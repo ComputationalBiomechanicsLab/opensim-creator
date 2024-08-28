@@ -4,11 +4,11 @@
 
 namespace osc
 {
-    enum class TextureChannelFormat {
+    enum class TextureComponentFormat {
         Uint8,
         Float32,
         NUM_OPTIONS,
     };
 
-    size_t num_bytes_per_channel_in(TextureChannelFormat);
+    size_t num_bytes_per_component_in(TextureComponentFormat);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Graphics/TextureChannelFormat.h>
+#include <oscar/Graphics/TextureComponentFormat.h>
 
 #include <cstddef>
 #include <optional>
@@ -20,8 +20,8 @@ namespace osc
         NUM_OPTIONS,
     };
 
-    size_t num_channels_in(TextureFormat);
-    TextureChannelFormat channel_format_of(TextureFormat);
+    size_t num_components_in(TextureFormat);
+    TextureComponentFormat component_format_of(TextureFormat);
     size_t num_bytes_per_pixel_in(TextureFormat);
-    std::optional<TextureFormat> to_texture_format(size_t num_channels, TextureChannelFormat);
+    std::optional<TextureFormat> to_texture_format(size_t num_components, TextureComponentFormat);
 }

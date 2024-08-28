@@ -41,7 +41,7 @@ add_executable(testoscar
     Graphics/TestSharedColorRenderBuffer.cpp
     Graphics/TestSharedDepthStencilRenderBuffer.cpp
     Graphics/TestSnorm8.cpp
-    Graphics/TestTextureChannelFormat.cpp
+    Graphics/TestTextureComponentFormat.cpp
     Graphics/TestTextureFormat.cpp
     Graphics/TestTexture2D.cpp
     Graphics/TestUnorm8.cpp

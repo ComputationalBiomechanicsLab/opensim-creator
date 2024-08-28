@@ -272,7 +272,7 @@ TEST(Variant, ColorToColorReturnsExpectedValues)
 
 TEST(Variant, ColorToFloatReturnsExpectedValues)
 {
-    // should only extract first channel, to match vec3 behavior for conversion
+    // should only extract first component, to match `Vec3` behavior for conversion
     ASSERT_EQ(to<float>(Variant(Color::black())), 0.0f);
     ASSERT_EQ(to<float>(Variant(Color::white())), 1.0f);
     ASSERT_EQ(to<float>(Variant(Color::blue())), 0.0f);
@@ -280,7 +280,7 @@ TEST(Variant, ColorToFloatReturnsExpectedValues)
 
 TEST(Variant, ColorToIntReturnsExpectedValues)
 {
-    // should only extract first channel, to match vec3 behavior for conversion
+    // should only extract first component, to match `Vec3` behavior for conversion
     ASSERT_EQ(to<int>(Variant(Color::black())), 0);
     ASSERT_EQ(to<int>(Variant(Color::white())), 1);
     ASSERT_EQ(to<int>(Variant(Color::cyan())), 0);
@@ -305,13 +305,13 @@ TEST(Variant, ColorValueToStringReturnsExpectedManualExamples)
     ASSERT_EQ(to<std::string>(Variant{Color::magenta()}), "#ff00ffff");
 }
 
-TEST(Variant, ColorValueToVec2ReturnsFirst2Channels)
+TEST(Variant, ColorValueToVec2ReturnsFirst2Components)
 {
     ASSERT_EQ(to<Vec2>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec2(1.0f, 2.0f));
     ASSERT_EQ(to<Vec2>(Variant(Color::red())), Vec2(1.0f, 0.0f));
 }
 
-TEST(Variant, ColorValueToVec3ReturnsFirst3Channels)
+TEST(Variant, ColorValueToVec3ReturnsFirst3Components)
 {
     ASSERT_EQ(to<Vec3>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec3(1.0f, 2.0f, 3.0f));
     ASSERT_EQ(to<Vec3>(Variant(Color::red())), Vec3(1.0f, 0.0f, 0.0f));

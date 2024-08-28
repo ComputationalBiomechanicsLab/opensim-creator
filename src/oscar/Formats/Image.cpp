@@ -81,9 +81,9 @@ namespace
         }
 
         Vec2i dimensions{};
-        int num_channels = 0;
+        int num_components = 0;
         const std::unique_ptr<float, decltype(&stbi_image_free)> pixel_data = {
-            stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_channels, 0),
+            stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
             stbi_image_free,
         };
 
@@ -98,19 +98,19 @@ namespace
         }
 
         const std::optional<TextureFormat> texture_format = to_texture_format(
-            static_cast<size_t>(num_channels),
-            TextureChannelFormat::Float32
+            static_cast<size_t>(num_components),
+            TextureComponentFormat::Float32
         );
 
         if (not texture_format) {
             std::stringstream ss;
-            ss << input_name << ": error loading HDR image: no TextureFormat exists for " << num_channels << " floating-point channel images";
+            ss << input_name << ": error loading HDR image: no TextureFormat exists for " << num_components << "-floating-point component images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
         const std::span<const float> pixel_span{
             pixel_data.get(),
-            static_cast<size_t>(dimensions.x*dimensions.y*num_channels)
+            static_cast<size_t>(dimensions.x*dimensions.y*num_components)
         };
 
         Texture2D rv{dimensions, *texture_format, color_space};
@@ -131,9 +131,9 @@ namespace
         }
 
         Vec2i dimensions{};
-        int num_channels = 0;
+        int num_components = 0;
         const std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixel_data = {
-            stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_channels, 0),
+            stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
             stbi_image_free,
         };
 
@@ -148,18 +148,18 @@ namespace
         }
 
         const std::optional<TextureFormat> texture_format = to_texture_format(
-            static_cast<size_t>(num_channels),
-            TextureChannelFormat::Uint8
+            static_cast<size_t>(num_components),
+            TextureComponentFormat::Uint8
         );
 
         if (not texture_format) {
             std::stringstream ss;
-            ss << input_name << ": error loading non-HDR image: no TextureFormat exists for " << num_channels << " 8-bit channel images";
+            ss << input_name << ": error loading non-HDR image: no TextureFormat exists for " << num_components << "-8-bit component images";
             throw std::runtime_error{std::move(ss).str()};
         }
 
         Texture2D rv{dimensions, *texture_format, color_space};
-        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x*dimensions.y*num_channels)});
+        rv.set_pixel_data({pixel_data.get(), static_cast<size_t>(dimensions.x*dimensions.y*num_components)});
         return rv;
     }
 

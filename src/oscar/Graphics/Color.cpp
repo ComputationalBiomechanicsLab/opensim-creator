@@ -92,23 +92,23 @@ std::ostream& osc::operator<<(std::ostream& out, const Color& color)
 // - https://registry.khronos.org/OpenGL/extensions/ARB/ARB_framebuffer_sRGB.txt
 //
 // (because I am a lazy bastard)
-float osc::to_linear_colorspace(float color_channel_value)
+float osc::to_linear_colorspace(float srgb_component_value)
 {
-    if (color_channel_value <= 0.04045f) {
-        return color_channel_value / 12.92f;
+    if (srgb_component_value <= 0.04045f) {
+        return srgb_component_value / 12.92f;
     }
     else {
-        return pow((color_channel_value + 0.055f) / 1.055f, 2.4f);
+        return pow((srgb_component_value + 0.055f) / 1.055f, 2.4f);
     }
 }
 
-float osc::to_srgb_colorspace(float color_channel_value)
+float osc::to_srgb_colorspace(float linear_component_value)
 {
-    if (color_channel_value <= 0.0031308f) {
-        return color_channel_value * 12.92f;
+    if (linear_component_value <= 0.0031308f) {
+        return linear_component_value * 12.92f;
     }
     else {
-        return pow(color_channel_value, 1.0f/2.4f)*1.055f - 0.055f;
+        return pow(linear_component_value, 1.0f/2.4f)*1.055f - 0.055f;
     }
 }
 
@@ -239,8 +239,8 @@ std::string osc::to_html_string_rgba(const Color& color)
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (auto channel : to_color32(color)) {
-        auto [nibble_1, nibble_2] = to_hex_chars(static_cast<uint8_t>(channel));
+    for (auto component : to_color32(color)) {
+        auto [nibble_1, nibble_2] = to_hex_chars(static_cast<uint8_t>(component));
         rv.push_back(nibble_1);
         rv.push_back(nibble_2);
     }

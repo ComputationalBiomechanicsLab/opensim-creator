@@ -180,7 +180,7 @@ add_library(oscar STATIC
     Graphics/Snorm8.h
     Graphics/SourceBlendingFactor.h
     Graphics/SubMeshDescriptor.h
-    Graphics/TextureChannelFormat.h
+    Graphics/TextureComponentFormat.h
     Graphics/TextureDimensionality.h
     Graphics/TextureFilterMode.h
     Graphics/TextureFormat.h

@@ -111,38 +111,38 @@ TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
     t.set_pixel_data(view_object_representations<uint8_t>(pixels));
 }
 
-TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleChannelData)
+TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleComponentData)
 {
     const Vec2i dimensions = {1, 1};
-    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y));
+    const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(singleChannelPixels);  // shouldn't throw
+    t.set_pixel_data(single_component_pixels);  // shouldn't throw
 }
 
-TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixelsBlanksOutGreenAndRed)
+TEST(Texture2D, SetPixelDataWith8BitSingleComponentDataFollowedByGetPixelsBlanksOutGreenAndRed)
 {
     const uint8_t color{0x88};
     const float colorFloat = static_cast<float>(color) / 255.0f;
     const Vec2i dimensions = {1, 1};
-    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(singleChannelPixels);
+    t.set_pixel_data(single_component_pixels);
 
     for (const Color& c : t.pixels()) {
         ASSERT_EQ(c, Color(colorFloat, 0.0f, 0.0f, 1.0f));
     }
 }
 
-TEST(Texture2D, SetPixelDataWith8BitSingleChannelDataFollowedByGetPixels32BlanksOutGreenAndRed)
+TEST(Texture2D, SetPixelDataWith8BitSingleComponentDataFollowedByGetPixels32BlanksOutGreenAndRed)
 {
     const uint8_t color{0x88};
     const Vec2i dimensions = {1, 1};
-    const std::vector<uint8_t> singleChannelPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
     Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(singleChannelPixels);
+    t.set_pixel_data(single_component_pixels);
 
     for (const Color32& c : t.pixels32()) {
         Color32 expected{color, 0x00, 0x00, 0xff};

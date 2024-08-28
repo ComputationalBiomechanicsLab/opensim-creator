@@ -160,7 +160,7 @@ namespace
         }
     };
 
-    // the `Material` that's used to detect the edges, per channel, in the input texture (used for rim-highlighting)
+    // the `Material` that's used to detect the edges, per color component, in the input texture (used for rim-highlighting)
     class EdgeDetectionMaterial final : public Material {
     public:
         explicit EdgeDetectionMaterial(SceneCache& cache) :

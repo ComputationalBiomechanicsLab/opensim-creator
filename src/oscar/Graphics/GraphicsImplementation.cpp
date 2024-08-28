@@ -326,11 +326,11 @@ namespace
     {
         // note: the OpenGL specification _requires_ that a backend supports
         // (effectively) RGBA, RG, and RED textures with the following data
-        // formats for each channel:
+        // formats for each component:
         //
-        // - uint8 (normalized)
-        // - int8 (normalized)
-        // - float32
+        // - Unorm8
+        // - Snorm8
+        // - float
         // - uint8/uint16/uint32 (non-normalized)
         // - int8/int16/int32 (non-normalized)
         //
@@ -1306,7 +1306,7 @@ public:
         texture_params_version_.reset();
     }
 
-    void set_pixel_data(CubemapFace face, std::span<const uint8_t> channels_row_by_row)
+    void set_pixel_data(CubemapFace face, std::span<const uint8_t> pixel_components_row_by_row)
     {
         const size_t face_index = to_index(face);
         const auto num_pixels_per_face = static_cast<size_t>(width_) * static_cast<size_t>(width_);
@@ -1315,10 +1315,10 @@ public:
         const size_t destination_data_end = destination_data_begin + num_bytes_per_face;
 
         OSC_ASSERT(face_index < num_options<CubemapFace>() && "invalid cubemap face passed to Cubemap::set_pixel_data");
-        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
+        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_face && "incorrect amount of data passed to Cubemap::set_pixel_data: the data must match the dimensions and texture format of the cubemap");
         OSC_ASSERT(destination_data_end <= data_.size() && "out of range assignment detected: this should be handled in the constructor");
 
-        rgs::copy(channels_row_by_row, data_.begin() + destination_data_begin);
+        rgs::copy(pixel_components_row_by_row, data_.begin() + destination_data_begin);
         data_version_.reset();
     }
 
@@ -1349,7 +1349,7 @@ private:
         const size_t num_bytes_per_face = width_ * num_bytes_per_row;
         const size_t num_bytes_in_cubemap = num_options<CubemapFace>() * num_bytes_per_face;
         const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const CPUImageFormat cpu_component_format = equivalent_cpu_image_format_of(format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
         const GLint opengl_unpack_alignment = opengl_unpack_alignment_of(format_);
 
         // sanity-check before doing anything with OpenGL
@@ -1373,7 +1373,7 @@ private:
                 width_,
                 width_,
                 0,
-                opengl_format_of(cpu_channel_layout),
+                opengl_format_of(cpu_component_format),
                 opengl_data_type_of(cpu_data_type),
                 data_.data() + face_bytes_begin
             );
@@ -1482,9 +1482,9 @@ TextureFormat osc::Cubemap::texture_format() const
     return impl_->texture_format();
 }
 
-void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> channels_row_by_row)
+void osc::Cubemap::set_pixel_data(CubemapFace face, std::span<const uint8_t> pixel_components_row_by_row)
 {
-    impl_.upd()->set_pixel_data(face, channels_row_by_row);
+    impl_.upd()->set_pixel_data(face, pixel_components_row_by_row);
 }
 
 namespace
@@ -1493,11 +1493,11 @@ namespace
         std::span<const uint8_t> pixel_bytes,
         TextureFormat pixel_format)
     {
-        const TextureChannelFormat channel_format = channel_format_of(pixel_format);
+        const TextureComponentFormat component_format = component_format_of(pixel_format);
 
-        const size_t num_channels = num_channels_in(pixel_format);
-        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
-        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_components = num_components_in(pixel_format);
+        const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
         const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
 
         OSC_ASSERT(pixel_bytes.size() % num_bytes_per_pixel == 0);
@@ -1505,42 +1505,42 @@ namespace
         std::vector<Color> rv;
         rv.reserve(num_pixels);
 
-        static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channel_format == TextureChannelFormat::Uint8) {
+        static_assert(num_options<TextureComponentFormat>() == 2);
+        if (component_format == TextureComponentFormat::Uint8) {
 
-            // unpack 8-bit channel bytes into floating-point Color channels
+            // unpack 8-bit component bytes into floating-point Color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const size_t channel_begin = pixel_begin + channel;
-                    color[channel] = Unorm8{pixel_bytes[channel_begin]}.normalized_value();
+                for (size_t component = 0; component < num_components; ++component) {
+                    const size_t component_begin = pixel_begin + component;
+                    color[component] = Unorm8{pixel_bytes[component_begin]}.normalized_value();
                 }
                 rv.push_back(color);
             }
         }
-        else if (channel_format == TextureChannelFormat::Float32 and num_bytes_per_channel == sizeof(float)) {
+        else if (component_format == TextureComponentFormat::Float32 and num_bytes_per_component == sizeof(float)) {
 
-            // read 32-bit channel floats into Color channels
+            // read 32-bit component floats into Color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color color = Color::black();
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const size_t channel_begin = pixel_begin + channel*num_bytes_per_channel;
+                for (size_t component = 0; component < num_components; ++component) {
+                    const size_t component_begin = pixel_begin + component*num_bytes_per_component;
 
-                    std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
+                    std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
-                    rgs::copy(channel_span, tmp_array.begin());
+                    rgs::copy(component_span, tmp_array.begin());
 
-                    color[channel] = cpp20::bit_cast<float>(tmp_array);
+                    color[component] = cpp20::bit_cast<float>(tmp_array);
                 }
                 rv.push_back(color);
             }
         }
         else {
-            OSC_ASSERT(false && "unsupported texture channel format or bytes per channel detected");
+            OSC_ASSERT(false && "unsupported texture component format or bytes per component detected");
         }
 
         return rv;
@@ -1550,49 +1550,49 @@ namespace
         std::span<const uint8_t> pixel_bytes,
         TextureFormat pixel_format)
     {
-        const TextureChannelFormat channel_format = channel_format_of(pixel_format);
+        const TextureComponentFormat component_format = component_format_of(pixel_format);
 
-        const size_t num_channels = num_channels_in(pixel_format);
-        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
-        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_components = num_components_in(pixel_format);
+        const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
         const size_t num_pixels = pixel_bytes.size() / num_bytes_per_pixel;
 
         std::vector<Color32> rv;
         rv.reserve(num_pixels);
 
-        static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channel_format == TextureChannelFormat::Uint8) {
+        static_assert(num_options<TextureComponentFormat>() == 2);
+        if (component_format == TextureComponentFormat::Uint8) {
 
-            // read 8-bit channel bytes into 8-bit Color32 color channels
+            // read 8-bit component bytes into 8-bit Color32 color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const size_t channel_begin = pixel_begin + channel;
-                    color[channel] = pixel_bytes[channel_begin];
+                for (size_t component = 0; component < num_components; ++component) {
+                    const size_t component_begin = pixel_begin + component;
+                    color[component] = pixel_bytes[component_begin];
                 }
                 rv.push_back(color);
             }
         }
         else {
             static_assert(std::is_same_v<Color::value_type, float>);
-            OSC_ASSERT(num_bytes_per_channel == sizeof(float));
+            OSC_ASSERT(num_bytes_per_component == sizeof(float));
 
-            // pack 32-bit channel floats into 8-bit Color32 color channels
+            // pack 32-bit component floats into 8-bit Color32 color components
             for (size_t pixel = 0; pixel < num_pixels; ++pixel) {
                 const size_t pixel_begin = num_bytes_per_pixel * pixel;
 
                 Color32 color = {0x00, 0x00, 0x00, 0xff};
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const size_t channel_begin = pixel_begin + channel*sizeof(float);
+                for (size_t component = 0; component < num_components; ++component) {
+                    const size_t component_begin = pixel_begin + component*sizeof(float);
 
-                    std::span<const uint8_t> channel_span{pixel_bytes.data() + channel_begin, sizeof(float)};
+                    std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
-                    rgs::copy(channel_span, tmp_array.begin());
-                    const auto channelFloat = cpp20::bit_cast<float>(tmp_array);
+                    rgs::copy(component_span, tmp_array.begin());
+                    const auto component_float = cpp20::bit_cast<float>(tmp_array);
 
-                    color[channel] = Unorm8{channelFloat};
+                    color[component] = Unorm8{component_float};
                 }
                 rv.push_back(color);
             }
@@ -1606,33 +1606,33 @@ namespace
         TextureFormat desired_pixel_format,
         std::vector<uint8_t>& pixel_bytes_out)
     {
-        const TextureChannelFormat channel_format = channel_format_of(desired_pixel_format);
+        const TextureComponentFormat component_format = component_format_of(desired_pixel_format);
 
-        const size_t num_channels = num_channels_in(desired_pixel_format);
-        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
-        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_components = num_components_in(desired_pixel_format);
+        const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
         const size_t num_pixels = colors.size();
         const size_t num_output_bytes = num_bytes_per_pixel * num_pixels;
 
         pixel_bytes_out.clear();
         pixel_bytes_out.reserve(num_output_bytes);
 
-        OSC_ASSERT(num_channels <= std::tuple_size_v<Color>);
-        static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channel_format == TextureChannelFormat::Uint8) {
+        OSC_ASSERT(num_components <= std::tuple_size_v<Color>);
+        static_assert(num_options<TextureComponentFormat>() == 2);
+        if (component_format == TextureComponentFormat::Uint8) {
 
             // clamp pixels, convert them to bytes, add them to pixel data buffer
             for (const Color& color : colors) {
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    pixel_bytes_out.push_back(Unorm8{color[channel]}.raw_value());
+                for (size_t component = 0; component < num_components; ++component) {
+                    pixel_bytes_out.push_back(Unorm8{color[component]}.raw_value());
                 }
             }
         }
         else {
             // write pixels to pixel data buffer as-is (they're floats already)
             for (const Color& color : colors) {
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    push_as_bytes(color[channel], pixel_bytes_out);
+                for (size_t component = 0; component < num_components; ++component) {
+                    push_as_bytes(color[component], pixel_bytes_out);
                 }
             }
         }
@@ -1643,32 +1643,32 @@ namespace
         TextureFormat desired_pixel_format,
         std::vector<uint8_t>& pixel_data_out)
     {
-        const TextureChannelFormat channel_format = channel_format_of(desired_pixel_format);
+        const TextureComponentFormat component_format = component_format_of(desired_pixel_format);
 
-        const size_t num_channels = num_channels_in(desired_pixel_format);
-        const size_t num_bytes_per_channel = num_bytes_per_channel_in(channel_format);
-        const size_t num_bytes_per_pixel = num_bytes_per_channel * num_channels;
+        const size_t num_components = num_components_in(desired_pixel_format);
+        const size_t num_bytes_per_component = num_bytes_per_component_in(component_format);
+        const size_t num_bytes_per_pixel = num_bytes_per_component * num_components;
         const size_t num_pixels = colors.size();
         const size_t num_output_bytes = num_bytes_per_pixel * num_pixels;
 
         pixel_data_out.clear();
         pixel_data_out.reserve(num_output_bytes);
 
-        OSC_ASSERT(num_channels <= Color32::length());
-        static_assert(num_options<TextureChannelFormat>() == 2);
-        if (channel_format == TextureChannelFormat::Uint8) {
+        OSC_ASSERT(num_components <= Color32::length());
+        static_assert(num_options<TextureComponentFormat>() == 2);
+        if (component_format == TextureComponentFormat::Uint8) {
             // write pixels to pixel data buffer as-is (they're bytes already)
             for (const Color32& color : colors) {
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    pixel_data_out.push_back(color[channel].raw_value());
+                for (size_t component = 0; component < num_components; ++component) {
+                    pixel_data_out.push_back(color[component].raw_value());
                 }
             }
         }
         else {
             // upscale pixels to float32s and write the floats to the pixel buffer
             for (const Color32& color : colors) {
-                for (size_t channel = 0; channel < num_channels; ++channel) {
-                    const float pixel_float_value = Unorm8{color[channel]}.normalized_value();
+                for (size_t component = 0; component < num_components; ++component) {
+                    const float pixel_float_value = Unorm8{color[component]}.normalized_value();
                     push_as_bytes(pixel_float_value, pixel_data_out);
                 }
             }
@@ -1795,12 +1795,12 @@ public:
         return pixel_data_;
     }
 
-    void set_pixel_data(std::span<const uint8_t> channels_row_by_row)
+    void set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
     {
-        OSC_ASSERT(channels_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
-        OSC_ASSERT(channels_row_by_row.size() == pixel_data_.size());
+        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(pixel_components_row_by_row.size() == pixel_data_.size());
 
-        rgs::copy(channels_row_by_row, pixel_data_.begin());
+        rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
     }
 
     // non PIMPL method
@@ -1830,7 +1830,7 @@ private:
         const size_t num_bytes_per_row = dimensions_.x * num_bytes_per_pixel;
         const GLint unpack_alignment = opengl_unpack_alignment_of(texture_format_);
         const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(texture_format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
-        const CPUImageFormat cpu_channel_layout = equivalent_cpu_image_format_of(texture_format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
+        const CPUImageFormat cpu_component_layout = equivalent_cpu_image_format_of(texture_format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
 
         static_assert(num_options<TextureFormat>() == 7, "careful here, glTexImage2D will not accept some formats (e.g. GL_RGBA16F) as the externally-provided format (must be GL_RGBA format with GL_HALF_FLOAT type)");
         OSC_ASSERT(num_bytes_per_row % unpack_alignment == 0 && "the memory alignment of each horizontal line in an OpenGL texture must match the GL_UNPACK_ALIGNMENT arg (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -1846,7 +1846,7 @@ private:
             dimensions_.x,
             dimensions_.y,
             0,
-            opengl_format_of(cpu_channel_layout),
+            opengl_format_of(cpu_component_layout),
             opengl_data_type_of(cpu_data_type),
             pixel_data_.data()
         );
@@ -1890,21 +1890,21 @@ std::ostream& osc::operator<<(std::ostream& o, TextureFilterMode filter_mode)
     return o << c_texture_filter_mode_strings.at(to_index(filter_mode));
 }
 
-size_t osc::num_channels_in(TextureFormat format)
+size_t osc::num_components_in(TextureFormat format)
 {
     constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
-        return std::to_array({ TextureFormatTraits<Formats>::num_channels... });
+        return std::to_array({ TextureFormatTraits<Formats>::num_components... });
     }(TextureFormatList{});
 
     return lut.at(to_index(format));
 }
 
-TextureChannelFormat osc::channel_format_of(TextureFormat format)
+TextureComponentFormat osc::component_format_of(TextureFormat format)
 {
     constexpr auto lut = []<TextureFormat... Formats>(OptionList<TextureFormat, Formats...>)
     {
-        return std::to_array({ TextureFormatTraits<Formats>::channel_format... });
+        return std::to_array({ TextureFormatTraits<Formats>::component_format... });
     }(TextureFormatList{});
 
     return lut.at(to_index(format));
@@ -1912,16 +1912,16 @@ TextureChannelFormat osc::channel_format_of(TextureFormat format)
 
 size_t osc::num_bytes_per_pixel_in(TextureFormat format)
 {
-    return num_channels_in(format) * num_bytes_per_channel_in(channel_format_of(format));
+    return num_components_in(format) * num_bytes_per_component_in(component_format_of(format));
 }
 
-std::optional<TextureFormat> osc::to_texture_format(size_t num_channels, TextureChannelFormat channel_format)
+std::optional<TextureFormat> osc::to_texture_format(size_t num_components, TextureComponentFormat component_format)
 {
-    static_assert(num_options<TextureChannelFormat>() == 2);
-    const bool format_is_byte_oriented = channel_format == TextureChannelFormat::Uint8;
+    static_assert(num_options<TextureComponentFormat>() == 2);
+    const bool format_is_byte_oriented = component_format == TextureComponentFormat::Uint8;
 
     static_assert(num_options<TextureFormat>() == 7);
-    switch (num_channels) {
+    switch (num_components) {
     case 1: return format_is_byte_oriented ? TextureFormat::R8     : std::optional<TextureFormat>{};
     case 2: return format_is_byte_oriented ? TextureFormat::RG16   : TextureFormat::RGFloat;
     case 3: return format_is_byte_oriented ? TextureFormat::RGB24  : TextureFormat::RGBFloat;
@@ -1930,12 +1930,12 @@ std::optional<TextureFormat> osc::to_texture_format(size_t num_channels, Texture
     }
 }
 
-size_t osc::num_bytes_per_channel_in(TextureChannelFormat channel_format)
+size_t osc::num_bytes_per_component_in(TextureComponentFormat component_format)
 {
-    static_assert(num_options<TextureChannelFormat>() == 2);
-    switch (channel_format) {
-    case TextureChannelFormat::Uint8:   return 1;
-    case TextureChannelFormat::Float32: return 4;
+    static_assert(num_options<TextureComponentFormat>() == 2);
+    switch (component_format) {
+    case TextureComponentFormat::Uint8:   return 1;
+    case TextureComponentFormat::Float32: return 4;
     default:                            return 1;
     }
 }
@@ -2040,9 +2040,9 @@ std::span<const uint8_t> osc::Texture2D::pixel_data() const
     return m_Impl->pixel_data();
 }
 
-void osc::Texture2D::set_pixel_data(std::span<const uint8_t> channels_row_by_row)
+void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
 {
-    m_Impl.upd()->set_pixel_data(channels_row_by_row);
+    m_Impl.upd()->set_pixel_data(pixel_components_row_by_row);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
@@ -5038,7 +5038,7 @@ private:
     {
         glVertexAttribPointer(
             shader_location_of(layout.attribute()),
-            static_cast<GLint>(num_components_in(layout.format())),
+            static_cast<GLint>(detail::num_components_in(layout.format())),
             to_opengl_attribute_type_enum(layout.format()),
             is_normalized_attribute_type(layout.format()),
             static_cast<GLsizei>(format.stride()),

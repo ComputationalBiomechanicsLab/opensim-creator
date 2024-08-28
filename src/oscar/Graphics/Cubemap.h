@@ -29,8 +29,8 @@ namespace osc
         TextureFilterMode filter_mode() const;
         void set_filter_mode(TextureFilterMode);
 
-        // the provided bytes must match the channel layout, bytes per channel, and
-        // width*height of the cubemap, or an exception will be thrown
+        // The number of provided bytes must match the provided `width*width` and
+        // `TextureFormat` of this `Cubemap`, or an exception will be thrown.
         void set_pixel_data(CubemapFace, std::span<const uint8_t>);
 
         friend bool operator==(const Cubemap&, const Cubemap&) = default;

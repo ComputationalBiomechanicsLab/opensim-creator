@@ -20,11 +20,11 @@ namespace osc
     // into a shader.
     enum class ColorSpace {
 
-        // Indicates that the color channels are encoded in a linear color space. This
+        // Indicates that the color components are encoded in a linear color space. This
         // encoding typical for (e.g.) normal maps and other vector-encoded image formats.
         Linear,
 
-        // Indicates that the color channels are encoded in a sRGB color space. This
+        // Indicates that the color components are encoded in a sRGB color space. This
         // implies that (e.g.) shaders need to perform sRGB <-> linear conversion when
         // sampling from, or rendering to, the texture. This encoding is typical for
         // (e.g.) albedo textures.

@@ -238,11 +238,11 @@ namespace osc
 
     std::ostream& operator<<(std::ostream&, const Color&);
 
-    // returns the linear version of one (presumed to be) sRGB color channel value
-    float to_linear_colorspace(float color_channel_value);
+    // returns the linearized version of a sRGB component value
+    float to_linear_colorspace(float srgb_component_value);
 
-    // returns the linear version of one (presumed to be) linear color channel value
-    float to_srgb_colorspace(float color_channel_value);
+    // returns the sRGB version of a linearized component value
+    float to_srgb_colorspace(float linear_component_value);
 
     // returns the linear version of a (presumed to be) sRGB color
     Color to_linear_colorspace(const Color&);
@@ -277,7 +277,7 @@ namespace osc
         return &color.r;
     }
 
-    // linearly interpolates all color channels and alpha of `a` and `b` by `t`
+    // linearly interpolates all components of `a` and `b` by the interpolant `t`
     //
     // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
     Color lerp(const Color& a, const Color& b, float t);
@@ -307,7 +307,7 @@ namespace osc
     // multiplying its luminance (L) by `factor`, and converting it back to RGBA
     Color multiply_luminance(const Color& color, float factor);
 
-    // when handled as a tuple-like object, a `Color` decomposes into its channels (incl. alpha)
+    // when handled as a tuple-like object, a `Color` decomposes into its components (incl. alpha)
 
     template<size_t I>
     constexpr const float& get(const Color& color) { return color[I]; }

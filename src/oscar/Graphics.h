@@ -47,7 +47,7 @@
 #include <oscar/Graphics/Snorm8.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
-#include <oscar/Graphics/TextureChannelFormat.h>
+#include <oscar/Graphics/TextureComponentFormat.h>
 #include <oscar/Graphics/TextureDimensionality.h>
 #include <oscar/Graphics/TextureFilterMode.h>
 #include <oscar/Graphics/TextureFormat.h>
