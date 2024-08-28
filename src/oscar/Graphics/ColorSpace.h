@@ -1,23 +1,34 @@
 #pragma once
 
+
 namespace osc
 {
-    // Used in various parts of the codebase (e.g. image loaders) to indicate the
-    // color space of the provided pixel data.
+    // Used to indicate the encoding used when converting the color components of
+    // a texture between color spaces.
     //
-    // This is necessary because some functions are only capable of knowing that they
-    // are loading pixel data (e.g. as RGB bytes), but they aren't capable of knowing
-    // the color space encoding of that data (e.g. when loading a normal map from a
-    // PNG). It's important metadata, because shaders always work in a linear color space,
-    // and other calling code may only want to deal with sRGB colors (e.g. even if
-    // the colors were originally loaded as linear-space floats)
+    // It's necessary to provide this as additional information when implementations
+    // can't discern the color encoding of the color components they're handling, but
+    // need to discern it for conversion purposes.
+    //
+    // For example, image loaders might be able to decode a bitstream into red, green,
+    // and blue color components, but the bitstream may not contain enough metadata
+    // to tell the image loader what the colorspace of those components are. If the
+    // image then plans on using the image with the graphics backend (e.g. via `Texture2D`),
+    // and the graphics backend "anchors" shaders into a linear color space, then the
+    // loader needs to be able to tell the graphics backend whether (or not) to
+    // perfrom (e.g.) sRGB-to-linear conversion when loading the color components
+    // into a shader.
     enum class ColorSpace {
 
-        // Indicates an sRGB colorspace. This is typical for (e.g.) image files, albedo textures
-        sRGB,
-
-        // Indicates a linear colorspace. This is typical for (e.g.) bump maps, normal maps
+        // Indicates that the color channels are encoded in a linear color space. This
+        // encoding typical for (e.g.) normal maps and other vector-encoded image formats.
         Linear,
+
+        // Indicates that the color channels are encoded in a sRGB color space. This
+        // implies that (e.g.) shaders need to perform sRGB <-> linear conversion when
+        // sampling from, or rendering to, the texture. This encoding is typical for
+        // (e.g.) albedo textures.
+        sRGB,
 
         NUM_OPTIONS,
     };
