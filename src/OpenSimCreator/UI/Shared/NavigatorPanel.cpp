@@ -7,6 +7,7 @@
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
+#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
@@ -237,15 +238,17 @@ private:
         const float unindentPerLevel = ui::get_tree_node_to_label_spacing() - 15.0f;
 
         const OpenSim::Component* root = &m_Model->getModel();
-        const OpenSim::Component* selection = m_Model->getSelected();
-        const OpenSim::Component* hover = m_Model->getHovered();
+        const OpenSim::Component* selected = m_Model->getSelected();
+        const OpenSim::Component* hovered = m_Model->getHovered();
 
-        const ComponentTreePathPointers selectionPath = selection ?
-            computeComponentTreePath(root, selection) :
+        OpenSim::ComponentPath selectedPath = GetAbsolutePathOrEmpty(selected);
+
+        const ComponentTreePathPointers selectedPathPointers = selected ?
+            computeComponentTreePath(root, selected) :
             ComponentTreePathPointers{};
 
-        const ComponentTreePathPointers hoverPath = selection ?
-            computeComponentTreePath(root, selection) :
+        const ComponentTreePathPointers hoveredPathPointers = hovered ?
+            computeComponentTreePath(root, hovered) :
             ComponentTreePathPointers{};
 
         // get underlying component list (+iterator)
@@ -318,11 +321,11 @@ private:
 
             // handle coloring
             int pushedStyles = 0;
-            if (cur == selection) {
+            if (cur == selected) {
                 ui::push_style_color(ImGuiCol_Text, Color::yellow());
                 ++pushedStyles;
             }
-            else if (cur == hover) {
+            else if (cur == hovered) {
                 ui::push_style_color(ImGuiCol_Text, Color::yellow());
                 ++pushedStyles;
             }
@@ -335,7 +338,7 @@ private:
             }
 
             // auto-open in these cases
-            if (searchHit || currentPath.sizei() == 1 || pathContains(selectionPath, cur)) {
+            if (searchHit || currentPath.sizei() == 1 || pathContains(selectedPathPointers, cur)) {
                 ui::set_next_item_open(true);
             }
 
@@ -349,18 +352,30 @@ private:
             ui::pop_style_color(pushedStyles);
 
             // handle tree node user interaction
-            if (ui::is_item_hovered()) {
+            const bool userHoveringThisTreeNode = ui::is_item_hovered();
+            const bool userLeftClickedThisTreeNode = ui::is_item_clicked(ui::MouseButton::Left);
+            const bool userRightClickedThisTreeNode = ui::is_item_clicked(ui::MouseButton::Right);
+
+            if (userHoveringThisTreeNode) {
                 rv.type = ResponseType::HoverChanged;
                 rv.ptr = cur;
-
                 ui::draw_tooltip(cur->getConcreteClassName());
             }
-            if (ui::is_item_clicked(ui::MouseButton::Left)) {
+            if (userLeftClickedThisTreeNode) {
                 rv.type = ResponseType::SelectionChanged;
                 rv.ptr = cur;
             }
-            if (ui::is_item_clicked(ui::MouseButton::Right)) {
+            if (userRightClickedThisTreeNode) {
                 m_OnRightClick(GetAbsolutePath(*cur));
+            }
+            if (cur == selected and
+                selectedPath != m_PreviousSelectionPath and
+                not userLeftClickedThisTreeNode) {
+
+                // if the current tree element being drawn is also the current
+                // selection, and the selection differs from the previous
+                // selection, then automatically scroll to this tree node (#908)
+                ui::set_scroll_y_here();
             }
         }
 
@@ -369,11 +384,15 @@ private:
             ui::indent(unindentPerLevel);
             ui::tree_pop();
         }
+
+        // cache the previous selection path, so we can observe when it has changed (#908)
+        m_PreviousSelectionPath = std::move(selectedPath);
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnRightClick;
     std::string m_CurrentSearch;
+    OpenSim::ComponentPath m_PreviousSelectionPath;
     bool m_ShowFrames = false;
 };
 

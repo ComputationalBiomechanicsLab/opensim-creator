@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The `Navigator` panel in the model editor now automatically scrolls to the selected
+  component when selecting the component via some other panel (e.g. a 3D viewer, reported
+  by @mrrezaie, #908)
 - Added `Point Forces` and `Point Torques` visualization options, which enables drawing force
   vectors in their point-force form (as opposed to their reduced body-force form). This feature
   currently only works for `ExternalForce`s in the model (#904) and `GeometryPath`s (#907).
