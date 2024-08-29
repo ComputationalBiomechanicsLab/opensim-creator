@@ -36,10 +36,10 @@ TEST(Rgba, can_be_decomposed_into_component_parts)
     const Rgba<float> rgba{1.0f, 2.0f, 3.0f, 0.5f};
     const auto& [r, g, b, a] = rgba;
 
-    ASSERT_EQ(rgba.r, 1.0f);
-    ASSERT_EQ(rgba.g, 2.0f);
-    ASSERT_EQ(rgba.b, 3.0f);
-    ASSERT_EQ(rgba.a, 0.5f);
+    ASSERT_EQ(r, 1.0f);
+    ASSERT_EQ(g, 2.0f);
+    ASSERT_EQ(b, 3.0f);
+    ASSERT_EQ(a, 0.5f);
 }
 
 TEST(Rgba, can_be_decomposed_into_mutable_component_parts)

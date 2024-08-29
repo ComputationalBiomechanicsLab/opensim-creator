@@ -70,6 +70,6 @@ TEST(Unorm8, can_be_streamed_to_ostream)
 
 TEST(Unorm8, can_be_hashed_with_std_hash)
 {
-    const Unorm8 value;
+    const Unorm8 value{0x48};
     ASSERT_NE(std::hash<Unorm8>{}(value), 0);
 }
