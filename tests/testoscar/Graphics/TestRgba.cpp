@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Unorm8.h>
+#include <oscar/Maths/Vec4.h>
 
 #include <sstream>
 
@@ -96,4 +97,25 @@ TEST(Rgba, Unorm8_rgba_can_be_hashed)
         ASSERT_NE(hash, last_hash);
         last_hash = hash;
     }
+}
+
+TEST(Rgba, can_implicitly_construct_Rgba_from_different_components_if_components_are_implicitly_convertible)
+{
+    const Rgba<float> float_val{0.0f, 0.5f, 1.0f, 1.0f};
+    const Rgba<Unorm8> unorm8_val = float_val;
+
+    ASSERT_EQ(unorm8_val.r, 0.0f);
+    ASSERT_EQ(unorm8_val.g, Unorm8{127});
+    ASSERT_EQ(unorm8_val.b, 1.0f);
+    ASSERT_EQ(unorm8_val.a, Unorm8{0xff});
+}
+
+TEST(Rgba, can_explicitly_construct_from_Vec4_of_different_type)
+{
+    const Rgba<Unorm8> unorm8_val{Vec4{0.0f, 0.5f, 1.0f, 1.0f}};
+
+    ASSERT_EQ(unorm8_val.r, 0.0f);
+    ASSERT_EQ(unorm8_val.g, Unorm8{127});
+    ASSERT_EQ(unorm8_val.b, 1.0f);
+    ASSERT_EQ(unorm8_val.a, Unorm8{0xff});
 }

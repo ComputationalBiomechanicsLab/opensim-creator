@@ -144,12 +144,31 @@ namespace osc
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {}
 
+        template<ColorComponent U>
+        requires std::constructible_from<T, const U&>
+        explicit constexpr Rgba(const Vec<4, U>& v) :
+            r{static_cast<T>(v.x)},
+            g{static_cast<T>(v.y)},
+            b{static_cast<T>(v.z)},
+            a{static_cast<T>(v.w)}
+        {}
+
         constexpr Rgba(value_type r_, value_type g_, value_type b_, value_type a_) :
             r{r_}, g{g_}, b{b_}, a{a_}
         {}
 
         constexpr Rgba(value_type r_, value_type g_, value_type b_) :
             r{r_}, g{g_}, b{b_}, a(1.0f)
+        {}
+
+        template<ColorComponent U>
+        requires std::constructible_from<T, const U&>
+        explicit (not (std::convertible_to<U, T>))
+        constexpr Rgba(const Rgba<U>& v) :
+            r{static_cast<T>(v.r)},
+            g{static_cast<T>(v.g)},
+            b{static_cast<T>(v.b)},
+            a{static_cast<T>(v.a)}
         {}
 
         constexpr reference operator[](size_type pos)

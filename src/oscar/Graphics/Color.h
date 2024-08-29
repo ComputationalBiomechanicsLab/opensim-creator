@@ -51,11 +51,8 @@ namespace osc
     Color lerp(const Color& a, const Color& b, float t);
 
     // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Color32 to_color32(const Color&);
-    Color32 to_color32(const Vec4&);
     Color32 to_color32(float, float, float, float);
     Color32 to_color32(uint32_t);  // R at MSB
-    Color to_color(Color32);
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.

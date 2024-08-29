@@ -255,7 +255,7 @@ TEST(Color, to_linear_colorspace_followed_by_to_srgb_colorspace_on_Color_returns
     ASSERT_NEAR(original_color.a, converted_color.a, tolerance);
 }
 
-TEST(Color, to_color32_returns_RGBA32_version_of_the_color)
+TEST(Color, conversion_to_Color32_returns_RGBA32_version_of_the_color)
 {
     const Color color = {0.85f, 0.62f, 0.3f, 0.5f};
     const Color32 expected = {
@@ -265,7 +265,7 @@ TEST(Color, to_color32_returns_RGBA32_version_of_the_color)
         static_cast<uint8_t>(color.a * static_cast<float>(0xff)),
     };
 
-    const Color32 got = to_color32(color);
+    const Color32 got = Color32{color};
 
     ASSERT_EQ(expected.r, got.r);
     ASSERT_EQ(expected.g, got.g);
@@ -273,26 +273,26 @@ TEST(Color, to_color32_returns_RGBA32_version_of_the_color)
     ASSERT_EQ(expected.a, got.a);
 }
 
-TEST(Color, to_color32_clamps_HDR_color_components)
+TEST(Color, conversion_to_Color32_clamps_HDR_color_components)
 {
     const Color hdr_color = {1.5f, 0.0f, 2.0f, 1.0f};
     const Color32 expected = {0xff, 0x00, 0xff, 0xff};
-    ASSERT_EQ(to_color32(hdr_color), expected);
+    ASSERT_EQ(Color32(hdr_color), expected);
 }
 
-TEST(Color, to_color32_clamps_negative_color_components)
+TEST(Color, conversion_to_Color32_clamps_negative_color_components)
 {
     const Color color = {-1.0f, 0.0f, 1.0f, 1.0f};
     const Color32 expected = {0x00, 0x00, 0xff, 0xff};
-    ASSERT_EQ(to_color32(color), expected);
+    ASSERT_EQ(Color32{color}, expected);
 }
 
-TEST(Color, to_color_on_Color32_returns_expected_colors)
+TEST(Color32, conversion_to_Color_returns_expected_colors)
 {
-    ASSERT_EQ(to_color(Color32(0xff, 0x00, 0x00, 0xff)), Color(1.0f, 0.0f, 0.0f, 1.0f));
-    ASSERT_EQ(to_color(Color32(0x00, 0xff, 0x00, 0xff)), Color(0.0f, 1.0f, 0.0f, 1.0f));
-    ASSERT_EQ(to_color(Color32(0x00, 0x00, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
-    ASSERT_EQ(to_color(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 1.0f, 1.0f, 0.0f));
+    ASSERT_EQ(Color(Color32(0xff, 0x00, 0x00, 0xff)), Color(1.0f, 0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color(Color32(0x00, 0xff, 0x00, 0xff)), Color(0.0f, 1.0f, 0.0f, 1.0f));
+    ASSERT_EQ(Color(Color32(0x00, 0x00, 0xff, 0xff)), Color(0.0f, 0.0f, 1.0f, 1.0f));
+    ASSERT_EQ(Color(Color32(0x00, 0xff, 0xff, 0x00)), Color(0.0f, 1.0f, 1.0f, 0.0f));
 }
 
 TEST(Color, black_returns_black_color)

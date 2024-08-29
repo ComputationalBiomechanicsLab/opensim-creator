@@ -1733,7 +1733,7 @@ TEST(Mesh, set_vertex_buffer_params_can_be_used_to_reformat_a_float_attribute_to
     });
 
     const auto expected = project_into_vector(colors, [](const Color& c) {
-        return to_color(to_color32(c));
+        return Color{Color32{c}};
     });
 
     ASSERT_EQ(m.colors(), expected);
@@ -1863,7 +1863,7 @@ TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
     };
     const std::vector<SimilarToImGuiVert> data(16);
     const auto expected_vertices = project_into_vector(data, [](const auto& v) { return Vec3{v.pos, 0.0f}; });
-    const auto expected_colors = project_into_vector(data, [](const auto& v) { return to_color(v.col); });
+    const auto expected_colors = project_into_vector(data, [](const auto& v) { return Color(v.col); });
     const auto expected_texture_coordinates = project_into_vector(data, [](const auto& v) { return v.uv; });
 
     Mesh mesh;

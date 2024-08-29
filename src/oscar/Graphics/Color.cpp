@@ -132,16 +132,6 @@ Color osc::lerp(const Color& a, const Color& b, float t)
     return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
 }
 
-Color32 osc::to_color32(const Color& color)
-{
-    return to_color32(static_cast<Vec4>(color));
-}
-
-Color32 osc::to_color32(const Vec4& vec)
-{
-    return Color32{vec.x, vec.y, vec.z, vec.w};
-}
-
 Color32 osc::to_color32(float r, float g, float b, float a)
 {
     return Color32{r, g, b, a};
@@ -154,16 +144,6 @@ Color32 osc::to_color32(uint32_t v)
         static_cast<uint8_t>((v >> 16) & 0xff),
         static_cast<uint8_t>((v >> 8 ) & 0xff),
         static_cast<uint8_t>((v >> 0 ) & 0xff),
-    };
-}
-
-Color osc::to_color(Color32 color)
-{
-    return Color{
-        color.r.normalized_value(),
-        color.g.normalized_value(),
-        color.b.normalized_value(),
-        color.a.normalized_value(),
     };
 }
 
@@ -229,7 +209,7 @@ std::string osc::to_html_string_rgba(const Color& color)
     std::string rv;
     rv.reserve(9);
     rv.push_back('#');
-    for (auto component : to_color32(color)) {
+    for (auto component : Color32{color}) {
         auto [nibble_1, nibble_2] = to_hex_chars(static_cast<uint8_t>(component));
         rv.push_back(nibble_1);
         rv.push_back(nibble_2);
