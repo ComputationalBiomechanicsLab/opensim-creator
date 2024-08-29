@@ -172,7 +172,7 @@ Color osc::clamp_to_ldr(const Color& color)
     return Color{saturate(Vec4{color})};
 }
 
-ColorHSLA osc::to_hsla_color(const Color& color)
+ColorHSLA osc::Converter<Color, ColorHSLA>::operator()(const Color& color) const
 {
     // sources:
     //
@@ -190,7 +190,7 @@ ColorHSLA osc::to_hsla_color(const Color& color)
     return {hue, saturation, lightness, a};
 }
 
-Color osc::to_color(const ColorHSLA& color)
+Color osc::Converter<ColorHSLA, Color>::operator()(const ColorHSLA& color) const
 {
     // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
 
@@ -281,7 +281,7 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view str)
 
 Color osc::multiply_luminance(const Color& color, float factor)
 {
-    auto hsla_color = to_hsla_color(color);
+    auto hsla_color = to<ColorHSLA>(color);
     hsla_color.lightness *= factor;
-    return to_color(hsla_color);
+    return to<Color>(hsla_color);
 }

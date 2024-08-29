@@ -124,17 +124,6 @@ TEST(Color, Vec4_constructor_is_constexpr)
     [[maybe_unused]] constexpr Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
-TEST(Color, to_vec4_explicitly_converts_it_into_a_Vec4)
-{
-    const Color c = {0.75, 0.75, 0.75, 1.0f};
-    const Vec4 v = to_vec4(c);
-
-    ASSERT_EQ(v.x, c.r);
-    ASSERT_EQ(v.y, c.g);
-    ASSERT_EQ(v.z, c.b);
-    ASSERT_EQ(v.w, c.a);
-}
-
 TEST(Color, operator_equals_returns_true_for_equivalent_colors)
 {
     const Color a = {1.0f, 0.0f, 1.0f, 0.5f};
@@ -459,10 +448,10 @@ TEST(Color, try_parse_html_color_string_parses_LDR_RGBx32_hex_string_to_Color)
     ASSERT_EQ(try_parse_html_color_string("red"), std::nullopt);  // literal hdr_color strings (e.g. as in Unity) aren't supported (yet)
 }
 
-TEST(Color, to_hsla_color_works_as_expected)
+TEST(Color, to_ColorHSLA_color_works_as_expected)
 {
     for (const auto& [rgba, expected] : c_RGBA_to_HSLA_known_conversion_values) {
-        const auto got = to_hsla_color(rgba);
+        const auto got = to<ColorHSLA>(rgba);
         ASSERT_NEAR(got.hue, expected.hue/360.0f, c_HLSL_conversion_tolerance_per_component);
         ASSERT_NEAR(got.saturation, expected.saturation, c_HLSL_conversion_tolerance_per_component);
         ASSERT_NEAR(got.lightness, expected.lightness, c_HLSL_conversion_tolerance_per_component);
@@ -476,7 +465,7 @@ TEST(Color, hsla_color_to_Color_works_as_expected)
         auto normalized = tc.expected_output;
         normalized.hue /= 360.0f;
 
-        const auto got = to_color(normalized);
+        const auto got = to<Color>(normalized);
         ASSERT_NEAR(got.r, tc.input.r, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
         ASSERT_NEAR(got.g, tc.input.g, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;
         ASSERT_NEAR(got.b, tc.input.b, c_HLSL_conversion_tolerance_per_component) << tc << ", got = " << got;

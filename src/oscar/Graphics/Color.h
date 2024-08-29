@@ -5,6 +5,7 @@
 #include <oscar/Graphics/Rgba.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/Conversion.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -32,17 +33,17 @@ namespace osc
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
     Color clamp_to_ldr(const Color&);
 
-    // returns the HSL(A) equivalent of the given (RGBA) color
-    ColorHSLA to_hsla_color(const Color&);
+    // converts a `Color` to a `ColorHSLA`
+    template<>
+    struct Converter<Color, ColorHSLA> final {
+        ColorHSLA operator()(const Color&) const;
+    };
 
-    // returns the color (RGBA) equivalent of the given HSL color
-    Color to_color(const ColorHSLA&);
-
-    // returns a Vec4 version of a Color
-    inline Vec4 to_vec4(const Color& color)
-    {
-        return Vec4{color};
-    }
+    // converts a `ColorHSLA` to a `Color`
+    template<>
+    struct Converter<ColorHSLA, Color> final {
+        Color operator()(const ColorHSLA&) const;
+    };
 
     // linearly interpolates all components of `a` and `b` by the interpolant `t`
     //
@@ -70,7 +71,7 @@ namespace osc
     std::string to_html_string_rgba(const Color&);
     std::optional<Color> try_parse_html_color_string(std::string_view);
 
-    // returns a color that is the result of converting `color` to HSLA,
-    // multiplying its luminance (L) by `factor`, and converting it back to RGBA
+    // returns a color that is the result of converting `color` to HSLA multiplying
+    // its luminance (L) by `factor`, and converting it back to RGBA
     Color multiply_luminance(const Color& color, float factor);
 }
