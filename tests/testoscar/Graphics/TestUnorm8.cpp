@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Conversion.h>
 
 #include <functional>
 #include <limits>
@@ -22,7 +23,7 @@ TEST(Unorm8, default_constructs_to_zero)
 }
 TEST(Unorm8, ComparisonBetweenBytesWorksAsExpected)
 {
-    static_assert(Unorm8{static_cast<std::byte>(0xfa)} == Unorm8{static_cast<std::byte>(0xfa)});
+    static_assert(to<Unorm8>(static_cast<std::byte>(0xfa)) == to<Unorm8>(static_cast<std::byte>(0xfa)));
 }
 
 TEST(Unorm8, ComparisonBetweenConvertedFloatsWorksAsExpected)
@@ -53,7 +54,7 @@ TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
 
 TEST(Unorm8, ConvertsAsExpected)
 {
-    ASSERT_EQ(Unorm8{0.5f}, Unorm8{static_cast<std::byte>(127)});
+    ASSERT_EQ(Unorm8{0.5f}, to<Unorm8>(static_cast<std::byte>(127)));
 }
 
 TEST(Unorm8, value_type_returns_uint8_t)

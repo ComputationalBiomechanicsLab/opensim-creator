@@ -70,7 +70,7 @@ namespace osc
 
     // a helper method that converts the provided `T` to a `U` using a `Converter<T, U>`
     template<typename U, typename T>
-    U to(T&& value)
+    constexpr U to(T&& value)
     {
         return Converter<std::remove_cvref_t<T>, U>{}(std::forward<T>(value));
     }
