@@ -247,10 +247,6 @@ private:
             computeComponentTreePath(root, selected) :
             ComponentTreePathPointers{};
 
-        const ComponentTreePathPointers hoveredPathPointers = hovered ?
-            computeComponentTreePath(root, hovered) :
-            ComponentTreePathPointers{};
-
         // get underlying component list (+iterator)
         const auto componentList = root->getComponentList();
         const auto componentListEnd = componentList.end();
