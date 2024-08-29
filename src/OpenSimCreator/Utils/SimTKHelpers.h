@@ -4,6 +4,7 @@
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
 #include <SimTKcommon/internal/Transform.h>
+#include <oscar/Graphics/Color.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
@@ -13,7 +14,6 @@
 
 #include <array>
 
-namespace osc { struct Color; }
 namespace osc { struct Transform; }
 
 namespace osc

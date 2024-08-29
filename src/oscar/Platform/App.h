@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMainLoopStatus.h>
@@ -24,7 +25,6 @@
 #include <vector>
 
 struct SDL_Window;
-namespace osc { struct Color; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }

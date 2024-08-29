@@ -22,6 +22,7 @@ add_executable(testoscar
     Graphics/TestCamera.cpp
     Graphics/TestCameraProjection.cpp
     Graphics/TestColor.cpp
+    Graphics/TestColorComponent.cpp
     Graphics/TestColorRenderBufferFormat.cpp
     Graphics/TestColorRenderBufferParams.cpp
     Graphics/TestCubemap.cpp
@@ -38,6 +39,7 @@ add_executable(testoscar
     Graphics/TestRenderTargetDepthStencilAttachment.cpp
     Graphics/TestRenderTexture.cpp
     Graphics/TestRenderTextureDescriptor.cpp
+    Graphics/TestRgba.cpp
     Graphics/TestSharedColorRenderBuffer.cpp
     Graphics/TestSharedDepthStencilRenderBuffer.cpp
     Graphics/TestSnorm8.cpp

@@ -72,11 +72,6 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& out, const Color& color)
-{
-    return out << "Color(r = " << color.r << ", g = " << color.g << ", b = " << color.b << ", a = " << color.a << ')';
-}
-
 // the sRGB <--> linear relationship is commonly simplified to:
 //
 // - linear = sRGB ^ 2.2
@@ -135,11 +130,6 @@ Color osc::to_srgb_colorspace(const Color& color)
 Color osc::lerp(const Color& a, const Color& b, float t)
 {
     return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
-}
-
-size_t std::hash<osc::Color>::operator()(const osc::Color& color) const
-{
-    return hash_of(color.r, color.g, color.b, color.a);
 }
 
 Color32 osc::to_color32(const Color& color)

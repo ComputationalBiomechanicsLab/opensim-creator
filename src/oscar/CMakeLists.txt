@@ -137,6 +137,7 @@ add_library(oscar STATIC
     Graphics/CameraProjection.h
     Graphics/Color.cpp
     Graphics/Color.h
+    Graphics/ColorComponent.h
     Graphics/ColorHSLA.h
     Graphics/ColorHSLA.cpp
     Graphics/ColorRenderBufferFormat.h
@@ -171,6 +172,7 @@ add_library(oscar STATIC
     Graphics/RenderTargetDepthStencilAttachment.h
     Graphics/RenderTexture.h
     Graphics/RenderTextureParams.h
+    Graphics/Rgba.h
     Graphics/Scene.h
     Graphics/Shader.h
     Graphics/ShaderPropertyType.h

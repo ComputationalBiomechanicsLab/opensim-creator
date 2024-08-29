@@ -1654,7 +1654,7 @@ namespace
         pixel_data_out.clear();
         pixel_data_out.reserve(num_output_bytes);
 
-        OSC_ASSERT(num_components <= Color32::length());
+        OSC_ASSERT(num_components <= std::tuple_size_v<Color32>);
         static_assert(num_options<TextureComponentFormat>() == 2);
         if (component_format == TextureComponentFormat::Uint8) {
             // write pixels to pixel data buffer as-is (they're bytes already)

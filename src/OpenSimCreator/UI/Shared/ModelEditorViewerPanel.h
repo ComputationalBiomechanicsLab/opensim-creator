@@ -7,7 +7,6 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { struct Color; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class ModelEditorViewerPanelLayer; }
 namespace osc { class ModelEditorViewerPanelParameters; }

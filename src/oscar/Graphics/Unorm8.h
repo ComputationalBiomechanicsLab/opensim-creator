@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 
 namespace osc
 {
@@ -39,3 +40,11 @@ namespace osc
         static constexpr bool value = true;
     };
 }
+
+template<>
+struct std::hash<osc::Unorm8> final {
+    size_t operator()(const osc::Unorm8& v) const
+    {
+        return std::hash<osc::Unorm<uint8_t>>{}(v);
+    }
+};

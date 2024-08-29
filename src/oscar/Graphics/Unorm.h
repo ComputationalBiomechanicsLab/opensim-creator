@@ -4,7 +4,9 @@
 
 #include <compare>
 #include <concepts>
+#include <functional>
 #include <limits>
+#include <ostream>
 #include <stdexcept>
 
 namespace osc
@@ -76,4 +78,18 @@ namespace osc
     struct IsScalar<Unorm<T>> final {
         static constexpr bool value = true;
     };
+
+    template<std::unsigned_integral T>
+    std::ostream& operator<<(std::ostream& o, const Unorm<T>& unorm)
+    {
+        return o << unorm.normalized_value();
+    }
 }
+
+template<std::unsigned_integral T>
+struct std::hash<osc::Unorm<T>> final {
+    size_t operator()(const osc::Unorm<T>& unorm) const
+    {
+        return std::hash<T>{}(unorm.raw_value());
+    }
+};

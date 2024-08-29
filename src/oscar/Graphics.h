@@ -8,6 +8,7 @@
 #include <oscar/Graphics/CameraClippingPlanes.h>
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/ColorComponent.h>
 #include <oscar/Graphics/ColorHSLA.h>
 #include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/ColorRenderBufferParams.h>
@@ -38,6 +39,7 @@
 #include <oscar/Graphics/RenderTargetDepthStencilAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/RenderTextureParams.h>
+#include <oscar/Graphics/Rgba.h>
 #include <oscar/Graphics/Scene.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/ShaderPropertyType.h>

@@ -4,7 +4,9 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
 
+#include <functional>
 #include <limits>
+#include <sstream>
 #include <type_traits>
 
 using namespace osc;
@@ -57,4 +59,17 @@ TEST(Unorm8, ConvertsAsExpected)
 TEST(Unorm8, value_type_returns_uint8_t)
 {
     static_assert(std::same_as<Unorm8::value_type, uint8_t>);
+}
+
+TEST(Unorm8, can_be_streamed_to_ostream)
+{
+    std::stringstream ss;
+    ss << Unorm8{};
+    ASSERT_FALSE(ss.str().empty());
+}
+
+TEST(Unorm8, can_be_hashed_with_std_hash)
+{
+    const Unorm8 value;
+    ASSERT_NE(std::hash<Unorm8>{}(value), 0);
 }

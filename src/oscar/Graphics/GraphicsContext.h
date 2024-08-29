@@ -1,13 +1,13 @@
 #pragma once
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
+#include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Texture2D.h>
 
 #include <future>
 #include <string>
 
 struct SDL_Window;
-namespace osc { struct Color; }
 
 namespace osc
 {

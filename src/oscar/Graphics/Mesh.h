@@ -26,7 +26,6 @@
 #include <vector>
 
 namespace osc { struct AABB; }
-namespace osc { struct Color; }
 namespace osc { class SubMeshDescriptor; }
 namespace osc { struct Transform; }
 namespace osc { class VertexFormat; }
