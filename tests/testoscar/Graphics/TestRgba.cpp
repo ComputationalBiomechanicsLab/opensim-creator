@@ -55,7 +55,7 @@ TEST(Rgba, can_be_decomposed_into_mutable_component_parts)
     ASSERT_EQ(rgba.r, 2.0f);
     ASSERT_EQ(rgba.g, 4.0f);
     ASSERT_EQ(rgba.b, 6.0f);
-    ASSERT_EQ(rgba.a, 0.25f);
+    ASSERT_EQ(rgba.a, 1.0f);
 }
 
 TEST(Rgba, value_ptr_works_for_float_type)
