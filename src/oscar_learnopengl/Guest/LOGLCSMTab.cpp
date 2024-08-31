@@ -19,6 +19,7 @@ namespace
 {
     constexpr CStringView c_tab_string_id = "LearnOpenGL/CSM";
 
+    // represents a single transformed mesh in the scene
     struct TransformedMesh {
         Mesh mesh;
         Transform transform;
@@ -223,33 +224,15 @@ private:
 
     void impl_on_draw() final
     {
-        user_camera_.on_draw();  // update from inputs etc.
+        // update state from user inputs, window size, etc.
+        user_camera_.on_draw();
         material_.set_viewer_position(user_camera_.position());
 
         render_cascades(ui::get_main_viewport_workspace_aspect_ratio());
-
-        // bind (cascade-aware) scene material to `cascade_rasters_` then draw
-        for (const auto& decoration : decorations_) {
-            graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_);
-        }
-
-        user_camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
-        user_camera_.render_to_screen();
-
-        draw_overlays();
+        render_scene_with_cascaded_shadow_mapping();
+        draw_debug_overlays();
 
         log_viewer_.on_draw();
-    }
-
-    void draw_overlays()
-    {
-        const Vec2 overlay_dimensions{256.0f};
-
-        Vec2 cursor = {0.0f, 0.0f};
-        for (const auto& cascade_raster : cascade_rasters_) {
-            graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});
-            cursor.x += overlay_dimensions.x;
-        }
     }
 
     void render_cascades(float user_aspect_ratio)
@@ -266,7 +249,6 @@ private:
             light_camera.set_position({});
             light_camera.set_direction(light_direction_);
             light_camera.set_projection_matrix_override(to_mat4(cascade_projection));
-            log_info("%s", to_string(to_mat4(cascade_projection)).c_str());
 
             shadowmapper_material_.set_color(Color::clear().with_element(i, 1.0f));
             for (const auto& decoration : decorations_) {
@@ -274,6 +256,26 @@ private:
             }
 
             light_camera.render_to(cascade_rasters_[i]);
+        }
+    }
+
+    void render_scene_with_cascaded_shadow_mapping()
+    {
+        for (const auto& decoration : decorations_) {
+            graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_);
+        }
+        user_camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        user_camera_.render_to_screen();
+    }
+
+    void draw_debug_overlays()
+    {
+        const Vec2 overlay_dimensions{256.0f};
+
+        Vec2 cursor = {0.0f, 0.0f};
+        for (const auto& cascade_raster : cascade_rasters_) {
+            graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});
+            cursor.x += overlay_dimensions.x;
         }
     }
 
