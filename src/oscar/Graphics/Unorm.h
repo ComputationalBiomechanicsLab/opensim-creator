@@ -22,11 +22,12 @@ namespace osc
 
         constexpr Unorm() = default;
 
-        consteval Unorm(int literal) :
-            value_{static_cast<T>(literal)}
+        template<std::integral U>
+        constexpr Unorm(U integral_value) :
+            value_{static_cast<T>(integral_value)}
         {
-            if (literal < std::numeric_limits<T>::min() or
-                literal > std::numeric_limits<T>::max()) {
+            if (integral_value < std::numeric_limits<T>::min() or
+                integral_value > std::numeric_limits<T>::max()) {
 
                 throw std::runtime_error{"provided value is out of range"};
             }
