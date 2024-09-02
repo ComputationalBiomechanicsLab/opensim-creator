@@ -193,16 +193,29 @@ namespace osc::ui
     };
     using SliderFlags = Flags<SliderFlag>;
 
+    enum class DataType {
+        Float,
+        NUM_OPTIONS
+    };
+
+    enum class TextInputFlag {
+        None             = 0,
+        ReadOnly         = 1<<0,
+        EnterReturnsTrue = 1<<1,
+        NUM_FLAGS        = 2,
+    };
+    using TextInputFlags = Flags<TextInputFlag>;
+
     bool draw_selectable(CStringView label, bool* p_selected);
     bool draw_selectable(CStringView label, bool selected = false);
     bool draw_checkbox(CStringView label, bool* v);
     bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", SliderFlags = {});
-    bool draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, ImGuiInputTextFlags flags = 0);
-    bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-    bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
-    bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-    bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-    bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+    bool draw_scalar_input(CStringView label, DataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, TextInputFlags = {});
+    bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, TextInputFlags = {});
+    bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", TextInputFlags = {});
+    bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", TextInputFlags = {});
+    bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", TextInputFlags = {});
+    bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", TextInputFlags = {});
     bool draw_rgb_color_editor(CStringView label, Color& color);
     bool draw_rgba_color_editor(CStringView label, Color& color);
     bool draw_button(CStringView label, const Vec2& size = {});
@@ -527,7 +540,7 @@ namespace osc::ui
     bool draw_string_input(
         CStringView label,
         std::string& edited_string,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+        TextInputFlags = {}
     );
 
     // behaves like `ui::draw_float_input`, but understood to manipulate the scene scale
@@ -536,14 +549,14 @@ namespace osc::ui
         float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+        TextInputFlags = {}
     );
 
     // behaves like `ui::draw_float3_input`, but understood to manipulate the scene scale
     bool draw_float3_meters_input(
         CStringView label,
         Vec3&,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+        TextInputFlags = {}
     );
 
     // behaves like `ui::draw_float_slider`, but understood to manipulate the scene scale
@@ -561,7 +574,7 @@ namespace osc::ui
         float& v,
         float step = 0.0f,
         float step_fast = 0.0f,
-        ImGuiInputTextFlags flags = ImGuiInputTextFlags_None
+        TextInputFlags = {}
     );
 
     // behaves like `ui::draw_float_input`, but edits the given angular value in degrees

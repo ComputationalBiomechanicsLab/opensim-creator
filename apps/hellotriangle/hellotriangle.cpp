@@ -305,7 +305,7 @@ void main()
                 script_output_ = lua::compile_and_print("ui", text_editor_.GetText());
             }
             text_editor_.Render("editor", {0.0f, 10.0f*ui::get_text_line_height()});
-            ui::draw_string_input("output", script_output_, ImGuiInputTextFlags_ReadOnly);
+            ui::draw_string_input("output", script_output_, ui::TextInputFlag::ReadOnly);
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
             ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
             ui::end_panel();

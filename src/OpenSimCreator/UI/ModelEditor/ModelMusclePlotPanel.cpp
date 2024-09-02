@@ -1967,7 +1967,7 @@ namespace
         void drawMaxDatapointsIntInput()
         {
             int currentDataPoints = getShared().getNumRequestedDatapoints();
-            if (ui::draw_int_input("num data points", &currentDataPoints, 1, 1024, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::draw_int_input("num data points", &currentDataPoints, 1, 1024, ui::TextInputFlag::EnterReturnsTrue)) {
                 if (currentDataPoints >= 0) {
                     updShared().setNumRequestedDataPoints(currentDataPoints);
                 }
@@ -1978,7 +1978,7 @@ namespace
         void drawMaxHistoryEntriesIntInput()
         {
             int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
-            if (ui::draw_int_input("max history size", &maxHistoryEntries, 1, 100, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            if (ui::draw_int_input("max history size", &maxHistoryEntries, 1, 100, ui::TextInputFlag::EnterReturnsTrue)) {
                 if (maxHistoryEntries >= 0) {
                     m_Lines.setMaxHistoryEntries(maxHistoryEntries);
                 }

@@ -67,7 +67,7 @@ private:
             }
             {
                 auto count = m_NewCustomEndTime.count();
-                if (ui::draw_double_input("custom end time", &count, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                if (ui::draw_double_input("custom end time", &count, 0.0, 0.0, "%.6f", ui::TextInputFlag::EnterReturnsTrue)) {
                     m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + SimulationClock::duration{count});
                 }
             }

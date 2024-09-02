@@ -187,6 +187,37 @@ struct osc::Converter<ui::SliderFlags, ImGuiSliderFlags> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::DataType, ImGuiDataType> final {
+    ImGuiDataType operator()(ui::DataType data_type) const
+    {
+        static_assert(num_options<ui::DataType>() == 1);
+
+        switch (data_type) {
+        case ui::DataType::Float: return ImGuiDataType_Float;
+        default:                  return ImGuiDataType_Float;
+        }
+    }
+};
+
+template<>
+struct osc::Converter<ui::TextInputFlags, ImGuiInputTextFlags> final {
+    ImGuiInputTextFlags operator()(ui::TextInputFlags flags) const
+    {
+        static_assert(num_flags<ui::TextInputFlag>() == 2);
+
+        ImGuiInputTextFlags rv = ImGuiInputTextFlags_None;
+        if (flags & ui::TextInputFlag::EnterReturnsTrue) {
+            rv |= ImGuiInputTextFlags_EnterReturnsTrue;
+        }
+        if (flags & ui::TextInputFlag::ReadOnly) {
+            rv |= ImGuiInputTextFlags_ReadOnly;
+        }
+        return rv;
+    }
+
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -380,34 +411,34 @@ bool osc::ui::draw_float_slider(CStringView label, float* v, float v_min, float 
     return ImGui::SliderFloat(label.c_str(), v, v_min, v_max, format, to<ImGuiSliderFlags>(flags));
 }
 
-bool osc::ui::draw_scalar_input(CStringView label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
+bool osc::ui::draw_scalar_input(CStringView label, DataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputScalar(label.c_str(), data_type, p_data, p_step, p_step_fast, format, flags);
+    return ImGui::InputScalar(label.c_str(), to<ImGuiDataType>(data_type), p_data, p_step, p_step_fast, format, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_int_input(CStringView label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
+bool osc::ui::draw_int_input(CStringView label, int* v, int step, int step_fast, TextInputFlags flags)
 {
-    return ImGui::InputInt(label.c_str(), v, step, step_fast, flags);
+    return ImGui::InputInt(label.c_str(), v, step, step_fast, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_double_input(CStringView label, double* v, double step, double step_fast, const char* format, ImGuiInputTextFlags flags)
+bool osc::ui::draw_double_input(CStringView label, double* v, double step, double step_fast, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, flags);
+    return ImGui::InputDouble(label.c_str(), v, step, step_fast, format, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_float_input(CStringView label, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float_input(CStringView label, float* v, float step, float step_fast, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, flags);
+    return ImGui::InputFloat(label.c_str(), v, step, step_fast, format, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_float3_input(CStringView label, float* v, const char* format, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float3_input(CStringView label, float* v, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), v, format, flags);
+    return ImGui::InputFloat3(label.c_str(), v, format, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_vec3_input(CStringView label, Vec3& v, const char* format, ImGuiInputTextFlags flags)
+bool osc::ui::draw_vec3_input(CStringView label, Vec3& v, const char* format, TextInputFlags flags)
 {
-    return ImGui::InputFloat3(label.c_str(), &v.x, format, flags);
+    return ImGui::InputFloat3(label.c_str(), &v.x, format, to<ImGuiInputTextFlags>(flags));
 }
 
 bool osc::ui::draw_rgb_color_editor(CStringView label, Color& color)
@@ -1504,17 +1535,17 @@ void osc::ui::draw_help_marker(CStringView content)
     draw_tooltip_if_item_hovered(content, {}, ImGuiHoveredFlags_None);
 }
 
-bool osc::ui::draw_string_input(CStringView label, std::string& edited_string, ImGuiInputTextFlags flags)
+bool osc::ui::draw_string_input(CStringView label, std::string& edited_string, TextInputFlags flags)
 {
-    return ImGui::InputText(label.c_str(), &edited_string, flags);  // uses `imgui_stdlib`
+    return ImGui::InputText(label.c_str(), &edited_string, to<ImGuiInputTextFlags>(flags));  // uses `imgui_stdlib`
 }
 
-bool osc::ui::draw_float_meters_input(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float_meters_input(CStringView label, float& v, float step, float step_fast, TextInputFlags flags)
 {
     return ui::draw_float_input(label, &v, step, step_fast, "%.6f", flags);
 }
 
-bool osc::ui::draw_float3_meters_input(CStringView label, Vec3& vec, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float3_meters_input(CStringView label, Vec3& vec, TextInputFlags flags)
 {
     return ui::draw_float3_input(label, value_ptr(vec), "%.6f", flags);
 }
@@ -1524,7 +1555,7 @@ bool osc::ui::draw_float_meters_slider(CStringView label, float& v, float v_min,
     return ui::draw_float_slider(label, &v, v_min, v_max, "%.6f", flags);
 }
 
-bool osc::ui::draw_float_kilogram_input(CStringView label, float& v, float step, float step_fast, ImGuiInputTextFlags flags)
+bool osc::ui::draw_float_kilogram_input(CStringView label, float& v, float step, float step_fast, TextInputFlags flags)
 {
     return draw_float_meters_input(label, v, step, step_fast, flags);
 }

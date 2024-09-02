@@ -573,7 +573,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", position, "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::draw_vec3_input("##translation", position, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
@@ -588,7 +588,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     ui::same_line();
     ui::draw_help_marker("direction", "a unit vector expressed in the given frame");
     ui::same_line();
-    ui::draw_vec3_input("##direction", direction, "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::draw_vec3_input("##direction", direction, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -604,13 +604,13 @@ void osc::DrawFrameInformationExpressedIn(
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", position, "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::draw_vec3_input("##translation", position, "%.6f", ui::TextInputFlag::ReadOnly);
 
     ui::draw_text("orientation");
     ui::same_line();
     ui::draw_help_marker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ui::same_line();
-    ui::draw_vec3_input("##orientation", rotationEulers, "%.6f", ImGuiInputTextFlags_ReadOnly);
+    ui::draw_vec3_input("##orientation", rotationEulers, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -704,15 +704,15 @@ void osc::DrawCalculateAxisDirectionsMenu(
 
             ui::draw_text("x axis");
             ui::same_line();
-            ui::draw_vec3_input("##xdir", x, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("y axis");
             ui::same_line();
-            ui::draw_vec3_input("##ydir", y, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("z axis");
             ui::same_line();
-            ui::draw_vec3_input("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::end_menu();
@@ -730,7 +730,7 @@ void osc::DrawCalculateOriginMenu(
             auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::draw_text("origin");
             ui::same_line();
-            ui::draw_vec3_input("##origin", v, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::end_menu();
@@ -792,7 +792,7 @@ void osc::DrawCalculateVolumeMenu(
     {
         const double r = sphere.get_radius();
         double v = 4.0/3.0 * SimTK::Pi * r*r*r;
-        ui::draw_double_input("volume", &v, 0.0, 0.0, "%.6f", ImGuiInputTextFlags_ReadOnly);
+        ui::draw_double_input("volume", &v, 0.0, 0.0, "%.6f", ui::TextInputFlag::ReadOnly);
         ui::end_menu();
     }
 }
@@ -863,7 +863,7 @@ void osc::DrawCalculateRadiiMenu(
         auto v = ToVec3(ellipsoid.get_radii());
         ui::draw_text("radii");
         ui::same_line();
-        ui::draw_vec3_input("##radii", v, "%.6f", ImGuiInputTextFlags_ReadOnly);
+        ui::draw_vec3_input("##radii", v, "%.6f", ui::TextInputFlag::ReadOnly);
         ui::end_menu();
     }
 }
@@ -891,15 +891,15 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
 
             ui::draw_text("x axis");
             ui::same_line();
-            ui::draw_vec3_input("##xdir", x, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("y axis");
             ui::same_line();
-            ui::draw_vec3_input("##ydir", y, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("z axis");
             ui::same_line();
-            ui::draw_vec3_input("##zdir", z, "%.6f", ImGuiInputTextFlags_ReadOnly);
+            ui::draw_vec3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(ellipsoid.getFrame()));
         ui::end_menu();
