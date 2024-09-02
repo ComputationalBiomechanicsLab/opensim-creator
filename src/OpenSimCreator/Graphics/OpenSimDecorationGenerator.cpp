@@ -524,9 +524,8 @@ namespace
 
             const SimTK::Vec3 pointInGround = pfd.frame().findStationLocationInGround(rs.getState(), pfd.point());
             const SimTK::Vec3 directionInGround = pfd.direction();  // note: sometimes zero? `draw_arrow` checks this
-            const double scale = pfd.scale();
 
-            const double arrowLength = tension * scale * c_ForceArrowLengthScale;
+            const double arrowLength = tension * c_ForceArrowLengthScale;
 
             const ArrowProperties arrowProperties = {
                 .start = ToVec3(pointInGround),
