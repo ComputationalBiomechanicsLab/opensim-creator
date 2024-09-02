@@ -16,7 +16,6 @@ add_executable(testoscar
     Graphics/Detail/TestVertexAttributeHelpers.cpp
     Graphics/Detail/TestVertexAttributeFormatList.cpp
     Graphics/Detail/TestVertexAttributeList.cpp
-    Graphics/Materials/TestMeshDepthWritingMaterial.cpp
     Graphics/Scene/TestSceneCache.cpp
     Graphics/Scene/TestSceneHelpers.cpp
     Graphics/TestAntiAliasingLevel.cpp

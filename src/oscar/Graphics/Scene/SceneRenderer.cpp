@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Materials/MeshDepthWritingMaterial.h>
+#include <oscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Textures/ChequeredTexture.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
@@ -175,18 +176,6 @@ namespace
         }
     };
 
-    // the `Material` that's used to draw mesh surface normal vectors
-    class NormalsMaterial final : public Material {
-    public:
-        explicit NormalsMaterial(SceneCache& cache) :
-            Material{cache.get_shader(
-                "oscar/shaders/SceneRenderer/NormalsVisualizer.vert",
-                "oscar/shaders/SceneRenderer/NormalsVisualizer.geom",
-                "oscar/shaders/SceneRenderer/NormalsVisualizer.frag"
-            )}
-        {}
-    };
-
     // a `Material` that colors `SceneDecoration`s in the rim color (groups)
     class RimFillerMaterial final : public MeshBasicMaterial {
     public:
@@ -212,7 +201,6 @@ public:
         rim_filler_material_{cache},
         wireframe_material_{cache.wireframe_material()},
         edge_detection_material_{cache},
-        normals_material_{cache},
         quad_mesh_{cache.quad_mesh()}
     {
         wireframe_material_.set_color(Color::black());
@@ -530,7 +518,7 @@ private:
     RimFillerMaterial rim_filler_material_;
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
-    NormalsMaterial normals_material_;
+    MeshNormalVectorsMaterial normals_material_;
     MeshDepthWritingMaterial depth_writer_material_;
 
     Mesh quad_mesh_;

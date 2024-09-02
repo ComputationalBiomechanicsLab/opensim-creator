@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 #include <oscar/Formats/Image.h>
+#include <oscar/Graphics/Materials/MeshDepthWritingMaterial.h>
+#include <oscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
@@ -1614,4 +1616,14 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
+}
+
+TEST_F(Renderer, MeshDepthWritingMaterial_can_default_construct)
+{
+    [[maybe_unused]] MeshDepthWritingMaterial default_constructed;  // should compile, run, etc.
+}
+
+TEST_F(Renderer, MeshNormalVectorsMaterial_can_default_construct)
+{
+    [[maybe_unused]] MeshNormalVectorsMaterial default_constructed;  // should compile, run, etc.
 }
