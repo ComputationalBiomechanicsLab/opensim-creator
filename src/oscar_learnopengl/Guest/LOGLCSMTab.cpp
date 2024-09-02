@@ -299,7 +299,7 @@ private:
         }
     }
 
-    ResourceLoader resource_loader_ = App::get().resource_loader();
+    ResourceLoader resource_loader_ = App::resource_loader();
     MouseCapturingCamera user_camera_;
     std::vector<TransformedMesh> decorations_ = generate_decorations();
     MeshBasicMaterial shadowmapping_material_{{
