@@ -9,6 +9,7 @@
 #include <memory>
 #include <random>
 #include <ranges>
+#include <span>
 #include <vector>
 
 using namespace osc;
@@ -226,43 +227,62 @@ private:
     {
         // update state from user inputs, window size, etc.
         user_camera_.on_draw();
-        material_.set_viewer_position(user_camera_.position());
 
-        render_cascades(ui::get_main_viewport_workspace_aspect_ratio());
-        render_scene_with_cascaded_shadow_mapping();
+        const auto cascade_projections = render_cascades(ui::get_main_viewport_workspace_aspect_ratio());
+        render_scene_with_cascaded_shadow_mapping(cascade_projections);
         draw_debug_overlays();
 
         log_viewer_.on_draw();
     }
 
-    void render_cascades(float user_aspect_ratio)
+    std::vector<Mat4> render_cascades(float user_aspect_ratio)
     {
         // calculate how each cascade maps from the user's camera to light-space
         const auto cascade_projections = calculate_light_source_orthographic_projections(user_camera_, user_aspect_ratio, light_direction_);
 
         // for each of those mappings, render a cascade
         OSC_ASSERT_ALWAYS(cascade_projections.size() == cascade_rasters_.size());
+        std::vector<Mat4> rv;
+        rv.reserve(cascade_projections.size());
         for (size_t i = 0; i < cascade_projections.size(); ++i) {
             const auto& cascade_projection = cascade_projections[i];
+            const Mat4 cascade_projection_mat4 = to_mat4(cascade_projection);
 
             Camera light_camera;
             light_camera.set_position({});
             light_camera.set_direction(light_direction_);
-            light_camera.set_projection_matrix_override(to_mat4(cascade_projection));
+            light_camera.set_projection_matrix_override(cascade_projection_mat4);
 
-            shadowmapper_material_.set_color(Color::clear().with_element(i, 1.0f));
+            shadowmapping_material_.set_color(Color::clear().with_element(i, 1.0f));
             for (const auto& decoration : decorations_) {
-                graphics::draw(decoration.mesh, decoration.transform, shadowmapper_material_, light_camera);
+                graphics::draw(decoration.mesh, decoration.transform, shadowmapping_material_, light_camera);
             }
 
             light_camera.render_to(cascade_rasters_[i]);
+            rv.push_back(cascade_projection_mat4);
         }
+        return rv;
     }
 
-    void render_scene_with_cascaded_shadow_mapping()
+    void render_scene_with_cascaded_shadow_mapping(std::span<const Mat4> cascade_projections)
     {
+        // setup material
+        csm_material_.set_array<Mat4>("uLightWVP", cascade_projections);
+        csm_material_.set("gNumPointLights", 0);
+        csm_material_.set("gNumSpotLights", 0);
+        csm_material_.set("gDirectionalLight.Base.Color", Color::white());
+        csm_material_.set("gDirectionalLight.Base.AmbientIntensity", 0.5f);
+        csm_material_.set("gDirectionalLight.Base.DiffuseIntensity", 0.9f);
+        csm_material_.set("gDirectionalLight.Base.Direction", Vec3{1.0f, -1.0f, 0.0f});
+        csm_material_.set("gObjectColor", Color::orange());
+        // csm_material_.set_array<RenderTexture>("gShadowMap", cascade_rasters_);  // TODO
+        csm_material_.set("gEyeWorldPos", user_camera_.position());
+        csm_material_.set("gMatSpecularIntensity", 0.0f);
+        csm_material_.set("gSpecularPower", 0.0f);
+        csm_material_.set_array<float>("gCascadeEndClipSpace", {{-0.333f, +0.333f, 1.0f}});  // TODO
+
         for (const auto& decoration : decorations_) {
-            graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_);
+            graphics::draw(decoration.mesh, decoration.transform, csm_material_, user_camera_);
         }
         user_camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
         user_camera_.render_to_screen();
@@ -279,14 +299,15 @@ private:
         }
     }
 
+    ResourceLoader resource_loader_ = App::get().resource_loader();
     MouseCapturingCamera user_camera_;
     std::vector<TransformedMesh> decorations_ = generate_decorations();
-    MeshPhongMaterial material_{{
-        .light_position = Vec3{5.0f},
-        .diffuse_color = Color::orange(),
-    }};
-    MeshBasicMaterial shadowmapper_material_{{
+    MeshBasicMaterial shadowmapping_material_{{
         .color = Color::red(),  // TODO: should be depth-only
+    }};
+    Material csm_material_{Shader{
+        resource_loader_.slurp("oscar_learnopengl/shaders/Guest/CSM/lighting.vert"),
+        resource_loader_.slurp("oscar_learnopengl/shaders/Guest/CSM/lighting.frag"),
     }};
     UnitVec3 light_direction_{0.5f, -1.0f, 0.0f};
     std::vector<RenderTexture> cascade_rasters_ = std::vector<RenderTexture>(3, RenderTexture{{.dimensions = {256, 256}}});

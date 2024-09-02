@@ -38,7 +38,7 @@ uniform int gNumSpotLights;
 uniform DirectionalLight gDirectionalLight;
 uniform PointLight gPointLights[MAX_POINT_LIGHTS];
 uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
-uniform sampler2D gSampler;
+uniform vec4 gObjectColor;
 uniform sampler2D gShadowMap[NUM_CASCADES];
 uniform vec3 gEyeWorldPos;
 uniform float gMatSpecularIntensity;
@@ -169,6 +169,6 @@ void main()
         TotalLight += CalcSpotLight(gSpotLights[i], Normal);
     }
 
-    vec4 SampledColor = texture2D(gSampler, TexCoord0.xy);
+    vec4 SampledColor = gObjectColor;
     FragColor = SampledColor * TotalLight + CascadeIndicator;
 }
