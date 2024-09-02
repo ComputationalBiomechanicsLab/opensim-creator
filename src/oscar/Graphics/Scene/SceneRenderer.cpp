@@ -1,6 +1,7 @@
 #include "SceneRenderer.h"
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <oscar/Graphics/Materials/MeshDepthWritingMaterial.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Graphics/Textures/ChequeredTexture.h>
 #include <oscar/Graphics/AntiAliasingLevel.h>
@@ -186,17 +187,6 @@ namespace
         {}
     };
 
-    // a `Material` that emits the NDC depth of the fragment as a color
-    class DepthColoringMaterial final : public Material {
-    public:
-        explicit DepthColoringMaterial(SceneCache& cache) :
-            Material{cache.get_shader(
-                "oscar/shaders/SceneRenderer/DepthMap.vert",
-                "oscar/shaders/SceneRenderer/DepthMap.frag"
-            )}
-        {}
-    };
-
     // a `Material` that colors `SceneDecoration`s in the rim color (groups)
     class RimFillerMaterial final : public MeshBasicMaterial {
     public:
@@ -223,7 +213,6 @@ public:
         wireframe_material_{cache.wireframe_material()},
         edge_detection_material_{cache},
         normals_material_{cache},
-        depth_writer_material_{cache},
         quad_mesh_{cache.quad_mesh()}
     {
         wireframe_material_.set_color(Color::black());
@@ -542,7 +531,7 @@ private:
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
     NormalsMaterial normals_material_;
-    DepthColoringMaterial depth_writer_material_;
+    MeshDepthWritingMaterial depth_writer_material_;
 
     Mesh quad_mesh_;
     Camera camera_;
