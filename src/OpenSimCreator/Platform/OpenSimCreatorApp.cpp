@@ -24,6 +24,7 @@
 #include <oscar/UI/Tabs/TabRegistry.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar_bookofshaders/BookOfShadersTabRegistry.h>
 #include <oscar_demos/OscarDemosTabRegistry.h>
 #include <oscar_learnopengl/LearnOpenGLTabRegistry.h>
 
@@ -210,8 +211,9 @@ namespace
     // registers user-accessible tabs
     void InitializeTabRegistry(TabRegistry& registry)
     {
-        register_learnopengl_tabs(registry);
+        register_bookofshaders_tabs(registry);
         register_demo_tabs(registry);
+        register_learnopengl_tabs(registry);
         RegisterOpenSimCreatorTabs(registry);
     }
 
