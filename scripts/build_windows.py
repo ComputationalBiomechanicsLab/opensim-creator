@@ -98,6 +98,7 @@ def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
         _run(
             f'cmake -S third_party/ -B "{conf.get_dependencies_build_dir()}" {conf.generator_flags} -DCMAKE_INSTALL_PREFIX="{conf.get_dependencies_install_dir()}"',
+            # note: this is necessary because OpenSim transitively uses `spdlog`, which has deprecated this
             extra_env_vars={'CXXFLAGS': '/D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING'},
         )
         _run(f'cmake --build {conf.get_dependencies_build_dir()} --config {conf.get_osc_deps_build_type()} -j{conf.concurrency}')
