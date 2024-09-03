@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.14] - 2024/09/04
+
 - The `Navigator` panel in the model editor now automatically scrolls to the selected
   component when selecting the component via some other panel (e.g. a 3D viewer, reported
   by @mrrezaie, #908)
