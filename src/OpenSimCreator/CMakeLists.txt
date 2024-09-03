@@ -443,16 +443,6 @@ target_link_libraries(OpenSimCreator PUBLIC
 # additional compile options (on top of `oscar_compiler_configuration`)
 target_compile_options(OpenSimCreator PUBLIC
 
-    # msvc (Windows) flags
-    $<$<CXX_COMPILER_ID:MSVC>:
-
-        # disable warning 4996: OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-        /wd4996
-
-        # disable warning about signed/unsigned comparison mismatch
-        /wd4389
-    >
-
     # gcc/clang
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
@@ -464,6 +454,11 @@ target_compile_options(OpenSimCreator PUBLIC
         # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
         -Wno-array-bounds
     >
+)
+
+target_compile_definitions(OpenSimCreator PUBLIC
+    # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+    $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )
 
 set_target_properties(OpenSimCreator PROPERTIES
