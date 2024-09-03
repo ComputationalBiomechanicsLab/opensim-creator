@@ -189,14 +189,11 @@ struct osc::Converter<ui::SliderFlags, ImGuiSliderFlags> final {
 
 template<>
 struct osc::Converter<ui::DataType, ImGuiDataType> final {
-    ImGuiDataType operator()(ui::DataType data_type) const
+    ImGuiDataType operator()(ui::DataType) const
     {
         static_assert(num_options<ui::DataType>() == 1);
 
-        switch (data_type) {
-        case ui::DataType::Float: return ImGuiDataType_Float;
-        default:                  return ImGuiDataType_Float;
-        }
+        return ImGuiDataType_Float;
     }
 };
 

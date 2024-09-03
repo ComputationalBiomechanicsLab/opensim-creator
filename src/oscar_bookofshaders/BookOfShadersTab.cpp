@@ -11,7 +11,7 @@ namespace
 {
     constexpr CStringView c_tab_string_id = "BookOfShaders/All";
 
-    static constexpr CStringView c_basic_vertex_shader = R"(
+    constexpr CStringView c_basic_vertex_shader = R"(
 #version 330 core
 
 uniform mat4 uViewProjMat;
