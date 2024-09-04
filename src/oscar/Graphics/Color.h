@@ -3,16 +3,12 @@
 #include <oscar/Graphics/Color32.h>
 #include <oscar/Graphics/ColorHSLA.h>
 #include <oscar/Graphics/Rgba.h>
-#include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
 #include <oscar/Utils/Conversion.h>
 
-#include <cstddef>
 #include <cstdint>
-#include <iosfwd>
 #include <optional>
 #include <string>
-#include <tuple>
+#include <string_view>
 
 namespace osc
 {
