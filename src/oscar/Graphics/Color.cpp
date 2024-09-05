@@ -79,11 +79,6 @@ Color osc::to_srgb_colorspace(const Color& color)
     };
 }
 
-Color osc::lerp(const Color& a, const Color& b, float t)
-{
-    return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
-}
-
 Color osc::clamp_to_ldr(const Color& color)
 {
     return Color{saturate(Vec4{color})};

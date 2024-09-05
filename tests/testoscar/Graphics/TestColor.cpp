@@ -365,26 +365,6 @@ TEST(Color, lerp_with_1_interpolant_returns_second_color)
     ASSERT_EQ(lerp(a, b, 1.0f), b);
 }
 
-TEST(Color, lerp_with_negative_interpolant_returns_first_color)
-{
-    // tests that `t` is appropriately clamped
-
-    const Color a = Color::red();
-    const Color b = Color::blue();
-
-    ASSERT_EQ(lerp(a, b, -1.0f), a);
-}
-
-TEST(Color, lerp_with_above_one_interpolant_returns_second_color)
-{
-    // tests that `t` is appropriately clamped
-
-    const Color a = Color::red();
-    const Color b = Color::blue();
-
-    ASSERT_EQ(lerp(a, b, 2.0f), b);
-}
-
 TEST(Color, lerp_with_intermediate_interpolant_returns_expected_result)
 {
     const Color a = Color::red();

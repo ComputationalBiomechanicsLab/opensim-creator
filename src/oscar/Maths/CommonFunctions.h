@@ -173,7 +173,10 @@ namespace osc
         typename Arithmetic2,
         typename Arithmetic3
     >
-    requires std::is_arithmetic_v<Arithmetic1> and std::is_arithmetic_v<Arithmetic2> and std::is_arithmetic_v<Arithmetic3>
+    requires
+        std::is_arithmetic_v<Arithmetic1> and
+        std::is_arithmetic_v<Arithmetic2> and
+        std::is_arithmetic_v<Arithmetic3>
     constexpr auto lerp(const Arithmetic1& a, const Arithmetic2& b, const Arithmetic3& t)
     {
         return std::lerp(a, b, t);

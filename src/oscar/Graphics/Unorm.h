@@ -2,6 +2,7 @@
 
 #include <oscar/Maths/Scalar.h>
 
+#include <cmath>
 #include <compare>
 #include <concepts>
 #include <functional>
@@ -37,7 +38,8 @@ namespace osc
             value_{raw_value}
         {}
 
-        constexpr Unorm(float normalized_value) :
+        template<std::floating_point U>
+        constexpr Unorm(U normalized_value) :
             value_{to_normalized_uint(normalized_value)}
         {}
 
@@ -64,10 +66,11 @@ namespace osc
         }
 
     private:
-        static constexpr T to_normalized_uint(float v)
+        template<std::floating_point U>
+        static constexpr T to_normalized_uint(U v)
         {
-            const float saturated = v > 0.0f ? (v < 1.0f ? v : 1.0f) : 0.0f;
-            return static_cast<T>(static_cast<float>(std::numeric_limits<T>::max()) * saturated);
+            const U saturated = v > U{0.0} ? (v < U{1.0} ? v : U{1.0}) : U{0.0};
+            return static_cast<T>(static_cast<U>(std::numeric_limits<T>::max()) * saturated);
         }
 
         T value_ = 0;
@@ -84,6 +87,14 @@ namespace osc
     std::ostream& operator<<(std::ostream& o, const Unorm<T>& unorm)
     {
         return o << unorm.normalized_value();
+    }
+
+    // returns the equivalent of `a + t(b - a)` (linear interpolation with extrapolation),
+    // with clamping for under-/over-flow
+    template<std::unsigned_integral T, typename TInterpolant>
+    constexpr Unorm<T> lerp(Unorm<T> a, Unorm<T> b, TInterpolant t)
+    {
+        return Unorm<T>{std::lerp(a.normalized_value(), b.normalized_value(), t)};
     }
 }
 

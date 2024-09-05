@@ -74,3 +74,10 @@ TEST(Unorm8, can_be_hashed_with_std_hash)
     const Unorm8 value{0x48};
     ASSERT_NE(std::hash<Unorm8>{}(value), 0);
 }
+
+TEST(Unorm8, lerp_works_as_expected)
+{
+    ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 0.0f), Unorm8{0x00});
+    ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 1.0f), Unorm8{0xff});
+    ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 0.5f), Unorm8{127});
+}

@@ -130,3 +130,13 @@ TEST(Rgba, map_with_binary_operation_works_as_expected)
 
     ASSERT_EQ(result, expected);
 }
+
+TEST(Rgba, lerp_works_with_unorm8)
+{
+    const Rgba<Unorm8> lhs = {0x00, 0x00, 0x00, 0x00};
+    const Rgba<Unorm8> rhs = {0xff, 0xff, 0xff, 0xff};
+    const Rgba<Unorm8> result = lerp(lhs, rhs, 123.0f/255.0f);
+    const Rgba<Unorm8> expected = {123, 123, 123, 123};
+
+    ASSERT_EQ(result, expected);
+}

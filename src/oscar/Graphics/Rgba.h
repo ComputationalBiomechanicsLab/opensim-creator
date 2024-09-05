@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Graphics/ColorComponent.h>
+#include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/HashHelpers.h>
 
@@ -304,6 +305,13 @@ namespace osc
             rv[i] = std::invoke(op, x[i], y[i]);
         }
         return rv;
+    }
+
+    // returns a color containing `lerp(xv, yv, t)` for each `(xv, yv)` component in `x` and `y`
+    template<ColorComponent T, typename TInterpolant>
+    constexpr auto lerp(const Rgba<T>& x, const Rgba<T>& y, TInterpolant t)
+    {
+        return map(x, y, [&t](const T& xv, const T& yv) { return lerp(xv, yv, t); });
     }
 }
 

@@ -25,11 +25,6 @@ namespace osc
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
     Color clamp_to_ldr(const Color&);
 
-    // linearly interpolates all components of `a` and `b` by the interpolant `t`
-    //
-    // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
-    Color lerp(const Color& a, const Color& b, float t);
-
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.
     //
