@@ -8,6 +8,7 @@
 #include <OpenSimCreator/Documents/Simulation/ISimulation.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -43,9 +44,6 @@ namespace plot = osc::ui::plot;
 
 namespace
 {
-    constexpr Color c_CurrentScubTimeColor = Color::yellow().with_alpha(0.6f);
-    constexpr Color c_HoveredScrubTimeColor = Color::yellow().with_alpha(0.3f);
-
     // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
         ISimulatorUIAPI& api,
@@ -268,8 +266,8 @@ private:
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
         ImDrawList* drawlist = ui::get_panel_draw_list();
-        const ImU32 currentTimeLineColor = ui::to_ImU32(c_CurrentScubTimeColor);
-        const ImU32 hoverTimeLineColor = ui::to_ImU32(c_HoveredScrubTimeColor);
+        const ImU32 currentTimeLineColor = ui::to_ImU32(OSCColors::scrub_current());
+        const ImU32 hoverTimeLineColor = ui::to_ImU32(OSCColors::scrub_hovered());
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
@@ -376,7 +374,7 @@ private:
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ImGuiCol_PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
-                    plot::drag_point(0, &currentVal, c_CurrentScubTimeColor, 4.0f, plot::DragToolFlags::NoInputs);
+                    plot::drag_point(0, &currentVal, OSCColors::scrub_current(), 4.0f, plot::DragToolFlags::NoInputs);
                 }
 
                 plot::end();

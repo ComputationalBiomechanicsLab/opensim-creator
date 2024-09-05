@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- There is now a slight color difference between selected and hovered items in the UI (e.g.
+  the color highlighting used in the navigator panel; thanks @mrrezaie, #916).
+
 ## [0.5.14] - 2024/09/04
 
 - The `Navigator` panel in the model editor now automatically scrolls to the selected

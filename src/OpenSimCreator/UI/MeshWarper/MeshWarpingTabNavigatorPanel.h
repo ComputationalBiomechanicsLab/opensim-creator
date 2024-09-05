@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <oscar/Maths/Circle.h>
@@ -145,11 +146,11 @@ namespace osc
             const float thickness = 2.0f;
             if (isSelected)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(Color::yellow()), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(OSCColors::selected()), 0, thickness);
             }
             else if (isHovered)
             {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(Color::yellow().with_alpha(0.5f)), 0, thickness);
+                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(OSCColors::hovered()), 0, thickness);
             }
         }
 

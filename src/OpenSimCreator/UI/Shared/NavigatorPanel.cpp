@@ -1,6 +1,7 @@
 #include "NavigatorPanel.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -318,18 +319,18 @@ private:
             // handle coloring
             int pushedStyles = 0;
             if (cur == selected) {
-                ui::push_style_color(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
                 ++pushedStyles;
             }
             else if (cur == hovered) {
-                ui::push_style_color(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
                 ++pushedStyles;
             }
             else if (!hasSearch || searchHit) {
                 // display as normal
             }
             else {
-                ui::push_style_color(ImGuiCol_Text, Color::half_grey());
+                ui::push_style_color(ImGuiCol_Text, OSCColors::disabled());
                 ++pushedStyles;
             }
 

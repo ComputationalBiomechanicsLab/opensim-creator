@@ -17,6 +17,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.h>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
@@ -1642,12 +1643,12 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                ui::push_style_color(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
                 ++styles;
             }
             else if (m_Shared->isSelected(id))
             {
-                ui::push_style_color(ImGuiCol_Text, Color::yellow());
+                ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
                 ++styles;
             }
 

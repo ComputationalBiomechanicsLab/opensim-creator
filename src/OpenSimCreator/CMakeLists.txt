@@ -222,6 +222,7 @@ add_library(OpenSimCreator STATIC
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.h
+    Platform/OSCColors.h
     Platform/RecentFile.h
     Platform/RecentFiles.cpp
     Platform/RecentFiles.h

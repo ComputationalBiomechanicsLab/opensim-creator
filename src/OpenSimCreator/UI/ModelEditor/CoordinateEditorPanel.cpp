@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -126,12 +127,12 @@ private:
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
         {
-            ui::push_style_color(ImGuiCol_Text, Color::yellow());
+            ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
             ++stylesPushed;
         }
         if (&c == m_Model->getSelected())
         {
-            ui::push_style_color(ImGuiCol_Text, Color::yellow());
+            ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
             ++stylesPushed;
         }
 

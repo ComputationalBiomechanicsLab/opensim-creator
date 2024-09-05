@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Model/ModelStateCommit.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -1818,7 +1819,7 @@ namespace
                 // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                 // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                 // which looks very very glitchy (#490)
-                plot::drag_line_x(10, &v, Color::yellow().with_alpha(0.6f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                plot::drag_line_x(10, &v, OSCColors::scrub_current(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
             }
 
             // also, draw an X tag on the axes where the coordinate's value currently is
@@ -1832,7 +1833,7 @@ namespace
                 // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                 // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                 // which looks very very glitchy (#490)
-                plot::drag_line_x(11, &v, Color::yellow().with_alpha(0.3f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                plot::drag_line_x(11, &v, OSCColors::scrub_hovered(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
             }
 
             // also, draw a faded X tag on the axes where the mouse currently is (in X)
@@ -1859,7 +1860,7 @@ namespace
                         // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                         // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                         // which looks very very glitchy (#490)
-                        plot::drag_line_y(13, &v, Color::yellow().with_alpha(0.6f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::drag_line_y(13, &v, OSCColors::scrub_current(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
                         plot::draw_annotation({coordinateXInDegrees, *maybeCoordinateY}, Color::white(), {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
                     }
                 }
@@ -1873,7 +1874,7 @@ namespace
                         // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                         // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                         // which looks very very glitchy (#490)
-                        plot::drag_line_y(14, &v, Color::yellow().with_alpha(0.3f), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::drag_line_y(14, &v, OSCColors::scrub_hovered(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
                         plot::draw_annotation({*maybeMouseX, *maybeHoverY}, Color::white().with_alpha(0.6f), {10.0f, 10.0f}, true, "%f", *maybeHoverY);
                     }
                 }
