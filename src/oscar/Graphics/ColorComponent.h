@@ -21,5 +21,4 @@ namespace osc
             std::assignable_from<T&, float> and
             std::constructible_from<float, const T&>
         );
-
 }

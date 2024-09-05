@@ -1,11 +1,7 @@
 #pragma once
 
-#include <oscar/Graphics/Color32.h>
-#include <oscar/Graphics/ColorHSLA.h>
 #include <oscar/Graphics/Rgba.h>
-#include <oscar/Utils/Conversion.h>
 
-#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -29,26 +25,10 @@ namespace osc
     // returns a color that is clamped to the low-dynamic range (LDR, i.e. [0, 1])
     Color clamp_to_ldr(const Color&);
 
-    // converts a `Color` to a `ColorHSLA`
-    template<>
-    struct Converter<Color, ColorHSLA> final {
-        ColorHSLA operator()(const Color&) const;
-    };
-
-    // converts a `ColorHSLA` to a `Color`
-    template<>
-    struct Converter<ColorHSLA, Color> final {
-        Color operator()(const ColorHSLA&) const;
-    };
-
     // linearly interpolates all components of `a` and `b` by the interpolant `t`
     //
     // `t` is clamped to [0.0f, 1.0f]. When `t` is 0, returns `a`. When `t` is 1, returns `b`
     Color lerp(const Color& a, const Color& b, float t);
-
-    // float-/double-based inputs assume normalized color range (i.e. 0 to 1)
-    Color32 to_color32(float, float, float, float);
-    Color32 to_color32(uint32_t);  // R at MSB
 
     // returns the color as a hexadecimal string in the format "#rrggbbaa", as
     // commonly-used in web applications, configuration files, etc.

@@ -1,6 +1,8 @@
 #include <oscar/Graphics/Color.h>
 
 #include <gtest/gtest.h>
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorHSLA.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>

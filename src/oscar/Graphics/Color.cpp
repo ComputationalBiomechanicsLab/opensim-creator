@@ -1,5 +1,8 @@
 #include "Color.h"
 
+#include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorHSLA.h>
+#include <oscar/Graphics/Unorm8.h>
 #include <oscar/Maths/CommonFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
@@ -20,57 +23,6 @@
 #include <utility>
 
 using namespace osc;
-namespace rgs = std::ranges;
-
-namespace
-{
-    float calc_normalized_hsla_hue(
-        float r,
-        float g,
-        float b,
-        float,
-        float max,
-        float delta)
-    {
-        if (delta == 0.0f) {
-            return 0.0f;
-        }
-
-        // figure out projection of color onto hue hexagon
-        float segment = 0.0f;
-        float shift = 0.0f;
-        if (max == r) {
-            segment = (g - b)/delta;
-            shift = (segment < 0.0f ? 360.0f/60.0f : 0.0f);
-        }
-        else if (max == g) {
-            segment = (b - r)/delta;
-            shift = 120.0f/60.0f;
-        }
-        else {  // max == b
-            segment = (r - g)/delta;
-            shift = 240.0f/60.0f;
-        }
-
-        return (segment + shift)/6.0f;  // normalize
-    }
-
-    float calc_hsla_saturation(float lightness, float min, float max)
-    {
-        if (lightness == 0.0f) {
-            return 0.0f;
-        }
-        else if (lightness <= 0.5f) {
-            return 0.5f * (max - min)/lightness;
-        }
-        else if (lightness < 1.0f) {
-            return 0.5f * (max - min)/(1.0f - lightness);
-        }
-        else {  // lightness == 1.0f
-            return 0.0f;
-        }
-    }
-}
 
 // the sRGB <--> linear relationship is commonly simplified to:
 //
@@ -132,76 +84,9 @@ Color osc::lerp(const Color& a, const Color& b, float t)
     return Color{lerp(Vec4{a}, Vec4{b}, saturate(t))};
 }
 
-Color32 osc::to_color32(float r, float g, float b, float a)
-{
-    return Color32{r, g, b, a};
-}
-
-Color32 osc::to_color32(uint32_t v)
-{
-    return Color32{
-        static_cast<uint8_t>((v >> 24) & 0xff),
-        static_cast<uint8_t>((v >> 16) & 0xff),
-        static_cast<uint8_t>((v >> 8 ) & 0xff),
-        static_cast<uint8_t>((v >> 0 ) & 0xff),
-    };
-}
-
 Color osc::clamp_to_ldr(const Color& color)
 {
     return Color{saturate(Vec4{color})};
-}
-
-ColorHSLA osc::Converter<Color, ColorHSLA>::operator()(const Color& color) const
-{
-    // sources:
-    //
-    // - https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
-    // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
-
-    const auto [r, g, b, a] = clamp_to_ldr(color);
-    const auto [min, max] = rgs::minmax(std::to_array({r, g, b}));  // CARE: `std::initializer_list<float>` broken in Ubuntu20?
-    const float delta = max - min;
-
-    const float hue = calc_normalized_hsla_hue(r, g, b, min, max, delta);
-    const float lightness = 0.5f*(min + max);
-    const float saturation = calc_hsla_saturation(lightness, min, max);
-
-    return {hue, saturation, lightness, a};
-}
-
-Color osc::Converter<ColorHSLA, Color>::operator()(const ColorHSLA& color) const
-{
-    // see: https://web.cs.uni-paderborn.de/cgvb/colormaster/web/color-systems/hsl.html
-
-    const auto& [h, s, l, a] = color;
-
-    if (l <= 0.0f) {
-        return Color::black();
-    }
-
-    if (l >= 1.0f) {
-        return Color::white();
-    }
-
-    const float hp = mod(6.0f*h, 6.0f);
-    const float c1 = floor(hp);
-    const float c2 = hp - c1;
-    const float d  = l <= 0.5f ? s*l : s*(1.0f - l);
-    const float u1 = l + d;
-    const float u2 = l - d;
-    const float u3 = u1 - (u1 - u2)*c2;
-    const float u4 = u2 + (u1 - u2)*c2;
-
-    switch (static_cast<int>(c1)) {
-    default:
-    case 0: return {u1, u4, u2, a};
-    case 1: return {u3, u1, u2, a};
-    case 2: return {u2, u1, u4, a};
-    case 3: return {u2, u3, u1, a};
-    case 4: return {u4, u2, u1, a};
-    case 5: return {u1, u2, u3, a};
-    }
 }
 
 std::string osc::to_html_string_rgba(const Color& color)
@@ -261,7 +146,7 @@ std::optional<Color> osc::try_parse_html_color_string(std::string_view str)
 
 Color osc::multiply_luminance(const Color& color, float factor)
 {
-    auto hsla_color = to<ColorHSLA>(color);
+    ColorHSLA hsla_color{color};
     hsla_color.lightness *= factor;
-    return to<Color>(hsla_color);
+    return Color{hsla_color};
 }
