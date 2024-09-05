@@ -4,6 +4,7 @@
 #include <oscar/Graphics/Unorm8.h>
 #include <oscar/Maths/Vec4.h>
 
+#include <functional>
 #include <sstream>
 
 using namespace osc;
@@ -118,4 +119,14 @@ TEST(Rgba, can_explicitly_construct_from_Vec4_of_different_type)
     ASSERT_EQ(unorm8_val.g, Unorm8{127});
     ASSERT_EQ(unorm8_val.b, 1.0f);
     ASSERT_EQ(unorm8_val.a, Unorm8{0xff});
+}
+
+TEST(Rgba, map_with_binary_operation_works_as_expected)
+{
+    const Rgba<float> lhs = {1.0f, 2.0f, 3.0f, 4.0f};
+    const Rgba<float> rhs = {1.0f, 2.0f, 3.0f, 4.0f};
+    const Rgba<float> result = map(lhs, rhs, std::plus<float>{});
+    const Rgba<float> expected = {1.0f+1.0f, 2.0f+2.0f, 3.0f+3.0f, 4.0f+4.0f};
+
+    ASSERT_EQ(result, expected);
 }

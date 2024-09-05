@@ -4,6 +4,7 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Utils/HashHelpers.h>
 
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <ostream>
@@ -293,6 +294,17 @@ namespace osc
 
     template<size_t I, ColorComponent T>
     constexpr const T&& get(const Rgba<T>&& rgba) { return std::move(rgba[I]); }
+
+    // returns a `Rgba<U>` containing `op(xv, yv)` for each `(xv, yv)` component in `x` and `y`
+    template<ColorComponent T, std::invocable<const T&, const T&> BinaryOperation>
+    constexpr auto map(const Rgba<T>& x, const Rgba<T>& y, BinaryOperation op) -> Rgba<decltype(std::invoke(op, x[0], y[0]))>
+    {
+        Rgba<decltype(std::invoke(op, x[0], y[0]))> rv{};
+        for (size_t i = 0; i < 4; ++i) {
+            rv[i] = std::invoke(op, x[i], y[i]);
+        }
+        return rv;
+    }
 }
 
 // define compile-time size for `Rgba<T>` (same as `std::array`, `std::tuple`, `osc::Vec`, etc.)
