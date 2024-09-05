@@ -70,7 +70,8 @@ namespace osc::testing
         if (v.size() < new_size) {
             rv.insert(rv.end(), v.begin(), v.end());
             rv.resize(new_size, filler);
-        } else {
+        }
+        else {
             rv.insert(rv.end(), v.begin(), v.begin() + new_size);
         }
         return rv;

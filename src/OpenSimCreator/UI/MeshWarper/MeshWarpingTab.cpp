@@ -119,7 +119,8 @@ public:
     {
         if (e.type == SDL_KEYDOWN) {
             return onKeydownEvent(e.key);
-        } else {
+        }
+        else {
             return false;
         }
     }

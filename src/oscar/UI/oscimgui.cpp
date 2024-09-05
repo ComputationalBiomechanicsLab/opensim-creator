@@ -1131,7 +1131,8 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         if (ctrl_or_super_down) {
             focus_along_minus_x(camera);
             return true;
-        } else {
+        }
+        else {
             focus_along_x(camera);
             return true;
         }

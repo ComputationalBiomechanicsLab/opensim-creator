@@ -232,7 +232,8 @@ namespace osc
             if (hasLocation) {
                 if (isPaired) {
                     return m_State->getPairedLandmarkColor();
-                } else {
+                }
+                else {
                     return m_State->getUnpairedLandmarkColor();
                 }
             }

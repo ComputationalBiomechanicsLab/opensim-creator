@@ -38,7 +38,8 @@ std::function<std::optional<ResourceDirectoryEntry>()> osc::FilesystemResourceLo
             ResourceDirectoryEntry rv{relative_path.string(), beg->is_directory()};
             ++beg;
             return rv;
-        } else {
+        }
+        else {
             return std::nullopt;
         }
     };

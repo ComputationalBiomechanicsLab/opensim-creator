@@ -437,7 +437,8 @@ namespace osc::mow
                 ss << sourceComponent.getName() << ": the absolute filesystem location of this mesh cannot be found";
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
                 return rv;
-            } else {
+            }
+            else {
                 std::stringstream ss;
                 ss << sourceMesh->getName() << ": was found on the filesystem at " << *sourceMeshPath;
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
@@ -450,7 +451,8 @@ namespace osc::mow
                 ss << sourceMesh->getName() << ": could not find an associated .landmarks.csv file at " << sourceLandmarksPath;
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
                 return rv;
-            } else {
+            }
+            else {
                 std::stringstream ss;
                 ss << sourceMesh->getName() << ": has a .landmarks.csv file at " << sourceLandmarksPath;
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);
@@ -462,7 +464,8 @@ namespace osc::mow
                 ss << getName() << ": cannot find the supplied model file's filesystem location: this is required in order to locate the `DestinationGeometry` directory";
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Error);
                 return rv;
-            } else {
+            }
+            else {
                 std::stringstream ss;
                 ss << getName() << ": the model file was found at " << *modelFilePath;
                 rv.emplace_back(std::move(ss).str(), ValidationCheckState::Ok);

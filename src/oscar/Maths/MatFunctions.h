@@ -449,7 +449,8 @@ namespace osc
         // if (cos(ret.rotateY) != 0) {
         //     ret.rotateX = atan2(Row[1][2], Row[2][2]);
         //     ret.rotateZ = atan2(Row[0][1], Row[0][0]);
-        // } else {
+        // }
+        // else {
         //     ret.rotateX = atan2(-Row[2][0], Row[1][1]);
         //     ret.rotateZ = 0;
         // }

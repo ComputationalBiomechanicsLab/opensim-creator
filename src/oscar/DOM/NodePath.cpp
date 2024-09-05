@@ -115,10 +115,12 @@ namespace
                         // them down
                         if (l.c == NodePath::separator) {
                             cursor += 3;
-                        } else {
+                        }
+                        else {
                             cursor += 2;
                         }
-                    } else {
+                    }
+                    else {
                         // normal element that starts with '..'
                         ++cursor;
                     }
@@ -175,7 +177,8 @@ namespace
                 cursor = prev_start;
                 shift(cursor, num_chars_in_previous_el + num_chars_in_current_el);
 
-            } else {
+            }
+            else {
                 // non-relative element: skip past the next separator or end
                 cursor = find(cursor, path_end, NodePath::separator) + 1;
             }

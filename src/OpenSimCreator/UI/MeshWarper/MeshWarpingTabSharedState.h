@@ -233,7 +233,8 @@ namespace osc
                 if (isOnlyCameraRotationLinked()) {
                     camera.phi = m_LinkedCameraBase.phi;
                     camera.theta = m_LinkedCameraBase.theta;
-                } else {
+                }
+                else {
                     camera = m_LinkedCameraBase;
                 }
                 return true;
