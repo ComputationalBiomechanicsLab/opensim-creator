@@ -44,14 +44,10 @@ void main()
         HelloWorldMaterial() : BookOfShadersShader{c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform float u_time;
+#version 330 core
 
 void main() {
-    gl_FragColor = vec4(1.0,0.0,1.0,1.0);
+    gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
 }
 )";
     };
@@ -61,14 +57,12 @@ void main() {
         Uniforms_TimeColored() : BookOfShadersShader{c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
-#ifdef GL_ES
-precision mediump float;
-#endif
+#version 330 core
 
 uniform float u_time;
 
 void main() {
-    gl_FragColor = vec4(abs(sin(u_time)),0.0,0.0,1.0);
+    gl_FragColor = vec4(abs(sin(u_time)), 0.0, 0.0, 1.0);
 }
 )";
     };
@@ -78,19 +72,14 @@ void main() {
         Uniforms_gl_FragCoord() : BookOfShadersShader{c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
-#ifdef GL_ES
-precision mediump float;
-#endif
+#version 330 core
 
 uniform vec2 u_resolution;
-uniform vec2 u_mouse;
-uniform float u_time;
 
 void main() {
     vec2 st = gl_FragCoord.xy/u_resolution;
-    gl_FragColor = vec4(st.x,st.y,0.0,1.0);
+    gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);
 }
-
 )";
     };
 
@@ -99,17 +88,12 @@ void main() {
         AlgorithmicDrawing_LinePlot() : BookOfShadersShader{c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
-#ifdef GL_ES
-precision mediump float;
-#endif
+#version 330 core
 
 uniform vec2 u_resolution;
-uniform vec2 u_mouse;
-uniform float u_time;
 
-// Plot a line on Y using a value between 0.0-1.0
 float plot(vec2 st) {
-    return smoothstep(0.02, 0.0, abs(st.y - st.x));
+    return smoothstep(0.0, 0.2, 0.2 - abs(st.y - st.x));
 }
 
 void main() {
@@ -121,7 +105,7 @@ void main() {
 
     // Plot a line
     float pct = plot(st);
-    color = (1.0-pct)*color+pct*vec3(0.0,1.0,0.0);
+    color = mix(color, vec3(0.0, 1.0, 0.0), pct);
 
 	gl_FragColor = vec4(color,1.0);
 }
