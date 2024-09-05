@@ -737,63 +737,57 @@ namespace
             SimTK::Transform m_ModelToEditedTransform;
         };
 
-        // returns `true` if the Vec3 property is expressed w.r.t. a frame
-        bool isPropertyExpressedWithinAParentFrame() const
-        {
-            return getParentToGroundTransform() != std::nullopt;
-        }
-
         // returns `true` if the Vec3 property is edited in radians
         bool isPropertyEditedInRadians() const
         {
             return is_equal_case_insensitive(m_EditedProperty.getName(), "orientation");
         }
 
+        // If the `Vec3` property has a parent frame, returns a pointer to the frame; otherwise,
+        // returns a `nullptr`.
+        const OpenSim::PhysicalFrame* tryGetParentFrame() const
+        {
+            const OpenSim::Object* const obj = tryGetObject();
+            if (not obj) {
+                return nullptr;  // cannot find the property's parent object?
+            }
+
+            const auto* const component = dynamic_cast<const OpenSim::Component*>(obj);
+            if (not component) {
+                return nullptr;  // the object isn't an OpenSim component
+            }
+
+            if (&component->getRoot() != &getModel()) {
+                return nullptr;  // the object is not within the tree of the model (#800)
+            }
+
+            const auto positionPropName = TryGetPositionalPropertyName(*component);
+            if (not positionPropName) {
+                return nullptr;  // the component doesn't have a logical positional property that can be edited with the transform
+            }
+
+            const OpenSim::Property<SimTK::Vec3>* const prop = tryGetDowncastedProperty();
+            if (not prop) {
+                return nullptr;  // can't access the property this editor is ultimately editing
+            }
+
+            if (prop->getName() != *positionPropName) {
+                return nullptr;  // the property this editor is editing isn't a logically positional one
+            }
+
+            return TryGetParentToGroundFrame(*component);
+        }
+
         // if the Vec3 property has a parent frame, returns a transform that maps the Vec3
         // property's value to ground
         std::optional<SimTK::Transform> getParentToGroundTransform() const
         {
-            const OpenSim::Object* const obj = tryGetObject();
-            if (!obj)
-            {
-                return std::nullopt;  // cannot find the property's parent object?
+            if (const OpenSim::PhysicalFrame* frame = tryGetParentFrame()) {
+                return frame->getTransformInGround(getState());
             }
-
-            const auto* const component = dynamic_cast<const OpenSim::Component*>(obj);
-            if (!component)
-            {
-                return std::nullopt;  // the object isn't an OpenSim component
+            else {
+                return std::nullopt;
             }
-
-            if (&component->getRoot() != &getModel())
-            {
-                return std::nullopt;  // the object is not within the tree of the model (#800)
-            }
-
-            const auto positionPropName = TryGetPositionalPropertyName(*component);
-            if (!positionPropName)
-            {
-                return std::nullopt;  // the component doesn't have a logical positional property that can be edited with the transform
-            }
-
-            const OpenSim::Property<SimTK::Vec3>* const prop = tryGetDowncastedProperty();
-            if (!prop)
-            {
-                return std::nullopt;  // can't access the property this editor is ultimately editing
-            }
-
-            if (prop->getName() != *positionPropName)
-            {
-                return std::nullopt;  // the property this editor is editing isn't a logically positional one
-            }
-
-            std::optional<SimTK::Transform> transform = TryGetParentToGroundTransform(*component, getState());
-            if (!transform)
-            {
-                return std::nullopt;  // the component doesn't have a logical position-to-ground transform
-            }
-
-            return transform;
         }
 
         // if the user has selected a different frame in which to edit 3D quantities, then
@@ -882,24 +876,19 @@ namespace
 
         void drawReexpressionEditorIfApplicable()
         {
-            if (!isPropertyExpressedWithinAParentFrame())
-            {
+            const OpenSim::PhysicalFrame* parentFrame = tryGetParentFrame();
+            if (not parentFrame) {
                 return;
             }
 
-            const CStringView defaultedLabel = "(parent frame)";
+            const auto& defaultedLabel = parentFrame->getName();
             const std::string preview = m_MaybeUserSelectedFrameAbsPath ?
                 m_MaybeUserSelectedFrameAbsPath->getComponentName() :
                 std::string{defaultedLabel};
 
-            ui::set_next_item_width(ui::get_content_region_available().x);
+            ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size("(?)").x);
             if (ui::begin_combobox("##reexpressioneditor", preview))
             {
-                ui::draw_text_disabled("Frame (editing)");
-                ui::same_line();
-                ui::draw_help_marker("Note: this only affects the values that the quantities are edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
-                ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
-
                 int imguiID = 0;
 
                 // draw "default" (reset) option
@@ -931,6 +920,9 @@ namespace
 
                 ui::end_combobox();
             }
+            ui::same_line();
+
+            ui::draw_help_marker("Expression Frame", "The coordinate frame in which this quantity is edited.\n\nNote: Changing this only affects the coordinate space the the value is edited in. It does not change the frame that the component is attached to. You can change the frame attachment by using the component's context menu: Socket > $FRAME > (edit button) > (select new frame)");
         }
 
         // draws an editor for the `ith` Vec3 element of the given (potentially, list) property

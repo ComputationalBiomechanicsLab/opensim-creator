@@ -1594,18 +1594,28 @@ OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<Op
     return rv;
 }
 
+const OpenSim::PhysicalFrame* osc::TryGetParentToGroundFrame(const OpenSim::Component& component)
+{
+    if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
+        return &station->getParentFrame();
+    }
+    else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
+        return &pp->getParentFrame();
+    }
+    else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
+        return &pof->getParentFrame();
+    }
+    else {
+        return nullptr;
+    }
+}
+
 std::optional<SimTK::Transform> osc::TryGetParentToGroundTransform(
     const OpenSim::Component& component,
     const SimTK::State& state)
 {
-    if (const auto* station = dynamic_cast<const OpenSim::Station*>(&component)) {
-        return station->getParentFrame().getTransformInGround(state);
-    }
-    else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&component)) {
-        return pp->getParentFrame().getTransformInGround(state);
-    }
-    else if (const auto* pof = dynamic_cast<const OpenSim::PhysicalOffsetFrame*>(&component)) {
-        return pof->getParentFrame().getTransformInGround(state);
+    if (const OpenSim::PhysicalFrame* frame = TryGetParentToGroundFrame(component)) {
+        return frame->getTransformInGround(state);
     }
     else {
         return std::nullopt;

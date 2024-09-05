@@ -878,6 +878,12 @@ namespace osc
         return Assign(set, index, Clone(el));
     }
 
+    // tries to get the "parent" frame of the given component (if available)
+    //
+    // e.g. in OpenSim, this is usually acquired with `getParentFrame()`
+    //      but that API isn't exposed generically via virtual methods
+    const OpenSim::PhysicalFrame* TryGetParentToGroundFrame(const OpenSim::Component&);
+
     // tries to get the "parent" transform of the given component (if available)
     //
     // e.g. in OpenSim, this is usually acquired with `getParentFrame().getTransformInGround(State const&)`

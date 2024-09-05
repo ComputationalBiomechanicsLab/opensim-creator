@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - There is now a slight color difference between selected and hovered items in the UI (e.g.
   the color highlighting used in the navigator panel; thanks @mrrezaie, #916).
+- The expression frame selector that appears in the property editor when editing spatial
+  quantities that are expressed with respect to a parent frame now shows the parent frame's
+  name by default (previously: it would show `(parent frame)`; thanks @mrrezaie, #916).
 
 ## [0.5.14] - 2024/09/04
 
