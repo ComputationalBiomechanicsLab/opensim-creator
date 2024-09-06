@@ -41,6 +41,8 @@
 #include <oscar/Utils/Perf.h>
 #include <SimTKcommon.h>
 
+#include <ankerl/unordered_dense.h>
+
 #include <cmath>
 #include <algorithm>
 #include <cstddef>
@@ -329,6 +331,10 @@ namespace
 
     // An `OpenSim::ForceConsumer` that emits `SceneDecoration` arrows that represent
     // each force vector it has consumed.
+    //
+    // Callers should also call `emitAccumulatedBodySpatialVecs` after `produceForces`
+    // has completed, because this implementation automatically merges body forces on
+    // the same body together.
     class SceneDecorationGeneratingForceConsumer : public OpenSim::ForceConsumer {
     public:
         explicit SceneDecorationGeneratingForceConsumer(
@@ -337,16 +343,79 @@ namespace
             m_RendererState{rendererState},
             m_AssociatedForceProducer{forceProducer}
         {}
+
+        // Emit any body forces that were accumulated during the production phase
+        void emitAccumulatedBodySpatialVecs(const SimTK::State& state)
+        {
+            for (const auto& [bodyPtr, spatialVec] : m_AccumulatedBodySpatialVecs) {
+                handleBodyTorque(state, *bodyPtr, spatialVec[0]);
+                handleBodyForce(state, *bodyPtr, spatialVec[1]);
+            }
+        }
     private:
         // Implements `ForceConsumer` API by generating equivalent `SceneDecoration`s for
         // the body torque + force (separately).
         void implConsumeBodySpatialVec(
-            const SimTK::State& state,
+            const SimTK::State&,
             const OpenSim::PhysicalFrame& body,
             const SimTK::SpatialVec& spatialVec) override
         {
-            handleBodyTorque(state, body, spatialVec[0]);
-            handleBodyForce(state, body, spatialVec[1]);
+            if (m_AccumulatedBodySpatialVecs.empty()) {
+                // Lazily reserve memory for the accumulated body forces lookup. Most
+                // `ForceProducer`s will only touch a few `Body`s, 8 is a guess on the
+                // most likely upper limit.
+                m_AccumulatedBodySpatialVecs.reserve(8);
+            }
+
+            // Accumulate the body forces, rather than emitting them seperately, because
+            // it makes the visualization less cluttered.
+            auto& accumulator = m_AccumulatedBodySpatialVecs.try_emplace(&body, SimTK::SpatialVec{SimTK::Vec3{0.0}, SimTK::Vec3{0.0}}).first->second;
+            accumulator += spatialVec;
+        }
+
+        // Implements `ForceConsumer` API by generating equivalent `SceneDecoration`s for
+        // the point force (incl. conversion to a resultant body force)
+        void implConsumePointForce(
+            const SimTK::State& state,
+            const OpenSim::PhysicalFrame& frame,
+            const SimTK::Vec3& point,
+            const SimTK::Vec3& forceInGround) override
+        {
+            if (equal_within_scaled_epsilon(forceInGround.normSqr(), 0.0)) {
+                return;  // zero/small force provided: skip it
+            }
+
+            // if requested, generate an arrow decoration for the point force
+            if (m_RendererState->getOptions().getShouldShowPointForces()) {
+                const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
+                const SimTK::Vec3 positionInGround = frame.findStationLocationInGround(state, point);
+                const ArrowProperties arrowProperties = {
+                    .start = ToVec3(positionInGround),
+                    .end = ToVec3(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                    .tip_length = 0.015f * fixupScaleFactor,
+                    .neck_thickness = 0.006f * fixupScaleFactor,
+                    .head_thickness = 0.01f * fixupScaleFactor,
+                    .color = c_PointForceArrowColor,
+                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                };
+
+                draw_arrow(m_RendererState->updSceneCache(), arrowProperties, [this](SceneDecoration&& decoration)
+                {
+                    m_RendererState->consume(*m_AssociatedForceProducer, std::move(decoration));
+                });
+            }
+
+            // accumulate associated body force
+            {
+                // maths ripped from `SimbodyMatterSubsystem::addInStationForce`
+                //
+                // https://github.com/simbody/simbody/blob/34b0ac47e6252457733a503c234b2daf1c596d81/Simbody/src/SimbodyMatterSubsystem.cpp#L2190
+
+                const auto& baseFrame = dynamic_cast<const OpenSim::PhysicalFrame&>(frame.findBaseFrame());
+                const SimTK::Rotation& R_GB = baseFrame.getTransformInGround(state).R();
+                const SimTK::Vec3 torque = (R_GB * point) % forceInGround;
+                implConsumeBodySpatialVec(state, baseFrame, SimTK::SpatialVec{torque, forceInGround});
+            }
         }
 
         // Helper method for drawing the torque part of a `SimTK::SpatialVec`
@@ -409,58 +478,9 @@ namespace
             });
         }
 
-        // Implements `ForceConsumer` API by generating equivalent `SceneDecoration`s for
-        // the point force (incl. conversion to a resultant body force)
-        void implConsumePointForce(
-            const SimTK::State& state,
-            const OpenSim::PhysicalFrame& frame,
-            const SimTK::Vec3& point,
-            const SimTK::Vec3& forceInGround) override
-        {
-            if (equal_within_scaled_epsilon(forceInGround.normSqr(), 0.0)) {
-                return;  // zero/small force provided: skip it
-            }
-
-            // if requested, generate an arrow decoration for the point force
-            if (m_RendererState->getOptions().getShouldShowPointForces()) {
-                const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
-                const SimTK::Vec3 positionInGround = frame.findStationLocationInGround(state, point);
-                const ArrowProperties arrowProperties = {
-                    .start = ToVec3(positionInGround),
-                    .end = ToVec3(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
-                    .tip_length = 0.015f * fixupScaleFactor,
-                    .neck_thickness = 0.006f * fixupScaleFactor,
-                    .head_thickness = 0.01f * fixupScaleFactor,
-                    .color = c_PointForceArrowColor,
-                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
-                };
-
-                draw_arrow(m_RendererState->updSceneCache(), arrowProperties, [this](SceneDecoration&& decoration)
-                {
-                    m_RendererState->consume(*m_AssociatedForceProducer, std::move(decoration));
-                });
-            }
-
-            // if requested, also emit as a resolved body force
-            if (m_RendererState->getOptions().getShouldShowForceLinearComponent()) {
-                const auto& baseFrame = dynamic_cast<const OpenSim::PhysicalFrame&>(frame.findBaseFrame());
-                handleBodyForce(state, baseFrame, forceInGround);
-            }
-
-            // if requested, also emit the point force as a resolved body torque
-            if (m_RendererState->getOptions().getShouldShowForceAngularComponent()) {
-                // maths ripped from `SimbodyMatterSubsystem::addInStationForce`
-                //
-                // https://github.com/simbody/simbody/blob/34b0ac47e6252457733a503c234b2daf1c596d81/Simbody/src/SimbodyMatterSubsystem.cpp#L2190
-                const auto& baseFrame = dynamic_cast<const OpenSim::PhysicalFrame&>(frame.findBaseFrame());
-                const SimTK::Rotation& R_GB = baseFrame.getTransformInGround(state).R();
-                const SimTK::Vec3 torque = (R_GB * point) % forceInGround;
-                handleBodyTorque(state, baseFrame, torque);
-            }
-        }
-
         RendererState* m_RendererState;
         OpenSim::ForceProducer const* m_AssociatedForceProducer;
+        ankerl::unordered_dense::map<const OpenSim::PhysicalFrame*, SimTK::SpatialVec> m_AccumulatedBodySpatialVecs;
     };
 
     // OSC-specific decoration handler that decorates the body forces/torques applied by
@@ -579,6 +599,7 @@ namespace
 
         SceneDecorationGeneratingForceConsumer consumer{&rs, &forceProducer};
         forceProducer.produceForces(rs.getState(), consumer);
+        consumer.emitAccumulatedBodySpatialVecs(rs.getState());
     }
 
     // OSC-specific decoration handler for `OpenSim::PointToPointSpring`
