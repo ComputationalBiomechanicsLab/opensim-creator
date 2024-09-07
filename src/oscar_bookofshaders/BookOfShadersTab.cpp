@@ -2,8 +2,8 @@
 
 #include <oscar/oscar.h>
 
-#include <map>
 #include <memory>
+#include <vector>
 
 using namespace osc;
 
@@ -32,16 +32,21 @@ void main()
         void set_mouse_position(Vec2 mouse_position) { set("u_mouse", mouse_position); }
     };
 
-    class BookOfShadersShader : public Material {
+    class BookOfShadersMaterial : public Material {
     public:
-        explicit BookOfShadersShader(CStringView fragment_shader_src) :
-            Material{Shader{c_basic_vertex_shader, fragment_shader_src}}
+        explicit BookOfShadersMaterial(CStringView name, CStringView fragment_shader_src) :
+            Material{Shader{c_basic_vertex_shader, fragment_shader_src}},
+            name_{name}
         {}
+
+        CStringView name() const { return name_; }
+    private:
+        std::string name_;
     };
 
-    class HelloWorldMaterial final : public BookOfShadersShader {
+    class HelloWorldMaterial final : public BookOfShadersMaterial {
     public:
-        HelloWorldMaterial() : BookOfShadersShader{c_fragment_source} {}
+        HelloWorldMaterial() : BookOfShadersMaterial{"hello_world", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -52,9 +57,9 @@ void main() {
 )";
     };
 
-    class Uniforms_TimeColored final : public BookOfShadersShader {
+    class Uniforms_TimeColored final : public BookOfShadersMaterial {
     public:
-        Uniforms_TimeColored() : BookOfShadersShader{c_fragment_source} {}
+        Uniforms_TimeColored() : BookOfShadersMaterial{"uniforms_time_colored", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -67,9 +72,9 @@ void main() {
 )";
     };
 
-    class Uniforms_gl_FragCoord final : public BookOfShadersShader {
+    class Uniforms_gl_FragCoord final : public BookOfShadersMaterial {
     public:
-        Uniforms_gl_FragCoord() : BookOfShadersShader{c_fragment_source} {}
+        Uniforms_gl_FragCoord() : BookOfShadersMaterial{"uniforms_gl_FragCoord", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -83,9 +88,9 @@ void main() {
 )";
     };
 
-    class AlgorithmicDrawing_LinePlot final : public BookOfShadersShader {
+    class AlgorithmicDrawing_Smoothstep final : public BookOfShadersMaterial {
     public:
-        AlgorithmicDrawing_LinePlot() : BookOfShadersShader{c_fragment_source} {}
+        AlgorithmicDrawing_Smoothstep() : BookOfShadersMaterial{"algorithmic_drawing", c_fragment_source} {}
     private:
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
@@ -93,7 +98,7 @@ void main() {
 uniform vec2 u_resolution;
 
 float plot(vec2 st) {
-    return smoothstep(0.0, 0.2, 0.2 - abs(st.y - st.x));
+    return smoothstep(0.0, 0.02, 0.02 - abs(st.y - st.x));
 }
 
 void main() {
@@ -101,7 +106,8 @@ void main() {
 
     float y = st.x;
 
-    vec3 color = vec3(y);
+    // note: BookOfShaders works with sRGB colors
+    vec3 color = vec3(pow(y, 2.2));
 
     // Plot a line
     float pct = plot(st);
@@ -133,34 +139,39 @@ private:
     void render_example_to_screen()
     {
         // update properties for this frame
-        {
-            props_.set_time(App::get().frame_start_time());
-            props_.set_resolution(ui::get_main_viewport_workspace_screen_dimensions());
-            props_.set_mouse_position(ui::get_mouse_pos());
-        }
+        const Vec2 workspace_dimensions = ui::get_main_viewport_workspace_screen_dimensions();
+        props_.set_time(App::get().frame_start_time());
+        props_.set_resolution(workspace_dimensions);
+        props_.set_mouse_position(ui::get_mouse_pos());
 
-        graphics::draw(quad_, identity<Transform>(), materials_.find(current_material_)->second, camera_, props_);
+        graphics::draw(
+            quad_,
+            {.scale = {aspect_ratio_of(workspace_dimensions), 1.0f, 1.0f}},
+            materials_.at(current_material_index_),
+            camera_,
+            props_
+        );
         camera_.render_to_screen();
     }
 
     void draw_2d_ui()
     {
         ui::begin_panel("material selector");
-        for (const auto& [name, _] : materials_) {
-            if (ui::draw_button(name)) {
-                current_material_ = name;
+        for (size_t i = 0; i < materials_.size(); ++i) {
+            if (ui::draw_button(materials_[i].name())) {
+                current_material_index_ = i;
             }
         }
         ui::end_panel();
     }
 
-    std::map<std::string, Material> materials_ = {
-        {"hello_world", HelloWorldMaterial{}},
-        {"uniforms_time_colored", Uniforms_TimeColored{}},
-        {"uniforms_gl_FragCoord", Uniforms_gl_FragCoord{}},
-        {"algorithmic_drawing", AlgorithmicDrawing_LinePlot{}},
+    std::vector<BookOfShadersMaterial> materials_ = {
+        HelloWorldMaterial{},
+        Uniforms_TimeColored{},
+        Uniforms_gl_FragCoord{},
+        AlgorithmicDrawing_Smoothstep{},
     };
-    std::string current_material_ = materials_.begin()->first;
+    size_t current_material_index_ = 0;
     PlaneGeometry quad_;
     Camera camera_;
     BookOfShadersCommonProperties props_;
