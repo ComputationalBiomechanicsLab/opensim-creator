@@ -80,8 +80,8 @@ namespace
     {
         const Color srgb = ui::to_color(color);
         const Color brightened = factor * srgb;
-        const Color clamped = clamp_to_ldr(brightened);
-        return ui::to_ImU32(clamped);
+        const Color saturated = saturate(brightened);
+        return ui::to_ImU32(saturated);
     }
 }
 

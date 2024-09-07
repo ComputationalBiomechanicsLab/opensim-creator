@@ -284,7 +284,7 @@ namespace osc
                 decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
             if (m_State->isHovered(landmarkID)) {
-                decoration.shading = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(color), 1.2f)));
+                decoration.shading = to_srgb_colorspace(saturate(multiply_luminance(to_linear_colorspace(color), 1.2f)));
                 decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 
@@ -321,7 +321,7 @@ namespace osc
                 decoration.flags |= SceneDecorationFlag::RimHighlight0;
             }
             if (m_State->isHovered(id)) {
-                decoration.shading = to_srgb_colorspace(clamp_to_ldr(multiply_luminance(to_linear_colorspace(color), 1.2f)));
+                decoration.shading = to_srgb_colorspace(saturate(multiply_luminance(to_linear_colorspace(color), 1.2f)));
                 decoration.flags |= SceneDecorationFlag::RimHighlight1;
             }
 

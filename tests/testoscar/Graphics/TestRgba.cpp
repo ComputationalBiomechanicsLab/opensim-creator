@@ -121,6 +121,16 @@ TEST(Rgba, can_explicitly_construct_from_Vec4_of_different_type)
     ASSERT_EQ(unorm8_val.a, Unorm8{0xff});
 }
 
+TEST(Rgba, map_with_unary_operation_works_as_expected)
+{
+    const Rgba<float> inputs = {1.0f, 2.0f, 3.0f, 4.0f};
+    const auto f = [](float input) { return input + 1.0f; };
+    const Rgba<float> result = map(inputs, f);
+    const Rgba<float> expected = {1.0f+1.0f, 2.0f+1.0f, 3.0f+1.0f, 4.0f+1.0f};
+
+    ASSERT_EQ(result, expected);
+}
+
 TEST(Rgba, map_with_binary_operation_works_as_expected)
 {
     const Rgba<float> lhs = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -137,6 +147,15 @@ TEST(Rgba, lerp_works_with_unorm8)
     const Rgba<Unorm8> rhs = {0xff, 0xff, 0xff, 0xff};
     const Rgba<Unorm8> result = lerp(lhs, rhs, 123.0f/255.0f);
     const Rgba<Unorm8> expected = {123, 123, 123, 123};
+
+    ASSERT_EQ(result, expected);
+}
+
+TEST(Rgba, saturate_works_as_expected)
+{
+    const Rgba<float> hdr_color = {1.5f, 1.1f, -0.1f, 0.5f};
+    const Rgba<float> result = saturate(hdr_color);
+    const Rgba<float> expected = {1.0f, 1.0f, 0.0f, 0.5f};
 
     ASSERT_EQ(result, expected);
 }

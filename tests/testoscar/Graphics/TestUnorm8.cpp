@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Conversion.h>
 
 #include <functional>
@@ -80,4 +81,20 @@ TEST(Unorm8, lerp_works_as_expected)
     ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 0.0f), Unorm8{0x00});
     ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 1.0f), Unorm8{0xff});
     ASSERT_EQ(lerp(Unorm8{0x00}, Unorm8{0xff}, 0.5f), Unorm8{127});
+}
+
+TEST(Unorm8, clamp_works_as_expected)
+{
+    static_assert(clamp(Unorm8{10}, Unorm8{0}, Unorm8{255}) == Unorm8{10});
+    static_assert(clamp(Unorm8{10}, Unorm8{15}, Unorm8{255}) == Unorm8{15});
+    static_assert(clamp(Unorm8{10}, Unorm8{0}, Unorm8{8}) == Unorm8{8});
+}
+
+TEST(Unorm8, saturate_returns_provided_Unorm)
+{
+    // a `Unorm<T>` is saturated by design.
+
+    static_assert(saturate(Unorm8{0x00}) == Unorm8{0x00});
+    static_assert(saturate(Unorm8{0xfe}) == Unorm8{0xfe});
+    static_assert(saturate(Unorm8{0xff}) == Unorm8{0xff});
 }

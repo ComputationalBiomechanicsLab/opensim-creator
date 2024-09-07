@@ -296,6 +296,17 @@ namespace osc
     template<size_t I, ColorComponent T>
     constexpr const T&& get(const Rgba<T>&& rgba) { return std::move(rgba[I]); }
 
+    // returns a `Rgba<U>` containing `op(xv)` for each `xv` component in `x`
+    template<ColorComponent T, std::invocable<const T&> UnaryOperation>
+    constexpr auto map(const Rgba<T>& x, UnaryOperation op) -> Rgba<decltype(std::invoke(op, x[0]))>
+    {
+        Rgba<decltype(std::invoke(op, x[0]))> rv{};
+        for (size_t i = 0; i < 4; ++i) {
+            rv[i] = std::invoke(op, x[i]);
+        }
+        return rv;
+    }
+
     // returns a `Rgba<U>` containing `op(xv, yv)` for each `(xv, yv)` component in `x` and `y`
     template<ColorComponent T, std::invocable<const T&, const T&> BinaryOperation>
     constexpr auto map(const Rgba<T>& x, const Rgba<T>& y, BinaryOperation op) -> Rgba<decltype(std::invoke(op, x[0], y[0]))>
@@ -307,11 +318,18 @@ namespace osc
         return rv;
     }
 
-    // returns a color containing `lerp(xv, yv, t)` for each `(xv, yv)` component in `x` and `y`
+    // returns a `Rgba<T>` containing `lerp(xv, yv, t)` for each `(xv, yv)` component in `x` and `y`
     template<ColorComponent T, typename TInterpolant>
     constexpr auto lerp(const Rgba<T>& x, const Rgba<T>& y, TInterpolant t)
     {
         return map(x, y, [&t](const T& xv, const T& yv) { return lerp(xv, yv, t); });
+    }
+
+    // returns an `Rgba<T>` containing `saturate(xv)` for each `xv` component in `x`
+    template<ColorComponent T>
+    constexpr Rgba<T> saturate(const Rgba<T>& x)
+    {
+        return map(x, [](const T& xv) { return saturate(xv); });
     }
 }
 

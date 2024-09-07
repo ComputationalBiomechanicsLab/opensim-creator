@@ -79,11 +79,6 @@ Color osc::to_srgb_colorspace(const Color& color)
     };
 }
 
-Color osc::clamp_to_ldr(const Color& color)
-{
-    return Color{saturate(Vec4{color})};
-}
-
 std::string osc::to_html_string_rgba(const Color& color)
 {
     std::string rv;

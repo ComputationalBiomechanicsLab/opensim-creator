@@ -91,10 +91,21 @@ namespace osc
 
     // returns the equivalent of `a + t(b - a)` (linear interpolation with extrapolation),
     // with clamping for under-/over-flow
-    template<std::unsigned_integral T, typename TInterpolant>
+    template<std::unsigned_integral T, std::floating_point TInterpolant>
     constexpr Unorm<T> lerp(Unorm<T> a, Unorm<T> b, TInterpolant t)
     {
         return Unorm<T>{std::lerp(a.normalized_value(), b.normalized_value(), t)};
+    }
+
+    // returns a copy of the provided `Unorm<T>`.
+    //
+    // the reason it returns a direct copy is because `saturate` for floating-point numbers
+    // clamps the number into the interval [0.0f, 1.0f]. `Unorm<T>`'s storage (unsigned
+    // integers) already map into that floating point range.
+    template<std::unsigned_integral T>
+    constexpr Unorm<T> saturate(const Unorm<T>& v)
+    {
+        return v;
     }
 }
 
