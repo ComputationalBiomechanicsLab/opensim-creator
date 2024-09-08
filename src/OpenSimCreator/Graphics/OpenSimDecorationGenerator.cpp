@@ -432,7 +432,7 @@ namespace
             }
 
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
-            const SimTK::Transform frame2ground = body.getTransformInGround(state);
+            const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
                 .start = ToVec3(frame2ground * SimTK::Vec3{0.0}),
                 .end = ToVec3(frame2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueInGround)),
@@ -462,7 +462,7 @@ namespace
             }
 
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
-            const SimTK::Transform frame2ground = body.getTransformInGround(state);
+            const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
                 .start = ToVec3(frame2ground * SimTK::Vec3{0.0}),
                 .end = ToVec3(frame2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
