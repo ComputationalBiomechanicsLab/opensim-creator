@@ -229,7 +229,7 @@ namespace osc::ui
 
     enum class ComboFlag {
         None = 0,
-        NoArrow = 1<<0,
+        NoArrowButton = 1<<0,
         NUM_FLAGS = 1,
     };
     using ComboFlags = Flags<ComboFlag>;
@@ -243,10 +243,34 @@ namespace osc::ui
     Vec2 get_main_viewport_center();
     void enable_dockspace_over_main_viewport();
 
-    bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
+    enum class WindowFlag {
+        None                    = 0,
+
+        NoMove                  = 1<<0,
+        NoTitleBar              = 1<<1,
+        NoResize                = 1<<2,
+        NoSavedSettings         = 1<<3,
+        NoScrollbar             = 1<<4,
+        NoInputs                = 1<<5,
+        NoBackground            = 1<<6,
+        NoCollapse              = 1<<7,
+        NoDecoration            = 1<<8,
+        NoDocking               = 1<<9,
+        NoNav                   = 1<<10,
+
+        MenuBar                 = 1<<11,
+        AlwaysAutoResize        = 1<<12,
+        HorizontalScrollbar     = 1<<13,
+        AlwaysVerticalScrollbar = 1<<14,
+
+        NUM_FLAGS               = 15,
+    };
+    using WindowFlags = Flags<WindowFlag>;
+
+    bool begin_panel(CStringView name, bool* p_open = nullptr, WindowFlags = {});
     void end_panel();
 
-    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, ImGuiWindowFlags panel_flags = 0);
+    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, WindowFlags panel_flags = {});
     void end_child_panel();
 
     void close_current_popup();
@@ -340,9 +364,9 @@ namespace osc::ui
     void pop_style_var(int count = 1);
 
     void open_popup(CStringView str_id, ImGuiPopupFlags popup_flags = 0);
-    bool begin_popup(CStringView str_id, ImGuiWindowFlags flags = 0);
+    bool begin_popup(CStringView str_id, WindowFlags = {});
     bool begin_popup_context_menu(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1);
-    bool begin_popup_modal(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
+    bool begin_popup_modal(CStringView name, bool* p_open = nullptr, WindowFlags = {});
     void end_popup();
 
     Vec2 get_mouse_pos();
@@ -619,7 +643,7 @@ namespace osc::ui
     ImVec4 to_ImVec4(const Color&);
 
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
-    ImGuiWindowFlags get_minimal_panel_flags();
+    WindowFlags get_minimal_panel_flags();
 
     // returns a `Rect` that indicates where the current workspace area is in the main viewport
     //
@@ -653,7 +677,7 @@ namespace osc::ui
     bool begin_main_viewport_top_bar(
         CStringView label,
         float height = ui::get_frame_height(),
-        ImGuiWindowFlags panel_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar
+        WindowFlags = {WindowFlag::NoScrollbar, WindowFlag::NoSavedSettings, WindowFlag::MenuBar}
     );
 
     // begin a menu that's attached to the bottom of a viewport, end it with `ui::end_panel()`

@@ -27,7 +27,7 @@ bool osc::IconWithMenu::on_draw()
     }
 
     bool rv = false;
-    if (ui::begin_popup(context_menu_id_,ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings)) {
+    if (ui::begin_popup(context_menu_id_, {ui::WindowFlag::AlwaysAutoResize, ui::WindowFlag::NoTitleBar, ui::WindowFlag::NoSavedSettings})) {
         ui::draw_text_disabled(icon_without_menu_.title());
         ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
         rv = content_renderer_();

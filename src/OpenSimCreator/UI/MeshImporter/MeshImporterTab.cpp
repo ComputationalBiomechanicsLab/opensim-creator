@@ -238,7 +238,7 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::Log))
         {
             bool v = true;
-            if (ui::begin_panel("Log", &v, ImGuiWindowFlags_MenuBar))
+            if (ui::begin_panel("Log", &v, ui::WindowFlag::MenuBar))
             {
                 m_Shared->updLogViewer().on_draw();
             }
@@ -2366,11 +2366,12 @@ private:
             ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
             ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
 
-            const ImGuiWindowFlags modalFlags =
-                ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoResize;
+            const ui::WindowFlags modalFlags = {
+                ui::WindowFlag::AlwaysAutoResize,
+                ui::WindowFlag::NoTitleBar,
+                ui::WindowFlag::NoMove,
+                ui::WindowFlag::NoResize,
+            };
 
             if (ui::begin_popup_modal("##visualizermodalpopup", nullptr, modalFlags))
             {

@@ -110,14 +110,14 @@ public:
         }
 
         if (m_LoadingErrorMsg.empty()) {
-            if (ui::begin_panel("Loading Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+            if (ui::begin_panel("Loading Message", nullptr, ui::WindowFlag::NoTitleBar)) {
                 ui::draw_text("loading: %s", m_OsimPath.string().c_str());
                 ui::draw_progress_bar(m_LoadingProgress);
             }
             ui::end_panel();
         }
         else {
-            if (ui::begin_panel("Error Message", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+            if (ui::begin_panel("Error Message", nullptr, ui::WindowFlag::NoTitleBar)) {
                 ui::draw_text_wrapped("An error occurred while loading the file:");
                 ui::draw_dummy({0.0f, 5.0f});
                 ui::draw_text_wrapped(m_LoadingErrorMsg);

@@ -224,7 +224,7 @@ private:
             "##componentnavigatorvieweritems",
             Vec2{0.0, 0.0},
             ImGuiChildFlags_None,
-            ImGuiWindowFlags_NoBackground
+            ui::WindowFlag::NoBackground
         );
 
         drawNavigationTreeContent(rv);

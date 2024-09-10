@@ -228,7 +228,7 @@ private:
         ui::set_next_panel_size({dimensions_of(mmr).x, -1.0f});
         ui::set_next_panel_size_constraints(dimensions_of(mmr), dimensions_of(mmr));
 
-        if (ui::begin_panel("Splash screen", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+        if (ui::begin_panel("Splash screen", nullptr, ui::WindowFlag::NoTitleBar)) {
             drawMenuContent();
         }
         ui::end_panel();

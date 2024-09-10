@@ -13,7 +13,7 @@ namespace osc
     class StandardPanelImpl : public IPanel {
     protected:
         explicit StandardPanelImpl(std::string_view panel_name);
-        StandardPanelImpl(std::string_view panel_name, ImGuiWindowFlags);
+        StandardPanelImpl(std::string_view panel_name, ui::WindowFlags);
         StandardPanelImpl(const StandardPanelImpl&) = default;
         StandardPanelImpl(StandardPanelImpl&&) noexcept = default;
         StandardPanelImpl& operator=(const StandardPanelImpl&) = default;
@@ -39,6 +39,6 @@ namespace osc
 
         std::string panel_name_;
         std::string panel_enabled_config_key_;
-        ImGuiWindowFlags panel_flags_;
+        ui::WindowFlags panel_flags_;
     };
 }

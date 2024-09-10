@@ -9,13 +9,13 @@
 #include <string_view>
 
 osc::StandardPopup::StandardPopup(std::string_view popup_name) :
-    StandardPopup{popup_name, {512.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize}
+    StandardPopup{popup_name, {512.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize}
 {}
 
 osc::StandardPopup::StandardPopup(
     std::string_view popup_name,
     Vec2 dimensions,
-    ImGuiWindowFlags popup_flags) :
+    ui::WindowFlags popup_flags) :
 
     popup_name_{popup_name},
     dimensions_{dimensions},
@@ -77,7 +77,7 @@ bool osc::StandardPopup::impl_begin_popup()
         //
         // else, set the position every frame, because the __nonzero__ dimensions
         // will stretch out the modal accordingly
-        if (not (popup_flags_ & ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (not (popup_flags_ & ui::WindowFlag::AlwaysAutoResize)) {
             ui::set_next_panel_size(
                 Vec2{dimensions_},
                 ImGuiCond_Appearing

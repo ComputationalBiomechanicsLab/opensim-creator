@@ -13,7 +13,7 @@ namespace osc
         LogViewer& operator=(LogViewer&&) noexcept;
         ~LogViewer() noexcept;
 
-        // assumes caller handles `ui::begin_panel(panel_name, nullptr, ImGuiWindowFlags_MenuBar)`
+        // assumes caller handles `ui::begin_panel(panel_name, nullptr, `ui::WindowFlag::MenuBar`)`
         void on_draw();
 
     private:

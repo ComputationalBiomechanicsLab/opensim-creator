@@ -23,12 +23,12 @@ namespace
 }
 
 osc::StandardPanelImpl::StandardPanelImpl(std::string_view panel_name) :
-    StandardPanelImpl{panel_name, ImGuiWindowFlags_None}
+    StandardPanelImpl{panel_name, ui::WindowFlag::None}
 {}
 
 osc::StandardPanelImpl::StandardPanelImpl(
     std::string_view panel_name,
-    ImGuiWindowFlags panel_flags) :
+    ui::WindowFlags panel_flags) :
 
     panel_name_{panel_name},
     panel_enabled_config_key_{create_panel_enabled_config_key(panel_name_)},

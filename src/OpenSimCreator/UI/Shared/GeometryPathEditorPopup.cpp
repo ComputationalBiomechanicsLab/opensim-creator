@@ -123,7 +123,7 @@ public:
         std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
-        StandardPopup{popupName_, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
+        StandardPopup{popupName_, {768.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
         m_TargetModel{std::move(targetModel_)},
         m_GeometryPathGetter{std::move(geometryPathGetter_)},
         m_OnLocalCopyEdited{std::move(onLocalCopyEdited_)},

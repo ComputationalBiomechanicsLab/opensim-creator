@@ -226,8 +226,64 @@ struct osc::Converter<ui::ComboFlags, ImGuiComboFlags> final {
         static_assert(num_flags<ui::ComboFlag>() == 1);
 
         ImGuiComboFlags rv = ImGuiComboFlags_None;
-        if (flags & ui::ComboFlag::NoArrow) {
+        if (flags & ui::ComboFlag::NoArrowButton) {
             rv |= ImGuiComboFlags_NoArrowButton;
+        }
+        return rv;
+    }
+};
+
+template<>
+struct osc::Converter<ui::WindowFlags, ImGuiWindowFlags> final {
+    ImGuiWindowFlags operator()(ui::WindowFlags flags) const
+    {
+        static_assert(num_flags<ui::WindowFlag>() == 15);
+
+        ImGuiWindowFlags rv = ImGuiWindowFlags_None;
+        if (flags & ui::WindowFlag::NoMove) {
+            rv |= ImGuiWindowFlags_NoMove;
+        }
+        if (flags & ui::WindowFlag::NoTitleBar) {
+            rv |= ImGuiWindowFlags_NoTitleBar;
+        }
+        if (flags & ui::WindowFlag::NoResize) {
+            rv |= ImGuiWindowFlags_NoResize;
+        }
+        if (flags & ui::WindowFlag::NoSavedSettings) {
+            rv |= ImGuiWindowFlags_NoSavedSettings;
+        }
+        if (flags & ui::WindowFlag::NoScrollbar) {
+            rv |= ImGuiWindowFlags_NoScrollbar;
+        }
+        if (flags & ui::WindowFlag::NoInputs) {
+            rv |= ImGuiWindowFlags_NoInputs;
+        }
+        if (flags & ui::WindowFlag::NoBackground) {
+            rv |= ImGuiWindowFlags_NoBackground;
+        }
+        if (flags & ui::WindowFlag::NoCollapse) {
+            rv |= ImGuiWindowFlags_NoCollapse;
+        }
+        if (flags & ui::WindowFlag::NoDecoration) {
+            rv |= ImGuiWindowFlags_NoDecoration;
+        }
+        if (flags & ui::WindowFlag::NoDocking) {
+            rv |= ImGuiWindowFlags_NoDocking;
+        }
+        if (flags & ui::WindowFlag::NoNav) {
+            rv |= ImGuiWindowFlags_NoNav;
+        }
+        if (flags & ui::WindowFlag::MenuBar) {
+            rv |= ImGuiWindowFlags_MenuBar;
+        }
+        if (flags & ui::WindowFlag::AlwaysAutoResize) {
+            rv |= ImGuiWindowFlags_AlwaysAutoResize;
+        }
+        if (flags & ui::WindowFlag::HorizontalScrollbar) {
+            rv |= ImGuiWindowFlags_HorizontalScrollbar;
+        }
+        if (flags & ui::WindowFlag::AlwaysVerticalScrollbar) {
+            rv |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
         }
         return rv;
     }
@@ -526,9 +582,9 @@ void osc::ui::enable_dockspace_over_main_viewport()
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
-bool osc::ui::begin_panel(CStringView name, bool* p_open, ImGuiWindowFlags flags)
+bool osc::ui::begin_panel(CStringView name, bool* p_open, WindowFlags flags)
 {
-    return ImGui::Begin(name.c_str(), p_open, flags);
+    return ImGui::Begin(name.c_str(), p_open, to<ImGuiWindowFlags>(flags));
 }
 
 void osc::ui::end_panel()
@@ -536,9 +592,9 @@ void osc::ui::end_panel()
     ImGui::End();
 }
 
-bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ImGuiChildFlags child_flags, ImGuiWindowFlags panel_flags)
+bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ImGuiChildFlags child_flags, WindowFlags panel_flags)
 {
-    return ImGui::BeginChild(str_id.c_str(), size, child_flags, panel_flags);
+    return ImGui::BeginChild(str_id.c_str(), size, child_flags, to<ImGuiWindowFlags>(panel_flags));
 }
 
 void osc::ui::end_child_panel()
@@ -811,9 +867,9 @@ void osc::ui::open_popup(CStringView str_id, ImGuiPopupFlags popup_flags)
     return ImGui::OpenPopup(str_id.c_str(), popup_flags);
 }
 
-bool osc::ui::begin_popup(CStringView str_id, ImGuiWindowFlags flags)
+bool osc::ui::begin_popup(CStringView str_id, WindowFlags flags)
 {
-    return ImGui::BeginPopup(str_id.c_str(), flags);
+    return ImGui::BeginPopup(str_id.c_str(), to<ImGuiWindowFlags>(flags));
 }
 
 bool osc::ui::begin_popup_context_menu(CStringView str_id, ImGuiPopupFlags popup_flags)
@@ -821,9 +877,9 @@ bool osc::ui::begin_popup_context_menu(CStringView str_id, ImGuiPopupFlags popup
     return ImGui::BeginPopupContextItem(str_id.c_str(), popup_flags);
 }
 
-bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, ImGuiWindowFlags flags)
+bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, WindowFlags flags)
 {
-    return ImGui::BeginPopupModal(name.c_str(), p_open, flags);
+    return ImGui::BeginPopupModal(name.c_str(), p_open, to<ImGuiWindowFlags>(flags));
 }
 
 void osc::ui::end_popup()
@@ -1632,20 +1688,21 @@ ImVec4 osc::ui::to_ImVec4(const Color& color)
 }
 
 
-ImGuiWindowFlags osc::ui::get_minimal_panel_flags()
+ui::WindowFlags osc::ui::get_minimal_panel_flags()
 {
-    return
-        ImGuiWindowFlags_NoBackground |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_NoDocking |
-        ImGuiWindowFlags_NoInputs |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoNav |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoTitleBar;
+    return {
+        ui::WindowFlag::NoBackground,
+        ui::WindowFlag::NoCollapse,
+        ui::WindowFlag::NoDecoration,
+        ui::WindowFlag::NoDocking,
+        ui::WindowFlag::NoInputs,
+        ui::WindowFlag::NoMove,
+        ui::WindowFlag::NoNav,
+        ui::WindowFlag::NoResize,
+        ui::WindowFlag::NoSavedSettings,
+        ui::WindowFlag::NoScrollbar,
+        ui::WindowFlag::NoTitleBar,
+    };
 }
 
 Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
@@ -1686,11 +1743,11 @@ bool osc::ui::is_mouse_in_main_viewport_workspace()
     return is_intersecting(hitRect, mousepos);
 }
 
-bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, ImGuiWindowFlags flags)
+bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, WindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
-    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
+    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, to<ImGuiWindowFlags>(flags));
 }
 
 

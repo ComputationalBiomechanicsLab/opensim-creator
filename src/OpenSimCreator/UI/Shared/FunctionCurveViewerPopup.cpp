@@ -33,7 +33,7 @@ public:
         std::shared_ptr<const IConstModelStatePair> targetModel,
         std::function<const OpenSim::Function*()> functionGetter) :
 
-        StandardPopup{popupName, {768.0f, 0.0f}, ImGuiWindowFlags_AlwaysAutoResize},
+        StandardPopup{popupName, {768.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
         m_Model{std::move(targetModel)},
         m_FunctionGetter{std::move(functionGetter)}
     {}

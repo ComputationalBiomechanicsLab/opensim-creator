@@ -1274,7 +1274,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     }
 
     const float height = ui::get_frame_height() + 2.0f*ui::get_style_panel_padding().y;
-    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    const ui::WindowFlags flags = {ui::WindowFlag::NoScrollbar, ui::WindowFlag::NoSavedSettings};
     bool open = ui::begin_main_viewport_top_bar(label, height, flags);
     if (padding)
     {

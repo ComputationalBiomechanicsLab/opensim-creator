@@ -53,7 +53,7 @@ private:
             ui::set_next_panel_pos(pos, ImGuiCond_Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 
-            if (ui::begin_panel("Error Log", nullptr, ImGuiWindowFlags_MenuBar)) {
+            if (ui::begin_panel("Error Log", nullptr, ui::WindowFlag::MenuBar)) {
                 log_viewer_.on_draw();
             }
             ui::end_panel();

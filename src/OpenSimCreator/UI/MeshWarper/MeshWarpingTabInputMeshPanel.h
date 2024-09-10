@@ -55,7 +55,7 @@ namespace osc
             std::shared_ptr<MeshWarpingTabSharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
-            MeshWarpingTabPanel{panelName_, ImGuiDockNodeFlags_PassthruCentralNode},
+            MeshWarpingTabPanel{panelName_},
             m_State{std::move(state_)},
             m_DocumentIdentifier{documentIdentifier_}
         {

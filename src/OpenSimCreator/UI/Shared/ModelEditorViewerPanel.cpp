@@ -494,16 +494,16 @@ private:
         {
             ModelEditorViewerPanelLayer& layer = **it;
 
-            ImGuiWindowFlags windowFlags = ui::get_minimal_panel_flags() & ~ImGuiWindowFlags_NoInputs;
+            ui::WindowFlags windowFlags = ui::get_minimal_panel_flags().without(ui::WindowFlag::NoInputs);
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (find_if(it+1, m_Layers.end(), [](const auto& layerPtr) -> bool { return layerPtr->getFlags() & ModelEditorViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
             {
-                windowFlags |= ImGuiWindowFlags_NoInputs;
+                windowFlags |= ui::WindowFlag::NoInputs;
             }
 
             // layers always have a background (although, it can be entirely invisible)
-            windowFlags &= ~ImGuiWindowFlags_NoBackground;
+            windowFlags = windowFlags.without(ui::WindowFlag::NoBackground);
             ui::set_next_panel_bg_alpha(layer.getBackgroundAlpha());
 
             // draw the layer in a child window, so that ImGui understands that hittests

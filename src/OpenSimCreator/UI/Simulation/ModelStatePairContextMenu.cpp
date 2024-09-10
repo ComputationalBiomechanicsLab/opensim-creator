@@ -26,7 +26,7 @@ public:
         const ParentPtr<IMainUIStateAPI>& api_,
         std::optional<std::string> maybeComponentAbsPath_) :
 
-        StandardPopup{panelName_, {10.0f, 10.0f}, ImGuiWindowFlags_NoMove},
+        StandardPopup{panelName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
         m_Model{std::move(model_)},
         m_API{api_},
         m_MaybeComponentAbsPath{std::move(maybeComponentAbsPath_)}

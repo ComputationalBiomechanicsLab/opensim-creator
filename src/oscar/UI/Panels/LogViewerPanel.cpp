@@ -13,7 +13,7 @@ class osc::LogViewerPanel::Impl final : public StandardPanelImpl {
 public:
 
     explicit Impl(std::string_view panel_name) :
-        StandardPanelImpl{panel_name, ImGuiWindowFlags_MenuBar}
+        StandardPanelImpl{panel_name, ui::WindowFlag::MenuBar}
     {}
 
 private:
