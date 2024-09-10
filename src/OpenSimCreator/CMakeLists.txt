@@ -223,9 +223,6 @@ add_library(OpenSimCreator STATIC
     Platform/RecentFiles.cpp
     Platform/RecentFiles.h
 
-    UI/Experimental/PreviewExperimentalDataTab.cpp
-    UI/Experimental/PreviewExperimentalDataTab.h
-
     UI/FrameDefinition/FrameDefinitionTab.cpp
     UI/FrameDefinition/FrameDefinitionTab.h
     UI/FrameDefinition/FrameDefinitionTabToolbar.cpp
@@ -317,6 +314,9 @@ add_library(OpenSimCreator STATIC
     UI/ModelWarper/Toolbar.h
     UI/ModelWarper/UIState.cpp
     UI/ModelWarper/UIState.h
+
+    UI/PreviewExperimentalData/PreviewExperimentalDataTab.cpp
+    UI/PreviewExperimentalData/PreviewExperimentalDataTab.h
 
     UI/Shared/BasicWidgets.cpp
     UI/Shared/BasicWidgets.h
