@@ -10,6 +10,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The expression frame selector that appears in the property editor when editing spatial
   quantities that are expressed with respect to a parent frame now shows the parent frame's
   name by default (previously: it would show `(parent frame)`; thanks @mrrezaie, #916).
+- Mousing over the barrel (i.e. non-points) of an `OpenSim::Ligament` component now coerces
+  the hit to the `OpenSim::Ligament` component (previously, would select the associated
+  `GeometryPath`; thanks @mrrezaie, #916).
 
 ## [0.5.14] - 2024/09/04
 
