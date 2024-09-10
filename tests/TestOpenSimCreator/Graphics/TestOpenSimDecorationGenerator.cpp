@@ -3,6 +3,7 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
@@ -249,4 +250,46 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
         [&empty](const OpenSim::Component&, SceneDecoration&&) { empty = false; }
     );
     ASSERT_FALSE(empty);
+}
+
+// tests that, when generating decorations for an `OpenSim::Ligament`, the decorations are
+// coerced from being `GeometryPath` decorations to `OpenSim::Ligament` decorations for the
+// non-point parts of the path (#919)
+TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigamentTaggedGeometry)
+{
+    OpenSim::Model model;
+    auto& ligament = AddModelComponent<OpenSim::Ligament>(model);
+    auto pp1 = std::make_unique<OpenSim::PathPoint>();
+    pp1->setLocation({-1.0, 0.0, 0.0});
+    pp1->setParentFrame(model.getGround());
+
+    auto pp2 = std::make_unique<OpenSim::PathPoint>();
+    pp2->setLocation({1.0, 0.0, 0.0});
+    pp2->setParentFrame(model.getGround());
+
+    ligament.updPath<OpenSim::GeometryPath>().updPathPointSet().adoptAndAppend(pp1.release());
+    ligament.updPath<OpenSim::GeometryPath>().updPathPointSet().adoptAndAppend(pp2.release());
+
+    FinalizeConnections(model);
+    InitializeModel(model);
+    InitializeState(model);
+
+    SceneCache meshCache;
+    OpenSimDecorationOptions opts;
+
+    size_t numDecorationsTaggedWithLigament = 0;
+    GenerateModelDecorations(
+        meshCache,
+        model,
+        model.getWorkingState(),
+        opts,
+        1.0f,
+        [&ligament, &numDecorationsTaggedWithLigament](const OpenSim::Component& component, SceneDecoration&&)
+        {
+            if (&component == &ligament) {
+                ++numDecorationsTaggedWithLigament;
+            }
+        }
+    );
+    ASSERT_EQ(numDecorationsTaggedWithLigament, 1);
 }

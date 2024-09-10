@@ -13,6 +13,7 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathSpring.h>
@@ -1094,6 +1095,11 @@ namespace
                 HandleMuscleOpenSimStyle(rs, *muscle);
                 return;
             }
+        }
+        else if (const auto* const ligament = GetOwner<OpenSim::Ligament>(gp)) {
+            // owner is an `OpenSim::Ligament`, coerce selection "hit" to the path actuator (#919)
+            HandleGenericGeometryPath(rs, gp, *ligament);
+            return;
         }
         else if (const auto* const pa = GetOwner<OpenSim::PathActuator>(gp)) {
             // owner is a path actuator, coerce selection "hit" to the path actuator (#519)
