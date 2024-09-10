@@ -1104,10 +1104,8 @@ public:
 
     void onDraw()
     {
-        ui::enable_dockspace_over_viewport(
-            ui::get_main_viewport(),
-            ImGuiDockNodeFlags_PassthruCentralNode
-        );
+        ui::enable_dockspace_over_main_viewport();
+
         m_Toolbar.onDraw();
         m_PanelManager->on_draw();
         m_PopupManager.on_draw();

@@ -1627,7 +1627,7 @@ namespace
             ui::set_cursor_pos_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
-            if (ui::begin_combobox("##musclename", muscleName, ImGuiComboFlags_NoArrowButton))
+            if (ui::begin_combobox("##musclename", muscleName, ui::ComboFlag::NoArrow))
             {
                 const auto* current = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
                 for (const OpenSim::Muscle& musc : getShared().getModel().getModel().getComponentList<OpenSim::Muscle>())
@@ -1646,7 +1646,7 @@ namespace
             ui::draw_text("'s");
             ui::same_line();
             ui::set_next_item_width(outputNameWidth);
-            if (ui::begin_combobox("##outputname", outputName, ImGuiComboFlags_NoArrowButton))
+            if (ui::begin_combobox("##outputname", outputName, ui::ComboFlag::NoArrow))
             {
                 PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
                 for (const PlottableOutput& output : getShared().availableOutputs())
@@ -1663,7 +1663,7 @@ namespace
             ui::draw_text_unformatted("vs.");
             ui::same_line();
             ui::set_next_item_width(coordNameWidth);
-            if (ui::begin_combobox("##coordname", coordName, ImGuiComboFlags_NoArrowButton))
+            if (ui::begin_combobox("##coordname", coordName, ui::ComboFlag::NoArrow))
             {
                 const auto* current = FindComponent<OpenSim::Coordinate>(getShared().getModel().getModel(), getShared().getPlotParams().getCoordinatePath());
                 for (const OpenSim::Coordinate& c : getShared().getModel().getModel().getComponentList<OpenSim::Coordinate>())

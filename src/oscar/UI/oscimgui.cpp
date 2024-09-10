@@ -116,7 +116,12 @@ template<>
 struct osc::Converter<ui::TreeNodeFlags, ImGuiTreeNodeFlags> final {
     ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const
     {
+        static_assert(num_flags<ui::TreeNodeFlag>() == 4);
+
         ImGuiTreeNodeFlags rv = 0;
+        if (flags & ui::TreeNodeFlag::DefaultOpen) {
+            rv |= ImGuiTreeNodeFlags_DefaultOpen;
+        }
         if (flags & ui::TreeNodeFlag::OpenOnArrow) {
             rv |= ImGuiTreeNodeFlags_OpenOnArrow;
         }
@@ -212,7 +217,20 @@ struct osc::Converter<ui::TextInputFlags, ImGuiInputTextFlags> final {
         }
         return rv;
     }
+};
 
+template<>
+struct osc::Converter<ui::ComboFlags, ImGuiComboFlags> final {
+    ImGuiComboFlags operator()(ui::ComboFlags flags) const
+    {
+        static_assert(num_flags<ui::ComboFlag>() == 1);
+
+        ImGuiComboFlags rv = ImGuiComboFlags_None;
+        if (flags & ui::ComboFlag::NoArrow) {
+            rv |= ImGuiComboFlags_NoArrowButton;
+        }
+        return rv;
+    }
 };
 
 void osc::ui::align_text_to_frame_padding()
@@ -468,9 +486,9 @@ bool osc::ui::draw_radio_button(CStringView label, bool active)
     return ImGui::RadioButton(label.c_str(), active);
 }
 
-bool osc::ui::draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags)
+bool osc::ui::draw_collapsing_header(CStringView label, TreeNodeFlags flags)
 {
-    return ImGui::CollapsingHeader(label.c_str(), flags);
+    return ImGui::CollapsingHeader(label.c_str(), to<ImGuiTreeNodeFlags>(flags));
 }
 
 void osc::ui::draw_dummy(const Vec2& size)
@@ -478,9 +496,9 @@ void osc::ui::draw_dummy(const Vec2& size)
     ImGui::Dummy(size);
 }
 
-bool osc::ui::begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags)
+bool osc::ui::begin_combobox(CStringView label, CStringView preview_value, ComboFlags flags)
 {
-    return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), flags);
+    return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), to<ImGuiComboFlags>(flags));
 }
 
 void osc::ui::end_combobox()
@@ -498,14 +516,14 @@ void osc::ui::end_listbox()
     ImGui::EndListBox();
 }
 
-ImGuiViewport* osc::ui::get_main_viewport()
+Vec2 osc::ui::get_main_viewport_center()
 {
-    return ImGui::GetMainViewport();
+    return ImGui::GetMainViewport()->GetCenter();
 }
 
-ui::ID osc::ui::enable_dockspace_over_viewport(const ImGuiViewport* viewport, ImGuiDockNodeFlags flags, const ImGuiWindowClass* window_class)
+void osc::ui::enable_dockspace_over_main_viewport()
 {
-    return ID{ImGui::DockSpaceOverViewport(0, viewport, flags, window_class)};
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 bool osc::ui::begin_panel(CStringView name, bool* p_open, ImGuiWindowFlags flags)
@@ -1632,7 +1650,7 @@ ImGuiWindowFlags osc::ui::get_minimal_panel_flags()
 
 Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
 {
-    const ImGuiViewport& viewport = *ui::get_main_viewport();
+    const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
     return Rect{
         viewport.WorkPos,
@@ -1642,7 +1660,7 @@ Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
 
 Rect osc::ui::get_main_viewport_workspace_screenspace_rect()
 {
-    const ImGuiViewport& viewport = *ui::get_main_viewport();
+    const ImGuiViewport& viewport = *ImGui::GetMainViewport();
     const Vec2 bottom_left_uiscreenspace = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
     const Vec2 bottom_left_screenspace = Vec2{bottom_left_uiscreenspace.x, viewport.Size.y - bottom_left_uiscreenspace.y};
     const Vec2 top_right_screenspace = bottom_left_screenspace + Vec2{viewport.WorkSize};
@@ -1671,7 +1689,7 @@ bool osc::ui::is_mouse_in_main_viewport_workspace()
 bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, ImGuiWindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::get_main_viewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, flags);
 }
 
@@ -1679,7 +1697,7 @@ bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, ImGui
 bool osc::ui::begin_main_viewport_bottom_bar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ui::get_main_viewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
     const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     const float height = ui::get_frame_height() + ui::get_style_panel_padding().y;
 
@@ -1783,7 +1801,7 @@ bool osc::ui::draw_combobox(
         accessor(*current) :
         CStringView{};
 
-    if (not ui::begin_combobox(label, preview, ImGuiComboFlags_None)) {
+    if (not ui::begin_combobox(label, preview)) {
         return false;
     }
 

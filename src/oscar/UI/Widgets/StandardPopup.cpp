@@ -66,7 +66,7 @@ bool osc::StandardPopup::impl_begin_popup()
         }
         else {
             ui::set_next_panel_pos(
-                ui::get_main_viewport()->GetCenter(),
+                ui::get_main_viewport_center(),
                 ImGuiCond_Appearing,
                 Vec2{0.5f, 0.5f}
             );

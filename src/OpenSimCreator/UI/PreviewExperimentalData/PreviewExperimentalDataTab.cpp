@@ -463,7 +463,7 @@ public:
 private:
     void impl_on_draw() final
     {
-        ui::enable_dockspace_over_viewport(ui::get_main_viewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ui::enable_dockspace_over_main_viewport();
 
         ui::begin_panel("render");
         Vec2 dims = ui::get_content_region_available();

@@ -106,9 +106,11 @@ namespace osc::ui
 
     enum class TreeNodeFlag {
         None        = 0,
-        OpenOnArrow = 1<<0,  // only open when clicking on the arrow part
-        Leaf        = 1<<1,  // no collapsing, no arrow (use as a convenience for leaf nodes)
-        Bullet      = 1<<2,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
+        DefaultOpen = 1<<0,
+        OpenOnArrow = 1<<1,  // only open when clicking on the arrow part
+        Leaf        = 1<<2,  // no collapsing, no arrow (use as a convenience for leaf nodes)
+        Bullet      = 1<<3,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
+        NUM_FLAGS   = 4,
     };
     using TreeNodeFlags = Flags<TreeNodeFlag>;
 
@@ -222,18 +224,24 @@ namespace osc::ui
     bool draw_small_button(CStringView label);
     bool draw_invisible_button(CStringView label, Vec2 size = {});
     bool draw_radio_button(CStringView label, bool active);
-    bool draw_collapsing_header(CStringView label, ImGuiTreeNodeFlags flags = 0);
+    bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
     void draw_dummy(const Vec2& size);
 
-    bool begin_combobox(CStringView label, CStringView preview_value, ImGuiComboFlags flags = 0);
+    enum class ComboFlag {
+        None = 0,
+        NoArrow = 1<<0,
+        NUM_FLAGS = 1,
+    };
+    using ComboFlags = Flags<ComboFlag>;
+
+    bool begin_combobox(CStringView label, CStringView preview_value, ComboFlags = {});
     void end_combobox();
 
     bool begin_listbox(CStringView label);
     void end_listbox();
 
-    ImGuiViewport* get_main_viewport();
-
-    ID enable_dockspace_over_viewport(const ImGuiViewport* viewport = nullptr, ImGuiDockNodeFlags flags = 0, const ImGuiWindowClass* window_class = nullptr);
+    Vec2 get_main_viewport_center();
+    void enable_dockspace_over_main_viewport();
 
     bool begin_panel(CStringView name, bool* p_open = nullptr, ImGuiWindowFlags flags = 0);
     void end_panel();

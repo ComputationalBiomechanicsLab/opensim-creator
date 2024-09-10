@@ -61,7 +61,7 @@ private:
             ui::set_num_columns();
         }
 
-        if (ui::draw_collapsing_header("properties", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ui::draw_collapsing_header("properties", ui::TreeNodeFlag::DefaultOpen)) {
             ui::set_num_columns(2);
             for (int i = 0; i < selected.getNumProperties(); ++i) {
                 const OpenSim::AbstractProperty& prop = selected.getPropertyByIndex(i);
