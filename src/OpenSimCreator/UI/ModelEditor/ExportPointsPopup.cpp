@@ -426,7 +426,7 @@ namespace
             return pointInfo.location;  // cannot find frame (bug?)
         }
 
-        return ToVec3(ground2otherFrame * frame->getTransformInGround(state) * ToSimTKVec3(pointInfo.location));
+        return to<Vec3>(ground2otherFrame * frame->getTransformInGround(state) * to<SimTK::Vec3>(pointInfo.location));
     }
 
     void TryWriteOneCSVDataRow(

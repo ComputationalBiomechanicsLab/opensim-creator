@@ -29,7 +29,7 @@ SimTK::Vec3 osc::fd::CalcLocationInFrame(
     const SimTK::State& state,
     const Vec3& locationInGround)
 {
-    const SimTK::Vec3 translationInGround = ToSimTKVec3(locationInGround);
+    const auto translationInGround = to<SimTK::Vec3>(locationInGround);
     return frame.getTransformInGround(state).invert() * translationInGround;
 }
 
@@ -53,7 +53,7 @@ void osc::fd::SetColorAndOpacity(
     OpenSim::Appearance& appearance,
     const Color& color)
 {
-    appearance.set_color(ToSimTKRGBVec3(color));
+    appearance.set_color(to<SimTK::Vec3>(color));
     appearance.set_opacity(color.a);
 }
 

@@ -192,8 +192,8 @@ namespace
             const OpenSim::Station& station) const final
         {
             const SimTK::State& state = getState();
-            Mat4 transformInGround = mat4_cast(station.getParentFrame().getRotationInGround(state));
-            transformInGround[3] = Vec4{ToVec3(station.getLocationInGround(state)), 1.0f};
+            Mat4 transformInGround = to<Mat4>(station.getParentFrame().getRotationInGround(state));
+            transformInGround[3] = Vec4{to<Vec3>(station.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
         }
@@ -206,7 +206,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = ToVec3(groundToParentRotation * transformInGround.p());
+            const Vec3 translationInParent = to<Vec3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -236,8 +236,8 @@ namespace
             const OpenSim::PathPoint& pathPoint) const final
         {
             const SimTK::State& state = getState();
-            Mat4 transformInGround = mat4_cast(pathPoint.getParentFrame().getRotationInGround(state));
-            transformInGround[3] = Vec4{ToVec3(pathPoint.getLocationInGround(state)), 1.0f};
+            Mat4 transformInGround = to<Mat4>(pathPoint.getParentFrame().getRotationInGround(state));
+            transformInGround[3] = Vec4{to<Vec3>(pathPoint.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
         }
@@ -250,7 +250,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = ToVec3(groundToParentRotation * transformInGround.p());
+            const Vec3 translationInParent = to<Vec3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -294,10 +294,10 @@ namespace
                 // if the POF that's being edited is the child frame of a joint then
                 // its offset/orientation is constrained to be in the same location/orientation
                 // as the joint's parent frame (plus coordinate transforms)
-                return ToMat4x4(pof.getParentFrame().getTransformInGround(getState()));
+                return to<Mat4>(pof.getParentFrame().getTransformInGround(getState()));
             }
             else {
-                return ToMat4x4(pof.getTransformInGround(getState()));
+                return to<Mat4>(pof.getTransformInGround(getState()));
             }
         }
 
@@ -323,8 +323,8 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
-                    ToVec3(X.p()),
-                    ToEulerAngles(X.R())
+                    to<Vec3>(X.p()),
+                    to<EulerAngles>(X.R())
                 );
             }
             else {
@@ -346,8 +346,8 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
-                    ToVec3(X.p()),
-                    ToEulerAngles(X.R())
+                    to<Vec3>(X.p()),
+                    to<EulerAngles>(X.R())
                 );
             }
         }
@@ -377,7 +377,7 @@ namespace
             const SimTK::Transform frameToGround = wrapObj.getFrame().getTransformInGround(getState());
             const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
-            return ToMat4x4(wrapToGround);
+            return to<Mat4>(wrapToGround);
         }
 
         void implOnApplyTransform(
@@ -400,8 +400,8 @@ namespace
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
-                ToVec3(X.p() - M_w.p()),
-                ToEulerAngles(X.R())
+                to<Vec3>(X.p() - M_w.p()),
+                to<EulerAngles>(X.R())
             );
         }
     };
@@ -428,7 +428,7 @@ namespace
             const SimTK::Transform frameToGround = contactGeom.getFrame().getTransformInGround(getState());
             const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
-            return ToMat4x4(wrapToGround);
+            return to<Mat4>(wrapToGround);
         }
 
         void implOnApplyTransform(
@@ -451,8 +451,8 @@ namespace
             ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
-                ToVec3(X.p() - M_w.p()),
-                ToEulerAngles(X.R())
+                to<Vec3>(X.p() - M_w.p()),
+                to<EulerAngles>(X.R())
             );
         }
     };
@@ -494,7 +494,7 @@ namespace
         Mat4 implGetCurrentTransformInGround(const OpenSim::Joint& joint) const final
         {
             // present the "joint center" as equivalent to the parent frame
-            return ToMat4x4(joint.getParentFrame().getTransformInGround(getState()));
+            return to<Mat4>(joint.getParentFrame().getTransformInGround(getState()));
         }
 
         void implOnApplyTransform(const OpenSim::Joint& joint, const SimTK::Transform& M_n) final
@@ -552,8 +552,8 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     parentPOF,
-                    ToVec3(X.p()),
-                    ToEulerAngles(X.R())
+                    to<Vec3>(X.p()),
+                    to<EulerAngles>(X.R())
                 );
             }
 
@@ -570,8 +570,8 @@ namespace
             ActionTransformPofV2(
                 getUndoableModel(),
                 childPOF,
-                ToVec3(M_cpof2.p()),
-                ToEulerAngles(M_cpof2.R())
+                to<Vec3>(M_cpof2.p()),
+                to<EulerAngles>(M_cpof2.R())
             );
         }
     };
@@ -632,7 +632,7 @@ namespace
 
         if (userEditInGround) {
             // propagate user edit to the model via the `ISelectionManipulator` interface
-            manipulator.onApplyTransform(SimTK::Transform{ToSimTKRotation(userEditInGround->rotation), ToSimTKVec3(userEditInGround->position)});
+            manipulator.onApplyTransform(SimTK::Transform{to<SimTK::Rotation>(userEditInGround->rotation), to<SimTK::Vec3>(userEditInGround->position)});
         }
 
         // once the user stops using the manipulator, save the changes

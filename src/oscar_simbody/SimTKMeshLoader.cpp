@@ -85,7 +85,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 
     // copy all vertex positions from the source mesh
     for (int i = 0; i < mesh.getNumVertices(); ++i) {
-        vertices.push_back(ToVec3(mesh.getVertexPosition(i)));
+        vertices.push_back(to<Vec3>(mesh.getVertexPosition(i)));
     }
 
     // build up the index list while triangulating any n>3 faces
@@ -172,7 +172,7 @@ void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vec3> v
 
     // assign vertices
     for (const Vec3& vertex : vertices) {
-        mesh.addVertex(ToSimTKVec3(vertex));
+        mesh.addVertex(to<SimTK::Vec3>(vertex));
     }
 
     // assign indices (assumed triangle)

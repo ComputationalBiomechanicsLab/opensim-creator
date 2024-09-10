@@ -12,7 +12,7 @@ void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
 {
     out(SceneDecoration{
         .mesh = m_OscMesh,
-        .transform = decompose_to_transform(getFrame().getTransformInGround(state)),
+        .transform = to<Transform>(getFrame().getTransformInGround(state)),
         .shading = to_color(get_Appearance()),
     });
 }

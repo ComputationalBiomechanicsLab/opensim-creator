@@ -39,7 +39,7 @@ namespace
             sf[i] = sf[i] <= 0.0 ? 1.0 : sf[i];
         }
 
-        return ToVec3(sf);
+        return to<Vec3>(sf);
     }
 
     // extracts RGBA color from geometry
@@ -50,7 +50,7 @@ namespace
         auto ar = static_cast<float>(geom.getOpacity());
         ar = ar < 0.0f ? 1.0f : ar;
 
-        return Color{ToVec3(rgb), ar};
+        return Color{to<Vec3>(rgb), ar};
     }
 
     SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
@@ -75,7 +75,7 @@ namespace
         const SimTK::Transform& body2ground = mobod.getBodyTransform(state);
         const SimTK::Transform& decoration2body = g.getTransform();
 
-        return decompose_to_transform(body2ground * decoration2body).with_scale(GetScaleFactors(g));
+        return to<Transform>(body2ground * decoration2body).with_scale(GetScaleFactors(g));
     }
 
     size_t hash_of(const SimTK::Vec3& v)
@@ -147,8 +147,8 @@ namespace
         void implementLineGeometry(const SimTK::DecorativeLine& d) final
         {
             const Transform t = ToOscTransform(d);
-            const Vec3 p1 = t * ToVec3(d.getPoint1());
-            const Vec3 p2 = t * ToVec3(d.getPoint2());
+            const Vec3 p1 = t * to<Vec3>(d.getPoint1());
+            const Vec3 p2 = t * to<Vec3>(d.getPoint2());
 
             const float thickness = c_LineThickness * m_FixupScaleFactor;
 
@@ -166,7 +166,7 @@ namespace
         void implementBrickGeometry(const SimTK::DecorativeBrick& d) final
         {
             Transform t = ToOscTransform(d);
-            t.scale *= ToVec3(d.getHalfLengths());
+            t.scale *= to<Vec3>(d.getHalfLengths());
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.brick_mesh(),
@@ -223,7 +223,7 @@ namespace
         void implementEllipsoidGeometry(const SimTK::DecorativeEllipsoid& d) final
         {
             Transform t = ToOscTransform(d);
-            t.scale *= ToVec3(d.getRadii());
+            t.scale *= to<Vec3>(d.getRadii());
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
@@ -326,8 +326,8 @@ namespace
         {
             const Transform t = ToOscTransform(d);
 
-            const Vec3 startBase = ToVec3(d.getStartPoint());
-            const Vec3 endBase = ToVec3(d.getEndPoint());
+            const Vec3 startBase = to<Vec3>(d.getStartPoint());
+            const Vec3 endBase = to<Vec3>(d.getEndPoint());
 
             const Vec3 start = transform_point(t, startBase);
             const Vec3 end = transform_point(t, endBase);
@@ -379,8 +379,8 @@ namespace
         {
             const Transform t = ToOscTransform(d);
 
-            const Vec3 posBase = ToVec3(d.getOrigin());
-            const Vec3 posDir = ToVec3(d.getDirection());
+            const Vec3 posBase = to<Vec3>(d.getOrigin());
+            const Vec3 posDir = to<Vec3>(d.getDirection());
 
             const Vec3 pos = transform_point(t, posBase);
             const Vec3 direction = transform_direction(t, posDir);

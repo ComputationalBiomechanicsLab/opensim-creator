@@ -192,7 +192,7 @@ namespace
     Vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, const SimTK::State& st)
     {
         const SimTK::Vec3 location = pf.frame().findStationLocationInGround(st, pf.point());
-        return ToVec3(location);
+        return to<Vec3>(location);
     }
 
     struct LinesOfActionConfig final {
@@ -1269,17 +1269,17 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
         }
         else if (const auto* pwp = dynamic_cast<const OpenSim::PathWrapPoint*>(ap)) {
             // special case: it's a wrapping point, so add each part of the wrap
-            const Transform body2ground = decompose_to_transform(pwp->getParentFrame().getTransformInGround(st));
+            const Transform body2ground = to<Transform>(pwp->getParentFrame().getTransformInGround(st));
             const OpenSim::Array<SimTK::Vec3>& wrapPath = pwp->getWrapPath(st);
 
             rv.reserve(rv.size() + size(wrapPath));
             for (size_t j = 0; j < size(wrapPath); ++j) {
-                rv.emplace_back(body2ground * ToVec3(At(wrapPath, j)));
+                rv.emplace_back(body2ground * to<Vec3>(At(wrapPath, j)));
             }
         }
         else {
             // typical case: it's a normal/computed point with a single location in ground
-            rv.emplace_back(*ap, ToVec3(ap->getLocationInGround(st)));
+            rv.emplace_back(*ap, to<Vec3>(ap->getLocationInGround(st)));
         }
     }
 
@@ -1364,10 +1364,10 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exherted
-        const Transform body2ground = decompose_to_transform(halfSpace.getFrame().getTransformInGround(state));
-        const Transform geom2body = decompose_to_transform(halfSpace.getTransform());
+        const Transform body2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
+        const Transform geom2body = to<Transform>(halfSpace.getTransform());
 
-        const Vec3 originInGround = body2ground * ToVec3(halfSpace.get_location());
+        const Vec3 originInGround = body2ground * to<Vec3>(halfSpace.get_location());
         const Vec3 normalInGround = normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
 
         return Plane{originInGround, normalInGround};
@@ -1471,25 +1471,25 @@ std::optional<PointInfo> osc::TryExtractPointInfo(
         }
 
         return PointInfo{
-            ToVec3(station->get_location()),
+            to<Vec3>(station->get_location()),
             GetAbsolutePath(station->getParentFrame()),
         };
     }
     else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c)) {
         return PointInfo{
-            ToVec3(pp->getLocation(st)),
+            to<Vec3>(pp->getLocation(st)),
             GetAbsolutePath(pp->getParentFrame()),
         };
     }
     else if (const auto* point = dynamic_cast<const OpenSim::Point*>(&c)) {
         return PointInfo{
-            ToVec3(point->getLocationInGround(st)),
+            to<Vec3>(point->getLocationInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
     else if (const auto* frame = dynamic_cast<const OpenSim::Frame*>(&c)) {
         return PointInfo{
-            ToVec3(frame->getPositionInGround(st)),
+            to<Vec3>(frame->getPositionInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }

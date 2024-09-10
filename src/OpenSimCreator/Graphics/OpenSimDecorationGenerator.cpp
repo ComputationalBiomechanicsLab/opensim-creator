@@ -77,7 +77,7 @@ namespace
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(const OpenSim::Frame& frame, const SimTK::State& state)
     {
-        return decompose_to_transform(frame.getTransformInGround(state));
+        return to<Transform>(frame.getTransformInGround(state));
     }
 
     // returns value between [0.0f, 1.0f]
@@ -108,16 +108,14 @@ namespace
 
     Color GetGeometryPathDefaultColor(const OpenSim::GeometryPath& gp)
     {
-        const SimTK::Vec3& c = gp.getDefaultColor();
-        return Color{ToVec3(c)};
+        return Color{to<Vec3>(gp.getDefaultColor())};
     }
 
     Color GetGeometryPathColor(const OpenSim::GeometryPath& gp, const SimTK::State& st)
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
-        const SimTK::Vec3 c = gp.getColor(st);
-        return Color{ToVec3(c)};
+        return Color{to<Vec3>(gp.getColor(st))};
     }
 
     Color CalcOSCMuscleColor(
@@ -391,8 +389,8 @@ namespace
                 const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
                 const SimTK::Vec3 positionInGround = frame.findStationLocationInGround(state, point);
                 const ArrowProperties arrowProperties = {
-                    .start = ToVec3(positionInGround),
-                    .end = ToVec3(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                    .start = to<Vec3>(positionInGround),
+                    .end = to<Vec3>(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
                     .tip_length = 0.015f * fixupScaleFactor,
                     .neck_thickness = 0.006f * fixupScaleFactor,
                     .head_thickness = 0.01f * fixupScaleFactor,
@@ -435,8 +433,8 @@ namespace
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
             const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
-                .start = ToVec3(frame2ground * SimTK::Vec3{0.0}),
-                .end = ToVec3(frame2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueInGround)),
+                .start = to<Vec3>(frame2ground * SimTK::Vec3{0.0}),
+                .end = to<Vec3>(frame2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueInGround)),
                 .tip_length = (fixupScaleFactor*0.015f),
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
@@ -465,8 +463,8 @@ namespace
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
             const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
-                .start = ToVec3(frame2ground * SimTK::Vec3{0.0}),
-                .end = ToVec3(frame2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                .start = to<Vec3>(frame2ground * SimTK::Vec3{0.0}),
+                .end = to<Vec3>(frame2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
                 .tip_length = (fixupScaleFactor*0.015f),
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
@@ -538,8 +536,8 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
+                    .start = to<Vec3>(mobod2ground * SimTK::Vec3{0.0}),
+                    .end = to<Vec3>(mobod2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -560,8 +558,8 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = ToVec3(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = ToVec3(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
+                    .start = to<Vec3>(mobod2ground * SimTK::Vec3{0.0}),
+                    .end = to<Vec3>(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -612,8 +610,8 @@ namespace
             return;
         }
 
-        const Vec3 p1 = TransformInGround(p2p.getBody1(), rs.getState()) * ToVec3(p2p.getPoint1());
-        const Vec3 p2 = TransformInGround(p2p.getBody2(), rs.getState()) * ToVec3(p2p.getPoint2());
+        const Vec3 p1 = TransformInGround(p2p.getBody1(), rs.getState()) * to<Vec3>(p2p.getPoint1());
+        const Vec3 p2 = TransformInGround(p2p.getBody2(), rs.getState()) * to<Vec3>(p2p.getPoint2());
 
         const float radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
 
@@ -635,7 +633,7 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = {
                 .scale = Vec3{radius},
-                .position = ToVec3(s.getLocationInGround(rs.getState())),
+                .position = to<Vec3>(s.getLocationInGround(rs.getState())),
             },
             .shading = c_StationColor,
         });
@@ -647,7 +645,7 @@ namespace
         const OpenSim::ScapulothoracicJoint& scapuloJoint)
     {
         Transform t = TransformInGround(scapuloJoint.getParentFrame(), rs.getState());
-        t.scale = ToVec3(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
+        t.scale = to<Vec3>(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
 
         rs.consume(scapuloJoint, SceneDecoration{
             .mesh = rs.sphere_mesh(),
@@ -670,7 +668,7 @@ namespace
 
         const float radius = rs.getFixupScaleFactor() * 0.005f;
         Transform t = TransformInGround(b, rs.getState());
-        t.position = t * ToVec3(b.getMassCenter());
+        t.position = t * to<Vec3>(b.getMassCenter());
         t.scale = Vec3{radius};
 
         rs.consume(b, SceneDecoration{
@@ -1338,7 +1336,7 @@ Mesh osc::ToOscMeshBakeScaleFactors(
     const OpenSim::Mesh& mesh)
 {
     Mesh rv = ToOscMesh(model, state, mesh);
-    rv.transform_vertices({.scale =  ToVec3(mesh.get_scale_factors())});
+    rv.transform_vertices({.scale =  to<Vec3>(mesh.get_scale_factors())});
 
     return rv;
 }

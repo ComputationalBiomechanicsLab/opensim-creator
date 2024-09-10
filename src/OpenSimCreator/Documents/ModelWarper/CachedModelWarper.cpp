@@ -141,7 +141,7 @@ public:
                         if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = pp.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), pp.get_location(), mesh->getFrame());
-                            auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));
+                            auto warpedInMeshFrame = to<SimTK::Vec3>(meshWarper->tryCreatePointWarper(document)->warp(to<Vec3>(posInMeshFrame)));
                             auto warpedInParentFrame = mesh->getFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), warpedInMeshFrame, pp.getParentFrame());
                             pp.set_location(warpedInParentFrame);
                         }
@@ -170,7 +170,7 @@ public:
                         if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());
-                            auto warpedInMeshFrame = ToSimTKVec3(meshWarper->tryCreatePointWarper(document)->warp(ToVec3(posInMeshFrame)));
+                            auto warpedInMeshFrame = to<SimTK::Vec3>(meshWarper->tryCreatePointWarper(document)->warp(to<Vec3>(posInMeshFrame)));
                             auto warpedInParentFrame = mesh->getFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), warpedInMeshFrame, station.getParentFrame());
                             station.set_location(warpedInParentFrame);
                         }

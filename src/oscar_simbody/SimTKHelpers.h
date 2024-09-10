@@ -11,6 +11,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Utils/Conversion.h>
 
 #include <array>
 
@@ -18,26 +19,88 @@ namespace osc { struct Transform; }
 
 namespace osc
 {
-    // converters: from osc types to SimTK,
-    SimTK::Vec3 ToSimTKVec3(const Vec3&);
-    inline SimTK::Vec3 ToSimTKVec3(const Vec4& v) { return ToSimTKVec3(Vec3{v}); }
-    SimTK::Vec3 ToSimTKVec3(const EulerAngles&);
-    SimTK::Mat33 ToSimTKMat3(const Mat3&);
-    SimTK::Inertia ToSimTKInertia(const Vec3&);
-    SimTK::Transform ToSimTKTransform(const Transform&);
-    SimTK::Transform ToSimTKTransform(const EulerAngles&, const Vec3&);
-    SimTK::Rotation ToSimTKRotation(const Quat&);
-    SimTK::Rotation ToSimTKRotation(const EulerAngles&);
-    SimTK::Vec3 ToSimTKRGBVec3(const Color&);
+    template<>
+    struct Converter<Vec3, SimTK::Vec3> final {
+        SimTK::Vec3 operator()(const Vec3&) const;
+    };
 
-    // converters: from SimTK types to osc
-    Vec3 ToVec3(const SimTK::Vec3&);
-    Vec4 to_vec4(const SimTK::Vec3&, float w = 1.0f);
-    Mat4 ToMat4x4(const SimTK::Transform&);
-    Mat3 ToMat3(const SimTK::Mat33&);
-    Mat4 mat4_cast(const SimTK::Rotation&);
-    Quat ToQuat(const SimTK::Rotation&);
-    EulerAngles ToEulerAngles(const SimTK::Rotation&);
-    std::array<float, 6> ToArray(const SimTK::Vec6&);
-    Transform decompose_to_transform(const SimTK::Transform&);
+    template<>
+    struct Converter<EulerAngles, SimTK::Vec3> final {
+        SimTK::Vec3 operator()(const EulerAngles&) const;
+    };
+
+    template<>
+    struct Converter<Mat3, SimTK::Mat33> final {
+        SimTK::Mat33 operator()(const Mat3&) const;
+    };
+
+    template<>
+    struct Converter<Vec3, SimTK::Inertia> final {
+        SimTK::Inertia operator()(const Vec3&) const;
+    };
+
+    template<>
+    struct Converter<Transform, SimTK::Transform> final {
+        SimTK::Transform operator()(const Transform&) const;
+    };
+
+    template<>
+    struct Converter<Quat, SimTK::Rotation> final {
+        SimTK::Rotation operator()(const Quat&) const;
+    };
+
+    template<>
+    struct Converter<EulerAngles, SimTK::Rotation> final {
+        SimTK::Rotation operator()(const EulerAngles&) const;
+    };
+
+    template<>
+    struct Converter<Color, SimTK::Vec3> final {
+        SimTK::Vec3 operator()(const Color&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Vec3, Vec3> final {
+        Vec3 operator()(const SimTK::Vec3&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::UnitVec3, Vec3> final {
+        Vec3 operator()(const SimTK::UnitVec3&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Transform, Mat4> final {
+        Mat4 operator()(const SimTK::Transform&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Mat33, Mat3> final {
+        Mat3 operator()(const SimTK::Mat33&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Rotation, Mat4> final {
+        Mat4 operator()(const SimTK::Rotation&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Rotation, Quat> final {
+        Quat operator()(const SimTK::Rotation&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Rotation, EulerAngles> final {
+        EulerAngles operator()(const SimTK::Rotation&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Vec6, std::array<float, 6>> final {
+        std::array<float, 6> operator()(const SimTK::Vec6&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::Transform, Transform> final {
+        Transform operator()(const SimTK::Transform&) const;
+    };
 }

@@ -621,9 +621,9 @@ Plane osc::FitPlane(const Mesh& mesh)
 
     // eigen analysis to yield [N, B1, B2]
     const SimTK::Mat33 eigenVectors = EigSorted(covarianceMatrix).first;
-    const Vec3 normal = ToVec3(eigenVectors.col(0));
-    const Vec3 basis1 = ToVec3(eigenVectors.col(1));
-    const Vec3 basis2 = ToVec3(eigenVectors.col(2));
+    const Vec3 normal = to<Vec3>(eigenVectors.col(0));
+    const Vec3 basis1 = to<Vec3>(eigenVectors.col(1));
+    const Vec3 basis2 = to<Vec3>(eigenVectors.col(2));
 
     // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
     // of them in plane-spae
@@ -703,8 +703,8 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     RightHandify(evecs);
 
     return Ellipsoid{
-        ToVec3(ellipsoidOrigin),
-        ToVec3(SimTK::sqrt(Reciporical(Diag(evals)))),
-        quat_cast(ToMat3(evecs)),
+        to<Vec3>(ellipsoidOrigin),
+        to<Vec3>(SimTK::sqrt(Reciporical(Diag(evals)))),
+        quat_cast(to<Mat3>(evecs)),
     };
 }

@@ -1318,8 +1318,8 @@ bool osc::ActionAddBodyToModel(UndoableModelStatePair& uim, const BodyDetails& d
         return false;
     }
 
-    const SimTK::Vec3 com = ToSimTKVec3(details.centerOfMass);
-    const SimTK::Inertia inertia = ToSimTKInertia(details.inertia);
+    const auto com = to<SimTK::Vec3>(details.centerOfMass);
+    const auto inertia = to<SimTK::Inertia>(details.inertia);
     const auto mass = static_cast<double>(details.mass);
 
     // create body
@@ -1848,7 +1848,7 @@ bool osc::ActionTranslateStation(
         }
 
         const SimTK::Vec3 originalPos = mutStation->get_location();
-        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 newPos = originalPos + to<SimTK::Vec3>(deltaPosition);
 
         // perform mutation
         mutStation->set_location(newPos);
@@ -1911,7 +1911,7 @@ bool osc::ActionTranslatePathPoint(
         }
 
         const SimTK::Vec3 originalPos = mutPathPoint->get_location();
-        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 newPos = originalPos + to<SimTK::Vec3>(deltaPosition);
 
         // perform mutation
         mutPathPoint->setLocation(newPos);
@@ -1970,11 +1970,11 @@ bool osc::ActionTransformPof(
         }
 
         const SimTK::Vec3 originalPos = mutPof->get_translation();
-        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaTranslationInParentFrame);
+        const SimTK::Vec3 newPos = originalPos + to<SimTK::Vec3>(deltaTranslationInParentFrame);
 
         // perform mutation
         mutPof->set_translation(newPos);
-        mutPof->set_orientation(ToSimTKVec3(newPofEulers));
+        mutPof->set_orientation(to<SimTK::Vec3>(newPofEulers));
         InitializeModel(mutModel);
         InitializeState(mutModel);
 
@@ -2009,8 +2009,8 @@ bool osc::ActionTransformPofV2(
         }
 
         // perform mutation
-        mutPof->set_translation(ToSimTKVec3(newTranslation));
-        mutPof->set_orientation(ToSimTKVec3(newEulers));
+        mutPof->set_translation(to<SimTK::Vec3>(newTranslation));
+        mutPof->set_orientation(to<SimTK::Vec3>(newEulers));
         InitializeModel(mutModel);
         InitializeState(mutModel);
 
@@ -2045,11 +2045,11 @@ bool osc::ActionTransformWrapObject(
         }
 
         const SimTK::Vec3 originalPos = mutPof->get_translation();
-        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 newPos = originalPos + to<SimTK::Vec3>(deltaPosition);
 
         // perform mutation
         mutPof->set_translation(newPos);
-        mutPof->set_xyz_body_rotation(ToSimTKVec3(newEulers));
+        mutPof->set_xyz_body_rotation(to<SimTK::Vec3>(newEulers));
         InitializeModel(mutModel);
         InitializeState(mutModel);
 
@@ -2084,11 +2084,11 @@ bool osc::ActionTransformContactGeometry(
         }
 
         const SimTK::Vec3 originalPos = mutGeom->get_location();
-        const SimTK::Vec3 newPos = originalPos + ToSimTKVec3(deltaPosition);
+        const SimTK::Vec3 newPos = originalPos + to<SimTK::Vec3>(deltaPosition);
 
         // perform mutation
         mutGeom->set_location(newPos);
-        mutGeom->set_orientation(ToSimTKVec3(newEulers));
+        mutGeom->set_orientation(to<SimTK::Vec3>(newEulers));
         InitializeModel(mutModel);
         InitializeState(mutModel);
 
@@ -2125,7 +2125,7 @@ bool osc::ActionFitSphereToMesh(
     auto offsetFrame = std::make_unique<OpenSim::PhysicalOffsetFrame>();
     offsetFrame->setName("sphere_fit");
     offsetFrame->connectSocket_parent(dynamic_cast<const OpenSim::PhysicalFrame&>(openSimMesh.getFrame()));
-    offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKVec3(sphere.origin)});
+    offsetFrame->setOffsetTransform(SimTK::Transform{to<SimTK::Vec3>(sphere.origin)});
 
     // create an origin-centered `OpenSim::Sphere` geometry to visually represent the computed
     // sphere
@@ -2198,10 +2198,10 @@ bool osc::ActionFitEllipsoidToMesh(
         // compute offset transform for ellipsoid
         SimTK::Mat33 m;
         auto directions = axis_directions_of(ellipsoid);
-        m.col(0) = ToSimTKVec3(directions[0]);
-        m.col(1) = ToSimTKVec3(directions[1]);
-        m.col(2) = ToSimTKVec3(directions[2]);
-        const SimTK::Transform t{SimTK::Rotation{m}, ToSimTKVec3(ellipsoid.origin)};
+        m.col(0) = to<SimTK::Vec3>(directions[0]);
+        m.col(1) = to<SimTK::Vec3>(directions[1]);
+        m.col(2) = to<SimTK::Vec3>(directions[2]);
+        const SimTK::Transform t{SimTK::Rotation{m}, to<SimTK::Vec3>(ellipsoid.origin)};
         offsetFrame->setOffsetTransform(t);
     }
 
@@ -2273,7 +2273,7 @@ bool osc::ActionFitPlaneToMesh(
     {
         // +1Y in "brick space" should map to the plane's normal
         const Quat q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
-        offsetFrame->setOffsetTransform(SimTK::Transform{ToSimTKRotation(q), ToSimTKVec3(plane.origin)});
+        offsetFrame->setOffsetTransform(SimTK::Transform{to<SimTK::Rotation>(q), to<SimTK::Vec3>(plane.origin)});
     }
 
     // create an origin-centered `OpenSim::Brick` geometry to visually represent the computed
@@ -2329,7 +2329,7 @@ bool osc::ActionImportLandmarks(
         OpenSim::Model& mutModel = model.updModel();
         for (const auto& lm : lms)
         {
-            AddMarker(mutModel, lm.name, mutModel.getGround(), ToSimTKVec3(lm.position));
+            AddMarker(mutModel, lm.name, mutModel.getGround(), to<SimTK::Vec3>(lm.position));
         }
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);

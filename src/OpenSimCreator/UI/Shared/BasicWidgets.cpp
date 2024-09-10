@@ -185,8 +185,8 @@ namespace
         const OpenSim::Frame& frame,
         const SimTK::State& state)
     {
-        Transform rv = decompose_to_transform(mesh.getFrame().findTransformBetween(state, frame));
-        rv.scale = ToVec3(mesh.get_scale_factors());
+        Transform rv = to<Transform>(mesh.getFrame().findTransformBetween(state, frame));
+        rv.scale = to<Vec3>(mesh.get_scale_factors());
         return rv;
     }
 
@@ -567,7 +567,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     Vec3 locationInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 position = ToVec3(groundToFrame * ToSimTKVec3(locationInGround));
+    Vec3 position = to<Vec3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
 
     ui::draw_text("translation");
     ui::same_line();
@@ -582,7 +582,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     Vec3 directionInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 direction = ToVec3(groundToFrame.xformBaseVecToFrame(ToSimTKVec3(directionInGround)));
+    Vec3 direction = to<Vec3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
 
     ui::draw_text("direction");
     ui::same_line();
@@ -597,8 +597,8 @@ void osc::DrawFrameInformationExpressedIn(
     const OpenSim::Frame& otherFrame)
 {
     const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
-    Vec3 position = ToVec3(xform.p());
-    Vec3 rotationEulers = ToVec3(xform.R().convertRotationToBodyFixedXYZ());
+    Vec3 position = to<Vec3>(xform.p());
+    Vec3 rotationEulers = to<Vec3>(xform.R().convertRotationToBodyFixedXYZ());
 
     ui::draw_text("translation");
     ui::same_line();
@@ -639,7 +639,7 @@ void osc::DrawCalculatePositionMenu(
             DrawPointTranslationInformationWithRespectTo(
                 frame,
                 state,
-                ToVec3(point.getLocationInGround(state))
+                to<Vec3>(point.getLocationInGround(state))
             );
         };
 
@@ -698,9 +698,9 @@ void osc::DrawCalculateAxisDirectionsMenu(
     if (ui::begin_menu("Axis Directions")) {
         const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
         {
-            Vec3 x = ToVec3(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vec3 y = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vec3 z = ToVec3(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            Vec3 x = to<Vec3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vec3 y = to<Vec3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vec3 z = to<Vec3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();
@@ -727,7 +727,7 @@ void osc::DrawCalculateOriginMenu(
     if (ui::begin_menu("Origin")) {
         const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
-            auto v = ToVec3(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
+            auto v = to<Vec3>(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::draw_text("origin");
             ui::same_line();
             ui::draw_vec3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
@@ -759,7 +759,7 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ui::begin_menu("Origin"))
     {
-        const Vec3 posInGround = ToVec3(sphere.getFrame().getPositionInGround(state));
+        const Vec3 posInGround = to<Vec3>(sphere.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -843,7 +843,7 @@ void osc::DrawCalculateOriginMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Origin")) {
-        const Vec3 posInGround = ToVec3(ellipsoid.getFrame().getPositionInGround(state));
+        const Vec3 posInGround = to<Vec3>(ellipsoid.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -860,7 +860,7 @@ void osc::DrawCalculateRadiiMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Radii")) {
-        auto v = ToVec3(ellipsoid.get_radii());
+        auto v = to<Vec3>(ellipsoid.get_radii());
         ui::draw_text("radii");
         ui::same_line();
         ui::draw_vec3_input("##radii", v, "%.6f", ui::TextInputFlag::ReadOnly);
@@ -885,9 +885,9 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
         const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
         {
             const auto& radii = ellipsoid.get_radii();
-            Vec3 x = ToVec3(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vec3 y = ToVec3(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vec3 z = ToVec3(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            Vec3 x = to<Vec3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vec3 y = to<Vec3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vec3 z = to<Vec3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();

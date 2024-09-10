@@ -513,7 +513,7 @@ namespace
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        ToVec3(edge.getStartLocationInGround(state))
+                        to<Vec3>(edge.getStartLocationInGround(state))
                     );
                 };
                 DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, nullptr);
@@ -527,7 +527,7 @@ namespace
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        ToVec3(edge.getEndLocationInGround(state))
+                        to<Vec3>(edge.getEndLocationInGround(state))
                     );
                 };
 
@@ -542,7 +542,7 @@ namespace
                     DrawDirectionInformationWithRepsectTo(
                         frame,
                         state,
-                        ToVec3(CalcDirection(edge.getLocationsInGround(state)))
+                        to<Vec3>(CalcDirection(edge.getLocationsInGround(state)))
                     );
                 };
 

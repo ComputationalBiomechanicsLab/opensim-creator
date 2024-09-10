@@ -725,12 +725,12 @@ namespace
 
             Vec3 modelValueToEditedValue(const Vec3& modelValue) const
             {
-                return ToVec3(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * ToSimTKVec3(modelValue)));
+                return to<Vec3>(static_cast<double>(m_ModelToEditedValueScaler) * (m_ModelToEditedTransform * to<SimTK::Vec3>(modelValue)));
             }
 
             Vec3 editedValueToModelValue(const Vec3& editedValue) const
             {
-                return ToVec3(m_ModelToEditedTransform.invert() * ToSimTKVec3(editedValue/m_ModelToEditedValueScaler));
+                return to<Vec3>(m_ModelToEditedTransform.invert() * to<SimTK::Vec3>(editedValue/m_ModelToEditedValueScaler));
             }
         private:
             float m_ModelToEditedValueScaler;
@@ -945,7 +945,7 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            const Vec3 rawValue = ToVec3(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
+            const Vec3 rawValue = to<Vec3>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
             const Vec3 editedValue = valueConverter.modelValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3
@@ -988,7 +988,7 @@ namespace
             {
                 // un-convert the value on save
                 const Vec3 savedValue = valueConverter.editedValueToModelValue(editedValue);
-                m_EditedProperty.setValue(idx, ToSimTKVec3(savedValue));
+                m_EditedProperty.setValue(idx, to<SimTK::Vec3>(savedValue));
             }
 
             ui::pop_id();
@@ -1093,7 +1093,7 @@ namespace
             //
             // care: `getValue` can return `nullptr` if the property is optional (size == 0)
             std::array<float, 6> rawValue = idx < m_EditedProperty.size() ?
-                ToArray(m_EditedProperty.getValue(idx)) :
+                to<std::array<float, 6>>(m_EditedProperty.getValue(idx)) :
                 std::array<float, 6>{};
 
             bool shouldSave = false;
