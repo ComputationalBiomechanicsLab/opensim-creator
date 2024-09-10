@@ -1,9 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/Experimental/MeshHittestTab.h>
 #include <OpenSimCreator/UI/Experimental/PreviewExperimentalDataTab.h>
-#include <OpenSimCreator/UI/Experimental/RendererGeometryShaderTab.h>
-#include <OpenSimCreator/UI/Experimental/TPS2DTab.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
@@ -13,10 +10,7 @@
 namespace osc
 {
     using OpenSimCreatorTabs = Typelist<
-        MeshHittestTab,
         PreviewExperimentalDataTab,
-        RendererGeometryShaderTab,
-        TPS2DTab,
 
         MeshWarpingTab,
         mow::ModelWarperTab,

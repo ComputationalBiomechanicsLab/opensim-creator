@@ -6,6 +6,7 @@ set(OSC_DISCOVER_TESTS ON
 if(${OSC_BUILD_OPENSIMCREATOR})
     add_subdirectory(TestOpenSimCreator)
     add_subdirectory(TestOpenSimThirdPartyPlugins)
+    add_subdirectory(testoscar_simbody)
 endif()
 add_subdirectory(testoscar)
 add_subdirectory(testoscar_demos)

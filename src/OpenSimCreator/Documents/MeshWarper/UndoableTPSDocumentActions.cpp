@@ -10,7 +10,6 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.h>
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.h>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <oscar/Formats/CSV.h>
 #include <oscar/Formats/OBJ.h>
@@ -20,6 +19,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/os.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <array>
 #include <filesystem>

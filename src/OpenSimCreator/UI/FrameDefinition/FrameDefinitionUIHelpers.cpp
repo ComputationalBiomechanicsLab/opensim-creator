@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -14,6 +13,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <filesystem>
 #include <memory>

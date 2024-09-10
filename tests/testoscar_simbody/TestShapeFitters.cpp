@@ -1,8 +1,8 @@
-#include <OpenSimCreator/Utils/ShapeFitters.h>
+#include <oscar_simbody/ShapeFitters.h>
 
-#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
+#include <testoscar_simbody/testoscar_simbody_config.h>
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
 #include <gtest/gtest.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Mesh.h>

@@ -9,10 +9,10 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
-#include <OpenSimCreator/Utils/SimTKHelpers.h>
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar_simbody/SimTKHelpers.h>
 
 #include <filesystem>
 #include <fstream>

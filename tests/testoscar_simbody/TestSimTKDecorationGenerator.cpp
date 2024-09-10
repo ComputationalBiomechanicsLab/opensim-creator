@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.h>
+#include <oscar_simbody/SimTKDecorationGenerator.h>
 
 #include <gtest/gtest.h>
 #include <oscar/oscar.h>

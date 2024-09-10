@@ -1,8 +1,7 @@
 #pragma once
 
-#include <OpenSimCreator/Utils/LandmarkPair3D.h>
-
 #include <oscar/Utils/StringName.h>
+#include <oscar_simbody/LandmarkPair3D.h>
 
 namespace osc
 {

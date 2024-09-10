@@ -18,8 +18,6 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/UI/Simulation/SimulationTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <OpenSimCreator/Utils/ShapeFitters.h>
-#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -59,6 +57,8 @@
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
+#include <oscar_simbody/ShapeFitters.h>
+#include <oscar_simbody/SimTKHelpers.h>
 
 #include <algorithm>
 #include <chrono>

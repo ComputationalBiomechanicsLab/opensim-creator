@@ -1,7 +1,7 @@
 #include "SimTKDecorationGenerator.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <OpenSimCreator/Utils/SimTKHelpers.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
+#include <oscar_simbody/SimTKHelpers.h>
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>

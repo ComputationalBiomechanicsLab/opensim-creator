@@ -215,10 +215,6 @@ add_library(OpenSimCreator STATIC
     Graphics/OverlayDecorationOptionFlags.h
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.h
-    Graphics/SimTKDecorationGenerator.cpp
-    Graphics/SimTKDecorationGenerator.h
-    Graphics/SimTKMeshLoader.cpp
-    Graphics/SimTKMeshLoader.h
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.h
@@ -227,14 +223,8 @@ add_library(OpenSimCreator STATIC
     Platform/RecentFiles.cpp
     Platform/RecentFiles.h
 
-    UI/Experimental/MeshHittestTab.cpp
-    UI/Experimental/MeshHittestTab.h
     UI/Experimental/PreviewExperimentalDataTab.cpp
     UI/Experimental/PreviewExperimentalDataTab.h
-    UI/Experimental/RendererGeometryShaderTab.cpp
-    UI/Experimental/RendererGeometryShaderTab.h
-    UI/Experimental/TPS2DTab.cpp
-    UI/Experimental/TPS2DTab.h
 
     UI/FrameDefinition/FrameDefinitionTab.cpp
     UI/FrameDefinition/FrameDefinitionTab.h
@@ -403,19 +393,11 @@ add_library(OpenSimCreator STATIC
     UI/SplashTab.cpp
     UI/SplashTab.h
 
-    Utils/LandmarkPair3D.cpp
-    Utils/LandmarkPair3D.h
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.h
     Utils/ParamBlock.h
     Utils/ParamBlock.cpp
     Utils/ParamValue.h
-    Utils/ShapeFitters.cpp
-    Utils/ShapeFitters.h
-    Utils/SimTKHelpers.cpp
-    Utils/SimTKHelpers.h
-    Utils/TPS3D.cpp
-    Utils/TPS3D.h
 )
 
 target_include_directories(OpenSimCreator PUBLIC
@@ -430,6 +412,7 @@ target_link_libraries(OpenSimCreator PUBLIC
     oscar_bookofshaders
     oscar_demos
     oscar_learnopengl
+    oscar_simbody
 
     osimCommon
     osimSimulation

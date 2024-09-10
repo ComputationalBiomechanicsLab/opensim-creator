@@ -11,7 +11,6 @@
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimBridge.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
@@ -50,6 +49,7 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
 #include <SDL_events.h>
 
 #include <array>

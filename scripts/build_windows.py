@@ -113,25 +113,30 @@ def build_osc(conf: BuildConfiguration):
         return
 
     with Section("build osc"):
-        test_osc_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimCreator', conf.get_osc_build_type(), 'TestOpenSimCreator')
-        test_osc_plugins_path =  os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimThirdPartyPlugins', conf.get_osc_build_type(), 'TestOpenSimThirdPartyPlugins')
-        test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar', conf.get_osc_build_type(), 'testoscar')
         other_build_args = f'--config {conf.get_osc_build_type()} -j{conf.concurrency}'
 
         # configure
         _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"} -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON')
 
         # build+run oscar test suite
+        test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar', conf.get_osc_build_type(), 'testoscar')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar {other_build_args}')
         _run(f'{test_oscar_path} --gtest_filter="-Renderer*')
 
+        # build+run testoscar_simbody suite
+        test_oscar_simbody_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar_simbody', conf.get_osc_build_type(), 'testoscar_simbody')
+        _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar_simbody {other_build_args}')
+        _run(f'{test_oscar_simbody_path} --gtest_filter="-Renderer*')
+
         # build+run third party plugin test suite
+        test_osc_plugins_path =  os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimThirdPartyPlugins', conf.get_osc_build_type(), 'TestOpenSimThirdPartyPlugins')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimThirdPartyPlugins {other_build_args}')
         _run(f'{test_osc_plugins_path}')
 
         # build+run OpenSimCreator test suite
         #
         # (--gtest_filter the tests that won't work in CI because of rendering issues)
+        test_osc_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimCreator', conf.get_osc_build_type(), 'TestOpenSimCreator')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimCreator {other_build_args}')
         _run(f'{test_osc_path} --gtest_filter="-AddComponentPopup*:RegisteredOpenSimCreatorTabs*"')
 

@@ -1,7 +1,5 @@
 #include "RendererGeometryShaderTab.h"
 
-#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
-
 #include <SDL_events.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
@@ -16,6 +14,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <memory>
 

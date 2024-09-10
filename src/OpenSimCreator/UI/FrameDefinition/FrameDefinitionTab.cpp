@@ -21,7 +21,6 @@
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <OpenSimCreator/Utils/SimTKHelpers.h>
 
 #include <IconsFontAwesome5.h>
 #include <SDL_events.h>
@@ -52,6 +51,7 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
+#include <oscar_simbody/SimTKHelpers.h>
 
 #include <cstddef>
 #include <cstdint>

@@ -6,13 +6,13 @@
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringName.h>
+#include <oscar_simbody/LandmarkPair3D.h>
 
 #include <cstddef>
 #include <optional>

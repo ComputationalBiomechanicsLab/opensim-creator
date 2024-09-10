@@ -1,7 +1,5 @@
 #include "OpenSimHelpers.h"
 
-#include <OpenSimCreator/Utils/SimTKHelpers.h>
-
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -57,6 +55,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Perf.h>
+#include <oscar_simbody/SimTKHelpers.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
 
