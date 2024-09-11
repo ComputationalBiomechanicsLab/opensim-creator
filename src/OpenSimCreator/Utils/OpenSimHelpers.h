@@ -389,6 +389,13 @@ namespace osc
         std::ostream&
     );
 
+    // writes the given model's multibody system (i.e. kinematic chain) to the output stream
+    // as a dotviz `digraph`
+    void WriteModelMultibodySystemGraphAsDotViz(
+        const OpenSim::Model&,
+        std::ostream&
+    );
+
     // returns a pointer if the given path resolves a component relative to root
     const OpenSim::Component* FindComponent(const OpenSim::Component& root, const OpenSim::ComponentPath&);
     const OpenSim::Component* FindComponent(const OpenSim::Model&, const std::string& absPath);

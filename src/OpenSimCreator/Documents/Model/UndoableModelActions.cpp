@@ -2369,3 +2369,11 @@ bool osc::ActionExportModelGraphToDotvizClipboard(const UndoableModelStatePair& 
     set_clipboard_text(std::move(ss).str());
     return true;
 }
+
+bool osc::ActionExportModelMultibodySystemAsDotviz(const UndoableModelStatePair& model)
+{
+    std::stringstream ss;
+    WriteModelMultibodySystemGraphAsDotViz(model.getModel(), ss);
+    set_clipboard_text(std::move(ss).str());
+    return true;
+}

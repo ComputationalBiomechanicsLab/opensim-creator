@@ -539,8 +539,26 @@ namespace
         std::string sourceAbsPath;
         std::string destinationAbsPath;
         std::string name;
-        GraphEdgeType type;
+        GraphEdgeType type = GraphEdgeType::ParentChild;
     };
+
+    void emitGraph(
+        const std::set<GraphEdge>& edges,
+        std::ostream& out)
+    {
+        out << "digraph Component {\n";
+        for (const auto& edge : edges) {
+            out << "    \"" << edge.sourceAbsPath << "\" -> \"" << edge.destinationAbsPath << '"';
+            if (edge.type == GraphEdgeType::ParentChild) {
+                out << " [color=grey];";
+            }
+            else if (edge.type == GraphEdgeType::Socket) {
+                out << " [label=\"" << edge.name << "\"];";
+            }
+            out << '\n';
+        }
+        out << "}";
+    }
 }
 
 void osc::WriteComponentTopologyGraphAsDotViz(
@@ -582,19 +600,24 @@ void osc::WriteComponentTopologyGraphAsDotViz(
         extractSocketEdges(c);
     }
 
-    // emit dotviz
-    out << "digraph Component {";
-    for (const auto& edge : edges) {
-        out << "    \"" << edge.sourceAbsPath << "\" -> \"" << edge.destinationAbsPath << '"';
-        if (edge.type == GraphEdgeType::ParentChild) {
-            out << " [color=grey];";
-        }
-        else if (edge.type == GraphEdgeType::Socket) {
-            out << " [label=\"" << edge.name << "\"];";
-        }
-        out << '\n';
+    // emit dotviz bitstream
+    emitGraph(edges, out);
+}
+
+void osc::WriteModelMultibodySystemGraphAsDotViz(
+    const OpenSim::Model& model,
+    std::ostream& out)
+{
+    std::set<GraphEdge> edges;
+    for (const auto& joint : model.getComponentList<OpenSim::Joint>()) {
+        edges.insert(GraphEdge{
+            .sourceAbsPath = joint.getChildFrame().findBaseFrame().getAbsolutePathString(),
+            .destinationAbsPath = joint.getParentFrame().findBaseFrame().getAbsolutePathString(),
+            .name = joint.getAbsolutePathString(),
+            .type = GraphEdgeType::Socket,
+        });
     }
-    out << "}";
+    emitGraph(edges, out);
 }
 
 std::vector<OpenSim::AbstractSocket*> osc::UpdAllSockets(OpenSim::Component& c)

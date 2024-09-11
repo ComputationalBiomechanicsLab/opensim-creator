@@ -13,6 +13,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Mousing over the barrel (i.e. non-points) of an `OpenSim::Ligament` component now coerces
   the hit to the `OpenSim::Ligament` component (previously, would select the associated
   `GeometryPath`; thanks @mrrezaie, #916).
+- The `Experimental Tools` section of the `Tools` menu now contains a `Export Multibody System as Dotviz`
+  option, which is handy for dumping the body/joint topology of a model to an external graph
+  visualizer (e.g. https://dreampuf.github.io/GraphvizOnline; thanks @mjhmilla, #920).
 - Internal: OpenSim-independent simbody code was refactored into a separate `oscar_simbody`
   library, so that we can port it independently to other platforms (e.g. wasm).
 

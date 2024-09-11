@@ -470,4 +470,8 @@ namespace osc
     bool ActionExportModelGraphToDotvizClipboard(
         const UndoableModelStatePair&
     );
+
+    bool ActionExportModelMultibodySystemAsDotviz(
+        const UndoableModelStatePair&
+    );
 }

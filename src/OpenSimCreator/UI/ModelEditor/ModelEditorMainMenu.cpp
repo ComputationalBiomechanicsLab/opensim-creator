@@ -125,6 +125,11 @@ private:
                     ActionExportModelGraphToDotvizClipboard(*m_Model);
                 }
 
+                if (ui::draw_menu_item("Export Model Multibody System as Dotviz (clipboard)")) {
+                    ActionExportModelMultibodySystemAsDotviz(*m_Model);
+                }
+                ui::draw_tooltip_if_item_hovered("Writes the model's multibody system (kinematic chain) in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
+
                 ui::end_menu();
             }
 

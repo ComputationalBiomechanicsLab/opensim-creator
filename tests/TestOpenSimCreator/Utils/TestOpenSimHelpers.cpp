@@ -314,6 +314,21 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
     ASSERT_TRUE(contains(rv, R"(label="sibling")"));
 }
 
+TEST(OpenSimHelpers, WriteModelMultibodySystemGraphAsDotViz)
+{
+    OpenSim::Model model;
+    model.addBody(new OpenSim::Body("somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{SimTK::Vec3(1.0), SimTK::Vec3(1.0)}));
+    model.buildSystem();
+
+    std::stringstream ss;
+    WriteModelMultibodySystemGraphAsDotViz(model, ss);
+
+    const std::string rv = ss.str();
+    ASSERT_FALSE(rv.empty());
+    ASSERT_TRUE(contains(rv, "digraph"));
+    ASSERT_TRUE(contains(rv, R"(somebody" ->)")) << rv;
+}
+
 TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
 {
     struct ExpectedWrap {
