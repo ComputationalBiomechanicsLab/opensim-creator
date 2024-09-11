@@ -140,7 +140,7 @@ private:
         ui::begin_child_panel(
             "mesh list",
             Vec2{ui::get_content_region_available().x, 256},
-            ImGuiChildFlags_None,
+            ui::ChildPanelFlags{},
             ui::WindowFlag::HorizontalScrollbar);
 
         if (!m_RecentUserChoices.empty())

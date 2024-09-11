@@ -110,7 +110,7 @@ private:
             ui::draw_help_marker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ui::next_column();
 
-            ui::begin_child_panel("join targets", Vec2{0, 128.0f}, ImGuiChildFlags_Border, ui::WindowFlag::HorizontalScrollbar);
+            ui::begin_child_panel("join targets", Vec2{0, 128.0f}, ui::ChildPanelFlag::Border, ui::WindowFlag::HorizontalScrollbar);
             for (const OpenSim::PhysicalFrame& pf : model.getComponentList<OpenSim::PhysicalFrame>())
             {
                 if (ui::draw_selectable(pf.getName(), &pf == selectedPf))

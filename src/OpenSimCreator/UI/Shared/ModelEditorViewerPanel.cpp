@@ -511,7 +511,7 @@ private:
             // buttons, widgets, etc.)
             ui::set_next_panel_pos(m_State.viewportRect.p1);
             const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ImGuiChildFlags_None, windowFlags))
+            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ui::ChildPanelFlags{}, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ui::end_child_panel();

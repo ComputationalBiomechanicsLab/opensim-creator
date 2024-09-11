@@ -270,7 +270,14 @@ namespace osc::ui
     bool begin_panel(CStringView name, bool* p_open = nullptr, WindowFlags = {});
     void end_panel();
 
-    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ImGuiChildFlags child_flags = 0, WindowFlags panel_flags = {});
+    enum class ChildPanelFlag {
+        None   = 0,
+        Border = 1<<0,
+        NUM_FLAGS = 1,
+    };
+    using ChildPanelFlags = Flags<ChildPanelFlag>;
+
+    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ChildPanelFlags child_flags = {}, WindowFlags panel_flags = {});
     void end_child_panel();
 
     void close_current_popup();

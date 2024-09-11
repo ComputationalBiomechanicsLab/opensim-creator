@@ -289,6 +289,20 @@ struct osc::Converter<ui::WindowFlags, ImGuiWindowFlags> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::ChildPanelFlags, ImGuiChildFlags> final {
+    ImGuiChildFlags operator()(ui::ChildPanelFlags flags) const
+    {
+        static_assert(num_flags<ui::ChildPanelFlag>() == 1);
+
+        ImGuiChildFlags rv = ImGuiChildFlags_None;
+        if (flags & ui::ChildPanelFlag::Border) {
+            rv |= ImGuiChildFlags_Border;
+        }
+        return rv;
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -592,9 +606,9 @@ void osc::ui::end_panel()
     ImGui::End();
 }
 
-bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ImGuiChildFlags child_flags, WindowFlags panel_flags)
+bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ChildPanelFlags child_flags, WindowFlags panel_flags)
 {
-    return ImGui::BeginChild(str_id.c_str(), size, child_flags, to<ImGuiWindowFlags>(panel_flags));
+    return ImGui::BeginChild(str_id.c_str(), size, to<ImGuiChildFlags>(child_flags), to<ImGuiWindowFlags>(panel_flags));
 }
 
 void osc::ui::end_child_panel()

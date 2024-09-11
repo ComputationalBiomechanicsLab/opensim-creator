@@ -223,7 +223,7 @@ private:
         ui::begin_child_panel(
             "##componentnavigatorvieweritems",
             Vec2{0.0, 0.0},
-            ImGuiChildFlags_None,
+            ui::ChildPanelFlags{},
             ui::WindowFlag::NoBackground
         );
 
