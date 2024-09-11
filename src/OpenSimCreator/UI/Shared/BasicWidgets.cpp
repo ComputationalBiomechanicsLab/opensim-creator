@@ -1143,7 +1143,7 @@ bool osc::DrawViewerTopButtonRow(
     edited = vizAidsButton.on_draw() || edited;
 
     ui::same_line();
-    ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+    ui::draw_vertical_separator();
     ui::same_line();
 
     // caller-provided extra buttons (usually, context-dependent)
@@ -1357,7 +1357,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
     if (!HasInputFileName(model.getModel()))
     {
-        ui::push_item_flag(ImGuiItemFlags_Disabled, true);
+        ui::push_item_flag(ui::ItemFlag::Disabled, true);
         ui::push_style_var(ImGuiStyleVar_Alpha, 0.5f * ui::get_style_alpha());
     }
 
@@ -1381,7 +1381,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
     int styleVarsPushed = 0;
     if (!model.canUndo())
     {
-        ui::push_item_flag(ImGuiItemFlags_Disabled, true);
+        ui::push_item_flag(ui::ItemFlag::Disabled, true);
         ++itemFlagsPushed;
         ui::push_style_var(ImGuiStyleVar_Alpha, 0.5f * ui::get_style_alpha());
         ++styleVarsPushed;
@@ -1404,7 +1404,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
     int styleVarsPushed = 0;
     if (!model.canRedo())
     {
-        ui::push_item_flag(ImGuiItemFlags_Disabled, true);
+        ui::push_item_flag(ui::ItemFlag::Disabled, true);
         ++itemFlagsPushed;
         ui::push_style_var(ImGuiStyleVar_Alpha, 0.5f * ui::get_style_alpha());
         ++styleVarsPushed;

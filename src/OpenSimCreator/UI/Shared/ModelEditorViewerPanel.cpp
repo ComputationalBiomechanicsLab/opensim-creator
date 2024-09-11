@@ -182,7 +182,7 @@ namespace
             }
 
             ui::same_line();
-            ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+            ui::draw_vertical_separator();
             ui::same_line();
 
             // draw translate/rotate/scale selector

@@ -353,6 +353,23 @@ struct osc::Converter<ui::HoveredFlags, ImGuiHoveredFlags> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::ItemFlags, ImGuiItemFlags> final {
+    ImGuiItemFlags operator()(ui::ItemFlags flags) const
+    {
+        static_assert(num_flags<ui::ItemFlag>() == 2);
+
+        ImGuiItemFlags rv = ImGuiItemFlags_None;
+        if (flags & ui::ItemFlag::Disabled) {
+            rv |= ImGuiItemFlags_Disabled;
+        }
+        if (flags & ui::ItemFlag::Inputable) {
+            rv |= ImGuiItemFlags_Inputable;
+        }
+        return rv;
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -801,11 +818,6 @@ ui::ID osc::ui::get_id(std::string_view str_id)
     return ID{ImGui::GetID(str_id.data(), str_id.data() + str_id.size())};
 }
 
-ImGuiItemFlags osc::ui::get_item_flags()
-{
-    return ImGui::GetItemFlags();
-}
-
 void osc::ui::set_next_item_size(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
 {
     ImGui::ItemSize(ImRect{r.p1, r.p2});
@@ -816,19 +828,14 @@ bool osc::ui::add_item(Rect bounds, ID id)
     return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id.value());
 }
 
-bool osc::ui::is_item_hoverable(Rect bounds, ID id, ImGuiItemFlags item_flags)
+bool osc::ui::is_item_hoverable(Rect bounds, ID id)
 {
-    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id.value(), item_flags);
+    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id.value(), ImGui::GetItemFlags());
 }
 
 void osc::ui::draw_separator()
 {
     ImGui::Separator();
-}
-
-void osc::ui::draw_separator(ImGuiSeparatorFlags flags)
-{
-    ImGui::SeparatorEx(flags);
 }
 
 void osc::ui::start_new_line()
@@ -866,11 +873,6 @@ bool osc::ui::is_key_down(ImGuiKey key)
     return ImGui::IsKeyDown(key);
 }
 
-ImGuiStyle& osc::ui::get_style()
-{
-    return ImGui::GetStyle();
-}
-
 Color osc::ui::get_style_color(ImGuiCol color)
 {
     return Color{ImGui::GetStyleColorVec4(color)};
@@ -878,32 +880,32 @@ Color osc::ui::get_style_color(ImGuiCol color)
 
 Vec2 osc::ui::get_style_frame_padding()
 {
-    return get_style().FramePadding;
+    return ImGui::GetStyle().FramePadding;
 }
 
 float osc::ui::get_style_frame_border_size()
 {
-    return get_style().FrameBorderSize;
+    return ImGui::GetStyle().FrameBorderSize;
 }
 
 Vec2 osc::ui::get_style_panel_padding()
 {
-    return get_style().WindowPadding;
+    return ImGui::GetStyle().WindowPadding;
 }
 
 Vec2 osc::ui::get_style_item_spacing()
 {
-    return get_style().ItemSpacing;
+    return ImGui::GetStyle().ItemSpacing;
 }
 
 Vec2 osc::ui::get_style_item_inner_spacing()
 {
-    return get_style().ItemInnerSpacing;
+    return ImGui::GetStyle().ItemInnerSpacing;
 }
 
 float osc::ui::get_style_alpha()
 {
-    return get_style().Alpha;
+    return ImGui::GetStyle().Alpha;
 }
 
 ImGuiIO& osc::ui::get_io()
@@ -981,9 +983,9 @@ void osc::ui::set_next_item_open(bool is_open)
     ImGui::SetNextItemOpen(is_open);
 }
 
-void osc::ui::push_item_flag(ImGuiItemFlags option, bool enabled)
+void osc::ui::push_item_flag(ItemFlags flags, bool enabled)
 {
-    ImGui::PushItemFlag(option, enabled);
+    ImGui::PushItemFlag(to<ImGuiItemFlags>(flags), enabled);
 }
 
 void osc::ui::pop_item_flag()
@@ -1136,7 +1138,7 @@ void osc::ui::apply_dark_theme()
     // see: https://github.com/ocornut/imgui/issues/707
     // this one: https://github.com/ocornut/imgui/issues/707#issuecomment-512669512
 
-    auto& style = ui::get_style();
+    auto& style = ImGui::GetStyle();
 
     style.FrameRounding = 0.0f;
     style.GrabRounding = 20.0f;
@@ -1966,7 +1968,7 @@ bool osc::ui::draw_combobox(
 
 void osc::ui::draw_vertical_separator()
 {
-    ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+    ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 }
 
 void osc::ui::draw_same_line_with_vertical_separator()

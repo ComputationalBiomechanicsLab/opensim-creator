@@ -64,13 +64,13 @@ private:
         drawScaleFactorGroup();
 
         ui::same_line();
-        ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+        ui::draw_vertical_separator();
         ui::same_line();
 
         m_Scrubber.onDraw();
 
         ui::same_line();
-        ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+        ui::draw_vertical_separator();
         ui::same_line();
 
         drawSimulationStatusGroup();

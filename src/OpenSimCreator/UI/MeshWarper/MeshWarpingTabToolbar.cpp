@@ -44,7 +44,7 @@ private:
         drawSaveLandmarksButton();
         ui::same_line();
 
-        ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+        ui::draw_vertical_separator();
         ui::same_line();
 
         // undo/redo-related stuff
@@ -53,14 +53,14 @@ private:
         m_RedoButton.onDraw();
         ui::same_line();
 
-        ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+        ui::draw_vertical_separator();
         ui::same_line();
 
         // camera stuff
         drawCameraLockCheckbox();
         ui::same_line();
 
-        ui::draw_separator(ImGuiSeparatorFlags_Vertical);
+        ui::draw_vertical_separator();
         ui::same_line();
 
         drawVisualAidsMenuButton();

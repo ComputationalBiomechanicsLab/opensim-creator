@@ -358,13 +358,19 @@ namespace osc::ui
 
     ID get_id(std::string_view);
 
-    ImGuiItemFlags get_item_flags();
+    enum class ItemFlag {
+        None      = 0,
+        Disabled  = 1<<0,
+        Inputable = 1<<1,
+        NUM_FLAGS =    2,
+    };
+    using ItemFlags = Flags<ItemFlag>;
+
     void set_next_item_size(Rect);  // note: ImGui API assumes cursor is located at `p1` already
     bool add_item(Rect bounds, ID);
-    bool is_item_hoverable(Rect bounds, ID, ImGuiItemFlags item_flags);
+    bool is_item_hoverable(Rect bounds, ID);
 
     void draw_separator();
-    void draw_separator(ImGuiSeparatorFlags);
 
     void start_new_line();
 
@@ -376,7 +382,6 @@ namespace osc::ui
     bool is_key_released(ImGuiKey);
     bool is_key_down(ImGuiKey);
 
-    ImGuiStyle& get_style();
     Color get_style_color(ImGuiCol);
     Vec2 get_style_frame_padding();
     float get_style_frame_border_size();
@@ -406,7 +411,7 @@ namespace osc::ui
 
     void set_next_item_width(float item_width);
     void set_next_item_open(bool is_open);
-    void push_item_flag(ImGuiItemFlags option, bool enabled);
+    void push_item_flag(ItemFlags flags, bool enabled);
     void pop_item_flag();
     bool is_item_clicked(MouseButton = MouseButton::Left);
     bool is_item_hovered(HoveredFlags = {});
