@@ -311,15 +311,36 @@ namespace osc::ui
     Vec2 get_cursor_screen_pos();
     void set_cursor_screen_pos(Vec2);
 
-    void set_next_panel_pos(Vec2, ImGuiCond = 0, Vec2 pivot = {});
+    enum class Conditional {
+        Always,
+        Once,
+        Appearing,
+        NUM_OPTIONS,
+    };
 
-    void set_next_panel_size(Vec2 size, ImGuiCond cond = 0);
+    void set_next_panel_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
+
+    void set_next_panel_size(Vec2 size, Conditional = Conditional::Always);
 
     void set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max);
 
     void set_next_panel_bg_alpha(float alpha);
 
-    bool is_panel_hovered(ImGuiHoveredFlags flags = 0);
+    enum class HoveredFlag {
+        None                         = 0,
+        AllowWhenDisabled            = 1<<0,
+        AllowWhenBlockedByPopup      = 1<<1,
+        AllowWhenBlockedByActiveItem = 1<<2,
+        AllowWhenOverlapped          = 1<<3,
+        DelayNormal                  = 1<<4,
+        ForTooltip                   = 1<<5,
+        RootAndChildWindows          = 1<<6,
+        ChildWindows                 = 1<<7,
+        NUM_FLAGS                    =    8,
+    };
+    using HoveredFlags = Flags<HoveredFlag>;
+
+    bool is_panel_hovered(HoveredFlags = {});
 
     void begin_disabled(bool disabled = true);
     void end_disabled();
@@ -388,7 +409,7 @@ namespace osc::ui
     void push_item_flag(ImGuiItemFlags option, bool enabled);
     void pop_item_flag();
     bool is_item_clicked(MouseButton = MouseButton::Left);
-    bool is_item_hovered(ImGuiHoveredFlags flags = 0);
+    bool is_item_hovered(HoveredFlags = {});
     bool is_item_deactivated_after_edit();
 
     Vec2 get_item_topleft();
@@ -556,7 +577,7 @@ namespace osc::ui
     // draws an overlay tooltip (content only) if the last item is hovered
     void draw_tooltip_body_only_if_item_hovered(
         CStringView,
-        ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
+        HoveredFlags = HoveredFlag::ForTooltip
     );
 
     // draws an overlay tooltip with a header and description
@@ -566,7 +587,7 @@ namespace osc::ui
     void draw_tooltip_if_item_hovered(
         CStringView header,
         CStringView description = {},
-        ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip
+        HoveredFlags = HoveredFlag::ForTooltip
     );
 
     // draws a help text marker `"(?)"` and display a tooltip when the user hovers over it

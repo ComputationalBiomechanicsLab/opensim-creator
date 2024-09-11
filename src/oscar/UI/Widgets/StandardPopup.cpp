@@ -61,13 +61,13 @@ bool osc::StandardPopup::impl_begin_popup()
         if (maybe_position_) {
             ui::set_next_panel_pos(
                 static_cast<Vec2>(*maybe_position_),
-                ImGuiCond_Appearing
+                ui::Conditional::Appearing
             );
         }
         else {
             ui::set_next_panel_pos(
                 ui::get_main_viewport_center(),
-                ImGuiCond_Appearing,
+                ui::Conditional::Appearing,
                 Vec2{0.5f, 0.5f}
             );
         }
@@ -80,7 +80,7 @@ bool osc::StandardPopup::impl_begin_popup()
         if (not (popup_flags_ & ui::WindowFlag::AlwaysAutoResize)) {
             ui::set_next_panel_size(
                 Vec2{dimensions_},
-                ImGuiCond_Appearing
+                ui::Conditional::Appearing
             );
         }
         else {
@@ -111,7 +111,7 @@ bool osc::StandardPopup::impl_begin_popup()
         if (maybe_position_) {
             ui::set_next_panel_pos(
                 static_cast<Vec2>(*maybe_position_),
-                ImGuiCond_Appearing
+                ui::Conditional::Appearing
             );
         }
 

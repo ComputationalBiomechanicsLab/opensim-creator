@@ -47,7 +47,7 @@ public:
             }
 
             // draw tooltip (if hovered)
-            if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+            if (ui::is_item_hovered(ui::HoveredFlag::DelayNormal)) {
                 ui::draw_tooltip(
                     "Add an OpenSim::Body into the model",
                     "An OpenSim::Body is a PhysicalFrame (reference frame) with an associated inertia specified by its mass, center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass");
@@ -83,7 +83,7 @@ private:
                     m_EditorAPI->pushPopup(std::move(popup));
                 }
 
-                if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+                if (ui::is_item_hovered(ui::HoveredFlag::DelayNormal)) {
                     ui::draw_tooltip(entry.name(), entry.description());
                 }
             }
@@ -91,7 +91,7 @@ private:
             ui::end_menu();
         }
 
-        if (ui::is_item_hovered(ImGuiHoveredFlags_DelayNormal)) {
+        if (ui::is_item_hovered(ui::HoveredFlag::DelayNormal)) {
             ui::draw_tooltip(registry.name(), registry.description());
         }
     }

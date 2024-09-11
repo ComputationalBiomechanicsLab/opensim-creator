@@ -122,7 +122,7 @@ namespace
     void DrawEntry(const UIState& state, const T& c)
     {
         DrawEntryIconAndText(state, c);
-        if (ui::is_item_hovered(ImGuiHoveredFlags_ForTooltip)) {
+        if (ui::is_item_hovered(ui::HoveredFlag::ForTooltip)) {
             ui::begin_tooltip_nowrap();
             DrawTooltipContent(state, c);
             ui::end_tooltip_nowrap();

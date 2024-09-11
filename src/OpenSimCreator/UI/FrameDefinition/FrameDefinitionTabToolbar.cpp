@@ -61,7 +61,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
     {
         ui::end_disabled();
     }
-    if (ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenDisabled))
+    if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled))
     {
         drawExportToOpenSimTooltipContent(numBodies);
     }

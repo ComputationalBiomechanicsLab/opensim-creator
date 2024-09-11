@@ -188,7 +188,7 @@ private:
         if (disabledReason)
         {
             ui::end_disabled();
-            if (ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenDisabled))
+            if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled))
             {
                 ui::draw_tooltip_body_only(*disabledReason);
             }

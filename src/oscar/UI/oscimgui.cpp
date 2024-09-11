@@ -303,6 +303,56 @@ struct osc::Converter<ui::ChildPanelFlags, ImGuiChildFlags> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::Conditional, ImGuiCond> final {
+    ImGuiCond operator()(ui::Conditional conditional) const
+    {
+        static_assert(num_options<ui::Conditional>() == 3);
+
+        switch (conditional) {
+        case ui::Conditional::Always:    return ImGuiCond_Always;
+        case ui::Conditional::Once:      return ImGuiCond_Once;
+        case ui::Conditional::Appearing: return ImGuiCond_Appearing;
+        default:                         return ImGuiCond_Always;
+        }
+    }
+};
+
+template<>
+struct osc::Converter<ui::HoveredFlags, ImGuiHoveredFlags> final {
+    ImGuiHoveredFlags operator()(ui::HoveredFlags flags) const
+    {
+        static_assert(num_flags<ui::HoveredFlag>() == 8);
+
+        ImGuiHoveredFlags rv = ImGuiHoveredFlags_None;
+        if (flags & ui::HoveredFlag::AllowWhenDisabled) {
+            rv |= ImGuiHoveredFlags_AllowWhenDisabled;
+        }
+        if (flags & ui::HoveredFlag::AllowWhenBlockedByPopup) {
+            rv |= ImGuiHoveredFlags_AllowWhenBlockedByPopup;
+        }
+        if (flags & ui::HoveredFlag::AllowWhenBlockedByActiveItem) {
+            rv |= ImGuiHoveredFlags_AllowWhenBlockedByActiveItem;
+        }
+        if (flags & ui::HoveredFlag::AllowWhenOverlapped) {
+            rv |= ImGuiHoveredFlags_AllowWhenOverlapped;
+        }
+        if (flags & ui::HoveredFlag::DelayNormal) {
+            rv |= ImGuiHoveredFlags_DelayNormal;
+        }
+        if (flags & ui::HoveredFlag::ForTooltip) {
+            rv |= ImGuiHoveredFlags_ForTooltip;
+        }
+        if (flags & ui::HoveredFlag::RootAndChildWindows) {
+            rv |= ImGuiHoveredFlags_RootAndChildWindows;
+        }
+        if (flags & ui::HoveredFlag::ChildWindows) {
+            rv |= ImGuiHoveredFlags_ChildWindows;
+        }
+        return rv;
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -676,14 +726,14 @@ void osc::ui::set_cursor_screen_pos(Vec2 pos)
     ImGui::SetCursorScreenPos(pos);
 }
 
-void osc::ui::set_next_panel_pos(Vec2 pos, ImGuiCond cond, Vec2 pivot)
+void osc::ui::set_next_panel_pos(Vec2 pos, Conditional conditional, Vec2 pivot)
 {
-    ImGui::SetNextWindowPos(pos, cond, pivot);
+    ImGui::SetNextWindowPos(pos, to<ImGuiCond>(conditional), pivot);
 }
 
-void osc::ui::set_next_panel_size(Vec2 size, ImGuiCond cond)
+void osc::ui::set_next_panel_size(Vec2 size, Conditional conditional)
 {
-    ImGui::SetNextWindowSize(size, cond);
+    ImGui::SetNextWindowSize(size, to<ImGuiCond>(conditional));
 }
 
 void osc::ui::set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max)
@@ -696,9 +746,9 @@ void osc::ui::set_next_panel_bg_alpha(float alpha)
     ImGui::SetNextWindowBgAlpha(alpha);
 }
 
-bool osc::ui::is_panel_hovered(ImGuiHoveredFlags flags)
+bool osc::ui::is_panel_hovered(HoveredFlags flags)
 {
-    return ImGui::IsWindowHovered(flags);
+    return ImGui::IsWindowHovered(to<ImGuiHoveredFlags>(flags));
 }
 
 void osc::ui::begin_disabled(bool disabled)
@@ -946,9 +996,9 @@ bool osc::ui::is_item_clicked(MouseButton mouse_button)
     return ImGui::IsItemClicked(to<ImGuiMouseButton>(mouse_button));
 }
 
-bool osc::ui::is_item_hovered(ImGuiHoveredFlags flags)
+bool osc::ui::is_item_hovered(HoveredFlags flags)
 {
-    return ImGui::IsItemHovered(flags);
+    return ImGui::IsItemHovered(to<ImGuiHoveredFlags>(flags));
 }
 
 bool osc::ui::is_item_deactivated_after_edit()
@@ -1581,7 +1631,7 @@ void osc::ui::draw_tooltip_body_only(CStringView content)
 
 void osc::ui::draw_tooltip_body_only_if_item_hovered(
     CStringView content,
-    ImGuiHoveredFlags flags)
+    HoveredFlags flags)
 {
     if (ui::is_item_hovered(flags)) {
         draw_tooltip_body_only(content);
@@ -1602,7 +1652,7 @@ void osc::ui::draw_tooltip(CStringView header, CStringView description)
 void osc::ui::draw_tooltip_if_item_hovered(
     CStringView header,
     CStringView description,
-    ImGuiHoveredFlags flags)
+    HoveredFlags flags)
 {
     if (ui::is_item_hovered(flags)) {
         draw_tooltip(header, description);
@@ -1612,13 +1662,13 @@ void osc::ui::draw_tooltip_if_item_hovered(
 void osc::ui::draw_help_marker(CStringView header, CStringView desc)
 {
     ui::draw_text_disabled("(?)");
-    draw_tooltip_if_item_hovered(header, desc, ImGuiHoveredFlags_None);
+    draw_tooltip_if_item_hovered(header, desc);
 }
 
 void osc::ui::draw_help_marker(CStringView content)
 {
     ui::draw_text_disabled("(?)");
-    draw_tooltip_if_item_hovered(content, {}, ImGuiHoveredFlags_None);
+    draw_tooltip_if_item_hovered(content, {});
 }
 
 bool osc::ui::draw_string_input(CStringView label, std::string& edited_string, TextInputFlags flags)

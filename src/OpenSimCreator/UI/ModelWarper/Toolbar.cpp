@@ -43,7 +43,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         ui::end_disabled();
     }
 
-    if (ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+    if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
         ui::begin_tooltip();
         ui::draw_tooltip_header_text("Warp Model");
         ui::draw_tooltip_description_spacer();

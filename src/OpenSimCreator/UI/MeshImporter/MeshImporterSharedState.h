@@ -419,7 +419,7 @@ namespace osc::mi
             ui::draw_image(scene_renderer_.upd_render_texture());
 
             // handle hittesting, etc.
-            setIsRenderHovered(ui::is_item_hovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup));
+            setIsRenderHovered(ui::is_item_hovered(ui::HoveredFlag::AllowWhenBlockedByPopup));
         }
 
         bool isRenderHovered() const

@@ -414,14 +414,14 @@ private:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            const bool windowHovered = ui::is_panel_hovered(ImGuiHoveredFlags_ChildWindows);
+            const bool windowHovered = ui::is_panel_hovered(ui::HoveredFlag::ChildWindows);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
-            const bool renderHoveredIgnoringOverlap = ui::is_item_hovered(
-                ImGuiHoveredFlags_AllowWhenBlockedByActiveItem |
-                ImGuiHoveredFlags_AllowWhenOverlapped
-            );
+            const bool renderHoveredIgnoringOverlap = ui::is_item_hovered({
+                ui::HoveredFlag::AllowWhenBlockedByActiveItem,
+                ui::HoveredFlag::AllowWhenOverlapped,
+            });
 
             m_RenderIsHovered = windowHovered && renderHoveredIgnoringOverlap;
         }
