@@ -407,7 +407,8 @@ namespace osc::ui
     bool begin_menu_bar();
     void end_menu_bar();
 
-    void set_mouse_cursor(ImGuiMouseCursor cursor_type);
+    void hide_mouse_cursor();
+    void show_mouse_cursor();
 
     void set_next_item_width(float item_width);
     void set_next_item_open(bool is_open);

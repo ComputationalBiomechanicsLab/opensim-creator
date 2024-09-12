@@ -154,11 +154,11 @@ private:
         // handle mouse capturing
         if (is_mouse_captured_) {
             ui::update_camera_from_all_inputs(camera_, camera_eulers);
-            ui::set_mouse_cursor(ImGuiMouseCursor_None);
+            ui::hide_mouse_cursor();
             App::upd().set_show_cursor(false);
         }
         else {
-            ui::set_mouse_cursor(ImGuiMouseCursor_Arrow);
+            ui::show_mouse_cursor();
             App::upd().set_show_cursor(true);
         }
 

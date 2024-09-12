@@ -72,15 +72,13 @@ public:
     void onDraw()
     {
         // handle mouse capturing
-        if (m_IsMouseCaptured)
-        {
+        if (m_IsMouseCaptured) {
             ui::update_camera_from_all_inputs(m_SceneCamera, m_CameraEulers);
-            ui::set_mouse_cursor(ImGuiMouseCursor_None);
+            ui::hide_mouse_cursor();
             App::upd().set_show_cursor(false);
         }
-        else
-        {
-            ui::set_mouse_cursor(ImGuiMouseCursor_Arrow);
+        else {
+            ui::show_mouse_cursor();
             App::upd().set_show_cursor(true);
         }
         m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());

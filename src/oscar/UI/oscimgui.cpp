@@ -968,9 +968,14 @@ void osc::ui::end_menu_bar()
     ImGui::EndMenuBar();
 }
 
-void osc::ui::set_mouse_cursor(ImGuiMouseCursor cursor_type)
+void osc::ui::hide_mouse_cursor()
 {
-    ImGui::SetMouseCursor(cursor_type);
+    ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+}
+
+void osc::ui::show_mouse_cursor()
+{
+    ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 }
 
 void osc::ui::set_next_item_width(float item_width)
