@@ -134,6 +134,7 @@ namespace osc
     template<typename TEnum>
     concept FlagsEnum = requires(TEnum v) {
         requires std::is_enum_v<TEnum>;
+        requires std::is_unsigned_v<std::underlying_type_t<TEnum>>;
         TEnum::NUM_FLAGS;
     };
 

@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstdint>
 
 using namespace osc;
 
@@ -221,4 +222,13 @@ TEST(Flags, without_doesnt_set_already_unset_flag)
     const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
     const Flags<ExampleDenseFlag> flags_after = flags.without(ExampleDenseFlag::Flag2);
     ASSERT_EQ(flags, flags_after);
+}
+
+TEST(Flags, has_a_to_underlying_specialization)
+{
+    enum class Some16BitEnum : uint16_t {};
+    static_assert(std::is_same_v<decltype(to_underlying(Flags<Some16BitEnum>{})), uint16_t>);
+
+    enum class SomeSigned32BitEnum : int32_t {};
+    static_assert(std::is_same_v<decltype(to_underlying(Flags<SomeSigned32BitEnum>{})), int32_t>);
 }

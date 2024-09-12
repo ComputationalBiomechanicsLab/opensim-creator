@@ -16,7 +16,9 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/VecFunctions.h>
+#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ui_graphics_backend.h>
+#include <oscar/Utils/Flags.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -28,11 +30,14 @@
 #include <ImGuizmo.h>
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <concepts>
 #include <functional>
+#include <initializer_list>
 #include <ranges>
 #include <string_view>
+#include <utility>
 
 using namespace osc;
 using namespace osc::literals;
@@ -83,6 +88,39 @@ namespace
         const Color saturated = saturate(brightened);
         return ui::to_ImU32(saturated);
     }
+
+    // maps between ui:: flag types and imgui flag types
+    template<FlagsEnum SourceFlagType, typename DestinationImGuiFlagsType>
+    requires std::is_enum_v<DestinationImGuiFlagsType> or std::is_integral_v<DestinationImGuiFlagsType>
+    class FlagMapper {
+    public:
+        constexpr FlagMapper(std::initializer_list<std::pair<SourceFlagType, DestinationImGuiFlagsType>> mappings)
+        {
+            if (mappings.size() != num_flags<SourceFlagType>()) {
+                throw std::runtime_error{"invalid number of flags passed to a FlagMapper"};
+            }
+
+            for (const auto& [source_flag, destination_flag] : mappings) {
+                const auto source_index = std::countr_zero(std::bit_floor(cpp23::to_underlying(source_flag)));
+                lut_[source_index] = destination_flag;
+            }
+        }
+
+        constexpr DestinationImGuiFlagsType operator()(Flags<SourceFlagType> flags) const
+        {
+            static_assert(std::is_unsigned_v<std::underlying_type_t<SourceFlagType>>);
+
+            DestinationImGuiFlagsType rv{};
+            for (auto v = to_underlying(flags); v;) {
+                const size_t index = std::countr_zero(v);
+                rv |= lut_[index];
+                v ^= 1<<index;
+            }
+            return rv;
+        }
+    private:
+        std::array<DestinationImGuiFlagsType, num_flags<SourceFlagType>()> lut_{};
+    };
 }
 
 template<>
@@ -114,46 +152,26 @@ struct osc::Converter<ui::GizmoMode, ImGuizmo::MODE> final {
 
 template<>
 struct osc::Converter<ui::TreeNodeFlags, ImGuiTreeNodeFlags> final {
-    ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const
-    {
-        static_assert(num_flags<ui::TreeNodeFlag>() == 4);
-
-        ImGuiTreeNodeFlags rv = 0;
-        if (flags & ui::TreeNodeFlag::DefaultOpen) {
-            rv |= ImGuiTreeNodeFlags_DefaultOpen;
-        }
-        if (flags & ui::TreeNodeFlag::OpenOnArrow) {
-            rv |= ImGuiTreeNodeFlags_OpenOnArrow;
-        }
-        if (flags & ui::TreeNodeFlag::Leaf) {
-            rv |= ImGuiTreeNodeFlags_Leaf;
-        }
-        if (flags & ui::TreeNodeFlag::Bullet) {
-            rv |= ImGuiTreeNodeFlags_Bullet;
-        }
-        return rv;
-    }
+    ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const { return c_mappings_(flags); }
+private:
+    static constexpr FlagMapper<ui::TreeNodeFlag, ImGuiTreeNodeFlags> c_mappings_ = {
+        {ui::TreeNodeFlag::DefaultOpen, ImGuiTreeNodeFlags_DefaultOpen},
+        {ui::TreeNodeFlag::OpenOnArrow, ImGuiTreeNodeFlags_OpenOnArrow},
+        {ui::TreeNodeFlag::Leaf,        ImGuiTreeNodeFlags_Leaf},
+        {ui::TreeNodeFlag::Bullet,      ImGuiTreeNodeFlags_Bullet},
+    };
 };
 
 template<>
 struct osc::Converter<ui::TabItemFlags, ImGuiTabItemFlags> final {
-    ImGuiTabItemFlags operator()(ui::TabItemFlags flags) const
-    {
-        ImGuiTabItemFlags rv = 0;
-        if (flags & ui::TabItemFlag::NoReorder) {
-            rv |= ImGuiTabItemFlags_NoReorder;
-        }
-        if (flags & ui::TabItemFlag::NoCloseButton) {
-            rv |= ImGuiTabItemFlags_NoCloseButton;
-        }
-        if (flags & ui::TabItemFlag::UnsavedDocument) {
-            rv |= ImGuiTabItemFlags_UnsavedDocument;
-        }
-        if (flags & ui::TabItemFlag::SetSelected) {
-            rv |= ImGuiTabItemFlags_SetSelected;
-        }
-        return rv;
-    }
+    ImGuiTabItemFlags operator()(ui::TabItemFlags flags) const { return c_mappings_(flags); }
+private:
+    static constexpr FlagMapper<ui::TabItemFlag, ImGuiTabItemFlags> c_mappings_ = {
+        {ui::TabItemFlag::NoReorder,       ImGuiTabItemFlags_NoReorder},
+        {ui::TabItemFlag::NoCloseButton,   ImGuiTabItemFlags_NoCloseButton},
+        {ui::TabItemFlag::UnsavedDocument, ImGuiTabItemFlags_UnsavedDocument},
+        {ui::TabItemFlag::SetSelected,     ImGuiTabItemFlags_SetSelected},
+    };
 };
 
 template<>

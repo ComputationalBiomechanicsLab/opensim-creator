@@ -19,6 +19,6 @@ TEST(num_options, ReturnsValueOfNUMOPTIONSWhenCustomized)
 
 TEST(num_flags, ReturnsValueOfNUMFLAGSEnumMember)
 {
-    enum class SomeFlagsEnum { First = 1<<0, Second = 1<<1, Third = 1<<2, NUM_FLAGS = 3};
+    enum class SomeFlagsEnum : unsigned { First = 1<<0, Second = 1<<1, Third = 1<<2, NUM_FLAGS = 3};
     static_assert(num_flags<SomeFlagsEnum>() == 3);
 }

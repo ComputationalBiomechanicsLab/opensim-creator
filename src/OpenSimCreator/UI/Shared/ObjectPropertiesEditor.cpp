@@ -1578,7 +1578,7 @@ namespace
 
         // create a type-erased entry from a known, concrete, editor
         template<std::derived_from<IPropertyEditor> ConcretePropertyEditor>
-        constexpr static PropertyEditorRegistryEntry make_entry()
+        static constexpr PropertyEditorRegistryEntry make_entry()
         {
             const auto testerFn = ConcretePropertyEditor::IsCompatibleWith;
             const auto typeErasedCtorFn = [](PropertyEditorArgs args) -> std::unique_ptr<IPropertyEditor>

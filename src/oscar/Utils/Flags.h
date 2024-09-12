@@ -75,9 +75,21 @@ namespace osc
             return Flags{value_ & ~static_cast<underlying_type>(flag)};
         }
 
+        constexpr underlying_type underlying_value() const
+        {
+            return value_;
+        }
+
     private:
         explicit constexpr Flags(underlying_type value) : value_{value} {}
 
         underlying_type value_{};
     };
+
+    template<class TEnum>
+    requires std::is_enum_v<TEnum>
+    constexpr auto to_underlying(const Flags<TEnum>& e) noexcept
+    {
+        return e.underlying_value();
+    }
 }

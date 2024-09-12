@@ -104,7 +104,7 @@ namespace osc::ui
 
     bool draw_text_link(CStringView);
 
-    enum class TreeNodeFlag {
+    enum class TreeNodeFlag : unsigned {
         None        = 0,
         DefaultOpen = 1<<0,
         OpenOnArrow = 1<<1,  // only open when clicking on the arrow part
@@ -143,12 +143,13 @@ namespace osc::ui
     bool begin_tab_bar(CStringView str_id);
     void end_tab_bar();
 
-    enum class TabItemFlag {
+    enum class TabItemFlag : unsigned {
         None            = 0,
         NoReorder       = 1<<0,  // disable reordering this tab or having another tab cross over this tab
         NoCloseButton   = 1<<1,  // track whether `p_open` was set or not (we'll need this info on the next frame to recompute ContentWidth during layout)
         UnsavedDocument = 1<<2,  // display a dot next to the title + (internally) set `ImGuiTabItemFlags_NoAssumedClosure`
         SetSelected     = 1<<3,  // trigger flag to programmatically make the tab selected when calling `begin_tab_item`
+        NUM_FLAGS       =    4,
     };
     using TabItemFlags = Flags<TabItemFlag>;
 
@@ -186,7 +187,7 @@ namespace osc::ui
     bool is_mouse_down(MouseButton);
     bool is_mouse_dragging(MouseButton, float lock_threshold = -1.0f);
 
-    enum class SliderFlag {
+    enum class SliderFlag : unsigned {
         None        = 0,
         Logarithmic = 1<<0,
         AlwaysClamp = 1<<1,
@@ -200,7 +201,7 @@ namespace osc::ui
         NUM_OPTIONS
     };
 
-    enum class TextInputFlag {
+    enum class TextInputFlag : unsigned {
         None             = 0,
         ReadOnly         = 1<<0,
         EnterReturnsTrue = 1<<1,
@@ -227,7 +228,7 @@ namespace osc::ui
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
     void draw_dummy(const Vec2& size);
 
-    enum class ComboFlag {
+    enum class ComboFlag : unsigned {
         None = 0,
         NoArrowButton = 1<<0,
         NUM_FLAGS = 1,
@@ -243,7 +244,7 @@ namespace osc::ui
     Vec2 get_main_viewport_center();
     void enable_dockspace_over_main_viewport();
 
-    enum class WindowFlag {
+    enum class WindowFlag : unsigned {
         None                    = 0,
 
         NoMove                  = 1<<0,
@@ -270,7 +271,7 @@ namespace osc::ui
     bool begin_panel(CStringView name, bool* p_open = nullptr, WindowFlags = {});
     void end_panel();
 
-    enum class ChildPanelFlag {
+    enum class ChildPanelFlag : unsigned {
         None   = 0,
         Border = 1<<0,
         NUM_FLAGS = 1,
@@ -326,7 +327,7 @@ namespace osc::ui
 
     void set_next_panel_bg_alpha(float alpha);
 
-    enum class HoveredFlag {
+    enum class HoveredFlag : unsigned {
         None                         = 0,
         AllowWhenDisabled            = 1<<0,
         AllowWhenBlockedByPopup      = 1<<1,
@@ -358,7 +359,7 @@ namespace osc::ui
 
     ID get_id(std::string_view);
 
-    enum class ItemFlag {
+    enum class ItemFlag : unsigned {
         None      = 0,
         Disabled  = 1<<0,
         Inputable = 1<<1,
@@ -782,7 +783,7 @@ namespace osc::ui
     );
 
     // an operation that a ui `Gizmo` shall perform
-    enum class GizmoOperation {
+    enum class GizmoOperation : unsigned {
         None         = 0,
         Translate    = 1<<0,
         Rotate       = 1<<1,

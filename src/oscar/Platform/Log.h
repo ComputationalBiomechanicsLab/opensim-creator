@@ -69,7 +69,7 @@ namespace osc
 
     namespace detail
     {
-        constexpr static size_t c_max_log_traceback_messages = 512;
+        static constexpr size_t c_max_log_traceback_messages = 512;
     }
 
     [[nodiscard]] LogLevel global_get_traceback_level();
