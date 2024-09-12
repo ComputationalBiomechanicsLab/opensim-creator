@@ -39,7 +39,7 @@ private:
         }
         if (e.type == SDL_MOUSEWHEEL) {
             const float factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
-            apply_zoom_to_camera(ui::get_io().MousePos, factor);
+            apply_zoom_to_camera(ui::get_mouse_pos(), factor);
             return true;
         }
         if (e.type == SDL_MOUSEMOTION and (e.motion.state & SDL_BUTTON_LMASK) != 0) {

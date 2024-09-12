@@ -742,7 +742,7 @@ private:
     // update this scene from the current keyboard state, as saved by ImGui
     bool updateFromImGuiKeyboardState()
     {
-        if (ui::get_io().WantCaptureKeyboard)
+        if (ui::wants_keyboard())
         {
             return false;
         }
@@ -1745,7 +1745,7 @@ private:
         ui::draw_button(ICON_FA_PLUS " Add Other");
         ui::draw_tooltip_if_item_hovered("Add components to the model");
 
-        if (ui::begin_popup_context_menu("##additemtoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##additemtoscenepopup", ui::PopupFlag::MouseButtonLeft))
         {
             drawAddOtherMenuItems();
             ui::end_popup();
@@ -1756,7 +1756,7 @@ private:
         ui::draw_button(ICON_FA_PAINT_ROLLER " Colors");
         ui::draw_tooltip_if_item_hovered("Change scene display colors", "This only changes the decroative display colors of model elements in this screen. Color changes are not saved to the exported OpenSim model. Changing these colors can be handy for spotting things, or constrasting scene elements more strongly");
 
-        if (ui::begin_popup_context_menu("##addpainttoscenepopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##addpainttoscenepopup", ui::PopupFlag::MouseButtonLeft))
         {
             std::span<const Color> colors = m_Shared->colors();
             std::span<const char* const> labels = m_Shared->getColorLabels();
@@ -1780,7 +1780,7 @@ private:
         ui::draw_button(ICON_FA_EYE " Visibility");
         ui::draw_tooltip_if_item_hovered("Change what's visible in the 3D scene", "This only changes what's visible in this screen. Visibility options are not saved to the exported OpenSim model. Changing these visibility options can be handy if you have a lot of overlapping/intercalated scene elements");
 
-        if (ui::begin_popup_context_menu("##changevisibilitypopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##changevisibilitypopup", ui::PopupFlag::MouseButtonLeft))
         {
             std::span<const bool> visibilities = m_Shared->getVisibilityFlags();
             std::span<const char* const> labels = m_Shared->getVisibilityFlagLabels();
@@ -1804,7 +1804,7 @@ private:
         ui::draw_button(ICON_FA_LOCK " Interactivity");
         ui::draw_tooltip_if_item_hovered("Change what your mouse can interact with in the 3D scene", "This does not prevent being able to edit the model - it only affects whether you can click that type of element in the 3D scene. Combining these flags with visibility and custom colors can be handy if you have heavily overlapping/intercalated scene elements.");
 
-        if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##changeinteractionlockspopup", ui::PopupFlag::MouseButtonLeft))
         {
             std::span<const bool> interactables = m_Shared->getIneractivityFlags();
             std::span<const char* const> labels =  m_Shared->getInteractivityFlagLabels();
@@ -1997,7 +1997,7 @@ private:
         ui::draw_button(settingButtonText);
         ui::pop_style_var();
 
-        if (ui::begin_popup_context_menu("##settingspopup", ImGuiPopupFlags_MouseButtonLeft))
+        if (ui::begin_popup_context_menu("##settingspopup", ui::PopupFlag::MouseButtonLeft))
         {
             const ModelCreationFlags flags = m_Shared->getModelCreationFlags();
 

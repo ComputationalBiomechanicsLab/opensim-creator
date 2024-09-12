@@ -85,7 +85,7 @@ private:
         if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType))
         {
             ui::draw_button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##exportoptions", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("as CSV"))
                 {

@@ -142,7 +142,7 @@ namespace osc
         {
             m_CursorXAtExportButton = ui::get_cursor_pos().x;  // needed to align the blending factor slider
             ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {

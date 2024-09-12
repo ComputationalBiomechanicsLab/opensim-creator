@@ -29,7 +29,7 @@ private:
         ui::set_num_columns(2);
         ui::draw_text_unformatted("FPS");
         ui::next_column();
-        ui::draw_text("%.0f", static_cast<double>(ui::get_io().Framerate));
+        ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
         ui::next_column();
         ui::set_num_columns();
 

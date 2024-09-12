@@ -391,19 +391,29 @@ namespace osc::ui
     Vec2 get_style_item_inner_spacing();
     float get_style_alpha();
 
-    ImGuiIO& get_io();
+    float get_framerate();
+    bool wants_keyboard();
 
     void push_style_var(ImGuiStyleVar style, const Vec2& pos);
     void push_style_var(ImGuiStyleVar style, float pos);
     void pop_style_var(int count = 1);
 
-    void open_popup(CStringView str_id, ImGuiPopupFlags popup_flags = 0);
+    enum class PopupFlag : unsigned {
+        None             = 0,
+        MouseButtonLeft  = 1<<0,
+        MouseButtonRight = 1<<1,
+        NUM_FLAGS        =    2,
+    };
+    using PopupFlags = Flags<PopupFlag>;
+
+    void open_popup(CStringView str_id, PopupFlags = {});
     bool begin_popup(CStringView str_id, WindowFlags = {});
-    bool begin_popup_context_menu(CStringView str_id = nullptr, ImGuiPopupFlags popup_flags = 1);
+    bool begin_popup_context_menu(CStringView str_id = {}, PopupFlags = PopupFlag::MouseButtonRight);
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, WindowFlags = {});
     void end_popup();
 
     Vec2 get_mouse_pos();
+    float get_mouse_wheel_amount();
 
     bool begin_menu_bar();
     void end_menu_bar();

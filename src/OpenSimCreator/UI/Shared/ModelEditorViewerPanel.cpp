@@ -385,7 +385,7 @@ private:
         {
             layersHandleMouseInputs();
 
-            if (!ui::get_io().WantCaptureKeyboard)
+            if (!ui::wants_keyboard())
             {
                 layersHandleKeyboardInputs();
             }

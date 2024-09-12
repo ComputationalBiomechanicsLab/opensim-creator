@@ -81,7 +81,7 @@ private:
     void drawOpenDocumentButton()
     {
         ui::draw_button(ICON_FA_FOLDER_OPEN);
-        if (ui::begin_popup_context_menu("##OpenFolder", ImGuiPopupFlags_MouseButtonLeft)) {
+        if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
             }

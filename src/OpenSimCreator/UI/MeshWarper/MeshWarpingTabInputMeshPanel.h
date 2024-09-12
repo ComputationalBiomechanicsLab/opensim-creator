@@ -472,7 +472,7 @@ namespace osc
         void drawImportButton()
         {
             ui::draw_button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##importcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::begin_popup_context_menu("##importcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh File"))
                 {
@@ -513,7 +513,7 @@ namespace osc
         void drawExportButton()
         {
             ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##exportcontextmenu", ImGuiPopupFlags_MouseButtonLeft))
+            if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {

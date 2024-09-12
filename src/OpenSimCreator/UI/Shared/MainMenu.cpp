@@ -54,8 +54,6 @@ void osc::MainMenuFileTab::onDraw(
 {
     // handle hotkeys enabled by just drawing the menu
     {
-        const auto& io = ui::get_io();
-
         bool mod = ui::is_ctrl_or_super_down();
 
         if (mod && ui::is_key_pressed(ImGuiKey_N))
@@ -66,7 +64,7 @@ void osc::MainMenuFileTab::onDraw(
         {
             ActionOpenModel(api);
         }
-        else if (maybeModel && mod && io.KeyShift && ui::is_key_pressed(ImGuiKey_S))
+        else if (maybeModel && mod && ui::is_shift_down() && ui::is_key_pressed(ImGuiKey_S))
         {
             ActionSaveCurrentModelAs(*maybeModel);
         }
@@ -248,7 +246,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::draw_text_unformatted("FPS");
         ui::next_column();
-        ui::draw_text("%.0f", static_cast<double>(ui::get_io().Framerate));
+        ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
         ui::next_column();
 
         ui::draw_text_unformatted("MSXAA");

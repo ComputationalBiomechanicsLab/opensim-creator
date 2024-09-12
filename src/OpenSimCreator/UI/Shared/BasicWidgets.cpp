@@ -1308,7 +1308,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     ui::pop_style_var();
     ui::pop_style_var();
 
-    if (ui::begin_popup_context_menu("##RecentFilesMenu", ImGuiPopupFlags_MouseButtonLeft))
+    if (ui::begin_popup_context_menu("##RecentFilesMenu", ui::PopupFlag::MouseButtonLeft))
     {
         const auto recentFiles = App::singleton<RecentFiles>();
         int imguiID = 0;

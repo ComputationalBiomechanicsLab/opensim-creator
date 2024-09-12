@@ -69,11 +69,11 @@ void osc::ui::context::init()
     // init ImGui top-level context
     ImGui::CreateContext();
 
-    ImGuiIO& io = ui::get_io();
+    ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // make it so that windows can only ever be moved from the title bar
-    ui::get_io().ConfigWindowsMoveFromTitleBarOnly = true;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     // load application-level ImGui settings, then the user one,
     // so that the user settings takes precedence
@@ -153,7 +153,7 @@ bool osc::ui::context::on_event(const SDL_Event& e)
 {
     ImGui_ImplSDL2_ProcessEvent(&e);
 
-    const ImGuiIO& io  = ui::get_io();
+    const ImGuiIO& io = ImGui::GetIO();
 
     bool event_handled_by_imgui = false;
 

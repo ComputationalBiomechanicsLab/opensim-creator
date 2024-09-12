@@ -194,20 +194,14 @@ template<>
 struct osc::Converter<ui::SliderFlags, ImGuiSliderFlags> final {
     ImGuiSliderFlags operator()(ui::SliderFlags flags) const
     {
-        static_assert(num_flags<ui::SliderFlag>() == 3);
-
-        ImGuiSliderFlags rv = ImGuiSliderFlags_None;
-        if (flags & ui::SliderFlag::Logarithmic) {
-            rv |= ImGuiSliderFlags_Logarithmic;
-        }
-        if (flags & ui::SliderFlag::AlwaysClamp) {
-            rv |= ImGuiSliderFlags_AlwaysClamp;
-        }
-        if (flags & ui::SliderFlag::NoInput) {
-            rv |= ImGuiSliderFlags_NoInput;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::SliderFlag, ImGuiSliderFlags> c_mappings_ = {
+        {ui::SliderFlag::Logarithmic, ImGuiSliderFlags_Logarithmic},
+        {ui::SliderFlag::AlwaysClamp, ImGuiSliderFlags_AlwaysClamp},
+        {ui::SliderFlag::NoInput,     ImGuiSliderFlags_NoInput},
+    };
 };
 
 template<>
@@ -215,7 +209,6 @@ struct osc::Converter<ui::DataType, ImGuiDataType> final {
     ImGuiDataType operator()(ui::DataType) const
     {
         static_assert(num_options<ui::DataType>() == 1);
-
         return ImGuiDataType_Float;
     }
 };
@@ -224,101 +217,64 @@ template<>
 struct osc::Converter<ui::TextInputFlags, ImGuiInputTextFlags> final {
     ImGuiInputTextFlags operator()(ui::TextInputFlags flags) const
     {
-        static_assert(num_flags<ui::TextInputFlag>() == 2);
-
-        ImGuiInputTextFlags rv = ImGuiInputTextFlags_None;
-        if (flags & ui::TextInputFlag::EnterReturnsTrue) {
-            rv |= ImGuiInputTextFlags_EnterReturnsTrue;
-        }
-        if (flags & ui::TextInputFlag::ReadOnly) {
-            rv |= ImGuiInputTextFlags_ReadOnly;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::TextInputFlag, ImGuiInputTextFlags> c_mappings_ = {
+        {ui::TextInputFlag::EnterReturnsTrue, ImGuiInputTextFlags_EnterReturnsTrue},
+        {ui::TextInputFlag::ReadOnly,         ImGuiInputTextFlags_ReadOnly},
+    };
 };
 
 template<>
 struct osc::Converter<ui::ComboFlags, ImGuiComboFlags> final {
     ImGuiComboFlags operator()(ui::ComboFlags flags) const
     {
-        static_assert(num_flags<ui::ComboFlag>() == 1);
-
-        ImGuiComboFlags rv = ImGuiComboFlags_None;
-        if (flags & ui::ComboFlag::NoArrowButton) {
-            rv |= ImGuiComboFlags_NoArrowButton;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::ComboFlag, ImGuiComboFlags> c_mappings_ = {
+        {ui::ComboFlag::NoArrowButton, ImGuiComboFlags_NoArrowButton},
+    };
 };
 
 template<>
 struct osc::Converter<ui::WindowFlags, ImGuiWindowFlags> final {
     ImGuiWindowFlags operator()(ui::WindowFlags flags) const
     {
-        static_assert(num_flags<ui::WindowFlag>() == 15);
-
-        ImGuiWindowFlags rv = ImGuiWindowFlags_None;
-        if (flags & ui::WindowFlag::NoMove) {
-            rv |= ImGuiWindowFlags_NoMove;
-        }
-        if (flags & ui::WindowFlag::NoTitleBar) {
-            rv |= ImGuiWindowFlags_NoTitleBar;
-        }
-        if (flags & ui::WindowFlag::NoResize) {
-            rv |= ImGuiWindowFlags_NoResize;
-        }
-        if (flags & ui::WindowFlag::NoSavedSettings) {
-            rv |= ImGuiWindowFlags_NoSavedSettings;
-        }
-        if (flags & ui::WindowFlag::NoScrollbar) {
-            rv |= ImGuiWindowFlags_NoScrollbar;
-        }
-        if (flags & ui::WindowFlag::NoInputs) {
-            rv |= ImGuiWindowFlags_NoInputs;
-        }
-        if (flags & ui::WindowFlag::NoBackground) {
-            rv |= ImGuiWindowFlags_NoBackground;
-        }
-        if (flags & ui::WindowFlag::NoCollapse) {
-            rv |= ImGuiWindowFlags_NoCollapse;
-        }
-        if (flags & ui::WindowFlag::NoDecoration) {
-            rv |= ImGuiWindowFlags_NoDecoration;
-        }
-        if (flags & ui::WindowFlag::NoDocking) {
-            rv |= ImGuiWindowFlags_NoDocking;
-        }
-        if (flags & ui::WindowFlag::NoNav) {
-            rv |= ImGuiWindowFlags_NoNav;
-        }
-        if (flags & ui::WindowFlag::MenuBar) {
-            rv |= ImGuiWindowFlags_MenuBar;
-        }
-        if (flags & ui::WindowFlag::AlwaysAutoResize) {
-            rv |= ImGuiWindowFlags_AlwaysAutoResize;
-        }
-        if (flags & ui::WindowFlag::HorizontalScrollbar) {
-            rv |= ImGuiWindowFlags_HorizontalScrollbar;
-        }
-        if (flags & ui::WindowFlag::AlwaysVerticalScrollbar) {
-            rv |= ImGuiWindowFlags_AlwaysVerticalScrollbar;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::WindowFlag, ImGuiWindowFlags> c_mappings_ = {
+        {ui::WindowFlag::NoMove                 , ImGuiWindowFlags_NoMove                 },
+        {ui::WindowFlag::NoTitleBar             , ImGuiWindowFlags_NoTitleBar             },
+        {ui::WindowFlag::NoResize               , ImGuiWindowFlags_NoResize               },
+        {ui::WindowFlag::NoSavedSettings        , ImGuiWindowFlags_NoSavedSettings        },
+        {ui::WindowFlag::NoScrollbar            , ImGuiWindowFlags_NoScrollbar            },
+        {ui::WindowFlag::NoInputs               , ImGuiWindowFlags_NoInputs               },
+        {ui::WindowFlag::NoBackground           , ImGuiWindowFlags_NoBackground           },
+        {ui::WindowFlag::NoCollapse             , ImGuiWindowFlags_NoCollapse             },
+        {ui::WindowFlag::NoDecoration           , ImGuiWindowFlags_NoDecoration           },
+        {ui::WindowFlag::NoDocking              , ImGuiWindowFlags_NoDocking              },
+
+        {ui::WindowFlag::NoNav                  , ImGuiWindowFlags_NoNav                  },
+        {ui::WindowFlag::MenuBar                , ImGuiWindowFlags_MenuBar                },
+        {ui::WindowFlag::AlwaysAutoResize       , ImGuiWindowFlags_AlwaysAutoResize       },
+        {ui::WindowFlag::HorizontalScrollbar    , ImGuiWindowFlags_HorizontalScrollbar    },
+        {ui::WindowFlag::AlwaysVerticalScrollbar, ImGuiWindowFlags_AlwaysVerticalScrollbar},
+    };
 };
 
 template<>
 struct osc::Converter<ui::ChildPanelFlags, ImGuiChildFlags> final {
     ImGuiChildFlags operator()(ui::ChildPanelFlags flags) const
     {
-        static_assert(num_flags<ui::ChildPanelFlag>() == 1);
-
-        ImGuiChildFlags rv = ImGuiChildFlags_None;
-        if (flags & ui::ChildPanelFlag::Border) {
-            rv |= ImGuiChildFlags_Border;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::ChildPanelFlag, ImGuiChildFlags> c_mappings_ = {
+        {ui::ChildPanelFlag::Border, ImGuiChildFlags_Border},
+    };
 };
 
 template<>
@@ -340,52 +296,45 @@ template<>
 struct osc::Converter<ui::HoveredFlags, ImGuiHoveredFlags> final {
     ImGuiHoveredFlags operator()(ui::HoveredFlags flags) const
     {
-        static_assert(num_flags<ui::HoveredFlag>() == 8);
-
-        ImGuiHoveredFlags rv = ImGuiHoveredFlags_None;
-        if (flags & ui::HoveredFlag::AllowWhenDisabled) {
-            rv |= ImGuiHoveredFlags_AllowWhenDisabled;
-        }
-        if (flags & ui::HoveredFlag::AllowWhenBlockedByPopup) {
-            rv |= ImGuiHoveredFlags_AllowWhenBlockedByPopup;
-        }
-        if (flags & ui::HoveredFlag::AllowWhenBlockedByActiveItem) {
-            rv |= ImGuiHoveredFlags_AllowWhenBlockedByActiveItem;
-        }
-        if (flags & ui::HoveredFlag::AllowWhenOverlapped) {
-            rv |= ImGuiHoveredFlags_AllowWhenOverlapped;
-        }
-        if (flags & ui::HoveredFlag::DelayNormal) {
-            rv |= ImGuiHoveredFlags_DelayNormal;
-        }
-        if (flags & ui::HoveredFlag::ForTooltip) {
-            rv |= ImGuiHoveredFlags_ForTooltip;
-        }
-        if (flags & ui::HoveredFlag::RootAndChildWindows) {
-            rv |= ImGuiHoveredFlags_RootAndChildWindows;
-        }
-        if (flags & ui::HoveredFlag::ChildWindows) {
-            rv |= ImGuiHoveredFlags_ChildWindows;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::HoveredFlag, ImGuiHoveredFlags> c_mappings_ = {
+        {ui::HoveredFlag::AllowWhenDisabled           , ImGuiHoveredFlags_AllowWhenDisabled           },
+        {ui::HoveredFlag::AllowWhenBlockedByPopup     , ImGuiHoveredFlags_AllowWhenBlockedByPopup     },
+        {ui::HoveredFlag::AllowWhenBlockedByActiveItem, ImGuiHoveredFlags_AllowWhenBlockedByActiveItem},
+        {ui::HoveredFlag::AllowWhenOverlapped         , ImGuiHoveredFlags_AllowWhenOverlapped         },
+        {ui::HoveredFlag::DelayNormal                 , ImGuiHoveredFlags_DelayNormal                 },
+        {ui::HoveredFlag::ForTooltip                  , ImGuiHoveredFlags_ForTooltip                  },
+        {ui::HoveredFlag::RootAndChildWindows         , ImGuiHoveredFlags_RootAndChildWindows         },
+        {ui::HoveredFlag::ChildWindows                , ImGuiHoveredFlags_ChildWindows                },
+    };
 };
 
 template<>
 struct osc::Converter<ui::ItemFlags, ImGuiItemFlags> final {
     ImGuiItemFlags operator()(ui::ItemFlags flags) const
     {
-        static_assert(num_flags<ui::ItemFlag>() == 2);
-
-        ImGuiItemFlags rv = ImGuiItemFlags_None;
-        if (flags & ui::ItemFlag::Disabled) {
-            rv |= ImGuiItemFlags_Disabled;
-        }
-        if (flags & ui::ItemFlag::Inputable) {
-            rv |= ImGuiItemFlags_Inputable;
-        }
-        return rv;
+        return c_mappings_(flags);
     }
+private:
+    static constexpr FlagMapper<ui::ItemFlag, ImGuiItemFlags> c_mappings_ = {
+        {ui::ItemFlag::Disabled , ImGuiItemFlags_Disabled },
+        {ui::ItemFlag::Inputable, ImGuiItemFlags_Inputable},
+    };
+};
+
+template<>
+struct osc::Converter<ui::PopupFlags, ImGuiPopupFlags> final {
+    ImGuiPopupFlags operator()(ui::PopupFlags flags) const
+    {
+        return c_mappings_(flags);
+    }
+private:
+    static constexpr FlagMapper<ui::PopupFlag, ImGuiPopupFlags> c_mappings_ = {
+        {ui::PopupFlag::MouseButtonLeft , ImGuiPopupFlags_MouseButtonLeft },
+        {ui::PopupFlag::MouseButtonRight, ImGuiPopupFlags_MouseButtonRight},
+    };
 };
 
 void osc::ui::align_text_to_frame_padding()
@@ -926,9 +875,14 @@ float osc::ui::get_style_alpha()
     return ImGui::GetStyle().Alpha;
 }
 
-ImGuiIO& osc::ui::get_io()
+float osc::ui::get_framerate()
 {
-    return ImGui::GetIO();
+    return ImGui::GetIO().Framerate;
+}
+
+bool osc::ui::wants_keyboard()
+{
+    return ImGui::GetIO().WantCaptureKeyboard;
 }
 
 void osc::ui::push_style_var(ImGuiStyleVar style, const Vec2& pos)
@@ -946,9 +900,9 @@ void osc::ui::pop_style_var(int count)
     ImGui::PopStyleVar(count);
 }
 
-void osc::ui::open_popup(CStringView str_id, ImGuiPopupFlags popup_flags)
+void osc::ui::open_popup(CStringView str_id, PopupFlags popup_flags)
 {
-    return ImGui::OpenPopup(str_id.c_str(), popup_flags);
+    return ImGui::OpenPopup(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
 }
 
 bool osc::ui::begin_popup(CStringView str_id, WindowFlags flags)
@@ -956,9 +910,9 @@ bool osc::ui::begin_popup(CStringView str_id, WindowFlags flags)
     return ImGui::BeginPopup(str_id.c_str(), to<ImGuiWindowFlags>(flags));
 }
 
-bool osc::ui::begin_popup_context_menu(CStringView str_id, ImGuiPopupFlags popup_flags)
+bool osc::ui::begin_popup_context_menu(CStringView str_id, PopupFlags popup_flags)
 {
-    return ImGui::BeginPopupContextItem(str_id.c_str(), popup_flags);
+    return ImGui::BeginPopupContextItem(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
 }
 
 bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, WindowFlags flags)
@@ -1225,8 +1179,8 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
     bool modified = false;
 
     // handle mousewheel scrolling
-    if (ui::get_io().MouseWheel != 0.0f) {
-        camera.radius *= 1.0f - 0.1f * ui::get_io().MouseWheel;
+    if (ImGui::GetIO().MouseWheel != 0.0f) {
+        camera.radius *= 1.0f - 0.1f * ImGui::GetIO().MouseWheel;
         modified = true;
     }
 
@@ -1248,7 +1202,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
     const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
-    const Vec2 delta = ui::get_io().MouseDelta;
+    const Vec2 delta = ImGui::GetIO().MouseDelta;
 
     if (delta != Vec2{} and (left_dragging or middle_dragging)) {
         if (is_ctrl_down()) {
@@ -1405,7 +1359,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     const Rect& viewport_rect,
     std::optional<AABB> maybe_scene_aabb)
 {
-    ImGuiIO& io = ui::get_io();
+    ImGuiIO& io = ImGui::GetIO();
 
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
     // is classed as a mouse interaction
@@ -1424,10 +1378,10 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     const Vec3 front = camera.direction();
     const Vec3 up = camera.upwards_direction();
     const Vec3 right = cross(front, up);
-    const Vec2 mouseDelta = ui::get_io().MouseDelta;
+    const Vec2 mouseDelta = ImGui::GetIO().MouseDelta;
 
     const float speed = 10.0f;
-    const float displacement = speed * ui::get_io().DeltaTime;
+    const float displacement = speed * ImGui::GetIO().DeltaTime;
     const auto sensitivity = 0.005_rad;
 
     // keyboard: changes camera position
@@ -1447,7 +1401,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     if (ui::is_key_down(ImGuiKey_Space)) {
         pos += displacement * up;
     }
-    if (ui::get_io().KeyCtrl) {
+    if (ui::is_ctrl_down()) {
         pos -= displacement * up;
     }
     camera.set_position(pos);
@@ -1578,22 +1532,22 @@ bool osc::ui::any_of_keys_pressed(std::initializer_list<const ImGuiKey> keys)
 
 bool osc::ui::is_ctrl_down()
 {
-    return ui::get_io().KeyCtrl;
+    return ImGui::GetIO().KeyCtrl;
 }
 
 bool osc::ui::is_ctrl_or_super_down()
 {
-    return ui::get_io().KeyCtrl or ui::get_io().KeySuper;
+    return ImGui::GetIO().KeyCtrl or ImGui::GetIO().KeySuper;
 }
 
 bool osc::ui::is_shift_down()
 {
-    return ui::get_io().KeyShift;
+    return ImGui::GetIO().KeyShift;
 }
 
 bool osc::ui::is_alt_down()
 {
-    return ui::get_io().KeyAlt;
+    return ImGui::GetIO().KeyAlt;
 }
 
 bool osc::ui::is_mouse_released_without_dragging(MouseButton mouse_button)

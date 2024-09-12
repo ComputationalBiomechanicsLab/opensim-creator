@@ -1683,7 +1683,7 @@ namespace
             // it's easier for users to figure out than having to guess they need to
             // right-click the plot (#399)
             ui::draw_button(ICON_FA_BARS " Options");
-            tryDrawGeneralPlotPopup(coord, plotTitle, ImGuiPopupFlags_MouseButtonLeft);
+            tryDrawGeneralPlotPopup(coord, plotTitle, ui::PopupFlag::MouseButtonLeft);
         }
 
         // draws the actual plot lines in the plot
@@ -1921,7 +1921,7 @@ namespace
         void tryDrawGeneralPlotPopup(
             const OpenSim::Coordinate& coord,
             const std::string& plotTitle,
-            ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight)
+            ui::PopupFlags flags = ui::PopupFlag::MouseButtonRight)
         {
             if (ui::begin_popup_context_menu(plotTitle + "_contextmenu", flags)) {
                 drawGeneralPlotPopupContent(coord);
