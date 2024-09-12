@@ -20,9 +20,6 @@ target_include_directories(imgui
 target_compile_features(imgui
     PRIVATE cxx_std_17
 )
-target_link_libraries(imgui
-    PUBLIC ${CMAKE_DL_LIBS}  # imgui_impl_opengl3.cpp references `dlclose`
-)
 
 include(GNUInstallDirs)
 install(
