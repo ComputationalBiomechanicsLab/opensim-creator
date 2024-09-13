@@ -299,10 +299,17 @@ namespace
     template<>
     void generateDecorations<DataPointType::Point>(
         const SimTK::State&,
-        std::span<const double, 3>,
-        SimTK::Array_<SimTK::DecorativeGeometry>&)
+        std::span<const double, 3> data,
+        SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        // TODO
+        SimTK::Vec3 position{data[0], data[1], data[2]};
+        if (not position.isNaN()) {
+            SimTK::DecorativeSphere sphere{};
+            sphere.setRadius(0.1);
+            sphere.setTransform(position * 0.001);
+            sphere.setColor(to<SimTK::Vec3>(Color::blue()));
+            out.push_back(sphere);
+        }
     }
 
     template<>
@@ -430,7 +437,9 @@ namespace
         // path, or throws an `std::exception` if any error occurs.
         explicit AnnotatedMotion(const std::filesystem::path& path) :
             AnnotatedMotion{std::make_shared<OpenSim::Storage>(path.string())}
-        {}
+        {
+            setName(path.filename().string());
+        }
 
     private:
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
