@@ -383,7 +383,12 @@ private:
         }
 
         // cache the previous selection path, so we can observe when it has changed (#908)
-        m_PreviousSelectionPath = std::move(selectedPath);
+        if (rv.type == ResponseType::SelectionChanged) {
+            m_PreviousSelectionPath = GetAbsolutePathOrEmpty(rv.ptr);
+        }
+        else {
+            m_PreviousSelectionPath = std::move(selectedPath);
+        }
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
