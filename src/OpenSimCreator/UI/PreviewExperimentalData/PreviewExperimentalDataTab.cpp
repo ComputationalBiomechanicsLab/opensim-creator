@@ -216,7 +216,7 @@ namespace
             DataSeriesPattern::forDatatype<DataPointType::BodyForce>("_fx", "_fy", "_fz"),
 
             // extra
-            DataSeriesPattern::forDatatype<DataPointType::BodyForce>("_x", "_y", "_z"),
+            DataSeriesPattern::forDatatype<DataPointType::Point>("_x", "_y", "_z"),
         };
     };
 
@@ -272,6 +272,21 @@ namespace
 
         std::vector<DataSeriesAnnotation> m_Annotations;
     };
+
+    // Returns the elements associated with one datapoint (e.g. [x, y, z])
+    std::vector<double> extractDataPoint(
+        const SimTK::State& state,
+        const OpenSim::Storage& storage,
+        const DataSeriesAnnotation& annotation)
+    {
+        // lol, `OpenSim::Storage` API, etc.
+        int aN = annotation.firstColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
+        std::vector<double> buffer(aN);
+        double* p = buffer.data();
+        storage.getDataAtTime(state.getTime(), aN, &p);
+        buffer.erase(buffer.begin(), buffer.begin() + annotation.firstColumnOffset);
+        return buffer;
+    }
 }
 
 // ui-independent graphics helpers
@@ -302,10 +317,21 @@ namespace
     template<>
     void generateDecorations<DataPointType::BodyForce>(
         const SimTK::State&,
-        std::span<const double, 3>,
-        SimTK::Array_<SimTK::DecorativeGeometry>&)
+        std::span<const double, 3> data,
+        SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        // TODO
+        const SimTK::Vec3 position = { data[0], data[1], data[2] };
+        if (not position.isNaN() and position.normSqr() > SimTK::Eps) {
+            SimTK::DecorativeArrow arrow{
+                SimTK::Vec3(0.0),
+                position.normalize(),
+            };
+            arrow.setScaleFactors({1, 1, 0.00001});
+            arrow.setColor(to<SimTK::Vec3>(Color::orange()));
+            arrow.setLineThickness(0.01);
+            arrow.setTipLength(0.1);
+            out.push_back(arrow);
+        }
     }
 
     template<>
@@ -336,12 +362,24 @@ namespace
     }
 
     void generateDecorations(
-        const SimTK::State&,
-        const OpenSim::Storage&,
-        const DataSeriesAnnotation&,
-        SimTK::Array_<SimTK::DecorativeGeometry>&)
+        const SimTK::State& state,
+        const OpenSim::Storage& storage,
+        const DataSeriesAnnotation& annotation,
+        SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        // TODO
+        const auto data = extractDataPoint(state, storage, annotation);
+        OSC_ASSERT_ALWAYS(data.size() == numElementsIn(annotation.dataType));
+
+        static_assert(num_options<DataPointType>() == 5);
+        switch (annotation.dataType) {
+        case DataPointType::Point:       generateDecorations<DataPointType::Point>(       state, std::span<const double, numElementsIn(DataPointType::Point)>{data}, out);      break;
+        case DataPointType::PointForce:  generateDecorations<DataPointType::PointForce>(  state, std::span<const double, numElementsIn(DataPointType::PointForce)>{data}, out); break;
+        case DataPointType::BodyForce:   generateDecorations<DataPointType::BodyForce>(   state, std::span<const double, numElementsIn(DataPointType::BodyForce)>{data}, out);  break;
+        case DataPointType::Orientation: generateDecorations<DataPointType::Orientation>( state, std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out);  break;
+
+        case DataPointType::Unknown: break;  // do nothing
+        default:                     break;  // do nothing
+        }
     }
 }
 

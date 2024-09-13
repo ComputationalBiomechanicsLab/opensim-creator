@@ -6,6 +6,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
+#include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>
@@ -66,7 +67,7 @@ namespace
     }
 
     // creates a geometry-to-ground transform for the given geometry
-    Transform ToOscTransform(
+    Transform ToOscTransformWithoutScaling(
         const SimTK::SimbodyMatterSubsystem& matter,
         const SimTK::State& state,
         const SimTK::DecorativeGeometry& g)
@@ -75,7 +76,7 @@ namespace
         const SimTK::Transform& body2ground = mobod.getBodyTransform(state);
         const SimTK::Transform& decoration2body = g.getTransform();
 
-        return to<Transform>(body2ground * decoration2body).with_scale(GetScaleFactors(g));
+        return to<Transform>(body2ground * decoration2body);
     }
 
     size_t hash_of(const SimTK::Vec3& v)
@@ -130,9 +131,14 @@ namespace
         }
 
     private:
+        Transform ToOscTransformWithoutScaling(const SimTK::DecorativeGeometry& d) const
+        {
+            return ::ToOscTransformWithoutScaling(m_Matter, m_State, d);
+        }
+
         Transform ToOscTransform(const SimTK::DecorativeGeometry& d) const
         {
-            return ::ToOscTransform(m_Matter, m_State, d);
+            return ToOscTransformWithoutScaling(d).with_scale(GetScaleFactors(d));
         }
 
         void implementPointGeometry(const SimTK::DecorativePoint&) final
@@ -324,42 +330,17 @@ namespace
 
         void implementArrowGeometry(const SimTK::DecorativeArrow& d) final
         {
-            const Transform t = ToOscTransform(d);
-
-            const Vec3 startBase = to<Vec3>(d.getStartPoint());
-            const Vec3 endBase = to<Vec3>(d.getEndPoint());
-
-            const Vec3 start = transform_point(t, startBase);
-            const Vec3 end = transform_point(t, endBase);
-
-            const Vec3 direction = normalize(end - start);
-
-            const Vec3 neckStart = start;
-            const Vec3 neckEnd = end - (m_FixupScaleFactor * static_cast<float>(d.getTipLength()) * direction);
-            const Vec3 headStart = neckEnd;
-            const Vec3 headEnd = end;
-
-            const float neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness());
-            const float head_thickness = 1.75f * neck_thickness;
-
-            const Color color = GetColor(d);
-            const auto flags = GetFlags(d);
-
-            // emit neck cylinder
-            m_Consumer(SceneDecoration{
-                .mesh = m_MeshCache.cylinder_mesh(),
-                .transform = cylinder_to_line_segment_transform({neckStart, neckEnd}, neck_thickness),
-                .shading = color,
-                .flags = flags,
-            });
-
-            // emit head cone
-            m_Consumer({
-                .mesh = m_MeshCache.cone_mesh(),
-                .transform = cylinder_to_line_segment_transform({headStart, headEnd}, head_thickness),
-                .shading = color,
-                .flags = flags,
-            });
+            const Transform t = ToOscTransformWithoutScaling(d);
+            const ArrowProperties p = {
+                .start = t * to<Vec3>(d.getStartPoint()),
+                .end = t * to<Vec3>(d.getEndPoint()),
+                .tip_length = static_cast<float>(d.getTipLength()),
+                .neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
+                .head_thickness = 1.75f * m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
+                .color = GetColor(d),
+                .decoration_flags = GetFlags(d),
+            };
+            draw_arrow(m_MeshCache, p, m_Consumer);
         }
 
         void implementTorusGeometry(const SimTK::DecorativeTorus& d) final
