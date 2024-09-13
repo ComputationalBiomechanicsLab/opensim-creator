@@ -26,7 +26,7 @@ namespace osc
         ~ObjectPropertiesEditor() noexcept;
 
         // does not actually apply any property changes - the caller should check+apply the return value
-        [[nodiscard]] std::optional<ObjectPropertyEdit> onDraw();
+        std::optional<ObjectPropertyEdit> onDraw();
 
     private:
         class Impl;

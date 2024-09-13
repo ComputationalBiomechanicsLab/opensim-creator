@@ -1,10 +1,14 @@
 #include "PreviewExperimentalDataTab.h"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -22,6 +26,7 @@
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
@@ -30,6 +35,7 @@
 
 #include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <SDL_events.h>
 #include <oscar_simbody/SimTKHelpers.h>
@@ -37,6 +43,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
@@ -207,6 +214,9 @@ namespace
             DataSeriesPattern::forDatatype<DataPointType::Orientation>("_1", "_2", "_3", "_4"),
             DataSeriesPattern::forDatatype<DataPointType::Point>("_1", "_2", "_3"),
             DataSeriesPattern::forDatatype<DataPointType::BodyForce>("_fx", "_fy", "_fz"),
+
+            // extra
+            DataSeriesPattern::forDatatype<DataPointType::BodyForce>("_x", "_y", "_z"),
         };
     };
 
@@ -254,6 +264,7 @@ namespace
             return StorageSchema{std::move(annotations)};
         }
 
+        const std::vector<DataSeriesAnnotation>& annotations() const { return m_Annotations; }
     private:
         explicit StorageSchema(std::vector<DataSeriesAnnotation> annotations) :
             m_Annotations{std::move(annotations)}
@@ -339,14 +350,22 @@ namespace
 {
     // Refers to one data series within one annotated motion.
     class DataSeries final : public OpenSim::ModelComponent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(DataSeries, OpenSim::ModelComponent);
     public:
+        OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series");
+        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column that contains this data series");
+
         explicit DataSeries(
             const std::shared_ptr<const OpenSim::Storage>& storage,
             const DataSeriesAnnotation& annotation) :
 
             m_Storage{storage},
             m_Annotation{annotation}
-        {}
+        {
+            setName(annotation.label);
+            constructProperty_type(std::string{labelFor(annotation.dataType)});
+            constructProperty_column_offset(annotation.firstColumnOffset);
+        }
     private:
         void generateDecorations(
             bool,
@@ -369,20 +388,24 @@ namespace
     class AnnotatedMotion final : public OpenSim::ModelComponent {
         OpenSim_DECLARE_CONCRETE_OBJECT(AnnotatedMotion, OpenSim::ModelComponent);
     public:
-
-        // Returns an `AnnotationMotion` that was loaded from the given filesystem
+        // Constructs an `AnnotationMotion` that was loaded from the given filesystem
         // path, or throws an `std::exception` if any error occurs.
-        static AnnotatedMotion fromFile(const std::filesystem::path& path)
-        {
-            return AnnotatedMotion{OpenSim::Storage{path.string()}};
-        }
-    private:
-        explicit AnnotatedMotion(OpenSim::Storage storage) :
-            m_Storage{std::move(storage)},
-            m_Schema{StorageSchema::parse(m_Storage)}
+        explicit AnnotatedMotion(const std::filesystem::path& path) :
+            AnnotatedMotion{std::make_shared<OpenSim::Storage>(path.string())}
         {}
 
-        OpenSim::Storage m_Storage;
+    private:
+        explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
+            m_Storage{std::move(storage)},
+            m_Schema{StorageSchema::parse(*m_Storage)}
+        {
+            setName(m_Storage->getName());
+
+            for (const auto& annotation : m_Schema.annotations()) {
+                addComponent(new DataSeries{m_Storage, annotation});
+            }
+        }
+        std::shared_ptr<OpenSim::Storage> m_Storage;
         StorageSchema m_Schema;
     };
 }
@@ -394,13 +417,61 @@ namespace
     class PreviewExperimentalDataUiState final {
     public:
         const std::shared_ptr<UndoableModelStatePair>& updSharedModelPtr() const { return m_Model; }
+
+        void loadModelFile(const std::filesystem::path& p)
+        {
+            // TODO: port any motions over?
+            // TODO: rescrub?
+            m_Model->loadModel(p);
+        }
+
+        void loadMotionFiles(std::vector<std::filesystem::path> paths)
+        {
+            if (paths.empty()) {
+                return;
+            }
+
+            OpenSim::Model& model = m_Model->updModel();
+            AnnotatedMotion* lastMotion = nullptr;
+            for (const std::filesystem::path& path : paths) {
+                lastMotion = new AnnotatedMotion{path};
+                model.addModelComponent(lastMotion);
+            }
+            m_Model->setSelected(lastMotion);
+            InitializeModel(model);
+            InitializeState(model);
+            // TODO: rescrub
+            m_Model->commit("loaded motions");
+        }
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
         double m_ScrubTime = 0.0;
     };
+
+    class ReadonlyPropertiesEditorPanel final : public StandardPanelImpl {
+    public:
+        ReadonlyPropertiesEditorPanel(
+            std::string_view panelName,
+            IPopupAPI* api,
+            std::shared_ptr<const UndoableModelStatePair> targetModel) :
+
+            StandardPanelImpl{panelName},
+            m_PropertiesEditor{api, targetModel, [model = targetModel](){ return model->getSelected(); }}
+        {}
+    private:
+        void impl_draw_content() final
+        {
+            ui::begin_disabled();
+            m_PropertiesEditor.onDraw();
+            ui::end_disabled();
+        }
+        ObjectPropertiesEditor m_PropertiesEditor;
+    };
 }
 
-class osc::PreviewExperimentalDataTab::Impl final : public StandardTabImpl {
+class osc::PreviewExperimentalDataTab::Impl final :
+    public StandardTabImpl,
+    public IPopupAPI {
 public:
     explicit Impl(const ParentPtr<ITabHost>&) :
         StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
@@ -433,6 +504,13 @@ public:
                 return std::make_shared<LogViewerPanel>(panelName);
             }
         );
+        m_PanelManager->register_toggleable_panel(
+            "Properties",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<ReadonlyPropertiesEditorPanel>(panelName, this, m_UiState->updSharedModelPtr());
+            }
+        );
     }
 private:
     void impl_on_mount() final
@@ -462,11 +540,23 @@ private:
         m_PanelManager->on_draw();
     }
 
+    void implPushPopup(std::unique_ptr<IPopup>) final
+    {
+    }
+
     void drawToolbar()
     {
         if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f}))
         {
-            ui::draw_button("todo");
+            if (ui::draw_button("load model")) {
+                if (const auto path = prompt_user_to_select_file({"osim"})) {
+                    m_UiState->loadModelFile(*path);
+                }
+            }
+            ui::same_line();
+            if (ui::draw_button("load force")) {
+                m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
+            }
         }
         ui::end_panel();
     }

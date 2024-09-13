@@ -332,6 +332,11 @@ public:
         m_Scratch = std::move(p);
     }
 
+    void loadModel(const std::filesystem::path& path)
+    {
+        setModel(std::make_unique<OpenSim::Model>(path.string()));
+    }
+
     UID getModelVersion() const
     {
         return m_Scratch.getModelVersion();
@@ -806,6 +811,11 @@ OpenSim::Model& osc::UndoableModelStatePair::updModel()
 void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newModel)
 {
     m_Impl->setModel(std::move(newModel));
+}
+
+void osc::UndoableModelStatePair::loadModel(const std::filesystem::path& p)
+{
+    m_Impl->loadModel(p);
 }
 
 void osc::UndoableModelStatePair::setModelVersion(UID version)
