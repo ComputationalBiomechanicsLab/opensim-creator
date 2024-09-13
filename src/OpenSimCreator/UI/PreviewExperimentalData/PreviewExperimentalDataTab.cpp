@@ -359,15 +359,6 @@ namespace
         });
     }
 
-    template<>
-    void generateDecorations<DataPointType::Unknown>(
-        const SimTK::State&,
-        std::span<const double, 1>,
-        SimTK::Array_<SimTK::DecorativeGeometry>&)
-    {
-        // (do nothing)
-    }
-
     void generateDecorations(
         const SimTK::State& state,
         const OpenSim::Storage& storage,
