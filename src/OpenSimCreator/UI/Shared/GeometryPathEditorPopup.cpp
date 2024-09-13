@@ -49,10 +49,10 @@ namespace
         RequestedAction() = default;
 
         RequestedAction(
-            Type type_,
+            Type m_Type,
             ptrdiff_t pathPointIndex_) :
 
-            type{type_},
+            type{m_Type},
             pathPointIndex{pathPointIndex_}
         {
         }
