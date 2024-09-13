@@ -1,15 +1,20 @@
 #include "PreviewExperimentalDataTab.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
+#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/IPopupAPI.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
+#include <IconsFontAwesome5.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
@@ -24,21 +29,16 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
-
-#include <IconsFontAwesome5.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <SDL_events.h>
 #include <oscar_simbody/SimTKHelpers.h>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <array>
@@ -467,9 +467,14 @@ namespace
 
         void loadModelFile(const std::filesystem::path& p)
         {
-            // TODO: port any motions over?
-            // TODO: rescrub?
-            m_Model->loadModel(p);
+            auto model = std::make_unique<OpenSim::Model>(p.string());
+            for (auto& force : model->updComponentList<OpenSim::Force>()) {
+                force.set_appliesForce(false);
+            }
+            InitializeModel(*model);
+            InitializeState(*model);
+
+            m_Model->setModel(std::move(model));
         }
 
         void loadMotionFiles(std::vector<std::filesystem::path> paths)
@@ -490,9 +495,42 @@ namespace
             // TODO: rescrub
             m_Model->commit("loaded motions");
         }
+
+        void loadExternalLoads(std::vector<std::filesystem::path> paths)
+        {
+            if (paths.empty()) {
+                return;
+            }
+
+            OpenSim::Model& model = m_Model->updModel();
+            OpenSim::ExternalLoads* lastLoads = nullptr;
+            for (const std::filesystem::path& path : paths) {
+                lastLoads = new OpenSim::ExternalLoads{path.string(), true};
+                for (int i = 0; i < lastLoads->getSize(); ++i) {
+                    // don't actually apply the forces, we're only visualizing them
+                    //(*lastLoads)[i].set_appliesForce(false);
+                }
+                model.addModelComponent(lastLoads);
+            }
+            m_Model->setSelected(lastLoads);
+            InitializeModel(model);
+            InitializeState(model);
+            m_Model->commit("loaded external loads");
+        }
+
+        double getScrubTime() const
+        {
+            return m_Model->getState().getTime();
+        }
+
+        void setScrubTime(double newTime)
+        {
+            SimTK::State& state = m_Model->updState();
+            state.setTime(newTime);
+            m_Model->updModel().realizeDynamics(state);  // TODO: osc::InitializeState creates one at t=0
+        }
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
-        double m_ScrubTime = 0.0;
     };
 
     class ReadonlyPropertiesEditorPanel final : public StandardPanelImpl {
@@ -540,6 +578,7 @@ public:
             {
                 auto onRightClick = [](const ModelEditorViewerPanelRightClickEvent&) {};
                 ModelEditorViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
+                panelParams.updRenderParams().decorationOptions.setMuscleColoringStyle(MuscleColoringStyle::Default);
                 return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
             },
             1  // have one viewer open at the start
@@ -601,8 +640,19 @@ private:
                 }
             }
             ui::same_line();
-            if (ui::draw_button("load force")) {
+            if (ui::draw_button("load forces")) {
                 m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
+            }
+            ui::same_line();
+            if (ui::draw_button("load external loads")) {
+                m_UiState->loadExternalLoads(prompt_user_to_select_files({"xml"}));
+            }
+            ui::same_line();
+            {
+                double t = m_UiState->getScrubTime();
+                if (ui::draw_double_input("t", &t, 1.0, 0.1, "%.6f", ui::TextInputFlag::EnterReturnsTrue)) {
+                    m_UiState->setScrubTime(t);
+                }
             }
         }
         ui::end_panel();

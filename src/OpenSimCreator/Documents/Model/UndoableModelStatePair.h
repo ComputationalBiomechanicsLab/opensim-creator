@@ -100,6 +100,8 @@ namespace osc
         void loadModel(const std::filesystem::path&);
         void setModelVersion(UID);
 
+        SimTK::State& updState();
+
     private:
         const OpenSim::Model& implGetModel() const final;
         UID implGetModelVersion() const final;

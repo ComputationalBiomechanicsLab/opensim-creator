@@ -86,6 +86,12 @@ namespace
             return *m_Model;
         }
 
+        SimTK::State& updState()
+        {
+            m_ModelVersion = UID{};
+            return m_Model->updWorkingState();
+        }
+
         UID implGetModelVersion() const final
         {
             return m_ModelVersion;
@@ -322,6 +328,11 @@ public:
     OpenSim::Model& updModel()
     {
         return m_Scratch.updModel();
+    }
+
+    SimTK::State& updState()
+    {
+        return m_Scratch.updState();
     }
 
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
@@ -806,6 +817,11 @@ bool osc::UndoableModelStatePair::tryCheckout(const ModelStateCommit& commit)
 OpenSim::Model& osc::UndoableModelStatePair::updModel()
 {
     return m_Impl->updModel();
+}
+
+SimTK::State& osc::UndoableModelStatePair::updState()
+{
+    return m_Impl->updState();
 }
 
 void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newModel)
