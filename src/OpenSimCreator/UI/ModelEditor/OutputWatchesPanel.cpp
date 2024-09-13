@@ -64,9 +64,9 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        if (m_API->getNumUserOutputExtractors() > 0 && ui::begin_table("##OutputWatchesTable", 2, ImGuiTableFlags_SizingStretchProp))
+        if (m_API->getNumUserOutputExtractors() > 0 && ui::begin_table("##OutputWatchesTable", 2, ui::TableFlag::SizingStretchProp))
         {
-            ui::table_setup_column("Output", ImGuiTableColumnFlags_WidthStretch);
+            ui::table_setup_column("Output", ui::ColumnFlag::WidthStretch);
             ui::table_setup_column("Value");
             ui::table_headers_row();
 

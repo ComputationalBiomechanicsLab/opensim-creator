@@ -429,17 +429,41 @@ namespace osc::ui
     bool is_item_hovered(HoveredFlags = {});
     bool is_item_deactivated_after_edit();
 
+    enum class TableFlag : unsigned {
+        None              = 0,
+        BordersInner      = 1<<0,
+        BordersInnerV     = 1<<1,
+        NoSavedSettings   = 1<<2,
+        PadOuterX         = 1<<3,
+        Resizable         = 1<<4,
+        ScrollY           = 1<<5,
+        SizingStretchProp = 1<<6,
+        SizingStretchSame = 1<<7,
+        Sortable          = 1<<8,
+        SortTristate      = 1<<9,
+        NUM_FLAGS         =    10,
+    };
+    using TableFlags = Flags<TableFlag>;
+
     Vec2 get_item_topleft();
     Vec2 get_item_bottomright();
-    bool begin_table(CStringView str_id, int column, ImGuiTableFlags flags = 0, const Vec2& outer_size = {}, float inner_width = 0.0f);
+    bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
     ImGuiTableSortSpecs* table_get_sort_specs();
 
+    enum class ColumnFlag : unsigned {
+        None         = 0,
+        NoSort       = 1<<0,
+        WidthStretch = 1<<1,
+        NUM_FLAGS    =    2,
+    };
+    using ColumnFlags = Flags<ColumnFlag>;
+
     void table_headers_row();
     bool table_set_column_index(int column_n);
-    void table_next_row(ImGuiTableRowFlags row_flags = 0, float min_row_height = 0.0f);
-    void table_setup_column(CStringView label, ImGuiTableColumnFlags flags = 0, float init_width_or_weight = 0.0f, ID = ID{});
+    void table_next_row();
+    void table_setup_column(CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
     void push_style_color(ImGuiCol index, ImU32 col);
@@ -680,12 +704,6 @@ namespace osc::ui
 
     // returns a `Color` converted from the given LDR 8-bit `ImU32` format
     Color to_color(ImU32);
-
-    // returns a `Color` converted from the given LDR `ImVec4` color
-    Color to_color(const ImVec4&);
-
-    // returns an `ImVec4` converted from the given `Color`
-    ImVec4 to_ImVec4(const Color&);
 
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
     WindowFlags get_minimal_panel_flags();

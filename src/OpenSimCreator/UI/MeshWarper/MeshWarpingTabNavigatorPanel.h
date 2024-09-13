@@ -69,9 +69,9 @@ namespace osc
                 return;
             }
 
-            ui::table_setup_column("Name", 0, 0.7f*ui::get_content_region_available().x);
-            ui::table_setup_column("Source", 0, 0.15f*ui::get_content_region_available().x);
-            ui::table_setup_column("Destination", 0, 0.15f*ui::get_content_region_available().x);
+            ui::table_setup_column("Name", {}, 0.7f*ui::get_content_region_available().x);
+            ui::table_setup_column("Source", {}, 0.15f*ui::get_content_region_available().x);
+            ui::table_setup_column("Destination", {}, 0.15f*ui::get_content_region_available().x);
 
             int id = 0;
             for (const auto& lm : m_State->getScratch().landmarkPairs)
@@ -182,8 +182,8 @@ namespace osc
                 return;
             }
 
-            ui::table_setup_column("Name", 0, 0.7f*ui::get_content_region_available().x);
-            ui::table_setup_column("Location", 0, 0.3f*ui::get_content_region_available().x);
+            ui::table_setup_column("Name", {}, 0.7f*ui::get_content_region_available().x);
+            ui::table_setup_column("Location", {}, 0.3f*ui::get_content_region_available().x);
 
             int id = 0;
             for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks)
@@ -240,11 +240,9 @@ namespace osc
             return Color::half_grey();
         }
 
-        ImGuiTableFlags getTableFlags() const
+        ui::TableFlags getTableFlags() const
         {
-            return
-                ImGuiTableFlags_NoSavedSettings |
-                ImGuiTableFlags_SizingStretchSame;
+            return {ui::TableFlag::NoSavedSettings, ui::TableFlag::SizingStretchSame};
         }
 
         float calcCircleRadius() const

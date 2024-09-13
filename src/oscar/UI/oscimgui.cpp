@@ -337,6 +337,40 @@ private:
     };
 };
 
+template<>
+struct osc::Converter<ui::TableFlags, ImGuiTableFlags> final {
+    ImGuiTableFlags operator()(ui::TableFlags flags) const
+    {
+        return c_mappings_(flags);
+    }
+private:
+    static constexpr FlagMapper<ui::TableFlag, ImGuiTableFlags> c_mappings_ = {
+        {ui::TableFlag::BordersInner     , ImGuiTableFlags_BordersInner     },
+        {ui::TableFlag::BordersInnerV    , ImGuiTableFlags_BordersInnerV    },
+        {ui::TableFlag::NoSavedSettings  , ImGuiTableFlags_NoSavedSettings  },
+        {ui::TableFlag::PadOuterX        , ImGuiTableFlags_PadOuterX        },
+        {ui::TableFlag::Resizable        , ImGuiTableFlags_Resizable        },
+        {ui::TableFlag::ScrollY          , ImGuiTableFlags_ScrollY          },
+        {ui::TableFlag::SizingStretchProp, ImGuiTableFlags_SizingStretchProp},
+        {ui::TableFlag::SizingStretchSame, ImGuiTableFlags_SizingStretchSame},
+        {ui::TableFlag::Sortable         , ImGuiTableFlags_Sortable         },
+        {ui::TableFlag::SortTristate     , ImGuiTableFlags_SortTristate     },
+    };
+};
+
+template<>
+struct osc::Converter<ui::ColumnFlags, ImGuiTableColumnFlags> final {
+    ImGuiTableColumnFlags operator()(ui::ColumnFlags flags) const
+    {
+        return c_mappings_(flags);
+    }
+private:
+    static constexpr FlagMapper<ui::ColumnFlag, ImGuiTableColumnFlags> c_mappings_ = {
+        {ui::ColumnFlag::NoSort,       ImGuiTableColumnFlags_NoSort},
+        {ui::ColumnFlag::WidthStretch, ImGuiTableColumnFlags_WidthStretch},
+    };
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -995,9 +1029,9 @@ Vec2 osc::ui::get_item_bottomright()
     return ImGui::GetItemRectMax();
 }
 
-bool osc::ui::begin_table(CStringView str_id, int column, ImGuiTableFlags flags, const Vec2& outer_size, float inner_width)
+bool osc::ui::begin_table(CStringView str_id, int column, TableFlags flags, const Vec2& outer_size, float inner_width)
 {
-    return ImGui::BeginTable(str_id.c_str(), column, flags, outer_size, inner_width);
+    return ImGui::BeginTable(str_id.c_str(), column, to<ImGuiTableFlags>(flags), outer_size, inner_width);
 }
 
 void osc::ui::table_setup_scroll_freeze(int cols, int rows)
@@ -1020,14 +1054,14 @@ bool osc::ui::table_set_column_index(int column_n)
     return ImGui::TableSetColumnIndex(column_n);
 }
 
-void osc::ui::table_next_row(ImGuiTableRowFlags row_flags, float min_row_height)
+void osc::ui::table_next_row()
 {
-    ImGui::TableNextRow(row_flags, min_row_height);
+    ImGui::TableNextRow(0, 0.0f);
 }
 
-void osc::ui::table_setup_column(CStringView label, ImGuiTableColumnFlags flags, float init_width_or_weight, ID user_id)
+void osc::ui::table_setup_column(CStringView label, ColumnFlags flags, float init_width_or_weight, ID user_id)
 {
-    ImGui::TableSetupColumn(label.c_str(), flags, init_width_or_weight, user_id.value());
+    ImGui::TableSetupColumn(label.c_str(), to<ImGuiTableColumnFlags>(flags), init_width_or_weight, user_id.value());
 }
 
 void osc::ui::end_table()
@@ -1719,17 +1753,6 @@ Color osc::ui::to_color(ImU32 u32color)
 {
     return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
 }
-
-Color osc::ui::to_color(const ImVec4& v)
-{
-    return {v.x, v.y, v.z, v.w};
-}
-
-ImVec4 osc::ui::to_ImVec4(const Color& color)
-{
-    return ImVec4{Vec4{color}};
-}
-
 
 ui::WindowFlags osc::ui::get_minimal_panel_flags()
 {

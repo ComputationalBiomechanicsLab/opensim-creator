@@ -56,10 +56,11 @@ private:
             rgs::sort(measurements, rgs::less{}, &PerfMeasurement::label);
         }
 
-        const ImGuiTableFlags flags =
-            ImGuiTableFlags_NoSavedSettings |
-            ImGuiTableFlags_Resizable |
-            ImGuiTableFlags_BordersInner;
+        const ui::TableFlags flags = {
+            ui::TableFlag::NoSavedSettings,
+            ui::TableFlag::Resizable,
+            ui::TableFlag::BordersInner,
+        };
 
         if (ui::begin_table("measurements", 6, flags)) {
             ui::table_setup_column("Label");

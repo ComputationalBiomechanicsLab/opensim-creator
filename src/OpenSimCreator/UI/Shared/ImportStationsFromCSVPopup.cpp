@@ -98,7 +98,7 @@ private:
         ui::draw_text_centered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
         ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
-        if (ui::begin_table("##importtable", 4, ImGuiTableFlags_ScrollY, {0.0f, 10.0f*ui::get_text_line_height()}))
+        if (ui::begin_table("##importtable", 4, ui::TableFlag::ScrollY, {0.0f, 10.0f*ui::get_text_line_height()}))
         {
             ui::table_setup_column("Name");
             ui::table_setup_column("X");

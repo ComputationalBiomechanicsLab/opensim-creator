@@ -56,18 +56,19 @@ private:
         }
 
         // else: there's coordinates, which should be shown in a table
-        ImGuiTableFlags flags =
-            ImGuiTableFlags_NoSavedSettings |
-            ImGuiTableFlags_Resizable |
-            ImGuiTableFlags_Sortable |
-            ImGuiTableFlags_SortTristate |
-            ImGuiTableFlags_BordersInnerV |
-            ImGuiTableFlags_SizingStretchSame;
+        const ui::TableFlags flags = {
+            ui::TableFlag::NoSavedSettings,
+            ui::TableFlag::Resizable,
+            ui::TableFlag::Sortable,
+            ui::TableFlag::SortTristate,
+            ui::TableFlag::BordersInnerV,
+            ui::TableFlag::SizingStretchSame,
+        };
         if (ui::begin_table("##coordinatestable", 3, flags))
         {
             ui::table_setup_column("Name");
-            ui::table_setup_column("Value", ImGuiTableColumnFlags_NoSort, 1.65f);
-            ui::table_setup_column("Speed", ImGuiTableColumnFlags_NoSort, 0.5f);
+            ui::table_setup_column("Value", ui::ColumnFlag::NoSort, 1.65f);
+            ui::table_setup_column("Speed", ui::ColumnFlag::NoSort, 0.5f);
             ui::table_setup_scroll_freeze(0, 1);
             ui::table_headers_row();
 

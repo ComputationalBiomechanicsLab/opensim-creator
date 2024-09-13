@@ -152,7 +152,7 @@ namespace
             ui::draw_separator();
             ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
 
-            if (ui::begin_table("CommonChoicesTable", 2, ImGuiTableFlags_SizingStretchProp)) {
+            if (ui::begin_table("CommonChoicesTable", 2, ui::TableFlag::SizingStretchProp)) {
                 ui::table_setup_column("Type");
                 ui::table_setup_column("Options");
 

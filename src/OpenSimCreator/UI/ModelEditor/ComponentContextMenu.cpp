@@ -609,7 +609,7 @@ private:
             if (!socketNames.empty())
             {
                 ui::push_style_var(ImGuiStyleVar_CellPadding, {0.5f*ui::get_text_line_height(), 0.5f*ui::get_text_line_height()});
-                if (ui::begin_table("sockets table", 3, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_BordersInner | ImGuiTableFlags_PadOuterX))
+                if (ui::begin_table("sockets table", 3, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX}))
                 {
                     ui::table_setup_column("Socket Name");
                     ui::table_setup_column("Connectee");
