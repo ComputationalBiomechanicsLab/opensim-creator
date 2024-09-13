@@ -395,10 +395,10 @@ namespace
 {
     // Refers to one data series within one annotated motion.
     class DataSeries final : public OpenSim::ModelComponent {
-        OpenSim_DECLARE_CONCRETE_OBJECT(DataSeries, OpenSim::ModelComponent);
+        OpenSim_DECLARE_CONCRETE_OBJECT(DataSeries, OpenSim::ModelComponent)
     public:
-        OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series");
-        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column that contains this data series");
+        OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series")
+        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column that contains this data series")
 
         explicit DataSeries(
             const std::shared_ptr<const OpenSim::Storage>& storage,
@@ -431,7 +431,7 @@ namespace
     //       reason it's reproduced here is to provide like-for-like behavior between
     //       OSC's 'preview experimental data' and OpenSim's.
     class AnnotatedMotion final : public OpenSim::ModelComponent {
-        OpenSim_DECLARE_CONCRETE_OBJECT(AnnotatedMotion, OpenSim::ModelComponent);
+        OpenSim_DECLARE_CONCRETE_OBJECT(AnnotatedMotion, OpenSim::ModelComponent)
     public:
         // Constructs an `AnnotationMotion` that was loaded from the given filesystem
         // path, or throws an `std::exception` if any error occurs.
@@ -475,6 +475,7 @@ namespace
             InitializeState(*model);
 
             m_Model->setModel(std::move(model));
+            m_Model->commit("loaded model");
         }
 
         void loadMotionFiles(std::vector<std::filesystem::path> paths)
@@ -568,7 +569,7 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_UiState->updSharedModelPtr(),
-                    [this](const OpenSim::ComponentPath&) {}
+                    [](const OpenSim::ComponentPath&) {}
                 );
             }
         );
