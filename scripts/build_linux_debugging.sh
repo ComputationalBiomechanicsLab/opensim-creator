@@ -54,6 +54,6 @@ export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (d
 ./osc-build/tests/testoscar/testoscar
 ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ./osc-build/tests/testoscar_demos/testoscar_demos
-./osc-build/tests/testoscar_demos/testoscar_simbody
+ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/testoscar_simbody/testoscar_simbody
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
