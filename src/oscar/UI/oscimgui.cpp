@@ -94,20 +94,9 @@ namespace
         return rgs::min(dimensions);
     }
 
-
-    void push_style_color(ImGuiCol index, ImU32 col)
-    {
-        ImGui::PushStyleColor(index, col);
-    }
-
-    ImU32 to_ImU32(const Vec4& color)
-    {
-        return ImGui::ColorConvertFloat4ToU32(color);
-    }
-
     ImU32 to_ImU32(const Color& color)
     {
-        return to_ImU32(Vec4{color});
+        return ImGui::ColorConvertFloat4ToU32(color);
     }
 
     Color to_color(ImU32 u32color)
