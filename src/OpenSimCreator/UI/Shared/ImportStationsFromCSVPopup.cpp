@@ -145,7 +145,7 @@ private:
             return;
         }
 
-        ui::push_style_color(ImGuiCol_Text, Color::orange());
+        ui::push_style_color(ui::ColorVar::Text, Color::orange());
         ui::draw_text(ICON_FA_EXCLAMATION " input file contains issues");
         ui::pop_style_color();
 

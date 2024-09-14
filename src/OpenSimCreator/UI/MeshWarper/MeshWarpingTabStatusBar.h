@@ -68,12 +68,11 @@ namespace osc
         {
             ui::draw_text_unformatted("(");
             ui::same_line();
-            for (int i = 0; i < 3; ++i)
-            {
+            for (int i = 0; i < 3; ++i) {
                 Color color = {0.5f, 0.5f, 0.5f, 1.0f};
                 color[i] = 1.0f;
 
-                ui::push_style_color(ImGuiCol_Text, color);
+                ui::push_style_color(ui::ColorVar::Text, color);
                 ui::draw_text("%f", pos[i]);
                 ui::same_line();
                 ui::pop_style_color();

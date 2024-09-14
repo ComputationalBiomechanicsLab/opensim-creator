@@ -246,7 +246,7 @@ private:
 
         ui::same_line();
 
-        ui::push_style_color(ImGuiCol_Text, Color{0.7f, 0.0f, 0.0f});
+        ui::push_style_color(ui::ColorVar::Text, Color{0.7f, 0.0f, 0.0f});
         if (ui::draw_small_button(ICON_FA_TIMES))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::Delete, i};

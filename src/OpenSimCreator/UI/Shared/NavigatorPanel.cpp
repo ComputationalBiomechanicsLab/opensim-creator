@@ -319,18 +319,18 @@ private:
             // handle coloring
             int pushedStyles = 0;
             if (cur == selected) {
-                ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
+                ui::push_style_color(ui::ColorVar::Text, OSCColors::selected());
                 ++pushedStyles;
             }
             else if (cur == hovered) {
-                ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
+                ui::push_style_color(ui::ColorVar::Text, OSCColors::hovered());
                 ++pushedStyles;
             }
             else if (!hasSearch || searchHit) {
                 // display as normal
             }
             else {
-                ui::push_style_color(ImGuiCol_Text, OSCColors::disabled());
+                ui::push_style_color(ui::ColorVar::Text, OSCColors::disabled());
                 ++pushedStyles;
             }
 

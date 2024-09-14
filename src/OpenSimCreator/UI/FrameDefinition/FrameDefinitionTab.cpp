@@ -598,7 +598,7 @@ namespace
 
         if (maybeSourceEvent && ui::begin_menu(ICON_FA_ARROWS_ALT " Frame With This Edge as"))
         {
-            ui::push_style_color(ImGuiCol_Text, Color::muted_red());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_red());
             if (ui::draw_menu_item("+x"))
             {
                 ActionPushCreateFrameLayer(
@@ -611,7 +611,7 @@ namespace
             }
             ui::pop_style_color();
 
-            ui::push_style_color(ImGuiCol_Text, Color::muted_green());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_green());
             if (ui::draw_menu_item("+y"))
             {
                 ActionPushCreateFrameLayer(
@@ -624,7 +624,7 @@ namespace
             }
             ui::pop_style_color();
 
-            ui::push_style_color(ImGuiCol_Text, Color::muted_blue());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_blue());
             if (ui::draw_menu_item("+z"))
             {
                 ActionPushCreateFrameLayer(
@@ -639,7 +639,7 @@ namespace
 
             ui::draw_separator();
 
-            ui::push_style_color(ImGuiCol_Text, Color::muted_red());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_red());
             if (ui::draw_menu_item("-x"))
             {
                 ActionPushCreateFrameLayer(
@@ -652,7 +652,7 @@ namespace
             }
             ui::pop_style_color();
 
-            ui::push_style_color(ImGuiCol_Text, Color::muted_green());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_green());
             if (ui::draw_menu_item("-y"))
             {
                 ActionPushCreateFrameLayer(
@@ -665,7 +665,7 @@ namespace
             }
             ui::pop_style_color();
 
-            ui::push_style_color(ImGuiCol_Text, Color::muted_blue());
+            ui::push_style_color(ui::ColorVar::Text, Color::muted_blue());
             if (ui::draw_menu_item("-z"))
             {
                 ActionPushCreateFrameLayer(

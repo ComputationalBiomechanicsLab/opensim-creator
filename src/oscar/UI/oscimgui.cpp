@@ -402,6 +402,28 @@ private:
     };
 };
 
+template<>
+struct osc::Converter<ui::ColorVar, ImGuiCol> final {
+    ImGuiCol operator()(ui::ColorVar option) const
+    {
+        static_assert(num_options<ui::ColorVar>() == 10);
+
+        switch (option) {
+        case ui::ColorVar::Text:           return ImGuiCol_Text;
+        case ui::ColorVar::Button:         return ImGuiCol_Button;
+        case ui::ColorVar::ButtonActive:   return ImGuiCol_ButtonActive;
+        case ui::ColorVar::ButtonHovered:  return ImGuiCol_ButtonHovered;
+        case ui::ColorVar::FrameBg:        return ImGuiCol_FrameBg;
+        case ui::ColorVar::PopupBg:        return ImGuiCol_PopupBg;
+        case ui::ColorVar::FrameBgHovered: return ImGuiCol_FrameBgHovered;
+        case ui::ColorVar::FrameBgActive:  return ImGuiCol_FrameBgActive;
+        case ui::ColorVar::CheckMark:      return ImGuiCol_CheckMark;
+        case ui::ColorVar::SliderGrab:     return ImGuiCol_SliderGrab;
+        default:                           return ImGuiCol_Text;
+        }
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -905,9 +927,9 @@ bool osc::ui::is_key_down(ImGuiKey key)
     return ImGui::IsKeyDown(key);
 }
 
-Color osc::ui::get_style_color(ImGuiCol color)
+Color osc::ui::get_style_color(ColorVar color)
 {
-    return Color{ImGui::GetStyleColorVec4(color)};
+    return Color{ImGui::GetStyleColorVec4(to<ImGuiCol>(color))};
 }
 
 Vec2 osc::ui::get_style_frame_padding()
@@ -1100,9 +1122,9 @@ void osc::ui::end_table()
     ImGui::EndTable();
 }
 
-void osc::ui::push_style_color(ImGuiCol index, const Color& c)
+void osc::ui::push_style_color(ColorVar var, const Color& c)
 {
-    ImGui::PushStyleColor(index, ImVec4{c});
+    ImGui::PushStyleColor(to<ImGuiCol>(var), ImVec4{c});
 }
 
 void osc::ui::pop_style_color(int count)
@@ -1110,9 +1132,9 @@ void osc::ui::pop_style_color(int count)
     ImGui::PopStyleColor(count);
 }
 
-Color osc::ui::get_color(ImGuiCol index)
+Color osc::ui::get_color(ColorVar var)
 {
-    return ImGui::GetStyle().Colors[index];
+    return ImGui::GetStyle().Colors[to<ImGuiCol>(var)];
 }
 
 float osc::ui::get_text_line_height()
@@ -1627,8 +1649,8 @@ float osc::ui::calc_button_width(CStringView content)
 
 bool osc::ui::draw_button_nobg(CStringView label, Vec2 dimensions)
 {
-    push_style_color(ImGuiCol_Button, Color::clear());
-    push_style_color(ImGuiCol_ButtonHovered, Color::clear());
+    push_style_color(ColorVar::Button, Color::clear());
+    push_style_color(ColorVar::ButtonHovered, Color::clear());
     const bool rv = ui::draw_button(label, dimensions);
     pop_style_color(2);
 
@@ -1998,14 +2020,14 @@ void osc::ui::draw_text_column_centered(CStringView content)
 
 void osc::ui::draw_text_faded(CStringView content)
 {
-    ui::push_style_color(ImGuiCol_Text, Color::light_grey());
+    ui::push_style_color(ColorVar::Text, Color::light_grey());
     draw_text_unformatted(content);
     ui::pop_style_color();
 }
 
 void osc::ui::draw_text_warning(CStringView content)
 {
-    push_style_color(ImGuiCol_Text, Color::yellow());
+    push_style_color(ColorVar::Text, Color::yellow());
     draw_text_unformatted(content);
     pop_style_color();
 }
@@ -2363,7 +2385,7 @@ bool osc::ui::draw_gizmo_op_selector(
 
     if (can_translate) {
         if (op == GizmoOperation::Translate) {
-            ui::push_style_color(ImGuiCol_Button, Color::muted_blue());
+            ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
         if (ui::draw_button(ICON_FA_ARROWS_ALT)) {
@@ -2379,7 +2401,7 @@ bool osc::ui::draw_gizmo_op_selector(
 
     if (can_rotate) {
         if (op == GizmoOperation::Rotate) {
-            ui::push_style_color(ImGuiCol_Button, Color::muted_blue());
+            ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
         if (ui::draw_button(ICON_FA_REDO)) {
@@ -2395,7 +2417,7 @@ bool osc::ui::draw_gizmo_op_selector(
 
     if (can_scale) {
         if (op == GizmoOperation::Scale) {
-            ui::push_style_color(ImGuiCol_Button, Color::muted_blue());
+            ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
         if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT)) {
@@ -2560,27 +2582,27 @@ namespace
         return static_cast<ImPlotFlags>(flags);
     }
 
-    constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::StyleVar var)
+    constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::PlotStyleVar var)
     {
-        static_assert(num_options<plot::StyleVar>() == 4);
+        static_assert(num_options<plot::PlotStyleVar>() == 4);
 
         switch (var) {
-        case plot::StyleVar::FitPadding:        return ImPlotStyleVar_FitPadding;
-        case plot::StyleVar::PlotPadding:       return ImPlotStyleVar_PlotPadding;
-        case plot::StyleVar::PlotBorderSize:    return ImPlotStyleVar_PlotBorderSize;
-        case plot::StyleVar::AnnotationPadding: return ImPlotStyleVar_AnnotationPadding;
-        default:                                return ImPlotStyleVar_PlotPadding;  // shouldn't happen
+        case plot::PlotStyleVar::FitPadding:        return ImPlotStyleVar_FitPadding;
+        case plot::PlotStyleVar::PlotPadding:       return ImPlotStyleVar_PlotPadding;
+        case plot::PlotStyleVar::PlotBorderSize:    return ImPlotStyleVar_PlotBorderSize;
+        case plot::PlotStyleVar::AnnotationPadding: return ImPlotStyleVar_AnnotationPadding;
+        default:                                    return ImPlotStyleVar_PlotPadding;  // shouldn't happen
         }
     }
 
-    constexpr ImPlotCol to_ImPlotCol(plot::ColorVar var)
+    constexpr ImPlotCol to_ImPlotCol(plot::PlotColorVar var)
     {
-        static_assert(num_options<plot::ColorVar>() == 2);
+        static_assert(num_options<plot::PlotColorVar>() == 2);
 
         switch (var) {
-        case plot::ColorVar::Line:           return ImPlotCol_Line;
-        case plot::ColorVar::PlotBackground: return ImPlotCol_PlotBg;
-        default:                             return ImPlotCol_Line;  // shouldn't happen
+        case plot::PlotColorVar::Line:           return ImPlotCol_Line;
+        case plot::PlotColorVar::PlotBackground: return ImPlotCol_PlotBg;
+        default:                                 return ImPlotCol_Line;  // shouldn't happen
         }
     }
 
@@ -2680,12 +2702,12 @@ void osc::ui::plot::end()
     ImPlot::EndPlot();
 }
 
-void osc::ui::plot::push_style_var(StyleVar var, float value)
+void osc::ui::plot::push_style_var(PlotStyleVar var, float value)
 {
     ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
 
-void osc::ui::plot::push_style_var(StyleVar var, Vec2 value)
+void osc::ui::plot::push_style_var(PlotStyleVar var, Vec2 value)
 {
     ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
@@ -2695,7 +2717,7 @@ void osc::ui::plot::pop_style_var(int count)
     ImPlot::PopStyleVar(count);
 }
 
-void osc::ui::plot::push_style_color(ColorVar var, const Color& color)
+void osc::ui::plot::push_style_color(PlotColorVar var, const Color& color)
 {
     ImPlot::PushStyleColor(to_ImPlotCol(var), color);
 }

@@ -143,7 +143,7 @@ private:
             plot::setup_finish();
 
             plot::set_next_marker_style(plot::MarkerType::Circle, 2.0f);
-            plot::push_style_color(plot::ColorVar::Line, Color::white());
+            plot::push_style_color(plot::PlotColorVar::Line, Color::white());
             plot::plot_line("Function Output", m_PlotPoints);
             plot::pop_style_color();
 

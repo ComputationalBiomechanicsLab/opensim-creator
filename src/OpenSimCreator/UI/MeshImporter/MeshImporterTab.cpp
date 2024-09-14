@@ -1643,12 +1643,12 @@ private:
 
             if (id == m_MaybeHover.ID)
             {
-                ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
+                ui::push_style_color(ui::ColorVar::Text, OSCColors::hovered());
                 ++styles;
             }
             else if (m_Shared->isSelected(id))
             {
-                ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
+                ui::push_style_color(ui::ColorVar::Text, OSCColors::selected());
                 ++styles;
             }
 
@@ -1982,7 +1982,7 @@ private:
         };
 
         ui::set_cursor_screen_pos(buttonTopLeft);
-        ui::push_style_color(ImGuiCol_Button, Color::dark_green());
+        ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
         if (ui::draw_button(mainButtonText))
         {
             m_Shared->tryCreateOutputModel();

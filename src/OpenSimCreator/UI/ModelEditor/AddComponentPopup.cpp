@@ -495,7 +495,7 @@ private:
     {
         if (!m_CurrentErrors.empty())
         {
-            ui::push_style_color(ImGuiCol_Text, Color::red());
+            ui::push_style_color(ui::ColorVar::Text, Color::red());
             ui::draw_dummy({0.0f, 2.0f});
             ui::draw_text_wrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
             ui::draw_dummy({0.0f, 2.0f});

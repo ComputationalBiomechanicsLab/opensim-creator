@@ -128,12 +128,12 @@ private:
         int stylesPushed = 0;
         if (&c == m_Model->getHovered())
         {
-            ui::push_style_color(ImGuiCol_Text, OSCColors::hovered());
+            ui::push_style_color(ui::ColorVar::Text, OSCColors::hovered());
             ++stylesPushed;
         }
         if (&c == m_Model->getSelected())
         {
-            ui::push_style_color(ImGuiCol_Text, OSCColors::selected());
+            ui::push_style_color(ui::ColorVar::Text, OSCColors::selected());
             ++stylesPushed;
         }
 
@@ -178,9 +178,9 @@ private:
 
     void drawDataCellLockButton(const OpenSim::Coordinate& c)
     {
-        ui::push_style_color(ImGuiCol_Button, Color::clear());
-        ui::push_style_color(ImGuiCol_ButtonActive, Color::clear());
-        ui::push_style_color(ImGuiCol_ButtonHovered, Color::clear());
+        ui::push_style_color(ui::ColorVar::Button, Color::clear());
+        ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
+        ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
         ui::push_style_var(ImGuiStyleVar_FramePadding, {0.0f, ui::get_style_frame_padding().y});
         if (ui::draw_button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {

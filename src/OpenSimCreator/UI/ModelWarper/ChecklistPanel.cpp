@@ -35,7 +35,7 @@ namespace
 
     void DrawIcon(const EntryStyling& style)
     {
-        ui::push_style_color(ImGuiCol_Text, style.color);
+        ui::push_style_color(ui::ColorVar::Text, style.color);
         ui::draw_text_unformatted(style.icon);
         ui::pop_style_color();
     }

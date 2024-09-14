@@ -1182,9 +1182,9 @@ bool osc::DrawCameraControlButtons(
         [&params, drawlist]() { return DrawAdvancedParamsEditor(params, drawlist); },
     };
 
-    auto c = ui::get_style_color(ImGuiCol_Button);
+    auto c = ui::get_style_color(ui::ColorVar::Button);
     c.a *= 0.9f;
-    ui::push_style_color(ImGuiCol_Button, c);
+    ui::push_style_color(ui::ColorVar::Button, c);
 
     const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;

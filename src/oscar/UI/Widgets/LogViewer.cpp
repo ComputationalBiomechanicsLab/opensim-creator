@@ -100,7 +100,7 @@ public:
         auto& guarded_content = global_get_traceback_log();
         const auto& guard = guarded_content.lock();
         for (const LogMessage& log_message : *guard) {
-            ui::push_style_color(ImGuiCol_Text, ::to_color(log_message.level()));
+            ui::push_style_color(ui::ColorVar::Text, ::to_color(log_message.level()));
             ui::draw_text("[%s]", to_cstringview(log_message.level()).c_str());
             ui::pop_style_color();
             ui::same_line();

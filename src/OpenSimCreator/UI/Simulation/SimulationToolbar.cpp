@@ -32,7 +32,7 @@ namespace
         case SimulationStatus::Error:
             return Color::red();
         default:
-            return ui::get_style_color(ImGuiCol_Text);
+            return ui::get_style_color(ui::ColorVar::Text);
         }
     }
 }
@@ -99,7 +99,7 @@ private:
         const SimulationStatus status = m_Simulation->getStatus();
         ui::draw_text_disabled("simulator status:");
         ui::same_line();
-        ui::push_style_color(ImGuiCol_Text, CalcStatusColor(status));
+        ui::push_style_color(ui::ColorVar::Text, CalcStatusColor(status));
         ui::draw_text_unformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
         ui::pop_style_color();
     }

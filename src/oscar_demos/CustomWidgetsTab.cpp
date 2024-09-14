@@ -15,7 +15,7 @@ namespace
     void draw_widget_title(CStringView title, Vec2 pos)
     {
         const Vec2 text_topleft = pos + ui::get_style_frame_padding();
-        ui::get_panel_draw_list().add_text(text_topleft, ui::get_color(ImGuiCol_Text), title);
+        ui::get_panel_draw_list().add_text(text_topleft, ui::get_color(ui::ColorVar::Text), title);
     }
 }
 
@@ -30,8 +30,8 @@ namespace
         const bool circular_grab = false;
 
         const Color bg_color = hovered ?
-            ui::get_color(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
-            ui::get_color(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
+            ui::get_color(enabled ? ui::ColorVar::FrameBgActive : ui::ColorVar::FrameBgHovered) :
+            ui::get_color(enabled ? ui::ColorVar::CheckMark : ui::ColorVar::FrameBg);
 
         const Vec2 pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
@@ -46,17 +46,17 @@ namespace
         draw_list.add_rect_filled(bg_rect, bg_color, rounding);
 
         if (circular_grab) {
-            draw_list.add_circle_filled({pmid, radius * 0.8f}, ui::get_color(ImGuiCol_SliderGrab));
+            draw_list.add_circle_filled({pmid, radius * 0.8f}, ui::get_color(ui::ColorVar::SliderGrab));
         }
         else {
             const Vec2 offs = {radius*0.8f, radius*0.8f};
-            draw_list.add_rect_filled({pmid - offs, pmid + offs}, ui::get_color(ImGuiCol_SliderGrab), rounding);
+            draw_list.add_rect_filled({pmid - offs, pmid + offs}, ui::get_color(ui::ColorVar::SliderGrab), rounding);
         }
     }
 
     bool Toggle(CStringView label, bool* v)
     {
-        ui::push_style_color(ImGuiCol_Button, Color::clear());
+        ui::push_style_color(ui::ColorVar::Button, Color::clear());
 
         const float title_height = ui::get_text_line_height();
 

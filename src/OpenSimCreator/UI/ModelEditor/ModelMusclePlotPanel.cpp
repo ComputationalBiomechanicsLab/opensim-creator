@@ -1542,7 +1542,7 @@ namespace
 
             drawPlotTitle(coord, plotTitle);  // draw a custom title bar
 
-            plot::push_style_var(plot::StyleVar::FitPadding, {0.025f, 0.05f});
+            plot::push_style_var(plot::PlotStyleVar::FitPadding, {0.025f, 0.05f});
             if (plot::begin(plotTitle, ui::get_content_region_available(), m_PlotFlags)) {
 
                 const PlotParameters& plotParams = getShared().getPlotParams();
@@ -1724,7 +1724,7 @@ namespace
 
                 const std::string lineName = IthPlotLineName(plot, i + 1);
 
-                plot::push_style_color(plot::ColorVar::Line, color);
+                plot::push_style_color(plot::PlotColorVar::Line, color);
                 plot::plot_line(lineName, *plot.lockDataPoints());
                 plot::pop_style_color();
 
@@ -1780,7 +1780,7 @@ namespace
                     plot::set_next_marker_style(plot::MarkerType::Circle, 3.0f);
                 }
 
-                plot::push_style_color(plot::ColorVar::Line, color);
+                plot::push_style_color(plot::PlotColorVar::Line, color);
                 plot::plot_line(lineName, *plot.lockDataPoints());
                 plot::pop_style_color();
 

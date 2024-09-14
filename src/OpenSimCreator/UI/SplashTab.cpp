@@ -295,7 +295,7 @@ private:
             }
         }
         else {
-            ui::push_style_color(ImGuiCol_Text, Color::half_grey());
+            ui::push_style_color(ui::ColorVar::Text, Color::half_grey());
             ui::draw_text_wrapped("No files opened recently. Try:");
             ui::draw_text_bullet_pointed("Creating a new model (Ctrl+N)");
             ui::draw_text_bullet_pointed("Opening an existing model (Ctrl+O)");

@@ -384,7 +384,21 @@ namespace osc::ui
     bool is_key_released(ImGuiKey);
     bool is_key_down(ImGuiKey);
 
-    Color get_style_color(ImGuiCol);
+    enum class ColorVar {
+        Text,
+        Button,
+        ButtonActive,
+        ButtonHovered,
+        FrameBg,
+        PopupBg,
+        FrameBgHovered,
+        FrameBgActive,
+        CheckMark,
+        SliderGrab,
+        NUM_OPTIONS,
+    };
+
+    Color get_style_color(ColorVar);
     Vec2 get_style_frame_padding();
     float get_style_frame_border_size();
     Vec2 get_style_panel_padding();
@@ -467,10 +481,10 @@ namespace osc::ui
     void table_setup_column(CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
-    void push_style_color(ImGuiCol index, const Color&);
+    void push_style_color(ColorVar index, const Color&);
     void pop_style_color(int count = 1);
 
-    Color get_color(ImGuiCol);
+    Color get_color(ColorVar);
     float get_text_line_height();
     float get_text_line_height_with_spacing();
 
@@ -939,7 +953,7 @@ namespace osc::ui
             return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
         }
 
-        enum class StyleVar {
+        enum class PlotStyleVar {
             // `Vec2`: additional fit padding as a percentage of the fit extents (e.g. Vec2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
             FitPadding,
 
@@ -955,7 +969,7 @@ namespace osc::ui
             NUM_OPTIONS
         };
 
-        enum class ColorVar {
+        enum class PlotColorVar {
             // plot line/outline color (defaults to the next unused color in the current colormap)
             Line,
 
@@ -1068,16 +1082,16 @@ namespace osc::ui
         void end();
 
         // temporarily modifies a style variable of `float` type. Must be paired with `pop_style_var`
-        void push_style_var(StyleVar, float);
+        void push_style_var(PlotStyleVar, float);
 
         // temporarily modifies a style variable of `Vec2` type. Must be paired with `pop_style_var`
-        void push_style_var(StyleVar, Vec2);
+        void push_style_var(PlotStyleVar, Vec2);
 
         // undoes `count` temporary style variable modifications that were enacted by `push_style_var`
         void pop_style_var(int count = 1);
 
         // temporarily modifies a style color variable. Must be paired with `pop_style_color`
-        void push_style_color(ColorVar, const Color&);
+        void push_style_color(PlotColorVar, const Color&);
 
         // undoes `count` temporary style color modifications that were enacted by `push_style_color`
         void pop_style_color(int count = 1);
