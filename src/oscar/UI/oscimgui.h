@@ -2,7 +2,6 @@
 
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
 #include <imgui.h>
-#include <imgui_internal.h>
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/AABB.h>

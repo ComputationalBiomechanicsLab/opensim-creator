@@ -33,6 +33,7 @@
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 
+#include <imgui/imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
 #include <IconsFontAwesome5.h>
