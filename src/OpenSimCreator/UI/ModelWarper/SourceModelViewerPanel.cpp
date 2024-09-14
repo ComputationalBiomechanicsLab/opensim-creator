@@ -23,7 +23,7 @@ public:
 private:
     void impl_before_imgui_begin() final
     {
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
     }
 
     void impl_after_imgui_begin() final

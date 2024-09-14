@@ -62,7 +62,7 @@ namespace
 
         const Vec2 p = ui::get_cursor_screen_pos();
         const Vec2 bb(ui::get_column_width(), ui::get_frame_height());
-        ui::push_style_var(ImGuiStyleVar_ButtonTextAlign, {0.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::ButtonTextAlign, {0.0f, 0.0f});
         ui::push_id(label);
         const bool status = ui::draw_button("###toggle_button", bb);
 

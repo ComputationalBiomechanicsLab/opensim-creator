@@ -462,10 +462,10 @@ private:
     {
         OSC_PERF("MainUIScreen/drawTabBar");
 
-        ui::push_style_var(ImGuiStyleVar_FramePadding, ui::get_style_frame_padding() + 2.0f);
-        ui::push_style_var(ImGuiStyleVar_ItemInnerSpacing, Vec2{5.0f, 0.0f});
-        ui::push_style_var(ImGuiStyleVar_TabRounding, 10.0f);
-        ui::push_style_var(ImGuiStyleVar_FrameRounding, 10.0f);
+        ui::push_style_var(ui::StyleVar::FramePadding, ui::get_style_frame_padding() + 2.0f);
+        ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vec2{5.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::TabRounding, 10.0f);
+        ui::push_style_var(ui::StyleVar::FrameRounding, 10.0f);
         if (ui::begin_main_viewport_top_bar("##TabBarViewport"))
         {
             if (ui::begin_menu_bar())

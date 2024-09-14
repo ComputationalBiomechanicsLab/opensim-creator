@@ -242,7 +242,7 @@ public:
 
         // draw cancellation button
         {
-            ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
             constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 25.0f};

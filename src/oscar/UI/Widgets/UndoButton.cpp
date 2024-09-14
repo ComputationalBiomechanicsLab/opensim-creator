@@ -17,7 +17,7 @@ void osc::UndoButton::on_draw()
 {
     int ui_id = 0;
 
-    ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+    ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 
     bool was_disabled = false;
     if (not undo_redo_->can_undo()) {
@@ -30,7 +30,7 @@ void osc::UndoButton::on_draw()
 
     ui::same_line();
 
-    ui::push_style_var(ImGuiStyleVar_FramePadding, {0.0f, ui::get_style_frame_padding().y});
+    ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
     ui::draw_button(ICON_FA_CARET_DOWN);
     ui::pop_style_var();
 

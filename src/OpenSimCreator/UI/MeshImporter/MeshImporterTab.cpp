@@ -942,7 +942,7 @@ private:
     // draw content of "Add" menu for some scene element
     void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
         const ScopeGuard g1{[]() { ui::pop_style_var(); }};
 
         int imguiID = 0;
@@ -1143,7 +1143,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
         for (int i = 0, len = el.getNumCrossReferences(); i < len; ++i)
         {
@@ -1215,7 +1215,7 @@ private:
             return;  // top-level menu isn't open
         }
 
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
         {
             auto DrawMenuContent = [&](int axis)
@@ -1334,7 +1334,7 @@ private:
 
         if (ui::begin_menu(ICON_FA_EXTERNAL_LINK_ALT " Reassign Connection"))
         {
-            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+            ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
             for (int i = 0; i < nRefs; ++i)
             {
@@ -1705,7 +1705,7 @@ private:
 
     void drawAddOtherMenuItems()
     {
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
 
         if (ui::draw_menu_item(ICON_FA_CUBE " Meshes"))
         {
@@ -1827,7 +1827,7 @@ private:
 
         ui::draw_gizmo_op_selector(m_Gizmo);
 
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
         ui::pop_style_var();
 
@@ -1964,7 +1964,7 @@ private:
 
     void draw3DViewerOverlayConvertToOpenSimModelButton()
     {
-        ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
         constexpr CStringView mainButtonText = "Convert to OpenSim Model " ICON_FA_ARROW_RIGHT;
         constexpr CStringView settingButtonText = ICON_FA_COG;
@@ -1992,7 +1992,7 @@ private:
         ui::pop_style_var();
         ui::draw_tooltip_if_item_hovered("Convert current scene to an OpenSim Model", "This will attempt to convert the current scene into an OpenSim model, followed by showing the model in OpenSim Creator's OpenSim model editor screen.\n\nYour progress in this tab will remain untouched.");
 
-        ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+        ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
         ui::same_line(0.0f, spacingBetweenMainAndSettingsButtons.x);
         ui::draw_button(settingButtonText);
         ui::pop_style_var();
@@ -2364,7 +2364,7 @@ private:
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
             ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
-            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
 
             const ui::WindowFlags modalFlags = {
                 ui::WindowFlag::AlwaysAutoResize,
@@ -2386,7 +2386,7 @@ private:
         }
         else
         {
-            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
             if (ui::begin_panel("wizard_3dViewer"))
             {
                 ui::pop_style_var();

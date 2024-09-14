@@ -105,7 +105,7 @@ private:
 
         // draw screenshot window
         {
-            ui::push_style_var(ImGuiStyleVar_WindowPadding, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
             ui::begin_panel("Screenshot");
             ui::pop_style_var();
 

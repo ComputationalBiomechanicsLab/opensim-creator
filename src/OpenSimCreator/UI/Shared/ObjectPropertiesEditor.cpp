@@ -274,7 +274,7 @@ namespace
     {
         ScalarInputRv rv;
 
-        ui::push_style_var(ImGuiStyleVar_ItemInnerSpacing, {1.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::ItemInnerSpacing, {1.0f, 0.0f});
         if (ui::draw_scalar_input(label, ui::DataType::Float, &value, &stepSize, nullptr, "%.6f")) {
             rv.wasEdited = true;
         }

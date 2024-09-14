@@ -424,6 +424,28 @@ struct osc::Converter<ui::ColorVar, ImGuiCol> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::StyleVar, ImGuiStyleVar> final {
+    ImGuiStyleVar operator()(ui::StyleVar option) const
+    {
+        static_assert(num_options<ui::StyleVar>() == 10);
+
+        switch (option) {
+        case ui::StyleVar::Alpha:            return ImGuiStyleVar_Alpha;
+        case ui::StyleVar::ButtonTextAlign:  return ImGuiStyleVar_ButtonTextAlign;
+        case ui::StyleVar::CellPadding:      return ImGuiStyleVar_CellPadding;
+        case ui::StyleVar::DisabledAlpha:    return ImGuiStyleVar_DisabledAlpha;
+        case ui::StyleVar::FramePadding:     return ImGuiStyleVar_FramePadding;
+        case ui::StyleVar::FrameRounding:    return ImGuiStyleVar_FrameRounding;
+        case ui::StyleVar::ItemInnerSpacing: return ImGuiStyleVar_ItemInnerSpacing;
+        case ui::StyleVar::ItemSpacing:      return ImGuiStyleVar_ItemSpacing;
+        case ui::StyleVar::TabRounding:      return ImGuiStyleVar_TabRounding;
+        case ui::StyleVar::WindowPadding:    return ImGuiStyleVar_WindowPadding;
+        default:                             return ImGuiStyleVar_Alpha;
+        }
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -972,14 +994,14 @@ bool osc::ui::wants_keyboard()
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void osc::ui::push_style_var(ImGuiStyleVar style, const Vec2& pos)
+void osc::ui::push_style_var(StyleVar var, const Vec2& pos)
 {
-    ImGui::PushStyleVar(style, pos);
+    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), pos);
 }
 
-void osc::ui::push_style_var(ImGuiStyleVar style, float pos)
+void osc::ui::push_style_var(StyleVar var, float pos)
 {
-    ImGui::PushStyleVar(style, pos);
+    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), pos);
 }
 
 void osc::ui::pop_style_var(int count)
@@ -2343,7 +2365,7 @@ bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
 
     bool rv = false;
     size_t current_mode = std::distance(rgs::begin(modes), rgs::find(modes, mode));
-    ui::push_style_var(ImGuiStyleVar_FrameRounding, 0.0f);
+    ui::push_style_var(StyleVar::FrameRounding, 0.0f);
     ui::set_next_item_width(ui::calc_text_size(mode_labels[0]).x + 40.0f);
     if (ui::draw_combobox("##modeselect", &current_mode, mode_labels)) {
         mode = modes.at(current_mode);
@@ -2379,8 +2401,8 @@ bool osc::ui::draw_gizmo_op_selector(
 {
     bool rv = false;
 
-    ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
-    ui::push_style_var(ImGuiStyleVar_FrameRounding, 0.0f);
+    ui::push_style_var(StyleVar::ItemSpacing, {0.0f, 0.0f});
+    ui::push_style_var(StyleVar::FrameRounding, 0.0f);
     int num_colors_pushed = 0;
 
     if (can_translate) {

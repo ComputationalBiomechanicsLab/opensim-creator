@@ -190,7 +190,7 @@ namespace osc::mi
         // draw a user-clickable button for cancelling out of this choosing state
         void drawCancelButton()
         {
-            ui::push_style_var(ImGuiStyleVar_FramePadding, {10.0f, 10.0f});
+            ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
             ui::push_style_color(ui::ColorVar::Button, Color::half_grey());
 
             const CStringView text = ICON_FA_ARROW_LEFT " Cancel (ESC)";

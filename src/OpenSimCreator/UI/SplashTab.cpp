@@ -191,7 +191,7 @@ private:
         ui::set_next_panel_pos(viewportUIRect.p1);
         ui::set_next_panel_size(dimensions_of(viewportUIRect));
 
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
+        ui::push_style_var(ui::StyleVar::WindowPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 

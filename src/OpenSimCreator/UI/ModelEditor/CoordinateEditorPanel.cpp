@@ -181,7 +181,7 @@ private:
         ui::push_style_color(ui::ColorVar::Button, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
-        ui::push_style_var(ImGuiStyleVar_FramePadding, {0.0f, ui::get_style_frame_padding().y});
+        ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
         if (ui::draw_button(c.getLocked(m_Model->getState()) ? ICON_FA_LOCK : ICON_FA_UNLOCK))
         {
             bool newValue = !c.getLocked(m_Model->getState());
@@ -206,7 +206,7 @@ private:
 
         if (coordinateLocked)
         {
-            ui::push_style_var(ImGuiStyleVar_DisabledAlpha, 0.2f);
+            ui::push_style_var(ui::StyleVar::DisabledAlpha, 0.2f);
             ui::begin_disabled();
         }
         if (ui::draw_float_circular_slider("##coordinatevalueeditor", &displayedValue, minValue, maxValue))

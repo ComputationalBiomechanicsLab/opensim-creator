@@ -58,7 +58,7 @@ private:
 
     void drawForwardDynamicSimulationControls()
     {
-        ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
 
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
         if (ui::draw_button(ICON_FA_PLAY))

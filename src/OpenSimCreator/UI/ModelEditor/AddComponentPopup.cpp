@@ -372,7 +372,7 @@ private:
         {
             ui::push_id(i);
 
-            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 
             if (ui::draw_button(ICON_FA_TRASH))
             {

@@ -409,8 +409,22 @@ namespace osc::ui
     float get_framerate();
     bool wants_keyboard();
 
-    void push_style_var(ImGuiStyleVar style, const Vec2& pos);
-    void push_style_var(ImGuiStyleVar style, float pos);
+    enum class StyleVar {
+        Alpha,
+        ButtonTextAlign,
+        CellPadding,
+        DisabledAlpha,
+        FramePadding,
+        FrameRounding,
+        ItemInnerSpacing,
+        ItemSpacing,
+        TabRounding,
+        WindowPadding,
+        NUM_OPTIONS,
+    };
+
+    void push_style_var(StyleVar, const Vec2& pos);
+    void push_style_var(StyleVar, float pos);
     void pop_style_var(int count = 1);
 
     enum class PopupFlag : unsigned {

@@ -2033,7 +2033,7 @@ namespace
             const float s = ui::get_frame_height();
             const Vec2 dims{1.5f * s, s};
 
-            ui::push_style_var(ImGuiStyleVar_ItemSpacing, {2.0f, 2.0f});
+            ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 2.0f});
             if (ui::draw_button("NW", dims))          { m_LegendLocation = plot::Location::NorthWest; } ui::same_line();
             if (ui::draw_button("N", dims))           { m_LegendLocation = plot::Location::North; }     ui::same_line();
             if (ui::draw_button("NE", dims))          { m_LegendLocation = plot::Location::NorthEast; }
