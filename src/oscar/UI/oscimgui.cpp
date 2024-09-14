@@ -21,7 +21,6 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
-#include <oscar/Maths/Transform.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
@@ -34,7 +33,7 @@
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 
-#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
+#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
 #include <imgui/imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -1213,7 +1212,7 @@ void osc::ui::table_setup_scroll_freeze(int cols, int rows)
 bool osc::ui::table_column_sort_specs_are_dirty()
 {
     const ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs();
-    return specs and specs->SpecsDirty;
+    return (specs != nullptr) and specs->SpecsDirty;
 }
 
 std::vector<ui::TableColumnSortSpec> osc::ui::get_table_column_sort_specs()

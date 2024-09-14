@@ -580,7 +580,7 @@ namespace osc::ui
     void table_setup_column(CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
-    void push_style_color(ColorVar index, const Color&);
+    void push_style_color(ColorVar, const Color&);
     void pop_style_color(int count = 1);
 
     Color get_color(ColorVar);

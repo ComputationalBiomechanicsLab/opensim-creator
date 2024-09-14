@@ -317,7 +317,7 @@ TEST(OpenSimHelpers, WriteComponentTopologyGraphAsDotViz)
 TEST(OpenSimHelpers, WriteModelMultibodySystemGraphAsDotViz)
 {
     OpenSim::Model model;
-    model.addBody(new OpenSim::Body("somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{SimTK::Vec3(1.0), SimTK::Vec3(1.0)}));
+    model.addBody(std::make_unique<OpenSim::Body>("somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{SimTK::Vec3(1.0)}).release());
     model.buildSystem();
 
     std::stringstream ss;

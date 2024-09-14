@@ -73,9 +73,9 @@ osc::ColorHSLA::ColorHSLA(const Color& color)
     const float delta = max - min;
 
     this->hue = calc_normalized_hsla_hue(r, g, b, min, max, delta);
-    this->lightness = 0.5f*(min + max);
+    this->lightness = 0.5f*(min + max);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
     this->saturation = calc_hsla_saturation(lightness, min, max);
-    this->alpha = a;
+    this->alpha = a;  // NOLINT(cppcoreguidelines-prefer-member-initializer)
 }
 
 osc::ColorHSLA::operator Color() const

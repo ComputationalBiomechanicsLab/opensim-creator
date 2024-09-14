@@ -148,7 +148,7 @@ namespace
             (std::constructible_from<CStringView, ColumnHeaderStrings> && ...)
         static DataSeriesPattern forDatatype(ColumnHeaderStrings&&... headerSuffixes)
         {
-            return DataSeriesPattern{DataType, {CStringView{std::forward<ColumnHeaderStrings>(headerSuffixes)}...}};
+            return DataSeriesPattern{DataType, std::initializer_list<CStringView>{CStringView{std::forward<ColumnHeaderStrings>(headerSuffixes)}...}};  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
         }
 
         // Returns the `DataPointType` matched by this pattern.
@@ -183,7 +183,7 @@ namespace
     private:
         DataSeriesPattern(DataPointType type, std::initializer_list<CStringView> header_suffxes) :
             m_Type{type},
-            m_HeaderSuffixes{std::move(header_suffxes)}
+            m_HeaderSuffixes{header_suffxes}
         {}
 
         DataPointType m_Type;
@@ -392,10 +392,10 @@ namespace
         OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column that contains this data series")
 
         explicit DataSeries(
-            const std::shared_ptr<const OpenSim::Storage>& storage,
+            std::shared_ptr<const OpenSim::Storage> storage,
             const DataSeriesAnnotation& annotation) :
 
-            m_Storage{storage},
+            m_Storage{std::move(storage)},
             m_Annotation{annotation}
         {
             setName(annotation.label);
@@ -440,7 +440,7 @@ namespace
             setName(m_Storage->getName());
 
             for (const auto& annotation : m_Schema.annotations()) {
-                addComponent(new DataSeries{m_Storage, annotation});
+                addComponent(std::make_unique<DataSeries>(m_Storage, annotation).release());
             }
         }
         std::shared_ptr<OpenSim::Storage> m_Storage;
@@ -469,7 +469,7 @@ namespace
             m_Model->commit("loaded model");
         }
 
-        void loadMotionFiles(std::vector<std::filesystem::path> paths)
+        void loadMotionFiles(std::span<const std::filesystem::path> paths)
         {
             if (paths.empty()) {
                 return;
@@ -478,8 +478,9 @@ namespace
             OpenSim::Model& model = m_Model->updModel();
             AnnotatedMotion* lastMotion = nullptr;
             for (const std::filesystem::path& path : paths) {
-                lastMotion = new AnnotatedMotion{path};
-                model.addModelComponent(lastMotion);
+                auto ptr = std::make_unique<AnnotatedMotion>(path);
+                lastMotion = ptr.get();
+                model.addModelComponent(ptr.release());
             }
             m_Model->setSelected(lastMotion);
             InitializeModel(model);
@@ -488,7 +489,7 @@ namespace
             m_Model->commit("loaded motions");
         }
 
-        void loadExternalLoads(std::vector<std::filesystem::path> paths)
+        void loadExternalLoads(std::span<const std::filesystem::path> paths)
         {
             if (paths.empty()) {
                 return;
@@ -497,12 +498,13 @@ namespace
             OpenSim::Model& model = m_Model->updModel();
             OpenSim::ExternalLoads* lastLoads = nullptr;
             for (const std::filesystem::path& path : paths) {
-                lastLoads = new OpenSim::ExternalLoads{path.string(), true};
+                auto ptr = std::make_unique<OpenSim::ExternalLoads>(path.string(), true);
                 for (int i = 0; i < lastLoads->getSize(); ++i) {
                     // don't actually apply the forces, we're only visualizing them
                     //(*lastLoads)[i].set_appliesForce(false);
                 }
-                model.addModelComponent(lastLoads);
+                lastLoads = ptr.get();
+                model.addModelComponent(ptr.release());
             }
             m_Model->setSelected(lastLoads);
             InitializeModel(model);
@@ -530,7 +532,7 @@ namespace
         ReadonlyPropertiesEditorPanel(
             std::string_view panelName,
             IPopupAPI* api,
-            std::shared_ptr<const UndoableModelStatePair> targetModel) :
+            const std::shared_ptr<const UndoableModelStatePair>& targetModel) :
 
             StandardPanelImpl{panelName},
             m_PropertiesEditor{api, targetModel, [model = targetModel](){ return model->getSelected(); }}

@@ -477,7 +477,7 @@ namespace
         for (const OpenSim::Body& b : m.getComponentList<OpenSim::Body>())
         {
             const std::string name = b.getName();
-            const Transform xform = to<Transform>(b.getTransformInGround(st));
+            const auto xform = to<Transform>(b.getTransformInGround(st));
 
             auto& el = rv.emplace<Body>(UID{}, name, xform);
             el.setMass(b.getMass());
@@ -537,7 +537,7 @@ namespace
                 continue;
             }
 
-            const Transform xform = to<Transform>(parentFrame.getTransformInGround(st));
+            const auto xform = to<Transform>(parentFrame.getTransformInGround(st));
 
             auto& jointEl = rv.emplace<Joint>(UID{}, j.getConcreteClassName(), j.getName(), parent, child, xform);
             jointLookup.emplace(&j, jointEl.getID());
@@ -598,7 +598,7 @@ namespace
             }
 
             auto& el = rv.emplace<Mesh>(UID{}, attachment, meshData, realLocation);
-            Transform newTransform = to<Transform>(frame.getTransformInGround(st));
+            auto newTransform = to<Transform>(frame.getTransformInGround(st));
             newTransform.scale = to<Vec3>(mesh.get_scale_factors());
 
             el.setXform(newTransform);

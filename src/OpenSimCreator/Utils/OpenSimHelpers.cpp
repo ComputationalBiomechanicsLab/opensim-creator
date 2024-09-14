@@ -1292,7 +1292,7 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
         }
         else if (const auto* pwp = dynamic_cast<const OpenSim::PathWrapPoint*>(ap)) {
             // special case: it's a wrapping point, so add each part of the wrap
-            const Transform body2ground = to<Transform>(pwp->getParentFrame().getTransformInGround(st));
+            const auto body2ground = to<Transform>(pwp->getParentFrame().getTransformInGround(st));
             const OpenSim::Array<SimTK::Vec3>& wrapPath = pwp->getWrapPath(st);
 
             rv.reserve(rv.size() + size(wrapPath));
@@ -1387,8 +1387,8 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exherted
-        const Transform body2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
-        const Transform geom2body = to<Transform>(halfSpace.getTransform());
+        const auto body2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
+        const auto geom2body = to<Transform>(halfSpace.getTransform());
 
         const Vec3 originInGround = body2ground * to<Vec3>(halfSpace.get_location());
         const Vec3 normalInGround = normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
