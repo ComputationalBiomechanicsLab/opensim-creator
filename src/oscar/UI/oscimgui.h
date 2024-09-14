@@ -7,15 +7,16 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
+#include <oscar/Maths/Circle.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
+#include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -466,13 +467,10 @@ namespace osc::ui
     void table_setup_column(CStringView label, ColumnFlags = {}, float init_width_or_weight = 0.0f, ID = ID{});
     void end_table();
 
-    void push_style_color(ImGuiCol index, ImU32 col);
-    void push_style_color(ImGuiCol index, const Vec4& col);
-    void push_style_color(ImGuiCol index, const Color& c);
+    void push_style_color(ImGuiCol index, const Color&);
     void pop_style_color(int count = 1);
 
-    ImU32 get_color_ImU32(ImGuiCol index);
-    ImU32 to_ImU32(const Vec4& color);
+    Color get_color(ImGuiCol);
     float get_text_line_height();
     float get_text_line_height_with_spacing();
 
@@ -482,9 +480,40 @@ namespace osc::ui
 
     Vec2 get_panel_size();
 
-    ImDrawList* get_panel_draw_list();
-    ImDrawList* get_foreground_draw_list();
-    ImDrawListSharedData* get_draw_list_shared_data();
+    class DrawListView {
+    public:
+        explicit DrawListView(ImDrawList* inner_list) : inner_list_{inner_list} {}
+
+        void add_rect(const Rect& rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
+        void add_rect_filled(const Rect& rect, const Color& color, float rounding = 0.0f);
+        void add_circle(const Circle& circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
+        void add_circle_filled(const Circle& circle, const Color& color, int num_segments = 0);
+        void add_text(const Vec2& position, const Color& color, CStringView text);
+        void add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness = 1.0f);
+        void add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color);
+
+    private:
+        ImDrawList* inner_list_;
+    };
+
+    class DrawList final {
+    public:
+        DrawList();
+        DrawList(const DrawList&) = delete;
+        DrawList(DrawList&&) noexcept;
+        DrawList& operator=(const DrawList&) = delete;
+        DrawList& operator=(DrawList&&) noexcept;
+        ~DrawList() noexcept;
+
+        operator DrawListView () { return DrawListView{underlying_drawlist_.get()}; }
+
+        void render_to(RenderTexture&);
+    private:
+        std::unique_ptr<ImDrawList> underlying_drawlist_;
+    };
+
+    DrawListView get_panel_draw_list();
+    DrawListView get_foreground_draw_list();
 
     void show_demo_panel();
 
@@ -698,12 +727,6 @@ namespace osc::ui
         Radians min,
         Radians max
     );
-
-    // returns an `ImU32` converted from the given `Color`
-    ImU32 to_ImU32(const Color&);
-
-    // returns a `Color` converted from the given LDR 8-bit `ImU32` format
-    Color to_color(ImU32);
 
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
     WindowFlags get_minimal_panel_flags();

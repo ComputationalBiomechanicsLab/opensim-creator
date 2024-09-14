@@ -55,7 +55,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
     // draw each edge back-to-front
     bool edited = false;
-    ImDrawList& drawlist = *ui::get_panel_draw_list();
+    ui::DrawListView drawlist = ui::get_panel_draw_list();
     for (auto axis_index : axis_indices) {
         // calc direction vector in screen space
         Vec2 view = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
@@ -78,12 +78,12 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 const Vec2 label_size = ui::calc_text_size(labels[axis_index]);
 
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);
-                const ImU32 color = ui::to_ImU32(hovered ? Color::white() : base_color);
-                const ImU32 text_color_u32 = ui::to_ImU32(hovered ? Color::black() : Color::white());
+                const Color color = hovered ? Color::white() : base_color;
+                const Color text_color = hovered ? Color::black() : Color::white();
 
-                drawlist.AddLine(origin, end, color, 3.0f);
-                drawlist.AddCircleFilled(circ.origin, circ.radius, color);
-                drawlist.AddText(end - 0.5f*label_size, text_color_u32, labels[axis_index].c_str());
+                drawlist.add_line(origin, end, color, 3.0f);
+                drawlist.add_circle_filled(circ, color);
+                drawlist.add_text(end - 0.5f*label_size, text_color, labels[axis_index]);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
                     focus_along_axis(camera, axis_index);
@@ -104,9 +104,9 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);
-                const ImU32 color = ui::to_ImU32(hovered ? Color::white() : base_color.with_alpha(0.3f));
+                const Color color = hovered ? Color::white() : base_color.with_alpha(0.3f);
 
-                drawlist.AddCircleFilled(circ.origin, circ.radius, color);
+                drawlist.add_circle_filled(circ, color);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
                     focus_along_axis(camera, axis_index, true);

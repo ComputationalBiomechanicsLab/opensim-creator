@@ -1,7 +1,12 @@
 #include "oscimgui.h"
 
 #include <oscar/Graphics/Camera.h>
+#include <oscar/Graphics/Color.h>
+#include <oscar/Graphics/Graphics.h>
+#include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
+#include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/ClosedInterval.h>
@@ -10,12 +15,16 @@
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/RectFunctions.h>
+#include <oscar/Maths/Transform.h>
 #include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/VecFunctions.h>
+#include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Flags.h>
@@ -38,6 +47,7 @@
 #include <ranges>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 using namespace osc;
 using namespace osc::literals;
@@ -81,12 +91,33 @@ namespace
         return rgs::min(dimensions);
     }
 
+
+    void push_style_color(ImGuiCol index, ImU32 col)
+    {
+        ImGui::PushStyleColor(index, col);
+    }
+
+    ImU32 to_ImU32(const Vec4& color)
+    {
+        return ImGui::ColorConvertFloat4ToU32(color);
+    }
+
+    ImU32 to_ImU32(const Color& color)
+    {
+        return to_ImU32(Vec4{color});
+    }
+
+    Color to_color(ImU32 u32color)
+    {
+        return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
+    }
+
     ImU32 brighten(ImU32 color, float factor)
     {
-        const Color srgb = ui::to_color(color);
+        const Color srgb = to_color(color);
         const Color brightened = factor * srgb;
         const Color saturated = saturate(brightened);
-        return ui::to_ImU32(saturated);
+        return to_ImU32(saturated);
     }
 
     // maps between ui:: flag types and imgui flag types
@@ -1069,16 +1100,6 @@ void osc::ui::end_table()
     ImGui::EndTable();
 }
 
-void osc::ui::push_style_color(ImGuiCol index, ImU32 col)
-{
-    ImGui::PushStyleColor(index, col);
-}
-
-void osc::ui::push_style_color(ImGuiCol index, const Vec4& col)
-{
-    ImGui::PushStyleColor(index, ImVec4{col});
-}
-
 void osc::ui::push_style_color(ImGuiCol index, const Color& c)
 {
     ImGui::PushStyleColor(index, ImVec4{c});
@@ -1089,14 +1110,9 @@ void osc::ui::pop_style_color(int count)
     ImGui::PopStyleColor(count);
 }
 
-ImU32 osc::ui::get_color_ImU32(ImGuiCol index)
+Color osc::ui::get_color(ImGuiCol index)
 {
-    return ImGui::GetColorU32(index);
-}
-
-ImU32 osc::ui::to_ImU32(const Vec4& color)
-{
-    return ImGui::ColorConvertFloat4ToU32(color);
+    return ImGui::GetStyle().Colors[index];
 }
 
 float osc::ui::get_text_line_height()
@@ -1124,19 +1140,129 @@ Vec2 osc::ui::get_panel_size()
     return ImGui::GetWindowSize();
 }
 
-ImDrawList* osc::ui::get_panel_draw_list()
+void osc::ui::DrawListView::add_rect(const Rect& rect, const Color& color, float rounding, float thickness)
 {
-    return ImGui::GetWindowDrawList();
+    inner_list_->AddRect(rect.p1, rect.p2, to_ImU32(color), rounding, 0, thickness);
 }
 
-ImDrawList* osc::ui::get_foreground_draw_list()
+void osc::ui::DrawListView::add_rect_filled(const Rect& rect, const Color& color, float rounding)
 {
-    return ImGui::GetForegroundDrawList();
+    inner_list_->AddRectFilled(rect.p1, rect.p2, to_ImU32(color), rounding);
 }
 
-ImDrawListSharedData* osc::ui::get_draw_list_shared_data()
+void osc::ui::DrawListView::add_circle(const Circle& circle, const Color& color, int num_segments, float thickness)
 {
-    return ImGui::GetDrawListSharedData();
+    inner_list_->AddCircle(circle.origin, circle.radius, to_ImU32(color), num_segments, thickness);
+}
+
+void osc::ui::DrawListView::add_circle_filled(const Circle& circle, const Color& color, int num_segments)
+{
+    inner_list_->AddCircleFilled(circle.origin, circle.radius, to_ImU32(color), num_segments);
+}
+
+void osc::ui::DrawListView::add_text(const Vec2& position, const Color& color, CStringView text)
+{
+    inner_list_->AddText(position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
+}
+
+void osc::ui::DrawListView::add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness)
+{
+    inner_list_->AddLine(p1, p2, to_ImU32(color), thickness);
+}
+
+void osc::ui::DrawListView::add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color)
+{
+    inner_list_->AddTriangleFilled(p0, p1, p2, to_ImU32(color));
+}
+
+ui::DrawListView osc::ui::get_panel_draw_list()
+{
+    return ui::DrawListView{ImGui::GetWindowDrawList()};
+}
+
+ui::DrawListView osc::ui::get_foreground_draw_list()
+{
+    return ui::DrawListView{ImGui::GetForegroundDrawList()};
+}
+
+osc::ui::DrawList::DrawList() :
+    underlying_drawlist_{std::make_unique<ImDrawList>(ImGui::GetDrawListSharedData())}
+{
+    underlying_drawlist_->Flags |= ImDrawListFlags_AntiAliasedLines;
+    underlying_drawlist_->AddDrawCmd();
+}
+osc::ui::DrawList::DrawList(DrawList&&) noexcept = default;
+osc::ui::DrawList& osc::ui::DrawList::operator=(DrawList&&) noexcept = default;
+osc::ui::DrawList::~DrawList() noexcept = default;
+
+void osc::ui::DrawList::render_to(RenderTexture& target)
+{
+    // TODO: this should be merged with `ui_graphics_backend`
+
+    // upload vertex positions/colors
+    Mesh mesh;
+    {
+        // vertices
+        {
+            std::vector<Vec3> vertices;
+            vertices.reserve(underlying_drawlist_->VtxBuffer.size());
+            for (const ImDrawVert& vert : underlying_drawlist_->VtxBuffer) {
+                vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
+            }
+            mesh.set_vertices(vertices);
+        }
+
+        // colors
+        {
+            std::vector<Color> colors;
+            colors.reserve(underlying_drawlist_->VtxBuffer.size());
+            for (const ImDrawVert& vert : underlying_drawlist_->VtxBuffer) {
+                const Color linear_color = to_color(vert.col);
+                colors.push_back(linear_color);
+            }
+            mesh.set_colors(colors);
+        }
+    }
+
+    // solid color material
+    Material material{Shader{
+        App::slurp("oscar/shaders/PerVertexColor.vert"),
+        App::slurp("oscar/shaders/PerVertexColor.frag"),
+    }};
+
+    Camera c;
+    c.set_view_matrix_override(identity<Mat4>());
+
+    {
+        // project screenspace overlays into NDC
+        float L = 0.0f;
+        float R = static_cast<float>(target.dimensions().x);
+        float T = 0.0f;
+        float B = static_cast<float>(target.dimensions().y);
+        const Mat4 proj = {
+            { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
+            { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
+            { 0.0f,         0.0f,        -1.0f,   0.0f },
+            { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
+        };
+        c.set_projection_matrix_override(proj);
+    }
+    c.set_clear_flags(CameraClearFlag::None);
+
+    for (const ImDrawCmd& cmd : underlying_drawlist_->CmdBuffer) {
+        // upload indices
+        std::vector<ImDrawIdx> indices;
+        indices.reserve(cmd.ElemCount);
+        for (auto offset = cmd.IdxOffset; offset < cmd.IdxOffset + cmd.ElemCount; ++offset) {
+            indices.push_back(underlying_drawlist_->IdxBuffer[static_cast<int>(offset)]);
+        }
+        mesh.set_indices(indices);
+
+        // draw mesh
+        graphics::draw(mesh, Transform{}, material, c);
+    }
+
+    c.render_to(target);
 }
 
 void osc::ui::show_demo_panel()
@@ -1744,16 +1870,6 @@ bool osc::ui::draw_angle_slider(CStringView label, Radians& v, Radians min, Radi
     return false;
 }
 
-ImU32 osc::ui::to_ImU32(const Color& color)
-{
-    return ui::to_ImU32(Vec4{color});
-}
-
-Color osc::ui::to_color(ImU32 u32color)
-{
-    return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
-}
-
 ui::WindowFlags osc::ui::get_minimal_panel_flags()
 {
     return {
@@ -2099,8 +2215,8 @@ bool osc::ui::draw_float_circular_slider(
         const float slider_rail_bottom_y = slider_nob_center.y + 0.5f*slider_rail_thickness;
 
         const bool is_active = g.ActiveId == id;
-        const ImU32 rail_color = ui::get_color_ImU32(is_hovered ? ImGuiCol_FrameBgHovered : is_active ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBg);
-        const ImU32 grab_color = ui::get_color_ImU32(is_active ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab);
+        const ImU32 rail_color = ImGui::GetColorU32(is_hovered ? ImGuiCol_FrameBgHovered : is_active ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBg);
+        const ImU32 grab_color = ImGui::GetColorU32(is_active ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab);
 
         // render left-hand rail (brighter)
         {
@@ -2154,14 +2270,14 @@ bool osc::ui::draw_float_circular_slider(
     else {
         // render slider background frame
         {
-            const ImU32 frame_color = ui::get_color_ImU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : is_hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
+            const ImU32 frame_color = ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : is_hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
             ImGui::RenderNavHighlight(frame_bounds, id);
             ImGui::RenderFrame(frame_bounds.Min, frame_bounds.Max, frame_color, true, g.Style.FrameRounding);
         }
 
         // render slider grab handle
         if (grab_bounding_box.Max.x > grab_bounding_box.Min.x) {
-            window->DrawList->AddRectFilled(grab_bounding_box.Min, grab_bounding_box.Max, ui::get_color_ImU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
+            window->DrawList->AddRectFilled(grab_bounding_box.Min, grab_bounding_box.Max, ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
         }
 
         // render current slider value using user-provided display format
@@ -2322,7 +2438,7 @@ std::optional<Transform> osc::ui::Gizmo::draw(
         dimensions_of(screenspace_rect).x,
         dimensions_of(screenspace_rect).y
     );
-    ImGuizmo::SetDrawlist(ui::get_panel_draw_list());
+    ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
     ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station

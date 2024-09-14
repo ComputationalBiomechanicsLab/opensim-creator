@@ -291,9 +291,7 @@ namespace osc::mi
                     std::swap(parentPos, childPos);
                 }
 
-                ImU32 strongColorU2 = ui::to_ImU32(m_Shared->getColorConnectionLine());
-
-                m_Shared->drawConnectionLine(strongColorU2, parentPos, childPos);
+                m_Shared->drawConnectionLine(m_Shared->getColorConnectionLine(), parentPos, childPos);
             }
         }
 
@@ -305,10 +303,9 @@ namespace osc::mi
                 return;
             }
 
-            ImU32 color = ui::to_ImU32(Color::white());
-            Vec2 padding = Vec2{10.0f, 10.0f};
-            Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
-            ui::get_panel_draw_list()->AddText(pos, color, m_Options.header.c_str());
+            const Vec2 padding = Vec2{10.0f, 10.0f};
+            const Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
+            ui::get_panel_draw_list().add_text(pos, Color::white(), m_Options.header);
         }
 
         // draw a user-clickable button for cancelling out of this choosing state

@@ -265,16 +265,16 @@ private:
 
         float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
-        ImDrawList* drawlist = ui::get_panel_draw_list();
-        const ImU32 currentTimeLineColor = ui::to_ImU32(OSCColors::scrub_current());
-        const ImU32 hoverTimeLineColor = ui::to_ImU32(OSCColors::scrub_hovered());
+        ui::DrawListView drawlist = ui::get_panel_draw_list();
+        const Color currentTimeLineColor = OSCColors::scrub_current();
+        const Color hoverTimeLineColor = OSCColors::scrub_hovered();
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
             float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions_of(plotRect).x);
             Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
             Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
-            drawlist->AddLine(p1, p2, currentTimeLineColor);
+            drawlist.add_line(p1, p2, currentTimeLineColor);
         }
 
         if (ui::is_item_hovered()) {
@@ -287,7 +287,7 @@ private:
             {
                 Vec2 p1 = {mp.x, plotRect.p1.y};
                 Vec2 p2 = {mp.x, plotRect.p2.y};
-                drawlist->AddLine(p1, p2, hoverTimeLineColor);
+                drawlist.add_line(p1, p2, hoverTimeLineColor);
             }
 
             // show a tooltip of X and Y

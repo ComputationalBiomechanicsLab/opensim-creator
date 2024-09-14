@@ -370,10 +370,9 @@ private:
             tabUIRect.p2.y - h - padding,
         };
 
-        ImDrawList* const dl = ui::get_foreground_draw_list();
-        const ImU32 color = ui::to_ImU32(Color::black());
+        ui::DrawListView dl = ui::get_foreground_draw_list();
         const std::string text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
-        dl->AddText(pos, color, text.c_str());
+        dl.add_text(pos, Color::black(), text);
     }
 
     // tab data

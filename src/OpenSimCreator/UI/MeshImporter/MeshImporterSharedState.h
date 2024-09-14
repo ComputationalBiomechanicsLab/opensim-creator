@@ -294,12 +294,12 @@ namespace osc::mi
         }
 
         void drawConnectionLine(
-            ImU32 color,
+            const Color& color,
             const Vec3& parent,
             const Vec3& child) const
         {
             // the line
-            ui::get_panel_draw_list()->AddLine(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
+            ui::get_panel_draw_list().add_line(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
 
             // the triangle
             drawConnectionLineTriangleAtMidpoint(color, parent, child);
@@ -310,7 +310,6 @@ namespace osc::mi
             const std::unordered_set<UID>& excludedIDs) const
         {
             const Document& mg = getModelGraph();
-            ImU32 colorU32 = ui::to_ImU32(color);
 
             for (const MIObject& el : mg.iter())
             {
@@ -328,11 +327,11 @@ namespace osc::mi
 
                 if (el.getNumCrossReferences() > 0)
                 {
-                    drawConnectionLines(el, colorU32, excludedIDs);
+                    drawConnectionLines(el, color, excludedIDs);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
-                    drawConnectionLineToGround(el, colorU32);
+                    drawConnectionLineToGround(el, color);
                 }
             }
         }
@@ -345,7 +344,6 @@ namespace osc::mi
         void drawConnectionLines(const MeshImporterHover& currentHover) const
         {
             const Document& mg = getModelGraph();
-            ImU32 color = ui::to_ImU32(m_Colors.connectionLines);
 
             for (const MIObject& el : mg.iter())
             {
@@ -363,11 +361,11 @@ namespace osc::mi
 
                 if (el.getNumCrossReferences() > 0)
                 {
-                    drawConnectionLines(el, color);
+                    drawConnectionLines(el, m_Colors.connectionLines);
                 }
                 else if (!IsAChildAttachmentInAnyJoint(mg, el))
                 {
-                    drawConnectionLineToGround(el, color);
+                    drawConnectionLineToGround(el, m_Colors.connectionLines);
                 }
             }
             //drawConnectionLines(m_Colors.connectionLines);
@@ -930,9 +928,9 @@ namespace osc::mi
         }
 
         void drawConnectionLineTriangleAtMidpoint(
-            ImU32 color,
-            Vec3 parent,
-            Vec3 child) const
+            const Color& color,
+            const Vec3& parent,
+            const Vec3& child) const
         {
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
@@ -941,8 +939,7 @@ namespace osc::mi
             const Vec2 childScr = worldPosToScreenPos(child);
             const Vec2 child2ParentScr = parentScr - childScr;
 
-            if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared)
-            {
+            if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared) {
                 return;
             }
 
@@ -955,12 +952,12 @@ namespace osc::mi
             const Vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
             const Vec2 p3 = midpointScr + triangleWidth*directionScr;
 
-            ui::get_panel_draw_list()->AddTriangleFilled(p1, p2, p3, color);
+            ui::get_panel_draw_list().add_triangle_filled(p1, p2, p3, color);
         }
 
         void drawConnectionLines(
             const MIObject& el,
-            ImU32 color,
+            const Color& color,
             const std::unordered_set<UID>& excludedIDs) const
         {
             const Document& mg = getModelGraph();
@@ -992,12 +989,12 @@ namespace osc::mi
             }
         }
 
-        void drawConnectionLines(const MIObject& el, ImU32 color) const
+        void drawConnectionLines(const MIObject& el, const Color& color) const
         {
             drawConnectionLines(el, color, std::unordered_set<UID>{});
         }
 
-        void drawConnectionLineToGround(const MIObject& el, ImU32 color) const
+        void drawConnectionLineToGround(const MIObject& el, const Color& color) const
         {
             if (el.getID() == MIIDs::Ground())
             {

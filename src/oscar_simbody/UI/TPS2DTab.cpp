@@ -427,7 +427,7 @@ private:
     // render any 2D overlays
     void renderOverlayElements(const ui::HittestResult& ht)
     {
-        ImDrawList* const drawlist = ui::get_panel_draw_list();
+        ui::DrawListView drawlist = ui::get_panel_draw_list();
 
         // render all fully-established landmark pairs
         for (const LandmarkPair2D& p : m_LandmarkPairs)
@@ -435,9 +435,9 @@ private:
             const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
             const Vec2 p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
-            drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
-            drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
+            drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
+            drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
+            drawlist.add_circle_filled({p2, 10.0f}, m_DestCircleColor);
         }
 
         // render any currenty-placing landmark pairs in a more-faded color
@@ -448,9 +448,9 @@ private:
             const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
             const Vec2 p2 = ui::get_mouse_pos();
 
-            drawlist->AddLine(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist->AddRectFilled(p1 - 12.0f, p1 + 12.0f, m_SrcSquareColor);
-            drawlist->AddCircleFilled(p2, 10.0f, m_DestCircleColor);
+            drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
+            drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
+            drawlist.add_circle_filled({p2, 10.0f}, m_DestCircleColor);
         }
     }
 
@@ -524,9 +524,9 @@ private:
     Camera m_Camera;
     std::optional<RenderTexture> m_InputRender;
     std::optional<RenderTexture> m_OutputRender;
-    ImU32 m_SrcSquareColor = ui::to_ImU32(Color::red());
-    ImU32 m_DestCircleColor = ui::to_ImU32(Color::green());
-    ImU32 m_ConnectionLineColor = ui::to_ImU32(Color::white());
+    Color m_SrcSquareColor = Color::red();
+    Color m_DestCircleColor = Color::green();
+    Color m_ConnectionLineColor = Color::white();
 
     // log panel (handy for debugging)
     LogViewerPanel m_LogViewerPanel{"Log"};

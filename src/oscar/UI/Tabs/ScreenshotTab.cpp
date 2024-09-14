@@ -110,7 +110,7 @@ private:
             ui::pop_style_var();
 
             const Rect ui_image_rect = draw_screenshot_as_image();
-            draw_image_overlays(*ui::get_panel_draw_list(), ui_image_rect, c_unselected_color, c_selected_color);
+            draw_image_overlays(ui::get_panel_draw_list(), ui_image_rect, c_unselected_color, c_selected_color);
 
             ui::end_panel();
         }
@@ -140,7 +140,7 @@ private:
     }
 
     void draw_image_overlays(
-        ImDrawList& drawlist,
+        ui::DrawListView drawlist,
         const Rect& image_rect,
         const Color& unselected_color,
         const Color& selected_color)
@@ -154,9 +154,9 @@ private:
             const bool selected = user_selected_annotations_.contains(annotation.label());
             const bool hovered = is_intersecting(annotation_rect_screen, mouse_pos);
 
-            Vec4 color = selected ? selected_color : unselected_color;
+            Color color = selected ? selected_color : unselected_color;
             if (hovered) {
-                color.w = saturate(color.w + 0.3f);
+                color.a = saturate(color.a + 0.3f);
             }
 
             if (hovered and left_click_released) {
@@ -168,12 +168,10 @@ private:
                 }
             }
 
-            drawlist.AddRect(
-                annotation_rect_screen.p1,
-                annotation_rect_screen.p2,
-                ui::to_ImU32(color),
+            drawlist.add_rect(
+                annotation_rect_screen,
+                color,
                 3.0f,
-                0,
                 3.0f
             );
         }
@@ -203,9 +201,7 @@ private:
         graphics::blit(image_texture_, render_texture);
 
         // draw overlays to a local ImGui drawlist
-        ImDrawList drawlist{ui::get_draw_list_shared_data()};
-        drawlist.Flags |= ImDrawListFlags_AntiAliasedLines;
-        drawlist.AddDrawCmd();
+        ui::DrawList drawlist;
         Color outline_color = c_selected_color;
         outline_color.a = 1.0f;
         draw_image_overlays(
@@ -216,72 +212,7 @@ private:
         );
 
         // render drawlist to output
-        {
-            // upload vertex positions/colors
-            Mesh mesh;
-            {
-                // vertices
-                {
-                    std::vector<Vec3> vertices;
-                    vertices.reserve(drawlist.VtxBuffer.size());
-                    for (const ImDrawVert& vert : drawlist.VtxBuffer) {
-                        vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
-                    }
-                    mesh.set_vertices(vertices);
-                }
-
-                // colors
-                {
-                    std::vector<Color> colors;
-                    colors.reserve(drawlist.VtxBuffer.size());
-                    for (const ImDrawVert& vert : drawlist.VtxBuffer) {
-                        const Color linear_color = ui::to_color(vert.col);
-                        colors.push_back(linear_color);
-                    }
-                    mesh.set_colors(colors);
-                }
-            }
-
-            // solid color material
-            Material material{Shader{
-                App::slurp("oscar/shaders/PerVertexColor.vert"),
-                App::slurp("oscar/shaders/PerVertexColor.frag"),
-            }};
-
-            Camera c;
-            c.set_view_matrix_override(identity<Mat4>());
-
-            {
-                // project screenspace overlays into NDC
-                float L = 0.0f;
-                float R = static_cast<float>(image_texture_.dimensions().x);
-                float T = 0.0f;
-                float B = static_cast<float>(image_texture_.dimensions().y);
-                const Mat4 proj = {
-                    { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
-                    { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
-                    { 0.0f,         0.0f,        -1.0f,   0.0f },
-                    { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
-                };
-                c.set_projection_matrix_override(proj);
-            }
-            c.set_clear_flags(CameraClearFlag::None);
-
-            for (const ImDrawCmd& cmd : drawlist.CmdBuffer) {
-                // upload indices
-                std::vector<ImDrawIdx> indices;
-                indices.reserve(cmd.ElemCount);
-                for (auto offset = cmd.IdxOffset; offset < cmd.IdxOffset + cmd.ElemCount; ++offset) {
-                    indices.push_back(drawlist.IdxBuffer[static_cast<int>(offset)]);
-                }
-                mesh.set_indices(indices);
-
-                // draw mesh
-                graphics::draw(mesh, Transform{}, material, c);
-            }
-
-            c.render_to(render_texture);
-        }
+        drawlist.render_to(render_texture);
 
         Texture2D rv{render_texture.dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
         graphics::copy_texture(render_texture, rv);

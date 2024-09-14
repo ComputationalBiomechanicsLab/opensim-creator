@@ -123,16 +123,14 @@ namespace osc
             bool hasLocation)
         {
             const Circle circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
-            const ImU32 color = ui::to_ImU32(landmarkDotColor(hasLocation, isPaired));
+            const Color color = landmarkDotColor(hasLocation, isPaired);
 
-            auto& dl = *ui::get_panel_draw_list();
-            if (hasLocation)
-            {
-                dl.AddCircleFilled(circle.origin, circle.radius, color);
+            ui::DrawListView dl = ui::get_panel_draw_list();
+            if (hasLocation) {
+                dl.add_circle_filled(circle, color);
             }
-            else
-            {
-                dl.AddCircle(circle.origin, circle.radius, color);
+            else {
+                dl.add_circle(circle, color);
             }
 
             tryDrawCircleHighlight(circle, isSelected, isHovered);
@@ -142,15 +140,13 @@ namespace osc
 
         void tryDrawCircleHighlight(const Circle& circle, bool isSelected, bool isHovered)
         {
-            auto& dl = *ui::get_panel_draw_list();
+            ui::DrawListView dl = ui::get_panel_draw_list();
             const float thickness = 2.0f;
-            if (isSelected)
-            {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(OSCColors::selected()), 0, thickness);
+            if (isSelected) {
+                dl.add_circle(circle.expanded_by(thickness), OSCColors::selected(), 0, thickness);
             }
-            else if (isHovered)
-            {
-                dl.AddCircle(circle.origin, circle.radius + thickness, ui::to_ImU32(OSCColors::hovered()), 0, thickness);
+            else if (isHovered) {
+                dl.add_circle(circle.expanded_by(thickness), OSCColors::hovered(), 0, thickness);
             }
         }
 
@@ -162,8 +158,8 @@ namespace osc
             const Vec2 direction = normalize(dest.origin - src.origin);
             const Vec2 start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             const Vec2 end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            const ImU32 color = ui::to_ImU32(Color::half_grey());
-            ui::get_panel_draw_list()->AddLine(start, end, color);
+            const Color color = Color::half_grey();
+            ui::get_panel_draw_list().add_line(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
             const Vec2 p0 = end;
@@ -171,7 +167,7 @@ namespace osc
             const Vec2 orthogonal = {-direction.y, direction.x};
             const Vec2 p1 = base + pad*orthogonal;
             const Vec2 p2 = base - pad*orthogonal;
-            ui::get_panel_draw_list()->AddTriangleFilled(p0, p1, p2, color);
+            ui::get_panel_draw_list().add_triangle_filled(p0, p1, p2, color);
         }
 
         // draws non-participating landmarks table
@@ -218,10 +214,9 @@ namespace osc
         {
             const Circle circle{.origin = calcColumnMidpointScreenPos(), .radius = calcCircleRadius()};
 
-            ui::get_panel_draw_list()->AddCircleFilled(
-                circle.origin,
-                circle.radius,
-                ui::to_ImU32(m_State->getNonParticipatingLandmarkColor())
+            ui::get_panel_draw_list().add_circle_filled(
+                circle,
+                m_State->getNonParticipatingLandmarkColor()
             );
 
             tryDrawCircleHighlight(circle, isSelected, isHovered);

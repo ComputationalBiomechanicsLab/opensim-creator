@@ -15,7 +15,7 @@ namespace
     void draw_widget_title(CStringView title, Vec2 pos)
     {
         const Vec2 text_topleft = pos + ui::get_style_frame_padding();
-        ui::get_panel_draw_list()->AddText(text_topleft, ui::get_color_ImU32(ImGuiCol_Text), title.c_str());
+        ui::get_panel_draw_list().add_text(text_topleft, ui::get_color(ImGuiCol_Text), title);
     }
 }
 
@@ -24,38 +24,39 @@ namespace
 {
     void draw_toggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
     {
-        ImDrawList& draw_list = *ui::get_panel_draw_list();
-
         const float radius = size.y * 0.5f;
         const float rounding = size.y * 0.25f;
         const float slot_half_height = size.y * 0.5f;
         const bool circular_grab = false;
 
-        const ImU32 bg_color = hovered ?
-            ui::get_color_ImU32(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
-            ui::get_color_ImU32(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
+        const Color bg_color = hovered ?
+            ui::get_color(enabled ? ImGuiCol_FrameBgActive : ImGuiCol_FrameBgHovered) :
+            ui::get_color(enabled ? ImGuiCol_CheckMark : ImGuiCol_FrameBg);
 
         const Vec2 pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
-        const Vec2 smin = {pos.x, pmid.y - slot_half_height};
-        const Vec2 smax = {pos.x + size.x, pmid.y + slot_half_height};
+        const Rect bg_rect = {
+            {pos.x, pmid.y - slot_half_height},
+            {pos.x + size.x, pmid.y + slot_half_height},
+        };
 
-        draw_list.AddRectFilled(smin, smax, bg_color, rounding);
+        ui::DrawListView draw_list = ui::get_panel_draw_list();
+        draw_list.add_rect_filled(bg_rect, bg_color, rounding);
 
         if (circular_grab) {
-            draw_list.AddCircleFilled(pmid, radius * 0.8f, ui::get_color_ImU32(ImGuiCol_SliderGrab));
+            draw_list.add_circle_filled({pmid, radius * 0.8f}, ui::get_color(ImGuiCol_SliderGrab));
         }
         else {
             const Vec2 offs = {radius*0.8f, radius*0.8f};
-            draw_list.AddRectFilled(pmid - offs, pmid + offs, ui::get_color_ImU32(ImGuiCol_SliderGrab), rounding);
+            draw_list.add_rect_filled({pmid - offs, pmid + offs}, ui::get_color(ImGuiCol_SliderGrab), rounding);
         }
     }
 
     bool Toggle(CStringView label, bool* v)
     {
-        ui::push_style_color(ImGuiCol_Button, IM_COL32_BLACK_TRANS);
+        ui::push_style_color(ImGuiCol_Button, Color::clear());
 
         const float title_height = ui::get_text_line_height();
 

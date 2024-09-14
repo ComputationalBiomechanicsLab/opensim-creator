@@ -133,11 +133,11 @@ namespace
     // x/y/z to the user
     void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
-        ImDrawList* const l = ui::get_panel_draw_list();
+        ui::DrawListView l = ui::get_panel_draw_list();
         const Vec2 p = ui::get_cursor_screen_pos();
         const float h = ui::get_text_line_height() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
-        l->AddRectFilled(p, p + dims, ui::to_ImU32(color));
+        l.add_rect_filled({p, p + dims}, color);
         ui::set_cursor_screen_pos({p.x + 4.0f, p.y});
     }
 
