@@ -72,23 +72,22 @@ private:
             ui::table_setup_scroll_freeze(0, 1);
             ui::table_headers_row();
 
-            if (ImGuiTableSortSpecs* p = ui::table_get_sort_specs(); p && p->SpecsDirty)
-            {
-                std::span<const ImGuiTableColumnSortSpecs> specs(p->Specs, p->SpecsCount);
+            if (ui::table_column_sort_specs_are_dirty()) {
+                const auto specs = ui::get_table_column_sort_specs();
 
                 // we know the user can only sort one column (name) so we don't need to permute
                 // through the entire specs structure
-                if (specs.size() == 1 && specs.front().ColumnIndex == 0 && specs.front().SortOrder == 0)
+                if (specs.size() == 1 && specs.front().column_index == 0 && specs.front().sort_order == 0)
                 {
-                    switch (specs.front().SortDirection)
+                    switch (specs.front().sort_direction)
                     {
-                    case ImGuiSortDirection_Ascending:
+                    case ui::SortDirection::Ascending:
                         rgs::sort(coordPtrs, rgs::less{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
-                    case ImGuiSortDirection_Descending:
+                    case ui::SortDirection::Descending:
                         rgs::sort(coordPtrs, rgs::greater{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
-                    case ImGuiSortDirection_None:
+                    case ui::SortDirection::None:
                     default:
                         break;  // just use them as-is
                     }

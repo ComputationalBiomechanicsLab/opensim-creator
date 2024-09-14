@@ -478,7 +478,22 @@ namespace osc::ui
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
-    ImGuiTableSortSpecs* table_get_sort_specs();
+    enum class SortDirection {
+        None,
+        Ascending,
+        Descending,
+        NUM_OPTIONS,
+    };
+
+    struct TableColumnSortSpec final {
+        ID column_id{};
+        size_t column_index = 0;
+        size_t sort_order = 0;
+        SortDirection sort_direction = SortDirection::None;
+    };
+
+    bool table_column_sort_specs_are_dirty();
+    std::vector<TableColumnSortSpec> get_table_column_sort_specs();
 
     enum class ColumnFlag : unsigned {
         None         = 0,

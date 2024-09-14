@@ -447,6 +447,34 @@ struct osc::Converter<ui::StyleVar, ImGuiStyleVar> final {
     }
 };
 
+template<>
+struct osc::Converter<ui::SortDirection, ImGuiSortDirection> final {
+    ImGuiSortDirection operator()(ui::SortDirection option) const
+    {
+        static_assert(num_options<ui::SortDirection>() == 3);
+
+        switch (option) {
+        case ui::SortDirection::None:       return ImGuiSortDirection_None;
+        case ui::SortDirection::Ascending:  return ImGuiSortDirection_Ascending;
+        case ui::SortDirection::Descending: return ImGuiSortDirection_Descending;
+        default:                            return ImGuiSortDirection_None;
+        }
+    }
+};
+
+template<>
+struct  osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final {
+    ui::TableColumnSortSpec operator()(ImGuiTableColumnSortSpecs specs) const
+    {
+        return {
+            .column_id = ui::ID{specs.ColumnUserID},
+            .column_index = static_cast<size_t>(specs.ColumnIndex),
+            .sort_order = static_cast<size_t>(specs.SortOrder),
+            .sort_direction = to<ui::SortDirection>(specs.SortDirection),
+        };
+    }
+};
+
 void osc::ui::align_text_to_frame_padding()
 {
     ImGui::AlignTextToFramePadding();
@@ -1115,9 +1143,23 @@ void osc::ui::table_setup_scroll_freeze(int cols, int rows)
     ImGui::TableSetupScrollFreeze(cols, rows);
 }
 
-ImGuiTableSortSpecs* osc::ui::table_get_sort_specs()
+bool osc::ui::table_column_sort_specs_are_dirty()
 {
-    return ImGui::TableGetSortSpecs();
+    const ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs();
+    return specs and specs->SpecsDirty;
+}
+
+std::vector<ui::TableColumnSortSpec> osc::ui::get_table_column_sort_specs()
+{
+    std::vector<TableColumnSortSpec> rv;
+    const ImGuiTableSortSpecs* specs = ImGui::TableGetSortSpecs();
+    if (specs) {
+        rv.reserve(specs->SpecsCount);
+        for (int i = 0; i < specs->SpecsCount; ++i) {
+            rv.push_back(to<TableColumnSortSpec>(specs->Specs[i]));
+        }
+    }
+    return rv;
 }
 
 void osc::ui::table_headers_row()
