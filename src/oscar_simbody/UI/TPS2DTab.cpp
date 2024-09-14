@@ -1,6 +1,5 @@
 #include "TPS2DTab.h"
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
@@ -16,6 +15,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/Utils/Algorithms.h>
@@ -330,7 +330,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_BEZIER_CURVE " TPS2DTab";
+        return OSC_ICON_BEZIER_CURVE " TPS2DTab";
     }
 
     void onDraw()

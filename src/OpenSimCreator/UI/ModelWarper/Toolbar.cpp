@@ -3,8 +3,8 @@
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperUIHelpers.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 
 #include <utility>
@@ -35,7 +35,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         ui::begin_disabled();
     }
     ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
-    if (ui::draw_button(ICON_FA_PLAY " Warp Model")) {
+    if (ui::draw_button(OSC_ICON_PLAY " Warp Model")) {
         m_State->actionWarpModelAndOpenInModelEditor();
     }
     ui::pop_style_color();

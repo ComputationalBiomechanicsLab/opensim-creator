@@ -7,7 +7,7 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/oscimgui.h>
@@ -55,7 +55,7 @@ private:
 
         if (IsAnyOutputExportableToCSV(*m_API))
         {
-            ui::draw_button(ICON_FA_SAVE " Save All " ICON_FA_CARET_DOWN);
+            ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("as CSV")) {
@@ -85,7 +85,7 @@ private:
 
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
             ui::same_line();
-            if (ui::draw_button(ICON_FA_TRASH)) {
+            if (ui::draw_button(OSC_ICON_TRASH)) {
                 m_API->removeUserOutputExtractor(output);
                 --i;
             }

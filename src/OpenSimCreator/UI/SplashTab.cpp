@@ -12,7 +12,6 @@
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Formats/SVG.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -26,6 +25,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
@@ -74,7 +74,7 @@ namespace
         ParentPtr<IMainUIStateAPI>& parent_,
         int& imguiID)
     {
-        const std::string label = std::string{ICON_FA_FILE} + " " + path.filename().string();
+        const std::string label = std::string{OSC_ICON_FILE} + " " + path.filename().string();
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
@@ -109,7 +109,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_HOME;
+        return OSC_ICON_HOME;
     }
 
     void on_mount()
@@ -250,33 +250,33 @@ private:
 
     void drawActionsMenuSectionContent()
     {
-        if (ui::draw_menu_item(ICON_FA_FILE " New Model")) {
+        if (ui::draw_menu_item(OSC_ICON_FILE " New Model")) {
             ActionNewModel(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_FOLDER_OPEN " Open Model")) {
+        if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open Model")) {
             ActionOpenModel(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_FILE_IMPORT " Import Meshes")) {
+        if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
-        if (ui::draw_menu_item(ICON_FA_BOOK " Open Documentation")) {
+        if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
             open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
         }
     }
 
     void drawWorkflowsMenuSectionContent()
     {
-        if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Frame Definition")) {
+        if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition")) {
             m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_FILE_IMPORT " Mesh Importer")) {
+        if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Mesh Importer")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Warping")) {
+        if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Warping")) {
             m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
         }
-        if (ui::draw_menu_item(ICON_FA_MAGIC " Model Warping (" ICON_FA_MAGIC " experimental)")) {
+        if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
             m_Parent->add_and_select_tab<mow::ModelWarperTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());

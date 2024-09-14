@@ -6,6 +6,7 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>

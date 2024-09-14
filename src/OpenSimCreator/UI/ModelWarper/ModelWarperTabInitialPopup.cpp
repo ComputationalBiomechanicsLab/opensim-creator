@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/UI/oscimgui.h>
@@ -18,7 +18,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        ui::draw_text_centered(ICON_FA_MAGIC " This feature is experimental " ICON_FA_MAGIC);
+        ui::draw_text_centered(OSC_ICON_MAGIC " This feature is experimental " OSC_ICON_MAGIC);
         ui::start_new_line();
         ui::draw_text_wrapped("The model warping UI is still work-in-progress. Which means that some datafiles may change over time.\n\nIf you would like a basic overview of how the model warping UI (and the associated mesh warping UI) work, please consult the documentation:");
         ui::start_new_line();

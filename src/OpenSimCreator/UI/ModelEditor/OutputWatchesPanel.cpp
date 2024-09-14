@@ -5,8 +5,8 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -80,7 +80,7 @@ private:
                 ui::table_next_row();
 
                 ui::table_set_column_index(column++);
-                if (ui::draw_small_button(ICON_FA_TRASH))
+                if (ui::draw_small_button(OSC_ICON_TRASH))
                 {
                     m_API->removeUserOutputExtractor(outputIdx);
                 }

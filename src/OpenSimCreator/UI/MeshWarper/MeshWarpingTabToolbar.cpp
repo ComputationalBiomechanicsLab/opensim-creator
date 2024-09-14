@@ -5,7 +5,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/RedoButton.h>
 #include <oscar/UI/Widgets/UndoButton.h>
@@ -69,7 +69,7 @@ private:
 
     void drawNewDocumentButton()
     {
-        if (ui::draw_button(ICON_FA_FILE)) {
+        if (ui::draw_button(OSC_ICON_FILE)) {
             ActionCreateNewDocument(m_State->updUndoable());
         }
         ui::draw_tooltip_if_item_hovered(
@@ -80,7 +80,7 @@ private:
 
     void drawOpenDocumentButton()
     {
-        ui::draw_button(ICON_FA_FOLDER_OPEN);
+        ui::draw_button(OSC_ICON_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
                 ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
@@ -98,7 +98,7 @@ private:
 
     void drawSaveLandmarksButton()
     {
-        if (ui::draw_button(ICON_FA_SAVE)) {
+        if (ui::draw_button(OSC_ICON_SAVE)) {
             ActionSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
@@ -134,7 +134,7 @@ private:
 
     void drawVisualAidsMenuButton()
     {
-        if (ui::draw_button("visualization options " ICON_FA_COG)) {
+        if (ui::draw_button("visualization options " OSC_ICON_COG)) {
             ui::open_popup("visualization_options_popup");
         }
         if (ui::begin_popup("visualization_options_popup", {ui::WindowFlag::AlwaysAutoResize, ui::WindowFlag::NoTitleBar, ui::WindowFlag::NoSavedSettings})) {

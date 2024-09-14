@@ -8,7 +8,6 @@
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -16,6 +15,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
@@ -206,7 +206,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_PLUS " add body"))
+        if (ui::draw_button(OSC_ICON_PLUS " add body"))
         {
             ActionAddBodyToModel(*m_Uum, m_BodyDetails);
             request_close();

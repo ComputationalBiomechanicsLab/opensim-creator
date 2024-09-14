@@ -4,9 +4,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/TransformFunctions.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/UID.h>
 
 #include <iostream>
@@ -38,7 +38,7 @@ MIClass osc::mi::Body::CreateClass()
         MIStrings::c_BodyLabel,
         MIStrings::c_BodyLabelPluralized,
         MIStrings::c_BodyLabelOptionallyPluralized,
-        ICON_FA_CIRCLE,
+        OSC_ICON_CIRCLE,
         MIStrings::c_BodyDescription,
     };
 }

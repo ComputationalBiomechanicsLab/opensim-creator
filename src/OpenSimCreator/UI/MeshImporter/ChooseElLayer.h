@@ -314,7 +314,7 @@ namespace osc::mi
             ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
             ui::push_style_color(ui::ColorVar::Button, Color::half_grey());
 
-            const CStringView text = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            const CStringView text = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 35.0f};
             const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 

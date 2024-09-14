@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIIDs.h>
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -21,7 +21,7 @@ MIClass osc::mi::Ground::CreateClass()
         MIStrings::c_GroundLabel,
         MIStrings::c_GroundLabelPluralized,
         MIStrings::c_GroundLabelOptionallyPluralized,
-        ICON_FA_DOT_CIRCLE,
+        OSC_ICON_DOT_CIRCLE,
         MIStrings::c_GroundDescription,
     };
 }

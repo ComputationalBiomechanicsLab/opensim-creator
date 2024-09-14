@@ -11,7 +11,6 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
@@ -21,6 +20,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringName.h>
@@ -244,7 +244,7 @@ public:
         {
             ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
-            constexpr CStringView cancellationButtonText = ICON_FA_ARROW_LEFT " Cancel (ESC)";
+            constexpr CStringView cancellationButtonText = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 25.0f};
             const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
             const Vec2 buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);

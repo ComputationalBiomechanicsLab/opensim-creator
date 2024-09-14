@@ -19,13 +19,12 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/Assertions.h>
-
-#include <IconsFontAwesome5.h>
 
 #include <filesystem>
 #include <fstream>
@@ -82,7 +81,7 @@ namespace
 class osc::ScreenshotTab::Impl final : public StandardTabImpl {
 public:
     explicit Impl(Screenshot&& screenshot) :
-        StandardTabImpl{ICON_FA_COOKIE " ScreenshotTab"},
+        StandardTabImpl{OSC_ICON_COOKIE " ScreenshotTab"},
         screenshot_{std::move(screenshot)}
     {
         image_texture_.set_filter_mode(TextureFilterMode::Mipmap);

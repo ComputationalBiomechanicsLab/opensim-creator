@@ -6,9 +6,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/UID.h>
 
 #include <filesystem>
@@ -45,7 +45,7 @@ MIClass osc::mi::Mesh::CreateClass()
         MIStrings::c_MeshLabel,
         MIStrings::c_MeshLabelPluralized,
         MIStrings::c_MeshLabelOptionallyPluralized,
-        ICON_FA_CUBE,
+        OSC_ICON_CUBE,
         MIStrings::c_MeshDescription,
     };
 }

@@ -11,8 +11,8 @@
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
@@ -62,7 +62,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_FAST_FORWARD " PerformanceAnalyzerTab";
+        return OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab";
     }
 
     void on_tick()
@@ -120,7 +120,7 @@ public:
 
             ui::end_table();
 
-            if (ui::draw_button(ICON_FA_SAVE " Export to CSV")) {
+            if (ui::draw_button(OSC_ICON_SAVE " Export to CSV")) {
                 tryExportOutputs();
             }
         }

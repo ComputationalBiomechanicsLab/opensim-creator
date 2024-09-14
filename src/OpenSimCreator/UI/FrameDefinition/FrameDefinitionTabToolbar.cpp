@@ -5,9 +5,9 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -53,7 +53,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
     {
         ui::begin_disabled();
     }
-    if (ui::draw_button(ICON_FA_FILE_EXPORT " Export to OpenSim"))
+    if (ui::draw_button(OSC_ICON_FILE_EXPORT " Export to OpenSim"))
     {
         fd::ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
     }

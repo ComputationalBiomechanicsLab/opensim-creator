@@ -5,10 +5,10 @@
 #include <OpenSimCreator/UI/Simulation/SimulationScrubber.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec4.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 
 #include <memory>
@@ -79,7 +79,7 @@ private:
     void drawScaleFactorGroup()
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-        ui::draw_text_unformatted(ICON_FA_EXPAND_ALT);
+        ui::draw_text_unformatted(OSC_ICON_EXPAND_ALT);
         ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::same_line();
 

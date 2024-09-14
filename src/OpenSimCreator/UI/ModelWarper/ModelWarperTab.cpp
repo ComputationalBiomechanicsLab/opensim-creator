@@ -9,8 +9,8 @@
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
 #include <SDL_events.h>
-#include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/PopupManager.h>
@@ -24,7 +24,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_TabStringID = "Model Warper (" ICON_FA_MAGIC " experimental)";
+    constexpr CStringView c_TabStringID = "Model Warper (" OSC_ICON_MAGIC " experimental)";
 }
 
 class osc::mow::ModelWarperTab::Impl final : public StandardTabImpl {

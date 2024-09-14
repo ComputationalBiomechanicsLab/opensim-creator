@@ -22,10 +22,10 @@
 #include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
@@ -466,7 +466,7 @@ private:
     // tab data
     UID m_ID;
     ParentPtr<IMainUIStateAPI> m_Parent;
-    std::string m_Name = ICON_FA_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
+    std::string m_Name = OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;

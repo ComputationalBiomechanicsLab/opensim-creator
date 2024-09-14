@@ -13,14 +13,14 @@
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
-#include <oscar/UI/oscimgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -50,12 +50,12 @@ namespace
         const OutputExtractor& output)
     {
         if (api.hasUserOutputExtractor(output)) {
-            if (ui::draw_menu_item(ICON_FA_TRASH " Stop Watching")) {
+            if (ui::draw_menu_item(OSC_ICON_TRASH " Stop Watching")) {
                 api.removeUserOutputExtractor(output);
             }
         }
         else {
-            if (ui::draw_menu_item(ICON_FA_EYE " Watch Output")) {
+            if (ui::draw_menu_item(OSC_ICON_EYE " Watch Output")) {
                 api.addUserOutputExtractor(output);
             }
             ui::draw_tooltip_if_item_hovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
@@ -67,11 +67,11 @@ namespace
         ISimulatorUIAPI& api,
         const OutputExtractor& output)
     {
-        if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV")) {
+        if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV")) {
             api.tryPromptToSaveOutputsAsCSV({output});
         }
 
-        if (ui::draw_menu_item(ICON_FA_SAVE "Save as CSV (and open)")) {
+        if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV (and open)")) {
             if (const auto path = api.tryPromptToSaveOutputsAsCSV({output})) {
                 open_file_in_os_default_application(*path);
             }
@@ -129,7 +129,7 @@ namespace
         ISimulation& sim,
         const OutputExtractor& output)
     {
-        if (ui::begin_menu(ICON_FA_CHART_LINE "Plot Against Other Output")) {
+        if (ui::begin_menu(OSC_ICON_CHART_LINE "Plot Against Other Output")) {
             DrawSelectOtherOutputMenuContent(api, sim, output);
             ui::end_menu();
         }

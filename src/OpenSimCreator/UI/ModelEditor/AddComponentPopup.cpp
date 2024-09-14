@@ -5,7 +5,6 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -18,6 +17,7 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
@@ -237,7 +237,7 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
-        ui::draw_text_unformatted(ICON_FA_SEARCH);
+        ui::draw_text_unformatted(OSC_ICON_SEARCH);
         ui::same_line();
         ui::set_next_item_width(ui::get_content_region_available().x);
         ui::draw_string_input("##search", m_SocketSearchStrings[i]);
@@ -374,7 +374,7 @@ private:
 
             ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 
-            if (ui::draw_button(ICON_FA_TRASH))
+            if (ui::draw_button(OSC_ICON_TRASH))
             {
                 maybeIndexToErase = i;
             }
@@ -385,7 +385,7 @@ private:
             {
                 ui::begin_disabled();
             }
-            if (ui::draw_button(ICON_FA_ARROW_UP) && i > 0)
+            if (ui::draw_button(OSC_ICON_ARROW_UP) && i > 0)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i-1]);
             }
@@ -400,7 +400,7 @@ private:
             {
                 ui::begin_disabled();
             }
-            if (ui::draw_button(ICON_FA_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
+            if (ui::draw_button(OSC_ICON_ARROW_DOWN) && i < std::ssize(m_PathPoints) - 1)
             {
                 std::swap(m_PathPoints[i], m_PathPoints[i+1]);
             }
@@ -446,7 +446,7 @@ private:
         ui::draw_help_marker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ui::draw_separator();
 
-        ui::draw_string_input(ICON_FA_SEARCH " search", m_PathSearchString);
+        ui::draw_string_input(OSC_ICON_SEARCH " search", m_PathSearchString);
 
         ui::set_num_columns(2);
         int imguiID = 0;
@@ -478,7 +478,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_PLUS " add"))
+        if (ui::draw_button(OSC_ICON_PLUS " add"))
         {
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)

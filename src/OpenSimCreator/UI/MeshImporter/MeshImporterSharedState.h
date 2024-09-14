@@ -15,7 +15,6 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Color.h>
@@ -40,6 +39,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
@@ -196,7 +196,7 @@ namespace osc::mi
         std::string getRecommendedTitle() const
         {
             std::stringstream ss;
-            ss << ICON_FA_CUBE << ' ' << getDocumentName();
+            ss << OSC_ICON_CUBE << ' ' << getDocumentName();
             return std::move(ss).str();
         }
 

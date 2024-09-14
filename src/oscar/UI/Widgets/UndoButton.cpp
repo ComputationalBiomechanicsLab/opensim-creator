@@ -1,9 +1,8 @@
 #include "UndoButton.h"
 
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/UndoRedo.h>
-
-#include <IconsFontAwesome5.h>
 
 #include <memory>
 
@@ -24,14 +23,14 @@ void osc::UndoButton::on_draw()
         ui::begin_disabled();
         was_disabled = true;
     }
-    if (ui::draw_button(ICON_FA_UNDO)) {
+    if (ui::draw_button(OSC_ICON_UNDO)) {
         undo_redo_->undo();
     }
 
     ui::same_line();
 
     ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
-    ui::draw_button(ICON_FA_CARET_DOWN);
+    ui::draw_button(OSC_ICON_CARET_DOWN);
     ui::pop_style_var();
 
     if (was_disabled) {

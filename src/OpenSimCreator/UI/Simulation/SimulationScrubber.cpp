@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/EnumHelpers.h>
 
@@ -57,14 +57,14 @@ public:
 private:
     void drawBackwardsButtons()
     {
-        if (ui::draw_button(ICON_FA_FAST_BACKWARD))
+        if (ui::draw_button(OSC_ICON_FAST_BACKWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
         ui::draw_tooltip_if_item_hovered("Go to First State");
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_STEP_BACKWARD))
+        if (ui::draw_button(OSC_ICON_STEP_BACKWARD))
         {
             m_SimulatorAPI->stepBack();
         }
@@ -96,7 +96,7 @@ private:
         if (state == SimulationUIPlaybackState::Playing) {
             // if playing, the only option is to stop
 
-            if (ui::draw_button(ICON_FA_PAUSE)) {
+            if (ui::draw_button(OSC_ICON_PAUSE)) {
                 m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Stopped);
             }
             ui::draw_tooltip_if_item_hovered("Pause (Space)");
@@ -106,14 +106,14 @@ private:
             // a PLAY button (i.e. un-pause)
 
             if (tCur >= tEnd) {
-                if (ui::draw_button(ICON_FA_REDO)) {
+                if (ui::draw_button(OSC_ICON_REDO)) {
                     m_SimulatorAPI->setSimulationScrubTime(tStart);
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);
                 }
                 ui::draw_tooltip_if_item_hovered("Replay (Space)");
             }
             else {
-                if (ui::draw_button(ICON_FA_PLAY)) {
+                if (ui::draw_button(OSC_ICON_PLAY)) {
                     m_SimulatorAPI->setSimulationPlaybackState(SimulationUIPlaybackState::Playing);  // i.e. unpause
                 }
                 ui::draw_tooltip_if_item_hovered("Play (Space)");
@@ -123,7 +123,7 @@ private:
 
     void drawForwardsButtons()
     {
-        if (ui::draw_button(ICON_FA_STEP_FORWARD))
+        if (ui::draw_button(OSC_ICON_STEP_FORWARD))
         {
             m_SimulatorAPI->stepForward();
         }
@@ -131,7 +131,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_FAST_FORWARD))
+        if (ui::draw_button(OSC_ICON_FAST_FORWARD))
         {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
         }

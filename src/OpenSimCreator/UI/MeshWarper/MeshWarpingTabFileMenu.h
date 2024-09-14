@@ -5,8 +5,8 @@
 #include <OpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 
 #include <memory>
@@ -35,29 +35,29 @@ namespace osc
     private:
         void drawContent()
         {
-            if (ui::draw_menu_item(ICON_FA_FILE " New", "Ctrl+N"))
+            if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N"))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
 
-            if (ui::begin_menu(ICON_FA_FILE_IMPORT " Import"))
+            if (ui::begin_menu(OSC_ICON_FILE_IMPORT " Import"))
             {
                 drawImportMenuContent();
                 ui::end_menu();
             }
 
-            if (ui::begin_menu(ICON_FA_FILE_EXPORT " Export"))
+            if (ui::begin_menu(OSC_ICON_FILE_EXPORT " Export"))
             {
                 drawExportMenuContent();
                 ui::end_menu();
             }
 
-            if (ui::draw_menu_item(ICON_FA_TIMES " Close", "Ctrl+W"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", "Ctrl+W"))
             {
                 m_State->closeTab();
             }
 
-            if (ui::draw_menu_item(ICON_FA_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q"))
             {
                 App::upd().request_quit();
             }

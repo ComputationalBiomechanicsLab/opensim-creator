@@ -6,7 +6,6 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Scene/CachedSceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -17,6 +16,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -101,7 +101,7 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ui::draw_button_nobg(ICON_FA_INFO_CIRCLE);
+            ui::draw_button_nobg(OSC_ICON_INFO_CIRCLE);
             if (ui::is_item_hovered())
             {
                 ui::begin_tooltip();
@@ -141,7 +141,7 @@ namespace osc
         void drawExportButton()
         {
             m_CursorXAtExportButton = ui::get_cursor_pos().x;  // needed to align the blending factor slider
-            ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
@@ -179,7 +179,7 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
             {
                 auto_focus(
                     m_Camera,

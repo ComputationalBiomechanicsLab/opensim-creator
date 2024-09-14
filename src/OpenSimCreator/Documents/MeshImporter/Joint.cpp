@@ -5,9 +5,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/TransformFunctions.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
@@ -42,7 +42,7 @@ MIClass osc::mi::Joint::CreateClass()
         MIStrings::c_JointLabel,
         MIStrings::c_JointLabelPluralized,
         MIStrings::c_JointLabelOptionallyPluralized,
-        ICON_FA_LINK,
+        OSC_ICON_LINK,
         MIStrings::c_JointDescription,
     };
 }

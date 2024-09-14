@@ -7,7 +7,6 @@
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -21,6 +20,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Shims/Cpp20/stop_token.h>
@@ -803,7 +803,7 @@ namespace
         ss << i << ") " << p.getName();
         if (p.getIsLocked())
         {
-            ss << " " ICON_FA_LOCK;
+            ss << " " OSC_ICON_LOCK;
         }
         return std::move(ss).str();
     }
@@ -1620,7 +1620,7 @@ namespace
                 coordNameWidth +
                 ui::get_style_item_spacing().x +
                 ui::get_style_frame_padding().x +
-                ui::calc_text_size(ICON_FA_BARS " Options").x +
+                ui::calc_text_size(OSC_ICON_BARS " Options").x +
                 ui::get_style_frame_padding().x;
 
             float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
@@ -1682,7 +1682,7 @@ namespace
             //
             // it's easier for users to figure out than having to guess they need to
             // right-click the plot (#399)
-            ui::draw_button(ICON_FA_BARS " Options");
+            ui::draw_button(OSC_ICON_BARS " Options");
             tryDrawGeneralPlotPopup(coord, plotTitle, ui::PopupFlag::MouseButtonLeft);
         }
 
@@ -1732,23 +1732,23 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (ui::draw_menu_item(ICON_FA_TRASH " delete"))
+                    if (ui::draw_menu_item(OSC_ICON_TRASH " delete"))
                     {
                         m_Lines.tagOtherPlotForDeletion(i);
                     }
-                    if (!plot.getIsLocked() && ui::draw_menu_item(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_LOCK " lock"))
                     {
                         m_Lines.setOtherPlotLocked(i, true);
                     }
-                    if (plot.getIsLocked() && ui::draw_menu_item(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_UNLOCK " unlock"))
                     {
                         m_Lines.setOtherPlotLocked(i, false);
                     }
-                    if (plot.tryGetParameters() && ui::draw_menu_item(ICON_FA_UNDO " revert to this"))
+                    if (plot.tryGetParameters() && ui::draw_menu_item(OSC_ICON_UNDO " revert to this"))
                     {
                         m_Lines.revertToPreviousPlot(updShared().updModel(), i);
                     }
-                    if (ui::draw_menu_item(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::draw_menu_item(OSC_ICON_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }
@@ -1788,15 +1788,15 @@ namespace
                 {
                     m_LegendPopupIsOpen = true;
 
-                    if (!plot.getIsLocked() && ui::draw_menu_item(ICON_FA_LOCK " lock"))
+                    if (!plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_LOCK " lock"))
                     {
                         m_Lines.setActivePlotLocked(true);
                     }
-                    if (plot.getIsLocked() && ui::draw_menu_item(ICON_FA_UNLOCK " unlock"))
+                    if (plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_UNLOCK " unlock"))
                     {
                         m_Lines.setActivePlotLocked(false);
                     }
-                    if (ui::draw_menu_item(ICON_FA_FILE_EXPORT " export to CSV"))
+                    if (ui::draw_menu_item(OSC_ICON_FILE_EXPORT " export to CSV"))
                     {
                         ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), plot);
                     }

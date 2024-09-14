@@ -10,7 +10,6 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -24,6 +23,7 @@
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
 #include <oscar/Maths.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
@@ -551,7 +551,7 @@ class osc::PreviewExperimentalDataTab::Impl final :
     public IPopupAPI {
 public:
     explicit Impl(const ParentPtr<ITabHost>&) :
-        StandardTabImpl{ICON_FA_DOT_CIRCLE " Experimental Data"}
+        StandardTabImpl{OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",

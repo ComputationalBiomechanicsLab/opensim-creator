@@ -10,7 +10,6 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
@@ -32,6 +31,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Typelist.h>
@@ -426,7 +426,7 @@ namespace osc
         // draws a information icon that shows basic mesh info when hovered
         void drawInformationIcon()
         {
-            ui::draw_button_nobg(ICON_FA_INFO_CIRCLE);
+            ui::draw_button_nobg(OSC_ICON_INFO_CIRCLE);
             if (ui::is_item_hovered())
             {
                 ui::begin_tooltip();
@@ -471,7 +471,7 @@ namespace osc
         // draws an import button that enables the user to import things for this input
         void drawImportButton()
         {
-            ui::draw_button(ICON_FA_FILE_IMPORT " import" ICON_FA_CARET_DOWN);
+            ui::draw_button(OSC_ICON_FILE_IMPORT " import" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##importcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh File"))
@@ -512,7 +512,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            ui::draw_button(ICON_FA_FILE_EXPORT " export" ICON_FA_CARET_DOWN);
+            ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
@@ -553,7 +553,7 @@ namespace osc
         // draws a button that auto-fits the camera to the 3D scene
         void drawAutoFitCameraButton()
         {
-            if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
+            if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
             {
                 auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect));
                 m_State->setLinkedBaseCamera(m_Camera);

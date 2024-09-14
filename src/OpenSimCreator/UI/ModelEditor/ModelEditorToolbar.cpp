@@ -7,10 +7,10 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -61,7 +61,7 @@ private:
         ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
 
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
-        if (ui::draw_button(ICON_FA_PLAY))
+        if (ui::draw_button(OSC_ICON_PLAY))
         {
             ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
         }
@@ -71,7 +71,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_EDIT))
+        if (ui::draw_button(OSC_ICON_EDIT))
         {
             m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
         }

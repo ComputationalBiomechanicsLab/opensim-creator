@@ -5,9 +5,9 @@
 #include <OpenSimCreator/Documents/MeshImporter/MIStrings.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/UID.h>
 
 #include <iostream>
@@ -49,7 +49,7 @@ MIClass osc::mi::StationEl::CreateClass()
         MIStrings::c_StationLabel,
         MIStrings::c_StationLabelPluralized,
         MIStrings::c_StationLabelOptionallyPluralized,
-        ICON_FA_MAP_PIN,
+        OSC_ICON_MAP_PIN,
         MIStrings::c_StationDescription,
     };
 }

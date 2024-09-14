@@ -9,7 +9,6 @@ if (NOT ${OSC_EMSCRIPTEN})
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(imgui REQUIRED CONFIG)
-find_package(IconFontCppHeaders REQUIRED CONFIG)
 find_package(ImGuizmo REQUIRED CONFIG)
 find_package(ImGuiColorTextEdit REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
@@ -466,7 +465,6 @@ target_link_libraries(oscar PUBLIC
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
     imgui
-    IconFontCppHeaders
     ImGuizmo
     ImGuiColorTextEdit
     implot

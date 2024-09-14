@@ -9,7 +9,6 @@ set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
 set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
 set(OSCDEPS_GET_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
 set(OSCDEPS_GET_GLEW ON CACHE BOOL "enable getting glew")
-set(OSCDEPS_GET_ICONFONTCPPHEADERS ON CACHE BOOL "enable gettting IconFontAwesome cpp headers")
 set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
 set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
@@ -109,20 +108,6 @@ if(${OSCDEPS_GET_GLEW})
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DBUILD_UTILS:BOOL=OFF
             -DBUILD_SHARED_LIBS:BOOL=OFF
-    )
-endif()
-
-if (${OSCDEPS_GET_ICONFONTCPPHEADERS})
-    ExternalProject_Add(IconFontCppHeaders
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/IconFontCppHeaders
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeaders.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/IconFontCppHeadersConfig.cmake.in" <SOURCE_DIR>/IconFontCppHeadersConfig.cmake.in
-
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
 endif()
 

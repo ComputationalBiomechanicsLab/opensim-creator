@@ -20,7 +20,6 @@
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -41,6 +40,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/IconCache.h>
@@ -448,7 +448,7 @@ void osc::DrawSearchBar(std::string& out)
     }
     else
     {
-        ui::draw_text(ICON_FA_SEARCH);
+        ui::draw_text(OSC_ICON_SEARCH);
     }
 
     // draw search bar
@@ -617,7 +617,7 @@ bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
 {
     const CStringView label = flags & CalculateMenuFlags::NoCalculatorIcon ?
         "Calculate" :
-        ICON_FA_CALCULATOR " Calculate";
+        OSC_ICON_CALCULATOR " Calculate";
     return ui::begin_menu(label);
 }
 
@@ -1285,7 +1285,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
 
 void osc::DrawNewModelButton(const ParentPtr<IMainUIStateAPI>& api)
 {
-    if (ui::draw_button(ICON_FA_FILE))
+    if (ui::draw_button(OSC_ICON_FILE))
     {
         ActionNewModel(api);
     }
@@ -1296,14 +1296,14 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
-    if (ui::draw_button(ICON_FA_FOLDER_OPEN))
+    if (ui::draw_button(OSC_ICON_FOLDER_OPEN))
     {
         onUserClickedOpenOrSelectedFile(std::nullopt);
     }
     ui::draw_tooltip_if_item_hovered("Open Model", "Opens an existing osim file in a new tab");
     ui::same_line();
     ui::push_style_var(ui::StyleVar::FramePadding, {1.0f, ui::get_style_frame_padding().y});
-    ui::draw_button(ICON_FA_CARET_DOWN);
+    ui::draw_button(OSC_ICON_CARET_DOWN);
     ui::draw_tooltip_if_item_hovered("Open Recent File", "Opens a recently-opened osim file in a new tab");
     ui::pop_style_var();
     ui::pop_style_var();
@@ -1346,7 +1346,7 @@ void osc::DrawSaveModelButton(
     const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair& model)
 {
-    if (ui::draw_button(ICON_FA_SAVE))
+    if (ui::draw_button(OSC_ICON_SAVE))
     {
         ActionSaveModel(*api, model);
     }
@@ -1361,7 +1361,7 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
         ui::push_style_var(ui::StyleVar::Alpha, 0.5f * ui::get_style_alpha());
     }
 
-    if (ui::draw_button(ICON_FA_RECYCLE))
+    if (ui::draw_button(OSC_ICON_RECYCLE))
     {
         ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
@@ -1387,7 +1387,7 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ui::draw_button(ICON_FA_UNDO))
+    if (ui::draw_button(OSC_ICON_UNDO))
     {
         ActionUndoCurrentlyEditedModel(model);
     }
@@ -1410,7 +1410,7 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ui::draw_button(ICON_FA_REDO))
+    if (ui::draw_button(OSC_ICON_REDO))
     {
         ActionRedoCurrentlyEditedModel(model);
     }
@@ -1494,7 +1494,7 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
 void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-    ui::draw_text_unformatted(ICON_FA_EXPAND_ALT);
+    ui::draw_text_unformatted(OSC_ICON_EXPAND_ALT);
     ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ui::same_line();
 
@@ -1510,7 +1510,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 
     ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
     ui::same_line();
-    if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT))
+    if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
     {
         ActionAutoscaleSceneScaleFactor(model);
     }

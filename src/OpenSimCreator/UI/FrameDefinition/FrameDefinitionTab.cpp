@@ -22,7 +22,6 @@
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <SDL_events.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -38,6 +37,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
@@ -504,7 +504,7 @@ namespace
         const SimTK::State& state,
         const Edge& edge)
     {
-        if (ui::begin_menu(ICON_FA_CALCULATOR " Calculate"))
+        if (ui::begin_menu(OSC_ICON_CALCULATOR " Calculate"))
         {
             if (ui::begin_menu("Start Point"))
             {
@@ -560,7 +560,7 @@ namespace
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Component&)
     {
-        if (maybeSourceEvent && ui::begin_menu(ICON_FA_CAMERA " Focus Camera"))
+        if (maybeSourceEvent && ui::begin_menu(OSC_ICON_CAMERA " Focus Camera"))
         {
             if (ui::draw_menu_item("on Ground"))
             {
@@ -591,12 +591,12 @@ namespace
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const Edge& edge)
     {
-        if (maybeSourceEvent && ui::draw_menu_item(ICON_FA_TIMES " Cross Product Edge"))
+        if (maybeSourceEvent && ui::draw_menu_item(OSC_ICON_TIMES " Cross Product Edge"))
         {
             PushCreateCrossProductEdgeLayer(editor, model, edge, *maybeSourceEvent);
         }
 
-        if (maybeSourceEvent && ui::begin_menu(ICON_FA_ARROWS_ALT " Frame With This Edge as"))
+        if (maybeSourceEvent && ui::begin_menu(OSC_ICON_ARROWS_ALT " Frame With This Edge as"))
         {
             ui::push_style_color(ui::ColorVar::Text, Color::muted_red());
             if (ui::draw_menu_item("+x"))
@@ -694,7 +694,7 @@ namespace
             groundOrExistingBody = FindFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
-        if (ui::draw_menu_item(ICON_FA_WEIGHT " Body From This", {}, false, groundOrExistingBody == nullptr))
+        if (ui::draw_menu_item(OSC_ICON_WEIGHT " Body From This", {}, false, groundOrExistingBody == nullptr))
         {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
@@ -710,7 +710,7 @@ namespace
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Mesh& mesh)
     {
-        if (ui::draw_menu_item(ICON_FA_CIRCLE " Sphere Landmark"))
+        if (ui::draw_menu_item(OSC_ICON_CIRCLE " Sphere Landmark"))
         {
             ActionAddSphereInMeshFrame(
                 *model,
@@ -718,7 +718,7 @@ namespace
                 maybeSourceEvent ? maybeSourceEvent->maybeClickPositionInGround : std::nullopt
             );
         }
-        if (ui::draw_menu_item(ICON_FA_ARROWS_ALT " Custom (Offset) Frame"))
+        if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Custom (Offset) Frame"))
         {
             ActionAddOffsetFrameInMeshFrame(
                 *model,
@@ -734,11 +734,11 @@ namespace
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Point& point)
     {
-        if (maybeSourceEvent && ui::draw_menu_item(ICON_FA_GRIP_LINES " Edge"))
+        if (maybeSourceEvent && ui::draw_menu_item(OSC_ICON_GRIP_LINES " Edge"))
         {
             PushCreateEdgeToOtherPointLayer(editor, model, point, *maybeSourceEvent);
         }
-        if (maybeSourceEvent && ui::draw_menu_item(ICON_FA_DOT_CIRCLE " Midpoint"))
+        if (maybeSourceEvent && ui::draw_menu_item(OSC_ICON_DOT_CIRCLE " Midpoint"))
         {
             PushCreateMidpointToAnotherPointLayer(editor, model, point, *maybeSourceEvent);
         }
@@ -750,9 +750,9 @@ namespace
         DrawNothingRightClickedContextMenuHeader();
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
-            if (ui::draw_menu_item(ICON_FA_CUBES " Meshes"))
+            if (ui::draw_menu_item(OSC_ICON_CUBES " Meshes"))
             {
                 ActionPromptUserToAddMeshFiles(model);
             }
@@ -769,12 +769,12 @@ namespace
         DrawRightClickedComponentContextMenuHeader(mesh);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
             DrawMeshAddContextMenuItems(model, maybeSourceEvent, mesh);
             ui::end_menu();
         }
-        if (ui::begin_menu(ICON_FA_FILE_EXPORT " Export"))
+        if (ui::begin_menu(OSC_ICON_FILE_EXPORT " Export"))
         {
             DrawMeshExportContextMenuContent(*model, mesh);
             ui::end_menu();
@@ -791,7 +791,7 @@ namespace
         DrawRightClickedComponentContextMenuHeader(point);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
             DrawPointAddContextMenuItems(editor, model, maybeSourceEvent, point);
             ui::end_menu();
@@ -809,12 +809,12 @@ namespace
         DrawRightClickedComponentContextMenuHeader(edge);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
             DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
             ui::end_menu();
         }
-        if (ui::draw_menu_item(ICON_FA_RECYCLE " Swap Direction"))
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Swap Direction"))
         {
             ActionSwapPointToPointEdgeEnds(*model, edge);
         }
@@ -831,12 +831,12 @@ namespace
         DrawRightClickedComponentContextMenuHeader(edge);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
             DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
             ui::end_menu();
         }
-        if (ui::draw_menu_item(ICON_FA_RECYCLE " Swap Operands"))
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Swap Operands"))
         {
             ActionSwapCrossProductEdgeOperands(*model, edge);
         }
@@ -853,7 +853,7 @@ namespace
         DrawRightClickedComponentContextMenuHeader(frame);
         DrawContextMenuSeparator();
 
-        if (ui::begin_menu(ICON_FA_PLUS " Add"))
+        if (ui::begin_menu(OSC_ICON_PLUS " Add"))
         {
             DrawCreateBodyMenuItem(editor, model, maybeSourceEvent, frame);
             ui::end_menu();
@@ -965,12 +965,12 @@ namespace
         {
             if (ui::begin_menu("Edit"))
             {
-                if (ui::draw_menu_item(ICON_FA_UNDO " Undo", {}, false, m_Model->canUndo()))
+                if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", {}, false, m_Model->canUndo()))
                 {
                     ActionUndoCurrentlyEditedModel(*m_Model);
                 }
 
-                if (ui::draw_menu_item(ICON_FA_REDO " Redo", {}, false, m_Model->canRedo()))
+                if (ui::draw_menu_item(OSC_ICON_REDO " Redo", {}, false, m_Model->canRedo()))
                 {
                     ActionRedoCurrentlyEditedModel(*m_Model);
                 }

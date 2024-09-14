@@ -3,11 +3,10 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/UI/Widgets/LogViewer.h>
-
-#include <IconsFontAwesome5.h>
 
 #include <exception>
 #include <memory>
@@ -18,7 +17,7 @@ using namespace osc;
 class osc::ErrorTab::Impl final : public StandardTabImpl {
 public:
     explicit Impl(const std::exception& exception) :
-        StandardTabImpl{ICON_FA_SPIDER " Error"},
+        StandardTabImpl{OSC_ICON_SPIDER " Error"},
         error_message_{exception.what()}
     {}
 

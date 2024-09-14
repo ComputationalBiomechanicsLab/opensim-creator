@@ -6,7 +6,6 @@
 #include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
@@ -24,6 +23,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
@@ -490,7 +490,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<std::string>(idx);
                 }
@@ -576,7 +576,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<double>(idx);
                 }
@@ -667,7 +667,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<bool>(idx);
                 }
@@ -935,7 +935,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<SimTK::Vec3>(idx);
                 }
@@ -1083,7 +1083,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<SimTK::Vec6>(idx);
                 }
@@ -1177,7 +1177,7 @@ namespace
             // draw trash can that can delete an element from the property's list
             if (m_EditedProperty.isListProperty())
             {
-                if (ui::draw_button(ICON_FA_TRASH))
+                if (ui::draw_button(OSC_ICON_TRASH))
                 {
                     rv = MakeSimplePropertyElementDeleter<int>(idx);
                 }
@@ -1414,7 +1414,7 @@ namespace
             ui::draw_separator();
             DrawPropertyName(prop);
             ui::next_column();
-            if (ui::draw_button(ICON_FA_EDIT))
+            if (ui::draw_button(OSC_ICON_EDIT))
             {
                 pushPopup(createGeometryPathEditorPopup());
             }
@@ -1505,7 +1505,7 @@ namespace
 
             ui::next_column();
 
-            if (ui::draw_button(ICON_FA_EYE)) {
+            if (ui::draw_button(OSC_ICON_EYE)) {
                 pushPopup(std::make_unique<FunctionCurveViewerPopup>(
                     generatePopupName(*prop),
                     getModelPtr(),
@@ -1527,7 +1527,7 @@ namespace
                     }
                 ));
             }
-            ui::draw_tooltip_if_item_hovered("View Function", ICON_FA_MAGIC " Experimental Feature " ICON_FA_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
+            ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
             ui::draw_text(prop->getTypeName());
             ui::next_column();

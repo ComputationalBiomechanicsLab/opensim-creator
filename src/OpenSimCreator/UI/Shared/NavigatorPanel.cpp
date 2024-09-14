@@ -5,7 +5,6 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -13,6 +12,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
@@ -205,7 +205,7 @@ private:
 
     void drawFilterAndSearchRow()
     {
-        ui::draw_text_unformatted(ICON_FA_EYE);
+        ui::draw_text_unformatted(OSC_ICON_EYE);
         if (ui::begin_popup_context_menu("##filterpopup")) {
             ui::draw_checkbox("frames", &m_ShowFrames);
             ui::end_popup();

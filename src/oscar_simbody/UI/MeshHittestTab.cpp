@@ -1,6 +1,5 @@
 #include "MeshHittestTab.h"
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Graphics/Geometries/AABBGeometry.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
@@ -23,6 +22,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/Utils/UID.h>
@@ -49,7 +49,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_COOKIE " MeshHittestTab";
+        return OSC_ICON_COOKIE " MeshHittestTab";
     }
 
     void on_tick()

@@ -10,9 +10,9 @@
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
@@ -535,7 +535,7 @@ private:
                     }
 
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
-                    ui::draw_tab_item_button(ICON_FA_PLUS);
+                    ui::draw_tab_item_button(OSC_ICON_PLUS);
 
                     if (ui::begin_popup_context_menu("popup", ui::PopupFlag::MouseButtonLeft))
                     {
@@ -604,11 +604,11 @@ private:
 
     void drawAddNewTabMenu()
     {
-        if (ui::draw_menu_item(ICON_FA_EDIT " Editor")) {
+        if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
             select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
         }
 
-        if (ui::draw_menu_item(ICON_FA_CUBE " Mesh Importer")) {
+        if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {
             select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 

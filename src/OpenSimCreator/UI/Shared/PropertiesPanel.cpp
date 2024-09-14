@@ -7,10 +7,10 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -37,7 +37,7 @@ namespace
         ui::draw_help_marker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
         ui::next_column();
         ui::push_style_color(ui::ColorVar::Text, Color::yellow());
-        if (ui::draw_button(ICON_FA_BOLT) or ui::is_item_clicked(ui::MouseButton::Right)) {
+        if (ui::draw_button(OSC_ICON_BOLT) or ui::is_item_clicked(ui::MouseButton::Right)) {
             editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
         }
         ui::pop_style_color();

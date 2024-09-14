@@ -25,6 +25,7 @@
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Flags.h>
@@ -38,7 +39,6 @@
 #include <imgui/imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
-#include <IconsFontAwesome5.h>
 #include <ImGuizmo.h>
 
 #include <algorithm>
@@ -2531,7 +2531,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(ICON_FA_ARROWS_ALT)) {
+        if (ui::draw_button(OSC_ICON_ARROWS_ALT)) {
             if (op != GizmoOperation::Translate) {
                 op = GizmoOperation::Translate;
                 rv = true;
@@ -2547,7 +2547,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(ICON_FA_REDO)) {
+        if (ui::draw_button(OSC_ICON_REDO)) {
             if (op != GizmoOperation::Rotate) {
                 op = GizmoOperation::Rotate;
                 rv = true;
@@ -2563,7 +2563,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(ICON_FA_EXPAND_ARROWS_ALT)) {
+        if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT)) {
             if (op != GizmoOperation::Scale) {
                 op = GizmoOperation::Scale;
                 rv = true;

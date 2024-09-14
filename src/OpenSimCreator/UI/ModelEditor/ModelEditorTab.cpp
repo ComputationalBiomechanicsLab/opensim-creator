@@ -20,12 +20,12 @@
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
@@ -312,7 +312,7 @@ private:
     std::string computeTabName()
     {
         std::stringstream ss;
-        ss << ICON_FA_EDIT << " ";
+        ss << OSC_ICON_EDIT << " ";
         ss << m_Model->recommendedDocumentName();
         return std::move(ss).str();
     }

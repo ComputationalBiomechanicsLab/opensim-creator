@@ -12,7 +12,7 @@
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -48,12 +48,12 @@ private:
     {
         if (ui::begin_menu("Edit"))
         {
-            if (ui::draw_menu_item(ICON_FA_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
+            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
                 ActionUndoCurrentlyEditedModel(*m_Model);
             }
 
-            if (ui::draw_menu_item(ICON_FA_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
+            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
                 ActionRedoCurrentlyEditedModel(*m_Model);
             }
@@ -82,12 +82,12 @@ private:
     {
         if (ui::begin_menu("Tools"))
         {
-            if (ui::draw_menu_item(ICON_FA_PLAY " Simulate", "Ctrl+R"))
+            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R"))
             {
                 ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
-            if (ui::draw_menu_item(ICON_FA_EDIT " Edit simulation settings"))
+            if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings"))
             {
                 m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }

@@ -98,7 +98,7 @@ public:
 
     CStringView getName() const
     {
-        return ICON_FA_BEZIER_CURVE " Mesh Warping";
+        return OSC_ICON_BEZIER_CURVE " Mesh Warping";
     }
 
     void on_mount()

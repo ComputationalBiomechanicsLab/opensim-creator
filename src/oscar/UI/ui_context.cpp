@@ -1,8 +1,8 @@
 #include "ui_context.h"
 
-#include <IconsFontAwesome5.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
@@ -122,7 +122,7 @@ void osc::ui::context::init()
         config.MergeMode = true;
         config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
-        static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ ICON_MIN_FA, ICON_MAX_FA, 0 });
+        static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
         add_resource_as_font(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
     }
 #endif

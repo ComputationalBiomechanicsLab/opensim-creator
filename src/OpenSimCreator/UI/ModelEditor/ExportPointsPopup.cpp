@@ -3,12 +3,12 @@
 #include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <IconsFontAwesome5.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Formats/CSV.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
@@ -264,7 +264,7 @@ namespace
         const OpenSim::Model& model,
         const SimTK::State& state)
     {
-        ui::draw_button("Select" ICON_FA_CARET_DOWN);
+        ui::draw_button("Select" OSC_ICON_CARET_DOWN);
         if (ui::begin_popup_context_menu("##selectmenu", ui::PopupFlag::MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -279,7 +279,7 @@ namespace
 
         ui::same_line();
 
-        ui::draw_button("De-Select" ICON_FA_CARET_DOWN);
+        ui::draw_button("De-Select" OSC_ICON_CARET_DOWN);
         if (ui::begin_popup_context_menu("##deselectmenu", ui::PopupFlag::MouseButtonLeft))
         {
             DrawSelectionStateModifierMenuContent(
@@ -585,7 +585,7 @@ private:
 
         ui::same_line();
 
-        if (ui::draw_button(ICON_FA_UPLOAD " Export to CSV"))
+        if (ui::draw_button(OSC_ICON_UPLOAD " Export to CSV"))
         {
             static_assert(num_options<ExportStepReturn>() == 3, "review error handling");
             const ExportStepReturn rv = ActionPromptUserForSaveLocationAndExportPoints(

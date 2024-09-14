@@ -9,7 +9,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 
-#include <IconsFontAwesome5.h>
+#include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -119,7 +119,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ui::draw_menu_item(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::draw_menu_item(OSC_ICON_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), lm.uid);
                 return;  // CARE: `lm` is now dead
@@ -157,7 +157,7 @@ namespace osc
 
             DrawContextMenuSeparator();
 
-            if (ui::draw_menu_item(ICON_FA_TRASH " Delete", "Delete"))
+            if (ui::draw_menu_item(OSC_ICON_TRASH " Delete", "Delete"))
             {
                 ActionDeleteElementByID(m_State->updUndoable(), npl.uid);
                 return;  // CARE: `npl` is now dead
