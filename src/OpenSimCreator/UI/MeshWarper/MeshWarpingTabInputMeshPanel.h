@@ -395,7 +395,7 @@ namespace osc
 
             // event: if the user is hovering the render while something is selected and the user
             // presses delete then the landmarks should be deleted
-            if (htResult.is_hovered && ui::any_of_keys_pressed({ImGuiKey_Delete, ImGuiKey_Backspace}))
+            if (htResult.is_hovered && ui::any_of_keys_pressed({ui::Key::Delete, ui::Key::Backspace}))
             {
                 ActionDeleteSceneElementsByID(
                     m_State->updUndoable(),
@@ -577,7 +577,7 @@ namespace osc
         {
             static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
             const bool isSourceMesh = m_DocumentIdentifier == TPSDocumentInputIdentifier::Source;
-            const bool isCtrlPressed = ui::any_of_keys_down({ImGuiKey_LeftCtrl, ImGuiKey_RightCtrl});
+            const bool isCtrlPressed = ui::any_of_keys_down({ui::Key::LeftCtrl, ui::Key::RightCtrl});
             return isSourceMesh && isCtrlPressed;
         }
 

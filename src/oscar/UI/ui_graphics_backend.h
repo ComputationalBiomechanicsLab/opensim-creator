@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/UI/oscimgui.h>
-
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 
@@ -10,10 +8,12 @@ struct ImDrawData;
 
 namespace osc::ui::graphics_backend
 {
+    using InternalTextureID = void*;
+
     bool init();
     void shutdown();
     void on_start_new_frame();
     void render(ImDrawData*);
-    ImTextureID allocate_texture_for_current_frame(const Texture2D&);
-    ImTextureID allocate_texture_for_current_frame(const RenderTexture&);
+    InternalTextureID allocate_texture_for_current_frame(const Texture2D&);
+    InternalTextureID allocate_texture_for_current_frame(const RenderTexture&);
 }

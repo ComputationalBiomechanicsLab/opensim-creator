@@ -13,6 +13,8 @@
 #include <oscar/Utils/Perf.h>
 #include <SDL_events.h>
 
+#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
+#include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>
 

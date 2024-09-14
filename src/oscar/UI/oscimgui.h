@@ -1,8 +1,5 @@
 #pragma once
 
-#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
-#include <imgui.h>
-
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Angle.h>
@@ -23,6 +20,7 @@
 #include <oscar/Utils/UID.h>
 
 #include <concepts>
+#include <cstdarg>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
@@ -36,6 +34,8 @@ namespace osc { class Camera; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
+
+struct ImDrawList;
 
 namespace osc::ui
 {
@@ -378,10 +378,81 @@ namespace osc::ui
     void indent(float indent_w = 0.0f);
     void unindent(float indent_w = 0.0f);
 
+    enum class Key {
+        Escape,
+        Enter,
+        Space,
+        Delete,
+        Tab,
+        LeftCtrl,
+        RightCtrl,
+        Backspace,
+        F1,
+        F2,
+        F3,
+        F4,
+        F5,
+        F6,
+        F7,
+        F8,
+        F9,
+        F10,
+        F11,
+        F12,
+        _1,
+        _2,
+        _3,
+        _4,
+        _5,
+        _6,
+        _7,
+        _8,
+        _9,
+        _0,
+        UpArrow,
+        DownArrow,
+        LeftArrow,
+        RightArrow,
+        Minus,
+        Equal,
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+
+        // legacy
+        MouseLeft,
+        MouseRight,
+
+        NUM_OPTIONS,
+    };
+
     void set_keyboard_focus_here();
-    bool is_key_pressed(ImGuiKey, bool repeat = true);
-    bool is_key_released(ImGuiKey);
-    bool is_key_down(ImGuiKey);
+    bool is_key_pressed(Key, bool repeat = true);
+    bool is_key_released(Key);
+    bool is_key_down(Key);
 
     enum class ColorVar {
         Text,
@@ -644,12 +715,12 @@ namespace osc::ui
     HittestResult hittest_last_drawn_item(float drag_threshold);
 
     // returns `true` if any scancode in the provided range is currently pressed down
-    bool any_of_keys_down(std::span<const ImGuiKey>);
-    bool any_of_keys_down(std::initializer_list<const ImGuiKey>);
+    bool any_of_keys_down(std::span<const Key>);
+    bool any_of_keys_down(std::initializer_list<const Key>);
 
     // returns `true` if any scancode in the provided range was pressed down this frame
-    bool any_of_keys_pressed(std::span<const ImGuiKey>);
-    bool any_of_keys_pressed(std::initializer_list<const ImGuiKey>);
+    bool any_of_keys_pressed(std::span<const Key>);
+    bool any_of_keys_pressed(std::initializer_list<const Key>);
 
     // returns true if the user is pressing either left- or right-Ctrl
     bool is_ctrl_down();

@@ -34,6 +34,8 @@
 #include <oscar/Utils/UID.h>
 
 #include <ankerl/unordered_dense.h>
+#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
+#include <imgui/imgui.h>
 
 #include <array>
 #include <cstddef>

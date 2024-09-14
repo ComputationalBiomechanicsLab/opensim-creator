@@ -33,6 +33,8 @@
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 
+#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>
+#include <imgui.h>
 #include <imgui/imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
@@ -472,6 +474,82 @@ struct  osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final
             .sort_order = static_cast<size_t>(specs.SortOrder),
             .sort_direction = to<ui::SortDirection>(specs.SortDirection),
         };
+    }
+};
+
+template<>
+struct osc::Converter<ui::Key, ImGuiKey> final {
+    ImGuiKey operator()(ui::Key key) const
+    {
+        static_assert(num_options<ui::Key>() == 64);
+
+        switch (key) {
+        case ui::Key::Escape:     return ImGuiKey_Escape;
+        case ui::Key::Enter:      return ImGuiKey_Enter;
+        case ui::Key::Space:      return ImGuiKey_Space;
+        case ui::Key::Delete:     return ImGuiKey_Delete;
+        case ui::Key::Tab:        return ImGuiKey_Tab;
+        case ui::Key::LeftCtrl:   return ImGuiKey_LeftCtrl;
+        case ui::Key::RightCtrl:  return ImGuiKey_RightCtrl;
+        case ui::Key::Backspace:  return ImGuiKey_Backspace;
+        case ui::Key::F1:         return ImGuiKey_F1;
+        case ui::Key::F2:         return ImGuiKey_F2;
+        case ui::Key::F3:         return ImGuiKey_F3;
+        case ui::Key::F4:         return ImGuiKey_F4;
+        case ui::Key::F5:         return ImGuiKey_F5;
+        case ui::Key::F6:         return ImGuiKey_F6;
+        case ui::Key::F7:         return ImGuiKey_F7;
+        case ui::Key::F8:         return ImGuiKey_F8;
+        case ui::Key::F9:         return ImGuiKey_F9;
+        case ui::Key::F10:        return ImGuiKey_F10;
+        case ui::Key::F11:        return ImGuiKey_F11;
+        case ui::Key::F12:        return ImGuiKey_F12;
+        case ui::Key::_1:         return ImGuiKey_1;
+        case ui::Key::_2:         return ImGuiKey_2;
+        case ui::Key::_3:         return ImGuiKey_3;
+        case ui::Key::_4:         return ImGuiKey_4;
+        case ui::Key::_5:         return ImGuiKey_5;
+        case ui::Key::_6:         return ImGuiKey_6;
+        case ui::Key::_7:         return ImGuiKey_7;
+        case ui::Key::_8:         return ImGuiKey_8;
+        case ui::Key::_9:         return ImGuiKey_9;
+        case ui::Key::_0:         return ImGuiKey_0;
+        case ui::Key::UpArrow:    return ImGuiKey_UpArrow;
+        case ui::Key::DownArrow:  return ImGuiKey_DownArrow;
+        case ui::Key::LeftArrow:  return ImGuiKey_LeftArrow;
+        case ui::Key::RightArrow: return ImGuiKey_RightArrow;
+        case ui::Key::Minus:      return ImGuiKey_Minus;
+        case ui::Key::Equal:      return ImGuiKey_Equal;
+        case ui::Key::A:          return ImGuiKey_A;
+        case ui::Key::B:          return ImGuiKey_B;
+        case ui::Key::C:          return ImGuiKey_C;
+        case ui::Key::D:          return ImGuiKey_D;
+        case ui::Key::E:          return ImGuiKey_E;
+        case ui::Key::F:          return ImGuiKey_F;
+        case ui::Key::G:          return ImGuiKey_G;
+        case ui::Key::H:          return ImGuiKey_H;
+        case ui::Key::I:          return ImGuiKey_I;
+        case ui::Key::J:          return ImGuiKey_J;
+        case ui::Key::K:          return ImGuiKey_K;
+        case ui::Key::L:          return ImGuiKey_L;
+        case ui::Key::M:          return ImGuiKey_M;
+        case ui::Key::N:          return ImGuiKey_N;
+        case ui::Key::O:          return ImGuiKey_O;
+        case ui::Key::P:          return ImGuiKey_P;
+        case ui::Key::Q:          return ImGuiKey_Q;
+        case ui::Key::R:          return ImGuiKey_R;
+        case ui::Key::S:          return ImGuiKey_S;
+        case ui::Key::T:          return ImGuiKey_T;
+        case ui::Key::U:          return ImGuiKey_U;
+        case ui::Key::V:          return ImGuiKey_V;
+        case ui::Key::W:          return ImGuiKey_W;
+        case ui::Key::X:          return ImGuiKey_X;
+        case ui::Key::Y:          return ImGuiKey_Y;
+        case ui::Key::Z:          return ImGuiKey_Z;
+        case ui::Key::MouseLeft:  return ImGuiKey_MouseLeft;
+        case ui::Key::MouseRight: return ImGuiKey_MouseRight;
+        default:                  return ImGuiKey_MouseLeft;
+        }
     }
 };
 
@@ -963,19 +1041,19 @@ void osc::ui::set_keyboard_focus_here()
     ImGui::SetKeyboardFocusHere();
 }
 
-bool osc::ui::is_key_pressed(ImGuiKey key, bool repeat)
+bool osc::ui::is_key_pressed(Key key, bool repeat)
 {
-    return ImGui::IsKeyPressed(key, repeat);
+    return ImGui::IsKeyPressed(to<ImGuiKey>(key), repeat);
 }
 
-bool osc::ui::is_key_released(ImGuiKey key)
+bool osc::ui::is_key_released(Key key)
 {
-    return ImGui::IsKeyReleased(key);
+    return ImGui::IsKeyReleased(to<ImGuiKey>(key));
 }
 
-bool osc::ui::is_key_down(ImGuiKey key)
+bool osc::ui::is_key_down(Key key)
 {
-    return ImGui::IsKeyDown(key);
+    return ImGui::IsKeyDown(to<ImGuiKey>(key));
 }
 
 Color osc::ui::get_style_color(ColorVar color)
@@ -1491,7 +1569,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
     const bool shift_down = is_shift_down();
     const bool ctrl_or_super_down = is_ctrl_or_super_down();
 
-    if (ui::is_key_released(ImGuiKey_X)) {
+    if (ui::is_key_released(Key::X)) {
         if (ctrl_or_super_down) {
             focus_along_minus_x(camera);
             return true;
@@ -1501,14 +1579,14 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
             return true;
         }
     }
-    else if (ui::is_key_pressed(ImGuiKey_Y)) {
+    else if (ui::is_key_pressed(Key::Y)) {
         // Ctrl+Y already does something?
         if (not ctrl_or_super_down) {
             focus_along_y(camera);
             return true;
         }
     }
-    else if (ui::is_key_pressed(ImGuiKey_F)) {
+    else if (ui::is_key_pressed(Key::F)) {
         if (ctrl_or_super_down) {
             if (maybe_scene_aabb) {
                 auto_focus(
@@ -1524,7 +1602,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
             return true;
         }
     }
-    else if (ctrl_or_super_down and ui::is_key_pressed(ImGuiKey_8)) {
+    else if (ctrl_or_super_down and ui::is_key_pressed(Key::_8)) {
         if (maybe_scene_aabb) {
             auto_focus(
                 camera,
@@ -1534,7 +1612,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
             return true;
         }
     }
-    else if (ui::is_key_down(ImGuiKey_UpArrow)) {
+    else if (ui::is_key_down(Key::UpArrow)) {
         if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {0.0f, -0.1f});
@@ -1547,7 +1625,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         }
         return true;
     }
-    else if (ui::is_key_down(ImGuiKey_DownArrow)) {
+    else if (ui::is_key_down(Key::DownArrow)) {
         if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {0.0f, +0.1f});
@@ -1562,7 +1640,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         }
         return true;
     }
-    else if (ui::is_key_down(ImGuiKey_LeftArrow)) {
+    else if (ui::is_key_down(Key::LeftArrow)) {
         if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {-0.1f, 0.0f});
@@ -1577,7 +1655,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         }
         return true;
     }
-    else if (ui::is_key_down(ImGuiKey_RightArrow)) {
+    else if (ui::is_key_down(Key::RightArrow)) {
         if (ctrl_or_super_down) {
             // pan
             camera.pan(aspect_ratio_of(viewport_rect), {+0.1f, 0.0f});
@@ -1590,11 +1668,11 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         }
         return true;
     }
-    else if (ui::is_key_down(ImGuiKey_Minus)) {
+    else if (ui::is_key_down(Key::Minus)) {
         camera.radius *= 1.1f;
         return true;
     }
-    else if (ui::is_key_down(ImGuiKey_Equal)) {
+    else if (ui::is_key_down(Key::Equal)) {
         camera.radius *= 0.9f;
         return true;
     }
@@ -1633,19 +1711,19 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 
     // keyboard: changes camera position
     Vec3 pos = camera.position();
-    if (ui::is_key_down(ImGuiKey_W)) {
+    if (ui::is_key_down(Key::W)) {
         pos += displacement * front;
     }
-    if (ui::is_key_down(ImGuiKey_S)) {
+    if (ui::is_key_down(Key::S)) {
         pos -= displacement * front;
     }
-    if (ui::is_key_down(ImGuiKey_A)) {
+    if (ui::is_key_down(Key::A)) {
         pos -= displacement * right;
     }
-    if (ui::is_key_down(ImGuiKey_D)) {
+    if (ui::is_key_down(Key::D)) {
         pos += displacement * right;
     }
-    if (ui::is_key_down(ImGuiKey_Space)) {
+    if (ui::is_key_down(Key::Space)) {
         pos += displacement * up;
     }
     if (ui::is_ctrl_down()) {
@@ -1758,23 +1836,23 @@ ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
     return rv;
 }
 
-bool osc::ui::any_of_keys_down(std::span<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_down(std::span<const Key> keys)
 {
     return rgs::any_of(keys, ui::is_key_down);
 }
 
-bool osc::ui::any_of_keys_down(std::initializer_list<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_down(std::initializer_list<const Key> keys)
 {
-    return any_of_keys_down(std::span<ImGuiKey const>{keys.begin(), keys.end()});
+    return any_of_keys_down(std::span<Key const>{keys.begin(), keys.end()});
 }
 
-bool osc::ui::any_of_keys_pressed(std::span<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_pressed(std::span<const Key> keys)
 {
-    return rgs::any_of(keys, [](ImGuiKey k) { return ui::is_key_pressed(k); });
+    return rgs::any_of(keys, [](Key k) { return ui::is_key_pressed(k); });
 }
-bool osc::ui::any_of_keys_pressed(std::initializer_list<const ImGuiKey> keys)
+bool osc::ui::any_of_keys_pressed(std::initializer_list<const Key> keys)
 {
-    return any_of_keys_pressed(std::span<const ImGuiKey>{keys.begin(), keys.end()});
+    return any_of_keys_pressed(std::span<const Key>{keys.begin(), keys.end()});
 }
 
 bool osc::ui::is_ctrl_down()
@@ -2103,7 +2181,7 @@ bool osc::ui::should_save_last_drawn_item_value()
         return true;  // ImGui detected that the item was deactivated after an edit
     }
 
-    if (ImGui::IsItemEdited() and any_of_keys_pressed({ImGuiKey_Enter, ImGuiKey_Tab})) {
+    if (ImGui::IsItemEdited() and any_of_keys_pressed({Key::Enter, Key::Tab})) {
         return true;  // user pressed enter/tab after editing
     }
 
@@ -2601,7 +2679,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
     if (shift_down or ctrl_or_super_down) {
         return false;  // assume the user is doing some other action
     }
-    else if (ui::is_key_pressed(ImGuiKey_R)) {
+    else if (ui::is_key_pressed(Key::R)) {
 
         // R: set manipulation mode to "rotate"
         if (operation_ == GizmoOperation::Rotate) {
@@ -2610,7 +2688,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
         operation_ = GizmoOperation::Rotate;
         return true;
     }
-    else if (ui::is_key_pressed(ImGuiKey_G)) {
+    else if (ui::is_key_pressed(Key::G)) {
 
         // G: set manipulation mode to "grab" (translate)
         if (operation_ == GizmoOperation::Translate) {
@@ -2619,7 +2697,7 @@ bool osc::ui::Gizmo::handle_keyboard_inputs()
         operation_ = GizmoOperation::Translate;
         return true;
     }
-    else if (ui::is_key_pressed(ImGuiKey_S)) {
+    else if (ui::is_key_pressed(Key::S)) {
 
         // S: set manipulation mode to "scale"
         if (operation_ == GizmoOperation::Scale) {

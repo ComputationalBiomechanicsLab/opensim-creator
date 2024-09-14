@@ -2,6 +2,7 @@
 
 #include <oscar/oscar.h>
 
+#include <imgui.h>
 #include <ImGuizmo.h>
 
 #include <memory>
