@@ -254,18 +254,18 @@ public:
         {
             OSC_PERF("App/pump_events");
 
-            bool shouldWait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
+            bool should_wait = is_in_wait_mode_ and num_frames_to_poll_ <= 0;
             num_frames_to_poll_ = max(0, num_frames_to_poll_ - 1);
 
-            for (SDL_Event e; shouldWait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
-                shouldWait = false;
+            for (SDL_Event e; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
+                should_wait = false;
 
                 // let screen handle the event
-                const bool screenHandledEvent = screen_->on_event(Event{e});
+                const bool screen_handled_event = screen_->on_event(*parse_into_event(e));
 
                 // if the active screen didn't handle the event, try to handle it here by following
                 // reasonable heuristics
-                if (not screenHandledEvent) {
+                if (not screen_handled_event) {
                     if (e.type == SDL_WINDOWEVENT) {
                         // window was resized and should be drawn a couple of times quickly
                         // to ensure any immediate UIs in screens are updated

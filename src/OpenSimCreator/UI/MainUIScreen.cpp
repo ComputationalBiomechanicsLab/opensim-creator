@@ -265,7 +265,7 @@ public:
 
             bool activeTabHandledEvent = false;
             try {
-                activeTabHandledEvent = active->on_event(Event{e});
+                activeTabHandledEvent = active->on_event(ev);
             }
             catch (const std::exception& ex) {
                 log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
