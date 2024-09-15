@@ -34,7 +34,6 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
-#include <SDL_events.h>
 
 #include <filesystem>
 #include <span>
@@ -128,12 +127,13 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
-        if (e.type == SDL_DROPFILE && e.drop.file != nullptr && std::string_view{e.drop.file}.ends_with(".osim")) {
-            // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.drop.file);
-            return true;
+        if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
+            if (dropfile->path().extension() == ".osim") {
+                m_Parent->add_and_select_tab<LoadingTab>(m_Parent, dropfile->path());
+                return true;
+            }
         }
         return false;
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 
 union SDL_Event;
@@ -27,6 +28,16 @@ namespace osc
     class RawEvent : public Event {
     public:
         explicit RawEvent(const SDL_Event& e) : Event{e} {}
+    };
+
+    class DropFileEvent : public Event {
+    public:
+        explicit DropFileEvent(const SDL_Event& e);
+
+        const std::filesystem::path& path() const { return path_; }
+
+    private:
+        std::filesystem::path path_;
     };
 
     std::unique_ptr<Event> parse_into_event(const SDL_Event&);

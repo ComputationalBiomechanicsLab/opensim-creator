@@ -182,18 +182,16 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& ev)
     {
-        if (e.type == SDL_KEYDOWN)
-        {
+        const SDL_Event& e = ev;
+        if (e.type == SDL_KEYDOWN) {
             return onKeydownEvent(e.key);
         }
-        else if (e.type == SDL_DROPFILE)
-        {
-            return onDropEvent(e.drop);
+        else if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&ev)) {
+            return onDropEvent(*dropfile);
         }
-        else
-        {
+        else {
             return false;
         }
     }
@@ -318,22 +316,14 @@ private:
         return std::move(ss).str();
     }
 
-    bool onDropEvent(const SDL_DropEvent& e)
+    bool onDropEvent(const DropFileEvent& e)
     {
-        if (e.type != SDL_DROPFILE || e.file == nullptr)
-        {
-            return false;
+        if (e.path().extension() == ".sto") {
+            return ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.path());
         }
-        const std::string_view filename{e.file};
-
-        if (filename.ends_with(".sto"))
-        {
-            return ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.file);
-        }
-        else if (filename.ends_with(".osim"))
-        {
+        else if (e.path().extension() == ".osim") {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.file);
+            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.path());
             return true;
         }
 
