@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL_events.h>
+union SDL_Event;
 
 namespace osc
 {
