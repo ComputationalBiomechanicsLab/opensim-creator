@@ -2,8 +2,6 @@
 
 #include <oscar/Platform/IScreen.h>
 
-#include <SDL_events.h>
-
 #include <memory>
 
 namespace osc { class TabRegistryEntry; }
@@ -21,7 +19,7 @@ namespace osc
     private:
         void impl_on_mount() override;
         void impl_on_unmount() override;
-        bool impl_on_event(const SDL_Event&) override;
+        bool impl_on_event(const Event&) override;
         void impl_on_tick() override;
         void impl_on_draw() override;
 

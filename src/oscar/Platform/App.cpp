@@ -6,6 +6,7 @@
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>
@@ -27,6 +28,7 @@
 #include <ankerl/unordered_dense.h>
 #include <SDL.h>
 #include <SDL_error.h>
+#include <SDL_events.h>
 #include <SDL_keyboard.h>
 #include <SDL_mouse.h>
 #include <SDL_stdinc.h>
@@ -259,7 +261,7 @@ public:
                 shouldWait = false;
 
                 // let screen handle the event
-                const bool screenHandledEvent = screen_->on_event(e);
+                const bool screenHandledEvent = screen_->on_event(Event{e});
 
                 // if the active screen didn't handle the event, try to handle it here by following
                 // reasonable heuristics

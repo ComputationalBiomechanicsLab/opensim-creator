@@ -271,6 +271,7 @@ add_library(oscar STATIC
     Platform/AppSettings.cpp
     Platform/AppSettings.h
     Platform/AppSettingScope.h
+    Platform/Event.h
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/ILogSink.h

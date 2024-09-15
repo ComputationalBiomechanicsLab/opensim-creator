@@ -88,7 +88,7 @@ void osc::CookiecutterScreen::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::CookiecutterScreen::impl_on_event(const SDL_Event& e)
+bool osc::CookiecutterScreen::impl_on_event(const Event& e)
 {
     return impl_->on_event(e);
 }

@@ -1,12 +1,11 @@
 #include "TabTestingScreen.h"
 
 #include <oscar/Platform/App.h>
-#include <oscar/UI/Tabs/TabRegistryEntry.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/UI/Tabs/ITabHost.h>
-#include <oscar/Utils/ParentPtr.h>
-
-#include <SDL_events.h>
+#include <oscar/UI/Tabs/TabRegistryEntry.h>
 #include <oscar/UI/ui_context.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -40,7 +39,7 @@ private:
         ui::context::shutdown();
     }
 
-    bool impl_on_event(const SDL_Event& e) override
+    bool impl_on_event(const Event& e) override
     {
         bool handled = ui::context::on_event(e);
         handled = current_tab_->on_event(e) || handled;
@@ -85,6 +84,6 @@ osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) 
 {}
 void osc::TabTestingScreen::impl_on_mount() { impl_->on_mount(); }
 void osc::TabTestingScreen::impl_on_unmount() { impl_->on_unmount(); }
-bool osc::TabTestingScreen::impl_on_event(const SDL_Event& e) { return impl_->on_event(e); }
+bool osc::TabTestingScreen::impl_on_event(const Event& e) { return impl_->on_event(e); }
 void osc::TabTestingScreen::impl_on_tick() { impl_->on_tick(); }
 void osc::TabTestingScreen::impl_on_draw() { impl_->on_draw(); }
