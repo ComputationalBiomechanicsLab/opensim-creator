@@ -362,6 +362,7 @@ add_library(oscar STATIC
     UI/IconCache.h
     UI/imgui_impl_sdl2.cpp
     UI/imgui_impl_sdl2.h
+    UI/MouseCapturingCamera.cpp
     UI/MouseCapturingCamera.h
     UI/oscimgui.cpp
     UI/oscimgui.h

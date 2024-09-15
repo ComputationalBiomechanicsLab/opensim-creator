@@ -39,7 +39,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -51,7 +50,6 @@
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstddef>
@@ -69,6 +67,7 @@
 #include <vector>
 
 namespace OpenSim { class Model; }
+namespace osc { class Event; }
 
 using namespace osc::literals;
 
@@ -772,20 +771,7 @@ namespace osc::mi
         // TOP-LEVEL STUFF
         //
 
-        bool onEvent(const Event& ev)
-        {
-            const SDL_Event& e = ev;
-
-            // if the user drags + drops a file into the window, assume it's a meshfile
-            // and start loading it
-            if (e.type == SDL_DROPFILE && e.drop.file != nullptr)
-            {
-                m_DroppedFiles.emplace_back(e.drop.file);
-                return true;
-            }
-
-            return false;
-        }
+        bool onEvent(const Event&);
 
         void tick(float)
         {

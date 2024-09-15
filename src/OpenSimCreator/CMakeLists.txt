@@ -234,6 +234,7 @@ add_library(OpenSimCreator STATIC
     UI/MeshImporter/DrawableThing.h
     UI/MeshImporter/IMeshImporterUILayerHost.h
     UI/MeshImporter/MeshImporterHover.h
+    UI/MeshImporter/MeshImporterSharedState.cpp
     UI/MeshImporter/MeshImporterSharedState.h
     UI/MeshImporter/MeshImporterTab.cpp
     UI/MeshImporter/MeshImporterTab.h
