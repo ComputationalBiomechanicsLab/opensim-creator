@@ -18,7 +18,7 @@ struct osc::Converter<Uint16, KeyModifier> final {
     KeyModifier operator()(Uint16 mod) const
     {
         KeyModifier rv = KeyModifier::None;
-        for (const auto [sdl_modifier, osc_modifier] : c_mappings_) {
+        for (const auto& [sdl_modifier, osc_modifier] : c_mappings_) {
             if (mod & sdl_modifier) {
                 rv |= osc_modifier;
             }
