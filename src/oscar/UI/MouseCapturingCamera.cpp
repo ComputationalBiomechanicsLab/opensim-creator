@@ -1,6 +1,5 @@
 #include "MouseCapturingCamera.h"
 
-#include <SDL_events.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/UI/oscimgui.h>
@@ -17,19 +16,20 @@ void osc::MouseCapturingCamera::on_unmount()
     App::upd().set_show_cursor(true);
 }
 
-bool osc::MouseCapturingCamera::on_event(const Event& ev)
+bool osc::MouseCapturingCamera::on_event(const Event& e)
 {
-    const SDL_Event& e = ev;
-
-    if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-        mouse_captured_ = false;
-        return true;
+    if (e.type() == EventType::KeyRelease) {
+        if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
+            mouse_captured_ = false;
+            return true;
+        }
     }
-    if (e.type == SDL_MOUSEBUTTONDOWN and ui::is_mouse_in_main_viewport_workspace()) {
-        mouse_captured_ = true;
-        return true;
+    else if (e.type() == EventType::MouseButtonPress) {
+        if (ui::is_mouse_in_main_viewport_workspace()) {
+            mouse_captured_ = true;
+            return true;
+        }
     }
-
     return false;
 }
 

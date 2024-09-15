@@ -17,7 +17,6 @@
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <array>
@@ -85,18 +84,13 @@ void osc::ui::context::init()
 #else
     float dpi_scale_factor = [&]()
     {
-        float dpi{};
-        float hdpi{};
-        float vdpi{};
-
         // if the user explicitly enabled high_dpi_mode...
         if (auto v = App::settings().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
-            // and SDL is able to get the DPI of the given window...
-            if (SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(App::upd().upd_underlying_window()), &dpi, &hdpi, &vdpi) == 0) {
-                return dpi / 96.0f;  // then calculate the scaling factor
-            }
+            return App::get().main_window_dpi() / 96.0f;
         }
-        return 1.0f;  // else: assume it's an unscaled 96dpi screen
+        else {
+            return 1.0f;  // else: assume it's an unscaled 96dpi screen
+        }
     }();
 
     {
@@ -154,18 +148,17 @@ void osc::ui::context::shutdown()
 
 bool osc::ui::context::on_event(const Event& ev)
 {
-    const SDL_Event& e = ev;
-    ImGui_ImplSDL2_ProcessEvent(&e);
+    ImGui_ImplSDL2_ProcessEvent(&static_cast<const SDL_Event&>(ev));
 
     const ImGuiIO& io = ImGui::GetIO();
 
     bool event_handled_by_imgui = false;
 
-    if (io.WantCaptureKeyboard and (e.type == SDL_KEYDOWN or e.type == SDL_KEYUP)) {
+    if (io.WantCaptureKeyboard and (ev.type() == EventType::KeyPress or ev.type() == EventType::KeyRelease)) {
         event_handled_by_imgui = true;
     }
 
-    if (io.WantCaptureMouse and (e.type == SDL_MOUSEWHEEL or e.type == SDL_MOUSEMOTION or e.type == SDL_MOUSEBUTTONUP or e.type == SDL_MOUSEBUTTONDOWN)) {
+    if (io.WantCaptureMouse and (ev.type() == EventType::MouseWheel or ev.type() == EventType::MouseMove or ev.type() == EventType::MouseButtonRelease or ev.type() == EventType::MouseButtonPress)) {
         event_handled_by_imgui = true;
     }
 

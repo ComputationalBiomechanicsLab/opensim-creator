@@ -12,6 +12,7 @@
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>
+#include <oscar/Platform/Key.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/Logger.h>
 #include <oscar/Platform/LogLevel.h>

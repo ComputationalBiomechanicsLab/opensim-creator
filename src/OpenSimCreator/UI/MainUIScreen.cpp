@@ -33,7 +33,6 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <functional>
@@ -79,64 +78,47 @@ class osc::MainUIScreen::Impl final :
     public std::enable_shared_from_this<Impl> {
 public:
 
-    // called when an event is pumped into this screen but isn't handled by
-    // either the global 2D UI context or the active tab
-    bool onUnhandledEvent(const SDL_Event& e)
+    bool onUnhandledKeyRelease(const KeyEvent& e)
     {
-        bool handled = false;
-        if (e.type == SDL_KEYUP &&
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-            e.key.keysym.scancode == SDL_SCANCODE_P)
-        {
+        if (e.matches(KeyModifier::CtrlORGui, Key::P)) {
             // `Ctrl+P` or `Super+P`: "take a screenshot"
             m_MaybeScreenshotRequest = App::upd().request_screenshot();
-            handled = true;
+            return true;
         }
-        if ((e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-             e.key.keysym.scancode == SDL_SCANCODE_PAGEUP) ||
-
-            (e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_GUI) &&
-             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
-             e.key.keysym.scancode == SDL_SCANCODE_LEFT))
-        {
+        if (e.matches(KeyModifier::CtrlORGui, Key::PageUp) or e.matches(KeyModifier::Gui, KeyModifier::Alt, Key::LeftArrow)) {
             // `Ctrl+PageUp` or `Super+PageUp` or `Command+Option+Left`: focus the tab to the left of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.begin() and it != m_Tabs.end()) {
                 --it;  // previous
                 select_tab((*it)->id());
             }
-            handled = true;
+            return true;
         }
-        if ((e.type == SDL_KEYUP &&
-            e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI) &&
-            e.key.keysym.scancode == SDL_SCANCODE_PAGEDOWN) ||
-
-            (e.type == SDL_KEYUP &&
-             e.key.keysym.mod & (KMOD_GUI) &&
-             e.key.keysym.mod & (KMOD_LALT | KMOD_RALT) &&
-             e.key.keysym.scancode == SDL_SCANCODE_RIGHT))
-        {
+        if (e.matches(KeyModifier::CtrlORGui, Key::PageDown) or e.matches(KeyModifier::Gui, KeyModifier::Alt, Key::RightArrow)) {
             // `Ctrl+PageDown` or `Super+PageDown` or `Command+Option+Right`: focus the tab to the right of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.end()-1) {
                 ++it;  // next
                 select_tab((*it)->id());
             }
-            handled = true;
+            return true;
         }
-        if (e.type == SDL_KEYUP &&
-            ((e.key.keysym.mod & (KMOD_CTRL | KMOD_GUI)) != 0) &&
-            e.key.keysym.scancode == SDL_SCANCODE_W &&
-            m_Tabs.size() > 1 &&  // can't close splash tab
-            m_ActiveTabID != m_Tabs.front()->id())
-        {
+        if (e.matches(KeyModifier::CtrlORGui, Key::W) and m_Tabs.size() > 1 and m_ActiveTabID != m_Tabs.front()->id()) {
+            // `Ctrl+W` or `Command+W`: close the current tab - unless it's the splash tab
             close_tab(m_ActiveTabID);
-            handled = true;
+            return true;
         }
+        return false;
+    }
 
-        return handled;
+    // called when an event is pumped into this screen but isn't handled by
+    // either the global 2D UI context or the active tab
+    bool onUnhandledEvent(const Event& e)
+    {
+        if (e.type() == EventType::KeyRelease) {
+            return onUnhandledKeyRelease(dynamic_cast<const KeyEvent&>(e));
+        }
+        return false;
     }
 
     UID addTab(std::unique_ptr<ITab> tab)
@@ -193,12 +175,12 @@ public:
 
     bool onEvent(const Event& ev)
     {
-        const SDL_Event& e = ev;
-
         bool handled = false;
-        if (e.type == SDL_KEYUP or
-            e.type == SDL_MOUSEBUTTONUP or
-            e.type == SDL_MOUSEMOTION) {
+        if (ev.type() == EventType::KeyPress or
+            ev.type() == EventType::KeyRelease or
+            ev.type() == EventType::MouseButtonRelease or
+            ev.type() == EventType::MouseMove or
+            ev.type() == EventType::MouseWheel) {
 
             // if the user just potentially changed something via a mouse/keyboard
             // interaction then the screen should be aggressively redrawn to reduce
@@ -214,7 +196,7 @@ public:
             m_ShouldRequestRedraw = true;
             handled = true;
         }
-        else if (e.type == SDL_QUIT) {
+        else if (ev.type() == EventType::Quit) {
             // if it's an application-level QUIT request, then it should be pumped into each
             // tab, while checking whether a tab wants to "block" the request (e.g. because it
             // wants to show a "do you want to save changes?" popup to the user
@@ -286,7 +268,7 @@ public:
                 handled = true;
             }
             else {
-                handled = onUnhandledEvent(e);
+                handled = onUnhandledEvent(ev);
             }
         }
 

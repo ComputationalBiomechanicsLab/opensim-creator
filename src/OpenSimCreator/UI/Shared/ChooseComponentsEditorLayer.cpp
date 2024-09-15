@@ -179,7 +179,7 @@ public:
         m_State.renderParams = panelParams.getRenderParams();
         m_IsLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
         m_IsRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
-        if (ui::is_key_released(ui::Key::Escape))
+        if (ui::is_key_released(Key::Escape))
         {
             m_State.shouldClosePopup = true;
         }

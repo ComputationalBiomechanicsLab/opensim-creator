@@ -52,7 +52,6 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKHelpers.h>
-#include <SDL_events.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -1081,14 +1080,12 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
-        if (e.type == SDL_KEYDOWN)
-        {
-            return onKeydownEvent(e.key);
+        if (e.type() == EventType::KeyPress) {
+            return onKeyPress(dynamic_cast<const KeyEvent&>(e));
         }
-        else
-        {
+        else {
             return false;
         }
     }
@@ -1113,30 +1110,24 @@ public:
     }
 
 private:
-    bool onKeydownEvent(const SDL_KeyboardEvent& e)
+    bool onKeyPress(const KeyEvent& e)
     {
-        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
-
-        if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
-        {
+        if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo
             ActionRedoCurrentlyEditedModel(*m_Model);
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
-        {
+        else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
             // Ctrl+Z: undo
             ActionUndoCurrentlyEditedModel(*m_Model);
             return true;
         }
-        else if (e.keysym.sym == SDLK_BACKSPACE || e.keysym.sym == SDLK_DELETE)
-        {
+        else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {
             // BACKSPACE/DELETE: delete selection
             ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }

@@ -279,6 +279,7 @@ add_library(oscar STATIC
     Platform/IResourceLoader.cpp
     Platform/IResourceLoader.h
     Platform/IScreen.h
+    Platform/Key.h
     Platform/Log.cpp
     Platform/Log.h
     Platform/Logger.h

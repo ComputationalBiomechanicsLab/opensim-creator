@@ -750,79 +750,79 @@ private:
         bool shiftDown = ui::is_shift_down();
         bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
 
-        if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::N))
+        if (ctrlOrSuperDown && ui::is_key_pressed(Key::N))
         {
             // Ctrl+N: new scene
             m_Shared->requestNewMeshImporterTab();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::O))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(Key::O))
         {
             // Ctrl+O: open osim
             m_Shared->openOsimFileAsModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(ui::Key::S))
+        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(Key::S))
         {
             // Ctrl+Shift+S: export as: export scene as osim to user-specified location
             m_Shared->exportAsModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::S))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(Key::S))
         {
             // Ctrl+S: export: export scene as osim according to typical export heuristic
             m_Shared->exportModelGraphAsOsimFile();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::Q))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(Key::Q))
         {
             // Ctrl+Q: quit application
             App::upd().request_quit();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::A))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(Key::A))
         {
             // Ctrl+A: select all
             m_Shared->selectAll();
             return true;
         }
-        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(ui::Key::Z))
+        else if (ctrlOrSuperDown && shiftDown && ui::is_key_pressed(Key::Z))
         {
             // Ctrl+Shift+Z: redo
             m_Shared->redoCurrentModelGraph();
             return true;
         }
-        else if (ctrlOrSuperDown && ui::is_key_pressed(ui::Key::Z))
+        else if (ctrlOrSuperDown && ui::is_key_pressed(Key::Z))
         {
             // Ctrl+Z: undo
             m_Shared->undoCurrentModelGraph();
             return true;
         }
-        else if (ui::any_of_keys_down({ui::Key::Delete, ui::Key::Backspace}))
+        else if (ui::any_of_keys_down({Key::Delete, Key::Backspace}))
         {
             // Delete/Backspace: delete any selected elements
             deleteSelected();
             return true;
         }
-        else if (ui::is_key_pressed(ui::Key::B))
+        else if (ui::is_key_pressed(Key::B))
         {
             // B: add body to hovered element
             tryAddBodyToHoveredElement();
             return true;
         }
-        else if (ui::is_key_pressed(ui::Key::A))
+        else if (ui::is_key_pressed(Key::A))
         {
             // A: assign a parent for the hovered element
             tryTransitionToAssigningHoverAndSelectionNextFrame();
             return true;
         }
-        else if (ui::is_key_pressed(ui::Key::J))
+        else if (ui::is_key_pressed(Key::J))
         {
             // J: try to create a joint
             tryCreatingJointFromHoveredElement();
             return true;
         }
-        else if (ui::is_key_pressed(ui::Key::T))
+        else if (ui::is_key_pressed(Key::T))
         {
             // T: try to add a station to the current hover
             tryAddingStationAtMousePosToHoveredElement();
@@ -1605,7 +1605,7 @@ private:
 
 
         // context menu should be closed under these conditions
-        if (ui::any_of_keys_pressed({ui::Key::Enter, ui::Key::Escape}))
+        if (ui::any_of_keys_pressed({Key::Enter, Key::Escape}))
         {
             m_MaybeOpenedContextMenu.reset();
             ui::close_current_popup();

@@ -42,8 +42,6 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
-#include <SDL_events.h>
-#include <SDL_keyboard.h>
 
 #include <chrono>
 #include <exception>
@@ -184,15 +182,10 @@ public:
 
     bool onEvent(const Event& ev)
     {
-        const SDL_Event& e = ev;
-        if (e.type == SDL_KEYDOWN) {
-            return onKeydownEvent(e.key);
-        }
-        else if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&ev)) {
-            return onDropEvent(*dropfile);
-        }
-        else {
-            return false;
+        switch (ev.type()) {
+        case EventType::KeyPress: return onKeydownEvent(dynamic_cast<const KeyEvent&>(ev));
+        case EventType::DropFile: return onDropEvent(dynamic_cast<const DropFileEvent&>(ev));
+        default:                  return false;
         }
     }
 
@@ -330,45 +323,35 @@ private:
         return false;
     }
 
-    bool onKeydownEvent(const SDL_KeyboardEvent& e)
+    bool onKeydownEvent(const KeyEvent& e)
     {
-        if (ui::is_ctrl_or_super_down())
-        {
-            if (e.keysym.mod & KMOD_SHIFT)
-            {
-                switch (e.keysym.sym) {
-                case SDLK_z:  // Ctrl+Shift+Z : undo focused model
-                    ActionRedoCurrentlyEditedModel(*m_Model);
-                    return true;
-                }
-                return false;
-            }
-
-            switch (e.keysym.sym) {
-            case SDLK_z:  // Ctrl+Z: undo focused model
-                ActionUndoCurrentlyEditedModel(*m_Model);
-                return true;
-            case SDLK_r:
-            {
-                // Ctrl+R: start a new simulation from focused model
-                return ActionStartSimulatingModel(m_Parent, *m_Model);
-            }
-            case SDLK_a:  // Ctrl+A: clear selection
-                ActionClearSelectionFromEditedModel(*m_Model);
-                return true;
-            }
-
-            return false;
+        if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
+            // Ctrl+Shift+Z : undo focused model
+            ActionRedoCurrentlyEditedModel(*m_Model);
+            return true;
         }
-
-        switch (e.keysym.sym) {
-        case SDLK_BACKSPACE:
-        case SDLK_DELETE:  // BACKSPACE/DELETE: delete selection
+        else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
+            // Ctrl+Z: undo focused model
+            ActionUndoCurrentlyEditedModel(*m_Model);
+            return true;
+        }
+        else if (e.matches(KeyModifier::CtrlORGui, Key::R)) {
+            // Ctrl+R: start a new simulation from focused model
+            return ActionStartSimulatingModel(m_Parent, *m_Model);
+        }
+        else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
+            // Ctrl+A: clear selection
+            ActionClearSelectionFromEditedModel(*m_Model);
+            return true;
+        }
+        else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {
+            // BACKSPACE/DELETE: delete selection
             ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }
-
-        return false;
+        else {
+            return false;
+        }
     }
 
     void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& path) final

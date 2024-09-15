@@ -19,7 +19,6 @@
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
-#include <SDL_events.h>
 
 #include <memory>
 #include <string_view>
@@ -116,10 +115,10 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
-        if (e.type == SDL_KEYDOWN) {
-            return onKeydownEvent(e.key);
+        if (e.type() == EventType::KeyPress) {
+            return onKeydownEvent(dynamic_cast<const KeyEvent&>(e));
         }
         else {
             return false;
@@ -151,48 +150,39 @@ public:
     }
 
 private:
-    bool onKeydownEvent(const SDL_KeyboardEvent& e)
+    bool onKeydownEvent(const KeyEvent& e)
     {
-        const bool ctrlOrSuperDown = ui::is_ctrl_or_super_down();
-
-        if (ctrlOrSuperDown && e.keysym.mod & KMOD_SHIFT && e.keysym.sym == SDLK_z)
-        {
+        if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo
             m_Shared->redo();
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_z)
-        {
+        else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
             // Ctrl+Z: undo
             m_Shared->undo();
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_n)
-        {
+        else if (e.matches(KeyModifier::CtrlORGui, Key::N)) {
             // Ctrl+N: redo
             ActionCreateNewDocument(m_Shared->updUndoable());
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_q)
-        {
+        else if (e.matches(KeyModifier::CtrlORGui, Key::Q)) {
             // Ctrl+Q: quit
             App::upd().request_quit();
             return true;
         }
-        else if (ctrlOrSuperDown && e.keysym.sym == SDLK_a)
-        {
+        else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
             // Ctrl+A: select all
             m_Shared->selectAll();
             return true;
         }
-        else if (e.keysym.sym == SDLK_ESCAPE)
-        {
+        else if (e.matches(Key::Escape)) {
             // ESCAPE: clear selection
             m_Shared->clearSelection();
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }

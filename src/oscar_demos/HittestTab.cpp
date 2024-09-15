@@ -1,7 +1,6 @@
 #include "HittestTab.h"
 
 #include <oscar/oscar.h>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstdint>
@@ -98,29 +97,18 @@ private:
     void impl_on_mount() final
     {
         App::upd().make_main_loop_polling();
-        is_mouse_captured_ = true;
+        camera_.on_mount();
     }
 
     void impl_on_unmount() final
     {
-        is_mouse_captured_ = false;
+        camera_.on_unmount();
         App::upd().make_main_loop_waiting();
-        App::upd().set_show_cursor(true);
     }
 
     bool impl_on_event(const Event& ev) final
     {
-        const SDL_Event& e = ev;
-
-        if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
-            is_mouse_captured_ = false;
-            return true;
-        }
-        else if (e.type == SDL_MOUSEBUTTONDOWN and ui::is_mouse_in_main_viewport_workspace()) {
-            is_mouse_captured_ = true;
-            return true;
-        }
-        return false;
+        return camera_.on_event(ev);
     }
 
     void impl_on_tick() final
@@ -153,16 +141,7 @@ private:
 
     void impl_on_draw() final
     {
-        // handle mouse capturing
-        if (is_mouse_captured_) {
-            ui::update_camera_from_all_inputs(camera_, camera_eulers);
-            ui::hide_mouse_cursor();
-            App::upd().set_show_cursor(false);
-        }
-        else {
-            ui::show_mouse_cursor();
-            App::upd().set_show_cursor(true);
-        }
+        camera_.on_draw();
 
         // render spheres
         for (const SceneSphere& sphere : scene_spheres_) {
@@ -248,7 +227,7 @@ private:
         camera_.render_to_screen();
     }
 
-    Camera camera_;
+    MouseCapturingCamera camera_;
     MeshBasicMaterial material_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
     Mesh wireframe_mesh_ = AABBGeometry{};
@@ -263,7 +242,6 @@ private:
     std::vector<SceneSphere> scene_spheres_ = generate_scene_spheres();
     AABB scene_sphere_aabb_ = sphere_mesh_.bounds();
     Sphere sphere_bounding_sphere_ = bounding_sphere_of(sphere_mesh_);
-    bool is_mouse_captured_ = false;
     EulerAngles camera_eulers{};
     bool showing_aabbs_ = true;
 };

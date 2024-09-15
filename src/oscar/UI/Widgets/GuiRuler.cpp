@@ -25,7 +25,7 @@ void osc::GuiRuler::on_draw(
     }
 
     // users can exit measuring through these actions
-    if (ui::is_key_down(ui::Key::Escape) or ui::is_mouse_released(ui::MouseButton::Right)) {
+    if (ui::is_key_down(Key::Escape) or ui::is_mouse_released(ui::MouseButton::Right)) {
         stop_measuring();
         return;
     }

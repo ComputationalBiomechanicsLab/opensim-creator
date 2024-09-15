@@ -391,6 +391,15 @@ public:
         return Vec2{sdl::GetWindowSizeInPixels(main_window_.get())};
     }
 
+    float main_window_dpi() const
+    {
+        float dpi = 96.0f;
+        float hdpi = 0.0f;
+        float vdpi = 0.0f;
+        SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(main_window_.get()), &dpi, &hdpi, &vdpi);
+        return dpi;
+    }
+
     void set_show_cursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
@@ -882,6 +891,11 @@ void osc::App::request_quit()
 Vec2 osc::App::main_window_dimensions() const
 {
     return impl_->main_window_dimensions();
+}
+
+float osc::App::main_window_dpi() const
+{
+    return impl_->main_window_dpi();
 }
 
 void osc::App::set_show_cursor(bool v)

@@ -216,7 +216,7 @@ namespace osc::mi
         {
             m_Shared->tick(dt);
 
-            if (ui::is_key_pressed(ui::Key::Escape))
+            if (ui::is_key_pressed(Key::Escape))
             {
                 // ESC: user cancelled out
                 requestPop();

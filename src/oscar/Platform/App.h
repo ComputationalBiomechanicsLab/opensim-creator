@@ -162,6 +162,9 @@ namespace osc
         // returns main window's dimensions
         Vec2 main_window_dimensions() const;
 
+        // returns the main window's DPI
+        float main_window_dpi() const;
+
         // sets whether the user's mouse cursor should be shown/hidden
         void set_show_cursor(bool);
 

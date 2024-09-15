@@ -128,8 +128,7 @@ R"(# configuration options
             }
 
             // HACK: there is a file at "MacOS/$configName", which is where the settings
-            // is relative to SDL_GetBasePath. current_exe_dir should be fixed
-            // accordingly.
+            // is relative to `current_executable_directory`.
             const std::filesystem::path maybe_macos_config = p / "MacOS" / application_config_file_name;
             if (std::filesystem::exists(maybe_macos_config)) {
                 p = maybe_macos_config;

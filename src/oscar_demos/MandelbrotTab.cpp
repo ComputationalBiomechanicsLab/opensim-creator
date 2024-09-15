@@ -1,7 +1,6 @@
 #include "MandelbrotTab.h"
 
 #include <oscar/oscar.h>
-#include <SDL_events.h>
 
 #include <limits>
 #include <memory>
@@ -27,25 +26,31 @@ public:
     {}
 
 private:
-    bool impl_on_event(const Event& ev) final
+    bool on_keyup(const KeyEvent& e)
     {
-        const SDL_Event& e = ev;
-        if (e.type == SDL_KEYUP and e.key.keysym.sym == SDLK_PAGEUP and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+        if (e.matches(Key::PageUp) and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
             num_iterations_ *= 2;
             return true;
         }
-        if (e.type == SDL_KEYUP and e.key.keysym.sym == SDLK_PAGEDOWN and num_iterations_ > 1) {
+        if (e.matches(Key::PageDown) and num_iterations_ > 1) {
             num_iterations_ /= 2;
             return true;
         }
-        if (e.type == SDL_MOUSEWHEEL) {
-            const float factor = e.wheel.y > 0 ? 0.9f : 1.11111111f;
+        return false;
+    }
+
+    bool impl_on_event(const Event& ev) final
+    {
+        if (ev.type() == EventType::KeyRelease) {
+            return on_keyup(dynamic_cast<const KeyEvent&>(ev));
+        }
+        else if (ev.type() == EventType::MouseWheel) {
+            const float factor = dynamic_cast<const MouseWheelEvent&>(ev).delta().y > 0 ? 0.9f : 1.11111111f;
             apply_zoom_to_camera(ui::get_mouse_pos(), factor);
             return true;
         }
-        if (e.type == SDL_MOUSEMOTION and (e.motion.state & SDL_BUTTON_LMASK) != 0) {
-            const Vec2 screenSpacePanAmount = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
-            apply_pan_to_camera(screenSpacePanAmount);
+        else if (ev.type() == EventType::MouseMove) {
+            apply_pan_to_camera(dynamic_cast<const MouseEvent&>(ev).relative_delta());
             return true;
         }
         return false;

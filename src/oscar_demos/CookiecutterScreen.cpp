@@ -1,7 +1,6 @@
 #include "CookiecutterScreen.h"
 
 #include <oscar/oscar.h>
-#include <SDL_events.h>
 
 #include <memory>
 
@@ -24,16 +23,15 @@ public:
         ui::context::shutdown();  // shutdown 2D UI support
     }
 
-    bool on_event(const Event& ev)
+    bool on_event(const Event& e)
     {
-        // called when the app receives an event from the operating system
-
-        const SDL_Event& e = ev;
-        if (e.type == SDL_QUIT) {
+        if (const auto* quit = dynamic_cast<const QuitEvent*>(&e)) {
+            // the app received a quit request from the operating system (e.g. because the
+            // user clicked the X, or Alt+F4, etc.)
             App::upd().request_quit();
             return true;
         }
-        else if (ui::context::on_event(ev)) {
+        else if (ui::context::on_event(e)) {
             return true;  // an element in the 2D UI handled this event
         }
         return false;   // nothing handled the event

@@ -15,7 +15,6 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
-#include <SDL_events.h>
 
 #include <memory>
 
@@ -55,17 +54,19 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
-        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)
-        {
-            m_IsMouseCaptured = false;
-            return true;
+        if (e.type() == EventType::KeyPress) {
+            if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
+                m_IsMouseCaptured = false;
+                return true;
+            }
         }
-        else if (e.type == SDL_MOUSEBUTTONDOWN && ui::is_mouse_in_main_viewport_workspace())
-        {
-            m_IsMouseCaptured = true;
-            return true;
+        else if (e.type() == EventType::MouseButtonPress) {
+            if (ui::is_mouse_in_main_viewport_workspace()) {
+                m_IsMouseCaptured = true;
+                return true;
+            }
         }
         return false;
     }

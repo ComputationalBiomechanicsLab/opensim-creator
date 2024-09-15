@@ -36,7 +36,6 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <atomic>
@@ -217,13 +216,13 @@ public:
         m_PanelManager->on_tick();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
-        if (e.type == SDL_KEYDOWN and
-            e.key.keysym.scancode == SDL_SCANCODE_SPACE)
-        {
-            togglePlaybackMode();
-            return true;
+        if (e.type() == EventType::KeyPress) {
+            if (dynamic_cast<const KeyEvent&>(e).matches(Key::Space)) {
+                togglePlaybackMode();
+                return true;
+            }
         }
         return false;
     }

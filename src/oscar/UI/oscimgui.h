@@ -13,6 +13,7 @@
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Key.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -377,77 +378,6 @@ namespace osc::ui
 
     void indent(float indent_w = 0.0f);
     void unindent(float indent_w = 0.0f);
-
-    enum class Key {
-        Escape,
-        Enter,
-        Space,
-        Delete,
-        Tab,
-        LeftCtrl,
-        RightCtrl,
-        Backspace,
-        F1,
-        F2,
-        F3,
-        F4,
-        F5,
-        F6,
-        F7,
-        F8,
-        F9,
-        F10,
-        F11,
-        F12,
-        _1,
-        _2,
-        _3,
-        _4,
-        _5,
-        _6,
-        _7,
-        _8,
-        _9,
-        _0,
-        UpArrow,
-        DownArrow,
-        LeftArrow,
-        RightArrow,
-        Minus,
-        Equal,
-        A,
-        B,
-        C,
-        D,
-        E,
-        F,
-        G,
-        H,
-        I,
-        J,
-        K,
-        L,
-        M,
-        N,
-        O,
-        P,
-        Q,
-        R,
-        S,
-        T,
-        U,
-        V,
-        W,
-        X,
-        Y,
-        Z,
-
-        // legacy
-        MouseLeft,
-        MouseRight,
-
-        NUM_OPTIONS,
-    };
 
     void set_keyboard_focus_here();
     bool is_key_pressed(Key, bool repeat = true);
