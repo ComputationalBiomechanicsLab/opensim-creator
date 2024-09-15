@@ -6170,11 +6170,6 @@ public:
         gl::clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    void* upd_raw_opengl_context_handle_HACK()
-    {
-        return opengl_context_.get();
-    }
-
     std::future<Texture2D> request_screenshot()
     {
         return screenshot_request_queue_.emplace_back().get_future();
@@ -6331,11 +6326,6 @@ void osc::GraphicsContext::set_debug_mode(bool v)
 void osc::GraphicsContext::clear_screen(const Color& color)
 {
     g_graphics_context_impl->clear_screen(color);
-}
-
-void* osc::GraphicsContext::upd_raw_opengl_context_handle_HACK()
-{
-    return g_graphics_context_impl->upd_raw_opengl_context_handle_HACK();
 }
 
 void osc::GraphicsContext::swap_buffers(SDL_Window& window)

@@ -123,9 +123,8 @@ void osc::ui::context::init()
 #endif
 
     // init ImGui for SDL2 /w OpenGL
-    ImGui_ImplSDL2_InitForOpenGL(
-        App::upd().upd_underlying_window(),
-        App::upd().upd_underlying_opengl_context()
+    ImGui_ImplSDL2_Init(
+        App::upd().upd_underlying_window()
     );
 
     // init ImGui for OpenGL

@@ -617,11 +617,6 @@ public:
 
     GraphicsContext& upd_graphics_context() { return graphics_context_; }
 
-    void* upd_raw_opengl_context_handle_HACK()
-    {
-        return graphics_context_.upd_raw_opengl_context_handle_HACK();
-    }
-
 private:
     bool is_window_focused() const
     {
@@ -1093,9 +1088,4 @@ std::shared_ptr<void> osc::App::upd_singleton(
 SDL_Window* osc::App::upd_underlying_window()
 {
     return impl_->upd_window().get();
-}
-
-void* osc::App::upd_underlying_opengl_context()
-{
-    return impl_->upd_graphics_context().upd_raw_opengl_context_handle_HACK();
 }

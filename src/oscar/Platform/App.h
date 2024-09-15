@@ -281,10 +281,9 @@ namespace osc
         // try and retrieve a singleton that has the same lifetime as the app
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
 
-        // HACK: the 2D ui currently needs access to these
+        // HACK: the 2D ui currently needs to access this
         friend void ui::context::init();
         SDL_Window* upd_underlying_window();
-        void* upd_underlying_opengl_context();
 
         class Impl;
         std::unique_ptr<Impl> impl_;
