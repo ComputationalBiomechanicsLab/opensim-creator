@@ -25,7 +25,7 @@ public:
 
     bool on_event(const Event& e)
     {
-        if (const auto* quit = dynamic_cast<const QuitEvent*>(&e)) {
+        if (e.type() == EventType::Quit) {
             // the app received a quit request from the operating system (e.g. because the
             // user clicked the X, or Alt+F4, etc.)
             App::upd().request_quit();
