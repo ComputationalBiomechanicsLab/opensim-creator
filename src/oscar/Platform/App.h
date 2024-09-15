@@ -9,8 +9,6 @@
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Screenshot.h>
 
-#include <SDL_events.h>
-
 #include <concepts>
 #include <cstdint>
 #include <filesystem>

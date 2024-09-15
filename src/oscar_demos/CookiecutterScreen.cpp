@@ -24,15 +24,16 @@ public:
         ui::context::shutdown();  // shutdown 2D UI support
     }
 
-    bool on_event(const SDL_Event& e)
+    bool on_event(const Event& ev)
     {
         // called when the app receives an event from the operating system
 
+        const SDL_Event& e = ev;
         if (e.type == SDL_QUIT) {
             App::upd().request_quit();
             return true;
         }
-        else if (ui::context::on_event(e)) {
+        else if (ui::context::on_event(ev)) {
             return true;  // an element in the 2D UI handled this event
         }
         return false;   // nothing handled the event

@@ -27,8 +27,9 @@ public:
     {}
 
 private:
-    bool impl_on_event(const SDL_Event& e) final
+    bool impl_on_event(const Event& ev) final
     {
+        const SDL_Event& e = ev;
         if (e.type == SDL_KEYUP and e.key.keysym.sym == SDLK_PAGEUP and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
             num_iterations_ *= 2;
             return true;
@@ -108,7 +109,7 @@ CStringView osc::MandelbrotTab::impl_get_name() const
     return impl_->name();
 }
 
-bool osc::MandelbrotTab::impl_on_event(const SDL_Event& e)
+bool osc::MandelbrotTab::impl_on_event(const Event& e)
 {
     return impl_->on_event(e);
 }

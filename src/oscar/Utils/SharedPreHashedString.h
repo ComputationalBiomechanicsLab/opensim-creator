@@ -218,26 +218,26 @@ namespace osc
             return static_cast<const Metadata*>(ptr_)->size;
         }
 
-        friend bool operator==(const SharedPreHashedString& lhs, const SharedPreHashedString& rhs)
+        friend constexpr bool operator==(const SharedPreHashedString& lhs, const SharedPreHashedString& rhs)
         {
             return lhs.ptr_ == rhs.ptr_ or std::string_view{lhs} == std::string_view{rhs};
         }
 
         template<typename StringViewLike>
         requires std::constructible_from<std::string_view, StringViewLike>
-        friend bool operator==(const SharedPreHashedString& lhs, const StringViewLike& rhs)
+        friend constexpr bool operator==(const SharedPreHashedString& lhs, const StringViewLike& rhs)
         {
             return std::string_view{lhs} == rhs;
         }
 
         template<typename StringViewLike>
         requires std::constructible_from<std::string_view, StringViewLike>
-        friend bool operator==(const StringViewLike& lhs, const SharedPreHashedString& rhs)
+        friend constexpr bool operator==(const StringViewLike& lhs, const SharedPreHashedString& rhs)
         {
             return lhs == std::string_view{rhs};
         }
 
-        friend auto operator<=>(const SharedPreHashedString& lhs, const SharedPreHashedString& rhs)
+        friend constexpr auto operator<=>(const SharedPreHashedString& lhs, const SharedPreHashedString& rhs)
         {
             if (lhs.ptr_ == rhs.ptr_) {
                 return std::strong_ordering::equal;
@@ -247,14 +247,14 @@ namespace osc
 
         template<typename StringViewLike>
         requires std::constructible_from<std::string_view, StringViewLike>
-        friend auto operator<=>(const SharedPreHashedString& lhs, const StringViewLike& rhs)
+        friend constexpr auto operator<=>(const SharedPreHashedString& lhs, const StringViewLike& rhs)
         {
             return std::string_view{lhs} <=> rhs;
         }
 
         template<typename StringViewLike>
         requires std::constructible_from<std::string_view, StringViewLike>
-        friend auto operator<=>(const StringViewLike& lhs, const SharedPreHashedString& rhs)
+        friend constexpr auto operator<=>(const StringViewLike& lhs, const SharedPreHashedString& rhs)
         {
             return lhs <=> std::string_view{rhs};
         }

@@ -1,6 +1,5 @@
 #include "RendererGeometryShaderTab.h"
 
-#include <SDL_events.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
@@ -13,8 +12,10 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
+#include <SDL_events.h>
 
 #include <memory>
 
@@ -151,7 +152,7 @@ void osc::RendererGeometryShaderTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::RendererGeometryShaderTab::impl_on_event(const SDL_Event& e)
+bool osc::RendererGeometryShaderTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

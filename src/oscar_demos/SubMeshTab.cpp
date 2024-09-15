@@ -1,7 +1,6 @@
 #include "SubMeshTab.h"
 
 #include <oscar/oscar.h>
-#include <SDL_events.h>
 
 #include <array>
 #include <cstdint>

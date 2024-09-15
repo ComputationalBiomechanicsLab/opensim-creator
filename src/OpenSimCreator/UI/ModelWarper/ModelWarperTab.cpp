@@ -8,7 +8,6 @@
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.h>
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
-#include <SDL_events.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
@@ -82,7 +81,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(const SDL_Event&) final
+    bool impl_on_event(const Event&) final
     {
         return false;
     }
@@ -147,7 +146,7 @@ void osc::mow::ModelWarperTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mow::ModelWarperTab::impl_on_event(const SDL_Event& e)
+bool osc::mow::ModelWarperTab::impl_on_event(const Event& e)
 {
     return m_Impl->on_event(e);
 }

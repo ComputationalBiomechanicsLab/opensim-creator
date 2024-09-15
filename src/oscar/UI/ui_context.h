@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL_events.h>
+namespace osc { class Event; }
 
 namespace osc::ui::context
 {
@@ -11,7 +11,7 @@ namespace osc::ui::context
     void shutdown();
 
     // returns true if the UI handled the event
-    bool on_event(const SDL_Event&);
+    bool on_event(const Event&);
 
     // should be called at the start of each frame (e.g. `IScreen::on_draw()`)
     void on_start_new_frame();

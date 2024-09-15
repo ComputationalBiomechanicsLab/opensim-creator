@@ -207,7 +207,7 @@ namespace osc::mi
             ui::pop_style_var();
         }
 
-        bool implOnEvent(const SDL_Event& e) final
+        bool implOnEvent(const Event& e) final
         {
             return m_Shared->onEvent(e);
         }

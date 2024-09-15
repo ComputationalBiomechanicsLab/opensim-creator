@@ -269,7 +269,7 @@ void main()
             ui::context::shutdown();
         }
 
-        bool impl_on_event(const SDL_Event& e) override
+        bool impl_on_event(const Event& e) override
         {
             return ui::context::on_event(e);
         }

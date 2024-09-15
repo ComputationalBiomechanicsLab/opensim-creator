@@ -9,8 +9,8 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
-#include <SDL_events.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
@@ -19,6 +19,7 @@
 #include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
+#include <SDL_events.h>
 
 #include <memory>
 #include <string_view>
@@ -244,7 +245,7 @@ void osc::MeshWarpingTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::MeshWarpingTab::impl_on_event(const SDL_Event& e)
+bool osc::MeshWarpingTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

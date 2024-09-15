@@ -25,6 +25,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
@@ -432,7 +433,7 @@ void osc::SplashTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::SplashTab::impl_on_event(const SDL_Event& e)
+bool osc::SplashTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

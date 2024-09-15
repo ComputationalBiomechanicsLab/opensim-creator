@@ -1,7 +1,6 @@
 #include "LOGLBasicLightingTab.h"
 
 #include <oscar/oscar.h>
-#include <SDL_events.h>
 
 #include <memory>
 
@@ -41,7 +40,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(const SDL_Event& e) final
+    bool impl_on_event(const Event& e) final
     {
         return camera_.on_event(e);
     }
@@ -141,7 +140,7 @@ void osc::LOGLBasicLightingTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::LOGLBasicLightingTab::impl_on_event(const SDL_Event& e)
+bool osc::LOGLBasicLightingTab::impl_on_event(const Event& e)
 {
     return impl_->on_event(e);
 }

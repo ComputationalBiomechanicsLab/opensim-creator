@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
@@ -484,7 +485,7 @@ void osc::ModelEditorTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::ModelEditorTab::impl_on_event(const SDL_Event& e)
+bool osc::ModelEditorTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

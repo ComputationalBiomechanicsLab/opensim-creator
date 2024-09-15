@@ -3,8 +3,6 @@
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/Utils/CStringView.h>
 
-#include <SDL_events.h>
-
 #include <memory>
 
 using namespace osc;
@@ -26,7 +24,7 @@ private:
     void impl_on_unmount() final
     {}
 
-    bool impl_on_event(const SDL_Event&) final
+    bool impl_on_event(const Event&) final
     {
         return false;
     }
@@ -74,7 +72,7 @@ void osc::CookiecutterTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::CookiecutterTab::impl_on_event(SDL_Event const& e)
+bool osc::CookiecutterTab::impl_on_event(Event const& e)
 {
     return impl_->on_event(e);
 }

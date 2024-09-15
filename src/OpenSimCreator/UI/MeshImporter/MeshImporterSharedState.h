@@ -16,10 +16,10 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Geometries.h>
 #include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
@@ -39,6 +39,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -771,8 +772,10 @@ namespace osc::mi
         // TOP-LEVEL STUFF
         //
 
-        bool onEvent(const SDL_Event& e)
+        bool onEvent(const Event& ev)
         {
+            const SDL_Event& e = ev;
+
             // if the user drags + drops a file into the window, assume it's a meshfile
             // and start loading it
             if (e.type == SDL_DROPFILE && e.drop.file != nullptr)

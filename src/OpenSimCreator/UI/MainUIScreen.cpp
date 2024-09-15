@@ -191,8 +191,10 @@ public:
         ui::context::shutdown();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& ev)
     {
+        const SDL_Event& e = ev;
+
         bool handled = false;
         if (e.type == SDL_KEYUP or
             e.type == SDL_MOUSEBUTTONUP or
@@ -205,7 +207,7 @@ public:
             m_ShouldRequestRedraw = true;
         }
 
-        if (ui::context::on_event(e)) {
+        if (ui::context::on_event(ev)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `ITab::onDraw` (immediate-mode UI)
 
@@ -220,7 +222,7 @@ public:
             bool atLeastOneTabHandledQuit = false;
             for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i) {
                 try {
-                    atLeastOneTabHandledQuit = m_Tabs[i]->on_event(e) || atLeastOneTabHandledQuit;
+                    atLeastOneTabHandledQuit = m_Tabs[i]->on_event(ev) || atLeastOneTabHandledQuit;
                 }
                 catch (const std::exception& ex) {
                     log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
@@ -263,7 +265,7 @@ public:
 
             bool activeTabHandledEvent = false;
             try {
-                activeTabHandledEvent = active->on_event(e);
+                activeTabHandledEvent = active->on_event(Event{e});
             }
             catch (const std::exception& ex) {
                 log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
@@ -851,8 +853,6 @@ private:
     std::future<Screenshot> m_MaybeScreenshotRequest;
 };
 
-
-// public API
 
 osc::MainUIScreen::MainUIScreen() :
     m_Impl{std::make_shared<Impl>()}

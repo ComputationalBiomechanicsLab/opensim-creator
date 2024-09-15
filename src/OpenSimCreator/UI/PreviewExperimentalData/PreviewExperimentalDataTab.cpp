@@ -38,7 +38,6 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar_simbody/SimTKHelpers.h>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <array>
@@ -696,7 +695,7 @@ void osc::PreviewExperimentalDataTab::impl_on_tick()
     m_Impl->on_tick();
 }
 
-bool osc::PreviewExperimentalDataTab::impl_on_event(const SDL_Event& e)
+bool osc::PreviewExperimentalDataTab::impl_on_event(const Event& e)
 {
     return m_Impl->on_event(e);
 }

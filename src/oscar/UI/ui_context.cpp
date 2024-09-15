@@ -2,6 +2,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
@@ -11,12 +12,12 @@
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
-#include <SDL_events.h>
 
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>
+#include <SDL_events.h>
 
 #include <algorithm>
 #include <array>
@@ -151,8 +152,9 @@ void osc::ui::context::shutdown()
     ImGui::DestroyContext();
 }
 
-bool osc::ui::context::on_event(const SDL_Event& e)
+bool osc::ui::context::on_event(const Event& ev)
 {
+    const SDL_Event& e = ev;
     ImGui_ImplSDL2_ProcessEvent(&e);
 
     const ImGuiIO& io = ImGui::GetIO();

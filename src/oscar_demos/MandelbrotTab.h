@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SDL_events.h>
 #include <oscar/UI/Tabs/ITab.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
@@ -26,7 +25,7 @@ namespace osc
     private:
         UID impl_get_id() const final;
         CStringView impl_get_name() const final;
-        bool impl_on_event(const SDL_Event&) final;
+        bool impl_on_event(const Event&) final;
         void impl_on_draw() final;
 
         class Impl;

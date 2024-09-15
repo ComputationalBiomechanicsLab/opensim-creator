@@ -19,7 +19,6 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
-#include <SDL_events.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -328,7 +327,7 @@ namespace osc::mi
             ui::pop_style_var();
         }
 
-        bool implOnEvent(const SDL_Event& e) final
+        bool implOnEvent(const Event& e) final
         {
             return m_Shared->onEvent(e);
         }

@@ -108,8 +108,10 @@ private:
         App::upd().set_show_cursor(true);
     }
 
-    bool impl_on_event(const SDL_Event& e) final
+    bool impl_on_event(const Event& ev) final
     {
+        const SDL_Event& e = ev;
+
         if (e.type == SDL_KEYDOWN and e.key.keysym.sym == SDLK_ESCAPE) {
             is_mouse_captured_ = false;
             return true;
@@ -300,7 +302,7 @@ void osc::HittestTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::HittestTab::impl_on_event(const SDL_Event& e)
+bool osc::HittestTab::impl_on_event(const Event& e)
 {
     return impl_->on_event(e);
 }

@@ -6,10 +6,9 @@ namespace osc
 {
     class Event {
     public:
-        explicit Event(SDL_Event& e) : inner_event_{&e} {}
-        operator SDL_Event& () { return *inner_event_; }
+        explicit Event(const SDL_Event& e) : inner_event_{&e} {}
         operator const SDL_Event& () const { return *inner_event_; }
     private:
-        SDL_Event* inner_event_;
+        const SDL_Event* inner_event_;
     };
 }

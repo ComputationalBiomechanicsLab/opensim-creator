@@ -22,7 +22,6 @@
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <SDL_events.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/ComponentSocket.h>
@@ -37,6 +36,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
@@ -52,6 +52,7 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKHelpers.h>
+#include <SDL_events.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -1209,7 +1210,7 @@ void osc::FrameDefinitionTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::FrameDefinitionTab::impl_on_event(const SDL_Event& e)
+bool osc::FrameDefinitionTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

@@ -47,6 +47,7 @@
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
@@ -59,7 +60,6 @@
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
-#include <SDL_events.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -130,7 +130,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const SDL_Event& e)
+    bool onEvent(const Event& e)
     {
         if (m_Shared->onEvent(e))
         {
@@ -2476,7 +2476,7 @@ void osc::mi::MeshImporterTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mi::MeshImporterTab::impl_on_event(const SDL_Event& e)
+bool osc::mi::MeshImporterTab::impl_on_event(const Event& e)
 {
     return m_Impl->onEvent(e);
 }

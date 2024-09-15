@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
 
-#include <SDL_events.h>
+namespace osc { class Event; }
 
 // UI layering support
 //
@@ -26,7 +26,7 @@ namespace osc::mi
     public:
         virtual ~MeshImporterUILayer() noexcept = default;
 
-        bool onEvent(const SDL_Event& e)
+        bool onEvent(const Event& e)
         {
             return implOnEvent(e);
         }
@@ -48,7 +48,7 @@ namespace osc::mi
         }
 
     private:
-        virtual bool implOnEvent(const SDL_Event&) = 0;
+        virtual bool implOnEvent(const Event&) = 0;
         virtual void implTick(float) = 0;
         virtual void implOnDraw() = 0;
 
