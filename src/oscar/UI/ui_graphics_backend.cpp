@@ -35,7 +35,7 @@
 
 #include <ankerl/unordered_dense.h>
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
-#include <imgui/imgui.h>
+#include <imgui.h>
 
 #include <array>
 #include <cstddef>

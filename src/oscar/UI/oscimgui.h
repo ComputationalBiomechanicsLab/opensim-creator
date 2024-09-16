@@ -913,6 +913,16 @@ namespace osc::ui
             const Mat4& projection_matrix,
             const Rect& screenspace_rect
         );
+
+        // same as `draw`, but draws to the foreground drawlist, rather than the
+        // drawlist of the currently active panel
+        std::optional<Transform> draw_to_foreground(
+            Mat4& model_matrix,  // edited in-place
+            const Mat4& view_matrix,
+            const Mat4& projection_matrix,
+            const Rect& screenspace_rect
+        );
+
         bool is_using() const;
         bool was_using() const { return was_using_last_frame_; }
         bool is_over() const;
@@ -924,11 +934,34 @@ namespace osc::ui
         // updates the gizmo based on keyboard inputs (e.g. pressing `G` enables grab mode)
         bool handle_keyboard_inputs();
     private:
+        std::optional<Transform> draw_to(
+            Mat4& model_matrix,
+            const Mat4& view_matrix,
+            const Mat4& projection_matrix,
+            const Rect& screenspace_rect,
+            ImDrawList* drawlist
+        );
+
         UID id_;
         GizmoOperation operation_ = GizmoOperation::Translate;
         GizmoMode mode_ = GizmoMode::World;
         bool was_using_last_frame_ = false;
     };
+
+    void gizmo_demo_draw_grid(
+        const Mat4& model_matrix,
+        const Mat4& view_matrix,
+        const Mat4& projection_matrix,
+        float grid_size,
+        const Rect& screenspace_rect
+    );
+
+    void gizmo_demo_draw_cube(
+        Mat4& model_matrix,
+        const Mat4& view_matrix,
+        const Mat4& projection_matrix,
+        const Rect& screenspace_rect
+    );
 
     bool draw_gizmo_mode_selector(
         Gizmo&

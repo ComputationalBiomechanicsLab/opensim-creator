@@ -119,7 +119,7 @@ namespace osc
     public:
         explicit MouseEvent(const SDL_Event&);
 
-        Vec2 relative_delta() const { return relative_delta_;  }
+        Vec2 relative_delta() const { return relative_delta_; }
     private:
         Vec2 relative_delta_;
     };

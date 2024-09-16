@@ -2459,6 +2459,37 @@ bool osc::ui::draw_float_circular_slider(
 
 // gizmo stuff
 
+void osc::ui::gizmo_demo_draw_grid(
+    const Mat4& model_matrix,
+    const Mat4& view_matrix,
+    const Mat4& projection_matrix,
+    float grid_size,
+    const Rect& screenspace_rect)
+{
+    ImGuizmo::SetRect(
+        screenspace_rect.p1.x,
+        screenspace_rect.p1.y,
+        dimensions_of(screenspace_rect).x,
+        dimensions_of(screenspace_rect).y
+    );
+    ImGuizmo::DrawGrid(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), grid_size);
+}
+
+void osc::ui::gizmo_demo_draw_cube(
+    Mat4& model_matrix,
+    const Mat4& view_matrix,
+    const Mat4& projection_matrix,
+    const Rect& screenspace_rect)
+{
+    ImGuizmo::SetRect(
+        screenspace_rect.p1.x,
+        screenspace_rect.p1.y,
+        dimensions_of(screenspace_rect).x,
+        dimensions_of(screenspace_rect).y
+    );
+    ImGuizmo::DrawCubes(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), 1);
+}
+
 bool osc::ui::draw_gizmo_mode_selector(Gizmo& gizmo)
 {
     GizmoMode mode = gizmo.mode();
@@ -2575,6 +2606,37 @@ std::optional<Transform> osc::ui::Gizmo::draw(
     const Mat4& projection_matrix,
     const Rect& screenspace_rect)
 {
+    return draw_to(
+        model_matrix,
+        view_matrix,
+        projection_matrix,
+        screenspace_rect,
+        ImGui::GetWindowDrawList()
+    );
+}
+
+std::optional<Transform> osc::ui::Gizmo::draw_to_foreground(
+    Mat4& model_matrix,
+    const Mat4& view_matrix,
+    const Mat4& projection_matrix,
+    const Rect& screenspace_rect)
+{
+    return draw_to(
+        model_matrix,
+        view_matrix,
+        projection_matrix,
+        screenspace_rect,
+        ImGui::GetForegroundDrawList()
+    );
+}
+
+std::optional<Transform> osc::ui::Gizmo::draw_to(
+    Mat4& model_matrix,
+    const Mat4& view_matrix,
+    const Mat4& projection_matrix,
+    const Rect& screenspace_rect,
+    ImDrawList* drawlist)
+{
     if (operation_ == GizmoOperation::None) {
         return std::nullopt;  // disabled
     }
@@ -2593,7 +2655,7 @@ std::optional<Transform> osc::ui::Gizmo::draw(
         dimensions_of(screenspace_rect).x,
         dimensions_of(screenspace_rect).y
     );
-    ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+    ImGuizmo::SetDrawlist(drawlist);
     ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station
