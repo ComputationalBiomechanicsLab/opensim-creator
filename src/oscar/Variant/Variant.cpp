@@ -164,8 +164,8 @@ osc::Variant::operator std::string() const
         [](const float& v)        { return std::to_string(v); },
         [](const int& v)          { return std::to_string(v); },
         [](std::string_view s)    { return std::string{s}; },
-        [](const Vec2& v)         { return to_string(v); },
-        [](const Vec3& v)         { return to_string(v); },
+        [](const Vec2& v)         { return stream_to_string(v); },
+        [](const Vec3& v)         { return stream_to_string(v); },
     }, data_);
 }
 

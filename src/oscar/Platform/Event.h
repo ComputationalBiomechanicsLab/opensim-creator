@@ -69,10 +69,8 @@ namespace osc
         RightShift   = 1<<1,
         LeftCtrl     = 1<<2,
         RightCtrl    = 1<<3,
-        // Windows key / MacOS command key / Ubuntu Key, etc.
-        LeftGui      = 1<<4,
-        // Windows key / MacOS command key / Ubuntu Key, etc.
-        RightGui     = 1<<5,
+        LeftGui      = 1<<4,  // Windows key / MacOS command key / Ubuntu Key, etc.
+        RightGui     = 1<<5,  // Windows key / MacOS command key / Ubuntu Key, etc.
         LeftAlt      = 1<<6,
         RightAlt     = 1<<7,
         NUM_FLAGS    =    8,

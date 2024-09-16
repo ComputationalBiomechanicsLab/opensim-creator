@@ -2,7 +2,6 @@
 
 #include <oscar/Maths/Vec3.h>
 
-#include <array>
 #include <cstddef>
 
 namespace osc

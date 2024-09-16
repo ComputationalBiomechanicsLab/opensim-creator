@@ -4,9 +4,6 @@
 #include <oscar/Maths/Vec3.h>
 
 #include <ostream>
-#include <sstream>
-#include <string>
-#include <utility>
 
 namespace osc
 {
@@ -61,12 +58,5 @@ namespace osc
     inline std::ostream& operator<<(std::ostream& out, const Transform& transform)
     {
         return out << "Transform(position = " << transform.position << ", rotation = " << transform.rotation << ", scale = " << transform.scale << ')';
-    }
-
-    inline std::string to_string(const Transform& transform)
-    {
-        std::stringstream ss;
-        ss << transform;
-        return std::move(ss).str();
     }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.h>
-
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <ranges>
@@ -9,6 +8,11 @@
 
 namespace osc
 {
+    template<typename T>
+    concept Hashable = requires(T v) {
+        { std::hash<T>{}(v) } -> std::convertible_to<size_t>;
+    };
+
     // combines hash of `T` into the seed value
     template<Hashable T>
     size_t hash_combine(size_t seed, const T& v)

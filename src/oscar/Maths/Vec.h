@@ -6,10 +6,7 @@
 #include <cstddef>
 #include <functional>
 #include <ostream>
-#include <sstream>
-#include <string>
 #include <string_view>
-#include <utility>
 
 namespace osc
 {
@@ -28,14 +25,6 @@ namespace osc
         }
         out << ')';
         return out;
-    }
-
-    template<size_t L, Scalar T>
-    std::string to_string(const Vec<L, T>& vec)
-    {
-        std::stringstream ss;
-        ss << vec;
-        return std::move(ss).str();
     }
 
     // when handled as a tuple-like object, a `Vec` decomposes into its elements

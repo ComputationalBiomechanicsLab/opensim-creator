@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/Assertions.h>
-
 #include <cstdint>
 #include <compare>
 #include <optional>
@@ -48,7 +46,9 @@ namespace osc
         explicit constexpr CoordinateAxis(int axis_index) :
             axis_index_{static_cast<uint8_t>(axis_index)}
         {
-            OSC_ASSERT(0 <= axis_index && axis_index <= 2 && "out-of-range index given to a CoordinateAxis");
+            if (not (0 <= axis_index && axis_index <= 2)) {
+                throw std::runtime_error{"out-of-range index given to a CoordinateAxis"};
+            }
         }
 
         // `CoordinateAxis`es are equality-comparable and totally ordered as X < Y < Z

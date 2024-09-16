@@ -24,7 +24,7 @@ public:
     {}
 
 private:
-    void impl_on_mount() override
+    void impl_on_mount() final
     {
         current_tab_ = registry_entry_.construct_tab(ParentPtr<Impl>{shared_from_this()});
         ui::context::init();
@@ -32,26 +32,26 @@ private:
         App::upd().make_main_loop_polling();
     }
 
-    void impl_on_unmount() override
+    void impl_on_unmount() final
     {
         App::upd().make_main_loop_waiting();
         current_tab_->on_unmount();
         ui::context::shutdown();
     }
 
-    bool impl_on_event(const Event& e) override
+    bool impl_on_event(const Event& e) final
     {
         bool handled = ui::context::on_event(e);
-        handled = current_tab_->on_event(e) || handled;
+        handled = current_tab_->on_event(e) or handled;
         return handled;
     }
 
-    void impl_on_tick() override
+    void impl_on_tick() final
     {
         current_tab_->on_tick();
     }
 
-    void impl_on_draw() override
+    void impl_on_draw() final
     {
         App::upd().clear_screen();
         ui::context::on_start_new_frame();
@@ -66,10 +66,9 @@ private:
         }
     }
 
-    UID impl_add_tab(std::unique_ptr<ITab>) override { return UID{}; }
-    void impl_select_tab(UID) override {}
-    void impl_close_tab(UID) override {}
-    void impl_reset_imgui() override {}
+    UID impl_add_tab(std::unique_ptr<ITab>) final { return UID{}; }
+    void impl_select_tab(UID) final {}
+    void impl_close_tab(UID) final {}
 
     TabRegistryEntry registry_entry_;
     std::unique_ptr<ITab> current_tab_;

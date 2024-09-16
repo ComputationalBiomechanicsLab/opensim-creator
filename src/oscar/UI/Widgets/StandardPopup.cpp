@@ -100,8 +100,7 @@ bool osc::StandardPopup::impl_begin_popup()
             return false;
         }
     }
-    else
-    {
+    else {
         // if specified, set the position of the modal upon appearing
         //
         // else, do nothing - the popup's position will be determined

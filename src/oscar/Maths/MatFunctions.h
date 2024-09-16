@@ -7,7 +7,6 @@
 #include <oscar/Maths/Qua.h>
 #include <oscar/Maths/UnitVec3.h>
 #include <oscar/Maths/Vec.h>
-#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/HashHelpers.h>
 
 #include <concepts>

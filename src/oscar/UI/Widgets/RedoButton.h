@@ -15,7 +15,7 @@ namespace osc
         RedoButton& operator=(RedoButton&&) noexcept = default;
         ~RedoButton() noexcept;
 
-        void onDraw();
+        void on_draw();
     private:
         std::shared_ptr<UndoRedoBase> undo_redo_;
     };

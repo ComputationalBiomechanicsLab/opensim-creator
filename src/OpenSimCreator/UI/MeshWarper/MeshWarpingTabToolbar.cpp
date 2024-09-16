@@ -50,7 +50,7 @@ private:
         // undo/redo-related stuff
         m_UndoButton.on_draw();
         ui::same_line();
-        m_RedoButton.onDraw();
+        m_RedoButton.on_draw();
         ui::same_line();
 
         ui::draw_vertical_separator();

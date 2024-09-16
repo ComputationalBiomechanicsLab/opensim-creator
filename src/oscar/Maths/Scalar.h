@@ -29,5 +29,5 @@ namespace osc
     concept Scalar = IsScalarV<T>;
 
     template<typename T>
-    concept ScalarOrBoolean = Scalar<T> || std::same_as<bool, T>;
+    concept ScalarOrBoolean = Scalar<T> or std::same_as<bool, T>;
 }

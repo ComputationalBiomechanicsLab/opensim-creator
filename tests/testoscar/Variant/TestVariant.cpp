@@ -679,7 +679,7 @@ TEST(Variant, Vec2ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<std::string>(Variant{testCase}), to_string(testCase));
+        ASSERT_EQ(to<std::string>(Variant{testCase}), stream_to_string(testCase));
     }
 }
 
@@ -788,7 +788,7 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
     });
 
     for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<std::string>(Variant{testCase}), to_string(testCase));
+        ASSERT_EQ(to<std::string>(Variant{testCase}), stream_to_string(testCase));
     }
 }
 

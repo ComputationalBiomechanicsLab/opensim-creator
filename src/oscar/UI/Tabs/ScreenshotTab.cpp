@@ -40,8 +40,8 @@ using namespace osc;
 
 namespace
 {
-    constexpr Color c_unselected_color = {1.0f, 1.0f, 1.0f, 0.4f};
-    constexpr Color c_selected_color = {1.0f, 0.0f, 0.0f, 0.8f};
+    constexpr Color c_unselected_color = Color::white().with_alpha(0.4f);
+    constexpr Color c_selected_color = Color::red().with_alpha(0.8f);
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio

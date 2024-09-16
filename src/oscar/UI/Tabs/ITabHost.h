@@ -27,25 +27,10 @@ namespace osc
             return add_tab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        UID add_tab(std::unique_ptr<ITab> tab)
-        {
-            return impl_add_tab(std::move(tab));
-        }
-
-        void select_tab(UID tab_id)
-        {
-            impl_select_tab(tab_id);
-        }
-
-        void close_tab(UID tab_id)
-        {
-            impl_close_tab(tab_id);
-        }
-
-        void reset_imgui()
-        {
-            impl_reset_imgui();
-        }
+        UID add_tab(std::unique_ptr<ITab> tab) { return impl_add_tab(std::move(tab)); }
+        void select_tab(UID tab_id) { impl_select_tab(tab_id); }
+        void close_tab(UID tab_id) { impl_close_tab(tab_id); }
+        void reset_imgui() { impl_reset_imgui(); }
 
         template<std::derived_from<ITab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>

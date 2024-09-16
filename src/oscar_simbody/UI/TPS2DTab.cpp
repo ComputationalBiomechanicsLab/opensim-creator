@@ -21,6 +21,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>
+#include <oscar/Utils/StringHelpers.h>
 #include <Simbody.h>
 
 #include <cmath>
@@ -472,7 +473,7 @@ private:
         const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
         const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
-        ui::draw_tooltip_body_only(to_string(mouseImageNDCPos));
+        ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos));
 
         if (ui::is_mouse_clicked(ui::MouseButton::Left))
         {
@@ -488,7 +489,7 @@ private:
         const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
         const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
 
-        ui::draw_tooltip_body_only(to_string(mouseImageNDCPos) + "*");
+        ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos) + "*");
 
         if (ui::is_mouse_clicked(ui::MouseButton::Left))
         {

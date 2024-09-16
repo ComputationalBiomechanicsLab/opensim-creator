@@ -12,7 +12,7 @@ osc::RedoButton::RedoButton(std::shared_ptr<UndoRedoBase> undo_redo) :
 
 osc::RedoButton::~RedoButton() noexcept = default;
 
-void osc::RedoButton::onDraw()
+void osc::RedoButton::on_draw()
 {
     int ui_id = 0;
 

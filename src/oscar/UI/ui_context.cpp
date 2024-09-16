@@ -13,7 +13,6 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 
-#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>

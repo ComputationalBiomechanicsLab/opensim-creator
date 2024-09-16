@@ -1,8 +1,6 @@
 #include <oscar/Maths.h>
-#include <oscar/Platform/Log.h>
-#include <oscar/Utils/Algorithms.h>
+
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/EnumHelpers.h>
 
 #include <cmath>
 #include <algorithm>

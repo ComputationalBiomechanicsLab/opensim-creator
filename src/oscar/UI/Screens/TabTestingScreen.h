@@ -17,11 +17,11 @@ namespace osc
         TabTestingScreen& operator=(TabTestingScreen&&) noexcept = default;
         ~TabTestingScreen() noexcept override = default;
     private:
-        void impl_on_mount() override;
-        void impl_on_unmount() override;
-        bool impl_on_event(const Event&) override;
-        void impl_on_tick() override;
-        void impl_on_draw() override;
+        void impl_on_mount() final;
+        void impl_on_unmount() final;
+        bool impl_on_event(const Event&) final;
+        void impl_on_tick() final;
+        void impl_on_draw() final;
 
         class Impl;
         std::shared_ptr<Impl> impl_;
