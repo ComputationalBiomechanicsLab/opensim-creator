@@ -218,7 +218,7 @@ public:
 
     bool onEvent(const Event& e)
     {
-        if (e.type() == EventType::KeyPress) {
+        if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).matches(Key::Space)) {
                 togglePlaybackMode();
                 return true;

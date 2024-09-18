@@ -1082,8 +1082,8 @@ public:
 
     bool onEvent(const Event& e)
     {
-        if (e.type() == EventType::KeyPress) {
-            return onKeyPress(dynamic_cast<const KeyEvent&>(e));
+        if (e.type() == EventType::KeyDown) {
+            return onKeyDown(dynamic_cast<const KeyEvent&>(e));
         }
         else {
             return false;
@@ -1110,7 +1110,7 @@ public:
     }
 
 private:
-    bool onKeyPress(const KeyEvent& e)
+    bool onKeyDown(const KeyEvent& e)
     {
         if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo

@@ -78,7 +78,7 @@ class osc::MainUIScreen::Impl final :
     public std::enable_shared_from_this<Impl> {
 public:
 
-    bool onUnhandledKeyRelease(const KeyEvent& e)
+    bool onUnhandledKeyUp(const KeyEvent& e)
     {
         if (e.matches(KeyModifier::CtrlORGui, Key::P)) {
             // `Ctrl+P` or `Super+P`: "take a screenshot"
@@ -115,8 +115,8 @@ public:
     // either the global 2D UI context or the active tab
     bool onUnhandledEvent(const Event& e)
     {
-        if (e.type() == EventType::KeyRelease) {
-            return onUnhandledKeyRelease(dynamic_cast<const KeyEvent&>(e));
+        if (e.type() == EventType::KeyUp) {
+            return onUnhandledKeyUp(dynamic_cast<const KeyEvent&>(e));
         }
         return false;
     }
@@ -176,9 +176,9 @@ public:
     bool onEvent(const Event& ev)
     {
         bool handled = false;
-        if (ev.type() == EventType::KeyPress or
-            ev.type() == EventType::KeyRelease or
-            ev.type() == EventType::MouseButtonRelease or
+        if (ev.type() == EventType::KeyDown or
+            ev.type() == EventType::KeyUp or
+            ev.type() == EventType::MouseButtonUp or
             ev.type() == EventType::MouseMove or
             ev.type() == EventType::MouseWheel) {
 

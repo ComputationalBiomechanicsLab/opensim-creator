@@ -117,7 +117,7 @@ public:
 
     bool onEvent(const Event& e)
     {
-        if (e.type() == EventType::KeyPress) {
+        if (e.type() == EventType::KeyDown) {
             return onKeydownEvent(dynamic_cast<const KeyEvent&>(e));
         }
         else {

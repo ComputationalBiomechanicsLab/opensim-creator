@@ -797,10 +797,10 @@ bool osc::ui::context::on_event(const Event& ev)
 {
     ImGui_ImplSDL2_ProcessEvent(ev);
 
-    if (ImGui::GetIO().WantCaptureKeyboard and (ev.type() == EventType::KeyPress or ev.type() == EventType::KeyRelease)) {
+    if (ImGui::GetIO().WantCaptureKeyboard and (ev.type() == EventType::KeyDown or ev.type() == EventType::KeyUp)) {
         return true;
     }
-    if (ImGui::GetIO().WantCaptureMouse and (ev.type() == EventType::MouseWheel or ev.type() == EventType::MouseMove or ev.type() == EventType::MouseButtonRelease or ev.type() == EventType::MouseButtonPress)) {
+    if (ImGui::GetIO().WantCaptureMouse and (ev.type() == EventType::MouseWheel or ev.type() == EventType::MouseMove or ev.type() == EventType::MouseButtonUp or ev.type() == EventType::MouseButtonDown)) {
         return true;
     }
     return false;

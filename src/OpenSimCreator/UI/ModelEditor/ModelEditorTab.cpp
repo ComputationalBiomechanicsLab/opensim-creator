@@ -183,7 +183,7 @@ public:
     bool onEvent(const Event& ev)
     {
         switch (ev.type()) {
-        case EventType::KeyPress: return onKeydownEvent(dynamic_cast<const KeyEvent&>(ev));
+        case EventType::KeyDown:  return onKeydownEvent(dynamic_cast<const KeyEvent&>(ev));
         case EventType::DropFile: return onDropEvent(dynamic_cast<const DropFileEvent&>(ev));
         default:                  return false;
         }

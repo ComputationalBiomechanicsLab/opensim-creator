@@ -56,13 +56,13 @@ public:
 
     bool onEvent(const Event& e)
     {
-        if (e.type() == EventType::KeyPress) {
+        if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
                 m_IsMouseCaptured = false;
                 return true;
             }
         }
-        else if (e.type() == EventType::MouseButtonPress) {
+        else if (e.type() == EventType::MouseButtonDown) {
             if (ui::is_mouse_in_main_viewport_workspace()) {
                 m_IsMouseCaptured = true;
                 return true;

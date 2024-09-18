@@ -122,7 +122,7 @@ osc::DropFileEvent::DropFileEvent(const SDL_Event& e) :
 }
 
 osc::KeyEvent::KeyEvent(const SDL_Event& e) :
-    Event{e, e.type == SDL_KEYUP ? EventType::KeyRelease : EventType::KeyPress},
+    Event{e, e.type == SDL_KEYUP ? EventType::KeyUp : EventType::KeyDown},
     modifier_{to<KeyModifier>(e.key.keysym.mod)},
     key_{to<Key>(e.key.keysym.sym)}
 {
@@ -136,7 +136,7 @@ osc::QuitEvent::QuitEvent(const SDL_Event& e) :
 }
 
 osc::MouseEvent::MouseEvent(const SDL_Event& e) :
-    Event{e, e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonPress : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonRelease : EventType::MouseMove)},
+    Event{e, e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)},
     relative_delta_{static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)}
 {
     OSC_ASSERT(e.type == SDL_MOUSEBUTTONDOWN or e.type == SDL_MOUSEBUTTONUP or e.type == SDL_MOUSEMOTION);

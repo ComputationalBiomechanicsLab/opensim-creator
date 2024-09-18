@@ -41,7 +41,7 @@ private:
 
     bool impl_on_event(const Event& ev) final
     {
-        if (ev.type() == EventType::KeyRelease) {
+        if (ev.type() == EventType::KeyUp) {
             return on_keyup(dynamic_cast<const KeyEvent&>(ev));
         }
         else if (ev.type() == EventType::MouseWheel) {
