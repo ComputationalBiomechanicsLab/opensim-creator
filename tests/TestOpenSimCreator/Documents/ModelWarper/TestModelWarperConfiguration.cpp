@@ -92,7 +92,8 @@ TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
     bool warperThrownException = false;
     try {
         warper.warpInPlace(parameters, cache, sourceModel, sourceMarker, destinationModel, destinationMarker);
-    } catch (const std::exception& ex) {
+    }
+    catch (const std::exception& ex) {
         ASSERT_TRUE(contains(ex.what(), "some message content"));
         warperThrownException = true;
     }

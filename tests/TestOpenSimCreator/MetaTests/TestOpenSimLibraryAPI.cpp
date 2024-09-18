@@ -375,12 +375,11 @@ TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
     // which makes no logical sense
     jointPtr->connectSocket_child_frame(model.getGround());
 
-    try
-    {
+    try {
         // doing that shouldn't segfault
         model.buildSystem();
-    } catch (const std::exception&)
-    {
+    }
+    catch (const std::exception&) {
         // but OpenSim is pemitted to throw an exception whining about it
     }
 }
@@ -440,12 +439,11 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
     // which makes no logical sense
     childToBodyOffset->connectSocket_parent(*parentToGroundOffset);
 
-    try
-    {
+    try {
         // doing that shouldn't segfault
         model.buildSystem();
-    } catch (const std::exception&)
-    {
+    }
+    catch (const std::exception&) {
         // but OpenSim is pemitted to throw an exception whining about it
     }
 }

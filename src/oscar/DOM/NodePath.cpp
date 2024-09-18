@@ -157,7 +157,8 @@ namespace
                 const size_t num_chars_in_current_el = l.b == NodePath::separator ? 2 : 1;
                 shift(cursor, num_chars_in_current_el);
 
-            } else if (l.a == '.' and l.b == '.' and (l.c == c_nul or l.c == NodePath::separator)) {
+            }
+            else if (l.a == '.' and l.b == '.' and (l.c == c_nul or l.c == NodePath::separator)) {
                 // handle '..' (if found)
 
                 if (cursor == content_start) {
