@@ -27,6 +27,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/IconCache.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
@@ -46,9 +47,11 @@
 #include <functional>
 #include <initializer_list>
 #include <iostream>
+#include <memory>
 #include <ranges>
 #include <regex>
 #include <span>
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -216,6 +219,7 @@ namespace
 
             // extra
             DataSeriesPattern::forDatatype<DataPointType::Point>("_x", "_y", "_z"),
+            DataSeriesPattern::forDatatype<DataPointType::Point>("x", "y", "z"),
         };
     };
 
@@ -454,6 +458,7 @@ namespace
     class PreviewExperimentalDataUiState final {
     public:
         const std::shared_ptr<UndoableModelStatePair>& updSharedModelPtr() const { return m_Model; }
+        UndoableModelStatePair& updModel() { return *m_Model; }
 
         void loadModelFile(const std::filesystem::path& p)
         {
@@ -484,31 +489,55 @@ namespace
             m_Model->setSelected(lastMotion);
             InitializeModel(model);
             InitializeState(model);
-            // TODO: rescrub
             m_Model->commit("loaded motions");
         }
 
-        void loadExternalLoads(std::span<const std::filesystem::path> paths)
+        void loadXMLsAsComponents(std::span<const std::filesystem::path> paths)
         {
             if (paths.empty()) {
                 return;
             }
 
             OpenSim::Model& model = m_Model->updModel();
-            OpenSim::ExternalLoads* lastLoads = nullptr;
+            OpenSim::ModelComponent* lastComponent = nullptr;
+            bool anyObjectIsExternalLoads = false;
             for (const std::filesystem::path& path : paths) {
-                auto ptr = std::make_unique<OpenSim::ExternalLoads>(path.string(), true);
-                for (int i = 0; i < lastLoads->getSize(); ++i) {
-                    // don't actually apply the forces, we're only visualizing them
-                    //(*lastLoads)[i].set_appliesForce(false);
+                auto ptr = std::unique_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
+                if (dynamic_cast<const OpenSim::ExternalLoads*>(ptr.get())) {
+                    // HACK: we need to know this so that we don't commit the model, because
+                    // ExternalLoads stupidly depends on an auto-resetting `Object::_document`
+                    // member.
+                    anyObjectIsExternalLoads = true;
                 }
-                lastLoads = ptr.get();
-                model.addModelComponent(ptr.release());
+                if (auto* component = dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
+                    model.addModelComponent(component);
+                    lastComponent = component;
+                    ptr.release();
+                }
             }
-            m_Model->setSelected(lastLoads);
+            m_Model->setSelected(lastComponent);
             InitializeModel(model);
             InitializeState(model);
-            m_Model->commit("loaded external loads");
+            if (not anyObjectIsExternalLoads) {
+                if (paths.size() <= 1) {
+                    m_Model->commit("loaded " + paths.front().string());
+                }
+                else {
+                    std::stringstream msg;
+                    msg << "loaded " << paths.size() << " xml files";
+                    m_Model->commit(std::move(msg).str());
+                }
+            }
+        }
+
+        ClosedInterval<float> getTimeRange() const
+        {
+            return m_TimeRange;
+        }
+
+        void setTimeRange(ClosedInterval<float> newTimeRange)
+        {
+            m_TimeRange = newTimeRange;
         }
 
         double getScrubTime() const
@@ -522,8 +551,14 @@ namespace
             state.setTime(newTime);
             m_Model->updModel().realizeDynamics(state);  // TODO: osc::InitializeState creates one at t=0
         }
+
+        void rollbackModel()
+        {
+            m_Model->rollback();
+        }
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
+        ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
     };
 
     class ReadonlyPropertiesEditorPanel final : public StandardPanelImpl {
@@ -614,9 +649,22 @@ private:
 
     void impl_on_draw() final
     {
-        ui::enable_dockspace_over_main_viewport();
-        drawToolbar();
-        m_PanelManager->on_draw();
+        try {
+            ui::enable_dockspace_over_main_viewport();
+            drawToolbar();
+            m_PanelManager->on_draw();
+            m_ThrewExceptionLastFrame = false;
+        }
+        catch (const std::exception& ex) {
+            if (m_ThrewExceptionLastFrame) {
+                throw;
+            }
+
+            m_ThrewExceptionLastFrame = true;
+            log_error("error detected: %s", ex.what());
+            log_error("rolling back model");
+            m_UiState->rollbackModel();
+        }
     }
 
     void implPushPopup(std::unique_ptr<IPopup>) final
@@ -627,26 +675,70 @@ private:
     {
         if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f}))
         {
-            if (ui::draw_button("load model")) {
-                if (const auto path = prompt_user_to_select_file({"osim"})) {
-                    m_UiState->loadModelFile(*path);
+            // load/reload etc.
+            {
+                if (ui::draw_button(OSC_ICON_RECYCLE " Reload model")) {
+                    SceneCache dummy;
+                    ActionReloadOsimFromDisk(m_UiState->updModel(), dummy);
+                }
+
+                ui::same_line();
+                if (ui::draw_button("load model")) {
+                    if (const auto path = prompt_user_to_select_file({"osim"})) {
+                        m_UiState->loadModelFile(*path);
+                    }
+                }
+                ui::same_line();
+                if (ui::draw_button("load raw data file")) {
+                    m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
+                }
+                ui::same_line();
+                if (ui::draw_button("load OpenSim XML")) {
+                    m_UiState->loadXMLsAsComponents(prompt_user_to_select_files({"xml"}));
                 }
             }
-            ui::same_line();
-            if (ui::draw_button("load forces")) {
-                m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
-            }
-            ui::same_line();
-            if (ui::draw_button("load external loads")) {
-                m_UiState->loadExternalLoads(prompt_user_to_select_files({"xml"}));
-            }
-            ui::same_line();
+
+            // scrubber
+            ui::draw_same_line_with_vertical_separator();
             {
-                double t = m_UiState->getScrubTime();
-                if (ui::draw_double_input("t", &t, 1.0, 0.1, "%.6f", ui::TextInputFlag::EnterReturnsTrue)) {
+                ClosedInterval<float> tr = m_UiState->getTimeRange();
+                ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                if (ui::draw_float_input("<=", &tr.lower)) {
+                    m_UiState->setTimeRange(tr);
+                }
+
+                ui::same_line();
+                float t = static_cast<float>(m_UiState->getScrubTime());
+                ui::set_next_item_width(ui::calc_text_size("----------------------------").x);
+                if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
                     m_UiState->setScrubTime(t);
                 }
+
+                ui::same_line();
+                ui::draw_text("<=");
+                ui::same_line();
+                ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                if (ui::draw_float_input("##<=", &tr.upper)) {
+                    m_UiState->setTimeRange(tr);
+                }
             }
+
+            // scaling, visualization toggles.
+            ui::draw_same_line_with_vertical_separator();
+            {
+                DrawSceneScaleFactorEditorControls(m_UiState->updModel());
+                if (not m_IconCache) {
+                    m_IconCache = App::singleton<IconCache>(
+                        App::resource_loader().with_prefix("icons/"),
+                        ui::get_text_line_height()/128.0f
+                    );
+                }
+                ui::same_line();
+                DrawAllDecorationToggleButtons(m_UiState->updModel(), *m_IconCache);
+            }
+
+
+            ui::draw_same_line_with_vertical_separator();
         }
         ui::end_panel();
     }
@@ -655,6 +747,8 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     WindowMenu m_WindowMenu{m_PanelManager};
+    std::shared_ptr<IconCache> m_IconCache;
+    bool m_ThrewExceptionLastFrame = false;
 };
 
 
