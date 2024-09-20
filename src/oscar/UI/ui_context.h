@@ -1,5 +1,7 @@
 #pragma once
 
+#include <oscar/Platform/Key.h>
+
 namespace osc { class Event; }
 
 namespace osc::ui::context

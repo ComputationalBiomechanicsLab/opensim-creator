@@ -37,9 +37,12 @@ namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 
 struct ImDrawList;
+enum ImGuiKey : int;
 
 namespace osc::ui
 {
+    ImGuiKey toImGuiKey(Key);
+
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
 

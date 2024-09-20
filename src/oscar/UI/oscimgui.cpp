@@ -465,83 +465,133 @@ struct  osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final
     }
 };
 
-template<>
-struct osc::Converter<Key, ImGuiKey> final {
-    ImGuiKey operator()(Key key) const
-    {
-        static_assert(num_options<Key>() == 67);
+ImGuiKey osc::ui::toImGuiKey(Key key)
+{
+    static_assert(num_options<Key>() == 120);
 
-        switch (key) {
-        case Key::Escape:     return ImGuiKey_Escape;
-        case Key::Enter:      return ImGuiKey_Enter;
-        case Key::Space:      return ImGuiKey_Space;
-        case Key::Delete:     return ImGuiKey_Delete;
-        case Key::Tab:        return ImGuiKey_Tab;
-        case Key::LeftCtrl:   return ImGuiKey_LeftCtrl;
-        case Key::RightCtrl:  return ImGuiKey_RightCtrl;
-        case Key::Backspace:  return ImGuiKey_Backspace;
-        case Key::PageUp:     return ImGuiKey_PageUp;
-        case Key::PageDown:   return ImGuiKey_PageDown;
-        case Key::F1:         return ImGuiKey_F1;
-        case Key::F2:         return ImGuiKey_F2;
-        case Key::F3:         return ImGuiKey_F3;
-        case Key::F4:         return ImGuiKey_F4;
-        case Key::F5:         return ImGuiKey_F5;
-        case Key::F6:         return ImGuiKey_F6;
-        case Key::F7:         return ImGuiKey_F7;
-        case Key::F8:         return ImGuiKey_F8;
-        case Key::F9:         return ImGuiKey_F9;
-        case Key::F10:        return ImGuiKey_F10;
-        case Key::F11:        return ImGuiKey_F11;
-        case Key::F12:        return ImGuiKey_F12;
-        case Key::_1:         return ImGuiKey_1;
-        case Key::_2:         return ImGuiKey_2;
-        case Key::_3:         return ImGuiKey_3;
-        case Key::_4:         return ImGuiKey_4;
-        case Key::_5:         return ImGuiKey_5;
-        case Key::_6:         return ImGuiKey_6;
-        case Key::_7:         return ImGuiKey_7;
-        case Key::_8:         return ImGuiKey_8;
-        case Key::_9:         return ImGuiKey_9;
-        case Key::_0:         return ImGuiKey_0;
-        case Key::UpArrow:    return ImGuiKey_UpArrow;
-        case Key::DownArrow:  return ImGuiKey_DownArrow;
-        case Key::LeftArrow:  return ImGuiKey_LeftArrow;
-        case Key::RightArrow: return ImGuiKey_RightArrow;
-        case Key::Minus:      return ImGuiKey_Minus;
-        case Key::Equal:      return ImGuiKey_Equal;
-        case Key::A:          return ImGuiKey_A;
-        case Key::B:          return ImGuiKey_B;
-        case Key::C:          return ImGuiKey_C;
-        case Key::D:          return ImGuiKey_D;
-        case Key::E:          return ImGuiKey_E;
-        case Key::F:          return ImGuiKey_F;
-        case Key::G:          return ImGuiKey_G;
-        case Key::H:          return ImGuiKey_H;
-        case Key::I:          return ImGuiKey_I;
-        case Key::J:          return ImGuiKey_J;
-        case Key::K:          return ImGuiKey_K;
-        case Key::L:          return ImGuiKey_L;
-        case Key::M:          return ImGuiKey_M;
-        case Key::N:          return ImGuiKey_N;
-        case Key::O:          return ImGuiKey_O;
-        case Key::P:          return ImGuiKey_P;
-        case Key::Q:          return ImGuiKey_Q;
-        case Key::R:          return ImGuiKey_R;
-        case Key::S:          return ImGuiKey_S;
-        case Key::T:          return ImGuiKey_T;
-        case Key::U:          return ImGuiKey_U;
-        case Key::V:          return ImGuiKey_V;
-        case Key::W:          return ImGuiKey_W;
-        case Key::X:          return ImGuiKey_X;
-        case Key::Y:          return ImGuiKey_Y;
-        case Key::Z:          return ImGuiKey_Z;
-        case Key::MouseLeft:  return ImGuiKey_MouseLeft;
-        case Key::MouseRight: return ImGuiKey_MouseRight;
-        default:              return ImGuiKey_MouseLeft;
-        }
+    switch (key) {
+    case Key::Tab: return ImGuiKey_Tab;
+    case Key::LeftArrow: return ImGuiKey_LeftArrow;
+    case Key::RightArrow: return ImGuiKey_RightArrow;
+    case Key::UpArrow: return ImGuiKey_UpArrow;
+    case Key::DownArrow: return ImGuiKey_DownArrow;
+    case Key::PageUp: return ImGuiKey_PageUp;
+    case Key::PageDown: return ImGuiKey_PageDown;
+    case Key::Home: return ImGuiKey_Home;
+    case Key::End: return ImGuiKey_End;
+    case Key::Insert: return ImGuiKey_Insert;
+    case Key::Delete: return ImGuiKey_Delete;
+    case Key::Backspace: return ImGuiKey_Backspace;
+    case Key::Space: return ImGuiKey_Space;
+    case Key::Return: return ImGuiKey_Enter;
+    case Key::Escape: return ImGuiKey_Escape;
+    case Key::Quote: return ImGuiKey_Apostrophe;
+    case Key::Comma: return ImGuiKey_Comma;
+    case Key::Minus: return ImGuiKey_Minus;
+    case Key::Period: return ImGuiKey_Period;
+    case Key::Slash: return ImGuiKey_Slash;
+    case Key::Semicolon: return ImGuiKey_Semicolon;
+    case Key::Equals: return ImGuiKey_Equal;
+    case Key::LeftBracket: return ImGuiKey_LeftBracket;
+    case Key::Backslash: return ImGuiKey_Backslash;
+    case Key::RightBracket: return ImGuiKey_RightBracket;
+    case Key::Backquote: return ImGuiKey_GraveAccent;
+    case Key::CapsLock: return ImGuiKey_CapsLock;
+    case Key::ScrollLock: return ImGuiKey_ScrollLock;
+    case Key::NumLockClear: return ImGuiKey_NumLock;
+    case Key::PrintScreen: return ImGuiKey_PrintScreen;
+    case Key::Pause: return ImGuiKey_Pause;
+    case Key::Keypad0: return ImGuiKey_Keypad0;
+    case Key::Keypad1: return ImGuiKey_Keypad1;
+    case Key::Keypad2: return ImGuiKey_Keypad2;
+    case Key::Keypad3: return ImGuiKey_Keypad3;
+    case Key::Keypad4: return ImGuiKey_Keypad4;
+    case Key::Keypad5: return ImGuiKey_Keypad5;
+    case Key::Keypad6: return ImGuiKey_Keypad6;
+    case Key::Keypad7: return ImGuiKey_Keypad7;
+    case Key::Keypad8: return ImGuiKey_Keypad8;
+    case Key::Keypad9: return ImGuiKey_Keypad9;
+    case Key::KeypadPeriod: return ImGuiKey_KeypadDecimal;
+    case Key::KeypadDivide: return ImGuiKey_KeypadDivide;
+    case Key::KeypadMultiply: return ImGuiKey_KeypadMultiply;
+    case Key::KeypadMinus: return ImGuiKey_KeypadSubtract;
+    case Key::KeypadPlus: return ImGuiKey_KeypadAdd;
+    case Key::KeypadEnter: return ImGuiKey_KeypadEnter;
+    case Key::KeypadEquals: return ImGuiKey_KeypadEqual;
+    case Key::LeftCtrl: return ImGuiKey_LeftCtrl;
+    case Key::LeftShift: return ImGuiKey_LeftShift;
+    case Key::LeftAlt: return ImGuiKey_LeftAlt;
+    case Key::LeftGui: return ImGuiKey_LeftSuper;
+    case Key::RightCtrl: return ImGuiKey_RightCtrl;
+    case Key::RightShift: return ImGuiKey_RightShift;
+    case Key::RightAlt: return ImGuiKey_RightAlt;
+    case Key::RightGui: return ImGuiKey_RightSuper;
+    case Key::Application: return ImGuiKey_Menu;
+    case Key::_0: return ImGuiKey_0;
+    case Key::_1: return ImGuiKey_1;
+    case Key::_2: return ImGuiKey_2;
+    case Key::_3: return ImGuiKey_3;
+    case Key::_4: return ImGuiKey_4;
+    case Key::_5: return ImGuiKey_5;
+    case Key::_6: return ImGuiKey_6;
+    case Key::_7: return ImGuiKey_7;
+    case Key::_8: return ImGuiKey_8;
+    case Key::_9: return ImGuiKey_9;
+    case Key::A: return ImGuiKey_A;
+    case Key::B: return ImGuiKey_B;
+    case Key::C: return ImGuiKey_C;
+    case Key::D: return ImGuiKey_D;
+    case Key::E: return ImGuiKey_E;
+    case Key::F: return ImGuiKey_F;
+    case Key::G: return ImGuiKey_G;
+    case Key::H: return ImGuiKey_H;
+    case Key::I: return ImGuiKey_I;
+    case Key::J: return ImGuiKey_J;
+    case Key::K: return ImGuiKey_K;
+    case Key::L: return ImGuiKey_L;
+    case Key::M: return ImGuiKey_M;
+    case Key::N: return ImGuiKey_N;
+    case Key::O: return ImGuiKey_O;
+    case Key::P: return ImGuiKey_P;
+    case Key::Q: return ImGuiKey_Q;
+    case Key::R: return ImGuiKey_R;
+    case Key::S: return ImGuiKey_S;
+    case Key::T: return ImGuiKey_T;
+    case Key::U: return ImGuiKey_U;
+    case Key::V: return ImGuiKey_V;
+    case Key::W: return ImGuiKey_W;
+    case Key::X: return ImGuiKey_X;
+    case Key::Y: return ImGuiKey_Y;
+    case Key::Z: return ImGuiKey_Z;
+    case Key::F1: return ImGuiKey_F1;
+    case Key::F2: return ImGuiKey_F2;
+    case Key::F3: return ImGuiKey_F3;
+    case Key::F4: return ImGuiKey_F4;
+    case Key::F5: return ImGuiKey_F5;
+    case Key::F6: return ImGuiKey_F6;
+    case Key::F7: return ImGuiKey_F7;
+    case Key::F8: return ImGuiKey_F8;
+    case Key::F9: return ImGuiKey_F9;
+    case Key::F10: return ImGuiKey_F10;
+    case Key::F11: return ImGuiKey_F11;
+    case Key::F12: return ImGuiKey_F12;
+    case Key::F13: return ImGuiKey_F13;
+    case Key::F14: return ImGuiKey_F14;
+    case Key::F15: return ImGuiKey_F15;
+    case Key::F16: return ImGuiKey_F16;
+    case Key::F17: return ImGuiKey_F17;
+    case Key::F18: return ImGuiKey_F18;
+    case Key::F19: return ImGuiKey_F19;
+    case Key::F20: return ImGuiKey_F20;
+    case Key::F21: return ImGuiKey_F21;
+    case Key::F22: return ImGuiKey_F22;
+    case Key::F23: return ImGuiKey_F23;
+    case Key::F24: return ImGuiKey_F24;
+    case Key::AppBack: return ImGuiKey_AppBack;
+    case Key::AppForward: return ImGuiKey_AppForward;
+    default: return ImGuiKey_None;
     }
-};
+}
 
 void osc::ui::align_text_to_frame_padding()
 {
@@ -1662,7 +1712,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         camera.radius *= 1.1f;
         return true;
     }
-    else if (ui::is_key_down(Key::Equal)) {
+    else if (ui::is_key_down(Key::Equals)) {
         camera.radius *= 0.9f;
         return true;
     }
@@ -2171,7 +2221,7 @@ bool osc::ui::should_save_last_drawn_item_value()
         return true;  // ImGui detected that the item was deactivated after an edit
     }
 
-    if (ImGui::IsItemEdited() and any_of_keys_pressed({Key::Enter, Key::Tab})) {
+    if (ImGui::IsItemEdited() and any_of_keys_pressed({Key::Return, Key::Tab})) {
         return true;  // user pressed enter/tab after editing
     }
 

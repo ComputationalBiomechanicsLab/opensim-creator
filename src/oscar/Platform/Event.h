@@ -113,13 +113,37 @@ namespace osc
         Key key_;
     };
 
+    enum class MouseButton : unsigned {
+        None    = 0,     // no button is associated with the `MouseEvent` (e.g. moving the mouse)
+        Left    = 1<<0,
+        Right   = 1<<1,
+        Middle  = 1<<2,
+        Back    = 1<<3,  // sometimes called X1 (SDL), ExtraButton1 (Qt)
+        Forward = 1<<4,  // sometimes called X2 (SDL), ExtraButton2 (Qt)
+    };
+
+    enum class MouseInputSource {
+        Mouse,
+        TouchScreen,
+    };
+
+    // TODO: textinput
+    // TODO: displayevent
+    // TODO: windowevent
+
     class MouseEvent final : public Event {
     public:
         explicit MouseEvent(const SDL_Event&);
 
+        MouseInputSource input_source() const { return input_source_; }
+        MouseButton button() const { return button_; }
         Vec2 relative_delta() const { return relative_delta_; }
+        Vec2 position_in_window() const { return position_in_window_; }
     private:
-        Vec2 relative_delta_;
+        Vec2 relative_delta_{};
+        Vec2 position_in_window_{};
+        MouseInputSource input_source_ = MouseInputSource::Mouse;
+        MouseButton button_ = MouseButton::None;
     };
 
     class QuitEvent final : public Event {
@@ -131,9 +155,11 @@ namespace osc
     public:
         explicit MouseWheelEvent(const SDL_Event&);
 
+        MouseInputSource input_source() const { return input_source_; }
         Vec2 delta() const { return delta_; }
     private:
         Vec2 delta_;
+        MouseInputSource input_source_ = MouseInputSource::TouchScreen;
     };
 
     std::unique_ptr<Event> parse_into_event(const SDL_Event&);

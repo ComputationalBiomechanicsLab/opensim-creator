@@ -1605,7 +1605,7 @@ private:
 
 
         // context menu should be closed under these conditions
-        if (ui::any_of_keys_pressed({Key::Enter, Key::Escape}))
+        if (ui::any_of_keys_pressed({Key::Return, Key::Escape}))
         {
             m_MaybeOpenedContextMenu.reset();
             ui::close_current_popup();
