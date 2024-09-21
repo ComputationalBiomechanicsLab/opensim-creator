@@ -176,6 +176,7 @@ static bool ImGui_ImplSDL2_ProcessEvent(const Event& e)
         io.AddKeyEvent(ui::toImGuiKey(key_event.key()), key_event.type() == EventType::KeyDown);
         return true;
     }
+    default: break;
     }
 
     switch (const SDL_Event* event = &static_cast<const SDL_Event&>(e); event->type) {
