@@ -6,10 +6,13 @@
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <SDL_events.h>
+#include <SDL_version.h>
 
 #include <array>
 #include <memory>
 #include <utility>
+
+#define SDL_HAS_DISPLAY_EVENT               SDL_VERSION_ATLEAST(2,0,9)
 
 using namespace osc;
 
@@ -207,6 +210,17 @@ osc::QuitEvent::QuitEvent(const SDL_Event& e) :
     OSC_ASSERT(e.type == SDL_QUIT);
 }
 
+osc::TextInputEvent::TextInputEvent(const SDL_Event& e) :
+    Event{e, EventType::TextInput},
+    utf8_text_{e.text.text}
+{
+    OSC_ASSERT(e.type == SDL_TEXTINPUT);
+}
+
+osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event& e) :
+    Event{e, EventType::DisplayStateChange}
+{}
+
 osc::MouseEvent::MouseEvent(const SDL_Event& e) :
     Event{e, e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)}
 {
@@ -254,6 +268,14 @@ std::unique_ptr<Event> osc::parse_into_event(const SDL_Event& e)
     else if (e.type == SDL_MOUSEWHEEL) {
         return std::make_unique<MouseWheelEvent>(e);
     }
+    else if (e.type == SDL_TEXTINPUT) {
+        return std::make_unique<TextInputEvent>(e);
+    }
+#if SDL_HAS_DISPLAY_EVENT
+    else if (e.type == SDL_DISPLAYEVENT) {
+        return std::make_unique<DisplayStateChangeEvent>(e);
+    }
+#endif
     else {
         return std::make_unique<RawEvent>(e);
     }

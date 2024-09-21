@@ -53,7 +53,6 @@ namespace rgs = std::ranges;
 #else
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
 #endif
-#define SDL_HAS_DISPLAY_EVENT               SDL_VERSION_ATLEAST(2,0,9)
 
 // SDL Data
 struct ImGui_ImplSDL2_Data
@@ -176,24 +175,23 @@ static bool ImGui_ImplSDL2_ProcessEvent(const Event& e)
         io.AddKeyEvent(ui::toImGuiKey(key_event.key()), key_event.type() == EventType::KeyDown);
         return true;
     }
-    default: break;
-    }
-
-    switch (const SDL_Event* event = &static_cast<const SDL_Event&>(e); event->type) {
-    case SDL_TEXTINPUT:
-    {
-        io.AddInputCharactersUTF8(event->text.text);
+    case EventType::TextInput: {
+        const auto& text_event = dynamic_cast<const TextInputEvent&>(e);
+        io.AddInputCharactersUTF8(text_event.utf8_text().c_str());
         return true;
     }
-#if SDL_HAS_DISPLAY_EVENT
-    case SDL_DISPLAYEVENT:
-    {
+    case EventType::DisplayStateChange: {
         // 2.0.26 has SDL_DISPLAYEVENT_CONNECTED/SDL_DISPLAYEVENT_DISCONNECTED/SDL_DISPLAYEVENT_ORIENTATION,
         // so change of DPI/Scaling are not reflected in this event. (SDL3 has it)
         bd->WantUpdateMonitors = true;
         return true;
     }
-#endif
+    default: {
+        break;
+    }
+    }
+
+    switch (const SDL_Event* event = &static_cast<const SDL_Event&>(e); event->type) {
     case SDL_WINDOWEVENT:
     {
         // - When capturing mouse, SDL will send a bunch of conflicting LEAVE/ENTER event on every mouse move, but the final ENTER tends to be right.

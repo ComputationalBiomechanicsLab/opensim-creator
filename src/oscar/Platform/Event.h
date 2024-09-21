@@ -3,9 +3,12 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Key.h>
 #include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/CStringView.h>
 
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <string_view>
 
 union SDL_Event;
 
@@ -16,10 +19,12 @@ namespace osc
         DropFile,
         KeyDown,
         KeyUp,
+        TextInput,
         MouseButtonDown,
         MouseButtonUp,
         MouseMove,
         MouseWheel,
+        DisplayStateChange,
         Quit,
         NUM_OPTIONS,
     };
@@ -127,8 +132,28 @@ namespace osc
         TouchScreen,
     };
 
-    // TODO: textinput
-    // TODO: displayevent
+    class TextInputEvent final : public Event {
+    public:
+        explicit TextInputEvent(const SDL_Event&);
+
+        CStringView utf8_text() const { return utf8_text_; }
+    private:
+        std::string utf8_text_;
+    };
+
+    // fired off when the state of a display changes, such as:
+    //
+    // - display connected
+    // - display disconnected
+    // - display reoriented
+    // - display resolution changed (maybe DPI change)
+    class DisplayStateChangeEvent final : public Event {
+    public:
+        explicit DisplayStateChangeEvent(const SDL_Event&);
+    };
+
+    // WindowStateChangeEvent - None, Minimized, Maximized, Fullscreen, Active
+
     // TODO: windowevent
 
     class MouseEvent final : public Event {
