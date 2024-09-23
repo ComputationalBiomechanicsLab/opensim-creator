@@ -118,13 +118,12 @@ add_executable(testoscar
     testoscar.cpp  # entry point
 )
 
-
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.h"
 )
 
-target_include_directories(testoscar PUBLIC
+target_include_directories(testoscar PRIVATE
 
     # so that the source code can `#include <testoscar/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
@@ -133,7 +132,7 @@ target_include_directories(testoscar PUBLIC
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
-target_link_libraries(testoscar PUBLIC
+target_link_libraries(testoscar PRIVATE
 
     # set compiler options
     oscar_compiler_configuration

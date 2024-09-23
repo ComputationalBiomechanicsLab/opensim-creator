@@ -1,16 +1,16 @@
-# prefer to choose GLVND for OpenGL
-cmake_policy(SET CMP0072 NEW)
-
 # find dependencies (usually built+installed from `third_party/`)
 if (NOT ${OSC_EMSCRIPTEN})
+    cmake_policy(PUSH)
+    cmake_policy(SET CMP0072 NEW)  # prefer to choose GLVND for OpenGL
     find_package(OpenGL REQUIRED)
+    cmake_policy(POP)
+
     find_package(glew REQUIRED CONFIG)
     find_package(SDL2 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(ImGuizmo REQUIRED CONFIG)
-find_package(ImGuiColorTextEdit REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
@@ -459,17 +459,16 @@ target_include_directories(oscar PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(oscar PUBLIC
-
+target_link_libraries(oscar
+PUBLIC
     oscar_compiler_configuration
-
+PRIVATE
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:OpenGL::GL>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:GLEW::glew_s>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
     imgui
     ImGuizmo
-    ImGuiColorTextEdit
     implot
     stb
     unordered_dense::unordered_dense

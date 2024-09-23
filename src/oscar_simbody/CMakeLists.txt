@@ -40,7 +40,7 @@ target_link_libraries(oscar_simbody PUBLIC
     SimTKsimbody
 )
 
-target_compile_options(oscar_simbody PUBLIC
+target_compile_options(oscar_simbody PRIVATE
     # gcc
     $<$<CXX_COMPILER_ID:GNU>:
         # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation

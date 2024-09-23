@@ -33,12 +33,12 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.h"
 )
-target_include_directories(TestOpenSimCreator PUBLIC
+target_include_directories(TestOpenSimCreator PRIVATE
     # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
-target_link_libraries(TestOpenSimCreator PUBLIC
+target_link_libraries(TestOpenSimCreator PRIVATE
 
     # set compile options
     oscar_compiler_configuration

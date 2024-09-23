@@ -13,11 +13,11 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimThirdPartyPluginsConfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPluginsConfig.h"
 )
-target_include_directories(TestOpenSimThirdPartyPlugins PUBLIC
+target_include_directories(TestOpenSimThirdPartyPlugins PRIVATE
     # so that source code can `#include <TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPluginsConfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
-target_link_libraries(TestOpenSimThirdPartyPlugins PUBLIC
+target_link_libraries(TestOpenSimThirdPartyPlugins PRIVATE
 
     # set compile options
     oscar_compiler_configuration
@@ -30,7 +30,7 @@ target_link_libraries(TestOpenSimThirdPartyPlugins PUBLIC
     GTest::gtest_main
 )
 # additional compile options (on top of `oscar_compiler_configuration`)
-target_compile_options(TestOpenSimThirdPartyPlugins PUBLIC
+target_compile_options(TestOpenSimThirdPartyPlugins PRIVATE
 
     # msvc (Windows) flags
     $<$<CXX_COMPILER_ID:MSVC>:

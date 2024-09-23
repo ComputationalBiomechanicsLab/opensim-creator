@@ -6,13 +6,13 @@ add_executable(testoscar_demos
     testoscar_demos.cpp  # entry point
 )
 
-target_include_directories(testoscar_demos PUBLIC
+target_include_directories(testoscar_demos PRIVATE
 
     # so that the source code can `#include <testoscar_demos/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(testoscar_demos PUBLIC
+target_link_libraries(testoscar_demos PRIVATE
 
     oscar_compiler_configuration
     oscar

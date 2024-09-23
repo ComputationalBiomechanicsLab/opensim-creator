@@ -73,7 +73,7 @@ add_executable(osc
     >
 )
 
-target_link_libraries(osc PUBLIC
+target_link_libraries(osc PRIVATE
 
     # so that it uses standard compiler flags etc.
     oscar_compiler_configuration
@@ -82,7 +82,7 @@ target_link_libraries(osc PUBLIC
     OpenSimCreator
 )
 
-target_include_directories(osc PUBLIC
+target_include_directories(osc PRIVATE
 
     # Windows: `resources.rc` uses the include path to find resources
     $<$<CXX_COMPILER_ID:MSVC>:
@@ -93,7 +93,7 @@ target_include_directories(osc PUBLIC
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
 
-target_link_options(osc PUBLIC
+target_link_options(osc PRIVATE
 
     # MSVC (Windows)
     $<$<CXX_COMPILER_ID:MSVC>:

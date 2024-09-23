@@ -427,7 +427,7 @@ target_link_libraries(OpenSimCreator PUBLIC
 )
 
 # additional compile options (on top of `oscar_compiler_configuration`)
-target_compile_options(OpenSimCreator PUBLIC
+target_compile_options(OpenSimCreator PRIVATE
 
     # gcc/clang
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
@@ -442,7 +442,7 @@ target_compile_options(OpenSimCreator PUBLIC
     >
 )
 
-target_compile_definitions(OpenSimCreator PUBLIC
+target_compile_definitions(OpenSimCreator PRIVATE
     # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )

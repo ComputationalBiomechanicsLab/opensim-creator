@@ -3,12 +3,12 @@
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #endif
-#include <ImGuiColorTextEdit/TextEditor.h>
-#include <lua/lauxlib.h>
-#include <lua/luaconf.h>
-#include <lua/lua.h>
-#include <lua/lcode.h>
-#include <lua/lualib.h>
+#include <TextEditor.h>
+#include <lauxlib.h>
+#include <luaconf.h>
+#include <lua.h>
+#include <lcode.h>
+#include <lualib.h>
 #include <oscar/Utils/Assertions.h>
 
 #include <array>

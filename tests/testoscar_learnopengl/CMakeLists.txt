@@ -6,13 +6,13 @@ add_executable(testoscar_learnopengl
     testoscar_learnopengl.cpp  # entry point
 )
 
-target_include_directories(testoscar_learnopengl PUBLIC
+target_include_directories(testoscar_learnopengl PRIVATE
 
     # so that the source code can `#include <testoscar_learnopengl/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(testoscar_learnopengl PUBLIC
+target_link_libraries(testoscar_learnopengl PRIVATE
 
     oscar_compiler_configuration
     oscar

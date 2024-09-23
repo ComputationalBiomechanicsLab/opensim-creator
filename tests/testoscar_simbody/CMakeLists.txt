@@ -12,7 +12,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar_simbody/testoscar_simbody_config.h"
 )
 
-target_include_directories(testoscar_simbody PUBLIC
+target_include_directories(testoscar_simbody PRIVATE
 
     # so that source code can `#include <testoscar_simbody/testoscar_simbody_config.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
@@ -21,7 +21,7 @@ target_include_directories(testoscar_simbody PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(testoscar_simbody PUBLIC
+target_link_libraries(testoscar_simbody PRIVATE
 
     oscar_compiler_configuration
     oscar_simbody

@@ -27,13 +27,10 @@ target_link_libraries(OpenSimThirdPartyPlugins PUBLIC
     osimLepton
 )
 
-set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
-    DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
-)
-
 target_compile_features(OpenSimThirdPartyPlugins PRIVATE cxx_std_14)
 
 set_target_properties(OpenSimThirdPartyPlugins PROPERTIES
+    DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON
 )
