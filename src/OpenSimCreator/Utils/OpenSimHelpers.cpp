@@ -9,6 +9,8 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
@@ -55,6 +57,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Perf.h>
+#include <oscar/Utils/StringHelpers.h>
 #include <oscar_simbody/SimTKHelpers.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -477,6 +480,18 @@ void osc::GetCoordinatesInModel(
         out.push_back(&At(s, i));
     }
 }
+
+std::vector<OpenSim::Coordinate*> osc::UpdDefaultLockedCoordinatesInModel(OpenSim::Model& model)
+{
+    std::vector<OpenSim::Coordinate*> rv;
+    for (auto& c : model.updComponentList<OpenSim::Coordinate>()) {
+        if (c.getDefaultLocked()) {
+            rv.push_back(&c);
+        }
+    }
+    return rv;
+}
+
 
 float osc::ConvertCoordValueToDisplayValue(const OpenSim::Coordinate& c, double v)
 {
@@ -1713,4 +1728,117 @@ std::string osc::SanitizeToOpenSimComponentName(std::string_view sv)
         }
     }
     return rv;
+}
+
+std::unique_ptr<OpenSim::Storage> osc::LoadStorage(
+    const OpenSim::Model& model,
+    const std::filesystem::path& path,
+    const StorageLoadingParameters& params)
+{
+    auto rv = std::make_unique<OpenSim::Storage>(path.string());
+
+    if (params.convertRotationalValuesToRadians and rv->isInDegrees()) {
+        model.getSimbodyEngine().convertDegreesToRadians(*rv);
+    }
+
+    if (params.resampleToFrequency) {
+        rv->resampleLinear(*params.resampleToFrequency);
+    }
+
+    return rv;
+}
+
+std::unordered_map<int, int> osc::CreateStorageIndexToModelStatevarMappingWithWarnings(
+    const OpenSim::Model& model,
+    const OpenSim::Storage& storage)
+{
+    auto mapping = CreateStorageIndexToModelStatevarMapping(model, storage);
+    if (not mapping.stateVariablesMissingInStorage.empty()) {
+        std::stringstream ss;
+        ss << "the provided STO file is missing the following columns:\n";
+        std::string_view delim;
+        for (const std::string& el : mapping.stateVariablesMissingInStorage) {
+            ss << delim << el;
+            delim = ", ";
+        }
+        log_warn("%s", std::move(ss).str().c_str());
+        log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
+        log_warn("Therefore, do not treat the motion you are seeing as a 'true' representation of something: some state data was 'made up' to make the motion viewable");
+    }
+    return std::move(mapping.storageIndexToModelStatevarIndex);
+}
+
+StorageIndexToModelStateVarMappingResult osc::CreateStorageIndexToModelStatevarMapping(
+    const OpenSim::Model& model,
+    const OpenSim::Storage& storage)
+{
+    // ensure the `OpenSim::Storage` holds a time sequence.
+    if (not is_equal_case_insensitive(storage.getColumnLabels()[0], "time")) {
+        throw std::runtime_error{"the provided motion data does not contain a 'time' column as its first column: it cannot be processed"};
+    }
+
+    // get+validate column headers from the `OpenSim::Storage`.
+    const OpenSim::Array<std::string>& storageColumnsIncludingTime = storage.getColumnLabels();
+    if (not IsAllElementsUnique(storageColumnsIncludingTime)) {
+        throw std::runtime_error{"the provided motion data contains multiple columns with the same name. This creates ambiguities that OpenSim Creator can't handle"};
+    }
+
+    // get the state variable labels from the `OpenSim::Model`
+    OpenSim::Array<std::string> modelStateVars = model.getStateVariableNames();
+
+    StorageIndexToModelStateVarMappingResult rv;
+    rv.storageIndexToModelStatevarIndex.reserve(modelStateVars.size());
+
+    // compute storage-to-model index mapping
+    //
+    // care: The storage's column labels do not match the model's state variable names
+    //       1:1. STO files have changed over time. OpenSim pre-4.0 used different naming
+    //       conventions for the column labels, so you *need* to map the storage column
+    //       strings carefully onto the model statevars.
+    for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex) {
+        const std::string& modelStateVarname = modelStateVars[modelIndex];
+        const int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, modelStateVarname);
+        const int valueIndex = storageIndex - 1;  // the column labels include 'time', which isn't in the data elements
+
+        if (valueIndex >= 0) {
+            rv.storageIndexToModelStatevarIndex[valueIndex] = modelIndex;
+        }
+        else {
+            rv.stateVariablesMissingInStorage.push_back(modelStateVarname);
+        }
+    }
+
+    return rv;
+}
+
+void osc::UpdateStateFromStorageRow(
+    OpenSim::Model& model,
+    SimTK::State& state,
+    const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+    const OpenSim::Storage& storage,
+    int row)
+{
+    // grab the state vector from the `OpenSim::Storage`
+    OpenSim::StateVector* sv = storage.getStateVector(row);
+    const OpenSim::Array<double>& cols = sv->getData();
+
+    // copy + update the `OpenSim::Model`'s state vector with state variables from the `OpenSim::Storage`
+    SimTK::Vector stateValsBuf = model.getStateVariableValues(state);
+    for (auto [valueIdx, modelIdx] : columnIndexToModelStateVarIndex) {
+        if (0 <= valueIdx && valueIdx < cols.size() && 0 <= modelIdx && modelIdx < stateValsBuf.size()) {
+            stateValsBuf[modelIdx] = cols[valueIdx];
+        }
+        else {
+            throw std::runtime_error{"an index in the stroage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
+        }
+    }
+
+    // update state with new state variables and re-assemble, re-realize, etc.
+    state.setTime(sv->getTime());
+    for (auto& coordinate : model.getComponentList<OpenSim::Coordinate>()) {
+        coordinate.setLocked(state, false);
+    }
+    model.setStateVariableValues(state, stateValsBuf);
+    model.assemble(state);
+    model.realizeReport(state);
 }

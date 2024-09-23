@@ -549,6 +549,7 @@ namespace
         {
             SimTK::State& state = m_Model->updState();
             state.setTime(newTime);
+            m_Model->updModel().equilibrateMuscles(state);
             m_Model->updModel().realizeDynamics(state);  // TODO: osc::InitializeState creates one at t=0
         }
 

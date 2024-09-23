@@ -9,17 +9,22 @@
 #include <oscar/Utils/Concepts.h>
 #include <oscar/Utils/StringName.h>
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <filesystem>
+#include <functional>
 #include <iosfwd>
+#include <iterator>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <stdexcept>
-#include <string>
 #include <string_view>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -53,6 +58,7 @@ namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { template<typename, typename> class Set; }
 namespace OpenSim { template<typename> class SimpleProperty; }
+namespace OpenSim { class Storage; }
 namespace OpenSim { class WrapObject; }
 namespace SimTK { class State; }
 namespace SimTK { class SimbodyMatterSubsystem; }
@@ -60,13 +66,13 @@ namespace SimTK { class SimbodyMatterSubsystem; }
 // OpenSimHelpers: a collection of various helper functions that are used by `osc`
 namespace osc
 {
+    // Is satisfied if `T` has a `.clone()` member method that returns a raw `T*` pointer.
     template<typename T>
-    concept ClonesToRawPtr = requires(const T& v) {
+    concept ClonesToRawPointer = requires(const T& v) {
         { v.clone() } -> std::same_as<T*>;
     };
 
-    // iteration/indexing helpers
-
+    // Returns the number of elements in `s` (see: `std::size`).
     template<
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
@@ -76,6 +82,7 @@ namespace osc
         return static_cast<size_t>(s.getSize());
     }
 
+    // Returns the number of elements in `s` as a signed integer (see: `std::ssize`).
     template<
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
@@ -85,24 +92,56 @@ namespace osc
         return static_cast<ptrdiff_t>(s.getSize());
     }
 
+    // Returns the number of elements in `ary` (see: `std::size`).
     template<typename T>
     size_t size(const OpenSim::ArrayPtrs<T>& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
+    // Returns the number of elements in `ary` (see: `std::size`).
     template<typename T>
     size_t size(const OpenSim::Array<T>& ary)
     {
         return static_cast<size_t>(ary.getSize());
     }
 
+    // Returns the number of elements in `p` (see `std::size`).
     template<typename T>
     size_t size(const OpenSim::Property<T>& p)
     {
         return static_cast<size_t>(p.size());
     }
 
+    // Returns an iterator to the beginning of `ary` (see: `std::begin`, `std::ranges::begin`).
+    template<typename T>
+    const T* begin(const OpenSim::Array<T>& ary)
+    {
+        return std::addressof(ary[0]);
+    }
+
+    // Returns an iterator to the beginning of `ary` (see: `std::begin`, `std::ranges::begin`).
+    template<typename T>
+    T* begin(OpenSim::Array<T>& ary)
+    {
+        return std::addressof(ary[0]);
+    }
+
+    // Returns an iterator to the end (i.e. the element after the last element) of `ary` (see: `std::end`, `std::ranges::end`)
+    template<typename T>
+    const T* end(const OpenSim::Array<T>& ary)
+    {
+        return std::addressof(ary[ary.getSize()]);
+    }
+
+    // Returns an iterator to the end (i.e. the element after the last element) of `ary` (see: `std::end`, `std::ranges::end`)
+    template<typename T>
+    T* end(OpenSim::Array<T>& ary)
+    {
+        return std::addressof(ary[ary.getSize()]);
+    }
+
+    // Returns whether `s` is empty (see: `std::empty`)
     template<
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
@@ -112,62 +151,64 @@ namespace osc
         return size(s) <= 0;
     }
 
+    // Returns a reference to the element of `ary` at location `pos`, with bounds checking.
     template<typename T>
-    T& At(OpenSim::ArrayPtrs<T>& ary, size_t i)
+    T& At(OpenSim::ArrayPtrs<T>& ary, size_t pos)
     {
-        if (i >= size(ary))
-        {
+        if (pos >= size(ary)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::ArrayPtrs detected"};
         }
 
-        if (T* el = ary.get(static_cast<int>(i)))
-        {
+        if (T* el = ary.get(static_cast<int>(pos))) {
             return *el;
         }
-        else
-        {
+        else {
             throw std::runtime_error{"attempted to access null element of ArrayPtrs"};
         }
     }
 
+    // Returns a reference to the element of `ary` at location `pos`, with bounds checking.
     template<typename T>
-    const T& At(const OpenSim::Array<T>& ary, size_t i)
+    const T& At(const OpenSim::Array<T>& ary, size_t pos)
     {
-        if (i >= size(ary)) {
+        if (pos >= size(ary)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::ArrayPtrs detected"};
         }
-        return ary.get(static_cast<int>(i));
+        return ary.get(static_cast<int>(pos));
     }
 
+    // Returns a reference to the element of `s` at location `pos`, with bounds checking.
     template<
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    const T& At(const OpenSim::Set<T, C>& s, size_t i)
+    const T& At(const OpenSim::Set<T, C>& s, size_t pos)
     {
-        if (i >= size(s)) {
+        if (pos >= size(s)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
-        return s.get(static_cast<int>(i));
+        return s.get(static_cast<int>(pos));
     }
 
+    // Returns a reference to the element of `s` at location `pos`, with bounds checking.
     template<
         std::derived_from<OpenSim::Object> T,
         std::derived_from<OpenSim::Object> C = OpenSim::Object
     >
-    T& At(OpenSim::Set<T, C>& s, size_t i)
+    T& At(OpenSim::Set<T, C>& s, size_t pos)
     {
-        if (i >= size(s)) {
+        if (pos >= size(s)) {
             throw std::out_of_range{"out of bounds access to an OpenSim::Set detected"};
         }
-        s.get(static_cast<int>(i));  // force an OpenSim-based null check
-        return s[static_cast<int>(i)];
+        s.get(static_cast<int>(pos));  // force an OpenSim-based null check
+        return s[static_cast<int>(pos)];
     }
 
+    // Returns a reference to the element of `p` at location `pos`, with bounds checking.
     template<typename T>
-    const T& At(const OpenSim::Property<T>& p, size_t i)
+    const T& At(const OpenSim::Property<T>& p, size_t pos)
     {
-        return p[static_cast<int>(i)];
+        return p[static_cast<int>(pos)];  // the implementation is already bounds-checked
     }
 
     template<
@@ -177,6 +218,18 @@ namespace osc
     bool EraseAt(OpenSim::Set<T, C>& s, size_t i)
     {
         return s.remove(static_cast<int>(i));
+    }
+
+    // Returns whether all elements in `v` are not equal to any other element in `v`.
+    template<typename T>
+    requires (std::strict_weak_order<std::ranges::less, T, T> and std::equality_comparable<T>)
+    bool IsAllElementsUnique(const OpenSim::Array<T>& v)
+    {
+        std::vector<std::reference_wrapper<const T>> buffer;
+        buffer.reserve(v.size());
+        std::ranges::copy(begin(v), end(v), std::back_inserter(buffer));
+        std::ranges::sort(buffer, std::less<T>{});
+        return std::ranges::adjacent_find(buffer, std::ranges::equal_to{}, &std::reference_wrapper<const T>::get) == buffer.end();
     }
 
     // returns true if the first argument has a lexographically lower class name
@@ -355,7 +408,7 @@ namespace osc
         return dynamic_cast<const T*>(rv);
     }
 
-    // returns a vector containing points to all user-editable coordinates in the model
+    // returns a vector containing pointers to all user-editable coordinates in the model
     std::vector<const OpenSim::Coordinate*> GetCoordinatesInModel(const OpenSim::Model&);
 
     // fills the given vector with all user-editable coordinates in the model
@@ -363,6 +416,9 @@ namespace osc
         const OpenSim::Model&,
         std::vector<const OpenSim::Coordinate*>&
     );
+
+    // returns a vector containing mutable pointers to all default-locked coordinates in the model
+    std::vector<OpenSim::Coordinate*> UpdDefaultLockedCoordinatesInModel(OpenSim::Model&);
 
     // returns the user-facing display value (i.e. degrees) for a coordinate
     float ConvertCoordValueToDisplayValue(const OpenSim::Coordinate&, double v);
@@ -809,7 +865,7 @@ namespace osc
         return static_cast<T&>(AddWrapObject(physFrame, std::make_unique<T>(std::forward<Args>(args)...)));
     }
 
-    template<ClonesToRawPtr T>
+    template<ClonesToRawPointer T>
     std::unique_ptr<T> Clone(const T& obj)
     {
         return std::unique_ptr<T>(obj.clone());
@@ -939,4 +995,44 @@ namespace osc
     // returns a sanitized form of the given string that OpenSim would (probably) accept
     // as a component name
     std::string SanitizeToOpenSimComponentName(std::string_view);
+
+    struct StorageLoadingParameters final {
+        bool convertRotationalValuesToRadians = true;
+        std::optional<double> resampleToFrequency = std::nullopt;
+    };
+
+    // returns an `OpenSim::Storage` with the given parameters
+    //
+    // (a `Model` is required because its `Coordinate`s are used to figure out which columns
+    //  might be rotational)
+    std::unique_ptr<OpenSim::Storage> LoadStorage(
+        const OpenSim::Model&,
+        const std::filesystem::path&,
+        const StorageLoadingParameters& = {}
+    );
+
+    // Represents the result of trying to map columns in an `OpenSim::Storage` to state
+    // variables in an `OpenSim::Model`.
+    struct StorageIndexToModelStateVarMappingResult final {
+        std::unordered_map<int, int> storageIndexToModelStatevarIndex;
+        std::vector<std::string> stateVariablesMissingInStorage;
+    };
+
+    StorageIndexToModelStateVarMappingResult CreateStorageIndexToModelStatevarMapping(
+        const OpenSim::Model&,
+        const OpenSim::Storage&
+    );
+
+    std::unordered_map<int, int> CreateStorageIndexToModelStatevarMappingWithWarnings(
+        const OpenSim::Model&,
+        const OpenSim::Storage&
+    );
+
+    void UpdateStateFromStorageRow(
+        OpenSim::Model&,
+        SimTK::State&,
+        const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+        const OpenSim::Storage&,
+        int row
+    );
 }

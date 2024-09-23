@@ -355,3 +355,29 @@ TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
         }
     }
 }
+
+TEST(OpenSimHelpers, IsAllElementsUniqueReturnsTrueForUniqueCase)
+{
+    OpenSim::Array<int> els;
+    els.ensureCapacity(5);
+    els.append(3);
+    els.append(2);
+    els.append(1);
+    els.append(4);
+    els.append(-2);
+
+    ASSERT_TRUE(IsAllElementsUnique(els));
+}
+
+TEST(OpenSimHelpers, IsAllElementsUniqueReturnsFalseForNotUniqueCase)
+{
+    OpenSim::Array<int> els;
+    els.ensureCapacity(5);
+    els.append(3);
+    els.append(4);
+    els.append(1);
+    els.append(4);  // uh oh
+    els.append(-2);
+
+    ASSERT_FALSE(IsAllElementsUnique(els));
+}
