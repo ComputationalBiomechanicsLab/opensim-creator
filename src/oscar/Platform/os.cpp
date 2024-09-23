@@ -5,6 +5,7 @@
 #include <oscar/Platform/LogSink.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #ifndef EMSCRIPTEN
@@ -88,6 +89,18 @@ std::filesystem::path osc::user_data_directory(
         SDL_free,
     };
     return convert_SDL_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
+}
+
+std::string osc::get_clipboard_text()
+{
+    char* str = SDL_GetClipboardText();
+    if (str) {
+        ScopeGuard guard{[str]() { SDL_free(str); }};
+        return std::string(str);
+    }
+    else {
+        return std::string{};
+    }
 }
 
 bool osc::set_clipboard_text(CStringView content)

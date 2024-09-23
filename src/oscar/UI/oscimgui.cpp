@@ -1083,17 +1083,17 @@ void osc::ui::set_keyboard_focus_here()
 
 bool osc::ui::is_key_pressed(Key key, bool repeat)
 {
-    return ImGui::IsKeyPressed(to<ImGuiKey>(key), repeat);
+    return ImGui::IsKeyPressed(toImGuiKey(key), repeat);
 }
 
 bool osc::ui::is_key_released(Key key)
 {
-    return ImGui::IsKeyReleased(to<ImGuiKey>(key));
+    return ImGui::IsKeyReleased(toImGuiKey(key));
 }
 
 bool osc::ui::is_key_down(Key key)
 {
-    return ImGui::IsKeyDown(to<ImGuiKey>(key));
+    return ImGui::IsKeyDown(toImGuiKey(key));
 }
 
 Color osc::ui::get_style_color(ColorVar color)

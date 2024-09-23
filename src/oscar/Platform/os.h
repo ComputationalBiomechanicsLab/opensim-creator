@@ -67,6 +67,9 @@ namespace osc
     // tries to open the specified URL in the OS's default browser
     void open_url_in_os_default_web_browser(CStringView);
 
+    // returns the contents of the clipboard as text, or an empty string if nothing's in the clipboard
+    std::string get_clipboard_text();
+
     // returns `true` if `content` was sucessfully copied to the user's clipboard
     bool set_clipboard_text(CStringView content);
 
