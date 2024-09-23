@@ -229,7 +229,7 @@ namespace osc
         buffer.reserve(v.size());
         std::ranges::copy(begin(v), end(v), std::back_inserter(buffer));
         std::ranges::sort(buffer, std::less<T>{});
-        return std::ranges::adjacent_find(buffer, std::ranges::equal_to{}, &std::reference_wrapper<const T>::get) == buffer.end();
+        return std::ranges::adjacent_find(buffer, std::equal_to<T>{}, &std::reference_wrapper<const T>::get) == buffer.end();
     }
 
     // returns true if the first argument has a lexographically lower class name
