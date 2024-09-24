@@ -10,6 +10,7 @@
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
+#include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -66,7 +67,7 @@ namespace
     // Describes the type of data held by [1..N] columns in the source data.
     enum class DataPointType {
         Point = 0,
-        PointForce,
+        ForcePoint,
         BodyForce,
         Orientation,
         Unknown,
@@ -76,7 +77,7 @@ namespace
     // A compile-time typelist of all possible `DataPointType`s.
     using DataPointTypeList = OptionList<DataPointType,
         DataPointType::Point,
-        DataPointType::PointForce,
+        DataPointType::ForcePoint,
         DataPointType::BodyForce,
         DataPointType::Orientation,
         DataPointType::Unknown
@@ -93,8 +94,8 @@ namespace
     };
 
     template<>
-    struct ColumnDataTypeTraits<DataPointType::PointForce> final {
-        static constexpr CStringView label = "PointForce";
+    struct ColumnDataTypeTraits<DataPointType::ForcePoint> final {
+        static constexpr CStringView label = "ForcePoint";
         static constexpr size_t num_elements = 6;
     };
 
@@ -209,7 +210,7 @@ namespace
         }
     private:
         std::vector<DataSeriesPattern> m_Patterns = {
-            DataSeriesPattern::forDatatype<DataPointType::PointForce>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
+            DataSeriesPattern::forDatatype<DataPointType::ForcePoint>("_vx", "_vy", "_vz", "_px", "_py", "_pz"),
             DataSeriesPattern::forDatatype<DataPointType::Point>("_vx", "_vy", "_vz"),
             DataSeriesPattern::forDatatype<DataPointType::Point>("_tx", "_ty", "_tz"),
             DataSeriesPattern::forDatatype<DataPointType::Point>("_px", "_py", "_pz"),
@@ -226,7 +227,7 @@ namespace
     // A single data annotation that describes some kind of substructure (series) in
     // columnar data.
     struct DataSeriesAnnotation final {
-        int firstColumnOffset = 0;
+        int dataColumnOffset = 0;
         std::string label;
         DataPointType dataType = DataPointType::Unknown;
     };
@@ -240,7 +241,7 @@ namespace
         static StorageSchema parse(const OpenSim::Storage& storage)
         {
             const DataSeriesPatterns patterns;
-            const auto& labels = storage.getColumnLabels();
+            const auto& labels = storage.getColumnLabels();  // includes time
 
             std::vector<DataSeriesAnnotation> annotations;
             int offset = 1;  // offset 0 == "time" (skip it)
@@ -249,7 +250,7 @@ namespace
                 const std::span<std::string> remainingLabels{&labels[offset], static_cast<size_t>(labels.size() - offset)};
                 if (const DataSeriesPattern* pattern = patterns.try_match(remainingLabels)) {
                     annotations.push_back({
-                        .firstColumnOffset = offset,
+                        .dataColumnOffset = offset-1,  // drop time for this index
                         .label = std::string{pattern->remove_suffix(remainingLabels.front())},
                         .dataType = pattern->datatype(),
                     });
@@ -257,7 +258,7 @@ namespace
                 }
                 else {
                     annotations.push_back({
-                        .firstColumnOffset = offset,
+                        .dataColumnOffset = offset-1,  // drop time for this index
                         .label = remainingLabels.front(),
                         .dataType = DataPointType::Unknown,
                     });
@@ -278,16 +279,16 @@ namespace
 
     // Returns the elements associated with one datapoint (e.g. [x, y, z])
     std::vector<double> extractDataPoint(
-        const SimTK::State& state,
+        double time,
         const OpenSim::Storage& storage,
         const DataSeriesAnnotation& annotation)
     {
         // lol, `OpenSim::Storage` API, etc.
-        int aN = annotation.firstColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
+        int aN = annotation.dataColumnOffset + static_cast<int>(numElementsIn(annotation.dataType));
         std::vector<double> buffer(aN);
         double* p = buffer.data();
-        storage.getDataAtTime(state.getTime(), aN, &p);
-        buffer.erase(buffer.begin(), buffer.begin() + annotation.firstColumnOffset);
+        storage.getDataAtTime(time, aN, &p);
+        buffer.erase(buffer.begin(), buffer.begin() + annotation.dataColumnOffset);
         return buffer;
     }
 }
@@ -295,42 +296,55 @@ namespace
 // ui-independent graphics helpers
 namespace
 {
+    inline constexpr float c_ForceArrowLengthScale = 0.0025f;
+
     // defines a decoration generator for a particular data point type
     template<DataPointType Type>
-    void generateDecorations(const SimTK::State&, std::span<const double, numElementsIn(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
+    void generateDecorations(std::span<const double, numElementsIn(Type)>, SimTK::Array_<SimTK::DecorativeGeometry>&);
 
     template<>
     void generateDecorations<DataPointType::Point>(
-        const SimTK::State&,
         std::span<const double, 3> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        SimTK::Vec3 position{data[0], data[1], data[2]};
+        const SimTK::Vec3 position = {data[0], data[1], data[2]};
         if (not position.isNaN()) {
             SimTK::DecorativeSphere sphere{};
-            sphere.setRadius(0.1);
-            sphere.setTransform(position * 0.001);
+            sphere.setRadius(0.005);  // i.e. like little 1 cm diameter markers
+            sphere.setTransform(position);
             sphere.setColor(to<SimTK::Vec3>(Color::blue()));
             out.push_back(sphere);
         }
     }
 
     template<>
-    void generateDecorations<DataPointType::PointForce>(
-        const SimTK::State&,
-        std::span<const double, 6>,
-        SimTK::Array_<SimTK::DecorativeGeometry>&)
+    void generateDecorations<DataPointType::ForcePoint>(
+        std::span<const double, 6> data,
+        SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        // TODO
+        const SimTK::Vec3 force = {data[0], data[1], data[2]};
+        const SimTK::Vec3 point = {data[3], data[4], data[5]};
+
+        if (not force.isNaN() and force.normSqr() > SimTK::Eps and not point.isNaN()) {
+
+            SimTK::DecorativeArrow arrow{
+                point,
+                point + c_ForceArrowLengthScale * force,
+            };
+            arrow.setScaleFactors({1, 1, 0.00001});
+            arrow.setColor(to<SimTK::Vec3>(Color::orange()));
+            arrow.setLineThickness(0.01);
+            arrow.setTipLength(0.1);
+            out.push_back(arrow);
+        }
     }
 
     template<>
     void generateDecorations<DataPointType::BodyForce>(
-        const SimTK::State&,
         std::span<const double, 3> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        const SimTK::Vec3 position = { data[0], data[1], data[2] };
+        const SimTK::Vec3 position = {data[0], data[1], data[2]};
         if (not position.isNaN() and position.normSqr() > SimTK::Eps) {
             SimTK::DecorativeArrow arrow{
                 SimTK::Vec3(0.0),
@@ -346,7 +360,6 @@ namespace
 
     template<>
     void generateDecorations<DataPointType::Orientation>(
-        const SimTK::State&,
         std::span<const double, 4> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
@@ -368,15 +381,21 @@ namespace
         const DataSeriesAnnotation& annotation,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        const auto data = extractDataPoint(state, storage, annotation);
+        const auto time = state.getTime();
+        const ClosedInterval<double> storageTimeRange{storage.getFirstTime(), storage.getLastTime()};
+        if (not storageTimeRange.contains(time)) {
+            return;  // time out of range: generate no decorations
+        }
+
+        const auto data = extractDataPoint(time, storage, annotation);
         OSC_ASSERT_ALWAYS(data.size() == numElementsIn(annotation.dataType));
 
         static_assert(num_options<DataPointType>() == 5);
         switch (annotation.dataType) {
-        case DataPointType::Point:       generateDecorations<DataPointType::Point>(       state, std::span<const double, numElementsIn(DataPointType::Point)>{data}, out);      break;
-        case DataPointType::PointForce:  generateDecorations<DataPointType::PointForce>(  state, std::span<const double, numElementsIn(DataPointType::PointForce)>{data}, out); break;
-        case DataPointType::BodyForce:   generateDecorations<DataPointType::BodyForce>(   state, std::span<const double, numElementsIn(DataPointType::BodyForce)>{data}, out);  break;
-        case DataPointType::Orientation: generateDecorations<DataPointType::Orientation>( state, std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out);  break;
+        case DataPointType::Point:       generateDecorations<DataPointType::Point>(       std::span<const double, numElementsIn(DataPointType::Point)>{data},       out); break;
+        case DataPointType::ForcePoint:  generateDecorations<DataPointType::ForcePoint>(  std::span<const double, numElementsIn(DataPointType::ForcePoint)>{data},  out); break;
+        case DataPointType::BodyForce:   generateDecorations<DataPointType::BodyForce>(   std::span<const double, numElementsIn(DataPointType::BodyForce)>{data},   out); break;
+        case DataPointType::Orientation: generateDecorations<DataPointType::Orientation>( std::span<const double, numElementsIn(DataPointType::Orientation)>{data}, out); break;
 
         case DataPointType::Unknown: break;  // do nothing
         default:                     break;  // do nothing
@@ -392,7 +411,7 @@ namespace
         OpenSim_DECLARE_CONCRETE_OBJECT(DataSeries, OpenSim::ModelComponent)
     public:
         OpenSim_DECLARE_PROPERTY(type, std::string, "the datatype of the data series")
-        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column that contains this data series")
+        OpenSim_DECLARE_PROPERTY(column_offset, int, "index of the first column (excl. time) that contains this data series")
 
         explicit DataSeries(
             std::shared_ptr<const OpenSim::Storage> storage,
@@ -403,7 +422,7 @@ namespace
         {
             setName(annotation.label);
             constructProperty_type(std::string{labelFor(annotation.dataType)});
-            constructProperty_column_offset(annotation.firstColumnOffset);
+            constructProperty_column_offset(annotation.dataColumnOffset);
         }
     private:
         void generateDecorations(
@@ -430,12 +449,29 @@ namespace
         // Constructs an `AnnotationMotion` that was loaded from the given filesystem
         // path, or throws an `std::exception` if any error occurs.
         explicit AnnotatedMotion(const std::filesystem::path& path) :
-            AnnotatedMotion{std::make_shared<OpenSim::Storage>(path.string())}
+            AnnotatedMotion{loadPathIntoStorage(path)}
         {
             setName(path.filename().string());
         }
 
     private:
+        static std::shared_ptr<OpenSim::Storage> loadPathIntoStorage(const std::filesystem::path& path)
+        {
+            if (path.extension() == ".trc") {
+                // use `MarkerData`, same as OpenSim GUI's `FileLoadDataAction.java`
+                OpenSim::MarkerData markerData{path.string()};
+                markerData.convertToUnits(OpenSim::Units::Meters);
+
+                auto storage = std::make_shared<OpenSim::Storage>();
+                markerData.makeRdStorage(*storage);
+                log_info("%s", storage->getName().c_str());
+                return storage;
+            }
+            else {
+                return std::make_shared<OpenSim::Storage>(path.string());
+            }
+        }
+
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
             m_Storage{std::move(storage)},
             m_Schema{StorageSchema::parse(*m_Storage)}
@@ -485,10 +521,11 @@ namespace
         void loadModelFile(const std::filesystem::path& p)
         {
             m_Model->setModel(std::make_unique<OpenSim::Model>(p.string()));
+            m_Model->setFilesystemPath(p);
             reinitializeModelFromBackingData("loaded model");
         }
 
-        void reloadAll()
+        void reloadAll(std::string_view label = "reloaded model")
         {
             if (m_Model->hasFilesystemLocation()) {
                 SceneCache dummy;
@@ -497,13 +534,13 @@ namespace
             if (m_AssociatedTrajectory) {
                 m_AssociatedTrajectory->reload(m_Model->getModel());
             }
-            reinitializeModelFromBackingData("reloaded model");
+            reinitializeModelFromBackingData(label);
         }
 
         void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
             m_AssociatedTrajectory = FileBackedStorage{m_Model->getModel(), path};
-            reinitializeModelFromBackingData("loaded trajactory");
+            reloadAll("loaded trajactory");
         }
 
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
@@ -513,7 +550,7 @@ namespace
             }
 
             m_AssociatedMotionFiles.insert(m_AssociatedMotionFiles.end(), paths.begin(), paths.end());
-            reinitializeModelFromBackingData(paths.size() == 1 ? "loaded motion" : "loaded motions");
+            reloadAll(paths.size() == 1 ? "loaded motion" : "loaded motions");
         }
 
         void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
@@ -523,7 +560,7 @@ namespace
             }
 
             m_AssociatedXMLDocuments.insert(m_AssociatedXMLDocuments.end(), paths.begin(), paths.end());
-            reinitializeModelFromBackingData(paths.size() == 1 ? "loaded XML document" : "loaded XML documents");
+            reloadAll(paths.size() == 1 ? "loaded XML document" : "loaded XML documents");
         }
 
         ClosedInterval<float> getTimeRange() const
@@ -779,7 +816,7 @@ private:
 
                 ui::same_line();
                 auto t = static_cast<float>(m_UiState->getScrubTime());
-                ui::set_next_item_width(ui::calc_text_size("----------------------------").x);
+                ui::set_next_item_width(ui::calc_text_size("----------------------------------------------------------------").x);
                 if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
                     m_UiState->setScrubTime(t);
                 }
