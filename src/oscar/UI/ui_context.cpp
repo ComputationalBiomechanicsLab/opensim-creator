@@ -273,7 +273,7 @@ static bool ImGui_ImplSDL2_ProcessEvent(const Event& e)
         io.AddKeyEvent(ImGuiMod_Shift, key_event.modifier() & KeyModifier::Shift);
         io.AddKeyEvent(ImGuiMod_Alt, key_event.modifier() & KeyModifier::Alt);
         io.AddKeyEvent(ImGuiMod_Super, key_event.modifier() & KeyModifier::Gui);
-        io.AddKeyEvent(ui::toImGuiKey(key_event.key()), key_event.type() == EventType::KeyDown);
+        io.AddKeyEvent(to<ImGuiKey>(key_event.key()), key_event.type() == EventType::KeyDown);
         return true;
     }
     case EventType::TextInput: {

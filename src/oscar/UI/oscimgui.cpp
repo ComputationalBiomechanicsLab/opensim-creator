@@ -438,19 +438,20 @@ struct osc::Converter<ui::StyleVar, ImGuiStyleVar> final {
 };
 
 template<>
-struct osc::Converter<ui::SortDirection, ImGuiSortDirection> final {
-    ImGuiSortDirection operator()(ui::SortDirection option) const
+struct osc::Converter<ImGuiSortDirection, ui::SortDirection> final {
+    ui::SortDirection operator()(ImGuiSortDirection option) const
     {
         static_assert(num_options<ui::SortDirection>() == 3);
 
         switch (option) {
-        case ui::SortDirection::None:       return ImGuiSortDirection_None;
-        case ui::SortDirection::Ascending:  return ImGuiSortDirection_Ascending;
-        case ui::SortDirection::Descending: return ImGuiSortDirection_Descending;
-        default:                            return ImGuiSortDirection_None;
+        case ImGuiSortDirection_None:       return ui::SortDirection::None;
+        case ImGuiSortDirection_Ascending:  return ui::SortDirection::Ascending;
+        case ImGuiSortDirection_Descending: return ui::SortDirection::Descending;
+        default:                            return ui::SortDirection::None;
         }
     }
 };
+
 
 template<>
 struct  osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final {
@@ -465,7 +466,7 @@ struct  osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final
     }
 };
 
-ImGuiKey osc::ui::toImGuiKey(Key key)
+ImGuiKey osc::Converter<Key, ImGuiKey>::operator()(Key key) const
 {
     static_assert(num_options<Key>() == 120);
 
@@ -1083,17 +1084,17 @@ void osc::ui::set_keyboard_focus_here()
 
 bool osc::ui::is_key_pressed(Key key, bool repeat)
 {
-    return ImGui::IsKeyPressed(toImGuiKey(key), repeat);
+    return ImGui::IsKeyPressed(to<ImGuiKey>(key), repeat);
 }
 
 bool osc::ui::is_key_released(Key key)
 {
-    return ImGui::IsKeyReleased(toImGuiKey(key));
+    return ImGui::IsKeyReleased(to<ImGuiKey>(key));
 }
 
 bool osc::ui::is_key_down(Key key)
 {
-    return ImGui::IsKeyDown(toImGuiKey(key));
+    return ImGui::IsKeyDown(to<ImGuiKey>(key));
 }
 
 Color osc::ui::get_style_color(ColorVar color)
