@@ -449,6 +449,23 @@ namespace
         std::shared_ptr<OpenSim::Storage> m_Storage;
         StorageSchema m_Schema;
     };
+
+    class NamedStorage final {
+    public:
+        explicit NamedStorage(const std::filesystem::path& sourceFile) :
+            m_SourceFile{sourceFile}
+        {
+            // TODO: load underlying storage
+        }
+
+        void reload()
+        {
+            // TODO: reload from disk
+        }
+    private:
+        std::filesystem::path m_SourceFile;
+        std::unique_ptr<OpenSim::Storage> m_Storage;
+    };
 }
 
 // Top-level UI state that's share-able between various panels in the
@@ -462,26 +479,26 @@ namespace
 
         void loadModelFile(const std::filesystem::path& p)
         {
-            auto model = std::make_unique<OpenSim::Model>(p.string());
-            for (auto& force : model->updComponentList<OpenSim::Force>()) {
-                force.set_appliesForce(false);
+            m_Model->setModel(std::make_unique<OpenSim::Model>(p.string()));
+            reinitializeModelFromBackingData("loaded model");
+        }
+
+        void reloadAll()
+        {
+            if (m_Model->hasFilesystemLocation()) {
+                SceneCache dummy;
+                ActionReloadOsimFromDisk(*m_Model, dummy);
             }
-            InitializeModel(*model);
-            InitializeState(*model);
-
-            m_Model->setModel(std::move(model));
-            m_Model->commit("loaded model");
+            if (m_AssociatedTrajectory) {
+                m_AssociatedTrajectory->reload();
+            }
+            reinitializeModelFromBackingData("reloaded model");
         }
 
-        void reloadModelFile()
+        void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
-            SceneCache dummy;
-            ActionReloadOsimFromDisk(*m_Model, dummy);
-        }
-
-        void loadModelTrajectoryFile(const std::filesystem::path&)
-        {
-            log_info("todo");
+            m_AssociatedTrajectory = NamedStorage{path};
+            reinitializeModelFromBackingData("loaded trajactory");
         }
 
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
@@ -490,17 +507,8 @@ namespace
                 return;
             }
 
-            OpenSim::Model& model = m_Model->updModel();
-            AnnotatedMotion* lastMotion = nullptr;
-            for (const std::filesystem::path& path : paths) {
-                auto ptr = std::make_unique<AnnotatedMotion>(path);
-                lastMotion = ptr.get();
-                model.addModelComponent(ptr.release());
-            }
-            m_Model->setSelected(lastMotion);
-            InitializeModel(model);
-            InitializeState(model);
-            m_Model->commit("loaded motions");
+            m_AssociatedMotionFiles.insert(m_AssociatedMotionFiles.end(), paths.begin(), paths.end());
+            reinitializeModelFromBackingData(paths.size() == 1 ? "loaded motion" : "loaded motions");
         }
 
         void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
@@ -509,35 +517,8 @@ namespace
                 return;
             }
 
-            OpenSim::Model& model = m_Model->updModel();
-            OpenSim::ModelComponent* lastComponent = nullptr;
-            bool anyObjectIsExternalLoads = false;
-            for (const std::filesystem::path& path : paths) {
-                auto ptr = std::unique_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
-                if (dynamic_cast<const OpenSim::ExternalLoads*>(ptr.get())) {
-                    // HACK: we need to know this so that we don't commit the model, because
-                    // ExternalLoads stupidly depends on an auto-resetting `Object::_document`
-                    // member.
-                    anyObjectIsExternalLoads = true;
-                }
-                if (auto* component = dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
-                    lastComponent = component;
-                    model.addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
-                }
-            }
-            m_Model->setSelected(lastComponent);
-            InitializeModel(model);
-            InitializeState(model);
-            if (not anyObjectIsExternalLoads) {
-                if (paths.size() <= 1) {
-                    m_Model->commit("loaded " + paths.front().string());
-                }
-                else {
-                    std::stringstream msg;
-                    msg << "loaded " << paths.size() << " xml files";
-                    m_Model->commit(std::move(msg).str());
-                }
-            }
+            m_AssociatedXMLDocuments.insert(m_AssociatedXMLDocuments.end(), paths.begin(), paths.end());
+            reinitializeModelFromBackingData(paths.size() == 1 ? "loaded XML document" : "loaded XML documents");
         }
 
         ClosedInterval<float> getTimeRange() const
@@ -552,11 +533,12 @@ namespace
 
         double getScrubTime() const
         {
-            return m_Model->getState().getTime();
+            return m_ScrubTime;
         }
 
         void setScrubTime(double newTime)
         {
+            m_ScrubTime = static_cast<float>(newTime);
             SimTK::State& state = m_Model->updState();
             state.setTime(newTime);
             m_Model->updModel().equilibrateMuscles(state);
@@ -568,9 +550,52 @@ namespace
             m_Model->rollback();
         }
     private:
+        void reinitializeModelFromBackingData(std::string_view label)
+        {
+            // hide forces that are computed from the model, because it's assumed that the
+            // user only wants to visualize forces that come from externally-supplied data
+            for (auto& force : m_Model->updModel().updComponentList<OpenSim::Force>()) {
+                force.set_appliesForce(false);
+            }
+
+            // TODO: load storage
+
+            // (re)load motions
+            for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
+                m_Model->updModel().addModelComponent(std::make_unique<AnnotatedMotion>(path).release());
+            }
+
+            // (re)load associated XML files (e.g. `ExternalLoads`)
+            bool anyObjectIsExternalLoads = false;
+            for (const std::filesystem::path& path : m_AssociatedXMLDocuments) {
+                auto ptr = std::unique_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
+                if (dynamic_cast<const OpenSim::ExternalLoads*>(ptr.get())) {
+                    // HACK: we need to know this so that we don't commit the model, because
+                    // ExternalLoads stupidly depends on an auto-resetting `Object::_document`
+                    // member.
+                    anyObjectIsExternalLoads = true;
+                }
+                if (auto* component = dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
+                    m_Model->updModel().addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
+                }
+            }
+
+            // care: state initialization is dependent on `m_AssociatedTrajectory`
+            InitializeModel(m_Model->updModel());
+            InitializeState(m_Model->updModel());
+            if (not anyObjectIsExternalLoads) {
+                m_Model->commit(label);
+            }
+
+            setScrubTime(m_ScrubTime);
+        }
+
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
-        std::unique_ptr<OpenSim::Storage> m_AssociatedStorage;
+        std::optional<NamedStorage> m_AssociatedTrajectory;
+        std::vector<std::filesystem::path> m_AssociatedMotionFiles;
+        std::vector<std::filesystem::path> m_AssociatedXMLDocuments;
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
+        float m_ScrubTime = 0.0f;
     };
 
     class ReadonlyPropertiesEditorPanel final : public StandardPanelImpl {
@@ -695,11 +720,10 @@ private:
                     }
                 }
 
-                ui::same_line(0.0f, 1.0f);
-                if (ui::draw_button(OSC_ICON_RECYCLE)) {
-                    m_UiState->reloadModelFile();
+                ui::same_line();
+                if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
+                    m_UiState->reloadAll();
                 }
-                ui::draw_tooltip_body_only_if_item_hovered("reload model");
 
                 /* TODO: implement
                 ui::same_line();
