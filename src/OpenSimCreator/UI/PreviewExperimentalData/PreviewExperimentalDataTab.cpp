@@ -487,8 +487,8 @@ namespace
 
     class FileBackedStorage final {
     public:
-        explicit FileBackedStorage(const OpenSim::Model& model, const std::filesystem::path& sourceFile) :
-            m_SourceFile{sourceFile},
+        explicit FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
+            m_SourceFile{std::move(sourceFile)},
             m_Storage{LoadStorage(model, m_SourceFile)},
             m_StorageIndexToModelStateVarIndexMap{CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage)}
         {}
