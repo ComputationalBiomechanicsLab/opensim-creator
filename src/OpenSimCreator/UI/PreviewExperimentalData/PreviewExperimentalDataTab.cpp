@@ -464,7 +464,6 @@ namespace
 
                 auto storage = std::make_shared<OpenSim::Storage>();
                 markerData.makeRdStorage(*storage);
-                log_info("%s", storage->getName().c_str());
                 return storage;
             }
             else {
@@ -527,13 +526,21 @@ namespace
 
         void reloadAll(std::string_view label = "reloaded model")
         {
+            // reload/reset model
             if (m_Model->hasFilesystemLocation()) {
                 SceneCache dummy;
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
+            else {
+                m_Model->updModel() = OpenSim::Model{};
+            }
+
+            // if applicable, reload associated trajectory
             if (m_AssociatedTrajectory) {
                 m_AssociatedTrajectory->reload(m_Model->getModel());
             }
+
+            // reinitialize everything else
             reinitializeModelFromBackingData(label);
         }
 
@@ -637,7 +644,7 @@ namespace
                     // member.
                     anyObjectIsExternalLoads = true;
                 }
-                if (auto* component = dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
+                if (dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
                     m_Model->updModel().addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
                 }
             }
