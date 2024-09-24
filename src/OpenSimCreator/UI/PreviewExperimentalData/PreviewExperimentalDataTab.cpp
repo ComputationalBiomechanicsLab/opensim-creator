@@ -473,6 +473,17 @@ namespace
             m_Model->commit("loaded model");
         }
 
+        void reloadModelFile()
+        {
+            SceneCache dummy;
+            ActionReloadOsimFromDisk(*m_Model, dummy);
+        }
+
+        void loadModelTrajectoryFile(const std::filesystem::path&)
+        {
+            log_info("todo");
+        }
+
         void loadMotionFiles(std::span<const std::filesystem::path> paths)
         {
             if (paths.empty()) {
@@ -492,7 +503,7 @@ namespace
             m_Model->commit("loaded motions");
         }
 
-        void loadXMLsAsComponents(std::span<const std::filesystem::path> paths)
+        void loadXMLAsOpenSimDocument(std::span<const std::filesystem::path> paths)
         {
             if (paths.empty()) {
                 return;
@@ -558,6 +569,7 @@ namespace
         }
     private:
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
+        std::unique_ptr<OpenSim::Storage> m_AssociatedStorage;
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
     };
 
@@ -677,24 +689,35 @@ private:
         {
             // load/reload etc.
             {
-                if (ui::draw_button(OSC_ICON_RECYCLE " Reload model")) {
-                    SceneCache dummy;
-                    ActionReloadOsimFromDisk(m_UiState->updModel(), dummy);
-                }
-
-                ui::same_line();
                 if (ui::draw_button("load model")) {
                     if (const auto path = prompt_user_to_select_file({"osim"})) {
                         m_UiState->loadModelFile(*path);
                     }
                 }
+
+                ui::same_line(0.0f, 1.0f);
+                if (ui::draw_button(OSC_ICON_RECYCLE)) {
+                    m_UiState->reloadModelFile();
+                }
+                ui::draw_tooltip_body_only_if_item_hovered("reload model");
+
+                /* TODO: implement
+                ui::same_line();
+                if (ui::draw_button("load model trajectory/states")) {
+                    if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
+                        m_UiState->loadModelTrajectoryFile(*path);
+                    }
+                }
+                */
+
                 ui::same_line();
                 if (ui::draw_button("load raw data file")) {
                     m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
                 }
+
                 ui::same_line();
                 if (ui::draw_button("load OpenSim XML")) {
-                    m_UiState->loadXMLsAsComponents(prompt_user_to_select_files({"xml"}));
+                    m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
                 }
             }
 
