@@ -51,6 +51,22 @@ target_link_libraries(TestOpenSimCreator PRIVATE
     GTest::gtest_main
 )
 
+# additional compile options (on top of `oscar_compiler_configuration`)
+target_compile_options(TestOpenSimCreator PRIVATE
+
+    # gcc/clang
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+        # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
+        -Wno-extra-semi
+    >
+
+    # gcc
+    $<$<CXX_COMPILER_ID:GNU>:
+        # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
+        -Wno-array-bounds
+    >
+)
+
 set_target_properties(TestOpenSimCreator PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON

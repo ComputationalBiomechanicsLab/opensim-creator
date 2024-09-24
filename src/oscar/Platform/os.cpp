@@ -96,10 +96,10 @@ std::string osc::get_clipboard_text()
     char* str = SDL_GetClipboardText();
     if (str) {
         ScopeGuard guard{[str]() { SDL_free(str); }};
-        return std::string(str);
+        return str;
     }
     else {
-        return std::string{};
+        return {};
     }
 }
 

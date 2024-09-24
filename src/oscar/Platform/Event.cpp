@@ -212,7 +212,7 @@ osc::QuitEvent::QuitEvent(const SDL_Event& e) :
 
 osc::TextInputEvent::TextInputEvent(const SDL_Event& e) :
     Event{e, EventType::TextInput},
-    utf8_text_{e.text.text}
+    utf8_text_{static_cast<const char*>(e.text.text)}
 {
     OSC_ASSERT(e.type == SDL_TEXTINPUT);
 }

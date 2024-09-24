@@ -510,9 +510,8 @@ namespace
                     anyObjectIsExternalLoads = true;
                 }
                 if (auto* component = dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
-                    model.addModelComponent(component);
                     lastComponent = component;
-                    ptr.release();
+                    model.addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
                 }
             }
             m_Model->setSelected(lastComponent);
@@ -709,7 +708,7 @@ private:
                 }
 
                 ui::same_line();
-                float t = static_cast<float>(m_UiState->getScrubTime());
+                auto t = static_cast<float>(m_UiState->getScrubTime());
                 ui::set_next_item_width(ui::calc_text_size("----------------------------").x);
                 if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
                     m_UiState->setScrubTime(t);
