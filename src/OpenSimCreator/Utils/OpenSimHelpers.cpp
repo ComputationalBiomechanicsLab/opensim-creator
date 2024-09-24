@@ -1811,7 +1811,7 @@ StorageIndexToModelStateVarMappingResult osc::CreateStorageIndexToModelStatevarM
     return rv;
 }
 
-void osc::UpdateStateFromStorageRow(
+void osc::UpdateStateVariablesFromStorageRow(
     OpenSim::Model& model,
     SimTK::State& state,
     const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
@@ -1839,6 +1839,14 @@ void osc::UpdateStateFromStorageRow(
         coordinate.setLocked(state, false);
     }
     model.setStateVariableValues(state, stateValsBuf);
-    model.assemble(state);
-    model.realizeReport(state);
+}
+
+void osc::UpdateStateFromStorageTime(
+    OpenSim::Model& model,
+    SimTK::State& state,
+    const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+    const OpenSim::Storage& storage,
+    double time)
+{
+    return UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
 }

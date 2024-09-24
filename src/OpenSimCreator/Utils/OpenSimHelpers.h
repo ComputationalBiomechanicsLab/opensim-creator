@@ -1028,11 +1028,19 @@ namespace osc
         const OpenSim::Storage&
     );
 
-    void UpdateStateFromStorageRow(
+    void UpdateStateVariablesFromStorageRow(
         OpenSim::Model&,
         SimTK::State&,
         const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
         const OpenSim::Storage&,
         int row
+    );
+
+    void UpdateStateFromStorageTime(
+        OpenSim::Model&,
+        SimTK::State&,
+        const std::unordered_map<int, int>& columnIndexToModelStateVarIndex,
+        const OpenSim::Storage&,
+        double time
     );
 }

@@ -45,7 +45,9 @@ namespace
         int row)
     {
         SimTK::State state = model.getWorkingState();
-        UpdateStateFromStorageRow(model, state, lut, storage, row);
+        UpdateStateVariablesFromStorageRow(model, state, lut, storage, row);
+        model.assemble(state);
+        model.realizeReport(state);
         return state;
     }
 

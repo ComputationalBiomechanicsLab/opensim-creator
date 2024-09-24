@@ -450,21 +450,26 @@ namespace
         StorageSchema m_Schema;
     };
 
-    class NamedStorage final {
+    class FileBackedStorage final {
     public:
-        explicit NamedStorage(const std::filesystem::path& sourceFile) :
-            m_SourceFile{sourceFile}
+        explicit FileBackedStorage(const OpenSim::Model& model, const std::filesystem::path& sourceFile) :
+            m_SourceFile{sourceFile},
+            m_Storage{LoadStorage(model, m_SourceFile)},
+            m_StorageIndexToModelStateVarIndexMap{CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage)}
+        {}
+
+        void reload(const OpenSim::Model& model)
         {
-            // TODO: load underlying storage
+            m_Storage = LoadStorage(model, m_SourceFile);
+            m_StorageIndexToModelStateVarIndexMap = CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage);
         }
 
-        void reload()
-        {
-            // TODO: reload from disk
-        }
+        const OpenSim::Storage& storage() const { return *m_Storage; }
+        const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
     private:
         std::filesystem::path m_SourceFile;
         std::unique_ptr<OpenSim::Storage> m_Storage;
+        std::unordered_map<int, int> m_StorageIndexToModelStateVarIndexMap;
     };
 }
 
@@ -490,14 +495,14 @@ namespace
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
             if (m_AssociatedTrajectory) {
-                m_AssociatedTrajectory->reload();
+                m_AssociatedTrajectory->reload(m_Model->getModel());
             }
             reinitializeModelFromBackingData("reloaded model");
         }
 
         void loadModelTrajectoryFile(const std::filesystem::path& path)
         {
-            m_AssociatedTrajectory = NamedStorage{path};
+            m_AssociatedTrajectory = FileBackedStorage{m_Model->getModel(), path};
             reinitializeModelFromBackingData("loaded trajactory");
         }
 
@@ -538,11 +543,27 @@ namespace
 
         void setScrubTime(double newTime)
         {
-            m_ScrubTime = static_cast<float>(newTime);
             SimTK::State& state = m_Model->updState();
             state.setTime(newTime);
-            m_Model->updModel().equilibrateMuscles(state);
-            m_Model->updModel().realizeDynamics(state);  // TODO: osc::InitializeState creates one at t=0
+
+            if (m_AssociatedTrajectory) {
+                UpdateStateFromStorageTime(
+                    m_Model->updModel(),
+                    state,
+                    m_AssociatedTrajectory->mapper(),
+                    m_AssociatedTrajectory->storage(),
+                    newTime
+                );
+                // m_Model->updModel().assemble(state);
+                // m_Model->updModel().equilibrateMuscles(state);
+                m_Model->getModel().realizeReport(state);
+            }
+            else {
+                // no associated motion: only change the time part of the state and re-realize
+                m_Model->updModel().equilibrateMuscles(state);
+                m_Model->updModel().realizeDynamics(state);
+            }
+            m_ScrubTime = static_cast<float>(newTime);
         }
 
         void rollbackModel()
@@ -558,7 +579,11 @@ namespace
                 force.set_appliesForce(false);
             }
 
-            // TODO: load storage
+            // (re)load associated trajectory
+            if (m_AssociatedTrajectory) {
+                InitializeModel(m_Model->updModel());
+                m_AssociatedTrajectory->reload(m_Model->getModel());
+            }
 
             // (re)load motions
             for (const std::filesystem::path& path : m_AssociatedMotionFiles) {
@@ -583,7 +608,7 @@ namespace
             // care: state initialization is dependent on `m_AssociatedTrajectory`
             InitializeModel(m_Model->updModel());
             InitializeState(m_Model->updModel());
-            if (not anyObjectIsExternalLoads) {
+            if (not anyObjectIsExternalLoads) {  // see HACK above
                 m_Model->commit(label);
             }
 
@@ -591,7 +616,7 @@ namespace
         }
 
         std::shared_ptr<UndoableModelStatePair> m_Model = std::make_shared<UndoableModelStatePair>();
-        std::optional<NamedStorage> m_AssociatedTrajectory;
+        std::optional<FileBackedStorage> m_AssociatedTrajectory;
         std::vector<std::filesystem::path> m_AssociatedMotionFiles;
         std::vector<std::filesystem::path> m_AssociatedXMLDocuments;
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
@@ -721,18 +746,11 @@ private:
                 }
 
                 ui::same_line();
-                if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
-                    m_UiState->reloadAll();
-                }
-
-                /* TODO: implement
-                ui::same_line();
                 if (ui::draw_button("load model trajectory/states")) {
                     if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
                         m_UiState->loadModelTrajectoryFile(*path);
                     }
                 }
-                */
 
                 ui::same_line();
                 if (ui::draw_button("load raw data file")) {
@@ -742,6 +760,11 @@ private:
                 ui::same_line();
                 if (ui::draw_button("load OpenSim XML")) {
                     m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
+                }
+
+                ui::same_line();
+                if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
+                    m_UiState->reloadAll();
                 }
             }
 
