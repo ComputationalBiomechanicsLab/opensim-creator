@@ -26,7 +26,7 @@ namespace osc::mi
     public:
         virtual ~MeshImporterUILayer() noexcept = default;
 
-        bool onEvent(const Event& e)
+        bool onEvent(Event& e)
         {
             return implOnEvent(e);
         }
@@ -48,7 +48,7 @@ namespace osc::mi
         }
 
     private:
-        virtual bool implOnEvent(const Event&) = 0;
+        virtual bool implOnEvent(Event&) = 0;
         virtual void implTick(float) = 0;
         virtual void implOnDraw() = 0;
 

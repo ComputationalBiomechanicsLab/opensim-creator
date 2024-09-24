@@ -1080,7 +1080,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const Event& e)
+    bool on_event(Event& e)
     {
         if (e.type() == EventType::KeyDown) {
             return onKeyDown(dynamic_cast<const KeyEvent&>(e));
@@ -1201,9 +1201,9 @@ void osc::FrameDefinitionTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::FrameDefinitionTab::impl_on_event(const Event& e)
+bool osc::FrameDefinitionTab::impl_on_event(Event& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
 void osc::FrameDefinitionTab::impl_on_tick()

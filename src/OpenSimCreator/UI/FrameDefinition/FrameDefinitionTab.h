@@ -27,7 +27,7 @@ namespace osc
         CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
-        bool impl_on_event(const Event&) final;
+        bool impl_on_event(Event&) final;
         void impl_on_tick() final;
         void impl_on_draw_main_menu() final;
         void impl_on_draw() final;

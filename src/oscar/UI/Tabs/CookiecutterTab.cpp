@@ -24,7 +24,7 @@ private:
     void impl_on_unmount() final
     {}
 
-    bool impl_on_event(const Event&) final
+    bool impl_on_event(Event&) final
     {
         return false;
     }
@@ -72,7 +72,7 @@ void osc::CookiecutterTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::CookiecutterTab::impl_on_event(Event const& e)
+bool osc::CookiecutterTab::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

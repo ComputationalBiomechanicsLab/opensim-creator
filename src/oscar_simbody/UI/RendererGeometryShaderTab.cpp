@@ -54,7 +54,7 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool onEvent(const Event& e)
+    bool on_event(Event& e)
     {
         if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
@@ -153,9 +153,9 @@ void osc::RendererGeometryShaderTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::RendererGeometryShaderTab::impl_on_event(const Event& e)
+bool osc::RendererGeometryShaderTab::impl_on_event(Event& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
 void osc::RendererGeometryShaderTab::impl_on_draw()

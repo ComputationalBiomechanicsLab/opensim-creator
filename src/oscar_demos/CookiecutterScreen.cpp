@@ -23,7 +23,7 @@ public:
         ui::context::shutdown();  // shutdown 2D UI support
     }
 
-    bool on_event(const Event& e)
+    bool on_event(Event& e)
     {
         if (e.type() == EventType::Quit) {
             // the app received a quit request from the operating system (e.g. because the
@@ -87,7 +87,7 @@ void osc::CookiecutterScreen::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::CookiecutterScreen::impl_on_event(const Event& e)
+bool osc::CookiecutterScreen::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

@@ -127,7 +127,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const Event& e)
+    bool on_event(Event& e)
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
             if (dropfile->path().extension() == ".osim") {
@@ -433,9 +433,9 @@ void osc::SplashTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::SplashTab::impl_on_event(const Event& e)
+bool osc::SplashTab::impl_on_event(Event& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
 void osc::SplashTab::impl_on_draw_main_menu()

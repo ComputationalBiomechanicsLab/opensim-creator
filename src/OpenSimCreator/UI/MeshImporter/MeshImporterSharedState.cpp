@@ -2,7 +2,7 @@
 
 #include <oscar/Platform/Event.h>
 
-bool osc::mi::MeshImporterSharedState::onEvent(const Event& ev)
+bool osc::mi::MeshImporterSharedState::onEvent(Event& ev)
 {
     if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&ev)) {
         m_DroppedFiles.emplace_back(dropfile->path());

@@ -771,7 +771,7 @@ namespace osc::mi
         // TOP-LEVEL STUFF
         //
 
-        bool onEvent(const Event&);
+        bool onEvent(Event&);
 
         void tick(float)
         {

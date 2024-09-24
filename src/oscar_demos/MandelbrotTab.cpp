@@ -39,7 +39,7 @@ private:
         return false;
     }
 
-    bool impl_on_event(const Event& ev) final
+    bool impl_on_event(Event& ev) final
     {
         if (ev.type() == EventType::KeyUp) {
             return on_keyup(dynamic_cast<const KeyEvent&>(ev));
@@ -114,7 +114,7 @@ CStringView osc::MandelbrotTab::impl_get_name() const
     return impl_->name();
 }
 
-bool osc::MandelbrotTab::impl_on_event(const Event& e)
+bool osc::MandelbrotTab::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

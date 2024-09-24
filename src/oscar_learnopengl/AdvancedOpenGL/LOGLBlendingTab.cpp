@@ -104,7 +104,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(const Event& e) final
+    bool impl_on_event(Event& e) final
     {
         return camera_.on_event(e);
     }
@@ -203,7 +203,7 @@ void osc::LOGLBlendingTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::LOGLBlendingTab::impl_on_event(const Event& e)
+bool osc::LOGLBlendingTab::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

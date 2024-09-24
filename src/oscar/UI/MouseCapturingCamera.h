@@ -11,7 +11,7 @@ namespace osc
     public:
         void on_mount();
         void on_unmount();
-        bool on_event(const Event&);
+        bool on_event(Event&);
         void on_draw();
 
         bool is_capturing_mouse() const { return mouse_captured_; }

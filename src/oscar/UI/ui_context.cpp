@@ -233,7 +233,7 @@ static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImG
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 // If you have multiple SDL events and some of them are not meant to be used by dear imgui, you may need to filter events based on their windowID field.
-static bool ImGui_ImplSDL2_ProcessEvent(const Event& e)
+static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
 {
     ImGuiIO& io = ImGui::GetIO();
     BackendData* bd = ImGui_ImplSDL2_GetBackendData();
@@ -658,7 +658,7 @@ void osc::ui::context::shutdown()
     ImGui::DestroyContext();
 }
 
-bool osc::ui::context::on_event(const Event& ev)
+bool osc::ui::context::on_event(Event& ev)
 {
     ImGui_ImplSDL2_ProcessEvent(ev);
 

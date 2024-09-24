@@ -113,7 +113,7 @@ public:
 
     // called when an event is pumped into this screen but isn't handled by
     // either the global 2D UI context or the active tab
-    bool onUnhandledEvent(const Event& e)
+    bool onUnhandledEvent(Event& e)
     {
         if (e.type() == EventType::KeyUp) {
             return onUnhandledKeyUp(dynamic_cast<const KeyEvent&>(e));
@@ -173,14 +173,14 @@ public:
         ui::context::shutdown();
     }
 
-    bool onEvent(const Event& ev)
+    bool on_event(Event& e)
     {
         bool handled = false;
-        if (ev.type() == EventType::KeyDown or
-            ev.type() == EventType::KeyUp or
-            ev.type() == EventType::MouseButtonUp or
-            ev.type() == EventType::MouseMove or
-            ev.type() == EventType::MouseWheel) {
+        if (e.type() == EventType::KeyDown or
+            e.type() == EventType::KeyUp or
+            e.type() == EventType::MouseButtonUp or
+            e.type() == EventType::MouseMove or
+            e.type() == EventType::MouseWheel) {
 
             // if the user just potentially changed something via a mouse/keyboard
             // interaction then the screen should be aggressively redrawn to reduce
@@ -189,14 +189,14 @@ public:
             m_ShouldRequestRedraw = true;
         }
 
-        if (ui::context::on_event(ev)) {
+        if (ui::context::on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `ITab::onDraw` (immediate-mode UI)
 
             m_ShouldRequestRedraw = true;
             handled = true;
         }
-        else if (ev.type() == EventType::Quit) {
+        else if (e.type() == EventType::Quit) {
             // if it's an application-level QUIT request, then it should be pumped into each
             // tab, while checking whether a tab wants to "block" the request (e.g. because it
             // wants to show a "do you want to save changes?" popup to the user
@@ -204,7 +204,7 @@ public:
             bool atLeastOneTabHandledQuit = false;
             for (int i = 0; i < static_cast<int>(m_Tabs.size()); ++i) {
                 try {
-                    atLeastOneTabHandledQuit = m_Tabs[i]->on_event(ev) || atLeastOneTabHandledQuit;
+                    atLeastOneTabHandledQuit = m_Tabs[i]->on_event(e) || atLeastOneTabHandledQuit;
                 }
                 catch (const std::exception& ex) {
                     log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
@@ -247,7 +247,7 @@ public:
 
             bool activeTabHandledEvent = false;
             try {
-                activeTabHandledEvent = active->on_event(ev);
+                activeTabHandledEvent = active->on_event(e);
             }
             catch (const std::exception& ex) {
                 log_error("MainUIScreen::on_event: exception thrown by tab: %s", ex.what());
@@ -268,7 +268,7 @@ public:
                 handled = true;
             }
             else {
-                handled = onUnhandledEvent(ev);
+                handled = onUnhandledEvent(e);
             }
         }
 
@@ -863,9 +863,9 @@ void osc::MainUIScreen::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::MainUIScreen::impl_on_event(const Event& e)
+bool osc::MainUIScreen::impl_on_event(Event& e)
 {
-    return m_Impl->onEvent(e);
+    return m_Impl->on_event(e);
 }
 
 void osc::MainUIScreen::impl_on_tick()

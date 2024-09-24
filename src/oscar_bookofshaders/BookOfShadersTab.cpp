@@ -209,7 +209,7 @@ void osc::BookOfShadersTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::BookOfShadersTab::impl_on_event(const Event& e)
+bool osc::BookOfShadersTab::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

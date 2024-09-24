@@ -216,7 +216,7 @@ public:
         m_PanelManager->on_tick();
     }
 
-    bool onEvent(const Event& e)
+    bool onEvent(Event& e)
     {
         if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).matches(Key::Space)) {
@@ -526,7 +526,7 @@ void osc::SimulationTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::SimulationTab::impl_on_event(const Event& e)
+bool osc::SimulationTab::impl_on_event(Event& e)
 {
     return m_Impl->onEvent(e);
 }

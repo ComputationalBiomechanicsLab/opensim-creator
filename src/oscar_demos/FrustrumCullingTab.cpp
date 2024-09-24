@@ -86,7 +86,7 @@ private:
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(const Event& e) final
+    bool impl_on_event(Event& e) final
     {
         return user_camera_.on_event(e);
     }
@@ -173,7 +173,7 @@ void osc::FrustrumCullingTab::impl_on_unmount()
     impl_->on_unmount();
 }
 
-bool osc::FrustrumCullingTab::impl_on_event(const Event& e)
+bool osc::FrustrumCullingTab::impl_on_event(Event& e)
 {
     return impl_->on_event(e);
 }

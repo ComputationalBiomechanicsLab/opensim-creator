@@ -130,7 +130,7 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const Event& e)
+    bool onEvent(Event& e)
     {
         if (m_Shared->onEvent(e))
         {
@@ -2476,7 +2476,7 @@ void osc::mi::MeshImporterTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::mi::MeshImporterTab::impl_on_event(const Event& e)
+bool osc::mi::MeshImporterTab::impl_on_event(Event& e)
 {
     return m_Impl->onEvent(e);
 }

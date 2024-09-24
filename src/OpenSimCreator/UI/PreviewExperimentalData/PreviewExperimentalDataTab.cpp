@@ -903,7 +903,7 @@ void osc::PreviewExperimentalDataTab::impl_on_tick()
     m_Impl->on_tick();
 }
 
-bool osc::PreviewExperimentalDataTab::impl_on_event(const Event& e)
+bool osc::PreviewExperimentalDataTab::impl_on_event(Event& e)
 {
     return m_Impl->on_event(e);
 }

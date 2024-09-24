@@ -180,11 +180,11 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(const Event& ev)
+    bool onEvent(Event& e)
     {
-        switch (ev.type()) {
-        case EventType::KeyDown:  return onKeydownEvent(dynamic_cast<const KeyEvent&>(ev));
-        case EventType::DropFile: return onDropEvent(dynamic_cast<const DropFileEvent&>(ev));
+        switch (e.type()) {
+        case EventType::KeyDown:  return onKeydownEvent(dynamic_cast<const KeyEvent&>(e));
+        case EventType::DropFile: return onDropEvent(dynamic_cast<const DropFileEvent&>(e));
         default:                  return false;
         }
     }
@@ -458,7 +458,7 @@ void osc::ModelEditorTab::impl_on_unmount()
     m_Impl->on_unmount();
 }
 
-bool osc::ModelEditorTab::impl_on_event(const Event& e)
+bool osc::ModelEditorTab::impl_on_event(Event& e)
 {
     return m_Impl->onEvent(e);
 }

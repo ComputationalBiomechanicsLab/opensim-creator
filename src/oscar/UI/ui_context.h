@@ -13,7 +13,7 @@ namespace osc::ui::context
     void shutdown();
 
     // returns true if the UI handled the event
-    bool on_event(const Event&);
+    bool on_event(Event&);
 
     // should be called at the start of each frame (e.g. `IScreen::on_draw()`)
     void on_start_new_frame();

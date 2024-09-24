@@ -16,7 +16,7 @@ void osc::MouseCapturingCamera::on_unmount()
     App::upd().set_show_cursor(true);
 }
 
-bool osc::MouseCapturingCamera::on_event(const Event& e)
+bool osc::MouseCapturingCamera::on_event(Event& e)
 {
     if (e.type() == EventType::KeyUp) {
         if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {

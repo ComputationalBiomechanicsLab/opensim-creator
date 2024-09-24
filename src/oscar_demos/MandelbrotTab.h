@@ -25,7 +25,7 @@ namespace osc
     private:
         UID impl_get_id() const final;
         CStringView impl_get_name() const final;
-        bool impl_on_event(const Event&) final;
+        bool impl_on_event(Event&) final;
         void impl_on_draw() final;
 
         class Impl;
