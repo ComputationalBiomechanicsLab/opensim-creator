@@ -26,6 +26,7 @@
 #include <memory>
 #include <ranges>
 #include <string>
+#include <string_view>
 
 using namespace osc;
 namespace rgs = std::ranges;
@@ -61,6 +62,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    // A handle to a single OS mouse cursor (that the UI may switch to at runtime).
     class SystemCursor final {
     public:
         SystemCursor() = default;
@@ -83,6 +85,7 @@ namespace
         std::unique_ptr<SDL_Cursor, CursorDeleter> ptr_;
     };
 
+    // A collection of all OS mouse cursors that the UI is capable of switching to.
     class SystemCursors final {
     public:
         SystemCursors()
@@ -104,34 +107,40 @@ namespace
         std::array<SystemCursor, ImGuiMouseCursor_COUNT> cursors_;
     };
 
+    // Returns whether global (OS-level, rather than window-level) mouse data
+    // can be acquired from the OS.
+    bool can_mouse_use_global_state()
+    {
+        // Check and store if we are on a SDL backend that supports global mouse position
+        // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
+        bool mouse_can_use_global_state = false;
+#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
+        const auto sdl_backend = std::string_view{SDL_GetCurrentVideoDriver()};
+        const auto global_mouse_whitelist = std::to_array<std::string_view>({"windows", "cocoa", "x11", "DIVE", "VMAN"});
+        mouse_can_use_global_state = rgs::any_of(global_mouse_whitelist, [sdl_backend](std::string_view whitelisted) { return sdl_backend.starts_with(whitelisted); });
+#endif
+        return mouse_can_use_global_state;
+    }
+
+    // Returns whether the global hover state of the mouse can be queried to ask if it's
+    // currently hovering a given UI viewport.
+    bool can_mouse_report_hovered_viewport(bool mouse_can_use_global_state)
+    {
+        // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
+        // We will use 'MouseCanReportHoveredViewport' to set 'ImGuiBackendFlags_HasMouseHoveredViewport' dynamically each frame.
+#ifndef __APPLE__
+        return mouse_can_use_global_state;
+#else
+        return false;
+#endif
+    }
+
+    // The internal backend data associated with one UI context.
     struct BackendData final {
 
-        explicit BackendData(SDL_Window* window)
-        {
-            // Check and store if we are on a SDL backend that supports global mouse position
-            // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
-            bool mouse_can_use_global_state = false;
-#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
-            const char* sdl_backend = SDL_GetCurrentVideoDriver();
-            const char* global_mouse_whitelist[] = { "windows", "cocoa", "x11", "DIVE", "VMAN" };
-            for (int n = 0; n < IM_ARRAYSIZE(global_mouse_whitelist); n++) {
-                if (strncmp(sdl_backend, global_mouse_whitelist[n], strlen(global_mouse_whitelist[n])) == 0) {
-                    mouse_can_use_global_state = true;
-                }
-            }
-#endif
-
-            this->Window = window;
-
-            // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
-            // We will use 'MouseCanReportHoveredViewport' to set 'ImGuiBackendFlags_HasMouseHoveredViewport' dynamically each frame.
-            this->MouseCanUseGlobalState = mouse_can_use_global_state;
-#ifndef __APPLE__
-            this->MouseCanReportHoveredViewport = this->MouseCanUseGlobalState;
-#else
-            this->MouseCanReportHoveredViewport = false;
-#endif
-        }
+        explicit BackendData(SDL_Window* window) :
+            Window{window}
+        {}
 
         SDL_Window*                                      Window = nullptr;
         std::chrono::high_resolution_clock::time_point   Time;
@@ -144,8 +153,9 @@ namespace
         SystemCursors                                    MouseCursors;
         SystemCursor*                                    MouseLastCursor = nullptr;
         int                                              MouseLastLeaveFrame = 0;
-        bool                                             MouseCanUseGlobalState = false;
-        bool                                             MouseCanReportHoveredViewport = false;  // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
+        bool                                             MouseCanUseGlobalState = can_mouse_use_global_state();
+        // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
+        bool                                             MouseCanReportHoveredViewport = can_mouse_report_hovered_viewport(MouseCanUseGlobalState);
     };
 }
 
@@ -366,29 +376,6 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
         main_viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
 #endif
     }
-
-    // init other global stuff
-
-    // From 2.0.5: Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
-    // Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
-    // (This is unfortunately a global SDL setting, so enabling it might have a side-effect on your application.
-    // It is unlikely to make a difference, but if your app absolutely needs to ignore the initial on-focus click:
-    // you can ignore SDL_MOUSEBUTTONDOWN events coming right after a SDL_WINDOWEVENT_FOCUS_GAINED)
-#ifdef SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH
-    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-#endif
-
-    // From 2.0.18: Enable native IME.
-    // IMPORTANT: This is used at the time of SDL_CreateWindow() so this will only affects secondary windows, if any.
-    // For the main window to be affected, your application needs to call this manually before calling SDL_CreateWindow().
-#ifdef SDL_HINT_IME_SHOW_UI
-    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-#endif
-
-    // From 2.0.22: Disable auto-capture, this is preventing drag and drop across multiple windows (see #5710)
-#ifdef SDL_HINT_MOUSE_AUTO_CAPTURE
-    SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
-#endif
 }
 
 static void ImGui_ImplSDL2_Shutdown()
@@ -491,7 +478,6 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
         SDL_ShowCursor(SDL_TRUE);
     }
 }
-
 
 static void ImGui_ImplSDL2_NewFrame()
 {

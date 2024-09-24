@@ -112,6 +112,33 @@ namespace
         sdl_gl_set_attribute_or_throw(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, "SDL_GL_FRAMEBUFFER_SRGB_CAPABLE", 1, "1");
 #endif
 
+        // adapted from: https://github.com/ocornut/imgui/blob/v1.91.1-docking/backends/imgui_impl_sdl2.cpp
+        //
+        // From 2.0.5: Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
+        // Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
+        // (This is unfortunately a global SDL setting, so enabling it might have a side-effect on your application.
+        // It is unlikely to make a difference, but if your app absolutely needs to ignore the initial on-focus click:
+        // you can ignore SDL_MOUSEBUTTONDOWN events coming right after a SDL_WINDOWEVENT_FOCUS_GAINED)
+#ifdef SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH
+        SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+#endif
+
+        // adapted from: https://github.com/ocornut/imgui/blob/v1.91.1-docking/backends/imgui_impl_sdl2.cpp
+        //
+        // From 2.0.18: Enable native IME.
+        // IMPORTANT: This is used at the time of SDL_CreateWindow() so this will only affects secondary windows, if any.
+        // For the main window to be affected, your application needs to call this manually before calling SDL_CreateWindow().
+#ifdef SDL_HINT_IME_SHOW_UI
+        SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
+
+        // adapted from: https://github.com/ocornut/imgui/blob/v1.91.1-docking/backends/imgui_impl_sdl2.cpp
+        //
+        // From 2.0.22: Disable auto-capture, this is preventing drag and drop across multiple windows (see #5710)
+#ifdef SDL_HINT_MOUSE_AUTO_CAPTURE
+        SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
+#endif
+
         // careful about setting resolution, position, etc. - some people have *very* shitty
         // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
         // be <700 px high)
