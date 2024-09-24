@@ -63,7 +63,7 @@ namespace rgs = std::ranges;
 namespace
 {
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
-    inline constexpr float c_ForceArrowLengthScale = 0.005f;
+    inline constexpr float c_ForceArrowLengthScale = 0.0025f;
     inline constexpr float c_TorqueArrowLengthScale = 0.01f;
     inline constexpr Color c_EffectiveLineOfActionColor = Color::green();
     inline constexpr Color c_AnatomicalLineOfActionColor = Color::red();

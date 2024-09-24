@@ -18,6 +18,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Experimental Tools` section of the `Tools` menu now contains a `Export Multibody System as Dotviz`
   option, which is handy for dumping the body/joint topology of a model to an external graph
   visualizer (e.g. https://dreampuf.github.io/GraphvizOnline; thanks @mjhmilla, #920).
+- Force arrows are now half as long, to make them manageable when forces become large.
 - Internal: OpenSim-independent simbody code was refactored into a separate `oscar_simbody`
   library, so that we can port it independently to other platforms (e.g. wasm).
 
