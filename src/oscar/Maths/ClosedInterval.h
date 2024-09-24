@@ -71,6 +71,11 @@ namespace osc
             return length() / T{2};
         }
 
+        constexpr bool contains(T v) const
+        {
+            return lower <= v and v <= upper;
+        }
+
         T lower{};
         T upper{};
     };

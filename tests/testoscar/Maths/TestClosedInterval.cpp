@@ -57,3 +57,19 @@ TEST(ClosedInterval, step_size_returns_expected_answers)
     static_assert(ClosedInterval{0.0f, 1.0f}.step_size(2) == 1.0f);
     static_assert(ClosedInterval{0.0f, 1.0f}.step_size(3) == 0.5f);
 }
+
+TEST(ClosedInterval, contains_works_as_expected)
+{
+    static_assert(ClosedInterval<float>{0.0f, 0.0f}.contains(0.0f));
+    static_assert(ClosedInterval<float>{-1.0f, 1.0f}.contains(0.0f));
+    static_assert(not ClosedInterval<float>{0.0f, 1.0f}.contains(-0.1f));
+    static_assert(not ClosedInterval<float>{0.0f, 1.0f}.contains(1.1f));
+}
+
+TEST(ClosedInterval, contains_also_works_for_ints)
+{
+    static_assert(ClosedInterval<int>{0, 0}.contains(0));
+    static_assert(ClosedInterval<int>{-1, 1}.contains(0));
+    static_assert(not ClosedInterval<int>{0, 1}.contains(-1));
+    static_assert(not ClosedInterval<int>{0, 1}.contains(2));
+}
