@@ -66,6 +66,12 @@ namespace osc
 
         ClonePtr& operator=(ClonePtr&&) noexcept = default;
 
+        ClonePtr& operator=(std::unique_ptr<T, Deleter>&& ptr) noexcept
+        {
+            *this = ClonePtr{std::move(ptr)};
+            return *this;
+        }
+
         template<typename U, typename E>
         requires
             (not std::is_array_v<U>) and

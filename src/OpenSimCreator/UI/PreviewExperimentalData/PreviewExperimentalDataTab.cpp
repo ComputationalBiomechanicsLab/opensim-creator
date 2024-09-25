@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/PreviewExperimentalData/FileBackedStorage.h>
 #include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
@@ -66,7 +67,7 @@ namespace
 {
     // Describes the type of data held by [1..N] columns in the source data.
     enum class DataPointType {
-        Point = 0,
+        Point,
         ForcePoint,
         BodyForce,
         Orientation,
@@ -484,28 +485,6 @@ namespace
         std::shared_ptr<OpenSim::Storage> m_Storage;
         StorageSchema m_Schema;
     };
-
-    class FileBackedStorage final {
-    public:
-        explicit FileBackedStorage(const OpenSim::Model& model, std::filesystem::path sourceFile) :
-            m_SourceFile{std::move(sourceFile)},
-            m_Storage{LoadStorage(model, m_SourceFile)},
-            m_StorageIndexToModelStateVarIndexMap{CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage)}
-        {}
-
-        void reload(const OpenSim::Model& model)
-        {
-            m_Storage = LoadStorage(model, m_SourceFile);
-            m_StorageIndexToModelStateVarIndexMap = CreateStorageIndexToModelStatevarMappingWithWarnings(model, *m_Storage);
-        }
-
-        const OpenSim::Storage& storage() const { return *m_Storage; }
-        const std::unordered_map<int, int>& mapper() const { return m_StorageIndexToModelStateVarIndexMap; }
-    private:
-        std::filesystem::path m_SourceFile;
-        std::unique_ptr<OpenSim::Storage> m_Storage;
-        std::unordered_map<int, int> m_StorageIndexToModelStateVarIndexMap;
-    };
 }
 
 // Top-level UI state that's share-able between various panels in the
@@ -537,7 +516,7 @@ namespace
 
             // if applicable, reload associated trajectory
             if (m_AssociatedTrajectory) {
-                m_AssociatedTrajectory->reload(m_Model->getModel());
+                m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
             }
 
             // reinitialize everything else
@@ -626,7 +605,7 @@ namespace
             // (re)load associated trajectory
             if (m_AssociatedTrajectory) {
                 InitializeModel(m_Model->updModel());
-                m_AssociatedTrajectory->reload(m_Model->getModel());
+                m_AssociatedTrajectory->reloadFromDisk(m_Model->getModel());
             }
 
             // (re)load motions
