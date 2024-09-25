@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Storage.h>
 
 #include <filesystem>
 #include <memory>

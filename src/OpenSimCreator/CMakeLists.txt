@@ -158,6 +158,7 @@ add_library(OpenSimCreator STATIC
     Documents/OutputExtractors/OutputExtractorDataTypeTraits.h
     Documents/OutputExtractors/OutputValueExtractor.h
 
+    Documents/PreviewExperimentalData/DataPointType.h
     Documents/PreviewExperimentalData/FileBackedStorage.cpp
     Documents/PreviewExperimentalData/FileBackedStorage.h
 
