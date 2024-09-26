@@ -5,6 +5,19 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- A `Preview Experimental Data` workflow has been added. This is **work in progress**, but
+  ultimately has a similar intent to the official OpenSim GUI's `Preview Experimental Data...`
+  workflow, with a few twists:
+  - Similarly to OpenSim GUI, you can load an `.osim` model, associated `.osim` motion
+    (`.sto`/`.mot`) and raw data into the scene. However, by default, all data will be
+    overlaid with no spatial offset, and playback will play all motion tracks, rather than
+    one of them. This helps with validating several datastreams (e.g. an IK result against
+    input marker motions).
+  - Additionally, it can preview the effect of adding `ExternalLoads` and `PrescribedForce`
+    XML files to the model. You'll need to enable the `Point Forces` or `BodyForces` visual
+    aid in the 3D visualizer panel to see the forces being emitted by the forces.
+  - The above two features can be used at the same time, which helps with (e.g.) validating
+    that `ExternalLoads` are being applied to the correct frame etc.
 - Fixed the navigator erroneously autoscrolling in some cases when selecting components
   via the navigator (#908)
 - There is now a slight color difference between selected and hovered items in the UI (e.g.
@@ -18,7 +31,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Experimental Tools` section of the `Tools` menu now contains a `Export Multibody System as Dotviz`
   option, which is handy for dumping the body/joint topology of a model to an external graph
   visualizer (e.g. https://dreampuf.github.io/GraphvizOnline; thanks @mjhmilla, #920).
-- Force arrows are now half as long, to make them manageable when forces become large.
+- Force arrows are now half as long, to make them more manageable when forces become large.
 - Internal: OpenSim-independent simbody code was refactored into a separate `oscar_simbody`
   library, so that we can port it independently to other platforms (e.g. wasm).
 
