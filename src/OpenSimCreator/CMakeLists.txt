@@ -28,6 +28,16 @@ add_library(OpenSimCreator STATIC
     Documents/CustomComponents/SphereLandmark.cpp
     Documents/CustomComponents/SphereLandmark.h
 
+    Documents/ExperimentalData/AnnotatedMotion.cpp
+    Documents/ExperimentalData/AnnotatedMotion.h
+    Documents/ExperimentalData/DataPointType.h
+    Documents/ExperimentalData/DataSeriesAnnotation.cpp
+    Documents/ExperimentalData/DataSeriesAnnotation.h
+    Documents/ExperimentalData/FileBackedStorage.cpp
+    Documents/ExperimentalData/FileBackedStorage.h
+    Documents/ExperimentalData/StorageSchema.cpp
+    Documents/ExperimentalData/StorageSchema.h
+
     Documents/FrameDefinition/FrameDefinitionActions.cpp
     Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
@@ -157,10 +167,6 @@ add_library(OpenSimCreator STATIC
     Documents/OutputExtractors/OutputExtractorDataTypeList.h
     Documents/OutputExtractors/OutputExtractorDataTypeTraits.h
     Documents/OutputExtractors/OutputValueExtractor.h
-
-    Documents/PreviewExperimentalData/DataPointType.h
-    Documents/PreviewExperimentalData/FileBackedStorage.cpp
-    Documents/PreviewExperimentalData/FileBackedStorage.h
 
     Documents/Simulation/ForwardDynamicSimulation.cpp
     Documents/Simulation/ForwardDynamicSimulation.h
