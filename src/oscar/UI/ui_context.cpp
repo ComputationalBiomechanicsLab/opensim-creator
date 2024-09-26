@@ -585,7 +585,7 @@ void osc::ui::context::init(App& app)
     }();
 
     {
-        const std::string base_ini_data = app.slurp("imgui_base_config.ini");
+        const std::string base_ini_data = app.slurp_resource("imgui_base_config.ini");
         ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
@@ -600,7 +600,7 @@ void osc::ui::context::init(App& app)
     base_config.SizePixels = dpi_scale_factor*15.0f;
     base_config.PixelSnapH = true;
     base_config.FontDataOwnedByAtlas = true;
-    add_resource_as_font(app.resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+    add_resource_as_font(app.upd_resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
     // add FontAwesome icon support
     {
@@ -609,7 +609,7 @@ void osc::ui::context::init(App& app)
         config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
         static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-        add_resource_as_font(app.resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
+        add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
     }
 #endif
 
