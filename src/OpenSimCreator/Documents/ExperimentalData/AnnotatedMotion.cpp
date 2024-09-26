@@ -1,7 +1,7 @@
 #include "AnnotatedMotion.h"
 
-#include <OpenSimCreator/Documents/Experimentaldata/DataSeriesAnnotation.h>
-#include <OpenSimCreator/Documents/Experimentaldata/StorageSchema.h>
+#include <OpenSimCreator/Documents/ExperimentalData/DataSeriesAnnotation.h>
+#include <OpenSimCreator/Documents/ExperimentalData/StorageSchema.h>
 
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
