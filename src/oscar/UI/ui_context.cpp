@@ -19,6 +19,14 @@
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>
+#include <SDL.h>
+#include <SDL_syswm.h>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten/em_js.h>
+#endif
 
 #include <algorithm>
 #include <array>
@@ -29,38 +37,17 @@
 #include <string>
 #include <string_view>
 
-using namespace osc;
-namespace rgs = std::ranges;
-namespace views = std::views;
-
-// SDL2 BIT
-//
-// this was refactored from https://github.com/ocornut/imgui/blob/v1.91.1-docking/backends/imgui_impl_sdl2.cpp
-
 // NOLINTBEGIN
-
-// Clang warnings with -Weverything
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wimplicit-int-float-conversion"  // warning: implicit conversion from 'xxx' to 'float' may lose precision
-#endif
-
-// SDL
-// (the multi-viewports feature requires SDL features supported from SDL 2.0.4+. SDL 2.0.5+ is highly recommended)
-#include <SDL.h>
-#include <SDL_syswm.h>
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
-#endif
-#ifdef __EMSCRIPTEN__
-#include <emscripten/em_js.h>
-#endif
 
 #if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
 #else
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
 #endif
+
+using namespace osc;
+namespace rgs = std::ranges;
+namespace views = std::views;
 
 namespace
 {
@@ -178,7 +165,7 @@ namespace
         platform_io.Monitors.clear();
         platform_io.Monitors.reserve(static_cast<int>(screens.size()));
         for (size_t i = 0; i < screens.size(); ++i) {
-            const Screen& screen = screens[i];
+            const auto& screen = screens[i];
 
             ImGuiPlatformMonitor monitor;
             monitor.MainPos = screen.bounds().p1;
@@ -524,11 +511,6 @@ static void ImGui_ImplSDL2_NewFrame(const App& app)
     ImGui_ImplSDL2_UpdateMouseData();
     ImGui_ImplSDL2_UpdateMouseCursor();
 }
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
 
 // NOLINTEND
 
