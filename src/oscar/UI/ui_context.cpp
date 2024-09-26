@@ -37,17 +37,14 @@
 #include <string>
 #include <string_view>
 
-// NOLINTBEGIN
-
 #if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1
+#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1  // NOLINT(cppcoreguidelines-macro-usage)
 #else
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0
+#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0  // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
 using namespace osc;
 namespace rgs = std::ranges;
-namespace views = std::views;
 
 namespace
 {
@@ -60,7 +57,7 @@ namespace
             ptr_(SDL_CreateSystemCursor(id))
         {}
 
-        explicit operator bool () const { return ptr_.get(); }
+        explicit operator bool () const { return static_cast<bool>(ptr_); }
 
         void use()
         {
@@ -153,7 +150,7 @@ namespace
     // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
     BackendData* get_ui_backend_data()
     {
-        return ImGui::GetCurrentContext() ? (BackendData*)ImGui::GetIO().BackendPlatformUserData : nullptr;
+        return ImGui::GetCurrentContext() ? static_cast<BackendData*>(ImGui::GetIO().BackendPlatformUserData) : nullptr;
     }
 
     void update_monitors(const App& app)
@@ -173,7 +170,7 @@ namespace
             monitor.WorkPos = screen.usable_bounds().p1;
             monitor.WorkSize = dimensions_of(screen.usable_bounds());
             monitor.DpiScale = screen.physical_dpi() / 96.0f;
-            monitor.PlatformHandle = reinterpret_cast<void*>(i);
+            monitor.PlatformHandle = cpp20::bit_cast<void*>(i);
 
             platform_io.Monitors.push_back(monitor);
         }
@@ -192,16 +189,15 @@ namespace
     }
 }
 
-
 // Note: native IME will only display if user calls SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1") _before_ SDL_CreateWindow().
 static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData* data)
 {
     if (data->WantVisible) {
         const SDL_Rect r{
-            .x = (int)data->InputPos.x,
-            .y = (int)data->InputPos.y,
+            .x = static_cast<int>(data->InputPos.x),
+            .y = static_cast<int>(data->InputPos.y),
             .w = 1,
-            .h = (int)data->InputLineHeight,
+            .h = static_cast<int>(data->InputLineHeight),
         };
         SDL_SetTextInputRect(&r);
     }
@@ -290,28 +286,33 @@ static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
         //   causing SDL_WINDOWEVENT_LEAVE on previous frame to interrupt drag operation by clear mouse position. This is why
         //   we delay process the SDL_WINDOWEVENT_LEAVE events by one frame. See issue #5012 for details.
         Uint8 window_event = event->window.event;
-        if (window_event == SDL_WINDOWEVENT_ENTER)
-        {
+        if (window_event == SDL_WINDOWEVENT_ENTER) {
             bd->MouseWindowID = event->window.windowID;
             bd->MouseLastLeaveFrame = 0;
         }
-        if (window_event == SDL_WINDOWEVENT_LEAVE)
+        if (window_event == SDL_WINDOWEVENT_LEAVE) {
             bd->MouseLastLeaveFrame = ImGui::GetFrameCount() + 1;
-        if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED)
+        }
+        if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED) {
             io.AddFocusEvent(true);
-        else if (window_event == SDL_WINDOWEVENT_FOCUS_LOST)
+        }
+        else if (window_event == SDL_WINDOWEVENT_FOCUS_LOST) {
             io.AddFocusEvent(false);
-        if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED || window_event == SDL_WINDOWEVENT_RESIZED)
-            if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle((void*)SDL_GetWindowFromID(event->window.windowID)))
-            {
-                if (window_event == SDL_WINDOWEVENT_CLOSE)
+        }
+        if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED || window_event == SDL_WINDOWEVENT_RESIZED) {
+            if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(SDL_GetWindowFromID(event->window.windowID)))) {
+                if (window_event == SDL_WINDOWEVENT_CLOSE) {
                     viewport->PlatformRequestClose = true;
-                if (window_event == SDL_WINDOWEVENT_MOVED)
+                }
+                if (window_event == SDL_WINDOWEVENT_MOVED) {
                     viewport->PlatformRequestMove = true;
-                if (window_event == SDL_WINDOWEVENT_RESIZED)
+                }
+                if (window_event == SDL_WINDOWEVENT_RESIZED) {
                     viewport->PlatformRequestResize = true;
+                }
                 return true;
             }
+        }
         return true;
     }
     }
@@ -344,7 +345,7 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
     //
     // Our mouse update function expect PlatformHandle to be filled for the main viewport
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    main_viewport->PlatformHandle = (void*)window;
+    main_viewport->PlatformHandle = cpp20::bit_cast<void*>(window);
     main_viewport->PlatformHandleRaw = nullptr;
     SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
@@ -361,7 +362,7 @@ static void ImGui_ImplSDL2_Shutdown()
 {
     BackendData* bd = get_ui_backend_data();
     OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
-    delete bd;
+    delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = nullptr;
@@ -380,39 +381,38 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
     SDL_CaptureMouse((bd->MouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
     SDL_Window* focused_window = SDL_GetKeyboardFocus();
-    const bool is_app_focused = (focused_window && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle((void*)focused_window)));
+    const bool is_app_focused = (focused_window != nullptr && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(focused_window)) != nullptr));
 #else
     SDL_Window* focused_window = bd->Window;
     const bool is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0; // SDL 2.0.3 and non-windowed systems: single-viewport only
 #endif
 
-    if (is_app_focused)
-    {
+    if (is_app_focused) {
         // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
-        if (io.WantSetMousePos)
-        {
-#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                SDL_WarpMouseGlobal((int)io.MousePos.x, (int)io.MousePos.y);
-            else
-#endif
-                SDL_WarpMouseInWindow(bd->Window, (int)io.MousePos.x, (int)io.MousePos.y);
+        if (io.WantSetMousePos) {
+            if (SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
+                SDL_WarpMouseGlobal(static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y));
+            }
+            else {
+                SDL_WarpMouseInWindow(bd->Window, static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y));
+            }
         }
 
         // (Optional) Fallback to provide mouse position when focused (SDL_MOUSEMOTION already provides this when hovered or captured)
-        if (bd->MouseCanUseGlobalState && bd->MouseButtonsDown == 0)
-        {
+        if (bd->MouseCanUseGlobalState && bd->MouseButtonsDown == 0) {
             // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
             // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
-            int mouse_x, mouse_y, window_x, window_y;
+            int mouse_x = 0;
+            int mouse_y = 0;
             SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
-            if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
-            {
+            if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
+                int window_x = 0;
+                int window_y = 0;
                 SDL_GetWindowPosition(focused_window, &window_x, &window_y);
                 mouse_x -= window_x;
                 mouse_y -= window_y;
             }
-            io.AddMousePosEvent((float)mouse_x, (float)mouse_y);
+            io.AddMousePosEvent(static_cast<float>(mouse_x), static_cast<float>(mouse_y));
         }
     }
 
@@ -423,12 +423,13 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     //       for docking, the viewport has the _NoInputs flag in order to allow us to find the viewport under), then Dear ImGui is forced to ignore the value reported
     //       by the backend, and use its flawed heuristic to guess the viewport behind.
     // - [X] SDL backend correctly reports this regardless of another viewport behind focused and dragged from (we need this to find a useful drag and drop target).
-    if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport)
-    {
+    if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
         ImGuiID mouse_viewport_id = 0;
-        if (SDL_Window* sdl_mouse_window = SDL_GetWindowFromID(bd->MouseWindowID))
-            if (ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle((void*)sdl_mouse_window))
+        if (SDL_Window* sdl_mouse_window = SDL_GetWindowFromID(bd->MouseWindowID)) {
+            if (ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(sdl_mouse_window))) {
                 mouse_viewport_id = mouse_viewport->ID;
+            }
+        }
         io.AddMouseViewportEvent(mouse_viewport_id);
     }
 }
@@ -436,18 +437,17 @@ static void ImGui_ImplSDL2_UpdateMouseData()
 static void ImGui_ImplSDL2_UpdateMouseCursor()
 {
     ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
+    if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) {
         return;
+    }
     BackendData* bd = get_ui_backend_data();
 
     ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-    if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None)
-    {
+    if (io.MouseDrawCursor or imgui_cursor == ImGuiMouseCursor_None) {
         // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
         SDL_ShowCursor(SDL_FALSE);
     }
-    else
-    {
+    else {
         // Show OS mouse cursor
         SystemCursor& expected_cursor = bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor] : bd->MouseCursors[ImGuiMouseCursor_Arrow];
         if (bd->MouseLastCursor != &expected_cursor and expected_cursor) {
@@ -465,16 +465,20 @@ static void ImGui_ImplSDL2_NewFrame(const App& app)
     ImGuiIO& io = ImGui::GetIO();
 
     // Setup display size (every frame to accommodate for window resizing)
-    int w, h;
-    int display_w, display_h;
+    int w = 0;
+    int h = 0;
     SDL_GetWindowSize(bd->Window, &w, &h);
-    if (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_MINIMIZED)
+    if (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_MINIMIZED) {
         w = h = 0;
+    }
+    int display_w = 0;
+    int display_h = 0;
     SDL_GL_GetDrawableSize(bd->Window, &display_w, &display_h);
 
-    io.DisplaySize = ImVec2((float)w, (float)h);
-    if (w > 0 && h > 0)
-        io.DisplayFramebufferScale = ImVec2((float)display_w / static_cast<float>(w), (float)display_h / static_cast<float>(h));
+    io.DisplaySize = ImVec2(static_cast<float>(w), static_cast<float>(h));
+    if (w > 0 && h > 0) {
+        io.DisplayFramebufferScale = ImVec2(static_cast<float>(display_w) / static_cast<float>(w), static_cast<float>(display_h) / static_cast<float>(h));
+    }
 
     // Update monitors
     if (bd->WantUpdateMonitors) {
@@ -491,7 +495,7 @@ static void ImGui_ImplSDL2_NewFrame(const App& app)
         io.DeltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(current_time - bd->Time).count();
     }
     else {
-        io.DeltaTime = (float)(1.0f / 60.0f);
+        io.DeltaTime = 1.0f / 60.0f;
     }
     bd->Time = current_time;
 
@@ -503,19 +507,16 @@ static void ImGui_ImplSDL2_NewFrame(const App& app)
 
     // Our io.AddMouseViewportEvent() calls will only be valid when not capturing.
     // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rygorous, but testing for payload reduces noise and potential side-effects.
-    if (bd->MouseCanReportHoveredViewport && ImGui::GetDragDropPayload() == nullptr)
+    if (bd->MouseCanReportHoveredViewport && ImGui::GetDragDropPayload() == nullptr) {
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
-    else
+    }
+    else {
         io.BackendFlags &= ~ImGuiBackendFlags_HasMouseHoveredViewport;
+    }
 
     ImGui_ImplSDL2_UpdateMouseData();
     ImGui_ImplSDL2_UpdateMouseCursor();
 }
-
-// NOLINTEND
-
-
-// CONTEXT BIT
 
 namespace
 {
