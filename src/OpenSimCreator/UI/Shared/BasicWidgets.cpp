@@ -1387,9 +1387,8 @@ void osc::DrawUndoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ui::draw_button(OSC_ICON_UNDO))
-    {
-        ActionUndoCurrentlyEditedModel(model);
+    if (ui::draw_button(OSC_ICON_UNDO)) {
+        model.doUndo();
     }
 
     ui::pop_item_flags(itemFlagsPushed);
@@ -1410,9 +1409,8 @@ void osc::DrawRedoButton(UndoableModelStatePair& model)
         ++styleVarsPushed;
     }
 
-    if (ui::draw_button(OSC_ICON_REDO))
-    {
-        ActionRedoCurrentlyEditedModel(model);
+    if (ui::draw_button(OSC_ICON_REDO)) {
+        model.doRedo();
     }
 
     ui::pop_item_flags(itemFlagsPushed);
@@ -1501,9 +1499,8 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
     {
         float scaleFactor = model.getFixupScaleFactor();
         ui::set_next_item_width(ui::calc_text_size("0.00000").x);
-        if (ui::draw_float_input("##scaleinput", &scaleFactor))
-        {
-            ActionSetModelSceneScaleFactorTo(model, scaleFactor);
+        if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
+            model.setFixupScaleFactor(scaleFactor);
         }
     }
     ui::pop_style_var();

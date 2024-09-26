@@ -391,6 +391,7 @@ add_library(oscar STATIC
     Utils/CStringView.h
     Utils/DefaultConstructOnCopy.h
     Utils/EnumHelpers.h
+    Utils/ExceptionHelpers.h
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.h
     Utils/FilenameExtractor.h
@@ -452,7 +453,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-)
+ "Utils/ExceptionHelpers.cpp")
 
 target_include_directories(oscar PUBLIC
 

@@ -10,6 +10,7 @@
 #include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
+#include <OpenSimCreator/UI/PerformanceAnalyzerTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <oscar/Platform/IconCodepoints.h>
@@ -19,6 +20,23 @@
 
 #include <memory>
 #include <utility>
+
+using namespace osc;
+
+namespace
+{
+    bool ActionSimulateAgainstAllIntegrators(
+        const ParentPtr<IMainUIStateAPI>& parent,
+        const UndoableModelStatePair& uim)
+    {
+        parent->add_and_select_tab<PerformanceAnalyzerTab>(
+            parent,
+            BasicModelStatePair{uim},
+            parent->getSimulationParams()
+        );
+        return true;
+    }
+}
 
 class osc::ModelEditorMainMenu::Impl final {
 public:
@@ -50,12 +68,12 @@ private:
         {
             if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
             {
-                ActionUndoCurrentlyEditedModel(*m_Model);
+                m_Model->doUndo();
             }
 
             if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
             {
-                ActionRedoCurrentlyEditedModel(*m_Model);
+                m_Model->doRedo();
             }
 
             ui::draw_separator();

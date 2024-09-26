@@ -91,6 +91,7 @@ add_executable(testoscar
     Utils/TestConversion.cpp
     Utils/TestCStringView.cpp
     Utils/TestEnumHelpers.cpp
+    Utils/TestExceptionHelpers.cpp
     Utils/TestFileChangePoller.cpp
     Utils/TestFilenameExtractor.cpp
     Utils/TestHashHelpers.cpp

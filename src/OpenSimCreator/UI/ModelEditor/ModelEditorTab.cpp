@@ -326,13 +326,13 @@ private:
     bool onKeydownEvent(const KeyEvent& e)
     {
         if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
-            // Ctrl+Shift+Z : undo focused model
-            ActionRedoCurrentlyEditedModel(*m_Model);
+            // Ctrl+Shift+Z : redo focused model
+            m_Model->doRedo();
             return true;
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
             // Ctrl+Z: undo focused model
-            ActionUndoCurrentlyEditedModel(*m_Model);
+            m_Model->doUndo();
             return true;
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::R)) {
@@ -341,7 +341,7 @@ private:
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
             // Ctrl+A: clear selection
-            ActionClearSelectionFromEditedModel(*m_Model);
+            m_Model->clearSelected();
             return true;
         }
         else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {

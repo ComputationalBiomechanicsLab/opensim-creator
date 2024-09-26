@@ -837,7 +837,7 @@ void osc::UndoableModelStatePair::loadModel(const std::filesystem::path& p)
     m_Impl->loadModel(p);
 }
 
-void osc::UndoableModelStatePair::setModelVersion(UID version)
+void osc::UndoableModelStatePair::implSetModelVersion(UID version)
 {
     m_Impl->setModelVersion(version);
 }

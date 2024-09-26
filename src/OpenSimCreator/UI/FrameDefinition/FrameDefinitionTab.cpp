@@ -965,14 +965,12 @@ namespace
         {
             if (ui::begin_menu("Edit"))
             {
-                if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", {}, false, m_Model->canUndo()))
-                {
-                    ActionUndoCurrentlyEditedModel(*m_Model);
+                if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", {}, false, m_Model->canUndo())) {
+                    m_Model->doUndo();
                 }
 
-                if (ui::draw_menu_item(OSC_ICON_REDO " Redo", {}, false, m_Model->canRedo()))
-                {
-                    ActionRedoCurrentlyEditedModel(*m_Model);
+                if (ui::draw_menu_item(OSC_ICON_REDO " Redo", {}, false, m_Model->canRedo())) {
+                    m_Model->doRedo();
                 }
                 ui::end_menu();
             }
@@ -1114,12 +1112,12 @@ private:
     {
         if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo
-            ActionRedoCurrentlyEditedModel(*m_Model);
+            m_Model->doRedo();
             return true;
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
             // Ctrl+Z: undo
-            ActionUndoCurrentlyEditedModel(*m_Model);
+            m_Model->doUndo();
             return true;
         }
         else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {

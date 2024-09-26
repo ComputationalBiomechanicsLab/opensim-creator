@@ -11,6 +11,7 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/DefaultConstructOnCopy.h>
 #include <oscar/Utils/EnumHelpers.h>
+#include <oscar/Utils/ExceptionHelpers.h>
 #include <oscar/Utils/FileChangePoller.h>
 #include <oscar/Utils/FilenameExtractor.h>
 #include <oscar/Utils/FilesystemHelpers.h>

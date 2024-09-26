@@ -93,7 +93,6 @@ namespace osc
         void setModel(std::unique_ptr<OpenSim::Model>);
         void resetModel();
         void loadModel(const std::filesystem::path&);
-        void setModelVersion(UID);
 
         SimTK::State& updState();
 
@@ -107,6 +106,7 @@ namespace osc
         void implCommit(std::string_view) final;
 
         UID implGetModelVersion() const final;
+        void implSetModelVersion(UID) final;
         UID implGetStateVersion() const final;
 
         float implGetFixupScaleFactor() const final;

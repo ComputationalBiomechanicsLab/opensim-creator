@@ -23,23 +23,23 @@ namespace osc
     public:
         virtual ~IModelStatePair() noexcept = default;
 
-        const OpenSim::Model& getModel() const
-        {
-            return implGetModel();
-        }
-        UID getModelVersion() const
-        {
-            return implGetModelVersion();
-        }
+        const OpenSim::Model& getModel() const { return implGetModel(); }
 
-        const SimTK::State& getState() const
-        {
-            return implGetState();
-        }
-        UID getStateVersion() const
-        {
-            return implGetStateVersion();
-        }
+        // Implicitly converts a `const IModelStatePair&` into a `const OpenSim::Model&`
+        operator const OpenSim::Model& () const { return getModel(); }
+
+        const SimTK::State& getState() const { return implGetState(); }
+
+        bool isReadonly() const { return not implCanUpdModel(); }
+        bool canUpdModel() const { return implCanUpdModel(); }
+        OpenSim::Model& updModel() { return implUpdModel(); }
+
+        // commit current scratch state to storage
+        void commit(std::string_view commitMessage) { implCommit(commitMessage); }
+
+        UID getModelVersion() const { return implGetModelVersion(); }
+        void setModelVersion(UID id) { implSetModelVersion(id); }
+        UID getStateVersion() const { return implGetStateVersion(); }
 
         const OpenSim::Component* getSelected() const
         {
@@ -51,6 +51,8 @@ namespace osc
         {
             return dynamic_cast<const T*>(getSelected());
         }
+
+        void clearSelected() { setSelected(nullptr); }
 
         const OpenSim::Component* getHovered() const
         {
@@ -77,12 +79,6 @@ namespace osc
         {
             implSetFixupScaleFactor(newScaleFactor);
         }
-
-        bool canUpdModel() const { return implCanUpdModel(); }
-        OpenSim::Model& updModel() { return implUpdModel(); }
-
-        // commit current scratch state to storage
-        void commit(std::string_view commitMessage) { implCommit(commitMessage); }
 
     private:
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
@@ -117,6 +113,9 @@ namespace osc
             // provides a way of knowing when it doesn't
             return UID{};
         }
+
+        // Implementors may use this to manually set the version of a model (sometimes useful for caching)
+        virtual void implSetModelVersion(UID) {}
 
         // Implementors may return a  `UID` that uniquely identifies the current state of the state.
         virtual UID implGetStateVersion() const

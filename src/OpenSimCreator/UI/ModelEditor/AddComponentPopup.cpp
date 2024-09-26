@@ -22,6 +22,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/ExceptionHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <SimTKcommon/SmallMatrix.h>
 
@@ -483,9 +484,14 @@ private:
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv)
             {
-                if (ActionAddComponentToModel(*m_Uum, std::move(rv), m_CurrentErrors))
-                {
-                    request_close();
+                try {
+                    if (ActionAddComponentToModel(*m_Uum, std::move(rv))) {
+                        request_close();
+                    }
+                }
+                catch (const std::exception& ex) {
+                    m_CurrentErrors = potentially_nested_exception_to_string(ex);
+                    m_Uum->rollback();
                 }
             }
         }
