@@ -1,70 +1,49 @@
 #include "PreviewExperimentalDataTab.h"
 
 #include <OpenSimCreator/Documents/ExperimentalData/AnnotatedMotion.h>
-#include <OpenSimCreator/Documents/ExperimentalData/DataPointType.h>
-#include <OpenSimCreator/Documents/ExperimentalData/DataSeriesAnnotation.h>
 #include <OpenSimCreator/Documents/ExperimentalData/FileBackedStorage.h>
-#include <OpenSimCreator/Documents/ExperimentalData/StorageSchema.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/IPopupAPI.h>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
-#include <OpenSim/Common/MarkerData.h>
-#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
-#include <oscar/Graphics/Scene/SceneDecoration.h>
-#include <oscar/Graphics/Scene/SceneDecorationFlags.h>
-#include <oscar/Graphics/Scene/SceneHelpers.h>
-#include <oscar/Graphics/Scene/SceneRenderer.h>
-#include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Maths.h>
+#include <oscar/Maths/ClosedInterval.h>
+#include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/oscimgui.h>
-#include <oscar/UI/IconCache.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Tabs/StandardTabImpl.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
-#include <oscar/Utils/Algorithms.h>
-#include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/StringHelpers.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar/UI/IconCache.h>
+#include <oscar/UI/oscimgui.h>
+#include <oscar/Utils/ParentPtr.h>
 
-#include <algorithm>
-#include <array>
-#include <cstddef>
 #include <filesystem>
-#include <functional>
-#include <initializer_list>
-#include <iostream>
 #include <memory>
-#include <ranges>
-#include <regex>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
 #include <span>
-#include <sstream>
-#include <string>
-#include <utility>
-
-namespace rgs = std::ranges;
+#include <vector>
 
 using namespace osc;
-using namespace osc::literals;
 
 // Top-level UI state that's share-able between various panels in the
 // preview experimental data UI.
@@ -291,25 +270,10 @@ public:
         );
     }
 private:
-    void impl_on_mount() final
-    {
-        m_PanelManager->on_mount();
-    }
-
-    void impl_on_unmount() final
-    {
-        m_PanelManager->on_unmount();
-    }
-
-    void impl_on_tick() final
-    {
-        m_PanelManager->on_tick();
-    }
-
-    void impl_on_draw_main_menu() final
-    {
-        m_WindowMenu.on_draw();
-    }
+    void impl_on_mount() final { m_PanelManager->on_mount(); }
+    void impl_on_unmount() final { m_PanelManager->on_unmount(); }
+    void impl_on_tick() final { m_PanelManager->on_tick(); }
+    void impl_on_draw_main_menu() final { m_WindowMenu.on_draw(); }
 
     void impl_on_draw() final
     {
@@ -331,14 +295,11 @@ private:
         }
     }
 
-    void implPushPopup(std::unique_ptr<IPopup>) final
-    {
-    }
+    void implPushPopup(std::unique_ptr<IPopup>) final {}
 
     void drawToolbar()
     {
-        if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f}))
-        {
+        if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f})) {
             // load/reload etc.
             {
                 if (ui::draw_button("load model")) {
