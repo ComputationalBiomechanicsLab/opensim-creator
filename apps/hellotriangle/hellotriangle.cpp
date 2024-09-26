@@ -261,7 +261,7 @@ void main()
     private:
         void impl_on_mount() override
         {
-            ui::context::init();
+            ui::context::init(App::upd());
         }
 
         void impl_on_unmount() override
@@ -278,7 +278,7 @@ void main()
         {
             App::upd().clear_screen();
 
-            ui::context::on_start_new_frame();
+            ui::context::on_start_new_frame(App::upd());
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({

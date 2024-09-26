@@ -49,6 +49,16 @@
 namespace sdl = osc::sdl;
 using namespace osc;
 
+template<>
+struct osc::Converter<SDL_Rect, Rect> final {
+    Rect operator()(const SDL_Rect& rect) const
+    {
+        const Vec2 top_left{rect.x, rect.y};
+        const Vec2 dimensions{rect.w, rect.h};
+        return {top_left, top_left + dimensions};
+    }
+};
+
 namespace
 {
     App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
@@ -411,6 +421,35 @@ public:
     void request_quit()
     {
         quit_requested_ = true;
+    }
+
+    std::vector<Screen> screens() const
+    {
+        std::vector<Screen> rv;
+
+        const int display_count = SDL_GetNumVideoDisplays();
+        rv.reserve(display_count);
+        for (int n = 0; n < display_count; n++) {
+            SDL_Rect display_bounds;
+            SDL_GetDisplayBounds(n, &display_bounds);
+
+
+#if SDL_HAS_USABLE_DISPLAY_BOUNDS
+            SDL_Rect usable_bounds;
+            SDL_GetDisplayUsableBounds(n, &r);
+#else
+            SDL_Rect usable_bounds = display_bounds;
+#endif
+
+            float dpi = 96.0f;
+#if SDL_HAS_PER_MONITOR_DPI
+            SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr);
+#endif
+
+            rv.emplace_back(to<Rect>(display_bounds), to<Rect>(usable_bounds), dpi);
+        }
+
+        return rv;
     }
 
     Vec2 main_window_dimensions() const
@@ -903,6 +942,11 @@ void osc::App::show(std::unique_ptr<IScreen> s)
 void osc::App::request_transition(std::unique_ptr<IScreen> s)
 {
     impl_->request_transition(std::move(s));
+}
+
+std::vector<Screen> osc::App::screens() const
+{
+    return impl_->screens();
 }
 
 void osc::App::request_quit()

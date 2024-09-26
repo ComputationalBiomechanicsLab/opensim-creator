@@ -149,7 +149,7 @@ public:
             }
         }
 
-        ui::context::init();
+        ui::context::init(App::upd());
     }
 
     void on_unmount()
@@ -313,7 +313,7 @@ public:
             App::upd().clear_screen();
         }
 
-        ui::context::on_start_new_frame();
+        ui::context::on_start_new_frame(App::upd());
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");
@@ -329,7 +329,7 @@ public:
             m_ActiveTabID = UID::empty();
 
             ui::context::shutdown();
-            ui::context::init();
+            ui::context::init(App::upd());
             App::upd().request_redraw();
             m_ImguiWasAggressivelyReset = false;
 

@@ -1,10 +1,10 @@
 #include "ui_context.h"
 
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
-#include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
@@ -15,6 +15,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Perf.h>
 
+#define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
 #include <ImGuizmo.h>
 #include <implot.h>
@@ -30,6 +31,7 @@
 
 using namespace osc;
 namespace rgs = std::ranges;
+namespace views = std::views;
 
 // SDL2 BIT
 //
@@ -157,62 +159,52 @@ namespace
         // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
         bool                                             MouseCanReportHoveredViewport = can_mouse_report_hovered_viewport(MouseCanUseGlobalState);
     };
-}
 
-// Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
-// It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
-// FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
-// FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
-static BackendData* ImGui_ImplSDL2_GetBackendData()
-{
-    return ImGui::GetCurrentContext() ? (BackendData*)ImGui::GetIO().BackendPlatformUserData : nullptr;
-}
-
-// FIXME: Note that doesn't update with DPI/Scaling change only as SDL2 doesn't have an event for it (SDL3 has).
-static void ImGui_ImplSDL2_UpdateMonitors()
-{
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
-    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-    platform_io.Monitors.resize(0);
-    bd->WantUpdateMonitors = false;
-    int display_count = SDL_GetNumVideoDisplays();
-    for (int n = 0; n < display_count; n++)
+    // Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
+    // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
+    // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
+    // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
+    BackendData* get_ui_backend_data()
     {
-        // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
-        ImGuiPlatformMonitor monitor;
-        SDL_Rect r;
-        SDL_GetDisplayBounds(n, &r);
-        monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-        monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-#if SDL_HAS_USABLE_DISPLAY_BOUNDS
-        SDL_GetDisplayUsableBounds(n, &r);
-        monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
-        monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
-#endif
-#if SDL_HAS_PER_MONITOR_DPI
-        // FIXME-VIEWPORT: On MacOS SDL reports actual monitor DPI scale, ignoring OS configuration. We may want to set
-        //  DpiScale to cocoa_window.backingScaleFactor here.
-        float dpi = 0.0f;
-        if (!SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr))
-            monitor.DpiScale = dpi / 96.0f;
-#endif
-        monitor.PlatformHandle = (void*)(intptr_t)n;
-        platform_io.Monitors.push_back(monitor);
+        return ImGui::GetCurrentContext() ? (BackendData*)ImGui::GetIO().BackendPlatformUserData : nullptr;
+    }
+
+    void update_monitors(const App& app)
+    {
+        const auto screens = app.screens();
+
+        get_ui_backend_data()->WantUpdateMonitors = false;
+        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+        platform_io.Monitors.clear();
+        platform_io.Monitors.reserve(static_cast<int>(screens.size()));
+        for (size_t i = 0; i < screens.size(); ++i) {
+            const Screen& screen = screens[i];
+
+            ImGuiPlatformMonitor monitor;
+            monitor.MainPos = screen.bounds().p1;
+            monitor.MainSize = dimensions_of(screen.bounds());
+            monitor.WorkPos = screen.usable_bounds().p1;
+            monitor.WorkSize = dimensions_of(screen.usable_bounds());
+            monitor.DpiScale = screen.physical_dpi() / 96.0f;
+            monitor.PlatformHandle = reinterpret_cast<void*>(i);
+
+            platform_io.Monitors.push_back(monitor);
+        }
+    }
+
+    const char* ui_get_clipboard_text(void*)
+    {
+        BackendData* bd = get_ui_backend_data();
+        bd->ClipboardText = get_clipboard_text();
+        return bd->ClipboardText.c_str();
+    }
+
+    void ui_set_clipboard_text(void*, const char* text)
+    {
+        set_clipboard_text(text);
     }
 }
 
-// Functions
-static const char* ImGui_ImplSDL2_GetClipboardText(void*)
-{
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
-    bd->ClipboardText = get_clipboard_text();
-    return bd->ClipboardText.c_str();
-}
-
-static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
-{
-    set_clipboard_text(text);
-}
 
 // Note: native IME will only display if user calls SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1") _before_ SDL_CreateWindow().
 static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData* data)
@@ -236,7 +228,7 @@ static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImG
 static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
 {
     ImGuiIO& io = ImGui::GetIO();
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
+    BackendData* bd = get_ui_backend_data();
 
     switch (e.type()) {
     case EventType::MouseMove: {
@@ -353,8 +345,8 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
     io.BackendPlatformName = "imgui_impl_sdl2";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
-    io.SetClipboardTextFn = ImGui_ImplSDL2_SetClipboardText;
-    io.GetClipboardTextFn = ImGui_ImplSDL2_GetClipboardText;
+    io.SetClipboardTextFn = ui_set_clipboard_text;
+    io.GetClipboardTextFn = ui_get_clipboard_text;
     io.ClipboardUserData = nullptr;
     io.PlatformSetImeDataFn = ImGui_ImplSDL2_PlatformSetImeData;
 #ifdef __EMSCRIPTEN__
@@ -380,7 +372,7 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
 
 static void ImGui_ImplSDL2_Shutdown()
 {
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
+    BackendData* bd = get_ui_backend_data();
     OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
     delete bd;
 
@@ -393,7 +385,7 @@ static void ImGui_ImplSDL2_Shutdown()
 // This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
 static void ImGui_ImplSDL2_UpdateMouseData()
 {
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
+    BackendData* bd = get_ui_backend_data();
     ImGuiIO& io = ImGui::GetIO();
 
     // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
@@ -459,7 +451,7 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange)
         return;
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
+    BackendData* bd = get_ui_backend_data();
 
     ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
     if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None)
@@ -479,9 +471,9 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     }
 }
 
-static void ImGui_ImplSDL2_NewFrame()
+static void ImGui_ImplSDL2_NewFrame(const App& app)
 {
-    BackendData* bd = ImGui_ImplSDL2_GetBackendData();
+    BackendData* bd = get_ui_backend_data();
     IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplSDL2_Init()?");
     ImGuiIO& io = ImGui::GetIO();
 
@@ -498,8 +490,9 @@ static void ImGui_ImplSDL2_NewFrame()
         io.DisplayFramebufferScale = ImVec2((float)display_w / static_cast<float>(w), (float)display_h / static_cast<float>(h));
 
     // Update monitors
-    if (bd->WantUpdateMonitors)
-        ImGui_ImplSDL2_UpdateMonitors();
+    if (bd->WantUpdateMonitors) {
+        update_monitors(app);
+    }
 
     // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
     // (Accept SDL_GetPerformanceCounter() not returning a monotonically increasing value. Happens in VMs and Emscripten, see #6189, #6114, #3644)
@@ -555,12 +548,13 @@ namespace
     }
 
     void add_resource_as_font(
+        ResourceLoader& loader,
         const ImFontConfig& config,
         ImFontAtlas& atlas,
         const ResourcePath& path,
         const ImWchar* glyph_ranges = nullptr)
     {
-        const std::string base_font_data = App::slurp(path);
+        const std::string base_font_data = loader.slurp(path);
         const std::span<const char> data_including_nul_terminator{base_font_data.data(), base_font_data.size() + 1};
 
         atlas.AddFontFromMemoryTTF(
@@ -574,7 +568,7 @@ namespace
 #endif
 }
 
-void osc::ui::context::init()
+void osc::ui::context::init(App& app)
 {
     // ensure ImGui uses the same allocator as the rest of
     // our (C++ stdlib) application
@@ -600,8 +594,8 @@ void osc::ui::context::init()
     float dpi_scale_factor = [&]()
     {
         // if the user explicitly enabled high_dpi_mode...
-        if (auto v = App::settings().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
-            return App::get().main_window_dpi() / 96.0f;
+        if (auto v = app.get_config().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
+            return app.main_window_dpi() / 96.0f;
         }
         else {
             return 1.0f;  // else: assume it's an unscaled 96dpi screen
@@ -609,12 +603,12 @@ void osc::ui::context::init()
     }();
 
     {
-        const std::string base_ini_data = App::slurp("imgui_base_config.ini");
+        const std::string base_ini_data = app.slurp("imgui_base_config.ini");
         ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
 
         // CARE: the reason this filepath is `static` is because ImGui requires that
         // the string outlives the ImGui context
-        static const std::string s_user_imgui_ini_file_path = (App::get().user_data_directory() / "imgui.ini").string();
+        static const std::string s_user_imgui_ini_file_path = (app.user_data_directory() / "imgui.ini").string();
 
         ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
         io.IniFilename = s_user_imgui_ini_file_path.c_str();
@@ -624,7 +618,7 @@ void osc::ui::context::init()
     base_config.SizePixels = dpi_scale_factor*15.0f;
     base_config.PixelSnapH = true;
     base_config.FontDataOwnedByAtlas = true;
-    add_resource_as_font(base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+    add_resource_as_font(app.resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
     // add FontAwesome icon support
     {
@@ -633,12 +627,12 @@ void osc::ui::context::init()
         config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
         config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
         static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-        add_resource_as_font(config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
+        add_resource_as_font(app.resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
     }
 #endif
 
     // init ImGui for SDL2 /w OpenGL
-    ImGui_ImplSDL2_Init(App::upd().upd_underlying_window());
+    ImGui_ImplSDL2_Init(app.upd_underlying_window());
 
     // init ImGui for OpenGL
     graphics_backend::init();
@@ -671,10 +665,10 @@ bool osc::ui::context::on_event(Event& ev)
     return false;
 }
 
-void osc::ui::context::on_start_new_frame()
+void osc::ui::context::on_start_new_frame(App& app)
 {
     graphics_backend::on_start_new_frame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplSDL2_NewFrame(app);
     ImGui::NewFrame();
 
     // extra parts

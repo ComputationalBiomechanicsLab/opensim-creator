@@ -12,7 +12,7 @@ public:
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
 
-        ui::context::init();  // boot up 2D ui support (ImGui, plotting, etc.)
+        ui::context::init(App::upd());  // boot up 2D ui support (ImGui, plotting, etc.)
     }
 
     void on_unmount()
@@ -53,7 +53,7 @@ public:
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)
 
-        ui::context::on_start_new_frame();  // prepare the 2D UI for drawing a new frame
+        ui::context::on_start_new_frame(App::upd());  // prepare the 2D UI for drawing a new frame
 
         App::upd().clear_screen();  // set app window bg color
 

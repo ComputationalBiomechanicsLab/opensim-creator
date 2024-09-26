@@ -29,10 +29,10 @@ namespace
 TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPopup)
 {
     OpenSimCreatorApp app;
-    ui::context::init();
+    ui::context::init(app);
     for (const auto& entry : GetAllRegisteredComponents()) {
         try {
-            ui::context::on_start_new_frame();
+            ui::context::on_start_new_frame(app);
             NullPopupAPI api;
             auto model = std::make_shared<UndoableModelStatePair>();
             AddComponentPopup popup{"popupname", &api, model, entry.instantiate()};

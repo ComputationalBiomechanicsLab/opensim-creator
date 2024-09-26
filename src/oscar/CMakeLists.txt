@@ -295,6 +295,7 @@ add_library(oscar STATIC
     Platform/ResourcePath.h
     Platform/ResourceStream.cpp
     Platform/ResourceStream.h
+    Platform/Screen.h
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
 

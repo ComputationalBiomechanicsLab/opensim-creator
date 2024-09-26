@@ -399,17 +399,17 @@ namespace
         }
 
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage) :
-            m_Storage{std::move(storage)},
-            m_Schema{StorageSchema::parse(*m_Storage)}
+            m_Storage{std::move(storage)}
         {
             setName(m_Storage->getName());
 
-            for (const auto& annotation : m_Schema.annotations()) {
+            const auto schema = StorageSchema::parse(*m_Storage);
+            for (const auto& annotation : schema.annotations()) {
                 addComponent(std::make_unique<DataSeries>(m_Storage, annotation).release());
             }
         }
+
         std::shared_ptr<OpenSim::Storage> m_Storage;
-        StorageSchema m_Schema;
     };
 }
 

@@ -24,5 +24,6 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Platform/ResourceStream.h>
+#include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenshotAnnotation.h>

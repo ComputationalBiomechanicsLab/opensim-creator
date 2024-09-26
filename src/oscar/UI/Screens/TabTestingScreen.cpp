@@ -27,7 +27,7 @@ private:
     void impl_on_mount() final
     {
         current_tab_ = registry_entry_.construct_tab(ParentPtr<Impl>{shared_from_this()});
-        ui::context::init();
+        ui::context::init(App::upd());
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();
     }
@@ -54,7 +54,7 @@ private:
     void impl_on_draw() final
     {
         App::upd().clear_screen();
-        ui::context::on_start_new_frame();
+        ui::context::on_start_new_frame(App::upd());
         current_tab_->on_draw();
         ui::context::render();
 

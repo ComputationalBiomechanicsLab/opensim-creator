@@ -7,6 +7,7 @@
 #include <oscar/Platform/AppMainLoopStatus.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourceStream.h>
+#include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
 
 #include <concepts>
@@ -23,10 +24,11 @@
 #include <vector>
 
 struct SDL_Window;
+namespace osc { class App; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
 namespace osc { class IScreen; }
-namespace osc::ui::context { void init(); }
+namespace osc::ui::context { void init(App&); }
 
 namespace osc
 {
@@ -159,6 +161,10 @@ namespace osc
         // application rendering loop)
         void request_quit();
 
+        // returns a sequence of all screens associated with the windowing system that
+        // this `App` is connected to.
+        std::vector<Screen> screens() const;
+
         // returns main window's dimensions
         Vec2 main_window_dimensions() const;
 
@@ -282,7 +288,7 @@ namespace osc
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
 
         // HACK: the 2D ui currently needs to access this
-        friend void ui::context::init();
+        friend void ui::context::init(App&);
         SDL_Window* upd_underlying_window();
 
         class Impl;

@@ -23,7 +23,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
-#include <oscar/Platform/App.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
