@@ -24,8 +24,12 @@
 
 using namespace osc;
 
-void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
+void osc::fd::ActionPromptUserToAddMeshFiles(IModelStatePair& model)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     const std::vector<std::filesystem::path> meshPaths =
         prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
     if (meshPaths.empty())
@@ -36,12 +40,10 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
     // create a human-readable commit message
     const std::string commitMessage = [&meshPaths]()
     {
-        if (meshPaths.size() == 1)
-        {
+        if (meshPaths.size() == 1) {
             return GenerateAddedSomethingCommitMessage(meshPaths.front().filename().string());
         }
-        else
-        {
+        else {
             std::stringstream ss;
             ss << "added " << meshPaths.size() << " meshes";
             return std::move(ss).str();
@@ -50,8 +52,7 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 
     // perform the model mutation
     OpenSim::Model& mutableModel = model.updModel();
-    for (const std::filesystem::path& meshPath : meshPaths)
-    {
+    for (const std::filesystem::path& meshPath : meshPaths) {
         const std::string meshName = meshPath.filename().replace_extension().string();
 
         // add an offset frame that is connected to ground - this will become
@@ -79,16 +80,16 @@ void osc::fd::ActionPromptUserToAddMeshFiles(UndoableModelStatePair& model)
 }
 
 std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel(
-    const UndoableModelStatePair& sceneModel)
+    const OpenSim::Model& sceneModel)
 {
-    auto modelCopy = std::make_unique<OpenSim::Model>(sceneModel.getModel());
+    auto modelCopy = std::make_unique<OpenSim::Model>(sceneModel);
     modelCopy->upd_ComponentSet().clearAndDestroy();
     return std::make_unique<UndoableModelStatePair>(std::move(modelCopy));
 }
 
 void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     const ParentPtr<ITabHost>& tabHost,
-    const UndoableModelStatePair& model)
+    const OpenSim::Model& model)
 {
     auto maybeMainUIStateAPI = dynamic_parent_cast<IMainUIStateAPI>(tabHost);
     if (!maybeMainUIStateAPI)

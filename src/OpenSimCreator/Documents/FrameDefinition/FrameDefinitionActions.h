@@ -13,60 +13,60 @@ namespace OpenSim { class Point; }
 namespace osc::fd { class CrossProductEdge; }
 namespace osc::fd { class PointToPointEdge; }
 namespace osc::fd { class Edge; }
+namespace osc { class IModelStatePair; }
 namespace osc { class ITabHost; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc::fd
 {
     void ActionAddSphereInMeshFrame(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const OpenSim::Mesh&,
         const std::optional<Vec3>& maybeClickPosInGround
     );
 
     void ActionAddOffsetFrameInMeshFrame(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const OpenSim::Mesh&,
         const std::optional<Vec3>& maybeClickPosInGround
     );
 
     void ActionAddPointToPointEdge(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const OpenSim::Point& ,
         const OpenSim::Point&
     );
 
     void ActionAddMidpoint(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const OpenSim::Point&,
         const OpenSim::Point&
     );
 
     void ActionAddCrossProductEdge(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const Edge&,
         const Edge&
     );
 
     void ActionSwapSocketAssignments(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         OpenSim::ComponentPath componentAbsPath,
         std::string firstSocketName,
         std::string secondSocketName
     );
 
     void ActionSwapPointToPointEdgeEnds(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const PointToPointEdge&
     );
 
     void ActionSwapCrossProductEdgeOperands(
-        UndoableModelStatePair&,
+        IModelStatePair&,
         const CrossProductEdge&
     );
 
     void ActionAddFrame(
-        const std::shared_ptr<UndoableModelStatePair>&,
+        const std::shared_ptr<IModelStatePair>&,
         const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis,
         const Edge& otherEdge,
@@ -74,7 +74,7 @@ namespace osc::fd
     );
 
     void ActionCreateBodyFromFrame(
-        const std::shared_ptr<UndoableModelStatePair>&,
+        const std::shared_ptr<IModelStatePair>&,
         const OpenSim::ComponentPath& frameAbsPath,
         const OpenSim::ComponentPath& meshAbsPath,
         const OpenSim::ComponentPath& jointFrameAbsPath,

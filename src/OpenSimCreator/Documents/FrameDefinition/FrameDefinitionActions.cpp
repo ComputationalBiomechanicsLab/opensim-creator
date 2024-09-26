@@ -6,7 +6,7 @@
 #include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <Simbody.h>
@@ -20,15 +20,20 @@
 
 #include <memory>
 #include <optional>
+#include <stdexcept>
 #include <sstream>
 #include <string>
 #include <utility>
 
 void osc::fd::ActionAddSphereInMeshFrame(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const OpenSim::Mesh& mesh,
     const std::optional<Vec3>& maybeClickPosInGround)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     // if the caller requests a location via a click, set the position accordingly
     const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
@@ -61,10 +66,14 @@ void osc::fd::ActionAddSphereInMeshFrame(
 }
 
 void osc::fd::ActionAddOffsetFrameInMeshFrame(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const OpenSim::Mesh& mesh,
     const std::optional<Vec3>& maybeClickPosInGround)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     // if the caller requests a location via a click, set the position accordingly
     const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
         CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
@@ -97,10 +106,14 @@ void osc::fd::ActionAddOffsetFrameInMeshFrame(
 }
 
 void osc::fd::ActionAddPointToPointEdge(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const OpenSim::Point& pointA,
     const OpenSim::Point& pointB)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     const std::string edgeName = GenerateSceneElementName("edge_");
     const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
@@ -123,10 +136,14 @@ void osc::fd::ActionAddPointToPointEdge(
 }
 
 void osc::fd::ActionAddMidpoint(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const OpenSim::Point& pointA,
     const OpenSim::Point& pointB)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     const std::string midpointName = GenerateSceneElementName("midpoint_");
     const std::string commitMessage = GenerateAddedSomethingCommitMessage(midpointName);
 
@@ -149,10 +166,14 @@ void osc::fd::ActionAddMidpoint(
 }
 
 void osc::fd::ActionAddCrossProductEdge(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const Edge& edgeA,
     const Edge& edgeB)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     const std::string edgeName = GenerateSceneElementName("crossproduct_");
     const std::string commitMessage = GenerateAddedSomethingCommitMessage(edgeName);
 
@@ -175,11 +196,15 @@ void osc::fd::ActionAddCrossProductEdge(
 }
 
 void osc::fd::ActionSwapSocketAssignments(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     OpenSim::ComponentPath componentAbsPath,
     std::string firstSocketName,
     std::string secondSocketName)
 {
+    if (model.isReadonly()) {
+        return;
+    }
+
     // create commit message
     const std::string commitMessage = [&componentAbsPath, &firstSocketName, &secondSocketName]()
     {
@@ -191,22 +216,19 @@ void osc::fd::ActionSwapSocketAssignments(
     // look things up in the mutable model
     OpenSim::Model& mutModel = model.updModel();
     OpenSim::Component* const component = FindComponentMut(mutModel, componentAbsPath);
-    if (!component)
-    {
+    if (not component) {
         log_error("failed to find %s in model, skipping action", componentAbsPath.toString().c_str());
         return;
     }
 
     OpenSim::AbstractSocket* const firstSocket = FindSocketMut(*component, firstSocketName);
-    if (!firstSocket)
-    {
+    if (not firstSocket) {
         log_error("failed to find socket %s in %s, skipping action", firstSocketName.c_str(), component->getName().c_str());
         return;
     }
 
     OpenSim::AbstractSocket* const secondSocket = FindSocketMut(*component, secondSocketName);
-    if (!secondSocket)
-    {
+    if (not secondSocket) {
         log_error("failed to find socket %s in %s, skipping action", secondSocketName.c_str(), component->getName().c_str());
         return;
     }
@@ -223,26 +245,30 @@ void osc::fd::ActionSwapSocketAssignments(
 }
 
 void osc::fd::ActionSwapPointToPointEdgeEnds(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const PointToPointEdge& edge)
 {
     ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_point", "second_point");
 }
 
 void osc::fd::ActionSwapCrossProductEdgeOperands(
-    UndoableModelStatePair& model,
+    IModelStatePair& model,
     const CrossProductEdge& edge)
 {
     ActionSwapSocketAssignments(model, edge.getAbsolutePath(), "first_edge", "second_edge");
 }
 
 void osc::fd::ActionAddFrame(
-    const std::shared_ptr<UndoableModelStatePair>& model,
+    const std::shared_ptr<IModelStatePair>& model,
     const Edge& firstEdge,
     CoordinateDirection firstEdgeAxis,
     const Edge& otherEdge,
     const OpenSim::Point& origin)
 {
+    if (model->isReadonly()) {
+        return;
+    }
+
     const std::string frameName = GenerateSceneElementName("frame_");
     const std::string commitMessage = GenerateAddedSomethingCommitMessage(frameName);
 
@@ -268,39 +294,39 @@ void osc::fd::ActionAddFrame(
 }
 
 void osc::fd::ActionCreateBodyFromFrame(
-    const std::shared_ptr<UndoableModelStatePair>& model,
+    const std::shared_ptr<IModelStatePair>& model,
     const OpenSim::ComponentPath& frameAbsPath,
     const OpenSim::ComponentPath& meshAbsPath,
     const OpenSim::ComponentPath& jointFrameAbsPath,
     const OpenSim::ComponentPath& parentFrameAbsPath)
 {
+    if (model->isReadonly()) {
+        return;
+    }
+
     // validate external inputs
 
     log_debug("validate external inputs");
     const auto* const meshFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), frameAbsPath);
-    if (!meshFrame)
-    {
+    if (not meshFrame) {
         log_error("%s: cannot find frame: skipping body creation", frameAbsPath.toString().c_str());
         return;
     }
 
     const auto* const mesh = FindComponent<OpenSim::Mesh>(model->getModel(), meshAbsPath);
-    if (!mesh)
-    {
+    if (not mesh) {
         log_error("%s: cannot find mesh: skipping body creation", meshAbsPath.toString().c_str());
         return;
     }
 
     const auto* const jointFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), jointFrameAbsPath);
-    if (!jointFrame)
-    {
+    if (not jointFrame) {
         log_error("%s: cannot find joint frame: skipping body creation", jointFrameAbsPath.toString().c_str());
         return;
     }
 
     const auto* const parentFrame = FindComponent<OpenSim::PhysicalFrame>(model->getModel(), parentFrameAbsPath);
-    if (!parentFrame)
-    {
+    if (not parentFrame) {
         log_error("%s: cannot find parent frame: skipping body creation", parentFrameAbsPath.toString().c_str());
         return;
     }
@@ -360,8 +386,7 @@ void osc::fd::ActionCreateBodyFromFrame(
 
     // start mutating the model
     log_debug("start model mutation");
-    try
-    {
+    try {
         // CARE: store mesh path before mutatingthe model, because the mesh reference
         // may become invalidated by other model mutations
         const OpenSim::ComponentPath meshPath = GetAbsolutePath(*mesh);
@@ -393,8 +418,7 @@ void osc::fd::ActionCreateBodyFromFrame(
             RecursivelyReassignAllSockets(mutModel, *pof, meshPofRef);
             FinalizeConnections(mutModel);
 
-            if (auto* mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, GetAbsolutePathOrEmpty(pof)))
-            {
+            if (auto* mutPof = FindComponentMut<OpenSim::PhysicalOffsetFrame>(mutModel, GetAbsolutePathOrEmpty(pof))) {
                 log_debug("delete old pof");
                 TryDeleteComponentFromModel(mutModel, *mutPof);
                 InitializeModel(mutModel);
@@ -405,8 +429,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         }
 
         // delete old mesh
-        if (auto* mutMesh = FindComponentMut<OpenSim::Mesh>(mutModel, meshAbsPath))
-        {
+        if (auto* mutMesh = FindComponentMut<OpenSim::Mesh>(mutModel, meshAbsPath)) {
             log_debug("delete old mesh");
             TryDeleteComponentFromModel(mutModel, *mutMesh);
             InitializeModel(mutModel);
@@ -418,9 +441,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         model->setSelected(&bodyRef);
         model->commit(commitMessage);
     }
-    catch (const std::exception& ex)
-    {
-        log_error("error detected while trying to add a body to the model: %s", ex.what());
-        model->rollback();
+    catch (const std::exception&) {
+        std::throw_with_nested(std::runtime_error{"error detected while trying to add a body to the model"});
     }
 }
