@@ -54,6 +54,11 @@ namespace
         const std::shared_ptr<UndoableModelStatePair>& updSharedModelPtr() const { return m_Model; }
         UndoableModelStatePair& updModel() { return *m_Model; }
 
+        bool isModelLoaded() const
+        {
+            return m_Model->hasFilesystemLocation();
+        }
+
         void loadModelFile(const std::filesystem::path& p)
         {
             m_Model->setModel(std::make_unique<OpenSim::Model>(p.string()));
@@ -69,7 +74,7 @@ namespace
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
             else {
-                m_Model->updModel() = OpenSim::Model{};
+                m_Model->setModel(std::make_unique<OpenSim::Model>());
             }
 
             // if applicable, reload associated trajectory
@@ -156,8 +161,10 @@ namespace
         {
             // hide forces that are computed from the model, because it's assumed that the
             // user only wants to visualize forces that come from externally-supplied data
-            for (auto& force : m_Model->updModel().updComponentList<OpenSim::Force>()) {
-                force.set_appliesForce(false);
+            if (m_Model->getModel().countNumComponents() > 0) {
+                for (auto& force : m_Model->updModel().updComponentList<OpenSim::Force>()) {
+                    force.set_appliesForce(false);
+                }
             }
 
             // (re)load associated trajectory
@@ -309,10 +316,16 @@ private:
                 }
 
                 ui::same_line();
+                if (not m_UiState->isModelLoaded()) {
+                    ui::begin_disabled();
+                }
                 if (ui::draw_button("load model trajectory/states")) {
                     if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
                         m_UiState->loadModelTrajectoryFile(*path);
                     }
+                }
+                if (not m_UiState->isModelLoaded()) {
+                    ui::end_disabled();
                 }
 
                 ui::same_line();
@@ -320,9 +333,15 @@ private:
                     m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
                 }
 
+                if (not m_UiState->isModelLoaded()) {
+                    ui::begin_disabled();
+                }
                 ui::same_line();
                 if (ui::draw_button("load OpenSim XML")) {
                     m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
+                }
+                if (not m_UiState->isModelLoaded()) {
+                    ui::end_disabled();
                 }
 
                 ui::same_line();
