@@ -74,7 +74,7 @@ namespace
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
             else {
-                m_Model->setModel(std::make_unique<OpenSim::Model>());
+                m_Model->resetModel();
             }
 
             // if applicable, reload associated trajectory

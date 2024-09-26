@@ -604,3 +604,16 @@ TEST(OpenSimModel, ChainsOfPOFsWorkAsExpected)
     InitializeModel(m);  // OpenSim's carve-out should ensure this works
     InitializeState(m);
 }
+
+// this a sanity check for behavior that I wasn't sure about when developing a UI
+TEST(OpenSimModel, LvalueAssignmentWorksInTrivialCase)
+{
+    OpenSim::Model lhs;
+    InitializeModel(lhs);
+    InitializeState(lhs);
+    lhs = OpenSim::Model{};
+    InitializeModel(lhs);
+    InitializeState(lhs);
+
+    // (shouldn't throw)
+}

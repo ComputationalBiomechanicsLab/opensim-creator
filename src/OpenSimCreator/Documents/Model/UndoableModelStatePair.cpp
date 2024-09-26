@@ -343,6 +343,14 @@ public:
         m_Scratch = std::move(p);
     }
 
+    void resetModel()
+    {
+        UiModelStatePair p;
+        CopySelectedAndHovered(m_Scratch, p);
+        p.setFixupScaleFactor(m_Scratch.getFixupScaleFactor());
+        m_Scratch = std::move(p);
+    }
+
     void loadModel(const std::filesystem::path& path)
     {
         setModel(std::make_unique<OpenSim::Model>(path.string()));
@@ -827,6 +835,11 @@ SimTK::State& osc::UndoableModelStatePair::updState()
 void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newModel)
 {
     m_Impl->setModel(std::move(newModel));
+}
+
+void osc::UndoableModelStatePair::resetModel()
+{
+    m_Impl->resetModel();
 }
 
 void osc::UndoableModelStatePair::loadModel(const std::filesystem::path& p)

@@ -97,6 +97,7 @@ namespace osc
         // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
         OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
+        void resetModel();
         void loadModel(const std::filesystem::path&);
         void setModelVersion(UID);
 
