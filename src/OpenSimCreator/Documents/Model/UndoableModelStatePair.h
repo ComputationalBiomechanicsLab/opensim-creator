@@ -83,9 +83,6 @@ namespace osc
         bool canRedo() const;
         void doRedo();
 
-        // commit current scratch state to storage
-        void commit(std::string_view commitMessage);
-
         // try to rollback the model to a recent-as-possible state
         void rollback();
 
@@ -93,9 +90,6 @@ namespace osc
         bool tryCheckout(const ModelStateCommit&);
 
         // read/manipulate underlying OpenSim::Model
-        //
-        // note: mutating anything may trigger an automatic undo/redo save if `isDirty` returns `true`
-        OpenSim::Model& updModel();
         void setModel(std::unique_ptr<OpenSim::Model>);
         void resetModel();
         void loadModel(const std::filesystem::path&);
@@ -105,9 +99,14 @@ namespace osc
 
     private:
         const OpenSim::Model& implGetModel() const final;
-        UID implGetModelVersion() const final;
-
         const SimTK::State& implGetState() const final;
+
+        bool implCanUpdModel() const final { return true; }
+        OpenSim::Model& implUpdModel() final;
+
+        void implCommit(std::string_view) final;
+
+        UID implGetModelVersion() const final;
         UID implGetStateVersion() const final;
 
         float implGetFixupScaleFactor() const final;

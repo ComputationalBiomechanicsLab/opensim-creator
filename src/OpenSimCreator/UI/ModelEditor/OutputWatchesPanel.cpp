@@ -27,7 +27,7 @@ namespace
         SimulationReport simulationReport;
     };
 
-    void UpdateCachedSimulationReportIfNecessary(const IConstModelStatePair& src, CachedSimulationReport& cache)
+    void UpdateCachedSimulationReportIfNecessary(const IModelStatePair& src, CachedSimulationReport& cache)
     {
         const UID modelVersion = src.getModelVersion();
         const UID stateVersion = src.getStateVersion();

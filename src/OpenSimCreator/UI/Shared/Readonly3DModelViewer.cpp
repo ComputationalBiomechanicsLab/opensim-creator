@@ -1,5 +1,6 @@
 #include "Readonly3DModelViewer.h"
 
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.h>
 #include <OpenSimCreator/Graphics/ModelRendererParams.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
@@ -60,7 +61,7 @@ public:
         return m_MaybeLastHittest && m_MaybeLastHittest->is_hovered;
     }
 
-    std::optional<SceneCollision> onDraw(const IConstModelStatePair& rs)
+    std::optional<SceneCollision> onDraw(const IModelStatePair& rs)
     {
         // if this is the first frame being rendered, auto-focus the scene
         if (!m_MaybeLastHittest)
@@ -223,7 +224,7 @@ bool osc::Readonly3DModelViewer::isMousedOver() const
     return m_Impl->isMousedOver();
 }
 
-std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(const IConstModelStatePair& rs)
+std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(const IModelStatePair& rs)
 {
     return m_Impl->onDraw(rs);
 }

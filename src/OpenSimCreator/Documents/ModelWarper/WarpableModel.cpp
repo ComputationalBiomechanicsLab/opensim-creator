@@ -41,7 +41,7 @@ const OpenSim::Model& osc::mow::WarpableModel::model() const
     return m_ModelState->getModel();
 }
 
-const IConstModelStatePair& osc::mow::WarpableModel::modelstate() const
+const IModelStatePair& osc::mow::WarpableModel::modelstate() const
 {
     return *m_ModelState;
 }

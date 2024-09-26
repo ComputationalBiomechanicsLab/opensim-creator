@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class Function; }
-namespace osc { class IConstModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
     public:
         FunctionCurveViewerPopup(
             std::string_view popupName,
-            std::shared_ptr<const IConstModelStatePair> targetModel,
+            std::shared_ptr<const IModelStatePair> targetModel,
             std::function<const OpenSim::Function*()> functionGetter
         );
         FunctionCurveViewerPopup(const FunctionCurveViewerPopup&) = delete;

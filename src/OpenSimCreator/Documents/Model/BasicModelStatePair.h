@@ -22,7 +22,7 @@ namespace osc
     class BasicModelStatePair final : public IModelStatePair {
     public:
         BasicModelStatePair();
-        explicit BasicModelStatePair(const IConstModelStatePair&);
+        explicit BasicModelStatePair(const IModelStatePair&);
         explicit BasicModelStatePair(const std::filesystem::path&);
         BasicModelStatePair(const OpenSim::Model&, const SimTK::State&);
         BasicModelStatePair(const BasicModelStatePair&);

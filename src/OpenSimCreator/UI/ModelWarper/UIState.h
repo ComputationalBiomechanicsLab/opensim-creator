@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/CachedModelWarper.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
@@ -31,7 +31,7 @@ namespace osc::mow
         {}
 
         const OpenSim::Model& model() const { return m_Document->model(); }
-        const IConstModelStatePair& modelstate() const { return m_Document->modelstate(); }
+        const IModelStatePair& modelstate() const { return m_Document->modelstate(); }
 
         std::vector<WarpDetail> details(const OpenSim::Mesh& mesh) const { return m_Document->details(mesh); }
         std::vector<ValidationCheckResult> validate(const OpenSim::Mesh& mesh) const { return m_Document->validate(mesh); }
@@ -53,7 +53,7 @@ namespace osc::mow
 
         ValidationCheckState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationCheckState::Error; }
-        std::shared_ptr<const IConstModelStatePair> tryGetWarpedModel()
+        std::shared_ptr<const IModelStatePair> tryGetWarpedModel()
         {
             if (canWarpModel()) {
                 return m_ModelWarper.warp(*m_Document);

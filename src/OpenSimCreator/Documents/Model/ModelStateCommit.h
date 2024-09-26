@@ -10,7 +10,7 @@
 
 namespace OpenSim { class ComponentPath; }
 namespace OpenSim { class Model; }
-namespace osc { class IConstModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -18,8 +18,8 @@ namespace osc
     // what is saved upon each user action
     class ModelStateCommit final {
     public:
-        ModelStateCommit(const IConstModelStatePair&, std::string_view message);
-        ModelStateCommit(const IConstModelStatePair&, std::string_view message, UID parent);
+        ModelStateCommit(const IModelStatePair&, std::string_view message);
+        ModelStateCommit(const IModelStatePair&, std::string_view message, UID parent);
 
         UID getID() const;
         bool hasParent() const;

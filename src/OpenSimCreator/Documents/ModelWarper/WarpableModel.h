@@ -1,7 +1,6 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarperFactories.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/PointWarperFactories.h>
@@ -43,7 +42,7 @@ namespace osc::mow
         ~WarpableModel() noexcept;
 
         const OpenSim::Model& model() const;
-        const IConstModelStatePair& modelstate() const;
+        const IModelStatePair& modelstate() const;
 
         std::vector<WarpDetail> details(const OpenSim::Mesh&) const;
         std::vector<ValidationCheckResult> validate(const OpenSim::Mesh&) const;

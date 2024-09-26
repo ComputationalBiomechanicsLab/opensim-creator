@@ -1,7 +1,6 @@
 #include "OpenSimDecorationGenerator.h"
 
 #include <OpenSimCreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 

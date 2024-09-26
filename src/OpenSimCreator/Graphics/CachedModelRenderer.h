@@ -9,13 +9,13 @@
 #include <optional>
 #include <span>
 
+namespace osc { class IModelStatePair; }
+namespace osc { class RenderTexture; }
+namespace osc { class SceneCache; }
 namespace osc { struct Line; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { struct Rect; }
-namespace osc { class RenderTexture; }
 namespace osc { struct SceneDecoration; }
-namespace osc { class SceneCache; }
-namespace osc { class IConstModelStatePair; }
 
 namespace osc
 {
@@ -29,13 +29,13 @@ namespace osc
         ~CachedModelRenderer() noexcept;
 
         void autoFocusCamera(
-            const IConstModelStatePair&,
+            const IModelStatePair&,
             ModelRendererParams&,
             float aspectRatio
         );
 
         RenderTexture& onDraw(
-            const IConstModelStatePair&,
+            const IModelStatePair&,
             const ModelRendererParams&,
             Vec2 dims,
             AntiAliasingLevel antiAliasingLevel

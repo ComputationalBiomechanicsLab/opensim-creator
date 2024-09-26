@@ -101,7 +101,6 @@ add_library(OpenSimCreator STATIC
 
     Documents/Model/BasicModelStatePair.cpp
     Documents/Model/BasicModelStatePair.h
-    Documents/Model/IConstModelStatePair.h
     Documents/Model/IModelStatePair.h
     Documents/Model/ModelStateCommit.cpp
     Documents/Model/ModelStateCommit.h

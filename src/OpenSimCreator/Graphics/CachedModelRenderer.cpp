@@ -1,6 +1,6 @@
 #include "CachedModelRenderer.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/ModelStatePairInfo.h>
 #include <OpenSimCreator/Graphics/ModelRendererParams.h>
 #include <OpenSimCreator/Graphics/OpenSimGraphicsHelpers.h>
@@ -39,7 +39,7 @@ namespace
         }
 
         bool update(
-            const IConstModelStatePair& modelState,
+            const IModelStatePair& modelState,
             const ModelRendererParams& params)
         {
             OSC_PERF("CachedModelRenderer/generateDecorationsCached");
@@ -115,7 +115,7 @@ public:
     {}
 
     void autoFocusCamera(
-        const IConstModelStatePair& modelState,
+        const IModelStatePair& modelState,
         ModelRendererParams& params,
         float aspectRatio)
     {
@@ -126,7 +126,7 @@ public:
     }
 
     RenderTexture& onDraw(
-        const IConstModelStatePair& modelState,
+        const IModelStatePair& modelState,
         const ModelRendererParams& renderParams,
         Vec2 dims,
         AntiAliasingLevel antiAliasingLevel)
@@ -198,7 +198,7 @@ osc::CachedModelRenderer& osc::CachedModelRenderer::operator=(CachedModelRendere
 osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 
 RenderTexture& osc::CachedModelRenderer::onDraw(
-    const IConstModelStatePair& modelState,
+    const IModelStatePair& modelState,
     const ModelRendererParams& renderParams,
     Vec2 dims,
     AntiAliasingLevel antiAliasingLevel)
@@ -212,7 +212,7 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
 }
 
 void osc::CachedModelRenderer::autoFocusCamera(
-    const IConstModelStatePair& modelState,
+    const IModelStatePair& modelState,
     ModelRendererParams& renderParams,
     float aspectRatio)
 {

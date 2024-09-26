@@ -1,6 +1,6 @@
 #include "FunctionCurveViewerPopup.h"
 
-#include <OpenSimCreator/Documents/Model/IConstModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 
 #include <OpenSim/Common/Function.h>
 #include <oscar/Formats/CSV.h>
@@ -30,7 +30,7 @@ class osc::FunctionCurveViewerPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName,
-        std::shared_ptr<const IConstModelStatePair> targetModel,
+        std::shared_ptr<const IModelStatePair> targetModel,
         std::function<const OpenSim::Function*()> functionGetter) :
 
         StandardPopup{popupName, {768.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
@@ -40,14 +40,14 @@ public:
 private:
     class FunctionParameters final {
     public:
-        explicit FunctionParameters(const IConstModelStatePair& model) :
+        explicit FunctionParameters(const IModelStatePair& model) :
             modelVerison{model.getModelVersion()},
             stateVersion{model.getStateVersion()}
         {}
 
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
-        void setVersionFromModel(const IConstModelStatePair& model)
+        void setVersionFromModel(const IModelStatePair& model)
         {
             modelVerison = model.getModelVersion();
             stateVersion = model.getStateVersion();
@@ -210,7 +210,7 @@ private:
         }
     }
 
-    std::shared_ptr<const IConstModelStatePair> m_Model;
+    std::shared_ptr<const IModelStatePair> m_Model;
     std::function<const OpenSim::Function*()> m_FunctionGetter;
     FunctionParameters m_LatestParameters{*m_Model};
     std::optional<FunctionParameters> m_PlottedParameters;
@@ -221,7 +221,7 @@ private:
 
 osc::FunctionCurveViewerPopup::FunctionCurveViewerPopup(
     std::string_view popupName,
-    std::shared_ptr<const IConstModelStatePair> targetModel,
+    std::shared_ptr<const IModelStatePair> targetModel,
     std::function<const OpenSim::Function*()> functionGetter) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(targetModel), std::move(functionGetter))}

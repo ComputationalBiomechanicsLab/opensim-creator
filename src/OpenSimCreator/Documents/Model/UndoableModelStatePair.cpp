@@ -807,11 +807,6 @@ void osc::UndoableModelStatePair::doRedo()
     m_Impl->doRedo();
 }
 
-void osc::UndoableModelStatePair::commit(std::string_view message)
-{
-    m_Impl->commit(message);
-}
-
 void osc::UndoableModelStatePair::rollback()
 {
     m_Impl->rollback();
@@ -820,11 +815,6 @@ void osc::UndoableModelStatePair::rollback()
 bool osc::UndoableModelStatePair::tryCheckout(const ModelStateCommit& commit)
 {
     return m_Impl->tryCheckout(commit);
-}
-
-OpenSim::Model& osc::UndoableModelStatePair::updModel()
-{
-    return m_Impl->updModel();
 }
 
 SimTK::State& osc::UndoableModelStatePair::updState()
@@ -857,14 +847,24 @@ const OpenSim::Model& osc::UndoableModelStatePair::implGetModel() const
     return m_Impl->getModel();
 }
 
-UID osc::UndoableModelStatePair::implGetModelVersion() const
-{
-    return m_Impl->getModelVersion();
-}
-
 const SimTK::State& osc::UndoableModelStatePair::implGetState() const
 {
     return m_Impl->getState();
+}
+
+OpenSim::Model& osc::UndoableModelStatePair::implUpdModel()
+{
+    return m_Impl->updModel();
+}
+
+void osc::UndoableModelStatePair::implCommit(std::string_view commitMessage)
+{
+    m_Impl->commit(commitMessage);
+}
+
+UID osc::UndoableModelStatePair::implGetModelVersion() const
+{
+    return m_Impl->getModelVersion();
 }
 
 UID osc::UndoableModelStatePair::implGetStateVersion() const

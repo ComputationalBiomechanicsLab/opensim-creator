@@ -8,7 +8,7 @@
 #include <optional>
 #include <string_view>
 
-namespace osc { class IConstModelStatePair; }
+namespace osc { class IModelStatePair; }
 namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
@@ -43,7 +43,7 @@ namespace osc
         bool isMousedOver() const;
         bool isLeftClicked() const;
         bool isRightClicked() const;
-        std::optional<SceneCollision> onDraw(const IConstModelStatePair&);
+        std::optional<SceneCollision> onDraw(const IModelStatePair&);
         std::optional<Rect> getScreenRect() const;
         const PolarPerspectiveCamera& getCamera() const;
         void setCamera(const PolarPerspectiveCamera&);
