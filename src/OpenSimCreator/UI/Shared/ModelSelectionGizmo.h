@@ -6,13 +6,13 @@
 
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
-namespace osc { class UndoableModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
     class ModelSelectionGizmo final {
     public:
-        explicit ModelSelectionGizmo(std::shared_ptr<UndoableModelStatePair>);
+        explicit ModelSelectionGizmo(std::shared_ptr<IModelStatePair>);
         ModelSelectionGizmo(const ModelSelectionGizmo&);
         ModelSelectionGizmo(ModelSelectionGizmo&&) noexcept;
         ModelSelectionGizmo& operator=(const ModelSelectionGizmo&);
@@ -34,7 +34,7 @@ namespace osc
         operator ui::Gizmo& () { return m_Gizmo; }
 
     private:
-        std::shared_ptr<UndoableModelStatePair> m_Model;
+        std::shared_ptr<IModelStatePair> m_Model;
         ui::Gizmo m_Gizmo;
     };
 }

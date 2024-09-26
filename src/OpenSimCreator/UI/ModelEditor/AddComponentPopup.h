@@ -6,8 +6,8 @@
 #include <string_view>
 
 namespace OpenSim { class Component; }
+namespace osc { class IModelStatePair; }
 namespace osc { class IPopupAPI; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
         AddComponentPopup(
             std::string_view popupName,
             IPopupAPI*,
-            std::shared_ptr<UndoableModelStatePair>,
+            std::shared_ptr<IModelStatePair>,
             std::unique_ptr<OpenSim::Component> prototype
         );
         AddComponentPopup(const AddComponentPopup&) = delete;

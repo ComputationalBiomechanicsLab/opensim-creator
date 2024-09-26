@@ -3,7 +3,7 @@
 #include <memory>
 
 namespace osc { class IEditorAPI; }
-namespace osc { class UndoableModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -11,7 +11,7 @@ namespace osc
     public:
         ModelActionsMenuItems(
             IEditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>
+            std::shared_ptr<IModelStatePair>
         );
         ModelActionsMenuItems(const ModelActionsMenuItems&) = delete;
         ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept;

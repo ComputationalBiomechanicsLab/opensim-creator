@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -30,22 +30,28 @@ class osc::AddBodyPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          IEditorAPI* api,
-         std::shared_ptr<UndoableModelStatePair> uum) :
+         std::shared_ptr<IModelStatePair> modelState) :
 
         StandardPopup{popupName},
         m_EditorAPI{api},
-        m_Uum{std::move(uum)}
-    {
-    }
+        m_Model{std::move(modelState)}
+    {}
 
 private:
     void impl_draw_content() final
     {
-        const OpenSim::Model& model = m_Uum->getModel();
+        if (m_Model->isReadonly()) {
+            ui::draw_text_centered(OSC_ICON_LOCK " cannot edit the model - it is locked");
+            if (ui::draw_button("cancel")) {
+                request_close();
+            }
+            return;
+        }
+
+        const OpenSim::Model& model = m_Model->getModel();
 
         const auto* selectedPf = FindComponent<OpenSim::PhysicalFrame>(model, m_BodyDetails.parentFrameAbsPath);
-        if (!selectedPf)
-        {
+        if (not selectedPf) {
             // if nothing selected (or not found), coerce the initial selection to ground
             selectedPf = &model.getGround();
             m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
@@ -55,8 +61,7 @@ private:
 
         // prompt name
         {
-            if (is_popup_opened_this_frame())
-            {
+            if (is_popup_opened_this_frame()) {
                 ui::set_keyboard_focus_here();
             }
 
@@ -111,15 +116,12 @@ private:
             ui::next_column();
 
             ui::begin_child_panel("join targets", Vec2{0, 128.0f}, ui::ChildPanelFlag::Border, ui::WindowFlag::HorizontalScrollbar);
-            for (const OpenSim::PhysicalFrame& pf : model.getComponentList<OpenSim::PhysicalFrame>())
-            {
-                if (ui::draw_selectable(pf.getName(), &pf == selectedPf))
-                {
+            for (const auto& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
+                if (ui::draw_selectable(pf.getName(), &pf == selectedPf)) {
                     selectedPf = &pf;
                     m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
                 }
-                if (&pf == selectedPf)
-                {
+                if (&pf == selectedPf) {
                     App::upd().add_frame_annotation(pf.getName(), ui::get_last_drawn_item_screen_rect());
                 }
             }
@@ -178,8 +180,7 @@ private:
             {
                 std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
-                if (ui::draw_button(label))
-                {
+                if (ui::draw_button(label)) {
                     // open geometry selection popup
                     auto popup = std::make_unique<SelectGeometryPopup>(
                         "addbody_attachgeometry",
@@ -199,16 +200,14 @@ private:
 
         ui::draw_dummy({0.0f, 1.0f});
 
-        if (ui::draw_button("cancel"))
-        {
+        if (ui::draw_button("cancel")) {
             request_close();
         }
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_PLUS " add body"))
-        {
-            ActionAddBodyToModel(*m_Uum, m_BodyDetails);
+        if (ui::draw_button(OSC_ICON_PLUS " add body")) {
+            ActionAddBodyToModel(*m_Model, m_BodyDetails);
             request_close();
         }
     }
@@ -227,7 +226,7 @@ private:
     IEditorAPI* m_EditorAPI;
 
     // the model that the body will be added to
-    std::shared_ptr<UndoableModelStatePair> m_Uum;
+    std::shared_ptr<IModelStatePair> m_Model;
 
     // details of the to-be-added body
     BodyDetails m_BodyDetails;
@@ -237,9 +236,9 @@ private:
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
     IEditorAPI* api,
-    std::shared_ptr<UndoableModelStatePair> uum) :
+    std::shared_ptr<IModelStatePair> modelState) :
 
-    m_Impl{std::make_unique<Impl>(popupName, api, std::move(uum))}
+    m_Impl{std::make_unique<Impl>(popupName, api, std::move(modelState))}
 {}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;

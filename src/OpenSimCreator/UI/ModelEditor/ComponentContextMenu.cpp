@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
@@ -50,32 +50,27 @@ namespace
 {
     // draw UI element that lets user change a model joint's type
     void DrawSelectionJointTypeSwitcher(
-        UndoableModelStatePair& uim,
+        IModelStatePair& model,
         const OpenSim::ComponentPath& jointPath)
     {
-        const auto* joint = FindComponent<OpenSim::Joint>(uim.getModel(), jointPath);
-        if (!joint)
-        {
+        const auto* joint = FindComponent<OpenSim::Joint>(model.getModel(), jointPath);
+        if (not joint) {
             return;
         }
 
         const auto& registry = GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
-        if (ui::begin_menu("Change Joint Type"))
-        {
+        if (ui::begin_menu("Change Joint Type")) {
             // look the Joint up in the type registry so we know where it should be in the ui::draw_combobox
             std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
 
-            for (ptrdiff_t i = 0; i < std::ssize(registry); ++i)
-            {
+            for (ptrdiff_t i = 0; i < std::ssize(registry); ++i) {
                 bool selected = i == maybeTypeIndex;
                 bool wasSelected = selected;
 
-                if (ui::draw_menu_item(registry[i].name(), {}, &selected))
-                {
-                    if (!wasSelected)
-                    {
+                if (ui::draw_menu_item(registry[i].name(), {}, &selected)) {
+                    if (not wasSelected) {
                         selectedIdx = i;
                     }
                 }
@@ -83,11 +78,10 @@ namespace
             ui::end_menu();
         }
 
-        if (selectedIdx && *selectedIdx < std::ssize(registry))
-        {
+        if (selectedIdx and *selectedIdx < std::ssize(registry)) {
             // copy + fixup  a prototype of the user's selection
             ActionChangeJointTypeTo(
-                uim,
+                model,
                 jointPath,
                 registry[*selectedIdx].instantiate()
             );
@@ -97,16 +91,16 @@ namespace
     // draw the `MenuItem`s for the "Add Wrap Object" menu
     void DrawAddWrapObjectsToPhysicalFrameMenuItems(
         IEditorAPI*,
-        const std::shared_ptr<UndoableModelStatePair>& uim,
+        IModelStatePair& modelState,
         const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
         // list each available `WrapObject` as something the user can add
         const auto& registry = GetComponentRegistry<OpenSim::WrapObject>();
         for (const auto& entry : registry) {
             ui::push_id(&entry);
-            if (ui::draw_menu_item(entry.name())) {
+            if (ui::draw_menu_item(entry.name(), {}, nullptr, modelState.canUpdModel())) {
                 ActionAddWrapObjectToPhysicalFrame(
-                    *uim,
+                    modelState,
                     physicalFrameAbsPath,
                     entry.instantiate()
                 );
@@ -118,24 +112,23 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
         IEditorAPI* editorAPI,
-        const std::shared_ptr<UndoableModelStatePair>& uim,
+        const std::shared_ptr<IModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
-        if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(uim->getModel(), pfPath))
-        {
+        if (const auto* pf = FindComponent<OpenSim::PhysicalFrame>(modelState->getModel(), pfPath)) {
             DrawCalculateMenu(
-                uim->getModel(),
-                uim->getState(),
+                modelState->getModel(),
+                modelState->getState(),
                 *pf,
                 CalculateMenuFlags::NoCalculatorIcon
             );
         }
 
-        if (ui::begin_menu("Add")) {
-            if (ui::draw_menu_item("Geometry")) {
-                const std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [uim, pfPath](auto geom)
+        if (ui::begin_menu("Add", modelState->canUpdModel())) {
+            if (ui::draw_menu_item("Geometry", {}, nullptr, modelState->canUpdModel())) {
+                const std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [modelState, pfPath](auto geom)
                 {
-                    ActionAttachGeometryToPhysicalFrame(*uim, pfPath, std::move(geom));
+                    ActionAttachGeometryToPhysicalFrame(*modelState, pfPath, std::move(geom));
                 };
                 auto p = std::make_unique<SelectGeometryPopup>(
                     "select geometry to attach",
@@ -147,13 +140,13 @@ namespace
             }
             ui::draw_tooltip_if_item_hovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
-            if (ui::draw_menu_item("Offset Frame")) {
-                ActionAddOffsetFrameToPhysicalFrame(*uim, pfPath);
+            if (ui::draw_menu_item("Offset Frame", {}, nullptr, modelState->canUpdModel())) {
+                ActionAddOffsetFrameToPhysicalFrame(*modelState, pfPath);
             }
             ui::draw_tooltip_if_item_hovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
 
-            if (ui::begin_menu("Wrap Object")) {
-                DrawAddWrapObjectsToPhysicalFrameMenuItems(editorAPI, uim, pfPath);
+            if (ui::begin_menu("Wrap Object", modelState->canUpdModel())) {
+                DrawAddWrapObjectsToPhysicalFrameMenuItems(editorAPI, *modelState, pfPath);
                 ui::end_menu();
             }
 
@@ -164,60 +157,50 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawJointContextualActions(
-        UndoableModelStatePair& uim,
+        IModelStatePair& modelState,
         const OpenSim::ComponentPath& jointPath)
     {
-        DrawSelectionJointTypeSwitcher(uim, jointPath);
+        DrawSelectionJointTypeSwitcher(modelState, jointPath);
 
-        if (CanRezeroJoint(uim, jointPath))
-        {
-            if (ui::draw_menu_item("Rezero Joint"))
-            {
-                ActionRezeroJoint(uim, jointPath);
-            }
-            ui::draw_tooltip_if_item_hovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+        if (ui::draw_menu_item("Rezero Joint", {}, nullptr, CanRezeroJoint(modelState, jointPath))) {
+            ActionRezeroJoint(modelState, jointPath);
+        }
+        ui::draw_tooltip_if_item_hovered("Re-zero the joint", "Given the joint's current geometry due to joint defaults, coordinate defaults, and any coordinate edits made in the coordinates panel, this will reorient the joint's parent (if it's an offset frame) to match the child's transformation. Afterwards, it will then resets all of the joints coordinates to zero. This effectively sets the 'zero point' of the joint (i.e. the geometry when all coordinates are zero) to match whatever the current geometry is.");
+
+        if (ui::draw_menu_item("Add Parent Offset Frame", {}, nullptr, modelState.canUpdModel())) {
+            ActionAddParentOffsetFrameToJoint(modelState, jointPath);
         }
 
-        if (ui::draw_menu_item("Add Parent Offset Frame"))
-        {
-            ActionAddParentOffsetFrameToJoint(uim, jointPath);
+        if (ui::draw_menu_item("Add Child Offset Frame", {}, nullptr, modelState.canUpdModel())) {
+            ActionAddChildOffsetFrameToJoint(modelState, jointPath);
         }
 
-        if (ui::draw_menu_item("Add Child Offset Frame"))
-        {
-            ActionAddChildOffsetFrameToJoint(uim, jointPath);
-        }
-
-        if (ui::draw_menu_item("Toggle Frame Visibility"))
-        {
-            ActionToggleFrames(uim);
+        if (ui::draw_menu_item("Toggle Frame Visibility", {}, nullptr, modelState.canUpdModel())) {
+            ActionToggleFrames(modelState);
         }
     }
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawHCFContextualActions(
         IEditorAPI* api,
-        const std::shared_ptr<UndoableModelStatePair>& uim,
+        const std::shared_ptr<IModelStatePair>& uim,
         const OpenSim::ComponentPath& hcfPath)
     {
         const auto* const hcf = FindComponent<OpenSim::HuntCrossleyForce>(uim->getModel(), hcfPath);
-        if (!hcf)
-        {
+        if (not hcf) {
             return;
         }
 
-        if (size(hcf->get_contact_parameters()) > 1)
-        {
+        if (size(hcf->get_contact_parameters()) > 1) {
             return;  // cannot edit: has more than one HuntCrossleyForce::Parameter
         }
 
-        if (ui::draw_menu_item("Add Contact Geometry"))
-        {
-            auto onSelection = [uim, hcfPath](const OpenSim::ComponentPath& geomPath)
+        if (ui::draw_menu_item("Add Contact Geometry", {}, nullptr, uim->canUpdModel())) {
+            const auto onSelection = [uim, hcfPath](const OpenSim::ComponentPath& geomPath)
             {
                 ActionAssignContactGeometryToHCF(*uim, hcfPath, geomPath);
             };
-            auto filter = [](const OpenSim::Component& c) -> bool
+            const auto filter = [](const OpenSim::Component& c) -> bool
             {
                 return dynamic_cast<const OpenSim::ContactGeometry*>(&c) != nullptr;
             };
@@ -231,124 +214,117 @@ namespace
     // draw contextual actions (buttons, sliders) for a selected path actuator
     void DrawPathActuatorContextualParams(
         IEditorAPI* api,
-        const std::shared_ptr<UndoableModelStatePair>& uim,
+        const std::shared_ptr<IModelStatePair>& modelState,
         const OpenSim::ComponentPath& paPath)
     {
-        if (ui::draw_menu_item("Add Path Point"))
-        {
-            auto onSelection = [uim, paPath](const OpenSim::ComponentPath& pfPath) { ActionAddPathPointToPathActuator(*uim, paPath, pfPath); };
-            auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", uim, onSelection);
+        if (ui::draw_menu_item("Add Path Point", {}, nullptr, modelState->canUpdModel())) {
+            auto onSelection = [modelState, paPath](const OpenSim::ComponentPath& pfPath) { ActionAddPathPointToPathActuator(*modelState, paPath, pfPath); };
+            auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", modelState, onSelection);
             popup->open();
             api->pushPopup(std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
     }
 
-    void DrawModelContextualActions(UndoableModelStatePair& uim)
+    void DrawModelContextualActions(IModelStatePair& modelState)
     {
-        if (ui::draw_menu_item("Toggle Frames"))
-        {
-            ActionToggleFrames(uim);
+        if (ui::draw_menu_item("Toggle Frames", {}, nullptr, modelState.canUpdModel())) {
+            ActionToggleFrames(modelState);
         }
     }
 
     void DrawStationContextualActions(
-        UndoableModelStatePair& uim,
+        const IModelStatePair& modelState,
         const OpenSim::Station& station)
     {
         DrawCalculateMenu(
-            uim.getModel(),
-            uim.getState(),
+            modelState.getModel(),
+            modelState.getState(),
             station,
             CalculateMenuFlags::NoCalculatorIcon
         );
     }
 
     void DrawPointContextualActions(
-        UndoableModelStatePair& uim,
+        const IModelStatePair& modelState,
         const OpenSim::Point& point)
     {
         DrawCalculateMenu(
-            uim.getModel(),
-            uim.getState(),
+            modelState.getModel(),
+            modelState.getState(),
             point,
             CalculateMenuFlags::NoCalculatorIcon
         );
     }
 
     void DrawEllipsoidContextualActions(
-        UndoableModelStatePair& uim,
+        const IModelStatePair& modelState,
         const OpenSim::Ellipsoid& ellipsoid)
     {
         DrawCalculateMenu(
-            uim.getModel(),
-            uim.getState(),
+            modelState.getModel(),
+            modelState.getState(),
             ellipsoid,
             CalculateMenuFlags::NoCalculatorIcon
         );
     }
 
     void DrawMeshContextualActions(
-        UndoableModelStatePair& uim,
+        IModelStatePair& modelState,
         const OpenSim::Mesh& mesh)
     {
-        if (ui::begin_menu("Fit Analytic Geometry to This"))
-        {
+        if (ui::begin_menu("Fit Analytic Geometry to This", modelState.canUpdModel())) {
             ui::draw_help_marker("Uses shape-fitting algorithms to fit analytic geometry to the points in the given mesh.\n\nThe 'htbad'-suffixed algorithms were adapted (potentially, with bugs - report them) from the MATLAB code in:\n\n        Bishop P., How to build a dinosaur..., doi:10.1017/pab.2020.46");
 
-            if (ui::draw_menu_item("Sphere (htbad)"))
-            {
-                ActionFitSphereToMesh(uim, mesh);
+            if (ui::draw_menu_item("Sphere (htbad)", {}, nullptr, modelState.canUpdModel())) {
+                ActionFitSphereToMesh(modelState, mesh);
             }
 
-            if (ui::draw_menu_item("Ellipsoid (htbad)"))
-            {
-                ActionFitEllipsoidToMesh(uim, mesh);
+            if (ui::draw_menu_item("Ellipsoid (htbad)", {}, nullptr, modelState.canUpdModel())) {
+                ActionFitEllipsoidToMesh(modelState, mesh);
             }
 
-            if (ui::draw_menu_item("Plane (htbad)"))
-            {
-                ActionFitPlaneToMesh(uim, mesh);
+            if (ui::draw_menu_item("Plane (htbad)", {}, nullptr, modelState.canUpdModel())) {
+                ActionFitPlaneToMesh(modelState, mesh);
             }
 
             ui::end_menu();
         }
 
-        if (ui::begin_menu("Export"))
-        {
-            DrawMeshExportContextMenuContent(uim, mesh);
+        if (ui::begin_menu("Export")) {
+            DrawMeshExportContextMenuContent(modelState, mesh);
             ui::end_menu();
         }
     }
 
     void DrawGeometryContextualActions(
-        UndoableModelStatePair& uim,
+        const IModelStatePair& modelState,
         const OpenSim::Geometry& geometry)
     {
         DrawCalculateMenu(
-            uim.getModel(),
-            uim.getState(),
+            modelState.getModel(),
+            modelState.getState(),
             geometry,
             CalculateMenuFlags::NoCalculatorIcon
         );
     }
 
     void DrawPathWrapToggleMenuItems(
-        UndoableModelStatePair& uim,
+        IModelStatePair& modelState,
         const OpenSim::GeometryPath& gp)
     {
         const auto wraps = GetAllWrapObjectsReferencedBy(gp);
-        for (const auto& wo : uim.getModel().getComponentList<OpenSim::WrapObject>()) {
+        for (const auto& wo : modelState.getModel().getComponentList<OpenSim::WrapObject>()) {
             const bool enabled = cpp23::contains(wraps, &wo);
 
             ui::push_id(&wo);
             bool selected = enabled;
-            if (ui::draw_menu_item(wo.getName(), {}, &selected)) {
+            if (ui::draw_menu_item(wo.getName(), {}, &selected, modelState.canUpdModel())) {
                 if (enabled) {
-                    ActionRemoveWrapObjectFromGeometryPathWraps(uim, gp, wo);
+                    ActionRemoveWrapObjectFromGeometryPathWraps(modelState, gp, wo);
                 }
                 else {
-                    ActionAddWrapObjectToGeometryPathWraps(uim, gp, wo);
+                    ActionAddWrapObjectToGeometryPathWraps(modelState, gp, wo);
                 }
             }
             ui::pop_id();
@@ -356,12 +332,12 @@ namespace
     }
 
     void DrawGeometryPathContextualActions(
-        UndoableModelStatePair& uim,
+        IModelStatePair& modelState,
         const OpenSim::GeometryPath& geometryPath)
     {
-        if (ui::begin_menu("Add")) {
-            if (ui::begin_menu("Path Wrap")) {
-                DrawPathWrapToggleMenuItems(uim, geometryPath);
+        if (ui::begin_menu("Add", modelState.canUpdModel())) {
+            if (ui::begin_menu("Path Wrap", modelState.canUpdModel())) {
+                DrawPathWrapToggleMenuItems(modelState, geometryPath);
                 ui::end_menu();
             }
             ui::end_menu();
@@ -384,7 +360,7 @@ public:
         std::string_view popupName_,
         const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
-        std::shared_ptr<UndoableModelStatePair> model_,
+        std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
@@ -401,13 +377,12 @@ private:
     void impl_draw_content() final
     {
         const OpenSim::Component* c = FindComponent(m_Model->getModel(), m_Path);
-        if (!c)
-        {
+        if (not c) {
+
             // draw context menu content that's shown when nothing was right-clicked
             DrawNothingRightClickedContextMenuHeader();
             DrawContextMenuSeparator();
-            if (ui::begin_menu("Add"))
-            {
+            if (ui::begin_menu("Add", m_Model->canUpdModel())) {
                 m_ModelActionsMenuBar.onDraw();
                 ui::end_menu();
             }
@@ -418,10 +393,8 @@ private:
             //
             // it's handy when users have selectively hidden this-or-that, or have hidden everything
             // in the model (#422)
-            if (ui::begin_menu("Display"))
-            {
-                if (ui::draw_menu_item("Show All"))
-                {
+            if (ui::begin_menu("Display", m_Model->canUpdModel())) {
+                if (ui::draw_menu_item("Show All")) {
                     ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
                 }
                 ui::draw_tooltip_if_item_hovered("Show All", "Sets the visiblity of all components within the model to 'visible', handy for undoing selective hiding etc.");
@@ -447,53 +420,19 @@ private:
             m_EditorAPI->getPanelManager()->set_toggleable_panel_activated("Output Watches", true);
         });
 
-        if (ui::begin_menu("Display"))
-        {
-            const bool shouldDisable = !AnyDescendentInclusiveHasAppearanceProperty(*c);
+        if (ui::begin_menu("Display", m_Model->canUpdModel())) {
+            const bool shouldDisable = m_Model->isReadonly() or not AnyDescendentInclusiveHasAppearanceProperty(*c);
 
-            {
-                if (shouldDisable)
-                {
-                    ui::begin_disabled();
-                }
-                if (ui::draw_menu_item("Show"))
-                {
-                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
-                }
-                if (shouldDisable)
-                {
-                    ui::end_disabled();
-                }
+            if (ui::draw_menu_item("Show", {}, nullptr, shouldDisable)) {
+                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
             }
 
-            {
-                if (shouldDisable)
-                {
-                    ui::begin_disabled();
-                }
-                if (ui::draw_menu_item("Show Only This"))
-                {
-                    ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
-                }
-                if (shouldDisable)
-                {
-                    ui::end_disabled();
-                }
+            if (ui::draw_menu_item("Show Only This", {}, nullptr, shouldDisable)) {
+                ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
             }
 
-            {
-                if (shouldDisable)
-                {
-                    ui::begin_disabled();
-                }
-                if (ui::draw_menu_item("Hide"))
-                {
-                    ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
-                }
-                if (shouldDisable)
-                {
-                    ui::end_disabled();
-                }
+            if (ui::draw_menu_item("Hide", {}, nullptr, shouldDisable)) {
+                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
             }
 
             // add a seperator between probably commonly-used, simple, diplay toggles and the more
@@ -503,8 +442,7 @@ private:
             // redundantly put a "Show All" option here, also, so that the user doesn't have
             // to "know" that they need to right-click in the middle of nowhere or on the
             // model
-            if (ui::draw_menu_item("Show All"))
-            {
+            if (ui::draw_menu_item("Show All", {}, nullptr, shouldDisable)) {
                 ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
             }
 
@@ -512,8 +450,7 @@ private:
                 std::stringstream ss;
                 ss << "Show All '" << c->getConcreteClassName() << "' Components";
                 const std::string label = std::move(ss).str();
-                if (ui::draw_menu_item(label))
-                {
+                if (ui::draw_menu_item(label, {}, nullptr, m_Model->canUpdModel())) {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
                         GetAbsolutePath(m_Model->getModel()),
@@ -527,8 +464,7 @@ private:
                 std::stringstream ss;
                 ss << "Hide All '" << c->getConcreteClassName() << "' Components";
                 const std::string label = std::move(ss).str();
-                if (ui::draw_menu_item(label))
-                {
+                if (ui::draw_menu_item(label, {}, nullptr, m_Model->canUpdModel())) {
                     ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
                         *m_Model,
                         GetAbsolutePath(m_Model->getModel()),
@@ -540,77 +476,61 @@ private:
             ui::end_menu();
         }
 
-        if (ui::draw_menu_item("Copy Absolute Path to Clipboard"))
-        {
-            const std::string path = GetAbsolutePathString(*c);
-            set_clipboard_text(path);
+        if (ui::draw_menu_item("Copy Absolute Path to Clipboard")) {
+            set_clipboard_text(GetAbsolutePathString(*c));
         }
         ui::draw_tooltip_if_item_hovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 
         drawSocketMenu(*c);
 
-        if (dynamic_cast<const OpenSim::Model*>(c))
-        {
+        if (dynamic_cast<const OpenSim::Model*>(c)) {
             DrawModelContextualActions(*m_Model);
         }
-        else if (dynamic_cast<const OpenSim::PhysicalFrame*>(c))
-        {
+        else if (dynamic_cast<const OpenSim::PhysicalFrame*>(c)) {
             DrawPhysicalFrameContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (dynamic_cast<const OpenSim::Joint*>(c))
-        {
+        else if (dynamic_cast<const OpenSim::Joint*>(c)) {
             DrawJointContextualActions(*m_Model, m_Path);
         }
-        else if (dynamic_cast<const OpenSim::HuntCrossleyForce*>(c))
-        {
+        else if (dynamic_cast<const OpenSim::HuntCrossleyForce*>(c)) {
             DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
         }
-        else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c))
-        {
+        else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c)) {
             drawAddMusclePlotMenu(*musclePtr);
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
         }
-        else if (dynamic_cast<const OpenSim::PathActuator*>(c))
-        {
+        else if (dynamic_cast<const OpenSim::PathActuator*>(c)) {
             DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
         }
-        else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c))
-        {
+        else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c)) {
             DrawStationContextualActions(*m_Model, *stationPtr);
         }
-        else if (const auto* pointPtr = dynamic_cast<const OpenSim::Point*>(c))
-        {
+        else if (const auto* pointPtr = dynamic_cast<const OpenSim::Point*>(c)) {
             DrawPointContextualActions(*m_Model, *pointPtr);
         }
-        else if (const auto* ellipsoidPtr = dynamic_cast<const OpenSim::Ellipsoid*>(c))
-        {
+        else if (const auto* ellipsoidPtr = dynamic_cast<const OpenSim::Ellipsoid*>(c)) {
             DrawEllipsoidContextualActions(*m_Model, *ellipsoidPtr);
         }
-        else if (const auto* meshPtr = dynamic_cast<const OpenSim::Mesh*>(c))
-        {
+        else if (const auto* meshPtr = dynamic_cast<const OpenSim::Mesh*>(c)) {
             DrawMeshContextualActions(*m_Model, *meshPtr);
         }
-        else if (const auto* geomPtr = dynamic_cast<const OpenSim::Geometry*>(c))
-        {
+        else if (const auto* geomPtr = dynamic_cast<const OpenSim::Geometry*>(c)) {
             DrawGeometryContextualActions(*m_Model, *geomPtr);
         }
-        else if (const auto* geomPathPtr = dynamic_cast<const OpenSim::GeometryPath*>(c))
-        {
+        else if (const auto* geomPathPtr = dynamic_cast<const OpenSim::GeometryPath*>(c)) {
             DrawGeometryPathContextualActions(*m_Model, *geomPathPtr);
         }
     }
 
     void drawSocketMenu(const OpenSim::Component& c)
     {
-        if (ui::begin_menu("Sockets"))
-        {
+        if (ui::begin_menu("Sockets", m_Model->canUpdModel())) {
             std::vector<std::string> socketNames = GetSocketNames(c);
 
-            if (!socketNames.empty())
-            {
+            if (not socketNames.empty()) {
                 ui::push_style_var(ui::StyleVar::CellPadding, {0.5f*ui::get_text_line_height(), 0.5f*ui::get_text_line_height()});
-                if (ui::begin_table("sockets table", 3, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX}))
-                {
+
+                if (ui::begin_table("sockets table", 3, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
                     ui::table_setup_column("Socket Name");
                     ui::table_setup_column("Connectee");
                     ui::table_setup_column("Actions");
@@ -618,8 +538,7 @@ private:
                     ui::table_headers_row();
 
                     int id = 0;
-                    for (const std::string& socketName : socketNames)
-                    {
+                    for (const std::string& socketName : socketNames) {
                         const OpenSim::AbstractSocket& socket = c.getSocket(socketName);
 
                         int column = 0;
@@ -630,20 +549,18 @@ private:
                         ui::draw_text_disabled(socketName);
 
                         ui::table_set_column_index(column++);
-                        if (ui::draw_small_button(socket.getConnecteeAsObject().getName()))
-                        {
+                        if (ui::draw_small_button(socket.getConnecteeAsObject().getName())) {
                             m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
                             request_close();
                         }
                         if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject());
-                            connectee && ui::is_item_hovered())
-                        {
+                            connectee && ui::is_item_hovered()) {
+
                             DrawComponentHoverTooltip(*connectee);
                         }
 
                         ui::table_set_column_index(column++);
-                        if (ui::draw_small_button("change"))
-                        {
+                        if (ui::draw_small_button("change")) {
                             auto popup = std::make_unique<ReassignSocketPopup>(
                                 "Reassign " + socket.getName(),
                                 m_Model,
@@ -661,8 +578,7 @@ private:
                 }
                 ui::pop_style_var();
             }
-            else
-            {
+            else {
                 ui::draw_text_disabled("%s has no sockets", c.getName().c_str());
             }
 
@@ -672,12 +588,9 @@ private:
 
     void drawAddMusclePlotMenu(const OpenSim::Muscle& m)
     {
-        if (ui::begin_menu("Plot vs. Coordinate"))
-        {
-            for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>())
-            {
-                if (ui::draw_menu_item(c.getName()))
-                {
+        if (ui::begin_menu("Plot vs. Coordinate")) {
+            for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>()) {
+                if (ui::draw_menu_item(c.getName())) {
                     m_EditorAPI->addMusclePlot(c, m);
                 }
             }
@@ -688,7 +601,7 @@ private:
 
     ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI = nullptr;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
     ModelActionsMenuItems m_ModelActionsMenuBar{m_EditorAPI, m_Model};
 };
@@ -698,7 +611,7 @@ osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
     const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
-    std::shared_ptr<UndoableModelStatePair> model_,
+    std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :
 
     m_Impl{std::make_unique<Impl>(popupName_, mainUIStateAPI_, editorAPI_, std::move(model_), path_)}

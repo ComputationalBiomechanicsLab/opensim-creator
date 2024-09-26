@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace OpenSim { class ComponentPath; }
-namespace osc { class UndoableModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -15,7 +15,7 @@ namespace osc
     public:
         Select1PFPopup(
             std::string_view popupName,
-            std::shared_ptr<const UndoableModelStatePair>,
+            std::shared_ptr<const IModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onSelection
         );
         Select1PFPopup(const Select1PFPopup&) = delete;

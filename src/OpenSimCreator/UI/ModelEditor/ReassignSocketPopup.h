@@ -5,7 +5,7 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class UndoableModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -13,7 +13,7 @@ namespace osc
     public:
         ReassignSocketPopup(
             std::string_view popupName,
-            std::shared_ptr<UndoableModelStatePair>,
+            std::shared_ptr<IModelStatePair>,
             std::string_view componentAbsPath,
             std::string_view socketName
         );

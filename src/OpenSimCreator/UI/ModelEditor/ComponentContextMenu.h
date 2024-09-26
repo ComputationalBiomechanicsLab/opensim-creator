@@ -8,8 +8,8 @@
 namespace OpenSim { class ComponentPath; }
 namespace osc { class IEditorAPI; }
 namespace osc { class IMainUIStateAPI; }
+namespace osc { class IModelStatePair; }
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
@@ -19,7 +19,7 @@ namespace osc
             std::string_view popupName,
             const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>,
+            std::shared_ptr<IModelStatePair>,
             const OpenSim::ComponentPath&
         );
         ComponentContextMenu(const ComponentContextMenu&) = delete;

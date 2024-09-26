@@ -7,8 +7,8 @@
 #include <optional>
 
 namespace OpenSim { class Object; }
+namespace osc { class IModelStatePair; }
 namespace osc { class IPopupAPI; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
     public:
         ObjectPropertiesEditor(
             IPopupAPI*,
-            std::shared_ptr<const UndoableModelStatePair> targetModel,
+            std::shared_ptr<const IModelStatePair> targetModel,
             std::function<const OpenSim::Object*()> objectGetter
         );
         ObjectPropertiesEditor(const ObjectPropertiesEditor&) = delete;

@@ -1,6 +1,5 @@
 #include "MainUIScreen.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
@@ -590,7 +589,7 @@ private:
     void drawAddNewTabMenu()
     {
         if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
-            select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI(), std::make_unique<UndoableModelStatePair>())));
+            select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI())));
         }
 
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {

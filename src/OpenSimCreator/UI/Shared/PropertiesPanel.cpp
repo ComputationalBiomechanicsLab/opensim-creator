@@ -1,7 +1,7 @@
 #include "PropertiesPanel.h"
 
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
@@ -24,7 +24,7 @@ using namespace osc;
 
 namespace
 {
-    void DrawActionsMenu(IEditorAPI* editorAPI, const std::shared_ptr<UndoableModelStatePair>& model)
+    void DrawActionsMenu(IEditorAPI* editorAPI, const std::shared_ptr<IModelStatePair>& model)
     {
         const OpenSim::Component* const selection = model->getSelected();
         if (!selection) {
@@ -47,7 +47,7 @@ namespace
 
     class ObjectNameEditor final {
     public:
-        explicit ObjectNameEditor(std::shared_ptr<UndoableModelStatePair> model_) :
+        explicit ObjectNameEditor(std::shared_ptr<IModelStatePair> model_) :
             m_Model{std::move(model_)}
         {
         }
@@ -88,7 +88,7 @@ namespace
             ui::set_num_columns();
         }
     private:
-        std::shared_ptr<UndoableModelStatePair> m_Model;
+        std::shared_ptr<IModelStatePair> m_Model;
         UID m_LastModelVersion;
         const OpenSim::Component* m_LastSelected = nullptr;
         std::string m_EditedName;
@@ -100,7 +100,7 @@ public:
     Impl(
         std::string_view panelName,
         IEditorAPI* editorAPI,
-        std::shared_ptr<UndoableModelStatePair> model) :
+        std::shared_ptr<IModelStatePair> model) :
 
         StandardPanelImpl{panelName},
         m_EditorAPI{editorAPI},
@@ -143,7 +143,7 @@ private:
     }
 
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_SelectionPropertiesEditor;
 };
@@ -152,7 +152,7 @@ private:
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
     IEditorAPI* editorAPI,
-    std::shared_ptr<UndoableModelStatePair> model) :
+    std::shared_ptr<IModelStatePair> model) :
     m_Impl{std::make_unique<Impl>(panelName, editorAPI, std::move(model))}
 {}
 osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;

@@ -8,7 +8,7 @@
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
-namespace osc { class UndoableModelStatePair; }
+namespace osc { class IModelStatePair; }
 
 namespace osc
 {
@@ -17,7 +17,7 @@ namespace osc
     public:
         SelectComponentPopup(
             std::string_view popupName,
-            std::shared_ptr<const UndoableModelStatePair>,
+            std::shared_ptr<const IModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onSelection,
             std::function<bool(const OpenSim::Component&)> filter
         );

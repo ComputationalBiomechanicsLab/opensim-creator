@@ -1516,7 +1516,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 }
 
 void osc::DrawMeshExportContextMenuContent(
-    const UndoableModelStatePair& model,
+    const IModelStatePair& model,
     const OpenSim::Mesh& mesh)
 {
     ui::draw_text_disabled("Format:");
@@ -1540,7 +1540,7 @@ void osc::DrawMeshExportContextMenuContent(
 
     if (ui::begin_menu(".stl"))
     {
-        const auto onFrameMenuItemClicked = [model, &mesh](const OpenSim::Frame& frame)
+        const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshSTLWithRespectTo(
                 model.getModel(),

@@ -16,7 +16,6 @@
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.h>
@@ -164,9 +163,11 @@ public:
         // if some screen generated an OpenSim::Model, transition to the main editor
         if (m_Shared->hasOutputModel())
         {
-            auto ptr = std::make_unique<UndoableModelStatePair>(std::move(m_Shared->updOutputModel()));
-            ptr->setFixupScaleFactor(m_Shared->getSceneScaleFactor());
-            m_Parent->add_and_select_tab<ModelEditorTab>(m_Parent, std::move(ptr));
+            m_Parent->add_and_select_tab<ModelEditorTab>(
+                m_Parent,
+                std::move(m_Shared->updOutputModel()),
+                m_Shared->getSceneScaleFactor()
+            );
         }
 
         m_Name = m_Shared->getRecommendedTitle();

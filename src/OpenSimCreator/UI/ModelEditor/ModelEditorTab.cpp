@@ -55,6 +55,19 @@ using namespace osc;
 
 class osc::ModelEditorTab::Impl final : public IEditorAPI {
 public:
+    Impl(
+        const ParentPtr<IMainUIStateAPI>& parent_) :
+        Impl{parent_, std::make_unique<UndoableModelStatePair>()}
+    {}
+
+    Impl(
+        const ParentPtr<IMainUIStateAPI>& parent_,
+        std::unique_ptr<OpenSim::Model> model_,
+        float fixupScaleFactor) :
+        Impl{parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
+    {
+        m_Model->setFixupScaleFactor(fixupScaleFactor);
+    }
 
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_,
@@ -418,6 +431,17 @@ private:
 };
 
 
+osc::ModelEditorTab::ModelEditorTab(
+    const ParentPtr<IMainUIStateAPI>& parent_) :
+
+    m_Impl{std::make_unique<Impl>(parent_)}
+{}
+osc::ModelEditorTab::ModelEditorTab(
+    const ParentPtr<IMainUIStateAPI>& parent_,
+    std::unique_ptr<OpenSim::Model> model_,
+    float fixupScaleFactor) :
+    m_Impl{std::make_unique<Impl>(parent_, std::move(model_), fixupScaleFactor)}
+{}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :

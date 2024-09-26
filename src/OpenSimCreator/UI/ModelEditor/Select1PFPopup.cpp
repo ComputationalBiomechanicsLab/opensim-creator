@@ -1,6 +1,6 @@
 #include "Select1PFPopup.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -17,14 +17,13 @@ class osc::Select1PFPopup::Impl final : public StandardPopup {
 public:
 
     Impl(std::string_view popupName,
-         std::shared_ptr<const UndoableModelStatePair> model,
+         std::shared_ptr<const IModelStatePair> model,
          std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
         StandardPopup{popupName},
         m_Model{std::move(model)},
         m_OnSelection{std::move(onSelection)}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -32,30 +31,27 @@ private:
         const OpenSim::PhysicalFrame* selected = nullptr;
 
         ui::begin_child_panel("pflist", Vec2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::WindowFlag::HorizontalScrollbar);
-        for (const auto& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>())
-        {
-            if (ui::draw_selectable(pf.getName()))
-            {
+        for (const auto& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>()) {
+            if (ui::draw_selectable(pf.getName())) {
                 selected = &pf;
             }
         }
         ui::end_child_panel();
 
-        if (selected)
-        {
+        if (selected) {
             m_OnSelection(GetAbsolutePath(*selected));
             request_close();
         }
     }
 
-    std::shared_ptr<const UndoableModelStatePair> m_Model;
+    std::shared_ptr<const IModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
 };
 
 
 osc::Select1PFPopup::Select1PFPopup(
     std::string_view popupName,
-    std::shared_ptr<const UndoableModelStatePair> model,
+    std::shared_ptr<const IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
     m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection))}

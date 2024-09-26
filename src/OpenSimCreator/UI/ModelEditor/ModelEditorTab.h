@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace OpenSim { class Model; }
 namespace osc { class IMainUIStateAPI; }
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class UndoableModelStatePair; }
@@ -14,7 +15,15 @@ namespace osc
 {
     class ModelEditorTab final : public ITab {
     public:
-        ModelEditorTab(
+        explicit ModelEditorTab(
+            const ParentPtr<IMainUIStateAPI>&
+        );
+        explicit ModelEditorTab(
+            const ParentPtr<IMainUIStateAPI>&,
+            std::unique_ptr<OpenSim::Model>,
+            float fixupScaleFactor = 1.0f
+        );
+        explicit ModelEditorTab(
             const ParentPtr<IMainUIStateAPI>&,
             std::unique_ptr<UndoableModelStatePair>
         );

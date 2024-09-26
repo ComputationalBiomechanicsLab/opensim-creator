@@ -276,7 +276,7 @@ namespace osc
 
     // mesh stuff
     void DrawMeshExportContextMenuContent(
-        const UndoableModelStatePair&,
+        const IModelStatePair&,
         const OpenSim::Mesh&
     );
 }

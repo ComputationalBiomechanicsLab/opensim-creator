@@ -1,7 +1,7 @@
 #include "ReassignSocketPopup.h"
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -124,7 +124,7 @@ namespace
 class osc::ReassignSocketPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
-         std::shared_ptr<UndoableModelStatePair> model,
+         std::shared_ptr<IModelStatePair> model,
          std::string_view componentAbsPath,
          std::string_view socketName) :
 
@@ -267,7 +267,7 @@ private:
         ui::draw_checkbox(label, &m_TryReexpressInDifferentFrame);
     }
 
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
     PopupParams m_Params;
     PopupParams m_EditedParams = m_Params;
     std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
@@ -280,7 +280,7 @@ private:
 
 osc::ReassignSocketPopup::ReassignSocketPopup(
     std::string_view popupName,
-    std::shared_ptr<UndoableModelStatePair> model,
+    std::shared_ptr<IModelStatePair> model,
     std::string_view componentAbsPath,
     std::string_view socketName) :
 

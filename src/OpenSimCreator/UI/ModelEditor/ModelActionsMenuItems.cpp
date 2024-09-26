@@ -1,5 +1,6 @@
 #include "ModelActionsMenuItems.h"
 
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/UI/ModelEditor/AddBodyPopup.h>
@@ -27,7 +28,7 @@ public:
 
     Impl(
         IEditorAPI* api,
-        std::shared_ptr<UndoableModelStatePair> uum_) :
+        std::shared_ptr<IModelStatePair> uum_) :
 
         m_EditorAPI{api},
         m_Model{std::move(uum_)}
@@ -97,22 +98,15 @@ private:
     }
 
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
-// public API (PIMPL)
-
-osc::ModelActionsMenuItems::ModelActionsMenuItems(IEditorAPI* api, std::shared_ptr<UndoableModelStatePair> m) :
+osc::ModelActionsMenuItems::ModelActionsMenuItems(IEditorAPI* api, std::shared_ptr<IModelStatePair> m) :
     m_Impl{std::make_unique<Impl>(api, std::move(m))}
-{
-}
-
+{}
 osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
 osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
 osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
 
-void osc::ModelActionsMenuItems::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::ModelActionsMenuItems::onDraw() { m_Impl->onDraw(); }
