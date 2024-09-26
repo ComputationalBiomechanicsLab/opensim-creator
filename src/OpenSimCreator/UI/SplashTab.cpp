@@ -10,6 +10,7 @@
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
+#include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
 #include <oscar/Formats/SVG.h>
@@ -279,6 +280,9 @@ private:
         }
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
             m_Parent->add_and_select_tab<mow::ModelWarperTab>(m_Parent);
+        }
+        if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
+            m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
     }

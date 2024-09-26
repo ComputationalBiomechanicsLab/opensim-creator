@@ -9,6 +9,7 @@
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/Simulation/SimulationTab.h>
+#include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -209,9 +210,11 @@ void osc::MainMenuFileTab::onDraw(
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes"))
-    {
+    if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
         api->add_and_select_tab<mi::MeshImporterTab>(api);
+    }
+    if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
+        api->add_and_select_tab<PreviewExperimentalDataTab>(api);
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 
