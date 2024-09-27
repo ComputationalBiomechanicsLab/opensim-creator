@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/EventType.h>
 #include <oscar/Platform/Key.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
@@ -14,29 +15,11 @@ union SDL_Event;
 
 namespace osc
 {
-    enum class EventType {
-        Raw,
-        DropFile,
-        KeyDown,
-        KeyUp,
-        TextInput,
-        MouseButtonDown,
-        MouseButtonUp,
-        MouseMove,
-        MouseWheel,
-        DisplayStateChange,
-        Quit,
-        NUM_OPTIONS,
-    };
-
     // base class for application events
     class Event {
     protected:
-        explicit Event(const SDL_Event& e, EventType type) :
-            inner_event_{&e},
-            type_{type}
-        {}
-
+        Event() = default;
+        explicit Event(EventType type) : type_{type} {}
         Event(const Event&) = default;
         Event(Event&&) noexcept = default;
         Event& operator=(const Event&) = default;
@@ -46,16 +29,8 @@ namespace osc
 
         EventType type() const { return type_; }
 
-        operator const SDL_Event& () const { return *inner_event_; }
     private:
-        const SDL_Event* inner_event_;
-        EventType type_;
-    };
-
-    // a "raw" uncategorized event from the underlying OS/OS abstraction layer
-    class RawEvent final : public Event {
-    public:
-        explicit RawEvent(const SDL_Event& e) : Event{e, EventType::Raw} {}
+        EventType type_ = EventType::Custom;
     };
 
     class DropFileEvent final : public Event {

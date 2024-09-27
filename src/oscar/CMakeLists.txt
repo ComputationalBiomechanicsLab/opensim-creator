@@ -273,6 +273,7 @@ add_library(oscar STATIC
     Platform/AppSettingScope.h
     Platform/Event.cpp
     Platform/Event.h
+    Platform/EventType.h
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/IconCodepoints.h
@@ -292,6 +293,7 @@ add_library(oscar STATIC
     Platform/LogSink.h
     Platform/os.cpp
     Platform/os.h
+    Platform/RawEvent.h
     Platform/ResourceLoader.h
     Platform/ResourcePath.h
     Platform/ResourceStream.cpp
@@ -392,6 +394,7 @@ add_library(oscar STATIC
     Utils/CStringView.h
     Utils/DefaultConstructOnCopy.h
     Utils/EnumHelpers.h
+    Utils/ExceptionHelpers.cpp
     Utils/ExceptionHelpers.h
     Utils/FileChangePoller.cpp
     Utils/FileChangePoller.h
@@ -454,7 +457,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- "Utils/ExceptionHelpers.cpp")
+)
 
 target_include_directories(oscar PUBLIC
 

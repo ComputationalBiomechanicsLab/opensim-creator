@@ -7,6 +7,7 @@
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/EventType.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/IEventListener.h>
@@ -21,6 +22,7 @@
 #include <oscar/Platform/LogMessageView.h>
 #include <oscar/Platform/LogSink.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/RawEvent.h>
 #include <oscar/Platform/ResourceDirectoryEntry.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>

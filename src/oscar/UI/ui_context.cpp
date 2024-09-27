@@ -4,6 +4,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/RawEvent.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceLoader.h>
@@ -203,6 +204,51 @@ static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImG
     }
 }
 
+static bool ImGui_ImplSDL2_ProcessRawEvent(BackendData& bd, ImGuiIO& io, const SDL_Event& e)
+{
+    switch (e.type) {
+    case SDL_WINDOWEVENT: {
+        // - When capturing mouse, SDL will send a bunch of conflicting LEAVE/ENTER event on every mouse move, but the final ENTER tends to be right.
+        // - However we won't get a correct LEAVE event for a captured window.
+        // - In some cases, when detaching a window from main viewport SDL may send SDL_WINDOWEVENT_ENTER one frame too late,
+        //   causing SDL_WINDOWEVENT_LEAVE on previous frame to interrupt drag operation by clear mouse position. This is why
+        //   we delay process the SDL_WINDOWEVENT_LEAVE events by one frame. See issue #5012 for details.
+        Uint8 window_event = e.window.event;
+        if (window_event == SDL_WINDOWEVENT_ENTER) {
+            bd.MouseWindowID = e.window.windowID;
+            bd.MouseLastLeaveFrame = 0;
+        }
+        if (window_event == SDL_WINDOWEVENT_LEAVE) {
+            bd.MouseLastLeaveFrame = ImGui::GetFrameCount() + 1;
+        }
+        if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+            io.AddFocusEvent(true);
+        }
+        else if (window_event == SDL_WINDOWEVENT_FOCUS_LOST) {
+            io.AddFocusEvent(false);
+        }
+        if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED || window_event == SDL_WINDOWEVENT_RESIZED) {
+            if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(SDL_GetWindowFromID(e.window.windowID)))) {
+                if (window_event == SDL_WINDOWEVENT_CLOSE) {
+                    viewport->PlatformRequestClose = true;
+                }
+                if (window_event == SDL_WINDOWEVENT_MOVED) {
+                    viewport->PlatformRequestMove = true;
+                }
+                if (window_event == SDL_WINDOWEVENT_RESIZED) {
+                    viewport->PlatformRequestResize = true;
+                }
+                return true;
+            }
+        }
+        return true;
+    }
+    default: {
+        return false;
+    }
+    }
+}
+
 // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
@@ -243,7 +289,7 @@ static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
         if (button == MouseButton::Forward) { mouse_button = 4; }
 
         if (mouse_button == -1) {
-            break;
+            return false;
         }
 
         io.AddMouseSourceEvent(button_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
@@ -272,51 +318,15 @@ static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
         bd->WantUpdateMonitors = true;
         return true;
     }
-    default: {
-        break;
-    }
-    }
-
-    switch (const SDL_Event* event = &static_cast<const SDL_Event&>(e); event->type) {
-    case SDL_WINDOWEVENT:
-    {
-        // - When capturing mouse, SDL will send a bunch of conflicting LEAVE/ENTER event on every mouse move, but the final ENTER tends to be right.
-        // - However we won't get a correct LEAVE event for a captured window.
-        // - In some cases, when detaching a window from main viewport SDL may send SDL_WINDOWEVENT_ENTER one frame too late,
-        //   causing SDL_WINDOWEVENT_LEAVE on previous frame to interrupt drag operation by clear mouse position. This is why
-        //   we delay process the SDL_WINDOWEVENT_LEAVE events by one frame. See issue #5012 for details.
-        Uint8 window_event = event->window.event;
-        if (window_event == SDL_WINDOWEVENT_ENTER) {
-            bd->MouseWindowID = event->window.windowID;
-            bd->MouseLastLeaveFrame = 0;
-        }
-        if (window_event == SDL_WINDOWEVENT_LEAVE) {
-            bd->MouseLastLeaveFrame = ImGui::GetFrameCount() + 1;
-        }
-        if (window_event == SDL_WINDOWEVENT_FOCUS_GAINED) {
-            io.AddFocusEvent(true);
-        }
-        else if (window_event == SDL_WINDOWEVENT_FOCUS_LOST) {
-            io.AddFocusEvent(false);
-        }
-        if (window_event == SDL_WINDOWEVENT_CLOSE || window_event == SDL_WINDOWEVENT_MOVED || window_event == SDL_WINDOWEVENT_RESIZED) {
-            if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(SDL_GetWindowFromID(event->window.windowID)))) {
-                if (window_event == SDL_WINDOWEVENT_CLOSE) {
-                    viewport->PlatformRequestClose = true;
-                }
-                if (window_event == SDL_WINDOWEVENT_MOVED) {
-                    viewport->PlatformRequestMove = true;
-                }
-                if (window_event == SDL_WINDOWEVENT_RESIZED) {
-                    viewport->PlatformRequestResize = true;
-                }
-                return true;
-            }
-        }
+    case EventType::Raw: {
+        const auto& raw_event = dynamic_cast<const RawEvent&>(e);
+        ImGui_ImplSDL2_ProcessRawEvent(*bd, io, raw_event.get_os_event());
         return true;
     }
+    default: {
+        return false;
     }
-    return false;
+    }
 }
 
 #ifdef __EMSCRIPTEN__

@@ -1,6 +1,7 @@
 #include "Event.h"
 
 #include <oscar/Platform/Log.h>
+#include <oscar/Platform/RawEvent.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -189,7 +190,7 @@ struct osc::Converter<Uint8, osc::MouseButton> final {
 };
 
 osc::DropFileEvent::DropFileEvent(const SDL_Event& e) :
-    Event{e, EventType::DropFile},
+    Event{EventType::DropFile},
     path_{e.drop.file}
 {
     OSC_ASSERT(e.type == SDL_DROPFILE);
@@ -197,7 +198,7 @@ osc::DropFileEvent::DropFileEvent(const SDL_Event& e) :
 }
 
 osc::KeyEvent::KeyEvent(const SDL_Event& e) :
-    Event{e, e.type == SDL_KEYUP ? EventType::KeyUp : EventType::KeyDown},
+    Event{e.type == SDL_KEYUP ? EventType::KeyUp : EventType::KeyDown},
     modifier_{to<KeyModifier>(e.key.keysym.mod)},
     key_{to<Key>(e.key.keysym.sym)}
 {
@@ -205,24 +206,24 @@ osc::KeyEvent::KeyEvent(const SDL_Event& e) :
 }
 
 osc::QuitEvent::QuitEvent(const SDL_Event& e) :
-    Event{e, EventType::Quit}
+    Event{EventType::Quit}
 {
     OSC_ASSERT(e.type == SDL_QUIT);
 }
 
 osc::TextInputEvent::TextInputEvent(const SDL_Event& e) :
-    Event{e, EventType::TextInput},
+    Event{EventType::TextInput},
     utf8_text_{static_cast<const char*>(e.text.text)}
 {
     OSC_ASSERT(e.type == SDL_TEXTINPUT);
 }
 
-osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event& e) :
-    Event{e, EventType::DisplayStateChange}
+osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event&) :
+    Event{EventType::DisplayStateChange}
 {}
 
 osc::MouseEvent::MouseEvent(const SDL_Event& e) :
-    Event{e, e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)}
+    Event{e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)}
 {
     switch (e.type) {
     case SDL_MOUSEBUTTONDOWN:
@@ -244,7 +245,7 @@ osc::MouseEvent::MouseEvent(const SDL_Event& e) :
 }
 
 osc::MouseWheelEvent::MouseWheelEvent(const SDL_Event& e) :
-    Event{e, EventType::MouseWheel},
+    Event{EventType::MouseWheel},
     delta_{e.wheel.preciseX, e.wheel.preciseY},
     input_source_{e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse}
 {
