@@ -276,6 +276,7 @@ add_library(oscar STATIC
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/IconCodepoints.h
+    Platform/IEventListener.h
     Platform/ILogSink.h
     Platform/IResourceLoader.cpp
     Platform/IResourceLoader.h

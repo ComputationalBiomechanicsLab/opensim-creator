@@ -9,6 +9,7 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/Platform/IEventListener.h>
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/IScreen.h>
