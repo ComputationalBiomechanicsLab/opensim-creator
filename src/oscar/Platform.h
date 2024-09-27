@@ -21,13 +21,13 @@
 #include <oscar/Platform/LogMessage.h>
 #include <oscar/Platform/LogMessageView.h>
 #include <oscar/Platform/LogSink.h>
+#include <oscar/Platform/Monitor.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/RawEvent.h>
 #include <oscar/Platform/ResourceDirectoryEntry.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Platform/ResourceStream.h>
-#include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenshotAnnotation.h>
 #include <oscar/Platform/Widget.h>

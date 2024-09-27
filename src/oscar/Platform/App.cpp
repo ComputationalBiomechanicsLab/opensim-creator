@@ -423,9 +423,9 @@ public:
         quit_requested_ = true;
     }
 
-    std::vector<Screen> screens() const
+    std::vector<Monitor> monitors() const
     {
-        std::vector<Screen> rv;
+        std::vector<Monitor> rv;
 
         const int display_count = SDL_GetNumVideoDisplays();
         rv.reserve(display_count);
@@ -944,9 +944,9 @@ void osc::App::request_transition(std::unique_ptr<IScreen> s)
     impl_->request_transition(std::move(s));
 }
 
-std::vector<Screen> osc::App::screens() const
+std::vector<Monitor> osc::App::monitors() const
 {
-    return impl_->screens();
+    return impl_->monitors();
 }
 
 void osc::App::request_quit()

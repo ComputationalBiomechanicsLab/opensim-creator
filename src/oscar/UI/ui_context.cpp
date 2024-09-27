@@ -156,14 +156,14 @@ namespace
 
     void update_monitors(const App& app)
     {
-        const auto screens = app.screens();
+        const auto monitors = app.monitors();
 
         get_ui_backend_data()->WantUpdateMonitors = false;
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         platform_io.Monitors.clear();
-        platform_io.Monitors.reserve(static_cast<int>(screens.size()));
-        for (size_t i = 0; i < screens.size(); ++i) {
-            const auto& screen = screens[i];
+        platform_io.Monitors.reserve(static_cast<int>(monitors.size()));
+        for (size_t i = 0; i < monitors.size(); ++i) {
+            const auto& screen = monitors[i];
 
             ImGuiPlatformMonitor monitor;
             monitor.MainPos = screen.bounds().p1;

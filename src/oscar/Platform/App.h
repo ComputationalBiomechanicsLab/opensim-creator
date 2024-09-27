@@ -7,7 +7,7 @@
 #include <oscar/Platform/AppMainLoopStatus.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourceStream.h>
-#include <oscar/Platform/Screen.h>
+#include <oscar/Platform/Monitor.h>
 #include <oscar/Platform/Screenshot.h>
 
 #include <concepts>
@@ -161,9 +161,9 @@ namespace osc
         // application rendering loop)
         void request_quit();
 
-        // returns a sequence of all screens associated with the windowing system that
+        // returns a sequence of all physical monitors associated with the windowing system that
         // this `App` is connected to.
-        std::vector<Screen> screens() const;
+        std::vector<Monitor> monitors() const;
 
         // returns main window's dimensions
         Vec2 main_window_dimensions() const;
