@@ -1352,7 +1352,7 @@ void osc::DrawSaveModelButton(
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
-    const bool disable = not HasInputFileName(model.getModel());
+    const bool disable = model.isReadonly() or not HasInputFileName(model.getModel());
 
     if (disable) {
         ui::begin_disabled();
@@ -1378,7 +1378,7 @@ void osc::DrawUndoButton(IModelStatePair& model)
         undoable->doUndo();
     }
     if (disable) {
-        ui::begin_disabled();
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Undo", "Undo the model to an earlier version");
 }

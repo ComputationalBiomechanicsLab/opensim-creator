@@ -61,7 +61,7 @@ namespace
         const auto& registry = GetComponentRegistry<OpenSim::Joint>();
 
         std::optional<ptrdiff_t> selectedIdx;
-        if (ui::begin_menu("Change Joint Type")) {
+        if (ui::begin_menu("Change Joint Type", model.canUpdModel())) {
             // look the Joint up in the type registry so we know where it should be in the ui::draw_combobox
             std::optional<size_t> maybeTypeIndex = IndexOf(registry, *joint);
 

@@ -158,7 +158,7 @@ void osc::MainMenuFileTab::onDraw(
     {
         const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel and modelHasBackingFile) and undoableModel) {
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
         ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");

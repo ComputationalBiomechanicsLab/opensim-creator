@@ -118,16 +118,15 @@ private:
 
         ui::same_line();
 
-        if (not m_State->isCamerasLinked()) {
+        const bool disabled = not m_State->isCamerasLinked();
+        if (disabled) {
             ui::begin_disabled();
         }
-        {
-            bool linkRotation = m_State->isOnlyCameraRotationLinked();
-            if (ui::draw_checkbox("only link rotation", &linkRotation)) {
-                m_State->setOnlyCameraRotationLinked(linkRotation);
-            }
+        bool linkRotation = m_State->isOnlyCameraRotationLinked();
+        if (ui::draw_checkbox("only link rotation", &linkRotation)) {
+            m_State->setOnlyCameraRotationLinked(linkRotation);
         }
-        if (not m_State->isCamerasLinked()) {
+        if (disabled) {
             ui::end_disabled();
         }
     }

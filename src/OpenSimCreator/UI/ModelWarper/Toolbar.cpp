@@ -31,7 +31,8 @@ void osc::mow::Toolbar::drawContent()
 
 void osc::mow::Toolbar::drawWarpModelButton()
 {
-    if (!m_State->canWarpModel()) {
+    const bool disabled = not m_State->canWarpModel();
+    if (disabled) {
         ui::begin_disabled();
     }
     ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
@@ -39,7 +40,7 @@ void osc::mow::Toolbar::drawWarpModelButton()
         m_State->actionWarpModelAndOpenInModelEditor();
     }
     ui::pop_style_color();
-    if (!m_State->canWarpModel()) {
+    if (disabled) {
         ui::end_disabled();
     }
 

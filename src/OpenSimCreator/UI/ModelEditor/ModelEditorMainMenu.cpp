@@ -107,7 +107,7 @@ private:
                 m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
-            if (ui::draw_menu_item("         Import Points")) {
+            if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
                 m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
                     "Import Points",
                     [model = m_Model](auto lms)
@@ -151,11 +151,11 @@ private:
     void drawMainMenuActionsTab()
     {
         if (ui::begin_menu("Actions")) {
-            if (ui::draw_menu_item("Disable all wrapping surfaces")) {
+            if (ui::draw_menu_item("Disable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
                 ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
-            if (ui::draw_menu_item("Enable all wrapping surfaces")) {
+            if (ui::draw_menu_item("Enable all wrapping surfaces", {}, nullptr, m_Model->canUpdModel())) {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
 

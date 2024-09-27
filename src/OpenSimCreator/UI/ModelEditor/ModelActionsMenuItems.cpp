@@ -38,10 +38,15 @@ public:
     {
         ui::push_id(this);
 
+        const bool disabled = m_Model->isReadonly();
+        if (disabled) {
+            ui::begin_disabled();
+        }
+
         // action: add body
         {
             // draw button
-            if (ui::draw_menu_item("Body")) {
+            if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
                 auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
                 popup->open();
                 m_EditorAPI->pushPopup(std::move(popup));
@@ -64,6 +69,10 @@ public:
         renderButton(GetComponentRegistry<OpenSim::Component>());
         renderButton(GetCustomComponentRegistry());
 
+        if (disabled) {
+            ui::end_disabled();
+        }
+
         ui::pop_id();
     }
 
@@ -71,7 +80,7 @@ private:
 
     void renderButton(const ComponentRegistryBase& registry)
     {
-        if (ui::begin_menu(registry.name())) {
+        if (ui::begin_menu(registry.name(), m_Model->canUpdModel())) {
             for (const auto& entry : registry) {
                 if (ui::draw_menu_item(entry.name())) {
                     auto popup = std::make_unique<AddComponentPopup>(

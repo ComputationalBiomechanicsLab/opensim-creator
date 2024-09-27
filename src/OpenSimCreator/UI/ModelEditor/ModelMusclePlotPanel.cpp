@@ -1490,6 +1490,7 @@ namespace
         }
 
     protected:
+        bool isModelLocked() const { return m_Shared->getModel().isReadonly(); }
         const SharedStateData& getShared() const { return *m_Shared; }
         SharedStateData& updShared() { return *m_Shared; }
 
@@ -1825,20 +1826,17 @@ namespace
             // also, draw an X tag on the axes where the coordinate's value currently is
             plot::tag_x(coordinateXInDegrees, Color::white());
 
-            // draw faded vertial drop line where the mouse currently is
-            if (maybeMouseX)
-            {
+            // if it's possible to edit the coordinate via the plot, draw faded vertial drop line where the
+            // mouse currently is
+            if (maybeMouseX) {
                 double v = *maybeMouseX;
 
                 // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                 // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                 // which looks very very glitchy (#490)
                 plot::drag_line_x(11, &v, OSCColors::scrub_hovered(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
-            }
 
-            // also, draw a faded X tag on the axes where the mouse currently is (in X)
-            if (maybeMouseX)
-            {
+                // also, draw a faded X tag on the axes where the mouse currently is (in X)
                 plot::tag_x(*maybeMouseX, Color::white().with_alpha(0.6f));
             }
 
@@ -1889,7 +1887,10 @@ namespace
             // then "scrub" through the output in the model
             //
             // this is handy for users to visually see how the independent variable affects the model
-            if (maybeMouseX && ui::is_mouse_down(ui::MouseButton::Left)) {
+            if (maybeMouseX and ui::is_mouse_down(ui::MouseButton::Left)) {
+                if (isModelLocked()) {
+                    ui::draw_tooltip("scrubbing disabled", "the model is locked");
+                }
                 if (coord.getDefaultLocked()) {
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
@@ -1902,6 +1903,9 @@ namespace
             // when the user stops dragging their left-mouse around, commit the scrubbed-to
             // coordinate to model storage
             if (maybeMouseX && ui::is_mouse_released(ui::MouseButton::Left)) {
+                if (isModelLocked()) {
+                    ui::draw_tooltip("scrubbing disabled", "the model is locked");
+                }
                 if (coord.getDefaultLocked()) {
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }

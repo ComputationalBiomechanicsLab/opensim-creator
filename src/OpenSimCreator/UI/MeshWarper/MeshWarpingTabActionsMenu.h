@@ -42,18 +42,13 @@ namespace osc
         {
             const bool hasLandmarks = ContainsLandmarks(m_State->getScratch());
 
-            if (!hasLandmarks)
-            {
+            if (not hasLandmarks) {
                 ui::begin_disabled();
             }
-
-            if (ui::draw_menu_item(OSC_ICON_ERASER " clear landmarks"))
-            {
+            if (ui::draw_menu_item(OSC_ICON_ERASER " clear landmarks")) {
                 ActionClearAllLandmarks(m_State->updUndoable());
             }
-
-            if (!hasLandmarks)
-            {
+            if (not hasLandmarks) {
                 ui::end_disabled();
             }
         }
@@ -63,18 +58,13 @@ namespace osc
             const bool hasNonParticipatingLandmarks =
                 ContainsNonParticipatingLandmarks(m_State->getScratch());
 
-            if (!hasNonParticipatingLandmarks)
-            {
+            if (not hasNonParticipatingLandmarks) {
                 ui::begin_disabled();
             }
-
-            if (ui::draw_menu_item(OSC_ICON_ERASER " clear non-participating landmarks"))
-            {
+            if (ui::draw_menu_item(OSC_ICON_ERASER " clear non-participating landmarks")) {
                 ActionClearAllNonParticipatingLandmarks(m_State->updUndoable());
             }
-
-            if (!hasNonParticipatingLandmarks)
-            {
+            if (not hasNonParticipatingLandmarks) {
                 ui::end_disabled();
             }
         }

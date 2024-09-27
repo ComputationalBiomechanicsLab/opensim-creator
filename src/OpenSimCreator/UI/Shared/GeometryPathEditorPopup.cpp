@@ -216,31 +216,25 @@ private:
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
 
-        if (i <= 0)
-        {
+        if (i <= 0) {
             ui::begin_disabled();
         }
-        if (ui::draw_small_button(OSC_ICON_ARROW_UP))
-        {
+        if (ui::draw_small_button(OSC_ICON_ARROW_UP)) {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveUp, i};
         }
-        if (i <= 0)
-        {
+        if (i <= 0) {
             ui::end_disabled();
         }
 
         ui::same_line();
 
-        if (i+1 >= ssize(pps))
-        {
+        if (i+1 >= ssize(pps)) {
             ui::begin_disabled();
         }
-        if (ui::draw_small_button(OSC_ICON_ARROW_DOWN))
-        {
+        if (ui::draw_small_button(OSC_ICON_ARROW_DOWN)) {
             m_RequestedAction = RequestedAction{RequestedAction::Type::MoveDown, i};
         }
-        if (i+1 >= ssize(pps))
-        {
+        if (i+1 >= ssize(pps)) {
             ui::end_disabled();
         }
 

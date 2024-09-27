@@ -76,6 +76,11 @@ namespace
                 m_LastSelected = selected;
             }
 
+            const bool disabled = m_Model->isReadonly();
+            if (disabled) {
+                ui::begin_disabled();
+            }
+
             ui::set_num_columns(2);
 
             ui::draw_separator();
@@ -95,6 +100,8 @@ namespace
             ui::next_column();
 
             ui::set_num_columns();
+
+            ui::end_disabled();
         }
     private:
         std::shared_ptr<IModelStatePair> m_Model;
@@ -120,8 +127,7 @@ public:
 private:
     void impl_draw_content() final
     {
-        if (!m_Model->getSelected())
-        {
+        if (not m_Model->getSelected()) {
             ui::draw_text_disabled_and_panel_centered("(nothing selected)");
             return;
         }
@@ -136,16 +142,14 @@ private:
 
         m_NameEditor.onDraw();
 
-        if (!m_Model->getSelected())
-        {
+        if (not m_Model->getSelected()) {
             return;
         }
 
         // property editors
         {
             auto maybeUpdater = m_SelectionPropertiesEditor.onDraw();
-            if (maybeUpdater)
-            {
+            if (maybeUpdater) {
                 ActionApplyPropertyEdit(*m_Model, *maybeUpdater);
             }
         }

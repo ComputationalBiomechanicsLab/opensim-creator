@@ -49,8 +49,7 @@ private:
         std::vector<const OpenSim::Coordinate*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
 
         // if there's no coordinates in the model, show a warning message and stop drawing
-        if (coordPtrs.empty())
-        {
+        if (coordPtrs.empty()) {
             ui::draw_text_disabled_and_panel_centered("(no coordinates in the model)");
             return;
         }
@@ -64,8 +63,7 @@ private:
             ui::TableFlag::BordersInnerV,
             ui::TableFlag::SizingStretchSame,
         };
-        if (ui::begin_table("##coordinatestable", 3, flags))
-        {
+        if (ui::begin_table("##coordinatestable", 3, flags)) {
             ui::table_setup_column("Name");
             ui::table_setup_column("Value", ui::ColumnFlag::NoSort, 1.65f);
             ui::table_setup_column("Speed", ui::ColumnFlag::NoSort, 0.5f);
@@ -77,10 +75,8 @@ private:
 
                 // we know the user can only sort one column (name) so we don't need to permute
                 // through the entire specs structure
-                if (specs.size() == 1 && specs.front().column_index == 0 && specs.front().sort_order == 0)
-                {
-                    switch (specs.front().sort_direction)
-                    {
+                if (specs.size() == 1 && specs.front().column_index == 0 && specs.front().sort_order == 0) {
+                    switch (specs.front().sort_direction) {
                     case ui::SortDirection::Ascending:
                         rgs::sort(coordPtrs, rgs::less{}, [](const auto& ptr) { return ptr->getName(); });
                         break;
@@ -125,13 +121,11 @@ private:
     void drawNameCell(const OpenSim::Coordinate& c)
     {
         int stylesPushed = 0;
-        if (&c == m_Model->getHovered())
-        {
+        if (&c == m_Model->getHovered()) {
             ui::push_style_color(ui::ColorVar::Text, OSCColors::hovered());
             ++stylesPushed;
         }
-        if (&c == m_Model->getSelected())
-        {
+        if (&c == m_Model->getSelected()) {
             ui::push_style_color(ui::ColorVar::Text, OSCColors::selected());
             ++stylesPushed;
         }
@@ -139,8 +133,7 @@ private:
         ui::draw_text_unformatted(c.getName());
         ui::pop_style_color(std::exchange(stylesPushed, 0));
 
-        if (ui::is_item_hovered())
-        {
+        if (ui::is_item_hovered()) {
             m_Model->setHovered(&c);
 
             std::stringstream ss;
@@ -150,12 +143,10 @@ private:
             ui::draw_tooltip(c.getName(), ss.str());
         }
 
-        if (ui::is_item_clicked(ui::MouseButton::Left))
-        {
+        if (ui::is_item_clicked(ui::MouseButton::Left)) {
             m_Model->setSelected(&c);
         }
-        else if (ui::is_item_clicked(ui::MouseButton::Right))
-        {
+        else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
                 m_MainUIStateAPI,
@@ -170,9 +161,16 @@ private:
 
     void drawDataCell(const OpenSim::Coordinate& c)
     {
+        const bool disabled = m_Model->isReadonly();
+        if (disabled) {
+            ui::begin_disabled();
+        }
         drawDataCellLockButton(c);
         ui::same_line(0.0f, 0.0f);
         drawDataCellCoordinateSlider(c);
+        if (disabled) {
+            ui::end_disabled();
+        }
     }
 
     void drawDataCellLockButton(const OpenSim::Coordinate& c)
@@ -181,8 +179,7 @@ private:
         ui::push_style_color(ui::ColorVar::ButtonActive, Color::clear());
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
         ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
-        if (ui::draw_button(c.getLocked(m_Model->getState()) ? OSC_ICON_LOCK : OSC_ICON_UNLOCK))
-        {
+        if (ui::draw_button(c.getLocked(m_Model->getState()) ? OSC_ICON_LOCK : OSC_ICON_UNLOCK)) {
             bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
@@ -199,28 +196,24 @@ private:
 
         ui::set_next_item_width(ui::get_content_region_available().x);
 
-        float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
-        float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
+        const float minValue = ConvertCoordValueToDisplayValue(c, c.getRangeMin());
+        const float maxValue = ConvertCoordValueToDisplayValue(c, c.getRangeMax());
         float displayedValue = ConvertCoordValueToDisplayValue(c, c.getValue(m_Model->getState()));
 
-        if (coordinateLocked)
-        {
+        if (coordinateLocked) {
             ui::push_style_var(ui::StyleVar::DisabledAlpha, 0.2f);
             ui::begin_disabled();
         }
-        if (ui::draw_float_circular_slider("##coordinatevalueeditor", &displayedValue, minValue, maxValue))
-        {
-            double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
+        if (ui::draw_float_circular_slider("##coordinatevalueeditor", &displayedValue, minValue, maxValue)) {
+            const double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValue(*m_Model, c, storedValue);
         }
-        if (coordinateLocked)
-        {
+        if (coordinateLocked) {
             ui::end_disabled();
             ui::pop_style_var();
         }
-        if (ui::is_item_deactivated_after_edit())
-        {
-            double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
+        if (ui::is_item_deactivated_after_edit()) {
+            const double storedValue = ConvertCoordDisplayValueToStorageValue(c, displayedValue);
             ActionSetCoordinateValueAndSave(*m_Model, c, storedValue);
         }
         ui::draw_tooltip_body_only_if_item_hovered("Ctrl-click the slider to edit");
@@ -231,15 +224,13 @@ private:
         float displayedSpeed = ConvertCoordValueToDisplayValue(c, c.getSpeedValue(m_Model->getState()));
 
         ui::set_next_item_width(ui::get_content_region_available().x);
-        if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed))
-        {
-            double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
+        if (ui::draw_float_meters_input("##coordinatespeededitor", displayedSpeed)) {
+            const double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
             ActionSetCoordinateSpeed(*m_Model, c, storedSpeed);
         }
 
-        if (ui::is_item_deactivated_after_edit())
-        {
-            double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
+        if (ui::is_item_deactivated_after_edit()) {
+            const double storedSpeed = ConvertCoordDisplayValueToStorageValue(c, displayedSpeed);
             ActionSetCoordinateSpeedAndSave(*m_Model, c, storedSpeed);
         }
     }

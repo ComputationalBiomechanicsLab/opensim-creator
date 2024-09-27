@@ -176,26 +176,21 @@ private:
             disabledReason = "Cannot continue: there are no landmarks to import";
         }
 
-        if (disabledReason)
-        {
+        if (disabledReason) {
             ui::begin_disabled();
         }
-        if (ui::draw_button("OK"))
-        {
+        if (ui::draw_button("OK")) {
             actionAttachResultToModelGraph();
             close();
         }
-        if (disabledReason)
-        {
+        if (disabledReason) {
             ui::end_disabled();
-            if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled))
-            {
+            if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
                 ui::draw_tooltip_body_only(*disabledReason);
             }
         }
         ui::same_line();
-        if (ui::draw_button("Cancel"))
-        {
+        if (ui::draw_button("Cancel")) {
             close();
         }
     }
