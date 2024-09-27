@@ -1,6 +1,6 @@
 #include "OutputWatchesPanel.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
@@ -51,7 +51,7 @@ class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(std::string_view panelName_,
-        std::shared_ptr<const UndoableModelStatePair> model_,
+        std::shared_ptr<const IModelStatePair> model_,
         const ParentPtr<IMainUIStateAPI>& api_) :
 
         StandardPanelImpl{panelName_},
@@ -103,14 +103,14 @@ private:
     }
 
     ParentPtr<IMainUIStateAPI> m_API;
-    std::shared_ptr<const UndoableModelStatePair> m_Model;
+    std::shared_ptr<const IModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
 
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
-    std::shared_ptr<const UndoableModelStatePair> model_,
+    std::shared_ptr<const IModelStatePair> model_,
     const ParentPtr<IMainUIStateAPI>& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}

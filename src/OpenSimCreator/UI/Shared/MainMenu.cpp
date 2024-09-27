@@ -51,66 +51,56 @@ osc::MainMenuFileTab::MainMenuFileTab() :
 
 void osc::MainMenuFileTab::onDraw(
     const ParentPtr<IMainUIStateAPI>& api,
-    UndoableModelStatePair* maybeModel)
+    IModelStatePair* maybeModel)
 {
+    auto* undoableModel = dynamic_cast<UndoableModelStatePair*>(maybeModel);
+
     // handle hotkeys enabled by just drawing the menu
     {
         bool mod = ui::is_ctrl_or_super_down();
 
-        if (mod && ui::is_key_pressed(Key::N))
-        {
+        if (mod and ui::is_key_pressed(Key::N)) {
             ActionNewModel(api);
         }
-        else if (mod && ui::is_key_pressed(Key::O))
-        {
+        else if (mod and ui::is_key_pressed(Key::O)) {
             ActionOpenModel(api);
         }
-        else if (maybeModel && mod && ui::is_shift_down() && ui::is_key_pressed(Key::S))
-        {
-            ActionSaveCurrentModelAs(*maybeModel);
+        else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
+            ActionSaveCurrentModelAs(*undoableModel);
         }
-        else if (maybeModel && mod && ui::is_key_pressed(Key::S))
-        {
-            ActionSaveModel(*api, *maybeModel);
+        else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
+            ActionSaveModel(*api, *undoableModel);
         }
-        else if (maybeModel && ui::is_key_pressed(Key::F5))
-        {
-            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
+        else if (undoableModel and ui::is_key_pressed(Key::F5)) {
+            ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
     }
 
     // draw "save as", if necessary
-    if (maybeSaveChangesPopup)
-    {
+    if (maybeSaveChangesPopup) {
         maybeSaveChangesPopup->on_draw();
     }
 
-    if (!ui::begin_menu("File"))
-    {
+    if (not ui::begin_menu("File")) {
         return;
     }
 
-    if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N"))
-    {
+    if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N")) {
         ActionNewModel(api);
     }
 
-    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O"))
-    {
+    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
         ActionOpenModel(api);
     }
 
     int imgui_id = 0;
 
     auto recentFiles = App::singleton<RecentFiles>();
-    if (ui::begin_menu(OSC_ICON_FOLDER_OPEN " Open Recent", !recentFiles->empty()))
-    {
+    if (ui::begin_menu(OSC_ICON_FOLDER_OPEN " Open Recent", !recentFiles->empty())) {
         // iterate in reverse: recent files are stored oldest --> newest
-        for (const RecentFile& rf : *recentFiles)
-        {
+        for (const RecentFile& rf : *recentFiles) {
             ui::push_id(++imgui_id);
-            if (ui::draw_menu_item(rf.path.filename().string()))
-            {
+            if (ui::draw_menu_item(rf.path.filename().string())) {
                 ActionOpenModel(api, rf.path);
             }
             ui::pop_id();
@@ -119,13 +109,10 @@ void osc::MainMenuFileTab::onDraw(
         ui::end_menu();
     }
 
-    if (ui::begin_menu(OSC_ICON_FOLDER_OPEN " Open Example"))
-    {
-        for (const std::filesystem::path& ex : exampleOsimFiles)
-        {
+    if (ui::begin_menu(OSC_ICON_FOLDER_OPEN " Open Example")) {
+        for (const std::filesystem::path& ex : exampleOsimFiles) {
             ui::push_id(++imgui_id);
-            if (ui::draw_menu_item(ex.filename().string()))
-            {
+            if (ui::draw_menu_item(ex.filename().string())) {
                 ActionOpenModel(api, ex);
             }
             ui::pop_id();
@@ -136,21 +123,17 @@ void osc::MainMenuFileTab::onDraw(
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr))
-    {
+    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr)) {
         std::optional<std::filesystem::path> maybePath = prompt_user_to_select_file({"sto", "mot"});
-        if (maybePath && maybeModel)
-        {
-            try
-            {
+        if (maybePath and maybeModel) {
+            try {
                 std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(maybeModel->getModel());
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
                 api->add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
-            catch (const std::exception& ex)
-            {
+            catch (const std::exception& ex) {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
             }
         }
@@ -158,19 +141,15 @@ void osc::MainMenuFileTab::onDraw(
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, maybeModel != nullptr))
-    {
-        if (maybeModel)
-        {
-            ActionSaveModel(*api, *maybeModel);
+    if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, undoableModel != nullptr)) {
+        if (undoableModel) {
+            ActionSaveModel(*api, *undoableModel);
         }
     }
 
-    if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", "Shift+Ctrl+S", false, maybeModel != nullptr))
-    {
-        if (maybeModel)
-        {
-            ActionSaveCurrentModelAs(*maybeModel);
+    if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", "Shift+Ctrl+S", false, undoableModel != nullptr)) {
+        if (undoableModel) {
+            ActionSaveCurrentModelAs(*undoableModel);
         }
     }
 
@@ -179,25 +158,21 @@ void osc::MainMenuFileTab::onDraw(
     {
         const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, modelHasBackingFile) && maybeModel)
-        {
-            ActionReloadOsimFromDisk(*maybeModel, *App::singleton<SceneCache>());
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel and modelHasBackingFile) and undoableModel) {
+            ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
         ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ui::draw_menu_item(OSC_ICON_CLIPBOARD " Copy .osim path to clipboard", {}, false, modelHasBackingFile) && maybeModel)
-        {
-            ActionCopyModelPathToClipboard(*maybeModel);
+        if (ui::draw_menu_item(OSC_ICON_CLIPBOARD " Copy .osim path to clipboard", {}, false, undoableModel and modelHasBackingFile) and undoableModel) {
+            ActionCopyModelPathToClipboard(*undoableModel);
         }
         ui::draw_tooltip_if_item_hovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");
 
-        if (ui::draw_menu_item(OSC_ICON_FOLDER " Open .osim's parent directory", {}, false, modelHasBackingFile) && maybeModel)
-        {
+        if (ui::draw_menu_item(OSC_ICON_FOLDER " Open .osim's parent directory", {}, false, modelHasBackingFile) && maybeModel) {
             ActionOpenOsimParentDirectory(*maybeModel);
         }
 
-        if (ui::draw_menu_item(OSC_ICON_LINK " Open .osim in external editor", {}, false, modelHasBackingFile) && maybeModel)
-        {
+        if (ui::draw_menu_item(OSC_ICON_LINK " Open .osim in external editor", {}, false, modelHasBackingFile) && maybeModel) {
             ActionOpenOsimInExternalEditor(*maybeModel);
         }
         ui::draw_tooltip_if_item_hovered("Open .osim in external editor", "Open the .osim file currently being edited in an external text editor. The editor that's used depends on your operating system's default for opening .osim files.");
@@ -218,10 +193,7 @@ void osc::MainMenuFileTab::onDraw(
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 
-
-
-    if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q"))
-    {
+    if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
         App::upd().request_quit();
     }
 

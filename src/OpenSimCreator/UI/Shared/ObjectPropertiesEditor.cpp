@@ -1660,16 +1660,21 @@ public:
 
     std::optional<ObjectPropertyEdit> onDraw()
     {
-        if (const OpenSim::Object* maybeObj = m_ObjectGetter())
-        {
-            // object accessible: draw property editors
-            return drawPropertyEditors(*maybeObj);
+        const bool disabled = m_TargetModel->isReadonly();
+        if (disabled) {
+            ui::begin_disabled();
         }
-        else
-        {
-            // object inaccessible: draw nothing
-            return std::nullopt;
+
+        std::optional<ObjectPropertyEdit> rv;
+        if (const OpenSim::Object* maybeObj = m_ObjectGetter()) {
+            rv = drawPropertyEditors(*maybeObj);  // object accessible: draw property editors
         }
+
+        if (disabled) {
+            ui::end_disabled();
+        }
+
+        return rv;
     }
 private:
 

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/ExperimentalData/AnnotatedMotion.h>
 #include <OpenSimCreator/Documents/ExperimentalData/FileBackedStorage.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
@@ -51,8 +52,8 @@ namespace
 {
     class PreviewExperimentalDataUiState final {
     public:
-        const std::shared_ptr<UndoableModelStatePair>& updSharedModelPtr() const { return m_Model; }
-        UndoableModelStatePair& updModel() { return *m_Model; }
+        std::shared_ptr<IModelStatePair> updSharedModelPtr() const { return m_Model; }
+        IModelStatePair& updModel() { return *m_Model; }
 
         bool isModelLoaded() const
         {
@@ -216,7 +217,7 @@ namespace
         ReadonlyPropertiesEditorPanel(
             std::string_view panelName,
             IPopupAPI* api,
-            const std::shared_ptr<const UndoableModelStatePair>& targetModel) :
+            const std::shared_ptr<const IModelStatePair>& targetModel) :
 
             StandardPanelImpl{panelName},
             m_PropertiesEditor{api, targetModel, [model = targetModel](){ return model->getSelected(); }}

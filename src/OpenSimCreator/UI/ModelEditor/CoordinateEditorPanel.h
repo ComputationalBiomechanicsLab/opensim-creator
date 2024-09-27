@@ -8,8 +8,8 @@
 
 namespace osc { class IEditorAPI; }
 namespace osc { class IMainUIStateAPI; }
+namespace osc { class IModelStatePair; }
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
@@ -19,7 +19,7 @@ namespace osc
             std::string_view panelName,
             const ParentPtr<IMainUIStateAPI>&,
             IEditorAPI*,
-            std::shared_ptr<UndoableModelStatePair>
+            std::shared_ptr<IModelStatePair>
         );
         CoordinateEditorPanel(const CoordinateEditorPanel&) = delete;
         CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept;

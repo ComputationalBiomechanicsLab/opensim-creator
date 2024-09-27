@@ -62,6 +62,12 @@ public:
 
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_,
+        const OpenSim::Model& model_) :
+        Impl{parent_, std::make_unique<UndoableModelStatePair>(model_)}
+    {}
+
+    Impl(
+        const ParentPtr<IMainUIStateAPI>& parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
         Impl{parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
@@ -435,6 +441,11 @@ osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_) :
 
     m_Impl{std::make_unique<Impl>(parent_)}
+{}
+osc::ModelEditorTab::ModelEditorTab(
+    const ParentPtr<IMainUIStateAPI>& parent_,
+    const OpenSim::Model& model_) :
+    m_Impl{std::make_unique<Impl>(parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,

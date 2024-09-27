@@ -14,21 +14,6 @@
 #include <span>
 #include <string>
 
-namespace osc { class OpenSimDecorationOptions; }
-namespace osc { class OverlayDecorationOptions; }
-namespace osc { class CustomRenderingOptions; }
-namespace osc { class IconCache; }
-namespace osc { class IMainUIStateAPI; }
-namespace osc { struct ModelRendererParams; }
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ParamBlock; }
-namespace osc { struct PolarPerspectiveCamera; }
-namespace osc { struct Rect; }
-namespace osc { struct SceneDecoration; }
-namespace osc { class UndoableModelStatePair; }
-namespace osc { class IModelStatePair; }
-namespace osc { class IOutputExtractor; }
-namespace osc { class SimulationModelStatePair; }
 namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class Component; }
 namespace OpenSim { class Ellipsoid; }
@@ -38,6 +23,21 @@ namespace OpenSim { class Mesh; }
 namespace OpenSim { class Point; }
 namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
+namespace osc { class CustomRenderingOptions; }
+namespace osc { class IconCache; }
+namespace osc { class IMainUIStateAPI; }
+namespace osc { class IModelStatePair; }
+namespace osc { class IOutputExtractor; }
+namespace osc { class OpenSimDecorationOptions; }
+namespace osc { class OverlayDecorationOptions; }
+namespace osc { class ParamBlock; }
+namespace osc { class SimulationModelStatePair; }
+namespace osc { class UndoableModelStatePair; }
+namespace osc { struct ModelRendererParams; }
+namespace osc { struct PolarPerspectiveCamera; }
+namespace osc { struct Rect; }
+namespace osc { struct SceneDecoration; }
+namespace osc { template<typename T> class ParentPtr; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -263,20 +263,17 @@ namespace osc
     void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>&);
     void DrawSaveModelButton(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
-    void DrawUndoButton(UndoableModelStatePair&);
-    void DrawRedoButton(UndoableModelStatePair&);
-    void DrawUndoAndRedoButtons(UndoableModelStatePair&);
-    void DrawToggleFramesButton(UndoableModelStatePair&, IconCache&);
-    void DrawToggleMarkersButton(UndoableModelStatePair&, IconCache&);
-    void DrawToggleWrapGeometryButton(UndoableModelStatePair&, IconCache&);
-    void DrawToggleContactGeometryButton(UndoableModelStatePair&, IconCache&);
-    void DrawToggleForcesButton(UndoableModelStatePair&, IconCache&);
-    void DrawAllDecorationToggleButtons(UndoableModelStatePair&, IconCache&);
-    void DrawSceneScaleFactorEditorControls(UndoableModelStatePair&);
+    void DrawUndoButton(IModelStatePair&);
+    void DrawRedoButton(IModelStatePair&);
+    void DrawUndoAndRedoButtons(IModelStatePair&);
+    void DrawToggleFramesButton(IModelStatePair&, IconCache&);
+    void DrawToggleMarkersButton(IModelStatePair&, IconCache&);
+    void DrawToggleWrapGeometryButton(IModelStatePair&, IconCache&);
+    void DrawToggleContactGeometryButton(IModelStatePair&, IconCache&);
+    void DrawToggleForcesButton(IModelStatePair&, IconCache&);
+    void DrawAllDecorationToggleButtons(IModelStatePair&, IconCache&);
+    void DrawSceneScaleFactorEditorControls(IModelStatePair&);
 
     // mesh stuff
-    void DrawMeshExportContextMenuContent(
-        const IModelStatePair&,
-        const OpenSim::Mesh&
-    );
+    void DrawMeshExportContextMenuContent(const IModelStatePair&, const OpenSim::Mesh&);
 }

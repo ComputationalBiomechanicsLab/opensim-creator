@@ -1331,12 +1331,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStat
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
-        if (maybeFile)
-        {
+        if (maybeFile) {
             ActionOpenModel(api, *maybeFile);
         }
-        else
-        {
+        else {
             ActionOpenModel(api);
         }
     });
@@ -1346,8 +1344,7 @@ void osc::DrawSaveModelButton(
     const ParentPtr<IMainUIStateAPI>& api,
     UndoableModelStatePair& model)
 {
-    if (ui::draw_button(OSC_ICON_SAVE))
-    {
+    if (ui::draw_button(OSC_ICON_SAVE)) {
         ActionSaveModel(*api, model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
@@ -1355,128 +1352,138 @@ void osc::DrawSaveModelButton(
 
 void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 {
-    if (!HasInputFileName(model.getModel()))
-    {
-        ui::push_item_flag(ui::ItemFlag::Disabled, true);
-        ui::push_style_var(ui::StyleVar::Alpha, 0.5f * ui::get_style_alpha());
-    }
+    const bool disable = not HasInputFileName(model.getModel());
 
-    if (ui::draw_button(OSC_ICON_RECYCLE))
-    {
+    if (disable) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_button(OSC_ICON_RECYCLE)) {
         ActionReloadOsimFromDisk(model, *App::singleton<SceneCache>());
     }
-
-    if (!HasInputFileName(model.getModel()))
-    {
-        ui::pop_item_flag();
-        ui::pop_style_var();
+    if (disable) {
+        ui::end_disabled();
     }
-
     ui::draw_tooltip_if_item_hovered("Reload Model", "Reloads the model from its source osim file");
 }
 
-void osc::DrawUndoButton(UndoableModelStatePair& model)
+void osc::DrawUndoButton(IModelStatePair& model)
 {
-    int itemFlagsPushed = 0;
-    int styleVarsPushed = 0;
-    if (!model.canUndo())
-    {
-        ui::push_item_flag(ui::ItemFlag::Disabled, true);
-        ++itemFlagsPushed;
-        ui::push_style_var(ui::StyleVar::Alpha, 0.5f * ui::get_style_alpha());
-        ++styleVarsPushed;
+    auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
+    const bool disable = not (undoable and undoable->canUndo());
+
+    if (disable) {
+        ui::begin_disabled();
     }
-
-    if (ui::draw_button(OSC_ICON_UNDO)) {
-        model.doUndo();
+    if (ui::draw_button(OSC_ICON_UNDO) and undoable) {
+        undoable->doUndo();
     }
-
-    ui::pop_item_flags(itemFlagsPushed);
-    ui::pop_style_var(styleVarsPushed);
-
+    if (disable) {
+        ui::begin_disabled();
+    }
     ui::draw_tooltip_if_item_hovered("Undo", "Undo the model to an earlier version");
 }
 
-void osc::DrawRedoButton(UndoableModelStatePair& model)
+void osc::DrawRedoButton(IModelStatePair& model)
 {
-    int itemFlagsPushed = 0;
-    int styleVarsPushed = 0;
-    if (!model.canRedo())
-    {
-        ui::push_item_flag(ui::ItemFlag::Disabled, true);
-        ++itemFlagsPushed;
-        ui::push_style_var(ui::StyleVar::Alpha, 0.5f * ui::get_style_alpha());
-        ++styleVarsPushed;
+    auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
+    const bool disable = not (undoable and undoable->canRedo());
+
+    if (disable) {
+        ui::begin_disabled();
     }
-
-    if (ui::draw_button(OSC_ICON_REDO)) {
-        model.doRedo();
+    if (ui::draw_button(OSC_ICON_REDO) and undoable) {
+        undoable->doRedo();
     }
-
-    ui::pop_item_flags(itemFlagsPushed);
-    ui::pop_style_var(styleVarsPushed);
-
+    if (disable) {
+        ui::end_disabled();
+    }
     ui::draw_tooltip_if_item_hovered("Redo", "Redo the model to an undone version");
 }
 
-void osc::DrawUndoAndRedoButtons(UndoableModelStatePair& model)
+void osc::DrawUndoAndRedoButtons(IModelStatePair& model)
 {
     DrawUndoButton(model);
     ui::same_line();
     DrawRedoButton(model);
 }
 
-void osc::DrawToggleFramesButton(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawToggleFramesButton(IModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingFrames(model.getModel()) ? "frame_colored" : "frame_bw");
-    if (ui::draw_image_button("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
-    {
+
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##toggleframes", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleFrames(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Frames", "Toggles whether frames (coordinate systems) within the model should be rendered in the 3D scene.");
 }
 
-void osc::DrawToggleMarkersButton(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawToggleMarkersButton(IModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingMarkers(model.getModel()) ? "marker_colored" : "marker");
-    if (ui::draw_image_button("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
-    {
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglemarkers", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleMarkers(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Markers", "Toggles whether markers should be rendered in the 3D scene");
 }
 
-void osc::DrawToggleWrapGeometryButton(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawToggleWrapGeometryButton(IModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingWrapGeometry(model.getModel()) ? "wrap_colored" : "wrap");
-    if (ui::draw_image_button("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
-    {
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglewrapgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleWrapGeometry(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Wrap Geometry", "Toggles whether wrap geometry should be rendered in the 3D scene.\n\nNOTE: This is a model-log_level_ property. Individual wrap geometries *within* the model may have their visibility set to 'false', which will cause them to be hidden from the visualizer, even if this is enabled.");
 }
 
-void osc::DrawToggleContactGeometryButton(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawToggleContactGeometryButton(IModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingContactGeometry(model.getModel()) ? "contact_colored" : "contact");
-    if (ui::draw_image_button("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
-    {
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##togglecontactgeom", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleContactGeometry(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Contact Geometry", "Toggles whether contact geometry should be rendered in the 3D scene");
 }
 
-void osc::DrawToggleForcesButton(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawToggleForcesButton(IModelStatePair& model, IconCache& icons)
 {
     const Icon& icon = icons.find_or_throw(IsShowingForces(model.getModel()) ? "forces_colored" : "forces_bw");
-    if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates()))
-    {
+    if (model.isReadonly()) {
+        ui::begin_disabled();
+    }
+    if (ui::draw_image_button("##toggleforces", icon.texture(), icon.dimensions(), icon.texture_coordinates())) {
         ActionToggleForces(model);
+    }
+    if (model.isReadonly()) {
+        ui::end_disabled();
     }
     ui::draw_tooltip_if_item_hovered("Toggle Rendering Forces", "Toggles whether forces should be rendered in the 3D scene.\n\nNOTE: this is a model-level property that only applies to forces in OpenSim that actually check this flag. OpenSim Creator's visualizers also offer custom overlays for forces, muscles, etc. separately to this mechanism.");
 }
 
-void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCache& icons)
+void osc::DrawAllDecorationToggleButtons(IModelStatePair& model, IconCache& icons)
 {
     DrawToggleFramesButton(model, icons);
     ui::same_line();
@@ -1489,7 +1496,7 @@ void osc::DrawAllDecorationToggleButtons(UndoableModelStatePair& model, IconCach
     DrawToggleForcesButton(model, icons);
 }
 
-void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
+void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
     ui::draw_text_unformatted(OSC_ICON_EXPAND_ALT);
@@ -1507,8 +1514,7 @@ void osc::DrawSceneScaleFactorEditorControls(UndoableModelStatePair& model)
 
     ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
     ui::same_line();
-    if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
-    {
+    if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT)) {
         ActionAutoscaleSceneScaleFactor(model);
     }
     ui::pop_style_var();
@@ -1522,8 +1528,7 @@ void osc::DrawMeshExportContextMenuContent(
     ui::draw_text_disabled("Format:");
     ui::draw_separator();
 
-    if (ui::begin_menu(".obj"))
-    {
+    if (ui::begin_menu(".obj")) {
         const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshOBJWithRespectTo(
@@ -1538,8 +1543,7 @@ void osc::DrawMeshExportContextMenuContent(
         ui::end_menu();
     }
 
-    if (ui::begin_menu(".stl"))
-    {
+    if (ui::begin_menu(".stl")) {
         const auto onFrameMenuItemClicked = [&model, &mesh](const OpenSim::Frame& frame)
         {
             ActionReexportMeshSTLWithRespectTo(

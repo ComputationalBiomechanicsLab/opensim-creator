@@ -27,11 +27,11 @@ namespace
 {
     bool ActionSimulateAgainstAllIntegrators(
         const ParentPtr<IMainUIStateAPI>& parent,
-        const UndoableModelStatePair& uim)
+        const IModelStatePair& model)
     {
         parent->add_and_select_tab<PerformanceAnalyzerTab>(
             parent,
-            BasicModelStatePair{uim},
+            BasicModelStatePair{model},
             parent->getSimulationParams()
         );
         return true;
@@ -43,7 +43,7 @@ public:
     Impl(
         const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
         IEditorAPI* editorAPI_,
-        std::shared_ptr<UndoableModelStatePair> model_) :
+        std::shared_ptr<IModelStatePair> model_) :
 
         m_MainUIStateAPI{mainStateAPI_},
         m_EditorAPI{editorAPI_},
@@ -64,22 +64,23 @@ public:
 private:
     void drawMainMenuEditTab()
     {
-        if (ui::begin_menu("Edit"))
-        {
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, m_Model->canUndo()))
-            {
-                m_Model->doUndo();
+        if (ui::begin_menu("Edit")) {
+            auto* undoable = dynamic_cast<UndoableModelStatePair*>(m_Model.get());
+            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, undoable and undoable->canUndo())) {
+                if (undoable) {
+                    undoable->doUndo();
+                }
             }
 
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, m_Model->canRedo()))
-            {
-                m_Model->doRedo();
+            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, undoable and undoable->canRedo())) {
+                if (undoable) {
+                    undoable->doRedo();
+                }
             }
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item("         Deselect", {}, false, m_Model->getSelected() != nullptr))
-            {
+            if (ui::draw_menu_item("         Deselect", {}, false, m_Model->getSelected() != nullptr)) {
                 m_Model->setSelected(nullptr);
             }
 
@@ -89,8 +90,7 @@ private:
 
     void drawMainMenuAddTab()
     {
-        if (ui::begin_menu("Add"))
-        {
+        if (ui::begin_menu("Add")) {
             m_MainMenuAddTabMenuItems.onDraw();
             ui::end_menu();
         }
@@ -98,20 +98,16 @@ private:
 
     void drawMainMenuToolsTab()
     {
-        if (ui::begin_menu("Tools"))
-        {
-            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R"))
-            {
+        if (ui::begin_menu("Tools")) {
+            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R")) {
                 ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
             }
 
-            if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings"))
-            {
+            if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
                 m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
             }
 
-            if (ui::draw_menu_item("         Import Points"))
-            {
+            if (ui::draw_menu_item("         Import Points")) {
                 m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
                     "Import Points",
                     [model = m_Model](auto lms)
@@ -121,15 +117,12 @@ private:
                 ));
             }
 
-            if (ui::draw_menu_item("         Export Points"))
-            {
+            if (ui::draw_menu_item("         Export Points")) {
                 m_EditorAPI->pushPopup(std::make_unique<ExportPointsPopup>("Export Points", m_Model));
             }
 
-            if (ui::begin_menu("         Experimental Tools"))
-            {
-                if (ui::draw_menu_item("Simulate Against All Integrators (advanced)"))
-                {
+            if (ui::begin_menu("         Experimental Tools")) {
+                if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
                     ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
                 }
                 ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
@@ -157,15 +150,12 @@ private:
 
     void drawMainMenuActionsTab()
     {
-        if (ui::begin_menu("Actions"))
-        {
-            if (ui::draw_menu_item("Disable all wrapping surfaces"))
-            {
+        if (ui::begin_menu("Actions")) {
+            if (ui::draw_menu_item("Disable all wrapping surfaces")) {
                 ActionDisableAllWrappingSurfaces(*m_Model);
             }
 
-            if (ui::draw_menu_item("Enable all wrapping surfaces"))
-            {
+            if (ui::draw_menu_item("Enable all wrapping surfaces")) {
                 ActionEnableAllWrappingSurfaces(*m_Model);
             }
 
@@ -175,7 +165,7 @@ private:
 
     ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
     ModelActionsMenuItems m_MainMenuAddTabMenuItems{m_EditorAPI, m_Model};
     WindowMenu m_WindowMenu{m_EditorAPI->getPanelManager()};
@@ -186,7 +176,7 @@ private:
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
     const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
     IEditorAPI* editorAPI_,
-    std::shared_ptr<UndoableModelStatePair> model_) :
+    std::shared_ptr<IModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainStateAPI_, editorAPI_, std::move(model_))}
 {}

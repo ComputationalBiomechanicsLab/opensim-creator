@@ -7,8 +7,8 @@
 #include <optional>
 
 namespace osc { class IMainUIStateAPI; }
+namespace osc { class IModelStatePair; }
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void onDraw(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair* = nullptr);
+        void onDraw(const ParentPtr<IMainUIStateAPI>&, IModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;

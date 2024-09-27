@@ -20,6 +20,10 @@ namespace osc
         );
         explicit ModelEditorTab(
             const ParentPtr<IMainUIStateAPI>&,
+            const OpenSim::Model&
+        );
+        explicit ModelEditorTab(
+            const ParentPtr<IMainUIStateAPI>&,
             std::unique_ptr<OpenSim::Model>,
             float fixupScaleFactor = 1.0f
         );

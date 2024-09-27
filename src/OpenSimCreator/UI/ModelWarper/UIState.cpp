@@ -1,6 +1,5 @@
 #include "UIState.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
@@ -29,13 +28,13 @@ void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem
 
 void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
 {
-    if (!canWarpModel()) {
+    if (not canWarpModel()) {
         log_error("cannot warp the provided model: there are probably errors in the input model (missing warp information, etc.)");
         return;
     }
 
     auto api = dynamic_parent_cast<IMainUIStateAPI>(m_TabHost);
-    if (!api) {
+    if (not api) {
         log_error("cannot warp the provided model: I can't open a model editor tab (something has gone wrong internally)");
         return;
     }
@@ -45,5 +44,5 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
     WarpableModel copy{*m_Document};
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
-    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, std::make_unique<UndoableModelStatePair>(warpedModelStatePair->getModel()));
+    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, warpedModelStatePair->getModel());
 }

@@ -33,8 +33,7 @@ public:
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
-    {
-    }
+    {}
 
     void onDraw()
     {

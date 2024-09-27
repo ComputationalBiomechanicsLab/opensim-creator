@@ -27,8 +27,13 @@ namespace
     void DrawActionsMenu(IEditorAPI* editorAPI, const std::shared_ptr<IModelStatePair>& model)
     {
         const OpenSim::Component* const selection = model->getSelected();
-        if (!selection) {
+        if (not selection) {
             return;
+        }
+
+        const bool disabled = not editorAPI or model->isReadonly();
+        if (disabled) {
+            ui::begin_disabled();
         }
 
         ui::set_num_columns(2);
@@ -38,30 +43,34 @@ namespace
         ui::next_column();
         ui::push_style_color(ui::ColorVar::Text, Color::yellow());
         if (ui::draw_button(OSC_ICON_BOLT) or ui::is_item_clicked(ui::MouseButton::Right)) {
-            editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
+            if (editorAPI) {
+                editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
+            }
         }
         ui::pop_style_color();
         ui::next_column();
         ui::set_num_columns();
+
+        if (disabled) {
+            ui::end_disabled();
+        }
     }
 
     class ObjectNameEditor final {
     public:
         explicit ObjectNameEditor(std::shared_ptr<IModelStatePair> model_) :
             m_Model{std::move(model_)}
-        {
-        }
+        {}
 
         void onDraw()
         {
             const OpenSim::Component* const selected = m_Model->getSelected();
-            if (!selected) {
+            if (not selected) {
                 return;  // don't do anything if nothing is selected
             }
 
             // update cached edits if model/selection changes
-            if (m_Model->getModelVersion() != m_LastModelVersion || selected != m_LastSelected)
-            {
+            if (m_Model->getModelVersion() != m_LastModelVersion or selected != m_LastSelected) {
                 m_EditedName = selected->getName();
                 m_LastModelVersion = m_Model->getModelVersion();
                 m_LastSelected = selected;

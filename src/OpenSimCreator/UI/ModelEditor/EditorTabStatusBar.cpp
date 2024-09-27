@@ -1,6 +1,6 @@
 #include "EditorTabStatusBar.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -19,7 +19,7 @@ public:
     Impl(
         const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
-        std::shared_ptr<UndoableModelStatePair> model_) :
+        std::shared_ptr<IModelStatePair> model_) :
 
         m_MainUIStateAPI{mainUIStateAPI_},
         m_EditorAPI{editorAPI_},
@@ -40,12 +40,10 @@ private:
 
         if (c) {
             const std::vector<const OpenSim::Component*> els = GetPathElements(*c);
-            for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i)
-            {
+            for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i) {
                 ui::push_id(i);
                 const std::string label = truncate_with_ellipsis(els[i]->getName(), 15);
-                if (ui::draw_small_button(label))
-                {
+                if (ui::draw_small_button(label)) {
                     m_Model->setSelected(els[i]);
                 }
                 drawMouseInteractionStuff(*els[i]);
@@ -54,31 +52,27 @@ private:
                 ui::same_line();
                 ui::pop_id();
             }
-            if (!els.empty())
-            {
+            if (not els.empty()) {
                 const std::string label = truncate_with_ellipsis(els.back()->getName(), 15);
                 ui::draw_text_unformatted(label);
                 drawMouseInteractionStuff(*els.back());
             }
         }
-        else
-        {
+        else {
             ui::draw_text_disabled("(nothing selected)");
         }
     }
 
     void drawMouseInteractionStuff(const OpenSim::Component& c)
     {
-        if (ui::is_item_hovered())
-        {
+        if (ui::is_item_hovered()) {
             m_Model->setHovered(&c);
 
             ui::begin_tooltip();
             ui::draw_text_disabled(c.getConcreteClassName());
             ui::end_tooltip();
         }
-        if (ui::is_item_clicked(ui::MouseButton::Right))
-        {
+        if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",
                 m_MainUIStateAPI,
@@ -93,14 +87,14 @@ private:
 
     ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
-    std::shared_ptr<UndoableModelStatePair> m_Model;
+    std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
     const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
-    std::shared_ptr<UndoableModelStatePair> model_) :
+    std::shared_ptr<IModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(mainUIStateAPI_, editorAPI_, std::move(model_))}
 {}

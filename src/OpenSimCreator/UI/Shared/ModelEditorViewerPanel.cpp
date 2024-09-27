@@ -1,6 +1,6 @@
 #include "ModelEditorViewerPanel.h"
 
-#include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Graphics/CachedModelRenderer.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelLayer.h>
@@ -87,12 +87,11 @@ namespace
     public:
         ButtonAndGizmoControlsLayer(
             std::string_view panelName_,
-            std::shared_ptr<UndoableModelStatePair> model_) :
+            std::shared_ptr<IModelStatePair> model_) :
 
             panel_name_{panelName_},
             m_Gizmo{std::move(model_)}
-        {
-        }
+        {}
     private:
         ModelEditorViewerPanelLayerFlags implGetFlags() const final
         {
