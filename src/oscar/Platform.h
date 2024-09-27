@@ -30,3 +30,4 @@
 #include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenshotAnnotation.h>
+#include <oscar/Platform/Widget.h>

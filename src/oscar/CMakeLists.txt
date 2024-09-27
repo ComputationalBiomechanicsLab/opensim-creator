@@ -301,6 +301,9 @@ add_library(oscar STATIC
     Platform/Screen.h
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
+    Platform/Widget.cpp
+    Platform/Widget.h
+    Platform/WidgetPrivate.h
 
     Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
