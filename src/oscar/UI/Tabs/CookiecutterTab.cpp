@@ -1,6 +1,6 @@
 #include "CookiecutterTab.h"
 
-#include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <memory>
@@ -12,82 +12,27 @@ namespace
     constexpr CStringView c_tab_string_id = "CookiecutterTab";
 }
 
-class osc::CookiecutterTab::Impl final : public StandardTabImpl {
+class osc::CookiecutterTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    Impl() : TabPrivate{c_tab_string_id} {}
 
-private:
-    void impl_on_mount() final
-    {}
-
-    void impl_on_unmount() final
-    {}
-
-    bool impl_on_event(Event&) final
-    {
-        return false;
-    }
-
-    void impl_on_tick() final
-    {}
-
-    void impl_on_draw_main_menu() final
-    {}
-
-    void impl_on_draw() final
-    {}
+    void on_mount() {}
+    void on_unmount() {}
+    bool on_event(Event&) { return false; }
+    void on_tick() {}
+    void on_draw_main_menu() {}
+    void on_draw() {}
 };
 
 
-osc::CStringView osc::CookiecutterTab::id()
-{
-    return c_tab_string_id;
-}
+osc::CStringView osc::CookiecutterTab::id() { return c_tab_string_id; }
 
 osc::CookiecutterTab::CookiecutterTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::CookiecutterTab::CookiecutterTab(CookiecutterTab&&) noexcept = default;
-osc::CookiecutterTab& osc::CookiecutterTab::operator=(CookiecutterTab&&) noexcept = default;
-osc::CookiecutterTab::~CookiecutterTab() noexcept = default;
-
-UID osc::CookiecutterTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::CookiecutterTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::CookiecutterTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::CookiecutterTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::CookiecutterTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::CookiecutterTab::impl_on_tick()
-{
-    impl_->on_tick();
-}
-
-void osc::CookiecutterTab::impl_on_draw_main_menu()
-{
-    impl_->on_draw_main_menu();
-}
-
-void osc::CookiecutterTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::CookiecutterTab::impl_on_mount() { private_data().on_mount(); }
+void osc::CookiecutterTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::CookiecutterTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::CookiecutterTab::impl_on_tick() { private_data().on_tick(); }
+void osc::CookiecutterTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
+void osc::CookiecutterTab::impl_on_draw() { private_data().on_draw(); }

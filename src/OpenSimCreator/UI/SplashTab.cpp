@@ -31,6 +31,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
@@ -92,25 +93,16 @@ namespace
     }
 }
 
-class osc::SplashTab::Impl final {
+class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
+        TabPrivate{OSC_ICON_HOME},
         m_Parent{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
         m_CziLogo.set_filter_mode(TextureFilterMode::Linear);
         m_TudLogo.set_filter_mode(TextureFilterMode::Linear);
-    }
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return OSC_ICON_HOME;
     }
 
     void on_mount()
@@ -381,7 +373,6 @@ private:
     }
 
     // tab data
-    UID m_TabID;
     ParentPtr<IMainUIStateAPI> m_Parent;
 
     // for rendering the 3D scene
@@ -407,47 +398,11 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::SplashTab::SplashTab(const ParentPtr<IMainUIStateAPI>& parent_) :
-    m_Impl{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(parent_)}
 {}
-
-osc::SplashTab::SplashTab(SplashTab&&) noexcept = default;
-osc::SplashTab& osc::SplashTab::operator=(SplashTab&&) noexcept = default;
-osc::SplashTab::~SplashTab() noexcept = default;
-
-UID osc::SplashTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::SplashTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::SplashTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::SplashTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::SplashTab::impl_on_event(Event& e)
-{
-    return m_Impl->on_event(e);
-}
-
-void osc::SplashTab::impl_on_draw_main_menu()
-{
-    m_Impl->drawMainMenu();
-}
-
-void osc::SplashTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::SplashTab::impl_on_mount() { private_data().on_mount(); }
+void osc::SplashTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::SplashTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::SplashTab::impl_on_draw_main_menu() { private_data().drawMainMenu(); }
+void osc::SplashTab::impl_on_draw() { private_data().onDraw(); }

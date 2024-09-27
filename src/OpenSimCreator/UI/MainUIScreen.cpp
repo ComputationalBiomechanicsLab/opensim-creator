@@ -19,7 +19,7 @@
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
-#include <oscar/UI/Tabs/ITab.h>
+#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/ScreenshotTab.h>
 #include <oscar/UI/Tabs/TabRegistry.h>
 #include <oscar/UI/ui_context.h>
@@ -51,7 +51,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    std::unique_ptr<ITab> LoadConfigurationDefinedTabIfNecessary(
+    std::unique_ptr<Tab> LoadConfigurationDefinedTabIfNecessary(
         const AppSettings& settings,
         const TabRegistry& tabRegistry,
         const ParentPtr<ITabHost>& api)
@@ -120,7 +120,7 @@ public:
         return false;
     }
 
-    UID addTab(std::unique_ptr<ITab> tab)
+    UID addTab(std::unique_ptr<Tab> tab)
     {
         return impl_add_tab(std::move(tab));
     }
@@ -154,7 +154,7 @@ public:
     void on_unmount()
     {
         // unmount the active tab before unmounting this (host) screen
-        if (ITab* active = getActiveTab()) {
+        if (Tab* active = getActiveTab()) {
             try {
                 active->on_unmount();
             }
@@ -190,7 +190,7 @@ public:
 
         if (ui::context::on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
-            // during `ITab::onDraw` (immediate-mode UI)
+            // during `Tab::onDraw` (immediate-mode UI)
 
             m_ShouldRequestRedraw = true;
             handled = true;
@@ -240,7 +240,7 @@ public:
 
             handled = true;
         }
-        else if (ITab* active = getActiveTab()) {
+        else if (Tab* active = getActiveTab()) {
             // if there's an active tab, pump the event into the active tab and check
             // whether the tab handled the event
 
@@ -414,7 +414,7 @@ private:
         {
             if (ui::begin_menu_bar())
             {
-                if (ITab* active = getActiveTab())
+                if (Tab* active = getActiveTab())
                 {
                     try {
                         active->on_draw_main_menu();
@@ -488,7 +488,7 @@ private:
                         {
                             if (m_Tabs[i]->id() != m_ActiveTabID)
                             {
-                                if (ITab* activeTab = getActiveTab())
+                                if (Tab* activeTab = getActiveTab())
                                 {
                                     activeTab->on_unmount();
                                 }
@@ -555,7 +555,7 @@ private:
         }
 
         // draw the active tab (if any)
-        if (ITab* active = getActiveTab()) {
+        if (Tab* active = getActiveTab()) {
             try {
                 OSC_PERF("MainUIScreen/drawActiveTab");
                 active->on_draw();
@@ -609,28 +609,28 @@ private:
         }
     }
 
-    std::vector<std::unique_ptr<ITab>>::iterator findTabByID(UID id)
+    std::vector<std::unique_ptr<Tab>>::iterator findTabByID(UID id)
     {
         return rgs::find(m_Tabs, id, [](const auto& ptr) { return ptr->id(); });
     }
 
-    ITab* getTabByID(UID id)
+    Tab* getTabByID(UID id)
     {
         auto it = findTabByID(id);
         return it != m_Tabs.end() ? it->get() : nullptr;
     }
 
-    ITab* getActiveTab()
+    Tab* getActiveTab()
     {
         return getTabByID(m_ActiveTabID);
     }
 
-    ITab* getRequestedTab()
+    Tab* getRequestedTab()
     {
         return getTabByID(m_RequestedTab);
     }
 
-    UID impl_add_tab(std::unique_ptr<ITab> tab) final
+    UID impl_add_tab(std::unique_ptr<Tab> tab) final
     {
         return m_Tabs.emplace_back(std::move(tab))->id();
     }
@@ -650,7 +650,7 @@ private:
     {
         bool savingFailedSomewhere = false;
         for (UID id : m_DeletedTabs) {
-            if (ITab* tab = getTabByID(id); tab && tab->is_unsaved()) {
+            if (Tab* tab = getTabByID(id); tab && tab->is_unsaved()) {
                 savingFailedSomewhere = !tab->try_save() || savingFailedSomewhere;
             }
         }
@@ -727,10 +727,10 @@ private:
         //
         // don't delete the tabs yet, because the user can always cancel out of the operation
 
-        std::vector<ITab*> tabsWithUnsavedChanges;
+        std::vector<Tab*> tabsWithUnsavedChanges;
 
         for (UID id : m_DeletedTabs) {
-            if (ITab* t = getTabByID(id)) {
+            if (Tab* t = getTabByID(id)) {
                 if (t->is_unsaved()) {
                     tabsWithUnsavedChanges.push_back(t);
                 }
@@ -746,7 +746,7 @@ private:
                 ss << "A tab has unsaved changes:\n";
             }
 
-            for (ITab* t : tabsWithUnsavedChanges) {
+            for (Tab* t : tabsWithUnsavedChanges) {
                 ss << "\n  - " << t->name();
             }
             ss << "\n\n";
@@ -802,7 +802,7 @@ private:
     std::vector<OutputExtractor> m_UserOutputExtractors;
 
     // user-visible UI tabs
-    std::vector<std::unique_ptr<ITab>> m_Tabs;
+    std::vector<std::unique_ptr<Tab>> m_Tabs;
 
     // set of tabs that should be deleted once control returns to this screen
     std::unordered_set<UID> m_DeletedTabs;
@@ -842,7 +842,7 @@ osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
-UID osc::MainUIScreen::addTab(std::unique_ptr<ITab> tab)
+UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
 {
     return m_Impl->addTab(std::move(tab));
 }

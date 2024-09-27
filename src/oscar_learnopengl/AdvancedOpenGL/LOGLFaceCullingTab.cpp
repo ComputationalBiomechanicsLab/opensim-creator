@@ -9,8 +9,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/FaceCulling";
-
     Mesh generate_cube_like_learnopengl()
     {
         return BoxGeometry{};
@@ -42,36 +40,37 @@ namespace
     }
 }
 
-class osc::LOGLFaceCullingTab::Impl final : public StandardTabImpl {
+class osc::LOGLFaceCullingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/FaceCulling"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
         draw_scene();
         draw_2d_ui();
     }
 
+private:
     void draw_scene()
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
@@ -101,44 +100,11 @@ private:
 };
 
 
-CStringView osc::LOGLFaceCullingTab::id()
-{
-    return c_tab_string_id;
-}
-
+CStringView osc::LOGLFaceCullingTab::id() { return Impl::static_label(); }
 osc::LOGLFaceCullingTab::LOGLFaceCullingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLFaceCullingTab::LOGLFaceCullingTab(LOGLFaceCullingTab&&) noexcept = default;
-osc::LOGLFaceCullingTab& osc::LOGLFaceCullingTab::operator=(LOGLFaceCullingTab&&) noexcept = default;
-osc::LOGLFaceCullingTab::~LOGLFaceCullingTab() noexcept = default;
-
-UID osc::LOGLFaceCullingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLFaceCullingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLFaceCullingTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLFaceCullingTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLFaceCullingTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLFaceCullingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLFaceCullingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLFaceCullingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLFaceCullingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLFaceCullingTab::impl_on_draw() { private_data().on_draw(); }

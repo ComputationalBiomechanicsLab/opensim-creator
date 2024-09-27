@@ -13,8 +13,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/Hittest";
-
     constexpr auto c_triangle_verts = std::to_array<Vec3>({
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
@@ -86,32 +84,33 @@ namespace
     }
 }
 
-class osc::HittestTab::Impl final : public StandardTabImpl {
+class osc::HittestTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "Demos/Hittest"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         camera_.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_tick() final
+    void on_tick()
     {
         // hittest spheres
 
@@ -139,7 +138,7 @@ private:
         }
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -247,50 +246,14 @@ private:
 };
 
 
-CStringView osc::HittestTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::HittestTab::id() { return Impl::static_label(); }
 
 osc::HittestTab::HittestTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
 
-osc::HittestTab::HittestTab(HittestTab&&) noexcept = default;
-osc::HittestTab& osc::HittestTab::operator=(HittestTab&&) noexcept = default;
-osc::HittestTab::~HittestTab() noexcept = default;
-
-UID osc::HittestTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::HittestTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::HittestTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::HittestTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::HittestTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::HittestTab::impl_on_tick()
-{
-    impl_->on_tick();
-}
-
-void osc::HittestTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::HittestTab::impl_on_mount() { private_data().on_mount(); }
+void osc::HittestTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::HittestTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::HittestTab::impl_on_tick() { private_data().on_tick(); }
+void osc::HittestTab::impl_on_draw() { private_data().on_draw(); }

@@ -25,6 +25,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
 
@@ -34,22 +35,12 @@
 
 using namespace osc;
 
-class osc::MeshHittestTab::Impl final {
+class osc::MeshHittestTab::Impl final : public TabPrivate {
 public:
 
-    Impl()
+    Impl() : TabPrivate{OSC_ICON_COOKIE " MeshHittestTab"}
     {
         m_Camera.set_background_color(Color::white());
-    }
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return OSC_ICON_COOKIE " MeshHittestTab";
     }
 
     void on_tick()
@@ -166,9 +157,6 @@ public:
     }
 
 private:
-
-    UID m_TabID;
-
     // rendering
     Camera m_Camera;
 
@@ -191,36 +179,10 @@ private:
 };
 
 
-// public API (PIMPL)
-
-CStringView osc::MeshHittestTab::id()
-{
-    return "OpenSim/Experimental/MeshHittest";
-}
+CStringView osc::MeshHittestTab::id() { return "OpenSim/Experimental/MeshHittest"; }
 
 osc::MeshHittestTab::MeshHittestTab(const ParentPtr<ITabHost>&) :
-    m_Impl{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::MeshHittestTab::MeshHittestTab(MeshHittestTab&&) noexcept = default;
-osc::MeshHittestTab& osc::MeshHittestTab::operator=(MeshHittestTab&&) noexcept = default;
-osc::MeshHittestTab::~MeshHittestTab() noexcept = default;
-
-UID osc::MeshHittestTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::MeshHittestTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::MeshHittestTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::MeshHittestTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::MeshHittestTab::impl_on_tick() { private_data().on_tick(); }
+void osc::MeshHittestTab::impl_on_draw() { private_data().onDraw(); }

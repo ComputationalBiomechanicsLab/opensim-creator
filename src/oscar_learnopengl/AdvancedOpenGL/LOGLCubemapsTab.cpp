@@ -12,7 +12,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/Cubemaps";
     constexpr auto c_skybox_texture_filenames = std::to_array<std::string_view>({
         "skybox_right.jpg",
         "skybox_left.jpg",
@@ -99,9 +98,11 @@ namespace
     }
 }
 
-class osc::LOGLCubemapsTab::Impl final : public StandardTabImpl {
+class osc::LOGLCubemapsTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "LearnOpenGL/Cubemaps"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         for (CubeMaterial& cube_material : cube_materials_) {
             cube_material.material.set("uTexture", container_texture_);
@@ -118,25 +119,24 @@ public:
         skybox_material_.set_depth_function(DepthFunction::LessOrEqual);
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -148,6 +148,7 @@ private:
         draw_2d_ui();
     }
 
+private:
     void draw_scene_cube()
     {
         cube_properties_.set("uCameraPos", camera_.position());
@@ -216,44 +217,12 @@ private:
 };
 
 
-CStringView osc::LOGLCubemapsTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLCubemapsTab::id() { return Impl::static_label(); }
 
 osc::LOGLCubemapsTab::LOGLCubemapsTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLCubemapsTab::LOGLCubemapsTab(LOGLCubemapsTab&&) noexcept = default;
-osc::LOGLCubemapsTab& osc::LOGLCubemapsTab::operator=(LOGLCubemapsTab&&) noexcept = default;
-osc::LOGLCubemapsTab::~LOGLCubemapsTab() noexcept = default;
-
-UID osc::LOGLCubemapsTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLCubemapsTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLCubemapsTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLCubemapsTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLCubemapsTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLCubemapsTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLCubemapsTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLCubemapsTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLCubemapsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLCubemapsTab::impl_on_draw() { private_data().on_draw(); }

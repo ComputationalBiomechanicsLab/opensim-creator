@@ -13,6 +13,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <chrono>
@@ -33,27 +34,18 @@ namespace
     }
 }
 
-class osc::LoadingTab::Impl final {
+class osc::LoadingTab::Impl final : public TabPrivate {
 public:
 
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::filesystem::path path_) :
 
+        TabPrivate{"LoadingTab"},
         m_Parent{parent_},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {}
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return "LoadingTab";
-    }
 
     void on_tick()
     {
@@ -92,7 +84,7 @@ public:
             //
             // recycle it so that users can keep their running sims, local edits, etc.
             m_Parent->add_and_select_tab<ModelEditorTab>(m_Parent, std::move(result));
-            m_Parent->close_tab(m_TabID);
+            m_Parent->close_tab(id());
         }
     }
 
@@ -125,7 +117,7 @@ public:
 
                 if (ui::draw_button("try again")) {
                     m_Parent->add_and_select_tab<LoadingTab>(m_Parent, m_OsimPath);
-                    m_Parent->close_tab(m_TabID);
+                    m_Parent->close_tab(id());
                 }
             }
             ui::end_panel();
@@ -134,7 +126,6 @@ public:
 
 
 private:
-    UID m_TabID;
     ParentPtr<IMainUIStateAPI> m_Parent;
 
     // filesystem path to the osim being loaded
@@ -160,29 +151,8 @@ osc::LoadingTab::LoadingTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::filesystem::path path_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(path_))}
+    Tab{std::make_unique<Impl>(parent_, std::move(path_))}
 {}
 
-osc::LoadingTab::LoadingTab(LoadingTab&&) noexcept = default;
-osc::LoadingTab& osc::LoadingTab::operator=(LoadingTab&&) noexcept = default;
-osc::LoadingTab::~LoadingTab() noexcept = default;
-
-UID osc::LoadingTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::LoadingTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::LoadingTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::LoadingTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::LoadingTab::impl_on_tick() { private_data().on_tick(); }
+void osc::LoadingTab::impl_on_draw() { private_data().onDraw(); }

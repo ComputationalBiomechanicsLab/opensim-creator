@@ -1,10 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITab.h>
-#include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/UID.h>
-
-#include <memory>
+#include <oscar/UI/Tabs/Tab.h>
 
 namespace OpenSim { class Model; }
 namespace osc { class IMainUIStateAPI; }
@@ -13,7 +9,7 @@ namespace osc { class UndoableModelStatePair; }
 
 namespace osc
 {
-    class ModelEditorTab final : public ITab {
+    class ModelEditorTab final : public Tab {
     public:
         explicit ModelEditorTab(
             const ParentPtr<IMainUIStateAPI>&
@@ -31,15 +27,8 @@ namespace osc
             const ParentPtr<IMainUIStateAPI>&,
             std::unique_ptr<UndoableModelStatePair>
         );
-        ModelEditorTab(const ModelEditorTab&) = delete;
-        ModelEditorTab(ModelEditorTab&&) noexcept;
-        ModelEditorTab& operator=(const ModelEditorTab&) = delete;
-        ModelEditorTab& operator=(ModelEditorTab&&) noexcept;
-        ~ModelEditorTab() noexcept override;
 
     private:
-        UID impl_get_id() const final;
-        CStringView impl_get_name() const final;
         bool impl_is_unsaved() const final;
         bool impl_try_save() final;
         void impl_on_mount() final;
@@ -50,6 +39,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

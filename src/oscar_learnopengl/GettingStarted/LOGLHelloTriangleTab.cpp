@@ -10,8 +10,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/HelloTriangle";
-
     Mesh generate_triangle_mesh()
     {
         Mesh m;
@@ -46,14 +44,13 @@ namespace
     }
 }
 
-class osc::LOGLHelloTriangleTab::Impl final : public StandardTabImpl {
+class osc::LOGLHelloTriangleTab::Impl final : public TabPrivate {
 public:
+    static CStringView static_label() { return "LearnOpenGL/HelloTriangle"; }
 
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    Impl() : TabPrivate{static_label()} {}
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         graphics::draw(triangle_mesh_, identity<Transform>(), material_, camera_);
 
@@ -61,6 +58,7 @@ private:
         camera_.render_to_screen();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
     Material material_ = create_triangle_material(loader_);
     Mesh triangle_mesh_ = generate_triangle_mesh();
@@ -68,31 +66,10 @@ private:
 };
 
 
-CStringView osc::LOGLHelloTriangleTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLHelloTriangleTab::id() { return Impl::static_label(); }
 
 osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
-{
-}
+    Tab{std::make_unique<Impl>()}
+{}
 
-osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(LOGLHelloTriangleTab&&) noexcept = default;
-osc::LOGLHelloTriangleTab& osc::LOGLHelloTriangleTab::operator=(LOGLHelloTriangleTab&&) noexcept = default;
-osc::LOGLHelloTriangleTab::~LOGLHelloTriangleTab() noexcept = default;
-
-UID osc::LOGLHelloTriangleTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLHelloTriangleTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLHelloTriangleTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLHelloTriangleTab::impl_on_draw() { private_data().on_draw(); }

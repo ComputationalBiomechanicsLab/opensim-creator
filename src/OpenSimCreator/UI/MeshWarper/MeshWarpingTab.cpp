@@ -17,6 +17,7 @@
 #include <oscar/UI/Panels/ToggleablePanelFlags.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 
@@ -25,10 +26,12 @@
 
 using namespace osc;
 
-class osc::MeshWarpingTab::Impl final {
+class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(const ParentPtr<ITabHost>& parent_) : m_Parent{parent_}
+    explicit Impl(const ParentPtr<ITabHost>& parent_) :
+        TabPrivate{OSC_ICON_BEZIER_CURVE " Mesh Warping"},
+        m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
             "Source Mesh",
@@ -89,16 +92,6 @@ public:
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
-    }
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return OSC_ICON_BEZIER_CURVE " Mesh Warping";
     }
 
     void on_mount()
@@ -187,11 +180,10 @@ private:
         }
     }
 
-    UID m_TabID;
     ParentPtr<ITabHost> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(m_TabID, m_Parent, App::singleton<SceneCache>(App::resource_loader()));
+    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), m_Parent, App::singleton<SceneCache>(App::resource_loader()));
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
@@ -203,54 +195,14 @@ private:
 };
 
 
-CStringView osc::MeshWarpingTab::id()
-{
-    return "OpenSim/Warping";
-}
+CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
 osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<ITabHost>& parent_) :
-    m_Impl{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(parent_)}
 {}
-osc::MeshWarpingTab::MeshWarpingTab(MeshWarpingTab&&) noexcept = default;
-osc::MeshWarpingTab& osc::MeshWarpingTab::operator=(MeshWarpingTab&&) noexcept = default;
-osc::MeshWarpingTab::~MeshWarpingTab() noexcept = default;
-
-UID osc::MeshWarpingTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::MeshWarpingTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::MeshWarpingTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::MeshWarpingTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::MeshWarpingTab::impl_on_event(Event& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::MeshWarpingTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::MeshWarpingTab::impl_on_draw_main_menu()
-{
-    m_Impl->onDrawMainMenu();
-}
-
-void osc::MeshWarpingTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::MeshWarpingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::MeshWarpingTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
+void osc::MeshWarpingTab::impl_on_tick() { private_data().on_tick(); }
+void osc::MeshWarpingTab::impl_on_draw_main_menu() { private_data().onDrawMainMenu(); }
+void osc::MeshWarpingTab::impl_on_draw() { private_data().onDraw(); }

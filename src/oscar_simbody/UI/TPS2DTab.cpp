@@ -1,23 +1,24 @@
 #include "TPS2DTab.h"
 
 #include <oscar/Formats/Image.h>
-#include <oscar/Graphics/Geometries/PlaneGeometry.h>
-#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
+#include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Mesh.h>
-#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/Mat4.h>
+#include <oscar/Maths/MatFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StdVariantHelpers.h>
@@ -309,10 +310,10 @@ namespace
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 }
 
-class osc::TPS2DTab::Impl final {
+class osc::TPS2DTab::Impl final : public TabPrivate {
 public:
 
-    Impl()
+    Impl() : TabPrivate{OSC_ICON_BEZIER_CURVE " TPS2DTab"}
     {
         m_Material.set("uTextureSampler", m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
@@ -322,16 +323,6 @@ public:
         m_Camera.set_view_matrix_override(identity<Mat4>());
         m_Camera.set_projection_matrix_override(identity<Mat4>());
         m_Camera.set_background_color(Color::white());
-    }
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return OSC_ICON_BEZIER_CURVE " TPS2DTab";
     }
 
     void onDraw()
@@ -498,8 +489,6 @@ private:
         }
     }
 
-    // tab data
-    UID m_TabID;
     ResourceLoader m_Loader = App::resource_loader();
 
     // TPS algorithm state
@@ -534,29 +523,9 @@ private:
 };
 
 
-CStringView osc::TPS2DTab::id()
-{
-    return "OpenSim/Experimental/TPS2D";
-}
+CStringView osc::TPS2DTab::id() { return "OpenSim/Experimental/TPS2D"; }
 
 osc::TPS2DTab::TPS2DTab(const ParentPtr<ITabHost>&) :
-    m_Impl{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::TPS2DTab::TPS2DTab(TPS2DTab&&) noexcept = default;
-osc::TPS2DTab& osc::TPS2DTab::operator=(TPS2DTab&&) noexcept = default;
-osc::TPS2DTab::~TPS2DTab() noexcept = default;
-
-UID osc::TPS2DTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::TPS2DTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::TPS2DTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::TPS2DTab::impl_on_draw() { private_data().onDraw(); }

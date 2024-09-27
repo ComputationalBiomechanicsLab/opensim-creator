@@ -11,8 +11,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/Framebuffers";
-
     Mesh generate_plane()
     {
         Mesh rv;
@@ -56,31 +54,30 @@ namespace
     }
 }
 
-class osc::LOGLFramebuffersTab::Impl final : public StandardTabImpl {
+class osc::LOGLFramebuffersTab::Impl final : public TabPrivate {
 public:
+    static CStringView static_label() { return "LearnOpenGL/Framebuffers"; }
 
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    Impl() : TabPrivate{static_label()} {}
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         scene_camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         scene_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return scene_camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         scene_camera_.on_draw();
 
@@ -110,6 +107,7 @@ private:
         perf_panel_.on_draw();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
 
     Material scene_render_material_{Shader{
@@ -144,44 +142,12 @@ private:
 };
 
 
-CStringView osc::LOGLFramebuffersTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLFramebuffersTab::id() { return Impl::static_label(); }
 
 osc::LOGLFramebuffersTab::LOGLFramebuffersTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(LOGLFramebuffersTab&&) noexcept = default;
-osc::LOGLFramebuffersTab& osc::LOGLFramebuffersTab::operator=(LOGLFramebuffersTab&&) noexcept = default;
-osc::LOGLFramebuffersTab::~LOGLFramebuffersTab() noexcept = default;
-
-UID osc::LOGLFramebuffersTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLFramebuffersTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLFramebuffersTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLFramebuffersTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLFramebuffersTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLFramebuffersTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLFramebuffersTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLFramebuffersTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLFramebuffersTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLFramebuffersTab::impl_on_draw() { private_data().on_draw(); }

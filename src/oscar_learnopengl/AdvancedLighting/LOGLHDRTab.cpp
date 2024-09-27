@@ -17,8 +17,6 @@ namespace
         { 0.8f, -1.7f, 6.0f},
     });
 
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/HDR";
-
     std::array<Color, c_light_positions.size()> GetLightColors()
     {
         return std::to_array<Color>({
@@ -72,30 +70,30 @@ namespace
     }
 }
 
-class osc::LOGLHDRTab::Impl final : public StandardTabImpl {
+class osc::LOGLHDRTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/HDR"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
         draw_3d_scene_to_hdr_texture();
@@ -103,6 +101,7 @@ private:
         draw_2d_ui();
     }
 
+private:
     void draw_3d_scene_to_hdr_texture()
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
@@ -165,44 +164,13 @@ private:
 };
 
 
-CStringView osc::LOGLHDRTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLHDRTab::id() { return Impl::static_label(); }
 
 osc::LOGLHDRTab::LOGLHDRTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLHDRTab::LOGLHDRTab(LOGLHDRTab&&) noexcept = default;
-osc::LOGLHDRTab& osc::LOGLHDRTab::operator=(LOGLHDRTab&&) noexcept = default;
-osc::LOGLHDRTab::~LOGLHDRTab() noexcept = default;
 
-UID osc::LOGLHDRTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLHDRTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLHDRTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLHDRTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLHDRTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLHDRTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLHDRTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLHDRTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLHDRTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLHDRTab::impl_on_draw() { private_data().on_draw(); }

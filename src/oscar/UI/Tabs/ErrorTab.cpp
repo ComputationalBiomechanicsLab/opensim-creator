@@ -5,7 +5,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 
 #include <exception>
@@ -14,15 +14,14 @@
 
 using namespace osc;
 
-class osc::ErrorTab::Impl final : public StandardTabImpl {
+class osc::ErrorTab::Impl final : public TabPrivate {
 public:
     explicit Impl(const std::exception& exception) :
-        StandardTabImpl{OSC_ICON_SPIDER " Error"},
+        TabPrivate{OSC_ICON_SPIDER " Error"},
         error_message_{exception.what()}
     {}
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
@@ -59,28 +58,13 @@ private:
         }
     }
 
+private:
     std::string error_message_;
     LogViewer log_viewer_;
 };
 
 osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& exception) :
-    impl_{std::make_unique<Impl>(exception)}
+    Tab{std::make_unique<Impl>(exception)}
 {}
-osc::ErrorTab::ErrorTab(ErrorTab&&) noexcept = default;
-osc::ErrorTab& osc::ErrorTab::operator=(ErrorTab&&) noexcept = default;
-osc::ErrorTab::~ErrorTab() noexcept = default;
 
-UID osc::ErrorTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::ErrorTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::ErrorTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::ErrorTab::impl_on_draw() { private_data().on_draw(); }

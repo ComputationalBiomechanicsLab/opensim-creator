@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITab.h>
+#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/UID.h>
 
 #include <concepts>
@@ -20,19 +20,19 @@ namespace osc
     public:
         virtual ~ITabHost() noexcept = default;
 
-        template<std::derived_from<ITab> T, typename... Args>
+        template<std::derived_from<Tab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
         UID add_tab(Args&&... args)
         {
             return add_tab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
-        UID add_tab(std::unique_ptr<ITab> tab) { return impl_add_tab(std::move(tab)); }
+        UID add_tab(std::unique_ptr<Tab> tab) { return impl_add_tab(std::move(tab)); }
         void select_tab(UID tab_id) { impl_select_tab(tab_id); }
         void close_tab(UID tab_id) { impl_close_tab(tab_id); }
         void reset_imgui() { impl_reset_imgui(); }
 
-        template<std::derived_from<ITab> T, typename... Args>
+        template<std::derived_from<Tab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
         void add_and_select_tab(Args&&... args)
         {
@@ -41,7 +41,7 @@ namespace osc
         }
 
     private:
-        virtual UID impl_add_tab(std::unique_ptr<ITab>) = 0;
+        virtual UID impl_add_tab(std::unique_ptr<Tab>) = 0;
         virtual void impl_select_tab(UID) = 0;
         virtual void impl_close_tab(UID) = 0;
         virtual void impl_reset_imgui() {}

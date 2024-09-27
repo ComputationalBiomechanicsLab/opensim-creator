@@ -14,8 +14,6 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/SubMeshes";
-
     template<rgs::range T, rgs::range U>
     requires std::same_as<typename T::value_type, typename U::value_type>
     void append(T& out, U els)
@@ -59,9 +57,11 @@ namespace
     }
 }
 
-class osc::SubMeshTab::Impl final : public StandardTabImpl {
+class osc::SubMeshTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "Demos/SubMeshes"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         camera_.set_background_color(Color::white());
         camera_.set_clipping_planes({0.1f, 5.0f});
@@ -72,8 +72,7 @@ public:
         material_.set_wireframe(true);
     }
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         for (size_t submesh_index = 0; submesh_index < mesh_with_submeshes_.num_submesh_descriptors(); ++submesh_index) {
             graphics::draw(
@@ -89,6 +88,7 @@ private:
         camera_.render_to_screen();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
     Camera camera_;
     MeshBasicMaterial material_;
@@ -96,30 +96,9 @@ private:
 };
 
 
-CStringView osc::SubMeshTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::SubMeshTab::id() { return Impl::static_label(); }
 
 osc::SubMeshTab::SubMeshTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-
-osc::SubMeshTab::SubMeshTab(SubMeshTab&&) noexcept = default;
-osc::SubMeshTab& osc::SubMeshTab::operator=(SubMeshTab&&) noexcept = default;
-osc::SubMeshTab::~SubMeshTab() noexcept = default;
-
-UID osc::SubMeshTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::SubMeshTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::SubMeshTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::SubMeshTab::impl_on_draw() { private_data().on_draw(); }

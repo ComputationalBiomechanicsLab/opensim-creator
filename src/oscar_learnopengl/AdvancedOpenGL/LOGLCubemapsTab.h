@@ -1,8 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITab.h>
-#include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/UID.h>
+#include <oscar/UI/Tabs/Tab.h>
 
 #include <memory>
 
@@ -11,26 +9,19 @@ namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class LOGLCubemapsTab final : public ITab {
+    class LOGLCubemapsTab final : public Tab {
     public:
         static CStringView id();
 
         explicit LOGLCubemapsTab(const ParentPtr<ITabHost>&);
-        LOGLCubemapsTab(const LOGLCubemapsTab&) = delete;
-        LOGLCubemapsTab(LOGLCubemapsTab&&) noexcept;
-        LOGLCubemapsTab& operator=(const LOGLCubemapsTab&) = delete;
-        LOGLCubemapsTab& operator=(LOGLCubemapsTab&&) noexcept;
-        ~LOGLCubemapsTab() noexcept override;
 
     private:
-        UID impl_get_id() const final;
-        CStringView impl_get_name() const final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
         bool impl_on_event(Event&) final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> impl_;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

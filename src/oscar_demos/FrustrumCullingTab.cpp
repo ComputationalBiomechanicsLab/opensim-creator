@@ -63,9 +63,9 @@ namespace
     }
 }
 
-class osc::FrustrumCullingTab::Impl final : public StandardTabImpl {
+class osc::FrustrumCullingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    Impl() : TabPrivate{c_tab_string_id}
     {
         user_camera_.set_clipping_planes({0.1f, 10.0f});
         top_down_camera_.set_position({0.0f, 9.5f, 0.0f});
@@ -73,25 +73,24 @@ public:
         top_down_camera_.set_clipping_planes({0.1f, 10.0f});
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         user_camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         user_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return user_camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
         const float xmid = midpoint(viewport_screenspace_rect.p1.x, viewport_screenspace_rect.p2.x);
@@ -146,39 +145,25 @@ osc::CStringView osc::FrustrumCullingTab::id()
 }
 
 osc::FrustrumCullingTab::FrustrumCullingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-
-osc::FrustrumCullingTab::FrustrumCullingTab(FrustrumCullingTab&&) noexcept = default;
-osc::FrustrumCullingTab& osc::FrustrumCullingTab::operator=(FrustrumCullingTab&&) noexcept = default;
-osc::FrustrumCullingTab::~FrustrumCullingTab() noexcept = default;
-
-UID osc::FrustrumCullingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::FrustrumCullingTab::impl_get_name() const
-{
-    return impl_->name();
-}
 
 void osc::FrustrumCullingTab::impl_on_mount()
 {
-    impl_->on_mount();
+    private_data().on_mount();
 }
 
 void osc::FrustrumCullingTab::impl_on_unmount()
 {
-    impl_->on_unmount();
+    private_data().on_unmount();
 }
 
 bool osc::FrustrumCullingTab::impl_on_event(Event& e)
 {
-    return impl_->on_event(e);
+    return private_data().on_event(e);
 }
 
 void osc::FrustrumCullingTab::impl_on_draw()
 {
-    impl_->on_draw();
+    private_data().on_draw();
 }

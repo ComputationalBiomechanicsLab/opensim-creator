@@ -7,18 +7,13 @@
 using namespace osc::literals;
 using namespace osc;
 
-namespace
-{
-    constexpr CStringView c_tab_string_id = "Demos/ImGuizmo";
-}
-
-class osc::ImGuizmoDemoTab::Impl final : public StandardTabImpl {
+class osc::ImGuizmoDemoTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "Demos/ImGuizmo"; }
 
-private:
-    void impl_on_draw() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_draw()
     {
         const Mat4 view_matrix = scene_camera_.view_matrix();
         const Rect viewport_ui_rect = ui::get_main_viewport_workspace_uiscreenspace_rect();
@@ -36,6 +31,7 @@ private:
         ui::draw_gizmo_op_selector(gizmo_);
     }
 
+private:
     PolarPerspectiveCamera scene_camera_ = []()
     {
         PolarPerspectiveCamera rv;
@@ -51,30 +47,10 @@ private:
 };
 
 
-CStringView osc::ImGuizmoDemoTab::id()
-{
-    return "Demos/ImGuizmo";
-}
+CStringView osc::ImGuizmoDemoTab::id() { return Impl::static_label(); }
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
 
-osc::ImGuizmoDemoTab::ImGuizmoDemoTab(ImGuizmoDemoTab&&) noexcept = default;
-osc::ImGuizmoDemoTab& osc::ImGuizmoDemoTab::operator=(ImGuizmoDemoTab&&) noexcept = default;
-osc::ImGuizmoDemoTab::~ImGuizmoDemoTab() noexcept = default;
-
-UID osc::ImGuizmoDemoTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::ImGuizmoDemoTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::ImGuizmoDemoTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::ImGuizmoDemoTab::impl_on_draw() { private_data().on_draw(); }

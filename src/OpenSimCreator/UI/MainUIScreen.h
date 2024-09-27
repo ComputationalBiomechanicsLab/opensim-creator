@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <memory>
 
-namespace osc { class ITab; }
+namespace osc { class Tab; }
 namespace osc { class ITabHost; }
 
 namespace osc
@@ -20,7 +20,7 @@ namespace osc
         MainUIScreen& operator=(MainUIScreen&&) noexcept;
         ~MainUIScreen() noexcept override;
 
-        UID addTab(std::unique_ptr<ITab>);
+        UID addTab(std::unique_ptr<Tab>);
         void open(const std::filesystem::path&);
 
     private:

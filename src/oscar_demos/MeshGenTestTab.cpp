@@ -11,8 +11,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/MeshGen";
-
     std::vector<Vec2> generate_lathe_points()
     {
         std::vector<Vec2> rv;
@@ -54,15 +52,16 @@ namespace
     }
 }
 
-class osc::MeshGenTestTab::Impl final : public StandardTabImpl {
+class osc::MeshGenTestTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "Demos/MeshGen"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         camera_.radius = 5.0f;
     }
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         ui::enable_dockspace_over_main_viewport();
 
@@ -101,6 +100,7 @@ private:
         ui::end_panel();
     }
 
+private:
     std::map<std::string, Mesh> all_meshes_ = generate_mesh_lookup();
     std::string current_mesh_ = all_meshes_.begin()->first;
     bool draw_wireframe_ = false;
@@ -110,30 +110,11 @@ private:
 };
 
 
-CStringView osc::MeshGenTestTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::MeshGenTestTab::id() { return Impl::static_label(); }
 
 osc::MeshGenTestTab::MeshGenTestTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
 
-osc::MeshGenTestTab::MeshGenTestTab(MeshGenTestTab&&) noexcept = default;
-osc::MeshGenTestTab& osc::MeshGenTestTab::operator=(MeshGenTestTab&&) noexcept = default;
-osc::MeshGenTestTab::~MeshGenTestTab() noexcept = default;
+void osc::MeshGenTestTab::impl_on_draw() { private_data().on_draw(); }
 
-UID osc::MeshGenTestTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::MeshGenTestTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::MeshGenTestTab::impl_on_draw()
-{
-    impl_->on_draw();
-}

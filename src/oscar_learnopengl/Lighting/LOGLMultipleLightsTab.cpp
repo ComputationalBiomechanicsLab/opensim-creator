@@ -10,8 +10,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/MultipleLights";
-
     // positions of cubes within the scene
     constexpr auto c_cube_positions = std::to_array<Vec3>({
         { 0.0f,  0.0f,  0.0f },
@@ -109,33 +107,34 @@ namespace
     }
 }
 
-class osc::LOGLMultipleLightsTab::Impl final : public StandardTabImpl {
+class osc::LOGLMultipleLightsTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "LearnOpenGL/MultipleLights"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         log_viewer_.open();
         perf_panel_.open();
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -179,6 +178,7 @@ private:
         perf_panel_.on_draw();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
 
     Material multiple_lights_material_ = create_multiple_lights_material(loader_);
@@ -194,44 +194,12 @@ private:
 };
 
 
-CStringView osc::LOGLMultipleLightsTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLMultipleLightsTab::id() { return Impl::static_label(); }
 
 osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(LOGLMultipleLightsTab&&) noexcept = default;
-osc::LOGLMultipleLightsTab& osc::LOGLMultipleLightsTab::operator=(LOGLMultipleLightsTab&&) noexcept = default;
-osc::LOGLMultipleLightsTab::~LOGLMultipleLightsTab() noexcept = default;
-
-UID osc::LOGLMultipleLightsTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLMultipleLightsTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLMultipleLightsTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLMultipleLightsTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLMultipleLightsTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLMultipleLightsTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLMultipleLightsTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLMultipleLightsTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLMultipleLightsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLMultipleLightsTab::impl_on_draw() { private_data().on_draw(); }

@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITab; }
+namespace osc { class Tab; }
 namespace osc { class ITabHost; }
 
 namespace osc
@@ -16,7 +16,7 @@ namespace osc
     public:
         TabRegistryEntry(
             CStringView name,
-            std::function<std::unique_ptr<ITab>(const ParentPtr<ITabHost>&)> tab_constructor
+            std::function<std::unique_ptr<Tab>(const ParentPtr<ITabHost>&)> tab_constructor
         );
         TabRegistryEntry(const TabRegistryEntry&);
         TabRegistryEntry(TabRegistryEntry&&) noexcept;
@@ -25,7 +25,7 @@ namespace osc
         ~TabRegistryEntry() noexcept;
 
         CStringView name() const;
-        std::unique_ptr<ITab> construct_tab(const ParentPtr<ITabHost>&) const;
+        std::unique_ptr<Tab> construct_tab(const ParentPtr<ITabHost>&) const;
 
     private:
         class Impl;

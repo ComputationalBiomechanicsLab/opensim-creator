@@ -15,6 +15,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
@@ -44,26 +45,17 @@ namespace
     }
 }
 
-class osc::PerformanceAnalyzerTab::Impl final {
+class osc::PerformanceAnalyzerTab::Impl final : public TabPrivate {
 public:
 
     Impl(
         BasicModelStatePair baseModel,
         ParamBlock params) :
 
+        TabPrivate{OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
     {}
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab";
-    }
 
     void on_tick()
     {
@@ -199,8 +191,6 @@ private:
         }
     }
 
-    UID m_TabID;
-
     int m_Parallelism = 1;
     BasicModelStatePair m_BaseModel;
     ParamBlock m_BaseParams;
@@ -213,36 +203,12 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
     const ParentPtr<ITabHost>&,
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 
-    m_Impl{std::make_unique<Impl>(std::move(modelState), params)}
+    Tab{std::make_unique<Impl>(std::move(modelState), params)}
 {}
-
-osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(PerformanceAnalyzerTab&&) noexcept = default;
-osc::PerformanceAnalyzerTab& osc::PerformanceAnalyzerTab::operator=(PerformanceAnalyzerTab&&) noexcept = default;
-osc::PerformanceAnalyzerTab::~PerformanceAnalyzerTab() noexcept = default;
-
-UID osc::PerformanceAnalyzerTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::PerformanceAnalyzerTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::PerformanceAnalyzerTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::PerformanceAnalyzerTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::PerformanceAnalyzerTab::impl_on_tick() { private_data().on_tick(); }
+void osc::PerformanceAnalyzerTab::impl_on_draw() { private_data().onDraw(); }

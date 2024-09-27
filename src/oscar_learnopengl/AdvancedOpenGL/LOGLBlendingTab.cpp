@@ -19,8 +19,6 @@ namespace
         { 0.5f, 0.0f, -0.6},
     });
 
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/Blending";
-
     Mesh generate_plane()
     {
         Mesh rv;
@@ -82,34 +80,35 @@ namespace
     }
 }
 
-class osc::LOGLBlendingTab::Impl final : public StandardTabImpl {
+class osc::LOGLBlendingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "LearnOpenGL/Blending"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         blending_material_.set_transparent(true);
         log_viewer_.open();
         perf_panel_.open();
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -144,6 +143,7 @@ private:
         perf_panel_.on_draw();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
     Material opaque_material_{Shader{
         loader_.slurp("oscar_learnopengl/shaders/AdvancedOpenGL/Blending.vert"),
@@ -171,44 +171,11 @@ private:
 };
 
 
-CStringView osc::LOGLBlendingTab::id()
-{
-    return c_tab_string_id;
-}
-
+CStringView osc::LOGLBlendingTab::id() { return Impl::static_label(); }
 osc::LOGLBlendingTab::LOGLBlendingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLBlendingTab::LOGLBlendingTab(LOGLBlendingTab&&) noexcept = default;
-osc::LOGLBlendingTab& osc::LOGLBlendingTab::operator=(LOGLBlendingTab&&) noexcept = default;
-osc::LOGLBlendingTab::~LOGLBlendingTab() noexcept = default;
-
-UID osc::LOGLBlendingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLBlendingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLBlendingTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLBlendingTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLBlendingTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLBlendingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLBlendingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLBlendingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLBlendingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLBlendingTab::impl_on_draw() { private_data().on_draw(); }

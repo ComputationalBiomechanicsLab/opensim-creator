@@ -92,8 +92,7 @@ namespace
 
             ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##nameeditor", m_EditedName);
-            if (ui::should_save_last_drawn_item_value())
-            {
+            if (ui::should_save_last_drawn_item_value()) {
                 ActionSetComponentName(*m_Model, GetAbsolutePath(*selected), m_EditedName);
             }
 
@@ -101,7 +100,9 @@ namespace
 
             ui::set_num_columns();
 
-            ui::end_disabled();
+            if (disabled) {
+                ui::end_disabled();
+            }
         }
     private:
         std::shared_ptr<IModelStatePair> m_Model;

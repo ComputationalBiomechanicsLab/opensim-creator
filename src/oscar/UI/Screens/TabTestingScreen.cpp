@@ -3,6 +3,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
 #include <oscar/UI/ui_context.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -66,12 +67,12 @@ private:
         }
     }
 
-    UID impl_add_tab(std::unique_ptr<ITab>) final { return UID{}; }
+    UID impl_add_tab(std::unique_ptr<Tab>) final { return UID{}; }
     void impl_select_tab(UID) final {}
     void impl_close_tab(UID) final {}
 
     TabRegistryEntry registry_entry_;
-    std::unique_ptr<ITab> current_tab_;
+    std::unique_ptr<Tab> current_tab_;
     size_t min_frames_shown_ = 2;
     size_t frames_shown_ = 0;
     AppClock::duration min_open_duration_ = AppSeconds{0};

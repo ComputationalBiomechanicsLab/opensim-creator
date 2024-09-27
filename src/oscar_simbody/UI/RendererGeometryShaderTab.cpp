@@ -13,6 +13,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
 
@@ -21,24 +22,14 @@
 using namespace osc::literals;
 using namespace osc;
 
-class osc::RendererGeometryShaderTab::Impl final {
+class osc::RendererGeometryShaderTab::Impl final : public TabPrivate {
 public:
 
-    Impl()
+    Impl() : TabPrivate{"GeometryShader"}
     {
         m_SceneCamera.set_position({0.0f, 0.0f, 3.0f});
         m_SceneCamera.set_vertical_fov(45_deg);
         m_SceneCamera.set_clipping_planes({0.1f, 100.0f});
-    }
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return "GeometryShader";
     }
 
     void on_mount()
@@ -92,21 +83,15 @@ public:
     }
 
 private:
-    UID m_TabID;
-
-    Material m_SceneMaterial
-    {
-        Shader
-        {
+    Material m_SceneMaterial{
+        Shader{
             App::slurp("shaders/GeometryShaderTab/Scene.vert"),
             App::slurp("shaders/GeometryShaderTab/Scene.frag"),
         },
     };
 
-    Material m_NormalsMaterial
-    {
-        Shader
-        {
+    Material m_NormalsMaterial{
+        Shader{
             App::slurp("shaders/GeometryShaderTab/DrawNormals.vert"),
             App::slurp("shaders/GeometryShaderTab/DrawNormals.geom"),
             App::slurp("shaders/GeometryShaderTab/DrawNormals.frag"),
@@ -121,44 +106,12 @@ private:
 };
 
 
-CStringView osc::RendererGeometryShaderTab::id()
-{
-    return "OpenSim/Experimental/GeometryShader";
-}
+CStringView osc::RendererGeometryShaderTab::id() { return "OpenSim/Experimental/GeometryShader"; }
 
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(const ParentPtr<ITabHost>&) :
-    m_Impl{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(RendererGeometryShaderTab&&) noexcept = default;
-osc::RendererGeometryShaderTab& osc::RendererGeometryShaderTab::operator=(RendererGeometryShaderTab&&) noexcept = default;
-osc::RendererGeometryShaderTab::~RendererGeometryShaderTab() noexcept = default;
-
-UID osc::RendererGeometryShaderTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::RendererGeometryShaderTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::RendererGeometryShaderTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::RendererGeometryShaderTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::RendererGeometryShaderTab::impl_on_event(Event& e)
-{
-    return m_Impl->on_event(e);
-}
-
-void osc::RendererGeometryShaderTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::RendererGeometryShaderTab::impl_on_mount() { private_data().on_mount(); }
+void osc::RendererGeometryShaderTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::RendererGeometryShaderTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::RendererGeometryShaderTab::impl_on_draw() { private_data().onDraw(); }

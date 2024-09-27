@@ -23,7 +23,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Tabs/StandardTabImpl.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/Assertions.h>
 
 #include <filesystem>
@@ -78,17 +78,16 @@ namespace
     }
 }
 
-class osc::ScreenshotTab::Impl final : public StandardTabImpl {
+class osc::ScreenshotTab::Impl final : public TabPrivate {
 public:
     explicit Impl(Screenshot&& screenshot) :
-        StandardTabImpl{OSC_ICON_COOKIE " ScreenshotTab"},
+        TabPrivate{OSC_ICON_COOKIE " ScreenshotTab"},
         screenshot_{std::move(screenshot)}
     {
         image_texture_.set_filter_mode(TextureFilterMode::Mipmap);
     }
 
-private:
-    void impl_on_draw_main_menu() final
+    void on_draw_main_menu()
     {
         if (ui::begin_menu("File")) {
             if (ui::draw_menu_item("Save")) {
@@ -98,7 +97,7 @@ private:
         }
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         ui::enable_dockspace_over_main_viewport();
 
@@ -127,6 +126,7 @@ private:
         }
     }
 
+private:
     // returns screenspace rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
@@ -224,28 +224,8 @@ private:
 };
 
 osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
-    impl_{std::make_unique<Impl>(std::move(screenshot))}
+    Tab{std::make_unique<Impl>(std::move(screenshot))}
 {}
-osc::ScreenshotTab::ScreenshotTab(ScreenshotTab&&) noexcept = default;
-osc::ScreenshotTab& osc::ScreenshotTab::operator=(ScreenshotTab&&) noexcept = default;
-osc::ScreenshotTab::~ScreenshotTab() noexcept = default;
 
-UID osc::ScreenshotTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::ScreenshotTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::ScreenshotTab::impl_on_draw_main_menu()
-{
-    impl_->on_draw_main_menu();
-}
-
-void osc::ScreenshotTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::ScreenshotTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
+void osc::ScreenshotTab::impl_on_draw() { private_data().on_draw(); }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITab.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -16,7 +16,7 @@ namespace osc
 {
     template<typename T>
     concept StandardRegisterableTab =
-        std::derived_from<T, ITab> and
+        std::derived_from<T, Tab> and
         std::constructible_from<T, const ParentPtr<ITabHost>&> and
         requires (T) {
             { T::id() } -> std::same_as<CStringView>;

@@ -11,8 +11,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/ShadowMapping";
-
     // this matches the plane vertices used in the LearnOpenGL tutorial
     Mesh generate_learnopengl_plane_mesh()
     {
@@ -65,35 +63,36 @@ namespace
     }
 }
 
-class osc::LOGLShadowMappingTab::Impl final : public StandardTabImpl {
+class osc::LOGLShadowMappingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/ShadowMapping"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
         draw_3d_scene();
     }
 
+private:
     void draw_3d_scene()
     {
         const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
@@ -187,45 +186,13 @@ private:
     Vec3 light_pos_ = {-2.0f, 4.0f, -1.0f};
 };
 
-
-CStringView osc::LOGLShadowMappingTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLShadowMappingTab::id() { return Impl::static_label(); }
 
 osc::LOGLShadowMappingTab::LOGLShadowMappingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(LOGLShadowMappingTab&&) noexcept = default;
-osc::LOGLShadowMappingTab& osc::LOGLShadowMappingTab::operator=(LOGLShadowMappingTab&&) noexcept = default;
-osc::LOGLShadowMappingTab::~LOGLShadowMappingTab() noexcept = default;
 
-UID osc::LOGLShadowMappingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLShadowMappingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLShadowMappingTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLShadowMappingTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLShadowMappingTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLShadowMappingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLShadowMappingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLShadowMappingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLShadowMappingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLShadowMappingTab::impl_on_draw() { private_data().on_draw(); }

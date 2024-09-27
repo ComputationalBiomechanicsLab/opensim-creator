@@ -34,6 +34,7 @@
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/IPopup.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
@@ -53,7 +54,7 @@
 
 using namespace osc;
 
-class osc::ModelEditorTab::Impl final : public IEditorAPI {
+class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_) :
@@ -79,6 +80,7 @@ public:
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
+        TabPrivate{"ModelEditorTab"},
         m_Parent{parent_},
         m_Model{std::move(model_)}
     {
@@ -163,16 +165,6 @@ public:
         );
     }
 
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return m_TabName;
-    }
-
     bool isUnsaved() const
     {
         return !m_Model->isUpToDateWithFilesystem();
@@ -187,7 +179,7 @@ public:
     {
         App::upd().make_main_loop_waiting();
         App::upd().set_main_window_subtitle(m_Model->recommendedDocumentName());
-        m_TabName = computeTabName();
+        set_name(computeTabName());
         m_PopupManager.on_mount();
         m_PanelManager->on_mount();
     }
@@ -215,7 +207,7 @@ public:
             ActionUpdateModelFromBackingFile(*m_Model);
         }
 
-        m_TabName = computeTabName();
+        set_name(computeTabName());
         m_PanelManager->on_tick();
     }
 
@@ -270,7 +262,7 @@ public:
                     log_error("undoing the model also failed with error: %s", ex2.what());
                     log_error("because the model isn't recoverable, closing the editor tab");
                     m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
-                    m_Parent->close_tab(m_TabID);  // TODO: should be forcibly closed with no "save" prompt
+                    m_Parent->close_tab(id());  // TODO: should be forcibly closed with no "save" prompt
                 }
 
                 log_error("sucessfully undone model");
@@ -290,7 +282,7 @@ public:
 
                 log_error("because the model isn't recoverable, closing the editor tab");
                 m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
-                m_Parent->close_tab(m_TabID);  // TODO: should be forcibly closed
+                m_Parent->close_tab(id());  // TODO: should be forcibly closed
             }
         }
         else
@@ -310,7 +302,7 @@ public:
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
                 m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex2);
-                m_Parent->close_tab(m_TabID);
+                m_Parent->close_tab(id());
             }
         }
 
@@ -407,16 +399,13 @@ private:
     }
 
     // tab top-level data
-    UID m_TabID;
     ParentPtr<IMainUIStateAPI> m_Parent;
-    std::string m_TabName = "ModelEditorTab";
 
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     // polls changes to a file
-    FileChangePoller m_FileChangePoller
-    {
+    FileChangePoller m_FileChangePoller{
         std::chrono::milliseconds{1000},  // polling rate
         m_Model->getModel().getInputFileName(),
     };
@@ -440,75 +429,33 @@ private:
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_) :
 
-    m_Impl{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     const OpenSim::Model& model_) :
-    m_Impl{std::make_unique<Impl>(parent_, model_)}
+
+    Tab{std::make_unique<Impl>(parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
-    m_Impl{std::make_unique<Impl>(parent_, std::move(model_), fixupScaleFactor)}
+
+    Tab{std::make_unique<Impl>(parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
+    Tab{std::make_unique<Impl>(parent_, std::move(model_))}
 {}
-osc::ModelEditorTab::ModelEditorTab(ModelEditorTab&&) noexcept = default;
-osc::ModelEditorTab& osc::ModelEditorTab::operator=(ModelEditorTab&&) noexcept = default;
-osc::ModelEditorTab::~ModelEditorTab() noexcept = default;
 
-UID osc::ModelEditorTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::ModelEditorTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-bool osc::ModelEditorTab::impl_is_unsaved() const
-{
-    return m_Impl->isUnsaved();
-}
-
-bool osc::ModelEditorTab::impl_try_save()
-{
-    return m_Impl->trySave();
-}
-
-void osc::ModelEditorTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::ModelEditorTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::ModelEditorTab::impl_on_event(Event& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::ModelEditorTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::ModelEditorTab::impl_on_draw_main_menu()
-{
-    m_Impl->onDrawMainMenu();
-}
-
-void osc::ModelEditorTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+bool osc::ModelEditorTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
+bool osc::ModelEditorTab::impl_try_save() { return private_data().trySave(); }
+void osc::ModelEditorTab::impl_on_mount() { private_data().on_mount(); }
+void osc::ModelEditorTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::ModelEditorTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
+void osc::ModelEditorTab::impl_on_tick() { private_data().on_tick(); }
+void osc::ModelEditorTab::impl_on_draw_main_menu() { private_data().onDrawMainMenu();}
+void osc::ModelEditorTab::impl_on_draw() { private_data().onDraw(); }

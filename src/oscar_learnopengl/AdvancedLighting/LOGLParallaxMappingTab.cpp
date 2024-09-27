@@ -12,8 +12,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/ParallaxMapping";
-
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
     Mesh generate_quad()
     {
@@ -88,28 +86,28 @@ namespace
     }
 }
 
-class osc::LOGLParallaxMappingTab::Impl final : public StandardTabImpl {
+class osc::LOGLParallaxMappingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/ParallaxMapping"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -138,6 +136,7 @@ private:
         ui::end_panel();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
 
     // rendering state
@@ -157,44 +156,12 @@ private:
 };
 
 
-CStringView osc::LOGLParallaxMappingTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLParallaxMappingTab::id() { return Impl::static_label(); }
 
 osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(LOGLParallaxMappingTab&&) noexcept = default;
-osc::LOGLParallaxMappingTab& osc::LOGLParallaxMappingTab::operator=(LOGLParallaxMappingTab&&) noexcept = default;
-osc::LOGLParallaxMappingTab::~LOGLParallaxMappingTab() noexcept = default;
-
-UID osc::LOGLParallaxMappingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLParallaxMappingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLParallaxMappingTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLParallaxMappingTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLParallaxMappingTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLParallaxMappingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLParallaxMappingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLParallaxMappingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLParallaxMappingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLParallaxMappingTab::impl_on_draw() { private_data().on_draw(); }

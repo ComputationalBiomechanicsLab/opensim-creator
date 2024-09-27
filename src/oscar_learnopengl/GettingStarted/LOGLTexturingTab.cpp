@@ -9,8 +9,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/Texturing";
-
     Mesh generate_textured_quad_mesh()
     {
         Mesh quad = PlaneGeometry{};
@@ -63,13 +61,13 @@ namespace
     }
 }
 
-class osc::LOGLTexturingTab::Impl final : public StandardTabImpl {
+class osc::LOGLTexturingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/Texturing"; }
 
-private:
-    void impl_on_draw() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_draw()
     {
         graphics::draw(mesh_, identity<Transform>(), material_, camera_);
 
@@ -77,6 +75,7 @@ private:
         camera_.render_to_screen();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
     Material material_ = load_textured_material(loader_);
     Mesh mesh_ = generate_textured_quad_mesh();
@@ -84,29 +83,8 @@ private:
 };
 
 
-CStringView osc::LOGLTexturingTab::id()
-{
-    return c_tab_string_id;
-}
-
+CStringView osc::LOGLTexturingTab::id() { return Impl::static_label(); }
 osc::LOGLTexturingTab::LOGLTexturingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLTexturingTab::LOGLTexturingTab(LOGLTexturingTab&&) noexcept = default;
-osc::LOGLTexturingTab& osc::LOGLTexturingTab::operator=(LOGLTexturingTab&&) noexcept = default;
-osc::LOGLTexturingTab::~LOGLTexturingTab() noexcept = default;
-
-UID osc::LOGLTexturingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLTexturingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLTexturingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLTexturingTab::impl_on_draw() { private_data().on_draw(); }

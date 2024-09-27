@@ -32,6 +32,7 @@
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -62,13 +63,16 @@ namespace
     }
 }
 
-class osc::SimulationTab::Impl final : public ISimulatorUIAPI {
+class osc::SimulationTab::Impl final :
+    public TabPrivate,
+    public ISimulatorUIAPI {
 public:
 
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
+        TabPrivate{OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Parent{parent_},
         m_Simulation{std::move(simulation_)}
     {
@@ -165,16 +169,6 @@ public:
             },
             1  // by default, open one viewer
         );
-    }
-
-    UID getID() const
-    {
-        return m_ID;
-    }
-
-    CStringView getName() const
-    {
-        return m_Name;
     }
 
     void on_mount()
@@ -465,9 +459,7 @@ private:
     }
 
     // tab data
-    UID m_ID;
     ParentPtr<IMainUIStateAPI> m_Parent;
-    std::string m_Name = OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber());
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
@@ -500,48 +492,11 @@ osc::SimulationTab::SimulationTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(simulation_))}
+    Tab{std::make_unique<Impl>(parent_, std::move(simulation_))}
 {}
-osc::SimulationTab::SimulationTab(SimulationTab&&) noexcept = default;
-osc::SimulationTab& osc::SimulationTab::operator=(SimulationTab&&) noexcept = default;
-osc::SimulationTab::~SimulationTab() noexcept = default;
-
-UID osc::SimulationTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-CStringView osc::SimulationTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-void osc::SimulationTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::SimulationTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::SimulationTab::impl_on_event(Event& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::SimulationTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::SimulationTab::impl_on_draw_main_menu()
-{
-    m_Impl->onDrawMainMenu();
-}
-
-void osc::SimulationTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+void osc::SimulationTab::impl_on_mount() { private_data().on_mount(); }
+void osc::SimulationTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::SimulationTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
+void osc::SimulationTab::impl_on_tick() { private_data().on_tick(); }
+void osc::SimulationTab::impl_on_draw_main_menu() { private_data().onDrawMainMenu(); }
+void osc::SimulationTab::impl_on_draw() { private_data().onDraw(); }

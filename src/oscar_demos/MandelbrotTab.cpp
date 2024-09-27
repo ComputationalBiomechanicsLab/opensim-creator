@@ -9,8 +9,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/Mandelbrot";
-
     Camera create_identity_camera()
     {
         Camera camera;
@@ -20,26 +18,13 @@ namespace
     }
 }
 
-class osc::MandelbrotTab::Impl final : public StandardTabImpl {
+class osc::MandelbrotTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "Demos/Mandelbrot"; }
 
-private:
-    bool on_keyup(const KeyEvent& e)
-    {
-        if (e.matches(Key::PageUp) and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
-            num_iterations_ *= 2;
-            return true;
-        }
-        if (e.matches(Key::PageDown) and num_iterations_ > 1) {
-            num_iterations_ /= 2;
-            return true;
-        }
-        return false;
-    }
+    Impl() : TabPrivate{static_label()} {}
 
-    bool impl_on_event(Event& ev) final
+    bool on_event(Event& ev)
     {
         if (ev.type() == EventType::KeyUp) {
             return on_keyup(dynamic_cast<const KeyEvent&>(ev));
@@ -56,7 +41,7 @@ private:
         return false;
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         main_viewport_workspace_screenspace_rect_ = ui::get_main_viewport_workspace_screenspace_rect();
 
@@ -66,6 +51,20 @@ private:
         graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
         camera_.set_pixel_rect(main_viewport_workspace_screenspace_rect_);
         camera_.render_to_screen();
+    }
+
+private:
+    bool on_keyup(const KeyEvent& e)
+    {
+        if (e.matches(Key::PageUp) and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+            num_iterations_ *= 2;
+            return true;
+        }
+        if (e.matches(Key::PageDown) and num_iterations_ > 1) {
+            num_iterations_ /= 2;
+            return true;
+        }
+        return false;
     }
 
     void apply_zoom_to_camera(Vec2, float)
@@ -91,35 +90,9 @@ private:
 };
 
 
-CStringView osc::MandelbrotTab::id()
-{
-    return c_tab_string_id;
-}
-
+CStringView osc::MandelbrotTab::id() { return Impl::static_label(); }
 osc::MandelbrotTab::MandelbrotTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-
-osc::MandelbrotTab::MandelbrotTab(MandelbrotTab&&) noexcept = default;
-osc::MandelbrotTab& osc::MandelbrotTab::operator=(MandelbrotTab&&) noexcept = default;
-osc::MandelbrotTab::~MandelbrotTab() noexcept = default;
-
-UID osc::MandelbrotTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::MandelbrotTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-bool osc::MandelbrotTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::MandelbrotTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+bool osc::MandelbrotTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::MandelbrotTab::impl_on_draw() { private_data().on_draw(); }

@@ -16,8 +16,6 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/CSM";
-
     // represents a single transformed mesh in the scene
     struct TransformedMesh {
         Mesh mesh;
@@ -192,9 +190,11 @@ namespace
     }
 }
 
-class osc::LOGLCSMTab::Impl final : public StandardTabImpl {
+class osc::LOGLCSMTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "LearnOpenGL/CSM"; }
+
+    Impl() : TabPrivate{static_label()}
     {
         // setup camera
         user_camera_.set_clipping_planes({0.1f, 10.0f});
@@ -203,25 +203,24 @@ public:
         log_viewer_.open();
     }
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         user_camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         user_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return user_camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         // update state from user inputs, window size, etc.
         user_camera_.on_draw();
@@ -233,6 +232,7 @@ private:
         log_viewer_.on_draw();
     }
 
+private:
     std::vector<Mat4> render_cascades(float user_aspect_ratio)
     {
         // calculate how each cascade maps from the user's camera to light-space
@@ -315,44 +315,12 @@ private:
 };
 
 
-osc::CStringView osc::LOGLCSMTab::id()
-{
-    return c_tab_string_id;
-}
-
+osc::CStringView osc::LOGLCSMTab::id() { return Impl::static_label(); }
 osc::LOGLCSMTab::LOGLCSMTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLCSMTab::LOGLCSMTab(LOGLCSMTab&&) noexcept = default;
-osc::LOGLCSMTab& osc::LOGLCSMTab::operator=(LOGLCSMTab&&) noexcept = default;
-osc::LOGLCSMTab::~LOGLCSMTab() noexcept = default;
 
-UID osc::LOGLCSMTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLCSMTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLCSMTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLCSMTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLCSMTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLCSMTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLCSMTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLCSMTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLCSMTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLCSMTab::impl_on_draw() { private_data().on_draw(); }

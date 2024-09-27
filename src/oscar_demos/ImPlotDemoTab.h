@@ -1,33 +1,22 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITab.h>
-#include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/UID.h>
-
-#include <memory>
+#include <oscar/UI/Tabs/Tab.h>
 
 namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class ImPlotDemoTab final : public ITab {
+    class ImPlotDemoTab final : public Tab {
     public:
         static CStringView id();
 
         explicit ImPlotDemoTab(const ParentPtr<ITabHost>&);
-        ImPlotDemoTab(const ImPlotDemoTab&) = delete;
-        ImPlotDemoTab(ImPlotDemoTab&&) noexcept;
-        ImPlotDemoTab& operator=(const ImPlotDemoTab&) = delete;
-        ImPlotDemoTab& operator=(ImPlotDemoTab&&) noexcept;
-        ~ImPlotDemoTab() noexcept override;
 
     private:
-        UID impl_get_id() const final;
-        CStringView impl_get_name() const final;
         void impl_on_draw() final;
 
         class Impl;
-        std::unique_ptr<Impl> impl_;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

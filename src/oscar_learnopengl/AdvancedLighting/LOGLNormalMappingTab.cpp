@@ -13,8 +13,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/NormalMapping";
-
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     Mesh generate_quad()
     {
@@ -84,28 +82,28 @@ namespace
     }
 }
 
-class osc::LOGLNormalMappingTab::Impl final : public StandardTabImpl {
+class osc::LOGLNormalMappingTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/NormalMapping"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_tick() final
+    void on_tick()
     {
         // rotate the quad over time
         const AppClock::duration dt = App::get().frame_delta_since_startup();
@@ -114,7 +112,7 @@ private:
         quad_transform_.rotation = angle_axis(angle, axis);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         camera_.on_draw();
 
@@ -143,6 +141,7 @@ private:
         ui::end_panel();
     }
 
+private:
     ResourceLoader loader_ = App::resource_loader();
 
     // rendering state
@@ -162,49 +161,12 @@ private:
 };
 
 
-CStringView osc::LOGLNormalMappingTab::id()
-{
-    return c_tab_string_id;
-}
-
+CStringView osc::LOGLNormalMappingTab::id() { return Impl::static_label(); }
 osc::LOGLNormalMappingTab::LOGLNormalMappingTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLNormalMappingTab::LOGLNormalMappingTab(LOGLNormalMappingTab&&) noexcept = default;
-osc::LOGLNormalMappingTab& osc::LOGLNormalMappingTab::operator=(LOGLNormalMappingTab&&) noexcept = default;
-osc::LOGLNormalMappingTab::~LOGLNormalMappingTab() noexcept = default;
-
-UID osc::LOGLNormalMappingTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLNormalMappingTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLNormalMappingTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLNormalMappingTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLNormalMappingTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLNormalMappingTab::impl_on_tick()
-{
-    impl_->on_tick();
-}
-
-void osc::LOGLNormalMappingTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLNormalMappingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLNormalMappingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLNormalMappingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLNormalMappingTab::impl_on_tick() { private_data().on_tick(); }
+void osc::LOGLNormalMappingTab::impl_on_draw() { private_data().on_draw(); }

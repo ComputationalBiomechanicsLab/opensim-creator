@@ -1,27 +1,21 @@
 #pragma once
 
-#include <oscar/Platform/IEventListener.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
-namespace osc { class Event; }
-namespace osc { class ITabHost; }
+#include <memory>
+
+namespace osc { class TabPrivate; }
 
 namespace osc
 {
-    // a virtual interface to a single UI tab/workspace
-    class ITab : public IEventListener {
-    protected:
-        ITab() = default;
-        ITab(const ITab&) = default;
-        ITab(ITab&&) noexcept = default;
-        ITab& operator=(const ITab&) = default;
-        ITab& operator=(ITab&&) noexcept = default;
+    class Tab : public Widget {
     public:
-        virtual ~ITab() noexcept = default;
+        explicit Tab(std::unique_ptr<TabPrivate>&&);
 
-        UID id() const { return impl_get_id(); }
-        CStringView name() const { return impl_get_name(); }
+        UID id() const;
+        CStringView name() const;
         bool is_unsaved() const { return impl_is_unsaved(); }
         bool try_save() { return impl_try_save(); }
         void on_mount() { impl_on_mount(); }
@@ -30,9 +24,11 @@ namespace osc
         void on_draw_main_menu() { impl_on_draw_main_menu(); }
         void on_draw() { impl_on_draw(); }
 
+    protected:
+        TabPrivate& private_data() { return reinterpret_cast<TabPrivate&>(base_private_data()); }
+        const TabPrivate& private_data() const { return reinterpret_cast<const TabPrivate&>(base_private_data()); }
+
     private:
-        virtual UID impl_get_id() const = 0;
-        virtual CStringView impl_get_name() const = 0;
         virtual bool impl_is_unsaved() const { return false; }
         virtual bool impl_try_save() { return true; }
         virtual void impl_on_mount() {}

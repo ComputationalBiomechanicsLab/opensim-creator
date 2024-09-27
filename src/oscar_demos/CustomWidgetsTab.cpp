@@ -10,8 +10,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/CustomWidgets";
-
     void draw_widget_title(CStringView title, Vec2 pos)
     {
         const Vec2 text_topleft = pos + ui::get_style_frame_padding();
@@ -92,13 +90,14 @@ namespace
     }
 }
 
-class osc::CustomWidgetsTab::Impl final : public StandardTabImpl {
+class osc::CustomWidgetsTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    static CStringView static_label() { return "Demos/CustomWidgets"; }
+
+    Impl() : TabPrivate{static_label()}
     {}
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         ui::begin_panel("window");
         ui::draw_float_input("standardinput", &float_value_);
@@ -108,6 +107,7 @@ private:
         ui::end_panel();
     }
 
+private:
     float float_value_ = 10.0f;
     bool toggle_state_ = false;
 };
@@ -115,28 +115,14 @@ private:
 
 CStringView osc::CustomWidgetsTab::id()
 {
-    return c_tab_string_id;
+    return Impl::static_label();
 }
 
 osc::CustomWidgetsTab::CustomWidgetsTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-
-osc::CustomWidgetsTab::CustomWidgetsTab(CustomWidgetsTab&&) noexcept = default;
-osc::CustomWidgetsTab& osc::CustomWidgetsTab::operator=(CustomWidgetsTab&&) noexcept = default;
-osc::CustomWidgetsTab::~CustomWidgetsTab() noexcept = default;
-
-UID osc::CustomWidgetsTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::CustomWidgetsTab::impl_get_name() const
-{
-    return impl_->name();
-}
 
 void osc::CustomWidgetsTab::impl_on_draw()
 {
-    impl_->on_draw();
+    private_data().on_draw();
 }

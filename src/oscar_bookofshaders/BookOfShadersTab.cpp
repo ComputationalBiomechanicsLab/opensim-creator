@@ -119,9 +119,9 @@ void main() {
     };
 }
 
-class osc::BookOfShadersTab::Impl final : public StandardTabImpl {
+class osc::BookOfShadersTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
+    Impl() : TabPrivate{c_tab_string_id}
     {
         camera_.set_projection(CameraProjection::Orthographic);
         camera_.set_clipping_planes({-1.0f, 1.0f});
@@ -129,13 +129,13 @@ public:
         camera_.set_orthographic_size(1.0f);
     }
 
-private:
-    void impl_on_draw() final
+    void on_draw()
     {
         render_example_to_screen();
         draw_2d_ui();
     }
 
+private:
     void render_example_to_screen()
     {
         // update properties for this frame
@@ -183,38 +183,10 @@ CStringView osc::BookOfShadersTab::id()
 }
 
 osc::BookOfShadersTab::BookOfShadersTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::BookOfShadersTab::BookOfShadersTab(BookOfShadersTab&&) noexcept = default;
-osc::BookOfShadersTab& osc::BookOfShadersTab::operator=(BookOfShadersTab&&) noexcept = default;
-osc::BookOfShadersTab::~BookOfShadersTab() noexcept = default;
-
-UID osc::BookOfShadersTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::BookOfShadersTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::BookOfShadersTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::BookOfShadersTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::BookOfShadersTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
 
 void osc::BookOfShadersTab::impl_on_draw()
 {
-    impl_->on_draw();
+    private_data().on_draw();
 }

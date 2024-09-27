@@ -52,6 +52,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
+#include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/UI/Widgets/PopupManager.h>
@@ -74,9 +75,12 @@
 #include <vector>
 
 // mesh importer tab implementation
-class osc::mi::MeshImporterTab::Impl final : public IMeshImporterUILayerHost {
+class osc::mi::MeshImporterTab::Impl final :
+    public TabPrivate,
+    public IMeshImporterUILayerHost {
 public:
     explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
+        TabPrivate{"MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {}
@@ -84,20 +88,10 @@ public:
     Impl(
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
-
+        TabPrivate{"MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
     {}
-
-    UID getID() const
-    {
-        return m_TabID;
-    }
-
-    CStringView getName() const
-    {
-        return m_Name;
-    }
 
     bool isUnsaved() const
     {
@@ -170,11 +164,11 @@ public:
             );
         }
 
-        m_Name = m_Shared->getRecommendedTitle();
+        set_name(m_Shared->getRecommendedTitle());
 
         if (m_Shared->isCloseRequested())
         {
-            m_Parent->close_tab(m_TabID);
+            m_Parent->close_tab(id());
             m_Shared->resetRequestClose();
         }
 
@@ -2404,9 +2398,7 @@ private:
     }
 
     // tab data
-    UID m_TabID;
     ParentPtr<IMainUIStateAPI> m_Parent;
-    std::string m_Name = "MeshImporterTab";
 
     // data shared between states
     std::shared_ptr<MeshImporterSharedState> m_Shared;
@@ -2435,64 +2427,19 @@ private:
 osc::mi::MeshImporterTab::MeshImporterTab(
     const ParentPtr<IMainUIStateAPI>& parent_) :
 
-    m_Impl{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::vector<std::filesystem::path> files_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(files_))}
+    Tab{std::make_unique<Impl>(parent_, std::move(files_))}
 {}
-osc::mi::MeshImporterTab::MeshImporterTab(MeshImporterTab&&) noexcept = default;
-osc::mi::MeshImporterTab& osc::mi::MeshImporterTab::operator=(MeshImporterTab&&) noexcept = default;
-osc::mi::MeshImporterTab::~MeshImporterTab() noexcept = default;
-
-osc::UID osc::mi::MeshImporterTab::impl_get_id() const
-{
-    return m_Impl->getID();
-}
-
-osc::CStringView osc::mi::MeshImporterTab::impl_get_name() const
-{
-    return m_Impl->getName();
-}
-
-bool osc::mi::MeshImporterTab::impl_is_unsaved() const
-{
-    return m_Impl->isUnsaved();
-}
-
-bool osc::mi::MeshImporterTab::impl_try_save()
-{
-    return m_Impl->trySave();
-}
-
-void osc::mi::MeshImporterTab::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::mi::MeshImporterTab::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::mi::MeshImporterTab::impl_on_event(Event& e)
-{
-    return m_Impl->onEvent(e);
-}
-
-void osc::mi::MeshImporterTab::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::mi::MeshImporterTab::impl_on_draw_main_menu()
-{
-    m_Impl->drawMainMenu();
-}
-
-void osc::mi::MeshImporterTab::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+bool osc::mi::MeshImporterTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
+bool osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }
+void osc::mi::MeshImporterTab::impl_on_mount() { private_data().on_mount(); }
+void osc::mi::MeshImporterTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::mi::MeshImporterTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
+void osc::mi::MeshImporterTab::impl_on_tick() { private_data().on_tick(); }
+void osc::mi::MeshImporterTab::impl_on_draw_main_menu() { private_data().drawMainMenu(); }
+void osc::mi::MeshImporterTab::impl_on_draw() { private_data().onDraw(); }

@@ -12,8 +12,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/PBR/SpecularIrradianceTextured";
-
     constexpr auto c_light_positions = std::to_array<Vec3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
@@ -210,30 +208,30 @@ namespace
     };
 }
 
-class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public StandardTabImpl {
+class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/PBR/SpecularIrradianceTextured"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return camera_.on_event(e);
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
         output_render_.set_dimensions(dimensions_of(viewport_screenspace_rect));
@@ -246,6 +244,7 @@ private:
         perf_panel_.on_draw();
     }
 
+private:
     void draw_3D_render()
     {
         set_common_material_properties();
@@ -346,44 +345,13 @@ private:
 };
 
 
-CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id() { return Impl::static_label(); }
 
 osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept = default;
-osc::LOGLPBRSpecularIrradianceTexturedTab& osc::LOGLPBRSpecularIrradianceTexturedTab::operator=(LOGLPBRSpecularIrradianceTexturedTab&&) noexcept = default;
-osc::LOGLPBRSpecularIrradianceTexturedTab::~LOGLPBRSpecularIrradianceTexturedTab() noexcept = default;
 
-UID osc::LOGLPBRSpecularIrradianceTexturedTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_draw() { private_data().on_draw(); }

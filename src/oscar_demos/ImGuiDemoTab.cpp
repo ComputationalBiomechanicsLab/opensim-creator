@@ -6,18 +6,13 @@
 
 using namespace osc;
 
-namespace
-{
-    constexpr CStringView c_tab_string_id = "Demos/ImGui";
-}
-
-class osc::ImGuiDemoTab::Impl final : public StandardTabImpl {
+class osc::ImGuiDemoTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "Demos/ImGui"; }
 
-private:
-    void impl_on_draw() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_draw()
     {
         ui::show_demo_panel();
     }
@@ -26,28 +21,14 @@ private:
 
 CStringView osc::ImGuiDemoTab::id()
 {
-    return c_tab_string_id;
+    return Impl::static_label();
 }
 
 osc::ImGuiDemoTab::ImGuiDemoTab(const ParentPtr<ITabHost>&) :
-    m_Impl{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-
-osc::ImGuiDemoTab::ImGuiDemoTab(ImGuiDemoTab&&) noexcept = default;
-osc::ImGuiDemoTab& osc::ImGuiDemoTab::operator=(ImGuiDemoTab&&) noexcept = default;
-osc::ImGuiDemoTab::~ImGuiDemoTab() noexcept = default;
-
-UID osc::ImGuiDemoTab::impl_get_id() const
-{
-    return m_Impl->id();
-}
-
-CStringView osc::ImGuiDemoTab::impl_get_name() const
-{
-    return m_Impl->name();
-}
 
 void osc::ImGuiDemoTab::impl_on_draw()
 {
-    m_Impl->on_draw();
+    private_data().on_draw();
 }

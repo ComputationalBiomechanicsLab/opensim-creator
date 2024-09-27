@@ -13,7 +13,6 @@ using namespace osc;
 namespace
 {
     constexpr Vec2i c_shadowmap_dimensions = {1024, 1024};
-    constexpr CStringView c_tab_string_id = "LearnOpenGL/PointShadows";
 
     Transform make_rotated_transform()
     {
@@ -70,43 +69,44 @@ namespace
     }
 }
 
-class osc::LOGLPointShadowsTab::Impl final : public StandardTabImpl {
+class osc::LOGLPointShadowsTab::Impl final : public TabPrivate {
 public:
-    Impl() : StandardTabImpl{c_tab_string_id}
-    {}
+    static CStringView static_label() { return "LearnOpenGL/PointShadows"; }
 
-private:
-    void impl_on_mount() final
+    Impl() : TabPrivate{static_label()} {}
+
+    void on_mount()
     {
         App::upd().make_main_loop_polling();
         scene_camera_.on_mount();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         scene_camera_.on_unmount();
         App::upd().make_main_loop_waiting();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         return scene_camera_.on_event(e);
     }
 
-    void impl_on_tick() final
+    void on_tick()
     {
         // move light position over time
         const double seconds = App::get().frame_delta_since_startup().count();
         light_pos_.x = static_cast<float>(3.0 * sin(0.5 * seconds));
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         scene_camera_.on_draw();
         draw_3d_scene();
         draw_2d_ui();
     }
 
+private:
     void draw_3d_scene()
     {
         const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
@@ -216,54 +216,14 @@ private:
 };
 
 
-CStringView osc::LOGLPointShadowsTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::LOGLPointShadowsTab::id() { return Impl::static_label(); }
 
 osc::LOGLPointShadowsTab::LOGLPointShadowsTab(const ParentPtr<ITabHost>&) :
-    impl_{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>()}
 {}
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(LOGLPointShadowsTab&&) noexcept = default;
-osc::LOGLPointShadowsTab& osc::LOGLPointShadowsTab::operator=(LOGLPointShadowsTab&&) noexcept = default;
-osc::LOGLPointShadowsTab::~LOGLPointShadowsTab() noexcept = default;
 
-UID osc::LOGLPointShadowsTab::impl_get_id() const
-{
-    return impl_->id();
-}
-
-CStringView osc::LOGLPointShadowsTab::impl_get_name() const
-{
-    return impl_->name();
-}
-
-void osc::LOGLPointShadowsTab::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::LOGLPointShadowsTab::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::LOGLPointShadowsTab::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::LOGLPointShadowsTab::impl_on_tick()
-{
-    impl_->on_tick();
-}
-
-void osc::LOGLPointShadowsTab::impl_on_draw_main_menu()
-{
-    impl_->on_draw_main_menu();
-}
-
-void osc::LOGLPointShadowsTab::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LOGLPointShadowsTab::impl_on_mount() { private_data().on_mount(); }
+void osc::LOGLPointShadowsTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::LOGLPointShadowsTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::LOGLPointShadowsTab::impl_on_tick() { private_data().on_tick(); }
+void osc::LOGLPointShadowsTab::impl_on_draw() { private_data().on_draw(); }

@@ -332,11 +332,12 @@ add_library(oscar STATIC
     UI/Tabs/CookiecutterTab.h
     UI/Tabs/ErrorTab.cpp
     UI/Tabs/ErrorTab.h
-    UI/Tabs/ITab.h
     UI/Tabs/ITabHost.h
     UI/Tabs/ScreenshotTab.cpp
     UI/Tabs/ScreenshotTab.h
-    UI/Tabs/StandardTabImpl.h
+    UI/Tabs/Tab.cpp
+    UI/Tabs/Tab.h
+    UI/Tabs/TabPrivate.h
     UI/Tabs/TabRegistry.cpp
     UI/Tabs/TabRegistry.h
     UI/Tabs/TabRegistryEntry.cpp
