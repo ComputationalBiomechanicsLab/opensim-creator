@@ -1,15 +1,13 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <string_view>
 
 namespace osc { class ISimulatorUIAPI; }
+namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -17,7 +15,7 @@ namespace osc
     public:
         OutputPlotsPanel(
             std::string_view panelName,
-            const ParentPtr<MainUIScreen>&,
+            MainUIScreen&,
             ISimulatorUIAPI*
         );
         OutputPlotsPanel(const OutputPlotsPanel&) = delete;

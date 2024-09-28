@@ -3,7 +3,6 @@
 #include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 
@@ -14,7 +13,7 @@ namespace osc
     class SimulationTab final : public Tab {
     public:
         SimulationTab(
-            const ParentPtr<MainUIScreen>&,
+            MainUIScreen&,
             std::shared_ptr<Simulation>
         );
 

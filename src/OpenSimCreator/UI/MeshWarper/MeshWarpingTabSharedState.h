@@ -38,11 +38,11 @@ namespace osc
     public:
         MeshWarpingTabSharedState(
             UID tabID_,
-            ParentPtr<MainUIScreen> parent_,
+            MainUIScreen& parent_,
             std::shared_ptr<SceneCache> sceneCache_) :
 
             m_TabID{tabID_},
-            m_TabHost{std::move(parent_)},
+            m_TabHost{parent_},
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);

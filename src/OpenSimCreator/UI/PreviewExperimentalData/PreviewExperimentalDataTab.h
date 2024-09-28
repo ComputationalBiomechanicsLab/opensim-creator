@@ -1,9 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
+
+namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -11,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit PreviewExperimentalDataTab(const ParentPtr<MainUIScreen>&);
+        explicit PreviewExperimentalDataTab(MainUIScreen&);
 
     private:
         void impl_on_mount() final;

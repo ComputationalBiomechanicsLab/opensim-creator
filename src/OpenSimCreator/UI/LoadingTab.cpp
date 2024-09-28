@@ -38,7 +38,7 @@ public:
 
     explicit Impl(
         LoadingTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         std::filesystem::path path_) :
 
         TabPrivate{owner, "LoadingTab"},
@@ -83,7 +83,7 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            m_Parent->add_and_select_tab<ModelEditorTab>(m_Parent, std::move(result));
+            m_Parent->add_and_select_tab<ModelEditorTab>(*m_Parent, std::move(result));
             m_Parent->close_tab(id());
         }
     }

@@ -135,7 +135,7 @@ public:
     {
         if (!std::exchange(m_HasBeenMountedBefore, true)) {
             // on first mount, place the splash tab at the front of the tabs collection
-            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(getTabHostAPI()));
+            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(owner()));
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
@@ -589,11 +589,11 @@ public:
     void drawAddNewTabMenu()
     {
         if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
-            impl_select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI())));
+            impl_select_tab(addTab(std::make_unique<ModelEditorTab>(owner())));
         }
 
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {
-            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
+            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(owner())));
         }
 
         const std::shared_ptr<const TabRegistry> tabRegistry = App::singleton<TabRegistry>();

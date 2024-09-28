@@ -17,7 +17,7 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+        MainUIScreen& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -75,7 +75,7 @@ private:
         if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",
-                m_MainUIStateAPI,
+                *m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
@@ -92,7 +92,7 @@ private:
 
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+    MainUIScreen& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 

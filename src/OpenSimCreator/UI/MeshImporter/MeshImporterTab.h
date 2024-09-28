@@ -1,19 +1,18 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <vector>
+
+namespace osc { class MainUIScreen; }
 
 namespace osc::mi
 {
     class MeshImporterTab final : public Tab {
     public:
-        explicit MeshImporterTab(const ParentPtr<MainUIScreen>&);
-        MeshImporterTab(const ParentPtr<MainUIScreen>&, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(MainUIScreen&);
+        MeshImporterTab(MainUIScreen&, std::vector<std::filesystem::path>);
 
     private:
         bool impl_is_unsaved() const final;

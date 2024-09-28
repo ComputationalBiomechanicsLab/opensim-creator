@@ -1,16 +1,14 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <string_view>
 
 namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
+namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -18,7 +16,7 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            const ParentPtr<MainUIScreen>&,
+            MainUIScreen&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

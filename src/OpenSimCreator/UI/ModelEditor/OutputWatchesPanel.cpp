@@ -52,7 +52,7 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<const IModelStatePair> model_,
-        const ParentPtr<MainUIScreen>& api_) :
+        MainUIScreen& api_) :
 
         StandardPanelImpl{panelName_},
         m_API{api_},
@@ -111,7 +111,7 @@ private:
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<const IModelStatePair> model_,
-    const ParentPtr<MainUIScreen>& api_) :
+    MainUIScreen& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
 {}

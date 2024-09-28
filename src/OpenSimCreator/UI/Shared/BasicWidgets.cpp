@@ -47,7 +47,6 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar_simbody/SimTKHelpers.h>
 #include <SimTKcommon/basics.h>
@@ -1283,7 +1282,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     return open;
 }
 
-void osc::DrawNewModelButton(const ParentPtr<MainUIScreen>& api)
+void osc::DrawNewModelButton(MainUIScreen& api)
 {
     if (ui::draw_button(OSC_ICON_FILE))
     {
@@ -1327,7 +1326,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<MainUIScreen>& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(MainUIScreen& api)
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
@@ -1335,17 +1334,17 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<MainUIScree
             ActionOpenModel(api, *maybeFile);
         }
         else {
-            ActionOpenModel(*api);
+            ActionOpenModel(api);
         }
     });
 }
 
 void osc::DrawSaveModelButton(
-    const ParentPtr<MainUIScreen>& api,
+    MainUIScreen& api,
     UndoableModelStatePair& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {
-        ActionSaveModel(*api, model);
+        ActionSaveModel(api, model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
 }

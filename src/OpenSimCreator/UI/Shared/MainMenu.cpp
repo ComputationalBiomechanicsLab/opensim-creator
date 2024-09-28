@@ -21,7 +21,6 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/FilesystemHelpers.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
@@ -50,7 +49,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
 }
 
 void osc::MainMenuFileTab::onDraw(
-    const ParentPtr<MainUIScreen>& api,
+    MainUIScreen& api,
     IModelStatePair* maybeModel)
 {
     auto* undoableModel = dynamic_cast<UndoableModelStatePair*>(maybeModel);
@@ -63,13 +62,13 @@ void osc::MainMenuFileTab::onDraw(
             ActionNewModel(api);
         }
         else if (mod and ui::is_key_pressed(Key::O)) {
-            ActionOpenModel(*api);
+            ActionOpenModel(api);
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
             ActionSaveCurrentModelAs(*undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
-            ActionSaveModel(*api, *undoableModel);
+            ActionSaveModel(api, *undoableModel);
         }
         else if (undoableModel and ui::is_key_pressed(Key::F5)) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
@@ -90,7 +89,7 @@ void osc::MainMenuFileTab::onDraw(
     }
 
     if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
-        ActionOpenModel(*api);
+        ActionOpenModel(api);
     }
 
     int imgui_id = 0;
@@ -131,7 +130,7 @@ void osc::MainMenuFileTab::onDraw(
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
-                api->add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                api.add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (const std::exception& ex) {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
@@ -143,7 +142,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveModel(*api, *undoableModel);
+            ActionSaveModel(api, *undoableModel);
         }
     }
 
@@ -186,10 +185,10 @@ void osc::MainMenuFileTab::onDraw(
     ui::draw_separator();
 
     if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-        api->add_and_select_tab<mi::MeshImporterTab>(api);
+        api.add_and_select_tab<mi::MeshImporterTab>(api);
     }
     if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
-        api->add_and_select_tab<PreviewExperimentalDataTab>(api);
+        api.add_and_select_tab<PreviewExperimentalDataTab>(api);
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 

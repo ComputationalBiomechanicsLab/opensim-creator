@@ -2,8 +2,6 @@
 
 #include <OpenSimCreator/UI/MainUIScreen.h>
 
-#include <oscar/Utils/ParentPtr.h>
-
 #include <memory>
 
 namespace osc { class PanelManager; }
@@ -14,7 +12,7 @@ namespace osc
     class SimulationTabMainMenu final {
     public:
         SimulationTabMainMenu(
-            ParentPtr<MainUIScreen>,
+            MainUIScreen&,
             std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>
         );

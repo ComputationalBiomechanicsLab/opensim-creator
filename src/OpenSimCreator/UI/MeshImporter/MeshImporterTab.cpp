@@ -81,7 +81,7 @@ class osc::mi::MeshImporterTab::Impl final :
 public:
     explicit Impl(
         MeshImporterTab& owner,
-        const ParentPtr<MainUIScreen>& parent_) :
+        MainUIScreen& parent_) :
 
         TabPrivate{owner, "MeshImporterTab"},
         m_Parent{parent_},
@@ -90,7 +90,7 @@ public:
 
     explicit Impl(
         MeshImporterTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
         TabPrivate{owner, "MeshImporterTab"},
@@ -163,7 +163,7 @@ public:
         if (m_Shared->hasOutputModel())
         {
             m_Parent->add_and_select_tab<ModelEditorTab>(
-                m_Parent,
+                *m_Parent,
                 std::move(m_Shared->updOutputModel()),
                 m_Shared->getSceneScaleFactor()
             );
@@ -179,7 +179,7 @@ public:
 
         if (m_Shared->isNewMeshImpoterTabRequested())
         {
-            m_Parent->add_and_select_tab<MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<MeshImporterTab>(*m_Parent);
             m_Shared->resetRequestNewMeshImporter();
         }
     }
@@ -2430,12 +2430,12 @@ private:
 
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    const ParentPtr<MainUIScreen>& parent_) :
+    MainUIScreen& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     std::vector<std::filesystem::path> files_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}

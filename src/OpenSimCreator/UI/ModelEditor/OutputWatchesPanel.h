@@ -1,15 +1,13 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <string_view>
 
 namespace osc { class IModelStatePair; }
+namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -18,7 +16,7 @@ namespace osc
         OutputWatchesPanel(
             std::string_view panelName,
             std::shared_ptr<const IModelStatePair>,
-            const ParentPtr<MainUIScreen>&
+            MainUIScreen&
         );
         OutputWatchesPanel(const OutputWatchesPanel&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;

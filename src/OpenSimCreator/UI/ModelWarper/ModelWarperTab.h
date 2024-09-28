@@ -1,9 +1,8 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
+
+namespace osc { class MainUIScreen; }
 
 namespace osc::mow
 {
@@ -11,7 +10,7 @@ namespace osc::mow
     public:
         static CStringView id();
 
-        explicit ModelWarperTab(const ParentPtr<MainUIScreen>&);
+        explicit ModelWarperTab(MainUIScreen&);
 
     private:
         void impl_on_mount() final;

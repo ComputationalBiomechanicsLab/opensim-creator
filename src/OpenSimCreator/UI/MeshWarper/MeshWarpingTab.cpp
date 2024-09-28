@@ -29,7 +29,7 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(MeshWarpingTab& owner, const ParentPtr<MainUIScreen>& parent_) :
+    explicit Impl(MeshWarpingTab& owner, MainUIScreen& parent_) :
         TabPrivate{owner, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
         m_Parent{parent_}
     {
@@ -183,7 +183,7 @@ private:
     ParentPtr<MainUIScreen> m_Parent;
 
     // top-level state that all panels can potentially access
-    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), m_Parent, App::singleton<SceneCache>(App::resource_loader()));
+    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), *m_Parent, App::singleton<SceneCache>(App::resource_loader()));
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
@@ -197,7 +197,7 @@ private:
 
 CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
-osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<MainUIScreen>& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(MainUIScreen& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }

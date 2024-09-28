@@ -16,6 +16,7 @@
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <functional>
 #include <string_view>
@@ -26,7 +27,7 @@ class osc::mow::ModelWarperTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
 
-    explicit Impl(ModelWarperTab& owner, const ParentPtr<MainUIScreen>& tabHost) :
+    explicit Impl(ModelWarperTab& owner, MainUIScreen& tabHost) :
         TabPrivate{owner, static_label()},
         m_TabHost{tabHost}
     {
@@ -99,7 +100,7 @@ public:
 
 private:
     ParentPtr<MainUIScreen> m_TabHost;
-    std::shared_ptr<UIState> m_State = std::make_shared<UIState>(m_TabHost);
+    std::shared_ptr<UIState> m_State = std::make_shared<UIState>(*m_TabHost);
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
     MainMenu m_MainMenu{m_State, m_PanelManager};
@@ -109,7 +110,7 @@ private:
 
 CStringView osc::mow::ModelWarperTab::id() { return Impl::static_label(); }
 
-osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<MainUIScreen>& tabHost) :
+osc::mow::ModelWarperTab::ModelWarperTab(MainUIScreen& tabHost) :
     Tab{std::make_unique<Impl>(*this, tabHost)}
 {}
 void osc::mow::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }

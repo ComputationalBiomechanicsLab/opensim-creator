@@ -72,14 +72,14 @@ namespace
     // helper: draws an ui::draw_menu_item for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         const std::filesystem::path& path,
-        ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         int& imguiID)
     {
         const std::string label = std::string{OSC_ICON_FILE} + " " + path.filename().string();
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
-            parent_->add_and_select_tab<LoadingTab>(*parent_, path);
+            parent_.add_and_select_tab<LoadingTab>(parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
@@ -95,7 +95,7 @@ namespace
 class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(SplashTab& owner, const ParentPtr<MainUIScreen>& parent_) :
+    explicit Impl(SplashTab& owner, MainUIScreen& parent_) :
         TabPrivate{owner, OSC_ICON_HOME},
         m_Parent{parent_}
     {
@@ -132,7 +132,7 @@ public:
 
     void drawMainMenu()
     {
-        m_MainMenuFileTab.onDraw(m_Parent);
+        m_MainMenuFileTab.onDraw(*m_Parent);
         m_MainMenuAboutTab.onDraw();
     }
 
@@ -244,13 +244,13 @@ private:
     void drawActionsMenuSectionContent()
     {
         if (ui::draw_menu_item(OSC_ICON_FILE " New Model")) {
-            ActionNewModel(m_Parent);
+            ActionNewModel(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open Model")) {
             ActionOpenModel(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-            m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
         if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
@@ -261,19 +261,19 @@ private:
     void drawWorkflowsMenuSectionContent()
     {
         if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition")) {
-            m_Parent->add_and_select_tab<FrameDefinitionTab>(m_Parent);
+            m_Parent->add_and_select_tab<FrameDefinitionTab>(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Mesh Importer")) {
-            m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);
+            m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Warping")) {
-            m_Parent->add_and_select_tab<MeshWarpingTab>(m_Parent);
+            m_Parent->add_and_select_tab<MeshWarpingTab>(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
-            m_Parent->add_and_select_tab<mow::ModelWarperTab>(m_Parent);
+            m_Parent->add_and_select_tab<mow::ModelWarperTab>(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
-            m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(m_Parent);
+            m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(*m_Parent);
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
     }
@@ -285,7 +285,7 @@ private:
             for (const RecentFile& rf : *recentFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     rf.path,
-                    m_Parent,
+                    *m_Parent,
                     imguiID
                 );
             }
@@ -329,7 +329,7 @@ private:
             for (const std::filesystem::path& examplePath : m_MainMenuFileTab.exampleOsimFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     examplePath,
-                    m_Parent,
+                    *m_Parent,
                     imguiID
                 );
             }
@@ -396,7 +396,7 @@ private:
     LogViewer m_LogViewer;
 };
 
-osc::SplashTab::SplashTab(const ParentPtr<MainUIScreen>& parent_) :
+osc::SplashTab::SplashTab(MainUIScreen& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::SplashTab::impl_on_mount() { private_data().on_mount(); }

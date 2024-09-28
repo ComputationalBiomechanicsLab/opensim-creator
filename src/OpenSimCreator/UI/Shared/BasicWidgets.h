@@ -1,14 +1,12 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <functional>
@@ -29,6 +27,7 @@ namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class IModelStatePair; }
 namespace osc { class IOutputExtractor; }
+namespace osc { class MainUIScreen; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { class ParamBlock; }
@@ -256,12 +255,12 @@ namespace osc
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
-    void DrawNewModelButton(const ParentPtr<MainUIScreen>&);
+    void DrawNewModelButton(MainUIScreen&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<MainUIScreen>&);
-    void DrawSaveModelButton(const ParentPtr<MainUIScreen>&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(MainUIScreen&);
+    void DrawSaveModelButton(MainUIScreen&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(IModelStatePair&);
     void DrawRedoButton(IModelStatePair&);

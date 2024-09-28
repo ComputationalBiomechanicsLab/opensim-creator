@@ -24,7 +24,7 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(const ParentPtr<MainUIScreen>& tabHost) :
+        explicit UIState(MainUIScreen& tabHost) :
             m_TabHost{tabHost}
         {}
 

@@ -34,7 +34,6 @@
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <memory>
@@ -239,7 +238,7 @@ class osc::PreviewExperimentalDataTab::Impl final :
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
-        const ParentPtr<MainUIScreen>&) :
+        MainUIScreen&) :
         TabPrivate{owner, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
@@ -407,7 +406,7 @@ private:
 
 CStringView osc::PreviewExperimentalDataTab::id() { return "OpenSim/Experimental/PreviewExperimentalData"; }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<MainUIScreen>& ptr) :
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(MainUIScreen& ptr) :
     Tab{std::make_unique<Impl>(*this, ptr)}
 {}
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }

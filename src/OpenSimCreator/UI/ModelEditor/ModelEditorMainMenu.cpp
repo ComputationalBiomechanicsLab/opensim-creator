@@ -26,13 +26,13 @@ using namespace osc;
 namespace
 {
     bool ActionSimulateAgainstAllIntegrators(
-        const ParentPtr<MainUIScreen>& parent,
+        MainUIScreen& parent,
         const IModelStatePair& model)
     {
-        parent->add_and_select_tab<PerformanceAnalyzerTab>(
-            *parent,
+        parent.add_and_select_tab<PerformanceAnalyzerTab>(
+            parent,
             BasicModelStatePair{model},
-            parent->getSimulationParams()
+            parent.getSimulationParams()
         );
         return true;
     }
@@ -41,7 +41,7 @@ namespace
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        const ParentPtr<MainUIScreen>& mainStateAPI_,
+        MainUIScreen& mainStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -52,7 +52,7 @@ public:
 
     void onDraw()
     {
-        m_MainMenuFileTab.onDraw(m_MainUIStateAPI, m_Model.get());
+        m_MainMenuFileTab.onDraw(*m_MainUIStateAPI, m_Model.get());
         drawMainMenuEditTab();
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
@@ -100,7 +100,7 @@ private:
     {
         if (ui::begin_menu("Tools")) {
             if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R")) {
-                ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
+                ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
             }
 
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
@@ -123,7 +123,7 @@ private:
 
             if (ui::begin_menu("         Experimental Tools")) {
                 if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
-                    ActionSimulateAgainstAllIntegrators(m_MainUIStateAPI, *m_Model);
+                    ActionSimulateAgainstAllIntegrators(*m_MainUIStateAPI, *m_Model);
                 }
                 ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
@@ -174,7 +174,7 @@ private:
 
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    const ParentPtr<MainUIScreen>& mainStateAPI_,
+    MainUIScreen& mainStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 

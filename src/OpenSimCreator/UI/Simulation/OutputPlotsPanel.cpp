@@ -36,7 +36,7 @@ class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
-        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+        MainUIScreen& mainUIStateAPI_,
         ISimulatorUIAPI* simulatorUIAPI_) :
 
         StandardPanelImpl{panelName_},
@@ -99,7 +99,7 @@ private:
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     std::string_view panelName_,
-    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+    MainUIScreen& mainUIStateAPI_,
     ISimulatorUIAPI* simulatorUIAPI_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, simulatorUIAPI_)}

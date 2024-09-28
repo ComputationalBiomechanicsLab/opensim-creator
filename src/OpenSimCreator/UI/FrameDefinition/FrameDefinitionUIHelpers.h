@@ -1,13 +1,10 @@
 #pragma once
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
-
-#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 
 namespace OpenSim { class Model; }
 namespace osc { class IModelStatePair; }
+namespace osc { class MainUIScreen; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc::fd
@@ -21,7 +18,7 @@ namespace osc::fd
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        const ParentPtr<MainUIScreen>&,
+        MainUIScreen&,
         const OpenSim::Model&
     );
 }

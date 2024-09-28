@@ -54,7 +54,6 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/FilesystemHelpers.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/ShapeFitters.h>
 #include <oscar_simbody/SimTKHelpers.h>
@@ -261,10 +260,10 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(const ParentPtr<MainUIScreen>& api)
+void osc::ActionNewModel(MainUIScreen& api)
 {
     auto p = std::make_unique<UndoableModelStatePair>();
-    api->add_and_select_tab<ModelEditorTab>(api, std::move(p));
+    api.add_and_select_tab<ModelEditorTab>(api, std::move(p));
 }
 
 void osc::ActionOpenModel(MainUIScreen& api)
@@ -272,9 +271,9 @@ void osc::ActionOpenModel(MainUIScreen& api)
     DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(const ParentPtr<MainUIScreen>& api, const std::filesystem::path& path)
+void osc::ActionOpenModel(MainUIScreen& api, const std::filesystem::path& path)
 {
-    OpenOsimInLoadingTab(*api, path);
+    OpenOsimInLoadingTab(api, path);
 }
 
 bool osc::ActionSaveModel(MainUIScreen&, UndoableModelStatePair& model)
@@ -381,7 +380,7 @@ void osc::ActionEnableAllWrappingSurfaces(IModelStatePair& model)
 }
 
 bool osc::ActionLoadSTOFileAgainstModel(
-    const ParentPtr<MainUIScreen>& parent,
+    MainUIScreen& parent,
     const IModelStatePair& uim,
     const std::filesystem::path& stoPath)
 {
@@ -392,7 +391,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
 
-        parent->add_and_select_tab<SimulationTab>(parent, simulation);
+        parent.add_and_select_tab<SimulationTab>(parent, simulation);
 
         return true;
     }
@@ -403,16 +402,16 @@ bool osc::ActionLoadSTOFileAgainstModel(
 }
 
 bool osc::ActionStartSimulatingModel(
-    const ParentPtr<MainUIScreen>& parent,
+    MainUIScreen& parent,
     const IModelStatePair& uim)
 {
     BasicModelStatePair modelState{uim};
-    ForwardDynamicSimulatorParams params = FromParamBlock(parent->getSimulationParams());
+    ForwardDynamicSimulatorParams params = FromParamBlock(parent.getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
     auto simulationTab = std::make_unique<SimulationTab>(parent, std::move(simulation));
 
-    parent->select_tab(parent->add_tab(std::move(simulationTab)));
+    parent.select_tab(parent.add_tab(std::move(simulationTab)));
 
     return true;
 }

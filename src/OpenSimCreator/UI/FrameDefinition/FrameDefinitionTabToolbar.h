@@ -16,7 +16,7 @@ namespace osc
     public:
         FrameDefinitionTabToolbar(
             std::string_view,
-            ParentPtr<MainUIScreen>,
+            MainUIScreen&,
             std::shared_ptr<UndoableModelStatePair>
         );
 

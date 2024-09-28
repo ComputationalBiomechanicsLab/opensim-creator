@@ -31,7 +31,7 @@ public:
 
     Impl(
         std::string_view panelName_,
-        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+        MainUIScreen& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -149,7 +149,7 @@ private:
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
-                m_MainUIStateAPI,
+                *m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
@@ -243,7 +243,7 @@ private:
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+    MainUIScreen& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> uum_) :
 

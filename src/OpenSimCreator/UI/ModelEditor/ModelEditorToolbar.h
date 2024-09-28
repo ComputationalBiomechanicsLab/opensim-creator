@@ -1,13 +1,10 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
-#include <oscar/Utils/ParentPtr.h>
-
 #include <memory>
 #include <string_view>
 
 namespace osc { class IEditorAPI; }
+namespace osc { class MainUIScreen; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -16,7 +13,7 @@ namespace osc
     public:
         ModelEditorToolbar(
             std::string_view label,
-            const ParentPtr<MainUIScreen>&,
+            MainUIScreen&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

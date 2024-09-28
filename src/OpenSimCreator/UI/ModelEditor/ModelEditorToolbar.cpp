@@ -25,7 +25,7 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label_,
-        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+        MainUIScreen& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
@@ -46,11 +46,11 @@ public:
 private:
     void drawModelFileRelatedButtons()
     {
-        DrawNewModelButton(m_MainUIStateAPI);
+        DrawNewModelButton(*m_MainUIStateAPI);
         ui::same_line();
-        DrawOpenModelButtonWithRecentFilesDropdown(m_MainUIStateAPI);
+        DrawOpenModelButtonWithRecentFilesDropdown(*m_MainUIStateAPI);
         ui::same_line();
-        DrawSaveModelButton(m_MainUIStateAPI, *m_Model);
+        DrawSaveModelButton(*m_MainUIStateAPI, *m_Model);
         ui::same_line();
         DrawReloadModelButton(*m_Model);
     }
@@ -62,7 +62,7 @@ private:
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
         if (ui::draw_button(OSC_ICON_PLAY))
         {
-            ActionStartSimulatingModel(m_MainUIStateAPI, *m_Model);
+            ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
         }
         ui::pop_style_color();
         App::upd().add_frame_annotation("Simulate Button", ui::get_last_drawn_item_screen_rect());
@@ -110,7 +110,7 @@ private:
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
-    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+    MainUIScreen& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 

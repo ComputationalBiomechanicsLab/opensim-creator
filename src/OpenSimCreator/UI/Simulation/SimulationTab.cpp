@@ -70,7 +70,7 @@ public:
 
     Impl(
         SimulationTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
         TabPrivate{owner, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
@@ -98,7 +98,7 @@ public:
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             "##componentcontextmenu",
                             m_ShownModelState,
-                            m_Parent,
+                            *m_Parent,
                             p.toString()
                         );
                         popup->open();
@@ -123,7 +123,7 @@ public:
             {
                 return std::make_shared<OutputPlotsPanel>(
                     panelName,
-                    m_Parent,
+                    *m_Parent,
                     this
                 );
             }
@@ -158,7 +158,7 @@ public:
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             menuName,
                             m_ShownModelState,
-                            m_Parent,
+                            *m_Parent,
                             e.maybeComponentAbsPath
                         );
                         popup->open();
@@ -481,7 +481,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    SimulationTabMainMenu m_MainMenu{m_Parent, m_Simulation, m_PanelManager};
+    SimulationTabMainMenu m_MainMenu{*m_Parent, m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
 
     // manager for popups that are open in this tab
@@ -490,7 +490,7 @@ private:
 
 
 osc::SimulationTab::SimulationTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}

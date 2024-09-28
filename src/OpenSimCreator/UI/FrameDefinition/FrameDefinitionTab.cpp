@@ -915,11 +915,11 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            ParentPtr<MainUIScreen> tabHost_,
+            MainUIScreen& tabHost_,
             std::shared_ptr<UndoableModelStatePair> model_,
             std::shared_ptr<PanelManager> panelManager_) :
 
-            m_TabHost{std::move(tabHost_)},
+            m_TabHost{tabHost_},
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {}
@@ -958,7 +958,7 @@ public:
 
     explicit Impl(
         FrameDefinitionTab& owner,
-        const ParentPtr<MainUIScreen>& parent_) :
+        MainUIScreen& parent_) :
 
         TabPrivate{owner, c_TabStringID},
         m_Parent{parent_}
@@ -1124,14 +1124,14 @@ private:
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
-    FrameDefinitionTabMainMenu m_MainMenu{m_Parent, m_Model, m_PanelManager};
-    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", m_Parent, m_Model};
+    FrameDefinitionTabMainMenu m_MainMenu{*m_Parent, m_Model, m_PanelManager};
+    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", *m_Parent, m_Model};
 };
 
 
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(const ParentPtr<MainUIScreen>& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(MainUIScreen& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }

@@ -57,20 +57,20 @@ class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<MainUIScreen>& parent_) :
+        MainUIScreen& parent_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>()}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         const OpenSim::Model& model_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(model_)}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
@@ -80,7 +80,7 @@ public:
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<MainUIScreen>& parent_,
+        MainUIScreen& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         TabPrivate{owner, "ModelEditorTab"},
@@ -98,7 +98,7 @@ public:
                     m_Model,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", m_Parent, this, m_Model, p));
+                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", *m_Parent, this, m_Model, p));
                     }
                 );
             }
@@ -121,7 +121,7 @@ public:
             "Coordinates",
             [this](std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, m_Parent, this, m_Model);
+                return std::make_shared<CoordinateEditorPanel>(panelName, *m_Parent, this, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -135,7 +135,7 @@ public:
             "Output Watches",
             [this](std::string_view panelName)
             {
-                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, m_Parent);
+                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, *m_Parent);
             }
         );
         m_PanelManager->register_spawnable_panel(
@@ -146,7 +146,7 @@ public:
                 {
                     editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
                         menuName,
-                        mainUIStateAPI,
+                        *mainUIStateAPI,
                         editorAPI,
                         model,
                         e.componentAbsPathOrEmpty
@@ -326,7 +326,7 @@ private:
     bool onDropEvent(const DropFileEvent& e)
     {
         if (e.path().extension() == ".sto") {
-            return ActionLoadSTOFileAgainstModel(m_Parent, *m_Model, e.path());
+            return ActionLoadSTOFileAgainstModel(*m_Parent, *m_Model, e.path());
         }
         else if (e.path().extension() == ".osim") {
             // if the user drops an osim file on this tab then it should be loaded
@@ -351,7 +351,7 @@ private:
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::R)) {
             // Ctrl+R: start a new simulation from focused model
-            return ActionStartSimulatingModel(m_Parent, *m_Model);
+            return ActionStartSimulatingModel(*m_Parent, *m_Model);
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
             // Ctrl+A: clear selection
@@ -372,7 +372,7 @@ private:
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
-            m_Parent,
+            *m_Parent,
             this,
             m_Model,
             path
@@ -417,9 +417,9 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    ModelEditorMainMenu m_MainMenu{m_Parent, this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", m_Parent, this, m_Model};
-    EditorTabStatusBar m_StatusBar{m_Parent, this, m_Model};
+    ModelEditorMainMenu m_MainMenu{*m_Parent, this, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *m_Parent, this, m_Model};
+    EditorTabStatusBar m_StatusBar{*m_Parent, this, m_Model};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;
@@ -429,25 +429,25 @@ private:
 };
 
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<MainUIScreen>& parent_) :
+    MainUIScreen& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     const OpenSim::Model& model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}

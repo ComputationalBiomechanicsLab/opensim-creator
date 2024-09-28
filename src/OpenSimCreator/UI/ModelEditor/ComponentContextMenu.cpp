@@ -358,7 +358,7 @@ class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+        MainUIScreen& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
@@ -609,7 +609,7 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
+    MainUIScreen& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :

@@ -44,5 +44,5 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
     WarpableModel copy{*m_Document};
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
-    m_TabHost->add_and_select_tab<ModelEditorTab>(*api, warpedModelStatePair->getModel());
+    m_TabHost->add_and_select_tab<ModelEditorTab>(**api, warpedModelStatePair->getModel());
 }

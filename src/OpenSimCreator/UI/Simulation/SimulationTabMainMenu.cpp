@@ -16,18 +16,18 @@ using namespace osc;
 class osc::SimulationTabMainMenu::Impl final {
 public:
     Impl(
-        ParentPtr<MainUIScreen> parent,
+        MainUIScreen& parent,
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
-        m_Parent{std::move(parent)},
+        m_Parent{parent},
         m_Simulation{std::move(simulation)},
         m_PanelManager{std::move(panelManager)}
     {}
 
     void onDraw()
     {
-        m_MainMenuFileTab.onDraw(m_Parent);
+        m_MainMenuFileTab.onDraw(*m_Parent);
         drawActionsMenu();
         m_MainMenuWindowTab.on_draw();
         m_MainMenuAboutTab.onDraw();
@@ -90,11 +90,11 @@ private:
 };
 
 osc::SimulationTabMainMenu::SimulationTabMainMenu(
-    ParentPtr<MainUIScreen> parent,
+    MainUIScreen& parent,
     std::shared_ptr<Simulation> simulation,
     std::shared_ptr<PanelManager> panelManager) :
 
-    m_Impl{std::make_unique<Impl>(std::move(parent), std::move(simulation), std::move(panelManager))}
+    m_Impl{std::make_unique<Impl>(parent, std::move(simulation), std::move(panelManager))}
 {}
 osc::SimulationTabMainMenu::SimulationTabMainMenu(SimulationTabMainMenu&&) noexcept = default;
 osc::SimulationTabMainMenu& osc::SimulationTabMainMenu::operator=(SimulationTabMainMenu&&) noexcept = default;

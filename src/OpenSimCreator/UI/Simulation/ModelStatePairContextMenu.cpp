@@ -23,7 +23,7 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<IModelStatePair> model_,
-        const ParentPtr<MainUIScreen>& api_,
+        MainUIScreen& api_,
         std::optional<std::string> maybeComponentAbsPath_) :
 
         StandardPopup{panelName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
@@ -90,7 +90,7 @@ private:
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(
     std::string_view panelName_,
     std::shared_ptr<IModelStatePair> model_,
-    const ParentPtr<MainUIScreen>& api_,
+    MainUIScreen& api_,
     std::optional<std::string> maybeComponentAbsPath_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_, std::move(maybeComponentAbsPath_))}

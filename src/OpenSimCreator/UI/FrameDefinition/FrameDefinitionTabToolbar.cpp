@@ -10,7 +10,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -19,11 +18,11 @@
 
 osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
     std::string_view label_,
-    ParentPtr<MainUIScreen> tabHost_,
+    MainUIScreen& tabHost_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Label{label_},
-    m_TabHost{std::move(tabHost_)},
+    m_TabHost{tabHost_},
     m_Model{std::move(model_)}
 {}
 
@@ -52,7 +51,7 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
         ui::begin_disabled();
     }
     if (ui::draw_button(OSC_ICON_FILE_EXPORT " Export to OpenSim")) {
-        fd::ActionExportFrameDefinitionSceneModelToEditorTab(m_TabHost, *m_Model);
+        fd::ActionExportFrameDefinitionSceneModelToEditorTab(*m_TabHost, *m_Model);
     }
     if (numBodies == 0) {
         ui::end_disabled();
