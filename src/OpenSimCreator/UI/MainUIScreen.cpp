@@ -73,10 +73,7 @@ namespace
     }
 }
 
-class osc::MainUIScreen::Impl final :
-    public ScreenPrivate,
-    public IMainUIStateAPI {
-
+class osc::MainUIScreen::Impl final : public ScreenPrivate {
 public:
 
     Impl(MainUIScreen& owner) : ScreenPrivate{owner} {}
@@ -93,7 +90,7 @@ public:
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.begin() and it != m_Tabs.end()) {
                 --it;  // previous
-                select_tab((*it)->id());
+                impl_select_tab((*it)->id());
             }
             return true;
         }
@@ -102,13 +99,13 @@ public:
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.end()-1) {
                 ++it;  // next
-                select_tab((*it)->id());
+                impl_select_tab((*it)->id());
             }
             return true;
         }
         if (e.matches(KeyModifier::CtrlORGui, Key::W) and m_Tabs.size() > 1 and m_ActiveTabID != m_Tabs.front()->id()) {
             // `Ctrl+W` or `Command+W`: close the current tab - unless it's the splash tab
-            close_tab(m_ActiveTabID);
+            impl_close_tab(m_ActiveTabID);
             return true;
         }
         return false;
@@ -216,7 +213,7 @@ public:
                     // - soak up the exception to prevent the whole application from terminating
                     // - then create a new tab containing the error message, so the user can see the error
                     UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
-                    select_tab(id);
+                    impl_select_tab(id);
                     impl_close_tab(m_Tabs[i]->id());
                 }
             }
@@ -259,7 +256,7 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
                 UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
-                select_tab(id);
+                impl_select_tab(id);
                 impl_close_tab(m_ActiveTabID);
             }
 
@@ -295,7 +292,7 @@ public:
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
                 UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
-                select_tab(id);
+                impl_select_tab(id);
                 impl_close_tab(m_Tabs[i]->id());
             }
         }
@@ -350,49 +347,49 @@ public:
         }
     }
 
-    const ParamBlock& implGetSimulationParams() const final
+    const ParamBlock& implGetSimulationParams() const
     {
         return m_SimulationParams;
     }
 
-    ParamBlock& implUpdSimulationParams() final
+    ParamBlock& implUpdSimulationParams()
     {
         return m_SimulationParams;
     }
 
-    int implGetNumUserOutputExtractors() const final
+    int implGetNumUserOutputExtractors() const
     {
         return static_cast<int>(m_UserOutputExtractors.size());
     }
 
-    const OutputExtractor& implGetUserOutputExtractor(int idx) const final
+    const OutputExtractor& implGetUserOutputExtractor(int idx) const
     {
         return m_UserOutputExtractors.at(idx);
     }
 
-    void implAddUserOutputExtractor(const OutputExtractor& output) final
+    void implAddUserOutputExtractor(const OutputExtractor& output)
     {
         m_UserOutputExtractors.push_back(output);
         App::upd().upd_settings().set_value("panels/Output Watches/enabled", true);
     }
 
-    void implRemoveUserOutputExtractor(int idx) final
+    void implRemoveUserOutputExtractor(int idx)
     {
         OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserOutputExtractors.size()));
         m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
     }
 
-    bool implHasUserOutputExtractor(const OutputExtractor& oe) const final
+    bool implHasUserOutputExtractor(const OutputExtractor& oe) const
     {
         return cpp23::contains(m_UserOutputExtractors, oe);
     }
 
-    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) final
+    bool implRemoveUserOutputExtractor(const OutputExtractor& oe)
     {
         return std::erase(m_UserOutputExtractors, oe) > 0;
     }
 
-    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) final
+    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer)
     {
         if (auto it = find_or_nullptr(m_UserOutputExtractors, old)) {
             *it = newer;
@@ -404,11 +401,9 @@ public:
         }
     }
 
-private:
-
     ParentPtr<IMainUIStateAPI> getTabHostAPI()
     {
-        return ParentPtr<IMainUIStateAPI>{m_Lifetime, this};
+        return ParentPtr<IMainUIStateAPI>{lifetime(), &owner()};
     }
 
     void drawTabSpecificMenu()
@@ -431,7 +426,7 @@ private:
                         // - soak up the exception to prevent the whole application from terminating
                         // - then create a new tab containing the error message, so the user can see the error
                         UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
-                        select_tab(id);
+                        impl_select_tab(id);
                         impl_close_tab(m_ActiveTabID);
                     }
 
@@ -574,9 +569,9 @@ private:
                 // - and indicate that the UI was aggressively reset, because the drawcall may have thrown midway
                 //   through rendering the 2D UI
                 UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
-                select_tab(id);
+                impl_select_tab(id);
                 impl_close_tab(m_ActiveTabID);
-                reset_imgui();
+                impl_reset_imgui();
             }
 
             handleDeletedTabs();
@@ -594,11 +589,11 @@ private:
     void drawAddNewTabMenu()
     {
         if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
-            select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI())));
+            impl_select_tab(addTab(std::make_unique<ModelEditorTab>(getTabHostAPI())));
         }
 
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {
-            select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
+            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(getTabHostAPI())));
         }
 
         const std::shared_ptr<const TabRegistry> tabRegistry = App::singleton<TabRegistry>();
@@ -606,7 +601,7 @@ private:
             if (ui::begin_menu("Experimental Tabs")) {
                 for (auto&& tabRegistryEntry : *tabRegistry) {
                     if (ui::draw_menu_item(tabRegistryEntry.name())) {
-                        select_tab(addTab(tabRegistryEntry.construct_tab(owner())));
+                        impl_select_tab(addTab(tabRegistryEntry.construct_tab(owner())));
                     }
                 }
                 ui::end_menu();
@@ -635,17 +630,17 @@ private:
         return getTabByID(m_RequestedTab);
     }
 
-    UID impl_add_tab(std::unique_ptr<Tab> tab) final
+    UID impl_add_tab(std::unique_ptr<Tab> tab)
     {
         return m_Tabs.emplace_back(std::move(tab))->id();
     }
 
-    void impl_select_tab(UID id) final
+    void impl_select_tab(UID id)
     {
         m_RequestedTab = id;
     }
 
-    void impl_close_tab(UID id) final
+    void impl_close_tab(UID id)
     {
         m_DeletedTabs.insert(id);
     }
@@ -773,7 +768,7 @@ private:
         }
     }
 
-    void impl_reset_imgui() final
+    void impl_reset_imgui()
     {
         m_ImguiWasAggressivelyReset = true;
     }
@@ -786,9 +781,12 @@ private:
 
         if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
             UID tabID = addTab(std::make_unique<ScreenshotTab>(owner(), m_MaybeScreenshotRequest.get()));
-            select_tab(tabID);
+            impl_select_tab(tabID);
         }
     }
+
+private:
+    OSC_OWNER_GETTERS(MainUIScreen);
 
     // lifetime of this object
     SharedLifetimeBlock m_Lifetime;
@@ -852,3 +850,19 @@ void osc::MainUIScreen::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::MainUIScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::MainUIScreen::impl_on_tick() { private_data().on_tick(); }
 void osc::MainUIScreen::impl_on_draw() { private_data().onDraw(); }
+
+UID osc::MainUIScreen::add_tab(std::unique_ptr<Tab> tab){ return private_data().impl_add_tab(std::move(tab)); }
+void osc::MainUIScreen::select_tab(UID tab_id) { private_data().impl_select_tab(tab_id); }
+void osc::MainUIScreen::close_tab(UID tab_id) { private_data().impl_close_tab(tab_id); }
+void osc::MainUIScreen::reset_imgui() { private_data().impl_reset_imgui(); }
+
+const ParamBlock& osc::MainUIScreen::getSimulationParams() const { return private_data().implGetSimulationParams(); }
+ParamBlock& osc::MainUIScreen::updSimulationParams() { return private_data().implUpdSimulationParams(); }
+
+int osc::MainUIScreen::getNumUserOutputExtractors() const { return private_data().implGetNumUserOutputExtractors(); }
+const OutputExtractor& osc::MainUIScreen::getUserOutputExtractor(int index) const { return private_data().implGetUserOutputExtractor(index); }
+void osc::MainUIScreen::addUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implAddUserOutputExtractor(extractor); }
+void osc::MainUIScreen::removeUserOutputExtractor(int index) { private_data().implRemoveUserOutputExtractor(index); }
+bool osc::MainUIScreen::hasUserOutputExtractor(const OutputExtractor& extractor) const { return private_data().implHasUserOutputExtractor(extractor); }
+bool osc::MainUIScreen::removeUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implRemoveUserOutputExtractor(extractor); }
+bool osc::MainUIScreen::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return private_data().implOverwriteOrAddNewUserOutputExtractor(old, newer); }

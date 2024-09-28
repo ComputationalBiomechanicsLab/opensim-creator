@@ -1,12 +1,12 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/ParentPtr.h>
 
 namespace osc { class ParamBlock; }
-namespace osc { class IMainUIStateAPI; }
 
 namespace osc
 {

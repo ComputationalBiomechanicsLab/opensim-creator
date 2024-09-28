@@ -1,11 +1,12 @@
 #pragma once
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+
 
 #include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 
 namespace OpenSim { class Model; }
-namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 

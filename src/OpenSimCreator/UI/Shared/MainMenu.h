@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
 #include <oscar/Utils/ParentPtr.h>
 
@@ -7,7 +9,6 @@
 #include <vector>
 #include <optional>
 
-namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
 
 namespace osc

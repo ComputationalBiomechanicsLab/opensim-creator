@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Vec3.h>
@@ -30,7 +31,6 @@ namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
-namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class SceneCache; }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+
 #include <oscar/UI/Widgets/IPopup.h>
 #include <oscar/Utils/ParentPtr.h>
 
@@ -8,7 +10,6 @@
 #include <string>
 #include <string_view>
 
-namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
 
 namespace osc

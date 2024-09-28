@@ -19,7 +19,6 @@
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class PhysicalOffsetFrame; }
-namespace osc { class IMainUIStateAPI; }
 
 namespace osc::mow
 {

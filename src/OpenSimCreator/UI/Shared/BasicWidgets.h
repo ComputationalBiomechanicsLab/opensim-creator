@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Vec2.h>
@@ -26,7 +27,6 @@ namespace OpenSim { class Sphere; }
 namespace OpenSim { class Station; }
 namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
-namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class IOutputExtractor; }
 namespace osc { class OpenSimDecorationOptions; }

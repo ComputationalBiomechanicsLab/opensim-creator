@@ -1,11 +1,11 @@
 #pragma once
 
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
-
-namespace osc { class IMainUIStateAPI; }
 
 namespace osc
 {
