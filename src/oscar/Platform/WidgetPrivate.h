@@ -11,11 +11,16 @@ namespace osc
 {
     class WidgetPrivate {
     public:
-        explicit WidgetPrivate(Widget& owner) : owner_{&owner} {}
+        explicit WidgetPrivate(Widget& owner, Widget* parent) :
+            owner_{&owner},
+            parent_{parent ? parent->weak_ref() : nullptr}
+        {}
         virtual ~WidgetPrivate() noexcept = default;
 
         SharedLifetimeBlock& lifetime() { return lifetime_; }
 
+        Widget* parent() { return parent_.get(); }
+        const Widget* parent() const { return parent_.get(); }
     protected:
         Widget& base_owner() { return *owner_; }
         const Widget& base_owner() const { return *owner_; }
@@ -24,6 +29,7 @@ namespace osc
 
     private:
         Widget* owner_;
+        LifetimedPtr<Widget> parent_;
         SharedLifetimeBlock lifetime_;
     };
 }

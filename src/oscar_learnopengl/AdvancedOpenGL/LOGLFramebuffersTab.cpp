@@ -58,8 +58,8 @@ class osc::LOGLFramebuffersTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/Framebuffers"; }
 
-    explicit Impl(LOGLFramebuffersTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLFramebuffersTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -146,8 +146,8 @@ private:
 
 CStringView osc::LOGLFramebuffersTab::id() { return Impl::static_label(); }
 
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLFramebuffersTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLFramebuffersTab::impl_on_unmount() { private_data().on_unmount(); }

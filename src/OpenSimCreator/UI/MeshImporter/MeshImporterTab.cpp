@@ -83,7 +83,7 @@ public:
         MeshImporterTab& owner,
         MainUIScreen& parent_) :
 
-        TabPrivate{owner, "MeshImporterTab"},
+        TabPrivate{owner, &parent_, "MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {}
@@ -93,7 +93,7 @@ public:
         MainUIScreen& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
-        TabPrivate{owner, "MeshImporterTab"},
+        TabPrivate{owner, &parent_, "MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
     {}

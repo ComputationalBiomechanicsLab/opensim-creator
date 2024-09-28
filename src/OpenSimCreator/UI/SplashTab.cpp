@@ -96,7 +96,7 @@ class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(SplashTab& owner, MainUIScreen& parent_) :
-        TabPrivate{owner, OSC_ICON_HOME},
+        TabPrivate{owner, &parent_, OSC_ICON_HOME},
         m_Parent{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);

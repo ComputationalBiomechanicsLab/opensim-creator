@@ -84,8 +84,8 @@ class osc::LOGLBlendingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/Blending"; }
 
-    explicit Impl(LOGLBlendingTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLBlendingTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {
         blending_material_.set_transparent(true);
         log_viewer_.open();
@@ -174,8 +174,8 @@ private:
 
 CStringView osc::LOGLBlendingTab::id() { return Impl::static_label(); }
 
-osc::LOGLBlendingTab::LOGLBlendingTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLBlendingTab::LOGLBlendingTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLBlendingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLBlendingTab::impl_on_unmount() { private_data().on_unmount(); }

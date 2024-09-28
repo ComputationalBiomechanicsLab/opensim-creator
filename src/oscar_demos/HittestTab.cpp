@@ -88,8 +88,8 @@ class osc::HittestTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/Hittest"; }
 
-    explicit Impl(HittestTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(HittestTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {
         camera_.set_background_color({1.0f, 1.0f, 1.0f, 0.0f});
     }
@@ -249,8 +249,8 @@ public:
 
 CStringView osc::HittestTab::id() { return Impl::static_label(); }
 
-osc::HittestTab::HittestTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::HittestTab::HittestTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::HittestTab::impl_on_mount() { private_data().on_mount(); }
 void osc::HittestTab::impl_on_unmount() { private_data().on_unmount(); }

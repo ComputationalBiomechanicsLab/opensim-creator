@@ -121,8 +121,8 @@ class osc::BookOfShadersTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "BookOfShaders/All"; }
 
-    explicit Impl(BookOfShadersTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(BookOfShadersTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {
         camera_.set_projection(CameraProjection::Orthographic);
         camera_.set_clipping_planes({-1.0f, 1.0f});
@@ -180,7 +180,7 @@ private:
 
 CStringView osc::BookOfShadersTab::id() { return Impl::static_label(); }
 
-osc::BookOfShadersTab::BookOfShadersTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::BookOfShadersTab::BookOfShadersTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::BookOfShadersTab::impl_on_draw() { private_data().on_draw(); }

@@ -73,7 +73,7 @@ public:
         MainUIScreen& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
-        TabPrivate{owner, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
+        TabPrivate{owner, &parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Parent{parent_},
         m_Simulation{std::move(simulation_)}
     {

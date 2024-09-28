@@ -73,8 +73,8 @@ class osc::LOGLPointShadowsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/PointShadows"; }
 
-    explicit Impl(LOGLPointShadowsTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLPointShadowsTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -220,8 +220,8 @@ private:
 
 CStringView osc::LOGLPointShadowsTab::id() { return Impl::static_label(); }
 
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLPointShadowsTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLPointShadowsTab::impl_on_unmount() { private_data().on_unmount(); }

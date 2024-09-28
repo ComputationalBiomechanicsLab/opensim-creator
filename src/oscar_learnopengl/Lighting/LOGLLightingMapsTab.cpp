@@ -46,8 +46,8 @@ class osc::LOGLLightingMapsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/LightingMaps"; }
 
-    explicit Impl(LOGLLightingMapsTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLLightingMapsTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -124,8 +124,8 @@ private:
 
 CStringView osc::LOGLLightingMapsTab::id() { return Impl::static_label(); }
 
-osc::LOGLLightingMapsTab::LOGLLightingMapsTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLLightingMapsTab::LOGLLightingMapsTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLLightingMapsTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLLightingMapsTab::impl_on_unmount() { private_data().on_unmount(); }

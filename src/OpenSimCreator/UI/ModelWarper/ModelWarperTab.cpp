@@ -28,7 +28,7 @@ public:
     static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
 
     explicit Impl(ModelWarperTab& owner, MainUIScreen& tabHost) :
-        TabPrivate{owner, static_label()},
+        TabPrivate{owner, &tabHost, static_label()},
         m_TabHost{tabHost}
     {
         m_PanelManager->register_toggleable_panel(

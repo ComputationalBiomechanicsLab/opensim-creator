@@ -102,8 +102,8 @@ class osc::LOGLCubemapsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/Cubemaps"; }
 
-    explicit Impl(LOGLCubemapsTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLCubemapsTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {
         for (CubeMaterial& cube_material : cube_materials_) {
             cube_material.material.set("uTexture", container_texture_);
@@ -220,8 +220,8 @@ private:
 
 CStringView osc::LOGLCubemapsTab::id() { return Impl::static_label(); }
 
-osc::LOGLCubemapsTab::LOGLCubemapsTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLCubemapsTab::LOGLCubemapsTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLCubemapsTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLCubemapsTab::impl_on_unmount() { private_data().on_unmount(); }

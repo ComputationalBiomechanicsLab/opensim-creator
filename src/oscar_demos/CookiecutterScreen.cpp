@@ -6,8 +6,8 @@
 
 class osc::CookiecutterScreen::Impl final : public ScreenPrivate {
 public:
-    explicit Impl(CookiecutterScreen& owner) :
-        ScreenPrivate{owner}
+    explicit Impl(CookiecutterScreen& owner, Widget& parent) :
+        ScreenPrivate{owner, &parent}
     {}
 
     void on_mount()
@@ -72,8 +72,8 @@ private:
     bool checkbox_state_ = false;
 };
 
-osc::CookiecutterScreen::CookiecutterScreen() :
-    Screen{std::make_unique<Impl>(*this)}
+osc::CookiecutterScreen::CookiecutterScreen(Widget& parent) :
+    Screen{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }

@@ -12,8 +12,8 @@ class osc::ImPlotDemoTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/ImPlot"; }
 
-    explicit Impl(ImPlotDemoTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(ImPlotDemoTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_draw()
@@ -25,7 +25,7 @@ public:
 
 CStringView osc::ImPlotDemoTab::id() { return Impl::static_label(); }
 
-osc::ImPlotDemoTab::ImPlotDemoTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::ImPlotDemoTab::ImPlotDemoTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::ImPlotDemoTab::impl_on_draw() { private_data().on_draw(); }

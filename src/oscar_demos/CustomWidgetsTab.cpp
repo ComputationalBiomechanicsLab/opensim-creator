@@ -94,8 +94,8 @@ class osc::CustomWidgetsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/CustomWidgets"; }
 
-    explicit Impl(CustomWidgetsTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(CustomWidgetsTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_draw()
@@ -116,7 +116,7 @@ private:
 
 CStringView osc::CustomWidgetsTab::id() { return Impl::static_label(); }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::CustomWidgetsTab::CustomWidgetsTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::CustomWidgetsTab::impl_on_draw() { private_data().on_draw(); }

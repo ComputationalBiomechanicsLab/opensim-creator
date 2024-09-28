@@ -960,7 +960,7 @@ public:
         FrameDefinitionTab& owner,
         MainUIScreen& parent_) :
 
-        TabPrivate{owner, c_TabStringID},
+        TabPrivate{owner, &parent_, c_TabStringID},
         m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(

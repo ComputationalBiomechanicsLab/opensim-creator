@@ -11,8 +11,8 @@ class osc::CookiecutterTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "CookiecutterTab"; }
 
-    explicit Impl(CookiecutterTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(CookiecutterTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount() {}
@@ -25,8 +25,8 @@ public:
 
 osc::CStringView osc::CookiecutterTab::id() { return Impl::static_label(); }
 
-osc::CookiecutterTab::CookiecutterTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::CookiecutterTab::CookiecutterTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::CookiecutterTab::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterTab::impl_on_unmount() { private_data().on_unmount(); }

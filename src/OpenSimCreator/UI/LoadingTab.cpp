@@ -41,7 +41,7 @@ public:
         MainUIScreen& parent_,
         std::filesystem::path path_) :
 
-        TabPrivate{owner, "LoadingTab"},
+        TabPrivate{owner, &parent_, "LoadingTab"},
         m_Parent{parent_},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}

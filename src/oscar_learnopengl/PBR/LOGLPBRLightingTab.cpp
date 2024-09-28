@@ -53,8 +53,8 @@ class osc::LOGLPBRLightingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/PBR/Lighting"; }
 
-    explicit Impl(LOGLPBRLightingTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLPBRLightingTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
    void on_mount()
@@ -138,8 +138,8 @@ private:
 
 CStringView osc::LOGLPBRLightingTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLPBRLightingTab::LOGLPBRLightingTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLPBRLightingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLPBRLightingTab::impl_on_unmount() { private_data().on_unmount(); }

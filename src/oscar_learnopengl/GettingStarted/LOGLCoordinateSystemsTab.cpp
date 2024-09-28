@@ -67,8 +67,8 @@ class osc::LOGLCoordinateSystemsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/CoordinateSystems"; }
 
-    explicit Impl(LOGLCoordinateSystemsTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLCoordinateSystemsTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -159,8 +159,8 @@ private:
 
 CStringView osc::LOGLCoordinateSystemsTab::id() { return Impl::static_label(); }
 
-osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLCoordinateSystemsTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLCoordinateSystemsTab::impl_on_unmount() { private_data().on_unmount(); }

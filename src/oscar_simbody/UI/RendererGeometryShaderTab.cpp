@@ -25,8 +25,8 @@ using namespace osc;
 class osc::RendererGeometryShaderTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(RendererGeometryShaderTab& owner) :
-        TabPrivate{owner, "GeometryShader"}
+    explicit Impl(RendererGeometryShaderTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, "GeometryShader"}
     {
         m_SceneCamera.set_position({0.0f, 0.0f, 3.0f});
         m_SceneCamera.set_vertical_fov(45_deg);
@@ -109,8 +109,8 @@ private:
 
 CStringView osc::RendererGeometryShaderTab::id() { return "OpenSim/Experimental/GeometryShader"; }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::RendererGeometryShaderTab::impl_on_mount() { private_data().on_mount(); }
 void osc::RendererGeometryShaderTab::impl_on_unmount() { private_data().on_unmount(); }

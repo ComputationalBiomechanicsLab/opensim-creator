@@ -8,7 +8,7 @@ namespace osc
     //       string that users can "Find+Replace" to make their own screen impl
     class CookiecutterScreen final : public Screen {
     public:
-        CookiecutterScreen();
+        explicit CookiecutterScreen(Widget&);
 
     private:
         void impl_on_mount() final;

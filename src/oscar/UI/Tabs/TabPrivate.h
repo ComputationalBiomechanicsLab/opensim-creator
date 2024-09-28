@@ -11,8 +11,8 @@ namespace osc
 {
     class TabPrivate : public WidgetPrivate {
     public:
-        explicit TabPrivate(Tab& owner, std::string_view tab_name) :
-            WidgetPrivate{owner},
+        explicit TabPrivate(Tab& owner, Widget* parent, std::string_view tab_name) :
+            WidgetPrivate{owner, parent},
             name_{tab_name}
         {}
 

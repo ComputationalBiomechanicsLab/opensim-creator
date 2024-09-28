@@ -21,6 +21,8 @@ namespace osc
         bool on_event(Event& e) { return impl_on_event(e); }
         LifetimedPtr<Widget> weak_ref();
 
+        Widget* parent();
+        const Widget* parent() const;
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
         Widget(Widget&&) noexcept;

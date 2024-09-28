@@ -8,8 +8,8 @@ namespace osc
 {
     class ScreenPrivate : public WidgetPrivate {
     public:
-        explicit ScreenPrivate(Screen& owner) :
-            WidgetPrivate{owner}
+        explicit ScreenPrivate(Screen& owner, Widget* parent) :
+            WidgetPrivate{owner, parent}
         {}
     protected:
         OSC_OWNER_GETTERS(Screen);

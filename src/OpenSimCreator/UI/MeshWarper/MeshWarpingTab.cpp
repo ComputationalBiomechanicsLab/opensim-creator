@@ -30,7 +30,7 @@ class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(MeshWarpingTab& owner, MainUIScreen& parent_) :
-        TabPrivate{owner, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
+        TabPrivate{owner, &parent_, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
         m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(

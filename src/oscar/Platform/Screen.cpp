@@ -8,7 +8,7 @@
 using namespace osc;
 
 osc::Screen::Screen() :
-    Screen{std::make_unique<ScreenPrivate>(*this)}
+    Screen{std::make_unique<ScreenPrivate>(*this, nullptr)}
 {}
 osc::Screen::Screen(std::unique_ptr<ScreenPrivate>&& ptr) :
     Widget{std::move(ptr)}

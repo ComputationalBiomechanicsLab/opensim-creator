@@ -83,7 +83,7 @@ public:
         MainUIScreen& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
-        TabPrivate{owner, "ModelEditorTab"},
+        TabPrivate{owner, &parent_, "ModelEditorTab"},
         m_Parent{parent_},
         m_Model{std::move(model_)}
     {

@@ -67,8 +67,8 @@ class osc::LOGLShadowMappingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/ShadowMapping"; }
 
-    explicit Impl(LOGLShadowMappingTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLShadowMappingTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -190,8 +190,8 @@ private:
 
 CStringView osc::LOGLShadowMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLShadowMappingTab::LOGLShadowMappingTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLShadowMappingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLShadowMappingTab::impl_on_unmount() { private_data().on_unmount(); }

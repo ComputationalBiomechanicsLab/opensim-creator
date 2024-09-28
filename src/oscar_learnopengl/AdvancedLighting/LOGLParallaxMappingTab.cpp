@@ -90,8 +90,8 @@ class osc::LOGLParallaxMappingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/ParallaxMapping"; }
 
-    explicit Impl(LOGLParallaxMappingTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLParallaxMappingTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -160,8 +160,8 @@ private:
 
 CStringView osc::LOGLParallaxMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLParallaxMappingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLParallaxMappingTab::impl_on_unmount() { private_data().on_unmount(); }

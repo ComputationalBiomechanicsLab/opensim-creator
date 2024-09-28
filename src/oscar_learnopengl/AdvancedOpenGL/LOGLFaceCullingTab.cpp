@@ -44,8 +44,8 @@ class osc::LOGLFaceCullingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/FaceCulling"; }
 
-    explicit Impl(LOGLFaceCullingTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLFaceCullingTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -103,8 +103,8 @@ private:
 
 
 CStringView osc::LOGLFaceCullingTab::id() { return Impl::static_label(); }
-osc::LOGLFaceCullingTab::LOGLFaceCullingTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLFaceCullingTab::LOGLFaceCullingTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLFaceCullingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLFaceCullingTab::impl_on_unmount() { private_data().on_unmount(); }

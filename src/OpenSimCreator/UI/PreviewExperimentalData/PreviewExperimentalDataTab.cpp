@@ -12,6 +12,7 @@
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -238,8 +239,8 @@ class osc::PreviewExperimentalDataTab::Impl final :
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
-        MainUIScreen&) :
-        TabPrivate{owner, OSC_ICON_DOT_CIRCLE " Experimental Data"}
+        MainUIScreen& parent) :
+        TabPrivate{owner, &parent, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",

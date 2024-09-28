@@ -8,6 +8,7 @@
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
 
@@ -50,10 +51,11 @@ public:
 
     Impl(
         PerformanceAnalyzerTab& owner,
+        Widget& parent,
         BasicModelStatePair baseModel,
         ParamBlock params) :
 
-        TabPrivate{owner, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
+        TabPrivate{owner, &parent, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
     {}
@@ -205,11 +207,11 @@ private:
 
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    MainUIScreen&,
+    MainUIScreen& parent,
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 
-    Tab{std::make_unique<Impl>(*this, std::move(modelState), params)}
+    Tab{std::make_unique<Impl>(*this, parent, std::move(modelState), params)}
 {}
 void osc::PerformanceAnalyzerTab::impl_on_tick() { private_data().on_tick(); }
 void osc::PerformanceAnalyzerTab::impl_on_draw() { private_data().onDraw(); }

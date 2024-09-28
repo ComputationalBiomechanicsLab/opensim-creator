@@ -211,8 +211,8 @@ class osc::LOGLPBRSpecularIrradianceTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/PBR/SpecularIrradiance"; }
 
-    explicit Impl(LOGLPBRSpecularIrradianceTab& owner) :
-        TabPrivate{owner, static_label()}
+    explicit Impl(LOGLPBRSpecularIrradianceTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()}
     {}
 
     void on_mount()
@@ -348,8 +348,8 @@ private:
 
 CStringView osc::LOGLPBRSpecularIrradianceTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(Widget&) :
-    Tab{std::make_unique<Impl>(*this)}
+osc::LOGLPBRSpecularIrradianceTab::LOGLPBRSpecularIrradianceTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLPBRSpecularIrradianceTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLPBRSpecularIrradianceTab::impl_on_unmount() { private_data().on_unmount(); }
