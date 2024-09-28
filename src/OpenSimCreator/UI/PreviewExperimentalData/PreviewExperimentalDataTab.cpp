@@ -239,7 +239,7 @@ class osc::PreviewExperimentalDataTab::Impl final :
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
-        const ParentPtr<ITabHost>&) :
+        const ParentPtr<IMainUIStateAPI>&) :
         TabPrivate{owner, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
@@ -407,7 +407,7 @@ private:
 
 CStringView osc::PreviewExperimentalDataTab::id() { return "OpenSim/Experimental/PreviewExperimentalData"; }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<ITabHost>& ptr) :
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<IMainUIStateAPI>& ptr) :
     Tab{std::make_unique<Impl>(*this, ptr)}
 {}
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }

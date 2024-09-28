@@ -21,6 +21,7 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -914,7 +915,7 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            ParentPtr<ITabHost> tabHost_,
+            ParentPtr<IMainUIStateAPI> tabHost_,
             std::shared_ptr<UndoableModelStatePair> model_,
             std::shared_ptr<PanelManager> panelManager_) :
 
@@ -945,7 +946,7 @@ namespace
             }
         }
 
-        ParentPtr<ITabHost> m_TabHost;
+        ParentPtr<IMainUIStateAPI> m_TabHost;
         std::shared_ptr<UndoableModelStatePair> m_Model;
         WindowMenu m_WindowMenu;
         MainMenuAboutTab m_AboutMenu;
@@ -957,7 +958,7 @@ public:
 
     explicit Impl(
         FrameDefinitionTab& owner,
-        const ParentPtr<ITabHost>& parent_) :
+        const ParentPtr<IMainUIStateAPI>& parent_) :
 
         TabPrivate{owner, c_TabStringID},
         m_Parent{parent_}
@@ -1119,7 +1120,7 @@ private:
         return m_PanelManager;
     }
 
-    ParentPtr<ITabHost> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
@@ -1130,7 +1131,7 @@ private:
 
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(const ParentPtr<ITabHost>& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(const ParentPtr<IMainUIStateAPI>& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }

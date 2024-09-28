@@ -1,9 +1,10 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Platform/Widget.h>
-#include <oscar/Utils/LifetimedPtr.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -14,8 +15,8 @@ namespace osc
     class FrameDefinitionTabToolbar final {
     public:
         FrameDefinitionTabToolbar(
-            Widget& parent_,
-            std::string_view label_,
+            std::string_view,
+            ParentPtr<IMainUIStateAPI>,
             std::shared_ptr<UndoableModelStatePair>
         );
 
@@ -25,8 +26,8 @@ namespace osc
         void drawExportToOpenSimButton();
         void drawExportToOpenSimTooltipContent(size_t);
 
-        LifetimedPtr<Widget> m_Parent;
         std::string m_Label;
+        ParentPtr<IMainUIStateAPI> m_TabHost;
         std::shared_ptr<UndoableModelStatePair> m_Model;
     };
 }

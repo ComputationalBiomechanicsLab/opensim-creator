@@ -102,6 +102,11 @@ namespace osc
         {
             return ptr_ and not lifetime_watcher_.expired();
         }
+
+        const LifetimeWatcher& watcher() const
+        {
+            return lifetime_watcher_;   // TODO: remove this
+        }
     private:
         void assert_within_lifetime() const
         {

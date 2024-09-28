@@ -9,6 +9,7 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Color.h>
@@ -19,7 +20,6 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -38,7 +38,7 @@ namespace osc
     public:
         MeshWarpingTabSharedState(
             UID tabID_,
-            ParentPtr<ITabHost> parent_,
+            ParentPtr<IMainUIStateAPI> parent_,
             std::shared_ptr<SceneCache> sceneCache_) :
 
             m_TabID{tabID_},
@@ -258,7 +258,7 @@ namespace osc
         UID m_TabID;
 
         // handle to the screen that owns the TPS3D tab
-        ParentPtr<ITabHost> m_TabHost;
+        ParentPtr<IMainUIStateAPI> m_TabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it over and over)
         TPSResultCache m_WarpingCache;

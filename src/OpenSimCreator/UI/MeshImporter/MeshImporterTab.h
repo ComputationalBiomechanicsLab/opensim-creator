@@ -1,12 +1,12 @@
 #pragma once
 
 #include <oscar/UI/Tabs/Tab.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <vector>
 
 namespace osc { class IMainUIStateAPI; }
-namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc::mi
 {

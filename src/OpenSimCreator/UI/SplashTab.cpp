@@ -30,7 +30,6 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/Algorithms.h>

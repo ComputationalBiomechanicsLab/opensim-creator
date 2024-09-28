@@ -3,13 +3,13 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
@@ -19,7 +19,7 @@
 
 osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
     std::string_view label_,
-    ParentPtr<ITabHost> tabHost_,
+    ParentPtr<IMainUIStateAPI> tabHost_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
     m_Label{label_},

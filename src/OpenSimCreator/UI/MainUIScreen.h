@@ -1,17 +1,16 @@
 #pragma once
 
-#include <oscar/Platform/IScreen.h>
+#include <oscar/Platform/Screen.h>
 #include <oscar/Utils/UID.h>
 
 #include <filesystem>
 #include <memory>
 
 namespace osc { class Tab; }
-namespace osc { class ITabHost; }
 
 namespace osc
 {
-    class MainUIScreen final : public IScreen {
+    class MainUIScreen final : public Screen {
     public:
         MainUIScreen();
         MainUIScreen(const MainUIScreen&) = delete;
@@ -31,6 +30,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::shared_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

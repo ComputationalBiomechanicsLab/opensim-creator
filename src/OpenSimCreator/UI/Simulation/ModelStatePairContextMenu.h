@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <optional>
@@ -8,7 +9,6 @@
 #include <string_view>
 
 namespace osc { class IMainUIStateAPI; }
-namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class IModelStatePair; }
 
 namespace osc

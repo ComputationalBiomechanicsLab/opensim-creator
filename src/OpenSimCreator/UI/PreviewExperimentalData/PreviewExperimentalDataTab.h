@@ -1,9 +1,9 @@
 #pragma once
 
 #include <oscar/UI/Tabs/Tab.h>
+#include <oscar/Utils/ParentPtr.h>
 
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITabHost; }
+namespace osc { class IMainUIStateAPI; }
 
 namespace osc
 {
@@ -11,7 +11,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit PreviewExperimentalDataTab(const ParentPtr<ITabHost>&);
+        explicit PreviewExperimentalDataTab(const ParentPtr<IMainUIStateAPI>&);
 
     private:
         void impl_on_mount() final;

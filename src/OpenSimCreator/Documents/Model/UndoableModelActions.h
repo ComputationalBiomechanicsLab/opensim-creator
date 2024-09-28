@@ -5,6 +5,7 @@
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -34,7 +35,6 @@ namespace osc { class IModelStatePair; }
 namespace osc { class ObjectPropertyEdit; }
 namespace osc { class SceneCache; }
 namespace osc { class UndoableModelStatePair; }
-namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {

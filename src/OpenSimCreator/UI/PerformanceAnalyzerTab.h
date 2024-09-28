@@ -3,17 +3,17 @@
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 
 #include <oscar/UI/Tabs/Tab.h>
+#include <oscar/Utils/ParentPtr.h>
 
 namespace osc { class ParamBlock; }
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITabHost; }
+namespace osc { class IMainUIStateAPI; }
 
 namespace osc
 {
     class PerformanceAnalyzerTab final : public Tab {
     public:
         PerformanceAnalyzerTab(
-            const ParentPtr<ITabHost>&,
+            const ParentPtr<IMainUIStateAPI>&,
             BasicModelStatePair,
             const ParamBlock&
         );

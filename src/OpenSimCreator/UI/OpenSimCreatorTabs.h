@@ -9,11 +9,12 @@
 
 namespace osc
 {
+    // TODO: refactor these
     using OpenSimCreatorTabs = Typelist<
-        PreviewExperimentalDataTab,
+        //PreviewExperimentalDataTab,
 
-        MeshWarpingTab,
-        mow::ModelWarperTab,
-        FrameDefinitionTab
+        //MeshWarpingTab,
+        //mow::ModelWarperTab,
+        //FrameDefinitionTab
     >;
 }

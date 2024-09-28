@@ -14,7 +14,6 @@ namespace osc::fd { class CrossProductEdge; }
 namespace osc::fd { class PointToPointEdge; }
 namespace osc::fd { class Edge; }
 namespace osc { class IModelStatePair; }
-namespace osc { class ITabHost; }
 
 namespace osc::fd
 {

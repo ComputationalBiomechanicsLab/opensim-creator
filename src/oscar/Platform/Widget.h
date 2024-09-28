@@ -23,15 +23,15 @@ namespace osc
 
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
+        Widget(Widget&&) noexcept;
+        Widget& operator=(Widget&&);
 
         const WidgetPrivate& base_private_data() const { return *data_; }
         WidgetPrivate& base_private_data() { return *data_; }
 
     private:
         Widget(const Widget&) = delete;
-        Widget(Widget&&) noexcept;
         Widget& operator=(const Widget&) = delete;
-        Widget& operator=(Widget&&);
 
         OSC_WIDGET_DATA_GETTERS(WidgetPrivate);
 

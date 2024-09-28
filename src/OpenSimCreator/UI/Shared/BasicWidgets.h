@@ -7,6 +7,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <functional>
@@ -37,7 +38,6 @@ namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
-namespace osc { template<typename T> class ParentPtr; }
 namespace SimTK { class State; }
 
 namespace osc

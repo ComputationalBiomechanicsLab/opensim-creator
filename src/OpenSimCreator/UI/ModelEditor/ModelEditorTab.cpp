@@ -18,6 +18,7 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -33,7 +34,6 @@
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/IPopup.h>
 #include <oscar/UI/Widgets/PopupManager.h>
@@ -265,7 +265,7 @@ public:
                 {
                     log_error("undoing the model also failed with error: %s", ex2.what());
                     log_error("because the model isn't recoverable, closing the editor tab");
-                    m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
+                    m_Parent->add_and_select_tab<ErrorTab>(owner(), ex);
                     m_Parent->close_tab(id());  // TODO: should be forcibly closed with no "save" prompt
                 }
 
@@ -285,7 +285,7 @@ public:
                 // but cannot undo, so quit
 
                 log_error("because the model isn't recoverable, closing the editor tab");
-                m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex);
+                m_Parent->add_and_select_tab<ErrorTab>(owner(), ex);
                 m_Parent->close_tab(id());  // TODO: should be forcibly closed
             }
         }
@@ -305,7 +305,7 @@ public:
             {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
-                m_Parent->add_and_select_tab<ErrorTab>(m_Parent, ex2);
+                m_Parent->add_and_select_tab<ErrorTab>(owner(), ex2);
                 m_Parent->close_tab(id());
             }
         }

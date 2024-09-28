@@ -7,6 +7,7 @@
 #include <OpenSimCreator/UI/ModelWarper/SourceModelViewerPanel.h>
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.h>
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
@@ -25,7 +26,7 @@ class osc::mow::ModelWarperTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
 
-    explicit Impl(ModelWarperTab& owner, const ParentPtr<ITabHost>& tabHost) :
+    explicit Impl(ModelWarperTab& owner, const ParentPtr<IMainUIStateAPI>& tabHost) :
         TabPrivate{owner, static_label()},
         m_TabHost{tabHost}
     {
@@ -97,7 +98,7 @@ public:
     }
 
 private:
-    ParentPtr<ITabHost> m_TabHost;
+    ParentPtr<IMainUIStateAPI> m_TabHost;
     std::shared_ptr<UIState> m_State = std::make_shared<UIState>(m_TabHost);
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
@@ -108,7 +109,7 @@ private:
 
 CStringView osc::mow::ModelWarperTab::id() { return Impl::static_label(); }
 
-osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<ITabHost>& tabHost) :
+osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<IMainUIStateAPI>& tabHost) :
     Tab{std::make_unique<Impl>(*this, tabHost)}
 {}
 void osc::mow::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }

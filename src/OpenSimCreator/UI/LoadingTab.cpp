@@ -12,7 +12,6 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/ParentPtr.h>
 

@@ -6,9 +6,9 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Maths/PolarPerspectiveCamera.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
@@ -19,14 +19,13 @@
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class PhysicalOffsetFrame; }
-namespace osc { template<typename> class ParentPtr; }
-namespace osc { class ITabHost; }
+namespace osc { class IMainUIStateAPI; }
 
 namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(const ParentPtr<ITabHost>& tabHost) :
+        explicit UIState(const ParentPtr<IMainUIStateAPI>& tabHost) :
             m_TabHost{tabHost}
         {}
 
@@ -69,7 +68,7 @@ namespace osc::mow
 
         void actionWarpModelAndOpenInModelEditor();
     private:
-        ParentPtr<ITabHost> m_TabHost;
+        ParentPtr<IMainUIStateAPI> m_TabHost;
         std::shared_ptr<WarpableModel> m_Document = std::make_shared<WarpableModel>();
         CachedModelWarper m_ModelWarper;
 

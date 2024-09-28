@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <memory>
 #include <string_view>
@@ -9,7 +10,6 @@ namespace OpenSim { class ComponentPath; }
 namespace osc { class IEditorAPI; }
 namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {

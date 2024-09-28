@@ -5,8 +5,8 @@
 #include <memory>
 
 namespace OpenSim { class Model; }
+namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { class ITabHost; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc::fd
@@ -20,7 +20,7 @@ namespace osc::fd
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        const ParentPtr<ITabHost>&,
+        const ParentPtr<IMainUIStateAPI>&,
         const OpenSim::Model&
     );
 }

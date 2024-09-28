@@ -420,6 +420,7 @@ add_library(oscar STATIC
     Utils/NullStreambuf.h
     Utils/ObjectRepresentation.h
     Utils/ParalellizationHelpers.h
+    Utils/ParentPtr.h
     Utils/Perf.cpp
     Utils/Perf.h
     Utils/PerfClock.h

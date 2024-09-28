@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
@@ -11,7 +12,6 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
 
@@ -88,7 +88,7 @@ std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel
 }
 
 void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
-    const ParentPtr<ITabHost>& tabHost,
+    const ParentPtr<IMainUIStateAPI>& tabHost,
     const OpenSim::Model& model)
 {
     auto maybeMainUIStateAPI = dynamic_parent_cast<IMainUIStateAPI>(tabHost);

@@ -16,6 +16,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
+#include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
@@ -54,11 +55,11 @@ namespace
     std::unique_ptr<Tab> LoadConfigurationDefinedTabIfNecessary(
         const AppSettings& settings,
         const TabRegistry& tabRegistry,
-        const ParentPtr<ITabHost>& api)
+        Widget& parent)
     {
         if (auto maybeRequestedTab = settings.find_value("initial_tab")) {
             if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(to<std::string>(*maybeRequestedTab))) {
-                return maybeEntry->construct_tab(api);
+                return maybeEntry->construct_tab(parent);
             }
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab).c_str());
@@ -73,9 +74,12 @@ namespace
 }
 
 class osc::MainUIScreen::Impl final :
-    public IMainUIStateAPI,
-    public std::enable_shared_from_this<Impl> {
+    public ScreenPrivate,
+    public IMainUIStateAPI {
+
 public:
+
+    Impl(MainUIScreen& owner) : ScreenPrivate{owner} {}
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
@@ -138,7 +142,7 @@ public:
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
-            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::settings(), *App::singleton<TabRegistry>(), getTabHostAPI())) {
+            if (auto tab = LoadConfigurationDefinedTabIfNecessary(App::settings(), *App::singleton<TabRegistry>(), owner())) {
                 addTab(std::move(tab));
             }
 
@@ -211,7 +215,7 @@ public:
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
                     // - then create a new tab containing the error message, so the user can see the error
-                    UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
+                    UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                     select_tab(id);
                     impl_close_tab(m_Tabs[i]->id());
                 }
@@ -254,7 +258,7 @@ public:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                 select_tab(id);
                 impl_close_tab(m_ActiveTabID);
             }
@@ -290,7 +294,7 @@ public:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                 select_tab(id);
                 impl_close_tab(m_Tabs[i]->id());
             }
@@ -404,8 +408,9 @@ private:
 
     ParentPtr<IMainUIStateAPI> getTabHostAPI()
     {
-        return ParentPtr<IMainUIStateAPI>{shared_from_this()};
+        return ParentPtr<IMainUIStateAPI>{m_Lifetime, this};
     }
+
     void drawTabSpecificMenu()
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
@@ -425,7 +430,7 @@ private:
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
                         // - then create a new tab containing the error message, so the user can see the error
-                        UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
+                        UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                         select_tab(id);
                         impl_close_tab(m_ActiveTabID);
                     }
@@ -568,7 +573,7 @@ private:
                 // - then create a new tab containing the error message, so the user can see the error
                 // - and indicate that the UI was aggressively reset, because the drawcall may have thrown midway
                 //   through rendering the 2D UI
-                UID id = addTab(std::make_unique<ErrorTab>(getTabHostAPI(), ex));
+                UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                 select_tab(id);
                 impl_close_tab(m_ActiveTabID);
                 reset_imgui();
@@ -601,7 +606,7 @@ private:
             if (ui::begin_menu("Experimental Tabs")) {
                 for (auto&& tabRegistryEntry : *tabRegistry) {
                     if (ui::draw_menu_item(tabRegistryEntry.name())) {
-                        select_tab(addTab(tabRegistryEntry.construct_tab(ParentPtr<ITabHost>{getTabHostAPI()})));
+                        select_tab(addTab(tabRegistryEntry.construct_tab(owner())));
                     }
                 }
                 ui::end_menu();
@@ -780,15 +785,13 @@ private:
         }
 
         if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-            UID tabID = addTab(std::make_unique<ScreenshotTab>(updThisAsParent(), m_MaybeScreenshotRequest.get()));
+            UID tabID = addTab(std::make_unique<ScreenshotTab>(owner(), m_MaybeScreenshotRequest.get()));
             select_tab(tabID);
         }
     }
 
-    ParentPtr<IMainUIStateAPI> updThisAsParent()
-    {
-        return ParentPtr<IMainUIStateAPI>{shared_from_this()};
-    }
+    // lifetime of this object
+    SharedLifetimeBlock m_Lifetime;
 
     // set the first time `onMount` is called
     bool m_HasBeenMountedBefore = false;
@@ -836,43 +839,16 @@ private:
 
 
 osc::MainUIScreen::MainUIScreen() :
-    m_Impl{std::make_shared<Impl>()}
+    Screen{std::make_unique<Impl>(*this)}
 {}
 osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
-UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab)
-{
-    return m_Impl->addTab(std::move(tab));
-}
-
-void osc::MainUIScreen::open(const std::filesystem::path& path)
-{
-    m_Impl->open(path);
-}
-
-void osc::MainUIScreen::impl_on_mount()
-{
-    m_Impl->on_mount();
-}
-
-void osc::MainUIScreen::impl_on_unmount()
-{
-    m_Impl->on_unmount();
-}
-
-bool osc::MainUIScreen::impl_on_event(Event& e)
-{
-    return m_Impl->on_event(e);
-}
-
-void osc::MainUIScreen::impl_on_tick()
-{
-    m_Impl->on_tick();
-}
-
-void osc::MainUIScreen::impl_on_draw()
-{
-    m_Impl->onDraw();
-}
+UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab) { return private_data().addTab(std::move(tab)); }
+void osc::MainUIScreen::open(const std::filesystem::path& path) { private_data().open(path); }
+void osc::MainUIScreen::impl_on_mount() { private_data().on_mount(); }
+void osc::MainUIScreen::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::MainUIScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::MainUIScreen::impl_on_tick() { private_data().on_tick(); }
+void osc::MainUIScreen::impl_on_draw() { private_data().onDraw(); }

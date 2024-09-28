@@ -8,6 +8,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
+#include <OpenSimCreator/UI/IMainUIStateAPI.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
@@ -16,7 +17,6 @@
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/ToggleablePanelFlags.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
@@ -29,7 +29,7 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(MeshWarpingTab& owner, const ParentPtr<ITabHost>& parent_) :
+    explicit Impl(MeshWarpingTab& owner, const ParentPtr<IMainUIStateAPI>& parent_) :
         TabPrivate{owner, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
         m_Parent{parent_}
     {
@@ -180,7 +180,7 @@ private:
         }
     }
 
-    ParentPtr<ITabHost> m_Parent;
+    ParentPtr<IMainUIStateAPI> m_Parent;
 
     // top-level state that all panels can potentially access
     std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), m_Parent, App::singleton<SceneCache>(App::resource_loader()));
@@ -197,7 +197,7 @@ private:
 
 CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
-osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<ITabHost>& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<IMainUIStateAPI>& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }

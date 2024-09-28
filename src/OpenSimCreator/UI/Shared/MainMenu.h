@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
+#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
 #include <vector>
@@ -8,7 +9,6 @@
 
 namespace osc { class IMainUIStateAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { template<typename T> class ParentPtr; }
 
 namespace osc
 {
