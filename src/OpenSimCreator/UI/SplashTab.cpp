@@ -79,7 +79,7 @@ namespace
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
-            parent_->add_and_select_tab<LoadingTab>(parent_, path);
+            parent_->add_and_select_tab<LoadingTab>(*parent_, path);
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
@@ -123,7 +123,7 @@ public:
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
             if (dropfile->path().extension() == ".osim") {
-                m_Parent->add_and_select_tab<LoadingTab>(m_Parent, dropfile->path());
+                m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, dropfile->path());
                 return true;
             }
         }
@@ -247,7 +247,7 @@ private:
             ActionNewModel(m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open Model")) {
-            ActionOpenModel(m_Parent);
+            ActionOpenModel(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
             m_Parent->add_and_select_tab<mi::MeshImporterTab>(m_Parent);

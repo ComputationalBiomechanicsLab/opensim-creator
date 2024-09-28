@@ -1,17 +1,16 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <filesystem>
+
+namespace osc { class MainUIScreen; }
 
 namespace osc
 {
     class LoadingTab final : public Tab {
     public:
-        LoadingTab(const ParentPtr<MainUIScreen>&, std::filesystem::path);
+        LoadingTab(MainUIScreen&, std::filesystem::path);
 
     private:
         void impl_on_tick() final;

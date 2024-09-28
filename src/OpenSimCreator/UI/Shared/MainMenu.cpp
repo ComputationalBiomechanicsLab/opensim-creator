@@ -63,7 +63,7 @@ void osc::MainMenuFileTab::onDraw(
             ActionNewModel(api);
         }
         else if (mod and ui::is_key_pressed(Key::O)) {
-            ActionOpenModel(api);
+            ActionOpenModel(*api);
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
             ActionSaveCurrentModelAs(*undoableModel);
@@ -90,7 +90,7 @@ void osc::MainMenuFileTab::onDraw(
     }
 
     if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
-        ActionOpenModel(api);
+        ActionOpenModel(*api);
     }
 
     int imgui_id = 0;

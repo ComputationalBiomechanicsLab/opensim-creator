@@ -128,7 +128,7 @@ public:
 
     void open(const std::filesystem::path& p)
     {
-        addTab(std::make_unique<LoadingTab>(getTabHostAPI(), p));
+        addTab(std::make_unique<LoadingTab>(owner(), p));
     }
 
     void on_mount()
@@ -866,3 +866,8 @@ void osc::MainUIScreen::removeUserOutputExtractor(int index) { private_data().im
 bool osc::MainUIScreen::hasUserOutputExtractor(const OutputExtractor& extractor) const { return private_data().implHasUserOutputExtractor(extractor); }
 bool osc::MainUIScreen::removeUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implRemoveUserOutputExtractor(extractor); }
 bool osc::MainUIScreen::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return private_data().implOverwriteOrAddNewUserOutputExtractor(old, newer); }
+
+osc::MainUIScreen::operator ParentPtr<MainUIScreen> ()
+{
+    return private_data().getTabHostAPI();
+}

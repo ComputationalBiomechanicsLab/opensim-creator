@@ -75,12 +75,12 @@ using namespace osc;
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(const ParentPtr<MainUIScreen>& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(MainUIScreen& api, std::filesystem::path p)
     {
-        api->add_and_select_tab<LoadingTab>(api, std::move(p));
+        api.add_and_select_tab<LoadingTab>(api, std::move(p));
     }
 
-    void DoOpenFileViaDialog(const ParentPtr<MainUIScreen>& api)
+    void DoOpenFileViaDialog(MainUIScreen& api)
     {
         for (const auto& path : prompt_user_to_select_files({"osim"})) {
             OpenOsimInLoadingTab(api, path);
@@ -267,14 +267,14 @@ void osc::ActionNewModel(const ParentPtr<MainUIScreen>& api)
     api->add_and_select_tab<ModelEditorTab>(api, std::move(p));
 }
 
-void osc::ActionOpenModel(const ParentPtr<MainUIScreen>& api)
+void osc::ActionOpenModel(MainUIScreen& api)
 {
     DoOpenFileViaDialog(api);
 }
 
 void osc::ActionOpenModel(const ParentPtr<MainUIScreen>& api, const std::filesystem::path& path)
 {
-    OpenOsimInLoadingTab(api, path);
+    OpenOsimInLoadingTab(*api, path);
 }
 
 bool osc::ActionSaveModel(MainUIScreen&, UndoableModelStatePair& model)

@@ -330,7 +330,7 @@ private:
         }
         else if (e.path().extension() == ".osim") {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->add_and_select_tab<LoadingTab>(m_Parent, e.path());
+            m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, e.path());
             return true;
         }
 

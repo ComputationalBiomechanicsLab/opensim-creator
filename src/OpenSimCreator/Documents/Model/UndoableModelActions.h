@@ -49,9 +49,7 @@ namespace osc
     );
 
     // prompt a user to open a model file and open it in a new tab
-    void ActionOpenModel(
-        const ParentPtr<MainUIScreen>&
-    );
+    void ActionOpenModel(MainUIScreen&);
 
     // open the specified model in a loading tab
     void ActionOpenModel(

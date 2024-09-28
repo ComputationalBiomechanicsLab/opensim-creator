@@ -1335,7 +1335,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<MainUIScree
             ActionOpenModel(api, *maybeFile);
         }
         else {
-            ActionOpenModel(api);
+            ActionOpenModel(*api);
         }
     });
 }

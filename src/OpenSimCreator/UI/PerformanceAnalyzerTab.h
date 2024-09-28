@@ -1,11 +1,10 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
 
+namespace osc { class MainUIScreen; }
 namespace osc { class ParamBlock; }
 
 namespace osc
@@ -13,7 +12,7 @@ namespace osc
     class PerformanceAnalyzerTab final : public Tab {
     public:
         PerformanceAnalyzerTab(
-            const ParentPtr<MainUIScreen>&,
+            MainUIScreen&,
             BasicModelStatePair,
             const ParamBlock&
         );

@@ -30,7 +30,7 @@ namespace
         const IModelStatePair& model)
     {
         parent->add_and_select_tab<PerformanceAnalyzerTab>(
-            parent,
+            *parent,
             BasicModelStatePair{model},
             parent->getSimulationParams()
         );

@@ -116,7 +116,7 @@ public:
                 ui::draw_dummy({0.0f, 5.0f});
 
                 if (ui::draw_button("try again")) {
-                    m_Parent->add_and_select_tab<LoadingTab>(m_Parent, m_OsimPath);
+                    m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, m_OsimPath);
                     m_Parent->close_tab(id());
                 }
             }
@@ -148,7 +148,7 @@ private:
 
 
 osc::LoadingTab::LoadingTab(
-    const ParentPtr<MainUIScreen>& parent_,
+    MainUIScreen& parent_,
     std::filesystem::path path_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}
