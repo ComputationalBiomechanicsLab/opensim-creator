@@ -6,7 +6,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -24,7 +24,7 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(const ParentPtr<IMainUIStateAPI>& tabHost) :
+        explicit UIState(const ParentPtr<MainUIScreen>& tabHost) :
             m_TabHost{tabHost}
         {}
 
@@ -67,7 +67,7 @@ namespace osc::mow
 
         void actionWarpModelAndOpenInModelEditor();
     private:
-        ParentPtr<IMainUIStateAPI> m_TabHost;
+        ParentPtr<MainUIScreen> m_TabHost;
         std::shared_ptr<WarpableModel> m_Document = std::make_shared<WarpableModel>();
         CachedModelWarper m_ModelWarper;
 

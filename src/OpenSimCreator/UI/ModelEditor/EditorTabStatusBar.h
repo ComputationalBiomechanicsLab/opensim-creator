@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Utils/ParentPtr.h>
 
@@ -14,7 +14,7 @@ namespace osc
     class EditorTabStatusBar final {
     public:
         EditorTabStatusBar(
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

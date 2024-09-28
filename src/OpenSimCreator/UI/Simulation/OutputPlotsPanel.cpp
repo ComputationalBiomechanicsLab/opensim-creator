@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>
@@ -21,7 +21,7 @@ using namespace osc;
 
 namespace
 {
-    bool IsAnyOutputExportableToCSV(IMainUIStateAPI& api)
+    bool IsAnyOutputExportableToCSV(MainUIScreen& api)
     {
         for (int i = 0; i < api.getNumUserOutputExtractors(); ++i) {
             if (is_numeric(api.getUserOutputExtractor(i).getOutputType())) {
@@ -36,7 +36,7 @@ class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
-        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
         ISimulatorUIAPI* simulatorUIAPI_) :
 
         StandardPanelImpl{panelName_},
@@ -93,13 +93,13 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_API;
+    ParentPtr<MainUIScreen> m_API;
     ISimulatorUIAPI* m_SimulatorUIAPI;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     std::string_view panelName_,
-    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
     ISimulatorUIAPI* simulatorUIAPI_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, simulatorUIAPI_)}

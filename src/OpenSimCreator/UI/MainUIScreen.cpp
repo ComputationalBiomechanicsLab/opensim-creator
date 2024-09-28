@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/SplashTab.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
@@ -401,9 +401,9 @@ public:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> getTabHostAPI()
+    ParentPtr<MainUIScreen> getTabHostAPI()
     {
-        return ParentPtr<IMainUIStateAPI>{lifetime(), &owner()};
+        return ParentPtr<MainUIScreen>{lifetime(), &owner()};
     }
 
     void drawTabSpecificMenu()

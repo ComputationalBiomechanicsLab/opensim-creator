@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
@@ -26,7 +26,7 @@ using namespace osc;
 namespace
 {
     bool ActionSimulateAgainstAllIntegrators(
-        const ParentPtr<IMainUIStateAPI>& parent,
+        const ParentPtr<MainUIScreen>& parent,
         const IModelStatePair& model)
     {
         parent->add_and_select_tab<PerformanceAnalyzerTab>(
@@ -41,7 +41,7 @@ namespace
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
+        const ParentPtr<MainUIScreen>& mainStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -163,7 +163,7 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
@@ -174,7 +174,7 @@ private:
 
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    const ParentPtr<IMainUIStateAPI>& mainStateAPI_,
+    const ParentPtr<MainUIScreen>& mainStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 

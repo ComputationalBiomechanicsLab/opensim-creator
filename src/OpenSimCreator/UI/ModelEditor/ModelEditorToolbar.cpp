@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
@@ -25,7 +25,7 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label_,
-        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
@@ -97,7 +97,7 @@ private:
     }
 
     std::string m_Label;
-    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
@@ -110,7 +110,7 @@ private:
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
-    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 

@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -23,7 +23,7 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<IModelStatePair> model_,
-        const ParentPtr<IMainUIStateAPI>& api_,
+        const ParentPtr<MainUIScreen>& api_,
         std::optional<std::string> maybeComponentAbsPath_) :
 
         StandardPopup{panelName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
@@ -82,7 +82,7 @@ public:
 
 private:
     std::shared_ptr<IModelStatePair> m_Model;
-    ParentPtr<IMainUIStateAPI> m_API;
+    ParentPtr<MainUIScreen> m_API;
     std::optional<std::string> m_MaybeComponentAbsPath;
 };
 
@@ -90,7 +90,7 @@ private:
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(
     std::string_view panelName_,
     std::shared_ptr<IModelStatePair> model_,
-    const ParentPtr<IMainUIStateAPI>& api_,
+    const ParentPtr<MainUIScreen>& api_,
     std::optional<std::string> maybeComponentAbsPath_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_, std::move(maybeComponentAbsPath_))}

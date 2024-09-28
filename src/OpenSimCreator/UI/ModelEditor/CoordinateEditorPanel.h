@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Panels/IPanel.h>
 #include <oscar/Utils/CStringView.h>
@@ -18,7 +18,7 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

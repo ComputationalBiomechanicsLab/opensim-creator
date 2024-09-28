@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Platform/RecentFile.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
@@ -72,7 +72,7 @@ namespace
     // helper: draws an ui::draw_menu_item for a given recent- or example-file-path
     void DrawRecentOrExampleFileMenuItem(
         const std::filesystem::path& path,
-        ParentPtr<IMainUIStateAPI>& parent_,
+        ParentPtr<MainUIScreen>& parent_,
         int& imguiID)
     {
         const std::string label = std::string{OSC_ICON_FILE} + " " + path.filename().string();
@@ -95,7 +95,7 @@ namespace
 class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(SplashTab& owner, const ParentPtr<IMainUIStateAPI>& parent_) :
+    explicit Impl(SplashTab& owner, const ParentPtr<MainUIScreen>& parent_) :
         TabPrivate{owner, OSC_ICON_HOME},
         m_Parent{parent_}
     {
@@ -372,7 +372,7 @@ private:
     }
 
     // tab data
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
@@ -396,7 +396,7 @@ private:
     LogViewer m_LogViewer;
 };
 
-osc::SplashTab::SplashTab(const ParentPtr<IMainUIStateAPI>& parent_) :
+osc::SplashTab::SplashTab(const ParentPtr<MainUIScreen>& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::SplashTab::impl_on_mount() { private_data().on_mount(); }

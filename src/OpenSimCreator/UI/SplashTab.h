@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -9,7 +9,7 @@ namespace osc
 {
     class SplashTab final : public Tab {
     public:
-        explicit SplashTab(const ParentPtr<IMainUIStateAPI>&);
+        explicit SplashTab(const ParentPtr<MainUIScreen>&);
 
     private:
         void impl_on_mount() final;

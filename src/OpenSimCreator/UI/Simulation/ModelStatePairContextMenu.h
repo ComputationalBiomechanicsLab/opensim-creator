@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Widgets/IPopup.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -19,7 +19,7 @@ namespace osc
         ModelStatePairContextMenu(
             std::string_view panelName,
             std::shared_ptr<IModelStatePair>,
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             std::optional<std::string> maybeComponentAbsPath
         );
         ModelStatePairContextMenu(const ModelStatePairContextMenu&) = delete;

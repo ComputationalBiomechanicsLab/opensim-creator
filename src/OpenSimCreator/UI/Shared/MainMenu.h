@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -17,7 +17,7 @@ namespace osc
     public:
         MainMenuFileTab();
 
-        void onDraw(const ParentPtr<IMainUIStateAPI>&, IModelStatePair* = nullptr);
+        void onDraw(const ParentPtr<MainUIScreen>&, IModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;

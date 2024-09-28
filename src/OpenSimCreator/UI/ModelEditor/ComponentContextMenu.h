@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Widgets/IPopup.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -18,7 +18,7 @@ namespace osc
     public:
         ComponentContextMenu(
             std::string_view popupName,
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>,
             const OpenSim::ComponentPath&

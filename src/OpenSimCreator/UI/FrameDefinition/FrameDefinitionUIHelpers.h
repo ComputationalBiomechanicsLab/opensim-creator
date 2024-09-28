@@ -1,5 +1,5 @@
 #pragma once
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 
 #include <oscar/Utils/ParentPtr.h>
@@ -21,7 +21,7 @@ namespace osc::fd
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        const ParentPtr<IMainUIStateAPI>&,
+        const ParentPtr<MainUIScreen>&,
         const OpenSim::Model&
     );
 }

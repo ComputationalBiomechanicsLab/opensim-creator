@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/IconCodepoints.h>
@@ -52,7 +52,7 @@ public:
 
     Impl(std::string_view panelName_,
         std::shared_ptr<const IModelStatePair> model_,
-        const ParentPtr<IMainUIStateAPI>& api_) :
+        const ParentPtr<MainUIScreen>& api_) :
 
         StandardPanelImpl{panelName_},
         m_API{api_},
@@ -102,7 +102,7 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_API;
+    ParentPtr<MainUIScreen> m_API;
     std::shared_ptr<const IModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
@@ -111,7 +111,7 @@ private:
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<const IModelStatePair> model_,
-    const ParentPtr<IMainUIStateAPI>& api_) :
+    const ParentPtr<MainUIScreen>& api_) :
 
     m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
 {}

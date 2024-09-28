@@ -31,7 +31,7 @@ public:
 
     Impl(
         std::string_view panelName_,
-        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -235,7 +235,7 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
@@ -243,7 +243,7 @@ private:
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> uum_) :
 

@@ -13,7 +13,7 @@
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -358,7 +358,7 @@ class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
@@ -599,7 +599,7 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
@@ -609,7 +609,7 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :

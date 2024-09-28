@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
@@ -57,20 +57,20 @@ class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_) :
+        const ParentPtr<MainUIScreen>& parent_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>()}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         const OpenSim::Model& model_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(model_)}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
@@ -80,7 +80,7 @@ public:
 
     Impl(
         ModelEditorTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         TabPrivate{owner, "ModelEditorTab"},
@@ -402,7 +402,7 @@ private:
     }
 
     // tab top-level data
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
@@ -429,25 +429,25 @@ private:
 };
 
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<IMainUIStateAPI>& parent_) :
+    const ParentPtr<MainUIScreen>& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     const OpenSim::Model& model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}

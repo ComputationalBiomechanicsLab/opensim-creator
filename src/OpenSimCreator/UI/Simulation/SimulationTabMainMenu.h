@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Utils/ParentPtr.h>
 
@@ -14,7 +14,7 @@ namespace osc
     class SimulationTabMainMenu final {
     public:
         SimulationTabMainMenu(
-            ParentPtr<IMainUIStateAPI>,
+            ParentPtr<MainUIScreen>,
             std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>
         );

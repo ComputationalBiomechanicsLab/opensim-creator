@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/ParentPtr.h>
@@ -13,19 +13,19 @@ namespace osc
     class ModelEditorTab final : public Tab {
     public:
         explicit ModelEditorTab(
-            const ParentPtr<IMainUIStateAPI>&
+            const ParentPtr<MainUIScreen>&
         );
         explicit ModelEditorTab(
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             const OpenSim::Model&
         );
         explicit ModelEditorTab(
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             std::unique_ptr<OpenSim::Model>,
             float fixupScaleFactor = 1.0f
         );
         explicit ModelEditorTab(
-            const ParentPtr<IMainUIStateAPI>&,
+            const ParentPtr<MainUIScreen>&,
             std::unique_ptr<UndoableModelStatePair>
         );
 

@@ -16,7 +16,7 @@ using namespace osc;
 class osc::SimulationTabMainMenu::Impl final {
 public:
     Impl(
-        ParentPtr<IMainUIStateAPI> parent,
+        ParentPtr<MainUIScreen> parent,
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
@@ -79,7 +79,7 @@ private:
         ui::end_menu();
     }
 
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
     std::shared_ptr<Simulation> m_Simulation;
     std::shared_ptr<PanelManager> m_PanelManager;
 
@@ -90,7 +90,7 @@ private:
 };
 
 osc::SimulationTabMainMenu::SimulationTabMainMenu(
-    ParentPtr<IMainUIStateAPI> parent,
+    ParentPtr<MainUIScreen> parent,
     std::shared_ptr<Simulation> simulation,
     std::shared_ptr<PanelManager> panelManager) :
 

@@ -17,7 +17,7 @@
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.h>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
 #include <OpenSimCreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
@@ -81,7 +81,7 @@ class osc::mi::MeshImporterTab::Impl final :
 public:
     explicit Impl(
         MeshImporterTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_) :
+        const ParentPtr<MainUIScreen>& parent_) :
 
         TabPrivate{owner, "MeshImporterTab"},
         m_Parent{parent_},
@@ -90,7 +90,7 @@ public:
 
     explicit Impl(
         MeshImporterTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
         TabPrivate{owner, "MeshImporterTab"},
@@ -2403,7 +2403,7 @@ private:
     }
 
     // tab data
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // data shared between states
     std::shared_ptr<MeshImporterSharedState> m_Shared;
@@ -2430,12 +2430,12 @@ private:
 
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    const ParentPtr<IMainUIStateAPI>& parent_) :
+    const ParentPtr<MainUIScreen>& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     std::vector<std::filesystem::path> files_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}

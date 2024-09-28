@@ -8,7 +8,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
@@ -29,7 +29,7 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(MeshWarpingTab& owner, const ParentPtr<IMainUIStateAPI>& parent_) :
+    explicit Impl(MeshWarpingTab& owner, const ParentPtr<MainUIScreen>& parent_) :
         TabPrivate{owner, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
         m_Parent{parent_}
     {
@@ -180,7 +180,7 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // top-level state that all panels can potentially access
     std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), m_Parent, App::singleton<SceneCache>(App::resource_loader()));
@@ -197,7 +197,7 @@ private:
 
 CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
-osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<IMainUIStateAPI>& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<MainUIScreen>& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }

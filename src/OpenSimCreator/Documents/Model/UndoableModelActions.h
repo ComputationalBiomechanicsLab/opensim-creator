@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Vec3.h>
@@ -45,23 +45,23 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        const ParentPtr<IMainUIStateAPI>&
+        const ParentPtr<MainUIScreen>&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        const ParentPtr<IMainUIStateAPI>&
+        const ParentPtr<MainUIScreen>&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        const ParentPtr<IMainUIStateAPI>&,
+        const ParentPtr<MainUIScreen>&,
         const std::filesystem::path&
     );
 
     // try to save the given model file to disk
     bool ActionSaveModel(
-        IMainUIStateAPI&,
+        MainUIScreen&,
         UndoableModelStatePair&
     );
 
@@ -84,14 +84,14 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        const ParentPtr<IMainUIStateAPI>&,
+        const ParentPtr<MainUIScreen>&,
         const IModelStatePair&,
         const std::filesystem::path& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        const ParentPtr<IMainUIStateAPI>&,
+        const ParentPtr<MainUIScreen>&,
         const IModelStatePair&
     );
 

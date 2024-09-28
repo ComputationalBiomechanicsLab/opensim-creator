@@ -17,7 +17,7 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+        const ParentPtr<MainUIScreen>& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
@@ -85,14 +85,14 @@ private:
         }
     }
 
-    ParentPtr<IMainUIStateAPI> m_MainUIStateAPI;
+    ParentPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    const ParentPtr<IMainUIStateAPI>& mainUIStateAPI_,
+    const ParentPtr<MainUIScreen>& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 

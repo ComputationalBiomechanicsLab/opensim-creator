@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
@@ -33,7 +33,7 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
         return;
     }
 
-    auto api = dynamic_parent_cast<IMainUIStateAPI>(m_TabHost);
+    auto api = dynamic_parent_cast<MainUIScreen>(m_TabHost);
     if (not api) {
         log_error("cannot warp the provided model: I can't open a model editor tab (something has gone wrong internally)");
         return;

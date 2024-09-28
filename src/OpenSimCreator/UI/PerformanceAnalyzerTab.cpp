@@ -205,7 +205,7 @@ private:
 
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    const ParentPtr<IMainUIStateAPI>&,
+    const ParentPtr<MainUIScreen>&,
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 

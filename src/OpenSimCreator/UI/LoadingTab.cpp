@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -38,7 +38,7 @@ public:
 
     explicit Impl(
         LoadingTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         std::filesystem::path path_) :
 
         TabPrivate{owner, "LoadingTab"},
@@ -126,7 +126,7 @@ public:
 
 
 private:
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;
@@ -148,7 +148,7 @@ private:
 
 
 osc::LoadingTab::LoadingTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     std::filesystem::path path_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}

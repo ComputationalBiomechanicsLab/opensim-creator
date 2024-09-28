@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Maths/AABB.h>
 #include <oscar/Maths/Vec2.h>
@@ -256,12 +256,12 @@ namespace osc
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
-    void DrawNewModelButton(const ParentPtr<IMainUIStateAPI>&);
+    void DrawNewModelButton(const ParentPtr<MainUIScreen>&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<IMainUIStateAPI>&);
-    void DrawSaveModelButton(const ParentPtr<IMainUIStateAPI>&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(const ParentPtr<MainUIScreen>&);
+    void DrawSaveModelButton(const ParentPtr<MainUIScreen>&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(IModelStatePair&);
     void DrawRedoButton(IModelStatePair&);

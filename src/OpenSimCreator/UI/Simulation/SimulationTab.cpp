@@ -7,7 +7,7 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/UI/IMainUIStateAPI.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -70,7 +70,7 @@ public:
 
     Impl(
         SimulationTab& owner,
-        const ParentPtr<IMainUIStateAPI>& parent_,
+        const ParentPtr<MainUIScreen>& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
         TabPrivate{owner, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
@@ -460,7 +460,7 @@ private:
     }
 
     // tab data
-    ParentPtr<IMainUIStateAPI> m_Parent;
+    ParentPtr<MainUIScreen> m_Parent;
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
@@ -490,7 +490,7 @@ private:
 
 
 osc::SimulationTab::SimulationTab(
-    const ParentPtr<IMainUIStateAPI>& parent_,
+    const ParentPtr<MainUIScreen>& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}
