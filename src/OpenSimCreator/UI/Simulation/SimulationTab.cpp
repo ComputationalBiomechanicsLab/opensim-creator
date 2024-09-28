@@ -69,10 +69,11 @@ class osc::SimulationTab::Impl final :
 public:
 
     Impl(
+        SimulationTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
-        TabPrivate{OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
+        TabPrivate{owner, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Parent{parent_},
         m_Simulation{std::move(simulation_)}
     {
@@ -492,7 +493,7 @@ osc::SimulationTab::SimulationTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
-    Tab{std::make_unique<Impl>(parent_, std::move(simulation_))}
+    Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}
 {}
 void osc::SimulationTab::impl_on_mount() { private_data().on_mount(); }
 void osc::SimulationTab::impl_on_unmount() { private_data().on_unmount(); }

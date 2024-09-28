@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/Platform/WidgetPrivate.h>
+#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/UID.h>
 
 #include <string>
@@ -10,7 +11,8 @@ namespace osc
 {
     class TabPrivate : public WidgetPrivate {
     public:
-        explicit TabPrivate(std::string_view tab_name) :
+        explicit TabPrivate(Tab& owner, std::string_view tab_name) :
+            WidgetPrivate{owner},
             name_{tab_name}
         {}
 

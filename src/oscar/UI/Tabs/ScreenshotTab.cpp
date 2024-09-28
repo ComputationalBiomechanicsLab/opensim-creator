@@ -80,8 +80,8 @@ namespace
 
 class osc::ScreenshotTab::Impl final : public TabPrivate {
 public:
-    explicit Impl(Screenshot&& screenshot) :
-        TabPrivate{OSC_ICON_COOKIE " ScreenshotTab"},
+    explicit Impl(ScreenshotTab& owner, Screenshot&& screenshot) :
+        TabPrivate{owner, OSC_ICON_COOKIE " ScreenshotTab"},
         screenshot_{std::move(screenshot)}
     {
         image_texture_.set_filter_mode(TextureFilterMode::Mipmap);
@@ -224,8 +224,7 @@ private:
 };
 
 osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
-    Tab{std::make_unique<Impl>(std::move(screenshot))}
+    Tab{std::make_unique<Impl>(*this, std::move(screenshot))}
 {}
-
 void osc::ScreenshotTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
 void osc::ScreenshotTab::impl_on_draw() { private_data().on_draw(); }

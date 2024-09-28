@@ -57,30 +57,34 @@ using namespace osc;
 class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
     Impl(
+        ModelEditorTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_) :
-        Impl{parent_, std::make_unique<UndoableModelStatePair>()}
+        Impl{owner, parent_, std::make_unique<UndoableModelStatePair>()}
     {}
 
     Impl(
+        ModelEditorTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         const OpenSim::Model& model_) :
-        Impl{parent_, std::make_unique<UndoableModelStatePair>(model_)}
+        Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(model_)}
     {}
 
     Impl(
+        ModelEditorTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
-        Impl{parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
+        Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
     {
         m_Model->setFixupScaleFactor(fixupScaleFactor);
     }
 
     Impl(
+        ModelEditorTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
-        TabPrivate{"ModelEditorTab"},
+        TabPrivate{owner, "ModelEditorTab"},
         m_Parent{parent_},
         m_Model{std::move(model_)}
     {
@@ -425,32 +429,30 @@ private:
     bool m_ExceptionThrownLastFrame = false;
 };
 
-
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_) :
 
-    Tab{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     const OpenSim::Model& model_) :
 
-    Tab{std::make_unique<Impl>(parent_, model_)}
+    Tab{std::make_unique<Impl>(*this, parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
 
-    Tab{std::make_unique<Impl>(parent_, std::move(model_), fixupScaleFactor)}
+    Tab{std::make_unique<Impl>(*this, parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
-    Tab{std::make_unique<Impl>(parent_, std::move(model_))}
+    Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}
 {}
-
 bool osc::ModelEditorTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
 bool osc::ModelEditorTab::impl_try_save() { return private_data().trySave(); }
 void osc::ModelEditorTab::impl_on_mount() { private_data().on_mount(); }

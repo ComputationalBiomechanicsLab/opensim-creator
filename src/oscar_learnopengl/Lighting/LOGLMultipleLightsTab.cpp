@@ -111,7 +111,8 @@ class osc::LOGLMultipleLightsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/MultipleLights"; }
 
-    Impl() : TabPrivate{static_label()}
+    explicit Impl(LOGLMultipleLightsTab& owner) :
+        TabPrivate{owner, static_label()}
     {
         log_viewer_.open();
         perf_panel_.open();
@@ -197,7 +198,7 @@ private:
 CStringView osc::LOGLMultipleLightsTab::id() { return Impl::static_label(); }
 
 osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLMultipleLightsTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLMultipleLightsTab::impl_on_unmount() { private_data().on_unmount(); }

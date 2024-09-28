@@ -16,8 +16,8 @@ using namespace osc;
 
 class osc::ErrorTab::Impl final : public TabPrivate {
 public:
-    explicit Impl(const std::exception& exception) :
-        TabPrivate{OSC_ICON_SPIDER " Error"},
+    explicit Impl(ErrorTab& owner, const std::exception& exception) :
+        TabPrivate{owner, OSC_ICON_SPIDER " Error"},
         error_message_{exception.what()}
     {}
 
@@ -64,7 +64,6 @@ private:
 };
 
 osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& exception) :
-    Tab{std::make_unique<Impl>(exception)}
+    Tab{std::make_unique<Impl>(*this, exception)}
 {}
-
 void osc::ErrorTab::impl_on_draw() { private_data().on_draw(); }

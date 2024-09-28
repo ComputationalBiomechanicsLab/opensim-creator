@@ -125,7 +125,9 @@ class osc::LOGLSSAOTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/SSAO"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLSSAOTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount()
     {
@@ -365,7 +367,7 @@ private:
 
 CStringView osc::LOGLSSAOTab::id() { return Impl::static_label(); }
 osc::LOGLSSAOTab::LOGLSSAOTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLSSAOTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLSSAOTab::impl_on_unmount() { private_data().on_unmount(); }

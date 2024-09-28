@@ -313,7 +313,8 @@ namespace
 class osc::TPS2DTab::Impl final : public TabPrivate {
 public:
 
-    Impl() : TabPrivate{OSC_ICON_BEZIER_CURVE " TPS2DTab"}
+    explicit Impl(TPS2DTab& owner) :
+        TabPrivate{owner, OSC_ICON_BEZIER_CURVE " TPS2DTab"}
     {
         m_Material.set("uTextureSampler", m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
@@ -526,6 +527,6 @@ private:
 CStringView osc::TPS2DTab::id() { return "OpenSim/Experimental/TPS2D"; }
 
 osc::TPS2DTab::TPS2DTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::TPS2DTab::impl_on_draw() { private_data().onDraw(); }

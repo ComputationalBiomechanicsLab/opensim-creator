@@ -10,7 +10,9 @@ class osc::ImGuiDemoTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/ImGui"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(ImGuiDemoTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_draw()
     {
@@ -19,16 +21,9 @@ public:
 };
 
 
-CStringView osc::ImGuiDemoTab::id()
-{
-    return Impl::static_label();
-}
+CStringView osc::ImGuiDemoTab::id() { return Impl::static_label(); }
 
 osc::ImGuiDemoTab::ImGuiDemoTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
-
-void osc::ImGuiDemoTab::impl_on_draw()
-{
-    private_data().on_draw();
-}
+void osc::ImGuiDemoTab::impl_on_draw() { private_data().on_draw(); }

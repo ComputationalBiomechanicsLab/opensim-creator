@@ -7,14 +7,13 @@
 
 using namespace osc;
 
-namespace
-{
-    constexpr CStringView c_tab_string_id = "CookiecutterTab";
-}
-
 class osc::CookiecutterTab::Impl final : public TabPrivate {
 public:
-    Impl() : TabPrivate{c_tab_string_id} {}
+    static CStringView static_label() { return "CookiecutterTab"; }
+
+    explicit Impl(CookiecutterTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount() {}
     void on_unmount() {}
@@ -24,11 +23,10 @@ public:
     void on_draw() {}
 };
 
-
-osc::CStringView osc::CookiecutterTab::id() { return c_tab_string_id; }
+osc::CStringView osc::CookiecutterTab::id() { return Impl::static_label(); }
 
 osc::CookiecutterTab::CookiecutterTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::CookiecutterTab::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterTab::impl_on_unmount() { private_data().on_unmount(); }

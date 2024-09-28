@@ -90,7 +90,9 @@ class osc::LOGLGammaTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/Gamma"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLGammaTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount()
     {
@@ -144,7 +146,7 @@ private:
 CStringView osc::LOGLGammaTab::id() { return Impl::static_label(); }
 
 osc::LOGLGammaTab::LOGLGammaTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLGammaTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLGammaTab::impl_on_unmount() { private_data().on_unmount(); }

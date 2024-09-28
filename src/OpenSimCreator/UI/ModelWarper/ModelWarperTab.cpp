@@ -21,15 +21,12 @@
 
 using namespace osc;
 
-namespace
-{
-    constexpr CStringView c_TabStringID = "Model Warper (" OSC_ICON_MAGIC " experimental)";
-}
-
 class osc::mow::ModelWarperTab::Impl final : public TabPrivate {
 public:
-    explicit Impl(const ParentPtr<ITabHost>& tabHost) :
-        TabPrivate{c_TabStringID},
+    static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
+
+    explicit Impl(ModelWarperTab& owner, const ParentPtr<ITabHost>& tabHost) :
+        TabPrivate{owner, static_label()},
         m_TabHost{tabHost}
     {
         m_PanelManager->register_toggleable_panel(
@@ -80,11 +77,6 @@ public:
         App::upd().make_main_loop_waiting();
     }
 
-    bool on_event(Event&)
-    {
-        return false;
-    }
-
     void on_tick()
     {
         m_PanelManager->on_tick();
@@ -114,14 +106,13 @@ private:
 };
 
 
-CStringView osc::mow::ModelWarperTab::id() { return c_TabStringID; }
+CStringView osc::mow::ModelWarperTab::id() { return Impl::static_label(); }
 
 osc::mow::ModelWarperTab::ModelWarperTab(const ParentPtr<ITabHost>& tabHost) :
-    Tab{std::make_unique<Impl>(tabHost)}
+    Tab{std::make_unique<Impl>(*this, tabHost)}
 {}
 void osc::mow::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }
 void osc::mow::ModelWarperTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::mow::ModelWarperTab::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::mow::ModelWarperTab::impl_on_tick() { private_data().on_tick(); }
 void osc::mow::ModelWarperTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
 void osc::mow::ModelWarperTab::impl_on_draw() { private_data().on_draw(); }

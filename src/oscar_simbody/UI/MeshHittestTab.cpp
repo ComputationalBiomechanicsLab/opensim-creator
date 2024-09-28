@@ -38,7 +38,8 @@ using namespace osc;
 class osc::MeshHittestTab::Impl final : public TabPrivate {
 public:
 
-    Impl() : TabPrivate{OSC_ICON_COOKIE " MeshHittestTab"}
+    explicit Impl(MeshHittestTab& owner) :
+        TabPrivate{owner, OSC_ICON_COOKIE " MeshHittestTab"}
     {
         m_Camera.set_background_color(Color::white());
     }
@@ -182,7 +183,7 @@ private:
 CStringView osc::MeshHittestTab::id() { return "OpenSim/Experimental/MeshHittest"; }
 
 osc::MeshHittestTab::MeshHittestTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::MeshHittestTab::impl_on_tick() { private_data().on_tick(); }
 void osc::MeshHittestTab::impl_on_draw() { private_data().onDraw(); }

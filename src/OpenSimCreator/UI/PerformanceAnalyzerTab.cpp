@@ -49,10 +49,11 @@ class osc::PerformanceAnalyzerTab::Impl final : public TabPrivate {
 public:
 
     Impl(
+        PerformanceAnalyzerTab& owner,
         BasicModelStatePair baseModel,
         ParamBlock params) :
 
-        TabPrivate{OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
+        TabPrivate{owner, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
     {}
@@ -208,7 +209,7 @@ osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 
-    Tab{std::make_unique<Impl>(std::move(modelState), params)}
+    Tab{std::make_unique<Impl>(*this, std::move(modelState), params)}
 {}
 void osc::PerformanceAnalyzerTab::impl_on_tick() { private_data().on_tick(); }
 void osc::PerformanceAnalyzerTab::impl_on_draw() { private_data().onDraw(); }

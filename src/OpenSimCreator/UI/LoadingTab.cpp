@@ -37,11 +37,12 @@ namespace
 class osc::LoadingTab::Impl final : public TabPrivate {
 public:
 
-    Impl(
+    explicit Impl(
+        LoadingTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::filesystem::path path_) :
 
-        TabPrivate{"LoadingTab"},
+        TabPrivate{owner, "LoadingTab"},
         m_Parent{parent_},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
@@ -151,8 +152,7 @@ osc::LoadingTab::LoadingTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::filesystem::path path_) :
 
-    Tab{std::make_unique<Impl>(parent_, std::move(path_))}
+    Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}
 {}
-
 void osc::LoadingTab::impl_on_tick() { private_data().on_tick(); }
 void osc::LoadingTab::impl_on_draw() { private_data().onDraw(); }

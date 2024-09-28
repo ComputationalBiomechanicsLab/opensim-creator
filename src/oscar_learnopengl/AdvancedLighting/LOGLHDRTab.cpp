@@ -74,7 +74,9 @@ class osc::LOGLHDRTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/HDR"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLHDRTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount()
     {
@@ -167,9 +169,8 @@ private:
 CStringView osc::LOGLHDRTab::id() { return Impl::static_label(); }
 
 osc::LOGLHDRTab::LOGLHDRTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
-
 void osc::LOGLHDRTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLHDRTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::LOGLHDRTab::impl_on_event(Event& e) { return private_data().on_event(e); }

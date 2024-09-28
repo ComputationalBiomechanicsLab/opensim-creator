@@ -61,7 +61,8 @@ class osc::SubMeshTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/SubMeshes"; }
 
-    Impl() : TabPrivate{static_label()}
+    explicit Impl(SubMeshTab& owner) :
+        TabPrivate{owner, static_label()}
     {
         camera_.set_background_color(Color::white());
         camera_.set_clipping_planes({0.1f, 5.0f});
@@ -99,6 +100,6 @@ private:
 CStringView osc::SubMeshTab::id() { return Impl::static_label(); }
 
 osc::SubMeshTab::SubMeshTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::SubMeshTab::impl_on_draw() { private_data().on_draw(); }

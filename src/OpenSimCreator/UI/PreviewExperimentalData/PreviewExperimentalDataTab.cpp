@@ -237,8 +237,10 @@ class osc::PreviewExperimentalDataTab::Impl final :
     public TabPrivate,
     public IPopupAPI {
 public:
-    explicit Impl(const ParentPtr<ITabHost>&) :
-        TabPrivate{OSC_ICON_DOT_CIRCLE " Experimental Data"}
+    explicit Impl(
+        PreviewExperimentalDataTab& owner,
+        const ParentPtr<ITabHost>&) :
+        TabPrivate{owner, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
@@ -403,17 +405,13 @@ private:
 };
 
 
-CStringView osc::PreviewExperimentalDataTab::id()
-{
-    return "OpenSim/Experimental/PreviewExperimentalData";
-}
+CStringView osc::PreviewExperimentalDataTab::id() { return "OpenSim/Experimental/PreviewExperimentalData"; }
 
 osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(const ParentPtr<ITabHost>& ptr) :
-    Tab{std::make_unique<Impl>(ptr)}
+    Tab{std::make_unique<Impl>(*this, ptr)}
 {}
-
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }
 void osc::PreviewExperimentalDataTab::impl_on_unmount() { private_data().on_unmount(); }
 void osc::PreviewExperimentalDataTab::impl_on_tick() { private_data().on_tick(); }
 void osc::PreviewExperimentalDataTab::impl_on_draw_main_menu() { return private_data().on_draw_main_menu(); }
-void osc::PreviewExperimentalDataTab::impl_on_draw() { private_data().on_draw();}
+void osc::PreviewExperimentalDataTab::impl_on_draw() { private_data().on_draw(); }

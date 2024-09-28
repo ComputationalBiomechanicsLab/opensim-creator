@@ -121,7 +121,8 @@ void main() {
 
 class osc::BookOfShadersTab::Impl final : public TabPrivate {
 public:
-    Impl() : TabPrivate{c_tab_string_id}
+    explicit Impl(BookOfShadersTab& owner) :
+        TabPrivate{owner, c_tab_string_id}
     {
         camera_.set_projection(CameraProjection::Orthographic);
         camera_.set_clipping_planes({-1.0f, 1.0f});
@@ -183,7 +184,7 @@ CStringView osc::BookOfShadersTab::id()
 }
 
 osc::BookOfShadersTab::BookOfShadersTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 
 void osc::BookOfShadersTab::impl_on_draw()

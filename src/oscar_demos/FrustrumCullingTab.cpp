@@ -14,8 +14,6 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "Demos/FrustrumCulling";
-
     struct TransformedMesh {
         Mesh mesh;
         Transform transform;
@@ -65,7 +63,10 @@ namespace
 
 class osc::FrustrumCullingTab::Impl final : public TabPrivate {
 public:
-    Impl() : TabPrivate{c_tab_string_id}
+    static CStringView static_label() { return "Demos/FrustrumCulling"; }
+
+    explicit Impl(FrustrumCullingTab& owner) :
+        TabPrivate{owner, static_label()}
     {
         user_camera_.set_clipping_planes({0.1f, 10.0f});
         top_down_camera_.set_position({0.0f, 9.5f, 0.0f});
@@ -139,31 +140,12 @@ public:
 };
 
 
-osc::CStringView osc::FrustrumCullingTab::id()
-{
-    return c_tab_string_id;
-}
+osc::CStringView osc::FrustrumCullingTab::id() { return Impl::static_label(); }
 
 osc::FrustrumCullingTab::FrustrumCullingTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
-
-void osc::FrustrumCullingTab::impl_on_mount()
-{
-    private_data().on_mount();
-}
-
-void osc::FrustrumCullingTab::impl_on_unmount()
-{
-    private_data().on_unmount();
-}
-
-bool osc::FrustrumCullingTab::impl_on_event(Event& e)
-{
-    return private_data().on_event(e);
-}
-
-void osc::FrustrumCullingTab::impl_on_draw()
-{
-    private_data().on_draw();
-}
+void osc::FrustrumCullingTab::impl_on_mount() { private_data().on_mount(); }
+void osc::FrustrumCullingTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::FrustrumCullingTab::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::FrustrumCullingTab::impl_on_draw() { private_data().on_draw(); }

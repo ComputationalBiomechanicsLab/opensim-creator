@@ -11,7 +11,9 @@ class osc::ImGuizmoDemoTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Demos/ImGuizmo"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(ImGuizmoDemoTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_draw()
     {
@@ -50,7 +52,6 @@ private:
 CStringView osc::ImGuizmoDemoTab::id() { return Impl::static_label(); }
 
 osc::ImGuizmoDemoTab::ImGuizmoDemoTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
-
 void osc::ImGuizmoDemoTab::impl_on_draw() { private_data().on_draw(); }

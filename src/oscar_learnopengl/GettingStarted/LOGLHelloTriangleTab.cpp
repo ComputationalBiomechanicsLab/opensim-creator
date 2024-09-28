@@ -48,7 +48,9 @@ class osc::LOGLHelloTriangleTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/HelloTriangle"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLHelloTriangleTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_draw()
     {
@@ -69,7 +71,7 @@ private:
 CStringView osc::LOGLHelloTriangleTab::id() { return Impl::static_label(); }
 
 osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 
 void osc::LOGLHelloTriangleTab::impl_on_draw() { private_data().on_draw(); }

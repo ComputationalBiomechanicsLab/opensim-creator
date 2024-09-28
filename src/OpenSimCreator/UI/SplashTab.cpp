@@ -96,8 +96,8 @@ namespace
 class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
-        TabPrivate{OSC_ICON_HOME},
+    explicit Impl(SplashTab& owner, const ParentPtr<IMainUIStateAPI>& parent_) :
+        TabPrivate{owner, OSC_ICON_HOME},
         m_Parent{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -397,9 +397,8 @@ private:
     LogViewer m_LogViewer;
 };
 
-
 osc::SplashTab::SplashTab(const ParentPtr<IMainUIStateAPI>& parent_) :
-    Tab{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::SplashTab::impl_on_mount() { private_data().on_mount(); }
 void osc::SplashTab::impl_on_unmount() { private_data().on_unmount(); }

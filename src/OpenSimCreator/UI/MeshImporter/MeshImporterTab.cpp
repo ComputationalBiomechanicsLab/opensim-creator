@@ -79,16 +79,21 @@ class osc::mi::MeshImporterTab::Impl final :
     public TabPrivate,
     public IMeshImporterUILayerHost {
 public:
-    explicit Impl(const ParentPtr<IMainUIStateAPI>& parent_) :
-        TabPrivate{"MeshImporterTab"},
+    explicit Impl(
+        MeshImporterTab& owner,
+        const ParentPtr<IMainUIStateAPI>& parent_) :
+
+        TabPrivate{owner, "MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {}
 
-    Impl(
+    explicit Impl(
+        MeshImporterTab& owner,
         const ParentPtr<IMainUIStateAPI>& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
-        TabPrivate{"MeshImporterTab"},
+
+        TabPrivate{owner, "MeshImporterTab"},
         m_Parent{parent_},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
     {}
@@ -2427,13 +2432,13 @@ private:
 osc::mi::MeshImporterTab::MeshImporterTab(
     const ParentPtr<IMainUIStateAPI>& parent_) :
 
-    Tab{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
     const ParentPtr<IMainUIStateAPI>& parent_,
     std::vector<std::filesystem::path> files_) :
 
-    Tab{std::make_unique<Impl>(parent_, std::move(files_))}
+    Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}
 {}
 bool osc::mi::MeshImporterTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
 bool osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }

@@ -194,7 +194,8 @@ class osc::LOGLCSMTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/CSM"; }
 
-    Impl() : TabPrivate{static_label()}
+    explicit Impl(LOGLCSMTab& owner) :
+        TabPrivate{owner, static_label()}
     {
         // setup camera
         user_camera_.set_clipping_planes({0.1f, 10.0f});
@@ -317,9 +318,8 @@ private:
 
 osc::CStringView osc::LOGLCSMTab::id() { return Impl::static_label(); }
 osc::LOGLCSMTab::LOGLCSMTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
-
 void osc::LOGLCSMTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLCSMTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::LOGLCSMTab::impl_on_event(Event& e) { return private_data().on_event(e); }

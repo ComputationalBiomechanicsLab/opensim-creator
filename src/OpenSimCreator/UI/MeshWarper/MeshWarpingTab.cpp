@@ -29,8 +29,8 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(const ParentPtr<ITabHost>& parent_) :
-        TabPrivate{OSC_ICON_BEZIER_CURVE " Mesh Warping"},
+    explicit Impl(MeshWarpingTab& owner, const ParentPtr<ITabHost>& parent_) :
+        TabPrivate{owner, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
         m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
@@ -198,7 +198,7 @@ private:
 CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
 osc::MeshWarpingTab::MeshWarpingTab(const ParentPtr<ITabHost>& parent_) :
-    Tab{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::MeshWarpingTab::impl_on_unmount() { private_data().on_unmount(); }

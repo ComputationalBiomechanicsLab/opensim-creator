@@ -955,8 +955,11 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
 
-    explicit Impl(const ParentPtr<ITabHost>& parent_) :
-        TabPrivate{c_TabStringID},
+    explicit Impl(
+        FrameDefinitionTab& owner,
+        const ParentPtr<ITabHost>& parent_) :
+
+        TabPrivate{owner, c_TabStringID},
         m_Parent{parent_}
     {
         m_PanelManager->register_toggleable_panel(
@@ -1128,7 +1131,7 @@ private:
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
 osc::FrameDefinitionTab::FrameDefinitionTab(const ParentPtr<ITabHost>& parent_) :
-    Tab{std::make_unique<Impl>(parent_)}
+    Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }
 void osc::FrameDefinitionTab::impl_on_unmount() { private_data().on_unmount(); }

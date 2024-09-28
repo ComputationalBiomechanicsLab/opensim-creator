@@ -124,7 +124,9 @@ class osc::LOGLPBRDiffuseIrradianceTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/PBR/DiffuseIrradiance"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLPBRDiffuseIrradianceTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount()
     {
@@ -243,7 +245,7 @@ private:
 CStringView osc::LOGLPBRDiffuseIrradianceTab::id() { return Impl::static_label(); }
 
 osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLPBRDiffuseIrradianceTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLPBRDiffuseIrradianceTab::impl_on_unmount() { private_data().on_unmount(); }

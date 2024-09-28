@@ -158,7 +158,9 @@ class osc::LOGLDeferredShadingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/DeferredShading"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLDeferredShadingTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_mount()
     {
@@ -321,7 +323,7 @@ private:
 CStringView osc::LOGLDeferredShadingTab::id() { return Impl::static_label(); }
 
 osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLDeferredShadingTab::impl_on_mount() { private_data().on_mount(); }
 void osc::LOGLDeferredShadingTab::impl_on_unmount() { private_data().on_unmount(); }

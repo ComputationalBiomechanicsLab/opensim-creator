@@ -65,7 +65,9 @@ class osc::LOGLTexturingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "LearnOpenGL/Texturing"; }
 
-    Impl() : TabPrivate{static_label()} {}
+    explicit Impl(LOGLTexturingTab& owner) :
+        TabPrivate{owner, static_label()}
+    {}
 
     void on_draw()
     {
@@ -84,7 +86,8 @@ private:
 
 
 CStringView osc::LOGLTexturingTab::id() { return Impl::static_label(); }
+
 osc::LOGLTexturingTab::LOGLTexturingTab(const ParentPtr<ITabHost>&) :
-    Tab{std::make_unique<Impl>()}
+    Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLTexturingTab::impl_on_draw() { private_data().on_draw(); }
