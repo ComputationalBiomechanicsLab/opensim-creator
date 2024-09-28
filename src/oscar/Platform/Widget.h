@@ -36,6 +36,5 @@ namespace osc
 }
 
 #define OSC_WIDGET_DATA_GETTERS(ImplClass)                                                                    \
-    class ImplClass;                                                                                          \
     const ImplClass& private_data() const { return reinterpret_cast<const ImplClass&>(base_private_data()); } \
     ImplClass& private_data() { return reinterpret_cast<ImplClass&>(base_private_data()); }
