@@ -244,7 +244,7 @@ private:
 
 CStringView osc::LOGLPBRDiffuseIrradianceTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(const ParentPtr<ITabHost>&) :
+osc::LOGLPBRDiffuseIrradianceTab::LOGLPBRDiffuseIrradianceTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLPBRDiffuseIrradianceTab::impl_on_mount() { private_data().on_mount(); }

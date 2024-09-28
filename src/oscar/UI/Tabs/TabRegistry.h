@@ -1,10 +1,8 @@
 #pragma once
 
-#include <oscar/UI/Tabs/ITabHost.h>
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <concepts>
 #include <cstddef>
@@ -12,12 +10,14 @@
 #include <optional>
 #include <string_view>
 
+namespace osc { class Widget; }
+
 namespace osc
 {
     template<typename T>
     concept StandardRegisterableTab =
         std::derived_from<T, Tab> and
-        std::constructible_from<T, const ParentPtr<ITabHost>&> and
+        std::constructible_from<T, Widget&> and
         requires (T) {
             { T::id() } -> std::same_as<CStringView>;
         };
@@ -44,7 +44,7 @@ namespace osc
         {
             register_tab(TabRegistryEntry{
                 T::id(),
-                [](const ParentPtr<ITabHost>& host_ptr) { return std::make_unique<T>(host_ptr); },
+                [](Widget& parent) { return std::make_unique<T>(parent); },
             });
         }
 

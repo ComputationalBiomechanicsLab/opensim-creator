@@ -63,7 +63,7 @@ private:
     LogViewer log_viewer_;
 };
 
-osc::ErrorTab::ErrorTab(const ParentPtr<ITabHost>&, const std::exception& exception) :
+osc::ErrorTab::ErrorTab(Widget&, const std::exception& exception) :
     Tab{std::make_unique<Impl>(*this, exception)}
 {}
 void osc::ErrorTab::impl_on_draw() { private_data().on_draw(); }

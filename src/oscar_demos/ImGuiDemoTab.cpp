@@ -23,7 +23,7 @@ public:
 
 CStringView osc::ImGuiDemoTab::id() { return Impl::static_label(); }
 
-osc::ImGuiDemoTab::ImGuiDemoTab(const ParentPtr<ITabHost>&) :
+osc::ImGuiDemoTab::ImGuiDemoTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::ImGuiDemoTab::impl_on_draw() { private_data().on_draw(); }

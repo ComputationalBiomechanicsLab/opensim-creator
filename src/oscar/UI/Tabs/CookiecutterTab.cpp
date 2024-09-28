@@ -25,7 +25,7 @@ public:
 
 osc::CStringView osc::CookiecutterTab::id() { return Impl::static_label(); }
 
-osc::CookiecutterTab::CookiecutterTab(const ParentPtr<ITabHost>&) :
+osc::CookiecutterTab::CookiecutterTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::CookiecutterTab::impl_on_mount() { private_data().on_mount(); }

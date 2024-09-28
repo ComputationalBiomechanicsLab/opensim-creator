@@ -5,6 +5,9 @@
 
 using namespace osc;
 
+osc::Widget::Widget() :
+    data_{std::make_unique<WidgetPrivate>(*this)}
+{}
 osc::Widget::~Widget() noexcept = default;
 osc::Widget::Widget(Widget&&) noexcept = default;
 Widget& osc::Widget::operator=(Widget&&) = default;

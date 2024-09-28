@@ -70,8 +70,7 @@ private:
 
 CStringView osc::LOGLHelloTriangleTab::id() { return Impl::static_label(); }
 
-osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(const ParentPtr<ITabHost>&) :
+osc::LOGLHelloTriangleTab::LOGLHelloTriangleTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
-
 void osc::LOGLHelloTriangleTab::impl_on_draw() { private_data().on_draw(); }

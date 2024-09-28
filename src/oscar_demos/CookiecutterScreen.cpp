@@ -4,7 +4,7 @@
 
 #include <memory>
 
-class osc::CookiecutterScreen::Impl final {
+class osc::CookiecutterScreen::Impl final : public ScreenPrivate {
 public:
 
     void on_mount()
@@ -70,34 +70,10 @@ private:
 };
 
 osc::CookiecutterScreen::CookiecutterScreen() :
-    impl_{std::make_unique<Impl>()}
+    Screen{std::make_unique<Impl>()}
 {}
-
-osc::CookiecutterScreen::CookiecutterScreen(CookiecutterScreen&&) noexcept = default;
-osc::CookiecutterScreen& osc::CookiecutterScreen::operator=(CookiecutterScreen&&) noexcept = default;
-osc::CookiecutterScreen::~CookiecutterScreen() noexcept = default;
-
-void osc::CookiecutterScreen::impl_on_mount()
-{
-    impl_->on_mount();
-}
-
-void osc::CookiecutterScreen::impl_on_unmount()
-{
-    impl_->on_unmount();
-}
-
-bool osc::CookiecutterScreen::impl_on_event(Event& e)
-{
-    return impl_->on_event(e);
-}
-
-void osc::CookiecutterScreen::impl_on_tick()
-{
-    impl_->on_tick();
-}
-
-void osc::CookiecutterScreen::impl_on_draw()
-{
-    impl_->onDraw();
-}
+void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
+void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::CookiecutterScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::CookiecutterScreen::impl_on_tick() { private_data().on_tick(); }
+void osc::CookiecutterScreen::impl_on_draw() { private_data().onDraw(); }

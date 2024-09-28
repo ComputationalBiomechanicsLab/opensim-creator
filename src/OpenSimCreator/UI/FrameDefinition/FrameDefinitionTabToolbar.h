@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 
-#include <oscar/UI/Tabs/ITabHost.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Platform/Widget.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -14,8 +14,8 @@ namespace osc
     class FrameDefinitionTabToolbar final {
     public:
         FrameDefinitionTabToolbar(
+            Widget& parent_,
             std::string_view label_,
-            ParentPtr<ITabHost>,
             std::shared_ptr<UndoableModelStatePair>
         );
 
@@ -25,8 +25,8 @@ namespace osc
         void drawExportToOpenSimButton();
         void drawExportToOpenSimTooltipContent(size_t);
 
+        LifetimedPtr<Widget> m_Parent;
         std::string m_Label;
-        ParentPtr<ITabHost> m_TabHost;
         std::shared_ptr<UndoableModelStatePair> m_Model;
     };
 }

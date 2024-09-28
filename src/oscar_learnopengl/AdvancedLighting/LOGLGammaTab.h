@@ -2,16 +2,13 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITabHost; }
-
 namespace osc
 {
     class LOGLGammaTab final : public Tab {
     public:
         static CStringView id();
 
-        explicit LOGLGammaTab(const ParentPtr<ITabHost>&);
+        explicit LOGLGammaTab(Widget&);
 
     private:
         void impl_on_mount() final;

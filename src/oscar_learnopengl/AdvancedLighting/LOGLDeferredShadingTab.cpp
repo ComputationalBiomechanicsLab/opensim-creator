@@ -322,7 +322,7 @@ private:
 
 CStringView osc::LOGLDeferredShadingTab::id() { return Impl::static_label(); }
 
-osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLDeferredShadingTab::impl_on_mount() { private_data().on_mount(); }

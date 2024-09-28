@@ -160,7 +160,7 @@ private:
 
 CStringView osc::LOGLParallaxMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLParallaxMappingTab::LOGLParallaxMappingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLParallaxMappingTab::impl_on_mount() { private_data().on_mount(); }

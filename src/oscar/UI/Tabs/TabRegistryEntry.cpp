@@ -15,7 +15,7 @@ public:
 
     Impl(
         CStringView name,
-        std::function<std::unique_ptr<Tab>(const ParentPtr<ITabHost>&)> tab_constructor) :
+        std::function<std::unique_ptr<Tab>(Widget&)> tab_constructor) :
 
         name_{name},
         tab_constructor_{std::move(tab_constructor)}
@@ -26,34 +26,29 @@ public:
         return name_;
     }
 
-    std::unique_ptr<Tab> construct_tab(const ParentPtr<ITabHost>& host) const
+    std::unique_ptr<Tab> construct_tab(Widget& host) const
     {
         return tab_constructor_(host);
     }
 
 private:
     std::string name_;
-    std::function<std::unique_ptr<Tab>(const ParentPtr<ITabHost>&)> tab_constructor_;
+    std::function<std::unique_ptr<Tab>(Widget&)> tab_constructor_;
 };
 
 osc::TabRegistryEntry::TabRegistryEntry(
     CStringView name,
-    std::function<std::unique_ptr<Tab>(const ParentPtr<ITabHost>&)> tab_constructor) :
+    std::function<std::unique_ptr<Tab>(Widget&)> tab_constructor) :
 
     impl_{std::make_shared<Impl>(name, std::move(tab_constructor))}
 {}
-osc::TabRegistryEntry::TabRegistryEntry(const TabRegistryEntry&) = default;
-osc::TabRegistryEntry::TabRegistryEntry(TabRegistryEntry&&) noexcept = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(const TabRegistryEntry&) = default;
-osc::TabRegistryEntry& osc::TabRegistryEntry::operator=(TabRegistryEntry&&) noexcept = default;
-osc::TabRegistryEntry::~TabRegistryEntry() noexcept = default;
 
 CStringView osc::TabRegistryEntry::name() const
 {
     return impl_->name();
 }
 
-std::unique_ptr<Tab> osc::TabRegistryEntry::construct_tab(const ParentPtr<ITabHost>& host) const
+std::unique_ptr<Tab> osc::TabRegistryEntry::construct_tab(Widget& host) const
 {
     return impl_->construct_tab(host);
 }

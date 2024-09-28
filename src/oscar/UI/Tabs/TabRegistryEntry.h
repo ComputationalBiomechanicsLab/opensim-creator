@@ -5,9 +5,8 @@
 #include <functional>
 #include <memory>
 
-namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class Tab; }
-namespace osc { class ITabHost; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -16,16 +15,11 @@ namespace osc
     public:
         TabRegistryEntry(
             CStringView name,
-            std::function<std::unique_ptr<Tab>(const ParentPtr<ITabHost>&)> tab_constructor
+            std::function<std::unique_ptr<Tab>(Widget&)> tab_constructor
         );
-        TabRegistryEntry(const TabRegistryEntry&);
-        TabRegistryEntry(TabRegistryEntry&&) noexcept;
-        TabRegistryEntry& operator=(const TabRegistryEntry&);
-        TabRegistryEntry& operator=(TabRegistryEntry&&) noexcept;
-        ~TabRegistryEntry() noexcept;
 
         CStringView name() const;
-        std::unique_ptr<Tab> construct_tab(const ParentPtr<ITabHost>&) const;
+        std::unique_ptr<Tab> construct_tab(Widget&) const;
 
     private:
         class Impl;

@@ -15,14 +15,18 @@ namespace osc
 {
     class Widget {
     public:
+        Widget();
         virtual ~Widget() noexcept;
 
         bool on_event(Event& e) { return impl_on_event(e); }
+        LifetimedPtr<Widget> weak_ref();
+
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
 
         const WidgetPrivate& base_private_data() const { return *data_; }
         WidgetPrivate& base_private_data() { return *data_; }
+
     private:
         Widget(const Widget&) = delete;
         Widget(Widget&&) noexcept;
@@ -30,8 +34,6 @@ namespace osc
         Widget& operator=(Widget&&);
 
         OSC_WIDGET_DATA_GETTERS(WidgetPrivate);
-
-        LifetimedPtr<Widget> weak_ref();
 
         virtual bool impl_on_event(Event&) { return false; }
 

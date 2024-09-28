@@ -103,7 +103,7 @@ private:
 
 
 CStringView osc::LOGLFaceCullingTab::id() { return Impl::static_label(); }
-osc::LOGLFaceCullingTab::LOGLFaceCullingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLFaceCullingTab::LOGLFaceCullingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLFaceCullingTab::impl_on_mount() { private_data().on_mount(); }

@@ -145,7 +145,7 @@ private:
 
 CStringView osc::LOGLGammaTab::id() { return Impl::static_label(); }
 
-osc::LOGLGammaTab::LOGLGammaTab(const ParentPtr<ITabHost>&) :
+osc::LOGLGammaTab::LOGLGammaTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLGammaTab::impl_on_mount() { private_data().on_mount(); }

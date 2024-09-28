@@ -9,11 +9,11 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IResourceLoader.h>
-#include <oscar/Platform/IScreen.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Platform/ResourceStream.h>
+#include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Detail/SDL2Helpers.h>
@@ -263,7 +263,7 @@ public:
     const std::filesystem::path& executable_directory() const { return executable_dir_; }
     const std::filesystem::path& user_data_directory() const { return user_data_dir_; }
 
-    void setup_main_loop(std::unique_ptr<IScreen> screen)
+    void setup_main_loop(std::unique_ptr<Screen> screen)
     {
         if (screen_) {
             throw std::runtime_error{"tried to call `App::setup_main_loop` when a screen is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the applications screen from *within* some other screen, call `request_transition` instead"};
@@ -401,7 +401,7 @@ public:
         active_screenshot_requests_.clear();
     }
 
-    void show(std::unique_ptr<IScreen> screen)
+    void show(std::unique_ptr<Screen> screen)
     {
         setup_main_loop(std::move(screen));
 
@@ -413,7 +413,7 @@ public:
         }
     }
 
-    void request_transition(std::unique_ptr<IScreen> screen)
+    void request_transition(std::unique_ptr<Screen> screen)
     {
         next_screen_ = std::move(screen);
     }
@@ -694,7 +694,7 @@ private:
         return graphics_context_.request_screenshot();
     }
 
-    // perform a screen transntion between two top-level `IScreen`s
+    // perform a screen transntion between two top-level `Screen`s
     void transition_to_next_screen()
     {
         if (not next_screen_) {
@@ -838,10 +838,10 @@ private:
     int32_t num_frames_to_poll_ = 0;
 
     // current screen being shown (if any)
-    std::unique_ptr<IScreen> screen_;
+    std::unique_ptr<Screen> screen_;
 
     // the *next* screen the application should show
-    std::unique_ptr<IScreen> next_screen_;
+    std::unique_ptr<Screen> next_screen_;
 
     // frame annotations made during this frame
     std::vector<ScreenshotAnnotation> frame_annotations_;
@@ -919,7 +919,7 @@ const std::filesystem::path& osc::App::user_data_directory() const
     return impl_->user_data_directory();
 }
 
-void osc::App::setup_main_loop(std::unique_ptr<IScreen> screen)
+void osc::App::setup_main_loop(std::unique_ptr<Screen> screen)
 {
     impl_->setup_main_loop(std::move(screen));
 }
@@ -934,12 +934,12 @@ void osc::App::teardown_main_loop()
     impl_->teardown_main_loop();
 }
 
-void osc::App::show(std::unique_ptr<IScreen> s)
+void osc::App::show(std::unique_ptr<Screen> s)
 {
     impl_->show(std::move(s));
 }
 
-void osc::App::request_transition(std::unique_ptr<IScreen> s)
+void osc::App::request_transition(std::unique_ptr<Screen> s)
 {
     impl_->request_transition(std::move(s));
 }

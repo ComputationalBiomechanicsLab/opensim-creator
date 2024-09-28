@@ -138,7 +138,7 @@ private:
 
 CStringView osc::LOGLPBRLightingTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLPBRLightingTab::LOGLPBRLightingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLPBRLightingTab::impl_on_mount() { private_data().on_mount(); }

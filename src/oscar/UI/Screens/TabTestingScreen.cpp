@@ -2,11 +2,10 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
-#include <oscar/UI/Tabs/ITabHost.h>
+#include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
 #include <oscar/UI/ui_context.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -15,44 +14,41 @@
 #include <utility>
 #include <vector>
 
-class osc::TabTestingScreen::Impl final :
-    public std::enable_shared_from_this<Impl>,
-    public IScreen,
-    public ITabHost {
+class osc::TabTestingScreen::Impl final : public ScreenPrivate {
 public:
-    explicit Impl(TabRegistryEntry registry_entry) :
+    explicit Impl(TabTestingScreen& owner, TabRegistryEntry registry_entry) :
+        ScreenPrivate{owner},
         registry_entry_{std::move(registry_entry)}
     {}
 
-private:
-    void impl_on_mount() final
+    void on_mount()
     {
-        current_tab_ = registry_entry_.construct_tab(ParentPtr<Impl>{shared_from_this()});
+        current_tab_ = registry_entry_.construct_tab(owner());
         ui::context::init(App::upd());
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();
     }
 
-    void impl_on_unmount() final
+    void on_unmount()
     {
         App::upd().make_main_loop_waiting();
         current_tab_->on_unmount();
         ui::context::shutdown();
     }
 
-    bool impl_on_event(Event& e) final
+    bool on_event(Event& e)
     {
         bool handled = ui::context::on_event(e);
         handled = current_tab_->on_event(e) or handled;
         return handled;
     }
 
-    void impl_on_tick() final
+    void on_tick()
     {
         current_tab_->on_tick();
     }
 
-    void impl_on_draw() final
+    void on_draw()
     {
         App::upd().clear_screen();
         ui::context::on_start_new_frame(App::upd());
@@ -67,10 +63,7 @@ private:
         }
     }
 
-    UID impl_add_tab(std::unique_ptr<Tab>) final { return UID{}; }
-    void impl_select_tab(UID) final {}
-    void impl_close_tab(UID) final {}
-
+private:
     TabRegistryEntry registry_entry_;
     std::unique_ptr<Tab> current_tab_;
     size_t min_frames_shown_ = 2;
@@ -80,10 +73,10 @@ private:
 };
 
 osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) :
-    impl_{std::make_shared<Impl>(registry_entry)}
+    Screen{std::make_unique<Impl>(*this, registry_entry)}
 {}
-void osc::TabTestingScreen::impl_on_mount() { impl_->on_mount(); }
-void osc::TabTestingScreen::impl_on_unmount() { impl_->on_unmount(); }
-bool osc::TabTestingScreen::impl_on_event(Event& e) { return impl_->on_event(e); }
-void osc::TabTestingScreen::impl_on_tick() { impl_->on_tick(); }
-void osc::TabTestingScreen::impl_on_draw() { impl_->on_draw(); }
+void osc::TabTestingScreen::impl_on_mount() { private_data().on_mount(); }
+void osc::TabTestingScreen::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::TabTestingScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
+void osc::TabTestingScreen::impl_on_tick() { private_data().on_tick(); }
+void osc::TabTestingScreen::impl_on_draw() { private_data().on_draw(); }

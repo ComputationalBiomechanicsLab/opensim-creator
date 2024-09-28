@@ -4,15 +4,14 @@
 
 #include <memory>
 
-namespace osc { template<typename T> class ParentPtr; }
 namespace osc { class Screenshot; }
-namespace osc { class ITabHost; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class ScreenshotTab final : public Tab {
     public:
-        ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&&);
+        ScreenshotTab(Widget&, Screenshot&&);
 
     private:
         void impl_on_draw_main_menu() final;

@@ -223,7 +223,7 @@ private:
     std::unordered_set<std::string> user_selected_annotations_;
 };
 
-osc::ScreenshotTab::ScreenshotTab(const ParentPtr<ITabHost>&, Screenshot&& screenshot) :
+osc::ScreenshotTab::ScreenshotTab(Widget&, Screenshot&& screenshot) :
     Tab{std::make_unique<Impl>(*this, std::move(screenshot))}
 {}
 void osc::ScreenshotTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }

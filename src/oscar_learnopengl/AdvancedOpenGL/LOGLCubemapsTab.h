@@ -2,10 +2,7 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-#include <memory>
-
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITabHost; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -13,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLCubemapsTab(const ParentPtr<ITabHost>&);
+        explicit LOGLCubemapsTab(Widget&);
 
     private:
         void impl_on_mount() final;

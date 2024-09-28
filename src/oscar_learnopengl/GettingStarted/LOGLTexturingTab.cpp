@@ -87,7 +87,7 @@ private:
 
 CStringView osc::LOGLTexturingTab::id() { return Impl::static_label(); }
 
-osc::LOGLTexturingTab::LOGLTexturingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLTexturingTab::LOGLTexturingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLTexturingTab::impl_on_draw() { private_data().on_draw(); }

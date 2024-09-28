@@ -242,7 +242,7 @@ void main()
         friend bool operator==(const TorusParameters&, const TorusParameters&) = default;
     };
 
-    class HelloTriangleScreen final : public IScreen {
+    class HelloTriangleScreen final : public Screen {
     public:
         HelloTriangleScreen()
         {

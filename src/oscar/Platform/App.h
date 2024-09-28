@@ -27,7 +27,7 @@ struct SDL_Window;
 namespace osc { class App; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
-namespace osc { class IScreen; }
+namespace osc { class Screen; }
 namespace osc::ui::context { void init(App&); }
 
 namespace osc
@@ -95,8 +95,8 @@ namespace osc
         // application
         const std::filesystem::path& user_data_directory() const;
 
-        void setup_main_loop(std::unique_ptr<IScreen>);
-        template<std::derived_from<IScreen> TScreen, typename... Args>
+        void setup_main_loop(std::unique_ptr<Screen>);
+        template<std::derived_from<Screen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
         void setup_main_loop(Args&&... args)
         {
@@ -122,10 +122,10 @@ namespace osc
         //     teardown_main_loop();
         //
         // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
-        void show(std::unique_ptr<IScreen>);
+        void show(std::unique_ptr<Screen>);
 
         // constructs `TScreen` with `Args` and starts `show`ing it
-        template<std::derived_from<IScreen> TScreen, typename... Args>
+        template<std::derived_from<Screen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
         void show(Args&&... args)
         {
@@ -144,10 +144,10 @@ namespace osc
         // - destroy the current screen
         // - mount the new screen
         // - make the new screen the current screen
-        void request_transition(std::unique_ptr<IScreen>);
+        void request_transition(std::unique_ptr<Screen>);
 
         // constructs `TScreen` with `Args` then requests that the app transitions to it
-        template<std::derived_from<IScreen> TScreen, typename... Args>
+        template<std::derived_from<Screen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
         void request_transition(Args&&... args)
         {

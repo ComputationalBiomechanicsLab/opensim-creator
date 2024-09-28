@@ -113,7 +113,7 @@ private:
 
 CStringView osc::MeshGenTestTab::id() { return Impl::static_label(); }
 
-osc::MeshGenTestTab::MeshGenTestTab(const ParentPtr<ITabHost>&) :
+osc::MeshGenTestTab::MeshGenTestTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::MeshGenTestTab::impl_on_draw() { private_data().on_draw(); }

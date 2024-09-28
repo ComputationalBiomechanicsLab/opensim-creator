@@ -24,7 +24,6 @@
 #include <oscar/Utils/NullStreambuf.h>
 #include <oscar/Utils/ObjectRepresentation.h>
 #include <oscar/Utils/ParalellizationHelpers.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/PerfClock.h>
 #include <oscar/Utils/PerfMeasurement.h>

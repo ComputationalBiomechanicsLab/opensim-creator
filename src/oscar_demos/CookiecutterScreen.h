@@ -1,21 +1,14 @@
 #pragma once
 
-#include <oscar/Platform/IScreen.h>
-
-#include <memory>
+#include <oscar/Platform/Screen.h>
 
 namespace osc
 {
     // META: this is a valid screen with `CookiecutterScreen` as a replaceable
     //       string that users can "Find+Replace" to make their own screen impl
-    class CookiecutterScreen final : public IScreen {
+    class CookiecutterScreen final : public Screen {
     public:
         CookiecutterScreen();
-        CookiecutterScreen(const CookiecutterScreen&) = delete;
-        CookiecutterScreen(CookiecutterScreen&&) noexcept;
-        CookiecutterScreen& operator=(const CookiecutterScreen&) = delete;
-        CookiecutterScreen& operator=(CookiecutterScreen&&) noexcept;
-        ~CookiecutterScreen() noexcept override;
 
     private:
         void impl_on_mount() final;
@@ -26,6 +19,6 @@ namespace osc
 
     private:
         class Impl;
-        std::unique_ptr<Impl> impl_;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

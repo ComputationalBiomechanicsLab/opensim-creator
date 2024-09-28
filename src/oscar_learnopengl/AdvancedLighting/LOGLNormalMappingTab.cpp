@@ -165,7 +165,7 @@ private:
 
 CStringView osc::LOGLNormalMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLNormalMappingTab::LOGLNormalMappingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLNormalMappingTab::LOGLNormalMappingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLNormalMappingTab::impl_on_mount() { private_data().on_mount(); }

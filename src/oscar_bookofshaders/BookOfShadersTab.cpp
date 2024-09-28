@@ -9,8 +9,6 @@ using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_tab_string_id = "BookOfShaders/All";
-
     constexpr CStringView c_basic_vertex_shader = R"(
 #version 330 core
 
@@ -121,8 +119,10 @@ void main() {
 
 class osc::BookOfShadersTab::Impl final : public TabPrivate {
 public:
+    static CStringView static_label() { return "BookOfShaders/All"; }
+
     explicit Impl(BookOfShadersTab& owner) :
-        TabPrivate{owner, c_tab_string_id}
+        TabPrivate{owner, static_label()}
     {
         camera_.set_projection(CameraProjection::Orthographic);
         camera_.set_clipping_planes({-1.0f, 1.0f});
@@ -178,16 +178,9 @@ private:
     BookOfShadersCommonProperties props_;
 };
 
-CStringView osc::BookOfShadersTab::id()
-{
-    return c_tab_string_id;
-}
+CStringView osc::BookOfShadersTab::id() { return Impl::static_label(); }
 
-osc::BookOfShadersTab::BookOfShadersTab(const ParentPtr<ITabHost>&) :
+osc::BookOfShadersTab::BookOfShadersTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
-
-void osc::BookOfShadersTab::impl_on_draw()
-{
-    private_data().on_draw();
-}
+void osc::BookOfShadersTab::impl_on_draw() { private_data().on_draw(); }

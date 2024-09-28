@@ -1,21 +1,15 @@
 #pragma once
 
-#include <oscar/Platform/IScreen.h>
-
-#include <memory>
+#include <oscar/Platform/Screen.h>
 
 namespace osc { class TabRegistryEntry; }
 
 namespace osc
 {
-    class TabTestingScreen final : public IScreen {
+    class TabTestingScreen final : public Screen {
     public:
         explicit TabTestingScreen(TabRegistryEntry const&);
-        TabTestingScreen(const TabTestingScreen&) = delete;
-        TabTestingScreen(TabTestingScreen&&) noexcept = default;
-        TabTestingScreen& operator=(const TabTestingScreen&) = delete;
-        TabTestingScreen& operator=(TabTestingScreen&&) noexcept = default;
-        ~TabTestingScreen() noexcept override = default;
+
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;
@@ -24,6 +18,6 @@ namespace osc
         void impl_on_draw() final;
 
         class Impl;
-        std::shared_ptr<Impl> impl_;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

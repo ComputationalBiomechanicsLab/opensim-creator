@@ -12,8 +12,6 @@ namespace osc
 {
     class Tab : public Widget {
     public:
-        explicit Tab(std::unique_ptr<TabPrivate>&&);
-
         UID id() const;
         CStringView name() const;
         bool is_unsaved() const { return impl_is_unsaved(); }
@@ -25,9 +23,9 @@ namespace osc
         void on_draw() { impl_on_draw(); }
 
     protected:
-        TabPrivate& private_data() { return reinterpret_cast<TabPrivate&>(base_private_data()); }
-        const TabPrivate& private_data() const { return reinterpret_cast<const TabPrivate&>(base_private_data()); }
+        explicit Tab(std::unique_ptr<TabPrivate>&&);
 
+        OSC_WIDGET_DATA_GETTERS(TabPrivate);
     private:
         virtual bool impl_is_unsaved() const { return false; }
         virtual bool impl_try_save() { return true; }

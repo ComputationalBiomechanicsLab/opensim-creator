@@ -1,5 +1,6 @@
 #pragma once
 
+#include <oscar/UI/Events.h>
 #include <oscar/UI/Panels.h>
 #include <oscar/UI/Screens.h>
 #include <oscar/UI/Tabs.h>

@@ -146,7 +146,7 @@ private:
 
 CStringView osc::LOGLFramebuffersTab::id() { return Impl::static_label(); }
 
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(const ParentPtr<ITabHost>&) :
+osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLFramebuffersTab::impl_on_mount() { private_data().on_mount(); }

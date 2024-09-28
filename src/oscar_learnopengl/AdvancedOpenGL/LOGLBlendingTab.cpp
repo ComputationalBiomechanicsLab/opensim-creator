@@ -174,7 +174,7 @@ private:
 
 CStringView osc::LOGLBlendingTab::id() { return Impl::static_label(); }
 
-osc::LOGLBlendingTab::LOGLBlendingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLBlendingTab::LOGLBlendingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLBlendingTab::impl_on_mount() { private_data().on_mount(); }

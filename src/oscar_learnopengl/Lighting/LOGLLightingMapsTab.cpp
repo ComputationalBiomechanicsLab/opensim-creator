@@ -124,7 +124,7 @@ private:
 
 CStringView osc::LOGLLightingMapsTab::id() { return Impl::static_label(); }
 
-osc::LOGLLightingMapsTab::LOGLLightingMapsTab(const ParentPtr<ITabHost>&) :
+osc::LOGLLightingMapsTab::LOGLLightingMapsTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLLightingMapsTab::impl_on_mount() { private_data().on_mount(); }

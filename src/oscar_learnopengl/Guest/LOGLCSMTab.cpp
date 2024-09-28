@@ -317,7 +317,7 @@ private:
 
 
 osc::CStringView osc::LOGLCSMTab::id() { return Impl::static_label(); }
-osc::LOGLCSMTab::LOGLCSMTab(const ParentPtr<ITabHost>&) :
+osc::LOGLCSMTab::LOGLCSMTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLCSMTab::impl_on_mount() { private_data().on_mount(); }

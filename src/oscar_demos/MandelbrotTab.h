@@ -2,8 +2,7 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { template<typename T> class ParentPtr; }
-namespace osc { class ITabHost; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -11,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MandelbrotTab(const ParentPtr<ITabHost>&);
+        explicit MandelbrotTab(Widget&);
 
     private:
         bool impl_on_event(Event&) final;

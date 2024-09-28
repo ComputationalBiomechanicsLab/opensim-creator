@@ -281,7 +281,6 @@ add_library(oscar STATIC
     Platform/ILogSink.h
     Platform/IResourceLoader.cpp
     Platform/IResourceLoader.h
-    Platform/IScreen.h
     Platform/Key.h
     Platform/Log.cpp
     Platform/Log.h
@@ -299,6 +298,9 @@ add_library(oscar STATIC
     Platform/ResourcePath.h
     Platform/ResourceStream.cpp
     Platform/ResourceStream.h
+    Platform/Screen.cpp
+    Platform/ScreenPrivate.h
+    Platform/Screen.h
     Platform/Screenshot.h
     Platform/ScreenshotAnnotation.h
     Platform/Widget.cpp
@@ -314,6 +316,10 @@ add_library(oscar STATIC
     Shims/Cpp23/ranges.h
     Shims/Cpp23/utility.h
 
+    UI/Events/CloseTabEvent.h
+    UI/Events/OpenTabEvent.h
+    UI/Events/ResetUIContextEvent.h
+    UI/Events/SelectTabEvent.h
     UI/Panels/IPanel.h
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.h
@@ -332,7 +338,6 @@ add_library(oscar STATIC
     UI/Tabs/CookiecutterTab.h
     UI/Tabs/ErrorTab.cpp
     UI/Tabs/ErrorTab.h
-    UI/Tabs/ITabHost.h
     UI/Tabs/ScreenshotTab.cpp
     UI/Tabs/ScreenshotTab.h
     UI/Tabs/Tab.cpp
@@ -368,6 +373,7 @@ add_library(oscar STATIC
     UI/Widgets/UndoButton.h
     UI/Widgets/WindowMenu.cpp
     UI/Widgets/WindowMenu.h
+    UI/Events.h
     UI/Icon.h
     UI/IconCache.cpp
     UI/IconCache.h
@@ -414,7 +420,6 @@ add_library(oscar STATIC
     Utils/NullStreambuf.h
     Utils/ObjectRepresentation.h
     Utils/ParalellizationHelpers.h
-    Utils/ParentPtr.h
     Utils/Perf.cpp
     Utils/Perf.h
     Utils/PerfClock.h

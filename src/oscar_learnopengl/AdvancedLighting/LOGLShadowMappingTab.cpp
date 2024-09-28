@@ -190,7 +190,7 @@ private:
 
 CStringView osc::LOGLShadowMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(const ParentPtr<ITabHost>&) :
+osc::LOGLShadowMappingTab::LOGLShadowMappingTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLShadowMappingTab::impl_on_mount() { private_data().on_mount(); }

@@ -116,7 +116,7 @@ private:
 
 CStringView osc::CustomWidgetsTab::id() { return Impl::static_label(); }
 
-osc::CustomWidgetsTab::CustomWidgetsTab(const ParentPtr<ITabHost>&) :
+osc::CustomWidgetsTab::CustomWidgetsTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::CustomWidgetsTab::impl_on_draw() { private_data().on_draw(); }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <oscar/Platform/IEventListener.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/Utils/CStringView.h>
 
-#include <typeinfo>
+#include <memory>
 
-namespace osc { class Event; }
+namespace osc { class ScreenPrivate; }
 
 namespace osc
 {
@@ -13,29 +13,23 @@ namespace osc
     //
     // the application shows exactly one top-level `Screen` to the user at
     // any given time
-    class IScreen : public IEventListener {
-    protected:
-        IScreen() = default;
-        IScreen(const IScreen&) = default;
-        IScreen(IScreen&&) noexcept = default;
-        IScreen& operator=(const IScreen&) = default;
-        IScreen& operator=(IScreen&&) noexcept = default;
+    class Screen : public Widget {
     public:
-        virtual ~IScreen() noexcept = default;
-
         CStringView name() const { return impl_get_name(); }
         void on_mount() { impl_on_mount(); }
         void on_unmount() { impl_on_unmount(); }
         void on_tick() { impl_on_tick(); }
         void on_draw() { impl_on_draw(); }
 
+    protected:
+        explicit Screen();
+        explicit Screen(std::unique_ptr<ScreenPrivate>&&);
+
+        OSC_WIDGET_DATA_GETTERS(ScreenPrivate);
+
     private:
-        // returns the name of the screen (handy for debugging/logging)
-        virtual CStringView impl_get_name() const
-        {
-            const IScreen& s = *this;
-            return typeid(s).name();
-        }
+        // returns the name of the screen
+        virtual CStringView impl_get_name() const;
 
         // called before the app is about to start pump-/tick-/draw-ing the screen
         virtual void impl_on_mount() {}

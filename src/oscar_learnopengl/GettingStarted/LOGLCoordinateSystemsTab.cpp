@@ -159,7 +159,7 @@ private:
 
 CStringView osc::LOGLCoordinateSystemsTab::id() { return Impl::static_label(); }
 
-osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(const ParentPtr<ITabHost>&) :
+osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLCoordinateSystemsTab::impl_on_mount() { private_data().on_mount(); }

@@ -13,7 +13,6 @@
 #include <oscar/Platform/IEventListener.h>
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
-#include <oscar/Platform/IScreen.h>
 #include <oscar/Platform/Key.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/Logger.h>
@@ -28,6 +27,8 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Platform/ResourceStream.h>
+#include <oscar/Platform/Screen.h>
+#include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenshotAnnotation.h>
 #include <oscar/Platform/Widget.h>

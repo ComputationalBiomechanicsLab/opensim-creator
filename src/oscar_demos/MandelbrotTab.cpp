@@ -94,7 +94,7 @@ private:
 
 CStringView osc::MandelbrotTab::id() { return Impl::static_label(); }
 
-osc::MandelbrotTab::MandelbrotTab(const ParentPtr<ITabHost>&) :
+osc::MandelbrotTab::MandelbrotTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 bool osc::MandelbrotTab::impl_on_event(Event& e) { return private_data().on_event(e); }

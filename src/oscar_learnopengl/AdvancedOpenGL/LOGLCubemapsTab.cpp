@@ -220,7 +220,7 @@ private:
 
 CStringView osc::LOGLCubemapsTab::id() { return Impl::static_label(); }
 
-osc::LOGLCubemapsTab::LOGLCubemapsTab(const ParentPtr<ITabHost>&) :
+osc::LOGLCubemapsTab::LOGLCubemapsTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::LOGLCubemapsTab::impl_on_mount() { private_data().on_mount(); }

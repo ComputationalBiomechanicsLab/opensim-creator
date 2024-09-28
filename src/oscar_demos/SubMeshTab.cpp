@@ -99,7 +99,7 @@ private:
 
 CStringView osc::SubMeshTab::id() { return Impl::static_label(); }
 
-osc::SubMeshTab::SubMeshTab(const ParentPtr<ITabHost>&) :
+osc::SubMeshTab::SubMeshTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::SubMeshTab::impl_on_draw() { private_data().on_draw(); }
