@@ -6,6 +6,9 @@
 
 class osc::CookiecutterScreen::Impl final : public ScreenPrivate {
 public:
+    explicit Impl(CookiecutterScreen& owner) :
+        ScreenPrivate{owner}
+    {}
 
     void on_mount()
     {
@@ -70,7 +73,7 @@ private:
 };
 
 osc::CookiecutterScreen::CookiecutterScreen() :
-    Screen{std::make_unique<Impl>()}
+    Screen{std::make_unique<Impl>(*this)}
 {}
 void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }

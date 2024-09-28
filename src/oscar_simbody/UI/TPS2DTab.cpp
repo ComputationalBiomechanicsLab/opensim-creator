@@ -526,7 +526,7 @@ private:
 
 CStringView osc::TPS2DTab::id() { return "OpenSim/Experimental/TPS2D"; }
 
-osc::TPS2DTab::TPS2DTab(const ParentPtr<ITabHost>&) :
+osc::TPS2DTab::TPS2DTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::TPS2DTab::impl_on_draw() { private_data().onDraw(); }

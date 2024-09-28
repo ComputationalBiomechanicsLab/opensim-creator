@@ -182,7 +182,7 @@ private:
 
 CStringView osc::MeshHittestTab::id() { return "OpenSim/Experimental/MeshHittest"; }
 
-osc::MeshHittestTab::MeshHittestTab(const ParentPtr<ITabHost>&) :
+osc::MeshHittestTab::MeshHittestTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::MeshHittestTab::impl_on_tick() { private_data().on_tick(); }

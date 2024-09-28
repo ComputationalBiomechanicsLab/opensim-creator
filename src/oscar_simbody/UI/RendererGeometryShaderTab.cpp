@@ -109,7 +109,7 @@ private:
 
 CStringView osc::RendererGeometryShaderTab::id() { return "OpenSim/Experimental/GeometryShader"; }
 
-osc::RendererGeometryShaderTab::RendererGeometryShaderTab(const ParentPtr<ITabHost>&) :
+osc::RendererGeometryShaderTab::RendererGeometryShaderTab(Widget&) :
     Tab{std::make_unique<Impl>(*this)}
 {}
 void osc::RendererGeometryShaderTab::impl_on_mount() { private_data().on_mount(); }
