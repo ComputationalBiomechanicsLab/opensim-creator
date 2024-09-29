@@ -409,9 +409,7 @@ bool osc::ActionStartSimulatingModel(
     ForwardDynamicSimulatorParams params = FromParamBlock(parent.getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
-    auto simulationTab = std::make_unique<SimulationTab>(parent, std::move(simulation));
-
-    parent.select_tab(parent.add_tab(std::move(simulationTab)));
+    parent.add_and_select_tab<SimulationTab>(parent, std::move(simulation));
 
     return true;
 }

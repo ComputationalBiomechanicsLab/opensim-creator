@@ -20,6 +20,7 @@
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
+#include <oscar/UI/Events/ResetUIContextEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/Tab.h>
@@ -253,6 +254,9 @@ public:
         else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
             impl_close_tab(closeTabEv->tabid_to_close());
             handled = true;
+        }
+        else if (auto* resetImguiEvent = dynamic_cast<ResetUIContextEvent*>(&e)) {
+            impl_reset_imgui();
         }
         else if (Tab* active = getActiveTab()) {
             // if there's an active tab, pump the event into the active tab and check
@@ -851,7 +855,6 @@ osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
-UID osc::MainUIScreen::addTab(std::unique_ptr<Tab> tab) { return private_data().addTab(std::move(tab)); }
 void osc::MainUIScreen::open(const std::filesystem::path& path) { private_data().open(path); }
 void osc::MainUIScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::MainUIScreen::impl_on_unmount() { private_data().on_unmount(); }
@@ -859,10 +862,13 @@ bool osc::MainUIScreen::impl_on_event(Event& e) { return private_data().on_event
 void osc::MainUIScreen::impl_on_tick() { private_data().on_tick(); }
 void osc::MainUIScreen::impl_on_draw() { private_data().onDraw(); }
 
-UID osc::MainUIScreen::add_tab(std::unique_ptr<Tab> tab){ return private_data().impl_add_tab(std::move(tab)); }
-void osc::MainUIScreen::select_tab(UID tab_id) { private_data().impl_select_tab(tab_id); }
+UID osc::MainUIScreen::add_and_select_tab(std::unique_ptr<Tab> tab)
+{
+    UID id = private_data().impl_add_tab(std::move(tab));
+    private_data().impl_select_tab(id);
+    return id;
+}
 void osc::MainUIScreen::close_tab(UID tab_id) { private_data().impl_close_tab(tab_id); }
-void osc::MainUIScreen::reset_imgui() { private_data().impl_reset_imgui(); }
 
 const ParamBlock& osc::MainUIScreen::getSimulationParams() const { return private_data().implGetSimulationParams(); }
 ParamBlock& osc::MainUIScreen::updSimulationParams() { return private_data().implUpdSimulationParams(); }

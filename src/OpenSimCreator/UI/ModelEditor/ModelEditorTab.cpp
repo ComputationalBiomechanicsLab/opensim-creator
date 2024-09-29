@@ -29,6 +29,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/Events/ResetUIContextEvent.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
@@ -223,8 +224,7 @@ public:
     {
         ui::enable_dockspace_over_main_viewport();
 
-        try
-        {
+        try {
             m_Toolbar.onDraw();
             m_PanelManager->on_draw();
             m_StatusBar.onDraw();
@@ -232,8 +232,7 @@ public:
 
             m_ExceptionThrownLastFrame = false;
         }
-        catch (const std::exception& ex)
-        {
+        catch (const std::exception& ex) {
             tryRecoveringFromException(ex);
         }
 
@@ -309,8 +308,9 @@ public:
             }
         }
 
-        // reset ImGui, because the exception unroll may have damaged ImGui state
-        m_Parent->reset_imgui();
+        // Request to reset the 2D UI context, because the exception
+        // unroll may have left it in an indeterminate state.
+        App::notify<ResetUIContextEvent>(*m_Parent);
     }
 
 private:

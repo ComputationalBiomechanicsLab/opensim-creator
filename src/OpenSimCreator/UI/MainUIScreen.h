@@ -24,27 +24,15 @@ namespace osc
         MainUIScreen& operator=(MainUIScreen&&) noexcept;
         ~MainUIScreen() noexcept override;
 
-        UID addTab(std::unique_ptr<Tab>);
         void open(const std::filesystem::path&);
 
-        template<std::derived_from<Tab> T, typename... Args>
-        requires std::constructible_from<T, Args&&...>
-        UID add_tab(Args&&... args)
-        {
-            return add_tab(std::make_unique<T>(std::forward<Args>(args)...));
-        }
-
-        UID add_tab(std::unique_ptr<Tab>);
-        void select_tab(UID);
         void close_tab(UID);
-        void reset_imgui();
 
         template<std::derived_from<Tab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
-        void add_and_select_tab(Args&&... args)
+        UID add_and_select_tab(Args&&... args)
         {
-            const UID tab_id = add_tab<T>(std::forward<Args>(args)...);
-            select_tab(tab_id);
+            return add_and_select_tab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
         const ParamBlock& getSimulationParams() const;
@@ -60,10 +48,12 @@ namespace osc
 
         LifetimedPtr<MainUIScreen> weak_ref()
         {
-            return static_cast<Widget&>(*this).weak_ref().dynamic_downcast<MainUIScreen>();
+            return Widget::weak_ref().dynamic_downcast<MainUIScreen>();
         }
 
     private:
+        UID add_and_select_tab(std::unique_ptr<Tab>);
+
         void impl_on_mount() final;
         void impl_on_unmount() final;
         bool impl_on_event(Event&) final;

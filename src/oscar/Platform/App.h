@@ -114,7 +114,6 @@ namespace osc
         // `notify(receiver, *event)`. See the documentation for `notify` for a detailed
         // description of event processing.
         static void post_event(Widget& receiver, std::unique_ptr<Event> event);
-
         template<std::derived_from<Event> TEvent, typename... Args>
         requires std::constructible_from<TEvent, Args&&...>
         static void post_event(Widget& receiver, Args&&... args)
@@ -129,6 +128,13 @@ namespace osc
         // will call `Widget::on_event(Event&)` for each `Widget` from `receiver` to the root widget
         // until either a widget in that chain returns `true` or `event.propagates()` is `false`.
         static bool notify(Widget& receiver, Event& event);
+        template<std::derived_from<Event> TEvent, typename... Args>
+        requires std::constructible_from<TEvent, Args&&...>
+        static bool notify(Widget& receiver, Args&&... args)
+        {
+            TEvent event{std::forward<Args>(args)...};
+            return notify(receiver, event);
+        }
 
         // sets the currently active screen, creates an application loop, then starts showing
         // the supplied screen
