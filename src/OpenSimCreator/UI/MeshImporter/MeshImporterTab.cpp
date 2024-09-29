@@ -49,6 +49,8 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/CloseTabEvent.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
@@ -173,13 +175,13 @@ public:
 
         if (m_Shared->isCloseRequested())
         {
-            m_Parent->close_tab(id());
+            App::post_event<CloseTabEvent>(*m_Parent, id());
             m_Shared->resetRequestClose();
         }
 
         if (m_Shared->isNewMeshImpoterTabRequested())
         {
-            m_Parent->add_and_select_tab<MeshImporterTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<MeshImporterTab>(*m_Parent));
             m_Shared->resetRequestNewMeshImporter();
         }
     }

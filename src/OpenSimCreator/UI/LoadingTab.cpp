@@ -11,6 +11,8 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
+#include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -83,8 +85,8 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            m_Parent->add_and_select_tab<ModelEditorTab>(*m_Parent, std::move(result));
-            m_Parent->close_tab(id());
+            App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ModelEditorTab>(*m_Parent, std::move(result)));
+            App::post_event<CloseTabEvent>(*m_Parent, id());
         }
     }
 
@@ -116,8 +118,8 @@ public:
                 ui::draw_dummy({0.0f, 5.0f});
 
                 if (ui::draw_button("try again")) {
-                    m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, m_OsimPath);
-                    m_Parent->close_tab(id());
+                    App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<LoadingTab>(*m_Parent, m_OsimPath));
+                    App::post_event<CloseTabEvent>(*m_Parent, id());
                 }
             }
             ui::end_panel();

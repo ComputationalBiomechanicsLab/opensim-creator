@@ -29,6 +29,8 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/Events/CloseTabEvent.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/Events/ResetUIContextEvent.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -263,8 +265,8 @@ public:
                 {
                     log_error("undoing the model also failed with error: %s", ex2.what());
                     log_error("because the model isn't recoverable, closing the editor tab");
-                    m_Parent->add_and_select_tab<ErrorTab>(owner(), ex);
-                    m_Parent->close_tab(id());  // TODO: should be forcibly closed with no "save" prompt
+                    App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex));
+                    App::post_event<CloseTabEvent>(*m_Parent, id());
                 }
 
                 log_error("sucessfully undone model");
@@ -283,8 +285,8 @@ public:
                 // but cannot undo, so quit
 
                 log_error("because the model isn't recoverable, closing the editor tab");
-                m_Parent->add_and_select_tab<ErrorTab>(owner(), ex);
-                m_Parent->close_tab(id());  // TODO: should be forcibly closed
+                App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex));
+                App::post_event<CloseTabEvent>(*m_Parent, id());
             }
         }
         else
@@ -303,8 +305,8 @@ public:
             {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
-                m_Parent->add_and_select_tab<ErrorTab>(owner(), ex2);
-                m_Parent->close_tab(id());
+                App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex2));
+                App::post_event<CloseTabEvent>(*m_Parent, id());
             }
         }
 

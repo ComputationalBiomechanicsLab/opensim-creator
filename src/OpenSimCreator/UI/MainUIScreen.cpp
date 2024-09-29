@@ -867,7 +867,6 @@ void osc::MainUIScreen::add_and_select_tab(std::unique_ptr<Tab> tab)
     const UID id = private_data().impl_add_tab(std::move(tab));
     private_data().impl_select_tab(id);
 }
-void osc::MainUIScreen::close_tab(UID tab_id) { private_data().impl_close_tab(tab_id); }
 
 const ParamBlock& osc::MainUIScreen::getSimulationParams() const { return private_data().implGetSimulationParams(); }
 ParamBlock& osc::MainUIScreen::updSimulationParams() { return private_data().implUpdSimulationParams(); }

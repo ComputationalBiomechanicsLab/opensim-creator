@@ -26,8 +26,6 @@ namespace osc
 
         void open(const std::filesystem::path&);
 
-        void close_tab(UID);
-
         template<std::derived_from<Tab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
         void add_and_select_tab(Args&&... args)
