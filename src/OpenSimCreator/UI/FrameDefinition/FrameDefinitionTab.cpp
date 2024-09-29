@@ -52,7 +52,6 @@
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKHelpers.h>
 
@@ -915,11 +914,9 @@ namespace
     class FrameDefinitionTabMainMenu final {
     public:
         explicit FrameDefinitionTabMainMenu(
-            MainUIScreen& tabHost_,
             std::shared_ptr<UndoableModelStatePair> model_,
             std::shared_ptr<PanelManager> panelManager_) :
 
-            m_TabHost{tabHost_},
             m_Model{std::move(model_)},
             m_WindowMenu{std::move(panelManager_)}
         {}
@@ -946,7 +943,6 @@ namespace
             }
         }
 
-        ParentPtr<MainUIScreen> m_TabHost;
         std::shared_ptr<UndoableModelStatePair> m_Model;
         WindowMenu m_WindowMenu;
         MainMenuAboutTab m_AboutMenu;
@@ -961,7 +957,7 @@ public:
         MainUIScreen& parent_) :
 
         TabPrivate{owner, &parent_, c_TabStringID},
-        m_Parent{parent_}
+        m_Toolbar{"##FrameDefinitionToolbar", parent_, m_Model}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
@@ -1120,12 +1116,11 @@ private:
         return m_PanelManager;
     }
 
-    ParentPtr<MainUIScreen> m_Parent;
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
-    FrameDefinitionTabMainMenu m_MainMenu{*m_Parent, m_Model, m_PanelManager};
-    FrameDefinitionTabToolbar m_Toolbar{"##FrameDefinitionToolbar", *m_Parent, m_Model};
+    FrameDefinitionTabMainMenu m_MainMenu{m_Model, m_PanelManager};
+    FrameDefinitionTabToolbar m_Toolbar;
 };
 
 

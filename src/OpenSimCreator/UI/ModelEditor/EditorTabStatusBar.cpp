@@ -7,7 +7,7 @@
 
 #include <OpenSim/Common/Component.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <memory>
@@ -85,7 +85,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };

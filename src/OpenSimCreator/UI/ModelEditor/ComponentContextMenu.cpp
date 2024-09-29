@@ -36,7 +36,7 @@
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <sstream>
@@ -599,7 +599,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;

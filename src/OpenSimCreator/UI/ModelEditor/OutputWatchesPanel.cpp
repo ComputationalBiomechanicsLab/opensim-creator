@@ -9,7 +9,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/UID.h>
 #include <Simbody.h>
 
@@ -102,7 +102,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_API;
+    LifetimedPtr<MainUIScreen> m_API;
     std::shared_ptr<const IModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };

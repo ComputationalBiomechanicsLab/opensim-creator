@@ -22,7 +22,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/UID.h>
 
 #include <concepts>
@@ -258,7 +258,7 @@ namespace osc
         UID m_TabID;
 
         // handle to the screen that owns the TPS3D tab
-        ParentPtr<MainUIScreen> m_TabHost;
+        LifetimedPtr<MainUIScreen> m_TabHost;
 
         // cached TPS3D algorithm result (to prevent recomputing it over and over)
         TPSResultCache m_WarpingCache;

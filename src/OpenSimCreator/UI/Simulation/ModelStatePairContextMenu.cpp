@@ -11,7 +11,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <string_view>
@@ -82,7 +82,7 @@ public:
 
 private:
     std::shared_ptr<IModelStatePair> m_Model;
-    ParentPtr<MainUIScreen> m_API;
+    LifetimedPtr<MainUIScreen> m_API;
     std::optional<std::string> m_MaybeComponentAbsPath;
 };
 

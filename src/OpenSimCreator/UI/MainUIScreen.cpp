@@ -30,7 +30,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/UID.h>
 
@@ -401,9 +401,9 @@ public:
         }
     }
 
-    ParentPtr<MainUIScreen> getTabHostAPI()
+    LifetimedPtr<MainUIScreen> getTabHostAPI()
     {
-        return ParentPtr<MainUIScreen>{lifetime(), &owner()};
+        return LifetimedPtr<MainUIScreen>{lifetime(), &owner()};
     }
 
     void drawTabSpecificMenu()
@@ -867,7 +867,7 @@ bool osc::MainUIScreen::hasUserOutputExtractor(const OutputExtractor& extractor)
 bool osc::MainUIScreen::removeUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implRemoveUserOutputExtractor(extractor); }
 bool osc::MainUIScreen::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return private_data().implOverwriteOrAddNewUserOutputExtractor(old, newer); }
 
-osc::MainUIScreen::operator ParentPtr<MainUIScreen> ()
+osc::MainUIScreen::operator LifetimedPtr<MainUIScreen> ()
 {
     return private_data().getTabHostAPI();
 }

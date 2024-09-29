@@ -12,7 +12,7 @@
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <string_view>
@@ -93,7 +93,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_API;
+    LifetimedPtr<MainUIScreen> m_API;
     ISimulatorUIAPI* m_SimulatorUIAPI;
 };
 

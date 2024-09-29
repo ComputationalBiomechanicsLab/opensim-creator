@@ -4,7 +4,7 @@
 #include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Platform/Widget.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <cstddef>
 #include <memory>
@@ -27,7 +27,7 @@ namespace osc
         void drawExportToOpenSimTooltipContent(size_t);
 
         std::string m_Label;
-        ParentPtr<MainUIScreen> m_TabHost;
+        LifetimedPtr<MainUIScreen> m_TabHost;
         std::shared_ptr<UndoableModelStatePair> m_Model;
     };
 }

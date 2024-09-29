@@ -36,7 +36,8 @@
 
 namespace rgs = std::ranges;
 
-osc::MainMenuFileTab::MainMenuFileTab() :
+osc::MainMenuFileTab::MainMenuFileTab(MainUIScreen& parent) :
+    m_Parent{parent},
     exampleOsimFiles
     {
         find_files_with_extensions_recursive(
@@ -48,9 +49,7 @@ osc::MainMenuFileTab::MainMenuFileTab() :
     rgs::sort(exampleOsimFiles, is_filename_lexographically_greater_than);
 }
 
-void osc::MainMenuFileTab::onDraw(
-    MainUIScreen& api,
-    IModelStatePair* maybeModel)
+void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 {
     auto* undoableModel = dynamic_cast<UndoableModelStatePair*>(maybeModel);
 
@@ -59,16 +58,16 @@ void osc::MainMenuFileTab::onDraw(
         bool mod = ui::is_ctrl_or_super_down();
 
         if (mod and ui::is_key_pressed(Key::N)) {
-            ActionNewModel(api);
+            ActionNewModel(*m_Parent);
         }
         else if (mod and ui::is_key_pressed(Key::O)) {
-            ActionOpenModel(api);
+            ActionOpenModel(*m_Parent);
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
             ActionSaveCurrentModelAs(*undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
-            ActionSaveModel(api, *undoableModel);
+            ActionSaveModel(*m_Parent, *undoableModel);
         }
         else if (undoableModel and ui::is_key_pressed(Key::F5)) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
@@ -85,11 +84,11 @@ void osc::MainMenuFileTab::onDraw(
     }
 
     if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N")) {
-        ActionNewModel(api);
+        ActionNewModel(*m_Parent);
     }
 
     if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
-        ActionOpenModel(api);
+        ActionOpenModel(*m_Parent);
     }
 
     int imgui_id = 0;
@@ -100,7 +99,7 @@ void osc::MainMenuFileTab::onDraw(
         for (const RecentFile& rf : *recentFiles) {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(rf.path.filename().string())) {
-                ActionOpenModel(api, rf.path);
+                ActionOpenModel(*m_Parent, rf.path);
             }
             ui::pop_id();
         }
@@ -112,7 +111,7 @@ void osc::MainMenuFileTab::onDraw(
         for (const std::filesystem::path& ex : exampleOsimFiles) {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(ex.filename().string())) {
-                ActionOpenModel(api, ex);
+                ActionOpenModel(*m_Parent, ex);
             }
             ui::pop_id();
         }
@@ -130,7 +129,7 @@ void osc::MainMenuFileTab::onDraw(
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
-                api.add_and_select_tab<SimulationTab>(api, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                m_Parent->add_and_select_tab<SimulationTab>(*m_Parent, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
             }
             catch (const std::exception& ex) {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
@@ -142,7 +141,7 @@ void osc::MainMenuFileTab::onDraw(
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveModel(api, *undoableModel);
+            ActionSaveModel(*m_Parent, *undoableModel);
         }
     }
 
@@ -185,10 +184,10 @@ void osc::MainMenuFileTab::onDraw(
     ui::draw_separator();
 
     if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-        api.add_and_select_tab<mi::MeshImporterTab>(api);
+        m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
     }
     if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
-        api.add_and_select_tab<PreviewExperimentalDataTab>(api);
+        m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(*m_Parent);
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 

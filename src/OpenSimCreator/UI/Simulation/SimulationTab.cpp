@@ -35,7 +35,7 @@
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/Perf.h>
 
 #include <algorithm>
@@ -460,7 +460,7 @@ private:
     }
 
     // tab data
-    ParentPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<MainUIScreen> m_Parent;
 
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;

@@ -3,6 +3,7 @@
 #include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
 #include <vector>
@@ -14,10 +15,11 @@ namespace osc
 {
     class MainMenuFileTab final {
     public:
-        MainMenuFileTab();
+        explicit MainMenuFileTab(MainUIScreen&);
 
-        void onDraw(MainUIScreen&, IModelStatePair* = nullptr);
+        void onDraw(IModelStatePair* = nullptr);
 
+        LifetimedPtr<MainUIScreen> m_Parent;
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;
     };

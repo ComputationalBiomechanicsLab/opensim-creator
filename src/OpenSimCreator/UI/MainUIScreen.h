@@ -2,7 +2,7 @@
 
 #include <oscar/Platform/Screen.h>
 #include <oscar/UI/Tabs/Tab.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/UID.h>
 
 #include <concepts>
@@ -58,7 +58,7 @@ namespace osc
         bool removeUserOutputExtractor(const OutputExtractor& extractor);
         bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer);
 
-        operator ParentPtr<MainUIScreen> ();
+        operator LifetimedPtr<MainUIScreen> ();
 
     private:
         void impl_on_mount() final;

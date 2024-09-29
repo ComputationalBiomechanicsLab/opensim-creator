@@ -12,7 +12,6 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <filesystem>
@@ -91,15 +90,8 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     MainUIScreen& tabHost,
     const OpenSim::Model& model)
 {
-    auto maybeMainUIStateAPI = dynamic_parent_cast<MainUIScreen>(ParentPtr<MainUIScreen>{tabHost});
-    if (!maybeMainUIStateAPI)
-    {
-        log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
-        return;
-    }
-
-    (*maybeMainUIStateAPI)->add_and_select_tab<ModelEditorTab>(
-        **maybeMainUIStateAPI,
+    tabHost.add_and_select_tab<ModelEditorTab>(
+        tabHost,
         MakeUndoableModelFromSceneModel(model)
     );
 }

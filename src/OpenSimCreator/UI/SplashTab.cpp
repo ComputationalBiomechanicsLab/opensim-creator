@@ -34,7 +34,7 @@
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
 #include <span>
@@ -97,7 +97,8 @@ public:
 
     explicit Impl(SplashTab& owner, MainUIScreen& parent_) :
         TabPrivate{owner, &parent_, OSC_ICON_HOME},
-        m_Parent{parent_}
+        m_Parent{parent_},
+        m_MainMenuFileTab{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
         m_CziLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -109,7 +110,7 @@ public:
         // edge-case: reset the file tab whenever the splash screen is (re)mounted,
         // because actions within other tabs may have updated things like recently
         // used files etc. (#618)
-        m_MainMenuFileTab = MainMenuFileTab{};
+        m_MainMenuFileTab = MainMenuFileTab{*m_Parent};
 
         App::upd().make_main_loop_waiting();
     }
@@ -132,7 +133,7 @@ public:
 
     void drawMainMenu()
     {
-        m_MainMenuFileTab.onDraw(*m_Parent);
+        m_MainMenuFileTab.onDraw();
         m_MainMenuAboutTab.onDraw();
     }
 
@@ -372,7 +373,7 @@ private:
     }
 
     // tab data
-    ParentPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<MainUIScreen> m_Parent;
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();

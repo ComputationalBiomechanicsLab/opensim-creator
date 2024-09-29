@@ -16,7 +16,6 @@
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
 
 #include <functional>
 #include <string_view>
@@ -29,7 +28,7 @@ public:
 
     explicit Impl(ModelWarperTab& owner, MainUIScreen& tabHost) :
         TabPrivate{owner, &tabHost, static_label()},
-        m_TabHost{tabHost}
+        m_State{std::make_shared<UIState>(tabHost)}
     {
         m_PanelManager->register_toggleable_panel(
             "Checklist",
@@ -99,8 +98,7 @@ public:
     }
 
 private:
-    ParentPtr<MainUIScreen> m_TabHost;
-    std::shared_ptr<UIState> m_State = std::make_shared<UIState>(*m_TabHost);
+    std::shared_ptr<UIState> m_State;
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PopupManager m_PopupManager;
     MainMenu m_MainMenu{m_State, m_PanelManager};

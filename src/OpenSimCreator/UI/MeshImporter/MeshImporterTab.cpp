@@ -57,7 +57,7 @@
 #include <oscar/UI/Widgets/LogViewer.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 
@@ -2403,7 +2403,7 @@ private:
     }
 
     // tab data
-    ParentPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<MainUIScreen> m_Parent;
 
     // data shared between states
     std::shared_ptr<MeshImporterSharedState> m_Shared;

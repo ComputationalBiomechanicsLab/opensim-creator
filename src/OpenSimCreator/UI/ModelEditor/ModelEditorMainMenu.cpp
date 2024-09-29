@@ -16,7 +16,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <utility>
@@ -47,12 +47,13 @@ public:
 
         m_MainUIStateAPI{mainStateAPI_},
         m_EditorAPI{editorAPI_},
-        m_Model{std::move(model_)}
+        m_Model{std::move(model_)},
+        m_MainMenuFileTab{mainStateAPI_}
     {}
 
     void onDraw()
     {
-        m_MainMenuFileTab.onDraw(*m_MainUIStateAPI, m_Model.get());
+        m_MainMenuFileTab.onDraw(m_Model.get());
         drawMainMenuEditTab();
         drawMainMenuAddTab();
         drawMainMenuToolsTab();
@@ -163,7 +164,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;

@@ -6,7 +6,7 @@
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <utility>
@@ -22,12 +22,13 @@ public:
 
         m_Parent{parent},
         m_Simulation{std::move(simulation)},
-        m_PanelManager{std::move(panelManager)}
+        m_PanelManager{std::move(panelManager)},
+        m_MainMenuFileTab{parent}
     {}
 
     void onDraw()
     {
-        m_MainMenuFileTab.onDraw(*m_Parent);
+        m_MainMenuFileTab.onDraw();
         drawActionsMenu();
         m_MainMenuWindowTab.on_draw();
         m_MainMenuAboutTab.onDraw();
@@ -79,7 +80,7 @@ private:
         ui::end_menu();
     }
 
-    ParentPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<MainUIScreen> m_Parent;
     std::shared_ptr<Simulation> m_Simulation;
     std::shared_ptr<PanelManager> m_PanelManager;
 

@@ -13,7 +13,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <algorithm>
 #include <memory>
@@ -97,7 +97,7 @@ private:
     }
 
     std::string m_Label;
-    ParentPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 

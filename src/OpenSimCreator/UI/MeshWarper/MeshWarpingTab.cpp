@@ -18,7 +18,6 @@
 #include <oscar/UI/Panels/ToggleablePanelFlags.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/Utils/ParentPtr.h>
 #include <oscar/Utils/UID.h>
 
 #include <memory>
@@ -31,7 +30,7 @@ public:
 
     explicit Impl(MeshWarpingTab& owner, MainUIScreen& parent_) :
         TabPrivate{owner, &parent_, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
-        m_Parent{parent_}
+        m_Shared{std::make_shared<MeshWarpingTabSharedState>(id(), parent_, App::singleton<SceneCache>(App::resource_loader()))}
     {
         m_PanelManager->register_toggleable_panel(
             "Source Mesh",
@@ -180,10 +179,8 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_Parent;
-
     // top-level state that all panels can potentially access
-    std::shared_ptr<MeshWarpingTabSharedState> m_Shared = std::make_shared<MeshWarpingTabSharedState>(id(), *m_Parent, App::singleton<SceneCache>(App::resource_loader()));
+    std::shared_ptr<MeshWarpingTabSharedState> m_Shared;
 
     // available/active panels that the user can toggle via the `window` menu
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();

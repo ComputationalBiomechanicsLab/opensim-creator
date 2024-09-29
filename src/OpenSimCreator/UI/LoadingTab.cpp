@@ -13,7 +13,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <chrono>
 #include <exception>
@@ -126,7 +126,7 @@ public:
 
 
 private:
-    ParentPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<MainUIScreen> m_Parent;
 
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;

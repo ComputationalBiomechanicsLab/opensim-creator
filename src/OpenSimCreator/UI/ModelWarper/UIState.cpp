@@ -33,16 +33,10 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
         return;
     }
 
-    auto api = dynamic_parent_cast<MainUIScreen>(m_TabHost);
-    if (not api) {
-        log_error("cannot warp the provided model: I can't open a model editor tab (something has gone wrong internally)");
-        return;
-    }
-
     // create a copy of the document so that we can apply export-specific
     // configuration changes to it
     WarpableModel copy{*m_Document};
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
-    m_TabHost->add_and_select_tab<ModelEditorTab>(**api, warpedModelStatePair->getModel());
+    m_TabHost->add_and_select_tab<ModelEditorTab>(*m_TabHost, warpedModelStatePair->getModel());
 }

@@ -14,7 +14,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <algorithm>
 #include <ranges>
@@ -235,7 +235,7 @@ private:
         }
     }
 
-    ParentPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };

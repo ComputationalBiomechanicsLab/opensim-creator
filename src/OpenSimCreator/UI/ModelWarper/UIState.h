@@ -9,7 +9,7 @@
 #include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Maths/PolarPerspectiveCamera.h>
-#include <oscar/Utils/ParentPtr.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
 #include <memory>
@@ -67,7 +67,7 @@ namespace osc::mow
 
         void actionWarpModelAndOpenInModelEditor();
     private:
-        ParentPtr<MainUIScreen> m_TabHost;
+        LifetimedPtr<MainUIScreen> m_TabHost;
         std::shared_ptr<WarpableModel> m_Document = std::make_shared<WarpableModel>();
         CachedModelWarper m_ModelWarper;
 
