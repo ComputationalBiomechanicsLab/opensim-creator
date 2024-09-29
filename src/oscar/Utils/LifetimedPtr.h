@@ -103,9 +103,10 @@ namespace osc
             return ptr_ and not lifetime_watcher_.expired();
         }
 
-        const LifetimeWatcher& watcher() const
+        template<typename U>
+        LifetimedPtr<U> dynamic_downcast()
         {
-            return lifetime_watcher_;   // TODO: remove this
+            return {lifetime_watcher_, dynamic_cast<U*>(ptr_)};
         }
     private:
         void assert_within_lifetime() const

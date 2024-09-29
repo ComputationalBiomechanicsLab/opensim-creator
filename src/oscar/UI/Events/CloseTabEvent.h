@@ -5,7 +5,7 @@
 
 namespace osc
 {
-    class CloseTabEvent final {
+    class CloseTabEvent final : public Event {
     public:
         explicit CloseTabEvent(UID tabid_to_close) :
             tabid_to_close_{tabid_to_close}

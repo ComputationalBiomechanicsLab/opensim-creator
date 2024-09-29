@@ -4,8 +4,8 @@
 
 namespace OpenSim { class Model; }
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
 namespace osc { class UndoableModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc::fd
 {
@@ -18,7 +18,7 @@ namespace osc::fd
     );
 
     void ActionExportFrameDefinitionSceneModelToEditorTab(
-        MainUIScreen&,
+        Widget&,
         const OpenSim::Model&
     );
 }

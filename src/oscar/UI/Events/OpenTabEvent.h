@@ -18,7 +18,7 @@ namespace osc
             return OpenTabEvent{std::make_unique<T>(std::forward<Args>(args)...)};
         }
 
-        bool handled() const { return tab_to_open_ != nullptr; }
+        bool has_tab() const { return tab_to_open_ != nullptr; }
         std::unique_ptr<Tab> take_tab() { return std::move(tab_to_open_); }
     private:
         explicit OpenTabEvent(std::unique_ptr<Tab> tab_to_open) :

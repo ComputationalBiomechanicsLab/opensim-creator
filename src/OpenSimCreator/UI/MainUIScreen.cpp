@@ -18,6 +18,8 @@
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/Shims/Cpp23/ranges.h>
+#include <oscar/UI/Events/CloseTabEvent.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/ErrorTab.h>
 #include <oscar/UI/Tabs/Tab.h>
@@ -176,6 +178,18 @@ public:
     bool on_event(Event& e)
     {
         bool handled = false;
+
+        if (auto* addTabEv = dynamic_cast<OpenTabEvent*>(&e)) {
+            if (addTabEv->has_tab()) {
+                impl_add_tab(addTabEv->take_tab());
+                handled = true;
+            }
+        }
+        else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
+            impl_close_tab(closeTabEv->tabid_to_close());
+            handled = true;
+        }
+
         if (e.type() == EventType::KeyDown or
             e.type() == EventType::KeyUp or
             e.type() == EventType::MouseButtonUp or

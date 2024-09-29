@@ -2,7 +2,7 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit PreviewExperimentalDataTab(MainUIScreen&);
+        explicit PreviewExperimentalDataTab(Widget&);
 
     private:
         void impl_on_mount() final;

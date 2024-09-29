@@ -952,10 +952,7 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
 
-    explicit Impl(
-        FrameDefinitionTab& owner,
-        MainUIScreen& parent_) :
-
+    explicit Impl(FrameDefinitionTab& owner, Widget& parent_) :
         TabPrivate{owner, &parent_, c_TabStringID},
         m_Toolbar{"##FrameDefinitionToolbar", parent_, m_Model}
     {
@@ -1126,7 +1123,7 @@ private:
 
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(MainUIScreen& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(Widget& parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }

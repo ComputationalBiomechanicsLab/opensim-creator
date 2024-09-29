@@ -2,7 +2,7 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc::mow
 {
@@ -10,7 +10,7 @@ namespace osc::mow
     public:
         static CStringView id();
 
-        explicit ModelWarperTab(MainUIScreen&);
+        explicit ModelWarperTab(Widget&);
 
     private:
         void impl_on_mount() final;

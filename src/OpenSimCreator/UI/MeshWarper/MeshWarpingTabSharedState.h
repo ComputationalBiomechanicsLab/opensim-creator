@@ -9,7 +9,6 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationOptions.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <oscar/Graphics/Color.h>
@@ -20,6 +19,8 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -38,11 +39,11 @@ namespace osc
     public:
         MeshWarpingTabSharedState(
             UID tabID_,
-            MainUIScreen& parent_,
+            Widget& parent_,
             std::shared_ptr<SceneCache> sceneCache_) :
 
             m_TabID{tabID_},
-            m_TabHost{parent_},
+            m_Parent{parent_.weak_ref()},
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);
@@ -182,7 +183,8 @@ namespace osc
 
         void closeTab()
         {
-            m_TabHost->close_tab(m_TabID);
+            CloseTabEvent e{m_TabID};
+            m_Parent->on_event(e);
         }
 
         bool canUndo() const
@@ -258,7 +260,7 @@ namespace osc
         UID m_TabID;
 
         // handle to the screen that owns the TPS3D tab
-        LifetimedPtr<MainUIScreen> m_TabHost;
+        LifetimedPtr<Widget> m_Parent;
 
         // cached TPS3D algorithm result (to prevent recomputing it over and over)
         TPSResultCache m_WarpingCache;

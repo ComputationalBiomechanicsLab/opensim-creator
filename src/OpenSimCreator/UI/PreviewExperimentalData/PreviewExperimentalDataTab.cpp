@@ -12,7 +12,6 @@
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -239,7 +238,7 @@ class osc::PreviewExperimentalDataTab::Impl final :
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
-        MainUIScreen& parent) :
+        Widget& parent) :
         TabPrivate{owner, &parent, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
@@ -407,7 +406,7 @@ private:
 
 CStringView osc::PreviewExperimentalDataTab::id() { return "OpenSim/Experimental/PreviewExperimentalData"; }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(MainUIScreen& ptr) :
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(Widget& ptr) :
     Tab{std::make_unique<Impl>(*this, ptr)}
 {}
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }

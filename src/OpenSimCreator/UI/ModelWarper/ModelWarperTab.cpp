@@ -7,7 +7,6 @@
 #include <OpenSimCreator/UI/ModelWarper/SourceModelViewerPanel.h>
 #include <OpenSimCreator/UI/ModelWarper/Toolbar.h>
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
@@ -26,9 +25,9 @@ class osc::mow::ModelWarperTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
 
-    explicit Impl(ModelWarperTab& owner, MainUIScreen& tabHost) :
-        TabPrivate{owner, &tabHost, static_label()},
-        m_State{std::make_shared<UIState>(tabHost)}
+    explicit Impl(ModelWarperTab& owner, Widget& parent) :
+        TabPrivate{owner, &parent, static_label()},
+        m_State{std::make_shared<UIState>(parent)}
     {
         m_PanelManager->register_toggleable_panel(
             "Checklist",
@@ -108,8 +107,8 @@ private:
 
 CStringView osc::mow::ModelWarperTab::id() { return Impl::static_label(); }
 
-osc::mow::ModelWarperTab::ModelWarperTab(MainUIScreen& tabHost) :
-    Tab{std::make_unique<Impl>(*this, tabHost)}
+osc::mow::ModelWarperTab::ModelWarperTab(Widget& parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::mow::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }
 void osc::mow::ModelWarperTab::impl_on_unmount() { private_data().on_unmount(); }

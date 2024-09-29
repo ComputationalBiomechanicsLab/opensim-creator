@@ -8,6 +8,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 
 #include <filesystem>
 #include <memory>
@@ -33,10 +34,18 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
         return;
     }
 
+    auto api = m_Parent.dynamic_downcast<MainUIScreen>();
+    if (not api) {
+        log_error("cannot warp the provided model: I can't open a model editor tab (something has gone wrong internally)");
+        return;
+    }
+
     // create a copy of the document so that we can apply export-specific
     // configuration changes to it
     WarpableModel copy{*m_Document};
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
-    m_TabHost->add_and_select_tab<ModelEditorTab>(*m_TabHost, warpedModelStatePair->getModel());
+
+    OpenTabEvent e = OpenTabEvent::create<ModelEditorTab>(*api, warpedModelStatePair->getModel());
+    m_Parent->on_event(e);
 }

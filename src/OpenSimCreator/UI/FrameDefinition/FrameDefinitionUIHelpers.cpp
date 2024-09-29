@@ -87,11 +87,16 @@ std::unique_ptr<UndoableModelStatePair> osc::fd::MakeUndoableModelFromSceneModel
 }
 
 void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
-    MainUIScreen& tabHost,
+    Widget& parent,
     const OpenSim::Model& model)
 {
-    tabHost.add_and_select_tab<ModelEditorTab>(
-        tabHost,
-        MakeUndoableModelFromSceneModel(model)
-    );
+    if (auto ptr = parent.weak_ref().dynamic_downcast<MainUIScreen>()) {
+        ptr->add_and_select_tab<ModelEditorTab>(
+            *ptr,
+            MakeUndoableModelFromSceneModel(model)
+        );
+    } else {
+        log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
+        return;
+    }
 }
