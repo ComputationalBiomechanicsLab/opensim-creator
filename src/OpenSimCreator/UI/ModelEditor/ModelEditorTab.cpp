@@ -84,7 +84,7 @@ public:
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         TabPrivate{owner, &parent_, "ModelEditorTab"},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_Model{std::move(model_)}
     {
         // register all panels that the editor tab supports

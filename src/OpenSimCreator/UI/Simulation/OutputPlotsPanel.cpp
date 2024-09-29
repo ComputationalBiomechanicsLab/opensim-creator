@@ -40,7 +40,7 @@ public:
         ISimulatorUIAPI* simulatorUIAPI_) :
 
         StandardPanelImpl{panelName_},
-        m_API{mainUIStateAPI_},
+        m_API{mainUIStateAPI_.weak_ref()},
         m_SimulatorUIAPI{simulatorUIAPI_}
     {}
 private:

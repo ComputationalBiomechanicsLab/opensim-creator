@@ -17,11 +17,11 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        MainUIScreen& mainUIStateAPI_,
+        MainUIScreen& mainUIScreen,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
-        m_MainUIStateAPI{mainUIStateAPI_},
+        m_MainUIStateAPI{mainUIScreen.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}

@@ -28,7 +28,7 @@ public:
 
         StandardPopup{panelName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
         m_Model{std::move(model_)},
-        m_API{api_},
+        m_API{api_.weak_ref()},
         m_MaybeComponentAbsPath{std::move(maybeComponentAbsPath_)}
     {
         set_modal(false);

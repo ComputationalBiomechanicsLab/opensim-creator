@@ -20,7 +20,7 @@ public:
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
-        m_Parent{parent},
+        m_Parent{parent.weak_ref()},
         m_Simulation{std::move(simulation)},
         m_PanelManager{std::move(panelManager)},
         m_MainMenuFileTab{parent}

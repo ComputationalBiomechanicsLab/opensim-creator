@@ -84,7 +84,7 @@ public:
         MainUIScreen& parent_) :
 
         TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {}
 
@@ -94,7 +94,7 @@ public:
         std::vector<std::filesystem::path> meshPaths_) :
 
         TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
     {}
 

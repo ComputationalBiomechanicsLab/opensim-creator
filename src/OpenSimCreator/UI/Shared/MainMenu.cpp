@@ -37,7 +37,7 @@
 namespace rgs = std::ranges;
 
 osc::MainMenuFileTab::MainMenuFileTab(MainUIScreen& parent) :
-    m_Parent{parent},
+    m_Parent{parent.weak_ref()},
     exampleOsimFiles
     {
         find_files_with_extensions_recursive(

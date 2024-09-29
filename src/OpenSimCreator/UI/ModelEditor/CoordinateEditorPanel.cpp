@@ -36,7 +36,7 @@ public:
         std::shared_ptr<IModelStatePair> model_) :
 
         StandardPanelImpl{panelName_},
-        m_MainUIStateAPI{mainUIStateAPI_},
+        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}

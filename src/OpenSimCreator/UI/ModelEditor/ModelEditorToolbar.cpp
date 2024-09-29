@@ -30,7 +30,7 @@ public:
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_Label{label_},
-        m_MainUIStateAPI{mainUIStateAPI_},
+        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}

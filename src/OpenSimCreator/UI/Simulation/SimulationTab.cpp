@@ -74,7 +74,7 @@ public:
         std::shared_ptr<Simulation> simulation_) :
 
         TabPrivate{owner, &parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_Simulation{std::move(simulation_)}
     {
         // register panels

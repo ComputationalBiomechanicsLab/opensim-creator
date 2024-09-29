@@ -45,7 +45,7 @@ public:
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
-        m_MainUIStateAPI{mainStateAPI_},
+        m_MainUIStateAPI{mainStateAPI_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_MainMenuFileTab{mainStateAPI_}

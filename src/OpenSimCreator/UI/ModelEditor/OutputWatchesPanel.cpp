@@ -55,7 +55,7 @@ public:
         MainUIScreen& api_) :
 
         StandardPanelImpl{panelName_},
-        m_API{api_},
+        m_API{api_.weak_ref()},
         m_Model{std::move(model_)}
     {}
 

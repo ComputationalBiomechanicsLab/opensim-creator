@@ -415,11 +415,6 @@ public:
         }
     }
 
-    LifetimedPtr<MainUIScreen> getTabHostAPI()
-    {
-        return LifetimedPtr<MainUIScreen>{lifetime(), &owner()};
-    }
-
     void drawTabSpecificMenu()
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
@@ -880,8 +875,3 @@ void osc::MainUIScreen::removeUserOutputExtractor(int index) { private_data().im
 bool osc::MainUIScreen::hasUserOutputExtractor(const OutputExtractor& extractor) const { return private_data().implHasUserOutputExtractor(extractor); }
 bool osc::MainUIScreen::removeUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implRemoveUserOutputExtractor(extractor); }
 bool osc::MainUIScreen::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return private_data().implOverwriteOrAddNewUserOutputExtractor(old, newer); }
-
-osc::MainUIScreen::operator LifetimedPtr<MainUIScreen> ()
-{
-    return private_data().getTabHostAPI();
-}

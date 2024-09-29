@@ -364,7 +364,7 @@ public:
         OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
-        m_MainUIStateAPI{mainUIStateAPI_},
+        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)}

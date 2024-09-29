@@ -42,7 +42,7 @@ public:
         std::filesystem::path path_) :
 
         TabPrivate{owner, &parent_, "LoadingTab"},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {}

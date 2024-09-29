@@ -58,7 +58,10 @@ namespace osc
         bool removeUserOutputExtractor(const OutputExtractor& extractor);
         bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer);
 
-        operator LifetimedPtr<MainUIScreen> ();
+        LifetimedPtr<MainUIScreen> weak_ref()
+        {
+            return static_cast<Widget&>(*this).weak_ref().dynamic_downcast<MainUIScreen>();
+        }
 
     private:
         void impl_on_mount() final;

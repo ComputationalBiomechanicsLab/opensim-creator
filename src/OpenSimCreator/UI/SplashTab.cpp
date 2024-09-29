@@ -97,7 +97,7 @@ public:
 
     explicit Impl(SplashTab& owner, MainUIScreen& parent_) :
         TabPrivate{owner, &parent_, OSC_ICON_HOME},
-        m_Parent{parent_},
+        m_Parent{parent_.weak_ref()},
         m_MainMenuFileTab{parent_}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
