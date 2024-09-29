@@ -46,6 +46,5 @@ void osc::mow::UIState::actionWarpModelAndOpenInModelEditor()
     copy.setShouldWriteWarpedMeshesToDisk(true);  // required for OpenSim to be able to load the warped model correctly
     auto warpedModelStatePair = m_ModelWarper.warp(copy);
 
-    OpenTabEvent e = OpenTabEvent::create<ModelEditorTab>(*api, warpedModelStatePair->getModel());
-    m_Parent->on_event(e);
+    App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ModelEditorTab>(*api, warpedModelStatePair->getModel()));
 }

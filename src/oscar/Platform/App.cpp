@@ -297,6 +297,25 @@ public:
             for (SDL_Event e; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                 should_wait = false;
 
+                // edge-case: it's an `SDL_USEREVENT`, which should only propagate from this
+                // compilation unit, and is always either blank (`data1 == nullptr`) or has
+                // two pointers: a not-owned `Widget*` receiver and an owned `Event*`.
+                if (e.type == SDL_USEREVENT) {
+                    if (e.user.data1) {
+                        // its an application-enacted (i.e. not spontaneous, OS-enacted, etc.) event
+                        // that should be immediately dispatched.
+                        auto* receiver = static_cast<Widget*>(e.user.data1);
+                        auto  event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
+                        notify(*receiver, *event);
+                        continue;  // event handled - go get the next one
+                    }
+                    else {
+                        // it's a blank user event from `request_redraw` that's being used to wake
+                        // up the event loop
+                        continue;  // handled - it woke up the event loop
+                    }
+                }
+
                 // let screen handle the event
                 const bool screen_handled_event = screen_->on_event(*parse_into_event(e));
 
@@ -399,6 +418,29 @@ public:
 
         frame_annotations_.clear();
         active_screenshot_requests_.clear();
+    }
+
+    void post_event(Widget& receiver, std::unique_ptr<Event> event)
+    {
+        SDL_Event e{};
+        e.type = SDL_USEREVENT;
+        e.user.data1 = &receiver;
+        e.user.data2 = event.release();
+        SDL_PushEvent(&e);
+    }
+
+    bool notify(Widget& receiver, Event& event)
+    {
+        Widget* current = &receiver;
+        do {
+            if (current->on_event(event)) {
+                return true;
+            }
+            current = current->parent();
+        }
+        while (current and event.propagates());
+
+        return false;
     }
 
     void show(std::unique_ptr<Screen> screen)
@@ -932,6 +974,16 @@ AppMainLoopStatus osc::App::do_main_loop_step()
 void osc::App::teardown_main_loop()
 {
     impl_->teardown_main_loop();
+}
+
+void osc::App::post_event(Widget& receiver, std::unique_ptr<Event> event)
+{
+    upd().impl_->post_event(receiver, std::move(event));
+}
+
+bool osc::App::notify(Widget& receiver, Event& event)
+{
+    return upd().impl_->notify(receiver, event);
 }
 
 void osc::App::show(std::unique_ptr<Screen> s)

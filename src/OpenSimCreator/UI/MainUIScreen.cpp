@@ -177,19 +177,6 @@ public:
 
     bool on_event(Event& e)
     {
-        bool handled = false;
-
-        if (auto* addTabEv = dynamic_cast<OpenTabEvent*>(&e)) {
-            if (addTabEv->has_tab()) {
-                impl_add_tab(addTabEv->take_tab());
-                handled = true;
-            }
-        }
-        else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
-            impl_close_tab(closeTabEv->tabid_to_close());
-            handled = true;
-        }
-
         if (e.type() == EventType::KeyDown or
             e.type() == EventType::KeyUp or
             e.type() == EventType::MouseButtonUp or
@@ -202,6 +189,8 @@ public:
 
             m_ShouldRequestRedraw = true;
         }
+
+        bool handled = false;
 
         if (ui::context::on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
@@ -253,6 +242,16 @@ public:
                 App::upd().request_quit();
             }
 
+            handled = true;
+        }
+        else if (auto* addTabEv = dynamic_cast<OpenTabEvent*>(&e)) {
+            if (addTabEv->has_tab()) {
+                impl_select_tab(impl_add_tab(addTabEv->take_tab()));
+                handled = true;
+            }
+        }
+        else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
+            impl_close_tab(closeTabEv->tabid_to_close());
             handled = true;
         }
         else if (Tab* active = getActiveTab()) {

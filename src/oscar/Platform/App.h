@@ -27,7 +27,9 @@ struct SDL_Window;
 namespace osc { class App; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
+namespace osc { class Event; }
 namespace osc { class Screen; }
+namespace osc { class Widget; }
 namespace osc::ui::context { void init(App&); }
 
 namespace osc
@@ -104,6 +106,29 @@ namespace osc
         }
         AppMainLoopStatus do_main_loop_step();
         void teardown_main_loop();
+
+        // Adds `event`, with the widget `receiver` as the receiver of `event`, to the event
+        // queue and returns immediately.
+        //
+        // When the event is popped off the event queue, it is processed as-if by calling
+        // `notify(receiver, *event)`. See the documentation for `notify` for a detailed
+        // description of event processing.
+        static void post_event(Widget& receiver, std::unique_ptr<Event> event);
+
+        template<std::derived_from<Event> TEvent, typename... Args>
+        requires std::constructible_from<TEvent, Args&&...>
+        static void post_event(Widget& receiver, Args&&... args)
+        {
+            return post_event(receiver, std::make_unique<TEvent>(std::forward<Args>(args)...));
+        }
+
+        // Immediately sends `event` to `receiver` as-if by calling `return receiver.on_event(event)`.
+        //
+        // This application-level event handler behaves differently from directly calling
+        // `receiver.on_event(event)` because it also handles event propagation. The implementation
+        // will call `Widget::on_event(Event&)` for each `Widget` from `receiver` to the root widget
+        // until either a widget in that chain returns `true` or `event.propagates()` is `false`.
+        static bool notify(Widget& receiver, Event& event);
 
         // sets the currently active screen, creates an application loop, then starts showing
         // the supplied screen

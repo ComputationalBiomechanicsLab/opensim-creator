@@ -18,10 +18,29 @@ namespace osc
         Widget();
         virtual ~Widget() noexcept;
 
+        // Returns `impl_on_event(e)`.
+        //
+        // This method directly notifies this `Widget` with no propagation, filtering,
+        // or batching. If you want those kinds of features, you should use:
+        //
+        // - `App::post_event(Widget&, std::unique_ptr<Event>)` or
+        // - `App::notify(Widget&, Event&)`
         bool on_event(Event& e) { return impl_on_event(e); }
+
+        // Returns a lifetime-checked, but non-lockable, pointer to this `Widget`.
+        //
+        // Runtime lifetime is handy for checking logic/lifetime errors at runtime,
+        // but does fundamentally fix any lifetime issues in your application. If
+        // you're triggering runtime lifetime assertion exceptions, you need to fix
+        // your code.
         LifetimedPtr<Widget> weak_ref();
 
+        // If it has a parent, returns a pointer to the parent of this `Widget`; otherwise,
+        // returns `nullptr`.
         Widget* parent();
+
+        // If it has a parent, returns a pointer to the parent of this `Widget`; otherwise,
+        // returns `nullptr`.
         const Widget* parent() const;
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);

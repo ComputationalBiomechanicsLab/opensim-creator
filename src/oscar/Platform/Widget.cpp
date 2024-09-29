@@ -1,5 +1,6 @@
 #include "Widget.h"
 
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/WidgetPrivate.h>
 #include <oscar/Utils/LifetimedPtr.h>
 
@@ -12,11 +13,14 @@ osc::Widget::~Widget() noexcept = default;
 osc::Widget::Widget(Widget&&) noexcept = default;
 Widget& osc::Widget::operator=(Widget&&) = default;
 
-osc::Widget::Widget(std::unique_ptr<WidgetPrivate>&& data) :
-    data_{std::move(data)}
-{}
+Widget* osc::Widget::parent() { return data_->parent(); }
+const Widget* osc::Widget::parent() const { return data_->parent(); }
 
 LifetimedPtr<Widget> osc::Widget::weak_ref()
 {
     return {private_data().lifetime(), this};
 }
+
+osc::Widget::Widget(std::unique_ptr<WidgetPrivate>&& data) :
+    data_{std::move(data)}
+{}
