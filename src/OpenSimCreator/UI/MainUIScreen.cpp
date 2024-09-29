@@ -862,11 +862,10 @@ bool osc::MainUIScreen::impl_on_event(Event& e) { return private_data().on_event
 void osc::MainUIScreen::impl_on_tick() { private_data().on_tick(); }
 void osc::MainUIScreen::impl_on_draw() { private_data().onDraw(); }
 
-UID osc::MainUIScreen::add_and_select_tab(std::unique_ptr<Tab> tab)
+void osc::MainUIScreen::add_and_select_tab(std::unique_ptr<Tab> tab)
 {
-    UID id = private_data().impl_add_tab(std::move(tab));
+    const UID id = private_data().impl_add_tab(std::move(tab));
     private_data().impl_select_tab(id);
-    return id;
 }
 void osc::MainUIScreen::close_tab(UID tab_id) { private_data().impl_close_tab(tab_id); }
 

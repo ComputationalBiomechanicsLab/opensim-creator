@@ -30,9 +30,9 @@ namespace osc
 
         template<std::derived_from<Tab> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
-        UID add_and_select_tab(Args&&... args)
+        void add_and_select_tab(Args&&... args)
         {
-            return add_and_select_tab(std::make_unique<T>(std::forward<Args>(args)...));
+            add_and_select_tab(std::make_unique<T>(std::forward<Args>(args)...));
         }
 
         const ParamBlock& getSimulationParams() const;
@@ -52,7 +52,7 @@ namespace osc
         }
 
     private:
-        UID add_and_select_tab(std::unique_ptr<Tab>);
+        void add_and_select_tab(std::unique_ptr<Tab>);
 
         void impl_on_mount() final;
         void impl_on_unmount() final;
