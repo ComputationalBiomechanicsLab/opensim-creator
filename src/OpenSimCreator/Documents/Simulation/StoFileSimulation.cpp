@@ -82,11 +82,13 @@ public:
     Impl(
         std::unique_ptr<OpenSim::Model> model,
         const std::filesystem::path& stoFilePath,
-        float fixupScaleFactor) :
+        float fixupScaleFactor,
+        std::shared_ptr<Environment> environment) :
 
         m_Model{std::move(model)},
         m_SimulationReports{ExtractReports(*m_Model, stoFilePath)},
-        m_FixupScaleFactor{fixupScaleFactor}
+        m_FixupScaleFactor{fixupScaleFactor},
+        m_Environment{std::move(environment)}
     {}
 
     SynchronizedValueGuard<const OpenSim::Model> getModel() const
@@ -139,6 +141,11 @@ public:
         m_FixupScaleFactor = v;
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment()
+    {
+        return m_Environment;
+    }
+
 private:
     mutable std::mutex m_ModelMutex;
     std::unique_ptr<OpenSim::Model> m_Model;
@@ -147,10 +154,15 @@ private:
     SimulationClock::time_point m_End = m_SimulationReports.empty() ? SimulationClock::start() : m_SimulationReports.back().getTime();
     ParamBlock m_ParamBlock;
     float m_FixupScaleFactor = 1.0f;
+    std::shared_ptr<Environment> m_Environment;
 };
 
-osc::StoFileSimulation::StoFileSimulation(std::unique_ptr<OpenSim::Model> model, const std::filesystem::path& stoFilePath, float fixupScaleFactor) :
-    m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor)}
+osc::StoFileSimulation::StoFileSimulation(
+    std::unique_ptr<OpenSim::Model> model,
+    const std::filesystem::path& stoFilePath,
+    float fixupScaleFactor,
+    std::shared_ptr<Environment> environment) :
+    m_Impl{std::make_unique<Impl>(std::move(model), stoFilePath, fixupScaleFactor, std::move(environment))}
 {}
 osc::StoFileSimulation::StoFileSimulation(StoFileSimulation&&) noexcept = default;
 osc::StoFileSimulation& osc::StoFileSimulation::operator=(StoFileSimulation&&) noexcept = default;
@@ -204,4 +216,9 @@ float osc::StoFileSimulation::implGetFixupScaleFactor() const
 void osc::StoFileSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
+}
+
+std::shared_ptr<Environment> osc::StoFileSimulation::implUpdAssociatedEnvironment()
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }

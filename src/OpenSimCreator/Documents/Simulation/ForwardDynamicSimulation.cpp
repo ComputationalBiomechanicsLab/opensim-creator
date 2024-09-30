@@ -211,6 +211,11 @@ public:
         m_ModelState.lock()->setFixupScaleFactor(v);
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment() const
+    {
+        return m_ModelState.lock()->tryUpdEnvironment();
+    }
+
 private:
     // MUST be done from the UI thread
     //
@@ -342,4 +347,9 @@ float osc::ForwardDynamicSimulation::implGetFixupScaleFactor() const
 void osc::ForwardDynamicSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
+}
+
+std::shared_ptr<Environment> osc::ForwardDynamicSimulation::implUpdAssociatedEnvironment()
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }

@@ -5,8 +5,10 @@
 #include <oscar/Utils/ClonePtr.h>
 
 #include <filesystem>
+#include <memory>
 
 namespace OpenSim { class Model; }
+namespace osc { class Environment; }
 namespace SimTK { class State; }
 
 namespace osc
@@ -37,6 +39,8 @@ namespace osc
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
+
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 
         class Impl;
         ClonePtr<Impl> m_Impl;

@@ -82,7 +82,7 @@ namespace osc
             implSetFixupScaleFactor(newScaleFactor);
         }
 
-        std::shared_ptr<Environment> tryUpdEnvironment() { return implUpdAssociatedEnvironment(); }
+        std::shared_ptr<Environment> tryUpdEnvironment() const { return implUpdAssociatedEnvironment(); }
 
     private:
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
@@ -136,6 +136,6 @@ namespace osc
         virtual void implSetHovered(const OpenSim::Component*) {}
         virtual void implSetFixupScaleFactor(float) {}
 
-        virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() { return nullptr; }
+        virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() const { return nullptr; }
     };
 }

@@ -64,6 +64,11 @@ public:
         return m_ModelState.lock()->setFixupScaleFactor(v);
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment()
+    {
+        return m_ModelState.lock()->tryUpdEnvironment();
+    }
+
 private:
     SynchronizedValue<BasicModelStatePair> m_ModelState;
     ParamBlock m_Params;
@@ -125,4 +130,9 @@ float osc::SingleStateSimulation::implGetFixupScaleFactor() const
 void osc::SingleStateSimulation::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
+}
+
+std::shared_ptr<Environment> osc::SingleStateSimulation::implUpdAssociatedEnvironment()
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }

@@ -1,11 +1,14 @@
 #include "BasicModelStatePair.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <filesystem>
 #include <memory>
+
+using namespace osc;
 
 class osc::BasicModelStatePair::Impl final {
 public:
@@ -18,7 +21,7 @@ public:
     }
 
     explicit Impl(const IModelStatePair& p) :
-        Impl{p.getModel(), p.getState(), p.getFixupScaleFactor()}
+        Impl{p.getModel(), p.getState(), p.getFixupScaleFactor(), p.tryUpdEnvironment()}
     {}
 
     explicit Impl(const std::filesystem::path& osimPath) :
@@ -32,9 +35,15 @@ public:
         Impl{m, st, 1.0f}
     {}
 
-    Impl(const OpenSim::Model& m, const SimTK::State& st, float fixupScaleFactor) :
+    Impl(
+        const OpenSim::Model& m,
+        const SimTK::State& st,
+        float fixupScaleFactor,
+        std::shared_ptr<Environment> environment = std::make_shared<Environment>()) :
+
         m_Model(std::make_unique<OpenSim::Model>(m)),
-        m_FixupScaleFactor{fixupScaleFactor}
+        m_FixupScaleFactor{fixupScaleFactor},
+        m_Environment{std::move(environment)}
     {
         InitializeModel(*m_Model);
         InitializeState(*m_Model);
@@ -44,7 +53,9 @@ public:
     }
 
     Impl(const Impl& o) :
-        m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)}
+        m_Model{std::make_unique<OpenSim::Model>(*o.m_Model)},
+        m_FixupScaleFactor{o.m_FixupScaleFactor},
+        m_Environment{o.m_Environment}
     {
         InitializeModel(*m_Model);
         InitializeState(*m_Model);
@@ -80,9 +91,14 @@ public:
         m_FixupScaleFactor = v;
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment()
+    {
+        return m_Environment;
+    }
 private:
     std::unique_ptr<OpenSim::Model> m_Model;
     float m_FixupScaleFactor = 1.0f;
+    std::shared_ptr<Environment> m_Environment = std::make_shared<Environment>();
 };
 
 
@@ -125,4 +141,9 @@ float osc::BasicModelStatePair::implGetFixupScaleFactor() const
 void osc::BasicModelStatePair::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
+}
+
+std::shared_ptr<Environment> osc::BasicModelStatePair::implUpdAssociatedEnvironment() const
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }

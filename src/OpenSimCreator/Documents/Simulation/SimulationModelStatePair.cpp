@@ -77,6 +77,11 @@ public:
         m_Simulation->setFixupScaleFactor(v);
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment() const
+    {
+        return m_Simulation->tryUpdEnvironment();
+    }
+
     std::shared_ptr<Simulation> updSimulation()
     {
         return m_Simulation;
@@ -199,4 +204,9 @@ float osc::SimulationModelStatePair::implGetFixupScaleFactor() const
 void osc::SimulationModelStatePair::implSetFixupScaleFactor(float v)
 {
     m_Impl->setFixupScaleFactor(v);
+}
+
+std::shared_ptr<Environment> osc::SimulationModelStatePair::implUpdAssociatedEnvironment() const
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }

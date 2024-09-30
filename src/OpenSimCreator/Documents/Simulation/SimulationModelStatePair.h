@@ -9,6 +9,7 @@
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class Model; }
+namespace osc { class Environment; }
 namespace osc { class Simulation; }
 namespace SimTK { class State; }
 
@@ -46,6 +47,8 @@ namespace osc
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
+
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

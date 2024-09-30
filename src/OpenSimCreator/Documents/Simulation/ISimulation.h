@@ -8,9 +8,11 @@
 #include <oscar/Utils/SynchronizedValueGuard.h>
 
 #include <cstddef>
+#include <memory>
 #include <span>
 #include <vector>
 
+namespace osc { class Environment; }
 namespace osc { class OutputExtractor; }
 namespace osc { class ParamBlock; }
 namespace OpenSim { class Model; }
@@ -125,6 +127,7 @@ namespace osc
             implSetFixupScaleFactor(newScaleFactor);
         }
 
+        std::shared_ptr<Environment> tryUpdEnvironment() { return implUpdAssociatedEnvironment(); }
     private:
         virtual SynchronizedValueGuard<const OpenSim::Model> implGetModel() const = 0;
 
@@ -145,5 +148,7 @@ namespace osc
 
         virtual float implGetFixupScaleFactor() const = 0;
         virtual void implSetFixupScaleFactor(float) = 0;
+
+        virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() = 0;
     };
 }

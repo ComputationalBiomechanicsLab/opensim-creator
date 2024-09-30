@@ -13,6 +13,7 @@
 #include <span>
 #include <vector>
 
+namespace osc { class Environment; }
 namespace osc { class OutputExtractor; }
 namespace osc { class ParamBlock; }
 namespace OpenSim { class Model; }
@@ -53,6 +54,8 @@ namespace osc
 
         float getFixupScaleFactor() const { return m_Simulation->getFixupScaleFactor(); }
         void setFixupScaleFactor(float v) { m_Simulation->setFixupScaleFactor(v); }
+
+        std::shared_ptr<Environment> tryUpdEnvironment() { return m_Simulation->tryUpdEnvironment(); }
 
         operator ISimulation& () { return *m_Simulation; }
         operator const ISimulation& () const { return *m_Simulation; }

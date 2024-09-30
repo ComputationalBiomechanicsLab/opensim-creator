@@ -14,6 +14,7 @@
 #include <vector>
 
 namespace OpenSim { class Model; }
+namespace osc { class Environment; }
 namespace osc { class OutputExtractor; }
 namespace osc { class ParamBlock; }
 
@@ -26,7 +27,8 @@ namespace osc
         StoFileSimulation(
             std::unique_ptr<OpenSim::Model>,
             const std::filesystem::path& stoFilePath,
-            float fixupScaleFactor
+            float fixupScaleFactor,
+            std::shared_ptr<Environment>
         );
         StoFileSimulation(const StoFileSimulation&) = delete;
         StoFileSimulation(StoFileSimulation&&) noexcept;
@@ -48,6 +50,8 @@ namespace osc
 
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
+
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

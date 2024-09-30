@@ -409,7 +409,7 @@ public:
 
     std::shared_ptr<Environment> implUpdAssociatedEnvironment()
     {
-        return nullptr;
+        return m_Environment;
     }
 
 private:
@@ -911,7 +911,7 @@ void osc::UndoableModelStatePair::implSetHovered(const OpenSim::Component* c)
     m_Impl->setHovered(c);
 }
 
-std::shared_ptr<Environment> osc::UndoableModelStatePair::implUpdAssociatedEnvironment()
+std::shared_ptr<Environment> osc::UndoableModelStatePair::implUpdAssociatedEnvironment() const
 {
     return m_Impl->implUpdAssociatedEnvironment();
 }

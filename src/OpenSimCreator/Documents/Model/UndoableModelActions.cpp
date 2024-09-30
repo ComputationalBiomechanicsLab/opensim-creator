@@ -392,7 +392,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
         InitializeModel(*modelCopy);
         InitializeState(*modelCopy);
 
-        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
+        auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor(), uim.tryUpdEnvironment()});
         auto tab = std::make_unique<SimulationTab>(parent, simulation);
         App::post_event<OpenTabEvent>(parent, std::move(tab));
 

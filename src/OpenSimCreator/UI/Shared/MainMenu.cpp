@@ -134,8 +134,9 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
                 auto simulation = std::make_shared<Simulation>(
                     StoFileSimulation{std::move(cpy),
                     *maybePath,
-                    maybeModel->getFixupScaleFactor()}
-                );
+                    maybeModel->getFixupScaleFactor(),
+                    maybeModel->tryUpdEnvironment()
+                });
                 auto tab = std::make_unique<SimulationTab>(*m_Parent, simulation);
                 App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
             }

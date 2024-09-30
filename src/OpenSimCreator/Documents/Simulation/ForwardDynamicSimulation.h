@@ -54,6 +54,8 @@ namespace osc
         float implGetFixupScaleFactor() const final;
         void implSetFixupScaleFactor(float) final;
 
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };
