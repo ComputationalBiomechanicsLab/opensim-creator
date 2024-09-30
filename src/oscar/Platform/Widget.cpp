@@ -10,8 +10,6 @@ osc::Widget::Widget() :
     data_{std::make_unique<WidgetPrivate>(*this, nullptr)}
 {}
 osc::Widget::~Widget() noexcept = default;
-osc::Widget::Widget(Widget&&) noexcept = default;
-Widget& osc::Widget::operator=(Widget&&) noexcept = default;
 
 Widget* osc::Widget::parent() { return data_->parent(); }
 const Widget* osc::Widget::parent() const { return data_->parent(); }

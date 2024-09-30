@@ -19,9 +19,9 @@ namespace osc
     public:
         MainUIScreen();
         MainUIScreen(const MainUIScreen&) = delete;
-        MainUIScreen(MainUIScreen&&) noexcept;
+        MainUIScreen(MainUIScreen&&) noexcept = delete;
         MainUIScreen& operator=(const MainUIScreen&) = delete;
-        MainUIScreen& operator=(MainUIScreen&&) noexcept;
+        MainUIScreen& operator=(MainUIScreen&&) noexcept = delete;
         ~MainUIScreen() noexcept override;
 
         void open(const std::filesystem::path&);

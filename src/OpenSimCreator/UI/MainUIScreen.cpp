@@ -851,8 +851,6 @@ private:
 osc::MainUIScreen::MainUIScreen() :
     Screen{std::make_unique<Impl>(*this)}
 {}
-osc::MainUIScreen::MainUIScreen(MainUIScreen&&) noexcept = default;
-osc::MainUIScreen& osc::MainUIScreen::operator=(MainUIScreen&&) noexcept = default;
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 
 void osc::MainUIScreen::open(const std::filesystem::path& path) { private_data().open(path); }

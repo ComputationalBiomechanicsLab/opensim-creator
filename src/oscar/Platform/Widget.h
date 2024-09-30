@@ -44,8 +44,6 @@ namespace osc
         const Widget* parent() const;
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
-        Widget(Widget&&) noexcept;
-        Widget& operator=(Widget&&) noexcept;
 
         const WidgetPrivate& base_private_data() const { return *data_; }
         WidgetPrivate& base_private_data() { return *data_; }
@@ -53,6 +51,8 @@ namespace osc
     private:
         Widget(const Widget&) = delete;
         Widget& operator=(const Widget&) = delete;
+        Widget(Widget&&) noexcept = delete;
+        Widget& operator=(Widget&&) noexcept = delete;
 
         OSC_WIDGET_DATA_GETTERS(WidgetPrivate);
 
