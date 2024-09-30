@@ -103,13 +103,6 @@ sdl
 - Licensed under the zlib license
 - Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
-ImGuizmo
---------
-
-- https://github.com/CedricGuillemet/ImGuizmo
-- Licensed under the MIT license
-- Copyright (c) 2016 Cedric Guillemet
-
 ImGuiColorTextEdit
 ------------------
 
@@ -159,3 +152,14 @@ jam-plugin
 - The source code for some OpenSim components hosted in that repository were copied+pasted
   into ``OpenSimCreatorThirdPartyPlugins` and modified such that they can be built+shipped
   within OpenSim Creator.
+
+ImGuizmo
+--------
+
+- https://github.com/CedricGuillemet/ImGuizmo
+- Licensed under the MIT license
+- Copyright (c) 2016 Cedric Guillemet
+- The source code was copied + pasted into OpenSim Creator's UI code, followed by modifying
+  it to fix various application-specific issues (e.g. ability to reset the global context)
+  in a backwards-compatibility-breaking way. It was then subsequently refactored to match the
+  rest of the project.

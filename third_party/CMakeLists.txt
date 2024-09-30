@@ -12,7 +12,6 @@ set(OSCDEPS_GET_GLEW ON CACHE BOOL "enable getting glew")
 set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
 set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
-set(OSCDEPS_GET_IMGUIZMO ON CACHE BOOL "enable getting ImGuizmo")
 set(OSCDEPS_GET_IMGUICOLORTEXTEDIT ON CACHE BOOL "enable getting ImGuiColorTextEdit")
 set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_GET_LUA ON CACHE BOOL "enable getting lua scripting language library")
@@ -146,22 +145,6 @@ if (${OSCDEPS_GET_IMGUI})
         # we provide our own cmake for this dependency
         PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
-
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-    )
-endif()
-
-if(${OSCDEPS_GET_IMGUIZMO})
-    ExternalProject_Add(ImGuizmo
-        DEPENDS imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ImGuizmo
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmo.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ImGuizmoConfig.cmake.in" <SOURCE_DIR>/ImGuizmoConfig.cmake.in
 
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS

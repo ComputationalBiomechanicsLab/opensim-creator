@@ -26,6 +26,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/utility.h>
+#include <oscar/UI/ImGuizmo.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Flags.h>
 #include <oscar/Utils/EnumHelpers.h>
@@ -38,7 +39,6 @@
 #include <imgui/imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
-#include <ImGuizmo.h>
 
 #include <algorithm>
 #include <array>
@@ -2711,17 +2711,6 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // use rotation from the parent, translation from station
     Mat4 delta_matrix;
-
-    // ensure style matches OSC requirements
-    {
-        ImGuizmo::Style& style = ImGuizmo::GetStyle();
-        style.TranslationLineThickness = 5.0f;
-        style.TranslationLineArrowSize = 8.0f;
-        style.RotationLineThickness = 5.0f;
-        style.RotationOuterLineThickness = 7.0f;
-        style.ScaleLineThickness = 5.0f;
-        style.ScaleLineCircleSize = 8.0f;
-    }
 
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),

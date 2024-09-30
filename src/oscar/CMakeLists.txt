@@ -376,6 +376,8 @@ add_library(oscar STATIC
     UI/Icon.h
     UI/IconCache.cpp
     UI/IconCache.h
+    UI/ImGuizmo.cpp
+    UI/ImGuizmo.h
     UI/MouseCapturingCamera.cpp
     UI/MouseCapturingCamera.h
     UI/oscimgui.cpp
@@ -482,7 +484,6 @@ PRIVATE
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
     imgui
-    ImGuizmo
     implot
     stb
     unordered_dense::unordered_dense

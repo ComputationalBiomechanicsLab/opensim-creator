@@ -10,6 +10,7 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
+#include <oscar/UI/ImGuizmo.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Algorithms.h>
@@ -18,7 +19,6 @@
 
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
-#include <ImGuizmo.h>
 #include <implot.h>
 #include <SDL.h>
 #include <SDL_syswm.h>
