@@ -75,7 +75,6 @@ private:
         if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",
-                *m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)

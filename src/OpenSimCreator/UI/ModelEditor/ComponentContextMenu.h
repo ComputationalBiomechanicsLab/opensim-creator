@@ -10,7 +10,6 @@
 namespace OpenSim { class ComponentPath; }
 namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -18,7 +17,6 @@ namespace osc
     public:
         ComponentContextMenu(
             std::string_view popupName,
-            MainUIScreen&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>,
             const OpenSim::ComponentPath&

@@ -1,5 +1,6 @@
 #include "ModelEditorToolbar.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/MainUIScreen.h>
@@ -72,7 +73,10 @@ private:
 
         if (ui::draw_button(OSC_ICON_EDIT))
         {
-            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>(
+                "simulation parameters",
+                &m_Model->tryUpdEnvironment()->updSimulationParams()
+            ));
         }
         ui::draw_tooltip_if_item_hovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 

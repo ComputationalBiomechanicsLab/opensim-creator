@@ -1,17 +1,12 @@
 #pragma once
 
 #include <oscar/Platform/Screen.h>
-#include <oscar/UI/Tabs/Tab.h>
 #include <oscar/Utils/LifetimedPtr.h>
-#include <oscar/Utils/UID.h>
 
 #include <concepts>
 #include <filesystem>
 #include <memory>
 #include <utility>
-
-namespace osc { class OutputExtractor; }
-namespace osc { class ParamBlock; }
 
 namespace osc
 {
@@ -25,17 +20,6 @@ namespace osc
         ~MainUIScreen() noexcept override;
 
         void open(const std::filesystem::path&);
-
-        const ParamBlock& getSimulationParams() const;
-        ParamBlock& updSimulationParams();
-
-        int getNumUserOutputExtractors() const;
-        const OutputExtractor& getUserOutputExtractor(int index) const;
-        void addUserOutputExtractor(const OutputExtractor& extractor);
-        void removeUserOutputExtractor(int index);
-        bool hasUserOutputExtractor(const OutputExtractor& extractor) const;
-        bool removeUserOutputExtractor(const OutputExtractor& extractor);
-        bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer);
 
         LifetimedPtr<MainUIScreen> weak_ref()
         {

@@ -1,6 +1,5 @@
 #include "MainUIScreen.h"
 
-#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/SplashTab.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
@@ -360,16 +359,6 @@ public:
             App::upd().request_redraw();
         }
     }
-
-    const ParamBlock& implGetSimulationParams() const { return m_Environment.getSimulationParams(); }
-    ParamBlock& implUpdSimulationParams() { return m_Environment.updSimulationParams(); }
-    int implGetNumUserOutputExtractors() const { return m_Environment.getNumUserOutputExtractors(); }
-    const OutputExtractor& implGetUserOutputExtractor(int idx) const { return m_Environment.getUserOutputExtractor(idx); }
-    void implAddUserOutputExtractor(const OutputExtractor& output) { m_Environment.addUserOutputExtractor(output); }
-    void implRemoveUserOutputExtractor(int idx) { return m_Environment.removeUserOutputExtractor(idx); }
-    bool implHasUserOutputExtractor(const OutputExtractor& oe) const { return m_Environment.hasUserOutputExtractor(oe); }
-    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) { return m_Environment.removeUserOutputExtractor(oe); }
-    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return m_Environment.overwriteOrAddNewUserOutputExtractor(old, newer); }
 
     void drawTabSpecificMenu()
     {
@@ -759,9 +748,6 @@ private:
     // set the first time `onMount` is called
     bool m_HasBeenMountedBefore = false;
 
-    // global environment that's shared between tabs
-    Environment m_Environment;
-
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;
 
@@ -807,14 +793,3 @@ void osc::MainUIScreen::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::MainUIScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::MainUIScreen::impl_on_tick() { private_data().on_tick(); }
 void osc::MainUIScreen::impl_on_draw() { private_data().onDraw(); }
-
-const ParamBlock& osc::MainUIScreen::getSimulationParams() const { return private_data().implGetSimulationParams(); }
-ParamBlock& osc::MainUIScreen::updSimulationParams() { return private_data().implUpdSimulationParams(); }
-
-int osc::MainUIScreen::getNumUserOutputExtractors() const { return private_data().implGetNumUserOutputExtractors(); }
-const OutputExtractor& osc::MainUIScreen::getUserOutputExtractor(int index) const { return private_data().implGetUserOutputExtractor(index); }
-void osc::MainUIScreen::addUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implAddUserOutputExtractor(extractor); }
-void osc::MainUIScreen::removeUserOutputExtractor(int index) { private_data().implRemoveUserOutputExtractor(index); }
-bool osc::MainUIScreen::hasUserOutputExtractor(const OutputExtractor& extractor) const { return private_data().implHasUserOutputExtractor(extractor); }
-bool osc::MainUIScreen::removeUserOutputExtractor(const OutputExtractor& extractor) { return private_data().implRemoveUserOutputExtractor(extractor); }
-bool osc::MainUIScreen::overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return private_data().implOverwriteOrAddNewUserOutputExtractor(old, newer); }

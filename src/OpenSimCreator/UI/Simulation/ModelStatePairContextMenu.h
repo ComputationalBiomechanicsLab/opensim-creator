@@ -8,7 +8,6 @@
 #include <string_view>
 
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -17,7 +16,6 @@ namespace osc
         ModelStatePairContextMenu(
             std::string_view panelName,
             std::shared_ptr<IModelStatePair>,
-            MainUIScreen&,
             std::optional<std::string> maybeComponentAbsPath
         );
         ModelStatePairContextMenu(const ModelStatePairContextMenu&) = delete;

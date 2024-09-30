@@ -1,5 +1,6 @@
 #include "ModelStatePairContextMenu.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
@@ -23,12 +24,10 @@ public:
     Impl(
         std::string_view panelName_,
         std::shared_ptr<IModelStatePair> model_,
-        MainUIScreen& api_,
         std::optional<std::string> maybeComponentAbsPath_) :
 
         StandardPopup{panelName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
         m_Model{std::move(model_)},
-        m_API{api_.weak_ref()},
         m_MaybeComponentAbsPath{std::move(maybeComponentAbsPath_)}
     {
         set_modal(false);
@@ -64,11 +63,12 @@ public:
         DrawSelectOwnerMenu(*m_Model, c);
         DrawWatchOutputMenu(c, [this](const OpenSim::AbstractOutput& output, std::optional<ComponentOutputSubfield> subfield)
         {
+            std::shared_ptr<Environment> environment = m_Model->tryUpdEnvironment();
             if (subfield) {
-                m_API->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
+                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
             }
             else {
-                m_API->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
+                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
             }
 
         });
@@ -82,7 +82,6 @@ public:
 
 private:
     std::shared_ptr<IModelStatePair> m_Model;
-    LifetimedPtr<MainUIScreen> m_API;
     std::optional<std::string> m_MaybeComponentAbsPath;
 };
 
@@ -90,10 +89,9 @@ private:
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(
     std::string_view panelName_,
     std::shared_ptr<IModelStatePair> model_,
-    MainUIScreen& api_,
     std::optional<std::string> maybeComponentAbsPath_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_, std::move(maybeComponentAbsPath_))}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), std::move(maybeComponentAbsPath_))}
 {}
 osc::ModelStatePairContextMenu::ModelStatePairContextMenu(ModelStatePairContextMenu&&) noexcept = default;
 osc::ModelStatePairContextMenu& osc::ModelStatePairContextMenu::operator=(ModelStatePairContextMenu&&) noexcept = default;

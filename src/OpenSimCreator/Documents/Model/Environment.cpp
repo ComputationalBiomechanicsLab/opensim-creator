@@ -50,3 +50,15 @@ bool osc::Environment::overwriteOrAddNewUserOutputExtractor(const OutputExtracto
         return true;
     }
 }
+
+std::vector<OutputExtractor> osc::Environment::getAllUserOutputExtractors() const
+{
+    int nOutputs = getNumUserOutputExtractors();
+
+    std::vector<OutputExtractor> rv;
+    rv.reserve(nOutputs);
+    for (int i = 0; i < nOutputs; ++i) {
+        rv.push_back(getUserOutputExtractor(i));
+    }
+    return rv;
+}

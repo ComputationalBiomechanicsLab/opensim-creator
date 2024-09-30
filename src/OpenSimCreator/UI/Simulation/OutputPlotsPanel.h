@@ -6,18 +6,14 @@
 #include <memory>
 #include <string_view>
 
+namespace osc { class Environment; }
 namespace osc { class ISimulatorUIAPI; }
-namespace osc { class MainUIScreen; }
 
 namespace osc
 {
     class OutputPlotsPanel final : public IPanel {
     public:
-        OutputPlotsPanel(
-            std::string_view panelName,
-            MainUIScreen&,
-            ISimulatorUIAPI*
-        );
+        OutputPlotsPanel(std::string_view panelName, std::shared_ptr<Environment>, ISimulatorUIAPI*);
         OutputPlotsPanel(const OutputPlotsPanel&) = delete;
         OutputPlotsPanel(OutputPlotsPanel&&) noexcept;
         OutputPlotsPanel& operator=(const OutputPlotsPanel&) = delete;

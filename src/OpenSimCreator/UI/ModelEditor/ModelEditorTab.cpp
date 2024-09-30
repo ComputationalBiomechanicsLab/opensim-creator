@@ -102,7 +102,7 @@ public:
                     m_Model,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", *m_Parent, this, m_Model, p));
+                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", this, m_Model, p));
                     }
                 );
             }
@@ -139,7 +139,7 @@ public:
             "Output Watches",
             [this](std::string_view panelName)
             {
-                return std::make_shared<OutputWatchesPanel>(panelName, m_Model, *m_Parent);
+                return std::make_shared<OutputWatchesPanel>(panelName, m_Model);
             }
         );
         m_PanelManager->register_spawnable_panel(
@@ -150,7 +150,6 @@ public:
                 {
                     editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
                         menuName,
-                        *mainUIStateAPI,
                         editorAPI,
                         model,
                         e.componentAbsPathOrEmpty
@@ -367,7 +366,6 @@ private:
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
-            *m_Parent,
             this,
             m_Model,
             path

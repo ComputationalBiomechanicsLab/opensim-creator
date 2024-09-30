@@ -1,5 +1,6 @@
 #include "OutputPlotsPanel.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <OpenSimCreator/UI/MainUIScreen.h>
@@ -21,10 +22,10 @@ using namespace osc;
 
 namespace
 {
-    bool IsAnyOutputExportableToCSV(MainUIScreen& api)
+    bool IsAnyOutputExportableToCSV(const Environment& env)
     {
-        for (int i = 0; i < api.getNumUserOutputExtractors(); ++i) {
-            if (is_numeric(api.getUserOutputExtractor(i).getOutputType())) {
+        for (int i = 0; i < env.getNumUserOutputExtractors(); ++i) {
+            if (is_numeric(env.getUserOutputExtractor(i).getOutputType())) {
                 return true;
             }
         }
@@ -36,34 +37,34 @@ class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName_,
-        MainUIScreen& mainUIStateAPI_,
-        ISimulatorUIAPI* simulatorUIAPI_) :
+        std::shared_ptr<Environment> environment,
+        ISimulatorUIAPI* api) :
 
         StandardPanelImpl{panelName_},
-        m_API{mainUIStateAPI_.weak_ref()},
-        m_SimulatorUIAPI{simulatorUIAPI_}
+        m_Environment{std::move(environment)},
+        m_SimulatorUIAPI{api}
     {}
 private:
     void impl_draw_content() final
     {
-        if (m_API->getNumUserOutputExtractors() <= 0)
+        if (m_Environment->getNumUserOutputExtractors() <= 0)
         {
             ui::draw_text_disabled_and_panel_centered("No outputs being watched");
             ui::draw_text_disabled_and_centered("(Right-click a component and 'Watch Output')");
             return;
         }
 
-        if (IsAnyOutputExportableToCSV(*m_API))
+        if (IsAnyOutputExportableToCSV(*m_Environment))
         {
             ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("as CSV")) {
-                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV();
+                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors());
                 }
 
                 if (ui::draw_menu_item("as CSV (and open)")) {
-                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV()) {
+                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors())) {
                         open_file_in_os_default_application(*path);
                     }
                 }
@@ -75,9 +76,9 @@ private:
         ui::draw_separator();
         ui::draw_dummy({0.0f, 5.0f});
 
-        for (int i = 0; i < m_API->getNumUserOutputExtractors(); ++i)
+        for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i)
         {
-            OutputExtractor output = m_API->getUserOutputExtractor(i);
+            OutputExtractor output = m_Environment->getUserOutputExtractor(i);
 
             ui::push_id(i);
             SimulationOutputPlot plot{m_SimulatorUIAPI, output, 128.0f};
@@ -86,23 +87,23 @@ private:
             DrawOutputNameColumn(output, true, m_SimulatorUIAPI->tryGetCurrentSimulationState());
             ui::same_line();
             if (ui::draw_button(OSC_ICON_TRASH)) {
-                m_API->removeUserOutputExtractor(output);
+                m_Environment->removeUserOutputExtractor(output);
                 --i;
             }
             ui::pop_id();
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_API;
+    std::shared_ptr<Environment> m_Environment;
     ISimulatorUIAPI* m_SimulatorUIAPI;
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
     std::string_view panelName_,
-    MainUIScreen& mainUIStateAPI_,
-    ISimulatorUIAPI* simulatorUIAPI_) :
+    std::shared_ptr<Environment> environment,
+    ISimulatorUIAPI* api) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, simulatorUIAPI_)}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(environment), api)}
 {}
 osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
 osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;

@@ -24,6 +24,7 @@ namespace osc
         bool removeUserOutputExtractor(const OutputExtractor& extractor);
         bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer);
 
+        std::vector<OutputExtractor> getAllUserOutputExtractors() const;
     private:
         // simulation params: dictates how the next simulation shall be ran
         ParamBlock m_ParamBlock;

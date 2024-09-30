@@ -1,5 +1,6 @@
 #include "ModelEditorMainMenu.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/MainUIScreen.h>
@@ -28,13 +29,13 @@ using namespace osc;
 namespace
 {
     bool ActionSimulateAgainstAllIntegrators(
-        MainUIScreen& parent,
+        Widget& parent,
         const IModelStatePair& model)
     {
         auto tab = std::make_unique<PerformanceAnalyzerTab>(
             parent,
             BasicModelStatePair{model},
-            parent.getSimulationParams()
+            model.tryUpdEnvironment()->getSimulationParams()
         );
         App::post_event<OpenTabEvent>(parent, std::move(tab));
         return true;
@@ -108,7 +109,10 @@ private:
             }
 
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
-                m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>("simulation parameters", &m_MainUIStateAPI->updSimulationParams()));
+                m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>(
+                    "simulation parameters",
+                    &m_Model->tryUpdEnvironment()->updSimulationParams()
+                ));
             }
 
             if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {

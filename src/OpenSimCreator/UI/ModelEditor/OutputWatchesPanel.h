@@ -7,7 +7,6 @@
 #include <string_view>
 
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
 
 namespace osc
 {
@@ -15,8 +14,7 @@ namespace osc
     public:
         OutputWatchesPanel(
             std::string_view panelName,
-            std::shared_ptr<const IModelStatePair>,
-            MainUIScreen&
+            std::shared_ptr<const IModelStatePair>
         );
         OutputWatchesPanel(const OutputWatchesPanel&) = delete;
         OutputWatchesPanel(OutputWatchesPanel&&) noexcept;

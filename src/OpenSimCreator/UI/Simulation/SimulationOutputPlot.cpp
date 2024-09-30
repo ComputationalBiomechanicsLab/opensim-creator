@@ -1,5 +1,6 @@
 #include "SimulationOutputPlot.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
@@ -46,17 +47,17 @@ namespace
 {
     // draw a menu item for toggling watching the output
     void DrawToggleWatchOutputMenuItem(
-        ISimulatorUIAPI& api,
+        Environment& env,
         const OutputExtractor& output)
     {
-        if (api.hasUserOutputExtractor(output)) {
+        if (env.hasUserOutputExtractor(output)) {
             if (ui::draw_menu_item(OSC_ICON_TRASH " Stop Watching")) {
-                api.removeUserOutputExtractor(output);
+                env.removeUserOutputExtractor(output);
             }
         }
         else {
             if (ui::draw_menu_item(OSC_ICON_EYE " Watch Output")) {
-                api.addUserOutputExtractor(output);
+                env.addUserOutputExtractor(output);
             }
             ui::draw_tooltip_if_item_hovered("Watch Output", "Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
         }
@@ -80,7 +81,6 @@ namespace
 
     // draw a menu that prompts the user to select some other output
     void DrawSelectOtherOutputMenuContent(
-        ISimulatorUIAPI& api,
         ISimulation& simulation,
         const OutputExtractor& oneDimensionalOutputExtractor)
     {
@@ -108,11 +108,11 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&api, &oneDimensionalOutputExtractor](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&simulation, &oneDimensionalOutputExtractor](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
-                            api.overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
+                            simulation.tryUpdEnvironment()->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::pop_id();
                     }
@@ -125,12 +125,11 @@ namespace
 
     // draw menu item for plotting one output against another output
     void DrawPlotAgainstOtherOutputMenuItem(
-        ISimulatorUIAPI& api,
         ISimulation& sim,
         const OutputExtractor& output)
     {
         if (ui::begin_menu(OSC_ICON_CHART_LINE "Plot Against Other Output")) {
-            DrawSelectOtherOutputMenuContent(api, sim, output);
+            DrawSelectOtherOutputMenuContent(sim, output);
             ui::end_menu();
         }
     }
@@ -148,15 +147,15 @@ namespace
 
         if (dataType == OutputExtractorDataType::Float) {
             DrawExportToCSVMenuItems(api, output);
-            DrawPlotAgainstOtherOutputMenuItem(api, sim, output);
-            DrawToggleWatchOutputMenuItem(api, output);
+            DrawPlotAgainstOtherOutputMenuItem(sim, output);
+            DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
         else if (dataType == OutputExtractorDataType::Vec2) {
             DrawExportToCSVMenuItems(api, output);
-            DrawToggleWatchOutputMenuItem(api, output);
+            DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
         else {
-            DrawToggleWatchOutputMenuItem(api, output);
+            DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
 
         }
 

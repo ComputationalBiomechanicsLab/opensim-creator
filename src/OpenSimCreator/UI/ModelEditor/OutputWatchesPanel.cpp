@@ -1,5 +1,6 @@
 #include "OutputWatchesPanel.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
@@ -51,11 +52,9 @@ class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
 public:
 
     Impl(std::string_view panelName_,
-        std::shared_ptr<const IModelStatePair> model_,
-        MainUIScreen& api_) :
+        std::shared_ptr<const IModelStatePair> model_) :
 
         StandardPanelImpl{panelName_},
-        m_API{api_.weak_ref()},
         m_Model{std::move(model_)}
     {}
 
@@ -64,16 +63,17 @@ private:
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
-        if (m_API->getNumUserOutputExtractors() > 0 && ui::begin_table("##OutputWatchesTable", 2, ui::TableFlag::SizingStretchProp))
+        std::shared_ptr<Environment> env = m_Model->tryUpdEnvironment();
+        if (env->getNumUserOutputExtractors() > 0 && ui::begin_table("##OutputWatchesTable", 2, ui::TableFlag::SizingStretchProp))
         {
             ui::table_setup_column("Output", ui::ColumnFlag::WidthStretch);
             ui::table_setup_column("Value");
             ui::table_headers_row();
 
-            for (int outputIdx = 0; outputIdx < m_API->getNumUserOutputExtractors(); ++outputIdx)
+            for (int outputIdx = 0; outputIdx < env->getNumUserOutputExtractors(); ++outputIdx)
             {
                 int column = 0;
-                OutputExtractor o = m_API->getUserOutputExtractor(outputIdx);
+                OutputExtractor o = env->getUserOutputExtractor(outputIdx);
 
                 ui::push_id(outputIdx);
 
@@ -82,7 +82,7 @@ private:
                 ui::table_set_column_index(column++);
                 if (ui::draw_small_button(OSC_ICON_TRASH))
                 {
-                    m_API->removeUserOutputExtractor(outputIdx);
+                    env->removeUserOutputExtractor(outputIdx);
                 }
                 ui::same_line();
                 ui::draw_text_unformatted(o.getName());
@@ -102,7 +102,6 @@ private:
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_API;
     std::shared_ptr<const IModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
@@ -110,10 +109,9 @@ private:
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
-    std::shared_ptr<const IModelStatePair> model_,
-    MainUIScreen& api_) :
+    std::shared_ptr<const IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_), api_)}
+    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_))}
 {}
 osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = default;
 osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;

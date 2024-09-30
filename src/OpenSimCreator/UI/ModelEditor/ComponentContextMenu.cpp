@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
@@ -358,13 +359,11 @@ class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        MainUIScreen& mainUIStateAPI_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
-        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)}
@@ -408,11 +407,12 @@ private:
 
         DrawWatchOutputMenu(*c, [this](const OpenSim::AbstractOutput& output, std::optional<ComponentOutputSubfield> subfield)
         {
+            std::shared_ptr<Environment> environment = m_Model->tryUpdEnvironment();
             if (subfield) {
-                m_MainUIStateAPI->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
+                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
             }
             else {
-                m_MainUIStateAPI->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
+                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
             }
 
             // when the user asks to watch an output, make sure the "Output Watches" panel is
@@ -599,7 +599,6 @@ private:
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
     IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
@@ -609,12 +608,11 @@ private:
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
-    MainUIScreen& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, mainUIStateAPI_, editorAPI_, std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, editorAPI_, std::move(model_), path_)}
 {}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;

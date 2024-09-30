@@ -47,24 +47,12 @@ namespace
     }
 }
 
-std::vector<OutputExtractor> osc::ISimulatorUIAPI::getAllUserOutputExtractors() const
-{
-    int nOutputs = getNumUserOutputExtractors();
-
-    std::vector<OutputExtractor> rv;
-    rv.reserve(nOutputs);
-    for (int i = 0; i < nOutputs; ++i) {
-        rv.push_back(getUserOutputExtractor(i));
-    }
-    return rv;
-}
-
 std::optional<std::filesystem::path> osc::ISimulatorUIAPI::tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor> outputs) const
 {
     return TryExportOutputsToCSV(getSimulation(), outputs);
 }
 
-std::optional<std::filesystem::path> osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV() const
+std::optional<std::filesystem::path> osc::ISimulatorUIAPI::tryPromptToSaveAllOutputsAsCSV(std::span<const OutputExtractor> outputs) const
 {
-    return TryExportOutputsToCSV(getSimulation(), getAllUserOutputExtractors());
+    return TryExportOutputsToCSV(getSimulation(), outputs);
 }

@@ -98,7 +98,6 @@ public:
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             "##componentcontextmenu",
                             m_ShownModelState,
-                            *m_Parent,
                             p.toString()
                         );
                         popup->open();
@@ -123,7 +122,7 @@ public:
             {
                 return std::make_shared<OutputPlotsPanel>(
                     panelName,
-                    *m_Parent,
+                    m_Simulation->tryUpdEnvironment(),
                     this
                 );
             }
@@ -158,7 +157,6 @@ public:
                         auto popup = std::make_shared<ModelStatePairContextMenu>(
                             menuName,
                             m_ShownModelState,
-                            *m_Parent,
                             e.maybeComponentAbsPath
                         );
                         popup->open();
@@ -387,41 +385,6 @@ private:
     std::optional<SimulationReport> implTrySelectReportBasedOnScrubbing() final
     {
         return tryFindNthReportAfter(getSimulationScrubTime());
-    }
-
-    int implGetNumUserOutputExtractors() const final
-    {
-        return m_Parent->getNumUserOutputExtractors();
-    }
-
-    const OutputExtractor& implGetUserOutputExtractor(int i) const final
-    {
-        return m_Parent->getUserOutputExtractor(i);
-    }
-
-    void implAddUserOutputExtractor(const OutputExtractor& outputExtractor) final
-    {
-        m_Parent->addUserOutputExtractor(outputExtractor);
-    }
-
-    void implRemoveUserOutputExtractor(int i) final
-    {
-        m_Parent->removeUserOutputExtractor(i);
-    }
-
-    bool implHasUserOutputExtractor(const OutputExtractor& oe) const final
-    {
-        return m_Parent->hasUserOutputExtractor(oe);
-    }
-
-    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) final
-    {
-        return m_Parent->removeUserOutputExtractor(oe);
-    }
-
-    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) final
-    {
-        return m_Parent->overwriteOrAddNewUserOutputExtractor(old, newer);
     }
 
     SimulationModelStatePair* implTryGetCurrentSimulationState() final

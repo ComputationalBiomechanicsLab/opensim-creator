@@ -3,6 +3,7 @@
 #include <OpenSimCreator/ComponentRegistry/ComponentRegistry.h>
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulation.h>
 #include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
@@ -409,7 +410,7 @@ bool osc::ActionStartSimulatingModel(
     const IModelStatePair& uim)
 {
     BasicModelStatePair modelState{uim};
-    ForwardDynamicSimulatorParams params = FromParamBlock(parent.getSimulationParams());
+    ForwardDynamicSimulatorParams params = FromParamBlock(uim.tryUpdEnvironment()->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
     auto tab = std::make_unique<SimulationTab>(parent, std::move(simulation));

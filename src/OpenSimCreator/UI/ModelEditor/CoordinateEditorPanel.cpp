@@ -149,7 +149,6 @@ private:
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
-                *m_MainUIStateAPI,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
