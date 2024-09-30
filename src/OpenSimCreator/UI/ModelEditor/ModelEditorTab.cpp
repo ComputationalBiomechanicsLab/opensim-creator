@@ -332,7 +332,8 @@ private:
         }
         else if (e.path().extension() == ".osim") {
             // if the user drops an osim file on this tab then it should be loaded
-            m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, e.path());
+            auto tab = std::make_unique<LoadingTab>(*m_Parent, e.path());
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
             return true;
         }
 

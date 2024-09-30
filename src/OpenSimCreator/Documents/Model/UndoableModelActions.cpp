@@ -52,6 +52,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/UID.h>
@@ -76,7 +77,8 @@ namespace
 {
     void OpenOsimInLoadingTab(MainUIScreen& api, std::filesystem::path p)
     {
-        api.add_and_select_tab<LoadingTab>(api, std::move(p));
+        auto tab = std::make_unique<LoadingTab>(api, std::move(p));
+        App::post_event<OpenTabEvent>(api, std::move(tab));
     }
 
     void DoOpenFileViaDialog(MainUIScreen& api)
@@ -262,8 +264,9 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
 
 void osc::ActionNewModel(MainUIScreen& api)
 {
-    auto p = std::make_unique<UndoableModelStatePair>();
-    api.add_and_select_tab<ModelEditorTab>(api, std::move(p));
+    auto model = std::make_unique<UndoableModelStatePair>();
+    auto tab = std::make_unique<ModelEditorTab>(api, std::move(model));
+    App::post_event<OpenTabEvent>(api, std::move(tab));
 }
 
 void osc::ActionOpenModel(MainUIScreen& api)
@@ -390,8 +393,8 @@ bool osc::ActionLoadSTOFileAgainstModel(
         InitializeState(*modelCopy);
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor()});
-
-        parent.add_and_select_tab<SimulationTab>(parent, simulation);
+        auto tab = std::make_unique<SimulationTab>(parent, simulation);
+        App::post_event<OpenTabEvent>(parent, std::move(tab));
 
         return true;
     }
@@ -409,7 +412,8 @@ bool osc::ActionStartSimulatingModel(
     ForwardDynamicSimulatorParams params = FromParamBlock(parent.getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
-    parent.add_and_select_tab<SimulationTab>(parent, std::move(simulation));
+    auto tab = std::make_unique<SimulationTab>(parent, std::move(simulation));
+    App::post_event<OpenTabEvent>(parent, std::move(tab));
 
     return true;
 }

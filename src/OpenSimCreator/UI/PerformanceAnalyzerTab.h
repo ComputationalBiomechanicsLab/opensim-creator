@@ -4,15 +4,15 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { class MainUIScreen; }
 namespace osc { class ParamBlock; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class PerformanceAnalyzerTab final : public Tab {
     public:
         PerformanceAnalyzerTab(
-            MainUIScreen&,
+            Widget&,
             BasicModelStatePair,
             const ParamBlock&
         );

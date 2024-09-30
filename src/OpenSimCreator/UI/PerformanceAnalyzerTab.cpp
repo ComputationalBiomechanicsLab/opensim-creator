@@ -8,13 +8,13 @@
 #include <OpenSimCreator/Documents/Simulation/IntegratorMethod.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationStatus.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/Algorithms.h>
@@ -207,7 +207,7 @@ private:
 
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    MainUIScreen& parent,
+    Widget& parent,
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 

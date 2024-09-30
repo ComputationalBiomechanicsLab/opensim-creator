@@ -26,13 +26,6 @@ namespace osc
 
         void open(const std::filesystem::path&);
 
-        template<std::derived_from<Tab> T, typename... Args>
-        requires std::constructible_from<T, Args&&...>
-        void add_and_select_tab(Args&&... args)
-        {
-            add_and_select_tab(std::make_unique<T>(std::forward<Args>(args)...));
-        }
-
         const ParamBlock& getSimulationParams() const;
         ParamBlock& updSimulationParams();
 
@@ -50,8 +43,6 @@ namespace osc
         }
 
     private:
-        void add_and_select_tab(std::unique_ptr<Tab>);
-
         void impl_on_mount() final;
         void impl_on_unmount() final;
         bool impl_on_event(Event&) final;

@@ -8,16 +8,18 @@
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <OpenSimCreator/UI/Simulation/SimulationTab.h>
 #include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
+#include <OpenSimCreator/UI/Simulation/SimulationTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Scene/SceneCache.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/FilesystemHelpers.h>
@@ -129,7 +131,13 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
                 InitializeModel(*cpy);
                 InitializeState(*cpy);
 
-                m_Parent->add_and_select_tab<SimulationTab>(*m_Parent, std::make_shared<Simulation>(StoFileSimulation{std::move(cpy), *maybePath, maybeModel->getFixupScaleFactor()}));
+                auto simulation = std::make_shared<Simulation>(
+                    StoFileSimulation{std::move(cpy),
+                    *maybePath,
+                    maybeModel->getFixupScaleFactor()}
+                );
+                auto tab = std::make_unique<SimulationTab>(*m_Parent, simulation);
+                App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
             }
             catch (const std::exception& ex) {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
@@ -184,10 +192,12 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     ui::draw_separator();
 
     if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-        m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
+        auto tab = std::make_unique<mi::MeshImporterTab>(*m_Parent);
+        App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
     }
     if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
-        m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(*m_Parent);
+        auto tab = std::make_unique<PreviewExperimentalDataTab>(*m_Parent);
+        App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 

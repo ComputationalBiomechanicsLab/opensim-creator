@@ -4,9 +4,9 @@
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Platform/RecentFile.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
-#include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
+#include <OpenSimCreator/UI/LoadingTab.h>
+#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
@@ -24,11 +24,13 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/LogViewer.h>
@@ -37,6 +39,7 @@
 #include <oscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
+#include <memory>
 #include <span>
 #include <string>
 #include <utility>
@@ -79,7 +82,8 @@ namespace
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
-            parent_.add_and_select_tab<LoadingTab>(parent_, path);
+            auto tab = std::make_unique<LoadingTab>(parent_, path);
+            App::post_event<OpenTabEvent>(parent_, std::move(tab));
         }
         // show the full path as a tooltip when the item is hovered (some people have
         // long file names (#784)
@@ -124,7 +128,8 @@ public:
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
             if (dropfile->path().extension() == ".osim") {
-                m_Parent->add_and_select_tab<LoadingTab>(*m_Parent, dropfile->path());
+                auto tab = std::make_unique<LoadingTab>(*m_Parent, dropfile->path());
+                App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
                 return true;
             }
         }
@@ -251,7 +256,8 @@ private:
             ActionOpenModel(*m_Parent);
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-            m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
+            auto tab = std::make_unique<mi::MeshImporterTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
         if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
@@ -262,19 +268,24 @@ private:
     void drawWorkflowsMenuSectionContent()
     {
         if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition")) {
-            m_Parent->add_and_select_tab<FrameDefinitionTab>(*m_Parent);
+            auto tab = std::make_unique<FrameDefinitionTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Mesh Importer")) {
-            m_Parent->add_and_select_tab<mi::MeshImporterTab>(*m_Parent);
+            auto tab = std::make_unique<mi::MeshImporterTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Warping")) {
-            m_Parent->add_and_select_tab<MeshWarpingTab>(*m_Parent);
+            auto tab = std::make_unique<MeshWarpingTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
-            m_Parent->add_and_select_tab<mow::ModelWarperTab>(*m_Parent);
+            auto tab = std::make_unique<mow::ModelWarperTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
-            m_Parent->add_and_select_tab<PreviewExperimentalDataTab>(*m_Parent);
+            auto tab = std::make_unique<PreviewExperimentalDataTab>(*m_Parent);
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
     }

@@ -10,8 +10,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <filesystem>
@@ -91,10 +93,8 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     const OpenSim::Model& model)
 {
     if (auto ptr = parent.weak_ref().dynamic_downcast<MainUIScreen>()) {
-        ptr->add_and_select_tab<ModelEditorTab>(
-            *ptr,
-            MakeUndoableModelFromSceneModel(model)
-        );
+        auto tab = std::make_unique<ModelEditorTab>(*ptr, MakeUndoableModelFromSceneModel(model));
+        App::post_event<OpenTabEvent>(parent, std::move(tab));
     } else {
         log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
         return;

@@ -7,13 +7,15 @@
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.h>
+#include <OpenSimCreator/UI/PerformanceAnalyzerTab.h>
 #include <OpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
-#include <OpenSimCreator/UI/PerformanceAnalyzerTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -29,11 +31,12 @@ namespace
         MainUIScreen& parent,
         const IModelStatePair& model)
     {
-        parent.add_and_select_tab<PerformanceAnalyzerTab>(
+        auto tab = std::make_unique<PerformanceAnalyzerTab>(
             parent,
             BasicModelStatePair{model},
             parent.getSimulationParams()
         );
+        App::post_event<OpenTabEvent>(parent, std::move(tab));
         return true;
     }
 }

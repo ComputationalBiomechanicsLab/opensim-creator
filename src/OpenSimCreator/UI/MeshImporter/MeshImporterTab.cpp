@@ -52,6 +52,7 @@
 #include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
@@ -162,13 +163,13 @@ public:
         }
 
         // if some screen generated an OpenSim::Model, transition to the main editor
-        if (m_Shared->hasOutputModel())
-        {
-            m_Parent->add_and_select_tab<ModelEditorTab>(
+        if (m_Shared->hasOutputModel()) {
+            auto tab = std::make_unique<ModelEditorTab>(
                 *m_Parent,
                 std::move(m_Shared->updOutputModel()),
                 m_Shared->getSceneScaleFactor()
             );
+            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
         }
 
         set_name(m_Shared->getRecommendedTitle());
