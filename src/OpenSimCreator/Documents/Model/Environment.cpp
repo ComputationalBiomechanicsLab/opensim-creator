@@ -1,5 +1,8 @@
 #include "Environment.h"
 
+#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
+
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Shims/Cpp23/ranges.h>
@@ -9,6 +12,10 @@
 #include <vector>
 
 using namespace osc;
+
+osc::Environment::Environment() :
+    m_ParamBlock{ToParamBlock(ForwardDynamicSimulatorParams{})}
+{}
 
 const OutputExtractor& osc::Environment::getUserOutputExtractor(int index) const
 {

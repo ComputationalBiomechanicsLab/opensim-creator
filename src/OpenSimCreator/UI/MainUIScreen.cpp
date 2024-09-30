@@ -1,13 +1,10 @@
 #include "MainUIScreen.h"
 
-#include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/SplashTab.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <OpenSimCreator/Utils/ParamBlock.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
@@ -364,59 +361,15 @@ public:
         }
     }
 
-    const ParamBlock& implGetSimulationParams() const
-    {
-        return m_SimulationParams;
-    }
-
-    ParamBlock& implUpdSimulationParams()
-    {
-        return m_SimulationParams;
-    }
-
-    int implGetNumUserOutputExtractors() const
-    {
-        return static_cast<int>(m_UserOutputExtractors.size());
-    }
-
-    const OutputExtractor& implGetUserOutputExtractor(int idx) const
-    {
-        return m_UserOutputExtractors.at(idx);
-    }
-
-    void implAddUserOutputExtractor(const OutputExtractor& output)
-    {
-        m_UserOutputExtractors.push_back(output);
-        App::upd().upd_settings().set_value("panels/Output Watches/enabled", true);
-    }
-
-    void implRemoveUserOutputExtractor(int idx)
-    {
-        OSC_ASSERT(0 <= idx && idx < static_cast<int>(m_UserOutputExtractors.size()));
-        m_UserOutputExtractors.erase(m_UserOutputExtractors.begin() + idx);
-    }
-
-    bool implHasUserOutputExtractor(const OutputExtractor& oe) const
-    {
-        return cpp23::contains(m_UserOutputExtractors, oe);
-    }
-
-    bool implRemoveUserOutputExtractor(const OutputExtractor& oe)
-    {
-        return std::erase(m_UserOutputExtractors, oe) > 0;
-    }
-
-    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer)
-    {
-        if (auto it = find_or_nullptr(m_UserOutputExtractors, old)) {
-            *it = newer;
-            return true;
-        }
-        else {
-            m_UserOutputExtractors.push_back(newer);
-            return true;
-        }
-    }
+    const ParamBlock& implGetSimulationParams() const { return m_Environment.getSimulationParams(); }
+    ParamBlock& implUpdSimulationParams() { return m_Environment.updSimulationParams(); }
+    int implGetNumUserOutputExtractors() const { return m_Environment.getNumUserOutputExtractors(); }
+    const OutputExtractor& implGetUserOutputExtractor(int idx) const { return m_Environment.getUserOutputExtractor(idx); }
+    void implAddUserOutputExtractor(const OutputExtractor& output) { m_Environment.addUserOutputExtractor(output); }
+    void implRemoveUserOutputExtractor(int idx) { return m_Environment.removeUserOutputExtractor(idx); }
+    bool implHasUserOutputExtractor(const OutputExtractor& oe) const { return m_Environment.hasUserOutputExtractor(oe); }
+    bool implRemoveUserOutputExtractor(const OutputExtractor& oe) { return m_Environment.removeUserOutputExtractor(oe); }
+    bool implOverwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer) { return m_Environment.overwriteOrAddNewUserOutputExtractor(old, newer); }
 
     void drawTabSpecificMenu()
     {
@@ -806,13 +759,8 @@ private:
     // set the first time `onMount` is called
     bool m_HasBeenMountedBefore = false;
 
-    // global simulation params: dictates how the next simulation shall be ran
-    ParamBlock m_SimulationParams = ToParamBlock(ForwardDynamicSimulatorParams{});
-
-    // user-initiated output extractors
-    //
-    // simulators should try to hook into these, if the component exists
-    std::vector<OutputExtractor> m_UserOutputExtractors;
+    // global environment that's shared between tabs
+    Environment m_Environment;
 
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;

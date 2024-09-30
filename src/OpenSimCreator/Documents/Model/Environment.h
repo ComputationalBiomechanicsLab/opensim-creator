@@ -11,6 +11,8 @@ namespace osc
     // `IModelStatePair`s (e.g. they all operate "in the same environment")
     class Environment final {
     public:
+        Environment();
+
         const ParamBlock& getSimulationParams() const { return m_ParamBlock; }
         ParamBlock& updSimulationParams() { return m_ParamBlock; }
 
@@ -23,7 +25,12 @@ namespace osc
         bool overwriteOrAddNewUserOutputExtractor(const OutputExtractor& old, const OutputExtractor& newer);
 
     private:
+        // simulation params: dictates how the next simulation shall be ran
         ParamBlock m_ParamBlock;
+
+        // user-initiated output extractors
+        //
+        // simulators should try to hook into these, if the component exists
         std::vector<OutputExtractor> m_OutputExtractors;
     };
 }
