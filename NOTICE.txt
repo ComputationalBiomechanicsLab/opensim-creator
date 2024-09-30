@@ -1,0 +1,161 @@
+OpenSim Creator
+Copyright 2024 Adam Kewley
+License: Apache License Version 2.0
+
+This product includes software developed by third parties, listed
+below. All third-party code uses some kind of permissive license, and
+is either used as a library (i.e. unmodified, linked), or as a source
+code fork (i.e. copied + pasted, then subsequently modified in-tree).
+
+
+Libraries
+=========
+
+This product uses software developed by third parties in an unmodified
+form. In all cases, the software has a permissive license.
+
+The following software libraries are used:
+
+
+unordered_dense
+---------------
+
+- https://github.com/martinus/unordered_dense
+- Licensed under the MIT license
+- Copyright (c) 2022 Martin Leitner-Ankerl
+
+tomlplusplus
+------------
+
+- https://github.com/marzer/tomlplusplus
+- Licensed under the MIT license
+- Copyright (c) Mark Gillard <mark.gillard@outlook.com.au>
+
+stb
+---
+
+- https://github.com/nothings/stb
+- Licensed under the MIT license
+- Copyright (c) 2017 Sean Barrett
+
+opensim-core
+------------
+
+- https://github.com/opensim-org/opensim-core
+- Licensed under the Apache 2.0 license
+- Mixed copyright holders. Largest appearsto be: Copyright (c) 2005-2024 Stanford University
+
+nativefiledialog
+----------------
+
+- https://github.com/mlabbe/nativefiledialog
+- Licensed under the zlib license
+- (assumed) Copyright Michael Labbe
+
+lunasvg
+-------
+
+- https://github.com/sammycage/lunasvg
+- Licensed under the MIT license
+- Copyright (c) 2020-2024 Samuel Ugochukwu <sammycageagle@gmail.com>
+
+lua
+---
+
+- https://www.lua.org/
+- Licensed under an MIT-style license (Lua License)
+- Copyright (C) 1994-2012 Lua.org, PUC-Rio.
+
+ImPlot
+------
+
+- https://github.com/epezent/implot
+- Licensed under the MIT license
+- Copyright (c) 2020 Evan Pezent
+
+imgui
+-----
+
+- https://github.com/ocornut/imgui
+- Licensed under the MIT license
+- Copyright (c) 2014-2024 Omar Cornut
+
+googletest
+----------
+
+- https://github.com/google/googletest
+- Licensed under the BSD 3-Clause "New" or "Revised" License
+- Copyright 2008, Google Inc.
+
+glew
+----
+
+- https://glew.sourceforge.net/ or https://github.com/nigels-com/glew
+- Licensed under an Apache 2-style license
+- Copyright (C) 2002-2007, Milan Ikits <milan ikits[]ieee org>
+- Copyright (C) 2002-2007, Marcelo E. Magallon <mmagallo[]debian org>
+- Copyright (C) 2002, Lev Povalahev
+
+sdl
+---
+
+- https://github.com/libsdl-org/SDL
+- Licensed under the zlib license
+- Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+
+ImGuizmo
+--------
+
+- https://github.com/CedricGuillemet/ImGuizmo
+- Licensed under the MIT license
+- Copyright (c) 2016 Cedric Guillemet
+
+ImGuiColorTextEdit
+------------------
+
+- https://github.com/BalazsJako/ImGuiColorTextEdit
+- Licensed under the MIT license
+- Copyright (c) 2017 BalazsJako
+
+
+Source Code Forks (Copy + Paste + Modify)
+=========================================
+
+This product contains source code that was originally copied + pasted
+from its original project into this project's sourcetree. In all
+cases, the original source codes have a permissive license. The reason
+for these copy+paste forks was typically to support major,
+not-backwards-compatible, modifications.
+
+The following source code was treated this way:
+
+OpenGL Mathematics (GLM)
+------------------------
+
+- https://github.com/g-truc/glm
+- Licensed under the MIT license
+- Copyright (c) 2005 - G-Truc Creation
+- The source code for `glm::vec2`, `glm::vec3`, `glm::vec4`, `glm::vec<L, T>`, `glm::quat`
+  `glm::mat3`, `glm::mat4`, and `glm::mat` and associated functions (e.g. `glm::dot`, and
+  `glm::conjugate` were copied into OpenSim Creator's `Maths/` library, followed by gradually
+  changing them to meet OpenSim Creator's requirements.
+
+
+imgui_impl_sdl2
+---------------
+
+- https://github.com/ocornut/imgui/blob/v1.91.2/backends/imgui_impl_sdl2.cpp
+- Licensed under the MIT license
+- Copyright (c) 2014-2024 Omar Cornut
+- The source code was copied + pasted into OpenSim Creator's UI backend module, followed by
+  gradually modifying it to instead use the `App` API that OpenSimCreator hosts.
+
+jam-plugin
+----------
+
+- https://github.com/opensim-jam-org/jam-plugin
+- Licensed under the Apache 2.0 license
+- Copyright (c) 2020 Colin Smith
+- The source code for some OpenSim components hosted in that repository were copied+pasted
+  into ``OpenSimCreatorThirdPartyPlugins` and modified such that they can be built+shipped
+  within OpenSim Creator.
