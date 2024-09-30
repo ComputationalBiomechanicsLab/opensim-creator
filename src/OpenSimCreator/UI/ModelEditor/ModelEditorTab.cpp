@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
@@ -61,20 +60,20 @@ class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
 public:
     Impl(
         ModelEditorTab& owner,
-        MainUIScreen& parent_) :
+        Widget& parent_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>()}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         const OpenSim::Model& model_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(model_)}
     {}
 
     Impl(
         ModelEditorTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
@@ -84,11 +83,10 @@ public:
 
     Impl(
         ModelEditorTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
         TabPrivate{owner, &parent_, "ModelEditorTab"},
-        m_Parent{parent_.weak_ref()},
         m_Model{std::move(model_)}
     {
         // register all panels that the editor tab supports
@@ -125,7 +123,7 @@ public:
             "Coordinates",
             [this](std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, *m_Parent, this, m_Model);
+                return std::make_shared<CoordinateEditorPanel>(panelName, *parent(), this, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -146,7 +144,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this, mainUIStateAPI = m_Parent](const ModelEditorViewerPanelRightClickEvent& e)
+                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelEditorViewerPanelRightClickEvent& e)
                 {
                     editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
                         menuName,
@@ -178,7 +176,7 @@ public:
 
     bool trySave()
     {
-        return ActionSaveModel(*m_Parent, *m_Model);
+        return ActionSaveModel(*parent(), *m_Model);
     }
 
     void on_mount()
@@ -261,8 +259,8 @@ public:
                     log_error("undoing the model also failed with an error");
                     log_error("%s", potentially_nested_exception_to_string(ex2, 1).c_str());
                     log_error("because the model isn't recoverable, closing the editor tab");
-                    App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex));
-                    App::post_event<CloseTabEvent>(*m_Parent, id());
+                    App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex));
+                    App::post_event<CloseTabEvent>(*parent(), id());
                 }
 
                 log_error("sucessfully undone model");
@@ -279,8 +277,8 @@ public:
                 // but cannot undo, so quit
 
                 log_error("because the model isn't recoverable, closing the editor tab");
-                App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex));
-                App::post_event<CloseTabEvent>(*m_Parent, id());
+                App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex));
+                App::post_event<CloseTabEvent>(*parent(), id());
             }
         }
         else {
@@ -296,14 +294,14 @@ public:
             catch (const std::exception& ex2) {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
-                App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex2));
-                App::post_event<CloseTabEvent>(*m_Parent, id());
+                App::post_event<OpenTabEvent>(*parent(), std::make_unique<ErrorTab>(owner(), ex2));
+                App::post_event<CloseTabEvent>(*parent(), id());
             }
         }
 
         // Request to reset the 2D UI context, because the exception
         // unroll may have left it in an indeterminate state.
-        App::notify<ResetUIContextEvent>(*m_Parent);
+        App::notify<ResetUIContextEvent>(*parent());
     }
 
 private:
@@ -319,12 +317,12 @@ private:
     bool onDropEvent(const DropFileEvent& e)
     {
         if (e.path().extension() == ".sto") {
-            return ActionLoadSTOFileAgainstModel(*m_Parent, *m_Model, e.path());
+            return ActionLoadSTOFileAgainstModel(*parent(), *m_Model, e.path());
         }
         else if (e.path().extension() == ".osim") {
             // if the user drops an osim file on this tab then it should be loaded
-            auto tab = std::make_unique<LoadingTab>(*m_Parent, e.path());
-            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
+            auto tab = std::make_unique<LoadingTab>(*parent(), e.path());
+            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
             return true;
         }
 
@@ -345,7 +343,7 @@ private:
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::R)) {
             // Ctrl+R: start a new simulation from focused model
-            return ActionStartSimulatingModel(*m_Parent, *m_Model);
+            return ActionStartSimulatingModel(*parent(), *m_Model);
         }
         else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
             // Ctrl+A: clear selection
@@ -394,9 +392,6 @@ private:
         return m_PanelManager;
     }
 
-    // tab top-level data
-    LifetimedPtr<MainUIScreen> m_Parent;
-
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
@@ -410,9 +405,9 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    ModelEditorMainMenu m_MainMenu{*m_Parent, this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *m_Parent, this, m_Model};
-    EditorTabStatusBar m_StatusBar{*m_Parent, this, m_Model};
+    ModelEditorMainMenu m_MainMenu{*parent(), this, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *parent(), this, m_Model};
+    EditorTabStatusBar m_StatusBar{*parent(), this, m_Model};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;
@@ -422,25 +417,25 @@ private:
 };
 
 osc::ModelEditorTab::ModelEditorTab(
-    MainUIScreen& parent_) :
+    Widget& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     const OpenSim::Model& model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}

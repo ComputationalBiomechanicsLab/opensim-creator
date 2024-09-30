@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/SimulationOutputPlot.h>

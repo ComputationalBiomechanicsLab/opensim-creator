@@ -4,8 +4,8 @@
 #include <string_view>
 
 namespace osc { class IEditorAPI; }
-namespace osc { class MainUIScreen; }
 namespace osc { class UndoableModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -13,7 +13,7 @@ namespace osc
     public:
         ModelEditorToolbar(
             std::string_view label,
-            MainUIScreen&,
+            Widget&,
             IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );

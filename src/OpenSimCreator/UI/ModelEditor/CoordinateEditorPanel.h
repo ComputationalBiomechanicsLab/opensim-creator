@@ -8,7 +8,7 @@
 
 namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -16,7 +16,7 @@ namespace osc
     public:
         CoordinateEditorPanel(
             std::string_view panelName,
-            MainUIScreen&,
+            Widget&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

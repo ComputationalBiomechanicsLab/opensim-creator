@@ -3,7 +3,7 @@
 #include <oscar/UI/Tabs/Tab.h>
 
 namespace OpenSim { class Model; }
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 namespace osc { class UndoableModelStatePair; }
 
 namespace osc
@@ -11,19 +11,19 @@ namespace osc
     class ModelEditorTab final : public Tab {
     public:
         explicit ModelEditorTab(
-            MainUIScreen&
+            Widget&
         );
         explicit ModelEditorTab(
-            MainUIScreen&,
+            Widget&,
             const OpenSim::Model&
         );
         explicit ModelEditorTab(
-            MainUIScreen&,
+            Widget&,
             std::unique_ptr<OpenSim::Model>,
             float fixupScaleFactor = 1.0f
         );
         explicit ModelEditorTab(
-            MainUIScreen&,
+            Widget&,
             std::unique_ptr<UndoableModelStatePair>
         );
 

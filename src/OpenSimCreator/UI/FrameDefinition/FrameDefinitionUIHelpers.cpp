@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -91,11 +90,6 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     Widget& parent,
     const OpenSim::Model& model)
 {
-    if (auto ptr = parent.weak_ref().dynamic_downcast<MainUIScreen>()) {
-        auto tab = std::make_unique<ModelEditorTab>(*ptr, MakeUndoableModelFromSceneModel(model));
-        App::post_event<OpenTabEvent>(parent, std::move(tab));
-    } else {
-        log_error("Tried to export frame definition scene to an OpenSim model but there is no MainUIStateAPI data");
-        return;
-    }
+    auto tab = std::make_unique<ModelEditorTab>(parent, MakeUndoableModelFromSceneModel(model));
+    App::post_event<OpenTabEvent>(parent, std::move(tab));
 }

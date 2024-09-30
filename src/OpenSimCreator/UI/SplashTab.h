@@ -2,13 +2,13 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class SplashTab final : public Tab {
     public:
-        explicit SplashTab(MainUIScreen&);
+        explicit SplashTab(Widget&);
 
     private:
         void impl_on_mount() final;

@@ -1,18 +1,17 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <memory>
 
 namespace osc { class PanelManager; }
 namespace osc { class Simulation; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class SimulationTabMainMenu final {
     public:
         SimulationTabMainMenu(
-            MainUIScreen&,
+            Widget&,
             std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>
         );

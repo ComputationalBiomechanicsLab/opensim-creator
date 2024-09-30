@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
@@ -12,6 +11,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -26,12 +26,12 @@ class osc::ModelEditorToolbar::Impl final {
 public:
     Impl(
         std::string_view label_,
-        MainUIScreen& mainUIStateAPI_,
+        Widget& parent_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_Label{label_},
-        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
+        m_Parent{parent_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
@@ -47,11 +47,11 @@ public:
 private:
     void drawModelFileRelatedButtons()
     {
-        DrawNewModelButton(*m_MainUIStateAPI);
+        DrawNewModelButton(*m_Parent);
         ui::same_line();
-        DrawOpenModelButtonWithRecentFilesDropdown(*m_MainUIStateAPI);
+        DrawOpenModelButtonWithRecentFilesDropdown(*m_Parent);
         ui::same_line();
-        DrawSaveModelButton(*m_MainUIStateAPI, *m_Model);
+        DrawSaveModelButton(*m_Parent, *m_Model);
         ui::same_line();
         DrawReloadModelButton(*m_Model);
     }
@@ -63,7 +63,7 @@ private:
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
         if (ui::draw_button(OSC_ICON_PLAY))
         {
-            ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
+            ActionStartSimulatingModel(*m_Parent, *m_Model);
         }
         ui::pop_style_color();
         App::upd().add_frame_annotation("Simulate Button", ui::get_last_drawn_item_screen_rect());
@@ -101,7 +101,7 @@ private:
     }
 
     std::string m_Label;
-    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
@@ -114,11 +114,11 @@ private:
 
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
-    MainUIScreen& mainUIStateAPI_,
+    Widget& parent_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(label_, mainUIStateAPI_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(label_, parent_, editorAPI_, std::move(model_))}
 {}
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;
 osc::ModelEditorToolbar& osc::ModelEditorToolbar::operator=(ModelEditorToolbar&&) noexcept = default;

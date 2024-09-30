@@ -1,7 +1,5 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Widgets/IPopup.h>
 
 #include <memory>

@@ -11,6 +11,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/CStringView.h>
@@ -31,12 +32,12 @@ public:
 
     Impl(
         std::string_view panelName_,
-        MainUIScreen& mainUIStateAPI_,
+        Widget& parent,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
         StandardPanelImpl{panelName_},
-        m_MainUIStateAPI{mainUIStateAPI_.weak_ref()},
+        m_Parent{parent.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
@@ -234,7 +235,7 @@ private:
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
@@ -242,7 +243,7 @@ private:
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
-    MainUIScreen& mainUIStateAPI_,
+    Widget& mainUIStateAPI_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> uum_) :
 

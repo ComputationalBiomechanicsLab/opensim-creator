@@ -4,13 +4,13 @@
 
 #include <filesystem>
 
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class LoadingTab final : public Tab {
     public:
-        LoadingTab(MainUIScreen&, std::filesystem::path);
+        LoadingTab(Widget&, std::filesystem::path);
 
     private:
         void impl_on_tick() final;

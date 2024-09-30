@@ -5,14 +5,14 @@
 #include <filesystem>
 #include <vector>
 
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc::mi
 {
     class MeshImporterTab final : public Tab {
     public:
-        explicit MeshImporterTab(MainUIScreen&);
-        MeshImporterTab(MainUIScreen&, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(Widget&);
+        MeshImporterTab(Widget&, std::vector<std::filesystem::path>);
 
     private:
         bool impl_is_unsaved() const final;

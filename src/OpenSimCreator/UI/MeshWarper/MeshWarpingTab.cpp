@@ -8,7 +8,6 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>

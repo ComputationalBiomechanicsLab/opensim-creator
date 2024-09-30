@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/IconCodepoints.h>

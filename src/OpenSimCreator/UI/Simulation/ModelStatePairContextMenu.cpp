@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 

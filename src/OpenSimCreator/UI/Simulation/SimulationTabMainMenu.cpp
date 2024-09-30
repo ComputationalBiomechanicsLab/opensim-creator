@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Simulation/Simulation.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/UI/oscimgui.h>
@@ -16,7 +17,7 @@ using namespace osc;
 class osc::SimulationTabMainMenu::Impl final {
 public:
     Impl(
-        MainUIScreen& parent,
+        Widget& parent,
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
@@ -80,7 +81,7 @@ private:
         ui::end_menu();
     }
 
-    LifetimedPtr<MainUIScreen> m_Parent;
+    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<Simulation> m_Simulation;
     std::shared_ptr<PanelManager> m_PanelManager;
 
@@ -91,7 +92,7 @@ private:
 };
 
 osc::SimulationTabMainMenu::SimulationTabMainMenu(
-    MainUIScreen& parent,
+    Widget& parent,
     std::shared_ptr<Simulation> simulation,
     std::shared_ptr<PanelManager> panelManager) :
 

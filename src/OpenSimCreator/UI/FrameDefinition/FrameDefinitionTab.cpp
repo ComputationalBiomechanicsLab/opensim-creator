@@ -21,7 +21,6 @@
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>

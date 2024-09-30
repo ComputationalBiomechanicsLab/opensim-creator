@@ -7,7 +7,6 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -70,11 +69,10 @@ public:
 
     Impl(
         SimulationTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         std::shared_ptr<Simulation> simulation_) :
 
         TabPrivate{owner, &parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
-        m_Parent{parent_.weak_ref()},
         m_Simulation{std::move(simulation_)}
     {
         // register panels
@@ -422,9 +420,6 @@ private:
         }
     }
 
-    // tab data
-    LifetimedPtr<MainUIScreen> m_Parent;
-
     // underlying simulation being shown
     std::shared_ptr<Simulation> m_Simulation;
 
@@ -444,7 +439,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    SimulationTabMainMenu m_MainMenu{*m_Parent, m_Simulation, m_PanelManager};
+    SimulationTabMainMenu m_MainMenu{*parent(), m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
 
     // manager for popups that are open in this tab
@@ -453,7 +448,7 @@ private:
 
 
 osc::SimulationTab::SimulationTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}

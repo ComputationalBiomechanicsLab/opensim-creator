@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -17,11 +18,11 @@
 class osc::EditorTabStatusBar::Impl final {
 public:
     Impl(
-        MainUIScreen& mainUIScreen,
+        Widget& parent_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
-        m_MainUIStateAPI{mainUIScreen.weak_ref()},
+        m_Parent{parent_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
@@ -84,18 +85,18 @@ private:
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
-    MainUIScreen& mainUIStateAPI_,
+    Widget& parent_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(mainUIStateAPI_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(parent_, editorAPI_, std::move(model_))}
 {}
 osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = default;
 osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;

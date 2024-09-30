@@ -1,7 +1,5 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Widgets/SaveChangesPopup.h>
 #include <oscar/Utils/LifetimedPtr.h>
 
@@ -10,16 +8,17 @@
 #include <optional>
 
 namespace osc { class IModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class MainMenuFileTab final {
     public:
-        explicit MainMenuFileTab(MainUIScreen&);
+        explicit MainMenuFileTab(Widget&);
 
         void onDraw(IModelStatePair* = nullptr);
 
-        LifetimedPtr<MainUIScreen> m_Parent;
+        LifetimedPtr<Widget> m_Parent;
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;
     };

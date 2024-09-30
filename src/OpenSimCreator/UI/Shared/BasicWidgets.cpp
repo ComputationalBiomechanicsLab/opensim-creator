@@ -15,7 +15,6 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Platform/RecentFile.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
@@ -1282,7 +1281,7 @@ bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
     return open;
 }
 
-void osc::DrawNewModelButton(MainUIScreen& api)
+void osc::DrawNewModelButton(Widget& api)
 {
     if (ui::draw_button(OSC_ICON_FILE))
     {
@@ -1326,7 +1325,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(
     }
 }
 
-void osc::DrawOpenModelButtonWithRecentFilesDropdown(MainUIScreen& api)
+void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
 {
     DrawOpenModelButtonWithRecentFilesDropdown([&api](auto maybeFile)
     {
@@ -1340,7 +1339,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(MainUIScreen& api)
 }
 
 void osc::DrawSaveModelButton(
-    MainUIScreen& api,
+    Widget& api,
     UndoableModelStatePair& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {

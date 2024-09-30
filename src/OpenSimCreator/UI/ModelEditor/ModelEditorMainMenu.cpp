@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
@@ -45,14 +44,14 @@ namespace
 class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
-        MainUIScreen& mainStateAPI_,
+        Widget& parent_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
-        m_MainUIStateAPI{mainStateAPI_.weak_ref()},
+        m_Parent{parent_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
-        m_MainMenuFileTab{mainStateAPI_}
+        m_MainMenuFileTab{parent_}
     {}
 
     void onDraw()
@@ -105,7 +104,7 @@ private:
     {
         if (ui::begin_menu("Tools")) {
             if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R")) {
-                ActionStartSimulatingModel(*m_MainUIStateAPI, *m_Model);
+                ActionStartSimulatingModel(*m_Parent, *m_Model);
             }
 
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
@@ -131,7 +130,7 @@ private:
 
             if (ui::begin_menu("         Experimental Tools")) {
                 if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
-                    ActionSimulateAgainstAllIntegrators(*m_MainUIStateAPI, *m_Model);
+                    ActionSimulateAgainstAllIntegrators(*m_Parent, *m_Model);
                 }
                 ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
@@ -171,7 +170,7 @@ private:
         }
     }
 
-    LifetimedPtr<MainUIScreen> m_MainUIStateAPI;
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
@@ -182,11 +181,11 @@ private:
 
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    MainUIScreen& mainStateAPI_,
+    Widget& parent_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(mainStateAPI_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(parent_, editorAPI_, std::move(model_))}
 {}
 osc::ModelEditorMainMenu::ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept = default;
 osc::ModelEditorMainMenu& osc::ModelEditorMainMenu::operator=(ModelEditorMainMenu&&) noexcept = default;

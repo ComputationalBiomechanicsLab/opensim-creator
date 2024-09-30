@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -40,11 +39,10 @@ public:
 
     explicit Impl(
         LoadingTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         std::filesystem::path path_) :
 
         TabPrivate{owner, &parent_, "LoadingTab"},
-        m_Parent{parent_.weak_ref()},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {}
@@ -85,8 +83,8 @@ public:
             // there is an existing editor state
             //
             // recycle it so that users can keep their running sims, local edits, etc.
-            App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ModelEditorTab>(*m_Parent, std::move(result)));
-            App::post_event<CloseTabEvent>(*m_Parent, id());
+            App::post_event<OpenTabEvent>(*parent(), std::make_unique<ModelEditorTab>(*parent(), std::move(result)));
+            App::post_event<CloseTabEvent>(*parent(), id());
         }
     }
 
@@ -118,8 +116,8 @@ public:
                 ui::draw_dummy({0.0f, 5.0f});
 
                 if (ui::draw_button("try again")) {
-                    App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<LoadingTab>(*m_Parent, m_OsimPath));
-                    App::post_event<CloseTabEvent>(*m_Parent, id());
+                    App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(*parent(), m_OsimPath));
+                    App::post_event<CloseTabEvent>(*parent(), id());
                 }
             }
             ui::end_panel();
@@ -128,8 +126,6 @@ public:
 
 
 private:
-    LifetimedPtr<MainUIScreen> m_Parent;
-
     // filesystem path to the osim being loaded
     std::filesystem::path m_OsimPath;
 
@@ -150,7 +146,7 @@ private:
 
 
 osc::LoadingTab::LoadingTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     std::filesystem::path path_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}

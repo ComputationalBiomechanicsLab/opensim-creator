@@ -6,7 +6,6 @@
 #include <OpenSimCreator/Documents/Simulation/StoFileSimulation.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
 #include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <OpenSimCreator/UI/Simulation/SimulationTab.h>
@@ -38,7 +37,7 @@
 
 namespace rgs = std::ranges;
 
-osc::MainMenuFileTab::MainMenuFileTab(MainUIScreen& parent) :
+osc::MainMenuFileTab::MainMenuFileTab(Widget& parent) :
     m_Parent{parent.weak_ref()},
     exampleOsimFiles
     {

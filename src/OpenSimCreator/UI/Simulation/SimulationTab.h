@@ -1,19 +1,18 @@
 #pragma once
 
-#include <OpenSimCreator/UI/MainUIScreen.h>
-
 #include <oscar/UI/Tabs/Tab.h>
 
 #include <memory>
 
 namespace osc { class Simulation; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class SimulationTab final : public Tab {
     public:
         SimulationTab(
-            MainUIScreen&,
+            Widget&,
             std::shared_ptr<Simulation>
         );
 

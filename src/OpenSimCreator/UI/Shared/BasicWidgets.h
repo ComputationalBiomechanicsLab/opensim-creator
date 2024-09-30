@@ -27,12 +27,12 @@ namespace osc { class CustomRenderingOptions; }
 namespace osc { class IconCache; }
 namespace osc { class IModelStatePair; }
 namespace osc { class IOutputExtractor; }
-namespace osc { class MainUIScreen; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { class ParamBlock; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
+namespace osc { class Widget; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Rect; }
@@ -255,12 +255,12 @@ namespace osc
 
     // toolbar stuff
     bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
-    void DrawNewModelButton(MainUIScreen&);
+    void DrawNewModelButton(Widget&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
-    void DrawOpenModelButtonWithRecentFilesDropdown(MainUIScreen&);
-    void DrawSaveModelButton(MainUIScreen&, UndoableModelStatePair&);
+    void DrawOpenModelButtonWithRecentFilesDropdown(Widget&);
+    void DrawSaveModelButton(Widget&, UndoableModelStatePair&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(IModelStatePair&);
     void DrawRedoButton(IModelStatePair&);

@@ -14,7 +14,6 @@
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>

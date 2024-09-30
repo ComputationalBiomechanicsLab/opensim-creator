@@ -4,14 +4,14 @@
 
 namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
-namespace osc { class MainUIScreen; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class EditorTabStatusBar final {
     public:
         EditorTabStatusBar(
-            MainUIScreen&,
+            Widget&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

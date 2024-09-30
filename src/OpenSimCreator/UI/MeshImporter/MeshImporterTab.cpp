@@ -17,7 +17,6 @@
 #include <OpenSimCreator/Documents/MeshImporter/UndoableActions.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/MeshImporter/ChooseElLayer.h>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
 #include <OpenSimCreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
@@ -83,20 +82,18 @@ class osc::mi::MeshImporterTab::Impl final :
 public:
     explicit Impl(
         MeshImporterTab& owner,
-        MainUIScreen& parent_) :
+        Widget& parent_) :
 
         TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Parent{parent_.weak_ref()},
         m_Shared{std::make_shared<MeshImporterSharedState>()}
     {}
 
     explicit Impl(
         MeshImporterTab& owner,
-        MainUIScreen& parent_,
+        Widget& parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
         TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Parent{parent_.weak_ref()},
         m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
     {}
 
@@ -164,24 +161,24 @@ public:
         // if some screen generated an OpenSim::Model, transition to the main editor
         if (m_Shared->hasOutputModel()) {
             auto tab = std::make_unique<ModelEditorTab>(
-                *m_Parent,
+                *parent(),
                 std::move(m_Shared->updOutputModel()),
                 m_Shared->getSceneScaleFactor()
             );
-            App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
+            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
 
         set_name(m_Shared->getRecommendedTitle());
 
         if (m_Shared->isCloseRequested())
         {
-            App::post_event<CloseTabEvent>(*m_Parent, id());
+            App::post_event<CloseTabEvent>(*parent(), id());
             m_Shared->resetRequestClose();
         }
 
         if (m_Shared->isNewMeshImpoterTabRequested())
         {
-            App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<MeshImporterTab>(*m_Parent));
+            App::post_event<OpenTabEvent>(*parent(), std::make_unique<MeshImporterTab>(*parent()));
             m_Shared->resetRequestNewMeshImporter();
         }
     }
@@ -2404,9 +2401,6 @@ private:
         }
     }
 
-    // tab data
-    LifetimedPtr<MainUIScreen> m_Parent;
-
     // data shared between states
     std::shared_ptr<MeshImporterSharedState> m_Shared;
 
@@ -2432,12 +2426,12 @@ private:
 
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    MainUIScreen& parent_) :
+    Widget& parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
-    MainUIScreen& parent_,
+    Widget& parent_,
     std::vector<std::filesystem::path> files_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}

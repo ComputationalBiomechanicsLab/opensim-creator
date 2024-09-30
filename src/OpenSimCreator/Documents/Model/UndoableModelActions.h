@@ -31,9 +31,9 @@ namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
 namespace osc { class IModelStatePair; }
 namespace osc { class ObjectPropertyEdit; }
-namespace osc { class MainUIScreen; }
 namespace osc { class SceneCache; }
 namespace osc { class UndoableModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -44,23 +44,23 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        MainUIScreen&
+        Widget&
     );
 
     // prompt a user to open a model file and open it in a new tab
     void ActionOpenModel(
-        MainUIScreen&
+        Widget&
     );
 
     // open the specified model in a loading tab
     void ActionOpenModel(
-        MainUIScreen&,
+        Widget&,
         const std::filesystem::path&
     );
 
     // try to save the given model file to disk
     bool ActionSaveModel(
-        MainUIScreen&,
+        Widget&,
         UndoableModelStatePair&
     );
 
@@ -83,14 +83,14 @@ namespace osc
 
     // loads an STO file against the current model and opens it in a new tab
     bool ActionLoadSTOFileAgainstModel(
-        MainUIScreen&,
+        Widget&,
         const IModelStatePair&,
         const std::filesystem::path& stoPath
     );
 
     // start simulating the given model in a forward-dynamic simulator tab
     bool ActionStartSimulatingModel(
-        MainUIScreen&,
+        Widget&,
         const IModelStatePair&
     );
 

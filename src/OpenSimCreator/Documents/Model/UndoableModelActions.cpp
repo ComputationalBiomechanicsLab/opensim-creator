@@ -12,7 +12,6 @@
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
-#include <OpenSimCreator/UI/MainUIScreen.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
@@ -76,13 +75,13 @@ using namespace osc;
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(MainUIScreen& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(Widget& api, std::filesystem::path p)
     {
         auto tab = std::make_unique<LoadingTab>(api, std::move(p));
         App::post_event<OpenTabEvent>(api, std::move(tab));
     }
 
-    void DoOpenFileViaDialog(MainUIScreen& api)
+    void DoOpenFileViaDialog(Widget& api)
     {
         for (const auto& path : prompt_user_to_select_files({"osim"})) {
             OpenOsimInLoadingTab(api, path);
@@ -263,24 +262,24 @@ void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
     }
 }
 
-void osc::ActionNewModel(MainUIScreen& api)
+void osc::ActionNewModel(Widget& api)
 {
     auto model = std::make_unique<UndoableModelStatePair>();
     auto tab = std::make_unique<ModelEditorTab>(api, std::move(model));
     App::post_event<OpenTabEvent>(api, std::move(tab));
 }
 
-void osc::ActionOpenModel(MainUIScreen& api)
+void osc::ActionOpenModel(Widget& api)
 {
     DoOpenFileViaDialog(api);
 }
 
-void osc::ActionOpenModel(MainUIScreen& api, const std::filesystem::path& path)
+void osc::ActionOpenModel(Widget& api, const std::filesystem::path& path)
 {
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(MainUIScreen&, UndoableModelStatePair& model)
+bool osc::ActionSaveModel(Widget&, UndoableModelStatePair& model)
 {
     const std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
@@ -384,7 +383,7 @@ void osc::ActionEnableAllWrappingSurfaces(IModelStatePair& model)
 }
 
 bool osc::ActionLoadSTOFileAgainstModel(
-    MainUIScreen& parent,
+    Widget& parent,
     const IModelStatePair& uim,
     const std::filesystem::path& stoPath)
 {
@@ -406,7 +405,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
 }
 
 bool osc::ActionStartSimulatingModel(
-    MainUIScreen& parent,
+    Widget& parent,
     const IModelStatePair& uim)
 {
     BasicModelStatePair modelState{uim};
