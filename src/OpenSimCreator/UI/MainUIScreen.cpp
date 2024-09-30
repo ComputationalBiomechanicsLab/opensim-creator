@@ -255,7 +255,7 @@ public:
             impl_close_tab(closeTabEv->tabid_to_close());
             handled = true;
         }
-        else if (auto* resetImguiEvent = dynamic_cast<ResetUIContextEvent*>(&e)) {
+        else if (dynamic_cast<ResetUIContextEvent*>(&e)) {
             impl_reset_imgui();
         }
         else if (Tab* active = getActiveTab()) {
