@@ -2694,8 +2694,8 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // important: necessary for multi-viewport gizmos
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-    ImGuizmo::SetID(static_cast<int>(std::hash<UID>{}(id_)));
-    const ScopeGuard g{[]() { ImGuizmo::SetID(-1); }};
+    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    const ScopeGuard g{[]() { ImGuizmo::PopID(); }};
 
     // update last-frame cache
     was_using_last_frame_ = ImGuizmo::IsUsing();
@@ -2760,17 +2760,17 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
 bool osc::ui::Gizmo::is_using() const
 {
-    ImGuizmo::SetID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
     const bool rv = ImGuizmo::IsUsing();
-    ImGuizmo::SetID(-1);
+    ImGuizmo::PopID();
     return rv;
 }
 
 bool osc::ui::Gizmo::is_over() const
 {
-    ImGuizmo::SetID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
     const bool rv = ImGuizmo::IsOver();
-    ImGuizmo::SetID(-1);
+    ImGuizmo::PopID();
     return rv;
 }
 
