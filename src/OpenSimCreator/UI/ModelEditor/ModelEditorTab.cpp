@@ -41,6 +41,7 @@
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/ExceptionHelpers.h>
 #include <oscar/Utils/FileChangePoller.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/Perf.h>
@@ -244,26 +245,22 @@ public:
 
     void tryRecoveringFromException(const std::exception& ex)
     {
-        log_error("an std::exception was thrown while drawing the model editor");
-        log_error("    message = %s", ex.what());
-        log_error("exceptions typically happen when the model is damaged or made invalid by an edit (e.g. setting a property to an invalid value)");
+        log_error("exception: thrown while drawing the model editor\n%s", potentially_nested_exception_to_string(ex, 1).c_str());
+        log_error("Exceptions typically happen when an invalid edit is made to the model");
 
-        if (m_ExceptionThrownLastFrame)
-        {
-            if (m_Model->canUndo())
-            {
+        if (m_ExceptionThrownLastFrame) {
+            if (m_Model->canUndo()) {
                 // exception was thrown last frame, indicating the model in the undo/redo buffer is also
                 // damaged, so try undoing
 
                 log_error("an exception was also thrown last frame, indicating model damage: attempting to undo to an earlier version of the model to try and fix the model");
 
-                try
-                {
+                try {
                     m_Model->doUndo();  // TODO: add `doUndoWithNoRedoStorage` so that the user's redo buffer isn't tainted
                 }
-                catch (const std::exception& ex2)
-                {
-                    log_error("undoing the model also failed with error: %s", ex2.what());
+                catch (const std::exception& ex2) {
+                    log_error("undoing the model also failed with an error");
+                    log_error("%s", potentially_nested_exception_to_string(ex2, 1).c_str());
                     log_error("because the model isn't recoverable, closing the editor tab");
                     App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex));
                     App::post_event<CloseTabEvent>(*m_Parent, id());
@@ -272,15 +269,13 @@ public:
                 log_error("sucessfully undone model");
                 m_ExceptionThrownLastFrame = false;  // reset flag
             }
-            else if (!m_PopupManager.empty())
-            {
+            else if (!m_PopupManager.empty()) {
                 // exception was thrown last frame, but we can't undo the model, so try to assume that a popup was
                 // causing the problem last frame and clear all popups instead of fully exploding the whole tab
                 log_error("trying to close all currently-open popups, in case that prevents crashes");
                 m_PopupManager.clear();
             }
-            else
-            {
+            else {
                 // exception thrown last frame, indicating the model in the undo/redo buffer is also damaged,
                 // but cannot undo, so quit
 
@@ -289,20 +284,17 @@ public:
                 App::post_event<CloseTabEvent>(*m_Parent, id());
             }
         }
-        else
-        {
+        else {
             // no exception last frame, indicating the _scratch space_ may be damaged, so try to rollback
             // to a version in the undo/redo buffer
 
-            try
-            {
+            try {
                 log_error("attempting to rollback the model edit to a clean state");
                 m_Model->rollback();
                 log_error("model rollback succeeded");
                 m_ExceptionThrownLastFrame = true;
             }
-            catch (const std::exception& ex2)
-            {
+            catch (const std::exception& ex2) {
                 log_error("model rollback thrown an exception: %s", ex2.what());
                 log_error("because the model cannot be rolled back, closing the editor tab");
                 App::post_event<OpenTabEvent>(*m_Parent, std::make_unique<ErrorTab>(owner(), ex2));
