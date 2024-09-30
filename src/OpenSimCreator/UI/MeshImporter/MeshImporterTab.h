@@ -11,6 +11,8 @@ namespace osc::mi
 {
     class MeshImporterTab final : public Tab {
     public:
+        static CStringView id() { return "OpenSim/MeshImporter"; }
+
         explicit MeshImporterTab(Widget&);
         MeshImporterTab(Widget&, std::vector<std::filesystem::path>);
 

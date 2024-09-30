@@ -1,6 +1,7 @@
 #pragma once
 
 #include <oscar/UI/Tabs/Tab.h>
+#include <oscar/Utils/CStringView.h>
 
 namespace OpenSim { class Model; }
 namespace osc { class Widget; }
@@ -10,6 +11,8 @@ namespace osc
 {
     class ModelEditorTab final : public Tab {
     public:
+        static CStringView id() { return "OpenSim/ModelEditor"; }
+
         explicit ModelEditorTab(
             Widget&
         );
