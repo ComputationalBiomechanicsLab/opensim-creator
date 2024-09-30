@@ -319,7 +319,6 @@ add_library(oscar STATIC
     UI/Events/CloseTabEvent.h
     UI/Events/OpenTabEvent.h
     UI/Events/ResetUIContextEvent.h
-    UI/Events/SelectTabEvent.h
     UI/Panels/IPanel.h
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.h
