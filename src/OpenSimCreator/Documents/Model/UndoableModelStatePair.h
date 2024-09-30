@@ -118,6 +118,8 @@ namespace osc
         const OpenSim::Component* implGetHovered() const final;
         void implSetHovered(const OpenSim::Component* c) final;
 
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() final;
+
         class Impl;
         std::unique_ptr<Impl> m_Impl;
     };

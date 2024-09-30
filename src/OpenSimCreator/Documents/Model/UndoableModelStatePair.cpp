@@ -1,5 +1,6 @@
 #include "UndoableModelStatePair.h"
 
+#include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/ModelStateCommit.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -406,6 +407,11 @@ public:
         m_Scratch.setHovered(c);
     }
 
+    std::shared_ptr<Environment> implUpdAssociatedEnvironment()
+    {
+        return nullptr;
+    }
+
 private:
 
     UID doCommit(std::string_view message)
@@ -700,6 +706,9 @@ private:
 
     // (maybe) the version of the model that was last saved to disk
     UID m_MaybeCommitSavedToDisk = UID::empty();
+
+    // the `Environment` that this model is associated with
+    std::shared_ptr<Environment> m_Environment = std::make_shared<Environment>();
 };
 
 
@@ -900,4 +909,9 @@ const OpenSim::Component* osc::UndoableModelStatePair::implGetHovered() const
 void osc::UndoableModelStatePair::implSetHovered(const OpenSim::Component* c)
 {
     m_Impl->setHovered(c);
+}
+
+std::shared_ptr<Environment> osc::UndoableModelStatePair::implUpdAssociatedEnvironment()
+{
+    return m_Impl->implUpdAssociatedEnvironment();
 }
