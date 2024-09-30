@@ -70,13 +70,13 @@ private:
     {
         if (ui::begin_menu("Edit")) {
             auto* undoable = dynamic_cast<UndoableModelStatePair*>(m_Model.get());
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, undoable and undoable->canUndo())) {
+            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, undoable != nullptr and undoable->canUndo())) {
                 if (undoable) {
                     undoable->doUndo();
                 }
             }
 
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, undoable and undoable->canRedo())) {
+            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, undoable != nullptr and undoable->canRedo())) {
                 if (undoable) {
                     undoable->doRedo();
                 }

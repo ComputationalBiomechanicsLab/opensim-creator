@@ -31,7 +31,7 @@ namespace
             return;
         }
 
-        const bool disabled = not editorAPI or model->isReadonly();
+        const bool disabled = editorAPI == nullptr or model->isReadonly();
         if (disabled) {
             ui::begin_disabled();
         }

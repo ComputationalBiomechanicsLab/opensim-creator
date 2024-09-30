@@ -52,7 +52,6 @@
 #include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
 #include <oscar/UI/Tabs/TabPrivate.h>

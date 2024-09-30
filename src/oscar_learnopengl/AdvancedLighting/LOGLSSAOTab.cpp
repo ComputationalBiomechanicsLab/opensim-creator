@@ -272,7 +272,6 @@ private:
         }
     }
 
-private:
     std::vector<Vec3> sample_kernel_ = generate_sample_kernel(64);
     Texture2D noise_texture_ = generate_noise_texture({4, 4});
     Vec3 light_position_ = {2.0f, 4.0f, -2.0f};

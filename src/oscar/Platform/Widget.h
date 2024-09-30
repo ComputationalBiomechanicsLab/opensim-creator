@@ -45,7 +45,7 @@ namespace osc
     protected:
         explicit Widget(std::unique_ptr<WidgetPrivate>&&);
         Widget(Widget&&) noexcept;
-        Widget& operator=(Widget&&);
+        Widget& operator=(Widget&&) noexcept;
 
         const WidgetPrivate& base_private_data() const { return *data_; }
         WidgetPrivate& base_private_data() { return *data_; }

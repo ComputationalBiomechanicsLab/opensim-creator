@@ -438,7 +438,7 @@ public:
             }
             current = current->parent();
         }
-        while (current and event.propagates());
+        while (current != nullptr and event.propagates());
 
         return false;
     }

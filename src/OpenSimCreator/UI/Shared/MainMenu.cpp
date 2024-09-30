@@ -164,12 +164,12 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     {
         const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel) {
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel != nullptr and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel != nullptr) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
         ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
 
-        if (ui::draw_menu_item(OSC_ICON_CLIPBOARD " Copy .osim path to clipboard", {}, false, undoableModel and modelHasBackingFile) and undoableModel) {
+        if (ui::draw_menu_item(OSC_ICON_CLIPBOARD " Copy .osim path to clipboard", {}, false, undoableModel != nullptr and modelHasBackingFile) and undoableModel != nullptr) {
             ActionCopyModelPathToClipboard(*undoableModel);
         }
         ui::draw_tooltip_if_item_hovered("Copy .osim path to clipboard", "Copies the absolute path to the model's .osim file into your clipboard.\n\nThis is handy if you want to (e.g.) load the osim via a script, open it from the command line in another app, etc.");

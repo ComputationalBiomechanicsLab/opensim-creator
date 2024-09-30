@@ -1368,12 +1368,12 @@ void osc::DrawReloadModelButton(UndoableModelStatePair& model)
 void osc::DrawUndoButton(IModelStatePair& model)
 {
     auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
-    const bool disable = not (undoable and undoable->canUndo());
+    const bool disable = not (undoable != nullptr and undoable->canUndo());
 
     if (disable) {
         ui::begin_disabled();
     }
-    if (ui::draw_button(OSC_ICON_UNDO) and undoable) {
+    if (ui::draw_button(OSC_ICON_UNDO) and undoable != nullptr) {
         undoable->doUndo();
     }
     if (disable) {
@@ -1385,12 +1385,12 @@ void osc::DrawUndoButton(IModelStatePair& model)
 void osc::DrawRedoButton(IModelStatePair& model)
 {
     auto* undoable = dynamic_cast<UndoableModelStatePair*>(&model);
-    const bool disable = not (undoable and undoable->canRedo());
+    const bool disable = not (undoable != nullptr and undoable->canRedo());
 
     if (disable) {
         ui::begin_disabled();
     }
-    if (ui::draw_button(OSC_ICON_REDO) and undoable) {
+    if (ui::draw_button(OSC_ICON_REDO) and undoable != nullptr) {
         undoable->doRedo();
     }
     if (disable) {

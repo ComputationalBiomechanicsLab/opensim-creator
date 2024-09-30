@@ -79,7 +79,7 @@ namespace
 class osc::MainUIScreen::Impl final : public ScreenPrivate {
 public:
 
-    Impl(MainUIScreen& owner) : ScreenPrivate{owner, nullptr} {}
+    explicit Impl(MainUIScreen& owner) : ScreenPrivate{owner, nullptr} {}
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {

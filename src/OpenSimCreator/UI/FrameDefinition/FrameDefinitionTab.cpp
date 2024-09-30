@@ -688,7 +688,7 @@ namespace
             groundOrExistingBody = FindFirstDescendentOfType<OpenSim::Body>(frame);
         }
 
-        if (ui::draw_menu_item(OSC_ICON_WEIGHT " Body From This", {}, false, not groundOrExistingBody and model->canUpdModel())) {
+        if (ui::draw_menu_item(OSC_ICON_WEIGHT " Body From This", {}, false, groundOrExistingBody == nullptr and model->canUpdModel())) {
             ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
         }
         if (groundOrExistingBody and ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
