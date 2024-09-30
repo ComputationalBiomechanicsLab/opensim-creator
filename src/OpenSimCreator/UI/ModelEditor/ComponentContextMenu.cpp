@@ -30,7 +30,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/Shims/Cpp23/ranges.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
@@ -90,7 +92,6 @@ namespace
 
     // draw the `MenuItem`s for the "Add Wrap Object" menu
     void DrawAddWrapObjectsToPhysicalFrameMenuItems(
-        IEditorAPI*,
         IModelStatePair& modelState,
         const OpenSim::ComponentPath& physicalFrameAbsPath)
     {
@@ -111,7 +112,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected physical frame
     void DrawPhysicalFrameContextualActions(
-        IEditorAPI* editorAPI,
+        Widget& parent,
         const std::shared_ptr<IModelStatePair>& modelState,
         const OpenSim::ComponentPath& pfPath)
     {
@@ -130,13 +131,12 @@ namespace
                 {
                     ActionAttachGeometryToPhysicalFrame(*modelState, pfPath, std::move(geom));
                 };
-                auto p = std::make_unique<SelectGeometryPopup>(
+                auto popup = std::make_unique<SelectGeometryPopup>(
                     "select geometry to attach",
                     App::resource_filepath("geometry"),
                     callback
                 );
-                p->open();
-                editorAPI->pushPopup(std::move(p));
+                App::post_event<OpenPopupEvent>(parent, std::move(popup));
             }
             ui::draw_tooltip_if_item_hovered("Add Geometry", "Add geometry to this component. Geometry can be removed by selecting it in the navigator and pressing DELETE");
 
@@ -146,7 +146,7 @@ namespace
             ui::draw_tooltip_if_item_hovered("Add Offset Frame", "Add an OpenSim::OffsetFrame as a child of this Component. Other components in the model can then connect to this OffsetFrame, rather than the base Component, so that it can connect at some offset that is relative to the parent Component");
 
             if (ui::begin_menu("Wrap Object", modelState->canUpdModel())) {
-                DrawAddWrapObjectsToPhysicalFrameMenuItems(editorAPI, *modelState, pfPath);
+                DrawAddWrapObjectsToPhysicalFrameMenuItems(*modelState, pfPath);
                 ui::end_menu();
             }
 
@@ -182,7 +182,7 @@ namespace
 
     // draw contextual actions (buttons, sliders) for a selected joint
     void DrawHCFContextualActions(
-        IEditorAPI* api,
+        Widget& parent,
         const std::shared_ptr<IModelStatePair>& uim,
         const OpenSim::ComponentPath& hcfPath)
     {
@@ -205,23 +205,21 @@ namespace
                 return dynamic_cast<const OpenSim::ContactGeometry*>(&c) != nullptr;
             };
             auto popup = std::make_unique<SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
-            popup->open();
-            api->pushPopup(std::move(popup));
+            App::post_event<OpenPopupEvent>(parent, std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
     }
 
     // draw contextual actions (buttons, sliders) for a selected path actuator
     void DrawPathActuatorContextualParams(
-        IEditorAPI* api,
+        Widget& parent,
         const std::shared_ptr<IModelStatePair>& modelState,
         const OpenSim::ComponentPath& paPath)
     {
         if (ui::draw_menu_item("Add Path Point", {}, nullptr, modelState->canUpdModel())) {
             auto onSelection = [modelState, paPath](const OpenSim::ComponentPath& pfPath) { ActionAddPathPointToPathActuator(*modelState, paPath, pfPath); };
             auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", modelState, onSelection);
-            popup->open();
-            api->pushPopup(std::move(popup));
+            App::post_event<OpenPopupEvent>(parent, std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
     }
@@ -358,11 +356,13 @@ class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
+        Widget& parent_,
         IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
+        m_Parent{parent_.weak_ref()},
         m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)}
@@ -486,20 +486,20 @@ private:
             DrawModelContextualActions(*m_Model);
         }
         else if (dynamic_cast<const OpenSim::PhysicalFrame*>(c)) {
-            DrawPhysicalFrameContextualActions(m_EditorAPI, m_Model, m_Path);
+            DrawPhysicalFrameContextualActions(*m_Parent, m_Model, m_Path);
         }
         else if (dynamic_cast<const OpenSim::Joint*>(c)) {
             DrawJointContextualActions(*m_Model, m_Path);
         }
         else if (dynamic_cast<const OpenSim::HuntCrossleyForce*>(c)) {
-            DrawHCFContextualActions(m_EditorAPI, m_Model, m_Path);
+            DrawHCFContextualActions(*m_Parent, m_Model, m_Path);
         }
         else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c)) {
             drawAddMusclePlotMenu(*musclePtr);
-            DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);  // a muscle is a path actuator
+            DrawPathActuatorContextualParams(*m_Parent, m_Model, m_Path);  // a muscle is a path actuator
         }
         else if (dynamic_cast<const OpenSim::PathActuator*>(c)) {
-            DrawPathActuatorContextualParams(m_EditorAPI, m_Model, m_Path);
+            DrawPathActuatorContextualParams(*m_Parent, m_Model, m_Path);
         }
         else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c)) {
             DrawStationContextualActions(*m_Model, *stationPtr);
@@ -566,8 +566,7 @@ private:
                                 GetAbsolutePathString(c),
                                 socketName
                             );
-                            popup->open();
-                            m_EditorAPI->pushPopup(std::move(popup));
+                            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
                         }
 
                         ui::pop_id();
@@ -598,20 +597,22 @@ private:
         }
     }
 
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{m_EditorAPI, m_Model};
+    ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_EditorAPI, m_Model};
 };
 
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
+    Widget& parent_,
     IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, editorAPI_, std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, parent_, editorAPI_, std::move(model_), path_)}
 {}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;

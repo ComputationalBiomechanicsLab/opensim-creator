@@ -1,16 +1,15 @@
 #include "ObjectPropertiesEditor.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
-#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Simulation/Model/AbstractGeometryPath.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -25,6 +24,8 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -331,7 +332,7 @@ namespace
 
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
-        IPopupAPI* api = nullptr;
+        LifetimedPtr<Widget> parent;
         std::shared_ptr<const IModelStatePair> model;
         std::function<const OpenSim::Object*()> objectAccessor;
         std::function<const OpenSim::AbstractProperty*()> propertyAccessor;
@@ -412,17 +413,7 @@ namespace
             return m_Args.objectAccessor();
         }
 
-        IPopupAPI* getPopupAPIPtr() const
-        {
-            return m_Args.api;
-        }
-
-        void pushPopup(std::unique_ptr<IPopup> p)
-        {
-            if (auto api = getPopupAPIPtr()) {
-                api->pushPopup(std::move(p));
-            }
-        }
+        Widget& parentWidget() { return *m_Args.parent; }
 
     private:
         bool implIsCompatibleWith(const OpenSim::AbstractProperty& prop) const final
@@ -1360,7 +1351,7 @@ namespace
             // update cached editors, if necessary
             if (!m_MaybeNestedEditor)
             {
-                m_MaybeNestedEditor.emplace(getPopupAPIPtr(), getModelPtr(), [&params]() { return &params; });
+                m_MaybeNestedEditor.emplace(parentWidget(), getModelPtr(), [&params]() { return &params; });
             }
             ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
 
@@ -1416,7 +1407,7 @@ namespace
             ui::next_column();
             if (ui::draw_button(OSC_ICON_EDIT))
             {
-                pushPopup(createGeometryPathEditorPopup());
+                App::post_event<OpenPopupEvent>(parentWidget(), createGeometryPathEditorPopup());
             }
             ui::next_column();
 
@@ -1506,7 +1497,7 @@ namespace
             ui::next_column();
 
             if (ui::draw_button(OSC_ICON_EYE)) {
-                pushPopup(std::make_unique<FunctionCurveViewerPopup>(
+                auto popup = std::make_unique<FunctionCurveViewerPopup>(
                     generatePopupName(*prop),
                     getModelPtr(),
                     [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
@@ -1525,7 +1516,8 @@ namespace
 
                         return dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0));
                     }
-                ));
+                );
+                App::post_event<OpenPopupEvent>(parentWidget(), std::move(popup));
             }
             ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
@@ -1648,15 +1640,14 @@ namespace
 class osc::ObjectPropertiesEditor::Impl final {
 public:
     Impl(
-        IPopupAPI* api_,
+        Widget& parent,
         std::shared_ptr<const IModelStatePair> targetModel_,
         std::function<const OpenSim::Object*()> objectGetter_) :
 
-        m_API{api_},
+        m_Parent{parent.weak_ref()},
         m_TargetModel{std::move(targetModel_)},
         m_ObjectGetter{std::move(objectGetter_)}
-    {
-    }
+    {}
 
     std::optional<ObjectPropertyEdit> onDraw()
     {
@@ -1774,7 +1765,7 @@ private:
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
             it->second = c_Registry.tryCreateEditor({
-                .api = m_API,
+                .parent = m_Parent,
                 .model = m_TargetModel,
                 .objectAccessor = m_ObjectGetter,
                 .propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName()),
@@ -1784,7 +1775,7 @@ private:
         return it->second.get();
     }
 
-    IPopupAPI* m_API;
+    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<const IModelStatePair> m_TargetModel;
     std::function<const OpenSim::Object*()> m_ObjectGetter;
     const OpenSim::Object* m_PreviousObject = nullptr;
@@ -1792,14 +1783,12 @@ private:
 };
 
 
-// public API (ObjectPropertiesEditor)
-
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
-    IPopupAPI* api_,
+    Widget& parent_,
     std::shared_ptr<const IModelStatePair> targetModel_,
     std::function<const OpenSim::Object*()> objectGetter_) :
 
-    m_Impl{std::make_unique<Impl>(api_, std::move(targetModel_), std::move(objectGetter_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(targetModel_), std::move(objectGetter_))}
 {
 }
 

@@ -4,12 +4,14 @@
 
 namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class ModelActionsMenuItems final {
     public:
         ModelActionsMenuItems(
+            Widget&,
             IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );

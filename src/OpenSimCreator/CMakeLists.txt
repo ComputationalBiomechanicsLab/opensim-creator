@@ -391,7 +391,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulationViewerPanelParameters.h
     UI/Simulation/SimulationViewerRightClickEvent.h
 
-    UI/IPopupAPI.h
     UI/LoadingTab.cpp
     UI/LoadingTab.h
     UI/MainUIScreen.cpp

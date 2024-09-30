@@ -7,7 +7,7 @@
 
 namespace OpenSim { class Component; }
 namespace osc { class IModelStatePair; }
-namespace osc { class IPopupAPI; }
+namespace osc { class Widget; }
 
 namespace osc
 {
@@ -15,7 +15,7 @@ namespace osc
     public:
         AddComponentPopup(
             std::string_view popupName,
-            IPopupAPI*,
+            Widget& parent,
             std::shared_ptr<IModelStatePair>,
             std::unique_ptr<OpenSim::Component> prototype
         );

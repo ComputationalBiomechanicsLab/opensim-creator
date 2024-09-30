@@ -116,13 +116,14 @@ class osc::PropertiesPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view panelName,
+        Widget& parent,
         IEditorAPI* editorAPI,
         std::shared_ptr<IModelStatePair> model) :
 
         StandardPanelImpl{panelName},
         m_EditorAPI{editorAPI},
         m_Model{std::move(model)},
-        m_SelectionPropertiesEditor{editorAPI, m_Model, [model = m_Model](){ return model->getSelected(); }}
+        m_SelectionPropertiesEditor{parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {}
 
 private:
@@ -165,9 +166,10 @@ private:
 
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
+    Widget& parent,
     IEditorAPI* editorAPI,
     std::shared_ptr<IModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(panelName, editorAPI, std::move(model))}
+    m_Impl{std::make_unique<Impl>(panelName, parent, editorAPI, std::move(model))}
 {}
 osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;

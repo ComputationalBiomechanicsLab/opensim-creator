@@ -8,14 +8,14 @@
 
 namespace OpenSim { class Object; }
 namespace osc { class IModelStatePair; }
-namespace osc { class IPopupAPI; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class ObjectPropertiesEditor final {
     public:
         ObjectPropertiesEditor(
-            IPopupAPI*,
+            Widget&,
             std::shared_ptr<const IModelStatePair> targetModel,
             std::function<const OpenSim::Object*()> objectGetter
         );

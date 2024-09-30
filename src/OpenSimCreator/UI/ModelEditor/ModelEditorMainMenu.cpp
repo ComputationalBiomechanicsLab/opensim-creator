@@ -15,6 +15,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
@@ -108,24 +109,27 @@ private:
             }
 
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
-                m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>(
+                auto popup = std::make_unique<ParamBlockEditorPopup>(
                     "simulation parameters",
                     &m_Model->tryUpdEnvironment()->updSimulationParams()
-                ));
+                );
+                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
             }
 
             if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
-                m_EditorAPI->pushPopup(std::make_unique<ImportStationsFromCSVPopup>(
+                auto popup = std::make_unique<ImportStationsFromCSVPopup>(
                     "Import Points",
                     [model = m_Model](auto lms)
                     {
                         ActionImportLandmarks(*model, lms.landmarks, lms.maybeLabel);
                     }
-                ));
+                );
+                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
             }
 
             if (ui::draw_menu_item("         Export Points")) {
-                m_EditorAPI->pushPopup(std::make_unique<ExportPointsPopup>("Export Points", m_Model));
+                auto popup = std::make_unique<ExportPointsPopup>("Export Points", m_Model);
+                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
             }
 
             if (ui::begin_menu("         Experimental Tools")) {
@@ -174,7 +178,7 @@ private:
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelActionsMenuItems m_MainMenuAddTabMenuItems{m_EditorAPI, m_Model};
+    ModelActionsMenuItems m_MainMenuAddTabMenuItems{*m_Parent, m_EditorAPI, m_Model};
     WindowMenu m_WindowMenu{m_EditorAPI->getPanelManager()};
     MainMenuAboutTab m_MainMenuAboutTab;
 };

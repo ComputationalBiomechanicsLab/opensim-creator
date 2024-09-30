@@ -6,7 +6,9 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -76,12 +78,13 @@ private:
         if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",
+                *m_Parent,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
             );
             menu->open();
-            m_EditorAPI->pushPopup(std::move(menu));
+            App::post_event<OpenPopupEvent>(*m_Parent, std::move(menu));
         }
     }
 

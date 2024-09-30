@@ -17,6 +17,8 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 
@@ -29,10 +31,12 @@
 class osc::AddBodyPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
+         Widget& parent,
          IEditorAPI* api,
          std::shared_ptr<IModelStatePair> modelState) :
 
         StandardPopup{popupName},
+        m_Parent{parent.weak_ref()},
         m_EditorAPI{api},
         m_Model{std::move(modelState)}
     {}
@@ -185,9 +189,9 @@ private:
                     auto popup = std::make_unique<SelectGeometryPopup>(
                         "addbody_attachgeometry",
                         App::resource_filepath("geometry"),
-                        [this](auto ptr) { onGeometrySelection(std::move(ptr)); });
-                    popup->open();
-                    m_EditorAPI->pushPopup(std::move(popup));
+                        [this](auto ptr) { onGeometrySelection(std::move(ptr)); }
+                    );
+                    App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
                 }
                 App::upd().add_frame_annotation("AddBodyPopup::GeometryButton", ui::get_last_drawn_item_screen_rect());
             }
@@ -222,6 +226,8 @@ private:
         m_BodyDetails.maybeGeometry = std::move(ptr);
     }
 
+    LifetimedPtr<Widget> m_Parent;
+
     // ability to push popups to the main UI
     IEditorAPI* m_EditorAPI;
 
@@ -235,10 +241,11 @@ private:
 
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
+    Widget& parent,
     IEditorAPI* api,
     std::shared_ptr<IModelStatePair> modelState) :
 
-    m_Impl{std::make_unique<Impl>(popupName, api, std::move(modelState))}
+    m_Impl{std::make_unique<Impl>(popupName, parent, api, std::move(modelState))}
 {}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;

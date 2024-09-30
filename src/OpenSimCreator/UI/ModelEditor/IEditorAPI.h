@@ -1,7 +1,5 @@
 #pragma once
 
-#include <OpenSimCreator/UI/IPopupAPI.h>
-
 #include <memory>
 
 namespace OpenSim { class ComponentPath; }
@@ -12,7 +10,7 @@ namespace osc { class PanelManager; }
 
 namespace osc
 {
-    class IEditorAPI : public IPopupAPI {
+    class IEditorAPI {
     protected:
         IEditorAPI() = default;
         IEditorAPI(const IEditorAPI&) = default;

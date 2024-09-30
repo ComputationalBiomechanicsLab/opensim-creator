@@ -10,8 +10,10 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/CStringView.h>
@@ -150,12 +152,12 @@ private:
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
+                *m_Parent,
                 m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
             );
-            popup->open();
-            m_EditorAPI->pushPopup(std::move(popup));
+            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
         }
     }
 

@@ -12,7 +12,6 @@
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <OpenSimCreator/UI/IPopupAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Object.h>
@@ -215,11 +214,11 @@ namespace
     public:
         ReadonlyPropertiesEditorPanel(
             std::string_view panelName,
-            IPopupAPI* api,
+            Widget& parent,
             const std::shared_ptr<const IModelStatePair>& targetModel) :
 
             StandardPanelImpl{panelName},
-            m_PropertiesEditor{api, targetModel, [model = targetModel](){ return model->getSelected(); }}
+            m_PropertiesEditor{parent, targetModel, [model = targetModel](){ return model->getSelected(); }}
         {}
     private:
         void impl_draw_content() final
@@ -232,9 +231,7 @@ namespace
     };
 }
 
-class osc::PreviewExperimentalDataTab::Impl final :
-    public TabPrivate,
-    public IPopupAPI {
+class osc::PreviewExperimentalDataTab::Impl final : public TabPrivate {
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
@@ -274,7 +271,7 @@ public:
             "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ReadonlyPropertiesEditorPanel>(panelName, this, m_UiState->updSharedModelPtr());
+                return std::make_shared<ReadonlyPropertiesEditorPanel>(panelName, this->owner(), m_UiState->updSharedModelPtr());
             }
         );
     }
@@ -303,8 +300,6 @@ public:
     }
 
 private:
-    void implPushPopup(std::unique_ptr<IPopup>) final {}
-
     void drawToolbar()
     {
         if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f})) {

@@ -30,6 +30,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/Events/ResetUIContextEvent.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -100,7 +101,8 @@ public:
                     m_Model,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        pushPopup(std::make_unique<ComponentContextMenu>("##componentcontextmenu", this, m_Model, p));
+                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), this, m_Model, p);
+                        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                     }
                 );
             }
@@ -109,7 +111,7 @@ public:
             "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this, m_Model);
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), this, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -146,12 +148,15 @@ public:
             {
                 auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelEditorViewerPanelRightClickEvent& e)
                 {
-                    editorAPI->pushPopup(std::make_unique<ComponentContextMenu>(
+                    auto popup = std::make_unique<ComponentContextMenu>(
                         menuName,
+                        editorAPI->owner(),
                         editorAPI,
                         model,
                         e.componentAbsPathOrEmpty
-                    ));
+                    );
+
+                    App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
                 };
                 ModelEditorViewerPanelParameters panelParams{m_Model, onRightClick};
 
@@ -197,6 +202,15 @@ public:
 
     bool onEvent(Event& e)
     {
+        if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
+            if (openPopupEvent->has_tab()) {
+                auto tab = openPopupEvent->take_tab();
+                tab->open();
+                m_PopupManager.push_back(std::move(tab));
+                return true;
+            }
+        }
+
         switch (e.type()) {
         case EventType::KeyDown:  return onKeydownEvent(dynamic_cast<const KeyEvent&>(e));
         case EventType::DropFile: return onDropEvent(dynamic_cast<const DropFileEvent&>(e));
@@ -364,18 +378,12 @@ private:
     {
         auto popup = std::make_unique<ComponentContextMenu>(
             "##componentcontextmenu",
+            this->owner(),
             this,
             m_Model,
             path
         );
-        pushPopup(std::move(popup));
-    }
-
-    void implPushPopup(std::unique_ptr<IPopup> popup) final
-    {
-        OSC_ASSERT(popup != nullptr);
-        popup->open();
-        m_PopupManager.push_back(std::move(popup));
+        App::post_event<OpenPopupEvent>(owner(), std::move(popup));
     }
 
     void implAddMusclePlot(const OpenSim::Coordinate& coord, const OpenSim::Muscle& muscle) final

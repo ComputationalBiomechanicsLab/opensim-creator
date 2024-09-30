@@ -16,8 +16,12 @@
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <oscar/Platform/App.h>
+#include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/LifetimedPtr.h>
 
 #include <concepts>
 #include <sstream>
@@ -27,9 +31,11 @@ class osc::ModelActionsMenuItems::Impl final {
 public:
 
     Impl(
+        Widget& parent,
         IEditorAPI* api,
         std::shared_ptr<IModelStatePair> uum_) :
 
+        m_Parent{parent.weak_ref()},
         m_EditorAPI{api},
         m_Model{std::move(uum_)}
     {}
@@ -47,9 +53,8 @@ public:
         {
             // draw button
             if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
-                auto popup = std::make_unique<AddBodyPopup>("add body", m_EditorAPI, m_Model);
-                popup->open();
-                m_EditorAPI->pushPopup(std::move(popup));
+                auto popup = std::make_unique<AddBodyPopup>("add body", *m_Parent, m_EditorAPI, m_Model);
+                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
             }
 
             // draw tooltip (if hovered)
@@ -85,12 +90,11 @@ private:
                 if (ui::draw_menu_item(entry.name())) {
                     auto popup = std::make_unique<AddComponentPopup>(
                         "Add " + registry.name(),
-                        m_EditorAPI,
+                        *m_Parent,
                         m_Model,
                         entry.instantiate()
                     );
-                    popup->open();
-                    m_EditorAPI->pushPopup(std::move(popup));
+                    App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
                 }
 
                 if (ui::is_item_hovered(ui::HoveredFlag::DelayNormal)) {
@@ -106,13 +110,14 @@ private:
         }
     }
 
+    LifetimedPtr<Widget> m_Parent;
     IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(IEditorAPI* api, std::shared_ptr<IModelStatePair> m) :
-    m_Impl{std::make_unique<Impl>(api, std::move(m))}
+osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget& parent, IEditorAPI* api, std::shared_ptr<IModelStatePair> m) :
+    m_Impl{std::make_unique<Impl>(parent, api, std::move(m))}
 {}
 osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
 osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;

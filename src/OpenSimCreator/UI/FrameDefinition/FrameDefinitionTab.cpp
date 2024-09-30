@@ -40,6 +40,7 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -964,12 +965,13 @@ public:
                     m_Model,
                     [this](const OpenSim::ComponentPath& rightClickedPath)
                     {
-                        pushPopup(std::make_unique<FrameDefinitionContextMenu>(
+                        auto popup = std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
                             this,
                             m_Model,
                             rightClickedPath
-                        ));
+                        );
+                        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                     }
                 );
             }
@@ -978,7 +980,7 @@ public:
             "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this, m_Model);
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), this, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -1004,13 +1006,14 @@ public:
                     m_Model,
                     [this](const ModelEditorViewerPanelRightClickEvent& e)
                     {
-                        pushPopup(std::make_unique<FrameDefinitionContextMenu>(
+                        auto popup = std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
                             this,
                             m_Model,
                             e.componentAbsPathOrEmpty,
                             e
-                        ));
+                        );
+                        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                     }
                 };
                 SetupDefault3DViewportRenderingParams(panelParams.updRenderParams());
@@ -1036,6 +1039,12 @@ public:
 
     bool on_event(Event& e)
     {
+        if (auto* openPopup = dynamic_cast<OpenPopupEvent*>(&e)) {
+            if (openPopup->has_tab()) {
+                m_PopupManager.push_back(openPopup->take_tab());
+            }
+        }
+
         if (e.type() == EventType::KeyDown) {
             return onKeyDown(dynamic_cast<const KeyEvent&>(e));
         }
@@ -1088,18 +1097,13 @@ private:
 
     void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& componentPath) final
     {
-        pushPopup(std::make_unique<FrameDefinitionContextMenu>(
+        auto popup = std::make_unique<FrameDefinitionContextMenu>(
             "##ContextMenu",
             this,
             m_Model,
             componentPath
-        ));
-    }
-
-    void implPushPopup(std::unique_ptr<IPopup> popup) final
-    {
-        popup->open();
-        m_PopupManager.push_back(std::move(popup));
+        );
+        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
     }
 
     void implAddMusclePlot(const OpenSim::Coordinate&, const OpenSim::Muscle&) final

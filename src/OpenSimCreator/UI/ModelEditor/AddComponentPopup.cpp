@@ -69,14 +69,14 @@ class osc::AddComponentPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName,
-        IPopupAPI* api,
+        Widget& parent,
         std::shared_ptr<IModelStatePair> model,
         std::unique_ptr<OpenSim::Component> prototype) :
 
         StandardPopup{popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{api, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
     {}
 
 private:
@@ -523,11 +523,11 @@ private:
 
 osc::AddComponentPopup::AddComponentPopup(
     std::string_view popupName,
-    IPopupAPI* api,
+    Widget& parent,
     std::shared_ptr<IModelStatePair> model,
     std::unique_ptr<OpenSim::Component> prototype) :
 
-    m_Impl{std::make_unique<Impl>(popupName, api, std::move(model), std::move(prototype))}
+    m_Impl{std::make_unique<Impl>(popupName, parent, std::move(model), std::move(prototype))}
 {}
 osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
 osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;

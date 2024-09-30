@@ -12,6 +12,7 @@
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -73,10 +74,11 @@ private:
 
         if (ui::draw_button(OSC_ICON_EDIT))
         {
-            m_EditorAPI->pushPopup(std::make_unique<ParamBlockEditorPopup>(
+            auto popup = std::make_unique<ParamBlockEditorPopup>(
                 "simulation parameters",
                 &m_Model->tryUpdEnvironment()->updSimulationParams()
-            ));
+            );
+            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
