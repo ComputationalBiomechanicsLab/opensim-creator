@@ -2,7 +2,6 @@
 
 #include <memory>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
 
@@ -10,11 +9,7 @@ namespace osc
 {
     class EditorTabStatusBar final {
     public:
-        EditorTabStatusBar(
-            Widget&,
-            IEditorAPI*,
-            std::shared_ptr<IModelStatePair>
-        );
+        EditorTabStatusBar(Widget&, std::shared_ptr<IModelStatePair>);
         EditorTabStatusBar(const EditorTabStatusBar&) = delete;
         EditorTabStatusBar(EditorTabStatusBar&&) noexcept;
         EditorTabStatusBar& operator=(const EditorTabStatusBar&) = delete;

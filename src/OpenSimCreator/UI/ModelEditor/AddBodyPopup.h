@@ -5,7 +5,6 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
 
@@ -16,7 +15,6 @@ namespace osc
         AddBodyPopup(
             std::string_view popupName,
             Widget& parent,
-            IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );
         AddBodyPopup(const AddBodyPopup&) = delete;

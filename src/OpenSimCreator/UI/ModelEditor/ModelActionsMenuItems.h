@@ -2,7 +2,6 @@
 
 #include <memory>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
 
@@ -10,11 +9,7 @@ namespace osc
 {
     class ModelActionsMenuItems final {
     public:
-        ModelActionsMenuItems(
-            Widget&,
-            IEditorAPI*,
-            std::shared_ptr<IModelStatePair>
-        );
+        ModelActionsMenuItems(Widget&, std::shared_ptr<IModelStatePair>);
         ModelActionsMenuItems(const ModelActionsMenuItems&) = delete;
         ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept;
         ModelActionsMenuItems& operator=(const ModelActionsMenuItems&) = delete;

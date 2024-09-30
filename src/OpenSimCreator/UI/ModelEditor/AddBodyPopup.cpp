@@ -4,7 +4,6 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -32,12 +31,10 @@ class osc::AddBodyPopup::Impl final : public StandardPopup {
 public:
     Impl(std::string_view popupName,
          Widget& parent,
-         IEditorAPI* api,
          std::shared_ptr<IModelStatePair> modelState) :
 
         StandardPopup{popupName},
         m_Parent{parent.weak_ref()},
-        m_EditorAPI{api},
         m_Model{std::move(modelState)}
     {}
 
@@ -226,10 +223,8 @@ private:
         m_BodyDetails.maybeGeometry = std::move(ptr);
     }
 
+    // the parent widget of this popup
     LifetimedPtr<Widget> m_Parent;
-
-    // ability to push popups to the main UI
-    IEditorAPI* m_EditorAPI;
 
     // the model that the body will be added to
     std::shared_ptr<IModelStatePair> m_Model;
@@ -242,10 +237,9 @@ private:
 osc::AddBodyPopup::AddBodyPopup(
     std::string_view popupName,
     Widget& parent,
-    IEditorAPI* api,
     std::shared_ptr<IModelStatePair> modelState) :
 
-    m_Impl{std::make_unique<Impl>(popupName, parent, api, std::move(modelState))}
+    m_Impl{std::make_unique<Impl>(popupName, parent, std::move(modelState))}
 {}
 osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
 osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;

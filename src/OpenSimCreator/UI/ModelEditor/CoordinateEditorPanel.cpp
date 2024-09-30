@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -35,12 +34,10 @@ public:
     Impl(
         std::string_view panelName_,
         Widget& parent,
-        IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_) :
 
         StandardPanelImpl{panelName_},
         m_Parent{parent.weak_ref()},
-        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
 
@@ -153,7 +150,6 @@ private:
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
                 *m_Parent,
-                m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
             );
@@ -238,7 +234,6 @@ private:
     }
 
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
@@ -246,10 +241,9 @@ private:
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
     Widget& mainUIStateAPI_,
-    IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> uum_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, editorAPI_, std::move(uum_))}
+    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, std::move(uum_))}
 {}
 osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept = default;
 osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;

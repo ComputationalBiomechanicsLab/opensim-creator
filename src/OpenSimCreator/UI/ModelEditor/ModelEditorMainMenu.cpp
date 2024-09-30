@@ -4,7 +4,6 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/UI/ModelEditor/ExportPointsPopup.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.h>
 #include <OpenSimCreator/UI/PerformanceAnalyzerTab.h>
@@ -46,13 +45,13 @@ class osc::ModelEditorMainMenu::Impl final {
 public:
     Impl(
         Widget& parent_,
-        IEditorAPI* editorAPI_,
+        std::shared_ptr<PanelManager> panelManager_,
         std::shared_ptr<IModelStatePair> model_) :
 
         m_Parent{parent_.weak_ref()},
-        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
-        m_MainMenuFileTab{parent_}
+        m_MainMenuFileTab{parent_},
+        m_WindowMenu{std::move(panelManager_)}
     {}
 
     void onDraw()
@@ -175,21 +174,20 @@ private:
     }
 
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelActionsMenuItems m_MainMenuAddTabMenuItems{*m_Parent, m_EditorAPI, m_Model};
-    WindowMenu m_WindowMenu{m_EditorAPI->getPanelManager()};
+    ModelActionsMenuItems m_MainMenuAddTabMenuItems{*m_Parent, m_Model};
+    WindowMenu m_WindowMenu;
     MainMenuAboutTab m_MainMenuAboutTab;
 };
 
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
     Widget& parent_,
-    IEditorAPI* editorAPI_,
+    std::shared_ptr<PanelManager> panelManager_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(panelManager_), std::move(model_))}
 {}
 osc::ModelEditorMainMenu::ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept = default;
 osc::ModelEditorMainMenu& osc::ModelEditorMainMenu::operator=(ModelEditorMainMenu&&) noexcept = default;

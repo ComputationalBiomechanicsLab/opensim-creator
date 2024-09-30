@@ -6,7 +6,6 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
 
@@ -17,7 +16,6 @@ namespace osc
         CoordinateEditorPanel(
             std::string_view panelName,
             Widget&,
-            IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );
         CoordinateEditorPanel(const CoordinateEditorPanel&) = delete;

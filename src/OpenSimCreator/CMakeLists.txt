@@ -38,6 +38,10 @@ add_library(OpenSimCreator STATIC
     Documents/ExperimentalData/StorageSchema.cpp
     Documents/ExperimentalData/StorageSchema.h
 
+    UI/Events/AddMusclePlotEvent.cpp
+    UI/Events/AddMusclePlotEvent.h
+    UI/Events/OpenComponentContextMenuEvent.h
+
     Documents/FrameDefinition/FrameDefinitionActions.cpp
     Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
@@ -285,7 +289,6 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/EditorTabStatusBar.h
     UI/ModelEditor/ExportPointsPopup.cpp
     UI/ModelEditor/ExportPointsPopup.h
-    UI/ModelEditor/IEditorAPI.h
     UI/ModelEditor/ModelActionsMenuItems.cpp
     UI/ModelEditor/ModelActionsMenuItems.h
     UI/ModelEditor/ModelEditorTab.cpp

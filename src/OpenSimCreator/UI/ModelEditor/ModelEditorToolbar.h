@@ -3,7 +3,6 @@
 #include <memory>
 #include <string_view>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class UndoableModelStatePair; }
 namespace osc { class Widget; }
 
@@ -14,7 +13,6 @@ namespace osc
         ModelEditorToolbar(
             std::string_view label,
             Widget&,
-            IEditorAPI*,
             std::shared_ptr<UndoableModelStatePair>
         );
         ModelEditorToolbar(const ModelEditorToolbar&) = delete;

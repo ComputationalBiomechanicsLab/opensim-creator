@@ -3,7 +3,6 @@
 #include <OpenSimCreator/Documents/Model/Environment.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
 
@@ -28,12 +27,10 @@ public:
     Impl(
         std::string_view label_,
         Widget& parent_,
-        IEditorAPI* editorAPI_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
         m_Label{label_},
         m_Parent{parent_.weak_ref()},
-        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
 
@@ -104,7 +101,6 @@ private:
 
     std::string m_Label;
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
@@ -117,10 +113,9 @@ private:
 osc::ModelEditorToolbar::ModelEditorToolbar(
     std::string_view label_,
     Widget& parent_,
-    IEditorAPI* editorAPI_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(label_, parent_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(label_, parent_, std::move(model_))}
 {}
 osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;
 osc::ModelEditorToolbar& osc::ModelEditorToolbar::operator=(ModelEditorToolbar&&) noexcept = default;

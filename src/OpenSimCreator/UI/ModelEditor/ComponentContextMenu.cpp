@@ -7,7 +7,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <OpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/Events/AddMusclePlotEvent.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <OpenSimCreator/UI/ModelEditor/ReassignSocketPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/Select1PFPopup.h>
@@ -32,6 +32,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Widget.h>
 #include <oscar/Shims/Cpp23/ranges.h>
+#include <oscar/UI/Events/OpenNamedPanelEvent.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -357,13 +358,11 @@ public:
     Impl(
         std::string_view popupName_,
         Widget& parent_,
-        IEditorAPI* editorAPI_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
         m_Parent{parent_.weak_ref()},
-        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)}
     {
@@ -416,7 +415,7 @@ private:
 
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)
-            m_EditorAPI->getPanelManager()->set_toggleable_panel_activated("Output Watches", true);
+            App::post_event<OpenNamedPanelEvent>(*m_Parent, "Output Watches");
         });
 
         if (ui::begin_menu("Display", m_Model->canUpdModel())) {
@@ -589,7 +588,7 @@ private:
         if (ui::begin_menu("Plot vs. Coordinate")) {
             for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>()) {
                 if (ui::draw_menu_item(c.getName())) {
-                    m_EditorAPI->addMusclePlot(c, m);
+                    App::post_event<AddMusclePlotEvent>(*m_Parent, c, m);
                 }
             }
 
@@ -598,21 +597,19 @@ private:
     }
 
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI = nullptr;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_EditorAPI, m_Model};
+    ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_Model};
 };
 
 
 osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
     Widget& parent_,
-    IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, parent_, editorAPI_, std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, parent_, std::move(model_), path_)}
 {}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;

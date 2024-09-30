@@ -2,7 +2,6 @@
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -19,13 +18,9 @@
 
 class osc::EditorTabStatusBar::Impl final {
 public:
-    Impl(
-        Widget& parent_,
-        IEditorAPI* editorAPI_,
-        std::shared_ptr<IModelStatePair> model_) :
+    Impl(Widget& parent_, std::shared_ptr<IModelStatePair> model_) :
 
         m_Parent{parent_.weak_ref()},
-        m_EditorAPI{editorAPI_},
         m_Model{std::move(model_)}
     {}
 
@@ -79,7 +74,6 @@ private:
             auto menu = std::make_unique<ComponentContextMenu>(
                 "##hovermenu",
                 *m_Parent,
-                m_EditorAPI,
                 m_Model,
                 GetAbsolutePath(c)
             );
@@ -89,17 +83,15 @@ private:
     }
 
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
 osc::EditorTabStatusBar::EditorTabStatusBar(
     Widget& parent_,
-    IEditorAPI* editorAPI_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, editorAPI_, std::move(model_))}
+    m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
 {}
 osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = default;
 osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;

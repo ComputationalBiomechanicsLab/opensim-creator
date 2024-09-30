@@ -5,7 +5,6 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/UI/ModelEditor/AddBodyPopup.h>
 #include <OpenSimCreator/UI/ModelEditor/AddComponentPopup.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -32,11 +31,9 @@ public:
 
     Impl(
         Widget& parent,
-        IEditorAPI* api,
         std::shared_ptr<IModelStatePair> uum_) :
 
         m_Parent{parent.weak_ref()},
-        m_EditorAPI{api},
         m_Model{std::move(uum_)}
     {}
 
@@ -53,7 +50,7 @@ public:
         {
             // draw button
             if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
-                auto popup = std::make_unique<AddBodyPopup>("add body", *m_Parent, m_EditorAPI, m_Model);
+                auto popup = std::make_unique<AddBodyPopup>("add body", *m_Parent, m_Model);
                 App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
             }
 
@@ -111,13 +108,12 @@ private:
     }
 
     LifetimedPtr<Widget> m_Parent;
-    IEditorAPI* m_EditorAPI;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget& parent, IEditorAPI* api, std::shared_ptr<IModelStatePair> m) :
-    m_Impl{std::make_unique<Impl>(parent, api, std::move(m))}
+osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget& parent, std::shared_ptr<IModelStatePair> m) :
+    m_Impl{std::make_unique<Impl>(parent, std::move(m))}
 {}
 osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
 osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;

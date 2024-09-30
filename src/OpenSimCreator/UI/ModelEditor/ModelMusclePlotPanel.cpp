@@ -4,7 +4,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/Events/AddMusclePlotEvent.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -23,6 +23,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/Shims/Cpp20/stop_token.h>
 #include <oscar/Shims/Cpp20/thread.h>
 #include <oscar/UI/oscimgui.h>
@@ -1426,20 +1427,20 @@ namespace
     class SharedStateData final {
     public:
         SharedStateData(
-            IEditorAPI* editorAPI,
+            Widget& parent,
             std::shared_ptr<UndoableModelStatePair> uim) :
 
-            m_EditorAPI{editorAPI},
+            m_Parent{parent.weak_ref()},
             m_Model{std::move(uim)}
         {}
 
         SharedStateData(
-            IEditorAPI* editorAPI,
+            Widget& parent,
             std::shared_ptr<UndoableModelStatePair> uim,
             const OpenSim::ComponentPath& coordPath,
             const OpenSim::ComponentPath& musclePath) :
 
-            m_EditorAPI{editorAPI},
+            m_Parent{parent.weak_ref()},
             m_Model{std::move(uim)},
             m_PlotParams{m_Model->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), c_DefaultNumPlotPoints}
         {}
@@ -1450,7 +1451,7 @@ namespace
         const UndoableModelStatePair& getModel() const { return *m_Model; }
         UndoableModelStatePair& updModel() { return *m_Model; }
 
-        IEditorAPI& updEditorAPI() { return *m_EditorAPI; }
+        Widget& getParentWidget() { return *m_Parent; }
 
         std::span<const PlottableOutput> availableOutputs() const { return m_AvailableMuscleOutputs; }
 
@@ -1461,7 +1462,7 @@ namespace
         void setNumRequestedDataPoints(int v) { updPlotParams().setNumRequestedDataPoints(v); }
 
     private:
-        IEditorAPI* m_EditorAPI;
+        LifetimedPtr<Widget> m_Parent;
         std::shared_ptr<UndoableModelStatePair> m_Model;
         PlotParameters m_PlotParams{
             m_Model->getLatestCommit(),
@@ -2084,7 +2085,7 @@ namespace
         {
             const auto* musc = FindComponent<OpenSim::Muscle>(getShared().getModel().getModel(), getShared().getPlotParams().getMusclePath());
             if (musc) {
-                updShared().updEditorAPI().addMusclePlot(coord, *musc);
+                App::post_event<AddMusclePlotEvent>(updShared().getParentWidget(), coord, *musc);
             }
         }
 
@@ -2194,23 +2195,23 @@ class osc::ModelMusclePlotPanel::Impl final {
 public:
 
     Impl(
-        IEditorAPI* editorAPI,
+        Widget& parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName) :
 
-        m_SharedData{editorAPI, std::move(uim)},
+        m_SharedData{parent, std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)},
         panel_name_{panelName}
     {}
 
     Impl(
-        IEditorAPI* editorAPI,
+        Widget& parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName,
         const OpenSim::ComponentPath& coordPath,
         const OpenSim::ComponentPath& musclePath) :
 
-        m_SharedData{editorAPI, std::move(uim), coordPath, musclePath},
+        m_SharedData{parent, std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)},
         panel_name_{panelName}
     {}
@@ -2254,24 +2255,22 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    IEditorAPI* editorAPI,
+    Widget& parent,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
-    m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName)}
+    m_Impl{std::make_unique<Impl>(parent, std::move(uim), panelName)}
 {}
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    IEditorAPI* editorAPI,
+    Widget& parent,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName,
     const OpenSim::ComponentPath& coordPath,
     const OpenSim::ComponentPath& musclePath) :
 
-    m_Impl{std::make_unique<Impl>(editorAPI, std::move(uim), panelName, coordPath, musclePath)}
+    m_Impl{std::make_unique<Impl>(parent, std::move(uim), panelName, coordPath, musclePath)}
 {}
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept = default;

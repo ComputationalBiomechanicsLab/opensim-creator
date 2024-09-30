@@ -2,8 +2,8 @@
 
 #include <memory>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
+namespace osc { class PanelManager; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -12,7 +12,7 @@ namespace osc
     public:
         ModelEditorMainMenu(
             Widget&,
-            IEditorAPI*,
+            std::shared_ptr<PanelManager>,
             std::shared_ptr<IModelStatePair>
         );
         ModelEditorMainMenu(const ModelEditorMainMenu&) = delete;

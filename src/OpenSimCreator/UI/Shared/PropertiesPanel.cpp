@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
+#include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -10,7 +10,9 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
+#include <oscar/Platform/Widget.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -24,14 +26,14 @@ using namespace osc;
 
 namespace
 {
-    void DrawActionsMenu(IEditorAPI* editorAPI, const std::shared_ptr<IModelStatePair>& model)
+    void DrawActionsMenu(Widget& parent, const std::shared_ptr<IModelStatePair>& model)
     {
         const OpenSim::Component* const selection = model->getSelected();
         if (not selection) {
             return;
         }
 
-        const bool disabled = editorAPI == nullptr or model->isReadonly();
+        const bool disabled = model->isReadonly();
         if (disabled) {
             ui::begin_disabled();
         }
@@ -43,9 +45,7 @@ namespace
         ui::next_column();
         ui::push_style_color(ui::ColorVar::Text, Color::yellow());
         if (ui::draw_button(OSC_ICON_BOLT) or ui::is_item_clicked(ui::MouseButton::Right)) {
-            if (editorAPI) {
-                editorAPI->pushComponentContextMenuPopup(GetAbsolutePath(*selection));
-            }
+            App::post_event<OpenComponentContextMenuEvent>(parent, GetAbsolutePath(*selection));
         }
         ui::pop_style_color();
         ui::next_column();
@@ -117,11 +117,10 @@ public:
     Impl(
         std::string_view panelName,
         Widget& parent,
-        IEditorAPI* editorAPI,
         std::shared_ptr<IModelStatePair> model) :
 
         StandardPanelImpl{panelName},
-        m_EditorAPI{editorAPI},
+        m_Parent{parent.weak_ref()},
         m_Model{std::move(model)},
         m_SelectionPropertiesEditor{parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {}
@@ -140,7 +139,7 @@ private:
         // draw an actions row with a button that opens the context menu
         //
         // it's helpful to reveal to users that actions are available (#426)
-        DrawActionsMenu(m_EditorAPI, m_Model);
+        DrawActionsMenu(*m_Parent, m_Model);
 
         m_NameEditor.onDraw();
 
@@ -157,7 +156,7 @@ private:
         }
     }
 
-    IEditorAPI* m_EditorAPI;
+    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_SelectionPropertiesEditor;
@@ -167,9 +166,8 @@ private:
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
     Widget& parent,
-    IEditorAPI* editorAPI,
     std::shared_ptr<IModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(panelName, parent, editorAPI, std::move(model))}
+    m_Impl{std::make_unique<Impl>(panelName, parent, std::move(model))}
 {}
 osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
 osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;

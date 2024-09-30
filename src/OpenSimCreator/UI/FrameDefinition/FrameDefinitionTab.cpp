@@ -9,9 +9,9 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionTabToolbar.h>
 #include <OpenSimCreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ChooseComponentsEditorLayer.h>
 #include <OpenSimCreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
@@ -78,12 +78,12 @@ namespace
     /////
 
     void PushCreateEdgeToOtherPointLayer(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const OpenSim::Point& point,
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
@@ -124,12 +124,12 @@ namespace
     }
 
     void PushCreateMidpointToAnotherPointLayer(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const OpenSim::Point& point,
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
@@ -170,12 +170,12 @@ namespace
     }
 
     void PushCreateCrossProductEdgeLayer(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const Edge& firstEdge,
         const ModelEditorViewerPanelRightClickEvent& sourceEvent)
     {
-        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
+        auto* const visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(sourceEvent.sourcePanelName);
         if (not visualizer) {
             return;  // can't figure out which visualizer to push the layer to
         }
@@ -316,7 +316,7 @@ namespace
 namespace
 {
     void ActionPushCreateFrameLayer(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const Edge& firstEdge,
         CoordinateDirection firstEdgeAxis,
@@ -330,7 +330,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+        auto* const visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (not visualizer) {
             return;  // the visualizer that the user clicked cannot be found
         }
@@ -477,7 +477,7 @@ namespace
     }
 
     void ActionCreateBodyFromFrame(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Frame& frame)
@@ -490,7 +490,7 @@ namespace
             return;  // there is no way to figure out which visualizer to push the layer to
         }
 
-        auto* const visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+        auto* const visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
         if (not visualizer) {
             return;  // the visualizer that the user clicked cannot be found
         }
@@ -563,14 +563,14 @@ namespace
     }
 
     void DrawFocusCameraMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>&,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Component&)
     {
         if (maybeSourceEvent and ui::begin_menu(OSC_ICON_CAMERA " Focus Camera")) {
             if (ui::draw_menu_item("on Ground")) {
-                auto* visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer) {
                     visualizer->focusOn({});
                 }
@@ -578,7 +578,7 @@ namespace
 
             if (maybeSourceEvent->maybeClickPositionInGround and
                 ui::draw_menu_item("on Click Position")) {
-                auto* visualizer = editor.getPanelManager()->try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
+                auto* visualizer = panelManager.try_upd_panel_by_name_T<ModelEditorViewerPanel>(maybeSourceEvent->sourcePanelName);
                 if (visualizer) {
                     visualizer->focusOn(*maybeSourceEvent->maybeClickPositionInGround);
                 }
@@ -589,20 +589,20 @@ namespace
     }
 
     void DrawEdgeAddContextMenuItems(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const Edge& edge)
     {
         if (maybeSourceEvent and ui::draw_menu_item(OSC_ICON_TIMES " Cross Product Edge")) {
-            PushCreateCrossProductEdgeLayer(editor, model, edge, *maybeSourceEvent);
+            PushCreateCrossProductEdgeLayer(panelManager, model, edge, *maybeSourceEvent);
         }
 
         if (maybeSourceEvent and ui::begin_menu(OSC_ICON_ARROWS_ALT " Frame With This Edge as")) {
             ui::push_style_color(ui::ColorVar::Text, Color::muted_red());
             if (ui::draw_menu_item("+x", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::x(),
@@ -614,7 +614,7 @@ namespace
             ui::push_style_color(ui::ColorVar::Text, Color::muted_green());
             if (ui::draw_menu_item("+y", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::y(),
@@ -626,7 +626,7 @@ namespace
             ui::push_style_color(ui::ColorVar::Text, Color::muted_blue());
             if (ui::draw_menu_item("+z", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::z(),
@@ -640,7 +640,7 @@ namespace
             ui::push_style_color(ui::ColorVar::Text, Color::muted_red());
             if (ui::draw_menu_item("-x", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::minus_x(),
@@ -652,7 +652,7 @@ namespace
             ui::push_style_color(ui::ColorVar::Text, Color::muted_green());
             if (ui::draw_menu_item("-y", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::minus_y(),
@@ -664,7 +664,7 @@ namespace
             ui::push_style_color(ui::ColorVar::Text, Color::muted_blue());
             if (ui::draw_menu_item("-z", {}, nullptr, model->canUpdModel())) {
                 ActionPushCreateFrameLayer(
-                    editor,
+                    panelManager,
                     model,
                     edge,
                     CoordinateDirection::minus_z(),
@@ -678,7 +678,7 @@ namespace
     }
 
     void DrawCreateBodyMenuItem(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Frame& frame)
@@ -689,7 +689,7 @@ namespace
         }
 
         if (ui::draw_menu_item(OSC_ICON_WEIGHT " Body From This", {}, false, groundOrExistingBody == nullptr and model->canUpdModel())) {
-            ActionCreateBodyFromFrame(editor, model, maybeSourceEvent, frame);
+            ActionCreateBodyFromFrame(panelManager, model, maybeSourceEvent, frame);
         }
         if (groundOrExistingBody and ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
             std::stringstream ss;
@@ -719,16 +719,16 @@ namespace
     }
 
     void DrawPointAddContextMenuItems(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Point& point)
     {
         if (maybeSourceEvent and ui::draw_menu_item(OSC_ICON_GRIP_LINES " Edge", {}, nullptr, model->canUpdModel())) {
-            PushCreateEdgeToOtherPointLayer(editor, model, point, *maybeSourceEvent);
+            PushCreateEdgeToOtherPointLayer(panelManager, model, point, *maybeSourceEvent);
         }
         if (maybeSourceEvent and ui::draw_menu_item(OSC_ICON_DOT_CIRCLE " Midpoint", {}, nullptr, model->canUpdModel())) {
-            PushCreateMidpointToAnotherPointLayer(editor, model, point, *maybeSourceEvent);
+            PushCreateMidpointToAnotherPointLayer(panelManager, model, point, *maybeSourceEvent);
         }
     }
 
@@ -747,7 +747,7 @@ namespace
     }
 
     void DrawRightClickedMeshContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Mesh& mesh)
@@ -763,11 +763,11 @@ namespace
             DrawMeshExportContextMenuContent(*model, mesh);
             ui::end_menu();
         }
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, mesh);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, mesh);
     }
 
     void DrawRightClickedPointContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Point& point)
@@ -776,15 +776,15 @@ namespace
         DrawContextMenuSeparator();
 
         if (ui::begin_menu(OSC_ICON_PLUS " Add")) {
-            DrawPointAddContextMenuItems(editor, model, maybeSourceEvent, point);
+            DrawPointAddContextMenuItems(panelManager, model, maybeSourceEvent, point);
             ui::end_menu();
         }
         osc::DrawCalculateMenu(model->getModel(), model->getState(), point);
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, point);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, point);
     }
 
     void DrawRightClickedPointToPointEdgeContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const PointToPointEdge& edge)
@@ -793,18 +793,18 @@ namespace
         DrawContextMenuSeparator();
 
         if (ui::begin_menu(OSC_ICON_PLUS " Add")) {
-            DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
+            DrawEdgeAddContextMenuItems(panelManager, model, maybeSourceEvent, edge);
             ui::end_menu();
         }
         if (ui::draw_menu_item(OSC_ICON_RECYCLE " Swap Direction", {}, nullptr, model->canUpdModel())) {
             ActionSwapPointToPointEdgeEnds(*model, edge);
         }
         DrawCalculateMenu(model->getModel(), model->getState(), edge);
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, edge);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, edge);
     }
 
     void DrawRightClickedCrossProductEdgeContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const CrossProductEdge& edge)
@@ -813,18 +813,18 @@ namespace
         DrawContextMenuSeparator();
 
         if (ui::begin_menu(OSC_ICON_PLUS " Add")) {
-            DrawEdgeAddContextMenuItems(editor, model, maybeSourceEvent, edge);
+            DrawEdgeAddContextMenuItems(panelManager, model, maybeSourceEvent, edge);
             ui::end_menu();
         }
         if (ui::draw_menu_item(OSC_ICON_RECYCLE " Swap Operands")) {
             ActionSwapCrossProductEdgeOperands(*model, edge);
         }
         DrawCalculateMenu(model->getModel(), model->getState(), edge);
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, edge);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, edge);
     }
 
     void DrawRightClickedFrameContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Frame& frame)
@@ -833,15 +833,15 @@ namespace
         DrawContextMenuSeparator();
 
         if (ui::begin_menu(OSC_ICON_PLUS " Add")) {
-            DrawCreateBodyMenuItem(editor, model, maybeSourceEvent, frame);
+            DrawCreateBodyMenuItem(panelManager, model, maybeSourceEvent, frame);
             ui::end_menu();
         }
         osc::DrawCalculateMenu(model->getModel(), model->getState(), frame);
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, frame);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, frame);
     }
 
     void DrawRightClickedUnknownComponentContextMenu(
-        IEditorAPI& editor,
+        PanelManager& panelManager,
         const std::shared_ptr<IModelStatePair>& model,
         const std::optional<ModelEditorViewerPanelRightClickEvent>& maybeSourceEvent,
         const OpenSim::Component& component)
@@ -849,7 +849,7 @@ namespace
         DrawRightClickedComponentContextMenuHeader(component);
         DrawContextMenuSeparator();
 
-        DrawFocusCameraMenu(editor, model, maybeSourceEvent, component);
+        DrawFocusCameraMenu(panelManager, model, maybeSourceEvent, component);
     }
 
     // popup state for the frame definition tab's general context menu
@@ -857,18 +857,17 @@ namespace
     public:
         FrameDefinitionContextMenu(
             std::string_view popupName_,
-            IEditorAPI* editorAPI_,
+            std::shared_ptr<PanelManager> panelManager_,
             std::shared_ptr<IModelStatePair> model_,
             OpenSim::ComponentPath componentPath_,
             std::optional<ModelEditorViewerPanelRightClickEvent> maybeSourceVisualizerEvent_ = std::nullopt) :
 
             StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
-            m_EditorAPI{editorAPI_},
+            m_PanelManager{std::move(panelManager_)},
             m_Model{std::move(model_)},
             m_ComponentPath{std::move(componentPath_)},
             m_MaybeSourceVisualizerEvent{std::move(maybeSourceVisualizerEvent_)}
         {
-            OSC_ASSERT(m_EditorAPI != nullptr);
             OSC_ASSERT(m_Model != nullptr);
 
             set_modal(false);
@@ -882,26 +881,26 @@ namespace
                 DrawRightClickedNothingContextMenu(*m_Model);
             }
             else if (const auto* maybeMesh = dynamic_cast<const OpenSim::Mesh*>(maybeComponent)) {
-                DrawRightClickedMeshContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
+                DrawRightClickedMeshContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
             }
             else if (const auto* maybePoint = dynamic_cast<const OpenSim::Point*>(maybeComponent)) {
-                DrawRightClickedPointContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
+                DrawRightClickedPointContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybePoint);
             }
             else if (const auto* maybeFrame = dynamic_cast<const OpenSim::Frame*>(maybeComponent)) {
-                DrawRightClickedFrameContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
+                DrawRightClickedFrameContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeFrame);
             }
             else if (const auto* maybeP2PEdge = dynamic_cast<const PointToPointEdge*>(maybeComponent)) {
-                DrawRightClickedPointToPointEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
+                DrawRightClickedPointToPointEdgeContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeP2PEdge);
             }
             else if (const auto* maybeCPEdge = dynamic_cast<const CrossProductEdge*>(maybeComponent)) {
-                DrawRightClickedCrossProductEdgeContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
+                DrawRightClickedCrossProductEdgeContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeCPEdge);
             }
             else {
-                DrawRightClickedUnknownComponentContextMenu(*m_EditorAPI, m_Model, m_MaybeSourceVisualizerEvent, *maybeComponent);
+                DrawRightClickedUnknownComponentContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeComponent);
             }
         }
 
-        IEditorAPI* m_EditorAPI;
+        std::shared_ptr<PanelManager> m_PanelManager;
         std::shared_ptr<IModelStatePair> m_Model;
         OpenSim::ComponentPath m_ComponentPath;
         std::optional<ModelEditorViewerPanelRightClickEvent> m_MaybeSourceVisualizerEvent;
@@ -949,7 +948,7 @@ namespace
     };
 }
 
-class osc::FrameDefinitionTab::Impl final : public TabPrivate, public IEditorAPI {
+class osc::FrameDefinitionTab::Impl final : public TabPrivate {
 public:
 
     explicit Impl(FrameDefinitionTab& owner, Widget& parent_) :
@@ -967,7 +966,7 @@ public:
                     {
                         auto popup = std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
-                            this,
+                            m_PanelManager,
                             m_Model,
                             rightClickedPath
                         );
@@ -980,7 +979,7 @@ public:
             "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), this, m_Model);
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -1008,7 +1007,7 @@ public:
                     {
                         auto popup = std::make_unique<FrameDefinitionContextMenu>(
                             "##ContextMenu",
-                            this,
+                            m_PanelManager,
                             m_Model,
                             e.componentAbsPathOrEmpty,
                             e
@@ -1042,7 +1041,18 @@ public:
         if (auto* openPopup = dynamic_cast<OpenPopupEvent*>(&e)) {
             if (openPopup->has_tab()) {
                 m_PopupManager.push_back(openPopup->take_tab());
+                return true;
             }
+        }
+        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+            auto popup = std::make_unique<FrameDefinitionContextMenu>(
+                "##ContextMenu",
+                m_PanelManager,
+                m_Model,
+                contextMenuEvent->path()
+            );
+            App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
+            return true;
         }
 
         if (e.type() == EventType::KeyDown) {
@@ -1093,27 +1103,6 @@ private:
         else {
             return false;
         }
-    }
-
-    void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& componentPath) final
-    {
-        auto popup = std::make_unique<FrameDefinitionContextMenu>(
-            "##ContextMenu",
-            this,
-            m_Model,
-            componentPath
-        );
-        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
-    }
-
-    void implAddMusclePlot(const OpenSim::Coordinate&, const OpenSim::Muscle&) final
-    {
-        // ignore: not applicable in this tab
-    }
-
-    std::shared_ptr<PanelManager> implGetPanelManager() final
-    {
-        return m_PanelManager;
     }
 
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();

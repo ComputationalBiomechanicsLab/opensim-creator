@@ -2,11 +2,12 @@
 
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/UI/Events/AddMusclePlotEvent.h>
+#include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/LoadingTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
 #include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.h>
-#include <OpenSimCreator/UI/ModelEditor/IEditorAPI.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorMainMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorToolbar.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.h>
@@ -29,6 +30,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Events/CloseTabEvent.h>
+#include <oscar/UI/Events/OpenNamedPanelEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/Events/ResetUIContextEvent.h>
@@ -57,7 +59,7 @@
 
 using namespace osc;
 
-class osc::ModelEditorTab::Impl final : public TabPrivate, public IEditorAPI {
+class osc::ModelEditorTab::Impl final : public TabPrivate {
 public:
     Impl(
         ModelEditorTab& owner,
@@ -101,7 +103,7 @@ public:
                     m_Model,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), this, m_Model, p);
+                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), m_Model, p);
                         App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                     }
                 );
@@ -111,7 +113,7 @@ public:
             "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), this, m_Model);
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -125,7 +127,7 @@ public:
             "Coordinates",
             [this](std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, *parent(), this, m_Model);
+                return std::make_shared<CoordinateEditorPanel>(panelName, *parent(), m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
@@ -151,7 +153,6 @@ public:
                     auto popup = std::make_unique<ComponentContextMenu>(
                         menuName,
                         editorAPI->owner(),
-                        editorAPI,
                         model,
                         e.componentAbsPathOrEmpty
                     );
@@ -168,7 +169,7 @@ public:
             "muscleplot",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ModelMusclePlotPanel>(this, m_Model, panelName);
+                return std::make_shared<ModelMusclePlotPanel>(this->owner(), m_Model, panelName);
             },
             0  // no muscle plots open at the start
         );
@@ -209,6 +210,34 @@ public:
                 m_PopupManager.push_back(std::move(tab));
                 return true;
             }
+        }
+        else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+            m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
+            return true;
+        }
+        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+            auto popup = std::make_unique<ComponentContextMenu>(
+                "##componentcontextmenu",
+                this->owner(),
+                m_Model,
+                contextMenuEvent->path()
+            );
+            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+            return true;
+        }
+        else if (auto* addMusclePlotEvent = dynamic_cast<AddMusclePlotEvent*>(&e)) {
+            const std::string name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
+
+            m_PanelManager->push_dynamic_panel(
+                "muscleplot",
+                std::make_shared<ModelMusclePlotPanel>(
+                    owner(),
+                    m_Model,
+                    name,
+                    addMusclePlotEvent->getCoordinateAbsPath(),
+                    addMusclePlotEvent->getMuscleAbsPath()
+                )
+            );
         }
 
         switch (e.type()) {
@@ -374,32 +403,6 @@ private:
         }
     }
 
-    void implPushComponentContextMenuPopup(const OpenSim::ComponentPath& path) final
-    {
-        auto popup = std::make_unique<ComponentContextMenu>(
-            "##componentcontextmenu",
-            this->owner(),
-            this,
-            m_Model,
-            path
-        );
-        App::post_event<OpenPopupEvent>(owner(), std::move(popup));
-    }
-
-    void implAddMusclePlot(const OpenSim::Coordinate& coord, const OpenSim::Muscle& muscle) final
-    {
-        const std::string name = m_PanelManager->suggested_dynamic_panel_name("muscleplot");
-        m_PanelManager->push_dynamic_panel(
-            "muscleplot",
-            std::make_shared<ModelMusclePlotPanel>(this, m_Model, name, GetAbsolutePath(coord), GetAbsolutePath(muscle))
-        );
-    }
-
-    std::shared_ptr<PanelManager> implGetPanelManager() final
-    {
-        return m_PanelManager;
-    }
-
     // the model being edited
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
@@ -413,9 +416,9 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    ModelEditorMainMenu m_MainMenu{*parent(), this, m_Model};
-    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *parent(), this, m_Model};
-    EditorTabStatusBar m_StatusBar{*parent(), this, m_Model};
+    ModelEditorMainMenu m_MainMenu{*parent(), m_PanelManager, m_Model};
+    ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *parent(), m_Model};
+    EditorTabStatusBar m_StatusBar{*parent(), m_Model};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;

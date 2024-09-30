@@ -6,7 +6,6 @@
 #include <string_view>
 #include <memory>
 
-namespace osc { class IEditorAPI; }
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
 
@@ -17,7 +16,6 @@ namespace osc
         PropertiesPanel(
             std::string_view panelName,
             Widget& parent,
-            IEditorAPI*,
             std::shared_ptr<IModelStatePair>
         );
         PropertiesPanel(const PropertiesPanel&) = delete;

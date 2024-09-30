@@ -8,20 +8,20 @@
 #include <string_view>
 
 namespace OpenSim { class ComponentPath; }
-namespace osc { class IEditorAPI; }
 namespace osc { class UndoableModelStatePair; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     class ModelMusclePlotPanel final : public IPanel {
     public:
         ModelMusclePlotPanel(
-            IEditorAPI*,
+            Widget&,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName
         );
         ModelMusclePlotPanel(
-            IEditorAPI*,
+            Widget&,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName,
             const OpenSim::ComponentPath& coordPath,
