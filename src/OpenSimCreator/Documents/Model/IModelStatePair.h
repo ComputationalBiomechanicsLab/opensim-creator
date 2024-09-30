@@ -2,12 +2,14 @@
 
 #include <oscar/Utils/UID.h>
 
+#include <memory>
 #include <stdexcept>
 #include <string_view>
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class Model; }
 namespace SimTK { class State; }
+namespace osc { class Environment; }
 
 namespace osc
 {
@@ -80,6 +82,8 @@ namespace osc
             implSetFixupScaleFactor(newScaleFactor);
         }
 
+        std::shared_ptr<Environment> tryUpdEnvironment() { return implUpdAssociatedEnvironment(); }
+
     private:
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
         virtual const OpenSim::Model& implGetModel() const = 0;
@@ -131,5 +135,7 @@ namespace osc
         virtual void implSetSelected(const OpenSim::Component*) {}
         virtual void implSetHovered(const OpenSim::Component*) {}
         virtual void implSetFixupScaleFactor(float) {}
+
+        virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() { return nullptr; }
     };
 }
