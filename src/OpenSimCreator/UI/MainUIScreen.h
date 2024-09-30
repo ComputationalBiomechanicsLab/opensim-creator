@@ -1,12 +1,8 @@
 #pragma once
 
 #include <oscar/Platform/Screen.h>
-#include <oscar/Utils/LifetimedPtr.h>
 
-#include <concepts>
 #include <filesystem>
-#include <memory>
-#include <utility>
 
 namespace osc
 {
@@ -20,11 +16,6 @@ namespace osc
         ~MainUIScreen() noexcept override;
 
         void open(const std::filesystem::path&);
-
-        LifetimedPtr<MainUIScreen> weak_ref()
-        {
-            return Widget::weak_ref().dynamic_downcast<MainUIScreen>();
-        }
 
     private:
         void impl_on_mount() final;
