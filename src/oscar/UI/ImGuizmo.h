@@ -56,6 +56,9 @@ using ImU32 = unsigned int;
 
 namespace ImGuizmo
 {
+   void CreateContext();
+   void DestroyContext();
+
    // call inside your own window and before Manipulate() in order to draw gizmo to that window.
    // Or pass a specific ImDrawList to draw to (e.g. ImGui::GetForegroundDrawList()).
    void SetDrawlist(ImDrawList* drawlist = nullptr);

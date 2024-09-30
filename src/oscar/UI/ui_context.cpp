@@ -634,10 +634,12 @@ void osc::ui::context::init(App& app)
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();
+    ImGuizmo::CreateContext();
 }
 
 void osc::ui::context::shutdown()
 {
+    ImGuizmo::DestroyContext();
     ImPlot::DestroyContext();
 
     graphics_backend::shutdown();
