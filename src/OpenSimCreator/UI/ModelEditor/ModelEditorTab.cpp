@@ -238,6 +238,7 @@ public:
                     addMusclePlotEvent->getMuscleAbsPath()
                 )
             );
+            return true;
         }
 
         switch (e.type()) {
