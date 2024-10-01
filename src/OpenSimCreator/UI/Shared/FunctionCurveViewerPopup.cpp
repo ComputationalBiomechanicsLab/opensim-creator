@@ -7,7 +7,7 @@
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 
@@ -26,14 +26,14 @@
 using namespace osc;
 namespace plot = osc::ui::plot;
 
-class osc::FunctionCurveViewerPopup::Impl final : public StandardPopup {
+class osc::FunctionCurveViewerPanel::Impl final : public StandardPanelImpl {
 public:
     Impl(
         std::string_view popupName,
         std::shared_ptr<const IModelStatePair> targetModel,
         std::function<const OpenSim::Function*()> functionGetter) :
 
-        StandardPopup{popupName, {768.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
+        StandardPanelImpl{popupName, ui::WindowFlag::AlwaysAutoResize},
         m_Model{std::move(targetModel)},
         m_FunctionGetter{std::move(functionGetter)}
     {}
@@ -112,7 +112,9 @@ private:
 
         drawTopEditors();
         drawPlot();
-        drawBottomButtons();
+        if (m_Error) {
+            ui::draw_text_wrapped(*m_Error);
+        }
     }
 
     void drawTopEditors()
@@ -148,13 +150,6 @@ private:
             plot::pop_style_color();
 
             plot::end();
-        }
-    }
-
-    void drawBottomButtons()
-    {
-        if (ui::draw_button("cancel")) {
-            request_close();
         }
     }
 
@@ -219,38 +214,35 @@ private:
 };
 
 
-osc::FunctionCurveViewerPopup::FunctionCurveViewerPopup(
-    std::string_view popupName,
+osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
+    std::string_view panelName,
     std::shared_ptr<const IModelStatePair> targetModel,
     std::function<const OpenSim::Function*()> functionGetter) :
 
-    m_Impl{std::make_unique<Impl>(popupName, std::move(targetModel), std::move(functionGetter))}
+    m_Impl{std::make_unique<Impl>(panelName, std::move(targetModel), std::move(functionGetter))}
 {}
-osc::FunctionCurveViewerPopup::FunctionCurveViewerPopup(FunctionCurveViewerPopup&&) noexcept = default;
-osc::FunctionCurveViewerPopup& osc::FunctionCurveViewerPopup::operator=(FunctionCurveViewerPopup&&) noexcept = default;
-osc::FunctionCurveViewerPopup::~FunctionCurveViewerPopup() noexcept = default;
+osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(FunctionCurveViewerPanel&&) noexcept = default;
+osc::FunctionCurveViewerPanel& osc::FunctionCurveViewerPanel::operator=(FunctionCurveViewerPanel&&) noexcept = default;
+osc::FunctionCurveViewerPanel::~FunctionCurveViewerPanel() noexcept = default;
 
-bool osc::FunctionCurveViewerPopup::impl_is_open() const
+CStringView osc::FunctionCurveViewerPanel::impl_get_name() const
+{
+    return m_Impl->name();
+}
+
+bool osc::FunctionCurveViewerPanel::impl_is_open() const
 {
     return m_Impl->is_open();
 }
-void osc::FunctionCurveViewerPopup::impl_open()
+void osc::FunctionCurveViewerPanel::impl_open()
 {
     m_Impl->open();
 }
-void osc::FunctionCurveViewerPopup::impl_close()
+void osc::FunctionCurveViewerPanel::impl_close()
 {
     m_Impl->close();
 }
-bool osc::FunctionCurveViewerPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-void osc::FunctionCurveViewerPopup::impl_on_draw()
+void osc::FunctionCurveViewerPanel::impl_on_draw()
 {
     m_Impl->on_draw();
-}
-void osc::FunctionCurveViewerPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
 }

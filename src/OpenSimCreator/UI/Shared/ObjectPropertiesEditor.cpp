@@ -25,6 +25,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/Widget.h>
+#include <oscar/UI/Events/OpenPanelEvent.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
@@ -411,6 +412,19 @@ namespace
         const OpenSim::Object* tryGetObject() const
         {
             return m_Args.objectAccessor();
+        }
+
+        OpenSim::ComponentPath tryGetObjectAbsPath() const
+        {
+            auto* obj = tryGetObject();
+            if (not obj) {
+                return {};
+            }
+            auto* component = dynamic_cast<const OpenSim::Component*>(obj);
+            if (not component) {
+                return {};
+            }
+            return GetAbsolutePath(*component);
         }
 
         Widget& parentWidget() { return *m_Args.parent; }
@@ -1497,27 +1511,36 @@ namespace
             ui::next_column();
 
             if (ui::draw_button(OSC_ICON_EYE)) {
-                auto popup = std::make_unique<FunctionCurveViewerPopup>(
+
+                // care: the accessor here differs from the default because the user's selection
+                // can change the accessor's behavior. This is a panel, so it should stick to
+                // whatever was selected when the panel was spawned.
+                auto panel = std::make_unique<FunctionCurveViewerPanel>(
                     generatePopupName(*prop),
                     getModelPtr(),
-                    [accessor = getPropertyAccessor()]() -> const OpenSim::Function*
+                    [model = getModelPtr(), parentPath = tryGetObjectAbsPath(), propname = prop->getName()]() -> const OpenSim::Function*
                     {
-                        const OpenSim::AbstractProperty* prop = accessor();
-
-                        if (not prop) {
+                        auto* parentComponent = FindComponent(*model, parentPath);
+                        if (not parentComponent) {
                             return nullptr;
                         }
-                        if (not prop->isObjectProperty()) {
+                        if (not parentComponent->hasProperty(propname)) {
                             return nullptr;
                         }
-                        if (prop->empty()) {
+                        auto& prop = parentComponent->getPropertyByName(propname);
+                        if (prop.empty()) {
                             return nullptr;
                         }
-
-                        return dynamic_cast<const OpenSim::Function*>(&prop->getValueAsObject(0));
+                        if (not prop.isObjectProperty()) {
+                            return nullptr;
+                        }
+                        if (prop.empty()) {
+                            return nullptr;
+                        }
+                        return dynamic_cast<const OpenSim::Function*>(&prop.getValueAsObject(0));
                     }
                 );
-                App::post_event<OpenPopupEvent>(parentWidget(), std::move(popup));
+                App::post_event<OpenPanelEvent>(parentWidget(), std::move(panel));
             }
             ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();

@@ -31,6 +31,7 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Events/CloseTabEvent.h>
 #include <oscar/UI/Events/OpenNamedPanelEvent.h>
+#include <oscar/UI/Events/OpenPanelEvent.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/Events/ResetUIContextEvent.h>
@@ -214,6 +215,14 @@ public:
         else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
             m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
             return true;
+        }
+        else if (auto* panel = dynamic_cast<OpenPanelEvent*>(&e)) {
+            if (panel->has_tab()) {
+                auto panelPtr = panel->take_panel();
+                const std::string name{panelPtr->name()};
+                m_PanelManager->push_dynamic_panel(name, std::move(panelPtr));
+                return true;
+            }
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(

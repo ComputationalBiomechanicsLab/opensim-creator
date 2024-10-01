@@ -318,6 +318,7 @@ add_library(oscar STATIC
     UI/Events/CloseTabEvent.h
     UI/Events/OpenTabEvent.h
     UI/Events/OpenNamedPanelEvent.h
+    UI/Events/OpenPanelEvent.h
     UI/Events/OpenPopupEvent.h
     UI/Events/ResetUIContextEvent.h
     UI/Panels/IPanel.h

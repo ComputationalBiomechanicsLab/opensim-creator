@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/UI/Panels/IPanel.h>
 
 #include <functional>
 #include <memory>
@@ -12,26 +12,25 @@ namespace osc { class IModelStatePair; }
 namespace osc
 {
 
-    class FunctionCurveViewerPopup final : public IPopup {
+    class FunctionCurveViewerPanel final : public IPanel {
     public:
-        FunctionCurveViewerPopup(
-            std::string_view popupName,
+        FunctionCurveViewerPanel(
+            std::string_view panelName,
             std::shared_ptr<const IModelStatePair> targetModel,
             std::function<const OpenSim::Function*()> functionGetter
         );
-        FunctionCurveViewerPopup(const FunctionCurveViewerPopup&) = delete;
-        FunctionCurveViewerPopup(FunctionCurveViewerPopup&&) noexcept;
-        FunctionCurveViewerPopup& operator=(const FunctionCurveViewerPopup&) = delete;
-        FunctionCurveViewerPopup& operator=(FunctionCurveViewerPopup&&) noexcept;
-        ~FunctionCurveViewerPopup() noexcept;
+        FunctionCurveViewerPanel(const FunctionCurveViewerPanel&) = delete;
+        FunctionCurveViewerPanel(FunctionCurveViewerPanel&&) noexcept;
+        FunctionCurveViewerPanel& operator=(const FunctionCurveViewerPanel&) = delete;
+        FunctionCurveViewerPanel& operator=(FunctionCurveViewerPanel&&) noexcept;
+        ~FunctionCurveViewerPanel() noexcept;
 
     private:
+        CStringView impl_get_name() const final;
         bool impl_is_open() const final;
         void impl_open() final;
         void impl_close() final;
-        bool impl_begin_popup() final;
         void impl_on_draw() final;
-        void impl_end_popup() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

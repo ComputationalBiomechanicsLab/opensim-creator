@@ -21,6 +21,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The simulator tab now has very similar behavior to the model editor tab - albeit, with
   editing disabled. This is part of an ongoing effort to merge the model editor, simulator,
   and preview experimental data workflows into a single UI.
+- The function curve viewer now spawns a separate, movable, panel that can be docked etc. in
+  the rest of the UI (previously: it would spawn a popup that took control of the UI until
+  it was closed).
 - Fixed the navigator erroneously autoscrolling in some cases when selecting components
   via the navigator (#908)
 - There is now a slight color difference between selected and hovered items in the UI (e.g.
