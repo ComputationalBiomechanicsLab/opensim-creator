@@ -281,12 +281,6 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/AddBodyPopup.h
     UI/ModelEditor/AddComponentPopup.cpp
     UI/ModelEditor/AddComponentPopup.h
-    UI/ModelEditor/ComponentContextMenu.cpp
-    UI/ModelEditor/ComponentContextMenu.h
-    UI/ModelEditor/CoordinateEditorPanel.cpp
-    UI/ModelEditor/CoordinateEditorPanel.h
-    UI/ModelEditor/EditorTabStatusBar.cpp
-    UI/ModelEditor/EditorTabStatusBar.h
     UI/ModelEditor/ExportPointsPopup.cpp
     UI/ModelEditor/ExportPointsPopup.h
     UI/ModelEditor/ModelActionsMenuItems.cpp
@@ -299,8 +293,6 @@ add_library(OpenSimCreator STATIC
     UI/ModelEditor/ModelEditorToolbar.h
     UI/ModelEditor/ModelMusclePlotPanel.cpp
     UI/ModelEditor/ModelMusclePlotPanel.h
-    UI/ModelEditor/OutputWatchesPanel.cpp
-    UI/ModelEditor/OutputWatchesPanel.h
     UI/ModelEditor/ReassignSocketPopup.cpp
     UI/ModelEditor/ReassignSocketPopup.h
     UI/ModelEditor/SelectComponentPopup.cpp
@@ -338,6 +330,12 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ChooseComponentsEditorLayer.cpp
     UI/Shared/ChooseComponentsEditorLayer.h
     UI/Shared/ChooseComponentsEditorLayerParameters.h
+    UI/Shared/ComponentContextMenu.cpp
+    UI/Shared/ComponentContextMenu.h
+    UI/Shared/CoordinateEditorPanel.cpp
+    UI/Shared/CoordinateEditorPanel.h
+    UI/Shared/EditorTabStatusBar.cpp
+    UI/Shared/EditorTabStatusBar.h
     UI/Shared/FunctionCurveViewerPopup.cpp
     UI/Shared/FunctionCurveViewerPopup.h
     UI/Shared/GeometryPathEditorPopup.cpp
@@ -360,6 +358,8 @@ add_library(OpenSimCreator STATIC
     UI/Shared/NavigatorPanel.h
     UI/Shared/ObjectPropertiesEditor.cpp
     UI/Shared/ObjectPropertiesEditor.h
+    UI/Shared/OutputWatchesPanel.cpp
+    UI/Shared/OutputWatchesPanel.h
     UI/Shared/ParamBlockEditorPopup.cpp
     UI/Shared/ParamBlockEditorPopup.h
     UI/Shared/PropertiesPanel.cpp

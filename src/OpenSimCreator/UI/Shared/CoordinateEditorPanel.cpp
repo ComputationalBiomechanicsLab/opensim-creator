@@ -3,7 +3,7 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Platform/OSCColors.h>
-#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
+#include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>

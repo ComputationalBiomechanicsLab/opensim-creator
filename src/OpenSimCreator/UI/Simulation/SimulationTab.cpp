@@ -10,9 +10,9 @@
 #include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
-#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
-#include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
-#include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.h>
+#include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
+#include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
+#include <OpenSimCreator/UI/Shared/EditorTabStatusBar.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
