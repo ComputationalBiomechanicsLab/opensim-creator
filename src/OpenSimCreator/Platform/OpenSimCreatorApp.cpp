@@ -50,12 +50,12 @@ namespace
         {"panels/Log/enabled", true},
         {"panels/Properties/enabled", true},
         {"panels/Selection Details/enabled", true},
-        {"panels/Simulation Details/enabled", false},
+        {"panels/Simulation Details/enabled", false},  // replaced by `Properties` around v0.5.15
         {"panels/Coordinates/enabled", true},
         {"panels/Performance/enabled", false},
         {"panels/Muscle Plot/enabled", false},
         {"panels/Output Watches/enabled", false},
-        {"panels/Output Plots/enabled", false},
+        {"panels/Output Plots/enabled", false},        // merged with `Output Watches` around v0.5.15
         {"panels/Source Mesh/enabled", true},
         {"panels/Destination Mesh/enabled", true},
         {"panels/Result/enabled", true},

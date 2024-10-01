@@ -278,6 +278,10 @@ public:
         }
         catch (const std::exception& ex) {
             tryRecoveringFromException(ex);
+
+            // Request to reset the 2D UI context, because the exception
+            // unroll may have left it in an indeterminate state.
+            App::notify<ResetUIContextEvent>(*parent());
         }
 
         // always re-update this, in case the model's document name changed
@@ -342,10 +346,6 @@ public:
                 App::post_event<CloseTabEvent>(*parent(), id());
             }
         }
-
-        // Request to reset the 2D UI context, because the exception
-        // unroll may have left it in an indeterminate state.
-        App::notify<ResetUIContextEvent>(*parent());
     }
 
 private:

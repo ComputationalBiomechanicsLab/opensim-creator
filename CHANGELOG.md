@@ -18,6 +18,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     aid in the 3D visualizer panel to see the forces being emitted by the forces.
   - The above two features can be used at the same time, which helps with (e.g.) validating
     that `ExternalLoads` are being applied to the correct frame etc.
+- The simulator tab now has very similar behavior to the model editor tab - albeit, with
+  editing disabled. This is part of an ongoing effort to merge the model editor, simulator,
+  and preview experimental data workflows into a single UI.
 - Fixed the navigator erroneously autoscrolling in some cases when selecting components
   via the navigator (#908)
 - There is now a slight color difference between selected and hovered items in the UI (e.g.

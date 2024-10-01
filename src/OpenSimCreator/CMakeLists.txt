@@ -373,7 +373,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/ModelStatePairContextMenu.h
     UI/Simulation/OutputPlotsPanel.cpp
     UI/Simulation/OutputPlotsPanel.h
-    UI/Simulation/SelectionDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.cpp
     UI/Simulation/SimulationDetailsPanel.h
     UI/Simulation/SimulationOutputPlot.cpp
@@ -388,7 +387,6 @@ add_library(OpenSimCreator STATIC
     UI/Simulation/SimulationToolbar.h
     UI/Simulation/SimulationUILoopingState.h
     UI/Simulation/SimulationUIPlaybackState.h
-    UI/Simulation/SelectionDetailsPanel.h
     UI/Simulation/SimulationViewerPanel.cpp
     UI/Simulation/SimulationViewerPanel.h
     UI/Simulation/SimulationViewerPanelParameters.h

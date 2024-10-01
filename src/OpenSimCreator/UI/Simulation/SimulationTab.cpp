@@ -7,12 +7,15 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationClock.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
+#include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.h>
+#include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/ModelStatePairContextMenu.h>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.h>
-#include <OpenSimCreator/UI/Simulation/SelectionDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationTabMainMenu.h>
 #include <OpenSimCreator/UI/Simulation/SimulationToolbar.h>
@@ -27,6 +30,7 @@
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
@@ -75,15 +79,6 @@ public:
         TabPrivate{owner, &parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Simulation{std::move(simulation_)}
     {
-        // register panels
-
-        m_PanelManager->register_toggleable_panel(
-            "Performance",
-            [](std::string_view panelName)
-            {
-                return std::make_shared<PerfPanel>(panelName);
-            }
-        );
         m_PanelManager->register_toggleable_panel(
             "Navigator",
             [this](std::string_view panelName)
@@ -105,17 +100,35 @@ public:
             }
         );
         m_PanelManager->register_toggleable_panel(
-            "Selection Details",
+            "Properties",
             [this](std::string_view panelName)
             {
-                return std::make_shared<SelectionDetailsPanel>(
-                    panelName,
-                    this
-                );
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_ShownModelState);
             }
         );
         m_PanelManager->register_toggleable_panel(
-            "Output Plots",
+            "Log",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<LogViewerPanel>(panelName);
+            }
+        );
+        m_PanelManager->register_toggleable_panel(
+            "Coordinates",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<CoordinateEditorPanel>(panelName, *parent(), m_ShownModelState);
+            }
+        );
+        m_PanelManager->register_toggleable_panel(
+            "Performance",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<PerfPanel>(panelName);
+            }
+        );
+        m_PanelManager->register_toggleable_panel(
+            "Output Watches",
             [this](std::string_view panelName)
             {
                 return std::make_shared<OutputPlotsPanel>(
@@ -134,13 +147,6 @@ public:
                     this,
                     m_Simulation
                 );
-            }
-        );
-        m_PanelManager->register_toggleable_panel(
-            "Log",
-            [](std::string_view panelName)
-            {
-                return std::make_shared<LogViewerPanel>(panelName);
             }
         );
         m_PanelManager->register_spawnable_panel(
@@ -209,6 +215,28 @@ public:
 
     bool onEvent(Event& e)
     {
+        if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
+            if (openPopupEvent->has_tab()) {
+                auto tab = openPopupEvent->take_tab();
+                tab->open();
+                m_PopupManager.push_back(std::move(tab));
+                return true;
+            }
+        }
+        else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+            m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
+            return true;
+        }
+        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+            auto popup = std::make_unique<ModelStatePairContextMenu>(
+                "##componentcontextmenu",
+                m_ShownModelState,
+                contextMenuEvent->path().toString()
+            );
+            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+            return true;
+        }
+
         if (e.type() == EventType::KeyDown) {
             if (dynamic_cast<const KeyEvent&>(e).matches(Key::Space)) {
                 togglePlaybackMode();
@@ -403,6 +431,7 @@ private:
 
             OSC_PERF("draw simulation screen");
             m_PanelManager->on_draw();
+            m_StatusBar.onDraw();
             m_PopupManager.on_draw();
         }
         else
@@ -441,6 +470,7 @@ private:
     // non-toggleable UI panels/menus/toolbars
     SimulationTabMainMenu m_MainMenu{*parent(), m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
+    EditorTabStatusBar m_StatusBar{*parent(), m_ShownModelState};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;
