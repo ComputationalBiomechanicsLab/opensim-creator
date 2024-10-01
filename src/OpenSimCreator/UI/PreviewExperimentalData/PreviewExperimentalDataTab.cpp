@@ -6,10 +6,16 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
+#include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
+#include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
+#include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
+#include <OpenSimCreator/UI/Shared/EditorTabStatusBar.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/Shared/OutputWatchesPanel.h>
+#include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -26,10 +32,13 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
+#include <oscar/UI/Events.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
+#include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
+#include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
@@ -209,26 +218,6 @@ namespace
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
         float m_ScrubTime = 0.0f;
     };
-
-    class ReadonlyPropertiesEditorPanel final : public StandardPanelImpl {
-    public:
-        ReadonlyPropertiesEditorPanel(
-            std::string_view panelName,
-            Widget& parent,
-            const std::shared_ptr<const IModelStatePair>& targetModel) :
-
-            StandardPanelImpl{panelName},
-            m_PropertiesEditor{parent, targetModel, [model = targetModel](){ return model->getSelected(); }}
-        {}
-    private:
-        void impl_draw_content() final
-        {
-            ui::begin_disabled();
-            m_PropertiesEditor.onDraw();
-            ui::end_disabled();
-        }
-        ObjectPropertiesEditor m_PropertiesEditor;
-    };
 }
 
 class osc::PreviewExperimentalDataTab::Impl final : public TabPrivate {
@@ -245,20 +234,20 @@ public:
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_UiState->updSharedModelPtr(),
-                    [](const OpenSim::ComponentPath&) {}
+                    [this](const OpenSim::ComponentPath& p)
+                    {
+                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), m_UiState->updSharedModelPtr(), p);
+                        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
+                    }
                 );
             }
         );
-        m_PanelManager->register_spawnable_panel(
-            "viewer",
+        m_PanelManager->register_toggleable_panel(
+            "Properties",
             [this](std::string_view panelName)
             {
-                auto onRightClick = [](const ModelEditorViewerPanelRightClickEvent&) {};
-                ModelEditorViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
-                panelParams.updRenderParams().decorationOptions.setMuscleColoringStyle(MuscleColoringStyle::Default);
-                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
-            },
-            1  // have one viewer open at the start
+                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_UiState->updSharedModelPtr());
+            }
         );
         m_PanelManager->register_toggleable_panel(
             "Log",
@@ -268,23 +257,106 @@ public:
             }
         );
         m_PanelManager->register_toggleable_panel(
-            "Properties",
+            "Coordinates",
             [this](std::string_view panelName)
             {
-                return std::make_shared<ReadonlyPropertiesEditorPanel>(panelName, this->owner(), m_UiState->updSharedModelPtr());
+                return std::make_shared<CoordinateEditorPanel>(panelName, this->owner(),  m_UiState->updSharedModelPtr());
             }
         );
+        m_PanelManager->register_toggleable_panel(
+            "Performance",
+            [](std::string_view panelName)
+            {
+                return std::make_shared<PerfPanel>(panelName);
+            }
+        );
+        m_PanelManager->register_toggleable_panel(
+            "Output Watches",
+            [this](std::string_view panelName)
+            {
+                return std::make_shared<OutputWatchesPanel>(panelName, m_UiState->updSharedModelPtr());
+            }
+        );
+        m_PanelManager->register_spawnable_panel(
+            "viewer",
+            [this](std::string_view panelName)
+            {
+                auto onRightClick = [model = m_UiState->updSharedModelPtr(), menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelEditorViewerPanelRightClickEvent& e)
+                    {
+                        auto popup = std::make_unique<ComponentContextMenu>(
+                            menuName,
+                            editorAPI->owner(),
+                            model,
+                            e.componentAbsPathOrEmpty
+                        );
+
+                        App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
+                    };
+                ModelEditorViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
+
+                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
+            },
+            1  // have one viewer open at the start
+        );
     }
-    void on_mount() { m_PanelManager->on_mount(); }
-    void on_unmount() { m_PanelManager->on_unmount(); }
-    void on_tick() { m_PanelManager->on_tick(); }
-    void on_draw_main_menu() { m_WindowMenu.on_draw(); }
+
+    void on_mount()
+    {
+        m_PanelManager->on_mount();
+        m_PopupManager.on_mount();
+    }
+
+    void on_unmount()
+    {
+        // m_PopupManager.on_unmount();
+        m_PanelManager->on_unmount();
+    }
+
+    bool on_event(Event& e)
+    {
+        if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
+            if (openPopupEvent->has_tab()) {
+                auto tab = openPopupEvent->take_tab();
+                tab->open();
+                m_PopupManager.push_back(std::move(tab));
+                return true;
+            }
+        }
+        else if (auto* namedPanel = dynamic_cast<OpenNamedPanelEvent*>(&e)) {
+            m_PanelManager->set_toggleable_panel_activated(namedPanel->panel_name(), true);
+            return true;
+        }
+        else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
+            auto popup = std::make_unique<ComponentContextMenu>(
+                "##componentcontextmenu",
+                this->owner(),
+                m_UiState->updSharedModelPtr(),
+                contextMenuEvent->path()
+            );
+            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+            return true;
+        }
+        return false;
+    }
+
+    void on_tick()
+    {
+        m_PanelManager->on_tick();
+    }
+
+    void on_draw_main_menu()
+    {
+        m_WindowMenu.on_draw();
+    }
+
     void on_draw()
     {
         try {
             ui::enable_dockspace_over_main_viewport();
             drawToolbar();
             m_PanelManager->on_draw();
+            m_StatusBar.onDraw();
+            m_PopupManager.on_draw();
             m_ThrewExceptionLastFrame = false;
         }
         catch (const std::exception& ex) {
@@ -394,7 +466,9 @@ private:
     std::shared_ptr<PreviewExperimentalDataUiState> m_UiState = std::make_shared<PreviewExperimentalDataUiState>();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     WindowMenu m_WindowMenu{m_PanelManager};
+    EditorTabStatusBar m_StatusBar{*parent(), m_UiState->updSharedModelPtr()};
     std::shared_ptr<IconCache> m_IconCache;
+    PopupManager m_PopupManager;
     bool m_ThrewExceptionLastFrame = false;
 };
 
@@ -406,6 +480,7 @@ osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(Widget& ptr) :
 {}
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }
 void osc::PreviewExperimentalDataTab::impl_on_unmount() { private_data().on_unmount(); }
+bool osc::PreviewExperimentalDataTab::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::PreviewExperimentalDataTab::impl_on_tick() { private_data().on_tick(); }
 void osc::PreviewExperimentalDataTab::impl_on_draw_main_menu() { return private_data().on_draw_main_menu(); }
 void osc::PreviewExperimentalDataTab::impl_on_draw() { private_data().on_draw(); }

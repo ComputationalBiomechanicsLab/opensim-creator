@@ -54,6 +54,11 @@ namespace osc
             return dynamic_cast<const T*>(getSelected());
         }
 
+        void setSelected(const OpenSim::Component* newSelection)
+        {
+            implSetSelected(newSelection);
+        }
+
         void clearSelected() { setSelected(nullptr); }
 
         const OpenSim::Component* getHovered() const
@@ -61,20 +66,15 @@ namespace osc
             return implGetHovered();
         }
 
+        void setHovered(const OpenSim::Component* newHover)
+        {
+            implSetHovered(newHover);
+        }
+
         // used to scale weird models (e.g. fly leg) in the UI
         float getFixupScaleFactor() const
         {
             return implGetFixupScaleFactor();
-        }
-
-        void setSelected(const OpenSim::Component* newSelection)
-        {
-            implSetSelected(newSelection);
-        }
-
-        void setHovered(const OpenSim::Component* newHover)
-        {
-            implSetHovered(newHover);
         }
 
         void setFixupScaleFactor(float newScaleFactor)
@@ -132,9 +132,9 @@ namespace osc
         virtual const OpenSim::Component* implGetSelected() const { return nullptr; }
         virtual const OpenSim::Component* implGetHovered() const { return nullptr; }
         virtual float implGetFixupScaleFactor() const { return 1.0f; }
+        virtual void implSetFixupScaleFactor(float) {}
         virtual void implSetSelected(const OpenSim::Component*) {}
         virtual void implSetHovered(const OpenSim::Component*) {}
-        virtual void implSetFixupScaleFactor(float) {}
 
         virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() const { return nullptr; }
     };
