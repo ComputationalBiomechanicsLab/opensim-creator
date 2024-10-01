@@ -369,8 +369,6 @@ add_library(OpenSimCreator STATIC
 
     UI/Simulation/ISimulatorUIAPI.cpp
     UI/Simulation/ISimulatorUIAPI.h
-    UI/Simulation/ModelStatePairContextMenu.cpp
-    UI/Simulation/ModelStatePairContextMenu.h
     UI/Simulation/OutputPlotsPanel.cpp
     UI/Simulation/OutputPlotsPanel.h
     UI/Simulation/SimulationDetailsPanel.cpp

@@ -10,11 +10,11 @@
 #include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
 #include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
-#include <OpenSimCreator/UI/Simulation/ModelStatePairContextMenu.h>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationDetailsPanel.h>
 #include <OpenSimCreator/UI/Simulation/SimulationTabMainMenu.h>
@@ -88,8 +88,9 @@ public:
                     m_ShownModelState,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        auto popup = std::make_shared<ModelStatePairContextMenu>(
+                        auto popup = std::make_shared<ComponentContextMenu>(
                             "##componentcontextmenu",
+                            this->owner(),
                             m_ShownModelState,
                             p.toString()
                         );
@@ -158,10 +159,11 @@ public:
                     m_ShownModelState,
                     [this, menuName = std::string{panelName} + "_contextmenu"](const SimulationViewerRightClickEvent& e)
                     {
-                        auto popup = std::make_shared<ModelStatePairContextMenu>(
+                        auto popup = std::make_shared<ComponentContextMenu>(
                             menuName,
+                            this->owner(),
                             m_ShownModelState,
-                            e.maybeComponentAbsPath
+                            e.maybeComponentAbsPath ? OpenSim::ComponentPath{*e.maybeComponentAbsPath} : OpenSim::ComponentPath{}
                         );
                         popup->open();
                         m_PopupManager.push_back(std::move(popup));
@@ -228,8 +230,9 @@ public:
             return true;
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
-            auto popup = std::make_unique<ModelStatePairContextMenu>(
+            auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
+                this->owner(),
                 m_ShownModelState,
                 contextMenuEvent->path().toString()
             );
