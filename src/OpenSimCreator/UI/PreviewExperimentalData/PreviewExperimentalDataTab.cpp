@@ -218,6 +218,107 @@ namespace
         ClosedInterval<float> m_TimeRange = {0.0f, 10.0f};
         float m_ScrubTime = 0.0f;
     };
+
+    class PreviewExperimentalDataTabToolbar final {
+    public:
+        explicit PreviewExperimentalDataTabToolbar(std::shared_ptr<PreviewExperimentalDataUiState> uiState) :
+            m_UiState{std::move(uiState)}
+        {}
+
+        void onDraw()
+        {
+            if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f})) {
+                // load/reload etc.
+                {
+                    if (ui::draw_button("load model")) {
+                        if (const auto path = prompt_user_to_select_file({"osim"})) {
+                            m_UiState->loadModelFile(*path);
+                        }
+                    }
+
+                    ui::same_line();
+                    if (not m_UiState->isModelLoaded()) {
+                        ui::begin_disabled();
+                    }
+                    if (ui::draw_button("load model trajectory/states")) {
+                        if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
+                            m_UiState->loadModelTrajectoryFile(*path);
+                        }
+                    }
+                    if (not m_UiState->isModelLoaded()) {
+                        ui::end_disabled();
+                    }
+
+                    ui::same_line();
+                    if (ui::draw_button("load raw data file")) {
+                        m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
+                    }
+
+                    if (not m_UiState->isModelLoaded()) {
+                        ui::begin_disabled();
+                    }
+                    ui::same_line();
+                    if (ui::draw_button("load OpenSim XML")) {
+                        m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
+                    }
+                    if (not m_UiState->isModelLoaded()) {
+                        ui::end_disabled();
+                    }
+
+                    ui::same_line();
+                    if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
+                        m_UiState->reloadAll();
+                    }
+                }
+
+                // scrubber
+                ui::draw_same_line_with_vertical_separator();
+                {
+                    ClosedInterval<float> tr = m_UiState->getTimeRange();
+                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                    if (ui::draw_float_input("<=", &tr.lower)) {
+                        m_UiState->setTimeRange(tr);
+                    }
+
+                    ui::same_line();
+                    auto t = static_cast<float>(m_UiState->getScrubTime());
+                    ui::set_next_item_width(ui::calc_text_size("----------------------------------------------------------------").x);
+                    if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
+                        m_UiState->setScrubTime(t);
+                    }
+
+                    ui::same_line();
+                    ui::draw_text("<=");
+                    ui::same_line();
+                    ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
+                    if (ui::draw_float_input("##<=", &tr.upper)) {
+                        m_UiState->setTimeRange(tr);
+                    }
+                }
+
+                // scaling, visualization toggles.
+                ui::draw_same_line_with_vertical_separator();
+                {
+                    DrawSceneScaleFactorEditorControls(m_UiState->updModel());
+                    if (not m_IconCache) {
+                        m_IconCache = App::singleton<IconCache>(
+                            App::resource_loader().with_prefix("icons/"),
+                            ui::get_text_line_height()/128.0f
+                        );
+                    }
+                    ui::same_line();
+                    DrawAllDecorationToggleButtons(m_UiState->updModel(), *m_IconCache);
+                }
+
+
+                ui::draw_same_line_with_vertical_separator();
+            }
+            ui::end_panel();
+        }
+    private:
+        std::shared_ptr<PreviewExperimentalDataUiState> m_UiState;
+        std::shared_ptr<IconCache> m_IconCache;
+    };
 }
 
 class osc::PreviewExperimentalDataTab::Impl final : public TabPrivate {
@@ -353,7 +454,7 @@ public:
     {
         try {
             ui::enable_dockspace_over_main_viewport();
-            drawToolbar();
+            m_Toolbar.onDraw();
             m_PanelManager->on_draw();
             m_StatusBar.onDraw();
             m_PopupManager.on_draw();
@@ -372,102 +473,11 @@ public:
     }
 
 private:
-    void drawToolbar()
-    {
-        if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f})) {
-            // load/reload etc.
-            {
-                if (ui::draw_button("load model")) {
-                    if (const auto path = prompt_user_to_select_file({"osim"})) {
-                        m_UiState->loadModelFile(*path);
-                    }
-                }
-
-                ui::same_line();
-                if (not m_UiState->isModelLoaded()) {
-                    ui::begin_disabled();
-                }
-                if (ui::draw_button("load model trajectory/states")) {
-                    if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
-                        m_UiState->loadModelTrajectoryFile(*path);
-                    }
-                }
-                if (not m_UiState->isModelLoaded()) {
-                    ui::end_disabled();
-                }
-
-                ui::same_line();
-                if (ui::draw_button("load raw data file")) {
-                    m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
-                }
-
-                if (not m_UiState->isModelLoaded()) {
-                    ui::begin_disabled();
-                }
-                ui::same_line();
-                if (ui::draw_button("load OpenSim XML")) {
-                    m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
-                }
-                if (not m_UiState->isModelLoaded()) {
-                    ui::end_disabled();
-                }
-
-                ui::same_line();
-                if (ui::draw_button(OSC_ICON_RECYCLE " reload all")) {
-                    m_UiState->reloadAll();
-                }
-            }
-
-            // scrubber
-            ui::draw_same_line_with_vertical_separator();
-            {
-                ClosedInterval<float> tr = m_UiState->getTimeRange();
-                ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
-                if (ui::draw_float_input("<=", &tr.lower)) {
-                    m_UiState->setTimeRange(tr);
-                }
-
-                ui::same_line();
-                auto t = static_cast<float>(m_UiState->getScrubTime());
-                ui::set_next_item_width(ui::calc_text_size("----------------------------------------------------------------").x);
-                if (ui::draw_float_slider("t", &t, static_cast<float>(tr.lower), static_cast<float>(tr.upper), "%.6f")) {
-                    m_UiState->setScrubTime(t);
-                }
-
-                ui::same_line();
-                ui::draw_text("<=");
-                ui::same_line();
-                ui::set_next_item_width(ui::calc_text_size("<= xxxx").x);
-                if (ui::draw_float_input("##<=", &tr.upper)) {
-                    m_UiState->setTimeRange(tr);
-                }
-            }
-
-            // scaling, visualization toggles.
-            ui::draw_same_line_with_vertical_separator();
-            {
-                DrawSceneScaleFactorEditorControls(m_UiState->updModel());
-                if (not m_IconCache) {
-                    m_IconCache = App::singleton<IconCache>(
-                        App::resource_loader().with_prefix("icons/"),
-                        ui::get_text_line_height()/128.0f
-                    );
-                }
-                ui::same_line();
-                DrawAllDecorationToggleButtons(m_UiState->updModel(), *m_IconCache);
-            }
-
-
-            ui::draw_same_line_with_vertical_separator();
-        }
-        ui::end_panel();
-    }
-
     std::shared_ptr<PreviewExperimentalDataUiState> m_UiState = std::make_shared<PreviewExperimentalDataUiState>();
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    PreviewExperimentalDataTabToolbar m_Toolbar{m_UiState};
     WindowMenu m_WindowMenu{m_PanelManager};
     EditorTabStatusBar m_StatusBar{*parent(), m_UiState->updSharedModelPtr()};
-    std::shared_ptr<IconCache> m_IconCache;
     PopupManager m_PopupManager;
     bool m_ThrewExceptionLastFrame = false;
 };
