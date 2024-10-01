@@ -13,6 +13,9 @@
 #include <OpenSimCreator/UI/ModelEditor/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/ModelEditor/CoordinateEditorPanel.h>
 #include <OpenSimCreator/UI/ModelEditor/EditorTabStatusBar.h>
+#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.h>
@@ -20,9 +23,6 @@
 #include <OpenSimCreator/UI/Simulation/SimulationTabMainMenu.h>
 #include <OpenSimCreator/UI/Simulation/SimulationToolbar.h>
 #include <OpenSimCreator/UI/Simulation/SimulationUIPlaybackState.h>
-#include <OpenSimCreator/UI/Simulation/SimulationViewerPanel.h>
-#include <OpenSimCreator/UI/Simulation/SimulationViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Simulation/SimulationViewerRightClickEvent.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -154,23 +154,23 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                SimulationViewerPanelParameters params
+                ModelEditorViewerPanelParameters params
                 {
                     m_ShownModelState,
-                    [this, menuName = std::string{panelName} + "_contextmenu"](const SimulationViewerRightClickEvent& e)
+                    [this, menuName = std::string{panelName} + "_contextmenu"](const ModelEditorViewerPanelRightClickEvent& e)
                     {
                         auto popup = std::make_shared<ComponentContextMenu>(
                             menuName,
                             this->owner(),
                             m_ShownModelState,
-                            e.maybeComponentAbsPath ? OpenSim::ComponentPath{*e.maybeComponentAbsPath} : OpenSim::ComponentPath{}
+                            OpenSim::ComponentPath{e.componentAbsPathOrEmpty}
                         );
                         popup->open();
                         m_PopupManager.push_back(std::move(popup));
                     },
                 };
 
-                return std::make_shared<SimulationViewerPanel>(panelName, std::move(params));
+                return std::make_shared<ModelEditorViewerPanel>(panelName, std::move(params));
             },
             1  // by default, open one viewer
         );

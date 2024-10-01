@@ -21,10 +21,9 @@ public:
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
-        m_Parent{parent.weak_ref()},
         m_Simulation{std::move(simulation)},
-        m_PanelManager{std::move(panelManager)},
-        m_MainMenuFileTab{parent}
+        m_MainMenuFileTab{parent},
+        m_MainMenuWindowTab{std::move(panelManager)}
     {}
 
     void onDraw()
@@ -81,13 +80,11 @@ private:
         ui::end_menu();
     }
 
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<Simulation> m_Simulation;
-    std::shared_ptr<PanelManager> m_PanelManager;
 
     MainMenuFileTab m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
-    WindowMenu m_MainMenuWindowTab{m_PanelManager};
+    WindowMenu m_MainMenuWindowTab;
     SimulationClock::duration m_NewCustomEndTime = 2 * (m_Simulation->getEndTime() - m_Simulation->getStartTime());
 };
 
