@@ -723,7 +723,7 @@ namespace ImGuizmo
 
    struct Context
    {
-      Context() : mbUsing(false), mbUsingViewManipulate(false), mbEnable(true), mbUsingBounds(false)
+      Context()
       {
           mIDStack.push_back(blank_id());
       }
@@ -759,9 +759,9 @@ namespace ImGuizmo
       float mScreenFactor;
       vec_t mRelativeOrigin;
 
-      bool mbUsing;
-      bool mbUsingViewManipulate;
-      bool mbEnable;
+      bool mbUsing = false;
+      bool mbUsingViewManipulate = false;
+      bool mbEnable = true;
       bool mbMouseOver;
       bool mReversed; // reversed projection matrix
 
@@ -799,7 +799,7 @@ namespace ImGuizmo
       vec_t mBoundsLocalPivot;
       int mBoundsBestAxis;
       int mBoundsAxis[2];
-      bool mbUsingBounds;
+      bool mbUsingBounds = false;
       matrix_t mBoundsMatrix;
 
       //
@@ -820,12 +820,12 @@ namespace ImGuizmo
       ImGuiWindow* mAlternativeWindow = nullptr;
       ImVector<ImGuiID> mIDStack;
       ImGuiID mEditingID = blank_id();
-      OPERATION mOperation = OPERATION(-1);
+      OPERATION mOperation = OPERATION::NONE;
 
       bool mAllowAxisFlip = true;
       float mGizmoSizeClipSpace = 0.1f;
 
-      inline ImGuiID GetCurrentID() {return mIDStack.back();}
+      inline ImGuiID GetCurrentID() { return mIDStack.back();}
    };
 
    static constinit Context* gCurrentContext = nullptr;
@@ -2886,7 +2886,7 @@ namespace ImGuizmo
             return 1;
          }
          return -1;
-         });
+      });
       // draw face with lighter color
       for (int iFace = 0; iFace < cubeFaceCount; iFace++)
       {
