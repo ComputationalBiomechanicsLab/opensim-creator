@@ -1,5 +1,6 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/ComponentPath.h>
@@ -54,6 +55,8 @@ namespace
 
 TEST(ComponentRegistry, CoordsHaveExpectedNames)
 {
+    GloballyInitOpenSim();
+
     // ensure the typeregistry sets the default OpenSim coordinate names to something
     // easier to work with
     //
