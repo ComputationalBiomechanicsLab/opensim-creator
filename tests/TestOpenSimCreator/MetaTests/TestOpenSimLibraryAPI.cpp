@@ -5,6 +5,7 @@
 
 #include <Simbody.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -644,4 +645,35 @@ TEST(OpenSimModel, LvalueAssignmentWorksInTrivialCase)
     InitializeState(lhs);
 
     // (shouldn't throw)
+}
+
+// This is a repro for #924.
+//
+// One issue that was encountered when developing the 'Preview Experimental Data' tab was that
+// associating an `OpenSim::ExternalLoads` to a model makes it non-committable.
+//
+// The reason behind the issue is that `OpenSim::ExternalLoads`, when loaded from an XML file,
+// associates itself with that file via `OpenSim::Object::_document (XMLDocument)`. That pointer
+// is automatically wiped when `OpenSim::Object::Object(const Object&);` (i.e. copy) is called. The
+// undo/redo storage of OpenSimCreator works by copying the entire model and re-finalizing it in
+// an undo/redo storage buffer. Because the `XMLDocument` pointer is reset, the re-finalization fails
+// with something along the lines of "cannot find associated file" or similar.
+TEST(OpenSimModel, CanCopyModelContainingExternalLoads)
+{
+    const std::filesystem::path exampleModel =
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_repro.osim";
+    const std::filesystem::path exampleExternalLoadsFile =
+        std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_external-loads.xml");
+
+    OpenSim::Model model{exampleModel.string()};
+    InitializeModel(model);
+    InitializeState(model);
+    model.addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
+
+    InitializeModel(model);
+    InitializeState(model);
+
+    // the only way to fix this bug is upstream, because `Object::setDocument` is `protected`
+    auto copy{model};
+    ASSERT_ANY_THROW({ InitializeModel(copy); })  << "this shouldn't throw, but does because of the bug";
 }

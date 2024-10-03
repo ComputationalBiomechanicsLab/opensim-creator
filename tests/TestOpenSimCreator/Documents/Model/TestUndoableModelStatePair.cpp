@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
@@ -111,4 +112,19 @@ TEST(UndoableModelStatePair, resetModelRetainsSceneScaleFactor)
 
     model.resetModel();
     ASSERT_EQ(model.getFixupScaleFactor(), 0.5f);
+}
+
+// This is a repro for #924
+//
+// Grep #924 for a more comprehensive explanation, which is next to a lower-level test
+TEST(UndoableModelStatePair, CanCommitWhenModelContainsExternalLoads)
+{
+    const std::filesystem::path exampleModel =
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_repro.osim";
+    const std::filesystem::path exampleExternalLoadsFile =
+        std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_external-loads.xml");
+
+    UndoableModelStatePair p{exampleModel};
+    p.updModel().addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
+    ASSERT_ANY_THROW({ p.commit("this shouldn't throw if `OpenSim::ExternalLoads` is behaving itself"); }) << "this shouldn't throw, but does";
 }
