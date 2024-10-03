@@ -15,6 +15,7 @@
 #include <OpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <OpenSimCreator/Documents/Model/ObjectPropertyEdit.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -66,6 +67,8 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileReturnsFalseIfFileDoesNotEx
 // upstream
 TEST(OpenSimActions, ActionApplyRangeDeletionPropertyEditReturnsFalseToIndicateFailure)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     // create undoable model with one body + joint
     auto undoableModel = []()
     {

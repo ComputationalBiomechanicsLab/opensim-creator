@@ -10,6 +10,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/StationDefinedFrameWarperFactory.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <filesystem>
@@ -45,6 +46,8 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsButNoWarpingConfigDoesN
     // warp configuration (either globally, as in "identity-warp all PoFs", or locally, as in
     // "identity-warp this PoF specifically")
 
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     const auto osimFileLocation = ModelWarperFixturesDir() / "PofPaired" / "model.osim";
     const OpenSim::Model model{osimFileLocation.string()};
     const ModelWarpConfiguration config{osimFileLocation, model};
@@ -57,6 +60,8 @@ TEST(FrameWarperFactories, WhenLoadingModelContainingPofsAndDefaultedWarpingPopu
     // tests that if an `.osim` is loaded that contains `OpenSim::PhysicalOffsetFrame`s (PoFs), and there
     // is also an associated warping configuration that says "identity warp missing data", then the lookup
     // should give identity warps to the PoFs
+
+    GloballyInitOpenSim();  // ensure component registry is populated
 
     const auto osimFileLocation = ModelWarperFixturesDir() / "PofPairedIdentityWarp" / "model.osim";
     OpenSim::Model model{osimFileLocation.string()};
@@ -80,6 +85,8 @@ TEST(FrameWarperFactories, WhenLoadingAModelUsingStationDefinedFramesAssignsStat
     // tests that if an `.osim` is loaded that exclusively uses `OpenSim::StationDefinedFrame`s, then the lookup
     // is populated with `StationDefinedFrameWarperFactory`s, rather than `IdentityFrameWarperFactory`s, because
     // the implementation knows that these are safe frames to warp (so the user need not override things, etc.)
+
+    GloballyInitOpenSim();  // ensure component registry is populated
 
     const auto osimFileLocation = ModelWarperFixturesDir() / "StationDefinedFramePaired" / "model.osim";
     OpenSim::Model model{osimFileLocation.string()};

@@ -5,11 +5,13 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
 #include <OpenSimCreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
 #include <string>
 
+using namespace osc;
 using namespace osc::mow;
 
 namespace
@@ -24,6 +26,8 @@ namespace
 
 TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "Simple";
@@ -79,6 +83,8 @@ TEST(PointWarperFactories, CorrectlyLoadsSimpleCase)
 
 TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "Paired";
@@ -142,6 +148,8 @@ TEST(ModelWarpingDocument, CorrectlyLoadsPairedCase)
 
 TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "MissingDestinationLMs";
@@ -207,6 +215,8 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingDestinationLMsCase)
 
 TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "MissingSourceLMs";
@@ -274,6 +284,8 @@ TEST(ModelWarpingDocument, CorrectlyLoadsMissingSourceLMsCase)
 
 TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "SimpleUnnamed";
@@ -325,6 +337,8 @@ TEST(ModelWarpingDocument, CorrectlyLoadsSimpleUnnamedCase)
 
 TEST(ModelWarpingDocument, CorrectlyLoadsSparselyNamedPairedCase)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct Paths final {
         // model
         std::filesystem::path modelDir = ModelWarperFixturesDir() / "SparselyNamedPaired";

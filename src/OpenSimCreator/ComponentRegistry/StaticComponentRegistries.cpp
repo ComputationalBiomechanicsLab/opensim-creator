@@ -6,6 +6,7 @@
 #include <OpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
 #include <OpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
 #include <OpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
@@ -401,6 +402,7 @@ namespace
     void AddRegisteredElementsOfType(std::unordered_set<std::string>& out)
     {
         OpenSim::ArrayPtrs<T> ptrs;
+        GloballyInitOpenSim(); // ensure OpenSim::Object registry is populated
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
         for (size_t i = 0; i < size(ptrs); ++i)
@@ -627,6 +629,7 @@ namespace
     std::vector<std::shared_ptr<const T>> CreatePrototypeLutT(bool useBlacklist = true)
     {
         OpenSim::ArrayPtrs<T> ptrs;
+        GloballyInitOpenSim(); // ensure OpenSim::Object registry is populated
         OpenSim::Object::getRegisteredObjectsOfGivenType<T>(ptrs);
 
         std::vector<std::shared_ptr<const T>> rv;
@@ -675,6 +678,7 @@ namespace
         const std::unordered_set<std::string>& blacklisted = GetComponentBlacklist();
 
         OpenSim::ArrayPtrs<OpenSim::ModelComponent> ptrs;
+        GloballyInitOpenSim();  // ensure OpenSim::Object registry is populated
         OpenSim::Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(ptrs);
 
         std::vector<std::shared_ptr<const OpenSim::Component>> rv;

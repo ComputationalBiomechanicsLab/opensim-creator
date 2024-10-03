@@ -7,6 +7,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <gtest/gtest.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -27,6 +28,8 @@ using namespace osc;
 // are based on something like excitation - #663)
 TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGeneratesRedMuscles)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     // TODO: this should be more synthetic and should just create a body with one muscle with a
     // known color that is then pumped through the pipeline etc.
     const std::filesystem::path tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
@@ -203,6 +206,8 @@ TEST(OpenSimDecorationGenerator, ToOscMeshWorksAsIntended)
 // everything and label it with 'model
 TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 {
+    GloballyInitOpenSim();  // ensure component registry is initialized
+
     const std::filesystem::path tugOfWarPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Tug_of_War" / "Tug_of_War.osim";
     OpenSim::Model model{tugOfWarPath.string()};
     InitializeModel(model);
@@ -231,6 +236,8 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
 // (this is just an automated repro for that one time where I screwed up a loop in the renderer ;))
 TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 {
+    GloballyInitOpenSim();  // ensure component registry is initialized
+
     const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
     OpenSim::Model model{soccerKickPath.string()};
     InitializeModel(model);
