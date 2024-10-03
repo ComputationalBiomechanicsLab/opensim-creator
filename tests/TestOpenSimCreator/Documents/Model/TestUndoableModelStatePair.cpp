@@ -126,5 +126,5 @@ TEST(UndoableModelStatePair, CanCommitWhenModelContainsExternalLoads)
 
     UndoableModelStatePair p{exampleModel};
     p.updModel().addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
-    ASSERT_ANY_THROW({ p.commit("this shouldn't throw if `OpenSim::ExternalLoads` is behaving itself"); }) << "this shouldn't throw, but does";
+    ASSERT_NO_THROW({ p.commit("this shouldn't throw if `OpenSim::ExternalLoads` is behaving itself"); }) << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
 }

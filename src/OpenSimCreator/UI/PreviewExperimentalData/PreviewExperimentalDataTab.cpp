@@ -186,15 +186,8 @@ namespace
             }
 
             // (re)load associated XML files (e.g. `ExternalLoads`)
-            bool anyObjectIsExternalLoads = false;
             for (const std::filesystem::path& path : m_AssociatedXMLDocuments) {
                 auto ptr = std::unique_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
-                if (dynamic_cast<const OpenSim::ExternalLoads*>(ptr.get())) {
-                    // HACK: we need to know this so that we don't commit the model, because
-                    // ExternalLoads stupidly depends on an auto-resetting `Object::_document`
-                    // member.
-                    anyObjectIsExternalLoads = true;
-                }
                 if (dynamic_cast<OpenSim::ModelComponent*>(ptr.get())) {
                     m_Model->updModel().addModelComponent(dynamic_cast<OpenSim::ModelComponent*>(ptr.release()));
                 }
@@ -203,10 +196,7 @@ namespace
             // care: state initialization is dependent on `m_AssociatedTrajectory`
             InitializeModel(m_Model->updModel());
             InitializeState(m_Model->updModel());
-            if (not anyObjectIsExternalLoads) {  // see HACK above
-                m_Model->commit(label);
-            }
-
+            m_Model->commit(label);
             setScrubTime(m_ScrubTime);
         }
 

@@ -675,5 +675,5 @@ TEST(OpenSimModel, CanCopyModelContainingExternalLoads)
 
     // the only way to fix this bug is upstream, because `Object::setDocument` is `protected`
     auto copy{model};
-    ASSERT_ANY_THROW({ InitializeModel(copy); })  << "this shouldn't throw, but does because of the bug";
+    ASSERT_NO_THROW({ InitializeModel(copy); })  << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
 }
