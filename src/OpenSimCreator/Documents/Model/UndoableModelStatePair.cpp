@@ -45,13 +45,11 @@ namespace
 
         UiModelStatePair() :
             UiModelStatePair{makeNewModel()}
-        {
-        }
+        {}
 
         explicit UiModelStatePair(const std::string& osim) :
-            UiModelStatePair{std::make_unique<OpenSim::Model>(osim)}
-        {
-        }
+            UiModelStatePair{LoadModel(osim)}
+        {}
 
         explicit UiModelStatePair(std::unique_ptr<OpenSim::Model> _model) :
             m_Model{std::move(_model)},
@@ -218,7 +216,7 @@ public:
     }
 
     explicit Impl(const std::filesystem::path& osimPath) :
-        Impl{std::make_unique<OpenSim::Model>(osimPath.string())}
+        Impl{LoadModel(osimPath)}
     {
         setUpToDateWithFilesystem(std::filesystem::last_write_time(osimPath));
     }
@@ -354,7 +352,8 @@ public:
 
     void loadModel(const std::filesystem::path& path)
     {
-        setModel(std::make_unique<OpenSim::Model>(path.string()));
+        setModel(LoadModel(path));
+        setFilesystemPath(path);
     }
 
     UID getModelVersion() const

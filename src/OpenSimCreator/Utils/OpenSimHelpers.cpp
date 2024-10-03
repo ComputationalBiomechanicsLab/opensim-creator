@@ -1,5 +1,7 @@
 #include "OpenSimHelpers.h"
 
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
+
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -1001,6 +1003,12 @@ std::vector<const OpenSim::WrapObject*> osc::GetAllWrapObjectsReferencedBy(const
         rv.push_back(wrapSet.get(i).getWrapObject());
     }
     return rv;
+}
+
+std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path)
+{
+    GloballyInitOpenSim();
+    return std::make_unique<OpenSim::Model>(path.string());
 }
 
 void osc::InitializeModel(OpenSim::Model& model)

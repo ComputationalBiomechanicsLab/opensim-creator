@@ -25,7 +25,7 @@ public:
     {}
 
     explicit Impl(const std::filesystem::path& osimPath) :
-        m_Model{std::make_unique<OpenSim::Model>(osimPath.string())}
+        m_Model{LoadModel(osimPath)}
     {
         InitializeModel(*m_Model);
         InitializeState(*m_Model);

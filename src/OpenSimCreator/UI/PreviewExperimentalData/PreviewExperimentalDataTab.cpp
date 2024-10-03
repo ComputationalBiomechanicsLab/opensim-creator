@@ -69,8 +69,7 @@ namespace
 
         void loadModelFile(const std::filesystem::path& p)
         {
-            m_Model->setModel(std::make_unique<OpenSim::Model>(p.string()));
-            m_Model->setFilesystemPath(p);
+            m_Model->loadModel(p);
             reinitializeModelFromBackingData("loaded model");
         }
 

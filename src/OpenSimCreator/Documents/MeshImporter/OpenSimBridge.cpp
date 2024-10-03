@@ -458,8 +458,10 @@ namespace
         return TryInclusiveRecurseToBodyOrGround(f, {});
     }
 
-    Document CreateMeshImporterDocumentFromModel(OpenSim::Model m)
+    Document CreateMeshImporterDocumentFromModel(std::unique_ptr<OpenSim::Model> ptr)
     {
+        OpenSim::Model& m = *ptr;
+
         // init model+state
         InitializeModel(m);
         const SimTK::State& st = InitializeState(m);
@@ -658,7 +660,7 @@ namespace
 
 Document osc::mi::CreateModelFromOsimFile(const std::filesystem::path& p)
 {
-    return CreateMeshImporterDocumentFromModel(OpenSim::Model{p.string()});
+    return CreateMeshImporterDocumentFromModel(LoadModel(p));
 }
 
 std::unique_ptr<OpenSim::Model> osc::mi::CreateOpenSimModelFromMeshImporterDocument(

@@ -605,6 +605,9 @@ namespace osc
     // returns pointers to all wrap objects that are referenced by the given `GeometryPath`
     std::vector<const OpenSim::WrapObject*> GetAllWrapObjectsReferencedBy(const OpenSim::GeometryPath&);
 
+    // returns a pointer to a not-yet-initialized model, loaded via an osim file at the given path
+    std::unique_ptr<OpenSim::Model> LoadModel(const std::filesystem::path&);
+
     // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
     void InitializeModel(OpenSim::Model&);
 

@@ -449,7 +449,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
     {
         log_info("file change detected: loading updated file");
 
-        auto loadedModel = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
+        auto loadedModel = LoadModel(uim.getModel().getInputFileName());
 
         log_info("loaded updated file");
 
@@ -631,7 +631,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
     try
     {
         log_info("manual osim file reload requested: attempting to reload the file");
-        auto p = std::make_unique<OpenSim::Model>(uim.getModel().getInputFileName());
+        auto p = LoadModel(uim.getModel().getInputFileName());
         log_info("loaded updated file");
 
         uim.setModel(std::move(p));
