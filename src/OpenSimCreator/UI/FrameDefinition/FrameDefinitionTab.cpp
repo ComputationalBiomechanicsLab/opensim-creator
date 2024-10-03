@@ -1040,7 +1040,9 @@ public:
     {
         if (auto* openPopup = dynamic_cast<OpenPopupEvent*>(&e)) {
             if (openPopup->has_tab()) {
-                m_PopupManager.push_back(openPopup->take_tab());
+                auto tab = openPopup->take_tab();
+                tab->open();
+                m_PopupManager.push_back(std::move(tab));
                 return true;
             }
         }
