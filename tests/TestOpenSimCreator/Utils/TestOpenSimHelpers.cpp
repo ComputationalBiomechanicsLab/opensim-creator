@@ -331,6 +331,8 @@ TEST(OpenSimHelpers, WriteModelMultibodySystemGraphAsDotViz)
 
 TEST(OpenSimHelpers, GetAllWrapObjectsReferencedByWorksAsExpected)
 {
+    GloballyInitOpenSim();  // ensure component registry is populated
+
     struct ExpectedWrap {
         OpenSim::ComponentPath geometryPathAbsPath;
         std::vector<std::string> associatedWrapObjectNames;

@@ -29,6 +29,8 @@ using namespace osc;
 // https://github.com/opensim-org/opensim-core/issues/3211
 TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     // data sources
     std::filesystem::path modelPath{std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
@@ -83,6 +85,8 @@ TEST(OpenSimModel, ProducesCorrectMomentArmOnFirstComputeCall)
 // breaks this test, and prompts removing fixups from OSC
 TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     std::filesystem::path modelPath{std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim"};
     OpenSim::ComponentPath coordinatePath{"/jointset/r_shoulder/r_shoulder_elev"};
 
@@ -111,6 +115,8 @@ TEST(OpenSimModel, EditingACoordinateLockMutatesModel)
 // `osim` file (i.e. it's not a code bug in OpenSim Creator)
 TEST(OpenSimModel, CreatingCircularJointConnectionToGroundDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path path =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_382_repro.osim";
 
@@ -125,6 +131,8 @@ TEST(OpenSimModel, CreatingCircularJointConnectionToGroundDoesNotSegfault)
 // is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path path =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_515_repro.osim";
 
@@ -140,6 +148,8 @@ TEST(OpenSimModel, CoordinateCouplerConstraintsWithNoCoupledCoordinatesFunctionD
 // property is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path path =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_517_repro.osim";
 
@@ -153,6 +163,8 @@ TEST(OpenSimModel, ActivationCoordinateActuatorWithNoCoordinateNameDoesNotSegfau
 // code inside OpenSim::PointToPointActuator segfaults if either `bodyA` or `bodyB` is unspecified
 TEST(OpenSimModel, PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path path =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_523_repro.osim";
 
@@ -167,6 +179,8 @@ TEST(OpenSimModel, PointToPointActuatorWithNoBodyAOrBodyBDoesNotSegfault)
 // is always set - even though it is listed as OPTIONAL
 TEST(OpenSimModel, SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path path =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_524_repro.osim";
 
@@ -191,6 +205,8 @@ TEST(OpenSimModel, SpringGeneralizedForceWithNoCoordinateDoesNotSegfault)
 // - call something that accesses the property (e.g. `buildSystem`) --> boom
 TEST(OpenSimModel, LoadingAnOsimWithEmptyFieldsDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_661_repro.osim";
 
@@ -271,6 +287,8 @@ TEST(OpenSimModel, HuntCrossleyForceGetStaticFrictionCreatesOneContactparameterS
 // this test just ensures that a minimal model containing those seems to work
 TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomial)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_515-2_repro.osim";
 
@@ -288,6 +306,8 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomial)
 // causing the crash?
 TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWithMultipleInputs)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_515-3_repro.osim";
 
@@ -321,6 +341,8 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWit
 // rendering)
 TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     OpenSim::Model model;
 
     auto body = std::make_unique<OpenSim::Body>("body", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{1.0});
@@ -354,6 +376,8 @@ TEST(OpenSimModel, DeletingElementFromCoordinateRangeShouldThrowEarly)
 // it should be fixed in OpenSim >= 4.4.1, but this test is here to double-check that
 TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     OpenSim::Model model;
 
     // define model with a body connected to ground via a simple joint
@@ -395,6 +419,8 @@ TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
 // selection and preemptively erroring on these edge-cases) are now unnecessary
 TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     OpenSim::Model model;
 
     // define model with a body connected to ground via a simple joint
@@ -451,6 +477,8 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
 // exact repro for #472 that matches upstreamed opensim-core/#3299
 TEST(OpenSimModel, OriginalReproFrom3299ThrowsInsteadOfSegfaulting)
 {
+    GloballyInitOpenSim();  // ensure component registries are populated
+
     const std::filesystem::path brokenFilePath =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_472_repro.osim";
 
