@@ -92,7 +92,8 @@ public:
                             "##componentcontextmenu",
                             this->owner(),
                             m_ShownModelState,
-                            p.toString()
+                            p.toString(),
+                            ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
                         );
                         popup->open();
                         m_PopupManager.push_back(std::move(popup));
@@ -163,7 +164,8 @@ public:
                             menuName,
                             this->owner(),
                             m_ShownModelState,
-                            OpenSim::ComponentPath{e.componentAbsPathOrEmpty}
+                            OpenSim::ComponentPath{e.componentAbsPathOrEmpty},
+                            ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
                         );
                         popup->open();
                         m_PopupManager.push_back(std::move(popup));
@@ -234,7 +236,8 @@ public:
                 "##componentcontextmenu",
                 this->owner(),
                 m_ShownModelState,
-                contextMenuEvent->path().toString()
+                contextMenuEvent->path().toString(),
+                ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
             );
             App::post_event<OpenPopupEvent>(owner(), std::move(popup));
             return true;

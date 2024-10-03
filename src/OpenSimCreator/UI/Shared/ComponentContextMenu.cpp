@@ -359,12 +359,14 @@ public:
         std::string_view popupName_,
         Widget& parent_,
         std::shared_ptr<IModelStatePair> model_,
-        OpenSim::ComponentPath path_) :
+        OpenSim::ComponentPath path_,
+        ComponentContextMenuFlags flags_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
         m_Parent{parent_.weak_ref()},
         m_Model{std::move(model_)},
-        m_Path{std::move(path_)}
+        m_Path{std::move(path_)},
+        m_Flags{flags_}
     {
         set_modal(false);
         OSC_ASSERT(m_Model != nullptr);
@@ -585,6 +587,9 @@ private:
 
     void drawAddMusclePlotMenu(const OpenSim::Muscle& m)
     {
+        if (m_Flags & ComponentContextMenuFlag::NoPlotVsCoordinate) {
+            return;
+        }
         if (ui::begin_menu("Plot vs. Coordinate")) {
             for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>()) {
                 if (ui::draw_menu_item(c.getName())) {
@@ -600,6 +605,7 @@ private:
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
     ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_Model};
+    ComponentContextMenuFlags m_Flags;
 };
 
 
@@ -607,9 +613,10 @@ osc::ComponentContextMenu::ComponentContextMenu(
     std::string_view popupName_,
     Widget& parent_,
     std::shared_ptr<IModelStatePair> model_,
-    const OpenSim::ComponentPath& path_) :
+    const OpenSim::ComponentPath& path_,
+    ComponentContextMenuFlags flags_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, parent_, std::move(model_), path_)}
+    m_Impl{std::make_unique<Impl>(popupName_, parent_, std::move(model_), path_, flags_)}
 {}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;
