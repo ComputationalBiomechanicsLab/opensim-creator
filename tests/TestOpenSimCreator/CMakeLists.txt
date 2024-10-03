@@ -24,6 +24,7 @@ add_executable(TestOpenSimCreator
     UI/Shared/TestFunctionCurveViewerPopup.cpp
     UI/Widgets/TestAddComponentPopup.cpp
     UI/TestAllRegisteredOpenSimCreatorTabs.cpp
+    UI/TestLoadingTab.cpp
     Utils/TestOpenSimHelpers.cpp
 
     TestOpenSimCreator.cpp  # entrypoint (main)

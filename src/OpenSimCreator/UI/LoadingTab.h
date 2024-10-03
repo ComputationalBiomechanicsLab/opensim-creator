@@ -12,6 +12,7 @@ namespace osc
     public:
         LoadingTab(Widget&, std::filesystem::path);
 
+        bool isFinishedLoading() const;
     private:
         void impl_on_tick() final;
         void impl_on_draw() final;

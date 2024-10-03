@@ -47,6 +47,8 @@ public:
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {}
 
+    bool isFinishedLoading() const { return m_IsFinishedLoading; }
+
     void on_tick()
     {
         const auto dt = static_cast<float>(App::get().frame_delta_since_last_frame().count());
@@ -61,6 +63,14 @@ public:
             return;
         }
 
+        // if there's no error, but the loading result is invalid, then something
+        // has already sucessfully taken the result away (below), but `on_tick` was
+        // called again
+        if (not m_LoadingResult.valid()) {
+            m_LoadingErrorMsg = "attempted to call `on_tick` on the loading screen after loading has finished";
+            return;
+        }
+
         // otherwise, poll for the result and catch any exceptions that bubble
         // up from the background thread
         std::unique_ptr<UndoableModelStatePair> result = nullptr;
@@ -72,6 +82,7 @@ public:
         catch (const std::exception& ex) {
             log_error("LoadingScreen::on_tick: exception thrown while loading model: %s", ex.what());
             m_LoadingErrorMsg = ex.what();
+            m_IsFinishedLoading = true;
             return;
         }
 
@@ -85,6 +96,7 @@ public:
             // recycle it so that users can keep their running sims, local edits, etc.
             App::post_event<OpenTabEvent>(*parent(), std::make_unique<ModelEditorTab>(*parent(), std::move(result)));
             App::post_event<CloseTabEvent>(*parent(), id());
+            m_IsFinishedLoading = true;
         }
     }
 
@@ -142,6 +154,10 @@ private:
     // user that *something* is happening - even if that "something"
     // is "the background thread is deadlocked" ;)
     float m_LoadingProgress = 0.0f;
+
+    // set after the file has either finished loading or there was
+    // an error (exception) loading it
+    bool m_IsFinishedLoading = false;
 };
 
 
@@ -151,5 +167,6 @@ osc::LoadingTab::LoadingTab(
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}
 {}
+bool osc::LoadingTab::isFinishedLoading() const { return private_data().isFinishedLoading(); }
 void osc::LoadingTab::impl_on_tick() { private_data().on_tick(); }
 void osc::LoadingTab::impl_on_draw() { private_data().onDraw(); }
