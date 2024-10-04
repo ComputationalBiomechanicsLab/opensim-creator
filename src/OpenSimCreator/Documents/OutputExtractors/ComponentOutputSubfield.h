@@ -14,11 +14,16 @@ namespace osc
 {
     // flag type that can be used to say what subfields an OpenSim output has
     enum class ComponentOutputSubfield : uint32_t {
-        None      = 0,
-        X         = 1<<0,
-        Y         = 1<<1,
-        Z         = 1<<2,
-        Magnitude = 1<<3,
+        None       = 0,
+        X          = 1<<0,
+        Y          = 1<<1,
+        Z          = 1<<2,
+        Magnitude  = 1<<3,
+        RX         = 1<<4,
+        RY         = 1<<5,
+        RZ         = 1<<6,
+        RMagnitude = 1<<7,
+        NUM_FLAGS  =    8,
 
         Default = None,
     };

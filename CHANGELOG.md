@@ -26,6 +26,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   it was closed).
 - Fixed the navigator erroneously autoscrolling in some cases when selecting components
   via the navigator (#908)
+- It's now possible to watch/plot parts of a `SpatialVec` component output; for example, the
+  `reaction_on_child` and `reaction_on_parent` outputs of an `OpenSim::Joint` (thanks Jeremy
+  Genter at ZHAW, #929)
 - There is now a slight color difference between selected and hovered items in the UI (e.g.
   the color highlighting used in the navigator panel; thanks @mrrezaie, #916).
 - The expression frame selector that appears in the property editor when editing spatial
