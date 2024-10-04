@@ -16,7 +16,6 @@ form. In all cases, the software has a permissive license.
 
 The following software libraries are used:
 
-
 unordered_dense
 ---------------
 
@@ -132,7 +131,6 @@ OpenGL Mathematics (GLM)
   `glm::mat3`, `glm::mat4`, and `glm::mat` and associated functions (e.g. `glm::dot`, and
   `glm::conjugate` were copied into OpenSim Creator's `Maths/` library, followed by gradually
   changing them to meet OpenSim Creator's requirements.
-
 
 imgui_impl_sdl2
 ---------------
