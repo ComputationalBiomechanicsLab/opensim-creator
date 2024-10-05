@@ -396,24 +396,6 @@ namespace
     }
 }
 
-TEST_F(Renderer, ShaderPropertyType_can_be_written_to_ostream)
-{
-    std::stringstream ss;
-    ss << ShaderPropertyType::Bool;
-
-    ASSERT_EQ(ss.str(), "Bool");
-}
-
-TEST_F(Renderer, ShaderPropertyType_can_be_iterated_over_and_all_can_be_written_to_ostream)
-{
-    for (size_t i = 0; i < num_options<ShaderPropertyType>(); ++i)
-    {
-        // shouldn't crash - if it does then we've missed a case somewhere
-        std::stringstream ss;
-        ss << static_cast<ShaderPropertyType>(i);
-    }
-}
-
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
@@ -1273,24 +1255,6 @@ TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
             ColorSpace::sRGB
         );
     });
-}
-
-TEST_F(Renderer, ColorRenderBufferFormatCanBeIteratedOverAndStreamedToString)
-{
-    for (size_t i = 0; i < num_options<ColorRenderBufferFormat>(); ++i)
-    {
-        std::stringstream ss;
-        ss << static_cast<ColorRenderBufferFormat>(i);  // shouldn't throw
-    }
-}
-
-TEST_F(Renderer, DepthStencilRenderBufferFormatCanBeIteratedOverAndStreamedToString)
-{
-    for (size_t i = 0; i < num_options<DepthStencilRenderBufferFormat>(); ++i)
-    {
-        std::stringstream ss;
-        ss << static_cast<DepthStencilRenderBufferFormat>(i);  // shouldn't throw
-    }
 }
 
 TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)

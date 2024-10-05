@@ -28,6 +28,7 @@ add_executable(testoscar
     Graphics/TestCubemap.cpp
     Graphics/TestCubemapFace.cpp
     Graphics/TestCullMode.cpp
+    Graphics/TestDepthStencilRenderBufferFormat.cpp
     Graphics/TestDepthStencilRenderBufferParams.cpp
     Graphics/TestGeometries.cpp
     Graphics/TestMaterialPropertyBlock.cpp
@@ -41,6 +42,7 @@ add_executable(testoscar
     Graphics/TestRenderTexture.cpp
     Graphics/TestRenderTextureDescriptor.cpp
     Graphics/TestRgba.cpp
+    Graphics/TestShaderPropertyType.cpp
     Graphics/TestSharedColorRenderBuffer.cpp
     Graphics/TestSharedDepthStencilRenderBuffer.cpp
     Graphics/TestSnorm8.cpp
