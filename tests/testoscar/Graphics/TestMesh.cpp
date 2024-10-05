@@ -1018,8 +1018,8 @@ TEST(Mesh, indexed_vertices_only_returns_the_indexed_vertices)
 
 TEST(Mesh, bounds_on_empty_Mesh_returns_empty_AABB)
 {
-    Mesh m;
-    AABB empty{};
+    const Mesh m;
+    const AABB empty;
     ASSERT_EQ(m.bounds(), empty);
 }
 
@@ -1034,7 +1034,7 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 
     Mesh m;
     m.set_vertices(pyramid);
-    AABB empty{};
+    const AABB empty;
     ASSERT_EQ(m.bounds(), empty) << "should be empty, because the caller forgot to provide indices";
 }
 
@@ -1060,8 +1060,8 @@ TEST(Mesh, can_be_compared_for_equality)
 
 TEST(Mesh, unmodified_copies_are_equivalent)
 {
-    Mesh m;
-    Mesh copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
+    const Mesh m;
+    const Mesh copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(m, copy);
 }

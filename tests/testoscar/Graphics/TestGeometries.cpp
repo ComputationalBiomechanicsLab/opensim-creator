@@ -58,7 +58,7 @@ TEST(BoxGeometry, works_with_non_default_args)
 
 TEST(PolyhedronGeometry, can_default_construct_with_params)
 {
-    PolyhedronGeometry mesh;
+    const PolyhedronGeometry mesh;
 
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
@@ -68,7 +68,7 @@ TEST(PolyhedronGeometry, can_default_construct_with_params)
 
 TEST(PolyhedronGeometry, can_construct_with_custom_params)
 {
-    PolyhedronGeometry mesh{{
+    const PolyhedronGeometry mesh{{
         .vertices = {{1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f}},
         .indices = {2, 1, 0,    0, 3, 2,    1, 3, 0,    2, 3, 1},
         .radius = 10.0f,
@@ -287,7 +287,7 @@ TEST(CylinderGeometry, works_with_non_default_args)
         .num_height_segments = 2,
         .open_ended = true,
         .theta_start = 180_deg,
-        .theta_length = 270_deg
+        .theta_length = 270_deg,
     }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
@@ -336,7 +336,7 @@ TEST(PlaneGeometry, works_with_non_default_args)
         .width = 0.5f,
         .height = 2.0f,
         .num_width_segments = 4,
-        .num_height_segments = 4
+        .num_height_segments = 4,
     }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
@@ -372,14 +372,14 @@ TEST(SphereGeometry, works_with_non_default_args)
 
 TEST(WireframeGeometry, can_default_construct)
 {
-    WireframeGeometry mesh;
+    const WireframeGeometry mesh;
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_FALSE(mesh.indices().empty());
 }
 
 TEST(WireframeGeometry, can_construct_from_some_other_geometry)
 {
-    WireframeGeometry mesh{TorusKnotGeometry{}};
+    const WireframeGeometry mesh{TorusKnotGeometry{}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_FALSE(mesh.indices().empty());
 }

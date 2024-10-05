@@ -12,7 +12,7 @@ using namespace osc;
 
 TEST(Cubemap, can_construct_1x1_RGBA32_Cubemap)
 {
-    Cubemap cubemap{1, TextureFormat::RGBA32};
+    const Cubemap cubemap{1, TextureFormat::RGBA32};
 }
 
 TEST(Cubemap, constructor_throws_if_given_zero_width)
@@ -28,7 +28,7 @@ TEST(Cubemap, constructor_throws_if_given_negative_width)
 TEST(Cubemap, can_copy_construct)
 {
     const Cubemap source{1, TextureFormat::RGBA32};
-    Cubemap copy = source;  // NOLINT(performance-unnecessary-copy-initialization)
+    const Cubemap copy = source;  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 static_assert(std::is_nothrow_move_constructible_v<Cubemap>);
@@ -36,7 +36,7 @@ static_assert(std::is_nothrow_move_constructible_v<Cubemap>);
 TEST(Cubemap, can_move_construct)
 {
     Cubemap source{1, TextureFormat::RGBA32};
-    Cubemap copy{std::move(source)};
+    const Cubemap copy{std::move(source)};
 }
 
 TEST(Cubemap, can_copy_assign)

@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-TEST(MeshIndicesView, IsARange)
+TEST(MeshIndicesView, is_a_std_range)
 {
     // required for it to be used in generic C++20 range algorithms
 

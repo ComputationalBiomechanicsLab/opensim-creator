@@ -18,7 +18,6 @@
 #include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
-#include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
 #include <oscar/Graphics/RenderTexture.h>
@@ -56,19 +55,19 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_App;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<App> g_renderer_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class Renderer : public ::testing::Test {
     protected:
         static void SetUpTestSuite()
         {
-            AppMetadata metadata{TESTOSCAR_ORGNAME_STRING, TESTOSCAR_APPNAME_STRING};
-            g_App = std::make_unique<App>(metadata);
+            const AppMetadata metadata{TESTOSCAR_ORGNAME_STRING, TESTOSCAR_APPNAME_STRING};
+            g_renderer_app = std::make_unique<App>(metadata);
         }
 
         static void TearDownTestSuite()
         {
-            g_App.reset();
+            g_renderer_app.reset();
         }
     };
 
@@ -193,7 +192,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_VertexShaderWithArray = R"(
+    constexpr CStringView c_vertex_shader_with_array = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -204,7 +203,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_FragmentShaderWithArray = R"(
+    constexpr CStringView c_fragment_shader_with_array = R"(
         #version 330 core
 
         uniform vec4 uFragColor[3];
@@ -218,7 +217,7 @@ namespace
     )";
 
     // expected, based on the above shader code
-    constexpr std::array<CStringView, 14> c_ExpectedPropertyNames = std::to_array<CStringView>(
+    constexpr std::array<CStringView, 14> c_expected_property_names = std::to_array<CStringView>(
     {
         "uViewProjMat",
         "uLightSpaceMat",
@@ -236,7 +235,7 @@ namespace
         "uFar",
     });
 
-    constexpr std::array<ShaderPropertyType, 14> c_ExpectedPropertyTypes = std::to_array(
+    constexpr std::array<ShaderPropertyType, 14> c_expected_property_types = std::to_array(
     {
         ShaderPropertyType::Mat4,
         ShaderPropertyType::Mat4,
@@ -253,9 +252,9 @@ namespace
         ShaderPropertyType::Float,
         ShaderPropertyType::Float,
     });
-    static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
+    static_assert(c_expected_property_names.size() == c_expected_property_types.size());
 
-    constexpr CStringView c_GeometryShaderVertSrc = R"(
+    constexpr CStringView c_geometry_shader_vert_src = R"(
         #version 330 core
 
         // draw_normals: program that draws mesh normals
@@ -277,7 +276,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_GeometryShaderGeomSrc = R"(
+    constexpr CStringView c_geometry_shader_geom_src = R"(
         #version 330 core
 
         // draw_normals: program that draws mesh normals
@@ -329,7 +328,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_GeometryShaderFragSrc = R"(
+    constexpr CStringView c_geometry_shader_frag_src = R"(
         #version 330 core
 
         // draw_normals: program that draws mesh normals
@@ -346,7 +345,7 @@ namespace
     )";
 
     // from: https://learnopengl.com/Advanced-OpenGL/Cubemaps
-    constexpr CStringView c_CubemapVertexShader = R"(
+    constexpr CStringView c_cubemap_vertex_shader = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -363,7 +362,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_CubemapFragmentShader = R"(
+    constexpr CStringView c_cubemap_fragment_shader = R"(
         #version 330 core
 
         out vec4 FragColor;
@@ -378,29 +377,26 @@ namespace
         }
     )";
 
-    Texture2D GenerateTexture()
+    Texture2D generate_red_texture()
     {
         Texture2D rv{Vec2i{2, 2}};
         rv.set_pixels(std::vector<Color>(4, Color::red()));
         return rv;
     }
 
-    Material GenerateMaterial()
+    Material generate_material()
     {
-        Shader shader{c_vertex_shader_src, c_fragment_shader_src};
+        const Shader shader{c_vertex_shader_src, c_fragment_shader_src};
         return Material{shader};
     }
 
-    RenderTexture GenerateRenderTexture()
+    RenderTexture generate_render_texture()
     {
         return RenderTexture{{.dimensions = {2, 2}}};
     }
 }
 
-
-// TESTS
-
-TEST_F(Renderer, ShaderTypeCanStreamToString)
+TEST_F(Renderer, ShaderPropertyType_can_be_written_to_ostream)
 {
     std::stringstream ss;
     ss << ShaderPropertyType::Bool;
@@ -408,7 +404,7 @@ TEST_F(Renderer, ShaderTypeCanStreamToString)
     ASSERT_EQ(ss.str(), "Bool");
 }
 
-TEST_F(Renderer, ShaderTypeCanBeIteratedOverAndAllCanBeStreamed)
+TEST_F(Renderer, ShaderPropertyType_can_be_iterated_over_and_all_can_be_written_to_ostream)
 {
     for (size_t i = 0; i < num_options<ShaderPropertyType>(); ++i)
     {
@@ -425,7 +421,7 @@ TEST_F(Renderer, ShaderCanBeConstructedFromVertexAndFragmentShaderSource)
 
 TEST_F(Renderer, ShaderCanBeConstructedFromVertexGeometryAndFragmentShaderSources)
 {
-    Shader s{c_GeometryShaderVertSrc, c_GeometryShaderGeomSrc, c_GeometryShaderFragSrc};
+    Shader s{c_geometry_shader_vert_src, c_geometry_shader_geom_src, c_geometry_shader_frag_src};
 }
 
 TEST_F(Renderer, ShaderCanBeCopyConstructed)
@@ -493,7 +489,7 @@ TEST_F(Renderer, ShaderOutputStreamContainsExpectedInfo)
     ss << s;
     std::string str{std::move(ss).str()};
 
-    for (const auto& propName : c_ExpectedPropertyNames) {
+    for (const auto& propName : c_expected_property_names) {
         ASSERT_TRUE(contains(str, std::string{propName}));
     }
 }
@@ -502,7 +498,7 @@ TEST_F(Renderer, ShaderFindPropertyIndexCanFindAllExpectedProperties)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (const auto& propName : c_ExpectedPropertyNames) {
+    for (const auto& propName : c_expected_property_names) {
         ASSERT_TRUE(s.property_index(std::string{propName}));
     }
 }
@@ -510,7 +506,7 @@ TEST_F(Renderer, ShaderHasExpectedNumberOfProperties)
 {
     // (effectively, number of properties == number of uniforms)
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
-    ASSERT_EQ(s.num_properties(), c_ExpectedPropertyNames.size());
+    ASSERT_EQ(s.num_properties(), c_expected_property_names.size());
 }
 
 TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyName)
@@ -518,7 +514,7 @@ TEST_F(Renderer, ShaderIteratingOverPropertyIndicesForNameReturnsValidPropertyNa
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
     std::unordered_set<std::string> allPropNames;
-    for (const auto& sv : c_ExpectedPropertyNames) {
+    for (const auto& sv : c_expected_property_names) {
         allPropNames.insert(std::string{sv});
     }
     std::unordered_set<std::string> returnedPropNames;
@@ -534,7 +530,7 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (const auto& propName : c_ExpectedPropertyNames) {
+    for (const auto& propName : c_expected_property_names) {
         std::optional<size_t> idx = s.property_index(propName);
         ASSERT_TRUE(idx);
         ASSERT_EQ(s.property_name(*idx), propName);
@@ -543,7 +539,7 @@ TEST_F(Renderer, ShaderGetPropertyNameReturnsGivenPropertyName)
 
 TEST_F(Renderer, ShaderGetPropertyNameStillWorksIfTheUniformIsAnArray)
 {
-    Shader s{c_VertexShaderWithArray, c_FragmentShaderWithArray};
+    Shader s{c_vertex_shader_with_array, c_fragment_shader_with_array};
     ASSERT_FALSE(s.property_index("uFragColor[0]").has_value()) << "shouldn't expose 'raw' name";
     ASSERT_TRUE(s.property_index("uFragColor").has_value()) << "should work, because the backend should normalize array-like uniforms to the original name (not uFragColor[0])";
 }
@@ -552,10 +548,10 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 {
     Shader s{c_vertex_shader_src, c_fragment_shader_src};
 
-    for (size_t i = 0; i < c_ExpectedPropertyNames.size(); ++i) {
-        static_assert(c_ExpectedPropertyNames.size() == c_ExpectedPropertyTypes.size());
-        const auto& propName = c_ExpectedPropertyNames[i];
-        ShaderPropertyType expectedType = c_ExpectedPropertyTypes[i];
+    for (size_t i = 0; i < c_expected_property_names.size(); ++i) {
+        static_assert(c_expected_property_names.size() == c_expected_property_types.size());
+        const auto& propName = c_expected_property_names[i];
+        ShaderPropertyType expectedType = c_expected_property_types[i];
 
         std::optional<size_t> idx = s.property_index(std::string{propName});
         ASSERT_TRUE(idx);
@@ -565,7 +561,7 @@ TEST_F(Renderer, ShaderGetPropertyTypeReturnsExpectedType)
 
 TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
 {
-    Shader shader{c_CubemapVertexShader, c_CubemapFragmentShader};
+    Shader shader{c_cubemap_vertex_shader, c_cubemap_fragment_shader};
     std::optional<size_t> index = shader.property_index("skybox");
 
     ASSERT_TRUE(index.has_value());
@@ -574,40 +570,40 @@ TEST_F(Renderer, ShaderGetPropertyForCubemapReturnsExpectedType)
 
 TEST_F(Renderer, MaterialCanBeConstructed)
 {
-    GenerateMaterial();  // should compile and run fine
+    generate_material();  // should compile and run fine
 }
 
 TEST_F(Renderer, MaterialCanBeCopyConstructed)
 {
-    Material material = GenerateMaterial();
+    Material material = generate_material();
     Material{material};
 }
 
 TEST_F(Renderer, MaterialCanBeMoveConstructed)
 {
-    Material material = GenerateMaterial();
+    Material material = generate_material();
     Material{std::move(material)};
 }
 
 TEST_F(Renderer, MaterialCanBeCopyAssigned)
 {
-    Material m1 = GenerateMaterial();
-    Material m2 = GenerateMaterial();
+    Material m1 = generate_material();
+    Material m2 = generate_material();
 
     m1 = m2;
 }
 
 TEST_F(Renderer, MaterialCanBeMoveAssigned)
 {
-    Material m1 = GenerateMaterial();
-    Material m2 = GenerateMaterial();
+    Material m1 = generate_material();
+    Material m2 = generate_material();
 
     m1 = std::move(m2);
 }
 
 TEST_F(Renderer, MaterialThatIsCopyConstructedEqualsSourceMaterial)
 {
-    Material material = GenerateMaterial();
+    Material material = generate_material();
     Material copy{material}; // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(material, copy);
@@ -615,8 +611,8 @@ TEST_F(Renderer, MaterialThatIsCopyConstructedEqualsSourceMaterial)
 
 TEST_F(Renderer, MaterialThatIsCopyAssignedEqualsSourceMaterial)
 {
-    Material m1 = GenerateMaterial();
-    Material m2 = GenerateMaterial();
+    Material m1 = generate_material();
+    Material m2 = generate_material();
 
     ASSERT_NE(m1, m2);
 
@@ -635,20 +631,20 @@ TEST_F(Renderer, MaterialGetShaderReturnsSuppliedShader)
 
 TEST_F(Renderer, MaterialGetColorOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_FALSE(mat.get<Color>("someKey"));
 }
 
 TEST_F(Renderer, MaterialCanCallSetColorOnNewMaterial)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set<Color>("someKey", Color::red());
 }
 
 TEST_F(Renderer, MaterialCallingGetColorOnMaterialAfterSetColorReturnsTheColor)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set<Color>("someKey", Color::red());
 
     ASSERT_EQ(mat.get<Color>("someKey"), Color::red());
@@ -656,14 +652,14 @@ TEST_F(Renderer, MaterialCallingGetColorOnMaterialAfterSetColorReturnsTheColor)
 
 TEST_F(Renderer, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_FALSE(mat.get_array<Color>("someKey"));
 }
 
 TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     const auto colors = std::to_array({Color::black(), Color::blue()});
 
     mat.set_array<Color>("someKey", colors);
@@ -671,7 +667,7 @@ TEST_F(Renderer, MaterialCanCallSetColorArrayOnNewMaterial)
 
 TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     const auto colors = std::to_array({Color::red(), Color::green(), Color::blue()});
     const CStringView key = "someKey";
 
@@ -685,67 +681,67 @@ TEST_F(Renderer, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTh
 }
 TEST_F(Renderer, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<float>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get_array<float>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<Vec2>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<Vec3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get_array<Vec3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<Vec4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<Mat3>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<Mat4>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<int>("someKey"));
 }
 
 TEST_F(Renderer, MaterialGetBoolOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get<bool>("someKey"));
 }
 
 TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     float value = generate<float>();
@@ -757,7 +753,7 @@ TEST_F(Renderer, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValu
 
 TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnTheProvidedValues)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     std::string key = "someKey";
     std::array<float, 4> values = {generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 
@@ -771,7 +767,7 @@ TEST_F(Renderer, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnThePr
 
 TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Vec2 value = generate<Vec2>();
@@ -783,7 +779,7 @@ TEST_F(Renderer, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Vec2 value = generate<Vec2>();
@@ -802,7 +798,7 @@ TEST_F(Renderer, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
 
 TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     Material copy{mat};
 
     mat.set<Vec2>("someKey", generate<Vec2>());
@@ -812,7 +808,7 @@ TEST_F(Renderer, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
 
 TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Vec3 value = generate<Vec3>();
@@ -824,7 +820,7 @@ TEST_F(Renderer, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProvidedValues)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     std::string key = "someKey";
     std::array<Vec3, 4> values = {generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 
@@ -838,7 +834,7 @@ TEST_F(Renderer, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProv
 
 TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Vec4 value = generate<Vec4>();
@@ -850,7 +846,7 @@ TEST_F(Renderer, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Mat3 value = generate<Mat3>();
@@ -862,7 +858,7 @@ TEST_F(Renderer, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     Mat4 value = generate<Mat4>();
@@ -874,7 +870,7 @@ TEST_F(Renderer, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialGetMat4ArrayInitiallyReturnsNothing)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.get_array<Mat4>("someKey").has_value());
 }
 
@@ -887,7 +883,7 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
         generate<Mat4>()
     });
 
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_array<Mat4>("someKey", mat4Array);
 
     std::optional<std::span<const Mat4>> rv = mat.get_array<Mat4>("someKey");
@@ -898,7 +894,7 @@ TEST_F(Renderer, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfVal
 
 TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     int value = generate<int>();
@@ -910,7 +906,7 @@ TEST_F(Renderer, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     bool value = generate<bool>();
@@ -922,10 +918,10 @@ TEST_F(Renderer, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
 
 TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
-    Texture2D t = GenerateTexture();
+    Texture2D t = generate_red_texture();
 
     ASSERT_FALSE(mat.get<Texture2D>(key));
 
@@ -936,10 +932,10 @@ TEST_F(Renderer, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
 
 TEST_F(Renderer, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
-    Texture2D t = GenerateTexture();
+    Texture2D t = generate_red_texture();
 
     ASSERT_FALSE(mat.get<Texture2D>(key));
 
@@ -954,8 +950,8 @@ TEST_F(Renderer, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
 
 TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTexture)
 {
-    Material mat = GenerateMaterial();
-    RenderTexture renderTex = GenerateRenderTexture();
+    Material mat = generate_material();
+    RenderTexture renderTex = generate_render_texture();
     std::string key = "someKey";
 
     ASSERT_FALSE(mat.get<RenderTexture>(key));
@@ -967,8 +963,8 @@ TEST_F(Renderer, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTextur
 
 TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
 {
-    Material mat = GenerateMaterial();
-    RenderTexture renderTex = GenerateRenderTexture();
+    Material mat = generate_material();
+    RenderTexture renderTex = generate_render_texture();
     std::string key = "someKey";
 
     ASSERT_FALSE(mat.get<RenderTexture>(key));
@@ -984,14 +980,14 @@ TEST_F(Renderer, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
 
 TEST_F(Renderer, MaterialGetCubemapInitiallyReturnsNothing)
 {
-    const Material mat = GenerateMaterial();
+    const Material mat = generate_material();
 
     ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(Renderer, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
@@ -1004,7 +1000,7 @@ TEST_F(Renderer, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
 
 TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
@@ -1020,7 +1016,7 @@ TEST_F(Renderer, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
 
 TEST_F(Renderer, MaterialUnsetCubemapClearsTheCubemap)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
 
@@ -1037,13 +1033,13 @@ TEST_F(Renderer, MaterialUnsetCubemapClearsTheCubemap)
 
 TEST_F(Renderer, MaterialGetTransparentIsInitiallyFalse)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.is_transparent());
 }
 
 TEST_F(Renderer, MaterialSetTransparentBehavesAsExpected)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_transparent(true);
     ASSERT_TRUE(mat.is_transparent());
     mat.set_transparent(false);
@@ -1054,7 +1050,7 @@ TEST_F(Renderer, MaterialSetTransparentBehavesAsExpected)
 
 TEST_F(Renderer, Material_source_blending_factor_returns_Default_when_not_set)
 {
-    const Material mat = GenerateMaterial();
+    const Material mat = generate_material();
     ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Default);
 }
 
@@ -1062,14 +1058,14 @@ TEST_F(Renderer, Material_set_source_blending_factor_sets_source_blending_factor
 {
     static_assert(SourceBlendingFactor::Default != SourceBlendingFactor::Zero);
 
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_source_blending_factor(SourceBlendingFactor::Zero);
     ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Zero);
 }
 
 TEST_F(Renderer, Material_destination_blending_factor_returns_Default_when_not_set)
 {
-    const Material mat = GenerateMaterial();
+    const Material mat = generate_material();
     ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::Default);
 }
 
@@ -1077,14 +1073,14 @@ TEST_F(Renderer, Material_set_destination_blending_factor_sets_destination_blend
 {
     static_assert(DestinationBlendingFactor::Default != DestinationBlendingFactor::SourceAlpha);
 
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_destination_blending_factor(DestinationBlendingFactor::SourceAlpha);
     ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::SourceAlpha);
 }
 
 TEST_F(Renderer, Material_blending_equation_returns_Default_when_not_set)
 {
-    const Material mat = GenerateMaterial();
+    const Material mat = generate_material();
     ASSERT_EQ(mat.blending_equation(), BlendingEquation::Default);
 }
 
@@ -1092,20 +1088,20 @@ TEST_F(Renderer, Material_set_blending_equation_sets_blending_equation)
 {
     static_assert(BlendingEquation::Default != BlendingEquation::Max);
 
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_blending_equation(BlendingEquation::Max);
     ASSERT_EQ(mat.blending_equation(), BlendingEquation::Max);
 }
 
 TEST_F(Renderer, MaterialGetDepthTestedIsInitiallyTrue)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_TRUE(mat.is_depth_tested());
 }
 
 TEST_F(Renderer, MaterialSetDepthTestedBehavesAsExpected)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_depth_tested(false);
     ASSERT_FALSE(mat.is_depth_tested());
     mat.set_depth_tested(true);
@@ -1116,13 +1112,13 @@ TEST_F(Renderer, MaterialSetDepthTestedBehavesAsExpected)
 
 TEST_F(Renderer, MaterialGetDepthFunctionIsInitiallyDefault)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_EQ(mat.depth_function(), DepthFunction::Default);
 }
 
 TEST_F(Renderer, MaterialSetDepthFunctionBehavesAsExpected)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     ASSERT_EQ(mat.depth_function(), DepthFunction::Default);
 
@@ -1135,13 +1131,13 @@ TEST_F(Renderer, MaterialSetDepthFunctionBehavesAsExpected)
 
 TEST_F(Renderer, MaterialGetWireframeModeIsInitiallyFalse)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.is_wireframe());
 }
 
 TEST_F(Renderer, MaterialSetWireframeModeBehavesAsExpected)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     mat.set_wireframe(false);
     ASSERT_FALSE(mat.is_wireframe());
     mat.set_wireframe(true);
@@ -1152,7 +1148,7 @@ TEST_F(Renderer, MaterialSetWireframeModeBehavesAsExpected)
 
 TEST_F(Renderer, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_FALSE(mat.is_wireframe());
     Material copy{mat};
     ASSERT_EQ(mat, copy);
@@ -1162,13 +1158,13 @@ TEST_F(Renderer, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
 
 TEST_F(Renderer, MaterialGetCullModeIsInitiallyDefault)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     ASSERT_EQ(mat.cull_mode(), CullMode::Default);
 }
 
 TEST_F(Renderer, MaterialSetCullModeBehavesAsExpected)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     constexpr CullMode newCullMode = CullMode::Front;
 
@@ -1181,7 +1177,7 @@ TEST_F(Renderer, MaterialSetCullModeCausesMaterialCopiesToBeNonEqual)
 {
     constexpr CullMode newCullMode = CullMode::Front;
 
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     Material copy{mat};
 
     ASSERT_EQ(mat, copy);
@@ -1192,7 +1188,7 @@ TEST_F(Renderer, MaterialSetCullModeCausesMaterialCopiesToBeNonEqual)
 
 TEST_F(Renderer, MaterialCanCompareEquals)
 {
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
     Material copy{mat};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(mat, copy);
@@ -1200,15 +1196,15 @@ TEST_F(Renderer, MaterialCanCompareEquals)
 
 TEST_F(Renderer, MaterialCanCompareNotEquals)
 {
-    Material m1 = GenerateMaterial();
-    Material m2 = GenerateMaterial();
+    Material m1 = generate_material();
+    Material m2 = generate_material();
 
     ASSERT_NE(m1, m2);
 }
 
 TEST_F(Renderer, MaterialCanPrintToStringStream)
 {
-    Material m1 = GenerateMaterial();
+    Material m1 = generate_material();
 
     std::stringstream ss;
     ss << m1;
@@ -1216,7 +1212,7 @@ TEST_F(Renderer, MaterialCanPrintToStringStream)
 
 TEST_F(Renderer, MaterialOutputStringContainsUsefulInformation)
 {
-    Material m1 = GenerateMaterial();
+    Material m1 = generate_material();
     std::stringstream ss;
 
     ss << m1;
@@ -1231,7 +1227,7 @@ TEST_F(Renderer, MaterialOutputStringContainsUsefulInformation)
 TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 {
     // compound test: when the caller sets a Vec3 then calling get_int with the same key should return empty
-    Material mat = GenerateMaterial();
+    Material mat = generate_material();
 
     std::string key = "someKey";
     float floatValue = generate<float>();
@@ -1246,296 +1242,6 @@ TEST_F(Renderer, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
     ASSERT_TRUE(mat.get<Vec3>(key));
     ASSERT_FALSE(mat.get<float>(key));
 }
-
-TEST_F(Renderer, MaterialPropertyBlockCanDefaultConstruct)
-{
-    MaterialPropertyBlock mpb;
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCopyConstruct)
-{
-    MaterialPropertyBlock mpb;
-    MaterialPropertyBlock{mpb};
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanMoveConstruct)
-{
-    MaterialPropertyBlock mpb;
-    MaterialPropertyBlock copy{std::move(mpb)};
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCopyAssign)
-{
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
-
-    m1 = m2;
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanMoveAssign)
-{
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
-
-    m1 = std::move(m2);
-}
-
-TEST_F(Renderer, MaterialPropertyBlock)
-{
-    MaterialPropertyBlock mpb;
-
-    ASSERT_TRUE(mpb.empty());
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanClearDefaultConstructed)
-{
-    MaterialPropertyBlock mpb;
-    mpb.clear();
-
-    ASSERT_TRUE(mpb.empty());
-}
-
-TEST_F(Renderer, MaterialPropertyBlockClearClearsProperties)
-{
-    MaterialPropertyBlock mpb;
-
-    mpb.set<float>("someKey", generate<float>());
-
-    ASSERT_FALSE(mpb.empty());
-
-    mpb.clear();
-
-    ASSERT_TRUE(mpb.empty());
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetColorOnNewMPBlReturnsEmptyOptional)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Color>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCallSetColorOnNewMaterial)
-{
-    MaterialPropertyBlock mpb;
-    mpb.set<Color>("someKey", Color::red());
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCallingGetColorOnMPBAfterSetColorReturnsTheColor)
-{
-    MaterialPropertyBlock mpb;
-    mpb.set<Color>("someKey", Color::red());
-
-    ASSERT_EQ(mpb.get<Color>("someKey"), Color::red());
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<float>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetVec3ReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Vec3>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetVec4ReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Vec4>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetMat3ReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Mat3>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetMat4ReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Mat4>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetIntReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<int>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockGetBoolReturnsEmptyOnDefaultConstructedInstance)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<bool>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    float value = generate<float>();
-
-    ASSERT_FALSE(mpb.get<float>(key));
-
-    mpb.set<float>(key, value);
-    ASSERT_TRUE(mpb.get<float>(key));
-    ASSERT_EQ(mpb.get<float>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Vec3 value = generate<Vec3>();
-
-    ASSERT_FALSE(mpb.get<Vec3>(key));
-
-    mpb.set<Vec3>(key, value);
-    ASSERT_TRUE(mpb.get<Vec3>(key));
-    ASSERT_EQ(mpb.get<Vec3>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Vec4 value = generate<Vec4>();
-
-    ASSERT_FALSE(mpb.get<Vec4>(key));
-
-    mpb.set<Vec4>(key, value);
-    ASSERT_TRUE(mpb.get<Vec4>(key));
-    ASSERT_EQ(mpb.get<Vec4>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Mat3 value = generate<Mat3>();
-
-    ASSERT_FALSE(mpb.get<Vec4>(key));
-
-    mpb.set<Mat3>(key, value);
-    ASSERT_TRUE(mpb.get<Mat3>(key));
-    ASSERT_EQ(mpb.get<Mat3>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    int value = generate<int>();
-
-    ASSERT_FALSE(mpb.get<int>(key));
-
-    mpb.set<int>(key, value);
-    ASSERT_TRUE(mpb.get<int>(key));
-    ASSERT_EQ(mpb.get<int>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
-{
-    MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    bool value = generate<bool>();
-
-    ASSERT_FALSE(mpb.get<bool>(key));
-
-    mpb.set<bool>(key, value);
-    ASSERT_TRUE(mpb.get<bool>(key));
-    ASSERT_EQ(mpb.get<bool>(key), value);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
-{
-    MaterialPropertyBlock mpb;
-
-    std::string key = "someKey";
-    Texture2D t = GenerateTexture();
-
-    ASSERT_FALSE(mpb.get<Texture2D>(key));
-
-    mpb.set<Texture2D>(key, t);
-
-    ASSERT_TRUE(mpb.get<Texture2D>(key));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<SharedColorRenderBuffer>("someKey"));
-    mpb.set("someKey", SharedColorRenderBuffer{});
-    ASSERT_TRUE(mpb.get<SharedColorRenderBuffer>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockSetSharedDepthRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)
-{
-    MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<SharedDepthStencilRenderBuffer>("someKey"));
-    mpb.set("someKey", SharedDepthStencilRenderBuffer{});
-    ASSERT_TRUE(mpb.get<SharedDepthStencilRenderBuffer>("someKey"));
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanCompareEquals)
-{
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
-
-    ASSERT_TRUE(m1 == m2);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCopyConstructionComparesEqual)
-{
-    MaterialPropertyBlock m;
-    MaterialPropertyBlock copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
-
-    ASSERT_EQ(m, copy);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCopyAssignmentComparesEqual)
-{
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
-
-    m1.set<float>("someKey", generate<float>());
-
-    ASSERT_NE(m1, m2);
-
-    m1 = m2;
-
-    ASSERT_EQ(m1, m2);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
-{
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
-
-    m1.set<float>("someKey", generate<float>());
-
-    ASSERT_NE(m1, m2);
-}
-
-TEST_F(Renderer, MaterialPropertyBlockCanPrintToOutputStream)
-{
-    MaterialPropertyBlock m1;
-    std::stringstream ss;
-
-    ss << m1;  // just ensure this compiles and runs
-}
-
-TEST_F(Renderer, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialPropertyBlock)
-{
-    MaterialPropertyBlock m1;
-    std::stringstream ss;
-
-    ss << m1;
-
-    ASSERT_TRUE(contains(ss.str(), "MaterialPropertyBlock"));
-}
-
 TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
 {
     for (size_t i = 0; i < num_options<MeshTopology>(); ++i) {
@@ -1591,7 +1297,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
-    const Material material = GenerateMaterial();
+    const Material material = generate_material();
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera); });
@@ -1601,7 +1307,7 @@ TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
-    const Material material = GenerateMaterial();
+    const Material material = generate_material();
     Camera camera;
 
     ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
@@ -1612,7 +1318,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
     Mesh mesh;
     mesh.push_submesh_descriptor({0, 0, MeshTopology::Triangles});
     const Transform transform = identity<Transform>();
-    const Material material = GenerateMaterial();
+    const Material material = generate_material();
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
