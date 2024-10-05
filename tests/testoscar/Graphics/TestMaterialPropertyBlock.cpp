@@ -77,7 +77,7 @@ TEST(MaterialPropertyBlock, can_clear_default_constructed)
     ASSERT_TRUE(mpb.empty());
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockClearClearsProperties)
+TEST(MaterialPropertyBlock, clear_clears_properties)
 {
     MaterialPropertyBlock mpb;
 
@@ -102,7 +102,7 @@ TEST(MaterialPropertyBlock, can_call_set_color)
     mpb.set<Color>("someKey", Color::red());
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockCallingGetColorOnMPBAfterSetColorReturnsTheColor)
+TEST(MaterialPropertyBlock, calling_get_Color_after_set_Color_returns_the_color)
 {
     MaterialPropertyBlock mpb;
     mpb.set<Color>("someKey", Color::red());
@@ -110,53 +110,53 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCallingGetColorOnMPBAfterSetCol
     ASSERT_EQ(mpb.get<Color>("someKey"), Color::red());
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetFloatReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_float_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<float>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetVec3ReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_Vec3_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<Vec3>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetVec4ReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_Vec4_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<Vec4>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetMat3ReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_Mat3_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<Mat3>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetMat4ReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_Mat4_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<Mat4>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetIntReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_int_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<int>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockGetBoolReturnsEmptyOnDefaultConstructedInstance)
+TEST(MaterialPropertyBlock, get_bool_returns_nullopt_on_default_constructed)
 {
-    MaterialPropertyBlock mpb;
+    const MaterialPropertyBlock mpb;
     ASSERT_FALSE(mpb.get<bool>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetFloatCausesGetterToReturnSetValue)
+TEST(MaterialPropertyBlock, set_float_causes_get_float_to_return_the_float)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    float value = generate<float>();
+    const std::string key = "someKey";
+    const float value = generate<float>();
 
     ASSERT_FALSE(mpb.get<float>(key));
 
@@ -165,11 +165,11 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetFloatCausesGetterToReturnSet
     ASSERT_EQ(mpb.get<float>(key), value);
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetVec3CausesGetterToReturnSetValue)
+TEST(MaterialPropertyBlock, set_Vec3_causes_get_Vec3_to_return_the_Vec3)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Vec3 value = generate<Vec3>();
+    const std::string key = "someKey";
+    const Vec3 value = generate<Vec3>();
 
     ASSERT_FALSE(mpb.get<Vec3>(key));
 
@@ -178,11 +178,11 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetVec3CausesGetterToReturnSetV
     ASSERT_EQ(mpb.get<Vec3>(key), value);
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetVec4CausesGetterToReturnSetValue)
+TEST(MaterialPropertyBlock, set_Vec4_causes_get_Vec4_to_return_the_Vec4)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Vec4 value = generate<Vec4>();
+    const std::string key = "someKey";
+    const Vec4 value = generate<Vec4>();
 
     ASSERT_FALSE(mpb.get<Vec4>(key));
 
@@ -191,11 +191,11 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetVec4CausesGetterToReturnSetV
     ASSERT_EQ(mpb.get<Vec4>(key), value);
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetMat3CausesGetterToReturnSetValue)
+TEST(MaterialPropertyBlock, set_Mat3_causes_get_Mat3_to_return_the_Mat3)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    Mat3 value = generate<Mat3>();
+    const std::string key = "someKey";
+    const Mat3 value = generate<Mat3>();
 
     ASSERT_FALSE(mpb.get<Vec4>(key));
 
@@ -204,11 +204,11 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetMat3CausesGetterToReturnSetV
     ASSERT_EQ(mpb.get<Mat3>(key), value);
 }
 
-TEST(MaterialPropertyBlock, MaterialPropertyBlockSetIntCausesGetterToReturnSetValue)
+TEST(MaterialPropertyBlock, set_int_causes_get_int_to_return_the_int)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    int value = generate<int>();
+    const std::string key = "someKey";
+    const int value = generate<int>();
 
     ASSERT_FALSE(mpb.get<int>(key));
 
