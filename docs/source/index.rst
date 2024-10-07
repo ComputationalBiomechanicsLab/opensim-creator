@@ -48,6 +48,7 @@ Table of Contents
    tut4
    tut5
    tut6
+   tut7
 
 .. toctree::
     :maxdepth: 2

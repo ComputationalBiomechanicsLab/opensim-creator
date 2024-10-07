@@ -129,8 +129,8 @@ OpenSim Creator's mesh warping UI, which internally uses the TPS algorithm:
 Opening the Mesh Warping UI
 ---------------------------
 
-The mesh warping UI is an independent "workflow" UI that's separate from the main
-OpenSim Creator model editing/simulation UI:
+The mesh warping UI is an independent "workflow" UI that can be accessed from
+OpenSim Creator's splash screen:
 
 .. figure:: _static/tut5_open-mesh-warper-from-splash-screen.png
     :width: 60%
