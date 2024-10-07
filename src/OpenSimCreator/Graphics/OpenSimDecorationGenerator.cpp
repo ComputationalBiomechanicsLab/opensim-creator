@@ -462,8 +462,8 @@ namespace
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
             const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
-                .start = to<Vec3>(frame2ground * SimTK::Vec3{0.0}),
-                .end = to<Vec3>(frame2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                .start = to<Vec3>(frame2ground.p()),
+                .end =  to<Vec3>(frame2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
                 .tip_length = (fixupScaleFactor*0.015f),
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
@@ -535,8 +535,8 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = to<Vec3>(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = to<Vec3>(mobod2ground * (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
+                    .start = to<Vec3>(mobod2ground.p()),
+                    .end = to<Vec3>(mobod2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),

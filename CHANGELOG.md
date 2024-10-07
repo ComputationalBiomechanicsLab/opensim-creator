@@ -10,25 +10,29 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   workflow, with a few twists:
   - Similarly to OpenSim GUI, you can load an `.osim` model, associated `.osim` motion
     (`.sto`/`.mot`) and raw data into the scene. However, by default, all data will be
-    overlaid with no spatial offset, and playback will play all motion tracks, rather than
-    one of them. This helps with validating several datastreams (e.g. an IK result against
-    input marker motions).
-  - Additionally, it can preview the effect of adding `ExternalLoads` and `PrescribedForce`
+    overlaid with no spatial offset, and time scrubber will scrub all motion tracks, rather
+    than one of them. This helps with validating several datastreams (e.g. an IK result
+    against input marker motions).
+  - Additionally, it can preview the effect of adding `ExternalLoads` and `PrescribedForce`s
     XML files to the model. You'll need to enable the `Point Forces` or `BodyForces` visual
-    aid in the 3D visualizer panel to see the forces being emitted by the forces.
+    aid in the 3D visualizer panel to visualize those forces.
   - The above two features can be used at the same time, which helps with (e.g.) validating
     that `ExternalLoads` are being applied to the correct frame etc.
-- The simulator tab now has very similar behavior to the model editor tab - albeit, with
-  editing disabled. This is part of an ongoing effort to merge the model editor, simulator,
-  and preview experimental data workflows into a single UI.
-- The function curve viewer now spawns a separate, movable, panel that can be docked etc. in
-  the rest of the UI (previously: it would spawn a popup that took control of the UI until
-  it was closed).
-- Fixed the navigator erroneously autoscrolling in some cases when selecting components
-  via the navigator (#908)
-- It's now possible to watch/plot parts of a `SpatialVec` component output; for example, the
-  `reaction_on_child` and `reaction_on_parent` outputs of an `OpenSim::Joint` (thanks Jeremy
-  Genter at ZHAW, #929)
+- The simulator tab now has similar behavior to the model editor tab. For example, it is now
+  possible to view the coordintes panel in the simulator tab - albeit, with editing
+  disabled. This is part of an ongoing effort to merge the model editor, simulator, and preview
+  experimental data workflows into a single UI.
+- The function curve viewer now spawns a separate, movable, panel that can be docked in the
+  editor UI. Previously, it would spawn a popup dialog, which would prevent the ability to edit
+  the model while viewing a function curve. With this change, it is now also possible to view
+  multiple function curves at the same time.
+- Fixed a bug where "Show Forces on Bodies" was erroneously handling the body's force vector
+  as-if it were in the parent frame (OpenSim's `ForceConsumer` API emits them in ground, #931).
+- Fixed a bug where the navigator panel would erroneously autoscroll when a user selects a
+  component in it (it should only autoscroll when the selection happens elsewhere, #908).
+- It is now possible to watch/plot parts of a `SpatialVec` component output. For example, it's
+  now possible to watch/plot the `reaction_on_child` and `reaction_on_parent` outputs of an
+  `OpenSim::Joint` (thanks Jeremy Genter at ZHAW, #929).
 - There is now a slight color difference between selected and hovered items in the UI (e.g.
   the color highlighting used in the navigator panel; thanks @mrrezaie, #916).
 - The expression frame selector that appears in the property editor when editing spatial
@@ -43,6 +47,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Force arrows are now half as long, to make them more manageable when forces become large.
 - Internal: OpenSim-independent simbody code was refactored into a separate `oscar_simbody`
   library, so that we can port it independently to other platforms (e.g. wasm).
+- Internal: the UI datastructures offered by `oscar` are now better-equipped for handling
+  custom events, which makes features like (e.g.) spawning function curve panels easier to
+  implement in `OpenSimCreator`.
+
 
 ## [0.5.14] - 2024/09/04
 
