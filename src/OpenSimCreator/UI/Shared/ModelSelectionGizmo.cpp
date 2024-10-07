@@ -678,7 +678,13 @@ namespace
 
 osc::ModelSelectionGizmo::ModelSelectionGizmo(std::shared_ptr<IModelStatePair> model_) :
     m_Model{std::move(model_)}
-{}
+{
+    // Default the gizmo to local-space, because OpenSim users can confuse the
+    // gizmo arrows with the frame they've currently selected. If the frames are
+    // hidden in the UI view, then they'll think "oh, these gizmo arrows are all
+    // wrong, my frame is rotated!", even though the gizmo isn't the frame (#928).
+    m_Gizmo.set_mode(ui::GizmoMode::Local);
+}
 osc::ModelSelectionGizmo::ModelSelectionGizmo(const ModelSelectionGizmo&) = default;
 osc::ModelSelectionGizmo::ModelSelectionGizmo(ModelSelectionGizmo&&) noexcept = default;
 osc::ModelSelectionGizmo& osc::ModelSelectionGizmo::operator=(const ModelSelectionGizmo&) = default;

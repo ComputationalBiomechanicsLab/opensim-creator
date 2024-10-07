@@ -26,6 +26,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   editor UI. Previously, it would spawn a popup dialog, which would prevent the ability to edit
   the model while viewing a function curve. With this change, it is now also possible to view
   multiple function curves at the same time.
+- The 3D manipulation gizmo that pops up when selecting (e.g.) markers and frames now defaults
+  to editing in their `Local` space, rather than editing in `Global` space. This is to reduce
+  confusion between "this is a UI manipulation gizmo" and "this is the frame I'm editing" in
+  the case where frame visualization is disabled. Global-space editing is still possible via
+  a dropdown in each 3D visualizer (or double-click `G`, `R`, etc. #928).
 - Fixed a bug where "Show Forces on Bodies" was erroneously handling the body's force vector
   as-if it were in the parent frame (OpenSim's `ForceConsumer` API emits them in ground, #931).
 - Fixed a bug where the navigator panel would erroneously autoscroll when a user selects a
