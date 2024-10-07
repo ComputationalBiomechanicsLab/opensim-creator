@@ -37,7 +37,7 @@ TEST(MaterialPropertyBlock, can_default_construct)
 TEST(MaterialPropertyBlock, can_copy_construct)
 {
     const MaterialPropertyBlock mpb;
-    const MaterialPropertyBlock copy{mpb};
+    const MaterialPropertyBlock copy{mpb};  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(MaterialPropertyBlock, can_move_construct)
@@ -57,7 +57,7 @@ TEST(MaterialPropertyBlock, can_copy_assign)
 TEST(MaterialPropertyBlock, can_move_assign)
 {
     MaterialPropertyBlock m1;
-    const MaterialPropertyBlock m2;
+    MaterialPropertyBlock m2;
 
     m1 = std::move(m2);
 }
