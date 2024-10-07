@@ -22,8 +22,7 @@ namespace osc
         ShouldShowForceLinearComponent                      = 1<<8,
         ShouldShowForceAngularComponent                     = 1<<9,
         ShouldShowPointForces                               = 1<<10,
-        ShouldShowPointTorques                              = 1<<11,
-        NUM_FLAGS                                           = 12,
+        NUM_FLAGS                                           =    11,
 
         Default = ShouldShowPointToPointSprings,
     };

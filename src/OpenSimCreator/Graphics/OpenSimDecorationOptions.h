@@ -72,9 +72,6 @@ namespace osc
         bool getShouldShowPointForces() const;
         void setShouldShowPointForces(bool);
 
-        bool getShouldShowPointTorques() const;
-        void setShouldShowPointTorques(bool);
-
         void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
         void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
 

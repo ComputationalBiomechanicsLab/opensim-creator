@@ -82,12 +82,14 @@ namespace
             OSC_ICON_MAGIC " Point Forces",
             "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only works for `ExternalForce`s and `GeometryPath`s",
         },
-        OpenSimDecorationOptionMetadata
-        {
-            "show_point_torques",
-            OSC_ICON_MAGIC " Point Torques",
-            "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only works for `ExternalForce`s",
-        },
+
+        // deprecated
+        // OpenSimDecorationOptionMetadata
+        // {
+        //     "show_point_torques",
+        //     OSC_ICON_MAGIC " Point Torques",
+        //     "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only works for `ExternalForce`s",
+        // },
     });
 
     static_assert(c_CustomDecorationOptionLabels.size() == num_flags<OpenSimDecorationOptionFlags>());

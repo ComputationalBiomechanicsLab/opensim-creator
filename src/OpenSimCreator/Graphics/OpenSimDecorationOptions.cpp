@@ -185,16 +185,6 @@ void osc::OpenSimDecorationOptions::setShouldShowPointForces(bool v)
     SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowPointForces, v);
 }
 
-bool osc::OpenSimDecorationOptions::getShouldShowPointTorques() const
-{
-    return m_Flags & OpenSimDecorationOptionFlags::ShouldShowPointTorques;
-}
-
-void osc::OpenSimDecorationOptions::setShouldShowPointTorques(bool v)
-{
-    SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowPointTorques, v);
-}
-
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);

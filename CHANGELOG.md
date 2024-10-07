@@ -31,10 +31,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   confusion between "this is a UI manipulation gizmo" and "this is the frame I'm editing" in
   the case where frame visualization is disabled. Global-space editing is still possible via
   a dropdown in each 3D visualizer (or double-click `G`, `R`, etc. #928).
-- Fixed a bug where "Show Forces on Bodies" was erroneously handling the body's force vector
-  as-if it were in the parent frame (OpenSim's `ForceConsumer` API emits them in ground, #931).
-- Fixed a bug where the navigator panel would erroneously autoscroll when a user selects a
-  component in it (it should only autoscroll when the selection happens elsewhere, #908).
 - It is now possible to watch/plot parts of a `SpatialVec` component output. For example, it's
   now possible to watch/plot the `reaction_on_child` and `reaction_on_parent` outputs of an
   `OpenSim::Joint` (thanks Jeremy Genter at ZHAW, #929).
@@ -50,6 +46,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   option, which is handy for dumping the body/joint topology of a model to an external graph
   visualizer (e.g. https://dreampuf.github.io/GraphvizOnline; thanks @mjhmilla, #920).
 - Force arrows are now half as long, to make them more manageable when forces become large.
+- "Point Torques" was removed as a visualization option (it did nothing).
+- Fixed a bug where "Show Forces on Bodies" was erroneously handling the body's force vector
+  as-if it were in the parent frame (OpenSim's `ForceConsumer` API emits them in ground, #931).
+- Fixed a bug where the navigator panel would erroneously autoscroll when a user selects a
+  component in it (it should only autoscroll when the selection happens elsewhere, #908).
 - Internal: OpenSim-independent simbody code was refactored into a separate `oscar_simbody`
   library, so that we can port it independently to other platforms (e.g. wasm).
 - Internal: the UI datastructures offered by `oscar` are now better-equipped for handling

@@ -588,7 +588,6 @@ namespace
         }
 
         if (not rs.getOptions().getShouldShowPointForces() and
-            not rs.getOptions().getShouldShowPointTorques() and
             not rs.getOptions().getShouldShowForceLinearComponent() and
             not rs.getOptions().getShouldShowForceAngularComponent()) {
 
