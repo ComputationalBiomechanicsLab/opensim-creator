@@ -21,8 +21,8 @@
 
 In this tutorial, we will be using the preview experimental data workflow to
 visualize, validate, and connect experimental data to an OpenSim model. This
-is typically required when you have external experimental data (e.g. markers,
-ground reaction forces) that you want to use with an OpenSim solver.
+is typically required when you have external experimental data that you want
+to use with an OpenSim solver.
 
 .. figure:: _static/tut7_preview-experimental-data-ui.jpeg
     :width: 60%
@@ -43,17 +43,16 @@ Prerequisites
 * **This is a standalone tutorial**. The preview experimental data workflow is
   a standalone UI for handling experimental data. You don't necessarily need
   to know how to build or handle an OpenSim model in order to use it
-  effectively, but those skills are useful for debugging (e.g.) issue with
-  ``ExternalLoads``.
+  effectively, but those skills are useful for debugging a model-specific issue.
 
 * **For your own work**, you will need to have your experimental data files in
-  a format that's compatible with OpenSim (e.g. ``trc``). Typically, this
+  a format that's compatible with OpenSim (e.g. ``trc``, ``sto``). Typically, this
   requires either using an OpenSim-aware data exporter, or writing a script
   that converts your experimental data from your source format into an
-  OpenSim-compatible format. The data formats used by OpenSim (e.g. ``sto``)
-  are typically simple plaintext formats, which means that you can generally
-  (e.g.) use a one-off python script to generate them. We recommend looking
-  at some existing OpenSim-compatible data files (e.g. this `Example MOT File`_
+  OpenSim-compatible format. The data formats used by OpenSim are typically
+  simple plaintext formats, which means that you can generally (e.g.) use a
+  one-off python script to generate them. We recommend looking at some existing
+  OpenSim-compatible data files (e.g. this `Example MOT File`_
   from the `OpenSim Models Repository`_) for inspiration.
 
 
@@ -69,10 +68,13 @@ Opening the Preview Experimental Data UI
 ----------------------------------------
 
 The preview experimental data UI is an independent "workflow" UI that can be
-accessed from OpenSim Creator's splash screen:
+accessed from OpenSim Creator's splash screen, in the ``Workflows`` section:
 
-``TODO``: screenshot of the splash screen showing where the preview experimental
-data UI button is.
+.. figure:: _static/tut7_preview-experimental-data-from-splash.jpeg
+    :width: 60%
+
+    How to open the preview experimental data UI from the splash screen. It's
+    also accessible from the ``File`` menu.
 
 
 Preview Experimental Data UI Overview
@@ -85,16 +87,43 @@ Preview Experimental Data UI Overview
     it has buttons for loading a model, the model's associated trajectory, raw
     data files (unassociated to the model), and OpenSim XML files (e.g. ``ExternalLoads``).
 
-- ``TODO`` the preview experimental data UI is similar to the model editing UI, but
-  with some key differences
-- ``TODO`` highlight the ability to load osim files
-- ``TODO`` highlight the ability to load motion
-- ``TODO`` highlight the ability to load raw data files
-- ``TODO`` highlight the ability to load + associate OpenSim XML files, which is handy
-  for debugging ``ExternalLoads``, ``PrescribedForces``, etc.
-- ``TODO`` roughly explain relationship between raw data files and ``ExternalLoads`` etc.
-  but beware that it'll be redundantly explained during the walkthrough in the next
-  section.
+The preview experimental data UI provides similar panels to the model editor
+UI (e.g. ``Coordinates``, ``Navigator``), but with some key differences that
+are tailored towards visualizing and debugging experimental data:
+
+- **It can load a model trajectory**. The ``load model trajectory`` button in the top
+  toolbar lets you load a trajectory (e.g. ``sto``) against the current. This
+  is useful for (e.g.) debugging whether the output from OpenSim's Inverse
+  Kinematics (IK) solver matches your experimental data.
+
+- **It can load raw experimental data files**. The ``load raw data file`` button
+  in the top toolbar lets you load raw data files into the scene. The data series
+  in the raw data file can then be clicked, inspected, scrubbed, etc. to
+  visualize how OpenSim understands them. Because they are "raw" data files
+  they are unconnected to any frame in the model and always display in ground.
+
+- **It can load associated OpenSim XML files**. The ``load OpenSim XML`` button
+  in the top toolbar reads any ``<OpenSimDocument>`` and puts it in the model's
+  ``componentset``, which associates it with the model. This is useful for (e.g.)
+  associating an ``ExternalLoads`` to a model which, when force-vector visualization
+  is enabled in a 3D viewer, lets you view when/where those forces are applied to
+  the model.
+
+- **It has a time scrubber**. There's a time scrubber (slider) in the top toolbar,
+  which lets you set/modify the currently-viewed time. This doesn't involve any
+  kind of solver or simulation (e.g. forward-dynamics). It only sets the current
+  model's time, so that (e.g.) any associated motions, raw data, or ``ExternalLoads``
+  reflect their impact at that point in time. This is useful for ensuring data
+  behaves as-expected over time.
+
+- **It can reload all of the above with a single click**. The ``reload all``
+  button in the top toolbar is designed to reload everything in one click and
+  scrub to the currently-scrubbed-to time. This is useful for debugging/fixing/editing
+  the external files in an external editor, followed by reloading.
+
+In combination, these features let you set up a single workplace where you can
+work on/with experimental data to solve your research problems. The next section
+describes, concretely, how they interplay in an example workflow.
 
 
 Walkthrough: Markers to Motion
