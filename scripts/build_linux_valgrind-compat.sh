@@ -27,7 +27,7 @@ valgrind_cmd="valgrind --leak-check=full --suppressions=scripts/valgrind_suppres
 ${valgrind_cmd} -- ./osc-build/tests/testoscar/testoscar
 ${valgrind_cmd} -- ./osc-build/tests/testoscar_demos/testoscar_demos
 ${valgrind_cmd} -- ./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
-${valgrind_cmd} -- ./osc-build/tests/testoscar_learnopengl/testoscar_simbody
+${valgrind_cmd} -- ./osc-build/tests/testoscar_simbody/testoscar_simbody
 ${valgrind_cmd} -- ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
 ${valgrind_cmd} -- ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins
 
