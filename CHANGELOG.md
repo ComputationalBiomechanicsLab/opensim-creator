@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.15] - 2024/10/07
+
 - A `Preview Experimental Data` workflow has been added. This is **work in progress**, but
   ultimately has a similar intent to the official OpenSim GUI's `Preview Experimental Data...`
   workflow, with a few twists:
