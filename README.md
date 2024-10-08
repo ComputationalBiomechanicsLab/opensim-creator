@@ -98,7 +98,7 @@ a bleeding-edge--but unreleased--build of OpenSim Creator check [the actions pag
 
 OpenSim Creator doesn't have a central _written_ software publication that you can cite (yet 😉). However, if you _need_ to directly cite OpenSim Creator (e.g. because you think it's relevant that you built a model with it), the closest thing you can use is our DOI-ed Zenodo releases (metadata available in this repo: `CITATION.cff`/`codemeta.json`):
 
-> Kewley, A., Beesel, J., & Seth, A. (2024). OpenSim Creator (0.5.14). Zenodo. https://doi.org/10.5281/zenodo.13682081
+> Kewley, A., Beesel, J., & Seth, A. (2024). OpenSim Creator (0.5.15). Zenodo. https://doi.org/10.5281/zenodo.13902129
 
 If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
 
