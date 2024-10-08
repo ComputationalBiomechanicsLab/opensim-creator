@@ -567,6 +567,9 @@ namespace osc
     // otherwise, returns an empty path
     std::optional<std::filesystem::path> TryFindInputFile(const OpenSim::Model&);
 
+    // returns the recommended name of the provided model file, e.g. for suggesting a name for users
+    std::string RecommendedDocumentName(const OpenSim::Model&);
+
     // returns the absolute path to the given mesh component, if found (otherwise, std::nullptr)
     std::optional<std::filesystem::path> FindGeometryFileAbsPath(
         const OpenSim::Model&,

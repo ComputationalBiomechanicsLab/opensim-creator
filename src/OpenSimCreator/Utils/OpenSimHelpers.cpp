@@ -785,6 +785,16 @@ std::optional<std::filesystem::path> osc::TryFindInputFile(const OpenSim::Model&
     return p;
 }
 
+std::string osc::RecommendedDocumentName(const OpenSim::Model& model)
+{
+    if (auto inputFile = TryFindInputFile(model)) {
+        return inputFile->filename().string();
+    }
+    else {
+        return "untitled.osim";
+    }
+}
+
 std::optional<std::filesystem::path> osc::FindGeometryFileAbsPath(
     const OpenSim::Model& model,
     const OpenSim::Mesh& mesh)

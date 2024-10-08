@@ -200,16 +200,13 @@ public:
 
     // crete a new commit graph that contains a backup of the given model
     explicit Impl(std::unique_ptr<OpenSim::Model> m) :
-        m_Scratch{std::move(m)},
-        m_MaybeFilesystemLocation{TryFindInputFile(m_Scratch.getModel()).value_or("")}
+        m_Scratch{std::move(m)}
     {
         std::stringstream ss;
-        if (!m_MaybeFilesystemLocation.empty())
-        {
-            ss << "loaded " << m_MaybeFilesystemLocation.filename().string();
+        if (auto inputPath = TryFindInputFile(getModel())) {
+            ss << "loaded " << inputPath->filename().string();
         }
-        else
-        {
+        else {
             ss << "loaded model";
         }
         doCommit(std::move(ss).str());  // make initial commit
@@ -228,14 +225,7 @@ public:
 
     std::string recommendedDocumentName() const
     {
-        if (hasFilesystemLocation())
-        {
-            return getFilesystemPath().filename().string();
-        }
-        else
-        {
-            return "untitled.osim";
-        }
+        return RecommendedDocumentName(getModel());
     }
 
     std::filesystem::path getFilesystemPath() const
@@ -672,12 +662,12 @@ private:
 
     std::filesystem::path getFilesystemLocation() const
     {
-        return m_MaybeFilesystemLocation;
+        return std::filesystem::path{getModel().getInputFileName()};
     }
 
     void setFilesystemLocation(const std::filesystem::path& p)
     {
-        m_MaybeFilesystemLocation = p;
+        updModel().setInputFileName(p.string());
     }
 
     UID getFilesystemVersion() const
@@ -696,9 +686,6 @@ private:
 
     // underlying storage for immutable commits
     std::unordered_map<UID, ModelStateCommit> m_Commits;
-
-    // (maybe) the location of the model on-disk
-    std::filesystem::path m_MaybeFilesystemLocation;
 
     // the timestamp of the on-disk data (needed to know when to trigger a reload)
     std::filesystem::file_time_type m_MaybeFilesystemTimestamp;

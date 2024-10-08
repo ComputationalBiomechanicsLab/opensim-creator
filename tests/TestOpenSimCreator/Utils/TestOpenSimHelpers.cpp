@@ -383,3 +383,15 @@ TEST(OpenSimHelpers, IsAllElementsUniqueReturnsFalseForNotUniqueCase)
 
     ASSERT_FALSE(IsAllElementsUnique(els));
 }
+
+TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemoryModel)
+{
+    ASSERT_EQ(RecommendedDocumentName(OpenSim::Model{}), "untitled.osim");
+}
+
+TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
+{
+    std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
+    OpenSim::Model model{modelPath.string()};
+    ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");
+}
