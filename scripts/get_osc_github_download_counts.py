@@ -21,7 +21,7 @@ urls = [
     "https://api.github.com/repos/ComputationalBiomechanicsLab/opensim-creator/releases",
 ]
 
-version_pattern = re.compile("\d+\.\d+.\d+")
+version_pattern = re.compile(r"\d+\.\d+.\d+")
 
 rows = []
 for url in urls:
