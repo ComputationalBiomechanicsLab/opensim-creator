@@ -241,31 +241,33 @@ namespace
     }
 }
 
-void osc::ActionSaveCurrentModelAs(UndoableModelStatePair& uim)
+void osc::ActionSaveCurrentModelAs(IModelStatePair& uim)
 {
-    const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
+    const auto maybePath = PromptSaveOneFile();
 
-    if (maybePath && TrySaveModel(uim.getModel(), maybePath->string()))
-    {
-        const std::string oldPath = uim.getModel().getInputFileName();
-
-        uim.updModel().setInputFileName(maybePath->string());
-        uim.setFilesystemPath(*maybePath);
-
-        if (*maybePath != oldPath)
-        {
-            uim.commit("changed osim path");
-        }
-        uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
-
-        App::singleton<RecentFiles>()->push_back(*maybePath);
+    if (not maybePath) {
+        return;  // user cancelled out of the prompt
     }
+
+    if (not TrySaveModel(uim.getModel(), maybePath->string())) {
+        return;  // error saving the model file
+    }
+
+    const std::string oldPath = uim.getModel().getInputFileName();
+
+    uim.updModel().setInputFileName(maybePath->string());
+
+    if (*maybePath != oldPath) {
+        uim.commit("changed osim path");
+    }
+    uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
+
+    App::singleton<RecentFiles>()->push_back(*maybePath);
 }
 
 void osc::ActionNewModel(Widget& api)
 {
-    auto model = std::make_unique<UndoableModelStatePair>();
-    auto tab = std::make_unique<ModelEditorTab>(api, std::move(model));
+    auto tab = std::make_unique<ModelEditorTab>(api);
     App::post_event<OpenTabEvent>(api, std::move(tab));
 }
 
@@ -279,29 +281,28 @@ void osc::ActionOpenModel(Widget& api, const std::filesystem::path& path)
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(Widget&, UndoableModelStatePair& model)
+bool osc::ActionSaveModel(Widget&, IModelStatePair& model)
 {
-    const std::optional<std::string> maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
+    const auto maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 
-    if (maybeUserSaveLoc && TrySaveModel(model.getModel(), *maybeUserSaveLoc))
-    {
-        const std::string oldPath = model.getModel().getInputFileName();
-        model.updModel().setInputFileName(*maybeUserSaveLoc);
-        model.setFilesystemPath(*maybeUserSaveLoc);
-
-        if (*maybeUserSaveLoc != oldPath)
-        {
-            model.commit("changed osim path");
-        }
-        model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
-
-        App::singleton<RecentFiles>()->push_back(*maybeUserSaveLoc);
-        return true;
+    if (not maybeUserSaveLoc) {
+        return false;  // the user cancelled out of the prompt
     }
-    else
-    {
-        return false;
+
+    if (not TrySaveModel(model.getModel(), *maybeUserSaveLoc)) {
+        return false;  // there was an error saving the model
     }
+
+    const std::string oldPath = model.getModel().getInputFileName();
+    model.updModel().setInputFileName(*maybeUserSaveLoc);
+
+    if (*maybeUserSaveLoc != oldPath) {
+        model.commit("changed osim path");
+    }
+    model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
+
+    App::singleton<RecentFiles>()->push_back(*maybeUserSaveLoc);
+    return true;
 }
 
 void osc::ActionTryDeleteSelectionFromEditedModel(IModelStatePair& uim)
@@ -420,24 +421,20 @@ bool osc::ActionStartSimulatingModel(
 
 bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
 {
-    if (!uim.hasFilesystemLocation())
-    {
-        // there is no backing file?
-        return false;
+    const auto path = TryFindInputFile(uim.getModel());
+
+    if (not path) {
+        return false;  // there is no backing file
     }
 
-    const std::filesystem::path path = uim.getFilesystemPath();
-
-    if (!std::filesystem::exists(path))
-    {
-        // the file does not exist? (e.g. because the user deleted it externally - #495)
-        return false;
+    if (not std::filesystem::exists(*path)) {
+        return false;  // the file does not exist? (e.g. because the user deleted it externally - #495)
     }
 
-    const std::filesystem::file_time_type lastSaveTime = std::filesystem::last_write_time(path);
+    const auto currentTimestamp = uim.getLastFilesystemWriteTime();
+    const auto lastSaveTime = std::filesystem::last_write_time(*path);
 
-    if (uim.getLastFilesystemWriteTime() >= lastSaveTime)
-    {
+    if (currentTimestamp >= lastSaveTime) {
         // the backing file is probably up-to-date with the in-memory representation
         //
         // (e.g. because OSC just saved it and set the timestamp appropriately)
@@ -445,8 +442,7 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
     }
 
     // else: there is a backing file and it's newer than what's in-memory, so reload
-    try
-    {
+    try {
         log_info("file change detected: loading updated file");
 
         auto loadedModel = LoadModel(uim.getModel().getInputFileName());
@@ -459,25 +455,22 @@ bool osc::ActionUpdateModelFromBackingFile(UndoableModelStatePair& uim)
 
         return true;
     }
-    catch (const std::exception& ex)
-    {
+    catch (const std::exception& ex) {
         log_error("error detected while trying to automatically load a model file: %s", ex.what());
         uim.rollback();
         return false;
     }
 }
 
-bool osc::ActionCopyModelPathToClipboard(const UndoableModelStatePair& uim)
+bool osc::ActionCopyModelPathToClipboard(const IModelStatePair& uim)
 {
-    if (!uim.hasFilesystemLocation())
-    {
-        // there is no backing file?
-        return false;
+    auto path = TryFindInputFile(uim.getModel());
+
+    if (not path) {
+        return false;  // there is no backing file
     }
 
-    const std::filesystem::path absPath = std::filesystem::weakly_canonical(uim.getFilesystemPath());
-
-    set_clipboard_text(absPath.string());
+    set_clipboard_text(std::filesystem::weakly_canonical(*path).string());
 
     return true;
 }
@@ -622,21 +615,21 @@ bool osc::ActionOpenOsimInExternalEditor(const OpenSim::Model& model)
 
 bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& meshCache)
 {
-    if (!HasInputFileName(uim.getModel()))
-    {
+    const auto inputFile = TryFindInputFile(uim.getModel());
+
+    if (not inputFile) {
         log_error("cannot reload the osim file: the model doesn't appear to have a backing file (is it saved?)");
         return false;
     }
 
-    try
-    {
+    try {
         log_info("manual osim file reload requested: attempting to reload the file");
-        auto p = LoadModel(uim.getModel().getInputFileName());
+        auto p = LoadModel(*inputFile);
         log_info("loaded updated file");
 
         uim.setModel(std::move(p));
         uim.commit("reloaded from filesystem");
-        uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(uim.getFilesystemPath()));
+        uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*inputFile));
 
         // #594: purge the app-wide mesh cache so that any user edits to the underlying
         // mesh files are immediately visible after reloading
@@ -646,8 +639,7 @@ bool osc::ActionReloadOsimFromDisk(UndoableModelStatePair& uim, SceneCache& mesh
 
         return true;
     }
-    catch (const std::exception& ex)
-    {
+    catch (const std::exception& ex) {
         log_error("error detected while trying to reload a model file: %s", ex.what());
         uim.rollback();
         return false;

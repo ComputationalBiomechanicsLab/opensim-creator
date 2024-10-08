@@ -1340,7 +1340,7 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
 
 void osc::DrawSaveModelButton(
     Widget& api,
-    UndoableModelStatePair& model)
+    IModelStatePair& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {
         ActionSaveModel(api, model);

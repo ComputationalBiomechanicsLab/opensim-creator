@@ -55,7 +55,7 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileReturnsFalseIfFileDoesNotEx
     ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
 
     // ... but if you say it has an invalid backing file path...
-    model.setFilesystemPath("doesnt-exist");
+    model.updModel().setInputFileName("doesnt-exist");
 
     // then it should just return `false`, rather than (e.g.) exploding
     ASSERT_FALSE(ActionUpdateModelFromBackingFile(model));
@@ -392,7 +392,7 @@ TEST(OpenSimActions, ActionUpdateModelFromBackingFileShouldRetainSceneScaleFacto
     UndoableModelStatePair model{backingFile};
     model.setUpToDateWithFilesystem(model.getLastFilesystemWriteTime() - std::chrono::seconds{1});  // ensure it's invalid
 
-    ASSERT_TRUE(model.hasFilesystemLocation());
+    ASSERT_TRUE(HasInputFileName(model.getModel()));
 
     // set the scale factor to a nonstandard value
     ASSERT_NE(model.getFixupScaleFactor(), 0.5f);

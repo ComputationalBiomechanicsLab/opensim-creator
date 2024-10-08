@@ -2,6 +2,7 @@
 
 #include <oscar/Utils/UID.h>
 
+#include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <string_view>
@@ -84,6 +85,10 @@ namespace osc
 
         std::shared_ptr<Environment> tryUpdEnvironment() const { return implUpdAssociatedEnvironment(); }
 
+        // if supported by the implementation, manually sets if the current model
+        // state pair as being up to date with disk at the given timepoint
+        void setUpToDateWithFilesystem(std::filesystem::file_time_type t) { implSetUpToDateWithFilesystem(t); }
+
     private:
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
         virtual const OpenSim::Model& implGetModel() const = 0;
@@ -137,5 +142,7 @@ namespace osc
         virtual void implSetHovered(const OpenSim::Component*) {}
 
         virtual std::shared_ptr<Environment> implUpdAssociatedEnvironment() const { return nullptr; }
+
+        virtual void implSetUpToDateWithFilesystem(std::filesystem::file_time_type) {}
     };
 }

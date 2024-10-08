@@ -64,7 +64,7 @@ namespace
 
         bool isModelLoaded() const
         {
-            return m_Model->hasFilesystemLocation();
+            return HasInputFileName(m_Model->getModel());
         }
 
         void loadModelFile(const std::filesystem::path& p)
@@ -76,7 +76,7 @@ namespace
         void reloadAll(std::string_view label = "reloaded model")
         {
             // reload/reset model
-            if (m_Model->hasFilesystemLocation()) {
+            if (HasInputFileName(m_Model->getModel())) {
                 SceneCache dummy;
                 ActionReloadOsimFromDisk(*m_Model, dummy);
             }
@@ -136,7 +136,7 @@ namespace
 
         void setScrubTime(double newTime)
         {
-            SimTK::State& state = m_Model->updState();
+            SimTK::State& state = m_Model->updModel().updWorkingState();
             state.setTime(newTime);
 
             if (m_AssociatedTrajectory) {

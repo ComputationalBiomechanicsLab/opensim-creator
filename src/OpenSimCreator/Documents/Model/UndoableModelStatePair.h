@@ -46,29 +46,10 @@ namespace osc
         // destruct an UndoableUiModel
         ~UndoableModelStatePair() noexcept override;
 
-        // returns `true` if the model has a known on-disk location
-        bool hasFilesystemLocation() const;
-
-        // returns a string representation of the recommended document's name
-        std::string recommendedDocumentName() const;
-
-        // returns the full filesystem path of the model's on-disk location, if applicable
-        //
-        // returns an empty path if the model has not been saved to disk
-        std::filesystem::path getFilesystemPath() const;
-
-        // sets the full filesystem path of the model's on-disk location
-        //
-        // setting this to an empty path is interpreted as "no on-disk location"
-        void setFilesystemPath(const std::filesystem::path&);
-
         // returns `true` if the current model commit is up to date with its on-disk representation
         //
         // returns `false` if the model has no on-disk location
         bool isUpToDateWithFilesystem() const;
-
-        // manually sets if the current commit as being up to date with disk at the given timepoint
-        void setUpToDateWithFilesystem(std::filesystem::file_time_type);
 
         // gets the last time when the model was set as up to date with the filesystem
         std::filesystem::file_time_type getLastFilesystemWriteTime() const;
@@ -94,8 +75,6 @@ namespace osc
         void resetModel();
         void loadModel(const std::filesystem::path&);
 
-        SimTK::State& updState();
-
     private:
         const OpenSim::Model& implGetModel() const final;
         const SimTK::State& implGetState() const final;
@@ -119,6 +98,8 @@ namespace osc
         void implSetHovered(const OpenSim::Component* c) final;
 
         std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
+
+        void implSetUpToDateWithFilesystem(std::filesystem::file_time_type) final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;

@@ -85,12 +85,6 @@ namespace
             return *m_Model;
         }
 
-        SimTK::State& updState()
-        {
-            m_ModelVersion = UID{};
-            return m_Model->updWorkingState();
-        }
-
         UID implGetModelVersion() const final
         {
             return m_ModelVersion;
@@ -218,26 +212,6 @@ public:
         setUpToDateWithFilesystem(std::filesystem::last_write_time(osimPath));
     }
 
-    bool hasFilesystemLocation() const
-    {
-        return !getFilesystemLocation().empty();
-    }
-
-    std::string recommendedDocumentName() const
-    {
-        return RecommendedDocumentName(getModel());
-    }
-
-    std::filesystem::path getFilesystemPath() const
-    {
-        return getFilesystemLocation();
-    }
-
-    void setFilesystemPath(const std::filesystem::path& p)
-    {
-        setFilesystemLocation(p);
-    }
-
     bool isUpToDateWithFilesystem() const
     {
         return getCheckoutID() == getFilesystemVersion();
@@ -319,11 +293,6 @@ public:
         return m_Scratch.updModel();
     }
 
-    SimTK::State& updState()
-    {
-        return m_Scratch.updState();
-    }
-
     void setModel(std::unique_ptr<OpenSim::Model> newModel)
     {
         UiModelStatePair p{std::move(newModel)};
@@ -343,7 +312,7 @@ public:
     void loadModel(const std::filesystem::path& path)
     {
         setModel(LoadModel(path));
-        setFilesystemPath(path);
+        setUpToDateWithFilesystem(std::filesystem::last_write_time(path));
     }
 
     UID getModelVersion() const
@@ -741,34 +710,9 @@ UndoableModelStatePair& osc::UndoableModelStatePair::operator=(const UndoableMod
 UndoableModelStatePair& osc::UndoableModelStatePair::operator=(UndoableModelStatePair&&) noexcept = default;
 osc::UndoableModelStatePair::~UndoableModelStatePair() noexcept = default;
 
-bool osc::UndoableModelStatePair::hasFilesystemLocation() const
-{
-    return m_Impl->hasFilesystemLocation();
-}
-
-std::string osc::UndoableModelStatePair::recommendedDocumentName() const
-{
-    return m_Impl->recommendedDocumentName();
-}
-
-std::filesystem::path osc::UndoableModelStatePair::getFilesystemPath() const
-{
-    return m_Impl->getFilesystemPath();
-}
-
-void osc::UndoableModelStatePair::setFilesystemPath(const std::filesystem::path& p)
-{
-    m_Impl->setFilesystemPath(p);
-}
-
 bool osc::UndoableModelStatePair::isUpToDateWithFilesystem() const
 {
     return m_Impl->isUpToDateWithFilesystem();
-}
-
-void osc::UndoableModelStatePair::setUpToDateWithFilesystem(std::filesystem::file_time_type t)
-{
-    m_Impl->setUpToDateWithFilesystem(t);
 }
 
 std::filesystem::file_time_type osc::UndoableModelStatePair::getLastFilesystemWriteTime() const
@@ -810,11 +754,6 @@ void osc::UndoableModelStatePair::rollback()
 bool osc::UndoableModelStatePair::tryCheckout(const ModelStateCommit& commit)
 {
     return m_Impl->tryCheckout(commit);
-}
-
-SimTK::State& osc::UndoableModelStatePair::updState()
-{
-    return m_Impl->updState();
 }
 
 void osc::UndoableModelStatePair::setModel(std::unique_ptr<OpenSim::Model> newModel)
@@ -900,4 +839,9 @@ void osc::UndoableModelStatePair::implSetHovered(const OpenSim::Component* c)
 std::shared_ptr<Environment> osc::UndoableModelStatePair::implUpdAssociatedEnvironment() const
 {
     return m_Impl->implUpdAssociatedEnvironment();
+}
+
+void osc::UndoableModelStatePair::implSetUpToDateWithFilesystem(std::filesystem::file_time_type t)
+{
+    m_Impl->setUpToDateWithFilesystem(t);
 }

@@ -39,7 +39,7 @@ namespace osc
 {
     // prompt the user for a save location and then save the model to the specified location
     void ActionSaveCurrentModelAs(
-        UndoableModelStatePair&
+        IModelStatePair&
     );
 
     // create a new model and show it in a new tab
@@ -61,7 +61,7 @@ namespace osc
     // try to save the given model file to disk
     bool ActionSaveModel(
         Widget&,
-        UndoableModelStatePair&
+        IModelStatePair&
     );
 
     // try to delete an undoable-model's current selection
@@ -101,7 +101,7 @@ namespace osc
 
     // copies the full absolute path to the osim to the clipboard
     bool ActionCopyModelPathToClipboard(
-        const UndoableModelStatePair&
+        const IModelStatePair&
     );
 
     // try to automatically set the model's scale factor based on how big the scene is
