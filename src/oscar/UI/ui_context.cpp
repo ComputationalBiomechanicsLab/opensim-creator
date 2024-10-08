@@ -208,7 +208,7 @@ static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImG
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 // If you have multiple SDL events and some of them are not meant to be used by dear imgui, you may need to filter events based on their windowID field.
-static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
+static bool ImGui_ImplOscar_ProcessEvent(Event& e)
 {
     ImGuiIO& io = ImGui::GetIO();
     BackendData* bd = get_ui_backend_data();
@@ -328,17 +328,17 @@ static bool ImGui_ImplSDL2_ProcessEvent(Event& e)
 }
 
 #ifdef __EMSCRIPTEN__
-EM_JS(void, ImGui_ImplSDL2_EmscriptenOpenURL, (char const* url), { url = url ? UTF8ToString(url) : null; if (url) window.open(url, '_blank'); });
+EM_JS(void, ImGui_ImplOscar_EmscriptenOpenURL, (char const* url), { url = url ? UTF8ToString(url) : null; if (url) window.open(url, '_blank'); });
 #endif
 
-static void ImGui_ImplSDL2_Init(SDL_Window* window)
+static void ImGui_ImplOscar_Init(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
     OSC_ASSERT_ALWAYS(io.BackendPlatformUserData == nullptr && "Already initialized a platform backend!");
 
     // init `BackendData` and setup `ImGuiIO` pointers etc.
     io.BackendPlatformUserData = static_cast<void*>(new BackendData{window});
-    io.BackendPlatformName = "imgui_impl_sdl2";
+    io.BackendPlatformName = "imgui_impl_oscar";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
     io.SetClipboardTextFn = ui_set_clipboard_text;
@@ -346,7 +346,7 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
     io.ClipboardUserData = nullptr;
     io.PlatformSetImeDataFn = ImGui_ImplSDL2_PlatformSetImeData;
 #ifdef __EMSCRIPTEN__
-    io.PlatformOpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplSDL2_EmscriptenOpenURL(url); return true; };
+    io.PlatformOpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplOscar_EmscriptenOpenURL(url); return true; };
 #endif
 
     // init `ImGuiViewport` for main viewport
@@ -355,18 +355,9 @@ static void ImGui_ImplSDL2_Init(SDL_Window* window)
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     main_viewport->PlatformHandle = cpp20::bit_cast<void*>(window);
     main_viewport->PlatformHandleRaw = nullptr;
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(window, &info)) {
-#if defined(SDL_VIDEO_DRIVER_WINDOWS)
-        main_viewport->PlatformHandleRaw = (void*)info.info.win.window;
-#elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
-        main_viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
-#endif
-    }
 }
 
-static void ImGui_ImplSDL2_Shutdown()
+static void ImGui_ImplOscar_Shutdown()
 {
     BackendData* bd = get_ui_backend_data();
     OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
@@ -469,7 +460,7 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
 static void ImGui_ImplSDL2_NewFrame(const App& app)
 {
     BackendData* bd = get_ui_backend_data();
-    IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplSDL2_Init()?");
+    IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
     ImGuiIO& io = ImGui::GetIO();
 
     // Setup display size (every frame to accommodate for window resizing)
@@ -507,7 +498,7 @@ static void ImGui_ImplSDL2_NewFrame(const App& app)
     }
     bd->Time = current_time;
 
-    if (bd->MouseLastLeaveFrame && bd->MouseLastLeaveFrame >= ImGui::GetFrameCount() && bd->MouseButtonsDown == 0) {
+    if (bd->MouseLastLeaveFrame && (bd->MouseLastLeaveFrame >= ImGui::GetFrameCount()) && bd->MouseButtonsDown == 0) {
         bd->MouseWindowID = 0;
         bd->MouseLastLeaveFrame = 0;
         io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
@@ -623,7 +614,7 @@ void osc::ui::context::init(App& app)
 #endif
 
     // init ImGui for SDL2 /w OpenGL
-    ImGui_ImplSDL2_Init(app.upd_underlying_window());
+    ImGui_ImplOscar_Init(app.upd_underlying_window());
 
     // init ImGui for OpenGL
     graphics_backend::init();
@@ -641,13 +632,13 @@ void osc::ui::context::shutdown()
     ImPlot::DestroyContext();
 
     graphics_backend::shutdown();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplOscar_Shutdown();
     ImGui::DestroyContext();
 }
 
 bool osc::ui::context::on_event(Event& ev)
 {
-    ImGui_ImplSDL2_ProcessEvent(ev);
+    ImGui_ImplOscar_ProcessEvent(ev);
 
     if (ImGui::GetIO().WantCaptureKeyboard and (ev.type() == EventType::KeyDown or ev.type() == EventType::KeyUp)) {
         return true;
