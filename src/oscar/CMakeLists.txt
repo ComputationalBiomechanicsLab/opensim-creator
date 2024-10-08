@@ -292,7 +292,6 @@ add_library(oscar STATIC
     Platform/Monitor.h
     Platform/os.cpp
     Platform/os.h
-    Platform/RawEvent.h
     Platform/ResourceLoader.h
     Platform/ResourcePath.h
     Platform/ResourceStream.cpp

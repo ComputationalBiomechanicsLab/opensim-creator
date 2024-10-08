@@ -317,7 +317,10 @@ public:
                 }
 
                 // let screen handle the event
-                const bool screen_handled_event = screen_->on_event(*parse_into_event(e));
+                bool screen_handled_event = false;
+                if (auto parsed = try_parse_into_event(e)) {
+                    screen_handled_event = screen_->on_event(*parsed);
+                }
 
                 // if the active screen didn't handle the event, try to handle it here by following
                 // reasonable heuristics

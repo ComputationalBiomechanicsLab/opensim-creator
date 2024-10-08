@@ -3,7 +3,6 @@
 namespace osc
 {
     enum class EventType {
-        Raw,
         DropFile,
         KeyDown,
         KeyUp,
@@ -14,6 +13,7 @@ namespace osc
         MouseWheel,
         DisplayStateChange,
         Quit,
+        Window,
         Custom,
         NUM_OPTIONS,
     };

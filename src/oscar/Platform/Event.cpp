@@ -1,13 +1,13 @@
 #include "Event.h"
 
 #include <oscar/Platform/Log.h>
-#include <oscar/Platform/RawEvent.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/EnumHelpers.h>
 
 #include <SDL_events.h>
 #include <SDL_version.h>
+#include <SDL_video.h>
 
 #include <array>
 #include <memory>
@@ -222,6 +222,24 @@ osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event&) :
     Event{EventType::DisplayStateChange}
 {}
 
+osc::WindowEvent::WindowEvent(const SDL_Event& e) :
+    Event{EventType::Window}
+{
+    OSC_ASSERT(e.type == SDL_WINDOWEVENT);
+
+    switch (e.window.event) {
+    case SDL_WINDOWEVENT_ENTER:        type_ = WindowEventType::GainedMouseFocus;    break;
+    case SDL_WINDOWEVENT_LEAVE:        type_ = WindowEventType::LostMouseFocus;      break;
+    case SDL_WINDOWEVENT_FOCUS_GAINED: type_ = WindowEventType::GainedKeyboardFocus; break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:   type_ = WindowEventType::LostKeyboardFocus;   break;
+    case SDL_WINDOWEVENT_CLOSE:        type_ = WindowEventType::WindowClosed;        break;
+    case SDL_WINDOWEVENT_MOVED:        type_ = WindowEventType::WindowMoved;         break;
+    case SDL_WINDOWEVENT_RESIZED:      type_ = WindowEventType::WindowResized;       break;
+    }
+    window_ = SDL_GetWindowFromID(e.window.windowID);
+    window_id_ = e.window.windowID;
+}
+
 osc::MouseEvent::MouseEvent(const SDL_Event& e) :
     Event{e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)}
 {
@@ -252,7 +270,7 @@ osc::MouseWheelEvent::MouseWheelEvent(const SDL_Event& e) :
     OSC_ASSERT(e.type == SDL_MOUSEWHEEL);
 }
 
-std::unique_ptr<Event> osc::parse_into_event(const SDL_Event& e)
+std::unique_ptr<Event> osc::try_parse_into_event(const SDL_Event& e)
 {
     if (e.type == SDL_DROPFILE and e.drop.file) {
         return std::make_unique<DropFileEvent>(e);
@@ -272,12 +290,15 @@ std::unique_ptr<Event> osc::parse_into_event(const SDL_Event& e)
     else if (e.type == SDL_TEXTINPUT) {
         return std::make_unique<TextInputEvent>(e);
     }
+    else if (e.type == SDL_WINDOWEVENT) {
+        return std::make_unique<WindowEvent>(e);
+    }
 #if SDL_HAS_DISPLAY_EVENT
     else if (e.type == SDL_DISPLAYEVENT) {
         return std::make_unique<DisplayStateChangeEvent>(e);
     }
 #endif
     else {
-        return std::make_unique<RawEvent>(e);
+        return nullptr;
     }
 }

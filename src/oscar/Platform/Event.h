@@ -6,12 +6,14 @@
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <string_view>
 
 union SDL_Event;
+struct SDL_Window;
 
 namespace osc
 {
@@ -132,9 +134,27 @@ namespace osc
         explicit DisplayStateChangeEvent(const SDL_Event&);
     };
 
-    // WindowStateChangeEvent - None, Minimized, Maximized, Fullscreen, Active
+    enum class WindowEventType {
+        GainedMouseFocus,
+        LostMouseFocus,
+        GainedKeyboardFocus,
+        LostKeyboardFocus,
+        WindowClosed,
+        WindowMoved,
+        WindowResized
+    };
+    class WindowEvent final : public Event {
+    public:
+        explicit WindowEvent(const SDL_Event&);
 
-    // TODO: windowevent
+        WindowEventType type() const { return type_; }
+        const SDL_Window* window() const { return window_; }
+        uint32_t window_id() const { return window_id_; }
+    private:
+        WindowEventType type_ = WindowEventType::WindowMoved;
+        SDL_Window* window_ = nullptr;
+        uint32_t window_id_ = 0;
+    };
 
     class MouseEvent final : public Event {
     public:
@@ -167,5 +187,5 @@ namespace osc
         MouseInputSource input_source_ = MouseInputSource::TouchScreen;
     };
 
-    std::unique_ptr<Event> parse_into_event(const SDL_Event&);
+    std::unique_ptr<Event> try_parse_into_event(const SDL_Event&);
 }
