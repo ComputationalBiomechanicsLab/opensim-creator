@@ -31,6 +31,9 @@ out/
 # Visual Studio Code user directory
 .vscode/
 
+# Visual Studio Code build directory (with cmake extension)
+build/
+
 # artefacts/side-effects from the OSC build script
 dependencies-install/
 opensim-build/
@@ -40,3 +43,5 @@ opensim-install/
 osc-build/
 osc-dependencies-build/
 osc-dependencies-install/
+osc-deps-build/
+osc-deps-install/
