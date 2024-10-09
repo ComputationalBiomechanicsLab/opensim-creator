@@ -502,6 +502,19 @@ public:
         return Vec2{sdl::GetWindowSizeInPixels(main_window_.get())};
     }
 
+    Vec2 main_window_drawable_pixel_dimensions() const
+    {
+        int w = 0;
+        int h = 0;
+        SDL_GL_GetDrawableSize(main_window_.get(), &w, &h);
+        return Vec2{static_cast<float>(w), static_cast<float>(h)};
+    }
+
+    bool is_main_window_minimized() const
+    {
+        return SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED;
+    }
+
     float main_window_dpi() const
     {
         float dpi = 96.0f;
@@ -1012,6 +1025,16 @@ void osc::App::request_quit()
 Vec2 osc::App::main_window_dimensions() const
 {
     return impl_->main_window_dimensions();
+}
+
+Vec2 osc::App::main_window_drawable_pixel_dimensions() const
+{
+    return impl_->main_window_drawable_pixel_dimensions();
+}
+
+bool osc::App::is_main_window_minimized() const
+{
+    return impl_->is_main_window_minimized();
 }
 
 float osc::App::main_window_dpi() const

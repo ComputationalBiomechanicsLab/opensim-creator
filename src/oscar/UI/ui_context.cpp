@@ -9,6 +9,7 @@
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Shims/Cpp20/bit.h>
+#include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuizmo.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/ui_graphics_backend.h>
@@ -129,7 +130,6 @@ namespace
         {}
 
         SDL_Window*                                      Window = nullptr;
-        std::chrono::high_resolution_clock::time_point   Time;
         std::string                                      ClipboardText;
         bool                                             WantUpdateMonitors = true;
 
@@ -148,37 +148,45 @@ namespace
     // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
     // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
     // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
-    BackendData* get_ui_backend_data()
+    BackendData* try_get_ui_backend_data()
     {
         return ImGui::GetCurrentContext() ? static_cast<BackendData*>(ImGui::GetIO().BackendPlatformUserData) : nullptr;
     }
 
+    BackendData& get_backend_data()
+    {
+        BackendData* bd = try_get_ui_backend_data();
+        IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
+        return *bd;
+    }
+
+    ImGuiPlatformMonitor to_ith_ui_monitor(const Monitor& os_monitor, size_t i)
+    {
+        ImGuiPlatformMonitor rv;
+        rv.MainPos = os_monitor.bounds().p1;
+        rv.MainSize = dimensions_of(os_monitor.bounds());
+        rv.WorkPos = os_monitor.usable_bounds().p1;
+        rv.WorkSize = dimensions_of(os_monitor.usable_bounds());
+        rv.DpiScale = os_monitor.physical_dpi() / 96.0f;
+        rv.PlatformHandle = cpp20::bit_cast<void*>(i);
+        return rv;
+    }
+
     void update_monitors(const App& app)
     {
-        const auto monitors = app.monitors();
+        const auto os_monitors = app.monitors();
+        auto& ui_monitors = ImGui::GetPlatformIO().Monitors;
 
-        get_ui_backend_data()->WantUpdateMonitors = false;
-        ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
-        platform_io.Monitors.clear();
-        platform_io.Monitors.reserve(static_cast<int>(monitors.size()));
-        for (size_t i = 0; i < monitors.size(); ++i) {
-            const auto& screen = monitors[i];
-
-            ImGuiPlatformMonitor monitor;
-            monitor.MainPos = screen.bounds().p1;
-            monitor.MainSize = dimensions_of(screen.bounds());
-            monitor.WorkPos = screen.usable_bounds().p1;
-            monitor.WorkSize = dimensions_of(screen.usable_bounds());
-            monitor.DpiScale = screen.physical_dpi() / 96.0f;
-            monitor.PlatformHandle = cpp20::bit_cast<void*>(i);
-
-            platform_io.Monitors.push_back(monitor);
+        ui_monitors.clear();
+        ui_monitors.reserve(static_cast<int>(os_monitors.size()));
+        for (size_t i = 0; i < os_monitors.size(); ++i) {
+            ui_monitors.push_back(to_ith_ui_monitor(os_monitors[i], i));
         }
     }
 
     const char* ui_get_clipboard_text(void*)
     {
-        BackendData* bd = get_ui_backend_data();
+        BackendData* bd = try_get_ui_backend_data();
         bd->ClipboardText = get_clipboard_text();
         return bd->ClipboardText.c_str();
     }
@@ -211,7 +219,7 @@ static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImG
 static bool ImGui_ImplOscar_ProcessEvent(Event& e)
 {
     ImGuiIO& io = ImGui::GetIO();
-    BackendData* bd = get_ui_backend_data();
+    BackendData* bd = try_get_ui_backend_data();
 
     switch (e.type()) {
     case EventType::MouseMove: {
@@ -359,7 +367,7 @@ static void ImGui_ImplOscar_Init(SDL_Window* window)
 
 static void ImGui_ImplOscar_Shutdown()
 {
-    BackendData* bd = get_ui_backend_data();
+    BackendData* bd = try_get_ui_backend_data();
     OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 
@@ -372,7 +380,7 @@ static void ImGui_ImplOscar_Shutdown()
 // This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
 static void ImGui_ImplSDL2_UpdateMouseData()
 {
-    BackendData* bd = get_ui_backend_data();
+    BackendData* bd = try_get_ui_backend_data();
     ImGuiIO& io = ImGui::GetIO();
 
     // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
@@ -439,7 +447,7 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) {
         return;
     }
-    BackendData* bd = get_ui_backend_data();
+    BackendData* bd = try_get_ui_backend_data();
 
     ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
     if (io.MouseDrawCursor or imgui_cursor == ImGuiMouseCursor_None) {
@@ -457,56 +465,46 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
     }
 }
 
-static void ImGui_ImplSDL2_NewFrame(const App& app)
+static void ImGui_ImplOscar_NewFrame(const App& app)
 {
-    BackendData* bd = get_ui_backend_data();
-    IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
+    BackendData& bd = get_backend_data();
     ImGuiIO& io = ImGui::GetIO();
 
-    // Setup display size (every frame to accommodate for window resizing)
-    int w = 0;
-    int h = 0;
-    SDL_GetWindowSize(bd->Window, &w, &h);
-    if (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_MINIMIZED) {
-        w = h = 0;
-    }
-    int display_w = 0;
-    int display_h = 0;
-    SDL_GL_GetDrawableSize(bd->Window, &display_w, &display_h);
+    // Setup `DisplaySize` and `DisplayFramebufferScale`
+    //
+    // Performed every frame to accomodate for runtime window resizes
+    {
+        auto window_dimensions = app.main_window_dimensions();
+        if (app.is_main_window_minimized()) {
+            window_dimensions = {0.0f, 0.0f};
+        }
+        io.DisplaySize = {window_dimensions.x, window_dimensions.y};
 
-    io.DisplaySize = ImVec2(static_cast<float>(w), static_cast<float>(h));
-    if (w > 0 && h > 0) {
-        io.DisplayFramebufferScale = ImVec2(static_cast<float>(display_w) / static_cast<float>(w), static_cast<float>(display_h) / static_cast<float>(h));
+        const auto window_drawable_dimensions = app.main_window_drawable_pixel_dimensions();
+        if (area_of(window_dimensions) > 0.0f) {
+            io.DisplayFramebufferScale = window_drawable_dimensions / window_dimensions;
+        }
     }
 
     // Update monitors
-    if (bd->WantUpdateMonitors) {
+    if (bd.WantUpdateMonitors) {
         update_monitors(app);
+        bd.WantUpdateMonitors = false;
     }
 
-    // Setup time step (we don't use SDL_GetTicks() because it is using millisecond resolution)
-    // (Accept SDL_GetPerformanceCounter() not returning a monotonically increasing value. Happens in VMs and Emscripten, see #6189, #6114, #3644)
-    auto current_time = std::chrono::high_resolution_clock::now();
-    if (current_time <= bd->Time) {
-        current_time = bd->Time + std::chrono::microseconds{1};
-    }
-    if (bd->Time.time_since_epoch() > std::chrono::seconds{0}) {
-        io.DeltaTime = std::chrono::duration_cast<std::chrono::duration<float>>(current_time - bd->Time).count();
-    }
-    else {
-        io.DeltaTime = 1.0f / 60.0f;
-    }
-    bd->Time = current_time;
+    // Update `DeltaTime`
+    io.DeltaTime = static_cast<float>(app.frame_delta_since_last_frame().count());
 
-    if (bd->MouseLastLeaveFrame && (bd->MouseLastLeaveFrame >= ImGui::GetFrameCount()) && bd->MouseButtonsDown == 0) {
-        bd->MouseWindowID = 0;
-        bd->MouseLastLeaveFrame = 0;
+    // Handle mouse leaving the window
+    if (bd.MouseLastLeaveFrame and (bd.MouseLastLeaveFrame >= ImGui::GetFrameCount()) and bd.MouseButtonsDown == 0) {
+        bd.MouseWindowID = 0;
+        bd.MouseLastLeaveFrame = 0;
         io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
     }
 
     // Our io.AddMouseViewportEvent() calls will only be valid when not capturing.
     // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rygorous, but testing for payload reduces noise and potential side-effects.
-    if (bd->MouseCanReportHoveredViewport && ImGui::GetDragDropPayload() == nullptr) {
+    if (bd.MouseCanReportHoveredViewport and ImGui::GetDragDropPayload() == nullptr) {
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
     }
     else {
@@ -613,10 +611,10 @@ void osc::ui::context::init(App& app)
     }
 #endif
 
-    // init ImGui for SDL2 /w OpenGL
+    // init ImGui for oscar
     ImGui_ImplOscar_Init(app.upd_underlying_window());
 
-    // init ImGui for OpenGL
+    // init ImGui for oscar's graphics backend (OpenGL)
     graphics_backend::init();
 
     apply_dark_theme();
@@ -640,19 +638,25 @@ bool osc::ui::context::on_event(Event& ev)
 {
     ImGui_ImplOscar_ProcessEvent(ev);
 
-    if (ImGui::GetIO().WantCaptureKeyboard and (ev.type() == EventType::KeyDown or ev.type() == EventType::KeyUp)) {
+    // handle `.WantCaptureKeyboard`
+    constexpr auto keyboard_event_types = std::to_array({EventType::KeyDown, EventType::KeyUp});
+    if (ImGui::GetIO().WantCaptureKeyboard and cpp23::contains(keyboard_event_types, ev.type())) {
         return true;
     }
-    if (ImGui::GetIO().WantCaptureMouse and (ev.type() == EventType::MouseWheel or ev.type() == EventType::MouseMove or ev.type() == EventType::MouseButtonUp or ev.type() == EventType::MouseButtonDown)) {
+
+    // handle `.WantCaptureMouse`
+    constexpr auto mouse_event_types = std::to_array({EventType::MouseWheel, EventType::MouseMove, EventType::MouseButtonUp, EventType::MouseButtonDown});
+    if (ImGui::GetIO().WantCaptureMouse and cpp23::contains(mouse_event_types, ev.type())) {
         return true;
     }
+
     return false;
 }
 
 void osc::ui::context::on_start_new_frame(App& app)
 {
     graphics_backend::on_start_new_frame();
-    ImGui_ImplSDL2_NewFrame(app);
+    ImGui_ImplOscar_NewFrame(app);
     ImGui::NewFrame();
 
     // extra parts
@@ -662,12 +666,12 @@ void osc::ui::context::on_start_new_frame(App& app)
 void osc::ui::context::render()
 {
     {
-        OSC_PERF("ImGuiRender/render");
+        OSC_PERF("ImGui::Render()");
         ImGui::Render();
     }
 
     {
-        OSC_PERF("ImGuiRender/ImGui_ImplOscarGfx_RenderDrawData");
+        OSC_PERF("graphics_backend::render(ImGui::GetDrawData())");
         graphics_backend::render(ImGui::GetDrawData());
     }
 }

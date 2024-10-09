@@ -196,8 +196,20 @@ namespace osc
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;
 
-        // returns main window's dimensions
+        // returns the main window's dimensions
         Vec2 main_window_dimensions() const;
+
+        // returns the main window's *drawable* pixel dimensions
+        //
+        // this might differ from the dimensions returned by `main_window_dimensions`, because
+        // the underlying operating system might be performing some kind of pixel scaling.
+        Vec2 main_window_drawable_pixel_dimensions() const;
+
+        // returns `true` if the main application window is minimized
+        bool is_main_window_minimized() const;
+
+        // returns `true` if the main application window is minimized
+        bool is_mini() const;
 
         // returns the main window's DPI
         float main_window_dpi() const;
