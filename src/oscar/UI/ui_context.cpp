@@ -429,8 +429,7 @@ static void ImGui_ImplOscar_UpdateMouseCursor(App& app)
     }
 
     BackendData& bd = get_backend_data();
-    const ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-    const CursorShape oscar_cursor = to<CursorShape>(imgui_cursor);
+    const auto oscar_cursor = to<CursorShape>(ImGui::GetMouseCursor());
 
     if (oscar_cursor != bd.CurrentCustomCursor) {
         if (bd.CurrentCustomCursor) {
@@ -622,11 +621,7 @@ bool osc::ui::context::on_event(Event& ev)
 
     // handle `.WantCaptureMouse`
     constexpr auto mouse_event_types = std::to_array({EventType::MouseWheel, EventType::MouseMove, EventType::MouseButtonUp, EventType::MouseButtonDown});
-    if (ImGui::GetIO().WantCaptureMouse and cpp23::contains(mouse_event_types, ev.type())) {
-        return true;
-    }
-
-    return false;
+    return ImGui::GetIO().WantCaptureMouse and cpp23::contains(mouse_event_types, ev.type());
 }
 
 void osc::ui::context::on_start_new_frame(App& app)
