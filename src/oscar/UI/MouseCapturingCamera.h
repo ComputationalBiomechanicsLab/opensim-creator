@@ -20,6 +20,8 @@ namespace osc
         EulerAngles& eulers() { return camera_eulers_; }
 
     private:
+        void grab_mouse(bool);
+
         bool mouse_captured_ = false;
         EulerAngles camera_eulers_ = {};
     };

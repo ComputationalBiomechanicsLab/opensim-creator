@@ -27,6 +27,7 @@ struct SDL_Window;
 namespace osc { class App; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
+namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class Screen; }
 namespace osc { class Widget; }
@@ -208,14 +209,18 @@ namespace osc
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
 
-        // returns `true` if the main application window is minimized
-        bool is_mini() const;
-
         // returns the main window's DPI
         float main_window_dpi() const;
 
-        // sets whether the user's mouse cursor should be shown/hidden
-        void set_show_cursor(bool);
+        // pushes the given cursor onto the application-wide cursor stack, making it
+        // the currently-active cursor until it is either popped, via `pop_cursor_override`,
+        // or another cursor is pushed.
+        void push_cursor_override(const Cursor&);
+        void pop_cursor_override();
+
+        // enables/disables "grabbing" the mouse cursor in the main window
+        void enable_main_window_grab();
+        void disable_main_window_grab();
 
         // makes the main window fullscreen
         void make_fullscreen();

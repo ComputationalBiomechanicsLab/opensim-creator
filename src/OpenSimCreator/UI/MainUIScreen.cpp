@@ -169,7 +169,7 @@ public:
             m_ActiveTabID = UID::empty();
         }
 
-        ui::context::shutdown();
+        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)
@@ -341,7 +341,7 @@ public:
             }
             m_ActiveTabID = UID::empty();
 
-            ui::context::shutdown();
+            ui::context::shutdown(App::upd());
             ui::context::init(App::upd());
             App::upd().request_redraw();
             m_ImguiWasAggressivelyReset = false;

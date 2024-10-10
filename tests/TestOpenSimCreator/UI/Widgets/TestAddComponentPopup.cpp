@@ -38,5 +38,5 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             FAIL() << entry.name() << ": " << ex.what();
         }
     }
-    ui::context::shutdown();
+    ui::context::shutdown(App::upd());
 }

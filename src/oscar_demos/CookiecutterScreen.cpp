@@ -23,7 +23,7 @@ public:
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
 
-        ui::context::shutdown();  // shutdown 2D UI support
+        ui::context::shutdown(App::upd());  // shutdown 2D UI support
     }
 
     bool on_event(Event& e)

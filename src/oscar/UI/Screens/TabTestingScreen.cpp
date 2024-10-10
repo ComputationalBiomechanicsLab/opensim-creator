@@ -34,7 +34,7 @@ public:
         App::upd().make_main_loop_waiting();
         current_tab_->on_unmount();
         current_tab_.reset();
-        ui::context::shutdown();
+        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)

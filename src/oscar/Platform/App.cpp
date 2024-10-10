@@ -6,6 +6,8 @@
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Cursor.h>
+#include <oscar/Platform/CursorShape.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IResourceLoader.h>
@@ -20,6 +22,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/ScopeGuard.h>
@@ -35,9 +38,9 @@
 #include <SDL_timer.h>
 #include <SDL_video.h>
 
-#include <cmath>
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
@@ -45,6 +48,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 namespace sdl = osc::sdl;
 using namespace osc;
@@ -239,6 +243,89 @@ namespace
         friend bool operator==(const TypeInfoReference&, const TypeInfoReference&) = default;
     private:
         const std::type_info* type_info_;
+    };
+
+    // A handle to a single OS mouse cursor (that the UI may switch to at runtime).
+    class SystemCursor final {
+    public:
+        SystemCursor() = default;
+
+        explicit SystemCursor(SDL_SystemCursor id) :
+            ptr_(SDL_CreateSystemCursor(id))
+        {}
+
+        explicit operator bool () const { return static_cast<bool>(ptr_); }
+
+        SDL_Cursor* get() { return ptr_.get(); }
+    private:
+        struct CursorDeleter {
+            void operator()(SDL_Cursor* ptr) { SDL_FreeCursor(ptr); }
+        };
+
+        std::unique_ptr<SDL_Cursor, CursorDeleter> ptr_;
+    };
+
+    // A collection of all OS mouse cursors that the UI is capable of switching to.
+    class SystemCursors final {
+    public:
+        SystemCursor& operator[](CursorShape shape) { return cursors_.at(to_index(shape)); }
+    private:
+        std::array<SystemCursor, num_options<CursorShape>()> cursors_ = std::to_array({
+            SystemCursor(SDL_SYSTEM_CURSOR_ARROW),     // CursorShape::Arrow
+            SystemCursor(SDL_SYSTEM_CURSOR_IBEAM),     // CursorShape::IBeam
+            SystemCursor(SDL_SYSTEM_CURSOR_SIZEALL),   // CursorShape::ResizeAll
+            SystemCursor(SDL_SYSTEM_CURSOR_SIZENS),    // CursorShape::ResizeVertical
+            SystemCursor(SDL_SYSTEM_CURSOR_SIZEWE),    // CursorShape::ResizeHorizontal
+            SystemCursor(SDL_SYSTEM_CURSOR_SIZENESW),  // CursorShape::ResizeDiagonalNESW
+            SystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE),  // CursorShape::ResizeDiagonalNWSE
+            SystemCursor(SDL_SYSTEM_CURSOR_HAND),      // CursorShape::PointingHand
+            SystemCursor(SDL_SYSTEM_CURSOR_NO),        // CursorShape::Forbidden
+            SystemCursor{},                            // CursorShape::Hidden
+        });
+    };
+
+    class CursorHandler final {
+    public:
+        CursorHandler()
+        {
+            push_cursor_override(Cursor{CursorShape::Forbidden});  // initialize senteniel
+        }
+        CursorHandler(const CursorHandler&) = delete;
+        CursorHandler(CursorHandler&&) = delete;
+        CursorHandler& operator=(const CursorHandler&) = delete;
+        CursorHandler& operator=(CursorHandler&&) = delete;
+        ~CursorHandler() noexcept
+        {
+            // try to reset the cursor to default
+            if (cursor_stack_.size() > 1) {
+                SDL_ShowCursor(SDL_ENABLE);
+                SDL_SetCursor(system_mouse_cursors_[CursorShape::Arrow].get());
+            }
+        }
+
+        void push_cursor_override(const Cursor& cursor)
+        {
+            SDL_ShowCursor(cursor.shape() != CursorShape::Hidden ? SDL_ENABLE : SDL_DISABLE);
+            SDL_SetCursor(system_mouse_cursors_[cursor.shape()].get());
+            cursor_stack_.push_back(cursor.shape());
+        }
+
+        void pop_cursor_override()
+        {
+            // note: there's a senteniel cursor at the bottom of the stack that's initialized
+            //       by the constructor
+            OSC_ASSERT(cursor_stack_.size() > 1 && "tried to call App::pop_cursor_override when no cursor overrides were pushed");
+
+            cursor_stack_.pop_back();
+            SDL_SetCursor(system_mouse_cursors_[cursor_stack_.back()].get());
+            SDL_ShowCursor(cursor_stack_.empty() or cursor_stack_.back() != CursorShape::Hidden ? SDL_ENABLE : SDL_DISABLE);
+        }
+    private:
+        // runtime lookup of all available mouse cursors
+        SystemCursors system_mouse_cursors_;
+
+        // current stack of application-level cursor overrides
+        std::vector<CursorShape> cursor_stack_;
     };
 }
 
@@ -522,6 +609,26 @@ public:
         float vdpi = 0.0f;
         SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(main_window_.get()), &dpi, &hdpi, &vdpi);
         return dpi;
+    }
+
+    void push_cursor_override(const Cursor& cursor)
+    {
+        cursor_handler_.push_cursor_override(cursor);
+    }
+
+    void pop_cursor_override()
+    {
+        cursor_handler_.pop_cursor_override();
+    }
+
+    void enable_main_window_grab()
+    {
+        SDL_SetWindowGrab(main_window_.get(), SDL_TRUE);
+    }
+
+    void disable_main_window_grab()
+    {
+        SDL_SetWindowGrab(main_window_.get(), SDL_FALSE);
     }
 
     void set_show_cursor(bool v)
@@ -839,7 +946,8 @@ private:
         metadata_.application_name()
     );
 
-    // ensure the application log is configured according to the given configuration file
+    // ensures that the global application log is configured according to the
+    // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
 
     // enable the stack backtrace handler (if necessary - once per process)
@@ -848,17 +956,20 @@ private:
     // top-level runtime resource loader
     ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(resources_dir_);
 
-    // init SDL context (windowing, etc.)
+    // SDL context (windowing, video driver, etc.)
     sdl::Context sdl_context_{SDL_INIT_VIDEO};
 
-    // init main application window
+    // SDL main application window
     sdl::Window main_window_ = create_main_app_window(config_, calc_human_readable_application_name(metadata_));
 
     // cache for the current (caller-set) window subtitle
     SynchronizedValue<std::string> main_window_subtitle_;
 
-    // init graphics context
+    // 3D graphics context for the oscar graphics API
     GraphicsContext graphics_context_{*main_window_};
+
+    // application-wide handler for the mouse cursor
+    CursorHandler cursor_handler_;
 
     // get performance counter frequency (for the delta clocks)
     Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
@@ -1042,9 +1153,24 @@ float osc::App::main_window_dpi() const
     return impl_->main_window_dpi();
 }
 
-void osc::App::set_show_cursor(bool v)
+void osc::App::push_cursor_override(const Cursor& cursor)
 {
-    impl_->set_show_cursor(v);
+    impl_->push_cursor_override(cursor);
+}
+
+void osc::App::pop_cursor_override()
+{
+    impl_->pop_cursor_override();
+}
+
+void osc::App::enable_main_window_grab()
+{
+    impl_->enable_main_window_grab();
+}
+
+void osc::App::disable_main_window_grab()
+{
+    impl_->disable_main_window_grab();
 }
 
 void osc::App::make_fullscreen()

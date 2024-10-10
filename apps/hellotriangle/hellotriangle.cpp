@@ -266,7 +266,7 @@ void main()
 
         void impl_on_unmount() override
         {
-            ui::context::shutdown();
+            ui::context::shutdown(App::upd());
         }
 
         bool impl_on_event(Event& e) override

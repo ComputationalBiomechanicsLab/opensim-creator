@@ -270,6 +270,8 @@ add_library(oscar STATIC
     Platform/AppSettings.cpp
     Platform/AppSettings.h
     Platform/AppSettingScope.h
+    Platform/Cursor.h
+    Platform/CursorShape.h
     Platform/Event.cpp
     Platform/Event.h
     Platform/EventType.h

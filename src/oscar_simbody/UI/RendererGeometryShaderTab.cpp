@@ -12,6 +12,8 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Cursor.h>
+#include <oscar/Platform/CursorShape.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/oscimgui.h>
@@ -36,29 +38,24 @@ public:
     void on_mount()
     {
         App::upd().make_main_loop_polling();
-        m_IsMouseCaptured = true;
+        grab_mouse(true);
     }
 
     void on_unmount()
     {
-        m_IsMouseCaptured = false;
-        App::upd().set_show_cursor(true);
+        grab_mouse(false);
         App::upd().make_main_loop_waiting();
     }
 
     bool on_event(Event& e)
     {
-        if (e.type() == EventType::KeyDown) {
-            if (dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
-                m_IsMouseCaptured = false;
-                return true;
-            }
+        if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
+            grab_mouse(false);
+            return true;
         }
-        else if (e.type() == EventType::MouseButtonDown) {
-            if (ui::is_mouse_in_main_viewport_workspace()) {
-                m_IsMouseCaptured = true;
-                return true;
-            }
+        else if (e.type() == EventType::MouseButtonDown and ui::is_mouse_in_main_viewport_workspace()) {
+            grab_mouse(true);
+            return true;
         }
         return false;
     }
@@ -68,12 +65,6 @@ public:
         // handle mouse capturing
         if (m_IsMouseCaptured) {
             ui::update_camera_from_all_inputs(m_SceneCamera, m_CameraEulers);
-            ui::hide_mouse_cursor();
-            App::upd().set_show_cursor(false);
-        }
-        else {
-            ui::show_mouse_cursor();
-            App::upd().set_show_cursor(true);
         }
         m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
@@ -84,6 +75,22 @@ public:
     }
 
 private:
+    void grab_mouse(bool v)
+    {
+        if (v) {
+            if (not std::exchange(m_IsMouseCaptured, true)) {
+                App::upd().push_cursor_override(Cursor{CursorShape::Hidden});
+                App::upd().enable_main_window_grab();
+            }
+        }
+        else {
+            if (std::exchange(m_IsMouseCaptured, false)) {
+                App::upd().disable_main_window_grab();
+                App::upd().pop_cursor_override();
+            }
+        }
+    }
+
     Material m_SceneMaterial{
         Shader{
             App::slurp("shaders/GeometryShaderTab/Scene.vert"),
@@ -116,3 +123,4 @@ void osc::RendererGeometryShaderTab::impl_on_mount() { private_data().on_mount()
 void osc::RendererGeometryShaderTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::RendererGeometryShaderTab::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::RendererGeometryShaderTab::impl_on_draw() { private_data().onDraw(); }
+

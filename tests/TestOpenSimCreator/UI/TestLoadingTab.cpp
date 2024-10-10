@@ -33,7 +33,7 @@ namespace
         void impl_on_unmount() final
         {
             m_LoadingTab.on_unmount();
-            ui::context::shutdown();
+            ui::context::shutdown(App::upd());
         }
 
         void impl_on_tick() final

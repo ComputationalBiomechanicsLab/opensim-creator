@@ -3,6 +3,8 @@
 #include <oscar/Maths/RectFunctions.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppSettings.h>
+#include <oscar/Platform/Cursor.h>
+#include <oscar/Platform/CursorShape.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
@@ -15,6 +17,7 @@
 #include <oscar/UI/ui_graphics_backend.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
+#include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/Perf.h>
 
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
@@ -34,6 +37,7 @@
 #include <chrono>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -47,53 +51,30 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
+template<>
+struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
+    CursorShape operator()(ImGuiMouseCursor cursor) const
+    {
+        static_assert(ImGuiMouseCursor_COUNT == 9);
+
+        switch (cursor) {
+        case ImGuiMouseCursor_None:       return CursorShape::Hidden;
+        case ImGuiMouseCursor_Arrow:      return CursorShape::Arrow;
+        case ImGuiMouseCursor_TextInput:  return CursorShape::IBeam;
+        case ImGuiMouseCursor_ResizeAll:  return CursorShape::ResizeAll;
+        case ImGuiMouseCursor_ResizeNS:   return CursorShape::ResizeVertical;
+        case ImGuiMouseCursor_ResizeEW:   return CursorShape::ResizeHorizontal;
+        case ImGuiMouseCursor_ResizeNESW: return CursorShape::ResizeDiagonalNESW;
+        case ImGuiMouseCursor_ResizeNWSE: return CursorShape::ResizeDiagonalNWSE;
+        case ImGuiMouseCursor_Hand:       return CursorShape::PointingHand;
+        case ImGuiMouseCursor_NotAllowed: return CursorShape::Forbidden;
+        default:                          return CursorShape::Arrow;
+        }
+    }
+};
+
 namespace
 {
-    // A handle to a single OS mouse cursor (that the UI may switch to at runtime).
-    class SystemCursor final {
-    public:
-        SystemCursor() = default;
-
-        explicit SystemCursor(SDL_SystemCursor id) :
-            ptr_(SDL_CreateSystemCursor(id))
-        {}
-
-        explicit operator bool () const { return static_cast<bool>(ptr_); }
-
-        void use()
-        {
-            SDL_SetCursor(ptr_.get()); // SDL function doesn't have an early out (see #6113)
-        }
-    private:
-        struct CursorDeleter {
-            void operator()(SDL_Cursor* ptr) { SDL_FreeCursor(ptr); }
-        };
-
-        std::unique_ptr<SDL_Cursor, CursorDeleter> ptr_;
-    };
-
-    // A collection of all OS mouse cursors that the UI is capable of switching to.
-    class SystemCursors final {
-    public:
-        SystemCursors()
-        {
-            static_assert(std::tuple_size_v<decltype(cursors_)> == ImGuiMouseCursor_COUNT);
-            cursors_[ImGuiMouseCursor_Arrow]      = SystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-            cursors_[ImGuiMouseCursor_TextInput]  = SystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-            cursors_[ImGuiMouseCursor_ResizeAll]  = SystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
-            cursors_[ImGuiMouseCursor_ResizeNS]   = SystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-            cursors_[ImGuiMouseCursor_ResizeEW]   = SystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-            cursors_[ImGuiMouseCursor_ResizeNESW] = SystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-            cursors_[ImGuiMouseCursor_ResizeNWSE] = SystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-            cursors_[ImGuiMouseCursor_Hand]       = SystemCursor(SDL_SYSTEM_CURSOR_HAND);
-            cursors_[ImGuiMouseCursor_NotAllowed] = SystemCursor(SDL_SYSTEM_CURSOR_NO);
-        }
-
-        SystemCursor& operator[](auto pos) { return cursors_[pos]; }
-    private:
-        std::array<SystemCursor, ImGuiMouseCursor_COUNT> cursors_;
-    };
-
     // Returns whether global (OS-level, rather than window-level) mouse data
     // can be acquired from the OS.
     bool can_mouse_use_global_state()
@@ -135,9 +116,8 @@ namespace
 
         // Mouse handling
         Uint32                                           MouseWindowID = 0;
+        std::optional<CursorShape>                       CurrentCustomCursor;
         int                                              MouseButtonsDown = 0;
-        SystemCursors                                    MouseCursors;
-        SystemCursor*                                    MouseLastCursor = nullptr;
         int                                              MouseLastLeaveFrame = 0;
         bool                                             MouseCanUseGlobalState = can_mouse_use_global_state();
         // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
@@ -365,10 +345,15 @@ static void ImGui_ImplOscar_Init(SDL_Window* window)
     main_viewport->PlatformHandleRaw = nullptr;
 }
 
-static void ImGui_ImplOscar_Shutdown()
+static void ImGui_ImplOscar_Shutdown(App& app)
 {
     BackendData* bd = try_get_ui_backend_data();
     OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
+
+    if (bd->CurrentCustomCursor) {
+        app.pop_cursor_override();
+    }
+
     delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
 
     ImGuiIO& io = ImGui::GetIO();
@@ -441,31 +426,27 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     }
 }
 
-static void ImGui_ImplSDL2_UpdateMouseCursor()
+static void ImGui_ImplOscar_UpdateMouseCursor(App& app)
 {
     ImGuiIO& io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) {
-        return;
+        return;  // ui cannot change the mouse cursor
     }
-    BackendData* bd = try_get_ui_backend_data();
 
-    ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-    if (io.MouseDrawCursor or imgui_cursor == ImGuiMouseCursor_None) {
-        // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
-        SDL_ShowCursor(SDL_FALSE);
-    }
-    else {
-        // Show OS mouse cursor
-        SystemCursor& expected_cursor = bd->MouseCursors[imgui_cursor] ? bd->MouseCursors[imgui_cursor] : bd->MouseCursors[ImGuiMouseCursor_Arrow];
-        if (bd->MouseLastCursor != &expected_cursor and expected_cursor) {
-            expected_cursor.use();
-            bd->MouseLastCursor = &expected_cursor;
+    BackendData& bd = get_backend_data();
+    const ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+    const CursorShape oscar_cursor = to<CursorShape>(imgui_cursor);
+
+    if (oscar_cursor != bd.CurrentCustomCursor) {
+        if (bd.CurrentCustomCursor) {
+            app.pop_cursor_override();
         }
-        SDL_ShowCursor(SDL_TRUE);
+        app.push_cursor_override(Cursor{oscar_cursor});
+        bd.CurrentCustomCursor = oscar_cursor;
     }
 }
 
-static void ImGui_ImplOscar_NewFrame(const App& app)
+static void ImGui_ImplOscar_NewFrame(App& app)
 {
     BackendData& bd = get_backend_data();
     ImGuiIO& io = ImGui::GetIO();
@@ -512,7 +493,7 @@ static void ImGui_ImplOscar_NewFrame(const App& app)
     }
 
     ImGui_ImplSDL2_UpdateMouseData();
-    ImGui_ImplSDL2_UpdateMouseCursor();
+    ImGui_ImplOscar_UpdateMouseCursor(app);
 }
 
 namespace
@@ -624,13 +605,13 @@ void osc::ui::context::init(App& app)
     ImGuizmo::CreateContext();
 }
 
-void osc::ui::context::shutdown()
+void osc::ui::context::shutdown(App& app)
 {
     ImGuizmo::DestroyContext();
     ImPlot::DestroyContext();
 
     graphics_backend::shutdown();
-    ImGui_ImplOscar_Shutdown();
+    ImGui_ImplOscar_Shutdown(app);
     ImGui::DestroyContext();
 }
 

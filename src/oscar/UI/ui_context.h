@@ -9,7 +9,7 @@ namespace osc::ui::context
     void init(App&);
 
     // shutdown UI context
-    void shutdown();
+    void shutdown(App&);
 
     // returns true if the UI handled the event
     bool on_event(Event&);
