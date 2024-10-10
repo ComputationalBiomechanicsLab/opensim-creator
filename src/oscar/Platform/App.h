@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Color.h>
+#include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMainLoopStatus.h>
@@ -221,6 +222,14 @@ namespace osc
         // enables/disables "grabbing" the mouse cursor in the main window
         void enable_main_window_grab();
         void disable_main_window_grab();
+
+        // sets the rectangle that's used to type unicode text inputs
+        //
+        // native input methods can place a window with word suggestions near the input
+        // in the UI, without covering the text that's being inputted, this indicates to
+        // the OS where the input rectangle is so that it can place the overlay in the
+        // correct location.
+        void set_unicode_input_rect(const Rect&);
 
         // makes the main window fullscreen
         void make_fullscreen();

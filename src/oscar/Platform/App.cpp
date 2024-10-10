@@ -2,23 +2,25 @@
 
 #include <oscar/Graphics/GraphicsContext.h>
 #include <oscar/Graphics/Texture2D.h>
+#include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/AppClock.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
+#include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/Log.h>
+#include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
-#include <oscar/Platform/os.h>
-#include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
@@ -631,6 +633,17 @@ public:
         SDL_SetWindowGrab(main_window_.get(), SDL_FALSE);
     }
 
+    void set_unicode_input_rect(const Rect& rect)
+    {
+        const SDL_Rect r{
+            .x = static_cast<int>(rect.p1.x),
+            .y = static_cast<int>(rect.p1.y),
+            .w = static_cast<int>(dimensions_of(rect).x),
+            .h = static_cast<int>(dimensions_of(rect).y),
+        };
+        SDL_SetTextInputRect(&r);
+    }
+
     void set_show_cursor(bool v)
     {
         SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
@@ -1171,6 +1184,11 @@ void osc::App::enable_main_window_grab()
 void osc::App::disable_main_window_grab()
 {
     impl_->disable_main_window_grab();
+}
+
+void osc::App::set_unicode_input_rect(const Rect& rect)
+{
+    impl_->set_unicode_input_rect(rect);
 }
 
 void osc::App::make_fullscreen()

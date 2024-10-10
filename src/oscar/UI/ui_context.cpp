@@ -178,16 +178,12 @@ namespace
 }
 
 // Note: native IME will only display if user calls SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1") _before_ SDL_CreateWindow().
-static void ImGui_ImplSDL2_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData* data)
+static void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData* data)
 {
     if (data->WantVisible) {
-        const SDL_Rect r{
-            .x = static_cast<int>(data->InputPos.x),
-            .y = static_cast<int>(data->InputPos.y),
-            .w = 1,
-            .h = static_cast<int>(data->InputLineHeight),
-        };
-        SDL_SetTextInputRect(&r);
+        const Vec2 top_left = {data->InputPos.x, data->InputPos.y};
+        const Vec2 dimensions = {1.0f, data->InputLineHeight};
+        App::upd().set_unicode_input_rect(Rect{top_left, top_left + dimensions});
     }
 }
 
@@ -332,7 +328,7 @@ static void ImGui_ImplOscar_Init(SDL_Window* window)
     io.SetClipboardTextFn = ui_set_clipboard_text;
     io.GetClipboardTextFn = ui_get_clipboard_text;
     io.ClipboardUserData = nullptr;
-    io.PlatformSetImeDataFn = ImGui_ImplSDL2_PlatformSetImeData;
+    io.PlatformSetImeDataFn = ImGui_ImplOscar_PlatformSetImeData;
 #ifdef __EMSCRIPTEN__
     io.PlatformOpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplOscar_EmscriptenOpenURL(url); return true; };
 #endif
