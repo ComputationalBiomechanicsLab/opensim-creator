@@ -24,7 +24,6 @@
 #include <imgui.h>
 #include <implot.h>
 #include <SDL.h>
-#include <SDL_syswm.h>
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
