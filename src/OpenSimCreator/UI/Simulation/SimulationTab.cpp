@@ -9,13 +9,13 @@
 #include <OpenSimCreator/Documents/Simulation/SimulationReport.h>
 #include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
-#include <OpenSimCreator/UI/Shared/EditorTabStatusBar.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
+#include <OpenSimCreator/UI/Shared/ModelStatusBar.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
+#include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <OpenSimCreator/UI/Simulation/OutputPlotsPanel.h>
@@ -155,10 +155,10 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                ModelEditorViewerPanelParameters params
+                ModelViewerPanelParameters params
                 {
                     m_ShownModelState,
-                    [this, menuName = std::string{panelName} + "_contextmenu"](const ModelEditorViewerPanelRightClickEvent& e)
+                    [this, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
                     {
                         auto popup = std::make_shared<ComponentContextMenu>(
                             menuName,
@@ -172,7 +172,7 @@ public:
                     },
                 };
 
-                return std::make_shared<ModelEditorViewerPanel>(panelName, std::move(params));
+                return std::make_shared<ModelViewerPanel>(panelName, std::move(params));
             },
             1  // by default, open one viewer
         );
@@ -476,7 +476,7 @@ private:
     // non-toggleable UI panels/menus/toolbars
     SimulationTabMainMenu m_MainMenu{*parent(), m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
-    EditorTabStatusBar m_StatusBar{*parent(), m_ShownModelState};
+    ModelStatusBar m_StatusBar{*parent(), m_ShownModelState};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;

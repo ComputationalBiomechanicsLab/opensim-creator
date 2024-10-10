@@ -401,12 +401,7 @@ osc::SimulationOutputPlot::SimulationOutputPlot(
 
     m_Impl{std::make_unique<Impl>(api, std::move(outputExtractor), height)}
 {}
-
 osc::SimulationOutputPlot::SimulationOutputPlot(SimulationOutputPlot&&) noexcept = default;
 osc::SimulationOutputPlot& osc::SimulationOutputPlot::operator=(SimulationOutputPlot&&) noexcept = default;
 osc::SimulationOutputPlot::~SimulationOutputPlot() noexcept = default;
-
-void osc::SimulationOutputPlot::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::SimulationOutputPlot::onDraw() { m_Impl->onDraw(); }

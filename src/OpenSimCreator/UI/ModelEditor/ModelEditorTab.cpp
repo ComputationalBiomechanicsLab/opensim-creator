@@ -11,10 +11,10 @@
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
 #include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
-#include <OpenSimCreator/UI/Shared/EditorTabStatusBar.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
+#include <OpenSimCreator/UI/Shared/ModelStatusBar.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/OutputWatchesPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
@@ -149,7 +149,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelEditorViewerPanelRightClickEvent& e)
+                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
                 {
                     auto popup = std::make_unique<ComponentContextMenu>(
                         menuName,
@@ -160,9 +160,9 @@ public:
 
                     App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
                 };
-                ModelEditorViewerPanelParameters panelParams{m_Model, onRightClick};
+                ModelViewerPanelParameters panelParams{m_Model, onRightClick};
 
-                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
+                return std::make_shared<ModelViewerPanel>(panelName, panelParams);
             },
             1  // have one viewer open at the start
         );
@@ -428,7 +428,7 @@ private:
     // non-toggleable UI panels/menus/toolbars
     ModelEditorMainMenu m_MainMenu{*parent(), m_PanelManager, m_Model};
     ModelEditorToolbar m_Toolbar{"##ModelEditorToolbar", *parent(), m_Model};
-    EditorTabStatusBar m_StatusBar{*parent(), m_Model};
+    ModelStatusBar m_StatusBar{*parent(), m_Model};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;

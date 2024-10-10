@@ -9,9 +9,9 @@
 
 namespace osc
 {
-    struct ModelEditorViewerPanelRightClickEvent final {
+    struct ModelViewerPanelRightClickEvent final {
 
-        ModelEditorViewerPanelRightClickEvent(
+        ModelViewerPanelRightClickEvent(
             std::string sourcePanelName_,
             const Rect& viewportScreenRect_,
             std::string componentAbsPathOrEmpty_,

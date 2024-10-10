@@ -7,8 +7,8 @@
 #include <OpenSimCreator/Graphics/OverlayDecorationGenerator.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelState.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelState.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <oscar/Graphics/Scene/SceneCache.h>
@@ -137,8 +137,8 @@ public:
     {}
 
     bool handleKeyboardInputs(
-        ModelEditorViewerPanelParameters& params,
-        ModelEditorViewerPanelState& state) const
+        ModelViewerPanelParameters& params,
+        ModelViewerPanelState& state) const
     {
         return ui::update_polar_camera_from_keyboard_inputs(
             params.updRenderParams().camera,
@@ -148,8 +148,8 @@ public:
     }
 
     bool handleMouseInputs(
-        ModelEditorViewerPanelParameters& params,
-        ModelEditorViewerPanelState& state)
+        ModelViewerPanelParameters& params,
+        ModelViewerPanelState& state)
     {
         bool rv = ui::update_polar_camera_from_mouse_inputs(
             params.updRenderParams().camera,
@@ -170,8 +170,8 @@ public:
     }
 
     void onDraw(
-        ModelEditorViewerPanelParameters& panelParams,
-        ModelEditorViewerPanelState& panelState)
+        ModelViewerPanelParameters& panelParams,
+        ModelViewerPanelState& panelState)
     {
         const bool layerIsHovered = ui::is_panel_hovered(ui::HoveredFlag::RootAndChildWindows);
 
@@ -318,22 +318,22 @@ osc::ChooseComponentsEditorLayer& osc::ChooseComponentsEditorLayer::operator=(Ch
 osc::ChooseComponentsEditorLayer::~ChooseComponentsEditorLayer() noexcept = default;
 
 bool osc::ChooseComponentsEditorLayer::implHandleKeyboardInputs(
-    ModelEditorViewerPanelParameters& params,
-    ModelEditorViewerPanelState& state)
+    ModelViewerPanelParameters& params,
+    ModelViewerPanelState& state)
 {
     return m_Impl->handleKeyboardInputs(params, state);
 }
 
 bool osc::ChooseComponentsEditorLayer::implHandleMouseInputs(
-    ModelEditorViewerPanelParameters& params,
-    ModelEditorViewerPanelState& state)
+    ModelViewerPanelParameters& params,
+    ModelViewerPanelState& state)
 {
     return m_Impl->handleMouseInputs(params, state);
 }
 
 void osc::ChooseComponentsEditorLayer::implOnDraw(
-    ModelEditorViewerPanelParameters& params,
-    ModelEditorViewerPanelState& state)
+    ModelViewerPanelParameters& params,
+    ModelViewerPanelState& state)
 {
     m_Impl->onDraw(params, state);
 }

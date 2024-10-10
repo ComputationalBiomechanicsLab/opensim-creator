@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Graphics/CachedModelRenderer.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelLayer.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <oscar/Graphics/Scene/SceneCollision.h>
@@ -21,9 +21,9 @@ namespace OpenSim { class Component; }
 
 namespace osc
 {
-    class ModelEditorViewerPanelState final {
+    class ModelViewerPanelState final {
     public:
-        explicit ModelEditorViewerPanelState(std::string_view panelName_);
+        explicit ModelViewerPanelState(std::string_view panelName_);
 
         CStringView getPanelName() const
         {
@@ -42,7 +42,7 @@ namespace osc
             return m_CachedModelRenderer.getDrawlist();
         }
 
-        ModelEditorViewerPanelLayer& pushLayer(std::unique_ptr<ModelEditorViewerPanelLayer> layer)
+        ModelViewerPanelLayer& pushLayer(std::unique_ptr<ModelViewerPanelLayer> layer)
         {
             return *m_LayerQueue.emplace_back(std::move(layer));
         }
@@ -57,7 +57,7 @@ namespace osc
             return m_CachedModelRenderer;
         }
 
-        void flushLayerQueueTo(std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>>& target)
+        void flushLayerQueueTo(std::vector<std::unique_ptr<ModelViewerPanelLayer>>& target)
         {
             target.insert(
                 target.end(),
@@ -70,6 +70,6 @@ namespace osc
     private:
         std::string panel_name_;
         CachedModelRenderer m_CachedModelRenderer;
-        std::vector<std::unique_ptr<ModelEditorViewerPanelLayer>> m_LayerQueue;
+        std::vector<std::unique_ptr<ModelViewerPanelLayer>> m_LayerQueue;
     };
 }

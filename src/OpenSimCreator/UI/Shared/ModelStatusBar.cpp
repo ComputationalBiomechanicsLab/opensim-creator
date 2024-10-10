@@ -1,4 +1,4 @@
-#include "EditorTabStatusBar.h"
+#include "ModelStatusBar.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
@@ -16,7 +16,7 @@
 #include <utility>
 
 
-class osc::EditorTabStatusBar::Impl final {
+class osc::ModelStatusBar::Impl final {
 public:
     Impl(Widget& parent_, std::shared_ptr<IModelStatePair> model_) :
 
@@ -87,17 +87,17 @@ private:
 };
 
 
-osc::EditorTabStatusBar::EditorTabStatusBar(
+osc::ModelStatusBar::ModelStatusBar(
     Widget& parent_,
     std::shared_ptr<IModelStatePair> model_) :
 
     m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
 {}
-osc::EditorTabStatusBar::EditorTabStatusBar(EditorTabStatusBar&&) noexcept = default;
-osc::EditorTabStatusBar& osc::EditorTabStatusBar::operator=(EditorTabStatusBar&&) noexcept = default;
-osc::EditorTabStatusBar::~EditorTabStatusBar() noexcept = default;
+osc::ModelStatusBar::ModelStatusBar(ModelStatusBar&&) noexcept = default;
+osc::ModelStatusBar& osc::ModelStatusBar::operator=(ModelStatusBar&&) noexcept = default;
+osc::ModelStatusBar::~ModelStatusBar() noexcept = default;
 
-void osc::EditorTabStatusBar::onDraw()
+void osc::ModelStatusBar::onDraw()
 {
     m_Impl->onDraw();
 }

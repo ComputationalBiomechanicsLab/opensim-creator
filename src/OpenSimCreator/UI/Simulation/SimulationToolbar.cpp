@@ -122,8 +122,4 @@ osc::SimulationToolbar::SimulationToolbar(
 osc::SimulationToolbar::SimulationToolbar(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar& osc::SimulationToolbar::operator=(SimulationToolbar&&) noexcept = default;
 osc::SimulationToolbar::~SimulationToolbar() noexcept = default;
-
-void osc::SimulationToolbar::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::SimulationToolbar::onDraw() { m_Impl->onDraw(); }

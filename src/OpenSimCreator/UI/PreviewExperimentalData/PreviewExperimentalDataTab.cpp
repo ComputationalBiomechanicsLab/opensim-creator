@@ -7,17 +7,17 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
 #include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
-#include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
-#include <OpenSimCreator/UI/Shared/EditorTabStatusBar.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanel.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelRightClickEvent.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/CoordinateEditorPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelStatusBar.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanel.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
+#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/UI/Shared/OutputWatchesPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
-#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Object.h>
@@ -371,7 +371,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                auto onRightClick = [model = m_UiState->updSharedModelPtr(), menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelEditorViewerPanelRightClickEvent& e)
+                auto onRightClick = [model = m_UiState->updSharedModelPtr(), menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
                     {
                         auto popup = std::make_unique<ComponentContextMenu>(
                             menuName,
@@ -382,9 +382,9 @@ public:
 
                         App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
                     };
-                ModelEditorViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
+                ModelViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
 
-                return std::make_shared<ModelEditorViewerPanel>(panelName, panelParams);
+                return std::make_shared<ModelViewerPanel>(panelName, panelParams);
             },
             1  // have one viewer open at the start
         );
@@ -466,7 +466,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PreviewExperimentalDataTabToolbar m_Toolbar{m_UiState};
     WindowMenu m_WindowMenu{m_PanelManager};
-    EditorTabStatusBar m_StatusBar{*parent(), m_UiState->updSharedModelPtr()};
+    ModelStatusBar m_StatusBar{*parent(), m_UiState->updSharedModelPtr()};
     PopupManager m_PopupManager;
     bool m_ThrewExceptionLastFrame = false;
 };

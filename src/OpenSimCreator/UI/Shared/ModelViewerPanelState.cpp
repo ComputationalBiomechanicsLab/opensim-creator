@@ -1,9 +1,9 @@
-#include "ModelEditorViewerPanelState.h"
+#include "ModelViewerPanelState.h"
 
 #include <oscar/Graphics/Scene/SceneCache.h>
 #include <oscar/Platform/App.h>
 
-osc::ModelEditorViewerPanelState::ModelEditorViewerPanelState(
+osc::ModelViewerPanelState::ModelViewerPanelState(
     std::string_view panelName_) :
 
     panel_name_{panelName_},

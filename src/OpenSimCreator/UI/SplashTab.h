@@ -2,6 +2,7 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
+namespace osc { class Event; }
 namespace osc { class Widget; }
 
 namespace osc

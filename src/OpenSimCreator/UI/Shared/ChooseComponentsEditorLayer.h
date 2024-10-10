@@ -1,19 +1,19 @@
 #pragma once
 
 #include <OpenSimCreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
-#include <OpenSimCreator/UI/Shared/ModelEditorViewerPanelLayer.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
 
 #include <memory>
 
 namespace osc { class IModelStatePair; }
-namespace osc { class ModelEditorViewerPanelParameters; }
-namespace osc { class ModelEditorViewerPanelState; }
+namespace osc { class ModelViewerPanelParameters; }
+namespace osc { class ModelViewerPanelState; }
 
 namespace osc
 {
     // modal popup that prompts the user to select components in the model (e.g.
     // to define an edge, or a frame)
-    class ChooseComponentsEditorLayer final : public ModelEditorViewerPanelLayer {
+    class ChooseComponentsEditorLayer final : public ModelViewerPanelLayer {
     public:
         ChooseComponentsEditorLayer(
             std::shared_ptr<IModelStatePair>,
@@ -27,18 +27,18 @@ namespace osc
 
     private:
         bool implHandleKeyboardInputs(
-            ModelEditorViewerPanelParameters&,
-            ModelEditorViewerPanelState&
+            ModelViewerPanelParameters&,
+            ModelViewerPanelState&
         ) final;
 
         bool implHandleMouseInputs(
-            ModelEditorViewerPanelParameters&,
-            ModelEditorViewerPanelState&
+            ModelViewerPanelParameters&,
+            ModelViewerPanelState&
         ) final;
 
         void implOnDraw(
-            ModelEditorViewerPanelParameters&,
-            ModelEditorViewerPanelState&
+            ModelViewerPanelParameters&,
+            ModelViewerPanelState&
         ) final;
 
         float implGetBackgroundAlpha() const final;

@@ -207,8 +207,4 @@ osc::SimulationScrubber::SimulationScrubber(
 osc::SimulationScrubber::SimulationScrubber(SimulationScrubber&&) noexcept = default;
 osc::SimulationScrubber& osc::SimulationScrubber::operator=(SimulationScrubber&&) noexcept = default;
 osc::SimulationScrubber::~SimulationScrubber() noexcept = default;
-
-void osc::SimulationScrubber::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::SimulationScrubber::onDraw() { m_Impl->onDraw(); }

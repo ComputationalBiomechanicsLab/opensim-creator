@@ -4,6 +4,8 @@
 
 #include <filesystem>
 
+namespace osc { class Event; }
+
 namespace osc
 {
     class MainUIScreen final : public Screen {

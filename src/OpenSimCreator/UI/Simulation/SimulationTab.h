@@ -4,6 +4,7 @@
 
 #include <memory>
 
+namespace osc { class Event; }
 namespace osc { class Simulation; }
 namespace osc { class Widget; }
 

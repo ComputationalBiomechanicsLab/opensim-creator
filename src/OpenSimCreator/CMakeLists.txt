@@ -334,8 +334,6 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ComponentContextMenu.h
     UI/Shared/CoordinateEditorPanel.cpp
     UI/Shared/CoordinateEditorPanel.h
-    UI/Shared/EditorTabStatusBar.cpp
-    UI/Shared/EditorTabStatusBar.h
     UI/Shared/FunctionCurveViewerPopup.cpp
     UI/Shared/FunctionCurveViewerPopup.h
     UI/Shared/GeometryPathEditorPopup.cpp
@@ -345,15 +343,17 @@ add_library(OpenSimCreator STATIC
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.h
     UI/Shared/ModelEditorViewerPanel.cpp
-    UI/Shared/ModelEditorViewerPanel.h
-    UI/Shared/ModelEditorViewerPanelLayer.h
-    UI/Shared/ModelEditorViewerPanelLayerFlags.h
-    UI/Shared/ModelEditorViewerPanelParameters.h
-    UI/Shared/ModelEditorViewerPanelRightClickEvent.h
-    UI/Shared/ModelEditorViewerPanelState.cpp
-    UI/Shared/ModelEditorViewerPanelState.h
     UI/Shared/ModelSelectionGizmo.cpp
     UI/Shared/ModelSelectionGizmo.h
+    UI/Shared/ModelStatusBar.cpp
+    UI/Shared/ModelStatusBar.h
+    UI/Shared/ModelViewerPanel.h
+    UI/Shared/ModelViewerPanelLayer.h
+    UI/Shared/ModelViewerPanelLayerFlags.h
+    UI/Shared/ModelViewerPanelParameters.h
+    UI/Shared/ModelViewerPanelRightClickEvent.h
+    UI/Shared/ModelViewerPanelState.cpp
+    UI/Shared/ModelViewerPanelState.h
     UI/Shared/NavigatorPanel.cpp
     UI/Shared/NavigatorPanel.h
     UI/Shared/ObjectPropertiesEditor.cpp

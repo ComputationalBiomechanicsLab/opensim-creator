@@ -208,38 +208,10 @@ osc::Readonly3DModelViewer::Readonly3DModelViewer(std::string_view parentPanelNa
 osc::Readonly3DModelViewer::Readonly3DModelViewer(Readonly3DModelViewer&&) noexcept = default;
 osc::Readonly3DModelViewer& osc::Readonly3DModelViewer::operator=(Readonly3DModelViewer&&) noexcept = default;
 osc::Readonly3DModelViewer::~Readonly3DModelViewer() noexcept = default;
-
-bool osc::Readonly3DModelViewer::isLeftClicked() const
-{
-    return m_Impl->isLeftClicked();
-}
-
-bool osc::Readonly3DModelViewer::isRightClicked() const
-{
-    return m_Impl->isRightClicked();
-}
-
-bool osc::Readonly3DModelViewer::isMousedOver() const
-{
-    return m_Impl->isMousedOver();
-}
-
-std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(const IModelStatePair& rs)
-{
-    return m_Impl->onDraw(rs);
-}
-
-std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const
-{
-    return m_Impl->getScreenRect();
-}
-
-const PolarPerspectiveCamera& osc::Readonly3DModelViewer::getCamera() const
-{
-    return m_Impl->getCamera();
-}
-
-void osc::Readonly3DModelViewer::setCamera(const PolarPerspectiveCamera& camera)
-{
-    m_Impl->setCamera(camera);
-}
+bool osc::Readonly3DModelViewer::isLeftClicked() const { return m_Impl->isLeftClicked(); }
+bool osc::Readonly3DModelViewer::isRightClicked() const { return m_Impl->isRightClicked(); }
+bool osc::Readonly3DModelViewer::isMousedOver() const { return m_Impl->isMousedOver(); }
+std::optional<SceneCollision> osc::Readonly3DModelViewer::onDraw(const IModelStatePair& rs) { return m_Impl->onDraw(rs); }
+std::optional<Rect> osc::Readonly3DModelViewer::getScreenRect() const { return m_Impl->getScreenRect(); }
+const PolarPerspectiveCamera& osc::Readonly3DModelViewer::getCamera() const { return m_Impl->getCamera(); }
+void osc::Readonly3DModelViewer::setCamera(const PolarPerspectiveCamera& camera) { m_Impl->setCamera(camera); }

@@ -98,8 +98,4 @@ osc::SimulationTabMainMenu::SimulationTabMainMenu(
 osc::SimulationTabMainMenu::SimulationTabMainMenu(SimulationTabMainMenu&&) noexcept = default;
 osc::SimulationTabMainMenu& osc::SimulationTabMainMenu::operator=(SimulationTabMainMenu&&) noexcept = default;
 osc::SimulationTabMainMenu::~SimulationTabMainMenu() noexcept = default;
-
-void osc::SimulationTabMainMenu::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::SimulationTabMainMenu::onDraw() { m_Impl->onDraw(); }
