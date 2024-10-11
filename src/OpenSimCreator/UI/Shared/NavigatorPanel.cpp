@@ -335,28 +335,8 @@ osc::NavigatorPanel::NavigatorPanel(
 osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
 osc::NavigatorPanel::~NavigatorPanel() noexcept = default;
-
-CStringView osc::NavigatorPanel::impl_get_name() const
-{
-    return m_Impl->name();
-}
-
-bool osc::NavigatorPanel::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::NavigatorPanel::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::NavigatorPanel::impl_close()
-{
-    m_Impl->close();
-}
-
-void osc::NavigatorPanel::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
+CStringView osc::NavigatorPanel::impl_get_name() const { return m_Impl->name(); }
+bool osc::NavigatorPanel::impl_is_open() const { return m_Impl->is_open(); }
+void osc::NavigatorPanel::impl_open() { m_Impl->open(); }
+void osc::NavigatorPanel::impl_close() { m_Impl->close(); }
+void osc::NavigatorPanel::impl_on_draw() { m_Impl->on_draw(); }
