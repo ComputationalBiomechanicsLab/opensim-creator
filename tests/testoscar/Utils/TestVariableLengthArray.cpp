@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <memory>
 #include <memory_resource>
 
@@ -145,13 +146,16 @@ TEST(VariableLengthArray, push_back_works_on_moveonly_types)
 
 TEST(VariableLengthArray, push_back_works_with_overaligned_values)
 {
-    struct alignas(256) Overaligned final { long value; std::byte padding[256 - sizeof(long)]; };
+    struct alignas(256) Overaligned final {
+        int64_t value = 0;
+        std::array<std::byte, 256 - sizeof(int64_t)> padding{};
+    };
 
     VariableLengthArray<Overaligned, 4> vla(std::pmr::null_memory_resource());  // throws `std::bad_alloc` on allocation
-    vla.push_back(Overaligned(0));
-    vla.push_back(Overaligned(1));
-    vla.push_back(Overaligned(2));
-    vla.push_back(Overaligned(3));
+    vla.push_back(Overaligned{0});
+    vla.push_back(Overaligned{1});
+    vla.push_back(Overaligned{2});
+    vla.push_back(Overaligned{3});
 
     ASSERT_EQ(vla[0].value, 0);
     ASSERT_EQ(vla[1].value, 1);

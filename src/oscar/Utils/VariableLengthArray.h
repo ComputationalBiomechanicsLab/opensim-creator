@@ -30,18 +30,18 @@ namespace osc
     private:
         using underlying_vector = std::pmr::vector<T>;
     public:
-        using value_type = underlying_vector::value_type;
-        using allocator_type = underlying_vector::allocator_type;
-        using size_type = underlying_vector::size_type;
-        using difference_type = underlying_vector::difference_type;
-        using reference = underlying_vector::reference;
-        using const_reference = underlying_vector::const_reference;
-        using pointer = underlying_vector::pointer;
-        using const_pointer = underlying_vector::const_pointer;
-        using iterator = underlying_vector::iterator;
-        using const_iterator = underlying_vector::const_iterator;
-        using reverse_iterator = underlying_vector::reverse_iterator;
-        using const_reverse_iterator = underlying_vector::const_reverse_iterator;
+        using value_type = typename underlying_vector::value_type;
+        using allocator_type = typename underlying_vector::allocator_type;
+        using size_type = typename underlying_vector::size_type;
+        using difference_type = typename underlying_vector::difference_type;
+        using reference = typename underlying_vector::reference;
+        using const_reference = typename underlying_vector::const_reference;
+        using pointer = typename underlying_vector::pointer;
+        using const_pointer = typename underlying_vector::const_pointer;
+        using iterator = typename underlying_vector::iterator;
+        using const_iterator = typename underlying_vector::const_iterator;
+        using reverse_iterator = typename underlying_vector::reverse_iterator;
+        using const_reverse_iterator = typename underlying_vector::const_reverse_iterator;
 
         explicit VariableLengthArray(std::pmr::memory_resource* upstream_allocator = std::pmr::new_delete_resource()) :
             pool{stack_data_.data(), stack_data_.size(), upstream_allocator}
