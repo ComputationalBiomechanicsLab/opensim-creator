@@ -31,7 +31,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 

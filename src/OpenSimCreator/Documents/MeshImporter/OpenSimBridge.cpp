@@ -41,7 +41,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/SimTKMeshLoader.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <array>
 #include <memory>

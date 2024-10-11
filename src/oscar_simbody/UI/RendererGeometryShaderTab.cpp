@@ -114,7 +114,7 @@ private:
 };
 
 
-CStringView osc::RendererGeometryShaderTab::id() { return "OpenSim/Experimental/GeometryShader"; }
+CStringView osc::RendererGeometryShaderTab::id() { return "oscar_simbody/RendererGeometryShader"; }
 
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(Widget& parent) :
     Tab{std::make_unique<Impl>(*this, parent)}

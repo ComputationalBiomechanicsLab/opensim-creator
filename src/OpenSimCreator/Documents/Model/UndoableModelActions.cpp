@@ -57,7 +57,7 @@
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/UID.h>
 #include <oscar_simbody/ShapeFitters.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <algorithm>
 #include <chrono>

@@ -15,10 +15,10 @@ add_library(oscar_simbody STATIC
     LandmarkPair3D.h
     ShapeFitters.cpp
     ShapeFitters.h
+    SimTKConverters.cpp
+    SimTKConverters.h
     SimTKDecorationGenerator.cpp
     SimTKDecorationGenerator.h
-    SimTKHelpers.cpp
-    SimTKHelpers.h
     SimTKMeshLoader.cpp
     SimTKMeshLoader.h
     TPS3D.cpp

@@ -1,6 +1,6 @@
 #include "TPS3D.h"
 
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <Simbody.h>
 #include <oscar/Maths/MathHelpers.h>

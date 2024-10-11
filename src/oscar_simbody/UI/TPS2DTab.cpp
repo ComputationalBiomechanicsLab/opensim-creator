@@ -524,7 +524,7 @@ private:
 };
 
 
-CStringView osc::TPS2DTab::id() { return "OpenSim/Experimental/TPS2D"; }
+CStringView osc::TPS2DTab::id() { return "oscar_simbody/TPS2D"; }
 
 osc::TPS2DTab::TPS2DTab(Widget& parent) :
     Tab{std::make_unique<Impl>(*this, parent)}

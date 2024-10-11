@@ -1,6 +1,6 @@
 #include "SimTKMeshLoader.h"
 
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>

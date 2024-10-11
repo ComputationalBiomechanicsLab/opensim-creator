@@ -30,7 +30,7 @@
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <concepts>
 #include <cstddef>

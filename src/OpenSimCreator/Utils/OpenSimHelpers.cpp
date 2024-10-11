@@ -60,7 +60,7 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StringHelpers.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
 

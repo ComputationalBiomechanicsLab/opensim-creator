@@ -12,7 +12,7 @@
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <filesystem>
 #include <fstream>

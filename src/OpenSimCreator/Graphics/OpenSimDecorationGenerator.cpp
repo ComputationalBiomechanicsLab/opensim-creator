@@ -38,7 +38,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar_simbody/SimTKDecorationGenerator.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon.h>
 
 #include <ankerl/unordered_dense.h>

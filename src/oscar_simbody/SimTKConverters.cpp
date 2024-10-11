@@ -1,4 +1,4 @@
-#include "SimTKHelpers.h"
+#include "SimTKConverters.h"
 
 #include <SimTKcommon/SmallMatrix.h>
 #include <SimTKcommon/internal/MassProperties.h>

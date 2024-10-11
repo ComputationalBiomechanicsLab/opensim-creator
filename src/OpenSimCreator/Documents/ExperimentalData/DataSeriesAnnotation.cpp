@@ -7,7 +7,7 @@
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 #include <Simbody.h>
 
 #include <span>

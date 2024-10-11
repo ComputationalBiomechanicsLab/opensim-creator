@@ -47,7 +47,7 @@
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/Utils/StringHelpers.h>
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon/basics.h>
 
 #include <algorithm>

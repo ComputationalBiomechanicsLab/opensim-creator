@@ -1,6 +1,6 @@
 ﻿#include "ShapeFitters.h"
 
-#include <oscar_simbody/SimTKHelpers.h>
+#include <oscar_simbody/SimTKConverters.h>
 
 #include <Simbody.h>
 #include <oscar/Graphics/Mesh.h>
