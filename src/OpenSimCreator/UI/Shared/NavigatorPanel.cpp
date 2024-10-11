@@ -19,6 +19,7 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/VariableLengthArray.h>
 
 #include <algorithm>
 #include <array>
@@ -36,77 +37,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    // poor-man's abstraction for a constant-sized array
-    template<typename T, size_t N>
-    class SizedArray final {
-        static_assert(std::is_trivial_v<T>);
-        static_assert(N <= std::numeric_limits<int>::max());
-
-    public:
-        void push_back(T v)
-        {
-            if (m_Size >= N) {
-                throw std::runtime_error{"cannot render a navigator: the Model/Component tree is too deep"};
-            }
-            m_Data[m_Size++] = v;
-        }
-
-        const T* begin() const
-        {
-            return m_Data.data();
-        }
-
-        T* begin()
-        {
-            return m_Data.data();
-        }
-
-        const T* end() const
-        {
-            return m_Data.data() + m_Size;
-        }
-
-        T* end()
-        {
-            return m_Data.data() + m_Size;
-        }
-
-        size_t size() const
-        {
-            return m_Size;
-        }
-
-        bool empty() const
-        {
-            return m_Size == 0;
-        }
-
-        void resize(size_t newsize)
-        {
-            m_Size = newsize;
-        }
-
-        void clear()
-        {
-            m_Size = 0;
-        }
-
-        T& operator[](size_t idx)
-        {
-            return m_Data[idx];
-        }
-
-        const T& operator[](size_t i) const
-        {
-            return m_Data[i];
-        }
-
-    private:
-        std::array<T, N> m_Data{};
-        size_t m_Size = 0;
-    };
-
-    using ComponentTreePathPointers = SizedArray<const OpenSim::Component*, 16>;
+    using ComponentTreePathPointers = VariableLengthArray<const OpenSim::Component*, 16>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     ComponentTreePathPointers computeComponentTreePath(

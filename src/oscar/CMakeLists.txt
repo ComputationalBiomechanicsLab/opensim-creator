@@ -450,6 +450,7 @@ add_library(oscar STATIC
     Utils/UID.h
     Utils/UndoRedo.cpp
     Utils/UndoRedo.h
+    Utils/VariableLengthArray.h
     Utils/WatchableLifetime.h
 
     Variant/Variant.cpp
