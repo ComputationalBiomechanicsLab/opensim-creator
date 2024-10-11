@@ -129,23 +129,65 @@ describes, concretely, how they interplay in an example workflow.
 Walkthrough: Markers to Motion
 ------------------------------
 
-``TODO`` rough high-level workflow diagram, even a pen drawing of a flowchart would
-be fine.
+.. warning::
 
-- ``TODO`` direct people to a model's repository data source so they can follow
-  along.
+    **The Preview Experimental Data UI is 🪄 experimental 🪄.**.
 
-- ``TODO`` load marker data, verify it looks ok
+    We anticipate that this section will change over the next few releases as
+    we work out the kinks, redesign parts of the workflow, etc. That is to say,
+    what's described here does work, but isn't as slick as we'd like 😎.
 
-- ``TODO`` use marker data in IK? Or "here's one I did earlier?"
+In this section, we will be using experimental data from the `OpenSim Models Repository`_.
+Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18musc Model Direct Link`_). You
+will need to download the data in order to follow along with this walkthrough.
 
-- ``TODO`` load IK into the preview experimental data UI and verify that it
-  overlaps well with the marker data etc.
+This walkthrough makes more sense if you engage in a little role-play 🧝🧙‍♂️. Imagine
+that you've already recorded some experimental data and have made/acquired ``subject01.osim``.
+You are now at the stage in your project where problems like loading/validating
+raw data and linking it to the OpenSim model are bottlenecks. Concretely, you
+want to double-check that your marker data matches what OpenSim expects, and
+that the Inverse Kinematics (IK) result from OpenSim looks like it matches those
+markers. You then want to validate that the ground reaction forces you measured
+in the lab are correct and that they're synchronized with the marker data. Finally,
+you want to apply those ground reaction forces to the OpenSim model and validate
+that they are applied in the right location.
 
-- ``TODO`` load GRFs, verify they look ok
+Load Raw Marker Data
+^^^^^^^^^^^^^^^^^^^^
 
-- ``TODO`` write an ``ExternalLoads`` that uses the GRFs, show how it can be
-  debugged with help from the preview experimental data UI
+.. _walkthrough_markers-loaded:
+.. figure:: _static/tut7_walkthrough-after-marker-data-loaded.png
+    :width: 60%
+
+    The preview experimental data UI after loading ``subject01_walk.trc``. The
+    UI shows the marker locations as blue spheres. The time range for scrubbing
+    can be adjusted using the min/max boxes either side of the scrubbing slider.
+
+The first step is to load the raw marker data (``.trc``) file into the UI. That's
+done by clicking the ``load raw data file`` button in the toolbar, followed by
+selecting the ``subject01_walk.trc`` file (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk.trc``). It
+should look something like :numref:`walkthrough_markers-loaded`.
+
+Load IK Result
+^^^^^^^^^^^^^^
+
+``TODO``
+
+Load Raw Ground Reaction Forces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``TODO``
+
+Associate Ground Reaction Forces With Model (``ExternalLoads``)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``TODO``
+
+
+Suggested Further Steps
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``TODO`` Inverse Dynamics, CMC, etc.
 
 
 Summary
@@ -190,5 +232,6 @@ experimental data with OpenSim models.
   source for published OpenSim models.
 
 .. _OpenSim Models Repository: https://github.com/opensim-org/opensim-models
+.. _Gait10dof18musc Model Direct Link: https://github.com/opensim-org/opensim-models/tree/c62c24b0da1f89178335cf10f646a39c90d15580/Pipelines/Gait10dof18musc/OutputReference
 .. _Example MOT File: https://github.com/opensim-org/opensim-models/blob/master/Pipelines/Gait10dof18musc/ExperimentalData/subject01_walk_grf.mot
 .. _SimTK.org: https://simtk.org/
