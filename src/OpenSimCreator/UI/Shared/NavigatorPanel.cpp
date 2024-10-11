@@ -76,11 +76,6 @@ namespace
             return m_Size;
         }
 
-        ptrdiff_t sizei() const
-        {
-            return static_cast<ptrdiff_t>(m_Size);
-        }
-
         bool empty() const
         {
             return m_Size == 0;
@@ -300,17 +295,17 @@ private:
             const bool searchHit = hasSearch && isSearchHit(m_CurrentSearch, currentPath);
 
             // skip rendering if a parent node is collapsed
-            if (imguiTreeDepth < currentPath.sizei() - 1) {
+            if (imguiTreeDepth < std::ssize(currentPath) - 1) {
                 continue;
             }
 
             // pop tree nodes down to the current depth
-            while (imguiTreeDepth >= currentPath.sizei()) {
+            while (imguiTreeDepth >= std::ssize(currentPath)) {
                 ui::indent(unindentPerLevel);
                 ui::tree_pop();
                 --imguiTreeDepth;
             }
-            OSC_ASSERT(imguiTreeDepth <= currentPath.sizei() - 1);
+            OSC_ASSERT(imguiTreeDepth <= std::ssize(currentPath) - 1);
 
             // handle display mode (node vs leaf)
             const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
@@ -335,7 +330,7 @@ private:
             }
 
             // auto-open in these cases
-            if (searchHit || currentPath.sizei() == 1 || pathContains(selectedPathPointers, cur)) {
+            if (searchHit || std::ssize(currentPath) == 1 || pathContains(selectedPathPointers, cur)) {
                 ui::set_next_item_open(true);
             }
 
