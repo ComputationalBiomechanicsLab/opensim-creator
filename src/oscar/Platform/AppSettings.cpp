@@ -40,7 +40,7 @@ R"(# configuration options
 #
 # you can manually add config options here: they will override the system configuration file, e.g.:
 #
-#     initial_tab = "LearnOpenGL/Blending"
+#     initial_tab = "oscar_demos/Mandelbrot"
 #
 # beware: this file is overwritten by the application when it detects that you have made changes
 

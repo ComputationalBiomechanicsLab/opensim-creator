@@ -59,7 +59,7 @@ namespace
 
 class osc::SubMeshTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/SubMeshes"; }
+    static CStringView static_label() { return "oscar_demos/SubMesh"; }
 
     explicit Impl(SubMeshTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

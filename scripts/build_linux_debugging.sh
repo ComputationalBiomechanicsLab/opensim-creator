@@ -40,7 +40,6 @@ cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=clang-tidy -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
-cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_learnopengl
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_demos
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_simbody
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimThirdPartyPlugins
@@ -52,7 +51,6 @@ export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_s
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (due to poor library design)
 ./osc-build/tests/testoscar/testoscar
-./osc-build/tests/testoscar_learnopengl/testoscar_learnopengl
 ./osc-build/tests/testoscar_demos/testoscar_demos
 ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/testoscar_simbody/testoscar_simbody
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimThirdPartyPlugins/TestOpenSimThirdPartyPlugins

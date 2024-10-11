@@ -5,7 +5,7 @@ docs_url = "@OSC_DOCS_URL@"
 # log_level = "trace"  # trace < debug < info < warn < err < critical
 
 # handy for auto-opening an in-development tab
-# initial_tab = "LearnOpenGL/Blending"
+# initial_tab = "oscar_demos/Mandelbrot"
 
 [experimental_feature_flags]
 

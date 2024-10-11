@@ -20,7 +20,7 @@ namespace
 
 class osc::MandelbrotTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/Mandelbrot"; }
+    static CStringView static_label() { return "oscar_demos/Mandelbrot"; }
 
     explicit Impl(MandelbrotTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

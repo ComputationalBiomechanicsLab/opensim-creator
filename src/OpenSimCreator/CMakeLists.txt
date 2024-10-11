@@ -414,9 +414,7 @@ target_include_directories(OpenSimCreator PUBLIC
 target_link_libraries(OpenSimCreator PUBLIC
     oscar_compiler_configuration
     oscar
-    oscar_bookofshaders
     oscar_demos
-    oscar_learnopengl
     oscar_simbody
 
     osimCommon

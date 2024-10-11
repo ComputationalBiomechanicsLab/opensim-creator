@@ -54,7 +54,7 @@ namespace
 
 class osc::MeshGenTestTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/MeshGen"; }
+    static CStringView static_label() { return "oscar_demos/MeshGenTest"; }
 
     explicit Impl(MeshGenTestTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

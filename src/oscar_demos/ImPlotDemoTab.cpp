@@ -10,7 +10,7 @@ using namespace osc;
 
 class osc::ImPlotDemoTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/ImPlot"; }
+    static CStringView static_label() { return "oscar_demos/ImPlot"; }
 
     explicit Impl(ImPlotDemoTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

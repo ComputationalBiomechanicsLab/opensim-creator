@@ -18,7 +18,7 @@ docs_url = "@CMAKE_CURRENT_SOURCE_DIR@/../../docs/build/index.html"
 # log_level = "trace"  # trace < debug < info < warn < err < critical
 
 # handy for auto-opening an in-development tab
-initial_tab = "OpenSim/Experimental/PreviewExperimentalData"
+# initial_tab = "oscar_demos/Mandelbrot"
 
 [experimental_feature_flags]
 

@@ -86,7 +86,7 @@ namespace
 
 class osc::HittestTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/Hittest"; }
+    static CStringView static_label() { return "oscar_demos/Hittest"; }
 
     explicit Impl(HittestTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

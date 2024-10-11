@@ -25,7 +25,7 @@ def resize_png_files(directory, scale_factor=0.5):
 
 if __name__ == "__main__":
     # Replace 'your_directory_path' with the path to your main directory
-    main_directory_path = 'resources/oscar_learnopengl/textures/pbr'
+    main_directory_path = 'resources/oscar_demos/learnopengl/textures/pbr'
 
     # Specify the scale factor for resizing (e.g., 0.5 for 50%)
     scale_factor = 0.5

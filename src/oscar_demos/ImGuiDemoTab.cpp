@@ -8,7 +8,7 @@ using namespace osc;
 
 class osc::ImGuiDemoTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/ImGui"; }
+    static CStringView static_label() { return "oscar_demos/ImGui"; }
 
     explicit Impl(ImGuiDemoTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

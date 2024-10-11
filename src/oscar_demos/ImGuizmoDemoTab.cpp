@@ -9,7 +9,7 @@ using namespace osc;
 
 class osc::ImGuizmoDemoTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/ImGuizmo"; }
+    static CStringView static_label() { return "oscar_demos/ImGuizmo"; }
 
     explicit Impl(ImGuizmoDemoTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

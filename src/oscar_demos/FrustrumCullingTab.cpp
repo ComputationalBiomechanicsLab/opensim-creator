@@ -63,7 +63,7 @@ namespace
 
 class osc::FrustrumCullingTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/FrustrumCulling"; }
+    static CStringView static_label() { return "oscar_demos/FrustumCulling"; }
 
     explicit Impl(FrustrumCullingTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}

@@ -92,7 +92,7 @@ namespace
 
 class osc::CustomWidgetsTab::Impl final : public TabPrivate {
 public:
-    static CStringView static_label() { return "Demos/CustomWidgets"; }
+    static CStringView static_label() { return "oscar_demos/CustomWidgets"; }
 
     explicit Impl(CustomWidgetsTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, static_label()}
