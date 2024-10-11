@@ -15,8 +15,9 @@ namespace osc
     // Provides a container that behaves as an on-stack/on-heap hybrid array that:
     //
     // - Allocates up to `N` elements on the stack without using a memory allocator.
-    // - Once the number of elements exeeds `N`, allocates everything (incl. the first `N`,
-    //   which are moved) via an upstream memory resource (defaults to new/delete).
+    // - Once the number of elements exeeds `N`, allocates all elements (incl. existing
+    //   elements, which are moved) via an upstream memory resource, which defaults to
+    //   a `std::pmr::new_delete_resource`
     //
     // This is handy when the caller believes that there's likely to be a (low) upper
     // bound on the number of elements in the container, but they cannot be 100 %
@@ -42,23 +43,17 @@ namespace osc
         using reverse_iterator = underlying_vector::reverse_iterator;
         using const_reverse_iterator = underlying_vector::const_reverse_iterator;
 
-        VariableLengthArray() :
-            VariableLengthArray(std::pmr::new_delete_resource())
-        {}
-
-        explicit VariableLengthArray(std::pmr::memory_resource* upstream_allocator) :
+        explicit VariableLengthArray(std::pmr::memory_resource* upstream_allocator = std::pmr::new_delete_resource()) :
             pool{stack_data_.data(), stack_data_.size(), upstream_allocator}
         {
-            // ensures `std::pmr::vector`'s geometric growth on-push doesn't overspill
-            // the pool before reaching `N`
-            vector_.reserve(N);
+            vector_.reserve(N);  // reserve the stack as one unit of allocation
         }
 
         VariableLengthArray(const VariableLengthArray& other)
             requires std::copy_constructible<T> :
             pool{stack_data_.data(), stack_data_.size(), other.pool.upstream_resource()}
         {
-            vector_.reserve(N);
+            vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(other.vector_.begin(), other.vector_.end());
         }
 
@@ -66,7 +61,7 @@ namespace osc
             requires std::move_constructible<T> :
             pool{stack_data_.data(), stack_data_.size(), other.pool.upstream_resource()}
         {
-            vector_.reserve(N);
+            vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(std::make_move_iterator(other.vector_.begin()), std::make_move_iterator(other.vector_.end()));
         }
 
@@ -74,8 +69,9 @@ namespace osc
             std::initializer_list<T> init,
             std::pmr::memory_resource* upstream_allocator = std::pmr::new_delete_resource())
             requires std::copy_constructible<T> :
-            VariableLengthArray{upstream_allocator}
+            pool{stack_data_.data(), stack_data_.size(), upstream_allocator}
         {
+            vector_.reserve(N);  // reserve the stack as one unit of allocation
             vector_.assign(init.begin(), init.end());
         }
 
@@ -120,13 +116,15 @@ namespace osc
         void push_back(const T& value) { vector_.push_back(value); }
         void push_back(T&& value) { vector_.push_back(std::move(value)); }
 
-        friend bool operator==(const VariableLengthArray& lhs, const VariableLengthArray& rhs)
-        {
-            return lhs.vector_ == rhs.vector_;
-        }
+        friend bool operator==(const VariableLengthArray& lhs, const VariableLengthArray& rhs) { return lhs.vector_ == rhs.vector_; }
     private:
+        // The object representation of elements, stored on-stack when `size() <= N`
         alignas(T) std::array<std::byte, N * sizeof(T)> stack_data_;
+
+        // A memory resource that uses `stack_data_` until `size() > N`, it then uses an upstream resource
         std::pmr::monotonic_buffer_resource pool{stack_data_.data(), stack_data_.size(), std::pmr::new_delete_resource()};
+
+        // A vector that's backed by the above memory resource
         std::pmr::vector<T> vector_ = std::pmr::vector<T>(&pool);
     };
 }
