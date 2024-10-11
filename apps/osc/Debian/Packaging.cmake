@@ -27,14 +27,11 @@ include(InstallRequiredSystemLibraries)
 #     bin/osc (exe)
 set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
 
-# HACK: Simbody has some sort of cmake configuration/module bug that
-#       prevents RUNTIME_DEPENDENCIES from correctly resolving it
-#       on Debian
-find_package(Simbody REQUIRED CONFIG)
+# install runtime libraries into the install directory
 install(
     TARGETS osc
     RUNTIME_DEPENDENCIES
-        DIRECTORIES $<TARGET_FILE_DIR:SimTKcommon>
+        DIRECTORIES ${CMAKE_PREFIX_PATH}/lib
         POST_EXCLUDE_REGEXES "^/usr/*" "^/lib/*"  # don't copy system-provided dependencies
 )
 
