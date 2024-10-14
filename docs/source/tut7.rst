@@ -129,33 +129,49 @@ describes, concretely, how they interplay in an example workflow.
 Walkthrough: Markers to Motion
 ------------------------------
 
-.. warning::
+In this section, we will go through a typical workflow that uses the preview
+experimental data UI.
 
-    **The Preview Experimental Data UI is 🪄 experimental 🪄.**.
+This walkthrough makes more sense if we use a little bit of 🧙‍♂️ **roleplay** to
+explain each step's context. Imagine that you've already recorded some experimental
+data and have made/acquired ``subject01.osim``. You are now at the stage in your
+project where problems like loading/validating raw data and linking it to the
+OpenSim model are bottlenecks.
 
-    We anticipate that this section will change over the next few releases as
-    we work out the kinks, redesign parts of the workflow, etc. That is to say,
-    what's described here does work, but isn't as slick as we'd like 😎.
+
+Download Raw Data and Models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+  🧙‍♂️ **Roleplay**: you painstakingly collected this data from the lab, probably.
 
 In this section, we will be using experimental data from the `OpenSim Models Repository`_.
-Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18musc Model Direct Link`_). You
-will need to download the data in order to follow along with this walkthrough.
+Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18musc Model Direct Link`_).
 
-This walkthrough makes more sense if you engage in a little role-play 🧝🧙‍♂️. Imagine
-that you've already recorded some experimental data and have made/acquired ``subject01.osim``.
-You are now at the stage in your project where problems like loading/validating
-raw data and linking it to the OpenSim model are bottlenecks. Concretely, you
-want to double-check that your marker data matches what OpenSim expects, and
-that the Inverse Kinematics (IK) result from OpenSim looks like it matches those
-markers. You then want to validate that the ground reaction forces you measured
-in the lab are correct and that they're synchronized with the marker data. Finally,
-you want to apply those ground reaction forces to the OpenSim model and validate
-that they are applied in the right location.
+1. **Download the data**: go to the ``TODO JUST PACKAGE IT UP BECAUSE IT'S A PITA
+   FOR USERS TO HAVE TO FIGURE OUT GITHUB``
+2. **Unzip it somewhere**: todo
 
+
+.. _Load Raw Marker Data:
 Load Raw Marker Data
 ^^^^^^^^^^^^^^^^^^^^
 
-.. _walkthrough_markers-loaded:
+.. note::
+
+  🧙‍♂️ **Roleplay**: you want to check the marker data before using it with
+  OpenSim's IK solver. Does it have reasonable locations, reasonable motion,
+  and correct labels?
+
+The first step is to load the raw marker data (``.trc``) file into the UI. To do
+that, you will need to:
+
+1. Click the ``load raw data file`` button in the toolbar
+2. Select the ``subject01_walk.trc`` file (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk.trc``).
+
+Once loaded, it should look something like this:
+
 .. figure:: _static/tut7_walkthrough-after-marker-data-loaded.png
     :width: 60%
 
@@ -163,23 +179,91 @@ Load Raw Marker Data
     UI shows the marker locations as blue spheres. The time range for scrubbing
     can be adjusted using the min/max boxes either side of the scrubbing slider.
 
-The first step is to load the raw marker data (``.trc``) file into the UI. That's
-done by clicking the ``load raw data file`` button in the toolbar, followed by
-selecting the ``subject01_walk.trc`` file (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk.trc``). It
-should look something like :numref:`walkthrough_markers-loaded`.
+With the markers loaded, you can now:
+
+- **Inspect whether they match your expectations**. The top toolbar lets you scrub
+  to different times in raw data, which helps with visualizing the motion of the
+  model.
+- **Double-check marker labels**. You can hover/click the markers to see their
+  name, or view the names in the ``Navigator`` panel. This can be handy for
+  double-checking that the marker data was labelled correctly. The OpenSim IK
+  solver generally assumes that the data labels match the names of ``OpenSim::Marker`` s
+  in your model.
+- **Edit the .trc file**. If there's any problems, you can edit the underlying
+  ``.trc`` file using a text editor (e.g. Visual Studio Code, Notepad++) and then
+  click ``Reload All`` in the Preview Experimental Data UI to reload the data. This
+  is useful for tweaking labels, reversing axes, etc.
+
 
 Load IK Result
 ^^^^^^^^^^^^^^
 
-``TODO``
+.. note::
+
+  🧙‍♂️ **Roleplay**: you were satisfied with the marker data and used it with OpenSim's
+  IK solver in a process described `here <https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089741/Tutorial+3+-+Scaling+Inverse+Kinematics+and+Inverse+Dynamics>`_.
+  You now want to inspect the IK result.
+
+After confirming that the marker data looks reasonable, you can then use it with
+your model and OpenSim's IK solver to yield a trajectory. You can overlay the
+model + trajectory in the preview experimental data UI with the following steps:
+
+1. **Load the model**: Click ``load model`` and choose ``Pipelines\Gait10dof18musc\OutputReference\subject01.osim``,
+   which, in this example, was the model that was used with the IK solver.
+
+2. **Load the trajectory**: Click ``load trajectory/states`` and choose ``Pipelines\Gait10dof18musc\OutputReference\IK\subject01_walk_IK.mot``,
+   which, in this example, is the result from OpenSim's IK solver.
+
+Once loaded, you should be able to see the raw marker data, your model, and its
+motion all overlaid:
+
+.. figure:: _static/tut7_walkthrough-after-IK.png
+    :width: 60%
+
+    The preview experimental data UI after loading the raw marker data, the model,
+    and the IK result. This is useful for visually inspecting how closely the model
+    trajectory from IK matches the input marker locations.
+
 
 Load Raw Ground Reaction Forces
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``TODO``
+.. note::
+
+  🧙‍♂️ **Roleplay**: your experiment also recorded ground reaction forces (GRFs) on
+  a force plate. You want to make sure that the GRFs are synchronized with the rest
+  of the data and point in the right direction.
+
+
+This step is identical to `Load Raw Marker Data`_ :
+
+1. Click the ``load raw data file`` button in the toolbar
+2. Select the GRF data, ``subject01_walk_grf.mot`` (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk_grf.mot``).
+
+Once loaded, you should be able to see the marker data, your model, the model's motion,
+and your GRF vectors overlaid:
+
+.. figure:: _static/tut7_walkthrough-after-grfs-loaded.png
+    :width: 60%
+
+    The preview experimental data UI after loading the marker data, model, IK
+    trajectory, and GRFs. The UI shows the GRFs are orange arrows.
+
+Similarly to `Load Raw Marker Data`_, you can edit the underlying GRF file to
+fix any issues, such as vectors pointing in the wrong direction or invalid
+column headers.
+
 
 Associate Ground Reaction Forces With Model (``ExternalLoads``)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+  🧙‍♂️ **Roleplay**: you want to use the GRFs with OpenSim's Inverse Dynamics
+  (ID) solver. However, OpenSim requires either an ``ExternalLoads`` XML file
+  to link the GRFs to the model.
+
+This is the final---and most error-prone---part of the process.
 
 ``TODO``
 
@@ -235,3 +319,4 @@ experimental data with OpenSim models.
 .. _Gait10dof18musc Model Direct Link: https://github.com/opensim-org/opensim-models/tree/c62c24b0da1f89178335cf10f646a39c90d15580/Pipelines/Gait10dof18musc/OutputReference
 .. _Example MOT File: https://github.com/opensim-org/opensim-models/blob/master/Pipelines/Gait10dof18musc/ExperimentalData/subject01_walk_grf.mot
 .. _SimTK.org: https://simtk.org/
+.. _OpenSim IK Tutorial: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089741/Tutorial+3+-+Scaling+Inverse+Kinematics+and+Inverse+Dynamics
