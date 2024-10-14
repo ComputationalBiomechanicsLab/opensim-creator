@@ -8,8 +8,8 @@
 
     **Previewing Experimental Data is 🪄 experimental 🪄.**.
 
-    We invite users to try this UI, and believe--even though it's still
-    in-development--that it provides valuable tooling for working with
+    We invite users to try this UI, and believe---even though it's still
+    in-development---that it provides valuable tooling for working with
     OpenSim's various experimental data sources.
 
     The "Preview Experimental Data" workflow is currently capable of loading
@@ -155,6 +155,7 @@ Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18mu
 
 
 .. _Load Raw Marker Data:
+
 Load Raw Marker Data
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -254,24 +255,141 @@ fix any issues, such as vectors pointing in the wrong direction or invalid
 column headers.
 
 
-Associate Ground Reaction Forces With Model (``ExternalLoads``)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Learn about ``ExternalLoads`` (optional)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
 
   🧙‍♂️ **Roleplay**: you want to use the GRFs with OpenSim's Inverse Dynamics
   (ID) solver. However, OpenSim requires either an ``ExternalLoads`` XML file
-  to link the GRFs to the model.
+  to link the GRFs to the model. You want to know what that means.
 
-This is the final---and most error-prone---part of the process.
+OpenSim's tools don't usually use raw experimental data directly. Instead, they
+tend accept a description of how the raw data should be combined with the model.
+``ExternalLoads`` is one such description. However, writing an ``ExternalLoads`` file
+is a common source of errors. This section aims to demystify what's going on.
 
-``TODO``
+Experimental Motivation
+  Imagine you've attached an accelerometer to a subject's hand. If you
+  load its measurements into the UI with ``load raw data file``, then the
+  UI will show the measurements with respect to the origin (ground). This
+  represents what the accelerometer recorded.
+
+  However, **you** know where that sensor was attached (the hand). So you
+  know where those raw measurements should be expressed--and applied to--in
+  your model. ``ExternalLoads`` is how you "explain" that relationship to
+  OpenSim.
+
+It's a good idea to carefully read through and understand an example ``ExternalLoads``
+file. Although your use-case is likely to be different from this walkthrough's,
+all ``ExternalLoads`` files ultimately contain the same fields. Here is a
+slightly stripped-down version of ``subject01_walk_grf.xml``, used later in
+the next part of this walkthrough:
+
+.. code-block:: xml
+  :linenos:
+
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <OpenSimDocument Version="30000">
+    <ExternalLoads name="WalkingGRF">
+      <objects>
+        <ExternalForce name="left">
+          <!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
+          <isDisabled>false</isDisabled>
+          <!--Name of the body the force is applied to.-->
+          <applied_to_body>calcn_l</applied_to_body>
+          <!--Name of the body the force is expressed in (default is ground).-->
+          <force_expressed_in_body>ground</force_expressed_in_body>
+          <!--Name of the body the point is expressed in (default is ground).-->
+          <point_expressed_in_body>ground</point_expressed_in_body>
+          <!--Identifier (string) to locate the force to be applied in the data source.-->
+          <force_identifier>1_ground_force_v</force_identifier>
+          <!--Identifier (string) to locate the point to be applied in the data source.-->
+          <point_identifier>1_ground_force_p</point_identifier>
+          <!--Identifier (string) to locate the torque to be applied in the data source.-->
+          <torque_identifier>1_ground_torque_</torque_identifier>
+          <!--Name of the data source (Storage) that will supply the force data.-->
+          <data_source_name>Unassigned</data_source_name>
+        </ExternalForce>
+
+        <!-- further <ExternalForce> blocks can be added here-->
+
+      </objects>
+      <groups />
+      <!--Storage file (.sto) containing (3) components of force and/or torque and point of application.Note: this file overrides the data source specified by the individual external forces if specified.-->
+      <datafile>subject01_walk_grf.mot</datafile>
+    </ExternalLoads>
+  </OpenSimDocument>
+
+The comments (``<!-- comment -->``) explain the role of each field. The most
+common problems that tend to be encountered are:
+
+1. The ``datafile`` is incorrect. It should name the associated raw data file.
+   Paths are relative to where the ``ExternalLoads`` file is saved.
+
+2. The ``_identifier`` fields don't match the headers in ``datafile``. Internally,
+   OpenSim uses the ``_identifier`` s in a prefix search through ``datafile``'s
+   columns. For example, if you specify ``point_identifier`` as ``my_force_p``
+   then OpenSim is going to search ``datafile`` for 3 adjacent columns named
+   ``my_force_px``, ``my_force_py``, ``my_force_pz``.
+
+3. The data is in the wrong coordinate system (left-handed, rather than
+   right-handed), or the wrong units. This is visualized via the preview
+   experimental data UI, which tries to draw the resulting force vectors
+   on the model (explained later). You may need to use external software/scripts
+   to make your data suitable for use in an ``ExternalLoads``.
+
+The key takeaways from this (optional) explanation section are to understand
+what ``ExternalLoads`` does and how to modify it for your purposes. If it still
+seems unclear, we suggest going through the ``Pipelines/`` section of the `OpenSim Models Repository`_
+and looking at how previous researchers wrote the files.
 
 
-Suggested Further Steps
-^^^^^^^^^^^^^^^^^^^^^^^
+Associate an ``ExternalLoads`` to the Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``TODO`` Inverse Dynamics, CMC, etc.
+.. note::
+
+  🧙‍♂️ **Roleplay**: you've written an ``ExternalLoads`` file for your GRFs and
+  now you want to verify that it's correct before (e.g.) using it with OpenSim's
+  Inverse Dynamics (ID) solver.
+
+An ``ExternalLoads`` XML file can be associated to a model that's loaded in the
+preview experimental data UI. Concretely, with the example data, you can do
+that with the following steps:
+
+1. **Load the ExternalLoads' XML**: Click ``load OpenSim XML`` in the toolbar
+   and open ``subject01_walk_grf.xml`` (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk_grf.xml``).
+2. **Enable 3D Body / Point Force Visualization**: In the top-left of any 3D
+   viewer panel, there's a grid icon for toggling visual aids. Enabling either
+   ``Forces on Bodies``, ``Torques on Bodies``, or ``Point Forces`` should draw
+   the ``ExternalForce``'s force vectors.
+
+Once loaded, you should be able to see the marker data, your model, the model's
+motion, your raw GRF vectors, and the ``ExternalForces`` from the ``ExternalLoads``
+file overlaid:
+
+.. figure:: _static/tut7_walkthrough-after-externalloads-loaded.png
+    :width: 60%
+
+    The preview experimental data UI after loading the marker data, model, IK
+    trajectory, raw GRFs, and ``ExternalLoads``. Dark-orange arrows are raw GRF
+    measurements, light-yellow arrows are the forces applied via the ``ExternalLoads``. Here, three 3D viewer panels
+    were opened with different visual aids\: *Left*: muscles, body forces, and
+    point forces. *Top-Right*\: body forces. *Bottom-Right*\: point forces.
+
+    Because the point forces are well-aligned with the raw GRF data, it's likely
+    that the ``ExternalLoads`` file applies the forces in the correct coordinate
+    system. Visualizing the body force vectors shows which bodies are ultimately
+    receiving the forces.
+
+A key benefit of the preview experimental data UI is that the raw data files,
+model, and trajectory can be loaded separately into a single 3D scene on a
+single timeline, which makes debugging synchronization and spatial issues easier.
+Another benefit is that the UI keeps track of which files were opened, so that
+the ``Reload All`` button is capable of reloading everything from scratch. This
+means that you can (e.g.) edit the ``ExternalLoads`` file in an external editor
+followed by reloading the scene in the UI in order to fix any data issues.
 
 
 Summary
