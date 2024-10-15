@@ -1,4 +1,4 @@
-find_package(OpenSim REQUIRED CONFIG)
+find_package(osim REQUIRED)
 
 add_library(OpenSimCreator STATIC
 
@@ -417,14 +417,7 @@ target_link_libraries(OpenSimCreator PUBLIC
     oscar_demos
     oscar_simbody
 
-    osimCommon
-    osimSimulation
-    osimActuators
-    osimAnalyses
-    osimTools
-    osimLepton
-    osimExampleComponents
-
+    osim
     OpenSimThirdPartyPlugins
 )
 

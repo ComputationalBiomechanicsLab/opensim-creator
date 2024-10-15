@@ -15,6 +15,7 @@ set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
 set(OSCDEPS_GET_IMGUICOLORTEXTEDIT ON CACHE BOOL "enable getting ImGuiColorTextEdit")
 set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_GET_LUA ON CACHE BOOL "enable getting lua scripting language library")
+set(OSCDEPS_OSIM_BUILD_OPENBLAS OFF CACHE BOOL "enable transitively getting+building OpenBLAS for osim")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
@@ -194,36 +195,22 @@ if(${OSCDEPS_GET_LUA})
 endif()
 
 if(${OSCDEPS_GET_OPENSIM})
-    ExternalProject_Add(opensim-core-dependencies
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core/dependencies
-        INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/opensim-core-dependencies-install
-        INSTALL_COMMAND ""  # OpenSim's dependency build installs during its build step
+    # build osim's dependencies
+    ExternalProject_Add(osim-third-party
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/osim/third_party
+	INSTALL_COMMAND ""  # it's an ExternalProject that does some of its own building
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DOPENSIM_WITH_CASADI:BOOL=OFF
-            -DOPENSIM_WITH_TROPTER:BOOL=OFF
-            -DCMAKE_INSTALL_PREFIX:STRING=<INSTALL_DIR>
-            "-DSIMBODY_EXTRA_CMAKE_ARGS:STRING=-DBUILD_VISUALIZER:BOOL=OFF"
+	    -DOSIMDEPS_GET_OPENBLAS:BOOL=${OSCDEPS_OSIM_BUILD_OPENBLAS}
     )
-
-    ExternalProject_Add(opensim-core
-        DEPENDS opensim-core-dependencies
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opensim-core
-        TEST_EXCLUDE_FROM_MAIN ON
+    # build osim
+    ExternalProject_Add(osim
+        DEPENDS osim-third-party
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/osim
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DOPENSIM_WITH_CASADI:BOOL=OFF
-            -DOPENSIM_WITH_TROPTER:BOOL=OFF
-            -DBUILD_API_ONLY:BOOL=ON
-            -DOPENSIM_DISABLE_LOG_FILE:BOOL=ON
-            -DOPENSIM_BUILD_INDIVIDUAL_APPS:BOOL=OFF
-            -DOPENSIM_DEPENDENCIES_DIR:PATH=${CMAKE_CURRENT_BINARY_DIR}/opensim-core-dependencies-install
-            -DBUILD_JAVA_WRAPPING:BOOL=OFF
-            -DOPENSIM_INSTALL_UNIX_FHS:BOOL=ON
-            -DOPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT:BOOL=OFF
-            -DBUILD_TESTING:BOOL=OFF
-            -DBUILD_API_EXAMPLES:BOOL=OFF
+            -DCMAKE_PREFIX_PATH:STRING=${CMAKE_INSTALL_PREFIX}
     )
 endif()

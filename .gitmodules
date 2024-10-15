@@ -19,9 +19,6 @@
 [submodule "third_party/tomlplusplus"]
 	path = third_party/tomlplusplus
 	url = https://github.com/ComputationalBiomechanicsLab/tomlplusplus
-[submodule "third_party/opensim-core"]
-	path = third_party/opensim-core
-	url = https://github.com/ComputationalBiomechanicsLab/opensim-core
 [submodule "third_party/lunasvg"]
 	path = third_party/lunasvg
 	url = https://github.com/ComputationalBiomechanicsLab/lunasvg
@@ -34,3 +31,6 @@
 [submodule "third_party/ImGuiColorTextEdit"]
 	path = third_party/ImGuiColorTextEdit
 	url = https://github.com/ComputationalBiomechanicsLab/ImGuiColorTextEdit.git
+[submodule "third_party/osim"]
+	path = third_party/osim
+	url = https://github.com/ComputationalBiomechanicsLab/osim

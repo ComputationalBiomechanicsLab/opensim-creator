@@ -154,7 +154,7 @@ if (WIN32)
     add_custom_command(
         TARGET osc
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:osc> $<TARGET_FILE_DIR:osc>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:osc> $<TARGET_RUNTIME_DLLS:osc>
         COMMAND_EXPAND_LISTS
     )
 endif()

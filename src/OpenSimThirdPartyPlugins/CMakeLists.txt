@@ -1,4 +1,4 @@
-find_package(OpenSim REQUIRED CONFIG)
+find_package(osim REQUIRED)
 
 add_library(OpenSimThirdPartyPlugins STATIC
 
@@ -18,14 +18,7 @@ target_include_directories(OpenSimThirdPartyPlugins PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-target_link_libraries(OpenSimThirdPartyPlugins PUBLIC
-    osimCommon
-    osimSimulation
-    osimActuators
-    osimAnalyses
-    osimTools
-    osimLepton
-)
+target_link_libraries(OpenSimThirdPartyPlugins PUBLIC osim)
 
 target_compile_features(OpenSimThirdPartyPlugins PRIVATE cxx_std_14)
 

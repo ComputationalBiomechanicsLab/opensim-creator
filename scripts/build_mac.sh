@@ -73,13 +73,6 @@ git submodule update --init --recursive
 if [[ -z ${OSC_SKIP_BREW:+x} ]]; then
     echo "----- getting system-level dependencies -----"
 
-    # reinstall gcc
-    #
-    # this is necessary because OpenSim depends on gfortran for
-    # libBLAS. This is probably a misconfigured dependency in OpenSim,
-    # because Mac already contains an Apple-provided libBLAS
-    brew reinstall gcc
-
     # `wget`
     #
     # seems to be a transitive dependency of OpenSim (Metis),

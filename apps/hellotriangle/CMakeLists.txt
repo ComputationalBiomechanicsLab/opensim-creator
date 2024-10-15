@@ -30,7 +30,7 @@ if (WIN32)
     add_custom_command(
         TARGET hellotriangle
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:hellotriangle> $<TARGET_FILE_DIR:hellotriangle>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:hellotriangle> $<TARGET_RUNTIME_DLLS:hellotriangle>
         COMMAND_EXPAND_LISTS
     )
 endif()

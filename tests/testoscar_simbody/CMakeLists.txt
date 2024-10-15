@@ -47,7 +47,7 @@ if (WIN32)
     add_custom_command(
         TARGET testoscar_simbody
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:testoscar_simbody> $<TARGET_FILE_DIR:testoscar_simbody>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:testoscar_simbody> $<TARGET_RUNTIME_DLLS:testoscar_simbody>
         COMMAND_EXPAND_LISTS
     )
 endif()

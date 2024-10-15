@@ -660,6 +660,8 @@ TEST(OpenSimModel, LvalueAssignmentWorksInTrivialCase)
 // with something along the lines of "cannot find associated file" or similar.
 TEST(OpenSimModel, CanCopyModelContainingExternalLoads)
 {
+    GloballyInitOpenSim();
+
     const std::filesystem::path exampleModel =
         std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_924_repro.osim";
     const std::filesystem::path exampleExternalLoadsFile =

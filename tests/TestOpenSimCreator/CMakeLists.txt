@@ -86,7 +86,7 @@ if (WIN32)
     add_custom_command(
         TARGET TestOpenSimCreator
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:TestOpenSimCreator> $<TARGET_FILE_DIR:TestOpenSimCreator>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:TestOpenSimCreator> $<TARGET_RUNTIME_DLLS:TestOpenSimCreator>
         COMMAND_EXPAND_LISTS
     )
 endif()

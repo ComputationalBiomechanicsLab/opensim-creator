@@ -39,7 +39,7 @@ if (WIN32)
     add_custom_command(
         TARGET testoscar_demos
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:testoscar_demos> $<TARGET_FILE_DIR:testoscar_demos>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:testoscar_demos> $<TARGET_RUNTIME_DLLS:testoscar_demos>
         COMMAND_EXPAND_LISTS
     )
 endif()

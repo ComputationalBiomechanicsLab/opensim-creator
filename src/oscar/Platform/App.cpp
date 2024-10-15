@@ -601,7 +601,7 @@ public:
 
     bool is_main_window_minimized() const
     {
-        return SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED;
+        return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
     }
 
     float main_window_dpi() const

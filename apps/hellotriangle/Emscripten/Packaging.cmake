@@ -4,6 +4,6 @@
 add_custom_command(
     TARGET hellotriangle
     PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/Emscripten/hellotriangle.html $<TARGET_FILE_DIR:hellotriangle>
+    COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:hellotriangle> ${CMAKE_CURRENT_SOURCE_DIR}/Emscripten/hellotriangle.html
     COMMAND_EXPAND_LISTS
 )

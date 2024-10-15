@@ -169,7 +169,7 @@ if (WIN32)
     add_custom_command(
         TARGET testoscar
         PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:testoscar> $<TARGET_FILE_DIR:testoscar>
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:testoscar> $<TARGET_RUNTIME_DLLS:testoscar>
         COMMAND_EXPAND_LISTS
     )
 endif()

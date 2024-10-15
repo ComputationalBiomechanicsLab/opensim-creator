@@ -391,6 +391,7 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsUntitledWhenProvidedInMemory
 
 TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedModel)
 {
+    GloballyInitOpenSim();
     std::filesystem::path modelPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim";
     OpenSim::Model model{modelPath.string()};
     ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");

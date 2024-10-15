@@ -1,4 +1,4 @@
-find_package(Simbody REQUIRED CONFIG)
+find_package(osim REQUIRED)
 
 add_library(oscar_simbody STATIC
     UI/MeshHittestTab.cpp
@@ -35,9 +35,7 @@ target_link_libraries(oscar_simbody PUBLIC
     oscar_compiler_configuration
     oscar
 
-    SimTKcommon
-    SimTKmath
-    SimTKsimbody
+    osim
 )
 
 target_compile_options(oscar_simbody PRIVATE
