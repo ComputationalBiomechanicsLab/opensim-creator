@@ -450,7 +450,8 @@ add_library(oscar STATIC
     Utils/UID.h
     Utils/UndoRedo.cpp
     Utils/UndoRedo.h
-    Utils/VariableLengthArray.h
+    # TODO: reenable once MacOS gets pmr::memory_resource support
+    # Utils/VariableLengthArray.h
     Utils/WatchableLifetime.h
 
     Variant/Variant.cpp

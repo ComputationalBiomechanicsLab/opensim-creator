@@ -19,7 +19,6 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
-#include <oscar/Utils/VariableLengthArray.h>
 
 #include <algorithm>
 #include <array>
@@ -31,13 +30,15 @@
 #include <string>
 #include <typeinfo>
 #include <utility>
+#include <vector>
 
 using namespace osc;
 namespace rgs = std::ranges;
 
 namespace
 {
-    using ComponentTreePathPointers = VariableLengthArray<const OpenSim::Component*, 16>;
+    // TODO: replace with VariableLengthArray once MacOS supports `std::pmr::memory_resource`
+    using ComponentTreePathPointers = std::vector<const OpenSim::Component*>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     ComponentTreePathPointers computeComponentTreePath(

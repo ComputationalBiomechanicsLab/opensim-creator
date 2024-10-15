@@ -113,7 +113,8 @@ add_executable(testoscar
     Utils/TestTemporaryFile.cpp
     Utils/TestTransparentStringHasher.cpp
     Utils/TestTypelist.cpp
-    Utils/TestVariableLengthArray.cpp
+    # TODO: re-enable once MacOS gets std::pmr support
+    # Utils/TestVariableLengthArray.cpp
 
     Variant/TestVariant.cpp
     Variant/TestVariantType.cpp

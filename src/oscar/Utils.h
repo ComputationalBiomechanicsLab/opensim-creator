@@ -44,4 +44,6 @@
 #include <oscar/Utils/Typelist.h>
 #include <oscar/Utils/UID.h>
 #include <oscar/Utils/UndoRedo.h>
+// TODO: reenable once MacOS gets pmr::memory_resource support
+// #include <oscar/Utils/VariableLengthArray.h>
 #include <oscar/Utils/WatchableLifetime.h>
