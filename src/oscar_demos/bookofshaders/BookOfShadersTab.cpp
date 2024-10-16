@@ -49,8 +49,10 @@ void main()
         static constexpr CStringView c_fragment_source = R"(
 #version 330 core
 
+out vec4 FragColor;
+
 void main() {
-    gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+    FragColor = vec4(1.0, 0.0, 1.0, 1.0);
 }
 )";
     };
@@ -64,8 +66,10 @@ void main() {
 
 uniform float u_time;
 
+out vec4 FragColor;
+
 void main() {
-    gl_FragColor = vec4(abs(sin(u_time)), 0.0, 0.0, 1.0);
+    FragColor = vec4(abs(sin(u_time)), 0.0, 0.0, 1.0);
 }
 )";
     };
@@ -79,9 +83,11 @@ void main() {
 
 uniform vec2 u_resolution;
 
+out vec4 FragColor;
+
 void main() {
     vec2 st = gl_FragCoord.xy/u_resolution;
-    gl_FragColor = vec4(st.x, st.y, 0.0, 1.0);
+    FragColor = vec4(st.x, st.y, 0.0, 1.0);
 }
 )";
     };
@@ -94,6 +100,8 @@ void main() {
 #version 330 core
 
 uniform vec2 u_resolution;
+
+out vec4 FragColor;
 
 float plot(vec2 st) {
     return smoothstep(0.0, 0.02, 0.02 - abs(st.y - st.x));
@@ -111,7 +119,7 @@ void main() {
     float pct = plot(st);
     color = mix(color, vec3(0.0, 1.0, 0.0), pct);
 
-    gl_FragColor = vec4(color,1.0);
+    FragColor = vec4(color,1.0);
 }
 )";
     };
