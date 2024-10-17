@@ -11,10 +11,10 @@
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimBridge.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 #include <OpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>

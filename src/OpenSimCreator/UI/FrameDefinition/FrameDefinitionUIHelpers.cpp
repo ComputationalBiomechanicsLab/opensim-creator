@@ -2,9 +2,9 @@
 
 #include <OpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>

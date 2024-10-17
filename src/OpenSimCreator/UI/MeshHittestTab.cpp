@@ -1,6 +1,6 @@
 #include "MeshHittestTab.h"
 
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <oscar/Graphics/Geometries/AABBGeometry.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>

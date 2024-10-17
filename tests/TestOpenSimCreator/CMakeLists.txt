@@ -19,6 +19,7 @@ add_executable(TestOpenSimCreator
     Documents/Simulation/TestForwardDynamicSimulation.cpp
     Documents/Simulation/TestSimulationHelpers.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
+    Graphics/TestSimTKDecorationGenerator.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
     UI/Shared/TestFunctionCurveViewerPopup.cpp
@@ -27,7 +28,6 @@ add_executable(TestOpenSimCreator
     UI/TestLoadingTab.cpp
     Utils/TestOpenSimHelpers.cpp
     Utils/TestShapeFitters.cpp
-    Utils/TestSimTKDecorationGenerator.cpp
 
     TestOpenSimCreator.cpp  # entrypoint (main)
 )

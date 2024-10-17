@@ -10,8 +10,8 @@
 #include <OpenSimCreator/Documents/MeshImporter/Mesh.h>
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
 #include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <SimTKcommon.h>

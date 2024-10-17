@@ -1,6 +1,6 @@
 #include "RendererGeometryShaderTab.h"
 
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>

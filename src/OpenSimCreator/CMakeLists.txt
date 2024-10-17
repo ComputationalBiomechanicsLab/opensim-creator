@@ -226,6 +226,10 @@ add_library(OpenSimCreator STATIC
     Graphics/OverlayDecorationOptionFlags.h
     Graphics/OverlayDecorationOptions.cpp
     Graphics/OverlayDecorationOptions.h
+    Graphics/SimTKDecorationGenerator.cpp
+    Graphics/SimTKDecorationGenerator.h
+    Graphics/SimTKMeshLoader.cpp
+    Graphics/SimTKMeshLoader.h
 
     Platform/OpenSimCreatorApp.cpp
     Platform/OpenSimCreatorApp.h
@@ -415,10 +419,6 @@ add_library(OpenSimCreator STATIC
     Utils/ShapeFitters.h
     Utils/SimTKConverters.cpp
     Utils/SimTKConverters.h
-    Utils/SimTKDecorationGenerator.cpp
-    Utils/SimTKDecorationGenerator.h
-    Utils/SimTKMeshLoader.cpp
-    Utils/SimTKMeshLoader.h
     Utils/TPS3D.cpp
     Utils/TPS3D.h
 )

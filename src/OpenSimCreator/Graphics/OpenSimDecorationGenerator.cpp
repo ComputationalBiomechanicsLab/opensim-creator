@@ -2,8 +2,8 @@
 
 #include <OpenSimCreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+#include <OpenSimCreator/Graphics/SimTKDecorationGenerator.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
-#include <OpenSimCreator/Utils/SimTKDecorationGenerator.h>
 #include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Common/Component.h>

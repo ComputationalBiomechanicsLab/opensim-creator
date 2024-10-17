@@ -3,7 +3,7 @@
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
-#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+#include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Angle.h>
