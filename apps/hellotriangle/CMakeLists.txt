@@ -1,15 +1,8 @@
-find_package(imgui REQUIRED CONFIG)
-find_package(ImGuiColorTextEdit REQUIRED CONFIG)
-find_package(lua REQUIRED CONFIG)
-
 add_executable(hellotriangle hellotriangle.cpp)
 
 target_link_libraries(hellotriangle PRIVATE
     oscar_compiler_configuration  # so that it uses standard compiler flags etc.
     oscar
-    imgui
-    ImGuiColorTextEdit
-    lua
 )
 
 set_target_properties(hellotriangle PROPERTIES
