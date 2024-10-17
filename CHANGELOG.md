@@ -5,6 +5,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Internal: OpenSimCreator now uses builds the OpenSim API via `osim` (https://github.com/ComputationalBiomechanicsLab/osim),
+  which makes building + packaging easier for the project
+- Internal: `oscar_simbody` was re-integrated into `OpenSimCreator` to reduce the amount of
+  cmake faffing around going on in the project
+- Internal: `lua` and `ImGuiColorTextEdit` were dropped as dependencies because they were
+  only used by one demo. They might be re-added later, if we get enough time to integrate
+  in-engine scripting ;)
+
 ## [0.5.15] - 2024/10/07
 
 - A `Preview Experimental Data` workflow has been added. This is **work in progress**, but
