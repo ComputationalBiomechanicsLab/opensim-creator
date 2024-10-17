@@ -4,6 +4,7 @@
 #include <OpenSimCreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <OpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Actuators/ActiveForceLengthCurve.h>
 #include <OpenSim/Common/AbstractProperty.h>
@@ -31,7 +32,6 @@
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
-#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon/Constants.h>
 #include <SimTKcommon/SmallMatrix.h>
 

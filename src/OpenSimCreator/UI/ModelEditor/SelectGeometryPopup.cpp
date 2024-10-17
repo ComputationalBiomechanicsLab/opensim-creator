@@ -1,11 +1,12 @@
 #include "SelectGeometryPopup.h"
 
+#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/Utils/FilesystemHelpers.h>
-#include <oscar_simbody/SimTKMeshLoader.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>

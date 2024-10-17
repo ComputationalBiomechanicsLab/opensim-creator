@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar_simbody/LandmarkPair3D.h>
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>

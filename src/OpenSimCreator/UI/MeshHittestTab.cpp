@@ -1,5 +1,7 @@
 #include "MeshHittestTab.h"
 
+#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+
 #include <oscar/Graphics/Geometries/AABBGeometry.h>
 #include <oscar/Graphics/Geometries/SphereGeometry.h>
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
@@ -27,7 +29,6 @@
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/UID.h>
-#include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <array>
 #include <cinttypes>

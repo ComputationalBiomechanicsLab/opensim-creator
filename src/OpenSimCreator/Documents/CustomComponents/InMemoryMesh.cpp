@@ -1,10 +1,10 @@
 #include "InMemoryMesh.h"
 
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <oscar/Graphics/Scene/SceneDecoration.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 void osc::mow::InMemoryMesh::implGenerateCustomDecorations(
     const SimTK::State& state,

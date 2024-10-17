@@ -11,6 +11,8 @@
 #include <OpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.h>
 #include <OpenSimCreator/Documents/MeshImporter/Station.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <SimTKcommon.h>
 #include <OpenSim/Common/Component.h>
@@ -40,8 +42,6 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/UID.h>
-#include <oscar_simbody/SimTKMeshLoader.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 #include <array>
 #include <memory>

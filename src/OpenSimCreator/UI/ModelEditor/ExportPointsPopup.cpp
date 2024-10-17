@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -17,7 +18,6 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
-#include <oscar_simbody/SimTKConverters.h>
 #include <Simbody.h>
 
 #include <algorithm>

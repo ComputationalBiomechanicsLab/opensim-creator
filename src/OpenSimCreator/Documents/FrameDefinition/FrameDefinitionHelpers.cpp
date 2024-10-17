@@ -4,6 +4,7 @@
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
 #include <OpenSimCreator/Graphics/ModelRendererParams.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <Simbody.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
@@ -11,7 +12,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 #include <array>
 #include <atomic>

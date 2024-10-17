@@ -14,6 +14,7 @@
 #include <OpenSimCreator/UI/MeshImporter/DrawableThing.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
 #include <OpenSimCreator/UI/MeshImporter/MeshLoader.h>
+#include <OpenSimCreator/Utils/SimTKMeshLoader.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
@@ -49,7 +50,6 @@
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/UID.h>
-#include <oscar_simbody/SimTKMeshLoader.h>
 
 #include <array>
 #include <cstddef>

@@ -2,6 +2,7 @@
 
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -12,7 +13,6 @@
 #include <oscar/Formats/OBJ.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 #include <filesystem>
 #include <fstream>

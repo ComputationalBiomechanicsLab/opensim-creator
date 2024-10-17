@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
@@ -30,7 +31,6 @@
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/Typelist.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 #include <concepts>
 #include <cstddef>

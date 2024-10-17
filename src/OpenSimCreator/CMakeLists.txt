@@ -38,10 +38,6 @@ add_library(OpenSimCreator STATIC
     Documents/ExperimentalData/StorageSchema.cpp
     Documents/ExperimentalData/StorageSchema.h
 
-    UI/Events/AddMusclePlotEvent.cpp
-    UI/Events/AddMusclePlotEvent.h
-    UI/Events/OpenComponentContextMenuEvent.h
-
     Documents/FrameDefinition/FrameDefinitionActions.cpp
     Documents/FrameDefinition/FrameDefinitionActions.h
     Documents/FrameDefinition/FrameDefinitionHelpers.cpp
@@ -238,6 +234,10 @@ add_library(OpenSimCreator STATIC
     Platform/RecentFiles.cpp
     Platform/RecentFiles.h
 
+    UI/Events/AddMusclePlotEvent.cpp
+    UI/Events/AddMusclePlotEvent.h
+    UI/Events/OpenComponentContextMenuEvent.h
+
     UI/FrameDefinition/FrameDefinitionTab.cpp
     UI/FrameDefinition/FrameDefinitionTab.h
     UI/FrameDefinition/FrameDefinitionTabToolbar.cpp
@@ -390,19 +390,37 @@ add_library(OpenSimCreator STATIC
     UI/LoadingTab.h
     UI/MainUIScreen.cpp
     UI/MainUIScreen.h
+    UI/MeshHittestTab.cpp
+    UI/MeshHittestTab.h
     UI/OpenSimCreatorTabRegistry.cpp
     UI/OpenSimCreatorTabRegistry.h
     UI/OpenSimCreatorTabs.h
     UI/PerformanceAnalyzerTab.cpp
     UI/PerformanceAnalyzerTab.h
+    UI/RendererGeometryShaderTab.cpp
+    UI/RendererGeometryShaderTab.h
     UI/SplashTab.cpp
     UI/SplashTab.h
+    UI/TPS2DTab.cpp
+    UI/TPS2DTab.h
 
+    Utils/LandmarkPair3D.cpp
+    Utils/LandmarkPair3D.h
     Utils/OpenSimHelpers.cpp
     Utils/OpenSimHelpers.h
     Utils/ParamBlock.h
     Utils/ParamBlock.cpp
     Utils/ParamValue.h
+    Utils/ShapeFitters.cpp
+    Utils/ShapeFitters.h
+    Utils/SimTKConverters.cpp
+    Utils/SimTKConverters.h
+    Utils/SimTKDecorationGenerator.cpp
+    Utils/SimTKDecorationGenerator.h
+    Utils/SimTKMeshLoader.cpp
+    Utils/SimTKMeshLoader.h
+    Utils/TPS3D.cpp
+    Utils/TPS3D.h
 )
 
 target_include_directories(OpenSimCreator PUBLIC
@@ -415,7 +433,6 @@ target_link_libraries(OpenSimCreator PUBLIC
     oscar_compiler_configuration
     oscar
     oscar_demos
-    oscar_simbody
 
     osim
     OpenSimThirdPartyPlugins

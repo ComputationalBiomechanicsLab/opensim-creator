@@ -5,10 +5,10 @@
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/TemporaryFile.h>
-#include <oscar_simbody/LandmarkPair3D.h>
 
 #include <algorithm>
 #include <array>

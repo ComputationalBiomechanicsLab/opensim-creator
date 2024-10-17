@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Documents/ModelWarper/ICloneable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/IWarpDetailProvider.h>
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Component.h>
@@ -11,7 +12,6 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
-#include <oscar_simbody/LandmarkPair3D.h>
 
 #include <compare>
 #include <concepts>

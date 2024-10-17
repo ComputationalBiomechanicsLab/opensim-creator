@@ -1,8 +1,8 @@
 #pragma once
 
+#include <OpenSimCreator/Utils/LandmarkPair3D.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar_simbody/LandmarkPair3D.h>
 
 #include <concepts>
 #include <optional>

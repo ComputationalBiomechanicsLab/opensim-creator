@@ -3,11 +3,11 @@
 #include <OpenSimCreator/Documents/ExperimentalData/DataPointType.h>
 
 #include <OpenSim/Common/Storage.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Utils/Assertions.h>
-#include <oscar_simbody/SimTKConverters.h>
 #include <Simbody.h>
 
 #include <span>

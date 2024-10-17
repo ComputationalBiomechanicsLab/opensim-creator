@@ -4,10 +4,10 @@
 #include <OpenSimCreator/Documents/ModelWarper/MaybePairedLandmark.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
-#include <oscar_simbody/TPS3D.h>
 
 #include <cstddef>
 #include <filesystem>

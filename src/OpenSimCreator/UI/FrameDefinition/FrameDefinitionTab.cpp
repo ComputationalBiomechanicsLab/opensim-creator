@@ -22,6 +22,7 @@
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -53,7 +54,6 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
-#include <oscar_simbody/SimTKConverters.h>
 
 #include <cstddef>
 #include <cstdint>

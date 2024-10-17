@@ -2,10 +2,10 @@
 
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocument.h>
 #include <OpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar_simbody/TPS3D.h>
 
 #include <algorithm>
 #include <ranges>

@@ -26,6 +26,8 @@ add_executable(TestOpenSimCreator
     UI/TestAllRegisteredOpenSimCreatorTabs.cpp
     UI/TestLoadingTab.cpp
     Utils/TestOpenSimHelpers.cpp
+    Utils/TestShapeFitters.cpp
+    Utils/TestSimTKDecorationGenerator.cpp
 
     TestOpenSimCreator.cpp  # entrypoint (main)
 )

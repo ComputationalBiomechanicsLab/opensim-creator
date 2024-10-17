@@ -3,12 +3,12 @@
 #include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpableModel.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Utils/Algorithms.h>
-#include <oscar_simbody/TPS3D.h>
 
 #include <algorithm>
 #include <filesystem>

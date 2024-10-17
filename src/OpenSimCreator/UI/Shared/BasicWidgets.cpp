@@ -18,6 +18,7 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <OpenSimCreator/Utils/ParamBlock.h>
 #include <OpenSimCreator/Utils/ParamValue.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
@@ -47,7 +48,6 @@
 #include <oscar/UI/Widgets/IconWithMenu.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/Utils/StringHelpers.h>
-#include <oscar_simbody/SimTKConverters.h>
 #include <SimTKcommon/basics.h>
 
 #include <algorithm>

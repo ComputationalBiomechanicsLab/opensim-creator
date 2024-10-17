@@ -25,7 +25,6 @@
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar_demos/OscarDemosTabRegistry.h>
-#include <oscar_simbody/UI/OscarSimbodyTabRegistry.h>
 
 #include <array>
 #include <clocale>
@@ -212,7 +211,6 @@ namespace
     {
         register_demo_tabs(registry);
         RegisterOpenSimCreatorTabs(registry);
-        RegisterOscarSimbodyTabs(registry);
     }
 
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
