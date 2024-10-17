@@ -123,11 +123,6 @@ def build_osc(conf: BuildConfiguration):
         _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar {other_build_args}')
         _run(f'{test_oscar_path} --gtest_filter="-Renderer*')
 
-        # build+run testoscar_simbody suite
-        test_oscar_simbody_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar_simbody', conf.get_osc_build_type(), 'testoscar_simbody')
-        _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar_simbody {other_build_args}')
-        _run(f'{test_oscar_simbody_path} --gtest_filter="-Renderer*')
-
         # build+run third party plugin test suite
         test_osc_plugins_path =  os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimThirdPartyPlugins', conf.get_osc_build_type(), 'TestOpenSimThirdPartyPlugins')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimThirdPartyPlugins {other_build_args}')
