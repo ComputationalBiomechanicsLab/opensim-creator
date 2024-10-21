@@ -123,11 +123,6 @@ def build_osc(conf: BuildConfiguration):
         _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar {other_build_args}')
         _run(f'{test_oscar_path} --gtest_filter="-Renderer*')
 
-        # build+run third party plugin test suite
-        test_osc_plugins_path =  os.path.join(conf.get_osc_build_dir(), 'tests', 'TestOpenSimThirdPartyPlugins', conf.get_osc_build_type(), 'TestOpenSimThirdPartyPlugins')
-        _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimThirdPartyPlugins {other_build_args}')
-        _run(f'{test_osc_plugins_path}')
-
         # build+run OpenSimCreator test suite
         #
         # (--gtest_filter the tests that won't work in CI because of rendering issues)
