@@ -6,16 +6,9 @@
 #include <OpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
 #include <OpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
 
-#include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
-#include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Common/Logger.h>
-#include <OpenSim/Common/RegisterTypes_osimCommon.h>
-#include <OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.h>
-#include <OpenSim/Simulation/RegisterTypes_osimSimulation.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <OpenSim/Tools/RegisterTypes_osimTools.h>
-#include <OpenSimThirdPartyPlugins/RegisterTypes_osimPlugin.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
@@ -25,6 +18,7 @@
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar_demos/OscarDemosTabRegistry.h>
+#include <osim/osim.h>
 
 #include <array>
 #include <clocale>
@@ -58,20 +52,6 @@ namespace
         {"panels/Result/enabled", true},
     });
 
-    // minor alias for setlocale so that any linter complaints about MT unsafety
-    // are all deduped to this one source location
-    //
-    // it's UNSAFE because `setlocale` is a global mutation
-    void setLocaleUNSAFE(int category, CStringView locale)
-    {
-        // disable lint because this function is only called once at application
-        // init time
-        if (std::setlocale(category, locale.c_str()) == nullptr)  // NOLINT(concurrency-mt-unsafe)
-        {
-            log_error("error setting locale category %i to %s", category, locale);
-        }
-    }
-
     // an OpenSim log sink that sinks into OSC's main log
     class OpenSimLogSink final : public OpenSim::LogSink {
         void sinkImpl(const std::string& msg) final
@@ -79,50 +59,6 @@ namespace
             log_info("%s", msg.c_str());
         }
     };
-
-    void SetGlobalLocaleToMatchOpenSim()
-    {
-        // these are because OpenSim is inconsistient about handling locales
-        //
-        // it *writes* OSIM files using the locale, so you can end up with entries like:
-        //
-        //     <PathPoint_X>0,1323</PathPoint_X>
-        //
-        // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
-
-        log_info("setting locale to US (so that numbers are always in the format '0.x'");
-        const CStringView locale = "C";
-        set_environment_variable("LANG", locale, true);
-        set_environment_variable("LC_CTYPE", locale, true);
-        set_environment_variable("LC_NUMERIC", locale, true);
-        set_environment_variable("LC_TIME", locale, true);
-        set_environment_variable("LC_COLLATE", locale, true);
-        set_environment_variable("LC_MONETARY", locale, true);
-        set_environment_variable("LC_MESSAGES", locale, true);
-        set_environment_variable("LC_ALL", locale, true);
-#ifdef LC_CTYPE
-        setLocaleUNSAFE(LC_CTYPE, locale);
-#endif
-#ifdef LC_NUMERIC
-        setLocaleUNSAFE(LC_NUMERIC, locale);
-#endif
-#ifdef LC_TIME
-        setLocaleUNSAFE(LC_TIME, locale);
-#endif
-#ifdef LC_COLLATE
-        setLocaleUNSAFE(LC_COLLATE, locale);
-#endif
-#ifdef LC_MONETARY
-        setLocaleUNSAFE(LC_MONETARY, locale);
-#endif
-#ifdef LC_MESSAGES
-        setLocaleUNSAFE(LC_MESSAGES, locale);
-#endif
-#ifdef LC_ALL
-        setLocaleUNSAFE(LC_ALL, locale);
-#endif
-        std::locale::global(std::locale{locale.c_str()});
-    }
 
     void SetupOpenSimLogToUseOSCsLog()
     {
@@ -144,24 +80,6 @@ namespace
         OpenSim::Logger::addSink(std::make_shared<OpenSimLogSink>());
     }
 
-    void RegisterOpenSimTypes()
-    {
-        log_info("registering OpenSim types");
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-        RegisterTypes_osimExampleComponents();
-        RegisterTypes_osimPlugin();  // from `OpenSimThirdPartyPlugins`
-
-        // custom components
-        OpenSim::Object::registerType(CrossProductEdge{});
-        OpenSim::Object::registerType(MidpointLandmark{});
-        OpenSim::Object::registerType(PointToPointEdge{});
-        OpenSim::Object::registerType(SphereLandmark{});
-    }
-
     void GloballySetOpenSimsGeometrySearchPath(const std::filesystem::path& geometryDir)
     {
         // globally set OpenSim's geometry search path
@@ -177,31 +95,21 @@ namespace
 
     bool InitializeOpenSim()
     {
-        // make this process (OSC) globally use the same locale that OpenSim uses
-        //
-        // this is necessary because OpenSim assumes a certain locale (see function
-        // impl. for more details)
-        SetGlobalLocaleToMatchOpenSim();
+        // globally initialize OpenSim
+        log_info("initializing OpenSim (osim::init)");
+        osim::init();
+
+        // custom components
+        log_info("registering custom types");
+        OpenSim::Object::registerType(CrossProductEdge{});
+        OpenSim::Object::registerType(MidpointLandmark{});
+        OpenSim::Object::registerType(PointToPointEdge{});
+        OpenSim::Object::registerType(SphereLandmark{});
 
         // point OpenSim's log towards OSC's log
         //
         // so that users can see OpenSim log messages in OSC's UI
         SetupOpenSimLogToUseOSCsLog();
-
-        // explicitly load OpenSim libs
-        //
-        // this is necessary because some compilers will refuse to link a library
-        // unless symbols from that library are directly used.
-        //
-        // Unfortunately, OpenSim relies on weak linkage *and* static library-loading
-        // side-effects. This means that (e.g.) the loading of muscles into the runtime
-        // happens in a static initializer *in the library*.
-        //
-        // osc may not link that library, though, because the source code in OSC may
-        // not *directly* use a symbol exported by the library (e.g. the code might use
-        // OpenSim::Muscle references, but not actually concretely refer to a muscle
-        // implementation method (e.g. a ctor)
-        RegisterOpenSimTypes();
 
         return true;
     }
