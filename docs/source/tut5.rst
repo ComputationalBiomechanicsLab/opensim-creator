@@ -198,16 +198,123 @@ How you use these panels is up to you. A typical workflow has these steps:
 Walkthrough: Warping a Femur
 ----------------------------
 
-In this concrete walkthrough, we'll go through pairing landmarks between two
-femur CT scans, followed by exporting the warped data.
+In this walkthrough, we'll go through pairing landmarks between two femur CT
+scans. For context, the femur scans we're showing in this section were originally
+collected by Judith Cueto Fernandez and Eline van der Kruk, from the `BODIES lab`_,
+who landmarked them in order to perform TPS-based model scaling in the model
+warper.  **Due to privacy reasons, we cannot provide the raw CT scans. You
+should use your own mesh data for this section - the fact we're using a femur
+isn't significant for this tutorial.**
 
-1. ``TODO``: provide the meshes
-2. ``TODO``: load meshes using import
-3. ``TODO``: manually place some landmark pairs, rename, etc.
-4. ``TODO``: manually rename some landmarks
-5. ``TODO``: import example landmarks (additionally, or in place of, the manual ones)
-6. ``TODO``: play with result
-7. ``TODO``: export result
+.. figure:: _static/tut5_walkthrough-overview.png
+    :width: 60%
+
+    A screenshot of the mesh warping UI with the two pelvis meshes opened, followed
+    by opening the landmark CSVs for the source/destination. *Left Mesh*: the source mesh.
+    *Middle Mesh*: the destination mesh. *Right Mesh*: the result mesh. The green
+    spheres represent paired landmarks. *Right Panel*: the landmark navigator, which
+    can be useful for figuring out which landmark is which.
+
+
+Load Raw Mesh Data
+^^^^^^^^^^^^^^^^^^
+
+Typically, the first step to take when warping a mesh is to load the raw mesh
+data for the source/destination into the mesh warping UI. To do that, we:
+
+1. Ensured the ``Source Mesh``, ``Destination Mesh``, and ``Result Mesh`` panels
+   were opened via the ``Window`` menu
+2. Opened the source mesh via the ``Import`` dropdown in the top-left of the
+   ``Source Mesh`` panel, which shown the source mesh.
+3. Opened the destination mesh via the ``Import`` dropdown in the top-left of the
+   ``Destination Mesh`` panel, which shown the destination mesh.
+
+.. figure:: _static/tut5_walkthrough-after-loading-meshes.png
+    :width: 60%
+
+    A screenshot of the mesh warping UI after the source and destination meshes
+    are loaded via the ``import`` dropdown.
+
+
+Place Landmarks on the meshes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+After loading the meshes, the next step is usually to place landmarks. In this
+walkthrough's case we:
+
+1. Changed the ``landmark radius`` from 0.05 to 0.005, because the pelvis meshes
+   are quite small (larger landmarks can drown out the mesh).
+2. Used the mouse to place a landmark on the source mesh, which initially appears
+   red because it has no corresponding point.
+3. Used the mouse to place a landmark on the destination mesh, which appears green,
+   and changes the source landmark's color to green, because it is fully paired with
+   the first landmark.
+4. Repeated this process for 3 or 4 more pairs.
+
+After doing this, you'll end up with something like the figure below. The key
+features when landmarking are that you can always delete a landmark with the ``Delete``
+or ``Backspace`` key, ``Undo``/``Redo`` work as normal, and the right-click context
+menu manipulates the *pair* (e.g. ``Delete`` ing via the context menu will try
+to delete both participants in the pair).
+
+You'll also notice that, while we generally don't interact much with the ``Result Mesh``
+panel when landmarking, it's useful for getting an idea of how well the Thin-Plate
+Spline (TPS) technique is able to morph the source mesh to "fit" the destination mesh.
+Playing around with the ``blending factor`` slider helps to show how the morph could
+be incrementally applied to the source data, and  there's also an
+``overlay destination mesh`` option, which helps with visually evaluating the
+fitting quality.
+
+.. figure:: _static/tut5_walkthrough-after-manually-placing-a-few-landmarks.png
+    :width: 60%
+
+    A screenshot of the mesh warping UI after the source and destination meshes
+    are loaded via the ``import`` dropdown.
+
+
+.. note::
+
+  Don't be afraid to play 🎮 with the mesh warping UI. Undo/redo is quite robust,
+  and it won't bite! There's a lot of things we haven't had time to cover in this
+  tutorial.
+
+
+Load Landmarks from CSV File (optional)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another way of placing landmarks is to import them from a CSV file. This is useful
+because other programs/scripts can easily write CSV data as an output, and because
+the mesh warping UI can also export to CSV, which is how you can save your progress
+to disk. OpenSim Creator prefers (but doesn't require) a convention of naming these
+files ``MESHFILENAME.landmarks.csv`` and saving them next to the mesh files, so that
+external tools have an easier time associating landmark data with mesh data. Here
+is an example CSV file:
+
+.. code-block::
+  :linenos:
+  :caption: mesh.landmarks.csv
+
+  name,x,y,z
+  landmark_0,-0.007511,-0.014189,0.122403
+  some_other_landmark,-0.007254,-0.014904,-0.123190
+  landmark_2,-0.022727,0.035774,0.130622
+
+To import landmarks from a CSV file, you need to:
+
+1. Use the ``Import`` menu in the top-left of the ``Source Mesh`` or ``Destination Mesh``
+   panels.
+2. Use the ``Import`` menu in the ``File`` menu of the UI.
+
+After doing so, the mesh warper UI should show the landmarks (below), if it
+doesn't, then try opening the ``Log`` panel through the ``Window`` menu and
+see if there's any useful error messages.
+
+.. figure:: _static/tut5_walkthrough-overview.png
+    :width: 60%
+
+    The mesh warping UI after loading two meshes and importing their associated
+    landmarks via a CSV file. Importing from a CSV file should behave identically
+    to placing them manually in the UI.
 
 Next Steps
 ----------
@@ -284,3 +391,4 @@ the algorithm.
 .. _A Practical Guide to Sliding and Surface Semilandmarks in Morphometric Analyses: https://doi.org/10.1093/iob/obz016
 .. _SemilandmarksInThreeDimensions: https://doi.org/10.1007/0-387-27614-9_3
 .. _RayCasting: https://en.wikipedia.org/wiki/Ray_casting
+.. _BODIES lab: https://bodieslab.com/

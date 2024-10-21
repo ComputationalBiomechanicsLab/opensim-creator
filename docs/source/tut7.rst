@@ -1,23 +1,18 @@
 .. _tut7:
 
 
-🪄 Preview Experimental Data
-=============================
+Preview Experimental Data
+=========================
 
-.. warning::
+.. note::
 
-    **Previewing Experimental Data is 🪄 experimental 🪄.**.
+    **Previewing Experimental Data is a ⭐new⭐ feature.**
 
-    We invite users to try this UI, and believe---even though it's still
-    in-development---that it provides valuable tooling for working with
-    OpenSim's various experimental data sources.
-
-    The "Preview Experimental Data" workflow is currently capable of loading
-    typical (i.e. ``sto`` / ``mot`` / ``trc``) files that are used in the
-    wider OpenSim ecosystem. It can also load a model and its associated
-    trajectory, and associate an ``ExternalLoads`` for visualization. The main
-    reason that it's experimental is because it's missing some nice-to-haves,
-    rather than because it's fundamentally broken.
+    It should be safer to use than an 🪄experimental🪄 feature, but it still
+    has some rough edges 🪨. If you think you've found a major bug, you should
+    report it to the `OpenSim Creator Issues Page`_. Minor bug reports are also
+    appreciated, but our current priority is to fix any big problems so that it
+    can evolve into an established feature.
 
 In this tutorial, we will be using the preview experimental data workflow to
 visualize, validate, and connect experimental data to an OpenSim model. This
@@ -433,6 +428,7 @@ experimental data with OpenSim models.
   to write the walkthrough section of this tutorial. `SimTK.org`_ is also a good
   source for published OpenSim models.
 
+.. _OpenSim Creator Issues Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues
 .. _OpenSim Models Repository: https://github.com/opensim-org/opensim-models
 .. _Gait10dof18musc Model Direct Link: https://github.com/opensim-org/opensim-models/tree/c62c24b0da1f89178335cf10f646a39c90d15580/Pipelines/Gait10dof18musc/OutputReference
 .. _Example MOT File: https://github.com/opensim-org/opensim-models/blob/master/Pipelines/Gait10dof18musc/ExperimentalData/subject01_walk_grf.mot
