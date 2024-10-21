@@ -17,6 +17,7 @@
 #include <oscar/UI/Tabs/TabRegistry.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar_demos/OscarDemosTabRegistry.h>
 #include <osim/osim.h>
 
@@ -26,6 +27,7 @@
 #include <locale>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 using namespace osc::fd;
@@ -97,7 +99,22 @@ namespace
     {
         // globally initialize OpenSim
         log_info("initializing OpenSim (osim::init)");
-        osim::init();
+        {
+            class LogginingInitConfiguration final : public osim::InitConfiguration {
+                void impl_log_message(std::string_view payload, osim::LogLevel level) final
+                {
+                    static_assert(num_options<osim::LogLevel>() == 2);
+                    std::string str{payload};
+                    switch (level) {
+                    case osim::LogLevel::info: osc::log_info("%s", str.c_str()); return;
+                    case osim::LogLevel::warn: osc::log_warn("%s", str.c_str()); return;
+                    default:                   osc::log_info("%s", str.c_str()); return;
+                    }
+                }
+            };
+            LogginingInitConfiguration config;
+            osim::init(config);
+        }
 
         // custom components
         log_info("registering custom types");
