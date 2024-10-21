@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Finished off tutorials 5 and 7 in the documentation.
 - Internal: OpenSimCreator now uses builds the OpenSim API via `osim` (https://github.com/ComputationalBiomechanicsLab/osim),
   which makes building + packaging easier for the project
 - Internal: `oscar_simbody` was re-integrated into `OpenSimCreator` to reduce the amount of
