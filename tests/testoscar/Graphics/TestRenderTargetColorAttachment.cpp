@@ -8,68 +8,62 @@
 
 using namespace osc;
 
-TEST(RenderTargetColorAttachment, CanConstructFromPartsOfRenderTexture)
+TEST(RenderTargetColorAttachment, can_construct_from_parts_of_a_RenderTexture)
 {
-    RenderTexture renderTex;
-    RenderTargetColorAttachment attachment
-    {
-        renderTex.upd_color_buffer(),
+    RenderTexture render_texture;
+    RenderTargetColorAttachment attachment{
+        render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
 
-    ASSERT_EQ(attachment.buffer, renderTex.upd_color_buffer());
+    ASSERT_EQ(attachment.buffer, render_texture.upd_color_buffer());
     ASSERT_EQ(attachment.load_action, RenderBufferLoadAction::Clear);
     ASSERT_EQ(attachment.store_action, RenderBufferStoreAction::Resolve);
     ASSERT_EQ(attachment.clear_color, Color::red());
 }
 
-TEST(RenderTargetColorAttachment, EqualityReturnsTrueForCopies)
+TEST(RenderTargetColorAttachment, compares_equal_to_its_copy)
 {
-    RenderTexture renderTex;
-    RenderTargetColorAttachment attachment
-    {
-        renderTex.upd_color_buffer(),
+    RenderTexture render_texture;
+    RenderTargetColorAttachment attachment{
+        render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
-    RenderTargetColorAttachment copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    RenderTargetColorAttachment attachment_copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
-    ASSERT_EQ(copy, attachment);
+    ASSERT_EQ(attachment_copy, attachment);
 }
 
-TEST(RenderTargetColorAttachment, EqualityReturnsTrueForSeperatelyConstructedButLogicallyEqualValues)
+TEST(RenderTargetColorAttachment, compares_equal_to_separately_constructed_instance_with_logically_equivalent_inputs)
 {
-    RenderTexture renderTex;
+    RenderTexture render_texture;
 
-    RenderTargetColorAttachment a
-    {
-        renderTex.upd_color_buffer(),
+    RenderTargetColorAttachment attachment_a{
+        render_texture.upd_color_buffer(),
+        RenderBufferLoadAction::Clear,
+        RenderBufferStoreAction::Resolve,
+        Color::red(),
+    };
+    RenderTargetColorAttachment attachment_b{
+        render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
 
-    RenderTargetColorAttachment b
-    {
-        renderTex.upd_color_buffer(),
-        RenderBufferLoadAction::Clear,
-        RenderBufferStoreAction::Resolve,
-        Color::red(),
-    };
-
-    ASSERT_EQ(a, b);
+    ASSERT_EQ(attachment_a, attachment_b);
 }
 
-TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
+TEST(RenderTargetColorAttachment, compares_false_to_a_copy_after_copy_is_modified)
 {
-    RenderTexture firstRenderTex;
-    RenderTexture secondRenderTex;
-    RenderTargetColorAttachment attachment
-    {
-        firstRenderTex.upd_color_buffer(),
+    RenderTexture first_render_texture;
+    RenderTexture second_render_texture;
+    RenderTargetColorAttachment attachment{
+        first_render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
@@ -79,7 +73,7 @@ TEST(RenderTargetColorAttachment, EqualityReturnsFalseIfSomethingIsModified)
     {
         RenderTargetColorAttachment copy = attachment;
         ASSERT_EQ(copy, attachment);
-        copy.buffer = secondRenderTex.upd_color_buffer();
+        copy.buffer = second_render_texture.upd_color_buffer();
         ASSERT_NE(copy, attachment);
     }
 

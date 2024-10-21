@@ -38,7 +38,7 @@ TEST(TextureFormat, component_format_of_returns_expected_values)
     ASSERT_EQ(component_format_of(TextureFormat::RGBAFloat), TextureComponentFormat::Float32);
 }
 
-TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
+TEST(TextureFormat, num_bytes_per_pixel_in_returns_expected_values)
 {
     static_assert(num_options<TextureFormat>() == 7);
 
@@ -51,7 +51,7 @@ TEST(TextureFormat, NumBytesPerPixelReturnsExpectedValues)
     ASSERT_EQ(num_bytes_per_pixel_in(TextureFormat::RGBAFloat), 16);
 }
 
-TEST(TextureFormat, ToTextureFormatReturnsExpectedValues)
+TEST(TextureFormat, to_texture_format_returns_expected_values)
 {
     static_assert(num_options<TextureFormat>() == 7);
 

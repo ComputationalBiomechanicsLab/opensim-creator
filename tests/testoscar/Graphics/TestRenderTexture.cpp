@@ -10,175 +10,162 @@
 
 using namespace osc;
 
-TEST(RenderTexture, DefaultConstructorCreates1x1DefaultRenderTexture)
+TEST(RenderTexture, default_constructor_creates_1x1_default_texture)
 {
-    const RenderTexture tex;
-    ASSERT_EQ(tex.dimensions(), Vec2i(1, 1));
-    ASSERT_EQ(tex.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
-    ASSERT_EQ(tex.color_format(), ColorRenderBufferFormat::Default);
-    ASSERT_EQ(tex.anti_aliasing_level(), AntiAliasingLevel{1});
+    const RenderTexture render_texture;
+    ASSERT_EQ(render_texture.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(render_texture.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
+    ASSERT_EQ(render_texture.color_format(), ColorRenderBufferFormat::Default);
+    ASSERT_EQ(render_texture.anti_aliasing_level(), AntiAliasingLevel{1});
 }
 
-TEST(RenderTexture, DefaultConstructorHasTex2DDimension)
+TEST(RenderTexture, default_constructor_has_Tex2D_TextureDimensionality)
 {
-    const RenderTexture tex;
-    ASSERT_EQ(tex.dimensionality(), TextureDimensionality::Tex2D);
+    const RenderTexture render_texture;
+    ASSERT_EQ(render_texture.dimensionality(), TextureDimensionality::Tex2D);
 }
 
-TEST(RenderTexture, SetDimensionSetsTheDimension)
+TEST(RenderTexture, set_dimensionality_sets_the_dimensionality)
 {
-    RenderTexture tex;
-    tex.set_dimensionality(TextureDimensionality::Cube);
-    ASSERT_EQ(tex.dimensionality(), TextureDimensionality::Cube);
+    RenderTexture render_texture;
+    render_texture.set_dimensionality(TextureDimensionality::Cube);
+    ASSERT_EQ(render_texture.dimensionality(), TextureDimensionality::Cube);
 }
 
-TEST(RenderTexture, SetDimensionToCubeThrowsIfRenderTextureIsMultisampled)
-{
-    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
-    // so loudly throw an error if the caller is trying to render a multisampled
-    // cubemap
-    RenderTexture tex;
-    tex.set_anti_aliasing_level(AntiAliasingLevel{2});
-    ASSERT_ANY_THROW(tex.set_dimensionality(TextureDimensionality::Cube));
-}
-
-TEST(RenderTexture, SetAntialiasingToNonOneOnCubeDimensionalityRenderTextureThrows)
+TEST(RenderTexture, set_dimensionality_to_Cube_throws_if_RenderTexture_is_multisampled)
 {
     // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
     // so loudly throw an error if the caller is trying to render a multisampled
     // cubemap
-    RenderTexture tex;
-    tex.set_dimensionality(TextureDimensionality::Cube);
-    ASSERT_ANY_THROW(tex.set_anti_aliasing_level(AntiAliasingLevel{2}));
+    RenderTexture render_texture;
+    render_texture.set_anti_aliasing_level(AntiAliasingLevel{2});
+    ASSERT_ANY_THROW(render_texture.set_dimensionality(TextureDimensionality::Cube));
 }
 
-TEST(RenderTexture, CtorThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
+TEST(RenderTexture, set_anti_aliasing_level_throws_if_RenderRexture_dimensionality_is_Cube)
+{
+    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multisampled
+    // cubemap
+    RenderTexture render_texture;
+    render_texture.set_dimensionality(TextureDimensionality::Cube);
+    ASSERT_ANY_THROW(render_texture.set_anti_aliasing_level(AntiAliasingLevel{2}));
+}
+
+TEST(RenderTexture, constructor_throws_if_constructed_with_Cube_dimensionality_and_anti_aliasing)
 {
     // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
     // so loudly throw an error if the caller is trying to render a multisampled
     // cubemap
 
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    const RenderTextureParams desc = {
+    const RenderTextureParams render_texture_params = {
         .dimensionality = TextureDimensionality::Cube,
         .anti_aliasing_level = AntiAliasingLevel{2},
     };
 
     // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture rt(desc));
+    ASSERT_ANY_THROW(RenderTexture render_texture(render_texture_params));
 }
 
-TEST(RenderTexture, ReformatThrowsIfGivenCubeDimensionalityAndAntialiasedDescriptor)
+TEST(RenderTexture, reformat_throws_if_given_CubeDimensionality_and_anti_aliasing)
 {
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    const RenderTextureParams params = {
+    const RenderTextureParams render_texture_params = {
         .dimensionality = TextureDimensionality::Cube,
         .anti_aliasing_level = AntiAliasingLevel{2},
     };
 
     // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture().reformat(params));
+    ASSERT_ANY_THROW(RenderTexture().reformat(render_texture_params));
 }
 
-TEST(RenderTexture, ThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
+TEST(RenderTexture, throws_if_given_non_square_dimensions_but_Cube_dimensionality)
 {
     // permitted
-    const RenderTextureParams params = {
+    const RenderTextureParams render_texture_params = {
         .dimensions = {1, 2},
         .dimensionality = TextureDimensionality::Cube,
     };
 
     // throws because non-square
-    ASSERT_ANY_THROW(RenderTexture rt(params));
+    ASSERT_ANY_THROW(RenderTexture render_texture(render_texture_params));
 }
 
-TEST(RenderTexture, ReformatThrowsIfGivenNonSquareButCubeDimensionalityDescriptor)
+TEST(RenderTexture, set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_dimensions)
 {
-    // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
-    const RenderTextureParams params = {
-        .dimensions = {1, 2},
-        .dimensionality = TextureDimensionality::Cube,
-    };
+    RenderTexture render_texture;
+    render_texture.set_dimensions({1, 2});  // not square
 
-    // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture().reformat(params));
+    ASSERT_ANY_THROW(render_texture.set_dimensionality(TextureDimensionality::Cube));
 }
 
-TEST(RenderTexture, SetDimensionThrowsIfSetToCubeOnNonSquareRenderTexture)
+TEST(RenderTexture, set_dimensions_throws_if_set_on_RenderTexture_with_cube_dimensionality)
 {
-    RenderTexture t;
-    t.set_dimensions({1, 2});  // not square
+    RenderTexture render_texture;
+    render_texture.set_dimensionality(TextureDimensionality::Cube);
 
-    ASSERT_ANY_THROW(t.set_dimensionality(TextureDimensionality::Cube));
+    ASSERT_ANY_THROW(render_texture.set_dimensions({1, 2}));
 }
 
-TEST(RenderTexture, SetDimensionsThrowsIfSettingNonSquareOnCubeDimensionTexture)
+TEST(RenderTexture, set_dimension_changes_equality)
 {
-    RenderTexture t;
-    t.set_dimensionality(TextureDimensionality::Cube);
+    RenderTexture texture_a;
+    RenderTexture texture_b{texture_a};
 
-    ASSERT_ANY_THROW(t.set_dimensions({1, 2}));
+    ASSERT_EQ(texture_a, texture_b);
+
+    texture_b.set_dimensionality(TextureDimensionality::Cube);
+
+    ASSERT_NE(texture_a, texture_b);
 }
 
-TEST(RenderTexture, SetDimensionChangesEquality)
+TEST(RenderTexture, can_be_constructed_from_dimensions_vector)
 {
-    RenderTexture t1;
-    RenderTexture t2{t1};
-
-    ASSERT_EQ(t1, t2);
-
-    t2.set_dimensionality(TextureDimensionality::Cube);
-
-    ASSERT_NE(t1, t2);
+    const Vec2i dimensions = {12, 12};
+    RenderTexture render_texture{{.dimensions = dimensions}};
+    ASSERT_EQ(render_texture.dimensions(), dimensions);
 }
 
-TEST(RenderTexture, CanBeConstructedFromDimensions)
+TEST(RenderTexture, can_be_constructed_from_RenderTextureParams)
 {
-    const Vec2i dims = {12, 12};
-    RenderTexture tex{{.dimensions = dims}};
-    ASSERT_EQ(tex.dimensions(), dims);
-}
-
-TEST(RenderTexture, CanBeConstructedFromADescriptor)
-{
-    const RenderTextureParams params{{1, 1}};
-    const RenderTexture d{params};
+    const RenderTextureParams render_texture_parameters{{1, 1}};
+    const RenderTexture render_texture{render_texture_parameters};
 }
 
 TEST(RenderTexture, FromDescriptorHasExpectedValues)
 {
-    const int width = 8;
-    const int height = 8;
-    const AntiAliasingLevel aaLevel{1};
+    const Vec2i dimensions = {8, 8};
+    const AntiAliasingLevel aa_level{1};
     const ColorRenderBufferFormat format = ColorRenderBufferFormat::R8_UNORM;
-    const TextureDimensionality dimension = TextureDimensionality::Cube;
+    const TextureDimensionality dimensionality = TextureDimensionality::Cube;
 
-    const RenderTextureParams params = {
-        .dimensions = {width, height},
-        .dimensionality = dimension,
-        .anti_aliasing_level = aaLevel,
+    const RenderTextureParams render_texture_params = {
+        .dimensions = dimensions,
+        .dimensionality = dimensionality,
+        .anti_aliasing_level = aa_level,
         .color_format = format,
     };
 
-    const RenderTexture tex{params};
+    const RenderTexture render_texture{render_texture_params};
 
-    ASSERT_EQ(tex.dimensions(), Vec2i(width, height));
-    ASSERT_EQ(tex.dimensionality(), TextureDimensionality::Cube);
-    ASSERT_EQ(tex.anti_aliasing_level(), aaLevel);
-    ASSERT_EQ(tex.color_format(), format);
+    ASSERT_EQ(render_texture.dimensions(), dimensions);
+    ASSERT_EQ(render_texture.dimensionality(), TextureDimensionality::Cube);
+    ASSERT_EQ(render_texture.anti_aliasing_level(), aa_level);
+    ASSERT_EQ(render_texture.color_format(), format);
 }
 
-TEST(RenderTexture, SetColorFormatCausesGetColorFormatToReturnValue)
+TEST(RenderTexture, set_color_format_causes_color_to_return_set_value)
 {
-    const RenderTextureParams params{{1, 1}};
-    RenderTexture d{params};
+    const RenderTextureParams render_texture_params{{1, 1}};
+    RenderTexture render_texture{render_texture_params};
 
-    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::Default);
+    ASSERT_EQ(render_texture.color_format(), ColorRenderBufferFormat::Default);
     static_assert(ColorRenderBufferFormat::Default != ColorRenderBufferFormat::R8_UNORM);
 
-    d.set_color_format(ColorRenderBufferFormat::R8_UNORM);
+    render_texture.set_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-    ASSERT_EQ(d.color_format(), ColorRenderBufferFormat::R8_UNORM);
+    ASSERT_EQ(render_texture.color_format(), ColorRenderBufferFormat::R8_UNORM);
 }
 
 TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copies)
@@ -191,10 +178,10 @@ TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copi
     // that pattern wasn't creating independent shadowmaps because the underlying `RenderBuffer`s
     // were being reference-copied, rather than value-copied
 
-    RenderTexture rt;
-    RenderTexture copy{rt};
+    RenderTexture render_texture;
+    RenderTexture render_texture_copy{render_texture};
 
-    ASSERT_NE(copy.upd_color_buffer(), rt.upd_color_buffer());
+    ASSERT_NE(render_texture_copy.upd_color_buffer(), render_texture.upd_color_buffer());
 }
 
 TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copies)
