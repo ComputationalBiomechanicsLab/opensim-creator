@@ -1,12 +1,8 @@
-# OpenSim Creator's Documentation
+# `docs/`: OpenSim Creator's User-Facing Documentation
 
-> The source code behind https://docs.opensimcreator.com
->
-> A manual for [OpenSim Creator](https://github.com/ComputationalBiomechanicsLab/opensim-creator) that's
-> targeted at end-users. Built using [Sphinx](https://www.sphinx-doc.org/en/master/)
-
-This repository contains the source code for OpenSim Creator's user-facing
-documentation, which is hosted at https://docs.opensimcreator.com .
+> The source code behind https://docs.opensimcreator.com, which is a user-facing
+> manual for the [OpenSim Creator Project](https://github.com/ComputationalBiomechanicsLab/opensim-creator).
+> Built using [Sphinx](https://www.sphinx-doc.org/en/master/).
 
 
 ## 🖥️ Dependencies/Environment Setup
