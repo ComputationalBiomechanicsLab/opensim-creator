@@ -69,5 +69,6 @@ cd opensim-creator
   - [ ] LinkedIn
   - [ ] Twitter
   - [ ] Mastodon
+  - [ ] Bluesky
   - [ ] SimTK
   - [ ] Reddit (occasionally)
