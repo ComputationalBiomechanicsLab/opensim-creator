@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The OpenSim Creator executable is now built with static linking which, with
+  a little more work, will enable portable executables, which are handy for
+  running courses etc. (#881).
 - The installation, building, development environment setup, and contribution guides
   have been moved into the documentation pages (https://docs.opensimcreator.com),
   so that there's a centralized location for all documentation.
