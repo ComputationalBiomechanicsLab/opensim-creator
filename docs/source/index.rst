@@ -39,6 +39,13 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 2
+   :caption: Setup
+   :numbered:
+
+   installation
+
+.. toctree::
+   :maxdepth: 2
    :caption: Tutorials
    :numbered:
 
@@ -51,8 +58,14 @@ Table of Contents
    tut7
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Documentation Pages
+   :maxdepth: 2
+   :caption: Development
+   :numbered:
+
+   building-from-source
+   setup-development-environment
+   contributing-to-development
+
 
 .. toctree::
     :caption: Other Links
