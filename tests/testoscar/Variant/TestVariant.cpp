@@ -21,13 +21,13 @@ using namespace osc;
 
 namespace
 {
-    float ToFloatOrZero(std::string_view v)
+    float to_float_or_zero(std::string_view str)
     {
         // TODO: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
         // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
         // for floating-point values
 
-        std::string s{v};
+        std::string s{str};
         size_t pos = 0;
         try {
             return std::stof(s, &pos);
@@ -37,66 +37,66 @@ namespace
         }
     }
 
-    int ToIntOrZero(std::string_view v)
+    int to_int_or_zero(std::string_view str)
     {
         int result{};
-        auto [ptr, ec] = std::from_chars(v.data(), v.data() + v.size(), result);
+        auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), result);
         return ec == std::errc() ? result : 0;
     }
 }
 
-TEST(Variant, CanDefaultConstruct)
+TEST(Variant, is_default_constructible)
 {
     static_assert(std::is_default_constructible_v<Variant>);
 }
 
-TEST(Variant, CanExplicitlyContructFromBool)
+TEST(Variant, can_be_explicitly_constructed_from_bool)
 {
-    Variant vfalse{false};
-    ASSERT_EQ(to<bool>(vfalse), false);
-    Variant vtrue{true};
-    ASSERT_EQ(to<bool>(vtrue), true);
+    Variant false_variant{false};
+    ASSERT_EQ(to<bool>(false_variant), false);
+    Variant true_variant{true};
+    ASSERT_EQ(to<bool>(true_variant), true);
 
-    ASSERT_EQ(vtrue.type(), VariantType::Bool);
+    ASSERT_EQ(true_variant.type(), VariantType::Bool);
 }
 
-TEST(Variant, CanImplicitlyConstructFromBool)
+TEST(Variant, can_be_implicitly_constructed_from_bool)
 {
     static_assert(std::is_convertible_v<bool, Variant>);
 }
 
-TEST(Variant, CanExplicitlyConstructFromColor)
+TEST(Variant, can_be_explicitly_constructed_from_Color)
 {
-    Variant v{Color::red()};
-    ASSERT_EQ(to<Color>(v), Color::red());
-    ASSERT_EQ(v.type(), VariantType::Color);
+    Variant variant{Color::red()};
+    ASSERT_EQ(to<Color>(variant), Color::red());
+    ASSERT_EQ(variant.type(), VariantType::Color);
 }
 
-TEST(Variant, CanImplicitlyConstructFromColor)
+TEST(Variant, can_be_implicitly_constructed_from_Color)
 {
     static_assert(std::is_convertible_v<Color, Variant>);
 }
 
-TEST(Variant, CanExplicityConstructFromFloat)
+TEST(Variant, can_be_explicitly_constructed_from_float)
 {
-    Variant v{1.0f};
-    ASSERT_EQ(to<float>(v), 1.0f);
-    ASSERT_EQ(v.type(), VariantType::Float);
+    Variant variant{1.0f};
+    ASSERT_EQ(to<float>(variant), 1.0f);
+    ASSERT_EQ(variant.type(), VariantType::Float);
 }
 
-TEST(Variant, CanImplicitlyConstructFromFloat)
+TEST(Variant, can_be_implicitly_constructed_from_float)
 {
     static_assert(std::is_convertible_v<float, Variant>);
 }
 
-TEST(Variant, CanExplicitlyConstructFromInt)
+TEST(Variant, can_be_explicitly_constructed_from_int)
 {
-    Variant v{5};
-    ASSERT_EQ(to<int>(v), 5);
-    ASSERT_EQ(v.type(), VariantType::Int);
+    Variant variant{5};
+    ASSERT_EQ(to<int>(variant), 5);
+    ASSERT_EQ(variant.type(), VariantType::Int);
 }
 
-TEST(Variant, CanImplicitlyConstructFromInt)
+TEST(Variant, can_be_implicitly_constructed_from_int)
 {
     static_assert(std::is_convertible_v<int, Variant>);
 }
@@ -491,7 +491,7 @@ TEST(Variant, StringValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure
     });
 
     for (const auto& input : inputs) {
-        const float expectedOutput = ToFloatOrZero(input);
+        const float expectedOutput = to_float_or_zero(input);
         ASSERT_EQ(to<float>(Variant{input}), expectedOutput);
     }
 }
@@ -510,7 +510,7 @@ TEST(Variant, StringValueToIntTriesToParseStringAsBase10Int)
     });
 
     for (const auto& input : inputs) {
-        const int expectedOutput = ToIntOrZero(input);
+        const int expectedOutput = to_int_or_zero(input);
         ASSERT_EQ(to<int>(Variant{input}), expectedOutput);
     }
 }
@@ -1133,7 +1133,7 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
     });
 
     for (const auto& input : inputs) {
-        const float expectedOutput = ToFloatOrZero(input);
+        const float expectedOutput = to_float_or_zero(input);
         ASSERT_EQ(to<float>(Variant{StringName{input}}), expectedOutput);
     }
 }
@@ -1152,7 +1152,7 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
     });
 
     for (const auto& input : inputs) {
-        const int expectedOutput = ToIntOrZero(input);
+        const int expectedOutput = to_int_or_zero(input);
         ASSERT_EQ(to<int>(Variant{StringName{input}}), expectedOutput);
     }
 }

@@ -15,7 +15,7 @@ namespace
 {
     struct VariantTypeStringTestCases final {
         VariantType input;
-        std::string_view expectedOutput;
+        std::string_view expected_output;
     };
     const auto c_expected_varianttype_strings = std::to_array<VariantTypeStringTestCases>({
         {VariantType::None, "NoneType"},
@@ -33,21 +33,21 @@ namespace
 
 TEST(VariantType, pipe_to_ostream_works_as_intended)
 {
-    for (const auto& [input, expectedOutput] : c_expected_varianttype_strings) {
+    for (const auto& [input, expected_output] : c_expected_varianttype_strings) {
         std::stringstream ss;
         ss << input;
-        ASSERT_EQ(ss.str(), expectedOutput);
+        ASSERT_EQ(ss.str(), expected_output);
     }
 }
 
-TEST(VariantType, ToStringReturnsExpectedResults)
+TEST(VariantType, stream_to_string_returns_expected_results)
 {
-    for (const auto& [input, expectedOutput] : c_expected_varianttype_strings) {
-        ASSERT_EQ(stream_to_string(input), expectedOutput);
+    for (const auto& [input, expected_output] : c_expected_varianttype_strings) {
+        ASSERT_EQ(stream_to_string(input), expected_output);
     }
 }
 
-TEST(VariantType, PassingBsValueIntoToStringThrows)
+TEST(VariantType, passing_bullshit_value_into_stream_to_string_throws)
 {
     const auto bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
     ASSERT_ANY_THROW({ stream_to_string(bs); });
