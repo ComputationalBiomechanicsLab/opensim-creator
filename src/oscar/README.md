@@ -1,4 +1,4 @@
-﻿# `oscar`
+﻿# `src/oscar`: The underlying engine that powers OpenSim Creator
 
 `oscar` is the "engine" part of OpenSim Creator. It's designed to have
 a minimal, OpenSim-independent, dependency set while providing what's

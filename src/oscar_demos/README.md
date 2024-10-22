@@ -1,8 +1,6 @@
-# `oscar-demos`
+# `src/oscar_demos`: Demos that use the `oscar` API
 
-> Demos that use the `oscar` API to demonstrate something useful/interesting
-
-- Provides `osc::ITab` implementations for library demos (e.g. `ImGuiDemoTab`)
+- Provides `osc::Tab` implementations for library demos (e.g. `ImGuiDemoTab`)
 
 - And provides tab implementations that use the `oscar` API in an interesting
   way (e.g. `HittestTab`)

@@ -1,6 +1,4 @@
-# `OpenSimCreator`
-
-> Implementation code for the OpenSim Creator UI
+# `src/OpenSimCreator`: Implementation code for the OpenSim Creator UI
 
 This project directly integrates the [OpenSim API](https://github.com/opensim-org/opensim-core)
 against the `oscar` API.
