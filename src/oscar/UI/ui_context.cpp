@@ -112,6 +112,7 @@ namespace
         SDL_Window*                                      Window = nullptr;
         std::string                                      ClipboardText;
         bool                                             WantUpdateMonitors = true;
+        std::optional<AppClock::time_point>              LastFrameTime;
 
         // Mouse handling
         Uint32                                           MouseWindowID = 0;
@@ -468,7 +469,20 @@ static void ImGui_ImplOscar_NewFrame(App& app)
     }
 
     // Update `DeltaTime`
-    io.DeltaTime = static_cast<float>(app.frame_delta_since_last_frame().count());
+    {
+        auto t = app.frame_start_time();  // note: might not increase (#935)
+        if (bd.LastFrameTime and t <= *bd.LastFrameTime) {
+            // handle the case where the clock hasn't increased since the last frame by
+            // adding a very small amount of time, because ImGui doesn't accept a `DeltaTime`
+            // of zero (see: imgui/#6189, imgui/#6114, imgui/#3644)
+            static_assert(static_cast<float>(std::chrono::duration<AppClock::rep, std::nano>{1}.count()) > std::numeric_limits<float>::epsilon());
+            t = *bd.LastFrameTime + std::chrono::nanoseconds{1};
+        }
+        const auto delta = bd.LastFrameTime ? t - *bd.LastFrameTime : AppClock::duration{1.0/60.0};
+        io.DeltaTime = static_cast<float>(delta.count());
+        bd.LastFrameTime = t;
+
+    }
 
     // Handle mouse leaving the window
     if (bd.MouseLastLeaveFrame and (bd.MouseLastLeaveFrame >= ImGui::GetFrameCount()) and bd.MouseButtonsDown == 0) {
