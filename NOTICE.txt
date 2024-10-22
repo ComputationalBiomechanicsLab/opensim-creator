@@ -127,16 +127,6 @@ imgui_impl_sdl2
 - The source code was copied + pasted into OpenSim Creator's UI backend module, followed by
   gradually modifying it to instead use the `App` API that OpenSimCreator hosts.
 
-jam-plugin
-----------
-
-- https://github.com/opensim-jam-org/jam-plugin
-- Licensed under the Apache 2.0 license
-- Copyright (c) 2020 Colin Smith
-- The source code for some OpenSim components hosted in that repository were copied+pasted
-  into ``OpenSimCreatorThirdPartyPlugins` and modified such that they can be built+shipped
-  within OpenSim Creator.
-
 ImGuizmo
 --------
 
