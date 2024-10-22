@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Graphics/CachedModelRenderer.h>
+#include <OpenSimCreator/UI/Shared/ModelViewerPanelFlags.h>
 #include <OpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
 
 #include <OpenSim/Common/ComponentPath.h>
@@ -23,11 +24,19 @@ namespace osc
 {
     class ModelViewerPanelState final {
     public:
-        explicit ModelViewerPanelState(std::string_view panelName_);
+        explicit ModelViewerPanelState(
+            std::string_view panelName_,
+            ModelViewerPanelFlags
+        );
 
         CStringView getPanelName() const
         {
             return panel_name_;
+        }
+
+        ModelViewerPanelFlags flags() const
+        {
+            return m_Flags;
         }
 
         Rect viewportRect{};
@@ -69,6 +78,7 @@ namespace osc
 
     private:
         std::string panel_name_;
+        ModelViewerPanelFlags m_Flags;
         CachedModelRenderer m_CachedModelRenderer;
         std::vector<std::unique_ptr<ModelViewerPanelLayer>> m_LayerQueue;
     };

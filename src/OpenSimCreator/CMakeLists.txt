@@ -346,11 +346,12 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ImportStationsFromCSVPopup.h
     UI/Shared/MainMenu.cpp
     UI/Shared/MainMenu.h
-    UI/Shared/ModelEditorViewerPanel.cpp
     UI/Shared/ModelSelectionGizmo.cpp
     UI/Shared/ModelSelectionGizmo.h
     UI/Shared/ModelStatusBar.cpp
     UI/Shared/ModelStatusBar.h
+    UI/Shared/ModelViewerPanelFlags.h
+    UI/Shared/ModelViewerPanel.cpp
     UI/Shared/ModelViewerPanel.h
     UI/Shared/ModelViewerPanelLayer.h
     UI/Shared/ModelViewerPanelLayerFlags.h

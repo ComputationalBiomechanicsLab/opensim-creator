@@ -314,10 +314,12 @@ public:
 
     Impl(
         std::string_view panelName_,
-        ModelViewerPanelParameters parameters_) :
+        ModelViewerPanelParameters parameters_,
+        ModelViewerPanelFlags flags_) :
 
         StandardPanelImpl{panelName_},
-        m_Parameters{std::move(parameters_)}
+        m_Parameters{std::move(parameters_)},
+        m_State{name(), flags_}
     {
         // update this panel's rendering/state parameters from the runtime
         // configuration (e.g. user edits)
@@ -332,6 +334,21 @@ public:
         pushLayer(std::make_unique<ButtonAndGizmoControlsLayer>(panelName_, m_Parameters.getModelSharedPtr()));
     }
 
+    bool isMousedOver() const
+    {
+        return m_RenderIsHovered;
+    }
+
+    bool isLeftClicked() const
+    {
+        return m_RenderIsHovered and m_State.isLeftClickReleasedWithoutDragging;
+    }
+
+    bool isRightClicked() const
+    {
+        return m_RenderIsHovered and m_State.isRightClickReleasedWithoutDragging;
+    }
+
     ModelViewerPanelLayer& pushLayer(std::unique_ptr<ModelViewerPanelLayer> layer)
     {
         // care: do not push new layers directly into `m_Layers`, because `pushLayer` can be
@@ -342,6 +359,21 @@ public:
     void focusOn(const Vec3& pos)
     {
         m_Parameters.updRenderParams().camera.focus_point = -pos;
+    }
+
+    std::optional<Rect> getScreenRect() const
+    {
+        return m_State.viewportRect;
+    }
+
+    const PolarPerspectiveCamera& getCamera() const
+    {
+        return m_Parameters.getRenderParams().camera;
+    }
+
+    void setCamera(const PolarPerspectiveCamera& camera)
+    {
+        m_Parameters.updRenderParams().camera = camera;
     }
 
 private:
@@ -429,7 +461,7 @@ private:
         m_State.maybeSceneAABB = m_State.getRenderer().bounds();
 
         // if hovering in 2D, 3D-hittest the scene
-        if (m_RenderIsHovered)
+        if (m_RenderIsHovered and not (m_State.flags() & ModelViewerPanelFlag::NoHittest))
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
@@ -532,26 +564,38 @@ private:
     }
 
     ModelViewerPanelParameters m_Parameters;
-    ModelViewerPanelState m_State{name()};
+    ModelViewerPanelState m_State;
     std::vector<std::unique_ptr<ModelViewerPanelLayer>> m_Layers;
     bool m_IsFirstFrame = true;
     bool m_RenderIsHovered = false;
 };
 
 
-// public API (PIMPL)
-
 osc::ModelViewerPanel::ModelViewerPanel(
     std::string_view panelName_,
-    const ModelViewerPanelParameters& parameters_) :
+    const ModelViewerPanelParameters& parameters_,
+    ModelViewerPanelFlags flags_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, parameters_)}
-{
-}
-
+    m_Impl{std::make_unique<Impl>(panelName_, parameters_, flags_)}
+{}
 osc::ModelViewerPanel::ModelViewerPanel(ModelViewerPanel&&) noexcept = default;
 osc::ModelViewerPanel& osc::ModelViewerPanel::operator=(ModelViewerPanel&&) noexcept = default;
 osc::ModelViewerPanel::~ModelViewerPanel() noexcept = default;
+
+bool osc::ModelViewerPanel::isMousedOver() const
+{
+    return m_Impl->isMousedOver();
+}
+
+bool osc::ModelViewerPanel::isLeftClicked() const
+{
+    return m_Impl->isLeftClicked();
+}
+
+bool osc::ModelViewerPanel::isRightClicked() const
+{
+    return m_Impl->isRightClicked();
+}
 
 ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelViewerPanelLayer> layer)
 {
@@ -561,6 +605,21 @@ ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelVie
 void osc::ModelViewerPanel::focusOn(const Vec3& pos)
 {
     m_Impl->focusOn(pos);
+}
+
+std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const
+{
+    return m_Impl->getScreenRect();
+}
+
+const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const
+{
+    return m_Impl->getCamera();
+}
+
+void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera)
+{
+    m_Impl->setCamera(camera);
 }
 
 CStringView osc::ModelViewerPanel::impl_get_name() const
