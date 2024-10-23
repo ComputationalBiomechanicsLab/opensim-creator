@@ -695,6 +695,10 @@ void osc::ModelSelectionGizmo::onDraw(
     const Rect& screenRect,
     const PolarPerspectiveCamera& camera)
 {
+    if (m_Model->isReadonly()) {
+        return;  // cannot manipulate a readonly model (#936)
+    }
+
     const OpenSim::Component* selected = m_Model->getSelected();
     if (not selected) {
         return;

@@ -12,6 +12,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   have been moved into the documentation pages (https://docs.opensimcreator.com),
   so that there's a centralized location for all documentation.
 - Finished off tutorials 5 and 7 in the documentation.
+- Fixed a bug where the model manipulation gizmo would show on readonly models (e.g.
+  in the simulator tab, #936)
 - Internal: OpenSimCreator now uses builds the OpenSim API via `osim` (https://github.com/ComputationalBiomechanicsLab/osim),
   which makes building + packaging easier for the project
 - Internal: `oscar_simbody` was re-integrated into `OpenSimCreator` to reduce the amount of
