@@ -52,7 +52,7 @@ namespace osc::mow
 
         ValidationCheckState state() const { return m_Document->state(); }
         bool canWarpModel() const { return state() != ValidationCheckState::Error; }
-        std::shared_ptr<const IModelStatePair> tryGetWarpedModel()
+        std::shared_ptr<IModelStatePair> tryGetWarpedModel()
         {
             if (canWarpModel()) {
                 return m_ModelWarper.warp(*m_Document);

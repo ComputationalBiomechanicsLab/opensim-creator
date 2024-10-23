@@ -369,8 +369,6 @@ add_library(OpenSimCreator STATIC
     UI/Shared/ParamBlockEditorPopup.h
     UI/Shared/PropertiesPanel.cpp
     UI/Shared/PropertiesPanel.h
-    UI/Shared/Readonly3DModelViewer.cpp
-    UI/Shared/Readonly3DModelViewer.h
 
     UI/Simulation/ISimulatorUIAPI.cpp
     UI/Simulation/ISimulatorUIAPI.h

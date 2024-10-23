@@ -89,7 +89,7 @@ namespace
 
 class osc::mow::CachedModelWarper::Impl final {
 public:
-    std::shared_ptr<const IModelStatePair> warp(const WarpableModel& document)
+    std::shared_ptr<IModelStatePair> warp(const WarpableModel& document)
     {
         if (document != m_PreviousDocument) {
             m_PreviousResult = createWarpedModel(document);
@@ -98,7 +98,7 @@ public:
         return m_PreviousResult;
     }
 
-    std::shared_ptr<const IModelStatePair> createWarpedModel(const WarpableModel& document)
+    std::shared_ptr<IModelStatePair> createWarpedModel(const WarpableModel& document)
     {
         // copy the model into an editable "warped" version
         OpenSim::Model warpedModel{document.getModel()};
@@ -201,7 +201,7 @@ public:
     }
 private:
     std::optional<WarpableModel> m_PreviousDocument;
-    std::shared_ptr<const IModelStatePair> m_PreviousResult;
+    std::shared_ptr<IModelStatePair> m_PreviousResult;
 };
 
 osc::mow::CachedModelWarper::CachedModelWarper() :
@@ -211,7 +211,7 @@ osc::mow::CachedModelWarper::CachedModelWarper(CachedModelWarper&&) noexcept = d
 CachedModelWarper& osc::mow::CachedModelWarper::operator=(CachedModelWarper&&) noexcept = default;
 osc::mow::CachedModelWarper::~CachedModelWarper() noexcept = default;
 
-std::shared_ptr<const IModelStatePair> osc::mow::CachedModelWarper::warp(const WarpableModel& document)
+std::shared_ptr<IModelStatePair> osc::mow::CachedModelWarper::warp(const WarpableModel& document)
 {
     return m_Impl->warp(document);
 }

@@ -20,7 +20,7 @@ namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
-    class ModelViewerPanel final : public IPanel {
+    class ModelViewerPanel : public IPanel {
     public:
         ModelViewerPanel(
             std::string_view panelName_,
@@ -43,12 +43,13 @@ namespace osc
         void setCamera(const PolarPerspectiveCamera&);
         void setModelState(const std::shared_ptr<IModelStatePair>&);
 
+    protected:
+        void impl_on_draw() override;
     private:
         CStringView impl_get_name() const final;
         bool impl_is_open() const final;
         void impl_open() final;
         void impl_close() final;
-        void impl_on_draw() final;
 
         class Impl;
         std::unique_ptr<Impl> m_Impl;
