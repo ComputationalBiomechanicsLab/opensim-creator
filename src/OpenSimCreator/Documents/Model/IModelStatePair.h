@@ -23,6 +23,9 @@ namespace osc
         IModelStatePair(IModelStatePair&&) noexcept = default;
         IModelStatePair& operator=(const IModelStatePair&) = default;
         IModelStatePair& operator=(IModelStatePair&&) noexcept = default;
+
+        friend bool operator==(const IModelStatePair&, const IModelStatePair&) = default;
+
     public:
         virtual ~IModelStatePair() noexcept = default;
 

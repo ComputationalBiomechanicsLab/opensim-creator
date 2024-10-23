@@ -101,7 +101,7 @@ public:
     std::shared_ptr<const IModelStatePair> createWarpedModel(const WarpableModel& document)
     {
         // copy the model into an editable "warped" version
-        OpenSim::Model warpedModel{document.model()};
+        OpenSim::Model warpedModel{document.getModel()};
         InitializeModel(warpedModel);
         InitializeState(warpedModel);
 
@@ -109,10 +109,10 @@ public:
         //
         // additionally, collect a base-frame-to-mesh lookup while doing this
         std::map<OpenSim::ComponentPath, std::vector<OpenSim::ComponentPath>> baseFrame2meshes;
-        for (const auto& mesh : document.model().getComponentList<OpenSim::Mesh>()) {
+        for (const auto& mesh : document.getModel().getComponentList<OpenSim::Mesh>()) {
             // try to warp+overwrite
             if (const auto* meshWarper = document.findMeshWarp(mesh)) {
-                auto warpedMesh = WarpMesh(document, document.model(), document.modelstate().getState(), mesh, *meshWarper);
+                auto warpedMesh = WarpMesh(document, document.getModel(), document.getState(), mesh, *meshWarper);
                 auto* targetMesh = FindComponentMut<OpenSim::Mesh>(warpedModel, mesh.getAbsolutePath());
                 OSC_ASSERT_ALWAYS(targetMesh && "cannot find target mesh in output model: this should never happen");
                 OverwriteGeometry(warpedModel, *targetMesh, std::move(warpedMesh));
@@ -137,7 +137,7 @@ public:
             auto baseFramePath = pp.getParentFrame().findBaseFrame().getAbsolutePath();
             if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
                 if (it->second.size() == 1) {
-                    if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
+                    if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.getModel(), it->second.front())) {
                         if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = pp.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), pp.get_location(), mesh->getFrame());
@@ -166,7 +166,7 @@ public:
             auto baseFramePath = station.getParentFrame().findBaseFrame().getAbsolutePath();
             if (auto it = baseFrame2meshes.find(baseFramePath); it != baseFrame2meshes.end()) {
                 if (it->second.size() == 1) {
-                    if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.model(), it->second.front())) {
+                    if (const auto* mesh = FindComponent<OpenSim::Mesh>(document.getModel(), it->second.front())) {
                         if (const auto meshWarper = document.findMeshWarp(*mesh)) {
                             // redefine the station's position in the mesh's coordinate system
                             auto posInMeshFrame = station.getParentFrame().expressVectorInAnotherFrame(warpedModel.getWorkingState(), station.get_location(), mesh->getFrame());

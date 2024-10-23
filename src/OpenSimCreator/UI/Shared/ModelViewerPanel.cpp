@@ -376,6 +376,11 @@ public:
         m_Parameters.updRenderParams().camera = camera;
     }
 
+    void setModelState(const std::shared_ptr<IModelStatePair>& newModelState)
+    {
+        m_Parameters.setModelSharedPtr(newModelState);
+    }
+
 private:
     void impl_before_imgui_begin() final
     {
@@ -620,6 +625,11 @@ const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const
 void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera)
 {
     m_Impl->setCamera(camera);
+}
+
+void osc::ModelViewerPanel::setModelState(const std::shared_ptr<IModelStatePair>& newModelState)
+{
+    m_Impl->setModelState(newModelState);
 }
 
 CStringView osc::ModelViewerPanel::impl_get_name() const

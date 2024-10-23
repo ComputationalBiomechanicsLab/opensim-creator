@@ -41,7 +41,7 @@ TEST(WarpableModel, ConstructorThrowsIfGivenInvalidOsimPath)
 TEST(WarpableModel, AfterConstructingFromBasicOsimFileTheReturnedModelContainsExpectedComponents)
 {
     const WarpableModel doc{GetFixturesDir() / "onebody.osim"};
-    doc.model().getComponent("bodyset/some_body");
+    doc.getModel().getComponent("bodyset/some_body");
 }
 
 TEST(WarpableModel, DefaultConstructedIsInAnOKState)

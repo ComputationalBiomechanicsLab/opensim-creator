@@ -36,16 +36,6 @@ osc::mow::WarpableModel& osc::mow::WarpableModel::operator=(const WarpableModel&
 osc::mow::WarpableModel& osc::mow::WarpableModel::operator=(WarpableModel&&) noexcept = default;
 osc::mow::WarpableModel::~WarpableModel() noexcept = default;
 
-const OpenSim::Model& osc::mow::WarpableModel::model() const
-{
-    return m_ModelState->getModel();
-}
-
-const IModelStatePair& osc::mow::WarpableModel::modelstate() const
-{
-    return *m_ModelState;
-}
-
 std::vector<WarpDetail> osc::mow::WarpableModel::details(const OpenSim::Mesh& mesh) const
 {
     std::vector<WarpDetail> rv;
@@ -108,10 +98,10 @@ ValidationCheckState osc::mow::WarpableModel::state(
 ValidationCheckState osc::mow::WarpableModel::state() const
 {
     ValidationCheckState rv = ValidationCheckState::Ok;
-    for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {
+    for (const auto& mesh : getModel().getComponentList<OpenSim::Mesh>()) {
         rv = max(rv , state(mesh));
     }
-    for (const auto& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+    for (const auto& pof : getModel().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
         rv = max(rv, state(pof));
     }
     return rv;
@@ -154,11 +144,36 @@ std::optional<std::filesystem::path> osc::mow::WarpableModel::getOsimFileLocatio
 std::vector<ValidationCheckResult> osc::mow::WarpableModel::implValidate(const WarpableModel&) const
 {
     std::vector<ValidationCheckResult> rv;
-    for (const auto& mesh : model().getComponentList<OpenSim::Mesh>()) {
+    for (const auto& mesh : getModel().getComponentList<OpenSim::Mesh>()) {
         rv.emplace_back(mesh.getName(), state(mesh));
     }
-    for (const auto& pof : model().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+    for (const auto& pof : getModel().getComponentList<OpenSim::PhysicalOffsetFrame>()) {
         rv.emplace_back(pof.getName(), state(pof));
     }
     return rv;
+}
+
+const OpenSim::Model& osc::mow::WarpableModel::implGetModel() const
+{
+    return m_ModelState->getModel();
+}
+
+const SimTK::State& osc::mow::WarpableModel::implGetState() const
+{
+    return m_ModelState->getState();
+}
+
+float osc::mow::WarpableModel::implGetFixupScaleFactor() const
+{
+    return m_ModelState->getFixupScaleFactor();
+}
+
+void osc::mow::WarpableModel::implSetFixupScaleFactor(float sf)
+{
+    m_ModelState.upd()->setFixupScaleFactor(sf);
+}
+
+std::shared_ptr<Environment> osc::mow::WarpableModel::implUpdAssociatedEnvironment() const
+{
+    return m_ModelState->tryUpdEnvironment();
 }

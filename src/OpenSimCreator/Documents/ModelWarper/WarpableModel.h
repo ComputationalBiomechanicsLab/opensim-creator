@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/ModelWarper/FrameWarperFactories.h>
 #include <OpenSimCreator/Documents/ModelWarper/IValidateable.h>
 #include <OpenSimCreator/Documents/ModelWarper/PointWarperFactories.h>
@@ -31,7 +32,9 @@ namespace osc::mow
     //
     // because this may be polled or used by the UI, it may (hopefully, temporarily) be
     // in an error/warning state that the user is expected to resolve at runtime
-    class WarpableModel final : public IValidateable {
+    class WarpableModel final :
+        public IValidateable,
+        public IModelStatePair {
     public:
         WarpableModel();
         explicit WarpableModel(const std::filesystem::path& osimFileLocation);
@@ -40,9 +43,6 @@ namespace osc::mow
         WarpableModel& operator=(const WarpableModel&);
         WarpableModel& operator=(WarpableModel&&) noexcept;
         ~WarpableModel() noexcept;
-
-        const OpenSim::Model& model() const;
-        const IModelStatePair& modelstate() const;
 
         std::vector<WarpDetail> details(const OpenSim::Mesh&) const;
         std::vector<ValidationCheckResult> validate(const OpenSim::Mesh&) const;
@@ -68,7 +68,15 @@ namespace osc::mow
         // returns `true` if both the left- and right-hand side _point_ to the same information
         friend bool operator==(const WarpableModel&, const WarpableModel&) = default;
     private:
+        // Implements the `IValidateable` API
         std::vector<ValidationCheckResult> implValidate(const WarpableModel&) const final;
+
+        // Implements the `IModelStatePair` API
+        const OpenSim::Model& implGetModel() const final;
+        const SimTK::State& implGetState() const final;
+        float implGetFixupScaleFactor() const final;
+        void implSetFixupScaleFactor(float) final;
+        std::shared_ptr<Environment> implUpdAssociatedEnvironment() const final;
 
         CopyOnUpdPtr<BasicModelStatePair> m_ModelState;
         CopyOnUpdPtr<ModelWarpConfiguration> m_ModelWarpConfig;

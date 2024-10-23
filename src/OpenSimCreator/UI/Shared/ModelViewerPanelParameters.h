@@ -23,6 +23,7 @@ namespace osc
         {}
 
         std::shared_ptr<IModelStatePair> getModelSharedPtr() { return m_Model; }
+        void setModelSharedPtr(const std::shared_ptr<IModelStatePair>& newModelState) { m_Model = newModelState; }
         void callOnRightClickHandler(const ModelViewerPanelRightClickEvent& e) { m_OnRightClickedAComponent(e); }
         const ModelRendererParams& getRenderParams() const { return m_RenderParams; }
         ModelRendererParams& updRenderParams() { return m_RenderParams; }

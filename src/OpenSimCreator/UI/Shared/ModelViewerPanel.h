@@ -13,6 +13,7 @@
 #include <string_view>
 
 namespace osc { class CustomRenderingOptions; }
+namespace osc { class IModelStatePair; }
 namespace osc { class ModelViewerPanelLayer; }
 namespace osc { class ModelViewerPanelParameters; }
 namespace osc { struct PolarPerspectiveCamera; }
@@ -40,6 +41,7 @@ namespace osc
         std::optional<Rect> getScreenRect() const;
         const PolarPerspectiveCamera& getCamera() const;
         void setCamera(const PolarPerspectiveCamera&);
+        void setModelState(const std::shared_ptr<IModelStatePair>&);
 
     private:
         CStringView impl_get_name() const final;

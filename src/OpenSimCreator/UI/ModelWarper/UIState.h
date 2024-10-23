@@ -28,8 +28,9 @@ namespace osc::mow
             m_Parent{parent.weak_ref()}
         {}
 
-        const OpenSim::Model& model() const { return m_Document->model(); }
-        const IModelStatePair& modelstate() const { return m_Document->modelstate(); }
+        const OpenSim::Model& model() const { return m_Document->getModel(); }
+        const IModelStatePair& modelstate() const { return *m_Document; }
+        std::shared_ptr<IModelStatePair> modelstatePtr() { return m_Document; }
 
         std::vector<WarpDetail> details(const OpenSim::Mesh& mesh) const { return m_Document->details(mesh); }
         std::vector<ValidationCheckResult> validate(const OpenSim::Mesh& mesh) const { return m_Document->validate(mesh); }
