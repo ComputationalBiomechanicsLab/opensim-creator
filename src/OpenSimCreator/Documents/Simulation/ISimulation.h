@@ -82,6 +82,12 @@ namespace osc
             return implGetClocks().end();
         }
 
+        SimulationClock::duration getDuration() const
+        {
+            const auto clocks = implGetClocks();
+            return clocks.end() - clocks.start();
+        }
+
         bool canChangeEndTime() const
         {
             return implCanChangeEndTime();

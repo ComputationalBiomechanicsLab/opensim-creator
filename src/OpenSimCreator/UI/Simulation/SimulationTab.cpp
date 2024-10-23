@@ -155,8 +155,7 @@ public:
             "viewer",
             [this](std::string_view panelName)
             {
-                ModelViewerPanelParameters params
-                {
+                ModelViewerPanelParameters params{
                     m_ShownModelState,
                     [this, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
                     {
@@ -287,24 +286,21 @@ private:
     {
         const ptrdiff_t numSimulationReports = m_Simulation->getNumReports();
 
-        if (numSimulationReports == 0)
-        {
+        if (numSimulationReports == 0) {
             return std::nullopt;
         }
 
         ptrdiff_t zeroethReportIndex = static_cast<ptrdiff_t>(numSimulationReports) - 1;
-        for (ptrdiff_t i = 0; i < numSimulationReports; ++i)
-        {
-            SimulationReport r = m_Simulation->getSimulationReport(i);
-            if (r.getTime() >= t)
-            {
+        for (ptrdiff_t i = 0; i < numSimulationReports; ++i) {
+            const SimulationReport r = m_Simulation->getSimulationReport(i);
+            if (r.getTime() >= t) {
                 zeroethReportIndex = i;
                 break;
             }
         }
 
         const ptrdiff_t reportIndex = zeroethReportIndex + offset;
-        if (0 <= reportIndex && reportIndex < numSimulationReports) {
+        if (0 <= reportIndex and reportIndex < numSimulationReports) {
             return m_Simulation->getSimulationReport(reportIndex);
         }
         else {
@@ -429,9 +425,8 @@ private:
         m_Toolbar.onDraw();
 
         // only draw content if a simulation report is available
-        std::optional<SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
-        if (maybeReport)
-        {
+        const std::optional<SimulationReport> maybeReport = trySelectReportBasedOnScrubbing();
+        if (maybeReport) {
             m_ShownModelState->setSimulation(m_Simulation);
             m_ShownModelState->setSimulationReport(*maybeReport);
 
@@ -440,8 +435,7 @@ private:
             m_StatusBar.onDraw();
             m_PopupManager.on_draw();
         }
-        else
-        {
+        else {
             ui::begin_panel("Waiting for simulation");
             ui::draw_text_disabled("(waiting for first simulation state)");
             ui::end_panel();

@@ -46,18 +46,15 @@ public:
 private:
     void impl_draw_content() final
     {
-        if (m_Environment->getNumUserOutputExtractors() <= 0)
-        {
+        if (m_Environment->getNumUserOutputExtractors() <= 0) {
             ui::draw_text_disabled_and_panel_centered("No outputs being watched");
             ui::draw_text_disabled_and_centered("(Right-click a component and 'Watch Output')");
             return;
         }
 
-        if (IsAnyOutputExportableToCSV(*m_Environment))
-        {
+        if (IsAnyOutputExportableToCSV(*m_Environment)) {
             ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft))
-            {
+            if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
                 if (ui::draw_menu_item("as CSV")) {
                     m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors());
                 }
@@ -75,8 +72,7 @@ private:
         ui::draw_separator();
         ui::draw_dummy({0.0f, 5.0f});
 
-        for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i)
-        {
+        for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
             OutputExtractor output = m_Environment->getUserOutputExtractor(i);
 
             ui::push_id(i);

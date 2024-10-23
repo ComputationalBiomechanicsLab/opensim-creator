@@ -43,28 +43,22 @@ private:
 
         if (ui::begin_menu("Change End Time", m_Simulation->canChangeEndTime())) {
             if (ui::draw_menu_item("0.1x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.1 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.1 * m_Simulation->getDuration()));
             }
             if (ui::draw_menu_item("0.25x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.25 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.25 * m_Simulation->getDuration()));
             }
             if (ui::draw_menu_item("0.5x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.5 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (0.5 * m_Simulation->getDuration()));
             }
             if (ui::draw_menu_item("2x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (2 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (2 * m_Simulation->getDuration()));
             }
             if (ui::draw_menu_item("4x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (4 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (4 * m_Simulation->getDuration()));
             }
             if (ui::draw_menu_item("10x")) {
-                auto dur = m_Simulation->getEndTime() - m_Simulation->getStartTime();
-                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (10 * dur));
+                m_Simulation->requestNewEndTime(m_Simulation->getStartTime() + (10 * m_Simulation->getDuration()));
             }
             {
                 auto count = m_NewCustomEndTime.count();

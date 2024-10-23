@@ -257,12 +257,12 @@ private:
 
         // figure out mapping between screen space and plot space
 
-        SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
-        SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
-        SimulationClock::duration simTimeStep = (simEndTime-simStartTime)/nReports;
-        SimulationClock::time_point simScrubTime = m_API->getSimulationScrubTime();
+        const SimulationClock::time_point simStartTime = sim.getSimulationReport(0).getTime();
+        const SimulationClock::time_point simEndTime = sim.getSimulationReport(nReports-1).getTime();
+        const SimulationClock::duration simTimeStep = (simEndTime-simStartTime)/nReports;
+        const SimulationClock::time_point simScrubTime = m_API->getSimulationScrubTime();
 
-        float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
+        const float simScrubPct = static_cast<float>(static_cast<double>((simScrubTime - simStartTime)/(simEndTime - simStartTime)));
 
         ui::DrawListView drawlist = ui::get_panel_draw_list();
         const Color currentTimeLineColor = OSCColors::scrub_current();
@@ -270,30 +270,30 @@ private:
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
-            float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions_of(plotRect).x);
-            Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
-            Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
+            const float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions_of(plotRect).x);
+            const Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
+            const Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
             drawlist.add_line(p1, p2, currentTimeLineColor);
         }
 
         if (ui::is_item_hovered()) {
-            Vec2 mp = ui::get_mouse_pos();
-            Vec2 plotLoc = mp - plotRect.p1;
-            float relLoc = plotLoc.x / dimensions_of(plotRect).x;
-            SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
+            const Vec2 mp = ui::get_mouse_pos();
+            const Vec2 plotLoc = mp - plotRect.p1;
+            const float relLoc = plotLoc.x / dimensions_of(plotRect).x;
+            const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                Vec2 p1 = {mp.x, plotRect.p1.y};
-                Vec2 p2 = {mp.x, plotRect.p2.y};
+                const Vec2 p1 = {mp.x, plotRect.p1.y};
+                const Vec2 p2 = {mp.x, plotRect.p2.y};
                 drawlist.add_line(p1, p2, hoverTimeLineColor);
             }
 
             // show a tooltip of X and Y
             {
-                int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
-                if (0 <= step && static_cast<size_t>(step) < buf.size()) {
-                    float y = buf[static_cast<size_t>(step)];
+                const int step = static_cast<int>((timeLoc - simStartTime) / simTimeStep);
+                if (0 <= step and static_cast<size_t>(step) < buf.size()) {
+                    const float y = buf[static_cast<size_t>(step)];
 
                     // ensure the tooltip doesn't occlude the line
                     ui::push_style_color(ui::ColorVar::PopupBg, ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f));
@@ -314,7 +314,7 @@ private:
     {
         ISimulation& sim = m_API->updSimulation();
         const ptrdiff_t nReports = m_API->updSimulation().getNumReports();
-        SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
+        const SimulationReport r = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
 
         ui::draw_text_centered(m_OutputExtractor.getValueString(*sim.getModel(), r));
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);

@@ -57,15 +57,13 @@ public:
 private:
     void drawBackwardsButtons()
     {
-        if (ui::draw_button(OSC_ICON_FAST_BACKWARD))
-        {
+        if (ui::draw_button(OSC_ICON_FAST_BACKWARD)) {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getStartTime());
         }
         ui::draw_tooltip_if_item_hovered("Go to First State");
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_STEP_BACKWARD))
-        {
+        if (ui::draw_button(OSC_ICON_STEP_BACKWARD)) {
             m_SimulatorAPI->stepBack();
         }
         ui::draw_tooltip_if_item_hovered("Previous State");
@@ -123,16 +121,14 @@ private:
 
     void drawForwardsButtons()
     {
-        if (ui::draw_button(OSC_ICON_STEP_FORWARD))
-        {
+        if (ui::draw_button(OSC_ICON_STEP_FORWARD)){
             m_SimulatorAPI->stepForward();
         }
         ui::draw_tooltip_if_item_hovered("Next State");
 
         ui::same_line();
 
-        if (ui::draw_button(OSC_ICON_FAST_FORWARD))
-        {
+        if (ui::draw_button(OSC_ICON_FAST_FORWARD)) {
             m_SimulatorAPI->setSimulationScrubTime(m_Simulation->getEndTime());
         }
         ui::draw_tooltip_if_item_hovered("Go to Last State");
@@ -148,8 +144,7 @@ private:
     {
         ui::set_next_item_width(ui::calc_text_size("0.000x").x + 2.0f*ui::get_style_frame_padding().x);
         float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
-        if (ui::draw_float_input("speed", &speed, 0.0f, 0.0f, "%.3f", ui::TextInputFlag::EnterReturnsTrue))
-        {
+        if (ui::draw_float_input("speed", &speed, 0.0f, 0.0f, "%.3f", ui::TextInputFlag::EnterReturnsTrue)) {
             m_SimulatorAPI->setSimulationPlaybackSpeed(speed);
         }
     }
@@ -162,7 +157,8 @@ private:
 
         ui::set_next_item_width(ui::get_font_size() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
-        const bool userScrubbed = ui::draw_float_slider("##scrubber",
+        const bool userScrubbed = ui::draw_float_slider(
+            "##scrubber",
             &v,
             static_cast<float>(tStart.time_since_epoch().count()),
             static_cast<float>(tEnd.time_since_epoch().count()),
@@ -171,13 +167,11 @@ private:
         );
         ui::same_line();
 
-        if (userScrubbed)
-        {
+        if (userScrubbed) {
             m_SimulatorAPI->setSimulationScrubTime(SimulationClock::start() + SimulationClock::duration{static_cast<double>(v)});
         }
 
-        if (ui::is_item_hovered())
-        {
+        if (ui::is_item_hovered()) {
             ui::begin_tooltip();
             ui::draw_text_unformatted("Left-Click: Change simulation time being shown");
             ui::draw_text_unformatted("Ctrl-Click: Type in the simulation time being shown");

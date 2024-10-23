@@ -26,26 +26,22 @@ namespace
         //       see: #553
 
         auto fv = static_cast<float>(v);
-        if (ui::draw_float_input("##", &fv, 0.0f, 0.0f, "%.9f"))
-        {
+        if (ui::draw_float_input("##", &fv, 0.0f, 0.0f, "%.9f")) {
             b.setValue(idx, static_cast<double>(fv));
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
 
     bool DrawEditor(ParamBlock& b, int idx, int v)
     {
-        if (ui::draw_int_input("##", &v))
-        {
+        if (ui::draw_int_input("##", &v)) {
             b.setValue(idx, v);
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
@@ -67,16 +63,9 @@ namespace
 
     bool DrawEditor(ParamBlock& b, int idx)
     {
-        ParamValue v = b.getValue(idx);
-        bool rv = false;
-        auto handler = Overload
-        {
-            [&b, &rv, idx](double dv) { rv = DrawEditor(b, idx, dv); },
-            [&b, &rv, idx](int iv) { rv = DrawEditor(b, idx, iv); },
-            [&b, &rv, idx](IntegratorMethod imv) { rv = DrawEditor(b, idx, imv); },
-        };
-        std::visit(handler, v);
-        return rv;
+        return std::visit(Overload{
+            [&b, idx](const auto& val) { return DrawEditor(b, idx, val); },
+        }, b.getValue(idx));
     }
 }
 
@@ -87,8 +76,7 @@ public:
         StandardPopup{popupName, {512.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
         m_OutputTarget{paramBlock},
         m_LocalCopy{*m_OutputTarget}
-    {
-    }
+    {}
 
 private:
     void impl_draw_content() final
@@ -96,8 +84,7 @@ private:
         m_WasEdited = false;
 
         ui::set_num_columns(2);
-        for (int i = 0, len = m_LocalCopy.size(); i < len; ++i)
-        {
+        for (int i = 0, len = m_LocalCopy.size(); i < len; ++i) {
             ui::push_id(i);
 
             ui::draw_text_unformatted(m_LocalCopy.getName(i));
@@ -105,8 +92,7 @@ private:
             ui::draw_help_marker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ui::next_column();
 
-            if (DrawEditor(m_LocalCopy, i))
-            {
+            if (DrawEditor(m_LocalCopy, i)) {
                 m_WasEdited = true;
             }
             ui::next_column();
@@ -117,14 +103,12 @@ private:
 
         ui::draw_dummy({0.0f, 1.0f});
 
-        if (ui::draw_button("save"))
-        {
+        if (ui::draw_button("save")) {
             *m_OutputTarget = m_LocalCopy;
             request_close();
         }
         ui::same_line();
-        if (ui::draw_button("close"))
-        {
+        if (ui::draw_button("close")) {
             request_close();
         }
     }
@@ -141,32 +125,9 @@ osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexc
 osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&&) noexcept = default;
 osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept = default;
 
-bool osc::ParamBlockEditorPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ParamBlockEditorPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ParamBlockEditorPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::ParamBlockEditorPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::ParamBlockEditorPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::ParamBlockEditorPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+bool osc::ParamBlockEditorPopup::impl_is_open() const { return m_Impl->is_open(); }
+void osc::ParamBlockEditorPopup::impl_open() { m_Impl->open(); }
+void osc::ParamBlockEditorPopup::impl_close() { m_Impl->close(); }
+bool osc::ParamBlockEditorPopup::impl_begin_popup() { return m_Impl->begin_popup(); }
+void osc::ParamBlockEditorPopup::impl_on_draw() { m_Impl->on_draw(); }
+void osc::ParamBlockEditorPopup::impl_end_popup() { m_Impl->end_popup(); }

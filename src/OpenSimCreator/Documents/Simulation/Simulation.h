@@ -42,6 +42,7 @@ namespace osc
         SimulationClock::time_point getCurTime() { return m_Simulation->getCurTime(); }
         SimulationClock::time_point getStartTime() const { return m_Simulation->getStartTime(); }
         SimulationClock::time_point getEndTime() const { return m_Simulation->getEndTime(); }
+        SimulationClock::duration   getDuration() const { return m_Simulation->getDuration(); }
         float getProgress() const { return m_Simulation->getProgress(); }
         const ParamBlock& getParams() const { return m_Simulation->getParams(); }
         std::span<const OutputExtractor> getOutputs() const { return m_Simulation->getOutputExtractors(); }

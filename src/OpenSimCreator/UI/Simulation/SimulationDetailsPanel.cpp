@@ -70,8 +70,7 @@ private:
     {
         auto outputs = sim.getOutputs();
 
-        if (outputs.empty())
-        {
+        if (outputs.empty()) {
             ui::draw_text_disabled_and_centered("(no simulator output plots)");
             return;
         }
@@ -82,18 +81,15 @@ private:
         ui::same_line();
         ui::draw_help_marker("Various statistics collected when the simulation was ran");
         ui::next_column();
-        if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType))
-        {
+        if (rgs::any_of(outputs, is_numeric, &OutputExtractor::getOutputType)) {
+
             ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
-            if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft))
-            {
-                if (ui::draw_menu_item("as CSV"))
-                {
+            if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
+                if (ui::draw_menu_item("as CSV")) {
                     m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs);
                 }
 
-                if (ui::draw_menu_item("as CSV (and open)"))
-                {
+                if (ui::draw_menu_item("as CSV (and open)")) {
                     if (const auto path = m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs)) {
                         open_file_in_os_default_application(*path);
                     }

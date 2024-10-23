@@ -23,16 +23,12 @@ namespace
     Color CalcStatusColor(SimulationStatus status)
     {
         switch (status) {
-        case SimulationStatus::Initializing:
-        case SimulationStatus::Running:
-            return Color::muted_blue();
-        case SimulationStatus::Completed:
-            return Color::dark_green();
-        case SimulationStatus::Cancelled:
-        case SimulationStatus::Error:
-            return Color::red();
-        default:
-            return ui::get_style_color(ui::ColorVar::Text);
+        case SimulationStatus::Initializing: return Color::muted_blue();
+        case SimulationStatus::Running:      return Color::muted_blue();
+        case SimulationStatus::Completed:    return Color::dark_green();
+        case SimulationStatus::Cancelled:    return Color::red();
+        case SimulationStatus::Error:        return Color::red();
+        default:                             return ui::get_style_color(ui::ColorVar::Text);
         }
     }
 }
@@ -86,8 +82,7 @@ private:
         {
             float scaleFactor = m_Simulation->getFixupScaleFactor();
             ui::set_next_item_width(ui::calc_text_size("0.00000").x);
-            if (ui::draw_float_input("##scaleinput", &scaleFactor))
-            {
+            if (ui::draw_float_input("##scaleinput", &scaleFactor)) {
                 m_Simulation->setFixupScaleFactor(scaleFactor);
             }
         }
