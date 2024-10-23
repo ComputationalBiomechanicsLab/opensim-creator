@@ -50,31 +50,27 @@ public:
         ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().main_window_dimensions());
 
         // handle hittest
-        auto raycastStart = std::chrono::high_resolution_clock::now();
+        const auto raycastStartTime = std::chrono::high_resolution_clock::now();
 
-        Rect r = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        Vec2 d = dimensions_of(r);
+        const Rect r = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Vec2 d = dimensions_of(r);
         m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_pos()} - r.p1, d);
 
         m_IsMousedOver = false;
-        if (m_UseBVH)
-        {
+        if (m_UseBVH) {
             m_MeshBVH.for_each_ray_aabb_collision(m_Ray, [this](const BVHCollision& aabbColl)
             {
                 const Triangle triangle = m_Mesh.get_triangle_at(aabbColl.id);
-                if (auto triangleColl = find_collision(m_Ray, triangle))
-                {
+                if (auto triangleColl = find_collision(m_Ray, triangle)) {
                     m_IsMousedOver = true;
                     m_Tris = triangle;
                 }
             });
         }
-        else
-        {
+        else {
             m_Mesh.for_each_indexed_triangle([this](Triangle triangle)
             {
-                if (const auto hit = find_collision(m_Ray, triangle))
-                {
+                if (const auto hit = find_collision(m_Ray, triangle)) {
                     m_HitPos = hit->position;
                     m_IsMousedOver = true;
                     m_Tris = triangle;
@@ -82,9 +78,8 @@ public:
             });
         }
 
-        auto raycastEnd = std::chrono::high_resolution_clock::now();
-        auto raycastDt = raycastEnd - raycastStart;
-        m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastDt);
+        const auto raycastEndTime = std::chrono::high_resolution_clock::now();
+        m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastEndTime - raycastStartTime);
     }
 
     void onDraw()
@@ -107,8 +102,7 @@ public:
         graphics::draw(m_Mesh, identity<Transform>(), m_Material, m_Camera);
 
         // draw hit triangle while mousing over
-        if (m_IsMousedOver)
-        {
+        if (m_IsMousedOver) {
             Mesh m;
             m.set_vertices(m_Tris);
             m.set_indices({0, 1, 2});
@@ -118,8 +112,7 @@ public:
             graphics::draw(m, identity<Transform>(), m_Material, m_Camera);
         }
 
-        if (m_UseBVH)
-        {
+        if (m_UseBVH) {
             // draw BVH AABBs
             m_Material.set_color(Color::black());
             m_Material.set_depth_tested(true);
@@ -145,8 +138,7 @@ public:
             auto r = m_Ray;
             ui::draw_text("camerapos = (%.2f, %.2f, %.2f)", m_Camera.position().x, m_Camera.position().y, m_Camera.position().z);
             ui::draw_text("origin = (%.2f, %.2f, %.2f), direction = (%.2f, %.2f, %.2f)", r.origin.x, r.origin.y, r.origin.z, r.direction.x, r.direction.y, r.direction.z);
-            if (m_IsMousedOver)
-            {
+            if (m_IsMousedOver) {
                 ui::draw_text("hit = (%.2f, %.2f, %.2f)", m_HitPos.x, m_HitPos.y, m_HitPos.z);
                 ui::draw_text("p0 = (%.2f, %.2f, %.2f)", m_Tris.p0.x, m_Tris.p0.y, m_Tris.p0.z);
                 ui::draw_text("p1 = (%.2f, %.2f, %.2f)", m_Tris.p1.x, m_Tris.p1.y, m_Tris.p1.z);

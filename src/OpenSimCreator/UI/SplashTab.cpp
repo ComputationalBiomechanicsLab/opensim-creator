@@ -291,7 +291,7 @@ private:
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
     {
         const auto recentFiles = App::singleton<RecentFiles>();
-        if (!recentFiles->empty()) {
+        if (not recentFiles->empty()) {
             for (const RecentFile& rf : *recentFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     rf.path,
@@ -332,7 +332,8 @@ private:
 
     void drawMenuRightColumnContent(int& imguiID)
     {
-        if (!m_MainMenuFileTab.exampleOsimFiles.empty()) {
+        if (not m_MainMenuFileTab.exampleOsimFiles.empty()) {
+
             ui::draw_text_disabled("Example Models");
             ui::draw_dummy({0.0f, 2.0f});
 

@@ -62,14 +62,12 @@ namespace
         const Vec2 diff = controlPoint - p;
         const float r2 = dot(diff, diff);
 
-        if (r2 == 0.0f)
-        {
+        if (r2 == 0.0f) {
             // this ensures that the result is always non-zero and non-NaN (this might be
             // necessary for some types of linear solvers?)
             return std::numeric_limits<float>::min();
         }
-        else
-        {
+        else {
             return r2 * log(r2);
         }
     }
@@ -83,8 +81,7 @@ namespace
         TPSNonAffineTerm2D(Vec2 weight_, Vec2 controlPoint_) :
             weight{weight_},
             controlPoint{controlPoint_}
-        {
-        }
+        {}
 
         Vec2 weight;
         Vec2 controlPoint;
@@ -111,8 +108,7 @@ namespace
         Vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-        for (const TPSNonAffineTerm2D& wt : coefs.weights)
-        {
+        for (const TPSNonAffineTerm2D& wt : coefs.weights) {
             rv += wt.weight * RadialBasisFunction2D(wt.controlPoint, p);
         }
 
@@ -170,8 +166,7 @@ namespace
 
         const int numPairs = static_cast<int>(landmarkPairs.size());
 
-        if (numPairs == 0)
-        {
+        if (numPairs == 0) {
             // edge-case: there are no pairs, so return an identity-like transform
             return TPSCoefficients2D{};
         }
@@ -182,8 +177,7 @@ namespace
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < numPairs; ++row)
         {
-            for (int col = 0; col < numPairs; ++col)
-            {
+            for (int col = 0; col < numPairs; ++col) {
                 const Vec2& pi_ = landmarkPairs[row].src;
                 const Vec2& pj = landmarkPairs[col].src;
 
@@ -195,8 +189,7 @@ namespace
         {
             const int pStartColumn = numPairs;
 
-            for (int row = 0; row < numPairs; ++row)
-            {
+            for (int row = 0; row < numPairs; ++row) {
                 L(row, pStartColumn)     = 1.0;
                 L(row, pStartColumn + 1) = landmarkPairs[row].src.x;
                 L(row, pStartColumn + 2) = landmarkPairs[row].src.y;
@@ -207,8 +200,7 @@ namespace
         {
             const int ptStartRow = numPairs;
 
-            for (int col = 0; col < numPairs; ++col)
-            {
+            for (int col = 0; col < numPairs; ++col) {
                 L(ptStartRow, col)     = 1.0;
                 L(ptStartRow + 1, col) = landmarkPairs[col].src.x;
                 L(ptStartRow + 2, col) = landmarkPairs[col].src.y;
@@ -220,10 +212,8 @@ namespace
             const int zeroStartRow = numPairs;
             const int zeroStartCol = numPairs;
 
-            for (int row = 0; row < 3; ++row)
-            {
-                for (int col = 0; col < 3; ++col)
-                {
+            for (int row = 0; row < 3; ++row) {
+                for (int col = 0; col < 3; ++col) {
                     L(zeroStartRow + row, zeroStartCol + col) = 0.0;
                 }
             }
@@ -232,8 +222,7 @@ namespace
         // construct "result" vectors Vx and Vy (these hold the landmark destinations)
         SimTK::Vector Vx(numPairs + 3, 0.0);
         SimTK::Vector Vy(numPairs + 3, 0.0);
-        for (int row = 0; row < numPairs; ++row)
-        {
+        for (int row = 0; row < numPairs; ++row) {
             Vx[row] = landmarkPairs[row].dest.x;
             Vy[row] = landmarkPairs[row].dest.y;
         }
@@ -260,10 +249,9 @@ namespace
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.weights.reserve(numPairs);
-        for (int i = 0; i < numPairs; ++i)
-        {
-            Vec2 weight = {Cx[i], Cy[i]};
-            Vec2 controlPoint = landmarkPairs[i].src;
+        for (int i = 0; i < numPairs; ++i) {
+            const Vec2 weight = {Cx[i], Cy[i]};
+            const Vec2 controlPoint = landmarkPairs[i].src;
             rv.weights.emplace_back(weight, controlPoint);
         }
 
@@ -276,8 +264,7 @@ namespace
     public:
         explicit ThinPlateWarper2D(std::span<const LandmarkPair2D> landmarkPairs) :
             m_Coefficients{CalcCoefficients(landmarkPairs)}
-        {
-        }
+        {}
 
         Vec2 transform(Vec2 p) const
         {
@@ -344,8 +331,7 @@ public:
 
             // draw any 2D overlays etc.
             renderOverlayElements(ht);
-            if (ht.is_hovered)
-            {
+            if (ht.is_hovered) {
                 renderMouseUIElements(ht);
             }
         }
@@ -365,8 +351,7 @@ public:
                 // apply blending factor, compute warp, apply to grid
 
                 std::vector<LandmarkPair2D> pairs = m_LandmarkPairs;
-                for (LandmarkPair2D& p : pairs)
-                {
+                for (LandmarkPair2D& p : pairs) {
                     p.dest = lerp(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
@@ -382,9 +367,9 @@ public:
 
         // draw scubber overlay
         {
-            float leftPadding = 10.0f;
-            float bottomPadding = 10.0f;
-            float panelHeight = 50.0f;
+            const float leftPadding = 10.0f;
+            const float bottomPadding = 10.0f;
+            const float panelHeight = 50.0f;
             ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
             ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::WindowFlag::NoInputs));
@@ -423,8 +408,7 @@ private:
         ui::DrawListView drawlist = ui::get_panel_draw_list();
 
         // render all fully-established landmark pairs
-        for (const LandmarkPair2D& p : m_LandmarkPairs)
-        {
+        for (const LandmarkPair2D& p : m_LandmarkPairs) {
             const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
             const Vec2 p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
 
@@ -434,8 +418,7 @@ private:
         }
 
         // render any currenty-placing landmark pairs in a more-faded color
-        if (ht.is_hovered && std::holds_alternative<GUIFirstClickMouseState>(m_MouseState))
-        {
+        if (ht.is_hovered and std::holds_alternative<GUIFirstClickMouseState>(m_MouseState)) {
             const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
             const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
@@ -450,10 +433,8 @@ private:
     // render any mouse-related overlays
     void renderMouseUIElements(const ui::HittestResult& ht)
     {
-        std::visit(Overload
-        {
-            [this, &ht](const GUIInitialMouseState& st) { renderMouseUIElements(ht, st); },
-            [this, &ht](const GUIFirstClickMouseState& st) { renderMouseUIElements(ht, st); },
+        std::visit(Overload{
+            [this, &ht](const auto& state) { renderMouseUIElements(ht, state); },
         }, m_MouseState);
     }
 
@@ -467,8 +448,7 @@ private:
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos));
 
-        if (ui::is_mouse_clicked(ui::MouseButton::Left))
-        {
+        if (ui::is_mouse_clicked(ui::MouseButton::Left)) {
             m_MouseState = GUIFirstClickMouseState{mouseImageNDCPos};
         }
     }
@@ -483,8 +463,7 @@ private:
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos) + "*");
 
-        if (ui::is_mouse_clicked(ui::MouseButton::Left))
-        {
+        if (ui::is_mouse_clicked(ui::MouseButton::Left)) {
             m_LandmarkPairs.push_back({st.srcNDCPos, mouseImageNDCPos});
             m_MouseState = GUIInitialMouseState{};
         }

@@ -59,7 +59,7 @@ public:
         // if there's an error, then the result came through (it's an error)
         // and this screen should just continuously show the error until the
         // user decides to transition back
-        if (!m_LoadingErrorMsg.empty()) {
+        if (not m_LoadingErrorMsg.empty()) {
             return;
         }
 

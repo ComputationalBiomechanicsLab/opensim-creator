@@ -75,7 +75,9 @@ namespace
 class osc::MainUIScreen::Impl final : public ScreenPrivate {
 public:
 
-    explicit Impl(MainUIScreen& owner) : ScreenPrivate{owner, nullptr} {}
+    explicit Impl(MainUIScreen& owner) :
+        ScreenPrivate{owner, nullptr}
+    {}
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
@@ -143,7 +145,7 @@ public:
             }
 
             // focus on the rightmost tab
-            if (!m_Tabs.empty()) {
+            if (not m_Tabs.empty()) {
                 m_RequestedTab = m_Tabs.back()->id();
             }
         }
@@ -212,7 +214,7 @@ public:
                     // - the tab is faulty in some way
                     // - soak up the exception to prevent the whole application from terminating
                     // - then create a new tab containing the error message, so the user can see the error
-                    UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
+                    const UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                     impl_select_tab(id);
                     impl_close_tab(m_Tabs[i]->id());
                 }
@@ -231,7 +233,7 @@ public:
             // handle any deletion-related side-effects (e.g. showing save prompt)
             handleDeletedTabs();
 
-            if (!atLeastOneTabHandledQuit && (!m_MaybeSaveChangesPopup || !m_MaybeSaveChangesPopup->is_open())) {
+            if (not atLeastOneTabHandledQuit and (not m_MaybeSaveChangesPopup or !m_MaybeSaveChangesPopup->is_open())) {
                 // - if no tab handled a quit event
                 // - and the UI isn't currently showing a save prompt
                 // - then it's safe to outright quit the application from this screen
@@ -292,8 +294,7 @@ public:
     {
         // tick all the tabs, because they may internally be polling something (e.g.
         // updating something as a simulation runs)
-        for (size_t i = 0; i < m_Tabs.size(); ++i)
-        {
+        for (size_t i = 0; i < m_Tabs.size(); ++i) {
             try {
                 m_Tabs[i]->on_tick();
             }
@@ -304,7 +305,7 @@ public:
                 // - the tab is faulty in some way
                 // - soak up the exception to prevent the whole application from terminating
                 // - then create a new tab containing the error message, so the user can see the error
-                UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
+                const UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                 impl_select_tab(id);
                 impl_close_tab(m_Tabs[i]->id());
             }
@@ -333,10 +334,8 @@ public:
             drawUIContent();
         }
 
-        if (m_ImguiWasAggressivelyReset)
-        {
-            if (m_RequestedTab == UID::empty())
-            {
+        if (m_ImguiWasAggressivelyReset) {
+            if (m_RequestedTab == UID::empty()) {
                 m_RequestedTab = m_ActiveTabID;
             }
             m_ActiveTabID = UID::empty();
@@ -354,8 +353,7 @@ public:
             ui::context::render();
         }
 
-        if (std::exchange(m_ShouldRequestRedraw, false))
-        {
+        if (std::exchange(m_ShouldRequestRedraw, false)) {
             App::upd().request_redraw();
         }
     }
@@ -364,12 +362,9 @@ public:
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (ui::begin_main_viewport_top_bar("##TabSpecificMenuBar"))
-        {
-            if (ui::begin_menu_bar())
-            {
-                if (Tab* active = getActiveTab())
-                {
+        if (ui::begin_main_viewport_top_bar("##TabSpecificMenuBar")) {
+            if (ui::begin_menu_bar()) {
+                if (Tab* active = getActiveTab()) {
                     try {
                         active->on_draw_main_menu();
                     }
@@ -379,13 +374,12 @@ public:
                         // - the tab is faulty in some way
                         // - soak up the exception to prevent the whole application from terminating
                         // - then create a new tab containing the error message, so the user can see the error
-                        UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
+                        const UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                         impl_select_tab(id);
                         impl_close_tab(m_ActiveTabID);
                     }
 
-                    if (m_ImguiWasAggressivelyReset)
-                    {
+                    if (m_ImguiWasAggressivelyReset) {
                         return;  // must return here to prevent the ImGui end_panel calls from erroring
                     }
                 }
@@ -404,33 +398,25 @@ public:
         ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vec2{5.0f, 0.0f});
         ui::push_style_var(ui::StyleVar::TabRounding, 10.0f);
         ui::push_style_var(ui::StyleVar::FrameRounding, 10.0f);
-        if (ui::begin_main_viewport_top_bar("##TabBarViewport"))
-        {
-            if (ui::begin_menu_bar())
-            {
-                if (ui::begin_tab_bar("##TabBar"))
-                {
-                    for (size_t i = 0; i < m_Tabs.size(); ++i)
-                    {
+        if (ui::begin_main_viewport_top_bar("##TabBarViewport")) {
+            if (ui::begin_menu_bar()) {
+                if (ui::begin_tab_bar("##TabBar")) {
+                    for (size_t i = 0; i < m_Tabs.size(); ++i) {
                         ui::TabItemFlags flags = ui::TabItemFlag::NoReorder;
 
-                        if (i == 0)
-                        {
+                        if (i == 0) {
                             flags |= ui::TabItemFlag::NoCloseButton;  // splash screen
                         }
 
-                        if (m_Tabs[i]->is_unsaved())
-                        {
+                        if (m_Tabs[i]->is_unsaved()) {
                             flags |= ui::TabItemFlag::UnsavedDocument;
                         }
 
-                        if (m_Tabs[i]->id() == m_RequestedTab)
-                        {
+                        if (m_Tabs[i]->id() == m_RequestedTab) {
                             flags |= ui::TabItemFlag::SetSelected;;
                         }
 
-                        if (m_Tabs[i]->id() == m_ActiveTabID && m_Tabs[i]->name() != m_ActiveTabNameLastFrame)
-                        {
+                        if (m_Tabs[i]->id() == m_ActiveTabID and m_Tabs[i]->name() != m_ActiveTabNameLastFrame) {
                             flags |= ui::TabItemFlag::SetSelected;
                             m_ActiveTabNameLastFrame = m_Tabs[i]->name();
                         }
@@ -438,12 +424,9 @@ public:
                         ui::push_id(m_Tabs[i].get());
                         bool active = true;
 
-                        if (ui::begin_tab_item(m_Tabs[i]->name(), &active, flags))
-                        {
-                            if (m_Tabs[i]->id() != m_ActiveTabID)
-                            {
-                                if (Tab* activeTab = getActiveTab())
-                                {
+                        if (ui::begin_tab_item(m_Tabs[i]->name(), &active, flags)) {
+                            if (m_Tabs[i]->id() != m_ActiveTabID) {
+                                if (Tab* activeTab = getActiveTab()) {
                                     activeTab->on_unmount();
                                 }
                                 m_Tabs[i]->on_mount();
@@ -452,13 +435,11 @@ public:
                             m_ActiveTabID = m_Tabs[i]->id();
                             m_ActiveTabNameLastFrame = m_Tabs[i]->name();
 
-                            if (m_RequestedTab == m_ActiveTabID)
-                            {
+                            if (m_RequestedTab == m_ActiveTabID) {
                                 m_RequestedTab = UID::empty();
                             }
 
-                            if (m_ImguiWasAggressivelyReset)
-                            {
+                            if (m_ImguiWasAggressivelyReset) {
                                 return;
                             }
 
@@ -466,8 +447,7 @@ public:
                         }
 
                         ui::pop_id();
-                        if (!active && i != 0)  // can't close the splash tab
-                        {
+                        if (not active and i != 0)  {  // can't close the splash tab
                             impl_close_tab(m_Tabs[i]->id());
                         }
                     }
@@ -475,8 +455,7 @@ public:
                     // adding buttons to tab bars: https://github.com/ocornut/imgui/issues/3291
                     ui::draw_tab_item_button(OSC_ICON_PLUS);
 
-                    if (ui::begin_popup_context_menu("popup", ui::PopupFlag::MouseButtonLeft))
-                    {
+                    if (ui::begin_popup_context_menu("popup", ui::PopupFlag::MouseButtonLeft)) {
                         drawAddNewTabMenu();
                         ui::end_popup();
                     }
@@ -496,15 +475,13 @@ public:
     {
         drawTabSpecificMenu();
 
-        if (m_ImguiWasAggressivelyReset)
-        {
+        if (m_ImguiWasAggressivelyReset) {
             return;
         }
 
         drawTabBar();
 
-        if (m_ImguiWasAggressivelyReset)
-        {
+        if (m_ImguiWasAggressivelyReset) {
             return;
         }
 
@@ -522,7 +499,7 @@ public:
                 // - then create a new tab containing the error message, so the user can see the error
                 // - and indicate that the UI was aggressively reset, because the drawcall may have thrown midway
                 //   through rendering the 2D UI
-                UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
+                const UID id = addTab(std::make_unique<ErrorTab>(owner(), ex));
                 impl_select_tab(id);
                 impl_close_tab(m_ActiveTabID);
                 impl_reset_imgui();
@@ -605,11 +582,11 @@ public:
         bool savingFailedSomewhere = false;
         for (UID id : m_DeletedTabs) {
             if (Tab* tab = getTabByID(id); tab && tab->is_unsaved()) {
-                savingFailedSomewhere = !tab->try_save() || savingFailedSomewhere;
+                savingFailedSomewhere = not tab->try_save() or savingFailedSomewhere;
             }
         }
 
-        if (!savingFailedSomewhere) {
+        if (not savingFailedSomewhere) {
             nukeDeletedTabs();
             if (m_QuitRequested) {
                 App::upd().request_quit();
@@ -656,9 +633,9 @@ public:
         m_DeletedTabs.clear();
 
         // coerce active tab, if it has become stale due to a deletion
-        if (!getRequestedTab() && !getActiveTab() && !m_Tabs.empty()) {
+        if (not getRequestedTab() and not getActiveTab() and not m_Tabs.empty()) {
             // focus the tab just to the left of the closed one
-            if (1 <= lowestDeletedTab && lowestDeletedTab <= static_cast<int>(m_Tabs.size())) {
+            if (1 <= lowestDeletedTab and lowestDeletedTab <= static_cast<int>(m_Tabs.size())) {
                 m_RequestedTab = m_Tabs[lowestDeletedTab - 1]->id();
             }
             else {
@@ -733,8 +710,8 @@ public:
             return;  // probably empty/errored
         }
 
-        if (m_MaybeScreenshotRequest.valid() && m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-            UID tabID = addTab(std::make_unique<ScreenshotTab>(owner(), m_MaybeScreenshotRequest.get()));
+        if (m_MaybeScreenshotRequest.valid() and m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+            const UID tabID = addTab(std::make_unique<ScreenshotTab>(owner(), m_MaybeScreenshotRequest.get()));
             impl_select_tab(tabID);
         }
     }

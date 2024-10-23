@@ -84,22 +84,22 @@ public:
 
         ui::begin_panel("Outputs");
 
-        if (!m_Sims.empty() && ui::begin_table("simulations", 4)) {
+        if (not m_Simulations.empty() and ui::begin_table("simulations", 4)) {
             ui::table_setup_column("Integrator");
             ui::table_setup_column("Progress");
             ui::table_setup_column("Wall Time (sec)");
             ui::table_setup_column("NumStepsTaken");
             ui::table_headers_row();
 
-            for (const ForwardDynamicSimulation& sim : m_Sims) {
-                auto reports = sim.getAllSimulationReports();
+            for (const ForwardDynamicSimulation& sim : m_Simulations) {
+                const auto reports = sim.getAllSimulationReports();
                 if (reports.empty()) {
                     continue;
                 }
 
-                IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-                float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
-                float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
+                const IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
+                const float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
+                const float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
 
                 ui::table_next_row();
                 int column = 0;
@@ -142,21 +142,22 @@ private:
 
         std::ofstream fout{*maybeCSVPath};
 
-        if (!fout) {
+        if (not fout) {
             return;  // IO error (can't write to that location?)
         }
 
         fout << "Integrator,Wall Time (sec),NumStepsTaken\n";
 
-        for (const ForwardDynamicSimulation& sim : m_Sims) {
-            auto reports = sim.getAllSimulationReports();
+        for (const ForwardDynamicSimulation& simulation : m_Simulations) {
+
+            const auto reports = simulation.getAllSimulationReports();
             if (reports.empty()) {
                 continue;
             }
 
-            IntegratorMethod m = std::get<IntegratorMethod>(sim.getParams().findValue("Integrator Method").value());
-            float t = m_WalltimeExtractor.getValueFloat(*sim.getModel(), reports.back());
-            float steps = m_StepsTakenExtractor.getValueFloat(*sim.getModel(), reports.back());
+            const IntegratorMethod m = std::get<IntegratorMethod>(simulation.getParams().findValue("Integrator Method").value());
+            const float t = m_WalltimeExtractor.getValueFloat(*simulation.getModel(), reports.back());
+            const float steps = m_StepsTakenExtractor.getValueFloat(*simulation.getModel(), reports.back());
 
             fout << m.label() << ',' << t << ',' << steps << '\n';
         }
@@ -166,7 +167,7 @@ private:
     void populateParamsFromParamBlock()
     {
         m_Params.clear();
-        m_Sims.clear();
+        m_Simulations.clear();
 
         ForwardDynamicSimulatorParams params = FromParamBlock(m_BaseParams);
 
@@ -180,9 +181,9 @@ private:
     // dequeue any queued sims
     void startSimsIfNecessary()
     {
-        int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Sims.size());
-        int nActive = static_cast<int>(rgs::count_if(m_Sims, [](const auto& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
-        int nToStart = min(nAvail, m_Parallelism - nActive);
+        const int nAvail = static_cast<int>(m_Params.size()) - static_cast<int>(m_Simulations.size());
+        const int nActive = static_cast<int>(rgs::count_if(m_Simulations, [](const auto& sim) { return sim.getStatus() == SimulationStatus::Running || sim.getStatus() == SimulationStatus::Initializing; }));
+        const int nToStart = min(nAvail, m_Parallelism - nActive);
 
         if (nToStart <= 0) {
             return;  // nothing to start
@@ -190,7 +191,7 @@ private:
 
         // load model and enqueue sims
         for (auto it = m_Params.end() - nAvail, end = it + nToStart; it != end; ++it) {
-            m_Sims.emplace_back(m_BaseModel, *it);
+            m_Simulations.emplace_back(m_BaseModel, *it);
         }
     }
 
@@ -198,7 +199,7 @@ private:
     BasicModelStatePair m_BaseModel;
     ParamBlock m_BaseParams;
     std::vector<ForwardDynamicSimulatorParams> m_Params;
-    std::vector<ForwardDynamicSimulation> m_Sims;
+    std::vector<ForwardDynamicSimulation> m_Simulations;
 
     OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
     OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
