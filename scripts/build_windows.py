@@ -116,7 +116,7 @@ def build_osc(conf: BuildConfiguration):
         other_build_args = f'--config {conf.get_osc_build_type()} -j{conf.concurrency}'
 
         # configure
-        _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"} -DCMAKE_EXECUTABLE_ENABLE_EXPORTS=ON')
+        _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"}')
 
         # build+run oscar test suite
         test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar', conf.get_osc_build_type(), 'testoscar')
