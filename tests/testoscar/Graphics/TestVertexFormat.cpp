@@ -9,6 +9,7 @@
 #include <array>
 #include <initializer_list>
 #include <ranges>
+#include <span>
 #include <type_traits>
 #include <vector>
 
@@ -333,7 +334,7 @@ TEST(VertexFormat, retains_caller_provided_layout)
     };
 
     // permute the non-Position fields
-    const auto fields_to_permute = rgs::subrange(attribute_descriptions.begin()+1, attribute_descriptions.end());
+    const auto fields_to_permute = std::span{attribute_descriptions}.subspan(1);
     for (bool permuted = true; permuted; permuted = rgs::next_permutation(fields_to_permute, rgs::less{}, &VertexAttributeDescriptor::attribute).found) {
 
         const VertexFormat permutation_format{attribute_descriptions};
