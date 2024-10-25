@@ -42,6 +42,11 @@ namespace
     // be able to have data passed to them
     constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;
 
+    // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
+    // file dialog system with a hint of where the user probably expects the next dialog to
+    // open
+    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback;
+
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView methodname, char* p)
     {
         // nullptr disallowed
@@ -118,6 +123,12 @@ void osc::set_environment_variable(CStringView name, CStringView value, bool ove
     SDL_setenv(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
+void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
+{
+    auto guard = g_initial_directory_to_show_fallback.lock();
+    *guard = p;
+}
+
 std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
     std::span<const std::string_view> file_extensions,
     std::optional<std::filesystem::path> initial_directory_to_show)
@@ -127,6 +138,11 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
     static_cast<void>(initial_directory_to_show);
     return std::nullopt;
 #else
+
+    if (not initial_directory_to_show) {
+        // defer to the application-wide fallback, if set
+        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+    }
 
     auto [path, result] = [&]()
     {
@@ -145,13 +161,12 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
         };
     }();
 
-    if (path && result == NFD_OKAY)
-    {
+    if (path and result == NFD_OKAY) {
         static_assert(std::is_same_v<nfdchar_t, char>);
+        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
         return std::filesystem::weakly_canonical(path.get());
     }
-    else
-    {
+    else {
         return std::nullopt;
     }
 #endif
@@ -167,6 +182,11 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
     return {};
 #else
 
+    if (not initial_directory_to_show) {
+        // defer to the application-wide fallback, if set
+        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+    }
+
     const std::string comma_delimted_extensions = join(file_extensions, ",");
     nfdpathset_t s{};
     nfdresult_t result = NFD_OpenDialogMultiple(
@@ -177,22 +197,19 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 
     std::vector<std::filesystem::path> rv;
 
-    if (result == NFD_OKAY)
-    {
+    if (result == NFD_OKAY) {
         size_t len = NFD_PathSet_GetCount(&s);
         rv.reserve(len);
-        for (size_t i = 0; i < len; ++i)
-        {
+        for (size_t i = 0; i < len; ++i) {
             rv.emplace_back(std::filesystem::weakly_canonical(NFD_PathSet_GetPath(&s, i)));
         }
 
         NFD_PathSet_Free(&s);
+        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
     }
-    else if (result == NFD_CANCEL)
-    {
+    else if (result == NFD_CANCEL) {
     }
-    else
-    {
+    else {
         log_error("NFD_OpenDialogMultiple error: %s", NFD_GetError());
     }
 
@@ -202,16 +219,19 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 
 std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add_extension_if_necessary(
     std::optional<CStringView> maybe_extension,
-    std::optional<CStringView> maybe_initial_directory_to_open)
+    std::optional<std::filesystem::path> maybe_initial_directory_to_open)
 {
 #ifdef EMSCRIPTEN
     static_cast<void>(maybe_extension);
     static_cast<void>(maybe_initial_directory_to_open);
     return std::nullopt;
 #else
-    if (maybe_extension)
-    {
-        OSC_ASSERT(!contains(*maybe_extension, ',') && "can only provide one extension to this implementation!");
+    if (maybe_extension) {
+        OSC_ASSERT(not contains(*maybe_extension, ',') && "can only provide one extension to this implementation!");
+    }
+    if (not maybe_initial_directory_to_open) {
+        // defer to the application-wide fallback, if set
+        maybe_initial_directory_to_open = *g_initial_directory_to_show_fallback.lock();
     }
 
     auto [path, result] = [&]()
@@ -219,26 +239,23 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         nfdchar_t* ptr = nullptr;
         const nfdresult_t res = NFD_SaveDialog(
             maybe_extension ? maybe_extension->c_str() : nullptr,
-            maybe_initial_directory_to_open ? maybe_initial_directory_to_open->c_str() : nullptr,
+            maybe_initial_directory_to_open ? maybe_initial_directory_to_open->string().c_str() : nullptr,
             &ptr
         );
-        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>
-        {
+        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>{
             std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
             res,
         };
     }();
 
-    if (result != NFD_OKAY)
-    {
+    if (result != NFD_OKAY) {
         return std::nullopt;
     }
 
     static_assert(std::is_same_v<nfdchar_t, char>);
     auto p = std::filesystem::weakly_canonical(path.get());
 
-    if (maybe_extension)
-    {
+    if (maybe_extension) {
         // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
         //
         // the caller only provides the extension without the dot (this is what
@@ -251,6 +268,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         }
     }
 
+    g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
     return p;
 #endif
 }

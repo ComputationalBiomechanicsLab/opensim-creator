@@ -87,6 +87,16 @@ namespace osc
     //   than as a process-wide function call
     void enable_highdpi_mode_for_this_process();
 
+    // Sets the directory that should be shown to the user if a call to one of the
+    // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
+    // isn't provided, the implementation will fallback to whatever the OS's default
+    // behavior is (usually, it remembers the user's last usage).
+    //
+    // This fallback override is activated until a call to `prompt_user*` is made without
+    // the user cancelling out of the dialog (i.e. if the user cancels then this fallback
+    // will remain in-place).
+    void set_initial_directory_to_show_fallback(const std::filesystem::path&);
+
     // synchronously prompt a user to select a single file using the OS's native file
     // browser
     //
@@ -157,7 +167,7 @@ namespace osc
     // the user selects a location
     std::optional<std::filesystem::path> prompt_user_for_file_save_location_add_extension_if_necessary(
         std::optional<CStringView> maybe_extension = std::nullopt,
-        std::optional<CStringView> maybe_initial_directory_to_open = std::nullopt
+        std::optional<std::filesystem::path> maybe_initial_directory_to_open = std::nullopt
     );
 
 
