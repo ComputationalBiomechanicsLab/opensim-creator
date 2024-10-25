@@ -7,6 +7,7 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/StringHelpers.h>
+#include <oscar/Utils/SynchronizedValue.h>
 
 #ifndef EMSCRIPTEN
     #include <nfd.h>
@@ -37,6 +38,10 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    // care: this is necessary because segfault crash handlers don't appear to
+    // be able to have data passed to them
+    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;
+
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView methodname, char* p)
     {
         // nullptr disallowed
@@ -260,7 +265,7 @@ namespace
     const std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
     void write_dynamic_name_els(std::ostream& out)
     {
-        static std::default_random_engine s_prng{std::random_device{}()};
+        std::default_random_engine s_prng{std::random_device{}()};
         std::array<char, 8> rv{};
         rgs::sample(c_valid_dynamic_characters, rv.begin(), rv.size(), s_prng);
         out << std::string_view{rv.begin(), rv.end()};
@@ -695,24 +700,17 @@ namespace
         return std::chrono::seconds(std::time(nullptr));
     }
 
-    // care: this is necessary because segfault crash handlers don't appear to
-    // be able to have data passed to them
-    std::optional<std::filesystem::path> upd_crash_report_directory_global()
-    {
-        static std::optional<std::filesystem::path> s_CrashDumpDir;
-        return s_CrashDumpDir;
-    }
-
     std::optional<std::filesystem::path> get_crash_report_path()
     {
-        if (!upd_crash_report_directory_global()) {
+        auto guard = g_crash_dump_dir.lock();
+        if (not *guard) {
             return std::nullopt;  // global wasn't set: programmer error
         }
 
         std::stringstream filename;
         filename << get_current_time_as_unix_timestamp().count();
         filename << "_CrashReport.txt";
-        return *upd_crash_report_directory_global() / std::move(filename).str();
+        return **guard / std::move(filename).str();
     }
 
     LONG crash_handler(EXCEPTION_POINTERS*)
@@ -773,7 +771,7 @@ void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path& cra
     // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
 
     // set crash dump directory globally so that the crash handler can see it
-    upd_crash_report_directory_global() = crash_dump_directory;
+    g_crash_dump_dir.lock()->emplace(crash_dump_directory);
 
     // system default: display all errors
     SetErrorMode(0);
