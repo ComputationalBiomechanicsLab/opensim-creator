@@ -15,13 +15,11 @@
 #include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
 #include <OpenSimCreator/UI/Shared/NavigatorPanel.h>
-#include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <OpenSimCreator/UI/Shared/OutputWatchesPanel.h>
 #include <OpenSimCreator/UI/Shared/PropertiesPanel.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
@@ -36,7 +34,6 @@
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
@@ -61,6 +58,18 @@ namespace
     public:
         std::shared_ptr<IModelStatePair> updSharedModelPtr() const { return m_Model; }
         IModelStatePair& updModel() { return *m_Model; }
+
+        void on_tick()
+        {
+            // ensure the model is scrubbed to the current scrub time
+            //
+            // this might not be the case if (e.g.) an edit was made by an action that
+            // re-finalizes the model at t=0, so use the version number to track potential
+            // situations where that might've happened (#932)
+            if (m_Model->getState().getTime() != m_ScrubTime) {
+                setScrubTime(m_ScrubTime);
+            }
+        }
 
         bool isModelLoaded() const
         {
@@ -372,16 +381,16 @@ public:
             [this](std::string_view panelName)
             {
                 auto onRightClick = [model = m_UiState->updSharedModelPtr(), menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
-                    {
-                        auto popup = std::make_unique<ComponentContextMenu>(
-                            menuName,
-                            editorAPI->owner(),
-                            model,
-                            e.componentAbsPathOrEmpty
-                        );
+                {
+                    auto popup = std::make_unique<ComponentContextMenu>(
+                        menuName,
+                        editorAPI->owner(),
+                        model,
+                        e.componentAbsPathOrEmpty
+                    );
 
-                        App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
-                    };
+                    App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
+                };
                 ModelViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
 
                 return std::make_shared<ModelViewerPanel>(panelName, panelParams);
@@ -431,6 +440,7 @@ public:
 
     void on_tick()
     {
+        m_UiState->on_tick();
         m_PanelManager->on_tick();
     }
 

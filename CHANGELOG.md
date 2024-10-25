@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Finished off tutorials 5 and 7 in the documentation.
 - Fixed a bug where the model manipulation gizmo would show on readonly models (e.g.
   in the simulator tab, #936)
+- Fixed a bug where editing a model that has an associated trajectory loaded in the
+  preview experimental data workflow would revert the model to its `t=0` state (#932)
 - Internal: OpenSimCreator now uses builds the OpenSim API via `osim` (https://github.com/ComputationalBiomechanicsLab/osim),
   which makes building + packaging easier for the project
 - Internal: `oscar_simbody` was re-integrated into `OpenSimCreator` to reduce the amount of
@@ -21,6 +23,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: `lua` and `ImGuiColorTextEdit` were dropped as dependencies because they were
   only used by one demo. They might be re-added later, if we get enough time to integrate
   in-engine scripting ;)
+
 
 ## [0.5.15] - 2024/10/07
 
