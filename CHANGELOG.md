@@ -6,12 +6,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - The OpenSim Creator executable is now built with static linking which, with
-  a little more work, will enable portable executables, which are handy for
-  running courses etc. (#881).
+  a little more work, will enable portable executables (#881).
 - The installation, building, development environment setup, and contribution guides
   have been moved into the documentation pages (https://docs.opensimcreator.com),
   so that there's a centralized location for all documentation.
 - Finished off tutorials 5 and 7 in the documentation.
+- After dragging a file into OSC, the next file dialog that opens should now default
+  to the same directory that the files were dragged from (thanks @mrrezaie, #918).
 - Fixed a bug where the model manipulation gizmo would show on readonly models (e.g.
   in the simulator tab, #936)
 - Fixed a bug where editing a model that has an associated trajectory loaded in the

@@ -279,15 +279,14 @@ public:
             handleDeletedTabs();
 
             if (activeTabHandledEvent) {
-                // If the user dragged a file into an open tab, and the open tab accepted the
-                // event (e.g. because it used it to open/import a file), then make the directory
-                // of that droppped file the next directory that the user will see if they
-                // subsequently open a file dialog.
+                // If the user dragged a file into an open tab, and the tab accepted the
+                // event (e.g. because it opened/imported the file), then the directory
+                // of the droppped file should become the next directory that the user sees
+                // if they subsequently open a file dialog.
                 //
-                // As an example, the reason that this is useful is because the user might want
-                // this is because they've just dragged a file into the UI to open something and
-                // then they subsequently want to load associated data (imagine loading an OpenSim
-                // model followed by wanting to associate it with motion data - #918).
+                // The reason that users find this useful is because they might've just
+                // dragged a file into the UI to open something and, subsequently, want
+                // to load associated data (#918).
                 if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
