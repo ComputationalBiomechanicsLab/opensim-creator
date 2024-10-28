@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Renamed the `OpenSim` options in the muscle styling panel to what they actually are
+  (e.g. `OpenSim` coloring is now `Activation`, `OpenSim` rendering is now `Lines of Action`,
+  #933).
 - The OpenSim Creator executable is now built with static linking which, with
   a little more work, will enable portable executables (#881).
 - The installation, building, development environment setup, and contribution guides
