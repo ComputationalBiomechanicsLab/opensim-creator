@@ -21,12 +21,6 @@ namespace
         },
         MuscleColorSourceMetadata
         {
-            "opensim",
-            "OpenSim",
-            MuscleColorSource::OpenSim,
-        },
-        MuscleColorSourceMetadata
-        {
             "activation",
             "Activation",
             MuscleColorSource::Activation,

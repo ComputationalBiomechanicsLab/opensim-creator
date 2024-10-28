@@ -9,14 +9,13 @@ namespace osc
 {
     enum class MuscleColorSource {
         AppearanceProperty,
-        OpenSim,
         Activation,
         Excitation,
         Force,
         FiberLength,
         NUM_OPTIONS,
 
-        Default = OpenSim,
+        Default = Activation,
     };
 
     struct MuscleColorSourceMetadata final {

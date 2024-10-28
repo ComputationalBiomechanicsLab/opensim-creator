@@ -139,8 +139,6 @@ namespace
         switch (s) {
         case MuscleColorSource::AppearanceProperty:
             return GetGeometryPathDefaultColor(musc.getGeometryPath());
-        case MuscleColorSource::OpenSim:
-            return GetGeometryPathColor(musc.getGeometryPath(), st);
         default:
             return CalcOSCMuscleColor(musc, st, s);
         }
