@@ -8,12 +8,12 @@
 namespace osc
 {
     enum class MuscleDecorationStyle {
-        OpenSim,
+        LinesOfAction,
         FibersAndTendons,
         Hidden,
         NUM_OPTIONS,
 
-        Default = OpenSim,
+        Default = LinesOfAction,
     };
 
     struct MuscleDecorationStyleMetadata final {

@@ -949,7 +949,7 @@ namespace
     //
     // the reason this is used, rather than OpenSim's implementation, is because this custom implementation
     // can do things like recolor parts of the muscle, customize the hittest, etc.
-    void HandleMuscleOpenSimStyle(
+    void HandleMuscleLinesOfAction(
         RendererState& rs,
         const OpenSim::Muscle& musc)
     {
@@ -1084,9 +1084,9 @@ namespace
                 return;
             case MuscleDecorationStyle::Hidden:
                 return;  // just don't generate them
-            case MuscleDecorationStyle::OpenSim:
+            case MuscleDecorationStyle::LinesOfAction:
             default:
-                HandleMuscleOpenSimStyle(rs, *muscle);
+                HandleMuscleLinesOfAction(rs, *muscle);
                 return;
             }
         }

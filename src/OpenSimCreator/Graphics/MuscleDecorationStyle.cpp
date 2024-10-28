@@ -11,22 +11,18 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleDecorationStyleMetadata>(
-    {
-        MuscleDecorationStyleMetadata
-        {
-            "opensim",
-            "OpenSim",
-            MuscleDecorationStyle::OpenSim,
+    constexpr auto c_Metadata = std::to_array<MuscleDecorationStyleMetadata>({
+        MuscleDecorationStyleMetadata{
+            "opensim",  // legacy label (naming was changed to "Lines of Action" in #933)
+            "Lines of Action",
+            MuscleDecorationStyle::LinesOfAction,
         },
-        MuscleDecorationStyleMetadata
-        {
+        MuscleDecorationStyleMetadata{
             "fibers_and_tendons",
             "Fibers & Tendons",
             MuscleDecorationStyle::FibersAndTendons,
         },
-        MuscleDecorationStyleMetadata
-        {
+        MuscleDecorationStyleMetadata{
             "hidden",
             "Hidden",
             MuscleDecorationStyle::Hidden,
