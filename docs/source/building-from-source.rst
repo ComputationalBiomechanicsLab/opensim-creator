@@ -107,7 +107,7 @@ Building on MacOS (Ventura or newer)
     3. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables
        point to compilers that are compatible with C++20. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
     4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
-6. Done:
+7. Done:
     1. The ``osc-build`` directory should contain the built installer
 
 
@@ -126,16 +126,16 @@ Building on Ubuntu (20 or newer)
        ``CC=clang-11 CXX=clang++-11 ./scripts/build_debian-buster.sh``
 3. Get C++20-compatible standard library headers (usually required on Ubuntu 20):
     1. ``sudo apt-get install libstdc++-10-dev``
-3. Get ``cmake``:
+4. Get ``cmake``:
     1. Install ``cmake`` via your package manager (e.g. ``apt-get install cmake``)
     2. If your cmake is too old, build one from source, see: https://askubuntu.com/a/865294
-4. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
+5. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
     1. Install ``python3`` and ``pip3`` via your package manager (e.g. ``apt-get install python3 pip3``)
-5. Build OpenSim Creator in a terminal:
+6. Build OpenSim Creator in a terminal:
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator --recursive``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables point to
        compilers that are compatible with C++20. E.g. ``export CC=clang-12``, ``export CXX=clang++-12``
     4. Run the build script: ``scripts/build_debian-buster.sh``
-6. Done:
+7. Done:
     1. The ``osc-build`` directory should contain the built installer
