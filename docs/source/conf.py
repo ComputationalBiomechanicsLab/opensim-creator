@@ -20,6 +20,8 @@
 project = 'OpenSim Creator'
 copyright = '2024, Adam Kewley'
 author = 'Adam Kewley'
+github_username = 'ComputationalBiomechanicsLab'
+github_repository = 'https://github.com/ComputationalBiomechanicsLab/opensim-creator'
 
 
 # -- General configuration ---------------------------------------------------
@@ -28,6 +30,12 @@ author = 'Adam Kewley'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+
+    # sphinx-toolbox: https://sphinx-toolbox.readthedocs.io/en/latest/extensions/index.html
+    'sphinx.ext.viewcode',
+    'sphinx_tabs.tabs',
+    'sphinx-prompt',
+    'sphinx_toolbox',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

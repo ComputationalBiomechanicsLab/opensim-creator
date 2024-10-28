@@ -213,19 +213,19 @@ containing a mesh that's directly connected to ground (origin). This roughly
 mirrors what's seen when using the mesh warper (see :ref:`tut5`).
 
 To do this, you'll need the source model with source and destination ``.landmarks.csv``
-files.
+files. ``TODO`` provide the model or direct the user to expand the collapsing
+thing below.
 
-``TODO`` put this list into a ``collapse`` block so it doesn't get in the way
-of the rest of the content. Provide a download link to the model zip ``TODO``
+.. collapse:: Build the model (optional, click to expand)
 
-- Use the mesh warper to create a warp between generated geometry and some
+  - Use the mesh warper to create a warp between generated geometry and some
   result. Save the generated source geometry as an ``obj`` in a folder at
   ``Geometry/mesh.obj`` . Save the source landmarks in the same folder at
   ``Geometry/mesh.landmarks.csv`` . Save the destination landmarks in the
   same folder at ``DestinationGeometry/mesh.landmarks.csv``.
-- Use the model editor to create a blank model. Save it in the folder at ``./model.osim``.
-  Right-click the ``ground`` component in the blank model, ``Add``,
-  ``Geometry``, select the ``mesh.obj`` file.
+
+  - Use the model editor to create a blank model. Save it in the folder at ``./model.osim``.
+    Right-click the ``ground`` component in the blank model, ``Add``, ``Geometry``, select the ``mesh.obj`` file.
 
 
 Walkthrough: Warping a One-Body, One-Mesh, One-Muscle Model
