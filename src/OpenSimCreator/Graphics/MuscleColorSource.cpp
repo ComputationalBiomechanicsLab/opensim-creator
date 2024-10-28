@@ -16,8 +16,8 @@ namespace
         MuscleColorSourceMetadata
         {
             "opensim_appearance",
-            "OpenSim (Appearance Property)",
-            MuscleColorSource::OpenSimAppearanceProperty,
+            "Appearance Property",
+            MuscleColorSource::AppearanceProperty,
         },
         MuscleColorSourceMetadata
         {

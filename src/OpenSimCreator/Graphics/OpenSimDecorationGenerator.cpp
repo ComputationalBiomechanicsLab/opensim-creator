@@ -137,7 +137,7 @@ namespace
         MuscleColorSource s)
     {
         switch (s) {
-        case MuscleColorSource::OpenSimAppearanceProperty:
+        case MuscleColorSource::AppearanceProperty:
             return GetGeometryPathDefaultColor(musc.getGeometryPath());
         case MuscleColorSource::OpenSim:
             return GetGeometryPathColor(musc.getGeometryPath(), st);
