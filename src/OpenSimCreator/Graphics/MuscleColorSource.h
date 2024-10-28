@@ -7,7 +7,7 @@
 
 namespace osc
 {
-    enum class MuscleColoringStyle {
+    enum class MuscleColorSource {
         OpenSimAppearanceProperty,
         OpenSim,
         Activation,
@@ -19,12 +19,12 @@ namespace osc
         Default = OpenSim,
     };
 
-    struct MuscleColoringStyleMetadata final {
+    struct MuscleColorSourceMetadata final {
         CStringView id;
         CStringView label;
-        MuscleColoringStyle value;
+        MuscleColorSource value;
     };
-    std::span<const MuscleColoringStyleMetadata> GetAllMuscleColoringStyleMetadata();
-    const MuscleColoringStyleMetadata& GetMuscleColoringStyleMetadata(MuscleColoringStyle);
-    ptrdiff_t GetIndexOf(MuscleColoringStyle);
+    std::span<const MuscleColorSourceMetadata> GetAllPossibleMuscleColoringSourcesMetadata();
+    const MuscleColorSourceMetadata& GetMuscleColoringStyleMetadata(MuscleColorSource);
+    ptrdiff_t GetIndexOf(MuscleColorSource);
 }

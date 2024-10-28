@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
+#include <OpenSimCreator/Graphics/MuscleColorSource.h>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.h>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptionFlags.h>
@@ -26,8 +26,8 @@ namespace osc
         MuscleDecorationStyle getMuscleDecorationStyle() const;
         void setMuscleDecorationStyle(MuscleDecorationStyle);
 
-        MuscleColoringStyle getMuscleColoringStyle() const;
-        void setMuscleColoringStyle(MuscleColoringStyle);
+        MuscleColorSource getMuscleColorSource() const;
+        void setMuscleColorSource(MuscleColorSource);
 
         MuscleSizingStyle getMuscleSizingStyle() const;
         void setMuscleSizingStyle(MuscleSizingStyle);
@@ -79,7 +79,7 @@ namespace osc
 
     private:
         MuscleDecorationStyle m_MuscleDecorationStyle;
-        MuscleColoringStyle m_MuscleColoringStyle;
+        MuscleColorSource m_MuscleColorSource;
         MuscleSizingStyle m_MuscleSizingStyle;
         OpenSimDecorationOptionFlags m_Flags;
     };

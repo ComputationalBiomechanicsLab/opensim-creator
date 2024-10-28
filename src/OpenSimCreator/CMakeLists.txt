@@ -208,8 +208,8 @@ add_library(OpenSimCreator STATIC
     Graphics/OpenSimDecorationOptions.h
     Graphics/ModelRendererParams.cpp
     Graphics/ModelRendererParams.h
-    Graphics/MuscleColoringStyle.cpp
-    Graphics/MuscleColoringStyle.h
+    Graphics/MuscleColorSource.cpp
+    Graphics/MuscleColorSource.h
     Graphics/MuscleDecorationStyle.cpp
     Graphics/MuscleDecorationStyle.h
     Graphics/MuscleSizingStyle.cpp

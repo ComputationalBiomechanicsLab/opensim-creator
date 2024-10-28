@@ -5,7 +5,7 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
+#include <OpenSimCreator/Graphics/MuscleColorSource.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -38,7 +38,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     SimTK::State& state = model.initializeState();
 
     OpenSimDecorationOptions opts;
-    opts.setMuscleColoringStyle(MuscleColoringStyle::OpenSimAppearanceProperty);
+    opts.setMuscleColorSource(MuscleColorSource::OpenSimAppearanceProperty);
 
     SceneCache meshCache;
     bool passedTest = false;

@@ -223,7 +223,7 @@ namespace osc
     // basic wigetized parts of the 3D viewer
     bool DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
     bool DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
-    bool DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions&);
+    bool DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions&);
     bool DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);

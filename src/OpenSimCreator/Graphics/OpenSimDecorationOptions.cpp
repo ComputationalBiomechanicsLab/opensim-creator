@@ -15,7 +15,7 @@ namespace rgs = std::ranges;
 
 osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
-    m_MuscleColoringStyle{MuscleColoringStyle::Default},
+    m_MuscleColorSource{MuscleColorSource::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
     m_Flags{OpenSimDecorationOptionFlags::Default}
 {}
@@ -30,14 +30,14 @@ void osc::OpenSimDecorationOptions::setMuscleDecorationStyle(MuscleDecorationSty
     m_MuscleDecorationStyle = s;
 }
 
-MuscleColoringStyle osc::OpenSimDecorationOptions::getMuscleColoringStyle() const
+MuscleColorSource osc::OpenSimDecorationOptions::getMuscleColorSource() const
 {
-    return m_MuscleColoringStyle;
+    return m_MuscleColorSource;
 }
 
-void osc::OpenSimDecorationOptions::setMuscleColoringStyle(MuscleColoringStyle s)
+void osc::OpenSimDecorationOptions::setMuscleColorSource(MuscleColorSource s)
 {
-    m_MuscleColoringStyle = s;
+    m_MuscleColorSource = s;
 }
 
 MuscleSizingStyle osc::OpenSimDecorationOptions::getMuscleSizingStyle() const
@@ -188,7 +188,7 @@ void osc::OpenSimDecorationOptions::setShouldShowPointForces(bool v)
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);
-    callback("muscle_coloring_style", GetMuscleColoringStyleMetadata(m_MuscleColoringStyle).id);
+    callback("muscle_coloring_style", GetMuscleColoringStyleMetadata(m_MuscleColorSource).id);
     callback("muscle_sizing_style", GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id);
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i) {
         const auto& meta = GetIthOptionMetadata(i);
@@ -223,10 +223,10 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
 
     if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == VariantType::String)
     {
-        const auto metadata = GetAllMuscleColoringStyleMetadata();
+        const auto metadata = GetAllPossibleMuscleColoringSourcesMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
         if (it != metadata.end()) {
-            m_MuscleColoringStyle = it->value;
+            m_MuscleColorSource = it->value;
         }
     }
 

@@ -949,15 +949,15 @@ bool osc::DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions& opts)
     return edited;
 }
 
-bool osc::DrawMuscleColoringOptionsRadioButtons(OpenSimDecorationOptions& opts)
+bool osc::DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions& opts)
 {
-    const MuscleColoringStyle currentStyle = opts.getMuscleColoringStyle();
+    const MuscleColorSource currentStyle = opts.getMuscleColorSource();
     bool edited = false;
-    for (const auto& metadata : GetAllMuscleColoringStyleMetadata())
+    for (const auto& metadata : GetAllPossibleMuscleColoringSourcesMetadata())
     {
         if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle))
         {
-            opts.setMuscleColoringStyle(metadata.value);
+            opts.setMuscleColorSource(metadata.value);
             edited = true;
         }
     }
@@ -982,8 +982,8 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 
     ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
     ui::push_id(id++);
-    ui::draw_text_disabled("Coloring");
-    edited = DrawMuscleColoringOptionsRadioButtons(opts) || edited;
+    ui::draw_text_disabled("Color Source");
+    edited = DrawMuscleColorSourceOptionsRadioButtons(opts) || edited;
     ui::pop_id();
 
     return edited;

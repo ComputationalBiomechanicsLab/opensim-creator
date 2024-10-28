@@ -83,16 +83,16 @@ namespace
     float GetMuscleColorFactor(
         const OpenSim::Muscle& musc,
         const SimTK::State& st,
-        MuscleColoringStyle s)
+        MuscleColorSource s)
     {
         switch (s) {
-        case MuscleColoringStyle::Activation:
+        case MuscleColorSource::Activation:
             return static_cast<float>(musc.getActivation(st));
-        case MuscleColoringStyle::Excitation:
+        case MuscleColorSource::Excitation:
             return static_cast<float>(musc.getExcitation(st));
-        case MuscleColoringStyle::Force:
+        case MuscleColorSource::Force:
             return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
-        case MuscleColoringStyle::FiberLength:
+        case MuscleColorSource::FiberLength:
         {
             const auto nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
             float fl = nfl - 1.0f;
@@ -120,7 +120,7 @@ namespace
     Color CalcOSCMuscleColor(
         const OpenSim::Muscle& musc,
         const SimTK::State& st,
-        MuscleColoringStyle s)
+        MuscleColorSource s)
     {
         const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
         const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
@@ -134,12 +134,12 @@ namespace
     Color GetMuscleColor(
         const OpenSim::Muscle& musc,
         const SimTK::State& st,
-        MuscleColoringStyle s)
+        MuscleColorSource s)
     {
         switch (s) {
-        case MuscleColoringStyle::OpenSimAppearanceProperty:
+        case MuscleColorSource::OpenSimAppearanceProperty:
             return GetGeometryPathDefaultColor(musc.getGeometryPath());
-        case MuscleColoringStyle::OpenSim:
+        case MuscleColorSource::OpenSim:
             return GetGeometryPathColor(musc.getGeometryPath(), st);
         default:
             return CalcOSCMuscleColor(musc, st, s);
@@ -710,7 +710,7 @@ namespace
         const Color fiberColor = GetMuscleColor(
             muscle,
             rs.getState(),
-            rs.getOptions().getMuscleColoringStyle()
+            rs.getOptions().getMuscleColorSource()
         );
         const Color tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
 
@@ -967,7 +967,7 @@ namespace
         const Color color = GetMuscleColor(
             musc,
             rs.getState(),
-            rs.getOptions().getMuscleColoringStyle()
+            rs.getOptions().getMuscleColorSource()
         );
 
         EmitPointBasedLine(rs, musc, points, radius, color);

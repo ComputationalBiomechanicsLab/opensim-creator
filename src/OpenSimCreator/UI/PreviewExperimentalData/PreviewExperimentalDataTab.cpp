@@ -5,7 +5,6 @@
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelActions.h>
 #include <OpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <OpenSimCreator/Graphics/MuscleColoringStyle.h>
 #include <OpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
