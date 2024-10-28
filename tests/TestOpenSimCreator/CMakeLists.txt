@@ -18,6 +18,7 @@ add_executable(TestOpenSimCreator
     Documents/OutputExtractors/TestConstantOutputExtractor.cpp
     Documents/Simulation/TestForwardDynamicSimulation.cpp
     Documents/Simulation/TestSimulationHelpers.cpp
+    Graphics/TestMuscleColorSourceScaling.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
     Graphics/TestSimTKDecorationGenerator.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp

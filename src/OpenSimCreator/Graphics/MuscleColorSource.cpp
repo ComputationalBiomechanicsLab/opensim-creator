@@ -11,34 +11,28 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleColorSourceMetadata>(
-    {
-        MuscleColorSourceMetadata
-        {
+    constexpr auto c_Metadata = std::to_array<MuscleColorSourceMetadata>({
+        MuscleColorSourceMetadata{
             "opensim_appearance",
             "Appearance Property",
             MuscleColorSource::AppearanceProperty,
         },
-        MuscleColorSourceMetadata
-        {
+        MuscleColorSourceMetadata{
             "activation",
             "Activation",
             MuscleColorSource::Activation,
         },
-        MuscleColorSourceMetadata
-        {
+        MuscleColorSourceMetadata{
             "excitation",
             "Excitation",
             MuscleColorSource::Excitation,
         },
-        MuscleColorSourceMetadata
-        {
+        MuscleColorSourceMetadata{
             "force",
             "Force",
             MuscleColorSource::Force,
         },
-        MuscleColorSourceMetadata
-        {
+        MuscleColorSourceMetadata{
             "fiber_length",
             "Fiber Length",
             MuscleColorSource::FiberLength,
