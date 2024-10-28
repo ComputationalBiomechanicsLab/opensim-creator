@@ -21,6 +21,7 @@ add_executable(TestOpenSimCreator
     Graphics/TestMuscleColorSourceScaling.cpp
     Graphics/TestOpenSimDecorationGenerator.cpp
     Graphics/TestSimTKDecorationGenerator.cpp
+    Graphics/TestOpenSimDecorationOptions.cpp
     MetaTests/TestOpenSimLibraryAPI.cpp
     Platform/TestRecentFiles.cpp
     UI/Shared/TestFunctionCurveViewerPopup.cpp

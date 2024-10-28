@@ -3,6 +3,7 @@
 #include <OpenSimCreator/Graphics/MuscleColorSource.h>
 #include <OpenSimCreator/Graphics/MuscleDecorationStyle.h>
 #include <OpenSimCreator/Graphics/MuscleSizingStyle.h>
+#include <OpenSimCreator/Graphics/MuscleColorSourceScaling.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptionFlags.h>
 
 #include <oscar/Utils/CStringView.h>
@@ -31,6 +32,9 @@ namespace osc
 
         MuscleSizingStyle getMuscleSizingStyle() const;
         void setMuscleSizingStyle(MuscleSizingStyle);
+
+        MuscleColorSourceScaling getMuscleColorSourceScaling() const;
+        void setMuscleColorSourceScaling(MuscleColorSourceScaling);
 
         // the ones below here are toggle-able options with user-facing strings etc
         size_t getNumOptions() const;
@@ -81,6 +85,7 @@ namespace osc
         MuscleDecorationStyle m_MuscleDecorationStyle;
         MuscleColorSource m_MuscleColorSource;
         MuscleSizingStyle m_MuscleSizingStyle;
+        MuscleColorSourceScaling m_MuscleColourSourceScaling;
         OpenSimDecorationOptionFlags m_Flags;
     };
 }

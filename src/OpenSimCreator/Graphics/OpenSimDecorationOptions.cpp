@@ -17,6 +17,7 @@ osc::OpenSimDecorationOptions::OpenSimDecorationOptions() :
     m_MuscleDecorationStyle{MuscleDecorationStyle::Default},
     m_MuscleColorSource{MuscleColorSource::Default},
     m_MuscleSizingStyle{MuscleSizingStyle::Default},
+    m_MuscleColourSourceScaling{MuscleColorSourceScaling::Default},
     m_Flags{OpenSimDecorationOptionFlags::Default}
 {}
 
@@ -48,6 +49,16 @@ MuscleSizingStyle osc::OpenSimDecorationOptions::getMuscleSizingStyle() const
 void osc::OpenSimDecorationOptions::setMuscleSizingStyle(MuscleSizingStyle s)
 {
     m_MuscleSizingStyle = s;
+}
+
+MuscleColorSourceScaling osc::OpenSimDecorationOptions::getMuscleColorSourceScaling() const
+{
+    return m_MuscleColourSourceScaling;
+}
+
+void osc::OpenSimDecorationOptions::setMuscleColorSourceScaling(MuscleColorSourceScaling s)
+{
+    m_MuscleColourSourceScaling = s;
 }
 
 size_t osc::OpenSimDecorationOptions::getNumOptions() const
@@ -190,6 +201,7 @@ void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::fu
     callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);
     callback("muscle_coloring_style", GetMuscleColoringStyleMetadata(m_MuscleColorSource).id);
     callback("muscle_sizing_style", GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id);
+    callback("muscle_color_scaling", GetMuscleColorSourceScalingMetadata(m_MuscleColourSourceScaling).id);
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i) {
         const auto& meta = GetIthOptionMetadata(i);
         callback(meta.id, static_cast<bool>(m_Flags & GetIthOption(i)));
@@ -212,7 +224,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         return lookup_or_nullptr(lut, buf);
     };
 
-    if (auto* appVal = lookup("muscle_decoration_style"); appVal->type() == VariantType::String)
+    if (auto* appVal = lookup("muscle_decoration_style"); appVal and appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllMuscleDecorationStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
@@ -221,7 +233,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         }
     }
 
-    if (auto* appVal = lookup("muscle_coloring_style"); appVal->type() == VariantType::String)
+    if (auto* appVal = lookup("muscle_coloring_style"); appVal and appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllPossibleMuscleColoringSourcesMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
@@ -230,7 +242,7 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         }
     }
 
-    if (auto* appVal = lookup("muscle_sizing_style"); appVal->type() == VariantType::String)
+    if (auto* appVal = lookup("muscle_sizing_style"); appVal and appVal->type() == VariantType::String)
     {
         const auto metadata = GetAllMuscleSizingStyleMetadata();
         const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
@@ -239,10 +251,18 @@ void osc::OpenSimDecorationOptions::tryUpdFromValues(
         }
     }
 
+    if (auto* appVal = lookup("muscle_color_scaling"); appVal and appVal->type() == VariantType::String)
+    {
+        const auto metadata = GetAllPossibleMuscleColorSourceScalingMetadata();
+        const auto it = rgs::find(metadata, to<std::string>(*appVal), [](const auto& m) { return m.id; });
+        if (it != metadata.end()) {
+            m_MuscleColourSourceScaling = it->value;
+        }
+    }
+
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlags>(); ++i) {
         const auto& metadata = GetIthOptionMetadata(i);
-        if (auto* appVal = lookup(metadata.id); appVal->type() == VariantType::Bool)
-        {
+        if (auto* appVal = lookup(metadata.id); appVal and appVal->type() == VariantType::Bool) {
             SetOption(m_Flags, GetIthOption(i), to<bool>(*appVal));
         }
     }
