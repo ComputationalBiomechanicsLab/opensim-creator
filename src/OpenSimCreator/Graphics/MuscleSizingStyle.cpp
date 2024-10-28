@@ -10,13 +10,11 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_Metadata = std::to_array<MuscleSizingStyleMetadata>(
-    {
-        MuscleSizingStyleMetadata
-        {
-            "opensim",
-            "OpenSim",
-            MuscleSizingStyle::OpenSim,
+    constexpr auto c_Metadata = std::to_array<MuscleSizingStyleMetadata>({
+        MuscleSizingStyleMetadata{
+            "opensim",  // legacy behavior (changed to 'Fixed' in #933)
+            "Fixed",
+            MuscleSizingStyle::Fixed,
         },
         MuscleSizingStyleMetadata
         {

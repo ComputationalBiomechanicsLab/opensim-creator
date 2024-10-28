@@ -38,7 +38,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
     SimTK::State& state = model.initializeState();
 
     OpenSimDecorationOptions opts;
-    opts.setMuscleColorSource(MuscleColorSource::Activation);
+    opts.setMuscleColorSource(MuscleColorSource::AppearanceProperty);
 
     SceneCache meshCache;
     bool passedTest = false;

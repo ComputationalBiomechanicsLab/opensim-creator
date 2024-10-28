@@ -165,7 +165,7 @@ namespace
         switch (s) {
         case MuscleSizingStyle::PcsaDerived:
             return GetSconeStyleAutomaticMuscleRadiusCalc(musc) * fixupScaleFactor;
-        case MuscleSizingStyle::OpenSim:
+        case MuscleSizingStyle::Fixed:
         default:
             return c_GeometryPathBaseRadius * fixupScaleFactor;
         }

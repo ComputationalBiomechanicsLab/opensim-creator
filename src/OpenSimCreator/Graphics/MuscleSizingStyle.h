@@ -8,11 +8,11 @@
 namespace osc
 {
     enum class MuscleSizingStyle {
-        OpenSim,
+        Fixed,
         PcsaDerived,
         NUM_OPTIONS,
 
-        Default = OpenSim,
+        Default = Fixed,
     };
 
     struct MuscleSizingStyleMetadata final {
