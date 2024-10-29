@@ -160,7 +160,7 @@ private:
         ColorSpace::sRGB
     );
     Texture2D metal_texture_ = load_texture2D_from_image(
-        loader_.open("oscar_demos/learnopengl/textures/metal.png"),
+        loader_.open("oscar_demos/learnopengl/textures/metal.jpg"),
         ColorSpace::sRGB
     );
     Texture2D window_texture_ = load_texture2D_from_image(

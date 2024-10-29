@@ -46,7 +46,7 @@ namespace
     Material create_scene_material(IResourceLoader& loader)
     {
         Texture2D wood_texture = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/wood.png"),
+            loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
             ColorSpace::sRGB
         );
 

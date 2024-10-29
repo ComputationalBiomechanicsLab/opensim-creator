@@ -297,7 +297,7 @@ private:
     Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
     Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Texture2D diffuse_map_ = load_texture2D_from_image(
-        loader_.open("oscar_demos/learnopengl/textures/container2.png"),
+        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB,
         ImageLoadingFlag::FlipVertically
     );

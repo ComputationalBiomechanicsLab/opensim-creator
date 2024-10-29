@@ -323,11 +323,11 @@ private:
     }};
 
     Texture2D wood_texture_ = load_texture2D_from_image(
-        loader_.open("oscar_demos/learnopengl/textures/wood.png"),
+        loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
     Texture2D container_texture_ = load_texture2D_from_image(
-        loader_.open("oscar_demos/learnopengl/textures/container2.png"),
+        loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );
     Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};

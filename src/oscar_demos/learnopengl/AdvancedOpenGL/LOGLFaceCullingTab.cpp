@@ -22,7 +22,7 @@ namespace
         }};
 
         rv.set("uTexture", load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/uv_checker.jpg"),
+            loader.open("oscar_demos/learnopengl/textures/uv_checker.png"),
             ColorSpace::sRGB
         ));
 

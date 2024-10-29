@@ -21,7 +21,7 @@ namespace
     Material create_light_mapping_material(IResourceLoader& loader)
     {
         const Texture2D diffuse_map = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/container2.png"),
+            loader.open("oscar_demos/learnopengl/textures/container2.jpg"),
             ColorSpace::sRGB,
             ImageLoadingFlag::FlipVertically
         );
