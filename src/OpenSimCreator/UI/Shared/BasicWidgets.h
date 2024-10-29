@@ -224,6 +224,7 @@ namespace osc
     bool DrawMuscleRenderingOptionsRadioButtions(OpenSimDecorationOptions&);
     bool DrawMuscleSizingOptionsRadioButtons(OpenSimDecorationOptions&);
     bool DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions&);
+    bool DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions&);
     bool DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions&);
     bool DrawRenderingOptionsEditor(CustomRenderingOptions&);
     bool DrawOverlayOptionsEditor(OverlayDecorationOptions&);

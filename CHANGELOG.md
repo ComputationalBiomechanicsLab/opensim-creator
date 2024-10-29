@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- There is now a `Color Scaling` option in the muscle coloring/styling panel, which
+  enables auto-scaling the min/max (e.g. blue-to-red) color range based on the model-wide
+  min/max of the chosen `Color Source`. This is useful for visualizing differences between
+  muscles that are all within a tight numeric range (#933).
 - Renamed the `OpenSim` options in the muscle styling panel to what they actually are
   (e.g. `OpenSim` coloring is now `Activation`, `OpenSim` rendering is now `Lines of Action`,
   #933).

@@ -30,6 +30,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/LineSegment.h>
 #include <oscar/Maths/MathHelpers.h>
@@ -38,6 +39,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Perf.h>
 #include <SimTKcommon.h>
 
@@ -61,6 +63,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
+    // constants
     inline constexpr float c_GeometryPathBaseRadius = 0.005f;
     inline constexpr float c_ForceArrowLengthScale = 0.0025f;
     inline constexpr float c_TorqueArrowLengthScale = 0.01f;
@@ -79,32 +82,6 @@ namespace
         return to<Transform>(frame.getTransformInGround(state));
     }
 
-    // returns value between [0.0f, 1.0f]
-    float GetMuscleColorFactor(
-        const OpenSim::Muscle& musc,
-        const SimTK::State& st,
-        MuscleColorSource s)
-    {
-        switch (s) {
-        case MuscleColorSource::Activation:
-            return static_cast<float>(musc.getActivation(st));
-        case MuscleColorSource::Excitation:
-            return static_cast<float>(musc.getExcitation(st));
-        case MuscleColorSource::Force:
-            return static_cast<float>(musc.getActuation(st)) / static_cast<float>(musc.getMaxIsometricForce());
-        case MuscleColorSource::FiberLength:
-        {
-            const auto nfl = static_cast<float>(musc.getNormalizedFiberLength(st));  // 1.0f == ideal length
-            float fl = nfl - 1.0f;
-            fl = abs(fl);
-            fl = min(fl, 1.0f);
-            return fl;
-        }
-        default:
-            return 1.0f;
-        }
-    }
-
     Color GetGeometryPathDefaultColor(const OpenSim::GeometryPath& gp)
     {
         return Color{to<Vec3>(gp.getDefaultColor())};
@@ -115,33 +92,6 @@ namespace
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
         return Color{to<Vec3>(gp.getColor(st))};
-    }
-
-    Color CalcOSCMuscleColor(
-        const OpenSim::Muscle& musc,
-        const SimTK::State& st,
-        MuscleColorSource s)
-    {
-        const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f, 1.0f};
-        const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f, 1.0f};
-        const float factor = GetMuscleColorFactor(musc, st, s);
-        return lerp(zeroColor, fullColor, factor);
-    }
-
-    // helper: returns the color a muscle should have, based on a variety of options (style, user-defined stuff in OpenSim, etc.)
-    //
-    // this is just a rough estimation of how SCONE is coloring things
-    Color GetMuscleColor(
-        const OpenSim::Muscle& musc,
-        const SimTK::State& st,
-        MuscleColorSource s)
-    {
-        switch (s) {
-        case MuscleColorSource::AppearanceProperty:
-            return GetGeometryPathDefaultColor(musc.getGeometryPath());
-        default:
-            return CalcOSCMuscleColor(musc, st, s);
-        }
     }
 
     // helper: calculates the radius of a muscle based on isometric force
@@ -170,11 +120,112 @@ namespace
             return c_GeometryPathBaseRadius * fixupScaleFactor;
         }
     }
+
+    template<MuscleColorSource>
+    float muscleColorSourceValueFor(const OpenSim::Muscle&, const SimTK::State&);
+    template<>
+    float muscleColorSourceValueFor<MuscleColorSource::Activation>(const OpenSim::Muscle& muscle, const SimTK::State& state)
+    {
+        return static_cast<float>(muscle.getActivation(state));
+    }
+    template<>
+    float muscleColorSourceValueFor<MuscleColorSource::AppearanceProperty>(const OpenSim::Muscle&, const SimTK::State&)
+    {
+        return 1.0f;
+    }
+    template<>
+    float muscleColorSourceValueFor<MuscleColorSource::Excitation>(const OpenSim::Muscle& muscle, const SimTK::State& state)
+    {
+        return static_cast<float>(muscle.getExcitation(state));
+    }
+    template<>
+    float muscleColorSourceValueFor<MuscleColorSource::Force>(const OpenSim::Muscle& muscle, const SimTK::State& state)
+    {
+        return static_cast<float>(muscle.getActuation(state) / muscle.getMaxIsometricForce());
+    }
+    template<>
+    float muscleColorSourceValueFor<MuscleColorSource::FiberLength>(const OpenSim::Muscle& muscle, const SimTK::State& state)
+    {
+        const auto nfl = static_cast<float>(muscle.getNormalizedFiberLength(state));  // 1.0f == ideal length
+        float fl = nfl - 1.0f;
+        fl = abs(fl);
+        fl = min(fl, 1.0f);
+        return fl;
+    }
+
+    // A lookup abstraction for figuring out the color factor of a muscle along a ramp.
+    class MuscleColorFactorLookup final {
+    public:
+        MuscleColorFactorLookup(
+            const OpenSim::Model& model,
+            const SimTK::State& state,
+            MuscleColorSource colorSource,
+            MuscleColorSourceScaling scaling) :
+
+            m_Getter{chooseGetter(colorSource)},
+            m_ScalingRange{chooseScalingRange(model, state, m_Getter, scaling)}
+        {}
+
+        // Returns a number in the range [0.0, 1.0] that describes the suggested position
+        // a muscle's color should be on a color ramp (e.g. from blue to red).
+        float lookup(const OpenSim::Muscle& muscle, const SimTK::State& state) const
+        {
+            const float v = m_Getter(muscle, state);
+            const float t = m_ScalingRange.normalized_interpolant_at(v);
+            return saturate(t);
+        }
+
+    private:
+        using MuscleColorFactorGetter = float (*)(const OpenSim::Muscle&, const SimTK::State&);
+
+        static MuscleColorFactorGetter chooseGetter(MuscleColorSource source)
+        {
+            switch (source) {
+            case MuscleColorSource::AppearanceProperty: return muscleColorSourceValueFor<MuscleColorSource::AppearanceProperty>;
+            case MuscleColorSource::Activation:         return muscleColorSourceValueFor<MuscleColorSource::Activation>;
+            case MuscleColorSource::Excitation:         return muscleColorSourceValueFor<MuscleColorSource::Excitation>;
+            case MuscleColorSource::Force:              return muscleColorSourceValueFor<MuscleColorSource::Force>;
+            case MuscleColorSource::FiberLength:        return muscleColorSourceValueFor<MuscleColorSource::FiberLength>;
+            default:                                    return muscleColorSourceValueFor<MuscleColorSource::Default>;
+            }
+        }
+
+        static ClosedInterval<float> chooseScalingRange(
+            const OpenSim::Model& model,
+            const SimTK::State& state,
+            const MuscleColorFactorGetter& getter,
+            MuscleColorSourceScaling scaling)
+        {
+            static_assert(num_options<MuscleColorSourceScaling>() == 2);
+
+            switch (scaling) {
+            case MuscleColorSourceScaling::None:      return unit_interval<float>();
+            case MuscleColorSourceScaling::ModelWide: return calculateModelWideScalingRange(model, state, getter);
+            default:                                  return unit_interval<float>();
+            }
+        }
+
+        static ClosedInterval<float> calculateModelWideScalingRange(
+            const OpenSim::Model& model,
+            const SimTK::State& state,
+            const MuscleColorFactorGetter& getter)
+        {
+            std::optional<ClosedInterval<float>> accumulator;
+            for (const auto& muscle : model.getComponentList<OpenSim::Muscle>()) {
+                accumulator = bounding_interval_of(accumulator, getter(muscle, state));
+            }
+            return accumulator.value_or(unit_interval<float>());
+        }
+
+        MuscleColorFactorGetter m_Getter;
+        ClosedInterval<float> m_ScalingRange;
+    };
 }
 
 // geometry handlers
 namespace
 {
+
     // a datastructure that is shared to all decoration-generation functions
     //
     // effectively, this is shared state/functions that each low-level decoration
@@ -310,6 +361,18 @@ namespace
             emitGenericDecorations(componentToRender, componentToLinkTo, getFixupScaleFactor());
         }
 
+        Color calcMuscleColor(const OpenSim::Muscle& muscle)
+        {
+            if (getOptions().getMuscleColorSource() == MuscleColorSource::AppearanceProperty) {
+                // early-out: the muscle has a constant, Appearance-defined color
+                return GetGeometryPathDefaultColor(muscle.getGeometryPath());
+            }
+
+            const float t = m_MuscleColorSourceScalingLookup.lookup(muscle, getState());
+            const Color zeroColor = {50.0f / 255.0f, 50.0f / 255.0f, 166.0f / 255.0f};
+            const Color fullColor = {255.0f / 255.0f, 25.0f / 255.0f, 25.0f / 255.0f};
+            return lerp(zeroColor, fullColor, t);
+        }
     private:
         SceneCache& m_MeshCache;
         Mesh m_SphereMesh = m_MeshCache.sphere_mesh();
@@ -323,6 +386,7 @@ namespace
         float m_FixupScaleFactor;
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& m_Out;
         SimTK::Array_<SimTK::DecorativeGeometry> m_GeomList;
+        MuscleColorFactorLookup m_MuscleColorSourceScalingLookup{m_Model, m_State, m_Opts.getMuscleColorSource(), m_Opts.getMuscleColorSourceScaling()};
     };
 
     // An `OpenSim::ForceConsumer` that emits `SceneDecoration` arrows that represent
@@ -705,11 +769,7 @@ namespace
         );
         const float tendonUiRadius = 0.618f * fiberUiRadius;  // or fixupScaleFactor * 0.005f;
 
-        const Color fiberColor = GetMuscleColor(
-            muscle,
-            rs.getState(),
-            rs.getOptions().getMuscleColorSource()
-        );
+        const Color fiberColor = rs.calcMuscleColor(muscle);
         const Color tendonColor = {204.0f/255.0f, 203.0f/255.0f, 200.0f/255.0f};
 
         const SceneDecoration tendonSpherePrototype = {
@@ -962,11 +1022,7 @@ namespace
             rs.getOptions().getMuscleSizingStyle()
         );
 
-        const Color color = GetMuscleColor(
-            musc,
-            rs.getState(),
-            rs.getOptions().getMuscleColorSource()
-        );
+        const Color color = rs.calcMuscleColor(musc);
 
         EmitPointBasedLine(rs, musc, points, radius, color);
     }

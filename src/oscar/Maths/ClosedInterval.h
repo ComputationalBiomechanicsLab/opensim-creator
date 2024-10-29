@@ -2,8 +2,10 @@
 
 #include <oscar/Maths/CommonFunctions.h>
 
+#include <cmath>
 #include <concepts>
 #include <cstddef>
+#include <optional>
 #include <utility>
 
 namespace osc
@@ -56,7 +58,12 @@ namespace osc
         // `lower` and `upper`
         constexpr T normalized_interpolant_at(T v) const
         {
-            return (v - lower) / (upper - lower);
+            if (lower == upper) {
+                return T{0};  // the inverse of `std::lerp`'s behavior (ignoring `std::isfinite`)
+            }
+            else {
+                return (v - lower) / (upper - lower);
+            }
         }
 
         // returns the absolute difference between the endpoints
@@ -80,11 +87,39 @@ namespace osc
         T upper{};
     };
 
+    // returns the unit interval for the given floating-point `T`
+    template<std::floating_point T>
+    constexpr ClosedInterval<T> unit_interval()
+    {
+        return ClosedInterval<T>(T{0}, T{1});
+    }
+
     // returns a `ClosedInterval<T>` with `lower == interval.lower - abs_amount` and
     // `upper == interval.upper + abs_amount`
     template<typename T>
     constexpr ClosedInterval<T> expand_by_absolute_amount(const ClosedInterval<T>& interval, T abs_amount)
     {
         return {interval.lower - abs_amount, interval.upper + abs_amount};
+    }
+
+    // returns a `ClosedInterval` that tightly bounds `x`
+    template<typename T>
+    constexpr ClosedInterval<T> bounding_interval_of(const T& x)
+    {
+        return ClosedInterval<T>{x, x};
+    }
+
+    // returns a `ClosedInterval` that tightly bounds both `x` and `y`
+    template<typename T>
+    constexpr ClosedInterval<T> bounding_interval_of(const ClosedInterval<T>& x, const T& y)
+    {
+        return ClosedInterval<T>{min(x.lower, y), max(x.upper, y)};
+    }
+
+    // returns a `ClosedInterval` that tightly bounds both `x` (if present) and `y`
+    template<typename T>
+    constexpr ClosedInterval<T> bounding_interval_of(const std::optional<ClosedInterval<T>>& x, const T& y)
+    {
+        return x ? bounding_interval_of(*x, y) : bounding_interval_of(y);
     }
 }

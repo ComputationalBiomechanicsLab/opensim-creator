@@ -964,6 +964,19 @@ bool osc::DrawMuscleColorSourceOptionsRadioButtons(OpenSimDecorationOptions& opt
     return edited;
 }
 
+bool osc::DrawMuscleColorScalingOptionsRadioButtons(OpenSimDecorationOptions& opts)
+{
+    const MuscleColorSourceScaling currentStyle = opts.getMuscleColorSourceScaling();
+    bool edited = false;
+    for (const auto& metadata : GetAllPossibleMuscleColorSourceScalingMetadata()) {
+        if (ui::draw_radio_button(metadata.label, metadata.value == currentStyle)) {
+            opts.setMuscleColorSourceScaling(metadata.value);
+            edited = true;
+        }
+    }
+    return edited;
+}
+
 bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
 {
     int id = 0;
@@ -984,6 +997,12 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     ui::push_id(id++);
     ui::draw_text_disabled("Color Source");
     edited = DrawMuscleColorSourceOptionsRadioButtons(opts) || edited;
+    ui::pop_id();
+
+    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+    ui::push_id(id++);
+    ui::draw_text_disabled("Color Scaling");
+    edited = DrawMuscleColorScalingOptionsRadioButtons(opts) || edited;
     ui::pop_id();
 
     return edited;
