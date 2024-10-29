@@ -1081,17 +1081,17 @@ TEST(Variant, type_returns_StringName_when_constructed_from_a_StringName)
     ASSERT_EQ(Variant(StringName{"s"}).type(), VariantType::StringName);
 }
 
-TEST(Variant, ConstructedFromSameStringNameComparesEquivalent)
+TEST(Variant, compares_equivalent_to_another_StringName_variant_with_the_same_string_content)
 {
     ASSERT_EQ(Variant{StringName{"string"}}, Variant{StringName{"string"}});
 }
 
-TEST(Variant, ConstructedFromStringNameComparesInequivalentToVariantConstructedFromDifferentString)
+TEST(Variant, compares_inequivalent_to_a_string_with_different_content)
 {
     ASSERT_NE(Variant{StringName{"a"}}, Variant{std::string{"b"}});
 }
 
-TEST(Variant, StringNameValueToBoolReturnsExpectedBoolValues)
+TEST(Variant, StringName_to_bool_returns_expected_boolean_values)
 {
     ASSERT_EQ(to<bool>(Variant(StringName{"false"})), false);
     ASSERT_EQ(to<bool>(Variant(StringName{"FALSE"})), false);
@@ -1106,7 +1106,7 @@ TEST(Variant, StringNameValueToBoolReturnsExpectedBoolValues)
     ASSERT_EQ(to<bool>(Variant(StringName{" "})), true);
 }
 
-TEST(Variant, StringNameValueToColorWorksIfStringIsAValidHTMLColorString)
+TEST(Variant, StringName_to_Color_works_if_string_content_is_a_valid_html_color_string)
 {
     ASSERT_EQ(to<Color>(Variant{StringName{"#ff0000ff"}}), Color::red());
     ASSERT_EQ(to<Color>(Variant{StringName{"#00ff00ff"}}), Color::green());
@@ -1117,12 +1117,12 @@ TEST(Variant, StringNameValueToColorWorksIfStringIsAValidHTMLColorString)
     ASSERT_EQ(to<Color>(Variant{StringName{"#123456ae"}}), *try_parse_html_color_string("#123456ae"));
 }
 
-TEST(Variant, StringNameValueToColorReturnsBlackIfStringIsInvalidHTMLColorString)
+TEST(Variant, StringName_to_Color_returns_black_if_string_is_an_invalid_HTML_color_string)
 {
     ASSERT_EQ(to<Color>(Variant{StringName{"not a color"}}), Color::black());
 }
 
-TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFailure)
+TEST(Variant, StringName_to_float_tries_to_parse_string_content_as_float_and_returns_zero_on_failure)
 {
     const auto inputs = std::to_array<std::string_view>({
         "-1.0",
@@ -1136,12 +1136,12 @@ TEST(Variant, StringNameValueToFloatTriesToParseStringAsFloatAndReturnsZeroOnFai
     });
 
     for (const auto& input : inputs) {
-        const float expectedOutput = to_float_or_zero(input);
-        ASSERT_EQ(to<float>(Variant{StringName{input}}), expectedOutput);
+        const float expected_output = to_float_or_zero(input);
+        ASSERT_EQ(to<float>(Variant{StringName{input}}), expected_output);
     }
 }
 
-TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
+TEST(Variant, StringName_to_int_tries_to_parse_the_string_content_as_a_base10_signed_integer)
 {
     const auto inputs = std::to_array<std::string_view>({
         "-1.0",
@@ -1155,12 +1155,12 @@ TEST(Variant, StringNameValueToIntTriesToParseStringAsBase10Int)
     });
 
     for (const auto& input : inputs) {
-        const int expectedOutput = to_int_or_zero(input);
-        ASSERT_EQ(to<int>(Variant{StringName{input}}), expectedOutput);
+        const int expected_output = to_int_or_zero(input);
+        ASSERT_EQ(to<int>(Variant{StringName{input}}), expected_output);
     }
 }
 
-TEST(Variant, StringNameValueToStringReturnsSuppliedString)
+TEST(Variant, StringName_to_string_returns_StringNames_content_in_the_string)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1180,7 +1180,7 @@ TEST(Variant, StringNameValueToStringReturnsSuppliedString)
     }
 }
 
-TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
+TEST(Variant, StringName_to_StringName_returns_supplied_StringName)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1200,7 +1200,7 @@ TEST(Variant, StringNameValueToStringNameReturnsSuppliedStringName)
     }
 }
 
-TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
+TEST(Variant, StringName_to_Vec3_always_returns_a_zeroed_Vec3)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1220,7 +1220,7 @@ TEST(Variant, StringNameToVec3AlwaysReturnsZeroedVec)
     }
 }
 
-TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
+TEST(Variant, std_hash_of_StringName_is_same_as_std_hash_of_string)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1236,14 +1236,14 @@ TEST(Variant, HashOfStringNameVariantIsSameAsHashOfStringVariant)
     });
 
     for (const auto& input : inputs) {
-        const auto snv = Variant{StringName{input}};
-        const auto sv = Variant{std::string{input}};
+        const auto stringname_variant = Variant{StringName{input}};
+        const auto string_variant = Variant{std::string{input}};
 
-        ASSERT_EQ(std::hash<Variant>{}(snv), std::hash<Variant>{}(sv));
+        ASSERT_EQ(std::hash<Variant>{}(stringname_variant), std::hash<Variant>{}(string_variant));
     }
 }
 
-TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
+TEST(Variant, StringName_compares_equivalent_to_string_with_same_content)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1259,13 +1259,13 @@ TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariant)
     });
 
     for (const auto& input : inputs) {
-        const auto snv = Variant{StringName{input}};
-        const auto sv = Variant{std::string{input}};
-        ASSERT_EQ(snv, sv);
+        const auto stringname_variant = Variant{StringName{input}};
+        const auto string_variant = Variant{std::string{input}};
+        ASSERT_EQ(stringname_variant, string_variant);
     }
 }
 
-TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariantReversed)
+TEST(Variant, string_compares_equivalent_to_StringName_with_same_content)
 {
     const auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1281,8 +1281,8 @@ TEST(Variant, StringNameVariantComparesEqualToEquivalentStringVariantReversed)
     });
 
     for (const auto& input : inputs) {
-        const auto snv = Variant{StringName{input}};
-        const auto sv = Variant{std::string{input}};
-        ASSERT_EQ(sv, snv);  // reversed, compared to other test
+        const auto string_variant = Variant{std::string{input}};
+        const auto stringname_variant = Variant{StringName{input}};
+        ASSERT_EQ(string_variant, stringname_variant);  // reversed, compared to other test
     }
 }
