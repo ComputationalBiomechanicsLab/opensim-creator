@@ -710,12 +710,12 @@ TEST(Variant, Vec2_to_Vec2_returns_original_value_unmodified)
     }
 }
 
-TEST(Variant, Vec3ValueToBoolReturnsFalseForZeroVec)
+TEST(Variant, Vec3_to_bool_returns_false_for_zeroed_Vec3)
 {
     ASSERT_EQ(to<bool>(Variant{Vec3{}}), false);
 }
 
-TEST(Variant, Vec3ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
+TEST(Variant, Vec3_to_bool_returns_false_if_X_is_zero_regardless_of_the_value_of_YZ)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
@@ -729,7 +729,7 @@ TEST(Variant, Vec3ValueToBoolReturnsFalseIfXIsZeroRegardlessOfOtherComponents)
     ASSERT_EQ(to<bool>(Variant{Vec3(-0.0f, 0.0f, 1000.0f)}), false);  // how fun ;)
 }
 
-TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
+TEST(Variant, Vec3_to_bool_returns_true_if_X_is_nonzero_regardless_of_the_value_of_YZ)
 {
     ASSERT_EQ(to<bool>(Variant{Vec3{1.0f}}), true);
     ASSERT_EQ(to<bool>(Variant{Vec3(2.0f, 7.0f, -30.0f)}), true);
@@ -738,9 +738,9 @@ TEST(Variant, Vec3ValueToBoolReturnsTrueIfXIsNonZeroRegardlessOfOtherComponents)
     ASSERT_EQ(to<bool>(Variant{Vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}), true);
 }
 
-TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
+TEST(Variant, Vec3_to_Color_extracts_XYZ_into_RGB)
 {
-    const auto testCases = std::to_array<Vec3>({
+    const auto test_cases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -748,14 +748,14 @@ TEST(Variant, Vec3ValueToColorExtractsTheElementsIntoRGB)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<Color>(Variant{testCase}), Color{testCase});
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(to<Color>(Variant{test_case}), Color{test_case});
     }
 }
 
-TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
+TEST(Variant, Vec3_to_float_extracts_X_into_the_float)
 {
-    const auto testCases = std::to_array<Vec3>({
+    const auto test_cases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -763,14 +763,14 @@ TEST(Variant, Vec3ValueToFloatExtractsXToTheFloat)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<float>(Variant{testCase}), testCase.x);
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(to<float>(Variant{test_case}), test_case.x);
     }
 }
 
-TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
+TEST(Variant, Vec3_to_int_extracts_x_into_the_int)
 {
-    const auto testCases = std::to_array<Vec3>({
+    const auto test_cases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -778,14 +778,14 @@ TEST(Variant, Vec3ValueToIntExtractsXToTheInt)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<int>(Variant{testCase}), static_cast<int>(testCase.x));
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(to<int>(Variant{test_case}), static_cast<int>(test_case.x));
     }
 }
 
-TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
+TEST(Variant, Vec3_to_string_returns_the_same_string_as_directly_converting_the_Vec3_to_a_string)
 {
-    const auto testCases = std::to_array<Vec3>({
+    const auto test_cases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -793,20 +793,20 @@ TEST(Variant, Vec3ValueToStringReturnsSameAsDirectlyConvertingVectorToString)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<std::string>(Variant{testCase}), stream_to_string(testCase));
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(to<std::string>(Variant{test_case}), stream_to_string(test_case));
     }
 }
 
-TEST(Variant, Vec3ValueToStringNameReturnsAnEmptyString)
+TEST(Variant, Vec3_to_StringName_returns_an_empty_StringName)
 {
     ASSERT_EQ(to<StringName>(Variant{Vec3{}}), StringName{});
     ASSERT_EQ(to<StringName>(Variant{Vec3(0.0f, -20.0f, 0.5f)}), StringName{});
 }
 
-TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
+TEST(Variant, Vec3_to_Vec3_returns_original_Vec3)
 {
-    const auto testCases = std::to_array<Vec3>({
+    const auto test_cases = std::to_array<Vec3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -814,14 +814,14 @@ TEST(Variant, Vec3ValueToVec3ReturnsOriginalValue)
         {0.0f, -20.0f, 0.5f},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(to<Vec3>(Variant{testCase}), testCase);
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(to<Vec3>(Variant{test_case}), test_case);
     }
 }
 
-TEST(Variant, IsAlwaysEqualToACopyOfItself)
+TEST(Variant, always_compares_equivalent_to_a_copy_of_itself)
 {
-    const auto testCases = std::to_array<Variant>({
+    const auto test_cases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -856,22 +856,22 @@ TEST(Variant, IsAlwaysEqualToACopyOfItself)
         Variant{Vec3{-0.5f}},
     });
 
-    for (const auto& tc : testCases) {
-        ASSERT_EQ(tc, tc) << "input: " << to<std::string>(tc);
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(test_case, test_case) << "input: " << to<std::string>(test_case);
     }
 
-    const auto exceptions = std::to_array<Variant>({
+    const auto exceptional_test_cases = std::to_array<Variant>({
         Variant{std::numeric_limits<float>::quiet_NaN()},
         Variant{std::numeric_limits<float>::signaling_NaN()},
     });
-    for (const auto& tc : exceptions) {
-        ASSERT_NE(tc, tc) << "input: " << to<std::string>(tc);
+    for (const auto& test_case : exceptional_test_cases) {
+        ASSERT_NE(test_case, test_case) << "input: " << to<std::string>(test_case);
     }
 }
 
-TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
+TEST(Variant, is_not_equal_to_Variants_of_different_type_even_if_conversion_is_possible)
 {
-    const auto testCases = std::to_array<Variant>({
+    const auto test_cases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -909,22 +909,19 @@ TEST(Variant, IsNotEqualToOtherValuesEvenIfConversionIsPossible)
         Variant{Vec3{-0.5f}},
     });
 
-    for (size_t i = 0; i < testCases.size(); ++i)
-    {
-        for (size_t j = 0; j != i; ++j)
-        {
-            ASSERT_NE(testCases[i], testCases[j]);
+    for (size_t i = 0; i < test_cases.size(); ++i) {
+        for (size_t j = 0; j != i; ++j) {
+            ASSERT_NE(test_cases[i], test_cases[j]);
         }
-        for (size_t j = i+1; j < testCases.size(); ++j)
-        {
-            ASSERT_NE(testCases[i], testCases[j]);
+        for (size_t j = i+1; j < test_cases.size(); ++j) {
+            ASSERT_NE(test_cases[i], test_cases[j]);
         }
     }
 }
 
-TEST(Variant, CanHashAVarietyOfTypes)
+TEST(Variant, can_be_hashed_with_std_hash)
 {
-    const auto testCases = std::to_array<Variant>({
+    const auto test_cases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -962,14 +959,14 @@ TEST(Variant, CanHashAVarietyOfTypes)
         Variant{Vec3{-0.5f}},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_NO_THROW({ std::hash<Variant>{}(testCase); });
+    for (const auto& test_case : test_cases) {
+        ASSERT_NO_THROW({ std::hash<Variant>{}(test_case); });
     }
 }
 
-TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMemberFunction)
+TEST(Variant, can_be_used_as_an_argument_to_stream_to_string)
 {
-    const auto testCases = std::to_array<Variant>({
+    const auto test_cases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -1007,14 +1004,14 @@ TEST(Variant, FreeFunctionToStringOnVarietyOfTypesReturnsSameAsCallingToStringMe
         Variant{Vec3{-0.5f}},
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(stream_to_string(testCase), to<std::string>(testCase));
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(stream_to_string(test_case), to<std::string>(test_case));
     }
 }
 
-TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
+TEST(Variant, writing_to_an_ostream_produces_same_output_as_converting_to_a_string)
 {
-    const auto testCases = std::to_array<Variant>({
+    const auto test_cases = std::to_array<Variant>({
         Variant{false},
         Variant{true},
         Variant{Color::white()},
@@ -1052,14 +1049,14 @@ TEST(Variant, StreamingToOutputStreamProducesSameOutputAsToString)
         Variant{Vec3{-0.5f}},
     });
 
-    for (const auto& testCase : testCases) {
+    for (const auto& test_case : test_cases) {
         std::stringstream ss;
-        ss << testCase;
-        ASSERT_EQ(ss.str(), to<std::string>(testCase));
+        ss << test_case;
+        ASSERT_EQ(ss.str(), to<std::string>(test_case));
     }
 }
 
-TEST(Variant, HashesForStringValuesMatchStdStringEtc)
+TEST(Variant, std_hash_of_string_values_is_equivalent_to_hashing_the_underlying_string_value)
 {
     const auto strings = std::to_array<std::string_view>({
         "false",
@@ -1079,7 +1076,7 @@ TEST(Variant, HashesForStringValuesMatchStdStringEtc)
     }
 }
 
-TEST(Variant, ConstructingFromstringNameMakesGetTypeReturnStringNameType)
+TEST(Variant, type_returns_StringName_when_constructed_from_a_StringName)
 {
     ASSERT_EQ(Variant(StringName{"s"}).type(), VariantType::StringName);
 }
