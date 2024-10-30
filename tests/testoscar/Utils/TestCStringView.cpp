@@ -2,60 +2,58 @@
 
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <array>
 #include <string_view>
 
 using namespace osc;
 using namespace osc::literals;
 
-TEST(CStringView, WhenPassedNullCstringYieldsEmptyCStringView)
+TEST(CStringView, when_passed_a_nullptr_cstring_yields_empty_CStringView)
 {
-    const char* p = nullptr;
+    const char* const p = nullptr;
     ASSERT_TRUE(CStringView{p}.empty());
 }
 
-TEST(CStringView, WhenPassedNullCStringYieldsNonNullCStr)
+TEST(CStringView, when_passed_a_nullptr_cstring_yields_non_nullptr_but_empty_c_str)
 {
-    const char* p = nullptr;
+    const char* const p = nullptr;
     ASSERT_NE(CStringView{p}.c_str(), nullptr);
 }
 
-TEST(CStringView, WhenDefaultConstructedYieldsEmptyCStringView)
+TEST(CStringView, is_empty_when_default_constructed)
 {
     ASSERT_TRUE(CStringView{}.empty());
 }
 
-TEST(CStringView, WhenDefaultConstructedYieldsNonNullCStr)
+TEST(CStringView, returns_non_nullptr_c_str_when_default_constructed)
 {
     ASSERT_NE(CStringView{}.c_str(), nullptr);
 }
 
-TEST(CStringView, WhenConstructedFromNullptrYieldsEmptyCStringView)
+TEST(CStringView, is_empty_when_constructed_from_nullptr)
 {
     ASSERT_TRUE(CStringView{nullptr}.empty());
 }
 
-TEST(CStringView, WhenConstructedFromNullptrYieldsNonNullCStr)
+TEST(CStringView, c_str_is_not_nullptr_when_CStringView_is_constructed_from_nullptr)
 {
     ASSERT_NE(CStringView{nullptr}.c_str(), nullptr);
 }
 
-TEST(CStringView, ThreeWayComparisonBehavesIdenticallyToStringViewComparision)
+TEST(CStringView, three_way_comparison_operator_behaves_identically_to_std_string_view)
 {
-    const auto svs = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
-    auto sameThreeWayResultWithAllOtherElements = [&svs](const char* elCStr)
-    {
-        std::string_view sv{elCStr};
-        CStringView csv{elCStr};
-        for (const char* otherCStr : svs) {
-            ASSERT_EQ(sv <=> std::string_view{otherCStr}, csv <=> CStringView{otherCStr});
+    const auto input_strings = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
+    for (const char* const cstring : input_strings) {
+
+        const std::string_view string_view{cstring};
+        const CStringView cstring_view{cstring};
+        for (const char* input_string : input_strings) {
+            ASSERT_EQ(string_view <=> std::string_view{input_string}, cstring_view <=> CStringView{input_string});
         }
-    };
-    std::for_each(svs.begin(), svs.end(), sameThreeWayResultWithAllOtherElements);
+    }
 }
 
-TEST(CStringView, LiteralSuffixReturnsCStringView)
+TEST(CStringView, literal_suffix_returns_CStringView)
 {
     static_assert(std::same_as<decltype("hello"_cs), CStringView>);
     ASSERT_EQ("hello"_cs, CStringView{"hello"});
