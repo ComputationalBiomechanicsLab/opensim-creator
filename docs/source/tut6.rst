@@ -147,6 +147,7 @@ each add something new to the model. This is to help familiarize you with
 the warping engine because, as your needs evolve, you may end up combining
 *a lot* of these steps into a single warpable model.
 
+.. _opening_the_model_warper:
 
 Opening the Model Warping UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -205,56 +206,81 @@ We'll use the next few walkthroughs to make it more interesting - at the cost of
 being more complicated 😉.
 
 
-Walkthrough: Warping a Zero-Body One-Mesh Model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Walkthrough: Warping a One-Mesh Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The next step up in complexity from the trivial case (an empty model) is a model
 containing a mesh that's directly connected to ground (origin). This roughly
 mirrors what's seen when using the mesh warper (see :ref:`tut5`).
 
-To do this, you'll need the source model with source and destination ``.landmarks.csv``
-files. ``TODO`` provide the model or direct the user to expand the collapsing
-thing below.
+To do this, we're going to first create the model and try to load it into the
+model warping UI. We'll then deal with any issues that the model warping UI
+spots, such as missing landmarks, followed by generating a warped version of the
+model.
 
-.. collapse:: Build the model (optional, click to expand)
+**Create a zero-body, one-mesh model**:
 
-  - Use the mesh warper to create a warp between generated geometry and some
-  result. Save the generated source geometry as an ``obj`` in a folder at
-  ``Geometry/mesh.obj`` . Save the source landmarks in the same folder at
-  ``Geometry/mesh.landmarks.csv`` . Save the destination landmarks in the
-  same folder at ``DestinationGeometry/mesh.landmarks.csv``.
+1. Create the model by opening a new model from OpenSim Creator's splash screen.
+2. Attach the mesh to ``ground`` by right-clicking the ``ground`` component, ``Add``,
+   ``Geometry``. Use ``TODO`` this sphere mesh.
+3. Save the model to a new directory (e.g. ``model_dir``)
 
-  - Use the model editor to create a blank model. Save it in the folder at ``./model.osim``.
-    Right-click the ``ground`` component in the blank model, ``Add``, ``Geometry``, select the ``mesh.obj`` file.
+**Load the model into the model warper and evaluate what's missing**:
+
+1. Open the model warper as described in :ref:`opening_the_model_warper`
+2. Open the model in the model warper using the open button/shortcut
+3. The ``Checklist`` panel should any warping steps, validation issues, etc. -
+   specifically, it should show that the sphere mesh isn't warpable because the
+   engine cannot find landmarks for it.
+
+**Create source and destination landmarks for the mesh**:
+
+1. ``TODO``
+2. ``TODO``
+
+**Reload the model in the model warper and generate the warped model**:
+
+1. ``TODO``
 
 
-Walkthrough: Warping a One-Body, One-Mesh, One-Muscle Model
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Walkthrough: Warping a One-Mesh, One-Body Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning::
+
+  This section hasn't been written yet: model warping is **very** 🪄 experimental 🪄!
 
 ``TODO``: create/offer a model that is the same as above, but with the meshes
-attached to a body (and, therefore, there's a joint, and joint frames, to
-consider).
+attached to a body. The reason this case is more complex is because adding a body
+also requires adding a joint. Joints usually use ``PhysicalOffsetFrame`` s to
+offset the joint center, and warping an offset + orientation requires modellers
+to make decisions (Only warp the offset? Only warp the orientation? Combine
+warping data from all meshes attached to both the parent and child body of
+the joint? etc.).
+
+``TODO``: this is also the place where ``StationDefinedFrame`` should be
+presented, because it's trivially warp-able (just warp the stations and the
+frame will automatically warp).
 
 
-Walkthrough: Warping a One-Body, One-Mesh, One-Muscle Model
+Walkthrough: Warping a One-Mesh, One-Body, One-Muscle Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``TODO``: create/offer a model that is the same as above, but contains a single
+.. warning::
+
+  We are still writing this section. Model warping is **very** 🪄 experimental 🪄
+
+``TODO``: create/offer a model that's the same as above, but also contains a muscle. The
+warping engine currently just figures out which body the muscle is attached to and
+then warps the muscle point.
 
 
+How to Customize Model Warping behavior
+---------------------------------------
 
-``TODO`` : explain what the model warper can/can't warp. Explain ``StationDefinedFrame``
-and limitations around warping frames, muscle scaling, etc.
+.. warning::
 
-
-Basic Example: Two-body model
------------------------------
-
-``TODO`` : provide a very stripped-down model that meets the requirements for warp-ability
-
-
-Customizing Model Warping behavior
-----------------------------------
+  This section hasn't been written yet: model warping is **very** 🪄 experimental 🪄!
 
 ``TODO`` : Explain how the user can use the ``.warpconfig.toml`` file to customize how the
 model warper warps models.
@@ -263,13 +289,19 @@ model warper warps models.
 Diagnosing Warping Issues
 -------------------------
 
+.. warning::
+
+  This section hasn't been written yet: model warping is **very** 🪄 experimental 🪄!
+
 ``TODO`` : explanation of any known issues, recommendations for working around them
 etc.
 
 
-Advanced Example: Many-Bodied Model with Custom Requirements
-------------------------------------------------------------
+Outlook/Planned Future Changes
+------------------------------
 
-``TODO`` : an example model that requires the user to specialize/specify customization
-in the warp config (e.g. tell the warp engine to skip some steps, warp X using
-technique Y, etc.)
+- ``.warpconfig.toml`` to be changed to a new specification that enables much
+  more nuanced warp customization. E.g. a single place where designers can
+  designate a combination of TPS warping, statistical shape modelling, traditional
+  scaling, etc. in one specification for warping a complete model.
+- Non-spatial warping/scaling. E.g. muscle parameter scaling.
