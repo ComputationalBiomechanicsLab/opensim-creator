@@ -13,39 +13,39 @@ namespace
     };
 }
 
-TEST(NonTypelist, CanCreateEmptyNonTypeList)
+TEST(NonTypelist, can_be_empty)
 {
-    [[maybe_unused]] NonTypelist<SomeEnum> l;  // compiles
+    [[maybe_unused]] const NonTypelist<SomeEnum> l;  // compiles
 }
 
-TEST(NonTypelist, CanHaveOneMember)
+TEST(NonTypelist, can_have_one_member)
 {
-    [[maybe_unused]] NonTypelist<SomeEnum, SomeEnum::First> l;  // compiles
+    [[maybe_unused]] const NonTypelist<SomeEnum, SomeEnum::First> l;  // compiles
 }
 
-TEST(NonTypelist, CanHaveTwoMembers)
+TEST(NonTypelist, can_have_two_members)
 {
-    [[maybe_unused]] NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second> l;
+    [[maybe_unused]] const NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second> l;
 }
 
-TEST(NonTypelist, HeadWorksAsExpected)
+TEST(NonTypelist, head_retrieves_first_element)
 {
     static_assert(NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::head == SomeEnum::First);
 }
 
-TEST(NonTypelist, TailsWorksAsExpected)
+TEST(NonTypelist, tail_retrieves_last_element)
 {
     static_assert(NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>::tails::head == SomeEnum::Second);
 }
 
-TEST(NonTypelist, NonTypelistSizeWorksAsExpected)
+TEST(NonTypelist, NonTypeListSizeV_returns_expected_results)
 {
     static_assert(NonTypelistSizeV<NonTypelist<SomeEnum>> == 0);
     static_assert(NonTypelistSizeV<NonTypelist<SomeEnum, SomeEnum::First>> == 1);
     static_assert(NonTypelistSizeV<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second>> == 2);
 }
 
-TEST(NonTypelist, NonTypeAtVWorksAsExpected)
+TEST(NonTypelist, NonTypeAt_works_as_expected)
 {
     static_assert(NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 0>::value == SomeEnum::First);
     static_assert(NonTypeAt<NonTypelist<SomeEnum, SomeEnum::First, SomeEnum::Second, SomeEnum::Third>, 1>::value == SomeEnum::Second);

@@ -24,30 +24,30 @@ namespace
 
 TEST(TransparentStringHasher, can_construct_unordered_map_that_uses_transparent_string_hasher)
 {
-    [[maybe_unused]] TransparentMap map;  // this should work
+    [[maybe_unused]] const TransparentMap should_compile;
 }
 
 TEST(TransparentStringHasher, transparent_unordered_map_enables_std_string_view_lookups)
 {
-    TransparentMap map;
+    const TransparentMap map;
     [[maybe_unused]] const auto it = map.find(std::string_view{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, transparent_unordered_map_enables_CStringView_lookups)
 {
-    TransparentMap map;
+    const TransparentMap map;
     [[maybe_unused]] const auto it = map.find(CStringView{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, transparent_unordered_map_enables_StringName_lookups)
 {
-    TransparentMap map;
+    const TransparentMap map;
     [[maybe_unused]] const auto it = map.find(StringName{"i don't need to be converted into a std::string :)"});
 }
 
 TEST(TransparentStringHasher, produces_same_hash_for_all_of_OSCs_string_types)
 {
-    for (const char* str : {"", "some string", "why not try three?"}) {
+    for (const char* const str : {"", "some string", "why not try three?"}) {
         const auto hashes = std::to_array({
             TransparentStringHasher{}(str),
             TransparentStringHasher{}(std::string_view{str}),

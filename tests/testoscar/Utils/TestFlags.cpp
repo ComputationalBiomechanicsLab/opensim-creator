@@ -20,21 +20,21 @@ namespace
 
 TEST(Flags, can_default_construct)
 {
-    Flags<ExampleDenseFlag> default_constructed;
+    const Flags<ExampleDenseFlag> default_constructed;
     ASSERT_EQ(default_constructed, ExampleDenseFlag::None);
 }
 
 TEST(Flags, can_implicitly_convert_from_single_flag)
 {
-    ExampleDenseFlag flag = ExampleDenseFlag::Flag1;
-    Flags<ExampleDenseFlag> flags = flag;
+    const ExampleDenseFlag flag = ExampleDenseFlag::Flag1;
+    const Flags<ExampleDenseFlag> flags = flag;
 
     ASSERT_TRUE(flags & ExampleDenseFlag::Flag1);
 }
 
 TEST(Flags, can_initialize_from_initializer_list_of_flags)
 {
-    Flags<ExampleDenseFlag> flags = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
+    const Flags<ExampleDenseFlag> flags = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
     ASSERT_TRUE(flags & ExampleDenseFlag::Flag1);
     ASSERT_TRUE(flags & ExampleDenseFlag::Flag2);
     ASSERT_FALSE(flags & ExampleDenseFlag::Flag3);
@@ -140,7 +140,7 @@ TEST(Flags, operator_or_equals_works_as_expected)
         Flags rhs;
         Flags expected;
     };
-    const auto testCases = std::to_array<TestCase>({
+    const auto test_cases = std::to_array<TestCase>({
         {
             .lhs = Flags{ExampleDenseFlag::None},
             .rhs = Flags{ExampleDenseFlag::Flag1},
@@ -163,10 +163,10 @@ TEST(Flags, operator_or_equals_works_as_expected)
         },
     });
 
-    for (const auto& testCase : testCases) {
-        Flags lhs = testCase.lhs;
-        lhs |= testCase.rhs;
-        ASSERT_EQ(lhs, testCase.expected);
+    for (const auto& test_case : test_cases) {
+        Flags lhs = test_case.lhs;
+        lhs |= test_case.rhs;
+        ASSERT_EQ(lhs, test_case.expected);
     }
 }
 

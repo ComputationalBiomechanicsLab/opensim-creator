@@ -185,9 +185,9 @@ TEST(VariableLengthArray, clear_clears_content)
 
 TEST(VariableLengthArray, equality_works_as_expected)
 {
-    VariableLengthArray<int, 1> a = {1};
-    VariableLengthArray<int, 1> b = {1};
-    VariableLengthArray<int, 1> c = {2};
+    const VariableLengthArray<int, 1> a = {1};
+    const VariableLengthArray<int, 1> b = {1};
+    const VariableLengthArray<int, 1> c = {2};
 
     ASSERT_EQ(a, a);
     ASSERT_EQ(a, b);

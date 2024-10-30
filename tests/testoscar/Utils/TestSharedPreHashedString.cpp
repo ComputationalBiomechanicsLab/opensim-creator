@@ -31,9 +31,9 @@ TEST(SharedPreHashedString, default_constructed_size_is_zero)
 
 TEST(SharedPreHashedString, can_construct_from_cstring)
 {
-    const SharedPreHashedString str{"some string"};
-    ASSERT_FALSE(str.empty());
-    ASSERT_EQ(str, "some string"sv);
+    const SharedPreHashedString prehashed_string{"some string"};
+    ASSERT_FALSE(prehashed_string.empty());
+    ASSERT_EQ(prehashed_string, "some string"sv);
 }
 
 TEST(SharedPreHashedString, separately_constructed_strings_dont_share_use_count)
@@ -79,7 +79,7 @@ TEST(SharedPreHashedString, can_move_construct)
 
 TEST(SharedPreHashedString, can_copy_assign)
 {
-    SharedPreHashedString str1{"first"};
+    const SharedPreHashedString str1{"first"};
     SharedPreHashedString str2{"second"};
     ASSERT_EQ(str2, "second"sv);
     str2 = str1;
@@ -89,7 +89,7 @@ TEST(SharedPreHashedString, can_copy_assign)
 
 TEST(SharedPreHashedString, can_move_assign)
 {
-    SharedPreHashedString str1{"first"};
+    const SharedPreHashedString str1{"first"};
     SharedPreHashedString str2{"second"};
     ASSERT_EQ(str2, "second"sv);
     str2 = std::move(str1);
@@ -131,8 +131,8 @@ TEST(SharedPreHashedString, size_returns_expected_answers)
 
 TEST(SharedPreHashedString, can_compare_with_cstring)
 {
-    const char* cstr = "some string";
-    SharedPreHashedString str{cstr};
+    const char* const cstr = "some string";
+    const SharedPreHashedString str{cstr};
 
     ASSERT_EQ(cstr, str);
     ASSERT_EQ(str, cstr);
@@ -166,7 +166,7 @@ TEST(SharedPreHashedString, can_stream_to_ostream)
 
 TEST(SharedPreHashedString, std_hash_returns_same_as_std_string_view)
 {
-    auto source_strings = std::to_array<std::string_view>({
+    const auto source_strings = std::to_array<std::string_view>({
         "",
         "str",
         "hash me",

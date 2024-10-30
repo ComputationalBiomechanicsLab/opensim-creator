@@ -17,14 +17,14 @@ using osc::to_hex_chars;
 using osc::is_valid_identifier;
 using osc::join;
 
-TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
+TEST(strip_whitespace, works_as_expected)
 {
     struct TestCase final {
         std::string_view input;
-        std::string_view expectedOutput;
+        std::string_view expected_output;
     };
 
-    const auto testCases = std::to_array<TestCase>({
+    const auto test_cases = std::to_array<TestCase>({
         // trivial case
         {"", ""},
 
@@ -61,9 +61,9 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
         {"\r\na ", "a"},
     });
 
-    for (const TestCase& tc : testCases) {
-        const std::string_view rv = strip_whitespace(tc.input);
-        ASSERT_EQ(rv, tc.expectedOutput);
+    for (const auto& [input, expected_output] : test_cases) {
+        const std::string_view result = strip_whitespace(input);
+        ASSERT_EQ(result, expected_output);
     }
 }
 
@@ -71,10 +71,10 @@ TEST(Algorithms, TrimLeadingAndTrailingWhitespaceWorksAsExpected)
 // one test per test case
 namespace
 {
-    std::ostream& operator<<(std::ostream& o, const std::optional<float>& v)
+    std::ostream& operator<<(std::ostream& o, const std::optional<float>& maybe_float)
     {
-        if (v) {
-            o << "Some(" << *v << ')';
+        if (maybe_float) {
+            o << "Some(" << *maybe_float << ')';
         }
         else {
             o << "None";
@@ -84,15 +84,14 @@ namespace
 
     struct TestCase final {
         std::string_view input;
-        std::optional<float> expectedOutput;
+        std::optional<float> expected_output;
     };
 
-    std::string WithoutControlCharacters(std::string_view v)
+    std::string with_escaped_control_characters(std::string_view sv)
     {
         std::string rv;
-        rv.reserve(v.size());
-        for (auto c : v)
-        {
+        rv.reserve(sv.size());
+        for (auto c : sv) {
             switch (c) {
             case '\n':
                 rv += "\\n";
@@ -107,24 +106,24 @@ namespace
         return rv;
     }
 
-    std::ostream& operator<<(std::ostream& o, const TestCase& tc)
+    std::ostream& operator<<(std::ostream& o, const TestCase& test_case)
     {
         // care: test UIs (e.g. Visual Studio test explorer) don't like it
         //       when they have to print test names containing control
         //       characters
-        const std::string sanitizedInput = WithoutControlCharacters(tc.input);
-        return o << "TestCase(input = " << sanitizedInput << ", expectedOutput = " << tc.expectedOutput << ')';
+        const std::string sanitized_input = with_escaped_control_characters(test_case.input);
+        return o << "TestCase(input = " << sanitized_input << ", expected_output = " << test_case.expected_output << ')';
     }
 
-    void PrintTo(const TestCase& tc, std::ostream* o)
+    void PrintTo(const TestCase& test_case, std::ostream* o)
     {
         // this teaches googletest to pretty-print a std::optional<float>
         //
         // see: googletest/include/gtest/gtest-printers.h `PrintTo`
-        *o << tc;
+        *o << test_case;
     }
 
-    constexpr auto c_TestCases = std::to_array<TestCase>({
+    constexpr auto c_test_cases = std::to_array<TestCase>({
         // it strips purely-whitespace strings
         {"", std::nullopt},
         {" ", std::nullopt},
@@ -170,18 +169,18 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     FromCharsStripWhitespaceChecks,
     FromCharsStripWhitespace,
-    testing::ValuesIn(c_TestCases)
+    testing::ValuesIn(c_test_cases)
 );
 
 TEST_P(FromCharsStripWhitespace, Check)
 {
-    TestCase c = GetParam();
-    std::optional<float> rv = osc::from_chars_strip_whitespace(c.input);
-    ASSERT_EQ(rv, c.expectedOutput);
+    const TestCase test_case = GetParam();
+    std::optional<float> output = osc::from_chars_strip_whitespace(test_case.input);
+    ASSERT_EQ(output, test_case.expected_output);
 }
-TEST(to_hex_chars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
+TEST(to_hex_chars, returns_expected_results_when_compared_to_alternative_implementation)
 {
-    // test by comparing with
+    // test by comparing with a custom implementation (think of this double-entry accounting ;))
     for (size_t i = 0; i <= static_cast<size_t>(std::numeric_limits<uint8_t>::max()); ++i) {
         const auto v = static_cast<uint8_t>(i);
 
@@ -190,21 +189,21 @@ TEST(to_hex_chars, ReturnsExpectedResultsWhenComparedToAlternateImplementation)
         const char msc = static_cast<char>(msn <= 9 ? '0' + msn : 'a' + (msn-10));
         const char lsc = static_cast<char>(lsn <= 9 ? '0' + lsn : 'a' + (lsn-10));
 
-        auto [a, b] = to_hex_chars(v);
+        const auto [a, b] = to_hex_chars(v);
 
         ASSERT_EQ(a, msc);
         ASSERT_EQ(b, lsc);
     }
 }
 
-TEST(to_hex_chars, ReturnsExpectedResults)
+TEST(to_hex_chars, returns_expected_results)
 {
     struct TestCase final {
         uint8_t input;
-        std::pair<char, char> expectedOutput;
+        std::pair<char, char> expected_output;
     };
 
-    const auto testCases = std::to_array<TestCase>({
+    const auto test_cases = std::to_array<TestCase>({
         {0x00, {'0', '0'}},
         {0x0f, {'0', 'f'}},
         {0xf0, {'f', '0'}},
@@ -215,12 +214,12 @@ TEST(to_hex_chars, ReturnsExpectedResults)
         {0xef, {'e', 'f'}},
     });
 
-    for (const TestCase& tc : testCases) {
-        ASSERT_EQ(to_hex_chars(tc.input), tc.expectedOutput);
+    for (const auto& [input, expected_output] : test_cases) {
+        ASSERT_EQ(to_hex_chars(input), expected_output);
     }
 }
 
-TEST(try_parse_hex_chars_as_byte, ReturnsExpectedResults)
+TEST(try_parse_hex_chars_as_byte, returns_expected_results)
 {
     // parseable cases
     ASSERT_EQ(try_parse_hex_chars_as_byte('0', '0'), 0x00);
@@ -249,9 +248,9 @@ TEST(try_parse_hex_chars_as_byte, ReturnsExpectedResults)
     ASSERT_EQ(try_parse_hex_chars_as_byte('\\', '5'), std::nullopt);
 }
 
-TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
+TEST(is_valid_identifier, returns_true_for_typical_identifiers)
 {
-    const auto testCases = std::to_array({
+    const auto test_cases = std::to_array({
         "f",
         "g",
         "a_snake_case_string",
@@ -265,14 +264,14 @@ TEST(StringHelpers, IsValidIdentifierReturnsTrueForTypicalIdentifiers)
         "__orIfYouLikeCPPThenItsMaybeReserved",
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_TRUE(is_valid_identifier(testCase)) << testCase;
+    for (const auto& test_case : test_cases) {
+        ASSERT_TRUE(is_valid_identifier(test_case)) << test_case;
     }
 }
 
-TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadingNumbers)
+TEST(is_valid_identifier, returns_false_when_given_an_identifier_with_leading_numbers)
 {
-    const auto testCases = std::to_array({
+    const auto test_cases = std::to_array({
         "1f",
         "2g",
         "3a_snake_case_string",
@@ -283,19 +282,19 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenAnIdentifierWithLeadin
         "8Inner56Numbers",
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_FALSE(is_valid_identifier(testCase)) << testCase;
+    for (const auto& test_case : test_cases) {
+        ASSERT_FALSE(is_valid_identifier(test_case)) << test_case;
     }
 }
 
-TEST(StringHelpers, IsValidIdentifierReturnsFalseIfGivenAnEmptyString)
+TEST(is_valid_identifier, returns_false_if_given_an_empty_string)
 {
     ASSERT_FALSE(is_valid_identifier(std::string_view{}));
 }
 
-TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalidASCIICharacters)
+TEST(is_valid_identifier, return_false_when_given_identifiers_with_invalid_ASCII_characters)
 {
-    const auto assertCharCannotBeUsedInIdentifier = [](char c)
+    const auto assert_char_cannot_be_used_in_identifier = [](char c)
     {
         {
             const std::string leading = c + std::string{"leading"};
@@ -311,7 +310,7 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
         }
     };
 
-    const auto invalidRanges = std::to_array<std::pair<int, int>>({
+    const auto invalid_ASCII_ranges = std::to_array<std::pair<int, int>>({
         {0, 0x1F},    // control chars
         {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /
         {0x3A, 0x40}, // : ; < = > ? @
@@ -321,32 +320,30 @@ TEST(StringHelpers, IsValidIdentifierReturnsFalseWhenGivenIdentifiersWithInvalid
         {0x7B, 0x7F}, // { | } ~ DEL
     });
 
-    for (auto [min, max] : invalidRanges)
-    {
-        for (auto c = min; c <= max; ++c)
-        {
-            assertCharCannotBeUsedInIdentifier(static_cast<char>(c));
+    for (auto [min, max] : invalid_ASCII_ranges) {
+        for (auto c = min; c <= max; ++c) {
+            assert_char_cannot_be_used_in_identifier(static_cast<char>(c));
         }
     }
 }
 
-TEST(StringHelpers, joinWorksForBlankString)
+TEST(join, works_with_a_blank_string)
 {
-    const auto els = std::vector<std::string>{};
-    ASSERT_EQ(join(els, ","), "");
+    const auto range = std::vector<std::string>{};
+    ASSERT_EQ(join(range, ","), "");
 }
 
-TEST(StringHelpers, joinWorksForOneElement)
+TEST(join, works_with_one_element)
 {
     ASSERT_EQ(join(std::to_array({1}), ", "), "1");
 }
 
-TEST(StringHelpers, joinWorksForTwoElements)
+TEST(join, works_with_two_elements)
 {
     ASSERT_EQ(join(std::to_array({1, 2}), ", "), "1, 2");
 }
 
-TEST(StringHelpers, joinWorksForThreeElements)
+TEST(join, works_with_three_elements)
 {
     ASSERT_EQ(join(std::to_array({5, 4, 3}), ", "), "5, 4, 3");
 }

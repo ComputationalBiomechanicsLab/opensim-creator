@@ -7,22 +7,22 @@
 
 using namespace osc;
 
-TEST(Typelist, EmptyTypelistIsOk)
+TEST(Typelist, can_be_empty)
 {
-    [[maybe_unused]] Typelist t;  // ensure it compiles
+    [[maybe_unused]] const Typelist should_compile;
 }
 
-TEST(Typelist, HeadReturnsFirstElement)
+TEST(Typelist, head_returns_first_element)
 {
     static_assert(std::is_same_v<Typelist<int>::head, int>);
 }
 
-TEST(Typelist, TailsReturnsTailedTypelist)
+TEST(Typelist, tails_returns_last_element)
 {
     static_assert(std::is_same_v<Typelist<int, float>::tails::head, float>);
 }
 
-TEST(Typelist, TypelistSizeVReturnsExpectedValues)
+TEST(TypelistSizeV, returns_expected_values)
 {
     static_assert(TypelistSizeV<Typelist<>> == 0);
     static_assert(TypelistSizeV<Typelist<int>> == 1);
@@ -32,7 +32,7 @@ TEST(Typelist, TypelistSizeVReturnsExpectedValues)
     // ... etc.
 }
 
-TEST(Typelist, TypeAtWorksAsExpected)
+TEST(TypeAtT, works_as_expected)
 {
     static_assert(std::is_same_v<TypeAtT<Typelist<int, float, char, int64_t>, 0>, int>);
     static_assert(std::is_same_v<TypeAtT<Typelist<int, float, char, int64_t>, 1>, float>);

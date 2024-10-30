@@ -2,7 +2,11 @@
 
 #include <gtest/gtest.h>
 
+#include <chrono>
+#include <string>
+
 using namespace osc;
+using namespace std::chrono_literals;
 
 // repro for #495
 //
@@ -10,12 +14,12 @@ using namespace osc;
 // they then delete the backing file (e.g. via Windows explorer), the editor UI will
 // then show an error message from an exception, rather than carrying on or warning
 // that something not-quite-right has happened
-TEST(FileChangePoller, CtorDoesNotThrowExceptionIfGivenInvalidPath)
+TEST(FileChangePoller, constructor_does_not_throw_exception_when_given_invalid_path)
 {
     const std::string path = "doesnt-exist";
 
     // constructing with an invalid path shouldn't throw
-    ASSERT_NO_THROW({ FileChangePoller(std::chrono::milliseconds{0}, path); });
+    ASSERT_NO_THROW({ FileChangePoller(0ms, path); });
 }
 
 // repro for #495
@@ -24,12 +28,12 @@ TEST(FileChangePoller, CtorDoesNotThrowExceptionIfGivenInvalidPath)
 // they then delete the backing file (e.g. via Windows explorer), the editor UI will
 // then show an error message from an exception, rather than carrying on or warning
 // that something not-quite-right has happened
-TEST(FileChangePoller, ChangeWasDetectedDoesNotThrowExceptionIfGivenInvalidPath)
+TEST(FileChangePoller, change_detected_does_not_throw_exception_if_given_invalid_path)
 {
     const std::string path = "doesnt-exist";
 
     // construct it with an invalid path
-    FileChangePoller p{std::chrono::milliseconds{0}, path};
+    FileChangePoller p{0ms, path};
 
     // change_detected should return `false` (as in, no change detected) if the file
     // does not exist (e.g. because it was deleted by a user)

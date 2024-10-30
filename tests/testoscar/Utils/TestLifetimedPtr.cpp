@@ -22,88 +22,88 @@ namespace
 
 TEST(LifetimedPtr, can_default_construct)
 {
-    [[maybe_unused]] LifetimedPtr<SomeDerivingObject> ptr;
+    [[maybe_unused]] const LifetimedPtr<const SomeDerivingObject> ptr;
 }
 
 TEST(LifetimedPtr, default_constructed_implicitly_converts_to_false)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
+    const LifetimedPtr<const SomeDerivingObject> ptr;
     ASSERT_FALSE(ptr);
 }
 
 TEST(LifetimedPtr, default_constructed_get_returns_nullptr)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
+    const LifetimedPtr<const SomeDerivingObject> ptr;
     ASSERT_EQ(ptr.get(), nullptr);
 }
 
 TEST(LifetimedPtr, can_be_constructed_from_nullptr)
 {
-    [[maybe_unused]] LifetimedPtr<SomeDerivingObject> ptr{nullptr};
+    [[maybe_unused]] const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
 }
 
 TEST(LifetimedPtr, nullptr_constructed_implicitly_converts_to_false)
 {
-    LifetimedPtr<SomeDerivingObject> ptr{nullptr};
+    const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
     ASSERT_FALSE(ptr);
 }
 
 TEST(LifetimedPtr, nullptr_constructed_get_returns_nullptr)
 {
-    LifetimedPtr<SomeDerivingObject> ptr{nullptr};
+    const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
     ASSERT_EQ(ptr.get(), nullptr);
 }
 
 TEST(LifetimedPtr, when_constructed_with_expired_lifetime_produced_expired_ptr)
 {
-    AlwaysExpiredLifetime expired_lifetime;
-    SomeDerivingObject obj;
+    const AlwaysExpiredLifetime expired_lifetime;
+    const SomeDerivingObject obj;
 
-    LifetimedPtr<SomeDerivingObject> ptr{expired_lifetime, &obj};
+    const LifetimedPtr<const SomeDerivingObject> ptr{expired_lifetime, &obj};
 
     ASSERT_TRUE(ptr.expired());
 }
 
 TEST(LifetimedPtr, when_constructed_with_in_life_lifetime_produces_not_expired_ptr)
 {
-    SharedLifetimeBlock valid_lifetime;
-    SomeDerivingObject obj;
+    const SharedLifetimeBlock valid_lifetime;
+    const SomeDerivingObject obj;
 
-    LifetimedPtr<SomeDerivingObject> ptr{valid_lifetime, &obj};
+    const LifetimedPtr<const SomeDerivingObject> ptr{valid_lifetime, &obj};
 
     ASSERT_FALSE(ptr.expired());
 }
 
 TEST(LifetimedPtr, can_upcast_to_a_base_class)
 {
-    SharedLifetimeBlock valid_lifetime;
-    SomeDerivingObject obj;
+    const SharedLifetimeBlock valid_lifetime;
+    const SomeDerivingObject obj;
 
-    LifetimedPtr<SomeDerivingObject> ptr{valid_lifetime, &obj};
-    [[maybe_unused]] LifetimedPtr<SomeBaseClass> base_ptr = ptr;
+    const LifetimedPtr<const SomeDerivingObject> ptr{valid_lifetime, &obj};
+    [[maybe_unused]] const LifetimedPtr<const SomeBaseClass> base_ptr = ptr;
 }
 
 TEST(LifetimedPtr, when_upcasted_is_also_not_expired)
 {
-    SharedLifetimeBlock valid_lifetime;
-    SomeDerivingObject obj;
+    const SharedLifetimeBlock valid_lifetime;
+    const SomeDerivingObject obj;
 
-    LifetimedPtr<SomeDerivingObject> ptr{valid_lifetime, &obj};
+    const LifetimedPtr<const SomeDerivingObject> ptr{valid_lifetime, &obj};
     ASSERT_FALSE(ptr.expired());
-    LifetimedPtr<SomeBaseClass> base_ptr = ptr;
+    const LifetimedPtr<const SomeBaseClass> base_ptr = ptr;
     ASSERT_FALSE(ptr.expired());
 }
 
 TEST(LifetimedPtr, upcasted_ptr_is_attached_to_same_lifetime_as_derived_ptr)
 {
-    LifetimedPtr<SomeBaseClass> base_ptr;
+    LifetimedPtr<const SomeBaseClass> base_ptr;
 
     ASSERT_FALSE(base_ptr);
     {
-        SharedLifetimeBlock valid_lifetime;
-        SomeDerivingObject obj;
-        LifetimedPtr<SomeBaseClass> ptr{valid_lifetime, &obj};
-        base_ptr = LifetimedPtr<SomeBaseClass>{ptr};
+        const SharedLifetimeBlock valid_lifetime;
+        const SomeDerivingObject obj;
+        const LifetimedPtr<const SomeBaseClass> ptr{valid_lifetime, &obj};
+        base_ptr = LifetimedPtr<const SomeBaseClass>{ptr};
         ASSERT_FALSE(ptr.expired());
         ASSERT_FALSE(base_ptr.expired());
     }
@@ -112,9 +112,9 @@ TEST(LifetimedPtr, upcasted_ptr_is_attached_to_same_lifetime_as_derived_ptr)
 
 TEST(LifetimePtr, reset_resets_the_ptr)
 {
-    SharedLifetimeBlock lifetime;
-    SomeDerivingObject obj;
-    LifetimedPtr<SomeDerivingObject> ptr{lifetime, &obj};
+    const SharedLifetimeBlock lifetime;
+    const SomeDerivingObject obj;
+    LifetimedPtr<const SomeDerivingObject> ptr{lifetime, &obj};
     ASSERT_FALSE(ptr.expired());
     ASSERT_TRUE(ptr);
     ptr.reset();
@@ -124,17 +124,17 @@ TEST(LifetimePtr, reset_resets_the_ptr)
 
 TEST(LifetimePtr, get_returns_nullptr_for_nullptr)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
+    const LifetimedPtr<const SomeDerivingObject> ptr;
     ASSERT_EQ(ptr, nullptr);
 }
 
 TEST(LifetimePtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
-    SomeDerivingObject obj; // doesn't matter if this is in-lifetime
+    LifetimedPtr<const SomeDerivingObject> ptr;
+    const SomeDerivingObject obj; // doesn't matter if this is in-lifetime
     {
-        SharedLifetimeBlock lifetime;
-        ptr = LifetimedPtr<SomeDerivingObject>{lifetime, &obj};
+        const SharedLifetimeBlock lifetime;
+        ptr = LifetimedPtr<const SomeDerivingObject>{lifetime, &obj};
     }
     ASSERT_TRUE(ptr.expired());
     ASSERT_ANY_THROW({ ptr.get(); });
@@ -142,41 +142,41 @@ TEST(LifetimePtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
 
 TEST(LifetimedPtr, throws_if_called_on_non_expired_ptr)
 {
-    SharedLifetimeBlock lifetime;
-    SomeDerivingObject obj;
-    LifetimedPtr<SomeDerivingObject> ptr{lifetime, &obj};
+    const SharedLifetimeBlock lifetime;
+    const SomeDerivingObject obj;
+    const LifetimedPtr<const SomeDerivingObject> ptr{lifetime, &obj};
     ASSERT_NO_THROW({ *ptr; });
 }
 
 TEST(LifetimedPtr, operator_asterisk_throws_if_called_on_nullptr)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
+    const LifetimedPtr<const SomeDerivingObject> ptr;
     ASSERT_ANY_THROW({ *ptr; });
 }
 
 TEST(LifetimedPtr, operator_asterisk_throws_if_called_on_non_nullptr_with_expired_lifetime)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
-    SomeDerivingObject obj;
+    LifetimedPtr<const SomeDerivingObject> ptr;
+    const SomeDerivingObject obj;
     {
-        SharedLifetimeBlock lifetime;
-        ptr = LifetimedPtr<SomeDerivingObject>{lifetime, &obj};
-        ptr = LifetimedPtr<SomeDerivingObject>{ptr};
+        const SharedLifetimeBlock lifetime;
+        ptr = LifetimedPtr<const SomeDerivingObject>{lifetime, &obj};
+        ptr = LifetimedPtr<const SomeDerivingObject>{ptr};
     }
     ASSERT_ANY_THROW({ *ptr; });
 }
 
 TEST(LifetimedPtr, operator_arrow_works_on_non_expired_ptr)
 {
-    SharedLifetimeBlock lifetime;
+    const SharedLifetimeBlock lifetime;
     SomeDerivingObject obj;
-    LifetimedPtr<SomeDerivingObject> ptr{lifetime, &obj};
+    const LifetimedPtr<SomeDerivingObject> ptr{lifetime, &obj};
     ASSERT_NO_THROW({ ptr->some_method(); });
 }
 
 TEST(LifetimedPtr, operator_arrow_throws_when_called_on_nullptr)
 {
-    LifetimedPtr<SomeDerivingObject> ptr;
+    const LifetimedPtr<SomeDerivingObject> ptr;
     ASSERT_ANY_THROW({ ptr->some_method(); });
 }
 
@@ -185,7 +185,7 @@ TEST(LifetimedPtr, operator_arrow_throws_when_called_on_expired_ptr)
     LifetimedPtr<SomeDerivingObject> ptr;
     SomeDerivingObject obj;
     {
-        SharedLifetimeBlock lifetime;
+        const SharedLifetimeBlock lifetime;
         ptr = LifetimedPtr<SomeDerivingObject>{lifetime, &obj};
     }
     ASSERT_ANY_THROW({ ptr->some_method(); });
@@ -193,18 +193,18 @@ TEST(LifetimedPtr, operator_arrow_throws_when_called_on_expired_ptr)
 
 TEST(LifetimedPtr, equality_returns_expected_results)
 {
-    SharedLifetimeBlock first_lifetime;
-    SharedLifetimeBlock second_lifetime;
+    const SharedLifetimeBlock first_lifetime;
+    const SharedLifetimeBlock second_lifetime;
 
-    SomeDerivingObject first_obj;
-    SomeDerivingObject second_obj;
+    const SomeDerivingObject first_obj;
+    const SomeDerivingObject second_obj;
 
-    LifetimedPtr<SomeDerivingObject> default_constructed;
-    LifetimedPtr<SomeDerivingObject> nullptr_constructed;
-    LifetimedPtr<SomeDerivingObject> first_first{first_lifetime, &first_obj};
-    LifetimedPtr<SomeDerivingObject> first_second{first_lifetime, &second_obj};
-    LifetimedPtr<SomeDerivingObject> second_first{second_lifetime, &first_obj};
-    LifetimedPtr<SomeDerivingObject> second_second{second_lifetime, &second_obj};
+    const LifetimedPtr<const SomeDerivingObject> default_constructed;
+    const LifetimedPtr<const SomeDerivingObject> nullptr_constructed;
+    const LifetimedPtr<const SomeDerivingObject> first_first{first_lifetime, &first_obj};
+    const LifetimedPtr<const SomeDerivingObject> first_second{first_lifetime, &second_obj};
+    const LifetimedPtr<const SomeDerivingObject> second_first{second_lifetime, &first_obj};
+    const LifetimedPtr<const SomeDerivingObject> second_second{second_lifetime, &second_obj};
 
     ASSERT_EQ(default_constructed, default_constructed);
     ASSERT_EQ(default_constructed, nullptr_constructed);
