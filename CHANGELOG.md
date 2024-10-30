@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The asset files for `oscar_demos`, which are shipped with the installer, are
+  now compressed with jpg, which makes the installer much smaller.
 - There is now a `Color Scaling` option in the muscle coloring/styling panel, which
   enables auto-scaling the min/max (e.g. blue-to-red) color range based on the model-wide
   min/max of the chosen `Color Source`. This is useful for visualizing differences between

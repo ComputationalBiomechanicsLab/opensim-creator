@@ -193,11 +193,11 @@ namespace
 
     struct IBLSpecularObjectTextures final {
         explicit IBLSpecularObjectTextures(ResourceLoader loader) :
-            albedo_map{load_texture2D_from_image(loader.open("albedo.png"), ColorSpace::sRGB)},
-            normal_map{load_texture2D_from_image(loader.open("normal.png"), ColorSpace::Linear)},
-            metallic_map{load_texture2D_from_image(loader.open("metallic.png"), ColorSpace::Linear)},
-            roughness_map{load_texture2D_from_image(loader.open("roughness.png"), ColorSpace::Linear)},
-            ao_map{load_texture2D_from_image(loader.open("ao.png"), ColorSpace::Linear)}
+            albedo_map{load_texture2D_from_image(loader.open("albedo.jpg"), ColorSpace::sRGB)},
+            normal_map{load_texture2D_from_image(loader.open("normal.jpg"), ColorSpace::Linear)},
+            metallic_map{load_texture2D_from_image(loader.open("metallic.jpg"), ColorSpace::Linear)},
+            roughness_map{load_texture2D_from_image(loader.open("roughness.jpg"), ColorSpace::Linear)},
+            ao_map{load_texture2D_from_image(loader.open("ao.jpg"), ColorSpace::Linear)}
         {}
 
         Texture2D albedo_map;

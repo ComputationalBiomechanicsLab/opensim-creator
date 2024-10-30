@@ -41,23 +41,23 @@ namespace
     Material create_material(IResourceLoader& loader)
     {
         const Texture2D albedo = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/albedo.png"),
+            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/albedo.jpg"),
             ColorSpace::sRGB
         );
         const Texture2D normal = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/normal.png"),
+            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/normal.jpg"),
             ColorSpace::Linear
         );
         const Texture2D metallic = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/metallic.png"),
+            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/metallic.jpg"),
             ColorSpace::Linear
         );
         const Texture2D roughness = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/roughness.png"),
+            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/roughness.jpg"),
             ColorSpace::Linear
         );
         const Texture2D ao = load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/ao.png"),
+            loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/ao.jpg"),
             ColorSpace::Linear
         );
 
