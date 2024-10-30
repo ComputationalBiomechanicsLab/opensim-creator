@@ -11,16 +11,16 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
-TEST(all_of, WorksAsExpected)
+TEST(all_of, works_as_expected)
 {
-    auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
+    const auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
     ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v > -4; }));
     ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v <  4; }));
     ASSERT_FALSE(rgs::all_of(vs, [](int v){ return v > 0; }));
 }
-TEST(at, WorksAsExpected)
+TEST(at, works_as_expected)
 {
-    auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
+    const auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
     ASSERT_EQ(at(vs, 0), -1);
     ASSERT_EQ(at(vs, 1), -2);
     ASSERT_EQ(at(vs, 2), -3);
@@ -33,15 +33,15 @@ TEST(at, WorksAsExpected)
 
 }
 
-TEST(at, WorksAtCompileTime)
+TEST(at, works_at_compile_time)
 {
     constexpr auto ary = std::to_array({-1, 0, 1});
     static_assert(at(ary, 1) == 0);
 }
 
-TEST(lookup_or_nullopt, WorksWithStdUnorderedMap)
+TEST(lookup_or_nullopt, works_with_std_unordered_map)
 {
-    std::unordered_map<int, int> um{
+    const std::unordered_map<int, int> um = {
         {20, 30},
         {-1, 98},
         {5, 10},
@@ -56,43 +56,26 @@ TEST(lookup_or_nullopt, WorksWithStdUnorderedMap)
     ASSERT_EQ(lookup_or_nullopt(um, 5), 10);
 }
 
-TEST(lookup_or_nullopt, WorksWithStdMap)
+TEST(lookup_or_nullopt, works_with_std_map)
 {
-    std::map<int, int> um{
+    const std::map<int, int> map = {
         {20, 30},
         {-1, 98},
         {5, 10},
         {-15, 20},
     };
 
-    ASSERT_EQ(lookup_or_nullopt(um, -20), std::nullopt);
-    ASSERT_EQ(lookup_or_nullopt(um, -15), 20);
-    ASSERT_EQ(lookup_or_nullopt(um, -2), std::nullopt);
-    ASSERT_EQ(lookup_or_nullopt(um, -1), 98);
-    ASSERT_EQ(lookup_or_nullopt(um, 0), std::nullopt);
-    ASSERT_EQ(lookup_or_nullopt(um, 5), 10);
+    ASSERT_EQ(lookup_or_nullopt(map, -20), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(map, -15), 20);
+    ASSERT_EQ(lookup_or_nullopt(map, -2), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(map, -1), 98);
+    ASSERT_EQ(lookup_or_nullopt(map, 0), std::nullopt);
+    ASSERT_EQ(lookup_or_nullopt(map, 5), 10);
 }
 
-TEST(lookup_or_nullptr, WorksWithUnorderedMap)
+TEST(lookup_or_nullptr, works_with_std_unordered_map)
 {
-    std::unordered_map<int, int> um{
-        {20, 30},
-        {-1, 98},
-        {5, 10},
-        {-15, 20},
-    };
-
-    ASSERT_EQ(lookup_or_nullptr(um, -20), nullptr);
-    ASSERT_EQ(*lookup_or_nullptr(um, -15), 20);
-    ASSERT_EQ(lookup_or_nullptr(um, -2), nullptr);
-    ASSERT_EQ(*lookup_or_nullptr(um, -1), 98);
-    ASSERT_EQ(lookup_or_nullptr(um, 0), nullptr);
-    ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
-}
-
-TEST(lookup_or_nullptr, WorksWithStdMap)
-{
-    std::map<int, int> um{
+    const std::unordered_map<int, int> um = {
         {20, 30},
         {-1, 98},
         {5, 10},
@@ -107,9 +90,26 @@ TEST(lookup_or_nullptr, WorksWithStdMap)
     ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
 }
 
-TEST(lookup_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
+TEST(lookup_or_nullptr, works_with_std_map)
 {
-    const std::unordered_map<int, int> um{
+    const std::map<int, int> map = {
+        {20, 30},
+        {-1, 98},
+        {5, 10},
+        {-15, 20},
+    };
+
+    ASSERT_EQ(lookup_or_nullptr(map, -20), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(map, -15), 20);
+    ASSERT_EQ(lookup_or_nullptr(map, -2), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(map, -1), 98);
+    ASSERT_EQ(lookup_or_nullptr(map, 0), nullptr);
+    ASSERT_EQ(*lookup_or_nullptr(map, 5), 10);
+}
+
+TEST(lookup_or_nullptr, works_with_const_qualified_std_unordered_map)
+{
+    const std::unordered_map<int, int> um = {
         {20, 30},
         {-1, 98},
         {5, 10},
@@ -124,9 +124,9 @@ TEST(lookup_or_nullptr, WorksWithConstQualifiedStdUnorderedMap)
     ASSERT_EQ(*lookup_or_nullptr(um, 5), 10);
 }
 
-TEST(lookup_or_nullptr, CanMutateViaReturnedPointer)
+TEST(lookup_or_nullptr, can_mutate_via_the_returned_pointer)
 {
-    std::unordered_map<int, int> um{
+    std::unordered_map<int, int> um = {
         {20, 30},
     };
 
@@ -136,19 +136,19 @@ TEST(lookup_or_nullptr, CanMutateViaReturnedPointer)
     ASSERT_EQ(*lookup_or_nullptr(um, 20), -40);
 }
 
-TEST(min_element, WorksAsExpected)
+TEST(min_element, works_as_expected)
 {
     const auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min_element(els), els.begin() + 3);
 }
 
-TEST(min, WorksAsExpected)
+TEST(min, works_as_expected)
 {
     const auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min(els), -4);
 }
 
-TEST(minmax_element, WorksAsExpected)
+TEST(minmax_element, works_as_expected)
 {
     const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
     const auto [minit, maxit] = rgs::minmax_element(els);
@@ -156,7 +156,7 @@ TEST(minmax_element, WorksAsExpected)
     ASSERT_EQ(maxit, els.end() - 1);
 }
 
-TEST(minmax, WorksAsExpected)
+TEST(minmax, works_as_expected)
 {
     const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
     const auto [min, max] = rgs::minmax(els);
@@ -193,7 +193,7 @@ namespace
     };
 }
 
-TEST(is_eq_downcasted, WorksAsExpected)
+TEST(is_eq_downcasted, works_as_expected)
 {
     // basic case: both types are the same and don't require downcasting
     ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{1}));
