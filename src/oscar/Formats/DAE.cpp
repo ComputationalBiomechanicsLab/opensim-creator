@@ -11,8 +11,10 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Strings.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <iomanip>
 #include <ostream>
 #include <ranges>
@@ -145,12 +147,12 @@ namespace
     std::ostream& operator<<(std::ostream& out, std::span<const float> values)
     {
         std::string_view delimeter;
+        std::array<char, 512> buffer;
         for (float value : values) {
-            // note: to_string measures faster than directly streaming the value, because
-            //       there's overhead associated with the stream that we don't care about
-            //       for the DAE format (locale, etc.)
-            out << delimeter << std::to_string(value);
-            delimeter = " ";
+            if (auto size = std::snprintf(buffer.data(), buffer.size(), "%f", value); size > 0) {
+                out << delimeter << std::string_view{buffer.data(), static_cast<size_t>(size)};
+                delimeter = " ";
+            }
         }
         return out;
     }
