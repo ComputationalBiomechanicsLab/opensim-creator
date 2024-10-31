@@ -12,9 +12,6 @@ set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
 
 # -------------- set globally-applicable policies ---------------- #
 
-# tell cmake that we will define MSVC warning flags (e.g. /W3 /W4) ourselves
-cmake_policy(SET CMP0092 NEW)
-
 # oscar_compiler_configuration:
 #
 # a cmake target that downstream projects can link to in order to inherit the
