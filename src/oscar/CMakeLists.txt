@@ -1,10 +1,6 @@
 # find dependencies (usually built+installed from `third_party/`)
 if (NOT ${OSC_EMSCRIPTEN})
-    cmake_policy(PUSH)
-    cmake_policy(SET CMP0072 NEW)  # prefer to choose GLVND for OpenGL
     find_package(OpenGL REQUIRED)
-    cmake_policy(POP)
-
     find_package(glew REQUIRED CONFIG)
     find_package(SDL2 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
