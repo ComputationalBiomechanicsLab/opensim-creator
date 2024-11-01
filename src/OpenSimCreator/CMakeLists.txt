@@ -447,7 +447,7 @@ set_target_properties(OpenSimCreator PROPERTIES
 target_compile_features(OpenSimCreator PUBLIC
     cxx_std_20
 )
-target_compile_options(OpenSimCreator INTERFACE
+target_compile_options(OpenSimCreator PUBLIC
 
     # gcc/clang
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
