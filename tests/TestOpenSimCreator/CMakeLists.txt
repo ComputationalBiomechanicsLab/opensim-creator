@@ -1,6 +1,10 @@
 include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.h"
+)
 add_executable(TestOpenSimCreator
 
     ComponentRegistry/TestStaticComponentRegistries.cpp
@@ -33,48 +37,21 @@ add_executable(TestOpenSimCreator
 
     TestOpenSimCreator.cpp  # entrypoint (main)
 )
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/TestOpenSimCreator/TestOpenSimCreatorConfig.h"
+set_target_properties(TestOpenSimCreator PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+target_compile_features(TestOpenSimCreator PUBLIC
+    cxx_std_20
 )
 target_include_directories(TestOpenSimCreator PRIVATE
     # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>`
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 )
-
 target_link_libraries(TestOpenSimCreator PRIVATE
-
-    # set compile options
-    oscar_compiler_configuration
-
-    # link to the to-be-tested library
     OpenSimCreator
-
-    # link to testing library
     GTest::gtest
     GTest::gtest_main
-)
-
-# additional compile options (on top of `oscar_compiler_configuration`)
-target_compile_options(TestOpenSimCreator PRIVATE
-
-    # gcc/clang
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
-        # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
-        -Wno-extra-semi
-    >
-
-    # gcc
-    $<$<CXX_COMPILER_ID:GNU>:
-        # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
-        -Wno-array-bounds
-    >
-)
-
-set_target_properties(TestOpenSimCreator PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 
 # tell CMake (+IDEs) how to find all tests

@@ -1,6 +1,10 @@
 include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.h"
+)
 add_executable(testoscar
     DOM/TestClass.cpp
     DOM/TestNode.cpp
@@ -123,12 +127,13 @@ add_executable(testoscar
     TestingHelpers.h
     testoscar.cpp  # entry point
 )
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/testoscar/testoscarconfig.h"
+set_target_properties(testoscar PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
 )
-
+target_compile_features(testoscar PUBLIC
+    cxx_std_20
+)
 target_include_directories(testoscar PRIVATE
 
     # so that the source code can `#include <testoscar/SomeModule.h>`
@@ -139,21 +144,9 @@ target_include_directories(testoscar PRIVATE
 )
 
 target_link_libraries(testoscar PRIVATE
-
-    # set compiler options
-    oscar_compiler_configuration
-
-    # link to the to-be-tested library
     oscar
-
-    # link to testing library
     GTest::gtest
     GTest::gtest_main
-)
-
-set_target_properties(testoscar PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 
 # tell CMake (+IDEs) how to find all tests

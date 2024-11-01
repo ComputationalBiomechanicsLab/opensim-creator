@@ -1,13 +1,15 @@
-add_executable(hellotriangle hellotriangle.cpp)
-
-target_link_libraries(hellotriangle PRIVATE
-    oscar_compiler_configuration  # so that it uses standard compiler flags etc.
-    oscar
+add_executable(hellotriangle
+    hellotriangle.cpp
 )
-
 set_target_properties(hellotriangle PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_STANDARD_REQUIRED ON
+)
+target_compile_features(hellotriangle PUBLIC
+    cxx_std_20
+)
+target_link_libraries(hellotriangle PRIVATE
+    oscar
 )
 
 # -------------- installation/packaging ------------- #

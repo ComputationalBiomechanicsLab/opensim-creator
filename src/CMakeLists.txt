@@ -1,4 +1,3 @@
-add_subdirectory(oscar_compiler_configuration)
 add_subdirectory(oscar)
 add_subdirectory(oscar_demos)
 if (${OSC_BUILD_OPENSIMCREATOR})

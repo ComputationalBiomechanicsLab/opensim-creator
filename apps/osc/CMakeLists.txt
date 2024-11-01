@@ -72,16 +72,16 @@ add_executable(osc
         ${CMAKE_CURRENT_SOURCE_DIR}/Windows/resources.rc
     >
 )
-
+set_target_properties(osc PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+target_compile_features(osc PUBLIC
+    cxx_std_20
+)
 target_link_libraries(osc PRIVATE
-
-    # so that it uses standard compiler flags etc.
-    oscar_compiler_configuration
-
-    # so that it can boot into the main osc codebase
     OpenSimCreator
 )
-
 target_include_directories(osc PRIVATE
 
     # Windows: `resources.rc` uses the include path to find resources
@@ -104,11 +104,6 @@ target_link_options(osc PRIVATE
         # as above, call into `main`
         /ENTRY:mainCRTStartup
     >
-)
-
-set_target_properties(osc PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 
 

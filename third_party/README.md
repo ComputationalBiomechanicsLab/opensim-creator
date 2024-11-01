@@ -1,10 +1,10 @@
 # `third_party/`: Source Code for OpenSim Creator's Third-Party Dependencies
 
 This directory contains the source code for all (recursive) of OpenSim Creator's
-third-party runtime dependencies. We use `git submodule` to fetch/version the
+third-party runtime dependencies. We use `git submodule` to fetch/version all
 dependencies.
 
-This directory also operates as a `cmake` build. It contains a `CMakeLists.txt`
+This directory also operates as a `cmake` "superbuild". It contains a `CMakeLists.txt`
 file that uses the `ExternalProject` API to build+install these third-party
 dependencies into a standalone directory, so that OpenSim Creator's main build
 (`../CMakeLists.txt`) can find all necessary dependencies via a combination

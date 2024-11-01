@@ -440,23 +440,14 @@ add_library(OpenSimCreator STATIC
     Utils/TPS3D.cpp
     Utils/TPS3D.h
 )
-
-target_include_directories(OpenSimCreator PUBLIC
-
-    # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+set_target_properties(OpenSimCreator PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
 )
-
-target_link_libraries(OpenSimCreator PUBLIC
-    oscar_compiler_configuration
-    oscar
-    oscar_demos
-
-    osim
+target_compile_features(OpenSimCreator PUBLIC
+    cxx_std_20
 )
-
-# additional compile options (on top of `oscar_compiler_configuration`)
-target_compile_options(OpenSimCreator PRIVATE
+target_compile_options(OpenSimCreator INTERFACE
 
     # gcc/clang
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
@@ -475,8 +466,13 @@ target_compile_definitions(OpenSimCreator PRIVATE
     # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )
+target_include_directories(OpenSimCreator PUBLIC
 
-set_target_properties(OpenSimCreator PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
+    # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+target_link_libraries(OpenSimCreator PUBLIC
+    oscar
+    oscar_demos
+    osim
 )

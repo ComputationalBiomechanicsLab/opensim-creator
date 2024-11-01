@@ -5,26 +5,23 @@ add_executable(testoscar_demos
     TestAllRegisteredDemoTabs.cpp
     testoscar_demos.cpp  # entry point
 )
-
+set_target_properties(testoscar_demos PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+target_compile_features(testoscar_demos PUBLIC
+    cxx_std_20
+)
 target_include_directories(testoscar_demos PRIVATE
 
     # so that the source code can `#include <testoscar_demos/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
-
 target_link_libraries(testoscar_demos PRIVATE
-
-    oscar_compiler_configuration
     oscar
     oscar_demos
-
     GTest::gtest
     GTest::gtest_main
-)
-
-set_target_properties(testoscar_demos PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 
 if(${OSC_DISCOVER_TESTS})

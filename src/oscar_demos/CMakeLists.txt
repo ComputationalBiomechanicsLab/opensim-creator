@@ -84,18 +84,18 @@ add_library(oscar_demos STATIC
     SubMeshTab.cpp
     SubMeshTab.h
 )
-
+set_target_properties(oscar_demos PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_STANDARD_REQUIRED ON
+)
+target_compile_features(oscar_demos PUBLIC
+    cxx_std_20
+)
 target_include_directories(oscar_demos PUBLIC
 
     # so that `#include "oscar_demos/HEADER.h"` works
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
-
 target_link_libraries(oscar_demos PUBLIC
     oscar
-)
-
-set_target_properties(oscar_demos PROPERTIES
-    CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
