@@ -196,6 +196,21 @@ void osc::OpenSimDecorationOptions::setShouldShowPointForces(bool v)
     SetOption(m_Flags, OpenSimDecorationOptionFlags::ShouldShowPointForces, v);
 }
 
+void osc::OpenSimDecorationOptions::setShouldShowEverything(bool v)
+{
+    setShouldShowScapulo(v);
+    setShouldShowEffectiveMuscleLineOfActionForOrigin(v);
+    setShouldShowEffectiveMuscleLineOfActionForInsertion(v);
+    setShouldShowAnatomicalMuscleLineOfActionForOrigin(v);
+    setShouldShowAnatomicalMuscleLineOfActionForInsertion(v);
+    setShouldShowCentersOfMass(v);
+    setShouldShowPointToPointSprings(v);
+    setShouldShowContactForces(v);
+    setShouldShowForceLinearComponent(v);
+    setShouldShowForceAngularComponent(v);
+    setShouldShowPointForces(v);
+}
+
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);

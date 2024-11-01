@@ -35,13 +35,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     // turn as many decoration options on as possible, so that the code gets tested
     // against them (#661)
     OpenSimDecorationOptions decorationOpts;
-    decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForInsertion(true);
-    decorationOpts.setShouldShowAnatomicalMuscleLineOfActionForOrigin(true);
-    decorationOpts.setShouldShowEffectiveMuscleLineOfActionForInsertion(true);
-    decorationOpts.setShouldShowEffectiveMuscleLineOfActionForOrigin(true);
-    decorationOpts.setShouldShowCentersOfMass(true);
-    decorationOpts.setShouldShowScapulo(true);
-    decorationOpts.setShouldShowPointToPointSprings(true);
+    decorationOpts.setShouldShowEverything(true);
 
     const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "models";
     ASSERT_TRUE(std::filesystem::exists(examplesDir) && std::filesystem::is_directory(examplesDir));
@@ -72,18 +66,53 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
             // and decorations are generated
             ASSERT_FALSE(decorations.empty());
 
-            // and all decorations can be exported to a DAE format
-            NullOStream stream;
-            const DAEMetadata metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
-            write_as_dae(stream, decorations, metadata);
-
-            // and content is actually written to the DAE stream
-            ASSERT_TRUE(stream.was_written_to());
-
             ++nExamplesTested;
         }
     }
     ASSERT_GT(nExamplesTested, 10);  // sanity check: remove this if you want <10 examples
+}
+
+// this test just ensures that the DAE writer works for a reasonably complicated model
+TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
+{
+    // ensure the OpenSim API is initialized and the meshes are loadable from
+    // the central `geometry/` directory
+    {
+        GloballyInitOpenSim();
+        GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
+    }
+
+    // load model
+    const UndoableModelStatePair p{std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "RajagopalModel" / "Rajagopal2015.osim"};
+
+    // setup rendering state
+    SceneCache meshCache;
+    OpenSimDecorationOptions decorationOpts;
+    decorationOpts.setShouldShowEverything(true);
+
+    // generate decorations
+    std::vector<SceneDecoration> decorations;
+    GenerateModelDecorations(
+        meshCache,
+        p.getModel(),
+        p.getState(),
+        decorationOpts,
+        1.0f,  // 1:1 scaling
+        [&decorations](const OpenSim::Component& component, SceneDecoration&& dec)
+        {
+            dec.id = GetAbsolutePathStringName(component);
+            decorations.push_back(std::move(dec));
+        }
+    );
+
+    ASSERT_FALSE(decorations.empty()) << "decorations should be generated";
+
+    // write decorations to a fake (testing) `std::ostream`
+    NullOStream stream;
+    const DAEMetadata metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
+    write_as_dae(stream, decorations, metadata);
+
+    ASSERT_TRUE(stream.was_written_to()) << "the DAE writer should write content to the stream";
 }
 
 // related issue: #890
