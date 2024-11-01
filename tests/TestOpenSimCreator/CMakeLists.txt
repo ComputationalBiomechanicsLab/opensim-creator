@@ -39,7 +39,6 @@ add_executable(TestOpenSimCreator
 )
 set_target_properties(TestOpenSimCreator PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(TestOpenSimCreator PUBLIC
     cxx_std_20

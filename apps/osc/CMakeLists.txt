@@ -74,7 +74,6 @@ add_executable(osc
 )
 set_target_properties(osc PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(osc PUBLIC
     cxx_std_20

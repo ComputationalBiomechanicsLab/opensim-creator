@@ -442,7 +442,6 @@ add_library(OpenSimCreator STATIC
 )
 set_target_properties(OpenSimCreator PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(OpenSimCreator PUBLIC
     cxx_std_20
@@ -461,13 +460,11 @@ target_compile_options(OpenSimCreator PUBLIC
         -Wno-array-bounds
     >
 )
-
 target_compile_definitions(OpenSimCreator PRIVATE
     # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )
 target_include_directories(OpenSimCreator PUBLIC
-
     # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )

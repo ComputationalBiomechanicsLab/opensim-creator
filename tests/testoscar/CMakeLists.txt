@@ -129,7 +129,6 @@ add_executable(testoscar
 )
 set_target_properties(testoscar PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(testoscar PUBLIC
     cxx_std_20

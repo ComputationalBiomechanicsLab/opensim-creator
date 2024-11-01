@@ -86,7 +86,6 @@ add_library(oscar_demos STATIC
 )
 set_target_properties(oscar_demos PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(oscar_demos PUBLIC
     cxx_std_20

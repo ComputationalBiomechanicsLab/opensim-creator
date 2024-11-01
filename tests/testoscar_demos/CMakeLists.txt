@@ -7,7 +7,6 @@ add_executable(testoscar_demos
 )
 set_target_properties(testoscar_demos PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(testoscar_demos PUBLIC
     cxx_std_20

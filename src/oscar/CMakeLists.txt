@@ -10,6 +10,8 @@ set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
 
 # find dependencies (usually built+installed from `third_party/`)
 if (NOT ${OSC_EMSCRIPTEN})
+    # these libraries are either provided by emscripten later on, or aren't
+    # supported by the emscripten build (they're #ifdef'd out)
     find_package(OpenGL REQUIRED)
     find_package(glew REQUIRED CONFIG)
     find_package(SDL2 REQUIRED CONFIG)
@@ -456,8 +458,7 @@ add_library(oscar STATIC
     Utils/UID.h
     Utils/UndoRedo.cpp
     Utils/UndoRedo.h
-    # TODO: reenable once MacOS gets pmr::memory_resource support
-    # Utils/VariableLengthArray.h
+    # Utils/VariableLengthArray.h  # disabled, because MacOS doesn't support `std::pmr::memory_resource`
     Utils/WatchableLifetime.h
 
     Variant/Variant.cpp
@@ -482,7 +483,6 @@ add_library(oscar STATIC
 
 set_target_properties(oscar PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_STANDARD_REQUIRED ON
 )
 target_compile_features(oscar PUBLIC
     cxx_std_20
