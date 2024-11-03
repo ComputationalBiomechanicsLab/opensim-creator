@@ -44,8 +44,7 @@ target_compile_features(TestOpenSimCreator PUBLIC
     cxx_std_20
 )
 target_include_directories(TestOpenSimCreator PRIVATE
-    # so that source code can `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>` works
 )
 target_link_libraries(TestOpenSimCreator PRIVATE
     OpenSimCreator

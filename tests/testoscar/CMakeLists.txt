@@ -117,8 +117,7 @@ add_executable(testoscar
     Utils/TestTemporaryFile.cpp
     Utils/TestTransparentStringHasher.cpp
     Utils/TestTypelist.cpp
-    # TODO: re-enable once MacOS gets std::pmr support
-    # Utils/TestVariableLengthArray.cpp
+    # Utils/TestVariableLengthArray.cpp  # disabled, because MacOS doesn't support `std::pmr::memory_resource`
 
     Variant/TestVariant.cpp
     Variant/TestVariantType.cpp
@@ -134,14 +133,9 @@ target_compile_features(testoscar PUBLIC
     cxx_std_20
 )
 target_include_directories(testoscar PRIVATE
-
-    # so that the source code can `#include <testoscar/SomeModule.h>`
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
-
-    # so that source code can `#include <tesetoscar/testoscarconfig.h>`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+    ${CMAKE_CURRENT_SOURCE_DIR}/..           # so that `#include <testoscar_demos/HEADER.h>` works
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/" # so that `#include <testoscar/testoscarconfig.h>` works
 )
-
 target_link_libraries(testoscar PRIVATE
     oscar
     GTest::gtest

@@ -91,9 +91,7 @@ target_compile_features(oscar_demos PUBLIC
     cxx_std_20
 )
 target_include_directories(oscar_demos PUBLIC
-
-    # so that `#include "oscar_demos/HEADER.h"` works
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/..      # so that `#include "oscar_demos/HEADER.h"` works
 )
 target_link_libraries(oscar_demos PUBLIC
     oscar

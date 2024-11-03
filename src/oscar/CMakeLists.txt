@@ -5,13 +5,13 @@ set(
 )
 set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
     CACHE BOOL
-    "enable/disable whether performance counters are collected at runtime wherever the `OSC_PERF` macro is used in the source code"
+    "enable/disable whether performance counters are collected at runtime whenever the `OSC_PERF` macro is used in the source code"
 )
 
-# find dependencies (usually built+installed from `third_party/`)
 if (NOT ${OSC_EMSCRIPTEN})
-    # these libraries are either provided by emscripten later on, or aren't
-    # supported by the emscripten build (they're #ifdef'd out)
+    # These libraries are either provided by emscripten later on, or aren't
+    # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
+    # source code).
     find_package(OpenGL REQUIRED)
     find_package(glew REQUIRED CONFIG)
     find_package(SDL2 REQUIRED CONFIG)
@@ -633,15 +633,12 @@ target_compile_options(oscar PUBLIC
         -Wno-restrict
     >
 )
-target_compile_definitions(oscar
-PUBLIC
+target_compile_definitions(oscar PUBLIC
     $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
     $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
 )
 target_include_directories(oscar PUBLIC
-
-    # so that `#include <oscar/HEADER.h>` works
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <oscar/HEADER.h>` works
 )
 
 target_link_libraries(oscar PRIVATE

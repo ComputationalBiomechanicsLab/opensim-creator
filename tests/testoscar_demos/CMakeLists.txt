@@ -12,9 +12,7 @@ target_compile_features(testoscar_demos PUBLIC
     cxx_std_20
 )
 target_include_directories(testoscar_demos PRIVATE
-
-    # so that the source code can `#include <testoscar_demos/SomeModule.h>`
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <testoscar_demos/HEADER.h>` works
 )
 target_link_libraries(testoscar_demos PRIVATE
     oscar

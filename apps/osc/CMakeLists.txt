@@ -1,5 +1,3 @@
-# -------------- gather user-facing build cache vars ---------------- #
-
 set(
     OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
     CACHE STRING

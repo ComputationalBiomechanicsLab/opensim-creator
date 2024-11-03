@@ -465,8 +465,7 @@ target_compile_definitions(OpenSimCreator PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )
 target_include_directories(OpenSimCreator PUBLIC
-    # so that the source code can `#include <OpenSimCreator/SomeModule.h>`
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <OpenSimCreator/HEADER.h>` works
 )
 target_link_libraries(OpenSimCreator PUBLIC
     oscar
