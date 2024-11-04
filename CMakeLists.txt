@@ -20,26 +20,6 @@ set(
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 
-# set OSC_BUILD_ID
-#
-# this is so that errors in the binary can potentially be linked to the source
-# that produced the binary later on (user errors, etc.)
-if(TRUE)
-
-    if(DEFINED ENV{OSC_BUILD_ID})
-        set(OSC_DEFAULT_BUILD_ID "$ENV{OSC_BUILD_ID}")
-    else()
-        set(OSC_DEFAULT_BUILD_ID "CUSTOM_BUILD")
-    endif()
-
-    set(
-        OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
-        CACHE STRING
-        "a unique identifier for this particular build configuration (handy for bug tracing)"
-    )
-    unset(OSC_DEFAULT_BUILD_ID)
-endif()
-
 
 # -------------- setup top-level project state ---------------- #
 
