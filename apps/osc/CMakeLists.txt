@@ -44,6 +44,26 @@ set(
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
 
+# set OSC_BUILD_ID
+#
+# this is so that errors in the binary can potentially be linked to the source
+# that produced the binary later on (user errors, etc.)
+if(TRUE)
+
+    if(DEFINED ENV{OSC_BUILD_ID})
+        set(OSC_DEFAULT_BUILD_ID "$ENV{OSC_BUILD_ID}")
+    else()
+        set(OSC_DEFAULT_BUILD_ID "CUSTOM_BUILD")
+    endif()
+
+    set(
+        OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
+        CACHE STRING
+        "a unique identifier for this particular build configuration (handy for bug tracing)"
+    )
+    unset(OSC_DEFAULT_BUILD_ID)
+endif()
+
 # OpenSimCreatorConfig.h
 #
 # a configured header file that contains values that are accessible in the source
