@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.5.16] - 2024/11/04
+
 - The `.vtp` files that are shipped with the demo models are now 30 % smaller,
   because they no longer contain unused normals (opensim-models/#181, #941)
 - The asset files for `oscar_demos`, which are shipped with the installer, are
