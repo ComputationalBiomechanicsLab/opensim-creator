@@ -1,6 +1,9 @@
 #include "OpenSimDecorationGenerator.h"
 
 #include <OpenSimCreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
+#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <OpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
 #include <OpenSimCreator/Graphics/SimTKDecorationGenerator.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
@@ -1247,6 +1250,48 @@ void osc::GenerateModelDecorations(
         out,
         false
     );
+}
+
+std::vector<SceneDecoration> osc::GenerateModelDecorations(
+    SceneCache& cache,
+    const IModelStatePair& modelState,
+    const OpenSimDecorationOptions& opts,
+    float fixupScaleFactor)
+{
+    return GenerateModelDecorations(
+        cache,
+        modelState.getModel(),
+        modelState.getState(),
+        opts,
+        fixupScaleFactor
+    );
+}
+
+std::vector<SceneDecoration> osc::GenerateModelDecorations(
+    SceneCache& cache,
+    const OpenSim::Model& model,
+    const SimTK::State& state,
+    const OpenSimDecorationOptions& opts,
+    float fixupScaleFactor)
+{
+    std::vector<SceneDecoration> rv;
+    ComponentAbsPathDecorationTagger pathTagger;
+
+    GenerateSubcomponentDecorations(
+        cache,
+        model,
+        state,
+        model,
+        opts,
+        fixupScaleFactor,
+        [&rv, &pathTagger](const OpenSim::Component& component, SceneDecoration&& decoration)
+        {
+            pathTagger(component, decoration);
+            rv.push_back(std::move(decoration));
+        },
+        false
+    );
+    return rv;
 }
 
 void osc::GenerateSubcomponentDecorations(

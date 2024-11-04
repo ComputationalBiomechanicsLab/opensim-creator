@@ -8,6 +8,7 @@
 #include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <OpenSimCreator/UI/MeshHittestTab.h>
 #include <OpenSimCreator/UI/RendererGeometryShaderTab.h>
+#include <OpenSimCreator/UI/RendererPerfTestingTab.h>
 #include <OpenSimCreator/UI/TPS2DTab.h>
 
 #include <oscar/Utils/Typelist.h>
@@ -24,6 +25,7 @@ namespace osc
         FrameDefinitionTab,
         MeshHittestTab,
         RendererGeometryShaderTab,
+        RendererPerfTestingTab,
         TPS2DTab
     >;
 }

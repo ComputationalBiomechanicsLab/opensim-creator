@@ -1,5 +1,8 @@
 #pragma once
 
+#include <OpenSimCreator/Graphics/OpenSimDecorationOptions.h>
+
+#include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Mesh.h>
 
 #include <functional>
@@ -8,6 +11,7 @@ namespace OpenSim { class Component; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class ModelDisplayHints; }
+namespace osc { class IModelStatePair; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
@@ -25,6 +29,23 @@ namespace osc
         const OpenSimDecorationOptions&,
         float fixupScaleFactor,
         const std::function<void(const OpenSim::Component&, SceneDecoration&&)>& out
+    );
+
+    // as above, but more convenient to use in simple use-cases
+    std::vector<SceneDecoration> GenerateModelDecorations(
+        SceneCache&,
+        const IModelStatePair&,
+        const OpenSimDecorationOptions& = {},
+        float fixupScaleFactor = 1.0f
+    );
+
+    // as above, but more convenient to use in simpler use-cases
+    std::vector<SceneDecoration> GenerateModelDecorations(
+        SceneCache&,
+        const OpenSim::Model&,
+        const SimTK::State&,
+        const OpenSimDecorationOptions& = {},
+        float fixupScaleFactor = 1.0f
     );
 
     // generates 3D decorations only for `subcomponent` within the given {model, state} pair

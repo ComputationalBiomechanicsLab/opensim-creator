@@ -467,4 +467,3 @@ TEST(StringName, CanBeStreamedToOStreamAndProducesIdenticalOutputToString)
 
     ASSERT_EQ(strss.str(), snss.str());
 }
-

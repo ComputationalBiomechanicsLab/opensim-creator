@@ -421,6 +421,8 @@ add_library(OpenSimCreator STATIC
     UI/PerformanceAnalyzerTab.h
     UI/RendererGeometryShaderTab.cpp
     UI/RendererGeometryShaderTab.h
+    UI/RendererPerfTestingTab.cpp
+    UI/RendererPerfTestingTab.h
     UI/SplashTab.cpp
     UI/SplashTab.h
     UI/TPS2DTab.cpp

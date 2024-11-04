@@ -2,6 +2,8 @@
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
+#include <OpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -299,4 +301,72 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigament
         }
     );
     ASSERT_EQ(numDecorationsTaggedWithLigament, 1);
+}
+
+TEST(GenerateModelDecorations, ShortHandOverloadWithModelAndStateWorksAsExpected)
+{
+    GloballyInitOpenSim();  // ensure component registry is initialized
+
+    // setup model + options
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
+    OpenSim::Model model{soccerKickPath.string()};
+    InitializeModel(model);
+    InitializeState(model);
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    opts.setShouldShowContactForces(true);
+
+    // emit decorations the hard way into a vector
+    ComponentAbsPathDecorationTagger tagger;
+    std::vector<SceneDecoration> decorations;
+    GenerateModelDecorations(
+        cache,
+        model,
+        model.getWorkingState(),
+        opts,
+        1.0f,
+        [&tagger, &decorations](const OpenSim::Component& component, SceneDecoration&& decoration)
+        {
+            tagger(component, decoration);
+            decorations.push_back(std::move(decoration));
+        }
+    );
+
+    // now do it with the easy override
+    const std::vector<SceneDecoration> easyDecorations = GenerateModelDecorations(cache, model, model.getWorkingState(), opts, 1.0);
+
+    ASSERT_EQ(decorations, easyDecorations);
+}
+
+TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpected)
+{
+    GloballyInitOpenSim();  // ensure component registry is initialized
+
+    // setup model + options
+    const std::filesystem::path soccerKickPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "SoccerKick" / "SoccerKickingModel.osim";
+    const BasicModelStatePair modelState{soccerKickPath.string()};
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    opts.setShouldShowContactForces(true);
+
+    // emit decorations the hard way into a vector
+    ComponentAbsPathDecorationTagger tagger;
+    std::vector<SceneDecoration> decorations;
+    GenerateModelDecorations(
+        cache,
+        modelState.getModel(),
+        modelState.getState(),
+        opts,
+        1.0f,
+        [&tagger, &decorations](const OpenSim::Component& component, SceneDecoration&& decoration)
+        {
+            tagger(component, decoration);
+            decorations.push_back(std::move(decoration));
+        }
+    );
+
+    // now do it with the easy override
+    const std::vector<SceneDecoration> easyDecorations = GenerateModelDecorations(cache, modelState, opts, 1.0);
+
+    ASSERT_EQ(decorations, easyDecorations);
 }
