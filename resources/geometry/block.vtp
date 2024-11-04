@@ -2,22 +2,6 @@
 <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
   <PolyData>
     <Piece NumberOfPoints="24" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="6">
-      <PointData Normals="Normals">
-        <DataArray type="Float32" Name="Normals" NumberOfComponents="3" format="ascii" RangeMin="1" RangeMax="1">
-          -1 0 0 -1 0 0
-          -1 0 0 -1 0 0
-          1 0 0 1 0 0
-          1 0 0 1 0 0
-          0 -1 0 0 -1 0
-          0 -1 0 0 -1 0
-          0 1 0 0 1 0
-          0 1 0 0 1 0
-          0 0 -1 0 0 -1
-          0 0 -1 0 0 -1
-          0 0 1 0 0 1
-          0 0 1 0 0 1
-        </DataArray>
-      </PointData>
       <CellData>
       </CellData>
       <Points>
