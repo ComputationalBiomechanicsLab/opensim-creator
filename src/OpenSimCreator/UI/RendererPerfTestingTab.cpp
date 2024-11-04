@@ -82,7 +82,6 @@ public:
         }
 
         const Rect viewportRect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 dimensions = dimensions_of(viewportRect);
         const SceneRendererParams params = CalcSceneRendererParams(
             m_ModelRendererParams,
             dimensions_of(viewportRect),
