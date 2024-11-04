@@ -4,8 +4,10 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
 #include <iterator>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>
@@ -14,6 +16,8 @@
 #include <utility>
 
 using namespace osc;
+
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -57,7 +61,7 @@ TEST(StringName, copy_assigning_default_constructed_over_non_default_makes_lhs_d
     ASSERT_EQ(a, b);
 }
 
-TEST(StringName, MoveAssigningDefaultOverNonDefaultMakesLhsDefault)
+TEST(StringName, move_assigning_default_over_non_default_instance_makes_lhs_default)
 {
     StringName a;
     StringName b{c_long_cstring_to_avoid_SSO};
@@ -65,217 +69,224 @@ TEST(StringName, MoveAssigningDefaultOverNonDefaultMakesLhsDefault)
     ASSERT_EQ(b, StringName{});
 }
 
-TEST(StringName, DefaultConstructedReturnsNonNullptrForData)
+TEST(StringName, data_returns_non_nullptr_on_empty_instance)
 {
+    ASSERT_TRUE(std::string{}.data()) << "this is why StringName::data should return non-nullptr (>=C++11 semantics)";
     ASSERT_TRUE(StringName{}.data());
 }
 
-TEST(StringName, DefaultConstructedReturnsNonNullptrForCString)
+TEST(StringName, c_str_returns_non_nullptr_on_empty_instance)
 {
+    ASSERT_TRUE(std::string{}.c_str()) << "this is why StringName::data should return non-nullptr (>=C++11 semantics)";
     ASSERT_TRUE(StringName{}.c_str());
 }
 
-TEST(StringName, DefaultConstructedImplicitlyConvertsIntoBlankStringView)
+TEST(StringName, default_constructed_can_convert_to_blank_string_view)
 {
     ASSERT_EQ(static_cast<std::string_view>(StringName{}), std::string_view{});
 }
 
-TEST(StringName, DefaultConstructedExplicitlyConvertsIntoCStringView)
+TEST(StringName, default_constructed_can_convert_to_blank_CStringView)
 {
     ASSERT_EQ(static_cast<CStringView>(StringName{}), CStringView{});
 }
 
-TEST(StringName, CanBeUsedToCallCStringViewFunctions)
+TEST(StringName, can_be_used_as_an_argument_to_functions_that_accept_CStringView)
 {
-    StringName sn;
+    const StringName string_name;
     const auto f = [](CStringView) {};
-    f(sn);  // should compile
+    f(string_name);  // should compile
 }
 
-TEST(StringName, DefaultConstructedBeginEqualsEnd)
+TEST(StringName, begin_equals_end_on_default_constructed_instance)
 {
-    StringName sn;
-    ASSERT_EQ(sn.begin(), sn.end());
+    const StringName string_name;
+    ASSERT_EQ(string_name.begin(), string_name.end());
 }
 
-TEST(StringName, DefaultConstructedCBeginEqualsCEnd)
+TEST(StringName, cbegin_equals_cend_on_default_constructed_instance)
 {
-    StringName sn;
-    ASSERT_EQ(sn.cbegin(), sn.cend());
+    const StringName string_name;
+    ASSERT_EQ(string_name.cbegin(), string_name.cend());
 }
 
-TEST(StringName, DefaultConstructedCBeginEqualsBegin)
+TEST(StringName, begin_equals_cbegin_on_default_constructed_instance)
 {
-    StringName sn;
-    ASSERT_EQ(sn.begin(), sn.cbegin());
+    const StringName string_name;
+    ASSERT_EQ(string_name.begin(), string_name.cbegin());
 }
 
-TEST(StringName, DefaultConstructedIsEmpty)
+TEST(StringName, empty_returns_true_on_default_constructed_instance)
 {
     ASSERT_TRUE(StringName{}.empty());
 }
 
-TEST(StringName, DefaultConstructedSizeIsZero)
+TEST(StringName, size_returns_0_on_default_constructed_instance)
 {
     ASSERT_EQ(StringName{}.size(), 0);
 }
 
-TEST(StringName, DefaultConstructedEqualsAnotherDefaultConstructed)
+TEST(StringName, size_returns_expected_size_when_given_known_string)
+{
+    ASSERT_EQ(StringName{"pizza"}.size(), 5);
+}
+
+TEST(StringName, two_default_constructed_instances_compare_equal)
 {
     ASSERT_EQ(StringName{}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedCanBeImplicitlyConvertedIntoBlankStringView)
+TEST(StringName, default_constructed_instance_can_be_implicitly_converted_to_a_blank_string_view)
 {
     ASSERT_EQ(StringName{}, std::string_view{});
 }
 
-TEST(StringName, DefaultConstructedCanBeImplicitlyConvertedIntoBlankCStringView)
+TEST(StringName, default_constructed_instance_can_be_implicitly_converted_to_a_blank_CStringView)
 {
     ASSERT_EQ(StringName{}, CStringView{});
 }
 
-TEST(StringName, DefaultConstructedIsEqualToBlankString)
+TEST(StringName, default_constructed_instance_compares_equal_to_a_blank_std_string)
 {
     ASSERT_EQ(StringName{}, std::string{});
 }
 
-TEST(StringName, DefaultConstructedIsEqualToBlankStringReversedOp)
+TEST(StringName, std_string_compares_equal_to_default_constructed_instance)
 {
     ASSERT_EQ(std::string{}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedIsEqualToBlankCString)
+TEST(StringName, default_constructed_instance_compares_equal_to_blank_cstring)
 {
     ASSERT_EQ(StringName{}, "");
 }
 
-TEST(StringName, DefaultConstructedIsEqualToBlankCStringReversedOp)
+TEST(StringName, blank_cstring_compares_equal_to_default_constructed_instance)
 {
     ASSERT_EQ("", StringName{});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankStringName)
+TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_instance)
 {
     ASSERT_NE(StringName{}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankStringNameReversedOp)
+TEST(StringName, nonempty_instance_compares_not_equal_to_default_constructed_instance)
 {
     ASSERT_NE(StringName{c_long_cstring_to_avoid_SSO}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankStringView)
+TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_string_view)
 {
     ASSERT_NE(StringName{}, std::string_view{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankStringViewReversedOp)
+TEST(StringName, nonempty_string_view_compares_not_equal_to_default_constructed_instance)
 {
     ASSERT_NE(std::string_view{c_long_cstring_to_avoid_SSO}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankString)
+TEST(StringName, default_constructed_compares_not_equal_to_nonempty_string)
 {
     ASSERT_NE(StringName{}, std::string{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankStringReversedOp)
+TEST(StringName, nonempty_string_compares_not_equal_to_default_constructed_instance)
 {
     ASSERT_NE(std::string{c_long_cstring_to_avoid_SSO}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankCString)
+TEST(StringName, default_constructed_instance_compares_not_equal_to_nonempty_cstring)
 {
     ASSERT_NE(StringName{}, c_long_cstring_to_avoid_SSO);
 }
 
-TEST(StringName, DefaultConstructedIsNotEqualToANonBlankCStringReversedOp)
+TEST(StringName, nonempty_cstring_compares_not_equal_to_default_constructed_instance)
 {
     ASSERT_NE(c_long_cstring_to_avoid_SSO, StringName{});
 }
 
-TEST(StringName, DefaultConstructedComparesLessThanContentfulStringView)
+TEST(StringName, default_constructed_instance_compares_less_than_to_nonempty_instance)
 {
     ASSERT_LT(StringName{}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, DefaultConstructedComparesLessThanContentfulStringViewReversedOp)
+TEST(StringName, nonempty_instance_compares_greater_than_or_equal_to_default_constructed_instance)
 {
-    ASSERT_LT(StringName{}, StringName{c_long_cstring_to_avoid_SSO});
+    ASSERT_GE(StringName{c_long_cstring_to_avoid_SSO}, StringName{});
 }
 
-TEST(StringName, DefaultConstructedCanBeStreamedWhichWritesNothingToTheStream)
+TEST(StringName, default_constructed_instance_writes_nothing_to_ostream)
 {
     std::stringstream ss;
     ss << StringName{};
     ASSERT_TRUE(ss.str().empty());
 }
 
-TEST(StringName, DefaultConstructedSwappingWorksAsExpectedWithNonEmpty)
+TEST(StringName, default_constructed_instance_can_be_swapped_with_nonempty_instance)
 {
     StringName a;
-    const StringName aCopy{a};
+    const StringName copy_of_a{a};
     StringName b{c_long_cstring_to_avoid_SSO};
-    const StringName bCopy{b};
+    const StringName copy_of_b{b};
 
     swap(a, b);
 
-    ASSERT_EQ(a, bCopy);
-    ASSERT_EQ(b, aCopy);
+    ASSERT_EQ(a, copy_of_b);
+    ASSERT_EQ(b, copy_of_a);
 }
 
-TEST(StringName, DefaultConstructedStringNameHashIsEqualToHashOfBlankString)
+TEST(StringName, default_constructed_std_hash_is_equal_to_hash_of_std_string)
 {
     ASSERT_EQ(std::hash<StringName>{}(StringName{}), std::hash<std::string>{}(std::string{}));
 }
 
-TEST(StringName, DefaultConstructedStringNameHashIsEqualToHashOfBlankStringView)
+TEST(StringName, default_constructed_std_hash_is_equal_to_hash_of_string_view)
 {
     ASSERT_EQ(std::hash<StringName>{}(StringName{}), std::hash<std::string_view>{}(std::string_view{}));
 }
 
-TEST(StringName, CanConstructFromStringView)
+TEST(StringName, can_be_constructed_from_a_string_view)
 {
     ASSERT_NO_THROW({ StringName(std::string_view(c_long_cstring_to_avoid_SSO)); });
 }
 
-TEST(StringName, CanConstructFromString)
+TEST(StringName, can_be_constructed_from_a_std_string)
 {
     ASSERT_NO_THROW({ StringName(std::string{c_long_cstring_to_avoid_SSO}); });
 }
 
-TEST(StringName, CanConstructFromCString)
+TEST(StringName, can_be_constructed_from_a_cstring)
 {
     ASSERT_NO_THROW({ StringName("somecstring"); });
 }
 
-TEST(StringName, CanImplicitlyConstructFromCStringView)
+TEST(StringName, can_be_implicitly_constructed_from_a_CStringView)
 {
     const auto f = [](const CStringView&) {};
     f(CStringView{"cstring"});  // should compile
 }
 
-TEST(StringName, CopyAssigningOneNonDefaultConstructedStringNameOverAnotherMakesLhsCompareEqual)
+TEST(StringName, copy_assigning_nonempty_over_a_different_nonempty_makes_lhs_compare_equal_to_rhs)
 {
-    StringName a{c_long_cstring_to_avoid_SSO};
-    StringName b{c_another_long_cstring_to_avoid_SSO};
-    a = b;
-    ASSERT_EQ(a, b);
+    StringName lhs{c_long_cstring_to_avoid_SSO};
+    const StringName rhs{c_another_long_cstring_to_avoid_SSO};
+    lhs = rhs;
+    ASSERT_EQ(lhs, rhs);
 }
 
-TEST(StringName, MoveAssingingOneDefaultConstructedStringNameOverAnotherMakesLhsCompareEqual)
+TEST(StringName, move_assigning_nonempty_instance_over_a_different_nonempty_instance_makes_lhs_compare_equal)
 {
-    StringName a{c_long_cstring_to_avoid_SSO};
-    StringName b{c_another_long_cstring_to_avoid_SSO};
-    StringName bTmp{b};
-    a = std::move(bTmp);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
-    ASSERT_EQ(a, b);
+    StringName lhs{c_long_cstring_to_avoid_SSO};
+    StringName rhs{c_another_long_cstring_to_avoid_SSO};
+    const StringName rhs_copy{rhs};
+    lhs = std::move(rhs);  // NOLINT(hicpp-move-const-arg,performance-move-const-arg)
+    ASSERT_EQ(lhs, rhs_copy);
 }
 
-TEST(StringName, AtReturnsCharacterAtGivenIndexWithBoundsChecking)
+TEST(StringName, at_returns_character_at_given_index_with_bounds_checking)
 {
-    StringName s{"string"};
+    const StringName s{"string"};
     ASSERT_EQ(s.at(0), 's');
     ASSERT_EQ(s.at(1), 't');
     ASSERT_EQ(s.at(2), 'r');
@@ -283,11 +294,12 @@ TEST(StringName, AtReturnsCharacterAtGivenIndexWithBoundsChecking)
     ASSERT_EQ(s.at(4), 'n');
     ASSERT_EQ(s.at(5), 'g');
     ASSERT_ANY_THROW({ s.at(6); });
+    ASSERT_ANY_THROW({ s.at(1000); });
 }
 
-TEST(StringName, BracketsOperatorReturnsCharacterAtGivenIndex)
+TEST(StringName, bracket_operator_returns_character_at_given_index_without_bounds_checking)
 {
-    StringName s{"string"};
+    const StringName s{"string"};
     ASSERT_EQ(s[0], 's');
     ASSERT_EQ(s[1], 't');
     ASSERT_EQ(s[2], 'r');
@@ -296,86 +308,86 @@ TEST(StringName, BracketsOperatorReturnsCharacterAtGivenIndex)
     ASSERT_EQ(s[5], 'g');
 }
 
-TEST(StringName, FrontReturnsFirstCharacter)
+TEST(StringName, front_returns_first_chracter)
 {
-    StringName s{"string"};
+    const StringName s{"string"};
     ASSERT_EQ(s.front(), 's');
 }
 
-TEST(StringName, BackReturnsLastCharacter)
+TEST(StringName, back_returns_last_character)
 {
-    StringName s{"string"};
+    const StringName s{"string"};
     ASSERT_EQ(s.back(), 'g');
 }
 
-TEST(StringName, DataReturnsNulTerminatedPointerToFirstElement)
+TEST(StringName, data_returns_NUL_terminated_pointer_to_first_element)
 {
-    constexpr auto c_Input = std::to_array("string");
-    StringName s{c_Input.data()};
+    constexpr auto c_input_characters = std::to_array({ 's', 't', 'r', 'i', 'n', 'g'}); // not NUL-terminated (the implementation should handle it)
 
-    std::span<const char> inputSpan(c_Input);
-    std::span<const StringName::value_type> outputSpan{s.data(), std::size(c_Input)};  // plus nul terminator
+    const StringName string_name{std::string_view{c_input_characters.data(), 6}};
+    const std::span<const StringName::value_type> stringname_span{string_name.data(), std::size(c_input_characters)};
 
-    ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
+    ASSERT_TRUE(rgs::equal(stringname_span, c_input_characters));
+    ASSERT_EQ(string_name.data()[c_input_characters.size()], '\0') << "should be NUL-terminated";
 }
 
-TEST(StringName, CStringReturnsNulTerminatedPointerToFirstElement)
+TEST(StringName, c_str_returns_NUL_terminated_pointer_to_first_element)
 {
-    constexpr auto c_Input = std::to_array("string");
-    StringName s{c_Input.data()};
+    constexpr auto c_input_characters = std::to_array({'s', 't', 'r', 'i', 'n', 'g'});  // not NUL-terminated (the implementation should handle it)
 
-    std::span<const char> inputSpan(c_Input);
-    std::span<const StringName::value_type> outputSpan{s.c_str(), std::size(c_Input)};  // plus nul terminator
+    const StringName string_name{std::string_view{c_input_characters.data(), 6}};
+    const std::span<const StringName::value_type> stringname_span{string_name.c_str(), std::size(c_input_characters)};  // plus nul terminator
 
-    ASSERT_TRUE(std::equal(outputSpan.begin(), outputSpan.end(), inputSpan.begin(), inputSpan.end()));
+    ASSERT_TRUE(rgs::equal(stringname_span, c_input_characters));
+    ASSERT_EQ(string_name.c_str()[c_input_characters.size()], '\0') << "should be NUL-terminated";
 }
 
-TEST(StringName, ImplicitlyConvertingToStringViewWorksAsExpected)
+TEST(StringName, implicit_conversion_to_string_view_works_as_expected)
 {
     const StringName s{c_long_cstring_to_avoid_SSO};
     ASSERT_EQ(static_cast<std::string_view>(s), std::string_view{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, ImplicitlyConvertingToCStringViewWorksAsExpected)
+TEST(StringName, implicit_conversion_to_CStringView_works_as_expected)
 {
-    const StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(static_cast<CStringView>(s), CStringView{c_long_cstring_to_avoid_SSO});
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_EQ(static_cast<CStringView>(string_name), CStringView{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, BeginNotEqualToEndForNonEmptyString)
+TEST(StringName, begin_compares_not_equal_to_end_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_NE(s.begin(), s.end());
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_NE(string_name.begin(), string_name.end());
 }
 
-TEST(StringName, CBeginNotEqualToCendForNonEmptyString)
+TEST(StringName, cbegin_compares_not_equal_to_cend_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_NE(s.cbegin(), s.cend());
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_NE(string_name.cbegin(), string_name.cend());
 }
 
-TEST(StringName, BeginIsEqualToCBeginForNonEmptyString)
+TEST(StringName, begin_compares_equal_to_cbegin_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(s.begin(), s.cbegin());
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_EQ(string_name.begin(), string_name.cbegin());
 }
 
-TEST(StringName, EndIsEqualToCendForNonEmptyString)
+TEST(StringName, end_compares_equal_to_cend_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(s.end(), s.cend());
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_EQ(string_name.end(), string_name.cend());
 }
 
-TEST(StringName, EmptyReturnsFalseForNonEmptyString)
+TEST(StringName, empty_returns_false_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_FALSE(s.empty());
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_FALSE(string_name.empty());
 }
 
-TEST(StringName, SizeReturnsExpectedValue)
+TEST(StringName, size_returns_expected_value_when_nonempty)
 {
-    StringName s{c_long_cstring_to_avoid_SSO};
-    ASSERT_EQ(s.size(), c_long_character_data_array_to_avoid_SSO.size()-1);  // minus nul
+    const StringName string_name{c_long_cstring_to_avoid_SSO};
+    ASSERT_EQ(string_name.size(), c_long_character_data_array_to_avoid_SSO.size()-1);  // minus nul
 }
 
 TEST(StringName, NonEmptyStringNameComapresEqualToAnotherLogicallyEquivalentNonEmptyStringName)
