@@ -40,12 +40,12 @@ namespace
 {
     // care: this is necessary because segfault crash handlers don't appear to
     // be able to have data passed to them
-    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;
+    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
     // file dialog system with a hint of where the user probably expects the next dialog to
     // open
-    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback;
+    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView methodname, char* p)
     {

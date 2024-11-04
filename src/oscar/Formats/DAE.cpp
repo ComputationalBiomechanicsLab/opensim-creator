@@ -147,7 +147,7 @@ namespace
     std::ostream& operator<<(std::ostream& out, std::span<const float> values)
     {
         std::string_view delimeter;
-        std::array<char, 512> buffer;
+        std::array<char, 512> buffer{};
         for (float value : values) {
             if (auto size = std::snprintf(buffer.data(), buffer.size(), "%f", value); size > 0) {
                 out << delimeter << std::string_view{buffer.data(), static_cast<size_t>(size)};

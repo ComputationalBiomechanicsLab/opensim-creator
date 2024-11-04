@@ -89,7 +89,7 @@ TEST(SharedPreHashedString, can_copy_assign)
 
 TEST(SharedPreHashedString, can_move_assign)
 {
-    const SharedPreHashedString str1{"first"};
+    SharedPreHashedString str1{"first"};
     SharedPreHashedString str2{"second"};
     ASSERT_EQ(str2, "second"sv);
     str2 = std::move(str1);
