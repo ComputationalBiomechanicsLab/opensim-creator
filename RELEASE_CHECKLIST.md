@@ -41,6 +41,7 @@ cd opensim-creator
 - [ ] Commit any fixes to CI and ensure CI passes
 - [ ] Tag+push the commit as a release
 - [ ] Download artifacts from the tagged commit CI build
+- [ ] Clean-install artifacts on development machines, ensure they install as-expected
 - [ ] Unzip/rename any artifacts (see prev. releases)
 - [ ] Create new release on github from the tagged commit
   - Upload all artifacts against it
