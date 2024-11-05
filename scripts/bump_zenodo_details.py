@@ -56,15 +56,15 @@ def _overwrite_file(path, new_content):
 
 def _update_readme(inputs: BumperInputs):
     content = _slurp_file('README.md')
-    new_content = re.sub(r'^>.+?https://doi.org/[^/]+/zenodo.+?$', f'> {inputs.citation_string}', content, 0, re.MULTILINE)
+    new_content = re.sub(r'^>.+?https://doi.org/[^/]+/zenodo.+?$', f'> {inputs.citation_string}', content, flags=re.MULTILINE)
     _overwrite_file('README.md', new_content)
 
 def _update_citation_cff(inputs: BumperInputs):
     content = _slurp_file('CITATION.cff')
     new_content = re.sub(r'value: \d+\.\d+/zenodo\.\d+', f'value: {inputs.doi}', content)
-    new_content = re.sub(r'^commit: .+?$', f'commit: {inputs.commit}', new_content, 0, re.MULTILINE)
-    new_content = re.sub(r'^version: .+?$', f'version: {inputs.new_version}', new_content, 0, re.MULTILINE)
-    new_content = re.sub(r'^date-released: .+?$', f"date-released: '{inputs.date_published}'", new_content, 0, re.MULTILINE)
+    new_content = re.sub(r'^commit: .+?$', f'commit: {inputs.commit}', new_content, flags=re.MULTILINE)
+    new_content = re.sub(r'^version: .+?$', f'version: {inputs.new_version}', new_content, flags=re.MULTILINE)
+    new_content = re.sub(r'^date-released: .+?$', f"date-released: '{inputs.date_published}'", new_content, flags=re.MULTILINE)
     new_content = re.sub(r'entry containing .+? binaries', f'entry containing {inputs.new_version} binaries', new_content)
     _overwrite_file('CITATION.cff', new_content)
 
