@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- A CC-BY license was added to `resources/icons` (#944)
 
 ## [0.5.16] - 2024/11/04
 
