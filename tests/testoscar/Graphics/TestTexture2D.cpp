@@ -27,7 +27,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    Texture2D GenerateTexture()
+    Texture2D generate_2x2_texture()
     {
         Texture2D rv{Vec2i{2, 2}};
         rv.set_pixels(std::vector<Color>(4, Color::red()));
@@ -35,7 +35,7 @@ namespace
     }
 }
 
-TEST(Texture2D, Texture2DConstructorThrowsIfGivenZeroOrNegativeSizedDimensions)
+TEST(Texture2D, constructor_throws_if_given_zero_or_negatively_sized_dimensions)
 {
     ASSERT_ANY_THROW({ Texture2D(Vec2i(0, 0)); });   // x and y are zero
     ASSERT_ANY_THROW({ Texture2D(Vec2i(0, 1)); });   // x is zero
@@ -46,444 +46,409 @@ TEST(Texture2D, Texture2DConstructorThrowsIfGivenZeroOrNegativeSizedDimensions)
     ASSERT_ANY_THROW({ Texture2D(Vec2i(1, -1)); });  // y is negative
 }
 
-TEST(Texture2D, DefaultConstructorCreatesRGBATextureWithExpectedColorSpaceEtc)
+TEST(Texture2D, default_constructor_creates_sRGBA_texture_with_expected_params)
 {
-    Texture2D t{Vec2i(1, 1)};
+    const Texture2D texture_2d{Vec2i(1, 1)};
 
-    ASSERT_EQ(t.dimensions(), Vec2i(1, 1));
-    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);
-    ASSERT_EQ(t.color_space(), ColorSpace::sRGB);
-    ASSERT_EQ(t.wrap_mode(), TextureWrapMode::Repeat);
-    ASSERT_EQ(t.filter_mode(), TextureFilterMode::Linear);
+    ASSERT_EQ(texture_2d.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(texture_2d.texture_format(), TextureFormat::RGBA32);
+    ASSERT_EQ(texture_2d.color_space(), ColorSpace::sRGB);
+    ASSERT_EQ(texture_2d.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(texture_2d.filter_mode(), TextureFilterMode::Linear);
 }
 
-TEST(Texture2D, CanSetPixels32OnDefaultConstructedTexture)
-{
-    const Vec2i dimensions = {1, 1};
-    const std::vector<Color32> pixels(static_cast<size_t>(dimensions.x * dimensions.y));
-
-    Texture2D t{dimensions};
-    t.set_pixels32(pixels);
-
-    ASSERT_EQ(t.dimensions(), dimensions);
-    ASSERT_EQ(t.pixels32(), pixels);
-}
-
-TEST(Texture2D, SetPixelsThrowsIfNumberOfPixelsDoesNotMatchDimensions)
-{
-    const Vec2i dimensions = {1, 1};
-    const std::vector<Color> incorrectPixels(dimensions.x * dimensions.y + 1);
-
-    Texture2D t{dimensions};
-
-    ASSERT_ANY_THROW({ t.set_pixels(incorrectPixels); });
-}
-
-TEST(Texture2D, SetPixels32ThrowsIfNumberOfPixelsDoesNotMatchDimensions)
-{
-    const Vec2i dimensions = {1, 1};
-    const std::vector<Color32> incorrectPixels(dimensions.x * dimensions.y + 1);
-
-    Texture2D t{dimensions};
-    ASSERT_ANY_THROW({ t.set_pixels32(incorrectPixels); });
-}
-
-TEST(Texture2D, SetPixelDataThrowsIfNumberOfPixelBytesDoesNotMatchDimensions)
-{
-    const Vec2i dimensions = {1, 1};
-    const std::vector<Color32> incorrectPixels(dimensions.x * dimensions.y + 1);
-
-    Texture2D t{dimensions};
-
-    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);  // sanity check
-    ASSERT_ANY_THROW({ t.set_pixel_data(view_object_representations<uint8_t>(incorrectPixels)); });
-}
-
-TEST(Texture2D, SetPixelDataDoesNotThrowWhenGivenValidNumberOfPixelBytes)
+TEST(Texture2D, can_set_pixels32_on_default_constructed_instance)
 {
     const Vec2i dimensions = {1, 1};
     const std::vector<Color32> pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
-    Texture2D t{dimensions};
+    Texture2D texture_2d{dimensions};
+    texture_2d.set_pixels32(pixels);
 
-    ASSERT_EQ(t.texture_format(), TextureFormat::RGBA32);  // sanity check
-
-    t.set_pixel_data(view_object_representations<uint8_t>(pixels));
+    ASSERT_EQ(texture_2d.dimensions(), dimensions);
+    ASSERT_EQ(texture_2d.pixels32(), pixels);
 }
 
-TEST(Texture2D, SetPixelDataWorksFineFor8BitSingleComponentData)
+TEST(Texture2D, set_pixels_throws_if_number_of_pixels_does_not_match_dimensions)
+{
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color> incorrect_number_of_pixels(dimensions.x * dimensions.y + 1);
+
+    Texture2D texture_2d{dimensions};
+
+    ASSERT_ANY_THROW({ texture_2d.set_pixels(incorrect_number_of_pixels); });
+}
+
+TEST(Texture2D, set_pixels32_throws_if_number_of_pixels_does_not_match_dimensions)
+{
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> incorrect_number_of_pixels(dimensions.x * dimensions.y + 1);
+
+    Texture2D texture_2d{dimensions};
+    ASSERT_ANY_THROW({ texture_2d.set_pixels32(incorrect_number_of_pixels); });
+}
+
+TEST(Texture2D, set_pixel_data_throws_if_number_of_bytes_occupied_by_pixels_does_not_match_dimensions_and_format_of_Texture2D)
+{
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> incorrect_number_of_pixels(dimensions.x * dimensions.y + 1);
+
+    Texture2D texture_2d{dimensions};
+
+    ASSERT_EQ(texture_2d.texture_format(), TextureFormat::RGBA32);  // sanity check
+    ASSERT_ANY_THROW({ texture_2d.set_pixel_data(view_object_representations<uint8_t>(incorrect_number_of_pixels)); });
+}
+
+TEST(Texture2D, set_pixel_data_does_not_throw_if_given_valid_number_of_pixel_bytes)
+{
+    const Vec2i dimensions = {1, 1};
+    const std::vector<Color32> pixels(static_cast<size_t>(dimensions.x * dimensions.y));
+
+    Texture2D texture_2d{dimensions};
+
+    ASSERT_EQ(texture_2d.texture_format(), TextureFormat::RGBA32);  // sanity check
+
+    texture_2d.set_pixel_data(view_object_representations<uint8_t>(pixels));
+}
+
+TEST(Texture2D, set_pixel_data_works_fine_for_8_bit_single_component_data)
 {
     const Vec2i dimensions = {1, 1};
     const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y));
 
-    Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(single_component_pixels);  // shouldn't throw
+    Texture2D texture_2d{dimensions, TextureFormat::R8};
+    texture_2d.set_pixel_data(single_component_pixels);  // shouldn't throw
 }
 
-TEST(Texture2D, SetPixelDataWith8BitSingleComponentDataFollowedByGetPixelsBlanksOutGreenAndRed)
+TEST(Texture2D, set_pixel_data_with_8_bit_single_component_data_followed_by_get_pixels_zeroes_out_green_and_red)
 {
-    const uint8_t color{0x88};
-    const float colorFloat = static_cast<float>(color) / 255.0f;
+    const uint8_t color_uint8{0x88};
+    const float color_float = static_cast<float>(color_uint8) / 255.0f;
     const Vec2i dimensions = {1, 1};
-    const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color_uint8);
 
-    Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(single_component_pixels);
+    Texture2D texture_2d{dimensions, TextureFormat::R8};
+    texture_2d.set_pixel_data(single_component_pixels);
 
-    for (const Color& c : t.pixels()) {
-        ASSERT_EQ(c, Color(colorFloat, 0.0f, 0.0f, 1.0f));
+    for (const Color& pixel : texture_2d.pixels()) {
+        ASSERT_EQ(pixel, Color(color_float, 0.0f, 0.0f, 1.0f));
     }
 }
 
-TEST(Texture2D, SetPixelDataWith8BitSingleComponentDataFollowedByGetPixels32BlanksOutGreenAndRed)
+TEST(Texture2D, set_pixel_data_with_8_bit_single_component_data_followed_by_get_pixels32_zeroes_out_green_and_red)
 {
     const uint8_t color{0x88};
     const Vec2i dimensions = {1, 1};
     const std::vector<uint8_t> single_component_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
-    Texture2D t{dimensions, TextureFormat::R8};
-    t.set_pixel_data(single_component_pixels);
+    Texture2D texture_2d{dimensions, TextureFormat::R8};
+    texture_2d.set_pixel_data(single_component_pixels);
 
-    for (const Color32& c : t.pixels32()) {
-        Color32 expected{color, 0x00, 0x00, 0xff};
-        ASSERT_EQ(c, expected);
+    for (const Color32& pixel : texture_2d.pixels32()) {
+        const Color32 expected{color, 0x00, 0x00, 0xff};
+        ASSERT_EQ(pixel, expected);
     }
 }
 
-TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelDataReturnsSameSpan)
+TEST(Texture2D, set_pixel_data_with_32bit_floating_point_components_followed_by_get_pixels_returns_same_span)
 {
     const Vec4 color = generate<Vec4>();
     const Vec2i dimensions = {1, 1};
-    std::vector<Vec4> const rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
+    std::vector<Vec4> const rgba_float32_pixels(static_cast<size_t>(dimensions.x * dimensions.y), color);
 
-    Texture2D t(dimensions, TextureFormat::RGBAFloat);
-    t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
+    Texture2D texture_2d(dimensions, TextureFormat::RGBAFloat);  // note: the format matches the incoming data
+    texture_2d.set_pixel_data(view_object_representations<uint8_t>(rgba_float32_pixels));
 
-    ASSERT_TRUE(rgs::equal(t.pixel_data(), view_object_representations<uint8_t>(rgbaFloatPixels)));
+    ASSERT_TRUE(rgs::equal(texture_2d.pixel_data(), view_object_representations<uint8_t>(rgba_float32_pixels)));
 }
 
-TEST(Texture2D, SetPixelDataWith32BitFloatingPointValuesFollowedByGetPixelsReturnsSameValues)
+TEST(Texture2D, set_pixel_data_with_32bit_HDR_floating_point_components_followed_by_get_pixels_returns_same_values)
 {
-    const Color hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    const Color hdr_color = {1.2f, 1.4f, 1.3f, 1.0f};
     const Vec2i dimensions = {1, 1};
-    const std::vector<Color> rgbaFloatPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
+    const std::vector<Color> rgba_hdr_pixels(static_cast<size_t>(dimensions.x * dimensions.y), hdr_color);
 
-    Texture2D t(dimensions, TextureFormat::RGBAFloat);
-    t.set_pixel_data(view_object_representations<uint8_t>(rgbaFloatPixels));
+    Texture2D texture_2d(dimensions, TextureFormat::RGBAFloat);
+    texture_2d.set_pixel_data(view_object_representations<uint8_t>(rgba_hdr_pixels));
 
-    ASSERT_EQ(t.pixels(), rgbaFloatPixels);  // because the texture holds 32-bit floats
+    ASSERT_EQ(texture_2d.pixels(), rgba_hdr_pixels);  // because the texture holds 32-bit floats
 }
 
-TEST(Texture2D, SetPixelsOnAn8BitTextureLDRClampsTheColorValues)
+TEST(Texture2D, set_pixel_data_on_8bit_component_format_clamps_hdr_color_values)
 {
-    const Color hdrColor = {1.2f, 1.4f, 1.3f, 1.0f};
+    const Color hdr_color = {1.2f, 1.4f, 1.3f, 1.0f};
     const Vec2i dimensions = {1, 1};
-    const std::vector<Color> hdrPixels(static_cast<size_t>(dimensions.x * dimensions.y), hdrColor);
+    const std::vector<Color> hdr_pixels(static_cast<size_t>(dimensions.x * dimensions.y), hdr_color);
 
-    Texture2D t(dimensions, TextureFormat::RGBA32);  // note: not HDR
+    Texture2D texture_2d(dimensions, TextureFormat::RGBA32);  // note: not a HDR-capable format
+    texture_2d.set_pixels(hdr_pixels);
 
-    t.set_pixels(hdrPixels);
-
-    ASSERT_NE(t.pixels(), hdrPixels);  // because the impl had to convert them
+    ASSERT_NE(texture_2d.pixels(), hdr_pixels);  // because the impl had to convert them
 }
 
-TEST(Texture2D, SetPixels32OnAn8BitTextureDoesntConvert)
+TEST(Texture2D, set_pixels32_on_an_8bit_texture_performs_no_conversion)
 {
     const Color32 color32 = {0x77, 0x63, 0x24, 0x76};
     const Vec2i dimensions = {1, 1};
     const std::vector<Color32> pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
-    Texture2D t(dimensions, TextureFormat::RGBA32);  // note: matches pixel format
+    Texture2D texture_2d(dimensions, TextureFormat::RGBA32);  // note: matches pixel format
+    texture_2d.set_pixels32(pixels32);
 
-    t.set_pixels32(pixels32);
-
-    ASSERT_EQ(t.pixels32(), pixels32);  // because no conversion was required
+    ASSERT_EQ(texture_2d.pixels32(), pixels32);  // because no conversion was required
 }
 
-TEST(Texture2D, SetPixels32OnA32BitTextureDoesntDetectablyChangeValues)
+TEST(Texture2D, set_pixels32_on_32bit_texture_doesnt_observibly_change_component_values)
 {
     const Color32 color32 = {0x77, 0x63, 0x24, 0x76};
     const Vec2i dimensions = {1, 1};
     const std::vector<Color32> pixels32(static_cast<size_t>(dimensions.x * dimensions.y), color32);
 
-    Texture2D t(dimensions, TextureFormat::RGBAFloat);  // note: higher precision than input
+    Texture2D texture_2d(dimensions, TextureFormat::RGBAFloat);  // note: higher precision than input
+    texture_2d.set_pixels32(pixels32);
 
-    t.set_pixels32(pixels32);
-
-    ASSERT_EQ(t.pixels32(), pixels32);  // because, although conversion happened, it was _from_ a higher precision
+    ASSERT_EQ(texture_2d.pixels32(), pixels32);  // because, although conversion happened, it was _from_ a higher precision
 }
 
-TEST(Texture2D, CanCopyConstruct)
+TEST(Texture2D, can_copy_construct)
 {
-    Texture2D t = GenerateTexture();
-    Texture2D{t};
+    const Texture2D texture_2d = generate_2x2_texture();
+    const Texture2D copy{texture_2d};
 }
 
-TEST(Texture2D, CanMoveConstruct)
+TEST(Texture2D, can_move_construct)
 {
-    Texture2D t = GenerateTexture();
-    Texture2D copy{std::move(t)};
+    Texture2D texture_2d = generate_2x2_texture();
+    const Texture2D copy{std::move(texture_2d)};
 }
 
-TEST(Texture2D, CanCopyAssign)
+TEST(Texture2D, can_copy_assign)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2 = GenerateTexture();
+    Texture2D lhs = generate_2x2_texture();
+    const Texture2D rhs = generate_2x2_texture();
 
-    t1 = t2;
+    lhs = rhs;
 }
 
-TEST(Texture2D, CanMoveAssign)
+TEST(Texture2D, can_move_assign)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2 = GenerateTexture();
+    Texture2D lhs = generate_2x2_texture();
+    Texture2D rhs = generate_2x2_texture();
 
-    t1 = std::move(t2);
+    lhs = std::move(rhs);
 }
 
-TEST(Texture2D, GetWidthReturnsSuppliedWidth)
+TEST(Texture2D, dimensions_x_returns_the_width_supplied_via_the_constructor)
 {
-    int width = 2;
-    int height = 6;
+    const int width = 2;
+    const int height = 6;
 
-    Texture2D t{{width, height}};
+    const Texture2D texture_2d{{width, height}};
 
-    ASSERT_EQ(t.dimensions().x, width);
+    ASSERT_EQ(texture_2d.dimensions().x, width);
 }
 
-TEST(Texture2D, GetHeightReturnsSuppliedHeight)
+TEST(Texture2D, dimensions_y_returns_the_height_supplied_via_the_constructor)
 {
-    int width = 2;
-    int height = 6;
+    const int width = 2;
+    const int height = 6;
+    const Texture2D texture_2d{{width, height}};
 
-    Texture2D t{{width, height}};
-
-    ASSERT_EQ(t.dimensions().y, height);
+    ASSERT_EQ(texture_2d.dimensions().y, height);
 }
 
-TEST(Texture2D, GetColorSpaceReturnsProvidedColorSpaceIfSRGB)
+TEST(Texture2D, color_space_returns_color_space_provided_via_the_constructor)
 {
-    Texture2D t{{1, 1}, TextureFormat::RGBA32, ColorSpace::sRGB};
-
-    ASSERT_EQ(t.color_space(), ColorSpace::sRGB);
+    for (const ColorSpace color_space : {ColorSpace::sRGB, ColorSpace::Linear}) {
+        const Texture2D texture_2d{{1, 1}, TextureFormat::RGBA32, color_space};
+        ASSERT_EQ(texture_2d.color_space(), color_space);
+    }
 }
 
-TEST(Texture2D, GetColorSpaceReturnsProvidedColorSpaceIfLinear)
+TEST(Texture2D, wrap_mode_returns_Repeat_on_default_constructed_instance)
 {
-    Texture2D t{{1, 1}, TextureFormat::RGBA32, ColorSpace::Linear};
+    const Texture2D texture_2d = generate_2x2_texture();
 
-    ASSERT_EQ(t.color_space(), ColorSpace::Linear);
+    ASSERT_EQ(texture_2d.wrap_mode(), TextureWrapMode::Repeat);
 }
 
-TEST(Texture2D, GetWrapModeReturnsRepeatedByDefault)
+TEST(Texture2D, set_wrap_mode_makes_wrap_mode_return_new_wrap_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    ASSERT_EQ(t.wrap_mode(), TextureWrapMode::Repeat);
+    const TextureWrapMode wrap_mode = TextureWrapMode::Mirror;
+
+    ASSERT_NE(texture_2d.wrap_mode(), wrap_mode);
+    texture_2d.set_wrap_mode(wrap_mode);
+    ASSERT_EQ(texture_2d.wrap_mode(), wrap_mode);
 }
 
-TEST(Texture2D, SetWrapModeMakesSubsequentGetWrapModeReturnNewWrapMode)
+TEST(Texture2D, set_wrap_mode_causes_wrap_mode_u_to_return_new_wrap_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureWrapMode wm = TextureWrapMode::Mirror;
+    const TextureWrapMode wrap_mode = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.wrap_mode(), wm);
-
-    t.set_wrap_mode(wm);
-
-    ASSERT_EQ(t.wrap_mode(), wm);
+    ASSERT_NE(texture_2d.wrap_mode(), wrap_mode);
+    ASSERT_NE(texture_2d.wrap_mode_u(), wrap_mode);
+    texture_2d.set_wrap_mode(wrap_mode);
+    ASSERT_EQ(texture_2d.wrap_mode_u(), wrap_mode);
 }
 
-TEST(Texture2D, SetWrapModeCausesGetWrapModeUToAlsoReturnNewWrapMode)
+TEST(Texture2D, set_wrap_mode_u_causes_wrap_mode_u_to_return_wrap_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureWrapMode wm = TextureWrapMode::Mirror;
+    const TextureWrapMode wrap_mode = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.wrap_mode(), wm);
-    ASSERT_NE(t.wrap_mode_u(), wm);
-
-    t.set_wrap_mode(wm);
-
-    ASSERT_EQ(t.wrap_mode_u(), wm);
+    ASSERT_NE(texture_2d.wrap_mode_u(), wrap_mode);
+    texture_2d.set_wrap_mode_u(wrap_mode);
+    ASSERT_EQ(texture_2d.wrap_mode_u(), wrap_mode);
 }
 
-TEST(Texture2D, SetWrapModeUCausesGetWrapModeUToReturnValue)
+TEST(Texture2D, set_wrap_mode_v_causes_wrap_mode_v_to_return_wrap_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureWrapMode wm = TextureWrapMode::Mirror;
+    const TextureWrapMode wrap_mode = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.wrap_mode_u(), wm);
-
-    t.set_wrap_mode_u(wm);
-
-    ASSERT_EQ(t.wrap_mode_u(), wm);
+    ASSERT_NE(texture_2d.wrap_mode_v(), wrap_mode);
+    texture_2d.set_wrap_mode_v(wrap_mode);
+    ASSERT_EQ(texture_2d.wrap_mode_v(), wrap_mode);
 }
 
-TEST(Texture2D, SetWrapModeVCausesGetWrapModeVToReturnValue)
+TEST(Texture2D, set_wrap_mode_w_causes_wrap_mode_w_to_return_wrap_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureWrapMode wm = TextureWrapMode::Mirror;
+    const TextureWrapMode wrap_mode = TextureWrapMode::Mirror;
 
-    ASSERT_NE(t.wrap_mode_v(), wm);
-
-    t.set_wrap_mode_v(wm);
-
-    ASSERT_EQ(t.wrap_mode_v(), wm);
+    ASSERT_NE(texture_2d.wrap_mode_w(), wrap_mode);
+    texture_2d.set_wrap_mode_w(wrap_mode);
+    ASSERT_EQ(texture_2d.wrap_mode_w(), wrap_mode);
 }
 
-TEST(Texture2D, SetWrapModeWCausesGetWrapModeWToReturnValue)
+TEST(Texture2D, set_filter_mode_causes_filter_mode_to_return_filter_mode)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureWrapMode wm = TextureWrapMode::Mirror;
+    const TextureFilterMode filter_mode = TextureFilterMode::Nearest;
 
-    ASSERT_NE(t.wrap_mode_w(), wm);
-
-    t.set_wrap_mode_w(wm);
-
-    ASSERT_EQ(t.wrap_mode_w(), wm);
+    ASSERT_NE(texture_2d.filter_mode(), filter_mode);
+    texture_2d.set_filter_mode(filter_mode);
+    ASSERT_EQ(texture_2d.filter_mode(), filter_mode);
 }
 
-TEST(Texture2D, SetFilterModeCausesGetFilterModeToReturnValue)
+TEST(Texture2D, set_filter_mode_returns_Mipmap_when_set)
 {
-    Texture2D t = GenerateTexture();
+    Texture2D texture_2d = generate_2x2_texture();
 
-    TextureFilterMode tfm = TextureFilterMode::Nearest;
+    const TextureFilterMode filter_mode = TextureFilterMode::Mipmap;
 
-    ASSERT_NE(t.filter_mode(), tfm);
-
-    t.set_filter_mode(tfm);
-
-    ASSERT_EQ(t.filter_mode(), tfm);
+    ASSERT_NE(texture_2d.filter_mode(), filter_mode);
+    texture_2d.set_filter_mode(filter_mode);
+    ASSERT_EQ(texture_2d.filter_mode(), filter_mode);
 }
 
-TEST(Texture2D, SetFilterModeMipmapReturnsMipmapOnGetFilterMode)
+TEST(Texture2D, is_equality_comparable)
 {
-    Texture2D t = GenerateTexture();
+    const Texture2D lhs = generate_2x2_texture();
+    const Texture2D rhs = generate_2x2_texture();
 
-    TextureFilterMode tfm = TextureFilterMode::Mipmap;
-
-    ASSERT_NE(t.filter_mode(), tfm);
-
-    t.set_filter_mode(tfm);
-
-    ASSERT_EQ(t.filter_mode(), tfm);
+    (void)(lhs == rhs);  // just ensure it compiles + runs
 }
 
-TEST(Texture2D, CanBeComparedForEquality)
+TEST(Texture2D, compares_equal_to_copy_constructed_instance)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2 = GenerateTexture();
+    const Texture2D texture_2d = generate_2x2_texture();
+    const Texture2D copy_constructed{texture_2d};  // NOLINT(performance-unnecessary-copy-initialization)
 
-    (void)(t1 == t2);  // just ensure it compiles + runs
+    ASSERT_EQ(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, CopyConstructingComparesEqual)
+TEST(Texture2D, compares_equal_to_copy_assigned_instance)
 {
-    Texture2D t = GenerateTexture();
-    Texture2D tcopy{t};  // NOLINT(performance-unnecessary-copy-initialization)
+    Texture2D lhs = generate_2x2_texture();
+    const Texture2D rhs = generate_2x2_texture();
 
-    ASSERT_EQ(t, tcopy);
+    lhs = rhs;
+    ASSERT_EQ(lhs, rhs);
 }
 
-TEST(Texture2D, CopyAssignmentMakesEqualityReturnTrue)
+TEST(Texture2D, not_equals_operator_is_available)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2 = GenerateTexture();
+    const Texture2D lhs = generate_2x2_texture();
+    const Texture2D rhs = generate_2x2_texture();
 
-    t1 = t2;
-
-    ASSERT_EQ(t1, t2);
+    (void)(lhs != rhs);  // just ensure this expression compiles
 }
 
-TEST(Texture2D, CanBeComparedForNotEquals)
+TEST(Texture2D, set_wrap_mode_makes_an_equal_copy_compare_not_equal)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2 = GenerateTexture();
+    const Texture2D texture_2d = generate_2x2_texture();
+    Texture2D copy_constructed{texture_2d};
+    const TextureWrapMode wrap_mode = TextureWrapMode::Clamp;
 
-    (void)(t1 != t2);  // just ensure this expression compiles
+    ASSERT_EQ(texture_2d, copy_constructed);
+    ASSERT_NE(copy_constructed.wrap_mode(), wrap_mode);
+    copy_constructed.set_wrap_mode(wrap_mode);
+    ASSERT_NE(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, ChangingWrapModeMakesCopyUnequal)
+TEST(Texture2D, set_wrap_mode_u_makes_an_equal_copy_compare_not_equal)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2{t1};
-    TextureWrapMode wm = TextureWrapMode::Clamp;
+    const Texture2D texture_2d = generate_2x2_texture();
+    Texture2D copy_constructed{texture_2d};
+    const TextureWrapMode wrap_mode = TextureWrapMode::Clamp;
 
-    ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.wrap_mode(), wm);
-
-    t2.set_wrap_mode(wm);
-
-    ASSERT_NE(t1, t2);
+    ASSERT_EQ(texture_2d, copy_constructed);
+    ASSERT_NE(copy_constructed.wrap_mode_u(), wrap_mode);
+    copy_constructed.set_wrap_mode_u(wrap_mode);
+    ASSERT_NE(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, ChangingWrapModeUMakesCopyUnequal)
+TEST(Texture2D, set_wrap_mode_v_makes_an_equal_copy_compare_not_equal)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2{t1};
-    TextureWrapMode wm = TextureWrapMode::Clamp;
+    const Texture2D texture_2d = generate_2x2_texture();
+    Texture2D copy_constructed{texture_2d};
+    const TextureWrapMode wrap_mode = TextureWrapMode::Clamp;
 
-    ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.wrap_mode_u(), wm);
-
-    t2.set_wrap_mode_u(wm);
-
-    ASSERT_NE(t1, t2);
+    ASSERT_EQ(texture_2d, copy_constructed);
+    ASSERT_NE(copy_constructed.wrap_mode_v(), wrap_mode);
+    copy_constructed.set_wrap_mode_v(wrap_mode);
+    ASSERT_NE(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, ChangingWrapModeVMakesCopyUnequal)
+TEST(Texture2D, set_wrap_mode_w_makes_an_equal_copy_compare_not_equal)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2{t1};
-    TextureWrapMode wm = TextureWrapMode::Clamp;
+    const Texture2D texture_2d = generate_2x2_texture();
+    Texture2D copy_constructed{texture_2d};
+    const TextureWrapMode wrap_mode = TextureWrapMode::Clamp;
 
-    ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.wrap_mode_v(), wm);
-
-    t2.set_wrap_mode_v(wm);
-
-    ASSERT_NE(t1, t2);
+    ASSERT_EQ(texture_2d, copy_constructed);
+    ASSERT_NE(copy_constructed.wrap_mode_w(), wrap_mode);
+    copy_constructed.set_wrap_mode_w(wrap_mode);
+    ASSERT_NE(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, ChangingWrapModeWMakesCopyUnequal)
+TEST(Texture2D, set_filter_mode_makes_an_equal_copy_compare_not_equal)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2{t1};
-    TextureWrapMode wm = TextureWrapMode::Clamp;
+    const Texture2D texture_2d = generate_2x2_texture();
+    Texture2D copy_constructed{texture_2d};
+    const TextureFilterMode filter_mode = TextureFilterMode::Nearest;
 
-    ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.wrap_mode_w(), wm);
-
-    t2.set_wrap_mode_w(wm);
-
-    ASSERT_NE(t1, t2);
+    ASSERT_EQ(texture_2d, copy_constructed);
+    ASSERT_NE(copy_constructed.filter_mode(), filter_mode);
+    copy_constructed.set_filter_mode(filter_mode);
+    ASSERT_NE(texture_2d, copy_constructed);
 }
 
-TEST(Texture2D, ChangingFilterModeMakesCopyUnequal)
+TEST(Texture2D, can_be_written_to_a_std_ostream)
 {
-    Texture2D t1 = GenerateTexture();
-    Texture2D t2{t1};
-    TextureFilterMode fm = TextureFilterMode::Nearest;
-
-    ASSERT_EQ(t1, t2);
-    ASSERT_NE(t2.filter_mode(), fm);
-
-    t2.set_filter_mode(fm);
-
-    ASSERT_NE(t1, t2);
-}
-
-TEST(Texture2D, CanBeWrittenToOutputStream)
-{
-    Texture2D t = GenerateTexture();
+    const Texture2D texture_2d = generate_2x2_texture();
 
     std::stringstream ss;
-    ss << t;
+    ss << texture_2d;
 
     ASSERT_FALSE(ss.str().empty());
 }
