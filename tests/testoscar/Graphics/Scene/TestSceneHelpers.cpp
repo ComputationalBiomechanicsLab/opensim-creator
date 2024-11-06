@@ -20,9 +20,9 @@ TEST(draw_arrow, generates_nothing_if_length_between_start_and_end_is_zero)
         .head_thickness = 0.5f,
     };
 
-    SceneCache cache;
+    SceneCache scene_cache;
     size_t num_decorations_generated = 0;
-    draw_arrow(cache, arrow_properties, [&num_decorations_generated](auto&&) { ++num_decorations_generated; });
+    draw_arrow(scene_cache, arrow_properties, [&num_decorations_generated](auto&&) { ++num_decorations_generated; });
 
     ASSERT_EQ(num_decorations_generated, 0);
 }

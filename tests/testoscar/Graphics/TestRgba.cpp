@@ -19,14 +19,14 @@ TEST(Rgba, can_be_instantiated_with_Unorm8_template_arg)
     [[maybe_unused]] Rgba<Unorm8> this_should_compile;
 }
 
-TEST(Rgba, can_write_float_channels_to_stream)
+TEST(Rgba, can_write_float_components_to_std_ostream)
 {
     std::stringstream ss;
     ss << Rgba<float>{};
     ASSERT_FALSE(ss.str().empty());
 }
 
-TEST(Rgba, can_write_Unorm8_channels_to_stream)
+TEST(Rgba, can_write_Unorm8_componrnts_to_std_ostream)
 {
     std::stringstream ss;
     ss << Rgba<Unorm8>{};

@@ -22,48 +22,53 @@ TEST(Unorm8, default_constructs_to_zero)
 {
     static_assert(Unorm8{} == Unorm8{0});
 }
-TEST(Unorm8, ComparisonBetweenBytesWorksAsExpected)
+TEST(Unorm8, compares_equivalent_to_a_std_byte_with_the_same_value)
 {
     static_assert(to<Unorm8>(static_cast<std::byte>(0xfa)) == to<Unorm8>(static_cast<std::byte>(0xfa)));
 }
 
-TEST(Unorm8, ComparisonBetweenConvertedFloatsWorksAsExpected)
+TEST(Unorm8, compares_equivalent_to_another_Unorm8_with_the_same_floating_point_value)
 {
     static_assert(Unorm8{0.5f} == Unorm8{0.5f});
 }
 
-TEST(Unorm8, NaNsAreConvertedToZero)
+TEST(Unorm8, floating_point_NaNs_convert_to_zero)
 {
+    // because the underlying integer-based storage can't encode NaNs
     static_assert(Unorm8{std::numeric_limits<float>::quiet_NaN()} == Unorm8{0.0f});
 }
 
-TEST(Unorm8, CanCreateVec3OfUnormsFromUsualVec3OfFloats)
+TEST(Unorm8, can_construct_a_Vec3_of_Unorm8s_from_a_Vec3_of_floats)
 {
-    const Vec3 v{0.25f, 1.0f, 1.5f};
-    const Vec<3, Unorm8> converted{v};
-    const Vec<3, Unorm8> expected{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
-    ASSERT_EQ(converted, expected);
+    // this is useful for (e.g.) color conversion and quantizing mesh data
+
+    const Vec3 vec3_of_floats{0.25f, 1.0f, 1.5f};
+    const Vec<3, Unorm8> vec3_of_unorm8s{vec3_of_floats};
+    const Vec<3, Unorm8> expected_content{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
+    ASSERT_EQ(vec3_of_unorm8s, expected_content);
 }
 
-TEST(Unorm8, CanCreateUsualVec3FromVec3OfUNorms)
+TEST(Unorm8, can_construct_a_Vec3_of_floats_from_a_Vec3_of_Unorm8s)
 {
-    const Vec<3, Unorm8> v{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
-    const Vec3 converted{v};
-    const Vec3 expected{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
-    ASSERT_EQ(converted, expected);
+    // this is useful for (e.g.) color conversion and quantizing mesh data
+
+    const Vec<3, Unorm8> vec3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
+    const Vec3 vec3_of_floats{vec3_of_unorm8s};
+    const Vec3 expected_content{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
+    ASSERT_EQ(vec3_of_floats, expected_content);
 }
 
-TEST(Unorm8, ConvertsAsExpected)
+TEST(Unorm8, converts_midpoint_from_a_std_byte_as_expected)
 {
     ASSERT_EQ(Unorm8{0.5f}, to<Unorm8>(static_cast<std::byte>(127)));
 }
 
-TEST(Unorm8, value_type_returns_uint8_t)
+TEST(Unorm8, value_type_typedef_returns_uint8_t)
 {
     static_assert(std::same_as<Unorm8::value_type, uint8_t>);
 }
 
-TEST(Unorm8, can_be_streamed_to_ostream)
+TEST(Unorm8, can_be_written_to_a_std_ostream)
 {
     std::stringstream ss;
     ss << Unorm8{};
