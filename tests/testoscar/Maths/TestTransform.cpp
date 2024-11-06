@@ -7,7 +7,7 @@
 
 using namespace osc;
 
-TEST(Transform, QuatDefaultCtorIsIdentity)
+TEST(Transform, default_constructed_has_an_identity_rotation)
 {
     // sanity check: the transform ctor depends on this
     static_assert(Transform{}.rotation == identity<Quat>());

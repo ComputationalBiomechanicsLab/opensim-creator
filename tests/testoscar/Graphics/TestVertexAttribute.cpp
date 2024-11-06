@@ -14,14 +14,14 @@ using namespace osc;
 // set intersection between multiple vertex buffers etc. more easily
 TEST(VertexAttribute, order_matches_default_vertex_buffer_layout)
 {
-    const auto order = std::to_array({
+    const auto expected_order = std::to_array({
         VertexAttribute::Position,
         VertexAttribute::Normal,
         VertexAttribute::Tangent,
         VertexAttribute::Color,
         VertexAttribute::TexCoord0,
     });
-    static_assert(std::tuple_size_v<decltype(order)> == num_options<VertexAttribute>());
+    static_assert(std::tuple_size_v<decltype(expected_order)> == num_options<VertexAttribute>());
 
-    ASSERT_TRUE(std::is_sorted(order.begin(), order.end()));
+    ASSERT_TRUE(std::is_sorted(expected_order.begin(), expected_order.end()));
 }

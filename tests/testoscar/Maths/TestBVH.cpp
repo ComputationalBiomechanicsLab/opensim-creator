@@ -4,9 +4,8 @@
 
 using namespace osc;
 
-TEST(BVH, GetMaxDepthReturns0OnDefaultConstruction)
+TEST(BVH, max_depth_returns_zero_on_default_construction)
 {
-    BVH bvh;
-
+    const BVH bvh;
     ASSERT_EQ(bvh.max_depth(), 0);
 }

@@ -4,12 +4,12 @@
 
 using namespace osc;
 
-TEST(ResourcePath, CanDefaultConstruct)
+TEST(ResourcePath, can_default_construct)
 {
-    [[maybe_unused]] ResourcePath p{};
+    [[maybe_unused]] const ResourcePath p{};
 }
 
-TEST(ResourcePath, CanConstructFromStringLiteral)
+TEST(ResourcePath, can_construct_from_cstring_literal_filepath)
 {
-    [[maybe_unused]] ResourcePath p{"some/path/to/resource.png"};
+    [[maybe_unused]] const ResourcePath p{"some/path/to/resource.png"};
 }

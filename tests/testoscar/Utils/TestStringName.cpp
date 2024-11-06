@@ -390,80 +390,81 @@ TEST(StringName, size_returns_expected_value_when_nonempty)
     ASSERT_EQ(string_name.size(), c_long_character_data_array_to_avoid_SSO.size()-1);  // minus nul
 }
 
-TEST(StringName, NonEmptyStringNameComapresEqualToAnotherLogicallyEquivalentNonEmptyStringName)
+TEST(StringName, nonempty_StringName_compares_equal_to_another_nonempty_StringName_with_the_same_content)
 {
     ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, NonEmptyStringNameComparesEquivalentToStringView)
+TEST(StringName, nonempty_compares_equal_to_a_string_view_with_the_same_content)
 {
     ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, std::string_view{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, NonEmptyStringNameComparesEquivalentToStringViewReversedOp)
+TEST(StringName, nonempty_string_view_compares_equal_to_a_StringName_with_the_same_content)
 {
     ASSERT_EQ(std::string_view{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, NonEmptyStringNameComparesEquivalentToCString)
+TEST(StringName, nonempty_StringName_compares_equal_to_cstring_with_the_same_content)
 {
     ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, c_long_cstring_to_avoid_SSO);
 }
 
-TEST(StringName, NonEmptyStringNameComparesEquivalentToCStringReversedOp)
+TEST(StringName, nonempty_cstring_compares_equal_to_StringName_with_the_same_content)
 {
     ASSERT_EQ(c_long_cstring_to_avoid_SSO, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, NonEmptyStringNameComaparesEquivalentToCStringView)
+TEST(StringName, nonempty_StringName_compares_equal_to_CStringView_with_the_same_content)
 {
     ASSERT_EQ(StringName{c_long_cstring_to_avoid_SSO}, CStringView{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, NonEmptyStringNameComaparesEquivalentToCStringViewReversedOp)
+TEST(StringName, nonempty_CStringView_compares_equal_to_StringName_with_the_same_content)
 {
     ASSERT_EQ(CStringView{c_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, ComparesNotEqualToInequivalentString)
+TEST(StringName, compares_not_equal_to_a_StringName_with_different_content)
 {
     ASSERT_NE(StringName{c_long_cstring_to_avoid_SSO}, StringName{c_another_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, ComparesNotEqualToInequivalentStringReversedOp)
+TEST(StringName, compares_not_equal_to_StringName_with_different_content_v2)
 {
     ASSERT_NE(StringName{c_another_long_cstring_to_avoid_SSO}, StringName{c_long_cstring_to_avoid_SSO});
 }
 
-TEST(StringName, StreamsCorrectlyToOutputString)
+TEST(StringName, can_write_content_to_std_ostream)
 {
     std::stringstream ss;
     ss << StringName{c_long_cstring_to_avoid_SSO};
     ASSERT_EQ(ss.str(), c_long_cstring_to_avoid_SSO);
 }
 
-TEST(StringName, NonEmptyStringNameHasSameHashAsEquivalentStringName)
+TEST(StringName, std_hash_of_nonempty_StringName_has_same_hash_as_StringName_with_same_content)
 {
     ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}));
 }
 
-TEST(StringName, NonEmptyStringNameHasSameHashAsEquivalentString)
+TEST(StringName, std_hash_of_nonempty_StringName_has_same_hash_as_std_string_with_same_content)
 {
     ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<std::string>{}(std::string{c_long_cstring_to_avoid_SSO}));
 }
 
-TEST(StringName, NonEmptyStringNameHasSameHashAsEquivalentStringView)
+TEST(StringName, std_hash_of_nonempty_StringName_has_same_has_as_string_view_with_same_content)
 {
     ASSERT_EQ(std::hash<StringName>{}(StringName{c_long_cstring_to_avoid_SSO}), std::hash<std::string_view>{}(std::string_view{c_long_cstring_to_avoid_SSO}));
 }
 
-TEST(StringName, CanBeStreamedToOStreamAndProducesIdenticalOutputToString)
+TEST(StringName, writes_identical_output_to_std_ostream_as_a_std_string_with_the_same_content)
 {
-    std::string str{"some streamed string"};
-    std::stringstream strss;
-    strss << str;
-    std::stringstream snss;
-    snss << StringName{str};
+    const std::string std_string{"some streamed string"};
+    std::stringstream string_stream;
+    string_stream << std_string;
 
-    ASSERT_EQ(strss.str(), snss.str());
+    std::stringstream stringname_stream;
+    stringname_stream << StringName{std_string};
+
+    ASSERT_EQ(string_stream.str(), stringname_stream.str());
 }

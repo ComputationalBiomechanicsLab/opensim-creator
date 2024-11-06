@@ -6,7 +6,7 @@
 
 using namespace osc;
 
-TEST(FrustumPlanes, IsRegular)
+TEST(FrustumPlanes, is_regular)
 {
     static_assert(std::regular<FrustumPlanes>);
 }

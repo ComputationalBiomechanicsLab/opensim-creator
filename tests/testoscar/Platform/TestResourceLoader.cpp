@@ -16,18 +16,18 @@ using namespace osc;
 namespace
 {
     struct MockState final {
-        std::optional<ResourcePath> lastOpenCallArg;
+        std::optional<ResourcePath> last_open_call_path;
     };
 
     class MockResourceLoader : public IResourceLoader {
     public:
         explicit MockResourceLoader(std::shared_ptr<MockState> state_) :
-            m_State{std::move(state_)}
+            state_{std::move(state_)}
         {}
     private:
-        ResourceStream impl_open(const ResourcePath& p) override
+        ResourceStream impl_open(const ResourcePath& resource_path) override
         {
-            m_State->lastOpenCallArg = p;
+            state_->last_open_call_path = resource_path;
             return ResourceStream{};
         }
 
@@ -36,30 +36,30 @@ namespace
             return []() { return std::nullopt; };
         }
 
-        std::shared_ptr<MockState> m_State;
+        std::shared_ptr<MockState> state_;
     };
 }
 
-TEST(ResourceLoader, InplaceConstructorWorksAsIntended)
+TEST(ResourceLoader, inplace_constructor_works_as_intended)
 {
-    auto state = std::make_shared<MockState>();
-    ResourcePath p{"some/path"};
+    const auto mock_state = std::make_shared<MockState>();
+    const ResourcePath resource_path{"some/path"};
 
-    ResourceLoader rl = make_resource_loader<MockResourceLoader>(state);
-    rl.open(p);
+    ResourceLoader resource_loader = make_resource_loader<MockResourceLoader>(mock_state);
+    resource_loader.open(resource_path);
 
-    ASSERT_EQ(state->lastOpenCallArg, p);
+    ASSERT_EQ(mock_state->last_open_call_path, resource_path);
 }
 
 TEST(ResourceLoader, WithPrefixCausesIResourceLoaderToBeCalledWithPrefixedPath)
 {
-    auto state = std::make_shared<MockState>();
+    const auto mock_state = std::make_shared<MockState>();
 
-    ResourceLoader rl = make_resource_loader<MockResourceLoader>(state);
-    ResourceLoader prefixedLoader = rl.with_prefix("prefix");
+    ResourceLoader resource_loader = make_resource_loader<MockResourceLoader>(mock_state);
+    ResourceLoader prefixed_loader = resource_loader.with_prefix("prefix");
 
-    rl.open(ResourcePath{"path"});
-    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"path"}) << "with_prefix doesn't affect original ResourceLoader";
-    prefixedLoader.open(ResourcePath{"path"});
-    ASSERT_EQ(state->lastOpenCallArg, ResourcePath{"prefix/path"}) << "with_prefix should return a loader the prefixes each open call";
+    resource_loader.open(ResourcePath{"path"});
+    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"path"}) << "with_prefix doesn't affect original ResourceLoader";
+    prefixed_loader.open(ResourcePath{"path"});
+    ASSERT_EQ(mock_state->last_open_call_path, ResourcePath{"prefix/path"}) << "with_prefix should return a loader the prefixes each open call";
 }

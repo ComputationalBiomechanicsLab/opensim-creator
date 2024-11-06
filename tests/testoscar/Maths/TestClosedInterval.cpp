@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(ClosedInterval, default_constructor_value_initializes)
 {
-    ClosedInterval<float> r;
+    const ClosedInterval<float> r;
     ASSERT_EQ(r.lower, float{});
     ASSERT_EQ(r.upper, float{});
 }
@@ -21,17 +21,17 @@ TEST(ClosedInterval, can_use_structured_bindings_to_get_lower_and_upper)
     ASSERT_EQ(upper, 3);
 }
 
-TEST(ClosedInterval, CanConstructForInts)
+TEST(ClosedInterval, can_be_constructed_from_ints)
 {
     [[maybe_unused]] ClosedInterval<int> r{0, 1}; // shouldn't throw etc
 }
 
-TEST(ClosedInterval, ReversingOrderIsAllowed)
+TEST(ClosedInterval, reversing_lower_and_upper_is_allowed)
 {
     [[maybe_unused]] ClosedInterval<int> r{1, 0};
 }
 
-TEST(ClosedInterval, TimestampsAreAllowed)
+TEST(ClosedInterval, can_be_constructed_from_time_points)
 {
     using TP = std::chrono::system_clock::time_point;
     [[maybe_unused]] ClosedInterval<TP> r{TP{}, TP{} + std::chrono::seconds{1}};

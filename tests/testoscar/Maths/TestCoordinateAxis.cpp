@@ -86,7 +86,7 @@ namespace
         std::optional<CoordinateAxis> expected;
     };
 
-    constexpr auto c_ParsingTestCases = std::to_array<ParsingTestCase>({
+    constexpr auto c_parsing_test_cases = std::to_array<ParsingTestCase>({
         // blank/value-initialized
         {"", std::nullopt},
         {{}, std::nullopt},
@@ -131,7 +131,7 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     CoordinateAxisParsingTest,
     CoordinateAxisParsingTestFixture,
-    testing::ValuesIn(c_ParsingTestCases)
+    testing::ValuesIn(c_parsing_test_cases)
 );
 
 TEST_P(CoordinateAxisParsingTestFixture, Check)

@@ -17,7 +17,7 @@ namespace
     std::string slurp(std::istream& is)
     {
         std::istreambuf_iterator<char> beg{is};
-        std::istreambuf_iterator<char> end;
+        const std::istreambuf_iterator<char> end;
         return std::string{beg, end};
     }
 
@@ -28,17 +28,17 @@ namespace
     }
 }
 
-TEST(ResourceStream, WhenDefaultConstructedYieldsAnEmptyStream)
+TEST(ResourceStream, yields_an_empty_string_when_default_constructed)
 {
     ASSERT_EQ(slurp(ResourceStream{}), std::string{});
 }
 
-TEST(ResourceStream, WhenDefaultConstructedHasNameNullstream)
+TEST(ResourceStream, name_returns_nullstream_when_default_constructed)
 {
     ASSERT_EQ(ResourceStream{}.name(), "nullstream");
 }
 
-TEST(ResourceStream, WhenConstructedFromFilepathCreatesStreamThatReadsFile)
+TEST(ResourceStream, yields_content_of_a_file_when_constructed_from_filesystem_path)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     ResourceStream rs{path};
@@ -46,7 +46,7 @@ TEST(ResourceStream, WhenConstructedFromFilepathCreatesStreamThatReadsFile)
     ASSERT_TRUE(slurp(rs) == slurp(path));
 }
 
-TEST(ResourceStream, WhenConstructedFromFilepathHasNameEqualtoFilename)
+TEST(ResourceStream, name_returns_name_of_filesystem_file_when_constructed_from_a_filesystem_path)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     ASSERT_EQ(ResourceStream{path}.name(), path.filename().string());

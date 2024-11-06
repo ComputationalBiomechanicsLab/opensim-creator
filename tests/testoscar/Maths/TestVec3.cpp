@@ -4,7 +4,7 @@
 
 using namespace osc;
 
-TEST(Vec3, WithElementWorksAsExpected)
+TEST(Vec3, with_element_works_as_expected)
 {
     ASSERT_EQ(Vec3{}.with_element(0, 2.0f), Vec3(2.0f, 0.0f, 0.0f));
     ASSERT_EQ(Vec3(1.0f).with_element(0, 3.0f), Vec3(3.0f, 1.0f, 1.0f));

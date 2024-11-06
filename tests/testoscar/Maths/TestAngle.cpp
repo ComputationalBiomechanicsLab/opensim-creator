@@ -8,27 +8,27 @@
 using namespace osc;
 using namespace osc::literals;
 
-TEST(Angle, RadiansCanValueConstructToZero)
+TEST(Radians, can_be_constructed_from_zero_float)
 {
     static_assert(Radians{} == Radians{0.0f});
 }
 
-TEST(Angle, RadiansCanConstructWithInitialValue)
+TEST(Radians, can_be_constructed_with_initial_value)
 {
     static_assert(Radians{5.0f}.count() == 5.0);
 }
 
-TEST(Angle, RadiansCanConstructViaUDL)
+TEST(Radians, can_be_constructed_from_user_defined_radians_literal)
 {
     static_assert(8.0_rad == Radians{8.0f});
 }
 
-TEST(Angle, RadiansCanConstructFromDegrees)
+TEST(Radians, can_be_constructed_from_Degrees)
 {
     static_assert(Radians{50.0_deg} == Radians{Degrees{50.0f}});
 }
 
-TEST(Angle, RadiansConversionFromDegreesWorksAsExpected)
+TEST(Radians, construction_from_Degrees_converts_the_value_as_expected)
 {
     static_assert(Radians{-90.0_deg} == Radians{-0.5f*pi_v<float>});
     static_assert(Radians{90.0_deg} == Radians{0.5f*pi_v<float>});
@@ -40,23 +40,23 @@ TEST(Angle, RadiansConversionFromDegreesWorksAsExpected)
     static_assert(Radians{360.0_deg} == Radians{2.0f*pi_v<float>});
 }
 
-TEST(Angle, RadiansAddingTwoRadiansWorksAsExpected)
+TEST(Radians, addition_operator_works_as_expected)
 {
     static_assert(Radians{1.0f} + Radians{1.0f} == Radians{2.0f});
 }
 
-TEST(Angle, RadiansSubtractingTwoRadiansWorksAsExpected)
+TEST(Radians, subtraction_operator_works_as_expected)
 {
     static_assert(Radians{1.0f} - Radians{0.5f} == Radians{0.5f});
 }
 
-TEST(Angle, RadiansMultiplyingRadiansByScalarWorksAsExpected)
+TEST(Radians, scalar_multiplication_operator_works_as_expected)
 {
     static_assert(2.0f*Radians{1.0f} == Radians{2.0f});
     static_assert(Radians{1.0f}*3.0f == Radians{3.0f});
 }
 
-TEST(Angle, ComparisonBehavesAsExpected)
+TEST(Radians, three_way_comparison_works_as_expected)
 {
     static_assert(1_rad < 2_rad);
     static_assert(1_rad <= 2_rad);
@@ -65,14 +65,14 @@ TEST(Angle, ComparisonBehavesAsExpected)
     static_assert(1_rad > 0.5_rad);
 }
 
-TEST(Angle, RadiansPlusEqualsWorksAsExpected)
+TEST(Radians, addition_assignment_operator_works_as_expected)
 {
     Radians r{1.0f};
     r += 1_rad;
     ASSERT_EQ(r, 2_rad);
 }
 
-TEST(Angle, FmodBehavesAsExpected)
+TEST(Radians, mod_works_as_expected)
 {
     using osc::mod;
 
@@ -81,12 +81,12 @@ TEST(Angle, FmodBehavesAsExpected)
     ASSERT_EQ(r, 0_rad);
 }
 
-TEST(Angle, MixedAdditionReturnsRadians)
+TEST(Angle, addition_operator_works_with_different_Angle_types)
 {
     static_assert(Radians{360_deg} == Radians{180_deg} + 180_deg);
 }
 
-TEST(Angle, TurnConvertsToRadiansOrDegreesAsExpected)
+TEST(Turns, converts_to_Degrees_or_Radians_as_expected)
 {
     static_assert(1_turn == 2.0f*pi_v<float>*1_rad);
     static_assert(0.5_turn == pi_v<float>*1_rad);
@@ -94,17 +94,17 @@ TEST(Angle, TurnConvertsToRadiansOrDegreesAsExpected)
     static_assert(0.5_turn == 180_deg);
 }
 
-TEST(Angle, CanCompareMixedAngularTypes)
+TEST(Angle, equality_works_across_mixed_Angle_types)
 {
     static_assert(1_turn == 360_deg);  // should compile
 }
 
-TEST(Angle, ScalarDivisionWorksAsExpected)
+TEST(Turn, division_by_a_scalar_works_as_expected)
 {
     static_assert(1_turn/2 == 180_deg);
 }
 
-TEST(Angle, CanUseProjectedClampWithAngles)
+TEST(Angle, is_compatible_with_projected_clamp_algorithm)
 {
     // just a "it'd be nice to know osc::Angle inter-operates with std::ranges::clamp algs"
     struct S {

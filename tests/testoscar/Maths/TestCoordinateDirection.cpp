@@ -12,43 +12,43 @@
 using namespace osc;
 using namespace osc::literals;
 
-TEST(CoordinateDirection, IsRegular)
+TEST(CoordinateDirection, is_regular)
 {
     static_assert(std::regular<CoordinateDirection>);
 }
 
-TEST(CoordinateDirection, DefaultConstructedPointsInPositiveX)
+TEST(CoordinateDirection, default_constructed_is_positive_X)
 {
     static_assert(CoordinateDirection{} == CoordinateDirection::x());
 }
 
-TEST(CoordinateDirection, XIsEquivalentToConstructingFromXAxisDirection)
+TEST(CoordinateDirection, x_compares_equivalent_to_constructing_from_x_CoordinateAxis)
 {
     static_assert(CoordinateDirection::x() == CoordinateDirection{CoordinateAxis::x()});
 }
 
-TEST(CoordinateDirection, XYZAreNotEqualToEachover)
+TEST(CoordinateDirection, x_y_and_z_are_not_equal_to_eachover)
 {
     static_assert(CoordinateDirection::x() != CoordinateDirection::y());
     static_assert(CoordinateDirection::x() != CoordinateDirection::z());
     static_assert(CoordinateDirection::y() != CoordinateDirection::z());
 }
 
-TEST(CoordinateDirection, PositiveDirectionsNotEqualToNegative)
+TEST(CoordinateDirection, positive_compares_not_equal_to_negative_CoordinateDirection)
 {
     static_assert(CoordinateDirection::x() != CoordinateDirection::minus_x());
     static_assert(CoordinateDirection::y() != CoordinateDirection::minus_y());
     static_assert(CoordinateDirection::z() != CoordinateDirection::minus_z());
 }
 
-TEST(CoordinateDirection, AxisIgnoresPositiveVsNegative)
+TEST(CoordinateDirection, axis_ignores_positive_vs_negative)
 {
     static_assert(CoordinateDirection::x().axis() == CoordinateDirection::minus_x().axis());
     static_assert(CoordinateDirection::y().axis() == CoordinateDirection::minus_y().axis());
     static_assert(CoordinateDirection::z().axis() == CoordinateDirection::minus_z().axis());
 }
 
-TEST(CoordinateDirection, UnaryNegationWorksAsExpected)
+TEST(CoordinateDirection, unary_minus_works_as_expected)
 {
     static_assert(-CoordinateDirection::x() == CoordinateDirection::minus_x());
     static_assert(-CoordinateDirection::y() == CoordinateDirection::minus_y());
@@ -58,7 +58,7 @@ TEST(CoordinateDirection, UnaryNegationWorksAsExpected)
     static_assert(-CoordinateDirection::minus_z() == CoordinateDirection::z());
 }
 
-TEST(CoordinateDirection, DirectionReturnsExpectedResults)
+TEST(CoordinateDirection, direction_returns_expected_results)
 {
     static_assert(CoordinateDirection::x().direction() == 1.0f);
     static_assert(CoordinateDirection::minus_x().direction() == -1.0f);
@@ -76,9 +76,9 @@ TEST(CoordinateDirection, DirectionReturnsExpectedResults)
     static_assert(CoordinateDirection::minus_x().direction<double>() == -1.0);
 }
 
-TEST(CoordinateDirection, AreOrderedAsExpected)
+TEST(CoordinateDirection, have_an_expected_total_ordering)
 {
-    const auto expectedOrder = std::to_array({
+    const auto expected_order = std::to_array({
         CoordinateDirection::minus_x(),
         CoordinateDirection::x(),
         CoordinateDirection::minus_y(),
@@ -86,10 +86,10 @@ TEST(CoordinateDirection, AreOrderedAsExpected)
         CoordinateDirection::minus_z(),
         CoordinateDirection::z(),
     });
-    ASSERT_TRUE(std::is_sorted(expectedOrder.begin(), expectedOrder.end()));
+    ASSERT_TRUE(std::is_sorted(expected_order.begin(), expected_order.end()));
 }
 
-TEST(CoordinateDirection, CrossWorksAsExpected)
+TEST(CoordinateDirection, cross_works_as_expected)
 {
     // cross products along same axis (undefined: falls back to first arg)
     static_assert(cross(CoordinateDirection::x(), CoordinateDirection::x()) == CoordinateDirection::x());
@@ -157,7 +157,7 @@ namespace
         std::optional<CoordinateDirection> expected;
     };
 
-    constexpr auto c_ParsingTestCases = std::to_array<ParsingTestCase>({
+    constexpr auto c_parsing_test_cases = std::to_array<ParsingTestCase>({
         // blank/value-initialized
         {"", std::nullopt},
         {{}, std::nullopt},
@@ -211,7 +211,7 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     CoordinateDirectionParsingTest,
     ParsingTestFixture,
-    testing::ValuesIn(c_ParsingTestCases)
+    testing::ValuesIn(c_parsing_test_cases)
 );
 
 TEST_P(ParsingTestFixture, Check)
@@ -228,7 +228,7 @@ namespace
         std::string_view expected;
     };
 
-    constexpr auto c_PrintingTestCases = std::to_array<PrintingTestCase>({
+    constexpr auto c_printing_test_cases = std::to_array<PrintingTestCase>({
         {CoordinateDirection::x(), "x"},
         {CoordinateDirection::minus_x(), "-x"},
         {CoordinateDirection::y(), "y"},
@@ -243,7 +243,7 @@ namespace
 INSTANTIATE_TEST_SUITE_P(
     CoordinateDirectionPrintingTest,
     PrintingTestFixture,
-    testing::ValuesIn(c_PrintingTestCases)
+    testing::ValuesIn(c_printing_test_cases)
 );
 
 TEST_P(PrintingTestFixture, Check)
@@ -266,7 +266,7 @@ TEST(CoordinateDirection, is_negated_WorksAsExpected)
     static_assert(CoordinateDirection::minus_z().is_negated());
 }
 
-TEST(CoordinateDirection, VecReturnsExpectedResults)
+TEST(CoordinateDirection, vec_returns_expected_results)
 {
     ASSERT_EQ(CoordinateDirection::x().vec(), Vec3(1.0f, 0.0f, 0.0f));
     ASSERT_EQ(CoordinateDirection::y().vec(), Vec3(0.0f, 1.0f, 0.0f));
