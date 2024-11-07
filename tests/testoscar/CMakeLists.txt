@@ -35,6 +35,7 @@ add_executable(testoscar
     Graphics/TestDepthStencilRenderBufferFormat.cpp
     Graphics/TestDepthStencilRenderBufferParams.cpp
     Graphics/TestGeometries.cpp
+    Graphics/TestMaterial.cpp
     Graphics/TestMaterialPropertyBlock.cpp
     Graphics/TestSubMeshDescriptor.cpp
     Graphics/TestMesh.cpp

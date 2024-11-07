@@ -22,19 +22,19 @@ using namespace osc;
 
 namespace
 {
-    std::unique_ptr<App> g_renderer_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    std::unique_ptr<App> g_shader_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     class ShaderTest : public ::testing::Test {
     protected:
         static void SetUpTestSuite()
         {
             const AppMetadata metadata{TESTOSCAR_ORGNAME_STRING, TESTOSCAR_APPNAME_STRING};
-            g_renderer_app = std::make_unique<App>(metadata);
+            g_shader_app = std::make_unique<App>(metadata);
         }
 
         static void TearDownTestSuite()
         {
-            g_renderer_app.reset();
+            g_shader_app.reset();
         }
     };
 

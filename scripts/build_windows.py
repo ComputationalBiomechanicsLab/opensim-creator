@@ -121,7 +121,7 @@ def build_osc(conf: BuildConfiguration):
         # build+run oscar test suite
         test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'tests', 'testoscar', conf.get_osc_build_type(), 'testoscar')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target testoscar {other_build_args}')
-        _run(f'{test_oscar_path} --gtest_filter="-Renderer*:ShaderTest*')
+        _run(f'{test_oscar_path} --gtest_filter="-Renderer*:ShaderTest*:MaterialTest*')
 
         # build+run OpenSimCreator test suite
         #
