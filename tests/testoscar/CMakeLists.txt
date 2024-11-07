@@ -46,6 +46,7 @@ add_executable(testoscar
     Graphics/TestRenderTexture.cpp
     Graphics/TestRenderTextureDescriptor.cpp
     Graphics/TestRgba.cpp
+    Graphics/TestShader.cpp
     Graphics/TestShaderPropertyType.cpp
     Graphics/TestSharedColorRenderBuffer.cpp
     Graphics/TestSharedDepthStencilRenderBuffer.cpp
