@@ -18,7 +18,7 @@ namespace osc
         Space,
         Return,
         Escape,
-        Quote,
+        Apostrophe,
         Comma,
         Minus,
         Period,
@@ -28,7 +28,7 @@ namespace osc
         LeftBracket,
         Backslash,
         RightBracket,
-        Backquote,
+        Grave,  // backquote
         CapsLock,
         ScrollLock,
         NumLockClear,

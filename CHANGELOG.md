@@ -18,8 +18,15 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The documentation banner now includes "OpenSim Creator", rather than just showing
   the icon logo.
 - A CC-BY license was added to `resources/icons` (#944)
+- "Windows Fullscreen" was dropped from the about page: the "Fullscreen" button now
+  always follows "windowed fullscreen" behavior (exclusive fullscreen usage was deemed
+  to be niche).
+- The `[experimental_feature] high_dpi_mode` is now always `true`, because the new SDL3
+  backend defaults to HighDPI mode. This means that the configuration option no longer
+  does anything.
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
-- Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs
+- Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
+
 
 ## [0.5.16] - 2024/11/04
 

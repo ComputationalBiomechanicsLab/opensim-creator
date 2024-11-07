@@ -13,6 +13,7 @@ namespace osc::ui::graphics_backend
     bool init();
     void shutdown();
     void on_start_new_frame();
+    void mark_fonts_for_reupload();
     void render(ImDrawData*);
     InternalTextureID allocate_texture_for_current_frame(const Texture2D&);
     InternalTextureID allocate_texture_for_current_frame(const RenderTexture&);

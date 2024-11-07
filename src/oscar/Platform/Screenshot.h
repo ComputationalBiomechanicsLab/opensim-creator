@@ -11,7 +11,10 @@ namespace osc
 {
     class Screenshot final {
     public:
-        Screenshot(Texture2D image, std::vector<ScreenshotAnnotation> annotations) :
+        Screenshot(
+            Texture2D image,
+            std::vector<ScreenshotAnnotation> annotations) :
+
             image_{std::move(image)},
             annotations_{std::move(annotations)}
         {}

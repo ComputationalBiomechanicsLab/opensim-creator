@@ -80,7 +80,7 @@ namespace osc
         //
         // the rectangle is defined in screen space, which:
         //
-        // - is measured in pixels
+        // - is measured in device-independent pixels
         // - starts in the bottom-left corner
         // - ends in the top-right corner
         //
@@ -94,7 +94,7 @@ namespace osc
         //
         // the rectangle is defined in screen space, which:
         //
-        // - is measured in pixels
+        // - is measured in device-independent pixels
         // - starts in the bottom-left corner
         // - ends in the top-right corner
         //

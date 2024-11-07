@@ -10,7 +10,6 @@
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
-#include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/Log.h>
@@ -29,14 +28,14 @@
 #include <oscar/Utils/SynchronizedValue.h>
 
 #include <ankerl/unordered_dense.h>
-#include <SDL.h>
-#include <SDL_error.h>
-#include <SDL_events.h>
-#include <SDL_keyboard.h>
-#include <SDL_mouse.h>
-#include <SDL_stdinc.h>
-#include <SDL_timer.h>
-#include <SDL_video.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_video.h>
 
 #include <algorithm>
 #include <array>
@@ -49,7 +48,6 @@
 #include <stdexcept>
 #include <vector>
 
-namespace sdl = osc::sdl;
 using namespace osc;
 
 template<>
@@ -62,18 +60,76 @@ struct osc::Converter<SDL_Rect, Rect> final {
     }
 };
 
+namespace osc::sdl
+{
+    // RAII wrapper for `SDL_Init` and `SDL_Quit`
+    //     https://wiki.libsdl.org/SDL_Quit
+    class Context final {
+    public:
+        explicit Context(Uint32 flags)
+        {
+            if (not SDL_Init(flags)) {
+                throw std::runtime_error{std::string{"SDL_Init: failed: "} + SDL_GetError()};
+            }
+        }
+        Context(const Context&) = delete;
+        Context(Context&&) noexcept = delete;
+        Context& operator=(const Context&) = delete;
+        Context& operator=(Context&&) noexcept = delete;
+        ~Context() noexcept
+        {
+            SDL_Quit();
+        }
+    };
+
+    // https://wiki.libsdl.org/SDL_Init
+    inline Context Init(Uint32 flags)
+    {
+        return Context{flags};
+    }
+
+    // RAII wrapper around `SDL_Window` that calls `SDL_DestroyWindow` on dtor
+    //     https://wiki.libsdl.org/SDL_CreateWindow
+    //     https://wiki.libsdl.org/SDL_DestroyWindow
+    class Window final {
+    public:
+        explicit Window(SDL_Window * _ptr) :
+            window_handle_{_ptr}
+        {}
+        Window(const Window&) = delete;
+        Window(Window&& tmp) noexcept :
+            window_handle_{std::exchange(tmp.window_handle_, nullptr)}
+        {}
+        Window& operator=(const Window&) = delete;
+        Window& operator=(Window&&) noexcept = delete;
+        ~Window() noexcept
+        {
+            if (window_handle_) {
+                SDL_DestroyWindow(window_handle_);
+            }
+        }
+
+        SDL_Window* get() const { return window_handle_; }
+
+        SDL_Window& operator*() const { return *window_handle_; }
+
+    private:
+        SDL_Window* window_handle_;
+    };
+}
+
 namespace
 {
     App* g_app_global = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 #ifndef EMSCRIPTEN
     void sdl_gl_set_attribute_or_throw(
-        SDL_GLattr attribute,
+        SDL_GLAttr attribute,
         CStringView attribute_readable_name,
         int new_attribute_value,
         CStringView value_readable_name)
     {
-        if (SDL_GL_SetAttribute(attribute, new_attribute_value)) {
+        if (not SDL_GL_SetAttribute(attribute, new_attribute_value)) {
             std::stringstream msg;
             msg << "SDL_GL_SetAttribute failed when setting " << attribute_readable_name << " = " << value_readable_name << ": " << SDL_GetError();
             throw std::runtime_error{std::move(msg).str()};
@@ -112,7 +168,7 @@ namespace
     }
 
     // initialize the main application window
-    sdl::Window create_main_app_window(const AppSettings& config, CStringView application_name)
+    sdl::Window create_main_app_window(const AppSettings&, CStringView application_name)
     {
         log_info("initializing main application window");
 
@@ -151,22 +207,23 @@ namespace
 #ifdef SDL_HINT_MOUSE_AUTO_CAPTURE
         SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
 #endif
+        SDL_PropertiesID properties = SDL_CreateProperties();
+        ScopeGuard g{[&]{ SDL_DestroyProperties(properties); }};
 
-        // careful about setting resolution, position, etc. - some people have *very* shitty
-        // screens on their laptop (e.g. ultrawide, sub-HD, minus space for the start bar, can
-        // be <700 px high)
-        constexpr int x = SDL_WINDOWPOS_CENTERED;
-        constexpr int y = SDL_WINDOWPOS_CENTERED;
-        constexpr int width = 800;
-        constexpr int height = 600;
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_MAXIMIZED_BOOLEAN, true);
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+        SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, application_name.c_str());
+        SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 800);
+        SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 600);
 
-        Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
-        if (auto v = config.find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
-            flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-            enable_highdpi_mode_for_this_process();
+        SDL_Window* const rv = SDL_CreateWindowWithProperties(properties);
+        if (rv == nullptr) {
+            throw std::runtime_error{std::string{"SDL_CreateWindow failed: "} + SDL_GetError()};
         }
 
-        return sdl::CreateWindoww(application_name, x, y, width, height, flags);
+        return sdl::Window{rv};
     }
 
     AppClock::duration convert_perf_ticks_to_appclock_duration(Uint64 ticks, Uint64 frequency)
@@ -258,7 +315,7 @@ namespace
         SDL_Cursor* get() { return ptr_.get(); }
     private:
         struct CursorDeleter {
-            void operator()(SDL_Cursor* ptr) { SDL_FreeCursor(ptr); }
+            void operator()(SDL_Cursor* ptr) { SDL_DestroyCursor(ptr); }
         };
 
         std::unique_ptr<SDL_Cursor, CursorDeleter> ptr_;
@@ -270,15 +327,15 @@ namespace
         SystemCursor& operator[](CursorShape shape) { return cursors_.at(to_index(shape)); }
     private:
         std::array<SystemCursor, num_options<CursorShape>()> cursors_ = std::to_array({
-            SystemCursor(SDL_SYSTEM_CURSOR_ARROW),     // CursorShape::Arrow
-            SystemCursor(SDL_SYSTEM_CURSOR_IBEAM),     // CursorShape::IBeam
-            SystemCursor(SDL_SYSTEM_CURSOR_SIZEALL),   // CursorShape::ResizeAll
-            SystemCursor(SDL_SYSTEM_CURSOR_SIZENS),    // CursorShape::ResizeVertical
-            SystemCursor(SDL_SYSTEM_CURSOR_SIZEWE),    // CursorShape::ResizeHorizontal
-            SystemCursor(SDL_SYSTEM_CURSOR_SIZENESW),  // CursorShape::ResizeDiagonalNESW
-            SystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE),  // CursorShape::ResizeDiagonalNWSE
-            SystemCursor(SDL_SYSTEM_CURSOR_HAND),      // CursorShape::PointingHand
-            SystemCursor(SDL_SYSTEM_CURSOR_NO),        // CursorShape::Forbidden
+            SystemCursor(SDL_SYSTEM_CURSOR_DEFAULT),     // CursorShape::Arrow
+            SystemCursor(SDL_SYSTEM_CURSOR_TEXT),     // CursorShape::IBeam
+            SystemCursor(SDL_SYSTEM_CURSOR_MOVE),   // CursorShape::ResizeAll
+            SystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE),    // CursorShape::ResizeVertical
+            SystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE),    // CursorShape::ResizeHorizontal
+            SystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE),  // CursorShape::ResizeDiagonalNESW
+            SystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE),  // CursorShape::ResizeDiagonalNWSE
+            SystemCursor(SDL_SYSTEM_CURSOR_POINTER),      // CursorShape::PointingHand
+            SystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED),        // CursorShape::Forbidden
             SystemCursor{},                            // CursorShape::Hidden
         });
     };
@@ -297,14 +354,19 @@ namespace
         {
             // try to reset the cursor to default
             if (cursor_stack_.size() > 1) {
-                SDL_ShowCursor(SDL_ENABLE);
+                SDL_ShowCursor();
                 SDL_SetCursor(system_mouse_cursors_[CursorShape::Arrow].get());
             }
         }
 
         void push_cursor_override(const Cursor& cursor)
         {
-            SDL_ShowCursor(cursor.shape() != CursorShape::Hidden ? SDL_ENABLE : SDL_DISABLE);
+            if (cursor.shape() != CursorShape::Hidden) {
+                SDL_ShowCursor();
+            }
+            else {
+                SDL_HideCursor();
+            }
             SDL_SetCursor(system_mouse_cursors_[cursor.shape()].get());
             cursor_stack_.push_back(cursor.shape());
         }
@@ -317,7 +379,12 @@ namespace
 
             cursor_stack_.pop_back();
             SDL_SetCursor(system_mouse_cursors_[cursor_stack_.back()].get());
-            SDL_ShowCursor(cursor_stack_.empty() or cursor_stack_.back() != CursorShape::Hidden ? SDL_ENABLE : SDL_DISABLE);
+            if (cursor_stack_.empty() or cursor_stack_.back() != CursorShape::Hidden) {
+                SDL_ShowCursor();
+            }
+            else {
+                SDL_HideCursor();
+            }
         }
     private:
         // runtime lookup of all available mouse cursors
@@ -386,7 +453,7 @@ public:
                 // edge-case: it's an `SDL_USEREVENT`, which should only propagate from this
                 // compilation unit, and is always either blank (`data1 == nullptr`) or has
                 // two pointers: a not-owned `Widget*` receiver and an owned `Event*`.
-                if (e.type == SDL_USEREVENT) {
+                if (e.type == SDL_EVENT_USER) {
                     if (e.user.data1) {
                         // it's an application-enacted (i.e. not spontaneous, OS-enacted, etc.) event
                         // that should be immediately dispatched.
@@ -411,12 +478,12 @@ public:
                 // if the active screen didn't handle the event, try to handle it here by following
                 // reasonable heuristics
                 if (not screen_handled_event) {
-                    if (e.type == SDL_WINDOWEVENT) {
+                    if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
                         // window was resized and should be drawn a couple of times quickly
                         // to ensure any immediate UIs in screens are updated
                         num_frames_to_poll_ = 2;
                     }
-                    else if (e.type == SDL_QUIT) {
+                    else if (e.type == SDL_EVENT_QUIT) {
                         request_quit();  // i.e. "as if the current screen tried to quit"
                     }
                 }
@@ -429,10 +496,6 @@ public:
                 if (next_screen_) {
                     // screen requested a new screen, so perform the transition
                     transition_to_next_screen();
-                }
-
-                if (e.type == SDL_DROPTEXT or e.type == SDL_DROPFILE) {
-                    SDL_free(e.drop.file);  // SDL documentation mandates that the caller frees this
                 }
             }
         }
@@ -512,7 +575,7 @@ public:
     void post_event(Widget& receiver, std::unique_ptr<Event> event)
     {
         SDL_Event e{};
-        e.type = SDL_USEREVENT;
+        e.type = SDL_EVENT_USER;
         e.user.data1 = &receiver;
         e.user.data2 = event.release();
         SDL_PushEvent(&e);
@@ -558,25 +621,30 @@ public:
     {
         std::vector<Monitor> rv;
 
-        const int display_count = SDL_GetNumVideoDisplays();
+        int display_count = 0;
+        SDL_DisplayID* const first_display = SDL_GetDisplays(&display_count);
+        if (first_display == nullptr) {
+            const char* error = SDL_GetError();
+            std::stringstream msg;
+            msg << "SDL_GetDisplays: error: " << error;
+            throw std::runtime_error{std::move(msg).str()};
+        }
+        ScopeGuard displays_deleter{[first_display]{ SDL_free(first_display); }};
+        const std::span<const SDL_DisplayID> display_ids{first_display, static_cast<size_t>(display_count)};
+
         rv.reserve(display_count);
-        for (int n = 0; n < display_count; n++) {
+        for (SDL_DisplayID display_id : display_ids) {
             SDL_Rect display_bounds;
-            SDL_GetDisplayBounds(n, &display_bounds);
+            SDL_GetDisplayBounds(display_id, &display_bounds);
 
 
 #if SDL_HAS_USABLE_DISPLAY_BOUNDS
             SDL_Rect usable_bounds;
-            SDL_GetDisplayUsableBounds(n, &r);
+            SDL_GetDisplayUsableBounds(display_id, &usable_bounds);
 #else
             SDL_Rect usable_bounds = display_bounds;
 #endif
-
-            float dpi = 96.0f;
-#if SDL_HAS_PER_MONITOR_DPI
-            SDL_GetDisplayDPI(n, &dpi, nullptr, nullptr);
-#endif
-
+            float dpi = SDL_GetDisplayContentScale(display_id) * 96.0f;
             rv.emplace_back(to<Rect>(display_bounds), to<Rect>(usable_bounds), dpi);
         }
 
@@ -585,29 +653,38 @@ public:
 
     Vec2 main_window_dimensions() const
     {
-        return Vec2{sdl::GetWindowSizeInPixels(main_window_.get())};
+        return main_window_pixel_dimensions() / main_window_device_pixel_ratio();
     }
 
-    Vec2 main_window_drawable_pixel_dimensions() const
+    Vec2 main_window_pixel_dimensions() const
     {
         int w = 0;
         int h = 0;
-        SDL_GL_GetDrawableSize(main_window_.get(), &w, &h);
+        SDL_GetWindowSizeInPixels(main_window_.get(), &w, &h);
         return Vec2{static_cast<float>(w), static_cast<float>(h)};
+    }
+
+    float main_window_device_pixel_ratio() const
+    {
+        return SDL_GetWindowDisplayScale(main_window_.get());
+    }
+
+    float os_to_main_window_device_independent_ratio() const
+    {
+        // i.e. scale the event by multiplying it by the pixel density (yielding a
+        // pixel-based event value) and then dividing it by the suggested window
+        // display scale (yielding a device-independent pixel value).
+        return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
+    }
+
+    float main_window_device_independent_to_os_ratio() const
+    {
+        return 1.0f / os_to_main_window_device_independent_ratio();
     }
 
     bool is_main_window_minimized() const
     {
         return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
-    }
-
-    float main_window_dpi() const
-    {
-        float dpi = 96.0f;
-        float hdpi = 0.0f;
-        float vdpi = 0.0f;
-        SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(main_window_.get()), &dpi, &hdpi, &vdpi);
-        return dpi;
     }
 
     void push_cursor_override(const Cursor& cursor)
@@ -622,44 +699,47 @@ public:
 
     void enable_main_window_grab()
     {
-        SDL_SetWindowGrab(main_window_.get(), SDL_TRUE);
+        SDL_SetWindowMouseGrab(main_window_.get(), true);
     }
 
     void disable_main_window_grab()
     {
-        SDL_SetWindowGrab(main_window_.get(), SDL_FALSE);
+        SDL_SetWindowMouseGrab(main_window_.get(), false);
     }
 
     void set_unicode_input_rect(const Rect& rect)
     {
+        const float device_independent_to_sdl3_ratio = main_window_device_independent_to_os_ratio();
+
         const SDL_Rect r{
-            .x = static_cast<int>(rect.p1.x),
-            .y = static_cast<int>(rect.p1.y),
-            .w = static_cast<int>(dimensions_of(rect).x),
-            .h = static_cast<int>(dimensions_of(rect).y),
+            .x = static_cast<int>(device_independent_to_sdl3_ratio * rect.p1.x),
+            .y = static_cast<int>(device_independent_to_sdl3_ratio * rect.p1.y),
+            .w = static_cast<int>(device_independent_to_sdl3_ratio * dimensions_of(rect).x),
+            .h = static_cast<int>(device_independent_to_sdl3_ratio * dimensions_of(rect).y),
         };
-        SDL_SetTextInputRect(&r);
+        SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
 
     void set_show_cursor(bool v)
     {
-        SDL_ShowCursor(v ? SDL_ENABLE : SDL_DISABLE);
-        SDL_SetWindowGrab(main_window_.get(), v ? SDL_FALSE : SDL_TRUE);
-    }
-
-    void make_fullscreen()
-    {
-        SDL_SetWindowFullscreen(main_window_.get(), SDL_WINDOW_FULLSCREEN);
+        if (v) {
+            SDL_ShowCursor();
+        }
+        else {
+            SDL_HideCursor();
+        }
+        SDL_SetWindowMouseGrab(main_window_.get(), not v);
     }
 
     void make_windowed_fullscreen()
     {
-        SDL_SetWindowFullscreen(main_window_.get(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+        SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
+        SDL_SetWindowFullscreen(main_window_.get(), true);
     }
 
     void make_windowed()
     {
-        SDL_SetWindowFullscreen(main_window_.get(), 0);
+        SDL_SetWindowFullscreen(main_window_.get(), false);
     }
 
     AntiAliasingLevel anti_aliasing_level() const
@@ -786,7 +866,7 @@ public:
     void request_redraw()
     {
         SDL_Event e{};
-        e.type = SDL_USEREVENT;
+        e.type = SDL_EVENT_USER;
         num_frames_to_poll_ += 2;  // immediate rendering can require rendering 2 frames before it shows something
         SDL_PushEvent(&e);
     }
@@ -1133,14 +1213,14 @@ void osc::App::request_transition(std::unique_ptr<Screen> s)
     impl_->request_transition(std::move(s));
 }
 
-std::vector<Monitor> osc::App::monitors() const
-{
-    return impl_->monitors();
-}
-
 void osc::App::request_quit()
 {
     impl_->request_quit();
+}
+
+std::vector<Monitor> osc::App::monitors() const
+{
+    return impl_->monitors();
 }
 
 Vec2 osc::App::main_window_dimensions() const
@@ -1148,19 +1228,29 @@ Vec2 osc::App::main_window_dimensions() const
     return impl_->main_window_dimensions();
 }
 
-Vec2 osc::App::main_window_drawable_pixel_dimensions() const
+Vec2 osc::App::main_window_pixel_dimensions() const
 {
-    return impl_->main_window_drawable_pixel_dimensions();
+    return impl_->main_window_pixel_dimensions();
+}
+
+float osc::App::main_window_device_pixel_ratio() const
+{
+    return impl_->main_window_device_pixel_ratio();
+}
+
+float osc::App::os_to_main_window_device_independent_ratio() const
+{
+    return impl_->os_to_main_window_device_independent_ratio();
+}
+
+float osc::App::main_window_device_independent_to_os_ratio() const
+{
+    return impl_->main_window_device_independent_to_os_ratio();
 }
 
 bool osc::App::is_main_window_minimized() const
 {
     return impl_->is_main_window_minimized();
-}
-
-float osc::App::main_window_dpi() const
-{
-    return impl_->main_window_dpi();
 }
 
 void osc::App::push_cursor_override(const Cursor& cursor)
@@ -1186,11 +1276,6 @@ void osc::App::disable_main_window_grab()
 void osc::App::set_unicode_input_rect(const Rect& rect)
 {
     impl_->set_unicode_input_rect(rect);
-}
-
-void osc::App::make_fullscreen()
-{
-    impl_->make_fullscreen();
 }
 
 void osc::App::make_windowed_fullscreen()

@@ -171,6 +171,8 @@ namespace osc::ui
     float get_column_width(int column_index = -1);
     void next_column();
 
+    // Places the cursor on the same line as the previous item, with the given
+    // offset/spacing in device-independent pixels.
     void same_line(float offset_from_start_x = 0.0f, float spacing = -1.0f);
 
     enum class MouseButton {
@@ -230,11 +232,14 @@ namespace osc::ui
     bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", TextInputFlags = {});
     bool draw_rgb_color_editor(CStringView label, Color& color);
     bool draw_rgba_color_editor(CStringView label, Color& color);
+    // Draws an interactive button with the given label and with a given size in device-independent pixels.
     bool draw_button(CStringView label, const Vec2& size = {});
     bool draw_small_button(CStringView label);
+    // Draws an interactive, but invisible, button with the given label and the given size in device-independent pixels.
     bool draw_invisible_button(CStringView label, Vec2 size = {});
     bool draw_radio_button(CStringView label, bool active);
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
+    // Draws an invisible, non-interactive "dummy" element in the UI with the given size in device-independent pixels.
     void draw_dummy(const Vec2& size);
 
     enum class ComboFlag : unsigned {
@@ -287,6 +292,7 @@ namespace osc::ui
     };
     using ChildPanelFlags = Flags<ChildPanelFlag>;
 
+    // Begins a child panel within a parent panel with the given ID, device-independent pixel size, and flags.
     bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ChildPanelFlags child_flags = {}, WindowFlags panel_flags = {});
     void end_child_panel();
 
@@ -306,19 +312,37 @@ namespace osc::ui
 
     void set_scroll_y_here();
 
+    // Returns the height of the current frame in device-independent pixels.
     float get_frame_height();
 
+    // Returns the size of the content region that's available from the current
+    // cursor position within the current panel in device-independent pixels.
     Vec2 get_content_region_available();
 
+    // Returns the position that the panel cursor started at relative to the top-left
+    // corner of the current panel in device-independent pixels.
     Vec2 get_cursor_start_pos();
 
+    // Returns the current position of the panel cursor relative to the top-left corner
+    // of the current panel in device-independent pixels.
     Vec2 get_cursor_pos();
 
-    float get_cursor_pos_x();
+    // Sets the current position of the panel cursor relative to the top-left corner
+    // of the panel in device-independent pixels.
     void set_cursor_pos(Vec2);
+
+    // Returns the current x position of the panel cursor relative to the left edge
+    // of the current panel in device-independent pixels.
+    float get_cursor_pos_x();
+
+    // Sets the current x position of the panel cursor relative to the left edge of
+    // the current panel in device-independent pixels.
     void set_cursor_pos_x(float local_x);
 
+    // Returns the current position of the panel cursor in screen-space in device-independent pixels.
     Vec2 get_cursor_screen_pos();
+
+    // Sets the current position of the panel cursor in screen-space in device-independent pixels.
     void set_cursor_screen_pos(Vec2);
 
     enum class Conditional {
@@ -794,7 +818,7 @@ namespace osc::ui
     //
     // the returned `Rect` is given in UI-compatible UI-space, such that:
     //
-    // - it's measured in pixels
+    // - it's measured in device-independent pixels
     // - starts in the top-left corner
     // - ends in the bottom-right corner
     Rect get_main_viewport_workspace_uiscreenspace_rect();
@@ -804,15 +828,15 @@ namespace osc::ui
     // the returned `Rect` is given in osc-graphics-API-compatible screen-space, rather than UI
     // space, such that:
     //
-    // - it's measured in pixels
+    // - it's measured in device-independent pixels
     // - starts in the bottom-left corner
     // - ends in the top-right corner
     Rect get_main_viewport_workspace_screenspace_rect();
 
-    // returns the dimensions of the current workspace area in pixels in the main viewport
+    // returns the dimensions of the current workspace area in device-independent pixels in the main viewport
     Vec2 get_main_viewport_workspace_screen_dimensions();
 
-    // returns the aspect ratio (width divided by height) of the pixel dimensions of the current workspace area
+    // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions of the current workspace area
     float get_main_viewport_workspace_aspect_ratio();
 
     // returns `true` if the user's mouse is within the current workspace area of the main viewport
@@ -886,7 +910,8 @@ namespace osc::ui
         SliderFlags = {}
     );
 
-    // updates a polar comera's rotation, position, etc. from UI mouse input state
+    // updates a polar comera's rotation, position, etc. from UI mouse input state, assuming
+    // the viewport it's connected to has the given device-independent pixel dimensions.
     bool update_polar_camera_from_mouse_inputs(
         PolarPerspectiveCamera&,
         Vec2 viewport_dimensions

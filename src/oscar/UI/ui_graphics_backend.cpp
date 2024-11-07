@@ -165,11 +165,11 @@ namespace
         }
 
         UID font_texture_id;
-        Texture2D font_texture = create_font_texture(font_texture_id);
+        std::optional<Texture2D> font_texture;
         Material ui_material{Shader{c_ui_vertex_shader_src, c_ui_fragment_shader_src}};
         Camera camera;
         Mesh mesh;
-        ankerl::unordered_dense::map<UID, std::variant<Texture2D, RenderTexture>> textures_allocated_this_frame = {{font_texture_id, font_texture}};
+        ankerl::unordered_dense::map<UID, std::variant<Texture2D, RenderTexture>> textures_allocated_this_frame;
     };
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
@@ -211,20 +211,20 @@ namespace
     {
         OSC_ASSERT(draw_command.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
-        // Will project scissor/clipping rectangles into framebuffer space
+        // Project scissor/clipping rectangles from device-independent top-left coordinate
+        // space into device-independent right-handed space
         const Vec2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
-        const Vec2 clip_scale = draw_data.FramebufferScale; // (1,1) unless using retina display which are often (2,2)
-        const Vec2 clip_min((draw_command.ClipRect.x - clip_off.x) * clip_scale.x, (draw_command.ClipRect.y - clip_off.y) * clip_scale.y);
-        const Vec2 clip_max((draw_command.ClipRect.z - clip_off.x) * clip_scale.x, (draw_command.ClipRect.w - clip_off.y) * clip_scale.y);
+        const Vec2 clip_min(draw_command.ClipRect.x - clip_off.x, draw_command.ClipRect.y - clip_off.y);
+        const Vec2 clip_max(draw_command.ClipRect.z - clip_off.x, draw_command.ClipRect.w - clip_off.y);
 
         if (clip_max.x <= clip_min.x or clip_max.y <= clip_min.y) {
             return;
         }
+        const Vec2 minflip{clip_min.x, (draw_data.DisplaySize.y) - clip_max.y};
+        const Vec2 maxflip{clip_max.x, (draw_data.DisplaySize.y) - clip_min.y};
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlag::None);
-        const Vec2 minflip{clip_min.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_max.y};
-        const Vec2 maxflip{clip_max.x, (draw_data.FramebufferScale.y * draw_data.DisplaySize.y) - clip_min.y};
         bd.camera.set_scissor_rect(Rect{minflip, maxflip});
 
         // setup sub-mesh description
@@ -329,9 +329,19 @@ void osc::ui::graphics_backend::on_start_new_frame()
     // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
     OscarImguiBackendData* bd = get_backend_data();
-    OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
+    OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available - this is a developer error");
     bd->textures_allocated_this_frame.clear();
-    bd->textures_allocated_this_frame.try_emplace(bd->font_texture_id, bd->font_texture);  // (so that all lookups can hit the same LUT)
+    if (not bd->font_texture) {
+        bd->font_texture = create_font_texture(bd->font_texture_id);
+    }
+    bd->textures_allocated_this_frame.try_emplace(bd->font_texture_id, *bd->font_texture);  // (so that all lookups can hit the same LUT)
+}
+
+void osc::ui::graphics_backend::mark_fonts_for_reupload()
+{
+    if (OscarImguiBackendData* bd = get_backend_data()) {
+        bd->font_texture.reset();
+    }
 }
 
 void osc::ui::graphics_backend::render(ImDrawData* draw_data)

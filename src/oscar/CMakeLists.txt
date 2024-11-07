@@ -14,7 +14,7 @@ if (NOT ${OSC_EMSCRIPTEN})
     # source code).
     find_package(OpenGL REQUIRED)
     find_package(glew REQUIRED CONFIG)
-    find_package(SDL2 REQUIRED CONFIG)
+    find_package(SDL3 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(imgui REQUIRED CONFIG)
@@ -23,6 +23,7 @@ find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
+find_package(Threads REQUIRED)  # implicitly required by SDL3
 
 add_library(oscar STATIC
     DOM/Class.cpp
@@ -268,7 +269,6 @@ add_library(oscar STATIC
     Maths/Vec3.h
     Maths/Vec4.h
 
-    Platform/Detail/SDL2Helpers.h
     Platform/App.cpp
     Platform/App.h
     Platform/AppClock.h
@@ -634,9 +634,17 @@ target_compile_options(oscar PUBLIC
         -Wno-restrict
     >
 )
-target_compile_definitions(oscar PUBLIC
+if(NOT ${OSC_EMSCRIPTEN} AND UNIX AND NOT APPLE)
+    set(OSC_ADD_LINUX_DEF ON)
+else()
+    set(OSC_ADD_LINUX_DEF OFF)
+endif()
+target_compile_definitions(oscar
+PUBLIC
     $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
     $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
+PRIVATE
+    $<$<BOOL:${OSC_ADD_LINUX_DEF}>:__LINUX__>
 )
 target_include_directories(oscar PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <oscar/HEADER.h>` works
@@ -646,7 +654,7 @@ target_link_libraries(oscar PRIVATE
     # supported by the emscripten build (they're #ifdef'd out)
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:OpenGL::GL>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:GLEW::glew_s>
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
     imgui
@@ -655,4 +663,5 @@ target_link_libraries(oscar PRIVATE
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
     lunasvg::lunasvg
+    Threads::Threads  # implicitly required by SDL3
 )

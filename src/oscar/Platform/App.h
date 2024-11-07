@@ -197,20 +197,39 @@ namespace osc
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;
 
-        // returns the main window's dimensions
+        // Returns the dimensions of the main application window in device-independent pixels.
         Vec2 main_window_dimensions() const;
 
-        // returns the main window's *drawable* pixel dimensions
+        // Returns the dimensions of the main application window in physical pixels.
+        Vec2 main_window_pixel_dimensions() const;
+
+        // Returns the ratio of the resolution in physical pixels to the resolution of
+        // device-independent pixels.
         //
-        // this might differ from the dimensions returned by `main_window_dimensions`, because
-        // the underlying operating system might be performing some kind of pixel scaling.
-        Vec2 main_window_drawable_pixel_dimensions() const;
+        // E.g. a high DPI monitor might return `2.0f`, which means "two physical pixels
+        // along X and Y map to one device-independent pixel".
+        //
+        // Related (other libraries):
+        //
+        // - https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+        // - https://doc.qt.io/qt-6/highdpi.html
+        // - https://doc.qt.io/qt-6/qwindow.html#devicePixelRatio
+        // - https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
+        float main_window_device_pixel_ratio() const;
+
+        // Returns the ratio between the underlying operating system's coordinate system (i.e. SDL3 API,
+        // events) to the main window's device independent pixels.
+        //
+        // Note: this is mostly for internal use: the `osc` APIs should uniformly use either device
+        //       independent pixels (mostly) or physical pixels (e.g. low-level rendering APIs).
+        float os_to_main_window_device_independent_ratio() const;
+
+        // Returns the ratio between the main window's device-independent pixels and the underlying
+        // operating system's coordinate system.
+        float main_window_device_independent_to_os_ratio() const;
 
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
-
-        // returns the main window's DPI
-        float main_window_dpi() const;
 
         // pushes the given cursor onto the application-wide cursor stack, making it
         // the currently-active cursor until it is either popped, via `pop_cursor_override`,
@@ -229,9 +248,6 @@ namespace osc
         // the OS where the input rectangle is so that it can place the overlay in the
         // correct location.
         void set_unicode_input_rect(const Rect&);
-
-        // makes the main window fullscreen
-        void make_fullscreen();
 
         // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
         void make_windowed_fullscreen();

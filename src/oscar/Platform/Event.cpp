@@ -1,19 +1,17 @@
 #include "Event.h"
 
+#include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/EnumHelpers.h>
 
-#include <SDL_events.h>
-#include <SDL_version.h>
-#include <SDL_video.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_video.h>
 
 #include <array>
 #include <memory>
 #include <utility>
-
-#define SDL_HAS_DISPLAY_EVENT               SDL_VERSION_ATLEAST(2,0,9)
 
 using namespace osc;
 
@@ -32,14 +30,14 @@ struct osc::Converter<Uint16, KeyModifier> final {
 private:
     using Mapping = std::pair<SDL_Keymod, KeyModifier>;
     static constexpr std::array<Mapping, num_flags<KeyModifier>()> c_mappings_ = std::to_array<Mapping>({
-        {KMOD_LSHIFT, KeyModifier::LeftShift},
-        {KMOD_RSHIFT, KeyModifier::RightShift},
-        {KMOD_LCTRL, KeyModifier::LeftCtrl},
-        {KMOD_RCTRL, KeyModifier::RightCtrl},
-        {KMOD_LALT, KeyModifier::LeftAlt},
-        {KMOD_RALT, KeyModifier::RightAlt},
-        {KMOD_LGUI, KeyModifier::LeftGui},
-        {KMOD_RGUI, KeyModifier::RightGui},
+        {SDL_KMOD_LSHIFT, KeyModifier::LeftShift},
+        {SDL_KMOD_RSHIFT, KeyModifier::RightShift},
+        {SDL_KMOD_LCTRL, KeyModifier::LeftCtrl},
+        {SDL_KMOD_RCTRL, KeyModifier::RightCtrl},
+        {SDL_KMOD_LALT, KeyModifier::LeftAlt},
+        {SDL_KMOD_RALT, KeyModifier::RightAlt},
+        {SDL_KMOD_LGUI, KeyModifier::LeftGui},
+        {SDL_KMOD_RGUI, KeyModifier::RightGui},
     });
 };
 
@@ -65,7 +63,7 @@ struct osc::Converter<SDL_Keycode, Key> final {
         case SDLK_SPACE: return Key::Space;
         case SDLK_RETURN: return Key::Return;
         case SDLK_ESCAPE: return Key::Escape;
-        case SDLK_QUOTE: return Key::Quote;
+        case SDLK_APOSTROPHE: return Key::Apostrophe;
         case SDLK_COMMA: return Key::Comma;
         case SDLK_MINUS: return Key::Minus;
         case SDLK_PERIOD: return Key::Period;
@@ -75,7 +73,7 @@ struct osc::Converter<SDL_Keycode, Key> final {
         case SDLK_LEFTBRACKET: return Key::LeftBracket;
         case SDLK_BACKSLASH: return Key::Backslash;
         case SDLK_RIGHTBRACKET: return Key::RightBracket;
-        case SDLK_BACKQUOTE: return Key::Backquote;
+        case SDLK_GRAVE: return Key::Grave;
         case SDLK_CAPSLOCK: return Key::CapsLock;
         case SDLK_SCROLLLOCK: return Key::ScrollLock;
         case SDLK_NUMLOCKCLEAR: return Key::NumLockClear;
@@ -117,32 +115,32 @@ struct osc::Converter<SDL_Keycode, Key> final {
         case SDLK_7: return Key::_7;
         case SDLK_8: return Key::_8;
         case SDLK_9: return Key::_9;
-        case SDLK_a: return Key::A;
-        case SDLK_b: return Key::B;
-        case SDLK_c: return Key::C;
-        case SDLK_d: return Key::D;
-        case SDLK_e: return Key::E;
-        case SDLK_f: return Key::F;
-        case SDLK_g: return Key::G;
-        case SDLK_h: return Key::H;
-        case SDLK_i: return Key::I;
-        case SDLK_j: return Key::J;
-        case SDLK_k: return Key::K;
-        case SDLK_l: return Key::L;
-        case SDLK_m: return Key::M;
-        case SDLK_n: return Key::N;
-        case SDLK_o: return Key::O;
-        case SDLK_p: return Key::P;
-        case SDLK_q: return Key::Q;
-        case SDLK_r: return Key::R;
-        case SDLK_s: return Key::S;
-        case SDLK_t: return Key::T;
-        case SDLK_u: return Key::U;
-        case SDLK_v: return Key::V;
-        case SDLK_w: return Key::W;
-        case SDLK_x: return Key::X;
-        case SDLK_y: return Key::Y;
-        case SDLK_z: return Key::Z;
+        case SDLK_A: return Key::A;
+        case SDLK_B: return Key::B;
+        case SDLK_C: return Key::C;
+        case SDLK_D: return Key::D;
+        case SDLK_E: return Key::E;
+        case SDLK_F: return Key::F;
+        case SDLK_G: return Key::G;
+        case SDLK_H: return Key::H;
+        case SDLK_I: return Key::I;
+        case SDLK_J: return Key::J;
+        case SDLK_K: return Key::K;
+        case SDLK_L: return Key::L;
+        case SDLK_M: return Key::M;
+        case SDLK_N: return Key::N;
+        case SDLK_O: return Key::O;
+        case SDLK_P: return Key::P;
+        case SDLK_Q: return Key::Q;
+        case SDLK_R: return Key::R;
+        case SDLK_S: return Key::S;
+        case SDLK_T: return Key::T;
+        case SDLK_U: return Key::U;
+        case SDLK_V: return Key::V;
+        case SDLK_W: return Key::W;
+        case SDLK_X: return Key::X;
+        case SDLK_Y: return Key::Y;
+        case SDLK_Z: return Key::Z;
         case SDLK_F1: return Key::F1;
         case SDLK_F2: return Key::F2;
         case SDLK_F3: return Key::F3;
@@ -191,31 +189,31 @@ struct osc::Converter<Uint8, osc::MouseButton> final {
 
 osc::DropFileEvent::DropFileEvent(const SDL_Event& e) :
     Event{EventType::DropFile},
-    path_{e.drop.file}
+    path_{e.drop.data}
 {
-    OSC_ASSERT(e.type == SDL_DROPFILE);
-    OSC_ASSERT(e.drop.file != nullptr);
+    OSC_ASSERT(e.type == SDL_EVENT_DROP_FILE);
+    OSC_ASSERT(e.drop.data != nullptr);
 }
 
 osc::KeyEvent::KeyEvent(const SDL_Event& e) :
-    Event{e.type == SDL_KEYUP ? EventType::KeyUp : EventType::KeyDown},
-    modifier_{to<KeyModifier>(e.key.keysym.mod)},
-    key_{to<Key>(e.key.keysym.sym)}
+    Event{e.type == SDL_EVENT_KEY_UP ? EventType::KeyUp : EventType::KeyDown},
+    modifier_{to<KeyModifier>(e.key.mod)},
+    key_{to<Key>(e.key.key)}
 {
-    OSC_ASSERT(e.type == SDL_KEYDOWN or e.type == SDL_KEYUP);
+    OSC_ASSERT(e.type == SDL_EVENT_KEY_DOWN or e.type == SDL_EVENT_KEY_UP);
 }
 
 osc::QuitEvent::QuitEvent(const SDL_Event& e) :
     Event{EventType::Quit}
 {
-    OSC_ASSERT(e.type == SDL_QUIT);
+    OSC_ASSERT(e.type == SDL_EVENT_QUIT);
 }
 
 osc::TextInputEvent::TextInputEvent(const SDL_Event& e) :
     Event{EventType::TextInput},
     utf8_text_{static_cast<const char*>(e.text.text)}
 {
-    OSC_ASSERT(e.type == SDL_TEXTINPUT);
+    OSC_ASSERT(e.type == SDL_EVENT_TEXT_INPUT);
 }
 
 osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event&) :
@@ -225,79 +223,83 @@ osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event&) :
 osc::WindowEvent::WindowEvent(const SDL_Event& e) :
     Event{EventType::Window}
 {
-    OSC_ASSERT(e.type == SDL_WINDOWEVENT);
+    static_assert(num_options<WindowEventType>() == 8);
+    OSC_ASSERT(SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST);
 
-    switch (e.window.event) {
-    case SDL_WINDOWEVENT_ENTER:        type_ = WindowEventType::GainedMouseFocus;    break;
-    case SDL_WINDOWEVENT_LEAVE:        type_ = WindowEventType::LostMouseFocus;      break;
-    case SDL_WINDOWEVENT_FOCUS_GAINED: type_ = WindowEventType::GainedKeyboardFocus; break;
-    case SDL_WINDOWEVENT_FOCUS_LOST:   type_ = WindowEventType::LostKeyboardFocus;   break;
-    case SDL_WINDOWEVENT_CLOSE:        type_ = WindowEventType::WindowClosed;        break;
-    case SDL_WINDOWEVENT_MOVED:        type_ = WindowEventType::WindowMoved;         break;
-    case SDL_WINDOWEVENT_RESIZED:      type_ = WindowEventType::WindowResized;       break;
+    switch (e.type) {
+    case SDL_EVENT_WINDOW_MOUSE_ENTER:           type_ = WindowEventType::GainedMouseFocus;          break;
+    case SDL_EVENT_WINDOW_MOUSE_LEAVE:           type_ = WindowEventType::LostMouseFocus;            break;
+    case SDL_EVENT_WINDOW_FOCUS_GAINED:          type_ = WindowEventType::GainedKeyboardFocus;       break;
+    case SDL_EVENT_WINDOW_FOCUS_LOST:            type_ = WindowEventType::LostKeyboardFocus;         break;
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:       type_ = WindowEventType::WindowClosed;              break;
+    case SDL_EVENT_WINDOW_MOVED:                 type_ = WindowEventType::WindowMoved;               break;
+    case SDL_EVENT_WINDOW_RESIZED:               type_ = WindowEventType::WindowResized;             break;
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: type_ = WindowEventType::WindowDisplayScaleChanged; break;
     }
     window_ = SDL_GetWindowFromID(e.window.windowID);
     window_id_ = e.window.windowID;
 }
 
 osc::MouseEvent::MouseEvent(const SDL_Event& e) :
-    Event{e.type == SDL_MOUSEBUTTONDOWN ? EventType::MouseButtonDown : (e.type == SDL_MOUSEBUTTONUP ? EventType::MouseButtonUp : EventType::MouseMove)}
+    Event{e.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? EventType::MouseButtonDown : (e.type == SDL_EVENT_MOUSE_BUTTON_UP ? EventType::MouseButtonUp : EventType::MouseMove)}
 {
     switch (e.type) {
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP: {
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP: {
         input_source_ = e.button.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
         button_ = to<MouseButton>(e.button.button);
         break;
     }
-    case SDL_MOUSEMOTION: {
+    case SDL_EVENT_MOUSE_MOTION: {
+        // scales from SDL3 (events) to device-independent pixels
+        const float sdl3_to_device_independent_ratio = App::get().os_to_main_window_device_independent_ratio();
+
         relative_delta_ = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
+        relative_delta_ *= sdl3_to_device_independent_ratio;
         position_in_window_ = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
+        position_in_window_ *= sdl3_to_device_independent_ratio;
         input_source_ = e.motion.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
         break;
     }
     default: {
         throw std::runtime_error{"unknown mouse event type passed into an osc::MouseEvent"};
-    }
-    }
+    }}
 }
 
 osc::MouseWheelEvent::MouseWheelEvent(const SDL_Event& e) :
     Event{EventType::MouseWheel},
-    delta_{e.wheel.preciseX, e.wheel.preciseY},
+    delta_{e.wheel.x, e.wheel.y},
     input_source_{e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse}
 {
-    OSC_ASSERT(e.type == SDL_MOUSEWHEEL);
+    OSC_ASSERT(e.type == SDL_EVENT_MOUSE_WHEEL);
 }
 
 std::unique_ptr<Event> osc::try_parse_into_event(const SDL_Event& e)
 {
-    if (e.type == SDL_DROPFILE and e.drop.file) {
+    if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
         return std::make_unique<DropFileEvent>(e);
     }
-    else if (e.type == SDL_KEYDOWN or e.type == SDL_KEYUP) {
+    else if (e.type == SDL_EVENT_KEY_DOWN or e.type == SDL_EVENT_KEY_UP) {
         return std::make_unique<KeyEvent>(e);
     }
-    else if (e.type == SDL_QUIT) {
+    else if (e.type == SDL_EVENT_QUIT) {
         return std::make_unique<QuitEvent>(e);
     }
-    else if (e.type == SDL_MOUSEBUTTONDOWN or e.type == SDL_MOUSEBUTTONUP or e.type == SDL_MOUSEMOTION) {
+    else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN or e.type == SDL_EVENT_MOUSE_BUTTON_UP or e.type == SDL_EVENT_MOUSE_MOTION) {
         return std::make_unique<MouseEvent>(e);
     }
-    else if (e.type == SDL_MOUSEWHEEL) {
+    else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
         return std::make_unique<MouseWheelEvent>(e);
     }
-    else if (e.type == SDL_TEXTINPUT) {
+    else if (e.type == SDL_EVENT_TEXT_INPUT) {
         return std::make_unique<TextInputEvent>(e);
     }
-    else if (e.type == SDL_WINDOWEVENT) {
-        return std::make_unique<WindowEvent>(e);
-    }
-#if SDL_HAS_DISPLAY_EVENT
-    else if (e.type == SDL_DISPLAYEVENT) {
+    else if (SDL_EVENT_DISPLAY_FIRST <= e.type and e.type <=  SDL_EVENT_DISPLAY_LAST) {
         return std::make_unique<DisplayStateChangeEvent>(e);
     }
-#endif
+    else if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
+        return std::make_unique<WindowEvent>(e);
+    }
     else {
         return nullptr;
     }

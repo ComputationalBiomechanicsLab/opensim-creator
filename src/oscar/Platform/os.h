@@ -80,13 +80,6 @@ namespace osc
     // `name` exists
     void set_environment_variable(CStringView name, CStringView value, bool overwrite);
 
-    // set the current process's HighDPI mode
-    //
-    // - must be called before a window is created
-    // - OS-dependent: some OSes handle this as a window-creation argument, rather
-    //   than as a process-wide function call
-    void enable_highdpi_mode_for_this_process();
-
     // Sets the directory that should be shown to the user if a call to one of the
     // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
     // global fallback isn't provided, the implementation will fallback to whatever the

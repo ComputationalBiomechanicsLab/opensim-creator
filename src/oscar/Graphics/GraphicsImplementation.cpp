@@ -74,7 +74,6 @@
 #include <oscar/Maths/Vec4.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
@@ -89,8 +88,10 @@
 #include <oscar/Utils/TransparentStringHasher.h>
 #include <oscar/Utils/UID.h>
 
-#include <GL/glew.h>
 #include <ankerl/unordered_dense.h>
+#include <GL/glew.h>
+#include <SDL3/SDL.h>
+#undef main
 
 #include <algorithm>
 #include <array>
@@ -117,6 +118,56 @@ using namespace osc::detail;
 using namespace osc::literals;
 using namespace osc;
 namespace rgs = std::ranges;
+
+namespace osc::sdl
+{
+    // RAII wrapper around `SDL_GLContext` that calls `SDL_GL_DeleteContext` on dtor
+    //     https://wiki.libsdl.org/SDL_GL_DeleteContext
+    class GLContext final {
+    public:
+        GLContext(const GLContext&) = delete;
+        GLContext(GLContext&& tmp) noexcept :
+            context_handle_{std::exchange(tmp.context_handle_, nullptr)}
+        {}
+        GLContext& operator=(const GLContext&) = delete;
+        GLContext& operator=(GLContext&&) = delete;
+        ~GLContext() noexcept
+        {
+            if (context_handle_) {
+                SDL_GL_DestroyContext(context_handle_);
+            }
+        }
+
+        SDL_GLContext get() { return context_handle_; }
+
+    private:
+        friend GLContext GL_CreateContext(SDL_Window* w);
+        explicit GLContext(SDL_GLContext _ctx) :
+            context_handle_{_ctx}
+        {}
+
+        SDL_GLContext context_handle_;
+    };
+
+    // https://wiki.libsdl.org/SDL_GL_CreateContext
+    inline GLContext GL_CreateContext(SDL_Window* w)
+    {
+        SDL_GLContext ctx = SDL_GL_CreateContext(w);
+
+        if (ctx == nullptr) {
+            throw std::runtime_error{std::string{"SDL_GL_CreateContext failed: "} + SDL_GetError()};
+        }
+
+        return GLContext{ctx};
+    }
+
+    inline int GetOpenGLSwapInterval()
+    {
+        int rv = 0;
+        SDL_GL_GetSwapInterval(&rv);
+        return rv;
+    }
+}
 
 // shader source
 namespace
@@ -984,8 +1035,16 @@ namespace osc
         );
 
         struct ViewportGeometry final {
-            Vec2 bottom_left;
-            Vec2 dimensions;
+            struct Viewport {
+                Vec2 bottom_left;
+                Vec2 dimensions;
+            } viewport;
+
+            struct Scissor {
+                Vec2 bottom_left;
+                Vec2 dimensions;
+            };
+            std::optional<Scissor> scissor;
         };
         static ViewportGeometry calc_viewport_geometry(
             Camera::Impl&,
@@ -5869,7 +5928,7 @@ namespace
         sdl::GLContext ctx = sdl::GL_CreateContext(&window);
 
         // enable the OpenGL context
-        if (SDL_GL_MakeCurrent(&window, ctx.get()) != 0) {
+        if (not SDL_GL_MakeCurrent(&window, ctx.get())) {
             throw std::runtime_error{std::string{"SDL_GL_MakeCurrent failed: "} + SDL_GetError()};
         }
 
@@ -5877,7 +5936,7 @@ namespace
         //
         // vsync can feel a little laggy on some systems, but vsync reduces CPU usage
         // on *constrained* systems (e.g. laptops, which the majority of users are using)
-        if (SDL_GL_SetSwapInterval(-1) != 0) {
+        if (not SDL_GL_SetSwapInterval(-1)) {
             SDL_GL_SetSwapInterval(1);
         }
 
@@ -6107,21 +6166,21 @@ public:
         if (v) {
             // try to enable vsync
 
-            if (SDL_GL_SetSwapInterval(-1) == 0) {
+            if (SDL_GL_SetSwapInterval(-1)) {
                 // adaptive vsync enabled
             }
-            else if (SDL_GL_SetSwapInterval(1) == 0) {
+            else if (SDL_GL_SetSwapInterval(1)) {
                 // normal vsync enabled
             }
 
             // always read the vsync state back from SDL
-            vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+            vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
         }
         else {
             // try to disable vsync
 
             SDL_GL_SetSwapInterval(0);
-            vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+            vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
         }
     }
 
@@ -6181,7 +6240,7 @@ public:
         if (not screenshot_request_queue_.empty()) {
 
             // copy GPU-side window framebuffer into response
-            const Vec2i dims = App::get().main_window_dimensions();
+            const Vec2i dims = App::get().main_window_pixel_dimensions();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -6257,7 +6316,7 @@ private:
     // maximum number of antiAliasingLevel supported by this hardware's OpenGL MSXAA API
     AntiAliasingLevel max_aa_level_ = get_opengl_max_aa_level(opengl_context_);
 
-    bool vsync_enabled_ = SDL_GL_GetSwapInterval() != 0;
+    bool vsync_enabled_ = sdl::GetOpenGLSwapInterval() != 0;
 
     // true if OpenGL's debug mode is enabled
     bool debug_mode_enabled_ = false;
@@ -7213,15 +7272,37 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     Camera::Impl& camera,
     const RenderTarget* maybe_custom_render_target)
 {
+    ViewportGeometry rv;
+    const float scaler = maybe_custom_render_target ? 1.0f : App::get().main_window_device_pixel_ratio();
+
+    // handle viewport (which should be in raw pixels for low-level graphics API calls)
     if (auto pixel_rect = camera.pixel_rect()) {
-        return {pixel_rect->p1, dimensions_of(*pixel_rect)};
+        rv.viewport = {
+            .bottom_left = scaler * pixel_rect->p1,
+            .dimensions = scaler * dimensions_of(*pixel_rect)
+        };
     }
     else if (maybe_custom_render_target) {
-        return {{}, maybe_custom_render_target->dimensions()};
+        rv.viewport = {
+            .bottom_left = {},
+            .dimensions = maybe_custom_render_target->dimensions(),
+        };
     }
     else {
-        return {{}, App::get().main_window_dimensions()};
+        rv.viewport = {
+            .bottom_left = {},
+            .dimensions = scaler * App::get().main_window_dimensions(),
+        };
     }
+
+    if (camera.maybe_scissor_rect_) {
+        rv.scissor = {
+            .bottom_left = scaler * camera.maybe_scissor_rect_->p1,
+            .dimensions = scaler * dimensions_of(*camera.maybe_scissor_rect_),
+        };
+    }
+
+    return rv;
 }
 
 float osc::GraphicsBackend::setup_top_level_pipeline_state(
@@ -7231,29 +7312,26 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
     const auto viewport_geom = calc_viewport_geometry(camera, maybe_custom_render_target);
 
     gl::viewport(
-        static_cast<GLsizei>(viewport_geom.bottom_left.x),
-        static_cast<GLsizei>(viewport_geom.bottom_left.y),
-        static_cast<GLsizei>(viewport_geom.dimensions.x),
-        static_cast<GLsizei>(viewport_geom.dimensions.y)
+        static_cast<GLint>(viewport_geom.viewport.bottom_left.x),
+        static_cast<GLint>(viewport_geom.viewport.bottom_left.y),
+        static_cast<GLsizei>(viewport_geom.viewport.dimensions.x),
+        static_cast<GLsizei>(viewport_geom.viewport.dimensions.y)
     );
 
-    if (camera.maybe_scissor_rect_) {
-        const Rect scissor_rect = *camera.maybe_scissor_rect_;
-        const Vec2i scissor_dimensions = dimensions_of(scissor_rect);
-
+    if (viewport_geom.scissor) {
         gl::enable(GL_SCISSOR_TEST);
         glScissor(
-            static_cast<GLint>(scissor_rect.p1.x),
-            static_cast<GLint>(scissor_rect.p1.y),
-            scissor_dimensions.x,
-            scissor_dimensions.y
+            static_cast<GLint>(viewport_geom.scissor->bottom_left.x),
+            static_cast<GLint>(viewport_geom.scissor->bottom_left.y),
+            static_cast<GLsizei>(viewport_geom.scissor->dimensions.x),
+            static_cast<GLsizei>(viewport_geom.scissor->dimensions.y)
         );
     }
     else {
         gl::disable(GL_SCISSOR_TEST);
     }
 
-    return aspect_ratio_of(viewport_geom.dimensions);
+    return aspect_ratio_of(viewport_geom.viewport.dimensions);
 }
 
 void osc::GraphicsBackend::teardown_top_level_pipeline_state(

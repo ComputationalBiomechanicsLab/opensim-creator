@@ -2391,7 +2391,7 @@ private:
             {
                 ui::pop_style_var();
                 draw3DViewer();
-                ui::set_cursor_pos(Vec2{ui::get_cursor_start_pos()} + Vec2{10.0f, 10.0f});
+                ui::set_cursor_pos(ui::get_cursor_start_pos() + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else

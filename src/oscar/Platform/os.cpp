@@ -12,10 +12,11 @@
 #ifndef EMSCRIPTEN
     #include <nfd.h>
 #endif
-#include <SDL_clipboard.h>
-#include <SDL_error.h>
-#include <SDL_filesystem.h>
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_clipboard.h>
+#include <SDL3/SDL_dialog.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_stdinc.h>
 
 #include <algorithm>
 #include <array>
@@ -47,7 +48,7 @@ namespace
     // open
     constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, char* p)
+    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, const char* p)
     {
         // nullptr disallowed
         if (p == nullptr) {
@@ -83,11 +84,7 @@ std::tm osc::system_calendar_time()
 
 std::filesystem::path osc::current_executable_directory()
 {
-    const std::unique_ptr<char, decltype(&SDL_free)> p{
-        SDL_GetBasePath(),
-        SDL_free
-    };
-    return convert_SDL_filepath_to_std_filepath("SDL_GetBasePath", p.get());
+    return convert_SDL_filepath_to_std_filepath("SDL_GetBasePath", SDL_GetBasePath());
 }
 
 std::filesystem::path osc::user_data_directory(
@@ -114,12 +111,12 @@ std::string osc::get_clipboard_text()
 
 bool osc::set_clipboard_text(CStringView content)
 {
-    return SDL_SetClipboardText(content.c_str()) == 0;
+    return SDL_SetClipboardText(content.c_str());
 }
 
 void osc::set_environment_variable(CStringView name, CStringView value, bool overwrite)
 {
-    SDL_setenv(name.c_str(), value.c_str(), overwrite ? 1 : 0);
+    SDL_setenv_unsafe(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
 void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
@@ -521,8 +518,6 @@ void osc::open_url_in_os_default_web_browser(CStringView vw)
     open_file_in_os_default_application(std::filesystem::path{std::string{vw}});
 }
 
-void osc::enable_highdpi_mode_for_this_process() {}
-
 #elif defined(__APPLE__)
 #include <errno.h>  // ERANGE
 #include <execinfo.h>  // backtrace(), backtrace_symbols()
@@ -611,8 +606,6 @@ void osc::open_url_in_os_default_web_browser(CStringView url)
     std::string cmd = "open " + std::string{url};
     system(cmd.c_str());
 }
-
-void osc::enable_highdpi_mode_for_this_process() {}
 
 #elif defined(WIN32)
 #include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
@@ -809,11 +802,6 @@ void osc::open_url_in_os_default_web_browser(CStringView url)
     ShellExecute(0, 0, url.c_str(), 0, 0 , SW_SHOW);
 }
 
-void osc::enable_highdpi_mode_for_this_process()
-{
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
-}
-
 #elif EMSCRIPTEN
 
 void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&) {}
@@ -824,7 +812,6 @@ std::tm osc::gmtime_threadsafe(std::time_t t)
     gmtime_r(&t, &rv);
     return rv;
 }
-void osc::enable_highdpi_mode_for_this_process() {}
 
 #else
 #error "Unsupported platform?"

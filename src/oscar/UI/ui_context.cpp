@@ -24,7 +24,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <implot.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #if defined(__APPLE__)
 #include <TargetConditionals.h>
 #endif
@@ -41,6 +41,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility>
 
 #if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
 #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1  // NOLINT(cppcoreguidelines-macro-usage)
@@ -103,6 +104,36 @@ namespace
 #endif
     }
 
+#ifndef EMSCRIPTEN
+    // this is necessary because ImGui will take ownership and be responsible for
+    // freeing the memory with `ImGui::MemFree`
+    char* to_imgui_allocated_copy(std::span<const char> span)
+    {
+        auto* ptr = cpp20::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
+        rgs::copy(span, ptr);
+        return ptr;
+    }
+
+    void add_resource_as_font(
+        ResourceLoader& loader,
+        const ImFontConfig& config,
+        ImFontAtlas& atlas,
+        const ResourcePath& path,
+        const ImWchar* glyph_ranges = nullptr)
+    {
+        const std::string base_font_data = loader.slurp(path);
+        const std::span<const char> data_including_nul_terminator{base_font_data.data(), base_font_data.size() + 1};
+
+        atlas.AddFontFromMemoryTTF(
+            to_imgui_allocated_copy(data_including_nul_terminator),
+            static_cast<int>(data_including_nul_terminator.size()),
+            config.SizePixels,
+            &config,
+            glyph_ranges
+        );
+    }
+#endif
+
     // The internal backend data associated with one UI context.
     struct BackendData final {
 
@@ -113,6 +144,7 @@ namespace
         SDL_Window*                                      Window = nullptr;
         std::string                                      ClipboardText;
         bool                                             WantUpdateMonitors = true;
+        bool                                             WantChangeDisplayScale = false;
         std::optional<AppClock::time_point>              LastFrameTime;
 
         // Mouse handling
@@ -180,6 +212,76 @@ namespace
     void ui_set_clipboard_text(ImGuiContext*, const char* text)
     {
         set_clipboard_text(text);
+    }
+
+#ifndef EMSCRIPTEN
+    void load_imgui_config(const std::filesystem::path& user_data_directory, ResourceLoader& loader)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
+
+        // make it so that windows can only ever be moved from the title bar
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+
+        // load application-level ImGui settings, then the user one,
+        // so that the user settings takes precedence
+        {
+            const std::string base_ini_data = loader.slurp("imgui_base_config.ini");
+            ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
+
+            // CARE: the reason this filepath is `static` is because ImGui requires that
+            // the string outlives the ImGui context
+            static const std::string s_user_imgui_ini_file_path = (user_data_directory / "imgui.ini").string();
+
+            ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
+            io.IniFilename = s_user_imgui_ini_file_path.c_str();
+        }
+    }
+#endif
+
+    void setup_scaling_dependent_fonts_and_styling(App& app)
+    {
+#ifdef EMSCRIPTEN
+        static_cast<void>(app);
+#else
+        ImGuiIO& io = ImGui::GetIO();
+        const float scale = app.main_window_device_pixel_ratio();
+
+        // ensure imgui-to-renderer scaling is correct
+        io.DisplayFramebufferScale = {scale, scale};
+
+        // setup fonts to use correct pixel scale
+        {
+            io.Fonts->Clear();
+            io.FontDefault = nullptr;
+
+            ImFontConfig base_config;
+            base_config.SizePixels = 15.0f;
+            base_config.RasterizerDensity = scale;
+            base_config.PixelSnapH = true;
+            base_config.FontDataOwnedByAtlas = true;
+            add_resource_as_font(app.upd_resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+
+            // add FontAwesome icon support
+            {
+                ImFontConfig config = base_config;
+                config.MergeMode = true;
+                config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
+                config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
+                static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
+                add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
+            }
+
+            io.Fonts->Build();
+            ui::graphics_backend::mark_fonts_for_reupload();
+        }
+
+        // ensure style is scaled correctly
+        {
+            ImGui::GetStyle() = ImGuiStyle{};
+            ui::apply_dark_theme();
+        }
+#endif
     }
 }
 
@@ -306,6 +408,10 @@ static bool ImGui_ImplOscar_ProcessEvent(Event& e)
             }
             return true;
         }
+        case WindowEventType::WindowDisplayScaleChanged: {
+            bd->WantChangeDisplayScale = true;
+            return true;
+        }
         default: {
             return true;
         }
@@ -375,7 +481,7 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
 #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
     // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
-    SDL_CaptureMouse((bd->MouseButtonsDown != 0) ? SDL_TRUE : SDL_FALSE);
+    SDL_CaptureMouse(bd->MouseButtonsDown != 0);
     SDL_Window* focused_window = SDL_GetKeyboardFocus();
     const bool is_app_focused = (focused_window != nullptr && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(focused_window)) != nullptr));
 #else
@@ -384,13 +490,15 @@ static void ImGui_ImplSDL2_UpdateMouseData()
 #endif
 
     if (is_app_focused) {
+
         // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
         if (io.WantSetMousePos) {
+            const float scale = App::get().main_window_device_independent_to_os_ratio();
             if (SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
-                SDL_WarpMouseGlobal(static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y));
+                SDL_WarpMouseGlobal(scale * io.MousePos.x, scale * io.MousePos.y);
             }
             else {
-                SDL_WarpMouseInWindow(bd->Window, static_cast<int>(io.MousePos.x), static_cast<int>(io.MousePos.y));
+                SDL_WarpMouseInWindow(bd->Window, scale * io.MousePos.x, scale * io.MousePos.y);
             }
         }
 
@@ -398,17 +506,18 @@ static void ImGui_ImplSDL2_UpdateMouseData()
         if (bd->MouseCanUseGlobalState && bd->MouseButtonsDown == 0) {
             // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
             // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
-            int mouse_x = 0;
-            int mouse_y = 0;
+            float mouse_x = 0;
+            float mouse_y = 0;
             SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
             if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
                 int window_x = 0;
                 int window_y = 0;
                 SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-                mouse_x -= window_x;
-                mouse_y -= window_y;
+                mouse_x -= static_cast<float>(window_x);
+                mouse_y -= static_cast<float>(window_y);
             }
-            io.AddMousePosEvent(static_cast<float>(mouse_x), static_cast<float>(mouse_y));
+            const float scale = App::get().os_to_main_window_device_independent_ratio();
+            io.AddMousePosEvent(scale * mouse_x, scale * mouse_y);
         }
     }
 
@@ -463,17 +572,17 @@ static void ImGui_ImplOscar_NewFrame(App& app)
             window_dimensions = {0.0f, 0.0f};
         }
         io.DisplaySize = {window_dimensions.x, window_dimensions.y};
-
-        const auto window_drawable_dimensions = app.main_window_drawable_pixel_dimensions();
-        if (area_of(window_dimensions) > 0.0f) {
-            io.DisplayFramebufferScale = window_drawable_dimensions / window_dimensions;
-        }
     }
 
     // Update monitors
-    if (bd.WantUpdateMonitors) {
+    if (std::exchange(bd.WantUpdateMonitors, false)) {
         update_monitors(app);
-        bd.WantUpdateMonitors = false;
+    }
+
+    // Update display scale (e.g. when user changes DPI settings or moves the
+    // application window to a display that has a different DPI)
+    if (std::exchange(bd.WantChangeDisplayScale, false)) {
+        setup_scaling_dependent_fonts_and_styling(app);
     }
 
     // Update `DeltaTime`
@@ -512,39 +621,6 @@ static void ImGui_ImplOscar_NewFrame(App& app)
     ImGui_ImplOscar_UpdateMouseCursor(app);
 }
 
-namespace
-{
-#ifndef EMSCRIPTEN
-    // this is necessary because ImGui will take ownership and be responsible for
-    // freeing the memory with `ImGui::MemFree`
-    char* to_imgui_allocated_copy(std::span<const char> span)
-    {
-        auto* ptr = cpp20::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
-        rgs::copy(span, ptr);
-        return ptr;
-    }
-
-    void add_resource_as_font(
-        ResourceLoader& loader,
-        const ImFontConfig& config,
-        ImFontAtlas& atlas,
-        const ResourcePath& path,
-        const ImWchar* glyph_ranges = nullptr)
-    {
-        const std::string base_font_data = loader.slurp(path);
-        const std::span<const char> data_including_nul_terminator{base_font_data.data(), base_font_data.size() + 1};
-
-        atlas.AddFontFromMemoryTTF(
-            to_imgui_allocated_copy(data_including_nul_terminator),
-            static_cast<int>(data_including_nul_terminator.size()),
-            config.SizePixels,
-            &config,
-            glyph_ranges
-        );
-    }
-#endif
-}
-
 void osc::ui::context::init(App& app)
 {
     // ensure ImGui uses the same allocator as the rest of
@@ -557,55 +633,16 @@ void osc::ui::context::init(App& app)
     // init ImGui top-level context
     ImGui::CreateContext();
 
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-    // make it so that windows can only ever be moved from the title bar
-    io.ConfigWindowsMoveFromTitleBarOnly = true;
-
-    // load application-level ImGui settings, then the user one,
-    // so that the user settings takes precedence
+    // load `imgui.ini`
 #ifdef EMSCRIPTEN
-    io.IniFilename = nullptr;
+    ImGui::GetIO().IniFilename = nullptr;
 #else
-    const float dpi_scale_factor = [&]()
-    {
-        // if the user explicitly enabled high_dpi_mode...
-        if (const auto v = app.get_config().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
-            return app.main_window_dpi() / 96.0f;
-        }
-        else {
-            return 1.0f;  // else: assume it's an unscaled 96dpi screen
-        }
-    }();
+    load_imgui_config(app.user_data_directory(), app.upd_resource_loader());
+#endif
 
-    {
-        const std::string base_ini_data = app.slurp_resource("imgui_base_config.ini");
-        ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
-
-        // CARE: the reason this filepath is `static` is because ImGui requires that
-        // the string outlives the ImGui context
-        static const std::string s_user_imgui_ini_file_path = (app.user_data_directory() / "imgui.ini").string();
-
-        ImGui::LoadIniSettingsFromDisk(s_user_imgui_ini_file_path.c_str());
-        io.IniFilename = s_user_imgui_ini_file_path.c_str();
-    }
-
-    ImFontConfig base_config;
-    base_config.SizePixels = dpi_scale_factor*15.0f;
-    base_config.PixelSnapH = true;
-    base_config.FontDataOwnedByAtlas = true;
-    add_resource_as_font(app.upd_resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
-
-    // add FontAwesome icon support
-    {
-        ImFontConfig config = base_config;
-        config.MergeMode = true;
-        config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
-        config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
-        static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-        add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
-    }
+    // setup fonts + styling
+#ifndef EMSCRIPTEN
+    setup_scaling_dependent_fonts_and_styling(app);
 #endif
 
     // init ImGui for oscar
@@ -613,8 +650,6 @@ void osc::ui::context::init(App& app)
 
     // init ImGui for oscar's graphics backend (OpenGL)
     graphics_backend::init();
-
-    apply_dark_theme();
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();

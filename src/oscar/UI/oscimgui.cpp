@@ -486,7 +486,7 @@ ImGuiKey osc::Converter<Key, ImGuiKey>::operator()(Key key) const
     case Key::Space: return ImGuiKey_Space;
     case Key::Return: return ImGuiKey_Enter;
     case Key::Escape: return ImGuiKey_Escape;
-    case Key::Quote: return ImGuiKey_Apostrophe;
+    case Key::Apostrophe: return ImGuiKey_Apostrophe;
     case Key::Comma: return ImGuiKey_Comma;
     case Key::Minus: return ImGuiKey_Minus;
     case Key::Period: return ImGuiKey_Period;
@@ -496,7 +496,7 @@ ImGuiKey osc::Converter<Key, ImGuiKey>::operator()(Key key) const
     case Key::LeftBracket: return ImGuiKey_LeftBracket;
     case Key::Backslash: return ImGuiKey_Backslash;
     case Key::RightBracket: return ImGuiKey_RightBracket;
-    case Key::Backquote: return ImGuiKey_GraveAccent;
+    case Key::Grave: return ImGuiKey_GraveAccent;
     case Key::CapsLock: return ImGuiKey_CapsLock;
     case Key::ScrollLock: return ImGuiKey_ScrollLock;
     case Key::NumLockClear: return ImGuiKey_NumLock;
@@ -942,14 +942,14 @@ Vec2 osc::ui::get_cursor_pos()
     return ImGui::GetCursorPos();
 }
 
-float osc::ui::get_cursor_pos_x()
-{
-    return ImGui::GetCursorPosX();
-}
-
 void osc::ui::set_cursor_pos(Vec2 pos)
 {
     ImGui::SetCursorPos(pos);
+}
+
+float osc::ui::get_cursor_pos_x()
+{
+    return ImGui::GetCursorPosX();
 }
 
 void osc::ui::set_cursor_pos_x(float local_x)

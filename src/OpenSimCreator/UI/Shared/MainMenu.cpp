@@ -258,16 +258,10 @@ void osc::MainMenuAboutTab::onDraw()
         ui::draw_text_unformatted("window");
         ui::next_column();
 
-        if (ui::draw_button(OSC_ICON_EXPAND " fullscreen"))
-        {
-            App::upd().make_fullscreen();
-        }
-        if (ui::draw_button(OSC_ICON_EXPAND " windowed fullscreen"))
-        {
+        if (ui::draw_button(OSC_ICON_EXPAND " fullscreen")) {
             App::upd().make_windowed_fullscreen();
         }
-        if (ui::draw_button(OSC_ICON_WINDOW_RESTORE " windowed"))
-        {
+        if (ui::draw_button(OSC_ICON_WINDOW_RESTORE " windowed")) {
             App::upd().make_windowed();
         }
         ui::next_column();
