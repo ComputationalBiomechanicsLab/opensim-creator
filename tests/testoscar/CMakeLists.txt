@@ -141,7 +141,6 @@ target_include_directories(testoscar PRIVATE
 target_link_libraries(testoscar PRIVATE
     oscar
     GTest::gtest
-    GTest::gtest_main
 )
 
 # tell CMake (+IDEs) how to find all tests

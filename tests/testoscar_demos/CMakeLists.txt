@@ -18,7 +18,6 @@ target_link_libraries(testoscar_demos PRIVATE
     oscar
     oscar_demos
     GTest::gtest
-    GTest::gtest_main
 )
 
 if(${OSC_DISCOVER_TESTS})

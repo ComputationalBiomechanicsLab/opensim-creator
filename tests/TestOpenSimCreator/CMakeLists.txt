@@ -49,7 +49,6 @@ target_include_directories(TestOpenSimCreator PRIVATE
 target_link_libraries(TestOpenSimCreator PRIVATE
     OpenSimCreator
     GTest::gtest
-    GTest::gtest_main
 )
 
 # tell CMake (+IDEs) how to find all tests
