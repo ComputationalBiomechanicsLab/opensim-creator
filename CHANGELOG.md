@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The documentation banner now includes "OpenSim Creator", rather than just showing
+  the icon logo.
 - A CC-BY license was added to `resources/icons` (#944)
 
 ## [0.5.16] - 2024/11/04

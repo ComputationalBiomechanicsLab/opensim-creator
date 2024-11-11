@@ -56,7 +56,7 @@ numfig = True
 # a list of builtin themes.
 #
 html_theme = 'sphinx_book_theme'
-html_logo = '../../resources/textures/logo.svg'
+html_logo = '../../resources/textures/banner_vertical.svg'
 html_favicon = '../../resources/textures/logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
