@@ -144,10 +144,11 @@ Download Raw Data and Models
 In this section, we will be using experimental data from the `OpenSim Models Repository`_.
 Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18musc Model Direct Link`_).
 
-1. **Download the data**: go to the ``TODO JUST PACKAGE IT UP BECAUSE IT'S A PITA
-   FOR USERS TO HAVE TO FIGURE OUT GITHUB``
-2. **Unzip it somewhere**: todo
-
+1. **Download the data**: download a stripped-down zip of ``Pipelines/Gait10dof18musc/OutputReference``  `from this link <_static/Gait10dof18musc_OutputReference.zip>`_
+   and unzip it somewhere.
+2. **Any filepaths in this tutorial are relative to the data folder**. E.g. if
+   something in this tutorial says "load ``ExperimentalData/subject_walk.trc`` then
+   that path is relative to the folder that you unzipped.
 
 .. _Load Raw Marker Data:
 
@@ -164,7 +165,7 @@ The first step is to load the raw marker data (``.trc``) file into the UI. To do
 that, you will need to:
 
 1. Click the ``load raw data file`` button in the toolbar
-2. Select the ``subject01_walk.trc`` file (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk.trc``).
+2. Select the ``subject01_walk.trc`` file (path: ``ExperimentalData/subject01_walk.trc``).
 
 Once loaded, it should look something like this:
 
@@ -204,10 +205,10 @@ After confirming that the marker data looks reasonable, you can then use it with
 your model and OpenSim's IK solver to yield a trajectory. You can overlay the
 model + trajectory in the preview experimental data UI with the following steps:
 
-1. **Load the model**: Click ``load model`` and choose ``Pipelines\Gait10dof18musc\OutputReference\subject01.osim``,
+1. **Load the model**: Click ``load model`` and choose ``subject01.osim``,
    which, in this example, was the model that was used with the IK solver.
 
-2. **Load the trajectory**: Click ``load trajectory/states`` and choose ``Pipelines\Gait10dof18musc\OutputReference\IK\subject01_walk_IK.mot``,
+2. **Load the trajectory**: Click ``load trajectory/states`` and choose ``IK/subject01_walk_IK.mot``,
    which, in this example, is the result from OpenSim's IK solver.
 
 Once loaded, you should be able to see the raw marker data, your model, and its
@@ -234,7 +235,7 @@ Load Raw Ground Reaction Forces
 This step is identical to `Load Raw Marker Data`_ :
 
 1. Click the ``load raw data file`` button in the toolbar
-2. Select the GRF data, ``subject01_walk_grf.mot`` (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk_grf.mot``).
+2. Select the GRF data, ``subject01_walk_grf.mot`` (path: ``ExperimentalData/subject01_walk_grf.mot``).
 
 Once loaded, you should be able to see the marker data, your model, the model's motion,
 and your GRF vectors overlaid:
@@ -354,7 +355,7 @@ preview experimental data UI. Concretely, with the example data, you can do
 that with the following steps:
 
 1. **Load the ExternalLoads' XML**: Click ``load OpenSim XML`` in the toolbar
-   and open ``subject01_walk_grf.xml`` (full path: ``Pipelines\Gait10dof18musc\OutputReference\ExperimentalData\subject01_walk_grf.xml``).
+   and open ``subject01_walk_grf.xml`` (path: ``ExperimentalData/subject01_walk_grf.xml``).
 2. **Enable 3D Body / Point Force Visualization**: In the top-left of any 3D
    viewer panel, there's a grid icon for toggling visual aids. Enabling either
    ``Forces on Bodies``, ``Torques on Bodies``, or ``Point Forces`` should draw
