@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 
@@ -8,7 +10,7 @@ struct ImDrawData;
 
 namespace osc::ui::graphics_backend
 {
-    using InternalTextureID = void*;
+    using InternalTextureID = uint64_t;
 
     bool init();
     void shutdown();

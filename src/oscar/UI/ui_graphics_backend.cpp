@@ -87,6 +87,7 @@ namespace
 
     ImTextureID to_imgui_texture_id(UID id)
     {
+        static_assert(std::is_same_v<ImTextureID, osc::ui::graphics_backend::InternalTextureID>);
         return cpp20::bit_cast<ImTextureID>(id);
     }
 
@@ -348,12 +349,12 @@ void osc::ui::graphics_backend::render(ImDrawData* drawData)
     }
 }
 
-ImTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const Texture2D& texture)
+osc::ui::graphics_backend::InternalTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const Texture2D& texture)
 {
     return ::allocate_texture_for_current_frame(texture);
 }
 
-ImTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const RenderTexture& texture)
+osc::ui::graphics_backend::InternalTextureID osc::ui::graphics_backend::allocate_texture_for_current_frame(const RenderTexture& texture)
 {
     return ::allocate_texture_for_current_frame(texture);
 }

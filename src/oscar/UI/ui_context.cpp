@@ -22,6 +22,7 @@
 
 #define IMGUI_USER_CONFIG <oscar/UI/oscimgui_config.h>  // NOLINT(bugprone-macro-parentheses)
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <implot.h>
 #include <SDL.h>
 #if defined(__APPLE__)
@@ -128,9 +129,14 @@ namespace
     // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
     // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
     // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
+    BackendData* try_get_ui_backend_data(ImGuiContext* context)
+    {
+        return context ? static_cast<BackendData*>(context->IO.BackendPlatformUserData) : nullptr;
+    }
+
     BackendData* try_get_ui_backend_data()
     {
-        return ImGui::GetCurrentContext() ? static_cast<BackendData*>(ImGui::GetIO().BackendPlatformUserData) : nullptr;
+        return try_get_ui_backend_data(ImGui::GetCurrentContext());
     }
 
     BackendData& get_backend_data()
@@ -164,14 +170,14 @@ namespace
         }
     }
 
-    const char* ui_get_clipboard_text(void*)
+    const char* ui_get_clipboard_text(ImGuiContext* context)
     {
-        BackendData* bd = try_get_ui_backend_data();
+        BackendData* bd = try_get_ui_backend_data(context);
         bd->ClipboardText = get_clipboard_text();
         return bd->ClipboardText.c_str();
     }
 
-    void ui_set_clipboard_text(void*, const char* text)
+    void ui_set_clipboard_text(ImGuiContext*, const char* text)
     {
         set_clipboard_text(text);
     }
@@ -325,12 +331,14 @@ static void ImGui_ImplOscar_Init(SDL_Window* window)
     io.BackendPlatformName = "imgui_impl_oscar";
     io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
     io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
-    io.SetClipboardTextFn = ui_set_clipboard_text;
-    io.GetClipboardTextFn = ui_get_clipboard_text;
-    io.ClipboardUserData = nullptr;
-    io.PlatformSetImeDataFn = ImGui_ImplOscar_PlatformSetImeData;
+
+    ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+    platform_io.Platform_SetClipboardTextFn = ui_set_clipboard_text;
+    platform_io.Platform_GetClipboardTextFn = ui_get_clipboard_text;
+    platform_io.Platform_ClipboardUserData = nullptr;
+    platform_io.Platform_SetImeDataFn = ImGui_ImplOscar_PlatformSetImeData;
 #ifdef __EMSCRIPTEN__
-    io.PlatformOpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplOscar_EmscriptenOpenURL(url); return true; };
+    platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplOscar_EmscriptenOpenURL(url); return true; };
 #endif
 
     // init `ImGuiViewport` for main viewport

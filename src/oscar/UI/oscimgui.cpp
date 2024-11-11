@@ -2343,7 +2343,7 @@ bool osc::ui::draw_float_circular_slider(
         // skip drawing: the slider item is off-screen or not interactable
         return false;
     }
-    const bool is_hovered = ImGui::ItemHoverable(frame_bounds, id, g.LastItemData.InFlags);  // hovertest the item
+    const bool is_hovered = ImGui::ItemHoverable(frame_bounds, id, g.LastItemData.ItemFlags);  // hovertest the item
 
     // figure out whether the user is (temporarily) editing the slider as an input text box
     bool temporary_text_input_active = temporary_text_input_allowed and ImGui::TempInputIsActive(id);
