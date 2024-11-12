@@ -1,4 +1,4 @@
-#include <OpenSimCreator/Documents/ModelWarper/ModelWarperConfiguration.h>
+#include <OpenSimCreator/Documents/ModelWarperV2/ModelWarperConfiguration.h>
 
 #include <TestOpenSimCreator/TestOpenSimCreatorConfig.h>
 
@@ -345,7 +345,7 @@ TEST(ModelWarperConfiguration, LoadingNonExistentFileThrows)
 
 TEST(ModelWarperConfiguration, CanLoadEmptySequence)
 {
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/empty_sequence.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/empty_sequence.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 }
@@ -354,7 +354,7 @@ TEST(ModelWarperConfiguration, CanLoadTrivialSingleOffsetFrameWarpingStrategy)
 {
     OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/single_offsetframe_warper.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/single_offsetframe_warper.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
@@ -368,7 +368,7 @@ TEST(ModelWarperConfiguration, CanContainAMixtureOfOffsetFrameWarpingStrategies)
     OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
     OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/mixed_offsetframe_warpers.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/mixed_offsetframe_warpers.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
@@ -381,7 +381,7 @@ TEST(ModelWarperConfiguration, CanLoadTrivialSingleStationWarpingStrategy)
 {
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/single_station_warper.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/single_station_warper.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
@@ -395,7 +395,7 @@ TEST(ModelWarperConfiguration, CanLoadAMixtureOfStationWarpingStrategies)
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
     OpenSim::Object::registerType(ThinPlateSplineStationWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/mixed_station_warpers.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/mixed_station_warpers.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
@@ -421,7 +421,7 @@ TEST(ModelWarperConfiguration, LoadingConfigurationContainingStrategyWithTwoTarg
 {
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/two_strategy_targets.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/two_strategy_targets.xml")};
     configuration.finalizeFromProperties();
 
     const auto* strategy = configuration.findComponent<ProduceErrorStationWarpingStrategy>("two_targets");
@@ -459,7 +459,7 @@ TEST(ModelWarperConfiguration, finalizeFromPropertiesThrowsWhenGivenConfiguratio
     OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
     OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/duplicated_offsetframe_strategytarget.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/duplicated_offsetframe_strategytarget.xml")};
 
     ASSERT_ANY_THROW({ configuration.finalizeFromProperties(); });
 }
@@ -469,7 +469,7 @@ TEST(ModelWarperConfiguration, finalizeFromPropertiesDoesNotThrowWhenGivenConfig
     OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
 
-    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarper/ModelWarperConfiguration/duplicated_but_different_types.xml")};
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/duplicated_but_different_types.xml")};
 
     ASSERT_NO_THROW({ configuration.finalizeFromProperties(); });
 }
