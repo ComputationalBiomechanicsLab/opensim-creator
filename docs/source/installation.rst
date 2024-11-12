@@ -28,18 +28,29 @@ Installing on MacOS (Ventura or newer)
 - Download a ``dmg``-based installer from the `GitHub Releases Page`_
 - Double click the ``dmg`` file to mount it
 - Drag the ``osc`` icon into your ``Applications`` directory
-- Browse to the ``Applications`` directory in the MacOS ``Finder`` directory
-- Right-click the ``osc`` application, click ``open``, continue past any
-  security warnings to run ``osc`` for the first time
-- After running it the first time, you can boot it as normal (e.g. ``Command+Space``,
-  ``osc``, ``Enter``)
+- Run ``osc`` from your applications folder
 
-.. note::
-    You may need to right-click the ``osc`` application to open it twice.
+.. warning::
 
-    The reason why is because MacOS _really_ doesn't like running unsigned
-    binaries, but the OpenSim Creator project is too cheap to join the Apple
-    developer program.
+  OpenSim Creator's build process does not sign (notarize) its binaries, because
+  we'd have to organize and pay a subscription for that service.
+
+  For you, what this means is that OSC will appear as from **"untrusted developer"**
+  when booting for the first time. MacOS's gatekeeper technology will then stop
+  OSC from booting. As a user, you can skip past this security warning, but Apple
+  has a habit of changing the skipping process every once in a while. Here is a
+  list of workarounds:
+
+  - **Check the official documentation**: Apple usually documents the process of
+    running unsigned executables in its `Apple Gatekeeper Documentation`_
+  - **On MacOS Sequoia (ish)**: Try to run OSC once. It will fail. Then open your
+    computer's system settings, click ``Privacy & Security``, scroll down. You
+    should see something like ``OSC was blocked to protect your mac``, click
+    ``Open Anyway``
+  - **On older MacOSes**: Open finder, go to ``Applications``, right-click the
+    OSC/OpenSimCreator application, click open. It should ask you whether you
+    want to open it anyway. Some newer(ish) MacOSes won't ask you until you
+    right-click the application a second time.
 
 
 Installing on Ubuntu (20 or newer)
@@ -62,3 +73,4 @@ See :ref:`buildingfromsource` for an explanation of how to do this.
 
 .. _GitHub Releases Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases
 .. _GitHub Actions Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions
+.. _Apple Gatekeeper Documentation: https://support.apple.com/en-us/102445

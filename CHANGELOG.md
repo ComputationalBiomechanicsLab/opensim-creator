@@ -5,9 +5,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The documentation now contains an explanation for how to install OSC on MacOSes
+  that have a newer, more draconian, gatekeeper (#942).
+- Fixed a typo where tutorial 5 referred to a "femur CT scan" when the content was
+  about a "pelvis MRI scan" (#949).
 - The documentation banner now includes "OpenSim Creator", rather than just showing
   the icon logo.
 - A CC-BY license was added to `resources/icons` (#944)
+- Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 
 ## [0.5.16] - 2024/11/04
 
