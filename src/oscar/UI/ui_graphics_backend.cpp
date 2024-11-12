@@ -88,12 +88,12 @@ namespace
     ImTextureID to_imgui_texture_id(UID id)
     {
         static_assert(std::is_same_v<ImTextureID, osc::ui::graphics_backend::InternalTextureID>);
-        return cpp20::bit_cast<ImTextureID>(id);
+        return static_cast<ImTextureID>(id.get());
     }
 
     UID to_uid(ImTextureID id)
     {
-        return UID::from_int_unchecked(cpp20::bit_cast<UID::element_type>(id));
+        return UID::from_int_unchecked(static_cast<UID::element_type>(id));
     }
 
     Texture2D create_font_texture(UID texture_id)
