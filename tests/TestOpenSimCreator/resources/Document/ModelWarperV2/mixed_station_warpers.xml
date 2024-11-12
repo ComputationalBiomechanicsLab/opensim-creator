@@ -7,7 +7,7 @@
 					*
 				</StrategyTargets>
 			</ProduceErrorStationWarpingStrategy>
-			<ThinPlateSplineStationWarpingStrategy>
+			<ThinPlateSplineStationWarpingStrategy name="warp2">
 				<StrategyTargets>
 					/something/more/specific
 				</StrategyTargets>

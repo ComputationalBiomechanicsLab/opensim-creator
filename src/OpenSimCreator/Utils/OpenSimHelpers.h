@@ -813,6 +813,12 @@ namespace osc
         return static_cast<T&>(AddComponent(c, static_cast<std::unique_ptr<OpenSim::Component>&&>(std::move(p))));
     }
 
+    template<std::derived_from<OpenSim::Component> T>
+    T& AddComponent(OpenSim::Component& host)
+    {
+        return AddComponent(host, std::make_unique<T>());
+    }
+
     template<std::derived_from<OpenSim::Component> T, typename... Args>
     requires std::constructible_from<T, Args&&...>
     T& AddComponent(OpenSim::Component& host, Args&&...args)

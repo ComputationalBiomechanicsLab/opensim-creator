@@ -26,32 +26,63 @@ namespace
     {
         return std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / subpath);
     }
+
+    // A testing class that can act as an inner node in a model's component tree.
+    class ContainerNode : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ContainerNode, OpenSim::Component);
+    };
 }
 
-static_assert(StrategyMatchQuality::none() < StrategyMatchQuality::wildcard());
-static_assert(StrategyMatchQuality::wildcard() < StrategyMatchQuality::exact());
-static_assert(not static_cast<bool>(StrategyMatchQuality::none()));
-static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()));
-static_assert(static_cast<bool>(StrategyMatchQuality::exact()));
+TEST(StrategyMatchQuality, NoneComparesLessThanWildcard)
+{
+    // A wildcard match is "better than" no match.
+    static_assert(StrategyMatchQuality::none() < StrategyMatchQuality::wildcard());
+}
+
+TEST(StrategyMatchQuality, WildcardComparesLessThanExact)
+{
+    // An exact match is "better than" a wildcard match.
+    static_assert(StrategyMatchQuality::wildcard() < StrategyMatchQuality::exact());
+}
+
+TEST(StrategyMatchQuality, NoneImplicitlyConvertsToFalse)
+{
+    // The truthiness of a `StrategyMatchQuality` corresponds to "is there any match?".
+    static_assert(not static_cast<bool>(StrategyMatchQuality::none()));
+}
+
+TEST(StrategyMatchQuality, WildcardImplicitlyConvertsToTrue)
+{
+    // The truthiness of a `StrategyMatchQuality` corresponds to "is there any match?".
+    static_assert(static_cast<bool>(StrategyMatchQuality::wildcard()));
+}
+
+TEST(StrategyMatchQuality, ExactImplicitlyConvertsToTrue)
+{
+    // The truthiness of a `StrategyMatchQuality` corresponds to "is there any match?".
+    static_assert(static_cast<bool>(StrategyMatchQuality::exact()));
+}
 
 TEST(RuntimeWarpParameters, ConstructedWithBlendFactorMakesGetBlendFactorReturnTheBlendFactor)
 {
-    RuntimeWarpParameters params{0.3f};
+    const RuntimeWarpParameters params{0.3f};
     ASSERT_EQ(params.getBlendFactor(), 0.3f);
 }
 
 TEST(WarpCache, CanDefaultConstruct)
 {
-    [[maybe_unused]] WarpCache instance;
+    [[maybe_unused]] const WarpCache instance;
 }
 
 TEST(IdentityComponentWarper, CanDefaultConstruct)
 {
-    [[maybe_unused]] IdentityComponentWarper instance;
+    [[maybe_unused]] const IdentityComponentWarper instance;
 }
 
 TEST(IdentityComponentWarper, DoesNotChangeAnyComponentProperty)
 {
+    // An `IdentityComponentWarper` shouldn't do anything to a component when it "warps" it.
+
     OpenSim::Model sourceModel;
     OpenSim::Marker& sourceMarker = AddMarker(sourceModel, "marker", sourceModel.getGround(), SimTK::Vec3{0.0});
     FinalizeConnections(sourceModel);
@@ -60,7 +91,7 @@ TEST(IdentityComponentWarper, DoesNotChangeAnyComponentProperty)
     InitializeModel(destinationModel);
     auto& destinationMarker = sourceModel.updComponent<OpenSim::Marker>(sourceMarker.getAbsolutePath());
 
-    RuntimeWarpParameters parameters;
+    const RuntimeWarpParameters parameters;
     WarpCache cache;
     IdentityComponentWarper warper;
 
@@ -71,11 +102,14 @@ TEST(IdentityComponentWarper, DoesNotChangeAnyComponentProperty)
 
 TEST(ExceptionThrowingComponentWarper, CanDefaultConstruct)
 {
-    [[maybe_unused]] ExceptionThrowingComponentWarper instance;
+    [[maybe_unused]] const ExceptionThrowingComponentWarper instance;
 }
 
 TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
 {
+    // An `ExceptionThrowingComponentWarper` is specifically designed to throw an exception when
+    // it tries to warp a component (this behavior can be useful as a catch-all).
+
     OpenSim::Model sourceModel;
     OpenSim::Marker& sourceMarker = AddMarker(sourceModel, "marker", sourceModel.getGround(), SimTK::Vec3{0.0});
     FinalizeConnections(sourceModel);
@@ -166,6 +200,7 @@ TEST(PairedPoints, EqualityIsValueBased)
 
 namespace
 {
+    // A testing class for testing the `PairedPointSource`-related APIs.
     class TestablePairedPointSource final : public PairedPointSource {
         OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointSource, PairedPointSource)
     public:
@@ -215,7 +250,7 @@ TEST(PairedPointSource, getPairedPoints_returnsPairedPoints)
     mock.setPairedPoints(points);
 
     WarpCache cache;
-    OpenSim::Model sourceModel;
+    const OpenSim::Model sourceModel;
     const auto& sourceComponent = sourceModel.getGround();
     const PairedPoints returnedPoints = mock.getPairedPoints(cache, sourceModel, sourceComponent);
 
@@ -233,7 +268,7 @@ TEST(PairedPointSource, getPairedPoints_validateReturnsValidationChecks)
     TestablePairedPointSource mock;
     mock.setChecks(checks);
 
-    OpenSim::Model sourceModel;
+    const OpenSim::Model sourceModel;
     const auto& sourceComponent = sourceModel.getGround();
     const std::vector<ValidationCheckResult> returnedChecks = mock.validate(sourceModel, sourceComponent);
 
@@ -250,7 +285,7 @@ TEST(PairedPointSource, getPairedPoints_throwsIfValidationChecksContainError)
     mock.setChecks(checks);
 
     WarpCache cache;
-    OpenSim::Model sourceModel;
+    const OpenSim::Model sourceModel;
     const auto& sourceComponent = sourceModel.getGround();
     ASSERT_THROW({ mock.getPairedPoints(cache, sourceModel, sourceComponent); }, std::exception);
 }
@@ -265,20 +300,20 @@ TEST(PairedPointSource, getPairedPoints_doesntThrowIfChecksContainWarning)
     mock.setChecks(checks);
 
     WarpCache cache;
-    OpenSim::Model sourceModel;
+    const OpenSim::Model sourceModel;
     const auto& sourceComponent = sourceModel.getGround();
     ASSERT_NO_THROW({ mock.getPairedPoints(cache, sourceModel, sourceComponent); });
 }
 
 TEST(LandmarkPairsAssociatedWithMesh, CanBeDefaultConstructed)
 {
-    [[maybe_unused]] LandmarkPairsAssociatedWithMesh instance;
+    [[maybe_unused]] const LandmarkPairsAssociatedWithMesh instance;
 }
 
 TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedNonMesh)
 {
-    LandmarkPairsAssociatedWithMesh pairSource;
-    OpenSim::Model model;
+    const LandmarkPairsAssociatedWithMesh pairSource;
+    const OpenSim::Model model;
     const auto checks = pairSource.validate(model, model.getGround());
 
     ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
@@ -286,17 +321,17 @@ TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedNonMesh)
 
 TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithoutSourceLandmarksButWithDestinationLandmarks)
 {
-    // note: doesn't have a `landmarks.csv` file
+    // Note: `sphere.obj` doesn't have an associated source `sphere.landmarks.csv` file.
     const std::filesystem::path sourceMeshPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/ModelWarper/MissingSourceLMs/Geometry/sphere.obj";
 
-    // create a model that contains the mesh
+    // Create an `OpenSim::Model` that contains the mesh.
     OpenSim::Model model;
     auto& mesh = AddComponent<OpenSim::Mesh>(model, sourceMeshPath.string());
     mesh.connectSocket_frame(model.getGround());
     FinalizeConnections(model);
     InitializeModel(model);
 
-    LandmarkPairsAssociatedWithMesh pointSource;
+    const LandmarkPairsAssociatedWithMesh pointSource;
     const auto checks = pointSource.validate(model, mesh);
 
     ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
@@ -304,17 +339,17 @@ TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithoutS
 
 TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithSourceLandmarksButNoDestinationLandmarks)
 {
-    // note: doesn't have a `landmarks.csv` file
-    std::filesystem::path sourceMeshPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/ModelWarper/MissingDestinationLMs/Geometry/sphere.obj";
+    // Note: `sphere.obj` doesn't have an associated destination `sphere.landmarks.csv` file.
+    const std::filesystem::path sourceMeshPath = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "Document/ModelWarper/MissingDestinationLMs/Geometry/sphere.obj";
 
-    // create a model that contains the mesh
+    // Create an `OpenSim::Model` that contains the mesh.
     OpenSim::Model model;
     auto& mesh = AddComponent<OpenSim::Mesh>(model, sourceMeshPath.string());
     mesh.connectSocket_frame(model.getGround());
     FinalizeConnections(model);
     InitializeModel(model);
 
-    LandmarkPairsAssociatedWithMesh pointSource;
+    const LandmarkPairsAssociatedWithMesh pointSource;
     const auto checks = pointSource.validate(model, mesh);
 
     ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));
@@ -322,7 +357,7 @@ TEST(LandmarkPairsAssociatedWithMesh, ValidateReturnsErrorIfProvidedMeshWithSour
 
 TEST(ModelWarperConfiguration, CanDefaultConstruct)
 {
-    [[maybe_unused]] ModelWarperConfiguration instance;
+    [[maybe_unused]] const ModelWarperConfiguration instance;
 }
 
 TEST(ModelWarperConfiguration, CanSaveAndLoadDefaultConstructedToAndFromXMLFile)
@@ -330,17 +365,19 @@ TEST(ModelWarperConfiguration, CanSaveAndLoadDefaultConstructedToAndFromXMLFile)
     TemporaryFile temporaryFile;
     temporaryFile.close();  // so that `OpenSim::Object::print`'s implementation can open+write to it
 
-    ModelWarperConfiguration configuration;
+    // Write a blank `ModelWarperConfiguration` file.
+    const ModelWarperConfiguration configuration;
     configuration.print(temporaryFile.absolute_path().string());
 
+    // Read the written file.
     ModelWarperConfiguration loadedConfiguration{temporaryFile.absolute_path().string()};
     loadedConfiguration.finalizeFromProperties();
     loadedConfiguration.finalizeConnections(loadedConfiguration);
 }
 
-TEST(ModelWarperConfiguration, LoadingNonExistentFileThrows)
+TEST(ModelWarperConfiguration, LoadingNonExistentFileThrowsAnException)
 {
-    ASSERT_ANY_THROW({ [[maybe_unused]] ModelWarperConfiguration configuration{GetFixturePath("doesnt_exist")}; });
+    ASSERT_ANY_THROW({ [[maybe_unused]] const ModelWarperConfiguration configuration{GetFixturePath("doesnt_exist")}; });
 }
 
 TEST(ModelWarperConfiguration, CanLoadEmptySequence)
@@ -354,13 +391,29 @@ TEST(ModelWarperConfiguration, CanLoadTrivialSingleOffsetFrameWarpingStrategy)
 {
     OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
 
+    // Load a `ModelWarperConfiguration` with a single `ProduceErrorOffsetFrameWarpingStrategy` that
+    // wildcard-matches all `PhysicalOffsetFrame`s in the model.
     ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/single_offsetframe_warper.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
-    auto range = configuration.getComponentList<ProduceErrorOffsetFrameWarpingStrategy>();
-    const auto numEls = std::distance(range.begin(), range.end());
-    ASSERT_EQ(numEls, 1);
+    // Confirm the strategy was loaded
+    {
+        auto range = configuration.getComponentList<ProduceErrorOffsetFrameWarpingStrategy>();
+        const auto numEls = std::distance(range.begin(), range.end());
+        ASSERT_EQ(numEls, 1);
+    }
+
+    // Create a model with a `PhysicalOffsetFrame`.
+    OpenSim::Model model;
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{});
+    model.finalizeConnections();
+
+    // Enusre it matches.
+    const ComponentWarpingStrategy* strategy = configuration.tryMatchStrategy(pof);
+    ASSERT_TRUE(strategy);
+    ASSERT_EQ(strategy->getName(), "warp1");
+    ASSERT_TRUE(dynamic_cast<const ProduceErrorOffsetFrameWarpingStrategy*>(strategy));
 }
 
 TEST(ModelWarperConfiguration, CanContainAMixtureOfOffsetFrameWarpingStrategies)
@@ -377,17 +430,66 @@ TEST(ModelWarperConfiguration, CanContainAMixtureOfOffsetFrameWarpingStrategies)
     ASSERT_EQ(numEls, 2);
 }
 
+TEST(ModelWarperConfiguration, PrefersMoreSpecificOffsetFrameWarperIfAvailable)
+{
+    OpenSim::Object::registerType(ProduceErrorOffsetFrameWarpingStrategy{});
+    OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
+
+    // Load a `ModelWarperConfiguration` that has two offset frame warping strategies with
+    // differing `StrategyTargets` specificity.
+    ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/mixed_offsetframe_warpers.xml")};
+    configuration.finalizeFromProperties();
+    configuration.finalizeConnections(configuration);
+
+    // Make an `OpenSim::Model` that contains two frames: one that perfectly matches the
+    // specific `StrategyTarget` and another one that doesn't.
+    OpenSim::Model model;
+    auto& something = AddComponent<ContainerNode>(model);
+    something.setName("something");
+    auto& more = AddComponent<ContainerNode>(something);
+    more.setName("more");
+    auto& specific = AddComponent<OpenSim::PhysicalOffsetFrame>(more, model.getGround(), SimTK::Transform{});
+    specific.setName("specific");
+    auto& topLevel = AddComponent<OpenSim::PhysicalOffsetFrame>(model, model.getGround(), SimTK::Transform{});
+    model.finalizeConnections();
+
+    // Ensure that the specific strategy is matched with the specific component.
+    const ComponentWarpingStrategy* specificMatch = configuration.tryMatchStrategy(specific);
+    ASSERT_TRUE(specificMatch);
+    ASSERT_EQ(specificMatch->getName(), "warp2");
+
+    // Ensure that the wildcard fallback strategy is matched with the other component.
+    const ComponentWarpingStrategy* topLevelMatch = configuration.tryMatchStrategy(topLevel);
+    ASSERT_TRUE(topLevelMatch);
+    ASSERT_EQ(topLevelMatch->getName(), "warp1");
+}
+
 TEST(ModelWarperConfiguration, CanLoadTrivialSingleStationWarpingStrategy)
 {
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
 
+    // Load a `ModelWarperConfiguration` with a single `ProduceErrorStationWarpingStrategy`
     ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/single_station_warper.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
-    auto range = configuration.getComponentList<ProduceErrorStationWarpingStrategy>();
-    const auto numEls = std::distance(range.begin(), range.end());
-    ASSERT_EQ(numEls, 1);
+    // Confirm the strategy was loaded.
+    {
+        auto range = configuration.getComponentList<ProduceErrorStationWarpingStrategy>();
+        const auto numEls = std::distance(range.begin(), range.end());
+        ASSERT_EQ(numEls, 1);
+    }
+
+    // Build an `OpenSim::Model` that contains an `OpenSim::Station`.
+    OpenSim::Model model;
+    auto& station = AddComponent<OpenSim::Station>(model, model.getGround(), SimTK::Vec3{0.0});
+    model.finalizeConnections();
+
+    // Ensure the strategy matches against the station.
+    const ComponentWarpingStrategy* strategy = configuration.tryMatchStrategy(station);
+    ASSERT_TRUE(strategy);
+    ASSERT_EQ(strategy->getName(), "warp1");
+    ASSERT_TRUE(dynamic_cast<const ProduceErrorStationWarpingStrategy*>(strategy));
 }
 
 TEST(ModelWarperConfiguration, CanLoadAMixtureOfStationWarpingStrategies)
@@ -395,13 +497,46 @@ TEST(ModelWarperConfiguration, CanLoadAMixtureOfStationWarpingStrategies)
     OpenSim::Object::registerType(ProduceErrorStationWarpingStrategy{});
     OpenSim::Object::registerType(ThinPlateSplineStationWarpingStrategy{});
 
+    // Load a `ModelWarperConfiguration` containing two `StationWarpingStrategy`s: a more specific
+    // one, and a wildcard one.
     ModelWarperConfiguration configuration{GetFixturePath("Document/ModelWarperV2/mixed_station_warpers.xml")};
     configuration.finalizeFromProperties();
     configuration.finalizeConnections(configuration);
 
-    auto range = configuration.getComponentList<StationWarpingStrategy>();
-    const auto numEls = std::distance(range.begin(), range.end());
-    ASSERT_EQ(numEls, 2);
+    // Confirm that two strategies were loaded.
+    {
+        auto range = configuration.getComponentList<StationWarpingStrategy>();
+        const auto numEls = std::distance(range.begin(), range.end());
+        ASSERT_EQ(numEls, 2);
+    }
+
+    // Create an `OpenSim::Model` containing two `Open::Station`s: one that's located
+    // at the specific path and another somewhere else.
+    OpenSim::Model model;
+    auto& something = AddComponent<ContainerNode>(model);
+    something.setName("something");
+    auto& more = AddComponent<ContainerNode>(something);
+    more.setName("more");
+    auto& specific = AddComponent<OpenSim::Station>(more, model.getGround(), SimTK::Vec3{0.0});
+    specific.setName("specific");
+    auto& general = AddComponent<OpenSim::Station>(something, model.getGround(), SimTK::Vec3{0.0});
+    general.setName("doesntmatter");
+
+    // Ensure that the specific strategy matches to the specific `OpenSim::Station`.
+    {
+        const ComponentWarpingStrategy* strategy = configuration.tryMatchStrategy(specific);
+        ASSERT_TRUE(strategy);
+        ASSERT_EQ(strategy->getName(), "warp2");
+        ASSERT_TRUE(dynamic_cast<const ThinPlateSplineStationWarpingStrategy*>(strategy));
+    }
+
+    // Ensure that the wildcard strategy matches to the other `OpenSim::Station`.
+    {
+        const ComponentWarpingStrategy* strategy = configuration.tryMatchStrategy(general);
+        ASSERT_TRUE(strategy);
+        ASSERT_EQ(strategy->getName(), "warp1");
+        ASSERT_TRUE(dynamic_cast<const ProduceErrorStationWarpingStrategy*>(strategy));
+    }
 }
 
 TEST(ProduceErrorOffsetFrameWarpingStrategy, FinalizeFromPropertiesFailsIfNoStrategyTargets)
@@ -410,7 +545,7 @@ TEST(ProduceErrorOffsetFrameWarpingStrategy, FinalizeFromPropertiesFailsIfNoStra
     ASSERT_ANY_THROW({ strategy.finalizeFromProperties(); }) << "should fail, because the strategy has no targets (ambiguous definition)";
 }
 
-TEST(ProduceErrorOffsetFrameWarpingStrategy, FinalizeFromPropertiesWorksIfThereIsAStrategyTarget)
+TEST(ProduceErrorOffsetFrameWarpingStrategy, FinalizeFromPropertiesWorksIfThereIsAtLeastOneStrategyTarget)
 {
     ProduceErrorOffsetFrameWarpingStrategy strategy;
     strategy.append_StrategyTargets("*");
