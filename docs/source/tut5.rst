@@ -188,15 +188,15 @@ How you use these panels is up to you. A typical workflow has these steps:
   this tutorial 📖
 
 
-Walkthrough: Warping a Femur
-----------------------------
+Walkthrough: Warping a Pelvis
+-----------------------------
 
-In this walkthrough, we'll go through pairing landmarks between two femur CT
-scans. For context, the femur scans we're showing in this section were originally
+In this walkthrough, we'll go through pairing landmarks between two pelvis MRI
+scans. For context, the pelvis scans we're showing in this section were originally
 collected by Judith Cueto Fernandez and Eline van der Kruk, from the `BODIES lab`_,
 who landmarked them in order to perform TPS-based model scaling in the model
-warper.  **Due to privacy reasons, we cannot provide the raw CT scans. You
-should use your own mesh data for this section - the fact we're using a femur
+warper.  **Due to privacy reasons, we cannot provide the raw  MRI scans. You
+should use your own mesh data for this section - the fact we're using a pelvis
 isn't significant for this tutorial.**
 
 .. figure:: _static/tut5_walkthrough-overview.png
