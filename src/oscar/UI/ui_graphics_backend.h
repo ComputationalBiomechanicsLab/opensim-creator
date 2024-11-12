@@ -10,7 +10,7 @@ struct ImDrawData;
 
 namespace osc::ui::graphics_backend
 {
-    using InternalTextureID = uint64_t;
+    using InternalTextureID = unsigned long long;
 
     bool init();
     void shutdown();
