@@ -184,7 +184,7 @@ TEST_F(MaterialTest, can_be_constructed_from_a_shader)
 TEST_F(MaterialTest, can_be_copy_constructed)
 {
     const Material material = generate_material();
-    const Material copy{material};
+    const Material copy{material}; // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST_F(MaterialTest, can_be_move_constructed)

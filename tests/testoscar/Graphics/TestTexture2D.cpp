@@ -213,7 +213,7 @@ TEST(Texture2D, set_pixels32_on_32bit_texture_doesnt_observibly_change_component
 TEST(Texture2D, can_copy_construct)
 {
     const Texture2D texture_2d = generate_2x2_texture();
-    const Texture2D copy{texture_2d};
+    const Texture2D copy{texture_2d};  // NOLINT(performance-unnecessary-copy-initialization)
 }
 
 TEST(Texture2D, can_move_construct)

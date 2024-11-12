@@ -57,7 +57,7 @@ public:
         App::upd().set_vsync_enabled(false);
     }
 
-    void on_unmount()
+    void on_unmount() const
     {
         App::upd().set_vsync_enabled(m_WasVSyncEnabled);
     }
