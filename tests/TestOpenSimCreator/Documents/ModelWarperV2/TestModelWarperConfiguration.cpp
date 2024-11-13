@@ -29,7 +29,7 @@ namespace
 
     // A testing class that can act as an inner node in a model's component tree.
     class ContainerNode : public OpenSim::Component {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ContainerNode, OpenSim::Component);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ContainerNode, OpenSim::Component)
     };
 }
 
