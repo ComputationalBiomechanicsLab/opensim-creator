@@ -35,7 +35,7 @@ namespace osc::mow
         static constexpr StrategyMatchQuality wildcard() { return StrategyMatchQuality{State::Wildcard}; }
         static constexpr StrategyMatchQuality exact() { return StrategyMatchQuality{State::Exact}; }
 
-        constexpr operator bool () const { return _state != State::None; }
+        constexpr operator bool () const { return m_State != State::None; }
 
         friend constexpr bool operator==(StrategyMatchQuality, StrategyMatchQuality) = default;
         friend constexpr auto operator<=>(StrategyMatchQuality, StrategyMatchQuality) = default;
@@ -47,10 +47,10 @@ namespace osc::mow
         };
 
         explicit constexpr StrategyMatchQuality(State state) :
-            _state{state}
+            m_State{state}
         {}
 
-        State _state = State::None;
+        State m_State = State::None;
     };
 
     // parameters that are provided each time a model warp is requested at runtime
@@ -232,6 +232,15 @@ namespace osc::mow
             // else: call into the concrete implementation
             return implCreateWarper(model, component);
         }
+
+        // returns a sequence of `ValidationCheckResult`s related to applying the provided
+        // `sourceModel` and `sourceComponent` to this `ComponentWarpingStrategy`.
+        std::vector<ValidationCheckResult> validate(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent) const
+        {
+            return implValidate(sourceModel, sourceComponent);
+        }
     private:
         // overriders should return the `typeinfo` of the concrete class that this warper can warp
         virtual const std::type_info& implGetTargetComponentTypeInfo() const = 0;
@@ -246,7 +255,12 @@ namespace osc::mow
         //
         // overriders should return a `std::vector<ValidationCheckResult>` that describe any validation
         // checks (incl. `Ok`, `Warning` and `Error` checks) against the provided `OpenSim::Model`
-        virtual std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const { return {}; }
+        virtual std::vector<ValidationCheckResult> implValidate(
+            const OpenSim::Model&,
+            const OpenSim::Component&) const
+        {
+            return {};
+        }
 
         void extendFinalizeFromProperties() override
         {
@@ -353,13 +367,14 @@ namespace osc::mow
             std::vector<LandmarkPair3D> pointsInBaseFrame;
             OpenSim::ComponentPath baseFrameAbsPath;
         };
+
         CopyOnUpdPtr<Data> m_Data = make_cow<Data>();
     };
 
     // an abstract base class to an `OpenSim::Object` that can lookup and produce
     // `PairedPoints` (e.g. for feeding into a Thin-Plate Spline fitter)
-    class PairedPointSource : public OpenSim::Object, public IWarpDetailProvider {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(PairedPointSource, OpenSim::Object)
+    class PairedPointsSource : public OpenSim::Object, public IWarpDetailProvider {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(PairedPointsSource, OpenSim::Object)
     public:
 
         // returns the paired points, based on the concrete implementation's approach
@@ -373,8 +388,8 @@ namespace osc::mow
             const OpenSim::Component& sourceComponent
         );
 
-        // returns a sequence of `ValidationCheckResult`s related to applying the provided
-        // `sourceModel` and `sourceComponent` to this `PairedPointSource`
+        // returns a sequence of `ValidationCheckResult`s related to trying to source the points
+        // from the provided `sourceModel` and `sourceComponent`.
         std::vector<ValidationCheckResult> validate(
             const OpenSim::Model& sourceModel,
             const OpenSim::Component& sourceComponent) const
@@ -391,7 +406,7 @@ namespace osc::mow
 
         // by default, returns no `ValidationCheckResult`s (i.e. no validation)
         //
-        // overriders should return `ValidationCheckResult`s for their concrete `PairedPointSource`
+        // overriders should return `ValidationCheckResult`s for their concrete `PairedPointsSource`
         // implementation--including checks that pass/warn--so that the information can be propagated
         // to other layers of the system (e.g. so that a UI system could display "this thing is ok")
         virtual std::vector<ValidationCheckResult> implValidate(
@@ -400,7 +415,7 @@ namespace osc::mow
         ) const;
     };
 
-    // a `PairedPointsource` that uses heuristics to find the landmarks associated with one `OpenSim::Mesh`
+    // a `PairedPointsSource` that uses heuristics to find the landmarks associated with one `OpenSim::Mesh`
     //
     // - the source component supplied must be an `OpenSim::Mesh`; otherwise, a validation error is generated
     // - the source landmarks file is assumed to be on the filesystem "next to" the `OpenSim::Mesh` and
@@ -409,8 +424,8 @@ namespace osc::mow
     //   in a directory named `DestinationGeometry` at `${model_parent_directory}/DestinationGeometry/${mesh_file_name_without_extension}.landmarks.csv`;
     //   otherwise, a validation error is generated
     // - else, accept those pairs as "the mesh's landmark pairs" (even if empty)
-    class LandmarkPairsAssociatedWithMesh final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsAssociatedWithMesh, PairedPointSource)
+    class LandmarkPairsAssociatedWithMesh final : public PairedPointsSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsAssociatedWithMesh, PairedPointsSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
@@ -488,7 +503,7 @@ namespace osc::mow
         }
     };
 
-    // a `PairedPointSource` that uses heuristics to find the most appropriate `PairedPoints`
+    // a `PairedPointsSource` that uses heuristics to find the most appropriate `PairedPoints`
     // for a given `OpenSim::Component`. The heuristic is:
     //
     // 1. find the base frame of the component:
@@ -510,8 +525,8 @@ namespace osc::mow
     //       should be propagated upwards
     //     - transform all of "the mesh's landmark pairs" in the mesh's frame to the base frame found in step 1
     //     - merge all of "the mesh's landmark pairs" in "the input mesh set" into a `PairedPoints`
-    class LandmarkPairsOfMeshesAttachedToSameBaseFrame final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsOfMeshesAttachedToSameBaseFrame, PairedPointSource)
+    class LandmarkPairsOfMeshesAttachedToSameBaseFrame final : public PairedPointsSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(LandmarkPairsOfMeshesAttachedToSameBaseFrame, PairedPointsSource)
     private:
         PairedPoints implGetPairedPoints(WarpCache&, const OpenSim::Model&, const OpenSim::Component&) final
         {
@@ -525,7 +540,12 @@ namespace osc::mow
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy, OffsetFrameWarpingStrategy)
 
     public:
-        OpenSim_DECLARE_PROPERTY(point_source, PairedPointSource, "a `PairedPointSource` that describes where the Thin Plate Spline algorithm should source its data from");
+        OpenSim_DECLARE_PROPERTY(point_source, PairedPointsSource, "a `PairedPointsSource` that describes where the Thin Plate Spline algorithm should source its data from");
+
+        ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy()
+        {
+            constructProperty_point_source(LandmarkPairsOfMeshesAttachedToSameBaseFrame{});
+        }
 
     private:
         std::unique_ptr<ComponentWarpingStrategy> implClone() const final
@@ -542,6 +562,13 @@ namespace osc::mow
         std::unique_ptr<IComponentWarper> implCreateWarper(const OpenSim::Model&, const OpenSim::Component&) final
         {
             return std::make_unique<IdentityComponentWarper>();
+        }
+
+        std::vector<ValidationCheckResult> implValidate(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Component& sourceComponent) const final
+        {
+            return get_point_source().validate(sourceModel, sourceComponent);
         }
     };
 
@@ -569,7 +596,7 @@ namespace osc::mow
             return std::make_unique<ExceptionThrowingComponentWarper>("ProduceErrorStationWarpingStrategy: TODO: configuration-customizable error message");
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             return {
                 ValidationCheckResult{"this warping strategy always produces an error (TODO: configuration-customizable error message)", ValidationCheckState::Error},
@@ -598,7 +625,7 @@ namespace osc::mow
             return std::make_unique<IdentityComponentWarper>();
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             return {
                 ValidationCheckResult{"this is an identity warp (i.e. it ignores warping this offset frame altogether)", ValidationCheckState::Warning},
@@ -617,7 +644,7 @@ namespace osc::mow
             return std::make_unique<ThinPlateSplineStationWarpingStrategy>(*this);
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             /*
             * std::vector<ValidationCheckResult> rv;
@@ -708,7 +735,7 @@ namespace osc::mow
             return std::make_unique<ExceptionThrowingComponentWarper>("ProduceErrorStationWarpingStrategy: TODO: configuration-customizable error message");
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             return {
                 ValidationCheckResult{"this warping strategy always produces an error (TODO: configuration-customizable error message)", ValidationCheckState::Error},
@@ -737,7 +764,7 @@ namespace osc::mow
             return std::make_unique<IdentityComponentWarper>();
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             return {
                 ValidationCheckResult{"this is an identity warp (i.e. it ignores warping this station altogether)", ValidationCheckState::Warning},
@@ -756,7 +783,7 @@ namespace osc::mow
             return std::make_unique<ThinPlateSplineMeshWarpingStrategy>(*this);
         }
 
-        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&) const override
+        std::vector<ValidationCheckResult> implValidate(const OpenSim::Model&, const OpenSim::Component&) const override
         {
             /*
             * std::vector<ValidationCheckResult> rv;

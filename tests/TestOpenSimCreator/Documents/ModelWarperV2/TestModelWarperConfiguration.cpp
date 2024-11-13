@@ -200,9 +200,9 @@ TEST(PairedPoints, EqualityIsValueBased)
 
 namespace
 {
-    // A testing class for testing the `PairedPointSource`-related APIs.
-    class TestablePairedPointSource final : public PairedPointSource {
-        OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointSource, PairedPointSource)
+    // A testing class for testing the `PairedPointsSource`-related APIs.
+    class TestablePairedPointsSource final : public PairedPointsSource {
+        OpenSim_DECLARE_CONCRETE_OBJECT(TestablePairedPointsSource, PairedPointsSource)
     public:
         template<std::ranges::input_range Range>
         requires std::convertible_to<std::ranges::range_value_t<Range>, ValidationCheckResult>
@@ -236,7 +236,7 @@ namespace
     };
 }
 
-TEST(PairedPointSource, getPairedPoints_returnsPairedPoints)
+TEST(PairedPointsSource, getPairedPoints_returnsPairedPoints)
 {
     const PairedPoints points{
         std::to_array<LandmarkPair3D>({
@@ -246,7 +246,7 @@ TEST(PairedPointSource, getPairedPoints_returnsPairedPoints)
         OpenSim::ComponentPath{"somebaseframe"},
     };
 
-    TestablePairedPointSource mock;
+    TestablePairedPointsSource mock;
     mock.setPairedPoints(points);
 
     WarpCache cache;
@@ -257,7 +257,7 @@ TEST(PairedPointSource, getPairedPoints_returnsPairedPoints)
     ASSERT_EQ(returnedPoints, points);
 }
 
-TEST(PairedPointSource, getPairedPoints_validateReturnsValidationChecks)
+TEST(PairedPointsSource, getPairedPoints_validateReturnsValidationChecks)
 {
     const std::vector<ValidationCheckResult> checks = {
         {"some ok check", ValidationCheckState::Ok},
@@ -265,7 +265,7 @@ TEST(PairedPointSource, getPairedPoints_validateReturnsValidationChecks)
         {"some error check", ValidationCheckState::Error},
     };
 
-    TestablePairedPointSource mock;
+    TestablePairedPointsSource mock;
     mock.setChecks(checks);
 
     const OpenSim::Model sourceModel;
@@ -275,13 +275,13 @@ TEST(PairedPointSource, getPairedPoints_validateReturnsValidationChecks)
     ASSERT_EQ(returnedChecks, checks);
 }
 
-TEST(PairedPointSource, getPairedPoints_throwsIfValidationChecksContainError)
+TEST(PairedPointsSource, getPairedPoints_throwsIfValidationChecksContainError)
 {
     const std::vector<ValidationCheckResult> checks = {
         {"uh oh", ValidationCheckState::Error},
     };
 
-    TestablePairedPointSource mock;
+    TestablePairedPointsSource mock;
     mock.setChecks(checks);
 
     WarpCache cache;
@@ -290,13 +290,13 @@ TEST(PairedPointSource, getPairedPoints_throwsIfValidationChecksContainError)
     ASSERT_THROW({ mock.getPairedPoints(cache, sourceModel, sourceComponent); }, std::exception);
 }
 
-TEST(PairedPointSource, getPairedPoints_doesntThrowIfChecksContainWarning)
+TEST(PairedPointsSource, getPairedPoints_doesntThrowIfChecksContainWarning)
 {
     const std::vector<ValidationCheckResult> checks = {
         {"should be ok", ValidationCheckState::Warning},
     };
 
-    TestablePairedPointSource mock;
+    TestablePairedPointsSource mock;
     mock.setChecks(checks);
 
     WarpCache cache;
@@ -751,4 +751,33 @@ TEST(ModelWarperConfiguration, tryMatchStrategyDoesNotThrowIfTwoWildcardsForDiff
 
     ASSERT_NE(matchedStrategy, nullptr);
     ASSERT_NE(dynamic_cast<const ProduceErrorOffsetFrameWarpingStrategy*>(matchedStrategy), nullptr);
+}
+
+TEST(ModelWarperConfiguration, OnlyWarpOffsetsWithMissingLandmarksProducesMissingLandmarksValidationError)
+{
+    OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
+
+    OpenSim::Model model{GetFixturePath("Document/ModelWarperV2/OnlyWarpOffsetsMissingLandmarks/model.osim").string()};
+    ASSERT_NO_THROW({ model.buildSystem(); })  << "the base model should be valid";
+
+    ModelWarperConfiguration config{GetFixturePath("Document/ModelWarperV2/OnlyWarpOffsetsMissingLandmarks/model.warpconfig.xml")};
+    ASSERT_NO_THROW({ config.finalizeConnections(config); }) << "shouldn't have problems until it starts recieving meshes etc.";
+
+    for (const auto& pof : model.getComponentList<OpenSim::PhysicalOffsetFrame>()) {
+        const ComponentWarpingStrategy* strategy = config.tryMatchStrategy(pof);
+
+        // Ensure the strategy was matched and has the expected type.
+        ASSERT_TRUE(strategy);
+        ASSERT_EQ(strategy->calculateMatchQuality(pof), StrategyMatchQuality::wildcard());
+        const auto* downcasted = dynamic_cast<const ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy*>(strategy);
+        ASSERT_TRUE(downcasted);
+
+        // Ensure the point source for the TPS warp defaults to `LandmarkPairsOfMeshesAttachedToSameBaseFrame`
+        ASSERT_TRUE(dynamic_cast<const LandmarkPairsOfMeshesAttachedToSameBaseFrame*>(&downcasted->get_point_source()));
+
+        // Ensure there's a validation error, because the meshes attached to the base frame don't have associated
+        // source/destination landmarks.
+        // const auto checks = strategy->validate(model, pof);  // TODO
+        // ASSERT_TRUE(rgs::any_of(checks, &ValidationCheckResult::is_error));  // TODO
+    }
 }

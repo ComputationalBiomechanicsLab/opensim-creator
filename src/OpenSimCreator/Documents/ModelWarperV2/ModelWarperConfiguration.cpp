@@ -19,7 +19,7 @@
 using namespace osc::mow;
 namespace rgs = std::ranges;
 
-PairedPoints osc::mow::PairedPointSource::getPairedPoints(
+PairedPoints osc::mow::PairedPointsSource::getPairedPoints(
     WarpCache& warpCache,
     const OpenSim::Model& sourceModel,
     const OpenSim::Component& sourceComponent)
@@ -41,7 +41,7 @@ PairedPoints osc::mow::PairedPointSource::getPairedPoints(
     return implGetPairedPoints(warpCache, sourceModel, sourceComponent);
 }
 
-std::vector<ValidationCheckResult> osc::mow::PairedPointSource::implValidate(
+std::vector<ValidationCheckResult> osc::mow::PairedPointsSource::implValidate(
     const OpenSim::Model&,
     const OpenSim::Component&) const
 {
