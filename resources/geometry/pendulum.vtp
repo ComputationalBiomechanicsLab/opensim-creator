@@ -2,10 +2,8 @@
 <VTKFile type="PolyData" version="0.1" byte_order="LittleEndian" header_type="UInt32" compressor="vtkZLibDataCompressor">
   <PolyData>
     <Piece NumberOfPoints="134" NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="144">
-      <CellData>
-      </CellData>
       <Points>
-        <DataArray type="Float32" Name="Array 000000000D877D50" NumberOfComponents="3" format="ascii" RangeMin="0.019999999553" RangeMax="0.50039984013">
+        <DataArray type="Float32" NumberOfComponents="3" format="ascii">
           -0.10000000149 0.014999999665 0 0.10000000149 0.014999999665 0
           -0.10000000149 0.0074999998324 -0.012990380637 0.10000000149 0.0074999998324 -0.012990380637
           -0.10000000149 -0.0074999998324 -0.012990380637 0.10000000149 -0.0074999998324 -0.012990380637
@@ -75,26 +73,8 @@
           0.047438625246 -0.034466166049 -0.046761739999 0.026326447725 -0.019127277657 -0.067572668195
         </DataArray>
       </Points>
-      <Verts>
-        <DataArray type="Int64" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-        <DataArray type="Int64" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-      </Verts>
-      <Lines>
-        <DataArray type="Int64" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-        <DataArray type="Int64" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-      </Lines>
-      <Strips>
-        <DataArray type="Int64" Name="connectivity" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-        <DataArray type="Int64" Name="offsets" format="ascii" RangeMin="1e+299" RangeMax="-1e+299">
-        </DataArray>
-      </Strips>
       <Polys>
-        <DataArray type="Int64" Name="connectivity" format="ascii" RangeMin="0" RangeMax="133">
+        <DataArray type="Int64" Name="connectivity" format="ascii">
           0 1 3 2 2 3
           5 4 4 5 7 6
           6 7 9 8 8 9
@@ -174,7 +154,7 @@
           131 132 78 131 78 77
           132 133 79 132 79 78
         </DataArray>
-        <DataArray type="Int64" Name="offsets" format="ascii" RangeMin="4" RangeMax="468">
+        <DataArray type="Int64" Name="offsets" format="ascii">
           4 8 12 16 20 24
           30 36 40 44 48 52
           56 60 66 72 76 80
