@@ -198,40 +198,6 @@ namespace
         return Material{shader};
     }
 }
-
-TEST_F(Renderer, MeshTopologyAllCanBeWrittenToStream)
-{
-    for (size_t i = 0; i < num_options<MeshTopology>(); ++i) {
-        const auto mt = static_cast<MeshTopology>(i);
-
-        std::stringstream ss;
-
-        ss << mt;
-
-        ASSERT_FALSE(ss.str().empty());
-    }
-}
-
-TEST_F(Renderer, LoadTexture2DFromImageResourceCanLoadImageFile)
-{
-    const Texture2D t = load_texture2D_from_image(
-        App::load_resource((std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png").string()),
-        ColorSpace::sRGB
-    );
-    ASSERT_EQ(t.dimensions(), Vec2i(512, 512));
-}
-
-TEST_F(Renderer, LoadTexture2DFromImageResourceThrowsIfResourceNotFound)
-{
-    ASSERT_ANY_THROW(
-    {
-        load_texture2D_from_image(
-            App::load_resource("textures/doesnt_exist.png"),
-            ColorSpace::sRGB
-        );
-    });
-}
-
 TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
 {
     const Mesh mesh;
