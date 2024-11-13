@@ -42,4 +42,4 @@ emmake cmake --build osc-build --target testoscar -v -j$(nproc)
 emmake cmake --build osc-build --target hellotriangle -v -j$(nproc)
 
 # run test suite, excluding tests that depend on window/files (work-in-progress)
-node osc-build/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*
+node osc-build/tests/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*
