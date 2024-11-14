@@ -29,7 +29,7 @@ TEST(load_texture2D_from_image, respects_linear_color_space)
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::Linear);
 }
 
-TEST(load_texture2d_from_image, is_compatible_with_write_to_png)
+TEST(load_texture2D_from_image, is_compatible_with_write_to_png)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
