@@ -640,16 +640,13 @@ target_compile_definitions(oscar PUBLIC
 target_include_directories(oscar PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <oscar/HEADER.h>` works
 )
-
 target_link_libraries(oscar PRIVATE
     # these libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out)
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:
-        OpenGL::GL
-        GLEW::glew_s
-        SDL2::SDL2
-        nativefiledialog
-    >
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:OpenGL::GL>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:GLEW::glew_s>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL2::SDL2>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
     imgui
     implot
