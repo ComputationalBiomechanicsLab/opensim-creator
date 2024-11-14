@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <OpenSimCreator/Utils/LandmarkPair3D.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -755,6 +756,8 @@ TEST(ModelWarperConfiguration, tryMatchStrategyDoesNotThrowIfTwoWildcardsForDiff
 
 TEST(ModelWarperConfiguration, OnlyWarpOffsetsWithMissingLandmarksProducesMissingLandmarksValidationError)
 {
+    GloballyInitOpenSim();
+
     OpenSim::Object::registerType(ThinPlateSplineOnlyTranslationOffsetFrameWarpingStrategy{});
 
     OpenSim::Model model{GetFixturePath("Document/ModelWarperV2/OnlyWarpOffsetsMissingLandmarks/model.osim").string()};
