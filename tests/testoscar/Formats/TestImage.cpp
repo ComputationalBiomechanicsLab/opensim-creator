@@ -39,7 +39,7 @@ TEST(load_texture2d_from_image, is_compatible_with_write_to_png)
     ASSERT_TRUE(out.was_written_to());
 }
 
-TEST(load_texture2d_from_image, can_load_image_from_ResourceStream)
+TEST(load_texture2D_from_image, can_load_image_from_ResourceStream)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
     const Texture2D loaded_texture = load_texture2D_from_image(
@@ -50,7 +50,7 @@ TEST(load_texture2d_from_image, can_load_image_from_ResourceStream)
     ASSERT_EQ(loaded_texture.dimensions(), Vec2i(512, 512));
 }
 
-TEST(load_texture2d_from_image, throws_when_called_with_an_invalid_path)
+TEST(load_texture2D_from_image, throws_when_called_with_an_invalid_path)
 {
     ASSERT_ANY_THROW(
     {
