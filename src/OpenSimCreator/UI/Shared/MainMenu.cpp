@@ -195,7 +195,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         auto tab = std::make_unique<mi::MeshImporterTab>(*m_Parent);
         App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
     }
-    if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data (" OSC_ICON_MAGIC " experimental)")) {
+    if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data")) {
         auto tab = std::make_unique<PreviewExperimentalDataTab>(*m_Parent);
         App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
     }

@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Workflow links on the splash screen were reordered slightly.
+- The "Frame Definition" workflow is now labelled as deprecated, because we anticipate
+  that it isn't used very much. If you think otherwise, then post a comment on issue
+  #951.
 - The documentation now contains an explanation for how to install OSC on MacOSes
   that have a newer, more draconian, gatekeeper (#942).
 - Fixed a typo where tutorial 5 referred to a "femur CT scan" when the content was
