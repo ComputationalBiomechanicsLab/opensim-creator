@@ -244,3 +244,18 @@ std::optional<uint8_t> osc::try_parse_hex_chars_as_byte(char a, char b)
         return std::nullopt;
     }
 }
+
+std::string osc::replace(std::string_view str, std::string_view from, std::string_view to)
+{
+    if (const auto pos = str.find(from); pos != std::string_view::npos) {
+        std::string rv;
+        rv.reserve(str.size() + to.size() - from.size());
+        rv.insert(0, str.substr(0, pos));
+        rv.insert(rv.size(), to);
+        rv.insert(rv.size(), str.substr(pos + from.size()));
+        return rv;
+    }
+    else {
+        return std::string{str};
+    }
+}

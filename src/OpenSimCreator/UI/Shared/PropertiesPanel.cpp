@@ -122,7 +122,7 @@ public:
 
         PanelPrivate{owner, &parent, panelName},
         m_Model{std::move(model)},
-        m_SelectionPropertiesEditor{parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
+        m_SelectionPropertiesEditor{&parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {}
 
     void draw_content()

@@ -76,7 +76,7 @@ public:
         StandardPopup{popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{&parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
     {}
 
 private:

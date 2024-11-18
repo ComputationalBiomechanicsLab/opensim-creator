@@ -11,11 +11,7 @@
 #include <string_view>
 #include <vector>
 
-using osc::try_parse_hex_chars_as_byte;
-using osc::strip_whitespace;
-using osc::to_hex_chars;
-using osc::is_valid_identifier;
-using osc::join;
+using namespace osc;
 
 TEST(strip_whitespace, works_as_expected)
 {
@@ -346,4 +342,24 @@ TEST(join, works_with_two_elements)
 TEST(join, works_with_three_elements)
 {
     ASSERT_EQ(join(std::to_array({5, 4, 3}), ", "), "5, 4, 3");
+}
+
+TEST(replace, works_as_intended)
+{
+    struct TestCase final {
+        std::string_view str;
+        std::string_view from;
+        std::string_view to;
+        std::string_view expected_output;
+    };
+    constexpr auto test_cases = std::to_array<TestCase>({
+        // input             // search string  // replacement  // expected result
+        {"hello, ${var}!" ,  "${var}",         "world",        "hello, world!" },
+        {"${var}, ${var}!",  "${var}",         "hello",        "hello, ${var}!"},  // i.e. it replaces the first instance, it isn't `replace_all`
+        {"hello, world!"  ,  "unused",         "nope" ,        "hello, world!" },
+    });
+    for (const auto& test_case : test_cases) {
+        const std::string output = replace(test_case.str, test_case.from, test_case.to);
+        ASSERT_EQ(output, test_case.expected_output);
+    }
 }

@@ -2018,7 +2018,12 @@ void osc::ui::draw_help_marker(CStringView content)
 
 bool osc::ui::draw_string_input(CStringView label, std::string& edited_string, TextInputFlags flags)
 {
-    return ImGui::InputText(label.c_str(), &edited_string, to<ImGuiInputTextFlags>(flags));  // uses `imgui_stdlib`
+    return ImGui::InputText(label.c_str(), &edited_string, to<ImGuiInputTextFlags>(flags));
+}
+
+bool osc::ui::draw_string_input_with_hint(CStringView label, CStringView hint, std::string& edited_string, TextInputFlags flags)
+{
+    return ImGui::InputTextWithHint(label.c_str(), hint.c_str(), & edited_string, to<ImGuiInputTextFlags>(flags));
 }
 
 bool osc::ui::draw_float_meters_input(CStringView label, float& v, float step, float step_fast, TextInputFlags flags)

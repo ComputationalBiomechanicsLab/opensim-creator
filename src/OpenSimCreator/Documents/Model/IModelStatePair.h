@@ -1,5 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Model/IVersionedComponentAccessor.h>
+
 #include <oscar/Utils/UID.h>
 
 #include <filesystem>
@@ -16,7 +18,7 @@ namespace osc
 {
     // virtual accessor to an `OpenSim::Model` + `SimTK::State` pair, with
     // additional opt-in overrides to aid rendering/UX etc.
-    class IModelStatePair {
+    class IModelStatePair : public IVersionedComponentAccessor {
     protected:
         IModelStatePair() = default;
         IModelStatePair(const IModelStatePair&) = default;
@@ -93,6 +95,13 @@ namespace osc
         void setUpToDateWithFilesystem(std::filesystem::file_time_type t) { implSetUpToDateWithFilesystem(t); }
 
     private:
+        // overrides + specializes `IComponentAccessor` API
+        const OpenSim::Component& implGetComponent() const final;
+        bool implCanUpdComponent() const { return implCanUpdModel(); }
+        OpenSim::Component& implUpdComponent() final;
+        UID implGetComponentVersion() const final { return implGetModelVersion(); }
+        void implSetComponentVersion(UID newVersion) final { implSetModelVersion(newVersion); }
+
         // Implementors should return a const reference to an initialized (finalized properties, etc.) model.
         virtual const OpenSim::Model& implGetModel() const = 0;
 

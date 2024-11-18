@@ -5,6 +5,7 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
 #include <OpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
 #include <OpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
+#include <OpenSimCreator/UI/ModelWarperV3/ModelWarperV3Tab.h>
 #include <OpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <OpenSimCreator/UI/MeshHittestTab.h>
 #include <OpenSimCreator/UI/RendererGeometryShaderTab.h>
@@ -22,6 +23,7 @@ namespace osc
         mi::MeshImporterTab,
         ModelEditorTab,
         mow::ModelWarperTab,
+        ModelWarperV3Tab,
         FrameDefinitionTab,
         MeshHittestTab,
         RendererGeometryShaderTab,

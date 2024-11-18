@@ -7,16 +7,16 @@
 #include <optional>
 
 namespace OpenSim { class Object; }
-namespace osc { class IModelStatePair; }
+namespace osc { class IVersionedComponentAccessor; }
 namespace osc { class Widget; }
 
 namespace osc
 {
     class ObjectPropertiesEditor final {
     public:
-        ObjectPropertiesEditor(
-            Widget&,
-            std::shared_ptr<const IModelStatePair> targetModel,
+        explicit ObjectPropertiesEditor(
+            Widget* parentWidget,
+            std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
             std::function<const OpenSim::Object*()> objectGetter
         );
         ObjectPropertiesEditor(const ObjectPropertiesEditor&) = delete;
@@ -24,6 +24,8 @@ namespace osc
         ObjectPropertiesEditor& operator=(const ObjectPropertiesEditor&) = delete;
         ObjectPropertiesEditor& operator=(ObjectPropertiesEditor&&) noexcept;
         ~ObjectPropertiesEditor() noexcept;
+
+        void insertInBlacklist(std::string_view propertyName);
 
         // does not actually apply any property changes - the caller should check+apply the return value
         std::optional<ObjectPropertyEdit> onDraw();

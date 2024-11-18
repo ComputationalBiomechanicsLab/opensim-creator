@@ -120,7 +120,10 @@ add_library(OpenSimCreator STATIC
     Documents/Model/BasicModelStatePair.h
     Documents/Model/Environment.cpp
     Documents/Model/Environment.h
+    Documents/Model/IComponentAccessor.h
+    Documents/Model/IModelStatePair.cpp
     Documents/Model/IModelStatePair.h
+    Documents/Model/IVersionedComponentAccessor.h
     Documents/Model/ModelStateCommit.cpp
     Documents/Model/ModelStateCommit.h
     Documents/Model/ModelStatePairInfo.cpp
@@ -300,6 +303,8 @@ add_library(OpenSimCreator STATIC
     UI/MeshWarper/MeshWarpingTabToolbar.cpp
     UI/MeshWarper/MeshWarpingTabToolbar.h
     UI/MeshWarper/MeshWarpingTabUserSelection.h
+    UI/ModelWarperV3/ModelWarperV3Tab.cpp
+    UI/ModelWarperV3/ModelWarperV3Tab.h
 
     UI/ModelEditor/AddBodyPopup.cpp
     UI/ModelEditor/AddBodyPopup.h

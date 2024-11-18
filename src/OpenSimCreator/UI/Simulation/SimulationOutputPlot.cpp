@@ -52,7 +52,7 @@ namespace
         const OutputExtractor& output)
     {
         if (env.hasUserOutputExtractor(output)) {
-            if (ui::draw_menu_item(OSC_ICON_TRASH " Stop Watching")) {
+            if (ui::draw_menu_item(OSC_ICON_TIMES " Stop Watching")) {
                 env.removeUserOutputExtractor(output);
             }
         }

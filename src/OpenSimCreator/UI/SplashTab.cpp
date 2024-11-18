@@ -287,7 +287,7 @@ private:
         }
         App::upd().add_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
 
-        if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition (" OSC_ICON_TRASH " deprecated)")) {
+        if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition (" OSC_ICON_TIMES " deprecated)")) {
             auto tab = std::make_unique<FrameDefinitionTab>(*parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }

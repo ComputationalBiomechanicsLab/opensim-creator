@@ -1,6 +1,6 @@
 #include "FunctionCurveViewerPopup.h"
 
-#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IVersionedComponentAccessor.h>
 
 #include <OpenSim/Common/Function.h>
 #include <oscar/Formats/CSV.h>
@@ -31,27 +31,25 @@ public:
     Impl(
         FunctionCurveViewerPanel& owner,
         std::string_view popupName,
-        std::shared_ptr<const IModelStatePair> targetModel,
+        std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Function*()> functionGetter) :
 
         PanelPrivate{owner, nullptr, popupName, ui::WindowFlag::AlwaysAutoResize},
-        m_Model{std::move(targetModel)},
+        m_Component{std::move(targetComponent)},
         m_FunctionGetter{std::move(functionGetter)}
     {}
 private:
     class FunctionParameters final {
     public:
-        explicit FunctionParameters(const IModelStatePair& model) :
-            modelVerison{model.getModelVersion()},
-            stateVersion{model.getStateVersion()}
+        explicit FunctionParameters(const IVersionedComponentAccessor& component) :
+            componentVersion{component.getComponentVersion()}
         {}
 
         friend bool operator==(const FunctionParameters& lhs, const FunctionParameters& rhs) = default;
 
-        void setVersionFromModel(const IModelStatePair& model)
+        void setVersionFromComponent(const IVersionedComponentAccessor& component)
         {
-            modelVerison = model.getModelVersion();
-            stateVersion = model.getStateVersion();
+            componentVersion = component.getComponentVersion();
         }
 
         ClosedInterval<float> getInputRange() const { return inputRange; }
@@ -60,8 +58,7 @@ private:
         int& updNumPoints() { return numPoints; }
 
     private:
-        UID modelVerison;
-        UID stateVersion;
+        UID componentVersion;
         ClosedInterval<float> inputRange = {-1.0f, 1.0f};
         int numPoints = 100;
     };
@@ -106,7 +103,7 @@ public:
     void draw_content()
     {
         // update parameter state and check if replotting is necessary
-        m_LatestParameters.setVersionFromModel(*m_Model);
+        m_LatestParameters.setVersionFromComponent(*m_Component);
         if (m_LatestParameters != m_PlottedParameters) {
             m_PlottedParameters = m_LatestParameters;
             m_PlotPoints = generatePlotPoints(m_LatestParameters);
@@ -162,7 +159,7 @@ private:
 
         const OpenSim::Function* function = m_FunctionGetter();
         if (not function) {
-            m_Error = "could not get the function from the model (maybe the model was edited, or the function was deleted?)";
+            m_Error = "could not get the function from the component (maybe the component was edited, or the function was deleted?)";
             return rv;
         }
 
@@ -208,9 +205,9 @@ private:
         }
     }
 
-    std::shared_ptr<const IModelStatePair> m_Model;
+    std::shared_ptr<const IVersionedComponentAccessor> m_Component;
     std::function<const OpenSim::Function*()> m_FunctionGetter;
-    FunctionParameters m_LatestParameters{*m_Model};
+    FunctionParameters m_LatestParameters{*m_Component};
     std::optional<FunctionParameters> m_PlottedParameters;
     PlotPoints m_PlotPoints;
     std::optional<std::string> m_Error;
@@ -218,9 +215,9 @@ private:
 
 osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
     std::string_view panelName,
-    std::shared_ptr<const IModelStatePair> targetModel,
+    std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Function*()> functionGetter) :
 
-    Panel{std::make_unique<Impl>(*this, panelName, std::move(targetModel), std::move(functionGetter))}
+    Panel{std::make_unique<Impl>(*this, panelName, std::move(targetComponent), std::move(functionGetter))}
 {}
 void osc::FunctionCurveViewerPanel::impl_draw_content() { private_data().draw_content(); }

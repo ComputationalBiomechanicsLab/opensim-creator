@@ -1,11 +1,11 @@
 #include "GeometryPathEditorPopup.h"
 
-#include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/Documents/Model/IComponentAccessor.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
+#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
@@ -119,12 +119,12 @@ class osc::GeometryPathEditorPopup::Impl final : public StandardPopup {
 public:
     Impl(
         std::string_view popupName_,
-        std::shared_ptr<const IModelStatePair> targetModel_,
+        std::shared_ptr<const IComponentAccessor> targetComponent_,
         std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
         StandardPopup{popupName_, {768.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
-        m_TargetModel{std::move(targetModel_)},
+        m_TargetComponent{std::move(targetComponent_)},
         m_GeometryPathGetter{std::move(geometryPathGetter_)},
         m_OnLocalCopyEdited{std::move(onLocalCopyEdited_)},
         m_EditedGeometryPath{CopyOrDefaultGeometryPath(m_GeometryPathGetter)}
@@ -144,7 +144,7 @@ private:
         }
         // else: the geometry path exists, but this UI should edit the cached
         // `m_EditedGeometryPath`, which is independent of the original data
-        // and the target model (so that edits can be applied transactionally)
+        // and the target component (so that edits can be applied transactionally)
 
         ui::draw_text("Path Points:");
         ui::draw_separator();
@@ -241,7 +241,7 @@ private:
         ui::same_line();
 
         ui::push_style_color(ui::ColorVar::Text, Color{0.7f, 0.0f, 0.0f});
-        if (ui::draw_small_button(OSC_ICON_TIMES))
+        if (ui::draw_small_button(OSC_ICON_TRASH))
         {
             m_RequestedAction = RequestedAction{RequestedAction::Type::Delete, i};
         }
@@ -299,7 +299,7 @@ private:
         ui::set_next_item_width(width);
         if (ui::begin_combobox("##framesel", label))
         {
-            for (const OpenSim::Frame& frame : m_TargetModel->getModel().getComponentList<OpenSim::Frame>())
+            for (const OpenSim::Frame& frame : m_TargetComponent->getComponent().getComponentList<OpenSim::Frame>())
             {
                 const std::string absPath = frame.getAbsolutePathString();
                 if (ui::draw_selectable(absPath))
@@ -354,7 +354,7 @@ private:
         m_RequestedAction.reset();  // action handled: resets
     }
 
-    std::shared_ptr<const IModelStatePair> m_TargetModel;
+    std::shared_ptr<const IComponentAccessor> m_TargetComponent;
     std::function<const OpenSim::GeometryPath*()> m_GeometryPathGetter;
     std::function<void(const OpenSim::GeometryPath&)> m_OnLocalCopyEdited;
 
@@ -365,37 +365,19 @@ private:
 
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
     std::string_view popupName_,
-    std::shared_ptr<const IModelStatePair> targetModel_,
+    std::shared_ptr<const IComponentAccessor> targetComponent_,
     std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetModel_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
+    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetComponent_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
 {}
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept = default;
 osc::GeometryPathEditorPopup& osc::GeometryPathEditorPopup::operator=(GeometryPathEditorPopup&&) noexcept = default;
 osc::GeometryPathEditorPopup::~GeometryPathEditorPopup() noexcept = default;
 
-bool osc::GeometryPathEditorPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-void osc::GeometryPathEditorPopup::impl_open()
-{
-    m_Impl->open();
-}
-void osc::GeometryPathEditorPopup::impl_close()
-{
-    m_Impl->close();
-}
-bool osc::GeometryPathEditorPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-void osc::GeometryPathEditorPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-void osc::GeometryPathEditorPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+bool osc::GeometryPathEditorPopup::impl_is_open() const { return m_Impl->is_open(); }
+void osc::GeometryPathEditorPopup::impl_open() { m_Impl->open(); }
+void osc::GeometryPathEditorPopup::impl_close() { m_Impl->close(); }
+bool osc::GeometryPathEditorPopup::impl_begin_popup() { return m_Impl->begin_popup(); }
+void osc::GeometryPathEditorPopup::impl_on_draw() { m_Impl->on_draw(); }
+void osc::GeometryPathEditorPopup::impl_end_popup() { m_Impl->end_popup(); }

@@ -87,6 +87,8 @@ namespace osc
         return std::move(ss).str();
     }
 
+    // returns a string that contains a string-ified version of each element in `r` joined
+    // with a given `delimiter`.
     template<std::ranges::input_range R>
     requires OutputStreamable<std::ranges::range_value_t<R>>
     std::string join(R&& r, std::string_view delimiter)
@@ -100,4 +102,8 @@ namespace osc
         }
         return std::move(ss).str();
     }
+
+    // Returns a copy of `str`'s content, but with the first instance of `from` replaced
+    // with `to` (if any).
+    std::string replace(std::string_view str, std::string_view from, std::string_view to);
 }

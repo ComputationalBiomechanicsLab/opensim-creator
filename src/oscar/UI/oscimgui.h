@@ -724,6 +724,14 @@ namespace osc::ui
         TextInputFlags = {}
     );
 
+    // draws a text input that contains `hint` as a placeholder and manipulates a `std::string`
+    bool draw_string_input_with_hint(
+        CStringView label,
+        CStringView hint,
+        std::string& edited_string,
+        TextInputFlags = {}
+    );
+
     // behaves like `ui::draw_float_input`, but understood to manipulate the scene scale
     bool draw_float_meters_input(
         CStringView label,
