@@ -8,13 +8,8 @@
 using namespace osc;
 
 osc::Screen::Screen() :
-    Screen{std::make_unique<ScreenPrivate>(*this, nullptr)}
+    Screen{std::make_unique<ScreenPrivate>(*this, nullptr, "DefaultScreen")}
 {}
 osc::Screen::Screen(std::unique_ptr<ScreenPrivate>&& ptr) :
     Widget{std::move(ptr)}
 {}
-CStringView osc::Screen::impl_get_name() const
-{
-    const Screen& s = *this;
-    return typeid(s).name();
-}

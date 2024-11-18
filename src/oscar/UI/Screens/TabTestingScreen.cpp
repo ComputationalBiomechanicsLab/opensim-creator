@@ -17,7 +17,7 @@
 class osc::TabTestingScreen::Impl final : public ScreenPrivate {
 public:
     explicit Impl(TabTestingScreen& owner, TabRegistryEntry registry_entry) :
-        ScreenPrivate{owner, nullptr},
+        ScreenPrivate{owner, nullptr, "TabTestingScreen"},
         registry_entry_{std::move(registry_entry)}
     {}
 

@@ -19,6 +19,16 @@ LifetimedPtr<Widget> osc::Widget::weak_ref()
     return {private_data().lifetime(), this};
 }
 
+CStringView osc::Widget::name() const
+{
+    return private_data().name();
+}
+
+void osc::Widget::set_name(std::string_view name)
+{
+    private_data().set_name(name);
+}
+
 osc::Widget::Widget(std::unique_ptr<WidgetPrivate>&& data) :
     data_{std::move(data)}
 {}

@@ -7,7 +7,7 @@
 class osc::CookiecutterScreen::Impl final : public ScreenPrivate {
 public:
     explicit Impl(CookiecutterScreen& owner, Widget& parent) :
-        ScreenPrivate{owner, &parent}
+        ScreenPrivate{owner, &parent, "CookiecutterScreen"}
     {}
 
     void on_mount()

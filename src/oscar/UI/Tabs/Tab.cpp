@@ -12,4 +12,3 @@ osc::Tab::Tab(std::unique_ptr<TabPrivate>&& ptr) :
     Widget{std::move(ptr)}
 {}
 UID osc::Tab::id() const { return private_data().id(); }
-CStringView osc::Tab::name() const { return private_data().name(); }

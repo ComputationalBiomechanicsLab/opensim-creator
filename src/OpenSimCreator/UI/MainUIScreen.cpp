@@ -76,7 +76,7 @@ class osc::MainUIScreen::Impl final : public ScreenPrivate {
 public:
 
     explicit Impl(MainUIScreen& owner) :
-        ScreenPrivate{owner, nullptr}
+        ScreenPrivate{owner, nullptr, "MainUIScreen"}
     {}
 
     bool onUnhandledKeyUp(const KeyEvent& e)
