@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed 'Wireframe' appearance causing the component's decoration to disappear, rather
+  than showing as a wireframe (#952).
 - Workflow links on the splash screen were reordered slightly.
 - The "Frame Definition" workflow is now labelled as deprecated, because we anticipate
   that it isn't used very much. If you think otherwise, then post a comment on issue

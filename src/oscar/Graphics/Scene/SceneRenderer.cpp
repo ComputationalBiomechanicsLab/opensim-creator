@@ -224,6 +224,8 @@ public:
 
         // draw the the scene
         {
+            // setup state (materials, shadowmaps, etc.)
+
             scene_main_material_.set("uViewPos", camera_.position());
             scene_main_material_.set("uLightDir", params.light_direction);
             scene_main_material_.set("uLightColor", params.light_color);
@@ -246,18 +248,31 @@ public:
 
             Material transparent_material = scene_main_material_;
             transparent_material.set_transparent(true);
-
             MaterialPropertyBlock prop_block;
             MaterialPropertyBlock wireframe_prop_block;
             Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
+
+            // draw scene decorations
             for (const SceneDecoration& dec : decorations) {
-                if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
-                    continue;  // skip this
+
+                // if a wireframe overlay is requested for the decoration then draw it over the top in
+                // a solid color - even if `NoDrawInScene` is requested (#952).
+                if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
+                    const Color wireframe_color = std::visit(Overload{
+                        [](const Color& color) { return color; },
+                        [](const auto&) { return Color::white(); },
+                    }, dec.shading);
+
+                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.5f));
+                    graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
-                Color color_guess = Color::white();
+                if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
+                    continue;  // skip drawing the decoration (and, potentially, its normals)
+                }
+
                 std::visit(Overload{
-                    [this, &transparent_material, &dec, &previous_color, &prop_block, &color_guess](const Color& color)
+                    [this, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
                     {
                         if (color != previous_color) {
                             prop_block.set(c_diffuse_color_propname, color);
@@ -270,7 +285,6 @@ public:
                         else {
                             graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
                         }
-                        color_guess = color;
                     },
                     [this, &dec](const Material& material)
                     {
@@ -281,13 +295,6 @@ public:
                         graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
                     }
                 }, dec.shading);
-
-                // if a wireframe overlay is requested for the decoration then draw it over the top in
-                // a solid color
-                if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(color_guess, 0.1f));
-                    graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
-                }
 
                 // if normals are requested, render the scene element via a normals geometry shader
                 //
