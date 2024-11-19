@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Widgets/SaveChangesPopup.h>
+#include <oscar/UI/Popups/SaveChangesPopup.h>
 #include <oscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/UI/Popups/IPopup.h>
 
 #include <memory>
 #include <string_view>

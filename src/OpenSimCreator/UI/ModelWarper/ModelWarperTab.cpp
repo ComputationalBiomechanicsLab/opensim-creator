@@ -12,7 +12,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
-#include <oscar/UI/Widgets/PopupManager.h>
+#include <oscar/UI/Popups/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/Utils/CStringView.h>
 

@@ -46,10 +46,10 @@
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Popups/IPopup.h>
+#include <oscar/UI/Popups/PopupManager.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/UI/Widgets/IPopup.h>
-#include <oscar/UI/Widgets/PopupManager.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>

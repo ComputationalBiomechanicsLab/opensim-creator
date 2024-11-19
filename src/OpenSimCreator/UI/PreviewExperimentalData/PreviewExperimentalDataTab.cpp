@@ -30,14 +30,14 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Events.h>
+#include <oscar/UI/IconCache.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Popups/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/UI/Widgets/WindowMenu.h>
-#include <oscar/UI/IconCache.h>
-#include <oscar/UI/oscimgui.h>
 
 #include <filesystem>
 #include <memory>

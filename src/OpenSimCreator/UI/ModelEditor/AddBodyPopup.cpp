@@ -19,7 +19,7 @@
 #include <oscar/Platform/Widget.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 
 #include <memory>
 #include <span>

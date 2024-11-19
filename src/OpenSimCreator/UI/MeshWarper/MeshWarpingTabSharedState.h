@@ -21,7 +21,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Widget.h>
 #include <oscar/UI/Events/CloseTabEvent.h>
-#include <oscar/UI/Widgets/PopupManager.h>
+#include <oscar/UI/Popups/PopupManager.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/UID.h>

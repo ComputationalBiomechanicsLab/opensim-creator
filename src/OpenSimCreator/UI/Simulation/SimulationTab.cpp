@@ -35,8 +35,8 @@
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>
+#include <oscar/UI/Popups/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/Perf.h>

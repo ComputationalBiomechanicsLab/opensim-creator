@@ -21,7 +21,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ExceptionHelpers.h>
 #include <oscar/Utils/StringHelpers.h>

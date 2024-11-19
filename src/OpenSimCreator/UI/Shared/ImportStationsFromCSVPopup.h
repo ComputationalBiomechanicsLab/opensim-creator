@@ -2,7 +2,7 @@
 
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
 
-#include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/UI/Popups/IPopup.h>
 
 #include <functional>
 #include <memory>

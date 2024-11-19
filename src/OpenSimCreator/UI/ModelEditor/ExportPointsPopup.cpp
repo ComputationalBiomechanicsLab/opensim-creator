@@ -13,7 +13,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/EnumHelpers.h>

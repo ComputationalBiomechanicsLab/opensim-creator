@@ -343,6 +343,14 @@ add_library(oscar STATIC
     UI/Panels/ToggleablePanelFlags.h
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.h
+    UI/Popups/IPopup.h
+    UI/Popups/PopupManager.cpp
+    UI/Popups/PopupManager.h
+    UI/Popups/SaveChangesPopupConfig.h
+    UI/Popups/SaveChangesPopup.cpp
+    UI/Popups/SaveChangesPopup.h
+    UI/Popups/StandardPopup.cpp
+    UI/Popups/StandardPopup.h
     UI/Screens/TabTestingScreen.cpp
     UI/Screens/TabTestingScreen.h
     UI/Tabs/CookiecutterTab.cpp
@@ -368,18 +376,10 @@ add_library(oscar STATIC
     UI/Widgets/IconWithoutMenu.h
     UI/Widgets/LogViewer.cpp
     UI/Widgets/LogViewer.h
-    UI/Widgets/IPopup.h
-    UI/Widgets/PopupManager.cpp
-    UI/Widgets/PopupManager.h
     UI/Widgets/RedoButton.cpp
     UI/Widgets/RedoButton.h
-    UI/Widgets/SaveChangesPopupConfig.h
-    UI/Widgets/SaveChangesPopup.cpp
-    UI/Widgets/SaveChangesPopup.h
     UI/Widgets/SceneViewer.cpp
     UI/Widgets/SceneViewer.h
-    UI/Widgets/StandardPopup.cpp
-    UI/Widgets/StandardPopup.h
     UI/Widgets/UndoButton.cpp
     UI/Widgets/UndoButton.h
     UI/Widgets/WindowMenu.cpp
@@ -480,7 +480,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
-)
+ "UI/Popups.h")
 
 set_target_properties(oscar PROPERTIES
     CXX_EXTENSIONS OFF

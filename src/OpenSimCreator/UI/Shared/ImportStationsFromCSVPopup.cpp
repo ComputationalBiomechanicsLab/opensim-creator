@@ -8,7 +8,7 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 
 #include <filesystem>
 #include <fstream>

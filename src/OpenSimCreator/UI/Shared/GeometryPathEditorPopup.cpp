@@ -9,7 +9,7 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <array>

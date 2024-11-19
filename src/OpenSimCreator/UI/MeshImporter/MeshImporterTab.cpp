@@ -53,10 +53,10 @@
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PerfPanel.h>
 #include <oscar/UI/Panels/UndoRedoPanel.h>
+#include <oscar/UI/Popups/PopupManager.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/UI/Widgets/LogViewer.h>
-#include <oscar/UI/Widgets/PopupManager.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/ScopeGuard.h>

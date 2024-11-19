@@ -1,8 +1,8 @@
 #include "SaveChangesPopup.h"
 
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/SaveChangesPopupConfig.h>
-#include <oscar/UI/Widgets/StandardPopup.h>
+#include <oscar/UI/Popups/SaveChangesPopupConfig.h>
+#include <oscar/UI/Popups/StandardPopup.h>
 
 #include <utility>
 

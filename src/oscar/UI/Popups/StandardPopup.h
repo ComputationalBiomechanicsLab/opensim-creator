@@ -2,7 +2,7 @@
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Widgets/IPopup.h>
+#include <oscar/UI/Popups/IPopup.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <optional>
