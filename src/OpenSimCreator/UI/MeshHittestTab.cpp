@@ -169,7 +169,7 @@ private:
     Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
     Line m_Ray{};
 
-    PerfPanel m_PerfPanel{"perf"};
+    PerfPanel m_PerfPanel;
 };
 
 

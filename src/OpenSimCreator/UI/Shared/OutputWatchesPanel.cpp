@@ -7,7 +7,7 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Platform/IconCodepoints.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/UID.h>
@@ -46,18 +46,19 @@ namespace
     }
 }
 
-class osc::OutputWatchesPanel::Impl final : public StandardPanelImpl {
+class osc::OutputWatchesPanel::Impl final : public PanelPrivate {
 public:
 
-    Impl(std::string_view panelName_,
+    explicit Impl(
+        OutputWatchesPanel& owner,
+        std::string_view panelName_,
         std::shared_ptr<const IModelStatePair> model_) :
 
-        StandardPanelImpl{panelName_},
+        PanelPrivate{owner, nullptr, panelName_},
         m_Model{std::move(model_)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         UpdateCachedSimulationReportIfNecessary(*m_Model, m_CachedReport);
 
@@ -96,23 +97,15 @@ private:
         }
     }
 
+private:
     std::shared_ptr<const IModelStatePair> m_Model;
     CachedSimulationReport m_CachedReport;
 };
-
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
     std::string_view panelName_,
     std::shared_ptr<const IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(model_))}
+    Panel{std::make_unique<Impl>(*this, panelName_, std::move(model_))}
 {}
-osc::OutputWatchesPanel::OutputWatchesPanel(OutputWatchesPanel&&) noexcept = default;
-osc::OutputWatchesPanel& osc::OutputWatchesPanel::operator=(OutputWatchesPanel&&) noexcept = default;
-osc::OutputWatchesPanel::~OutputWatchesPanel() noexcept = default;
-
-CStringView osc::OutputWatchesPanel::impl_get_name() const { return m_Impl->name(); }
-bool osc::OutputWatchesPanel::impl_is_open() const { return m_Impl->is_open(); }
-void osc::OutputWatchesPanel::impl_open() { m_Impl->open(); }
-void osc::OutputWatchesPanel::impl_close() { m_Impl->close(); }
-void osc::OutputWatchesPanel::impl_on_draw() { m_Impl->on_draw(); }
+void osc::OutputWatchesPanel::impl_draw_content() { private_data().draw_content(); }

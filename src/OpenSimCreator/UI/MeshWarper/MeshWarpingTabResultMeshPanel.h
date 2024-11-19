@@ -37,10 +37,9 @@ namespace osc
             std::string_view panelName_,
             std::shared_ptr<MeshWarpingTabSharedState> state_) :
 
-            MeshWarpingTabPanel{panelName_},
+            MeshWarpingTabPanel{nullptr, panelName_},
             m_State{std::move(state_)}
-        {
-        }
+        {}
     private:
         void impl_draw_content() final
         {

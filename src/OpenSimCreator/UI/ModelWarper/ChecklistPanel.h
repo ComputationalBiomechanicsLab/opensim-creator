@@ -2,24 +2,21 @@
 
 #include <OpenSimCreator/UI/ModelWarper/UIState.h>
 
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/Panel.h>
 
 #include <memory>
 #include <string_view>
 #include <utility>
 
-namespace OpenSim { class Frame; }
-namespace OpenSim { class Mesh; }
-
 namespace osc::mow
 {
-    class ChecklistPanel final : public StandardPanelImpl {
+    class ChecklistPanel final : public Panel {
     public:
         ChecklistPanel(
             std::string_view panelName_,
             std::shared_ptr<UIState> state_) :
 
-            StandardPanelImpl{panelName_},
+            Panel{nullptr, panelName_},
             m_State{std::move(state_)}
         {}
     private:

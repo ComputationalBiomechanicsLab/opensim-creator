@@ -312,7 +312,7 @@ private:
     std::vector<RenderTexture> cascade_rasters_ = std::vector<RenderTexture>(3, RenderTexture{{.dimensions = {256, 256}}});
 
     // ui
-    LogViewerPanel log_viewer_{"log"};
+    LogViewerPanel log_viewer_;
 };
 
 

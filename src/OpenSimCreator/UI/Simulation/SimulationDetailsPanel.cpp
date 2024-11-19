@@ -9,7 +9,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Perf.h>
 
@@ -22,20 +22,20 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
-class osc::SimulationDetailsPanel::Impl final : public StandardPanelImpl {
+class osc::SimulationDetailsPanel::Impl final : public PanelPrivate {
 public:
-    Impl(
+    explicit Impl(
+        SimulationDetailsPanel& owner,
         std::string_view panelName,
         ISimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<const Simulation> simulation) :
 
-        StandardPanelImpl{panelName},
+        PanelPrivate{owner, nullptr, panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
         m_Simulation{std::move(simulation)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         {
             ui::draw_dummy({0.0f, 1.0f});
@@ -66,6 +66,7 @@ private:
         }
     }
 
+private:
     void drawSimulationStatPlots(const Simulation& sim)
     {
         auto outputs = sim.getOutputs();
@@ -122,19 +123,11 @@ private:
     std::shared_ptr<const Simulation> m_Simulation;
 };
 
-
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
     std::string_view panelName,
     ISimulatorUIAPI* simulatorUIAPI,
     std::shared_ptr<const Simulation> simulation) :
 
-    m_Impl{std::make_unique<Impl>(panelName, simulatorUIAPI, std::move(simulation))}
+    Panel{std::make_unique<Impl>(*this, panelName, simulatorUIAPI, std::move(simulation))}
 {}
-osc::SimulationDetailsPanel::SimulationDetailsPanel(SimulationDetailsPanel&&) noexcept = default;
-osc::SimulationDetailsPanel& osc::SimulationDetailsPanel::operator=(SimulationDetailsPanel&&) noexcept = default;
-osc::SimulationDetailsPanel::~SimulationDetailsPanel() noexcept = default;
-CStringView osc::SimulationDetailsPanel::impl_get_name() const { return m_Impl->name(); }
-bool osc::SimulationDetailsPanel::impl_is_open() const { return m_Impl->is_open(); }
-void osc::SimulationDetailsPanel::impl_open() { m_Impl->open(); }
-void osc::SimulationDetailsPanel::impl_close() { m_Impl->close(); }
-void osc::SimulationDetailsPanel::impl_on_draw() { m_Impl->on_draw(); }
+void osc::SimulationDetailsPanel::impl_draw_content() { private_data().draw_content(); }

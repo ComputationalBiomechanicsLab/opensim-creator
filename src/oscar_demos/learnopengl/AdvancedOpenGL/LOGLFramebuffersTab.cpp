@@ -139,8 +139,8 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
     }};
 
-    LogViewerPanel log_viewer_{"log"};
-    PerfPanel perf_panel_{"perf"};
+    LogViewerPanel log_viewer_;
+    PerfPanel perf_panel_;
 };
 
 

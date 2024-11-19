@@ -18,7 +18,7 @@ osc::mow::SourceModelViewerPanel::SourceModelViewerPanel(
     m_State{std::move(state_)}
 {}
 
-void osc::mow::SourceModelViewerPanel::impl_on_draw()
+void osc::mow::SourceModelViewerPanel::impl_draw_content()
 {
     if (m_State->isCameraLinked()) {
         if (m_State->isOnlyCameraRotationLinked()) {
@@ -33,7 +33,7 @@ void osc::mow::SourceModelViewerPanel::impl_on_draw()
     }
 
     setModelState(m_State->modelstatePtr());
-    ModelViewerPanel::impl_on_draw();
+    ModelViewerPanel::impl_draw_content();
 
     // draw may have updated the camera, so flash is back
     if (m_State->isCameraLinked()) {

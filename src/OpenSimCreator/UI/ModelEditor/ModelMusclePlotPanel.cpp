@@ -27,6 +27,7 @@
 #include <oscar/Shims/Cpp20/stop_token.h>
 #include <oscar/Shims/Cpp20/thread.h>
 #include <oscar/UI/oscimgui.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
@@ -2191,52 +2192,37 @@ namespace
 //
 // this effectively operates as a state-machine host, where each state (e.g.
 // "choose a muscle", "choose a coordinate") is mostly independent
-class osc::ModelMusclePlotPanel::Impl final {
+class osc::ModelMusclePlotPanel::Impl final : public PanelPrivate {
 public:
 
-    Impl(
+    explicit Impl(
+        ModelMusclePlotPanel& owner,
         Widget& parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName) :
 
+        PanelPrivate{owner, &parent, panelName},
         m_SharedData{parent, std::move(uim)},
-        m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)},
-        panel_name_{panelName}
+        m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)}
     {}
 
-    Impl(
+    explicit Impl(
+        ModelMusclePlotPanel& owner,
         Widget& parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName,
         const OpenSim::ComponentPath& coordPath,
         const OpenSim::ComponentPath& musclePath) :
 
+        PanelPrivate{owner, &parent, panelName},
         m_SharedData{parent, std::move(uim), coordPath, musclePath},
-        m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)},
-        panel_name_{panelName}
+        m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)}
     {}
 
-    const std::string& getName() const { return panel_name_; }
-    bool isOpen() const { return m_IsOpen; }
-    void open() { m_IsOpen = true; }
-    void close() { m_IsOpen = false; }
-
-    void onDraw()
+    void draw_content()
     {
-        if (m_IsOpen) {
-            bool isOpen = m_IsOpen;
-
-            if (ui::begin_panel(panel_name_, &isOpen)) {
-                if (auto maybeNextState = m_ActiveState->onDraw()) {
-                    m_ActiveState = std::move(maybeNextState);
-                }
-                m_IsOpen = isOpen;
-            }
-            ui::end_panel();
-
-            if (isOpen != m_IsOpen) {
-                m_IsOpen = isOpen;
-            }
+        if (auto maybeNextState = m_ActiveState->onDraw()) {
+            m_ActiveState = std::move(maybeNextState);
         }
     }
 
@@ -2246,23 +2232,15 @@ private:
 
     // currently active state (this class controls a state machine)
     std::unique_ptr<MusclePlotState> m_ActiveState;
-
-    // name of the panel, as shown in the UI (via `ui::begin_panel`)
-    std::string panel_name_;
-
-    // if the panel is currently open or not
-    bool m_IsOpen = true;
 };
-
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     Widget& parent,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
-    m_Impl{std::make_unique<Impl>(parent, std::move(uim), panelName)}
+    Panel{std::make_unique<Impl>(*this, parent, std::move(uim), panelName)}
 {}
-
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     Widget& parent,
     std::shared_ptr<UndoableModelStatePair> uim,
@@ -2270,15 +2248,6 @@ osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
     const OpenSim::ComponentPath& coordPath,
     const OpenSim::ComponentPath& musclePath) :
 
-    m_Impl{std::make_unique<Impl>(parent, std::move(uim), panelName, coordPath, musclePath)}
+    Panel{std::make_unique<Impl>(*this, parent, std::move(uim), panelName, coordPath, musclePath)}
 {}
-
-osc::ModelMusclePlotPanel::ModelMusclePlotPanel(ModelMusclePlotPanel&&) noexcept = default;
-osc::ModelMusclePlotPanel& osc::ModelMusclePlotPanel::operator=(ModelMusclePlotPanel&&) noexcept = default;
-osc::ModelMusclePlotPanel::~ModelMusclePlotPanel() noexcept = default;
-
-CStringView osc::ModelMusclePlotPanel::impl_get_name() const { return m_Impl->getName(); }
-bool osc::ModelMusclePlotPanel::impl_is_open() const { return m_Impl->isOpen(); }
-void osc::ModelMusclePlotPanel::impl_open() { m_Impl->open(); }
-void osc::ModelMusclePlotPanel::impl_close() { m_Impl->close(); }
-void osc::ModelMusclePlotPanel::impl_on_draw() { m_Impl->onDraw(); }
+void osc::ModelMusclePlotPanel::impl_draw_content() { private_data().draw_content(); }

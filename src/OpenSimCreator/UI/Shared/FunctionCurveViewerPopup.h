@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/IPanel.h>
+#include <oscar/UI/Panels/Panel.h>
 
 #include <functional>
 #include <memory>
@@ -12,27 +12,18 @@ namespace osc { class IModelStatePair; }
 namespace osc
 {
 
-    class FunctionCurveViewerPanel final : public IPanel {
+    class FunctionCurveViewerPanel final : public Panel {
     public:
-        FunctionCurveViewerPanel(
+        explicit FunctionCurveViewerPanel(
             std::string_view panelName,
             std::shared_ptr<const IModelStatePair> targetModel,
             std::function<const OpenSim::Function*()> functionGetter
         );
-        FunctionCurveViewerPanel(const FunctionCurveViewerPanel&) = delete;
-        FunctionCurveViewerPanel(FunctionCurveViewerPanel&&) noexcept;
-        FunctionCurveViewerPanel& operator=(const FunctionCurveViewerPanel&) = delete;
-        FunctionCurveViewerPanel& operator=(FunctionCurveViewerPanel&&) noexcept;
-        ~FunctionCurveViewerPanel() noexcept;
 
     private:
-        CStringView impl_get_name() const final;
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        void impl_on_draw() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

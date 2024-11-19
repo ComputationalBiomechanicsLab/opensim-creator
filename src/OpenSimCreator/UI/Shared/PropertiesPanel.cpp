@@ -14,7 +14,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Widget.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/ScopeGuard.h>
 
 #include <optional>
@@ -112,21 +112,20 @@ namespace
     };
 }
 
-class osc::PropertiesPanel::Impl final : public StandardPanelImpl {
+class osc::PropertiesPanel::Impl final : public PanelPrivate {
 public:
-    Impl(
+    explicit Impl(
+        PropertiesPanel& owner,
         std::string_view panelName,
         Widget& parent,
         std::shared_ptr<IModelStatePair> model) :
 
-        StandardPanelImpl{panelName},
-        m_Parent{parent.weak_ref()},
+        PanelPrivate{owner, &parent, panelName},
         m_Model{std::move(model)},
         m_SelectionPropertiesEditor{parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         if (not m_Model->getSelected()) {
             ui::draw_text_disabled_and_panel_centered("(nothing selected)");
@@ -139,7 +138,7 @@ private:
         // draw an actions row with a button that opens the context menu
         //
         // it's helpful to reveal to users that actions are available (#426)
-        DrawActionsMenu(*m_Parent, m_Model);
+        DrawActionsMenu(*parent(), m_Model);
 
         m_NameEditor.onDraw();
 
@@ -156,25 +155,16 @@ private:
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
+private:
     std::shared_ptr<IModelStatePair> m_Model;
     ObjectNameEditor m_NameEditor{m_Model};
     ObjectPropertiesEditor m_SelectionPropertiesEditor;
 };
 
-
 osc::PropertiesPanel::PropertiesPanel(
     std::string_view panelName,
     Widget& parent,
     std::shared_ptr<IModelStatePair> model) :
-    m_Impl{std::make_unique<Impl>(panelName, parent, std::move(model))}
+    Panel{std::make_unique<Impl>(*this, panelName, parent, std::move(model))}
 {}
-osc::PropertiesPanel::PropertiesPanel(PropertiesPanel&&) noexcept = default;
-osc::PropertiesPanel& osc::PropertiesPanel::operator=(PropertiesPanel&&) noexcept = default;
-osc::PropertiesPanel::~PropertiesPanel() noexcept = default;
-
-CStringView osc::PropertiesPanel::impl_get_name() const { return m_Impl->name(); }
-bool osc::PropertiesPanel::impl_is_open() const { return m_Impl->is_open(); }
-void osc::PropertiesPanel::impl_open() { m_Impl->open(); }
-void osc::PropertiesPanel::impl_close() { m_Impl->close(); }
-void osc::PropertiesPanel::impl_on_draw() { m_Impl->on_draw(); }
+void osc::PropertiesPanel::impl_draw_content() { private_data().draw_content(); }

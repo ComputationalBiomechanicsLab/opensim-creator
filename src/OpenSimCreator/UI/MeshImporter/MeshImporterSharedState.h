@@ -1508,7 +1508,7 @@ namespace osc::mi
         static_assert(c_OpenedPanelNames.size() == c_NumPanelStates);
         static_assert(num_options<PanelIndex>() == c_NumPanelStates);
         LogViewer m_Logviewer;
-        PerfPanel m_PerfPanel{"Performance"};
+        PerfPanel m_PerfPanel;
 
         // scale factor for all non-mesh, non-overlay scene elements (e.g.
         // the floor, bodies)

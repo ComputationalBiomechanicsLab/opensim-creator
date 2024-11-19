@@ -1,6 +1,6 @@
 #include "PanelManager.h"
 
-#include <oscar/UI/Panels/IPanel.h>
+#include <oscar/UI/Panels/Panel.h>
 #include <oscar/UI/Panels/ToggleablePanelFlags.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
@@ -28,7 +28,7 @@ namespace
     public:
         ToggleablePanel(
             std::string_view name,
-            std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
             ToggleablePanelFlags flags) :
 
             name_{name},
@@ -42,7 +42,7 @@ namespace
             return name_;
         }
 
-        IPanel* instance_or_nullptr()
+        Panel* instance_or_nullptr()
         {
             return instance_ ? instance_->get() : nullptr;
         }
@@ -98,9 +98,9 @@ namespace
 
     private:
         std::string name_;
-        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor_;
+        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor_;
         ToggleablePanelFlags flags_;
-        std::optional<std::shared_ptr<IPanel>> instance_;
+        std::optional<std::shared_ptr<Panel>> instance_;
     };
 
     class DynamicPanel final {
@@ -108,7 +108,7 @@ namespace
         DynamicPanel(
             std::string_view base_name,
             size_t instance_number,
-            std::shared_ptr<IPanel> instance) :
+            std::shared_ptr<Panel> instance) :
 
             spawner_id_{std::hash<std::string_view>{}(base_name)},
             instance_number_{instance_number},
@@ -117,7 +117,7 @@ namespace
             instance_->open();
         }
 
-        IPanel* instance_or_nullptr()
+        Panel* instance_or_nullptr()
         {
             return instance_.get();
         }
@@ -150,7 +150,7 @@ namespace
     private:
         size_t spawner_id_;
         size_t instance_number_;
-        std::shared_ptr<IPanel> instance_;
+        std::shared_ptr<Panel> instance_;
     };
 
     // declaration for a panel that can spawn new dyanmic panels (above)
@@ -158,7 +158,7 @@ namespace
     public:
         SpawnablePanel(
             std::string_view base_name,
-            std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
             size_t num_initially_opened_panels) :
 
             base_name_{base_name},
@@ -192,7 +192,7 @@ namespace
 
     private:
         std::string base_name_;
-        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor_;
+        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor_;
         size_t num_initially_opened_panels_;
     };
 }
@@ -202,7 +202,7 @@ public:
 
     void register_toggleable_panel(
         std::string_view base_name,
-        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
         ToggleablePanelFlags flags)
     {
         toggleable_panels_.emplace_back(base_name, std::move(panel_constructor), flags);
@@ -210,24 +210,24 @@ public:
 
     void register_spawnable_panel(
         std::string_view base_name,
-        std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
         size_t num_initially_opened_panels)
     {
         spawnable_panels_.emplace_back(base_name, std::move(panel_constructor), num_initially_opened_panels);
     }
 
-    IPanel* try_upd_panel_by_name(std::string_view name)
+    Panel* try_upd_panel_by_name(std::string_view name)
     {
         for (ToggleablePanel& panel : toggleable_panels_) {
 
-            if (IPanel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
+            if (Panel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
                 return p;
             }
         }
 
         for (DynamicPanel& panel : dynamic_panels_) {
 
-            if (IPanel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
+            if (Panel* p = panel.instance_or_nullptr(); (p != nullptr) and p->name() == name) {
                 return p;
             }
         }
@@ -372,7 +372,7 @@ public:
         return calc_panel_name(base_name, ith_instance);
     }
 
-    void push_dynamic_panel(std::string_view base_name, std::shared_ptr<IPanel> panel)
+    void push_dynamic_panel(std::string_view base_name, std::shared_ptr<Panel> panel)
     {
         const size_t ith_instance = calc_dynamic_panel_instance_number(std::hash<std::string_view>{}(base_name));
 
@@ -430,7 +430,7 @@ osc::PanelManager::~PanelManager() noexcept = default;
 
 void osc::PanelManager::register_toggleable_panel(
     std::string_view base_name,
-    std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+    std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
     ToggleablePanelFlags flags)
 {
     impl_->register_toggleable_panel(base_name, std::move(panel_constructor), flags);
@@ -438,13 +438,13 @@ void osc::PanelManager::register_toggleable_panel(
 
 void osc::PanelManager::register_spawnable_panel(
     std::string_view base_name,
-    std::function<std::shared_ptr<IPanel>(std::string_view)> panel_constructor,
+    std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
     size_t num_initially_opened_panels)
 {
     impl_->register_spawnable_panel(base_name, std::move(panel_constructor), num_initially_opened_panels);
 }
 
-IPanel* osc::PanelManager::try_upd_panel_by_name(std::string_view name)
+Panel* osc::PanelManager::try_upd_panel_by_name(std::string_view name)
 {
     return impl_->try_upd_panel_by_name(name);
 }
@@ -529,7 +529,7 @@ std::string osc::PanelManager::suggested_dynamic_panel_name(std::string_view bas
     return impl_->suggested_dynamic_panel_name(base_name);
 }
 
-void osc::PanelManager::push_dynamic_panel(std::string_view base_name, std::shared_ptr<IPanel> panel)
+void osc::PanelManager::push_dynamic_panel(std::string_view base_name, std::shared_ptr<Panel> panel)
 {
     impl_->push_dynamic_panel(base_name, std::move(panel));
 }

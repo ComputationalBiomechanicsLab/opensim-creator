@@ -167,8 +167,8 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );
-    LogViewerPanel log_viewer_{"log"};
-    PerfPanel perf_panel_{"perf"};
+    LogViewerPanel log_viewer_;
+    PerfPanel perf_panel_;
 };
 
 

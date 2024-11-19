@@ -9,7 +9,7 @@
 
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/LifetimedPtr.h>
@@ -32,19 +32,20 @@ namespace
     }
 }
 
-class osc::OutputPlotsPanel::Impl final : public StandardPanelImpl {
+class osc::OutputPlotsPanel::Impl final : public PanelPrivate {
 public:
-    Impl(
+    explicit Impl(
+        OutputPlotsPanel& owner,
         std::string_view panelName_,
         std::shared_ptr<Environment> environment,
         ISimulatorUIAPI* api) :
 
-        StandardPanelImpl{panelName_},
+        PanelPrivate{owner, nullptr, panelName_},
         m_Environment{std::move(environment)},
         m_SimulatorUIAPI{api}
     {}
-private:
-    void impl_draw_content() final
+
+    void draw_content()
     {
         if (m_Environment->getNumUserOutputExtractors() <= 0) {
             ui::draw_text_disabled_and_panel_centered("No outputs being watched");
@@ -89,6 +90,7 @@ private:
         }
     }
 
+private:
     std::shared_ptr<Environment> m_Environment;
     ISimulatorUIAPI* m_SimulatorUIAPI;
 };
@@ -98,14 +100,6 @@ osc::OutputPlotsPanel::OutputPlotsPanel(
     std::shared_ptr<Environment> environment,
     ISimulatorUIAPI* api) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, std::move(environment), api)}
+    Panel{std::make_unique<Impl>(*this, panelName_, std::move(environment), api)}
 {}
-osc::OutputPlotsPanel::OutputPlotsPanel(OutputPlotsPanel&&) noexcept = default;
-osc::OutputPlotsPanel& osc::OutputPlotsPanel::operator=(OutputPlotsPanel&&) noexcept = default;
-osc::OutputPlotsPanel::~OutputPlotsPanel() noexcept = default;
-
-CStringView osc::OutputPlotsPanel::impl_get_name() const { return m_Impl->name(); }
-bool osc::OutputPlotsPanel::impl_is_open() const { return m_Impl->is_open(); }
-void osc::OutputPlotsPanel::impl_open() { m_Impl->open(); }
-void osc::OutputPlotsPanel::impl_close() { m_Impl->close(); }
-void osc::OutputPlotsPanel::impl_on_draw() { m_Impl->on_draw(); }
+void osc::OutputPlotsPanel::impl_draw_content() { private_data().draw_content(); }

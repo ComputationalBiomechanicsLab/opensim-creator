@@ -14,7 +14,7 @@
 #include <oscar/Platform/Widget.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/LifetimedPtr.h>
 
@@ -28,22 +28,20 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
-class osc::CoordinateEditorPanel::Impl final : public StandardPanelImpl {
+class osc::CoordinateEditorPanel::Impl final : public PanelPrivate {
 public:
 
-    Impl(
+    explicit Impl(
+        CoordinateEditorPanel& owner,
         std::string_view panelName_,
         Widget& parent,
         std::shared_ptr<IModelStatePair> model_) :
 
-        StandardPanelImpl{panelName_},
-        m_Parent{parent.weak_ref()},
+        PanelPrivate{owner, &parent, panelName_},
         m_Model{std::move(model_)}
     {}
 
-private:
-
-    void impl_draw_content() final
+    void draw_content()
     {
         // load coords
         std::vector<const OpenSim::Coordinate*> coordPtrs = GetCoordinatesInModel(m_Model->getModel());
@@ -101,6 +99,7 @@ private:
         }
     }
 
+private:
     void drawRow(const OpenSim::Coordinate& c)
     {
         ui::table_next_row();
@@ -149,11 +148,11 @@ private:
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
                 "##componentcontextmenu",
-                *m_Parent,
+                *parent(),
                 m_Model,
                 GetAbsolutePath(c)
             );
-            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+            App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
         }
     }
 
@@ -233,43 +232,14 @@ private:
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
 };
-
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
     std::string_view panelName_,
     Widget& mainUIStateAPI_,
     std::shared_ptr<IModelStatePair> uum_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, mainUIStateAPI_, std::move(uum_))}
+    Panel{std::make_unique<Impl>(*this, panelName_, mainUIStateAPI_, std::move(uum_))}
 {}
-osc::CoordinateEditorPanel::CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept = default;
-osc::CoordinateEditorPanel& osc::CoordinateEditorPanel::operator=(CoordinateEditorPanel&&) noexcept = default;
-osc::CoordinateEditorPanel::~CoordinateEditorPanel() noexcept = default;
-
-CStringView osc::CoordinateEditorPanel::impl_get_name() const
-{
-    return m_Impl->name();
-}
-
-bool osc::CoordinateEditorPanel::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::CoordinateEditorPanel::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::CoordinateEditorPanel::impl_close()
-{
-    m_Impl->close();
-}
-
-void osc::CoordinateEditorPanel::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
+void osc::CoordinateEditorPanel::impl_draw_content() { private_data().draw_content(); }

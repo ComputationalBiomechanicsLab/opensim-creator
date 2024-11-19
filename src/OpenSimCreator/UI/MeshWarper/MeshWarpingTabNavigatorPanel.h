@@ -11,7 +11,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/Panel.h>
 
 #include <memory>
 #include <string_view>
@@ -19,27 +19,24 @@
 
 namespace osc
 {
-    class MeshWarpingTabNavigatorPanel final : public StandardPanelImpl {
+    class MeshWarpingTabNavigatorPanel final : public Panel {
     public:
         MeshWarpingTabNavigatorPanel(
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_) :
 
-            StandardPanelImpl{label_},
+            Panel{nullptr, label_},
             m_State{std::move(shared_)}
-        {
-        }
+        {}
     private:
         void impl_draw_content() final
         {
             ui::draw_text_unformatted("Landmarks:");
             ui::draw_separator();
-            if (ContainsLandmarks(m_State->getScratch()))
-            {
+            if (ContainsLandmarks(m_State->getScratch())) {
                 drawLandmarksTable();
             }
-            else
-            {
+            else {
                 ui::draw_text_disabled_and_centered("(none in the scene)");
             }
 
@@ -47,12 +44,10 @@ namespace osc
 
             ui::draw_text_unformatted("Non-Participating Landmarks:");
             ui::draw_separator();
-            if (ContainsNonParticipatingLandmarks(m_State->getScratch()))
-            {
+            if (ContainsNonParticipatingLandmarks(m_State->getScratch())) {
                 drawNonPariticpatingLandmarksTable();
             }
-            else
-            {
+            else {
                 ui::draw_text_disabled_and_centered("(none in the scene)");
             }
             ui::start_new_line();
@@ -64,8 +59,7 @@ namespace osc
         // - whether they have source/destination location, or are paired
         void drawLandmarksTable()
         {
-            if (!ui::begin_table("##LandmarksTable", 3, getTableFlags()))
-            {
+            if (not ui::begin_table("##LandmarksTable", 3, getTableFlags())) {
                 return;
             }
 
@@ -74,8 +68,7 @@ namespace osc
             ui::table_setup_column("Destination", {}, 0.15f*ui::get_content_region_available().x);
 
             int id = 0;
-            for (const auto& lm : m_State->getScratch().landmarkPairs)
-            {
+            for (const auto& lm : m_State->getScratch().landmarkPairs) {
                 ui::push_id(++id);
                 drawLandmarksTableRow(lm);
                 ui::pop_id();
@@ -110,8 +103,7 @@ namespace osc
                 p.maybeDestinationLocation.has_value()
             );
 
-            if (IsFullyPaired(p))
-            {
+            if (IsFullyPaired(p)) {
                 drawConnectingLine(srcCircle, destCircle);
             }
         }
@@ -173,8 +165,7 @@ namespace osc
         // draws non-participating landmarks table
         void drawNonPariticpatingLandmarksTable()
         {
-            if (!ui::begin_table("##NonParticipatingLandmarksTable", 2, getTableFlags()))
-            {
+            if (not ui::begin_table("##NonParticipatingLandmarksTable", 2, getTableFlags())) {
                 return;
             }
 
@@ -182,8 +173,7 @@ namespace osc
             ui::table_setup_column("Location", {}, 0.3f*ui::get_content_region_available().x);
 
             int id = 0;
-            for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks)
-            {
+            for (const auto& npl : m_State->getScratch().nonParticipatingLandmarks) {
                 ui::push_id(++id);
                 drawNonParticipatingLandmarksTableRow(npl);
                 ui::pop_id();

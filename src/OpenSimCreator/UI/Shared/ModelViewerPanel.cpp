@@ -18,7 +18,7 @@
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/UI/Widgets/GuiRuler.h>
 #include <oscar/UI/Widgets/IconWithoutMenu.h>
 #include <oscar/Utils/Algorithms.h>
@@ -309,15 +309,16 @@ namespace
     };
 }
 
-class osc::ModelViewerPanel::Impl final : public StandardPanelImpl {
+class osc::ModelViewerPanel::Impl final : public PanelPrivate {
 public:
 
-    Impl(
+    explicit Impl(
+        ModelViewerPanel& owner_,
         std::string_view panelName_,
         ModelViewerPanelParameters parameters_,
         ModelViewerPanelFlags flags_) :
 
-        StandardPanelImpl{panelName_},
+        PanelPrivate{owner_, nullptr, panelName_},
         m_Parameters{std::move(parameters_)},
         m_State{name(), flags_}
     {
@@ -381,18 +382,7 @@ public:
         m_Parameters.setModelSharedPtr(newModelState);
     }
 
-private:
-    void impl_before_imgui_begin() final
-    {
-        ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
-    }
-
-    void impl_after_imgui_begin() final
-    {
-        ui::pop_style_var();
-    }
-
-    void impl_draw_content() final
+    void draw_content()
     {
         // HACK: garbage-collect one frame later, because the layers
         // may have submitted textures to ImGui that are then invalid
@@ -493,6 +483,7 @@ private:
         layersPopQueuedNewLayers();
     }
 
+private:
     void layersOnNewFrame()
     {
         for (const auto& layerPtr : m_Layers)
@@ -581,78 +572,20 @@ osc::ModelViewerPanel::ModelViewerPanel(
     const ModelViewerPanelParameters& parameters_,
     ModelViewerPanelFlags flags_) :
 
-    m_Impl{std::make_unique<Impl>(panelName_, parameters_, flags_)}
+    Panel{std::make_unique<Impl>(*this, panelName_, parameters_, flags_)}
 {}
-osc::ModelViewerPanel::ModelViewerPanel(ModelViewerPanel&&) noexcept = default;
-osc::ModelViewerPanel& osc::ModelViewerPanel::operator=(ModelViewerPanel&&) noexcept = default;
-osc::ModelViewerPanel::~ModelViewerPanel() noexcept = default;
-
-bool osc::ModelViewerPanel::isMousedOver() const
-{
-    return m_Impl->isMousedOver();
-}
-
-bool osc::ModelViewerPanel::isLeftClicked() const
-{
-    return m_Impl->isLeftClicked();
-}
-
-bool osc::ModelViewerPanel::isRightClicked() const
-{
-    return m_Impl->isRightClicked();
-}
-
+bool osc::ModelViewerPanel::isMousedOver() const { return private_data().isMousedOver(); }
+bool osc::ModelViewerPanel::isLeftClicked() const { return private_data().isLeftClicked(); }
+bool osc::ModelViewerPanel::isRightClicked() const { return private_data().isRightClicked(); }
 ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelViewerPanelLayer> layer)
 {
-    return m_Impl->pushLayer(std::move(layer));
+    return private_data().pushLayer(std::move(layer));
 }
-
-void osc::ModelViewerPanel::focusOn(const Vec3& pos)
-{
-    m_Impl->focusOn(pos);
-}
-
-std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const
-{
-    return m_Impl->getScreenRect();
-}
-
-const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const
-{
-    return m_Impl->getCamera();
-}
-
-void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera)
-{
-    m_Impl->setCamera(camera);
-}
-
-void osc::ModelViewerPanel::setModelState(const std::shared_ptr<IModelStatePair>& newModelState)
-{
-    m_Impl->setModelState(newModelState);
-}
-
-CStringView osc::ModelViewerPanel::impl_get_name() const
-{
-    return m_Impl->name();
-}
-
-bool osc::ModelViewerPanel::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ModelViewerPanel::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ModelViewerPanel::impl_close()
-{
-    m_Impl->close();
-}
-
-void osc::ModelViewerPanel::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
+void osc::ModelViewerPanel::focusOn(const Vec3& pos) { private_data().focusOn(pos); }
+std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const { return private_data().getScreenRect(); }
+const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
+void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }
+void osc::ModelViewerPanel::setModelState(const std::shared_ptr<IModelStatePair>& newModelState) { private_data().setModelState(newModelState); }
+void osc::ModelViewerPanel::impl_draw_content() { private_data().draw_content(); }
+void osc::ModelViewerPanel::impl_before_imgui_begin() { ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f}); }
+void osc::ModelViewerPanel::impl_after_imgui_begin() { ui::pop_style_var(); }

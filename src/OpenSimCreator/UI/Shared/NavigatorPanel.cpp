@@ -15,7 +15,7 @@
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/StringHelpers.h>
@@ -88,21 +88,20 @@ namespace
     }
 }
 
-class osc::NavigatorPanel::Impl final : public StandardPanelImpl {
+class osc::NavigatorPanel::Impl final : public PanelPrivate {
 public:
     Impl(
+        NavigatorPanel& owner,
         std::string_view panelName,
         std::shared_ptr<IModelStatePair> model,
         std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
-        StandardPanelImpl{panelName},
+        PanelPrivate{owner, nullptr, panelName},
         m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
     {}
 
-private:
-
-    void impl_draw_content() final
+    void draw_content()
     {
         if (not m_Model) {
             ui::draw_text_disabled("(no model)");  // edge-case
@@ -121,6 +120,7 @@ private:
         }
     }
 
+private:
     Response drawWithResponse()
     {
         Response rv;
@@ -325,19 +325,11 @@ private:
     bool m_ShowFrames = false;
 };
 
-
 osc::NavigatorPanel::NavigatorPanel(
     std::string_view panelName,
     std::shared_ptr<IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
-    m_Impl{std::make_unique<Impl>(panelName, std::move(model), std::move(onRightClick))}
+    Panel{std::make_unique<Impl>(*this, panelName, std::move(model), std::move(onRightClick))}
 {}
-osc::NavigatorPanel::NavigatorPanel(NavigatorPanel&&) noexcept = default;
-osc::NavigatorPanel& osc::NavigatorPanel::operator=(NavigatorPanel&&) noexcept = default;
-osc::NavigatorPanel::~NavigatorPanel() noexcept = default;
-CStringView osc::NavigatorPanel::impl_get_name() const { return m_Impl->name(); }
-bool osc::NavigatorPanel::impl_is_open() const { return m_Impl->is_open(); }
-void osc::NavigatorPanel::impl_open() { m_Impl->open(); }
-void osc::NavigatorPanel::impl_close() { m_Impl->close(); }
-void osc::NavigatorPanel::impl_on_draw() { m_Impl->on_draw(); }
+void osc::NavigatorPanel::impl_draw_content() { private_data().draw_content(); }

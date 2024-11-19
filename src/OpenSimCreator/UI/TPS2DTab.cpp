@@ -499,7 +499,7 @@ private:
     Color m_ConnectionLineColor = Color::white();
 
     // log panel (handy for debugging)
-    LogViewerPanel m_LogViewerPanel{"Log"};
+    LogViewerPanel m_LogViewerPanel;
 };
 
 

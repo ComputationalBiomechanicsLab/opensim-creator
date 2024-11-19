@@ -153,7 +153,7 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
     bool show_step1_ = false;
     Transform step1_transform_;
-    PerfPanel perf_panel_{"perf"};
+    PerfPanel perf_panel_;
 };
 
 

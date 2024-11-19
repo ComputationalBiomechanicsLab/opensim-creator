@@ -1,7 +1,7 @@
 #include "UndoRedoPanel.h"
 
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/Utils/UndoRedo.h>
 
 #include <cstddef>
@@ -11,22 +11,23 @@
 
 using namespace osc;
 
-class osc::UndoRedoPanel::Impl final : public StandardPanelImpl {
+class osc::UndoRedoPanel::Impl final : public PanelPrivate {
 public:
     Impl(
+        UndoRedoPanel& owner,
         std::string_view panel_name,
         std::shared_ptr<UndoRedoBase> storage) :
 
-        StandardPanelImpl{panel_name},
+        PanelPrivate{owner, nullptr, panel_name},
         storage_{std::move(storage)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         UndoRedoPanel::draw_content(*storage_);
     }
 
+private:
     std::shared_ptr<UndoRedoBase> storage_;
 };
 
@@ -69,33 +70,6 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
 }
 
 osc::UndoRedoPanel::UndoRedoPanel(std::string_view panel_name, std::shared_ptr<UndoRedoBase> storage) :
-    impl_{std::make_unique<Impl>(panel_name, std::move(storage))}
+    Panel{std::make_unique<Impl>(*this, panel_name, std::move(storage))}
 {}
-osc::UndoRedoPanel::UndoRedoPanel(UndoRedoPanel&&) noexcept = default;
-osc::UndoRedoPanel& osc::UndoRedoPanel::operator=(UndoRedoPanel&&) noexcept = default;
-osc::UndoRedoPanel::~UndoRedoPanel() noexcept = default;
-
-CStringView osc::UndoRedoPanel::impl_get_name() const
-{
-    return impl_->name();
-}
-
-bool osc::UndoRedoPanel::impl_is_open() const
-{
-    return impl_->is_open();
-}
-
-void osc::UndoRedoPanel::impl_open()
-{
-    return impl_->open();
-}
-
-void osc::UndoRedoPanel::impl_close()
-{
-    return impl_->close();
-}
-
-void osc::UndoRedoPanel::impl_on_draw()
-{
-    return impl_->on_draw();
-}
+void osc::UndoRedoPanel::impl_draw_content() { private_data().draw_content(); }

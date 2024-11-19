@@ -132,7 +132,7 @@ private:
     MouseCapturingCamera camera_ = CreateCamera();
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = CreateMaterial(loader_);
-    PerfPanel perf_panel_{"Perf"};
+    PerfPanel perf_panel_;
 };
 
 

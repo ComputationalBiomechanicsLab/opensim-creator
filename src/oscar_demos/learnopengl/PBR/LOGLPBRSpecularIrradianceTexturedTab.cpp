@@ -343,7 +343,7 @@ private:
 
     MouseCapturingCamera camera_ = create_camera();
 
-    PerfPanel perf_panel_{"Perf"};
+    PerfPanel perf_panel_;
 };
 
 

@@ -214,7 +214,7 @@ private:
     bool soft_shadows_ = true;
     bool use_soft_shadows_ = false;
 
-    PerfPanel perf_panel_{"Perf"};
+    PerfPanel perf_panel_;
 };
 
 

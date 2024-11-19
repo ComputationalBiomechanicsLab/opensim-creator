@@ -21,7 +21,7 @@ osc::mow::ResultModelViewerPanel::ResultModelViewerPanel(
     m_State{std::move(state_)}
 {}
 
-void osc::mow::ResultModelViewerPanel::impl_on_draw()
+void osc::mow::ResultModelViewerPanel::impl_draw_content()
 {
     if (auto warped = m_State->tryGetWarpedModel()) {
         // handle camera linking
@@ -38,7 +38,7 @@ void osc::mow::ResultModelViewerPanel::impl_on_draw()
         }
 
         setModelState(warped);
-        ModelViewerPanel::impl_on_draw();
+        ModelViewerPanel::impl_draw_content();
 
         // draw may have updated the camera, so flash is back
         if (m_State->isCameraLinked()) {

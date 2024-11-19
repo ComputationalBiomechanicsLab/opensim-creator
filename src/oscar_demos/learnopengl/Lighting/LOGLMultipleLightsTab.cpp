@@ -190,8 +190,8 @@ private:
 
     float material_shininess_ = 64.0f;
 
-    LogViewerPanel log_viewer_{"log"};
-    PerfPanel perf_panel_{"perf"};
+    LogViewerPanel log_viewer_;
+    PerfPanel perf_panel_;
 };
 
 

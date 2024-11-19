@@ -14,7 +14,7 @@ namespace osc::mow
         ResultModelViewerPanel(std::string_view panelName_, std::shared_ptr<UIState> state_);
 
     private:
-        void impl_on_draw() final;
+        void impl_draw_content() final;
 
         std::shared_ptr<UIState> m_State;
     };

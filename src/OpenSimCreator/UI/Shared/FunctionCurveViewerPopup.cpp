@@ -7,7 +7,7 @@
 #include <oscar/Maths/Constants.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Platform/os.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 
@@ -26,14 +26,15 @@
 using namespace osc;
 namespace plot = osc::ui::plot;
 
-class osc::FunctionCurveViewerPanel::Impl final : public StandardPanelImpl {
+class osc::FunctionCurveViewerPanel::Impl final : public PanelPrivate {
 public:
     Impl(
+        FunctionCurveViewerPanel& owner,
         std::string_view popupName,
         std::shared_ptr<const IModelStatePair> targetModel,
         std::function<const OpenSim::Function*()> functionGetter) :
 
-        StandardPanelImpl{popupName, ui::WindowFlag::AlwaysAutoResize},
+        PanelPrivate{owner, nullptr, popupName, ui::WindowFlag::AlwaysAutoResize},
         m_Model{std::move(targetModel)},
         m_FunctionGetter{std::move(functionGetter)}
     {}
@@ -101,7 +102,8 @@ private:
         ClosedInterval<float> m_YRange = {quiet_nan_v<float>, quiet_nan_v<float>};
     };
 
-    void impl_draw_content() final
+public:
+    void draw_content()
     {
         // update parameter state and check if replotting is necessary
         m_LatestParameters.setVersionFromModel(*m_Model);
@@ -117,6 +119,7 @@ private:
         }
     }
 
+private:
     void drawTopEditors()
     {
         ui::draw_float_input("min x", &m_LatestParameters.updInputRange().lower);
@@ -213,36 +216,11 @@ private:
     std::optional<std::string> m_Error;
 };
 
-
 osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
     std::string_view panelName,
     std::shared_ptr<const IModelStatePair> targetModel,
     std::function<const OpenSim::Function*()> functionGetter) :
 
-    m_Impl{std::make_unique<Impl>(panelName, std::move(targetModel), std::move(functionGetter))}
+    Panel{std::make_unique<Impl>(*this, panelName, std::move(targetModel), std::move(functionGetter))}
 {}
-osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(FunctionCurveViewerPanel&&) noexcept = default;
-osc::FunctionCurveViewerPanel& osc::FunctionCurveViewerPanel::operator=(FunctionCurveViewerPanel&&) noexcept = default;
-osc::FunctionCurveViewerPanel::~FunctionCurveViewerPanel() noexcept = default;
-
-CStringView osc::FunctionCurveViewerPanel::impl_get_name() const
-{
-    return m_Impl->name();
-}
-
-bool osc::FunctionCurveViewerPanel::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-void osc::FunctionCurveViewerPanel::impl_open()
-{
-    m_Impl->open();
-}
-void osc::FunctionCurveViewerPanel::impl_close()
-{
-    m_Impl->close();
-}
-void osc::FunctionCurveViewerPanel::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
+void osc::FunctionCurveViewerPanel::impl_draw_content() { private_data().draw_content(); }

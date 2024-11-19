@@ -1,8 +1,8 @@
 #include "PerfPanel.h"
 
 #include <oscar/Platform/App.h>
+#include <oscar/UI/Panels/PanelPrivate.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/Panels/StandardPanelImpl.h>
 #include <oscar/Utils/Perf.h>
 
 #include <algorithm>
@@ -16,15 +16,13 @@
 using namespace osc;
 namespace rgs = std::ranges;
 
-class osc::PerfPanel::Impl final : public StandardPanelImpl {
+class osc::PerfPanel::Impl final : public PanelPrivate {
 public:
-
-    explicit Impl(std::string_view panel_name) :
-        StandardPanelImpl{panel_name}
+    explicit Impl(PerfPanel& owner, std::string_view panel_name) :
+        PanelPrivate{owner, nullptr, panel_name}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         ui::set_num_columns(2);
         ui::draw_text_unformatted("FPS");
@@ -97,37 +95,11 @@ private:
         }
     }
 
+private:
     bool is_paused_ = false;
 };
 
 osc::PerfPanel::PerfPanel(std::string_view panel_name) :
-    impl_{std::make_unique<Impl>(panel_name)}
+    Panel{std::make_unique<Impl>(*this, panel_name)}
 {}
-osc::PerfPanel::PerfPanel(PerfPanel&&) noexcept = default;
-osc::PerfPanel& osc::PerfPanel::operator=(PerfPanel&&) noexcept = default;
-osc::PerfPanel::~PerfPanel() noexcept = default;
-
-CStringView osc::PerfPanel::impl_get_name() const
-{
-    return impl_->name();
-}
-
-bool osc::PerfPanel::impl_is_open() const
-{
-    return impl_->is_open();
-}
-
-void osc::PerfPanel::impl_open()
-{
-    return impl_->open();
-}
-
-void osc::PerfPanel::impl_close()
-{
-    impl_->close();
-}
-
-void osc::PerfPanel::impl_on_draw()
-{
-    impl_->on_draw();
-}
+void osc::PerfPanel::impl_draw_content() { private_data().draw_content(); }

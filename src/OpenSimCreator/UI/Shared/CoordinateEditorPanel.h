@@ -1,7 +1,6 @@
 #pragma once
 
-#include <oscar/UI/Panels/IPanel.h>
-#include <oscar/Utils/CStringView.h>
+#include <oscar/UI/Panels/Panel.h>
 
 #include <memory>
 #include <string_view>
@@ -11,27 +10,18 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class CoordinateEditorPanel final : public IPanel {
+    class CoordinateEditorPanel final : public Panel {
     public:
-        CoordinateEditorPanel(
+        explicit CoordinateEditorPanel(
             std::string_view panelName,
-            Widget&,
+            Widget& parent,
             std::shared_ptr<IModelStatePair>
         );
-        CoordinateEditorPanel(const CoordinateEditorPanel&) = delete;
-        CoordinateEditorPanel(CoordinateEditorPanel&&) noexcept;
-        CoordinateEditorPanel& operator=(const CoordinateEditorPanel&) = delete;
-        CoordinateEditorPanel& operator=(CoordinateEditorPanel&&) noexcept;
-        ~CoordinateEditorPanel() noexcept;
 
     private:
-        CStringView impl_get_name() const final;
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        void impl_on_draw() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

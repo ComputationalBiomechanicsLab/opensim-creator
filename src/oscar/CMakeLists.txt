@@ -330,15 +330,16 @@ add_library(oscar STATIC
     UI/Events/OpenPanelEvent.h
     UI/Events/OpenPopupEvent.h
     UI/Events/ResetUIContextEvent.h
-    UI/Panels/IPanel.h
     UI/Panels/LogViewerPanel.cpp
     UI/Panels/LogViewerPanel.h
+    UI/Panels/Panel.cpp
+    UI/Panels/Panel.h
     UI/Panels/PanelManager.cpp
     UI/Panels/PanelManager.h
+    UI/Panels/PanelPrivate.cpp
+    UI/Panels/PanelPrivate.h
     UI/Panels/PerfPanel.cpp
     UI/Panels/PerfPanel.h
-    UI/Panels/StandardPanelImpl.cpp
-    UI/Panels/StandardPanelImpl.h
     UI/Panels/ToggleablePanelFlags.h
     UI/Panels/UndoRedoPanel.cpp
     UI/Panels/UndoRedoPanel.h

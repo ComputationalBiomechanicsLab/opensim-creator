@@ -360,7 +360,7 @@ private:
         }
     } lighting_state_;
 
-    PerfPanel perf_panel_{"Perf"};
+    PerfPanel perf_panel_;
 };
 
 

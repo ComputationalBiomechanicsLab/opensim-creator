@@ -4,15 +4,12 @@
 
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/UI/Panels/IPanel.h>
-#include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/Flags.h>
+#include <oscar/UI/Panels/Panel.h>
 
 #include <memory>
 #include <optional>
 #include <string_view>
 
-namespace osc { class CustomRenderingOptions; }
 namespace osc { class IModelStatePair; }
 namespace osc { class ModelViewerPanelLayer; }
 namespace osc { class ModelViewerPanelParameters; }
@@ -20,18 +17,13 @@ namespace osc { struct PolarPerspectiveCamera; }
 
 namespace osc
 {
-    class ModelViewerPanel : public IPanel {
+    class ModelViewerPanel : public Panel {
     public:
-        ModelViewerPanel(
+        explicit ModelViewerPanel(
             std::string_view panelName_,
             const ModelViewerPanelParameters&,
             ModelViewerPanelFlags = {}
         );
-        ModelViewerPanel(const ModelViewerPanel&) = delete;
-        ModelViewerPanel(ModelViewerPanel&&) noexcept;
-        ModelViewerPanel& operator=(const ModelViewerPanel&) = delete;
-        ModelViewerPanel& operator=(ModelViewerPanel&&) noexcept;
-        ~ModelViewerPanel() noexcept;
 
         bool isMousedOver() const;
         bool isLeftClicked() const;
@@ -44,14 +36,12 @@ namespace osc
         void setModelState(const std::shared_ptr<IModelStatePair>&);
 
     protected:
-        void impl_on_draw() override;
+        void impl_draw_content() override;
     private:
-        CStringView impl_get_name() const final;
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
+        void impl_before_imgui_begin() final;
+        void impl_after_imgui_begin() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }
