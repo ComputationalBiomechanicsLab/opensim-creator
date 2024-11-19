@@ -17,6 +17,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the icon logo.
 - A CC-BY license was added to `resources/icons` (#944)
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
+- Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs
 
 ## [0.5.16] - 2024/11/04
 
