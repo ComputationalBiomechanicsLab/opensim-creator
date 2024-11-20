@@ -34,6 +34,9 @@ out/
 # Visual Studio Code build directory (with cmake extension)
 build/
 
+# qtcreator side-effect
+CMakeLists.txt.user
+
 # artefacts/side-effects from the OSC build script
 dependencies-install/
 opensim-build/
