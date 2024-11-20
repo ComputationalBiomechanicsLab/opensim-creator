@@ -263,7 +263,7 @@ public:
                         [](const auto&) { return Color::white(); },
                     }, dec.shading);
 
-                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.5f));
+                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.25f));
                     graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
                 }
 
