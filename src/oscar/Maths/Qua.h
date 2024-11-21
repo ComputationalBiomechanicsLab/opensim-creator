@@ -9,7 +9,6 @@
 #include <oscar/Utils/HashHelpers.h>
 
 #include <cstddef>
-#include <cstdint>
 #include <ostream>
 #include <sstream>
 #include <string>

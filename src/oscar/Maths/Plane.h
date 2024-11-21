@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Maths/AnalyticPlane.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <iosfwd>

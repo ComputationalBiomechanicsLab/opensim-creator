@@ -23,7 +23,7 @@ namespace
 {
     template<typename StringLike>
     StringLike&& validate_as_classname(StringLike&& str)
-		requires std::constructible_from<std::string_view, StringLike&&>
+        requires std::constructible_from<std::string_view, StringLike&&>
     {
         if (is_valid_identifier(str)) {
             return std::forward<StringLike>(str);

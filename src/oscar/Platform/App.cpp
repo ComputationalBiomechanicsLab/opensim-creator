@@ -13,7 +13,6 @@
 #include <oscar/Platform/Detail/SDL2Helpers.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
-#include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceLoader.h>
@@ -25,7 +24,6 @@
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/SynchronizedValue.h>
@@ -49,7 +47,6 @@
 #include <exception>
 #include <sstream>
 #include <stdexcept>
-#include <unordered_map>
 #include <vector>
 
 namespace sdl = osc::sdl;
@@ -290,7 +287,7 @@ namespace
     public:
         CursorHandler()
         {
-            push_cursor_override(Cursor{CursorShape::Forbidden});  // initialize senteniel
+            push_cursor_override(Cursor{CursorShape::Forbidden});  // initialize sentinel
         }
         CursorHandler(const CursorHandler&) = delete;
         CursorHandler(CursorHandler&&) = delete;
@@ -314,7 +311,7 @@ namespace
 
         void pop_cursor_override()
         {
-            // note: there's a senteniel cursor at the bottom of the stack that's initialized
+            // note: there's a sentinel cursor at the bottom of the stack that's initialized
             //       by the constructor
             OSC_ASSERT(cursor_stack_.size() > 1 && "tried to call App::pop_cursor_override when no cursor overrides were pushed");
 
@@ -333,7 +330,7 @@ namespace
 
 template<>
 struct std::hash<TypeInfoReference> final {
-    size_t operator()(const TypeInfoReference& ref) const
+    size_t operator()(const TypeInfoReference& ref) const noexcept
     {
         return ref.get().hash_code();
     }
@@ -391,7 +388,7 @@ public:
                 // two pointers: a not-owned `Widget*` receiver and an owned `Event*`.
                 if (e.type == SDL_USEREVENT) {
                     if (e.user.data1) {
-                        // its an application-enacted (i.e. not spontaneous, OS-enacted, etc.) event
+                        // it's an application-enacted (i.e. not spontaneous, OS-enacted, etc.) event
                         // that should be immediately dispatched.
                         auto* receiver = static_cast<Widget*>(e.user.data1);
                         auto  event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
@@ -483,7 +480,7 @@ public:
         handle_screenshot_requests_for_this_frame();
 
         // care: only update the frame counter here because the above methods
-        // and checks depend on it being consistient throughout a single crank
+        // and checks depend on it being consistent throughout a single crank
         // of the application loop
         ++frame_counter_;
 
@@ -872,7 +869,7 @@ private:
         return graphics_context_.request_screenshot();
     }
 
-    // perform a screen transntion between two top-level `Screen`s
+    // perform a screen transition between two top-level `Screen`s
     void transition_to_next_screen()
     {
         if (not next_screen_) {

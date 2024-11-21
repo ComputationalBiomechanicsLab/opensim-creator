@@ -12,7 +12,7 @@
 class osc::SceneViewer::Impl final {
 public:
 
-    void onDraw(
+    void on_draw(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& renderer_params)
     {
@@ -46,7 +46,7 @@ osc::SceneViewer::~SceneViewer() noexcept = default;
 
 void osc::SceneViewer::on_draw(std::span<const SceneDecoration> decorations, const SceneRendererParams& renderer_params)
 {
-    impl_->onDraw(decorations, renderer_params);
+    impl_->on_draw(decorations, renderer_params);
 }
 
 bool osc::SceneViewer::is_hovered() const

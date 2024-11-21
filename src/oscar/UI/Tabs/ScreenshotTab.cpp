@@ -1,14 +1,12 @@
 #include "ScreenshotTab.h"
 
 #include <oscar/Formats/Image.h>
-#include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/RenderTexture.h>
-#include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/Texture2D.h>
 #include <oscar/Graphics/TextureFormat.h>
 #include <oscar/Maths/CollisionTests.h>
@@ -20,13 +18,11 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
-#include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/Utils/Assertions.h>
 
 #include <filesystem>
 #include <fstream>
@@ -36,7 +32,6 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
-#include <vector>
 
 using namespace osc;
 
@@ -129,7 +124,7 @@ public:
     }
 
 private:
-    // returns screenspace rect of the screenshot within the UI
+    // returns screen-space rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
         const Vec2 cursor_topleft = ui::get_cursor_screen_pos();
@@ -141,7 +136,7 @@ private:
     }
 
     void draw_image_overlays(
-        ui::DrawListView drawlist,
+        ui::DrawListView draw_list,
         const Rect& image_rect,
         const Color& unselected_color,
         const Color& selected_color)
@@ -169,7 +164,7 @@ private:
                 }
             }
 
-            drawlist.add_rect(
+            draw_list.add_rect(
                 annotation_rect_screen,
                 color,
                 3.0f,
@@ -201,19 +196,19 @@ private:
         // blit the screenshot into the output
         graphics::blit(image_texture_, render_texture);
 
-        // draw overlays to a local ImGui drawlist
-        ui::DrawList drawlist;
+        // draw overlays to a local ImGui draw list
+        ui::DrawList draw_list;
         Color outline_color = c_selected_color;
         outline_color.a = 1.0f;
         draw_image_overlays(
-            drawlist,
+            draw_list,
             Rect{{0.0f, 0.0f}, image_texture_.dimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
             outline_color
         );
 
-        // render drawlist to output
-        drawlist.render_to(render_texture);
+        // render draw list to output
+        draw_list.render_to(render_texture);
 
         Texture2D rv{render_texture.dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
         graphics::copy_texture(render_texture, rv);

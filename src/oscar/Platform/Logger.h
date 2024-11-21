@@ -49,7 +49,7 @@ namespace osc
             {
                 va_list args;
                 va_start(args, fmt);
-                int rv = std::vsnprintf(formatted_buffer.data(), formatted_buffer.size(), fmt.c_str(), args);
+                const int rv = std::vsnprintf(formatted_buffer.data(), formatted_buffer.size(), fmt.c_str(), args);
                 va_end(args);
 
                 if (rv <= 0) {

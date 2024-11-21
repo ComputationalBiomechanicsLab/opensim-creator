@@ -153,7 +153,7 @@ namespace
         std::shared_ptr<Panel> instance_;
     };
 
-    // declaration for a panel that can spawn new dyanmic panels (above)
+    // declaration for a panel that can spawn new dynamic panels (above)
     class SpawnablePanel final {
     public:
         SpawnablePanel(

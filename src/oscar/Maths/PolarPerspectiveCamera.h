@@ -34,7 +34,7 @@ namespace osc
 
         // autoscale znear and zfar based on the camera's distance from what it's looking at
         //
-        // important for looking at extremely small/large scenes. znear and zfar dictates
+        // important for looking at tiny/large scenes. znear and zfar dictates
         // both the culling planes of the camera *and* rescales the Z values of elements
         // in the scene. If the znear-to-zfar range is too large then Z-fighting will happen
         // and the scene will look wrong.

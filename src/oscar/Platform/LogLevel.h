@@ -1,9 +1,7 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 
-#include <cstddef>
 #include <iosfwd>
 #include <optional>
 #include <string_view>

@@ -2,6 +2,7 @@
 #include <oscar/Maths/UnitVec3.h>
 
 #include <oscar/Maths/GeometricFunctions.h>
+#include <oscar/Maths/Vec3.h>
 
 #include <gtest/gtest.h>
 

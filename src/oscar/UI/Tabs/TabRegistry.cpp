@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <memory>
 #include <ranges>
-#include <string>
+#include <string_view>
 #include <vector>
 
 using namespace osc;

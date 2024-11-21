@@ -17,7 +17,7 @@ namespace osc
     class ResourceLoader {
     public:
         operator IResourceLoader& () { return *impl_; }
-        operator const IResourceLoader& () { return *impl_; }
+        operator const IResourceLoader& () const { return *impl_; }
 
         ResourceStream open(const ResourcePath& resource_path)
         {
@@ -33,9 +33,12 @@ namespace osc
         {
             return ResourceLoader{impl_, prefix_ / prefix};
         }
-        ResourceLoader with_prefix(std::string_view str)
+
+        template<typename StringLike>
+        ResourceLoader with_prefix(StringLike&& str) const
+            requires std::constructible_from<ResourceLoader, StringLike&&>
         {
-            return with_prefix(ResourcePath{str});
+            return with_prefix(ResourcePath{std::forward<StringLike>(str)});
         }
 
         std::function<std::optional<ResourceDirectoryEntry>()> iterate_directory(const ResourcePath& resource_path)
@@ -49,10 +52,10 @@ namespace osc
 
         explicit ResourceLoader(
             std::shared_ptr<IResourceLoader> impl,
-            const ResourcePath& prefix = ResourcePath{}) :
+            ResourcePath prefix = ResourcePath{}) :
 
             impl_{std::move(impl)},
-            prefix_{prefix}
+            prefix_{std::move(prefix)}
         {}
 
         std::shared_ptr<IResourceLoader> impl_;

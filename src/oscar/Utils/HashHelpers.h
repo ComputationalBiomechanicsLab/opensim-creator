@@ -15,13 +15,13 @@ namespace osc
 
     // combines hash of `T` into the seed value
     template<Hashable T>
-    size_t hash_combine(size_t seed, const T& v)
+    size_t hash_combine(size_t seed, const T& v) noexcept(noexcept(std::hash<T>{}(v)))
     {
         return seed ^ (std::hash<T>{}(v) + 0x9e3779b9 + (seed<<6) + (seed>>2));
     }
 
     template<Hashable T>
-    size_t hash_of(const T& v)
+    size_t hash_of(const T& v) noexcept(noexcept(std::hash<T>{}(v)))
     {
         return std::hash<T>{}(v);
     }
@@ -33,7 +33,7 @@ namespace osc
     }
 
     template<typename Range>
-    size_t hash_range(const Range& range)
+    size_t hash_range(const Range& range) noexcept(noexcept(hash_combine(0, *std::ranges::begin(range))))
     {
         size_t rv = 0;
         for (const auto& el : range) {
@@ -52,7 +52,7 @@ namespace osc
 
     template<typename T1, typename T2>
     struct Hasher<std::pair<T1, T2>> final {
-        size_t operator()(const std::pair<T1, T2>& p) const
+        size_t operator()(const std::pair<T1, T2>& p) const noexcept(noexcept(hash_of(p.first, p.second)))
         {
             return hash_of(p.first, p.second);
         }

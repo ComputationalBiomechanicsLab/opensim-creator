@@ -3,7 +3,6 @@
 #include <oscar/Formats/SVG.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/UI/Icon.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/TransparentStringHasher.h>
 
 #include <ankerl/unordered_dense.h>
@@ -13,7 +12,6 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 using osc::Icon;
 
@@ -21,7 +19,7 @@ class osc::IconCache::Impl final {
 public:
     Impl(ResourceLoader& loader_prefixed_at_dir_containing_svgs, float vertical_scale)
     {
-        auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
+        const auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {
             const ResourcePath& p = *el;

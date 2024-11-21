@@ -15,7 +15,7 @@ namespace osc
         SaveChangesPopup(SaveChangesPopup&&) noexcept;
         SaveChangesPopup& operator=(const SaveChangesPopup&) = delete;
         SaveChangesPopup& operator=(SaveChangesPopup&&) noexcept;
-        ~SaveChangesPopup() noexcept;
+        ~SaveChangesPopup() noexcept override;
 
         void on_draw();
     private:

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <oscar/Platform/Widget.h>
-#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
 #include <memory>

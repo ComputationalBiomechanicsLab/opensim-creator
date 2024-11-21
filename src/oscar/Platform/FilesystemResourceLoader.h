@@ -13,13 +13,13 @@ namespace osc
 {
     class FilesystemResourceLoader final : public IResourceLoader {
     public:
-        FilesystemResourceLoader(const std::filesystem::path& root_directory) :
+        explicit FilesystemResourceLoader(const std::filesystem::path& root_directory) :
             root_directory_{root_directory}
         {}
 
     private:
-        ResourceStream impl_open(const ResourcePath&);
-        std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&);
+        ResourceStream impl_open(const ResourcePath&) final;
+        std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&) final;
 
         std::filesystem::path root_directory_;
     };

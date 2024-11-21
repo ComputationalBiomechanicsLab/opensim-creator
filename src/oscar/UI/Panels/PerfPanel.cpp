@@ -54,7 +54,7 @@ public:
             rgs::sort(measurements, rgs::less{}, &PerfMeasurement::label);
         }
 
-        const ui::TableFlags flags = {
+        constexpr ui::TableFlags flags = {
             ui::TableFlag::NoSavedSettings,
             ui::TableFlag::Resizable,
             ui::TableFlag::BordersInner,

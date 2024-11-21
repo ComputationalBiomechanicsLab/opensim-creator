@@ -5,7 +5,6 @@
 #include <oscar/Utils/StringName.h>
 
 #include <chrono>
-#include <string_view>
 
 namespace osc
 {

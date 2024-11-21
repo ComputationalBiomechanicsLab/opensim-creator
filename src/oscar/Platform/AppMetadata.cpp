@@ -13,11 +13,11 @@ std::string osc::calc_full_application_name_with_version_and_build_id(AppMetadat
 {
     std::stringstream ss;
     ss << calc_human_readable_application_name(metadata);
-    if (auto version = metadata.maybe_version_string()) {
+    if (const auto version = metadata.maybe_version_string()) {
         ss << " v" << *version;
     }
-    if (auto buildID = metadata.maybe_build_id()) {
-        ss << " (build " << *buildID << ')';
+    if (const auto build_id = metadata.maybe_build_id()) {
+        ss << " (build " << *build_id << ')';
     }
     return std::move(ss).str();
 }

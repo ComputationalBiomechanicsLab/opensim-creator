@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Vec2.h>
 
 namespace osc { struct PolarPerspectiveCamera; }

@@ -12,7 +12,6 @@
 #include <oscar/Platform/Screenshot.h>
 
 #include <concepts>
-#include <cstdint>
 #include <filesystem>
 #include <functional>
 #include <future>
@@ -240,17 +239,17 @@ namespace osc
         // makes the main window windowed (as opposed to fullscreen)
         void make_windowed();
 
-        // returns the recommended number of anti-aliasing samples that renderers that want to render
+        // returns the recommended number of antialiasing samples that renderers that want to render
         // to this `App`'s screen should use (based on user settings, etc.)
         AntiAliasingLevel anti_aliasing_level() const;
 
-        // sets the number of anti-aliasing samples that multisampled renderers should use when they
+        // sets the number of antialiasing samples that multi-sampled renderers should use when they
         // want to render to this `App`'s screen
         //
         // throws if `samples > max_samples()`
         void set_anti_aliasing_level(AntiAliasingLevel);
 
-        // returns the maximum number of anti-aliasing samples that the graphics backend supports
+        // returns the maximum number of antialiasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
         // returns true if the main window is backed by a framebuffer/renderbuffer that automatically

@@ -52,7 +52,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::ResourcePath> final {
-    size_t operator()(const osc::ResourcePath& resource_path) const
+    size_t operator()(const osc::ResourcePath& resource_path) const noexcept
     {
         return std::filesystem::hash_value(resource_path.path_);
     }

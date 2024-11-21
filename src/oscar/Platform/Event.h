@@ -10,7 +10,6 @@
 #include <filesystem>
 #include <memory>
 #include <string>
-#include <string_view>
 
 union SDL_Event;
 struct SDL_Window;

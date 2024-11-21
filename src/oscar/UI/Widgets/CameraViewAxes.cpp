@@ -2,6 +2,7 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/Circle.h>
+#include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/Rect.h>
@@ -13,8 +14,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
-#include <iterator>
 #include <ranges>
 
 using namespace osc;
@@ -26,7 +25,7 @@ namespace
         float font_size = ui::get_font_size();
         float line_length = 2.0f * font_size;
         float circle_radius = 0.6f * font_size;
-        float max_edge_length = 2.0f * (line_length + std::sqrt(2.0f * circle_radius * circle_radius));
+        float max_edge_length = 2.0f * (line_length + sqrt(2.0f * circle_radius * circle_radius));
         Vec2 dimensions = {max_edge_length, max_edge_length};
     };
 }
@@ -56,7 +55,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
     // draw each edge back-to-front
     bool edited = false;
-    ui::DrawListView drawlist = ui::get_panel_draw_list();
+    ui::DrawListView draw_list = ui::get_panel_draw_list();
     for (auto axis_index : axis_indices) {
         // calc direction vector in screen space
         Vec2 view = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
@@ -82,9 +81,9 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 const Color color = hovered ? Color::white() : base_color;
                 const Color text_color = hovered ? Color::black() : Color::white();
 
-                drawlist.add_line(origin, end, color, 3.0f);
-                drawlist.add_circle_filled(circ, color);
-                drawlist.add_text(end - 0.5f*label_size, text_color, labels[axis_index]);
+                draw_list.add_line(origin, end, color, 3.0f);
+                draw_list.add_circle_filled(circ, color);
+                draw_list.add_text(end - 0.5f*label_size, text_color, labels[axis_index]);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
                     focus_along_axis(camera, axis_index);
@@ -107,7 +106,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);
                 const Color color = hovered ? Color::white() : base_color.with_alpha(0.3f);
 
-                drawlist.add_circle_filled(circ, color);
+                draw_list.add_circle_filled(circ, color);
 
                 if (hovered and ui::is_mouse_clicked(ui::MouseButton::Left, id)) {
                     focus_along_axis(camera, axis_index, true);

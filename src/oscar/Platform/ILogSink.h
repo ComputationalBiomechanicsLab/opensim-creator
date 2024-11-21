@@ -20,7 +20,7 @@ namespace osc
         LogLevel level() const { return impl_level(); }
         void set_level(LogLevel log_level) { impl_set_level(log_level); }
 
-        bool should_log(LogLevel message_level) { return message_level >= level(); }
+        bool should_log(LogLevel message_level) const { return message_level >= level(); }
     private:
         virtual void impl_sink_message(const LogMessageView&) = 0;
         virtual LogLevel impl_level() const = 0;

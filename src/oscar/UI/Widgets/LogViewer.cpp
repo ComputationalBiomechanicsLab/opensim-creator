@@ -34,8 +34,8 @@ namespace
     {
         std::stringstream ss;
 
-        auto& guarded_content = global_get_traceback_log();
         {
+            auto& guarded_content = global_get_traceback_log();
             const auto& guard = guarded_content.lock();
             for (const LogMessage& msg : *guard) {
                 ss << '[' << msg.level() << "] " << msg.payload() << '\n';

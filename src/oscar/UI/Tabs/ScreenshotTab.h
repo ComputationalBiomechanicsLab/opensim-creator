@@ -2,8 +2,6 @@
 
 #include <oscar/UI/Tabs/Tab.h>
 
-#include <memory>
-
 namespace osc { class Screenshot; }
 namespace osc { class Widget; }
 

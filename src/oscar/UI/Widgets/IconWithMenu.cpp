@@ -6,7 +6,6 @@
 #include <oscar/Utils/CStringView.h>
 
 #include <functional>
-#include <string>
 #include <utility>
 
 osc::IconWithMenu::IconWithMenu(

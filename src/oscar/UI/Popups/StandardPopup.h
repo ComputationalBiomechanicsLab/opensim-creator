@@ -22,7 +22,7 @@ namespace osc
         StandardPopup& operator=(const StandardPopup&) = default;
         StandardPopup& operator=(StandardPopup&&) noexcept = default;
     public:
-        virtual ~StandardPopup() noexcept = default;
+        virtual ~StandardPopup() noexcept override = default;
 
         explicit StandardPopup(
             std::string_view popup_name

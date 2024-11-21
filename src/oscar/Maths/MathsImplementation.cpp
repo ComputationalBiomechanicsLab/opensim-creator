@@ -89,7 +89,7 @@ namespace
 
             midpoint = std::distance(prims.begin(), it);
             if (midpoint == begin or midpoint == end) {
-                // edge-case: failed to spacially partition: just naievely partition
+                // edge-case: failed to spatially partition: just naively partition
                 midpoint = begin + n/2;
             }
 
@@ -134,7 +134,7 @@ namespace
         }
 
         if (node.is_leaf()) {
-            // it's a leaf node, so we've sucessfully found the `AABB` that intersected
+            // it's a leaf node, so we've successfully found the `AABB` that intersected
             callback(BVHCollision{
                 maybe_collision->distance,
                 maybe_collision->position,
@@ -271,7 +271,7 @@ namespace
         Vec3 direction;
         Vec3 up;
     };
-    constexpr auto c_CubemapFacesDetails = std::to_array<CubemapFaceDetails>({
+    constexpr auto c_cubemap_faces_details = std::to_array<CubemapFaceDetails>({
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{-1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
         {{ 0.0f,  1.0f,  0.0f}, {0.0f,  0.0f,  1.0f}},
@@ -387,14 +387,14 @@ bool osc::BVH::empty() const
 size_t osc::BVH::max_depth() const
 {
     size_t cur = 0;
-    size_t maxdepth = 0;
+    size_t max_depth = 0;
     std::stack<size_t> stack;
 
     while (cur < nodes_.size()) {
         if (nodes_[cur].is_leaf()) {
             // leaf node: compute its depth and continue traversal (if applicable)
 
-            maxdepth = max(maxdepth, stack.size() + 1);
+            max_depth = max(max_depth, stack.size() + 1);
 
             if (stack.empty()) {
                 break;  // nowhere to traverse to: exit
@@ -415,7 +415,7 @@ size_t osc::BVH::max_depth() const
         }
     }
 
-    return maxdepth;
+    return max_depth;
 }
 
 std::optional<AABB> osc::BVH::bounds() const
@@ -592,7 +592,7 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
     // axes to match the scene's rotation
     const Vec4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
     const Mat4 rotation_theta = rotate(identity<Mat4>(), theta, UnitVec3::along_y());
-    const UnitVec3 theta_vec = UnitVec3{sin(theta), 0.0f, cos(theta)};
+    const UnitVec3 theta_vec{sin(theta), 0.0f, cos(theta)};
     const UnitVec3 phi_axis = cross(theta_vec, UnitVec3::along_y());
     const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
 
@@ -608,7 +608,7 @@ void osc::PolarPerspectiveCamera::drag(Vec2 delta)
 
 void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
 {
-    // znear and zfar are only really dicated by the camera's radius, because
+    // znear and zfar are only really dictated by the camera's radius, because
     // the radius is effectively the distance from the camera's focal point
 
     znear = 0.02f * radius;
@@ -705,7 +705,7 @@ Vec3 osc::recommended_light_direction(const PolarPerspectiveCamera& camera)
     const Radians theta = camera.theta + 22.5_deg;
 
     // #549: phi shouldn't track with the camera, because changing the "height"/"slope"
-    // of the camera with shadow rendering (#10) looks bizzare
+    // of the camera with shadow rendering (#10) looks bizarre
     const Radians phi = 45_deg;
 
     const Vec3 p = PolarToCartesian(camera.focus_point, camera.radius, theta, phi);
@@ -844,7 +844,7 @@ float osc::volume_of(const Tetrahedron& tetrahedron)
 namespace
 {
     struct QuadraticFormulaResult final {
-        bool computeable;
+        bool computable;
         float x0;
         float x1;
     };
@@ -860,7 +860,7 @@ namespace
         const float discriminant = b*b - 4.0f*a*c;
 
         if (discriminant < 0.0f) {
-            res.computeable = false;
+            res.computable = false;
             return res;
         }
 
@@ -891,7 +891,7 @@ namespace
         // which, handily, will only *accumulate* the sum inside those
         // parentheses. If `b` is positive, you end up with a positive
         // number. If `b` is negative, you end up with a negative number. No
-        // catastropic cancellation. By multiplying it by "-0.5" you end up
+        // catastrophic cancellation. By multiplying it by "-0.5" you end up
         // with:
         //
         //     -b - sqrt(disc)
@@ -908,7 +908,7 @@ namespace
         //     https://en.wikipedia.org/wiki/Quadratic_equation
 
 
-        res.computeable = true;
+        res.computable = true;
         res.x0 = q/a;  // textbook "complete the square" equation
         res.x1 = c/q;  // Muller's method equation
         return res;
@@ -1044,7 +1044,7 @@ Line osc::perspective_unproject_topleft_screen_pos_to_world_ray(
     line_origin_view /= line_origin_view.w;  // perspective divide
 
     // location of mouse in worldspace
-    const Vec3 line_origin_world = Vec3{inverse(camera_view_matrix) * line_origin_view};
+    const Vec3 line_origin_world{inverse(camera_view_matrix) * line_origin_view};
 
     // direction vector from camera to mouse location (i.e. the projection)
     const Vec3 line_direction_world = normalize(line_origin_world - camera_worldspace_origin);
@@ -1067,8 +1067,8 @@ Vec2 osc::top_left_rh(const Rect& rect)
 
 Rect osc::bounding_rect_of(const Circle& circle)
 {
-    const float hypot = sqrt(2.0f * circle.radius * circle.radius);
-    return {circle.origin - hypot, circle.origin + hypot};
+    const float hypotenuse = sqrt(2.0f * circle.radius * circle.radius);
+    return {circle.origin - hypotenuse, circle.origin + hypotenuse};
 }
 
 Rect osc::expand_by_absolute_amount(const Rect& rect, float abs_amount)
@@ -1182,7 +1182,7 @@ Mat4 osc::mat4_transform_between(const Disc& src_disc, const Disc& dest_disc)
     // - s if perpendicular to N
     // - N is a directional vector, so it's `cos(theta)` in each axis already
     // - 1-N is sin(theta) of each axis to the normal
-    // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendiular each axis is
+    // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendicular each axis is
 
     const Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - src_disc.normal));
     const Mat4 scaler = scale(identity<Mat4>(), scalers);
@@ -1270,7 +1270,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     // create a new AABB in viewspace that bounds the worldspace AABB
     AABB viewspace_aabb = transform_aabb(view_mat, aabb);
 
-    // z-test the viewspace AABB to see if any part of it it falls within the
+    // z-test the viewspace AABB to see if any part of it falls within the
     // camera's clipping planes
     //
     // care: `znear` and `zfar` are usually defined as positive distances from the
@@ -1457,7 +1457,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Plane& p
     }
     else {
         // the line is *very* parallel to the plane, which could cause
-        // some divide-by-zero havok: pretend it didn't intersect
+        // some divide-by-zero havoc: pretend it didn't intersect
         return std::nullopt;
     }
 }
@@ -1548,9 +1548,9 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle
         const Vec3 c = P - start;
 
         // cross product of the above indicates whether the vectors are
-        // clockwise or anti-clockwise with respect to eachover. It's a
-        // right-handed coord system, so anti-clockwise produces a vector
-        // that points in same direction as normal
+        // clockwise or anti-clockwise with respect to each over. It's a
+        // right-handed coordinate system, so anti-clockwise produces a
+        // vector that points in same direction as normal
         const Vec3 ax = cross(e, c);
 
         // if the dot product of that axis with the normal is <0.0f then
@@ -1577,11 +1577,11 @@ std::array<Mat4, 6> osc::calc_cubemap_view_proj_matrices(
     const Mat4& projection_matrix,
     Vec3 cube_center)
 {
-    static_assert(std::size(c_CubemapFacesDetails) == 6);
+    static_assert(std::size(c_cubemap_faces_details) == 6);
 
     std::array<Mat4, 6> rv{};
     for (size_t i = 0; i < 6; ++i) {
-        rv[i] = projection_matrix * calc_cubemap_view_matrix(c_CubemapFacesDetails[i], cube_center);
+        rv[i] = projection_matrix * calc_cubemap_view_matrix(c_cubemap_faces_details[i], cube_center);
     }
     return rv;
 }

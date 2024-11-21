@@ -14,8 +14,6 @@ osc::UndoButton::~UndoButton() noexcept = default;
 
 void osc::UndoButton::on_draw()
 {
-    int ui_id = 0;
-
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 
     bool was_disabled = false;
@@ -38,6 +36,7 @@ void osc::UndoButton::on_draw()
     }
 
     if (ui::begin_popup_context_menu("##OpenUndoMenu", ui::PopupFlag::MouseButtonLeft)) {
+        int ui_id = 0;
         for (size_t i = 0; i < undo_redo_->num_undo_entries(); ++i) {
             ui::push_id(ui_id++);
             if (ui::draw_selectable(undo_redo_->undo_entry_at(i).message())) {

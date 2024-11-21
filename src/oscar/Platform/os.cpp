@@ -47,12 +47,12 @@ namespace
     // open
     constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView methodname, char* p)
+    std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, char* p)
     {
         // nullptr disallowed
         if (p == nullptr) {
             std::stringstream ss;
-            ss << methodname << ": returned null: " << SDL_GetError();
+            ss << method_name << ": returned null: " << SDL_GetError();
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -61,7 +61,7 @@ namespace
         // empty string disallowed
         if (sv.empty()) {
             std::stringstream ss;
-            ss << methodname << ": returned an empty string";
+            ss << method_name << ": returned an empty string";
             throw std::runtime_error{std::move(ss).str()};
         }
 
@@ -83,7 +83,7 @@ std::tm osc::system_calendar_time()
 
 std::filesystem::path osc::current_executable_directory()
 {
-    std::unique_ptr<char, decltype(&SDL_free)> p{
+    const std::unique_ptr<char, decltype(&SDL_free)> p{
         SDL_GetBasePath(),
         SDL_free
     };
@@ -94,7 +94,7 @@ std::filesystem::path osc::user_data_directory(
     CStringView organization_name,
     CStringView application_name)
 {
-    std::unique_ptr<char, decltype(&SDL_free)> p{
+    const std::unique_ptr<char, decltype(&SDL_free)> p{
         SDL_GetPrefPath(organization_name.c_str(), application_name.c_str()),
         SDL_free,
     };
@@ -103,8 +103,7 @@ std::filesystem::path osc::user_data_directory(
 
 std::string osc::get_clipboard_text()
 {
-    char* str = SDL_GetClipboardText();
-    if (str) {
+    if (char* str = SDL_GetClipboardText()) {
         ScopeGuard guard{[str]() { SDL_free(str); }};
         return str;
     }
@@ -146,11 +145,11 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
 
     auto [path, result] = [&]()
     {
-        const std::string comma_delimted_extensions = join(file_extensions, ",");
+        const std::string comma_delimited_extensions = join(file_extensions, ",");
 
         nfdchar_t* ptr = nullptr;
         const nfdresult_t res = NFD_OpenDialog(
-            comma_delimted_extensions.empty() ? nullptr : comma_delimted_extensions.c_str(),
+            comma_delimited_extensions.empty() ? nullptr : comma_delimited_extensions.c_str(),
             initial_directory_to_show ? initial_directory_to_show->string().c_str() : nullptr,
             &ptr
         );
@@ -187,10 +186,10 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
         initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
     }
 
-    const std::string comma_delimted_extensions = join(file_extensions, ",");
+    const std::string comma_delimited_extensions = join(file_extensions, ",");
     nfdpathset_t s{};
-    nfdresult_t result = NFD_OpenDialogMultiple(
-        comma_delimted_extensions.empty() ? nullptr : comma_delimted_extensions.c_str(),
+    const nfdresult_t result = NFD_OpenDialogMultiple(
+        comma_delimited_extensions.empty() ? nullptr : comma_delimited_extensions.c_str(),
         initial_directory_to_show ? initial_directory_to_show->string().c_str() : nullptr,
         &s
     );
@@ -259,7 +258,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
         //
         // the caller only provides the extension without the dot (this is what
-        // NFD requires) but the user may have manually wrote a string that is
+        // NFD requires) but the user may have manually written a string that is
         // suffixed with the dot-less version of the extension (e.g. "somecsv")
 
         const std::string fullExtension = std::string{"."} + *maybe_extension;
@@ -280,7 +279,7 @@ std::string osc::errno_to_string_threadsafe()
 
 namespace
 {
-    const std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+    constexpr std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
     void write_dynamic_name_els(std::ostream& out)
     {
         std::default_random_engine s_prng{std::random_device{}()};
@@ -507,7 +506,7 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
         // this thread only reaches here if there is some kind of error in `exec`
         //
         // aggressively exit this thread, returning the status code. Do **not**
-        // return from this thread, because it should'nt behave as-if it were
+        // return from this thread, because it shouldn't behave as-if it were
         // the calling thread
         //
         // use `_exit`, rather than `exit`, because we don't want the fork to
@@ -653,7 +652,7 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 
     PVOID return_addrs[num_frames];
 
-    // popupate [0, n) with return addresses (see MSDN)
+    // populate [0, n) with return addresses (see MSDN)
     USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
 
     log_message(lvl, "backtrace:");

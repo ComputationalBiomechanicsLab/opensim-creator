@@ -1,7 +1,6 @@
 #include "Tab.h"
 
 #include <oscar/UI/Tabs/TabPrivate.h>
-#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/UID.h>
 
 #include <memory>

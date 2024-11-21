@@ -1,7 +1,6 @@
 #include "TabTestingScreen.h"
 
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
@@ -9,10 +8,7 @@
 
 #include <cstddef>
 #include <memory>
-#include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 class osc::TabTestingScreen::Impl final : public ScreenPrivate {
 public:

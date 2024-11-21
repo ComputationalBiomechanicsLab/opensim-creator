@@ -7,7 +7,6 @@
 #include <concepts>
 #include <functional>
 #include <ranges>
-#include <span>
 
 namespace osc { struct Circle; }
 

@@ -5,7 +5,7 @@ namespace osc
     // returned by `App::do_main_loop_step`
     //
     // callers should interpret an implicit conversion of this class to `true` as "the
-    // tick was ok". An impicit conversion to `false` should be interpreted as "something
+    // tick was ok". An implicit conversion to `false` should be interpreted as "something
     // happened, you should stop stepping and maybe teardown the application loop"
     class AppMainLoopStatus final {
     public:

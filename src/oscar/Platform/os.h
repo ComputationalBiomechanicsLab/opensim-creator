@@ -70,7 +70,7 @@ namespace osc
     // returns the contents of the clipboard as text, or an empty string if nothing's in the clipboard
     std::string get_clipboard_text();
 
-    // returns `true` if `content` was sucessfully copied to the user's clipboard
+    // returns `true` if `content` was successfully copied to the user's clipboard
     bool set_clipboard_text(CStringView content);
 
     // sets an environment variable's value process-wide
