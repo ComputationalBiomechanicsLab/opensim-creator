@@ -48,3 +48,6 @@ osc-dependencies-build/
 osc-dependencies-install/
 osc-deps-build/
 osc-deps-install/
+
+# CLion
+.idea/
