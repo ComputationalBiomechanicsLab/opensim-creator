@@ -1,6 +1,6 @@
 #include "AntiAliasingLevel.h"
 
-#include <cstddef>
+#include <cstdint>
 #include <ostream>
 
 std::ostream& osc::operator<<(std::ostream& out, AntiAliasingLevel aa_level)

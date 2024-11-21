@@ -15,7 +15,7 @@ namespace osc
     public:
         Class();
 
-        Class(
+        explicit Class(
             std::string_view name,
             const Class& parent_class = Class{},
             std::span<const PropertyInfo> properties = std::span<const PropertyInfo>{}

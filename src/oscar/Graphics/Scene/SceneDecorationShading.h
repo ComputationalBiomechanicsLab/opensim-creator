@@ -8,7 +8,7 @@
 
 namespace osc
 {
-    // the choice of shading that a `SceneRenderer` should use when drawing a `SceneDecroation`
+    // the choice of shading that a `SceneRenderer` should use when drawing a `SceneDecoration`
     using SceneDecorationShading = std::variant<
 
         // draws the `SceneDecoration` with this `Color` using an implementation-defined `Material`

@@ -21,6 +21,7 @@
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>

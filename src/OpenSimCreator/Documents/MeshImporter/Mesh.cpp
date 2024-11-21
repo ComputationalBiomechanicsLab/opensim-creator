@@ -7,12 +7,12 @@
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <oscar/Maths/AABB.h>
-#include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Utils/UID.h>
 
 #include <filesystem>
-#include <iostream>
+#include <ostream>
 #include <utility>
 #include <vector>
 

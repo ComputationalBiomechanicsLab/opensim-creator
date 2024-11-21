@@ -64,7 +64,7 @@ namespace osc
         friend class RenderTexture;
         class ColorRenderBuffer;
 
-        SharedColorRenderBuffer(const ColorRenderBuffer&);
+        explicit SharedColorRenderBuffer(const ColorRenderBuffer&);
 
         std::shared_ptr<ColorRenderBuffer> impl_;
     };

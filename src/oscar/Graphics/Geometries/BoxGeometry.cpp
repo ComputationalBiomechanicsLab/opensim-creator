@@ -24,14 +24,14 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
     std::vector<Vec3> vertices;
     std::vector<Vec3> normals;
     std::vector<Vec2> uvs;
-    std::vector<SubMeshDescriptor> submeshes;  // for multi-material support
+    std::vector<SubMeshDescriptor> sub_meshes;  // for multi-material support
 
     // helper variables
     size_t num_vertices = 0;
     size_t group_start = 0;
 
     // helper function
-    const auto build_plane = [&indices, &vertices, &normals, &uvs, &submeshes, &num_vertices, &group_start](
+    const auto build_plane = [&indices, &vertices, &normals, &uvs, &sub_meshes, &num_vertices, &group_start](
         Vec3::size_type u,
         Vec3::size_type v,
         Vec3::size_type w,
@@ -93,8 +93,8 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
             }
         }
 
-        // add submesh description
-        submeshes.emplace_back(group_start, group_count, MeshTopology::Triangles);
+        // add sub-mesh description
+        sub_meshes.emplace_back(group_start, group_count, MeshTopology::Triangles);
         group_start += group_count;
         num_vertices += vertex_count;
     };
@@ -107,13 +107,13 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
     build_plane(0, 1, 2,  1.0f, -1.0f, {p.width, p.height,  p.depth},  p.num_width_segments, p.num_height_segments);  // pz
     build_plane(0, 1, 2, -1.0f, -1.0f, {p.width, p.height, -p.depth},  p.num_width_segments, p.num_height_segments);  // nz
 
-    // the first submesh is "the entire cube"
-    submeshes.insert(submeshes.begin(), SubMeshDescriptor{0, group_start, MeshTopology::Triangles});
+    // the first sub-mesh is "the entire cube"
+    sub_meshes.insert(sub_meshes.begin(), SubMeshDescriptor{0, group_start, MeshTopology::Triangles});
 
     // build geometry
     set_vertices(vertices);
     set_normals(normals);
     set_tex_coords(uvs);
     set_indices(indices);
-    set_submesh_descriptors(submeshes);
+    set_submesh_descriptors(sub_meshes);
 }

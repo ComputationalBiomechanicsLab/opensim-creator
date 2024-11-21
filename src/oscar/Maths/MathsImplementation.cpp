@@ -20,7 +20,6 @@
 #include <string>
 #include <string_view>
 #include <stack>
-#include <stdexcept>
 #include <utility>
 
 using namespace osc::literals;
@@ -582,7 +581,7 @@ void osc::PolarPerspectiveCamera::reset()
 
 void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
 {
-    const auto horizontal_fov = vertial_to_horizontal_fov(vertical_fov, aspect_ratio);
+    const auto horizontal_fov = vertical_to_horizontal_fov(vertical_fov, aspect_ratio);
 
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
@@ -793,7 +792,7 @@ void osc::auto_focus(
     float aspect_ratio)
 {
     const Sphere bounding_sphere = bounding_sphere_of(element_aabb);
-    const Radians smallest_fov = aspect_ratio > 1.0f ? camera.vertical_fov : vertial_to_horizontal_fov(camera.vertical_fov, aspect_ratio);
+    const Radians smallest_fov = aspect_ratio > 1.0f ? camera.vertical_fov : vertical_to_horizontal_fov(camera.vertical_fov, aspect_ratio);
 
     // auto-focus the camera with a minimum radius of 1m
     //
@@ -967,7 +966,7 @@ namespace
 }
 
 
-Radians osc::vertial_to_horizontal_fov(Radians vertical_fov, float aspect_ratio)
+Radians osc::vertical_to_horizontal_fov(Radians vertical_fov, float aspect_ratio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 

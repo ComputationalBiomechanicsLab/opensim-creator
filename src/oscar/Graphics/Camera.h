@@ -106,7 +106,7 @@ namespace osc
         //
         // - limit running an expensive fragment shader to a smaller subspace
         // - only draw sub-parts of a scene without having to recompute transforms or render it differently etc.
-        // - only clear + draw to a smaller subspace of the output (e.g. writing to sub-sections of a larger UI)
+        // - only clear + draw to a smaller subspace of the output (e.g. writing to subsections of a larger UI)
         std::optional<Rect> scissor_rect() const;
         void set_scissor_rect(std::optional<Rect>);
 

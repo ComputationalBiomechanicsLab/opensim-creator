@@ -12,7 +12,6 @@
 #include <memory>
 #include <span>
 #include <sstream>
-#include <stdexcept>
 
 using namespace osc;
 
@@ -20,19 +19,19 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 {
     // read SVG content into a `std::string`
     std::string data;
-    copy(
+    std::copy(
         std::istreambuf_iterator{in},
         std::istreambuf_iterator<std::istream::char_type>{},
         std::back_inserter(data)
     );
 
     // parse the `std::string` as an SVG document
-    std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
+    const std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
     OSC_ASSERT(svg_document != nullptr && "error loading SVG document");
 
     // when rendering the document's contents, flip Y so that it's compatible with the
     // renderer's coordinate system
-    lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, svg_document->height()};
+    const lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, svg_document->height()};
     svg_document->setMatrix(m);
 
     // render to a rescaled bitmap

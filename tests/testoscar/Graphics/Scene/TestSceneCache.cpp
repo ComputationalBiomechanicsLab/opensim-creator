@@ -1,6 +1,7 @@
 #include <oscar/Graphics/Scene/SceneCache.h>
 
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Vec3.h>

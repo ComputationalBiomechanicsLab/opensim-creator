@@ -34,7 +34,7 @@ osc::RingGeometry::RingGeometry(const Params& p)
     std::vector<Vec2> uvs;
 
     float radius = p.inner_radius;
-    float radius_step = (p.outer_radius - p.inner_radius)/fnum_phi_segments;
+    const float radius_step = (p.outer_radius - p.inner_radius)/fnum_phi_segments;
 
     // generate vertices, normals, and uvs
     for (size_t j = 0; j <= num_phi_segments; ++j) {

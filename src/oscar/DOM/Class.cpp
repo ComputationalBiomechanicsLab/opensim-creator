@@ -21,10 +21,12 @@ using namespace osc;
 
 namespace
 {
-    const StringName& validate_as_classname(const StringName& str)
+    template<typename StringLike>
+    StringLike&& validate_as_classname(StringLike&& str)
+		requires std::constructible_from<std::string_view, StringLike&&>
     {
         if (is_valid_identifier(str)) {
-            return str;
+            return std::forward<StringLike>(str);
         }
         else {
             std::stringstream ss;
@@ -69,7 +71,7 @@ public:
         const Class& parent_class,
         std::span<const PropertyInfo> properties) :
 
-        name_{validate_as_classname(StringName{name})},
+        name_{validate_as_classname(name)},
         parent_class_{parent_class},
         properties_{concat_into_vector(parent_class.properties(), properties)},
         property_name_to_index_lookup_{create_index_lookup_throw_if_dupes(properties_)}
@@ -95,8 +97,8 @@ private:
 
 osc::Class::Class()
 {
-    static const std::shared_ptr<Impl> s_ObjectClassImpl = std::make_shared<Impl>();
-    impl_ = s_ObjectClassImpl;
+    static const auto s_object_class_impl = std::make_shared<Impl>();
+    impl_ = s_object_class_impl;
 }
 
 osc::Class::Class(

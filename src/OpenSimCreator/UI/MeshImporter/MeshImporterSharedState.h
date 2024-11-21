@@ -30,11 +30,11 @@
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/CollisionTests.h>
 #include <oscar/Maths/Line.h>
-#include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>

@@ -11,7 +11,6 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 
 #include <cstddef>
@@ -86,7 +85,7 @@ std::vector<Vec4> osc::calc_tangent_vectors(
     const auto accumulate_tangent = [&rv, &weights](auto i, const Vec4& new_tangent)
     {
         rv[i] = (static_cast<float>(weights[i])*rv[i] + new_tangent)/(static_cast<float>(weights[i]+1));
-        weights[i]++;
+        ++weights[i];
     };
 
     // compute tangent vectors from triangle primitives

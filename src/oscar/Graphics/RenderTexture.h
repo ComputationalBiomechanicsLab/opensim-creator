@@ -11,7 +11,6 @@
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <iosfwd>
-#include <memory>
 
 namespace osc
 {

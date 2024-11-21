@@ -28,7 +28,7 @@ namespace osc
         size_t detail_level = 0;
     };
 
-    // generates a 3D solid with flat faces by projecting triangle faces (`indicies`
+    // generates a 3D solid with flat faces by projecting triangle faces (`indices`
     // indexes into `vertices` for each triangle) onto a sphere of `radius`, followed
     // by dividing them up to the desired `detail_level`
     class PolyhedronGeometry final : public Mesh {

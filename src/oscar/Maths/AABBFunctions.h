@@ -5,11 +5,9 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
-#include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec3.h>
 
 #include <array>
-#include <cstdint>
 #include <concepts>
 #include <functional>
 #include <optional>

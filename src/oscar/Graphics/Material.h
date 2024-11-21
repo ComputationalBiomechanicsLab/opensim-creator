@@ -1,25 +1,15 @@
 #pragma once
 
 #include <oscar/Graphics/BlendingEquation.h>
-#include <oscar/Graphics/Color.h>
-#include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/CullMode.h>
 #include <oscar/Graphics/DepthFunction.h>
 #include <oscar/Graphics/DestinationBlendingFactor.h>
 #include <oscar/Graphics/MaterialPropertyBlock.h>
-#include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/SourceBlendingFactor.h>
-#include <oscar/Graphics/Texture2D.h>
-#include <oscar/Maths/Mat3.h>
-#include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/Vec2.h>
-#include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
 #include <oscar/Utils/CopyOnUpdPtr.h>
 
 #include <concepts>
-#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <span>

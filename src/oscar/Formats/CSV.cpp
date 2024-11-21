@@ -109,11 +109,11 @@ void osc::write_csv_row(
     std::ostream& out,
     std::span<const std::string> columns)
 {
-    std::string_view delimeter;
+    std::string_view delimiter;
     for (const auto& column : columns) {
         const bool quoted = should_be_quoted(column);
 
-        out << delimeter;
+        out << delimiter;
         if (quoted) {
             out << '"';
         }
@@ -131,7 +131,7 @@ void osc::write_csv_row(
             out << '"';
         }
 
-        delimeter = ",";
+        delimiter = ",";
     }
     out << '\n';
 }

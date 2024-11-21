@@ -57,7 +57,7 @@ namespace osc
 
         constexpr float normalized_value() const
         {
-            // remapping signed integers is tricker than unsigned ones, because
+            // remapping signed integers is trickier than unsigned ones, because
             // `|MIN| > |MAX|`
             //
             // this implementation follows OpenGL 4.2+'s convention of mapping

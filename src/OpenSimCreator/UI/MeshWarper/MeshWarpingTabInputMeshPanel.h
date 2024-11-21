@@ -26,6 +26,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/RayCollision.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>

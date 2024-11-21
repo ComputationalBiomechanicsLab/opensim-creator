@@ -5,6 +5,7 @@
 #include <oscar/Graphics/Detail/DepthStencilRenderBufferFormatList.h>
 #include <oscar/Graphics/Detail/DepthStencilRenderBufferFormatTraits.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/EnumHelpers.h>
 
 #include <array>
 

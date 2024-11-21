@@ -16,7 +16,7 @@ namespace osc
     // image then plans on using the image with the graphics backend (e.g. via `Texture2D`),
     // and the graphics backend "anchors" shaders into a linear color space, then the
     // loader needs to be able to tell the graphics backend whether (or not) to
-    // perfrom (e.g.) sRGB-to-linear conversion when loading the color components
+    // perform (e.g.) sRGB-to-linear conversion when loading the color components
     // into a shader.
     enum class ColorSpace {
 

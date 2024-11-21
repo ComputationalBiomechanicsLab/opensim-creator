@@ -10,21 +10,21 @@ namespace osc::detail
 
     template<>
     struct CPUDataTypeOpenGLTraits<CPUDataType::UnsignedByte> {
-        static inline constexpr GLenum opengl_data_type = GL_UNSIGNED_BYTE;
+        static constexpr GLenum opengl_data_type = GL_UNSIGNED_BYTE;
     };
 
     template<>
     struct CPUDataTypeOpenGLTraits<CPUDataType::Float> {
-        static inline constexpr GLenum opengl_data_type = GL_FLOAT;
+        static constexpr GLenum opengl_data_type = GL_FLOAT;
     };
 
     template<>
     struct CPUDataTypeOpenGLTraits<CPUDataType::UnsignedInt24_8> {
-        static inline constexpr GLenum opengl_data_type = GL_UNSIGNED_INT_24_8;
+        static constexpr GLenum opengl_data_type = GL_UNSIGNED_INT_24_8;
     };
 
     template<>
     struct CPUDataTypeOpenGLTraits<CPUDataType::HalfFloat> {
-        static inline constexpr GLenum opengl_data_type = GL_HALF_FLOAT;
+        static constexpr GLenum opengl_data_type = GL_HALF_FLOAT;
     };
 }

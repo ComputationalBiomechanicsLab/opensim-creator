@@ -347,7 +347,7 @@ struct std::tuple_element<I, osc::Rgba<T>> {
 // define hashing function for `Rgba<T>`
 template<osc::ColorComponent T>
 struct std::hash<osc::Rgba<T>> final {
-    size_t operator()(const osc::Rgba<T>& rgba) const
+    size_t operator()(const osc::Rgba<T>& rgba) const noexcept
     {
         return osc::hash_of(rgba.r, rgba.g, rgba.b, rgba.a);
     }

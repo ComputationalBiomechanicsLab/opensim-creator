@@ -1,8 +1,5 @@
 #pragma once
 
-#include <oscar/Graphics/AntiAliasingLevel.h>
-#include <oscar/Maths/Vec2.h>
-
 #include <memory>
 #include <span>
 

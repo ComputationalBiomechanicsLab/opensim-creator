@@ -15,7 +15,6 @@
 #include <istream>
 #include <memory>
 #include <mutex>
-#include <new>
 #include <optional>
 #include <sstream>
 #include <string>

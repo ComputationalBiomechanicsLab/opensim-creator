@@ -2,7 +2,6 @@
 
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Material.h>
-#include <oscar/Graphics/MaterialPropertyBlock.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Graphics/Scene/SceneDecorationShading.h>
@@ -10,13 +9,11 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/StringName.h>
 
-#include <optional>
-#include <string>
 #include <variant>
 
 namespace osc
 {
-    // a single renderable decoration element in the scene
+    // a single render-able decoration element in the scene
     struct SceneDecoration final {
 
         friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;

@@ -5,7 +5,6 @@
 #include <oscar/Maths/GeometricFunctions.h>
 
 #include <array>
-#include <cstddef>
 #include <cstdint>
 
 using namespace osc;

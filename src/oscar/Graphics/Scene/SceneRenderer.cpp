@@ -19,6 +19,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MatFunctions.h>
@@ -26,6 +27,7 @@
 #include <oscar/Maths/PolarPerspectiveCamera.h>
 #include <oscar/Maths/QuaternionFunctions.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>

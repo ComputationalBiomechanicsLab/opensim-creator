@@ -4,20 +4,11 @@
 #include <oscar/Graphics/ColorHSLA.h>
 #include <oscar/Graphics/Unorm8.h>
 #include <oscar/Maths/CommonFunctions.h>
-#include <oscar/Maths/MathHelpers.h>
-#include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
-#include <oscar/Utils/Algorithms.h>
-#include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
-#include <array>
-#include <cmath>
 #include <algorithm>
 #include <cstdint>
-#include <iostream>
 #include <optional>
-#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>

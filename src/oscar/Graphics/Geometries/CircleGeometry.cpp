@@ -6,6 +6,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Shims/Cpp23/cstddef.h>
+#include <oscar/Utils/Assertions.h>
 
 #include <cstddef>
 #include <cstdint>

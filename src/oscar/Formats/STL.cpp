@@ -96,7 +96,7 @@ namespace
 
     void write_triangles(std::ostream& out, const Mesh& mesh)
     {
-        mesh.for_each_indexed_triangle([&out](Triangle t) { write_triangle(out, t); });
+        mesh.for_each_indexed_triangle([&out](Triangle triangle) { write_triangle(out, triangle); });
     }
 }
 

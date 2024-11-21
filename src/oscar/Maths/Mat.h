@@ -53,7 +53,7 @@ namespace osc
 
 template<size_t C, size_t R, typename T>
 struct std::tuple_size<osc::Mat<C, R, T>> {
-    static inline constexpr size_t value = C;
+    static constexpr size_t value = C;
 };
 
 template<size_t I, size_t C, size_t R, typename T>

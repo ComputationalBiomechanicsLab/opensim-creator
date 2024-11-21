@@ -38,6 +38,7 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/TransformFunctions.h>
 #include <oscar/Maths/Vec2.h>

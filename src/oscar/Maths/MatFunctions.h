@@ -12,11 +12,6 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <ostream>
-#include <sstream>
-#include <string>
-#include <string_view>
-#include <utility>
 
 namespace osc
 {

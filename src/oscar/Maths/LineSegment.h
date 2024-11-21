@@ -23,7 +23,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::LineSegment> {
-    size_t operator()(const osc::LineSegment& line_segment) const
+    size_t operator()(const osc::LineSegment& line_segment) const noexcept
     {
         return osc::hash_of(line_segment.start, line_segment.end);
     }

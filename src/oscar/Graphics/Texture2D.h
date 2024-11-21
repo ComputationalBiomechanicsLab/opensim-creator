@@ -19,7 +19,7 @@ namespace osc
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
-        Texture2D(
+        explicit Texture2D(
             Vec2i dimensions,
             TextureFormat = TextureFormat::RGBA32,
             ColorSpace = ColorSpace::sRGB,
@@ -73,7 +73,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> m_Impl;
+        CopyOnUpdPtr<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Texture2D&);

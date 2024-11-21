@@ -107,7 +107,7 @@ namespace
         // precompute necessary values to figure out the corners of the view frustum
         const auto [view_znear, view_zfar] = camera.clipping_planes();
         const Radians view_vfov = camera.vertical_fov();
-        const Radians view_hfov = vertial_to_horizontal_fov(view_vfov, aspect_ratio);
+        const Radians view_hfov = vertical_to_horizontal_fov(view_vfov, aspect_ratio);
         const float view_tan_half_vfov = tan(0.5f * view_vfov);
         const float view_tan_half_hfov = tan(0.5f * view_hfov);
 

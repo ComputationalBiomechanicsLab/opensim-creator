@@ -52,7 +52,7 @@ namespace
         const auto indices = mesh.indices();
 
         if (indices.size() < 3) {
-            return;  // insufficient primatives
+            return;  // insufficient primitives
         }
 
         for (size_t i = 0; i < indices.size()-2; i += 3) {
@@ -65,7 +65,7 @@ namespace
                 out << "f " << i0 << "//" << i0 << ' ' << i1  << "//" << i1 << ' ' << i2 << "//" << i2 << '\n';
             }
             else {
-                // ignore the normals and only declare faces dependent on verts
+                // ignore the normals and only declare faces dependent on vertices
                 out << "f " << i0 << ' ' << i1  << ' ' << i2 << '\n';
             }
         }

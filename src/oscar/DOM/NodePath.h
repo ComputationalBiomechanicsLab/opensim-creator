@@ -50,7 +50,7 @@ namespace osc
 
             Iterator() = default;
 
-            Iterator(std::string_view path) :
+            explicit Iterator(std::string_view path) :
                 current_{path.substr(0, path.find(separator))},
                 remaining_{current_.size() == path.size() ? std::string_view{} : path.substr(current_.size()+1)}
             {}
@@ -99,7 +99,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::NodePath> final {
-    size_t operator()(const osc::NodePath& node_path) const
+    size_t operator()(const osc::NodePath& node_path) const noexcept
     {
         return std::hash<std::string_view>{}(node_path);
     }

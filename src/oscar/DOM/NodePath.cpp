@@ -44,7 +44,7 @@ namespace
         //       `path` quite a bit. The test suite is heavily relied on for
         //       developing this kind of tricky code.
         //
-        //       the reason it's done this way is because ths path is used in
+        //       the reason it's done this way is because the path is used in
         //       performance-critical contexts
 
         // assert that `path` contains no invalid chars

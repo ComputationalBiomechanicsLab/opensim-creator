@@ -13,14 +13,14 @@ namespace osc
     public:
         PropertyInfo() = default;
 
-        PropertyInfo(
+        explicit PropertyInfo(
             std::string_view name,
             Variant default_value) :
 
             PropertyInfo{StringName{name}, std::move(default_value)}
         {}
 
-        PropertyInfo(
+        explicit PropertyInfo(
             StringName name,
             Variant default_value
         );

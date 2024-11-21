@@ -18,6 +18,7 @@
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Maths/BVH.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/IconCodepoints.h>

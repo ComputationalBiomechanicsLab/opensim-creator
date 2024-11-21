@@ -33,6 +33,7 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneHelpers.h>
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/ClosedInterval.h>
 #include <oscar/Maths/GeometricFunctions.h>
 #include <oscar/Maths/LineSegment.h>

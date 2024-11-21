@@ -59,10 +59,10 @@ TEST(Class, constructor_throws_if_given_invalid_class_name)
 
 TEST(Class, constructor_throws_if_given_duplicate_PropertyInfo)
 {
-    const auto properties = std::to_array<PropertyInfo>({
-        {"duplicate", Variant{"shouldnt-matter"}},
-        {"b", Variant{"shouldnt-matter"}},
-        {"duplicate", Variant{"shouldnt-matter"}},
+    const auto properties = std::to_array({
+        PropertyInfo{"duplicate", Variant{"shouldnt-matter"}},
+        PropertyInfo{"b", Variant{"shouldnt-matter"}},
+        PropertyInfo{"duplicate", Variant{"shouldnt-matter"}},
     });
 
     ASSERT_ANY_THROW({ Class("validclassname", Class{}, properties); });
@@ -73,8 +73,8 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_paren
     const Class parent_class{
         "ParentClass",
         Class{},
-        std::to_array<PropertyInfo>({
-            {"parentprop", Variant{"shouldnt-matter"}},
+        std::to_array({
+            PropertyInfo{"parentprop", Variant{"shouldnt-matter"}},
         }),
     };
 
@@ -83,8 +83,8 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_paren
         const Class child_class(
             "ChildClass",
             parent_class,
-            std::to_array<PropertyInfo>({
-                {"parentprop", Variant{"should-throw"}},
+            std::to_array({
+                PropertyInfo{"parentprop", Variant{"should-throw"}},
             })
         );
     });
@@ -95,16 +95,16 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_grand
     const Class grandparent_class{
         "GrandparentClass",
         Class{},
-        std::to_array<PropertyInfo>({
-            {"grandparentProp", Variant{"shouldnt-matter"}},
+        std::to_array({
+            PropertyInfo{"grandparentProp", Variant{"shouldnt-matter"}},
         }),
     };
 
     const Class parent_class{
         "ParentClass",
         grandparent_class,
-        std::to_array<PropertyInfo>({
-            {"parentprop", Variant{"shouldnt-matter"}},
+        std::to_array({
+            PropertyInfo{"parentprop", Variant{"shouldnt-matter"}},
         }),
     };
 
@@ -113,8 +113,8 @@ TEST(Class, constructor_throws_if_given_PropertyInfo_that_is_duplicated_in_grand
         const Class child_class(
             "ChildClass",
             parent_class,
-            std::to_array<PropertyInfo>({
-                {"grandparentProp", Variant{"should-throw"}},
+            std::to_array({
+                PropertyInfo{"grandparentProp", Variant{"should-throw"}},
             })
         );
     });
@@ -134,11 +134,11 @@ TEST(Class, parent_class_returns_parent_class_provided_via_constructor)
 
 TEST(Class, properties_returns_property_list_provided_via_constructor)
 {
-    const auto properties_provided = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{true}},
-        {"Prop2", Variant{"false"}},
-        {"Prop3", Variant{7}},
-        {"Prop4", Variant{7.5f}},
+    const auto properties_provided = std::to_array({
+        PropertyInfo{"Prop1", Variant{true}},
+        PropertyInfo{"Prop2", Variant{"false"}},
+        PropertyInfo{"Prop3", Variant{7}},
+        PropertyInfo{"Prop4", Variant{7.5f}},
     });
 
     const Class klass{"SomeClass", Class{}, properties_provided};
@@ -147,17 +147,17 @@ TEST(Class, properties_returns_property_list_provided_via_constructor)
 
 TEST(Class, properties_returns_union_of_parent_properties_and_properties_provided_via_constructor)
 {
-    const auto base_properties = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{true}},
-        {"Prop2", Variant{"false"}},
-        {"Prop3", Variant{7}},
-        {"Prop4", Variant{7.5f}},
+    const auto base_properties = std::to_array({
+        PropertyInfo{"Prop1", Variant{true}},
+        PropertyInfo{"Prop2", Variant{"false"}},
+        PropertyInfo{"Prop3", Variant{7}},
+        PropertyInfo{"Prop4", Variant{7.5f}},
     });
     const Class base_class{"BaseClass", Class{}, base_properties};
 
-    const auto derived_properties = std::to_array<PropertyInfo>({
-        {"Prop5", Variant{11}},
-        {"Prop6", Variant{false}},
+    const auto derived_properties = std::to_array({
+        PropertyInfo{"Prop5", Variant{11}},
+        PropertyInfo{"Prop6", Variant{false}},
     });
     const Class derived_class{"DerivedClass", base_class, derived_properties};
 
@@ -166,17 +166,17 @@ TEST(Class, properties_returns_union_of_parent_properties_and_properties_provide
 
 TEST(Class, property_index_returns_indices_in_expected_order)
 {
-    const auto base_properties = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{true}},
-        {"Prop2", Variant{"false"}},
-        {"Prop3", Variant{7}},
-        {"Prop4", Variant{7.5f}},
+    const auto base_properties = std::to_array({
+        PropertyInfo{"Prop1", Variant{true}},
+        PropertyInfo{"Prop2", Variant{"false"}},
+        PropertyInfo{"Prop3", Variant{7}},
+        PropertyInfo{"Prop4", Variant{7.5f}},
     });
     const Class base_class{"BaseClass", Class{}, base_properties};
 
-    const auto derived_properties = std::to_array<PropertyInfo>({
-        {"Prop5", Variant{11}},
-        {"Prop6", Variant{false}},
+    const auto derived_properties = std::to_array({
+        PropertyInfo{"Prop5", Variant{11}},
+        PropertyInfo{"Prop6", Variant{false}},
     });
     const Class derived_class{"DerivedClass", base_class, derived_properties};
 
@@ -208,9 +208,9 @@ TEST(Class, equality_returns_true_when_comparing_two_Class_instances_with_same_n
 {
     const StringName class_name{"SomeClass"};
     const Class parent{"ParentClass"};
-    const auto properties = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{"FirstProp"}},
-        {"Prop2", Variant{"SecondProp"}},
+    const auto properties = std::to_array({
+        PropertyInfo{"Prop1", Variant{"FirstProp"}},
+        PropertyInfo{"Prop2", Variant{"SecondProp"}},
     });
 
     ASSERT_EQ(Class(class_name, parent, properties), Class(class_name, parent, properties));
@@ -220,9 +220,9 @@ TEST(Class, equality_returns_true_when_comparing_copied_class_instances)
 {
     const StringName class_name{"SomeClass"};
     const Class parent{"ParentClass"};
-    const auto properties = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{"FirstProp"}},
-        {"Prop2", Variant{"SecondProp"}},
+    const auto properties = std::to_array({
+        PropertyInfo{"Prop1", Variant{"FirstProp"}},
+        PropertyInfo{"Prop2", Variant{"SecondProp"}},
     });
 
     const Class klass{class_name, parent, properties};
@@ -246,13 +246,13 @@ TEST(Class, equality_returns_false_when_comparing_Class_instances_with_same_name
 {
     const StringName class_name{"SomeClass"};
     const Class parent{"ParentClass"};
-    const auto lhs_properties = std::to_array<PropertyInfo>({
-        {"Prop1", Variant{"FirstProp"}},
-        {"Prop2", Variant{"SecondProp"}},
+    const auto lhs_properties = std::to_array({
+        PropertyInfo{"Prop1", Variant{"FirstProp"}},
+        PropertyInfo{"Prop2", Variant{"SecondProp"}},
     });
-    const auto rhs_properties = std::to_array<PropertyInfo>({
-        {"Prop3", Variant{"ThirdProp"}},
-        {"Prop4", Variant{"FourthProp"}},
+    const auto rhs_properties = std::to_array({
+        PropertyInfo{"Prop3", Variant{"ThirdProp"}},
+        PropertyInfo{"Prop4", Variant{"FourthProp"}},
     });
     ASSERT_NE(Class(class_name, parent, lhs_properties), Class(class_name, parent, rhs_properties));
 }

@@ -4,7 +4,7 @@
 
 namespace osc
 {
-    // how sampling should handle when the sampling location falls between multiple textels
+    // how sampling should handle when the sampling location falls between multiple texels
     enum class TextureFilterMode {
         Nearest,
         Linear,

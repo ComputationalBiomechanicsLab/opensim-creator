@@ -95,7 +95,7 @@ namespace osc
             set_tangents(std::span<const Vec4>{il});
         }
 
-        // indices into the vertex data: tells the backend which primatives
+        // indices into the vertex data: tells the backend which primitives
         // to draw in which order from the underlying vertex buffer
         //
         // all meshes _must_ be indexed: even if you're just drawing a single triangle
@@ -189,7 +189,7 @@ namespace osc
 
 template<>
 struct std::hash<osc::Mesh> final {
-    size_t operator()(const osc::Mesh& mesh) const
+    size_t operator()(const osc::Mesh& mesh) const noexcept
     {
         return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.impl_);
     }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/Algorithms.h>
-#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Concepts.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 

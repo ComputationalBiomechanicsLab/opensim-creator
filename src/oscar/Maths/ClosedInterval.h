@@ -2,9 +2,7 @@
 
 #include <oscar/Maths/CommonFunctions.h>
 
-#include <cmath>
 #include <concepts>
-#include <cstddef>
 #include <optional>
 #include <utility>
 

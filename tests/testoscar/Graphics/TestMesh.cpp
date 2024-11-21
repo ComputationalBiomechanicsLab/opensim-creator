@@ -8,6 +8,7 @@
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/VertexFormat.h>
 #include <oscar/Maths/AABB.h>
+#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/MatFunctions.h>
@@ -18,7 +19,6 @@
 #include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/TriangleFunctions.h>
 #include <oscar/Maths/UnitVec3.h>
-#include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>

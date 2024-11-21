@@ -3,7 +3,6 @@
 #include <oscar/Graphics/Scene/SceneDecoration.h>
 #include <oscar/Graphics/Scene/SceneRenderer.h>
 #include <oscar/Graphics/Scene/SceneRendererParams.h>
-#include <oscar/Utils/Algorithms.h>
 
 #include <algorithm>
 #include <memory>

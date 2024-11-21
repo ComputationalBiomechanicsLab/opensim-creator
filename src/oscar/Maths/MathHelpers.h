@@ -1,7 +1,6 @@
 #pragma once
 
 #include <oscar/Maths/AABB.h>
-#include <oscar/Maths/AABBFunctions.h>
 #include <oscar/Maths/Angle.h>
 #include <oscar/Maths/EulerAngles.h>
 #include <oscar/Maths/Line.h>
@@ -9,10 +8,8 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Quat.h>
 #include <oscar/Maths/Rect.h>
-#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Sphere.h>
 #include <oscar/Maths/Transform.h>
-#include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -20,14 +17,7 @@
 #include <oscar/Maths/TransformFunctions.h>
 
 #include <array>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <concepts>
-#include <initializer_list>
-#include <optional>
 #include <span>
-#include <type_traits>
 
 namespace osc { struct Circle; }
 namespace osc { struct Disc; }
@@ -40,7 +30,7 @@ namespace osc { struct Tetrahedron; }
 namespace osc
 {
     // computes horizontal FoV for a given vertical FoV + aspect ratio
-    Radians vertial_to_horizontal_fov(Radians vertical_fov, float aspect_ratio);
+    Radians vertical_to_horizontal_fov(Radians vertical_fov, float aspect_ratio);
 
     // returns an XY NDC point converted from a screen/viewport point
     //
@@ -83,7 +73,7 @@ namespace osc
         const Mat4& camera_proj_matrix
     );
 
-    // returns a rect, created by mapping an Normalized Device Coordinates (NDC) rect
+    // returns a rect, created by mapping a Normalized Device Coordinates (NDC) rect
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
     Rect ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
@@ -142,7 +132,7 @@ namespace osc
         return Vec3{mat * Vec4{point, 1.0f}};
     }
 
-    // returns the a `Quat` equivalent to the given euler angles
+    // returns a `Quat` equivalent to the given euler angles
     Quat to_worldspace_rotation_quat(const EulerAngles&);
 
     // applies a world-space rotation to the transform

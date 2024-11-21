@@ -4,7 +4,7 @@
 
 namespace osc
 {
-    // the shape of the viewing frustrum that the camera uses
+    // the shape of the viewing frustum that the camera uses
     enum class CameraProjection {
         Perspective,
         Orthographic,

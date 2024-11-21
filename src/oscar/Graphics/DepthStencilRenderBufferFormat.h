@@ -6,7 +6,7 @@ namespace osc
 {
     // the underlying format of a depth render buffer
     //
-    // note: the naming convention and docuemntation for each format is designed
+    // note: the naming convention and documentation for each format is designed
     //       to be the same as Vulkan's:
     //
     //           https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html

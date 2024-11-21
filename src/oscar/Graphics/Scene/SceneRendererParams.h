@@ -5,10 +5,8 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Shims/Cpp23/utility.h>
 
 #include <array>
-#include <bit>
 
 namespace osc
 {
@@ -31,7 +29,7 @@ namespace osc
         }
 
     private:
-        static inline constexpr size_t c_num_rim_groups = 2;
+        static constexpr size_t c_num_rim_groups = 2;
     public:
         static constexpr size_t num_rim_groups()
         {

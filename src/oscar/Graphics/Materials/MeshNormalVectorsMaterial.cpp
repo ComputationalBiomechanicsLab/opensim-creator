@@ -67,7 +67,7 @@ void GenerateLine(int index)
     gl_Position = origVertexPos + normalVec;
     EmitVertex();
 
-    // emit line primitve
+    // emit line primitive
     EndPrimitive();
 }
 

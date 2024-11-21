@@ -13,6 +13,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Rect.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Log.h>

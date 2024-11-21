@@ -19,7 +19,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -87,7 +86,7 @@ namespace
 template<>
 struct std::hash<ShaderLookupKey> final {
 
-    size_t operator()(const ShaderLookupKey& inputs) const
+    size_t operator()(const ShaderLookupKey& inputs) const noexcept
     {
         return inputs.hash;
     }
@@ -95,7 +94,7 @@ struct std::hash<ShaderLookupKey> final {
 
 template<>
 struct std::hash<TorusParameters> final {
-    size_t operator()(const TorusParameters& params) const
+    size_t operator()(const TorusParameters& params) const noexcept
     {
         return hash_of(params.tube_center_radius, params.tube_radius);
     }

@@ -14,7 +14,7 @@ namespace osc
     // the `SceneDecoration`s or the `SceneRendererParams` change
     class CachedSceneRenderer final {
     public:
-        CachedSceneRenderer(SceneCache&);
+        explicit CachedSceneRenderer(SceneCache&);
         CachedSceneRenderer(const CachedSceneRenderer&) = delete;
         CachedSceneRenderer(CachedSceneRenderer&&) noexcept;
         CachedSceneRenderer& operator=(const CachedSceneRenderer&) = delete;

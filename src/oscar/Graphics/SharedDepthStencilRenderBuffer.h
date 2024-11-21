@@ -65,7 +65,7 @@ namespace osc
         friend class RenderTexture;
         class DepthStencilRenderBuffer;
 
-        SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
+        explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
 
         std::shared_ptr<DepthStencilRenderBuffer> impl_;
     };

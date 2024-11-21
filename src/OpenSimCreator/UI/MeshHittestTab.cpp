@@ -19,6 +19,7 @@
 #include <oscar/Maths/Line.h>
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/PolarPerspectiveCamera.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec2.h>

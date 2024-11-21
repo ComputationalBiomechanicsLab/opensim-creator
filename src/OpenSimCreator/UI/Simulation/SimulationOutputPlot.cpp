@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Maths/MathHelpers.h>
+#include <oscar/Maths/RectFunctions.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>

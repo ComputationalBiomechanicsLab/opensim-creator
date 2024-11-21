@@ -71,7 +71,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
             }
         }
 
-        // construct all of the faces
+        // construct all the faces
         for (size_t i = 0; i < num_cols; ++i) {
             for (size_t j = 0; j < 2*(num_cols-i) - 1; ++j) {
                 const size_t k = j/2;
