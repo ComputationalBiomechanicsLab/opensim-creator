@@ -19,14 +19,14 @@ namespace osc
             return num_chars_written_ > 0;
         }
     protected:
-        int overflow(int c) final
+        int overflow(int c) override
         {
             setp(dummy_buffer_.data(), dummy_buffer_.data() + dummy_buffer_.size());
             ++num_chars_written_;
             return (c == traits_type::eof() ? char_type{} : c);
         }
 
-        std::streamsize xsputn(const char_type*, std::streamsize count) final
+        std::streamsize xsputn(const char_type*, std::streamsize count) override
         {
             num_chars_written_ += count;
             return count;

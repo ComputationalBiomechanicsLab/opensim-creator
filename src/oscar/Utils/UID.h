@@ -77,7 +77,7 @@ namespace osc
 // lets them be used as associative lookup keys, etc.
 template<>
 struct std::hash<osc::UID> final {
-    size_t operator()(const osc::UID& id) const
+    size_t operator()(const osc::UID& id) const noexcept
     {
         return static_cast<size_t>(id.get());
     }

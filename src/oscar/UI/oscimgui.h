@@ -9,7 +9,6 @@
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/Rect.h>
 #include <oscar/Maths/Transform.h>
-#include <oscar/Maths/Triangle.h>
 #include <oscar/Maths/Vec.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
@@ -17,7 +16,6 @@
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/Conversion.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/EnumHelpers.h>
 #include <oscar/Utils/Flags.h>
 #include <oscar/Utils/UID.h>
 
@@ -573,14 +571,14 @@ namespace osc::ui
     // applies "dark" theme to current UI context
     void apply_dark_theme();
 
-    // updates a polar comera's rotation, position, etc. from UI keyboard input state
+    // updates a polar camera's rotation, position, etc. from UI keyboard input state
     bool update_polar_camera_from_keyboard_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
         std::optional<AABB> maybe_scene_aabb
     );
 
-    // updates a polar comera's rotation, position, etc. from UI input state (all)
+    // updates a polar camera's rotation, position, etc. from UI input state (all)
     bool update_polar_camera_from_all_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
@@ -592,7 +590,7 @@ namespace osc::ui
         EulerAngles&
     );
 
-    // returns the UI content region available in screenspace as a `Rect`
+    // returns the UI content region available in screen-space as a `Rect`
     Rect content_region_avail_as_screen_rect();
 
     // draws a texture within the 2D UI
@@ -641,7 +639,7 @@ namespace osc::ui
         Vec2 dimensions
     );
 
-    // returns the screenspace bounding rectangle of the last-drawn item
+    // returns the screen-space bounding rectangle of the last-drawn item
     Rect get_last_drawn_item_screen_rect();
 
     // hittest the last-drawn item in the UI
@@ -924,8 +922,8 @@ namespace osc::ui
             const Rect& screenspace_rect
         );
 
-        // same as `draw`, but draws to the foreground drawlist, rather than the
-        // drawlist of the currently active panel
+        // same as `draw`, but draws to the foreground draw list, rather than the
+        // draw list of the currently active panel
         std::optional<Transform> draw_to_foreground(
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
@@ -949,7 +947,7 @@ namespace osc::ui
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
             const Rect& screenspace_rect,
-            ImDrawList* drawlist
+            ImDrawList* draw_list
         );
 
         UID id_;
@@ -1231,7 +1229,7 @@ namespace osc::ui
             DragToolFlags = DragToolFlags::Default
         );
 
-        // draws a draggable vertical guide line at an x-value in the plot area
+        // draws a draggable vertical guideline at an x-value in the plot area
         bool drag_line_x(
             int id,
             double* x,
@@ -1240,7 +1238,7 @@ namespace osc::ui
             DragToolFlags = DragToolFlags::Default
         );
 
-        // draws a draggable horizontal guide line at a y-value in the plot area
+        // draws a draggable horizontal guideline at a y-value in the plot area
         bool drag_line_y(
             int id,
             double* y,
@@ -1249,7 +1247,7 @@ namespace osc::ui
             DragToolFlags = DragToolFlags::Default
         );
 
-        // draws a tag on the x axis at the specified x value
+        // draws a tag on the x-axis at the specified x value
         void tag_x(double x, const Color&, bool round = false);
 
         // returns `true` if the plot area in the current plot is hovered

@@ -4,7 +4,6 @@
 #include <oscar/Utils/PerfClock.h>
 #include <oscar/Utils/PerfMeasurement.h>
 
-#include <cstdint>
 #include <string_view>
 #include <vector>
 

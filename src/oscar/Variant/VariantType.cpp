@@ -5,7 +5,6 @@
 #include <oscar/Variant/VariantTypeTraits.h>
 
 #include <array>
-#include <cstddef>
 #include <ostream>
 
 std::ostream& osc::operator<<(std::ostream& out, VariantType variant_type)

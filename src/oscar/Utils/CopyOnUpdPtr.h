@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/Concepts.h>
-
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -88,7 +86,7 @@ namespace osc
 
 template<typename T>
 struct std::hash<osc::CopyOnUpdPtr<T>> final {
-    size_t operator()(const osc::CopyOnUpdPtr<T>& cow) const
+    size_t operator()(const osc::CopyOnUpdPtr<T>& cow) const noexcept
     {
         return std::hash<std::shared_ptr<T>>{}(cow.ptr_);
     }

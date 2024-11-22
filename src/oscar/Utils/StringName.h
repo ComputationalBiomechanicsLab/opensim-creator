@@ -1,6 +1,5 @@
 #pragma once
 
-#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/SharedPreHashedString.h>
 
@@ -64,8 +63,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::StringName> final {
-    size_t operator()(const osc::StringName& sn) const
+    size_t operator()(const osc::StringName& string_name) const noexcept
     {
-        return std::hash<osc::SharedPreHashedString>{}(sn);
+        return std::hash<osc::SharedPreHashedString>{}(string_name);
     }
 };

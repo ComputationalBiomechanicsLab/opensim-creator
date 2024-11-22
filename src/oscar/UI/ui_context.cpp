@@ -422,7 +422,7 @@ static void ImGui_ImplSDL2_UpdateMouseData()
     if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
         ImGuiID mouse_viewport_id = 0;
         if (SDL_Window* sdl_mouse_window = SDL_GetWindowFromID(bd->MouseWindowID)) {
-            if (ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(sdl_mouse_window))) {
+            if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(sdl_mouse_window))) {
                 mouse_viewport_id = mouse_viewport->ID;
             }
         }
@@ -500,7 +500,7 @@ static void ImGui_ImplOscar_NewFrame(App& app)
     }
 
     // Our io.AddMouseViewportEvent() calls will only be valid when not capturing.
-    // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rygorous, but testing for payload reduces noise and potential side-effects.
+    // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rigorous, but testing for payload reduces noise and potential side effects.
     if (bd.MouseCanReportHoveredViewport and ImGui::GetDragDropPayload() == nullptr) {
         io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
     }
@@ -568,10 +568,10 @@ void osc::ui::context::init(App& app)
 #ifdef EMSCRIPTEN
     io.IniFilename = nullptr;
 #else
-    float dpi_scale_factor = [&]()
+    const float dpi_scale_factor = [&]()
     {
         // if the user explicitly enabled high_dpi_mode...
-        if (auto v = app.get_config().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
+        if (const auto v = app.get_config().find_value("experimental_feature_flags/high_dpi_mode"); v and *v) {
             return app.main_window_dpi() / 96.0f;
         }
         else {

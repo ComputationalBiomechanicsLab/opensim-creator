@@ -48,7 +48,7 @@ namespace osc
     //
     // - use `StringName` in larger multi-level systems that use, copy, and hash a lot of
     //   potentially-longer strings in associative lookups. E.g. a large application
-    //   containing a graphics system, which binds materialkeys to shader uniforms on the GPU;
+    //   containing a graphics system, which binds material keys to shader uniforms on the GPU;
     //   a mid-level UI controller, which maintains a datamodel containing material key-value
     //   pairs; and a high-level UI, which binds those pairs to a nodegraph UI (i.e. despite
     //   each tier having an independent responsibility, there's likely to be overlaps in
@@ -67,7 +67,7 @@ namespace osc
         using const_reverse_iterator = std::string_view::const_reverse_iterator;
 
         explicit SharedPreHashedString() :
-            SharedPreHashedString{SharedPreHashedString::static_default_instance()}
+            SharedPreHashedString{static_default_instance()}
         {}
 
         explicit SharedPreHashedString(std::string_view str)
@@ -275,17 +275,17 @@ namespace osc
     private:
         friend struct std::hash<SharedPreHashedString>;
 
-        const SharedPreHashedString& static_default_instance()
+        static const SharedPreHashedString& static_default_instance()
         {
             static SharedPreHashedString s_default_instance{std::string_view{}};
             return s_default_instance;
         }
 
-        // internal datastructure that's placed at the front of the dynamically-allocated
+        // internal data structure that's placed at the front of the dynamically-allocated
         // allocated memory block
         struct Metadata final {
 
-            Metadata(std::string_view str) noexcept :
+            explicit Metadata(std::string_view str) noexcept :
                 size{str.size()},
                 hash{std::hash<std::string_view>{}(str)}
             {}

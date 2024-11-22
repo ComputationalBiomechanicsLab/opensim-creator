@@ -12,19 +12,19 @@ namespace osc
 
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
-        DefaultConstructOnCopy(Args&& ...args) :
-            m_Value{std::forward<Args>(args)...}
+        explicit DefaultConstructOnCopy(Args&& ...args) :
+            value_{std::forward<Args>(args)...}
         {}
 
         DefaultConstructOnCopy(const DefaultConstructOnCopy&) :
-            m_Value{}
+            value_{}
         {}
 
         DefaultConstructOnCopy(DefaultConstructOnCopy&&) noexcept = default;
 
         DefaultConstructOnCopy& operator=(const DefaultConstructOnCopy&)
         {
-            m_Value = T{};  // exception safety: construct it then move-assign it
+            value_ = T{};  // exception safety: construct it then move-assign it
             return *this;
         }
 
@@ -32,16 +32,16 @@ namespace osc
 
         ~DefaultConstructOnCopy() noexcept = default;
 
-        T* operator->() { return &m_Value; }
-        const T* operator->() const { return &m_Value; }
-        T& operator*() { return m_Value; }
-        const T& operator*() const { return m_Value; }
-        T* get() { return m_Value; }
-        const T* get() const { return m_Value; }
+        T* operator->() { return &value_; }
+        const T* operator->() const { return &value_; }
+        T& operator*() { return value_; }
+        const T& operator*() const { return value_; }
+        T* get() { return value_; }
+        const T* get() const { return value_; }
 
-        void reset() { m_Value = T{}; }
+        void reset() { value_ = T{}; }
 
     private:
-        T m_Value;
+        T value_;
     };
 }

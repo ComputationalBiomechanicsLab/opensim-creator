@@ -45,8 +45,8 @@ void osc::GuiRuler::on_draw(
     const float circle_radius = 5.0f;
     const float line_thickness = 3.0f;
 
-    ui::DrawListView drawlist = ui::get_panel_draw_list();
-    const auto draw_tooltip_with_bg = [&drawlist, &text_background_color, &text_color](const Vec2& pos, CStringView tooltip_text)
+    ui::DrawListView draw_list = ui::get_panel_draw_list();
+    const auto draw_tooltip_with_bg = [&draw_list, &text_background_color, &text_color](const Vec2& pos, CStringView tooltip_text)
     {
         const Vec2 text_size = ui::calc_text_size(tooltip_text);
         const float background_padding = 5.0f;
@@ -56,19 +56,19 @@ void osc::GuiRuler::on_draw(
             {pos - background_padding},
             {pos + text_size + background_padding},
         };
-        drawlist.add_rect_filled(background_rect, text_background_color, edge_rounding);
-        drawlist.add_text(pos, text_color, tooltip_text);
+        draw_list.add_rect_filled(background_rect, text_background_color, edge_rounding);
+        draw_list.add_text(pos, text_color, tooltip_text);
     };
 
     if (state_ == State::WaitingForFirstPoint) {
         if (not maybe_mouseover) {
             // not mousing over anything
-            drawlist.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_moused_over_nothing_color);
+            draw_list.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_moused_over_nothing_color);
             return;
         }
         else {
             // mousing over something
-            drawlist.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_color);
+            draw_list.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_color);
 
             if (ui::is_mouse_released(ui::MouseButton::Left)) {
                 state_ = State::WaitingForSecondPoint;
@@ -88,9 +88,9 @@ void osc::GuiRuler::on_draw(
             const Vec2 line_midpoint = (start_screenpos + end_screenpos) / 2.0f;
             const float line_world_length = length(maybe_mouseover->worldspace_location - start_world_pos_);
 
-            drawlist.add_circle_filled({start_screenpos, circle_radius}, circle_color);
-            drawlist.add_line(start_screenpos, end_screenpos, line_color, line_thickness);
-            drawlist.add_circle_filled({end_screenpos, circle_radius}, circle_color);
+            draw_list.add_circle_filled({start_screenpos, circle_radius}, circle_color);
+            draw_list.add_line(start_screenpos, end_screenpos, line_color, line_thickness);
+            draw_list.add_circle_filled({end_screenpos, circle_radius}, circle_color);
 
             // label the line's length
             {
@@ -104,7 +104,7 @@ void osc::GuiRuler::on_draw(
             }
         }
         else {
-            drawlist.add_circle_filled({start_screenpos, circle_radius}, circle_color);
+            draw_list.add_circle_filled({start_screenpos, circle_radius}, circle_color);
         }
     }
 }

@@ -14,23 +14,23 @@ namespace osc
 
         using is_transparent = void;  // C++20, `std::unordered_map` uses this
 
-        size_t operator()(std::string_view sv) const noexcept
+        size_t operator()(std::string_view string_view) const noexcept
         {
             // if something implicitly converts into a `std::string_view` then it's
             // eligible for transparent hashing
-            return std::hash<std::string_view>{}(sv);
+            return std::hash<std::string_view>{}(string_view);
         }
 
-        size_t operator()(const SharedPreHashedString& sn) const noexcept
+        size_t operator()(const SharedPreHashedString& shared_pre_hashed_string) const noexcept
         {
             // special case: `SharedPreHashedString`s are pre-hashed
-            return std::hash<SharedPreHashedString>{}(sn);
+            return std::hash<SharedPreHashedString>{}(shared_pre_hashed_string);
         }
 
-        size_t operator()(const StringName& sn) const noexcept
+        size_t operator()(const StringName& string_name) const noexcept
         {
             // special case: `StringName`s are pre-hashed
-            return std::hash<StringName>{}(sn);
+            return std::hash<StringName>{}(string_name);
         }
     };
 }

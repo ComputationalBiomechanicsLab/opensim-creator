@@ -5,9 +5,7 @@
 #include <oscar/Utils/PerfMeasurementMetadata.h>
 
 #include <chrono>
-#include <cstdint>
 #include <memory>
-#include <string>
 
 namespace osc
 {

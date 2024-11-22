@@ -1,22 +1,20 @@
 #include "TemporaryFile.h"
 
+#include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Utils/TemporaryFileParameters.h>
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
-#include <optional>
-#include <string_view>
 #include <utility>
 
 using namespace osc;
 
 osc::TemporaryFile::TemporaryFile(const TemporaryFileParameters& params)
 {
-    auto p = mkstemp(params.suffix, params.prefix);
-    absolute_path_ = std::move(p.second);
-    handle_ = std::move(p.first);
+    auto [stream, path] = mkstemp(params.suffix, params.prefix);
+    absolute_path_ = std::move(path);
+    handle_ = std::move(stream);
 }
 
 osc::TemporaryFile::TemporaryFile(TemporaryFile&& tmp) noexcept :
@@ -24,6 +22,7 @@ osc::TemporaryFile::TemporaryFile(TemporaryFile&& tmp) noexcept :
     handle_{std::move(tmp.handle_)},
     should_delete_{std::exchange(tmp.should_delete_, false)}
 {}
+
 TemporaryFile& osc::TemporaryFile::operator=(TemporaryFile&& tmp) noexcept
 {
     using std::swap;
@@ -37,6 +36,7 @@ TemporaryFile& osc::TemporaryFile::operator=(TemporaryFile&& tmp) noexcept
     swap(should_delete_, tmp.should_delete_);
     return *this;
 }
+
 osc::TemporaryFile::~TemporaryFile() noexcept
 {
     if (should_delete_) {
@@ -46,9 +46,8 @@ osc::TemporaryFile::~TemporaryFile() noexcept
         try {
             std::filesystem::remove(absolute_path_);
         }
-        catch (const std::filesystem::filesystem_error&) {
-            // swallow it: we're in a destructor, so the best we could hope for
-            //             is to report it to the log or similar
+        catch (const std::filesystem::filesystem_error& ex) {
+            log_error("error closing a temporary file, this could be a sign of operating system issues: %s", ex.what());
         }
     }
 }

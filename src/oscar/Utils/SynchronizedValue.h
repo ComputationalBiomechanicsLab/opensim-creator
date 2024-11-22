@@ -9,7 +9,7 @@
 
 namespace osc
 {
-    // represents a `T` value that can only be accessed via a mutexed guard
+    // represents a `T` value that can only be accessed via a mutex guard
     template<
         typename T,
         typename TDefaultGuard = std::lock_guard<std::mutex>
@@ -23,17 +23,14 @@ namespace osc
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
         explicit SynchronizedValue(Args&&... args) :
-            value_mutex_{},
             value_{std::forward<Args>(args)...}
         {}
 
         SynchronizedValue(const SynchronizedValue& other) :
-            value_mutex_{},
             value_{*other.lock()}
         {}
 
         SynchronizedValue(SynchronizedValue&& tmp) noexcept :
-            value_mutex_{},
             value_{std::move(tmp).value()}
         {}
 
@@ -52,6 +49,8 @@ namespace osc
             }
             return *this;
         }
+
+        ~SynchronizedValue() noexcept = default;
 
         T value() &&
         {

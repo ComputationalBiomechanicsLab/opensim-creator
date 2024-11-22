@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
-#include <memory>
 #include <ranges>
 #include <string_view>
 #include <type_traits>

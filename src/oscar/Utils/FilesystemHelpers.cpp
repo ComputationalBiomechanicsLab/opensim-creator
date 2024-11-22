@@ -1,15 +1,12 @@
 #include "FilesystemHelpers.h"
 
-#include <oscar/Platform/os.h>
 #include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
-#include <string>
 #include <filesystem>
-#include <fstream>
 #include <iterator>
 #include <span>
-#include <sstream>
+#include <string_view>
 #include <utility>
 
 void osc::for_each_file_with_extensions_recursive(
@@ -77,15 +74,15 @@ std::vector<std::filesystem::path> osc::find_files_recursive(
     return rv;
 }
 
-bool osc::is_filename_lexographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2)
+bool osc::is_filename_lexicographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2)
 {
     return is_string_case_insensitive_greater_than(p1.filename().string(), p2.filename().string());
 }
 
 bool osc::is_subpath(const std::filesystem::path& dir, const std::filesystem::path& path)
 {
-    auto num_dir_components = std::distance(dir.begin(), dir.end());
-    auto num_path_components = std::distance(path.begin(), path.end());
+    const auto num_dir_components = std::distance(dir.begin(), dir.end());
+    const auto num_path_components = std::distance(path.begin(), path.end());
 
     if (num_path_components < num_dir_components) {
         return false;

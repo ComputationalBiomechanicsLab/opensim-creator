@@ -61,7 +61,7 @@ void osc::UndoRedoBase::undo_to(size_t pos)
 
     // copy any commits between the top of the undo stack, but shallower than
     // the requested entry, onto the redo stack
-    copy(undo_.rbegin(), undo_.rbegin() + pos, std::back_inserter(redo_));
+    std::copy_n(undo_.rbegin(), pos, std::back_inserter(redo_));
     undo_.erase((undo_.rbegin() + pos + 1).base(), undo_.end());
 
     head_ = new_head;
@@ -108,7 +108,7 @@ void osc::UndoRedoBase::redo_to(size_t pos)
 
     // copy any commits between the top of the redo stack but *before* the
     // requested entry onto the redo stack
-    copy(redo_.rbegin(), redo_.rbegin() + pos, std::back_inserter(undo_));
+    std::copy_n(redo_.rbegin(), pos, std::back_inserter(undo_));
     redo_.erase((redo_.rbegin() + pos + 1).base(), redo_.end());
 
     head_ = new_head;

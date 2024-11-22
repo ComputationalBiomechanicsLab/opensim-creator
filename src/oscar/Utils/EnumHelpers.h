@@ -36,7 +36,7 @@ namespace osc
         static_assert(sizeof...(TEnumOptions) == num_options<TEnum>());
     };
 
-    // returns the value of `v` casted to a `size_t` (i.e. `v` should probably satisfy
+    // returns the value of `v` cast to a `size_t` (i.e. `v` should probably satisfy
     // `DenselyPackedOptionsEnum` for this to work
     template<DenselyPackedOptionsEnum TEnum>
     constexpr size_t to_index(TEnum v)

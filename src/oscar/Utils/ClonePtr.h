@@ -36,10 +36,10 @@ namespace osc
         // constructs a `ClonePtr` by `clone`ing `src`
         ClonePtr(const ClonePtr& src) : value_{src.value_ ? src.value_->clone() : nullptr} {}
 
-        // constructs `ClonePtr` by transferring ownership from an rvalue
+        // constructs `ClonePtr` by transferring ownership from a rvalue
         ClonePtr(ClonePtr&&) noexcept = default;
 
-        // constructs `ClonePtr` by transferring ownership from an rvalue (with conversion)
+        // constructs `ClonePtr` by transferring ownership from a rvalue (with conversion)
         template<typename U, typename E>
         requires
             std::convertible_to<typename ClonePtr<U, E>::pointer, pointer> and
@@ -124,7 +124,7 @@ namespace osc
             return value_;
         }
 
-        typename std::add_lvalue_reference<T>::type operator*() const noexcept(noexcept(*std::declval<pointer>()))
+        std::add_lvalue_reference_t<T> operator*() const noexcept(noexcept(*std::declval<pointer>()))
         {
             return *value_;
         }
@@ -168,7 +168,7 @@ namespace osc
 
 template<typename T, typename Deleter>
 struct std::hash<osc::ClonePtr<T, Deleter>> final {
-    size_t operator()(const osc::ClonePtr<T, Deleter>& p) const
+    size_t operator()(const osc::ClonePtr<T, Deleter>& p) const noexcept
     {
         return std::hash(p.get());
     }

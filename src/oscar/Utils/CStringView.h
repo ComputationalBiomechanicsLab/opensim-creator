@@ -42,6 +42,7 @@ namespace osc
         constexpr CStringView(CStringView&&) noexcept = default;
         constexpr CStringView& operator=(const CStringView&) = default;
         constexpr CStringView& operator=(CStringView&&) noexcept = default;
+        constexpr ~CStringView() noexcept = default;
 
         constexpr size_type size() const
         {
@@ -104,9 +105,9 @@ namespace osc
         }
     }
 
-    inline std::string to_string(const CStringView& cstrv)
+    inline std::string to_string(const CStringView& cstring_view)
     {
-        return std::string{cstrv};
+        return std::string{cstring_view};
     }
 
     std::ostream& operator<<(std::ostream&, const CStringView&);
@@ -116,8 +117,8 @@ namespace osc
 
 template<>
 struct std::hash<osc::CStringView> final {
-    size_t operator()(const osc::CStringView& cstrv) const
+    size_t operator()(const osc::CStringView& cstring_view) const noexcept
     {
-        return std::hash<std::string_view>{}(cstrv);
+        return std::hash<std::string_view>{}(cstring_view);
     }
 };

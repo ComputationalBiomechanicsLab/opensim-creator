@@ -947,9 +947,9 @@ float osc::ui::get_cursor_pos_x()
     return ImGui::GetCursorPosX();
 }
 
-void osc::ui::set_cursor_pos(Vec2 p)
+void osc::ui::set_cursor_pos(Vec2 pos)
 {
-    ImGui::SetCursorPos(p);
+    ImGui::SetCursorPos(pos);
 }
 
 void osc::ui::set_cursor_pos_x(float local_x)
@@ -1440,7 +1440,7 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
     c.set_view_matrix_override(identity<Mat4>());
 
     {
-        // project screenspace overlays into NDC
+        // project screen-space overlays into NDC
         float L = 0.0f;
         float R = static_cast<float>(target.dimensions().x);
         float T = 0.0f;
@@ -2348,7 +2348,7 @@ bool osc::ui::draw_float_circular_slider(
     // figure out whether the user is (temporarily) editing the slider as an input text box
     bool temporary_text_input_active = temporary_text_input_allowed and ImGui::TempInputIsActive(id);
     if (not temporary_text_input_active) {
-        // tabbing or double clicking the slider temporarily transforms it into an input box
+        // tabbing or double-clicking the slider temporarily transforms it into an input box
         const bool clicked = is_hovered and ui::is_mouse_clicked(MouseButton::Left, ui::ID{id});
         const bool double_clicked = (is_hovered and g.IO.MouseClickedCount[0] == 2 and ImGui::TestKeyOwner(ImGuiKey_MouseLeft, id));
         const bool make_active = (clicked or double_clicked or g.NavActivateId == id);
@@ -2686,7 +2686,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
     const Rect& screenspace_rect,
-    ImDrawList* drawlist)
+    ImDrawList* draw_list)
 {
     if (operation_ == GizmoOperation::None) {
         return std::nullopt;  // disabled
@@ -2706,7 +2706,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
         dimensions_of(screenspace_rect).x,
         dimensions_of(screenspace_rect).y
     );
-    ImGuizmo::SetDrawlist(drawlist);
+    ImGuizmo::SetDrawlist(draw_list);
     ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station

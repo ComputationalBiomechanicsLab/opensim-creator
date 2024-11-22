@@ -41,6 +41,7 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/UID.h>
 
 #include <array>

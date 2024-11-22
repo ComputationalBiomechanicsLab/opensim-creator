@@ -47,7 +47,7 @@ osc::MainMenuFileTab::MainMenuFileTab(Widget& parent) :
         )
     }
 {
-    rgs::sort(exampleOsimFiles, is_filename_lexographically_greater_than);
+    rgs::sort(exampleOsimFiles, is_filename_lexicographically_greater_than);
 }
 
 void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)

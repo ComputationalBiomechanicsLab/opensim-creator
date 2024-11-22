@@ -2,7 +2,6 @@
 
 #include <oscar/Utils/CStringView.h>
 
-#include <cstdint>
 #include <string>
 #include <string_view>
 

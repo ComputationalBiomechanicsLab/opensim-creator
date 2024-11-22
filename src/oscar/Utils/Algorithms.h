@@ -3,7 +3,6 @@
 #include <oscar/Utils/Concepts.h>
 
 #include <algorithm>
-#include <cstddef>
 #include <functional>
 #include <iterator>
 #include <memory>
@@ -65,7 +64,7 @@ namespace osc
     constexpr std::ranges::range_reference_t<R> at(R&& r, std::ranges::range_size_t<R> pos)
     {
         if (pos < std::ranges::size(r)) {
-            return r[pos];
+            return std::forward<R>(r)[pos];
         }
         else {
             throw std::out_of_range{"out of bounds index given to a container"};
@@ -133,7 +132,7 @@ namespace osc
         return static_cast<return_type>(nullptr);
     }
 
-    // returns `true` if both `lhs` and `rhs` can be sucessfully `dynamic_cast`ed to `Downcasted` and compare equal
+    // returns `true` if both `lhs` and `rhs` can be successfully `dynamic_cast`ed to `Downcasted` and compare equal
     template<typename Downcasted, typename T1, typename T2>
     requires
         std::equality_comparable<Downcasted> and

@@ -106,12 +106,10 @@ namespace osc
             {
                 difference_type im = (i % N);
 
-                if (im > offset_)
-                {
+                if (im > offset_) {
                     offset_ = N - (im - offset_);
                 }
-                else
-                {
+                else {
                     offset_ = offset_ - im;
                 }
 
@@ -266,7 +264,7 @@ namespace osc
         //
         // be careful here: the data is type-punned from a sequence of bytes
         // so that the backing storage does not have a strict requirement of
-        // having to contain redundant default-constrcuted elements
+        // having to contain redundant default-constructed elements
 
         constexpr void clear()
         {
@@ -384,7 +382,7 @@ namespace osc
         // - the above constraints imply that the number of "live"
         //   elements in storage is N-1, because `end_offset_` will modulo
         //   spin into position 0 once it is equal to `N` (this is
-        //   in constrast to non-circular storage, where `end_offset_`
+        //   in contrast to non-circular storage, where `end_offset_`
         //   typically points one past the end of the storage range)
         //
         // - this behavior makes the implementation simpler, because

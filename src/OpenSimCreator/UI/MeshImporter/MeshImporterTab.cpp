@@ -58,8 +58,8 @@
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/Widgets/CameraViewAxes.h>
 #include <oscar/UI/Widgets/LogViewer.h>
+#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/LifetimedPtr.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/UID.h>
 

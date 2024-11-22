@@ -30,7 +30,7 @@ namespace osc::spsc
             // queue mutex
             std::mutex mutex_;
 
-            // queue != empty condvar for worker
+            // queue != empty condition variable for worker
             std::condition_variable condition_variable_;
 
             // the queue
@@ -57,7 +57,7 @@ namespace osc::spsc
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Sender(std::shared_ptr<detail::Impl<T>> impl) :
+        explicit Sender(std::shared_ptr<detail::Impl<T>> impl) :
             impl_{std::move(impl)}
         {
             ++impl_->num_senders_;
@@ -99,7 +99,7 @@ namespace osc::spsc
         template<typename U>
         friend std::pair<Sender<U>, Receiver<U>> channel();
 
-        Receiver(std::shared_ptr<detail::Impl<T>> impl) :
+        explicit Receiver(std::shared_ptr<detail::Impl<T>> impl) :
             impl_{std::move(impl)}
         {
             ++impl_->num_receivers_;
@@ -150,10 +150,10 @@ namespace osc::spsc
                 return not impl_->message_queue_.empty() or impl_->num_senders_ == 0;
             });
 
-            // the condvar woke up (non-spuriously), either:
+            // the condition variable woke up (non-spuriously), either:
             //
             // - there's something in the queue (return it)
-            // - the sender hung up (return nullopt)
+            // - the sender hung up (return `std::nullopt`)
 
             if (not impl_->message_queue_.empty()) {
                 std::optional<T> rv{std::move(impl_->message_queue_.back())};
@@ -171,7 +171,7 @@ namespace osc::spsc
         }
     };
 
-    // create a new threadsafe spsc channel (sender + receiver)
+    // create a new thread-safe spsc channel (sender + receiver)
     template<typename T>
     std::pair<Sender<T>, Receiver<T>> channel()
     {
@@ -181,7 +181,7 @@ namespace osc::spsc
 
     // SPSC worker: single-producer single-consumer worker abstraction
     //
-    // encapsulates a worker background thread with threadsafe communication
+    // encapsulates a worker background thread with thread-safe communication
     // channels
     template<typename Input, typename Output, typename Func>
     class Worker {
@@ -202,7 +202,7 @@ namespace osc::spsc
             spsc::Sender<Output> sender,
             Func message_processor)
         {
-            // continously try to receive input messages and
+            // continuously try to receive input messages and
             // respond to them one-by-one
             while (not sender.is_receiver_hung_up()) {
                 std::optional<Input> message = receiver.receive();

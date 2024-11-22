@@ -27,7 +27,7 @@ namespace osc
         Variant(std::string_view);
         Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
         Variant(std::nullopt_t) = delete;
-        Variant(CStringView cstr) : Variant{std::string_view{cstr}} {}
+        Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
         Variant(const StringName&);
         Variant(Vec2);
         Variant(Vec3);
@@ -73,5 +73,5 @@ namespace osc
 
 template<>
 struct std::hash<osc::Variant> final {
-    size_t operator()(const osc::Variant&) const;
+    size_t operator()(const osc::Variant&) const noexcept;
 };

@@ -26,9 +26,9 @@ namespace
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     });
 
-    std::string to_lowercase(std::string_view sv)
+    std::string to_lowercase(std::string_view str)
     {
-        std::string cpy{sv};
+        std::string cpy{str};
         rgs::transform(cpy, cpy.begin(), [](std::string::value_type c)
         {
             return static_cast<std::string::value_type>(std::tolower(c));
@@ -99,7 +99,7 @@ bool osc::is_valid_identifier(std::string_view sv)
             (     '_' == c       ) or
             ('a' <= c && c <= 'z');
     };
-    const auto is_valid_nonfirst_character_of_identifier = [](std::string_view::value_type c)
+    const auto is_valid_non_first_character_of_identifier = [](std::string_view::value_type c)
     {
         return
             ('0' <= c && c <= '9') or
@@ -116,13 +116,13 @@ bool osc::is_valid_identifier(std::string_view sv)
         return false;
     }
 
-    return rgs::all_of(sv.begin() + 1, sv.end(), is_valid_nonfirst_character_of_identifier);
+    return rgs::all_of(sv.begin() + 1, sv.end(), is_valid_non_first_character_of_identifier);
 }
 
 std::string_view osc::strip_whitespace(std::string_view sv)
 {
-    const std::string_view::const_iterator front = rgs::find_if_not(sv, ::isspace);
-    const std::string_view::const_iterator back = rgs::find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
+    const auto front = rgs::find_if_not(sv, ::isspace);
+    const auto back = rgs::find_if_not(sv.rbegin(), std::string_view::const_reverse_iterator{front}, ::isspace).base();
     return {sv.data() + std::distance(sv.begin(), front), static_cast<size_t>(std::distance(front, back))};
 }
 
@@ -160,10 +160,10 @@ std::string osc::truncate_with_ellipsis(std::string_view v, size_t max_length)
         return std::string{v};
     }
 
-    std::string_view substr = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
+    std::string_view substring = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
     std::string rv;
-    rv.reserve(substr.length() + 3);
-    rv = substr;
+    rv.reserve(substring.length() + 3);
+    rv = substring;
     rv += "...";
     return rv;
 }
@@ -198,17 +198,17 @@ std::optional<uint8_t> osc::try_parse_hex_chars_as_byte(char a, char b)
     // you might be wondering why we aren't using a library function, it's
     // because:
     //
-    // - std::stringstream is a sledge-hammer that will try its best to parse
-    //   alsorts of `n`-lengthed strings as hex strings, so users of this
+    // - `std::stringstream` is a sledgehammer that will try its best to parse
+    //   all sorts of `n`-length strings as hex strings, so users of this
     //   function would need to know the edge-cases
     //
-    // - std::strtol is closer, in that it supports parsing base16 strings etc.
+    // - `std::strtol` is closer, in that it supports parsing base16 strings etc.
     //   but it _also_ handles things such as plus/minus signs, the `0x`, octal,
     //   etc.
     //
-    // - std::from_chars, is the savior from std::strtol, but _also_ has special
+    // - `std::from_chars`, is the savior from `std::strtol`, but _also_ has special
     //   parsing behavior (e.g. the test suite for this function found that it
-    //   is effectively a wrapper around std::strol in terms of behavior
+    //   is effectively a wrapper around `std::strol` in terms of behavior`
     //
     // and all this particular function needs to do is map strings like '00' to
     // 0x0, 'ff' to 255, etc.

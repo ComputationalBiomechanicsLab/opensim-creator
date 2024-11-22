@@ -234,7 +234,7 @@ std::ostream& osc::operator<<(std::ostream& out, const Variant& variant)
     return out << to<std::string>(variant);
 }
 
-size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
+size_t std::hash<osc::Variant>::operator()(const Variant& variant) const noexcept
 {
     // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.data_)`
     //
@@ -250,9 +250,9 @@ size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
     //     `hash_of(Variant) == hash_of(std::string) == hash_of(std::string_view) == hash_of(StringName)...`
 
     return std::visit(Overload{
-        [](const auto& inner)
+        []<typename T>(const T& inner)
         {
-            return std::hash<std::remove_cv_t<std::remove_reference_t<decltype(inner)>>>{}(inner);
+            return std::hash<std::remove_cv_t<std::remove_reference_t<T>>>{}(inner);
         },
     }, variant.data_);
 }

@@ -4,7 +4,6 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 namespace osc
 {
@@ -14,7 +13,7 @@ namespace osc
     //
     // - The file is created in the operating system's temporary directory, or `dir`, throwing otherwise
     // - The name of the temporary file begins with `prefix`, ends with `suffix`, and the characters between
-    //   those two are are chosen to result in a new, unique, filename, throwing otherwise
+    //   those two are chosen to result in a new, unique, filename, throwing otherwise
     // - The file will be deleted from the filesystem upon destruction of the `TemporaryFile` object
     class TemporaryFile final {
     public:

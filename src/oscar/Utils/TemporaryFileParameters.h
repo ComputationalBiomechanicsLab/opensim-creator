@@ -1,15 +1,12 @@
 #pragma once
 
-#include <filesystem>
-#include <ios>
-#include <optional>
 #include <string_view>
 
 namespace osc
 {
     // parameters for constructing a `TemporaryFile`
     //
-    // designed for designated initializer compatibility: `TemporaryFile tmpfile({ .suffix = ".obj" });`
+    // designed for designated initializer compatibility: `TemporaryFile temporary_file({ .suffix = ".obj" });`
     struct TemporaryFileParameters final {
 
         // a prefix that will be prepended to the dynamic portion of the temporary file name (e.g. `${prefix}XXXXXX${suffix}`)

@@ -3,14 +3,13 @@
 #include <filesystem>
 #include <functional>
 #include <span>
-#include <string>
 #include <string_view>
 #include <vector>
 
 namespace osc
 {
     // calls `consumer` with each file recursively found in `root` that ends with
-    // any of the provied `extensions`
+    // any of the provided `extensions`
     void for_each_file_with_extensions_recursive(
         const std::filesystem::path& root,
         const std::function<void(std::filesystem::path)>& consumer,
@@ -35,10 +34,10 @@ namespace osc
         const std::filesystem::path& root
     );
 
-    // returns true if `p1` is lexographically greater than `p2`, ignoring case
+    // returns true if `p1` is lexicographically greater than `p2`, ignoring case
     //
     // e.g. "b" > "a", "B" > "a" (this isn't true if case-sensitive)
-    bool is_filename_lexographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2);
+    bool is_filename_lexicographically_greater_than(const std::filesystem::path& p1, const std::filesystem::path& p2);
 
     // returns true if `path` is within `dir` (non-recursive)
     bool is_subpath(const std::filesystem::path& dir, const std::filesystem::path& path);

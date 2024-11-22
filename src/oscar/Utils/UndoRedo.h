@@ -15,7 +15,7 @@
 // undo/redo algorithm support
 //
 // snapshot-based, rather than command-pattern based. Designed to be reference-counted, and
-// type-eraseable, so that generic downstream code doesn't necessarily need to know what,
+// type-erasable, so that generic downstream code doesn't necessarily need to know what,
 // or how, the data is actually stored in memory
 namespace osc
 {
@@ -54,7 +54,7 @@ namespace osc
         public:
             template<typename... Args>
             requires std::constructible_from<T, Args&&...>
-            UndoRedoEntryData(std::string_view message, Args&&... args) :
+            explicit UndoRedoEntryData(std::string_view message, Args&&... args) :
                 UndoRedoEntryMetadata{std::move(message)},
                 value_{std::forward<Args>(args)...}
             {}
@@ -92,7 +92,7 @@ namespace osc
     public:
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
-        UndoRedoEntry(std::string_view message, Args&&... args) :
+        explicit UndoRedoEntry(std::string_view message, Args&&... args) :
             UndoRedoEntryBase{std::make_shared<detail::UndoRedoEntryData<T>>(std::move(message), std::forward<Args>(args)...)}
         {}
 
@@ -150,7 +150,7 @@ namespace osc
     public:
         template<typename... Args>
         requires std::constructible_from<T, Args&&...>
-        UndoRedo(Args&&... args) :
+        explicit UndoRedo(Args&&... args) :
             UndoRedoBase(UndoRedoEntry<T>{"created document", std::forward<Args>(args)...}),
             scratch_{static_cast<const UndoRedoEntry<T>&>(head()).value()}
         {}

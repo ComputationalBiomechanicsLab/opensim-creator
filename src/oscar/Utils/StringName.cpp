@@ -14,15 +14,15 @@ namespace
 {
     using FastStringLookup = ankerl::unordered_dense::set<SharedPreHashedString, TransparentStringHasher, std::equal_to<>>;
 
-    SynchronizedValue<FastStringLookup>& get_global_lookup()
+    SynchronizedValue<FastStringLookup>& get_global_lut()
     {
-        static SynchronizedValue<FastStringLookup> s_lookup;
-        return s_lookup;
+        static SynchronizedValue<FastStringLookup> s_string_name_global_lut;
+        return s_string_name_global_lut;
     }
 }
 
 osc::StringName::StringName(std::string_view sv) :
-    SharedPreHashedString{*get_global_lookup().lock()->emplace(sv).first}
+    SharedPreHashedString{*get_global_lut().lock()->emplace(sv).first}
 {}
 
 osc::StringName::~StringName() noexcept
@@ -36,5 +36,5 @@ osc::StringName::~StringName() noexcept
     }
 
     // else: clear it from the global table
-    get_global_lookup().lock()->erase(static_cast<const SharedPreHashedString&>(*this));
+    get_global_lut().lock()->erase(static_cast<const SharedPreHashedString&>(*this));
 }

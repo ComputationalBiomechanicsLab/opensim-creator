@@ -5,11 +5,11 @@
 
 namespace osc
 {
-    template<std::invocable Dtor>
+    template<std::invocable Destructor>
     class ScopeGuard final {
     public:
-        explicit ScopeGuard(Dtor&& destructor) :
-            destructor_{std::forward<Dtor&&>(destructor)}
+        explicit ScopeGuard(Destructor&& destructor) :
+            destructor_{std::forward<Destructor>(destructor)}
         {}
         ScopeGuard(const ScopeGuard&) = delete;
         ScopeGuard(ScopeGuard&&) noexcept = delete;
@@ -21,6 +21,6 @@ namespace osc
         }
 
     private:
-        Dtor destructor_;
+        Destructor destructor_;
     };
 }

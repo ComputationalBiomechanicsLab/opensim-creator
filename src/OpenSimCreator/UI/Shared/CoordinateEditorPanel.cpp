@@ -15,8 +15,8 @@
 #include <oscar/UI/Events/OpenPopupEvent.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelPrivate.h>
+#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/LifetimedPtr.h>
 
 #include <algorithm>
 #include <ranges>

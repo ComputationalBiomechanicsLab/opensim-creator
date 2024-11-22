@@ -56,6 +56,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Events/OpenTabEvent.h>
 #include <oscar/Utils/Algorithms.h>
+#include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/FilesystemHelpers.h>
 #include <oscar/Utils/UID.h>
 

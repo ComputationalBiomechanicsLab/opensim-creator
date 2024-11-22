@@ -17,7 +17,7 @@ namespace osc
     //       without having to invasively add reference counters etc. to the things being
     //       managed
     //
-    // note: `LifetimedPtr` isn't threadsafe in the same way that (e.g.) `std::weak_ptr`
+    // note: `LifetimedPtr` isn't thread-safe in the same way that (e.g.) `std::weak_ptr`
     //       is. Because there's no way to `lock` a raw pointer, this class is susceptible
     //       to (e.g.) checking the lifetime, followed by accessing the object while the
     //       owning thread is destructing it

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 

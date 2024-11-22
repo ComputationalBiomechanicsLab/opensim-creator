@@ -20,7 +20,7 @@ namespace osc
     // returns true if `sv` contains `substr` (case-insensitive)
     bool contains_case_insensitive(std::string_view sv, std::string_view substr);
 
-    // returns true if `b` is lexographically greater than `a`, ignoring case
+    // returns true if `b` is lexicographically greater than `a`, ignoring case
     bool is_string_case_insensitive_greater_than(std::string_view a, std::string_view b);
 
     // returns true if `a` is equal to `b` (case-insensitive)
@@ -47,7 +47,7 @@ namespace osc
     //   number, internally using something like `std::strtof` (which depends
     //   on C locale - careful)
     //
-    // returns the resulting float if sucessful, or `std::nullopt` if it fails
+    // returns the resulting float if successful, or `std::nullopt` if it fails
     //
     // the reason this function exists is because, at time of writing, C++'s
     // <charconv> `std::from_chars` function isn't implemented in Mac OSX
@@ -60,7 +60,7 @@ namespace osc
     // of `sv` exceeds `max_length`
     std::string truncate_with_ellipsis(std::string_view sv, size_t max_length);
 
-    // returns the end of the string between the last occurance of `delimiter` and
+    // returns the end of the string between the last occurrence of `delimiter` and
     // the end of `sv`, or `sv` if `delimiter` does not occur within `sv`.
     std::string_view substring_after_last(std::string_view sv, std::string_view::value_type delimiter);
 
@@ -89,14 +89,14 @@ namespace osc
 
     template<std::ranges::input_range R>
     requires OutputStreamable<std::ranges::range_value_t<R>>
-    std::string join(R&& r, std::string_view delimeter)
+    std::string join(R&& r, std::string_view delimiter)
     {
         std::stringstream ss;
-        std::string_view prefix_delim;
+        std::string_view prefix_delimiter;
         for (auto&& el : r) {
-            ss << prefix_delim;
+            ss << prefix_delimiter;
             ss << el;
-            prefix_delim = delimeter;
+            prefix_delimiter = delimiter;
         }
         return std::move(ss).str();
     }

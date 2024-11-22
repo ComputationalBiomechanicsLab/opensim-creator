@@ -35,14 +35,14 @@ osc::FileChangePoller::FileChangePoller(
 bool osc::FileChangePoller::change_detected(const std::string& path)
 {
     if (path.empty() or path == c_model_no_backing_file_sentinel) {
-        // has no, or a senteniel, path - do no checks
+        // has no, or a sentinel, path - do no checks
         return false;
     }
 
-    auto now = std::chrono::system_clock::now();
+    const auto now = std::chrono::system_clock::now();
 
     if (now < next_polling_time_) {
-        // to soon to poll again
+        // too soon to poll again
         return false;
     }
 
@@ -53,7 +53,7 @@ bool osc::FileChangePoller::change_detected(const std::string& path)
         return false;
     }
 
-    auto modification_time = std::filesystem::last_write_time(path);
+    const auto modification_time = std::filesystem::last_write_time(path);
     next_polling_time_ = now + delay_between_checks_;
 
     if (modification_time == file_last_modification_time_) {
