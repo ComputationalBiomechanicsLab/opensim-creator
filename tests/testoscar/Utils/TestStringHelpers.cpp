@@ -24,7 +24,7 @@ TEST(strip_whitespace, works_as_expected)
         std::string_view expected_output;
     };
 
-    const auto test_cases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         // trivial case
         {"", ""},
 
@@ -87,11 +87,11 @@ namespace
         std::optional<float> expected_output;
     };
 
-    std::string with_escaped_control_characters(std::string_view sv)
+    std::string with_escaped_control_characters(std::string_view str)
     {
         std::string rv;
-        rv.reserve(sv.size());
-        for (auto c : sv) {
+        rv.reserve(str.size());
+        for (auto c : str) {
             switch (c) {
             case '\n':
                 rv += "\\n";
@@ -175,7 +175,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(FromCharsStripWhitespace, Check)
 {
     const TestCase test_case = GetParam();
-    std::optional<float> output = osc::from_chars_strip_whitespace(test_case.input);
+    const std::optional<float> output = osc::from_chars_strip_whitespace(test_case.input);
     ASSERT_EQ(output, test_case.expected_output);
 }
 TEST(to_hex_chars, returns_expected_results_when_compared_to_alternative_implementation)
@@ -203,7 +203,7 @@ TEST(to_hex_chars, returns_expected_results)
         std::pair<char, char> expected_output;
     };
 
-    const auto test_cases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {0x00, {'0', '0'}},
         {0x0f, {'0', 'f'}},
         {0xf0, {'f', '0'}},
@@ -250,7 +250,7 @@ TEST(try_parse_hex_chars_as_byte, returns_expected_results)
 
 TEST(is_valid_identifier, returns_true_for_typical_identifiers)
 {
-    const auto test_cases = std::to_array({
+    constexpr auto test_cases = std::to_array({
         "f",
         "g",
         "a_snake_case_string",
@@ -271,7 +271,7 @@ TEST(is_valid_identifier, returns_true_for_typical_identifiers)
 
 TEST(is_valid_identifier, returns_false_when_given_an_identifier_with_leading_numbers)
 {
-    const auto test_cases = std::to_array({
+    constexpr auto test_cases = std::to_array({
         "1f",
         "2g",
         "3a_snake_case_string",
@@ -310,7 +310,7 @@ TEST(is_valid_identifier, return_false_when_given_identifiers_with_invalid_ASCII
         }
     };
 
-    const auto invalid_ASCII_ranges = std::to_array<std::pair<int, int>>({
+    constexpr auto invalid_ascii_ranges = std::to_array<std::pair<int, int>>({
         {0, 0x1F},    // control chars
         {0x20, 0x2F}, // SPC ! " # $ % & ' ( ) * +  ' - /
         {0x3A, 0x40}, // : ; < = > ? @
@@ -320,7 +320,7 @@ TEST(is_valid_identifier, return_false_when_given_identifiers_with_invalid_ASCII
         {0x7B, 0x7F}, // { | } ~ DEL
     });
 
-    for (auto [min, max] : invalid_ASCII_ranges) {
+    for (auto [min, max] : invalid_ascii_ranges) {
         for (auto c = min; c <= max; ++c) {
             assert_char_cannot_be_used_in_identifier(static_cast<char>(c));
         }

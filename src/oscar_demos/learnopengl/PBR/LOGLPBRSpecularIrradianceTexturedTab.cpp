@@ -4,7 +4,7 @@
 
 #include <array>
 #include <bit>
-#include <utility>
+#include <memory>
 
 namespace graphics = osc::graphics;
 using namespace osc::literals;
@@ -235,19 +235,19 @@ public:
 
     void on_draw()
     {
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        output_render_.set_dimensions(dimensions_of(viewport_screenspace_rect));
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        output_render_.set_dimensions(dimensions_of(viewport_screen_space_rect));
         output_render_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         camera_.on_draw();
-        draw_3D_render();
+        draw_3d_render();
         draw_background();
-        graphics::blit_to_screen(output_render_, viewport_screenspace_rect);
+        graphics::blit_to_screen(output_render_, viewport_screen_space_rect);
         perf_panel_.on_draw();
     }
 
 private:
-    void draw_3D_render()
+    void draw_3d_render()
     {
         set_common_material_properties();
         draw_spheres();

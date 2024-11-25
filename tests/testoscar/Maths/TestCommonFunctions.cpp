@@ -30,9 +30,9 @@ TEST(abs, works_on_Vec3i)
 
 TEST(mod, works_on_Vec3_of_Angles)
 {
-    const Vec<3, Degrees> x{10.0f, 3.0f, 4.0f};
-    const Vec<3, Degrees> y{8.0f, 2.0f, 1.0f};
-    const Vec<3, Degrees> expected{2.0f, 1.0f, 0.0f};
+    constexpr Vec<3, Degrees> x{10.0f, 3.0f, 4.0f};
+    constexpr Vec<3, Degrees> y{8.0f, 2.0f, 1.0f};
+    constexpr Vec<3, Degrees> expected{2.0f, 1.0f, 0.0f};
 
     ASSERT_EQ(mod(x, y), expected);
 }

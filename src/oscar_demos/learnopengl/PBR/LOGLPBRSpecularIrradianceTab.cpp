@@ -4,7 +4,7 @@
 
 #include <array>
 #include <bit>
-#include <utility>
+#include <memory>
 
 namespace graphics = osc::graphics;
 using namespace osc::literals;
@@ -234,20 +234,20 @@ public:
 
     void on_draw()
     {
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        output_render_texture_.set_dimensions(dimensions_of(viewport_screenspace_rect));
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        output_render_texture_.set_dimensions(dimensions_of(viewport_screen_space_rect));
         output_render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         camera_.on_draw();
-        draw_3D_render();
+        draw_3d_render();
         draw_background();
-        graphics::blit_to_screen(output_render_texture_, viewport_screenspace_rect);
-        draw_2D_ui();
+        graphics::blit_to_screen(output_render_texture_, viewport_screen_space_rect);
+        draw_2d_ui();
         perf_panel_.on_draw();
     }
 
 private:
-    void draw_3D_render()
+    void draw_3d_render()
     {
         pbr_material_.set("uCameraWorldPos", camera_.position());
         pbr_material_.set_array("uLightPositions", c_light_positions);
@@ -306,7 +306,7 @@ private:
         camera_.set_clear_flags(CameraClearFlag::Default);
     }
 
-    void draw_2D_ui()
+    void draw_2d_ui()
     {
         if (ui::begin_panel("Controls")) {
             float ao = pbr_material_.get<float>("uAO").value_or(1.0f);

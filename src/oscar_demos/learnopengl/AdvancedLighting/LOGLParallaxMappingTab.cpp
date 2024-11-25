@@ -2,10 +2,7 @@
 
 #include <oscar/oscar.h>
 
-#include <array>
-#include <cstdint>
 #include <memory>
-#include <vector>
 
 using namespace osc::literals;
 using namespace osc;
@@ -15,31 +12,31 @@ namespace
     // matches the quad used in LearnOpenGL's parallax mapping tutorial
     Mesh generate_quad()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        rv.set_normals({
+        mesh.set_normals({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        rv.set_indices({
+        mesh.set_indices({
             0, 1, 2,
             0, 2, 3,
         });
-        rv.recalculate_tangents();
-        return rv;
+        mesh.recalculate_tangents();
+        return mesh;
     }
 
     MouseCapturingCamera create_camera()

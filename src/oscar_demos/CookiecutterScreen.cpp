@@ -42,14 +42,13 @@ public:
 
     void on_tick()
     {
-        // called once per frame, before drawing, with a timedelta from the last call
-        // to `on_tick`
+        // called once per frame, before drawing
 
         // use this if you need to regularly update something (e.g. an animation, or
         // file polling)
     }
 
-    void onDraw()
+    void on_draw()
     {
         // called once per frame. Code in here should use drawing primitives, `Graphics`,
         // `ui`, etc. to draw things into the screen. The application does not clear the
@@ -79,4 +78,4 @@ void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::CookiecutterScreen::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::CookiecutterScreen::impl_on_tick() { private_data().on_tick(); }
-void osc::CookiecutterScreen::impl_on_draw() { private_data().onDraw(); }
+void osc::CookiecutterScreen::impl_on_draw() { private_data().on_draw(); }

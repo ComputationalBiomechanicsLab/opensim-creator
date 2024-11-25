@@ -10,7 +10,7 @@
 #include <oscar_demos/learnopengl/PBR.h>
 
 #include <oscar_demos/CustomWidgetsTab.h>
-#include <oscar_demos/FrustrumCullingTab.h>
+#include <oscar_demos/FrustumCullingTab.h>
 #include <oscar_demos/HittestTab.h>
 #include <oscar_demos/ImGuiDemoTab.h>
 #include <oscar_demos/ImGuizmoDemoTab.h>
@@ -58,7 +58,7 @@ namespace osc
         LOGLPBRSpecularIrradianceTexturedTab,
 
         CustomWidgetsTab,
-        FrustrumCullingTab,
+        FrustumCullingTab,
         HittestTab,
         ImGuiDemoTab,
         ImPlotDemoTab,

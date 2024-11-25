@@ -78,7 +78,7 @@ TEST(CoordinateDirection, direction_returns_expected_results)
 
 TEST(CoordinateDirection, have_an_expected_total_ordering)
 {
-    const auto expected_order = std::to_array({
+    constexpr auto expected_order = std::to_array({
         CoordinateDirection::minus_x(),
         CoordinateDirection::x(),
         CoordinateDirection::minus_y(),
@@ -216,8 +216,8 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(ParsingTestFixture, Check)
 {
-    const ParsingTestCase tc =  GetParam();
-    ASSERT_EQ(CoordinateDirection::try_parse(tc.input), tc.expected) << "input = " << tc.input;
+    const ParsingTestCase test_case =  GetParam();
+    ASSERT_EQ(CoordinateDirection::try_parse(test_case.input), test_case.expected) << "input = " << test_case.input;
 }
 
 // printing test cases
@@ -248,10 +248,10 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(PrintingTestFixture, Check)
 {
-    const PrintingTestCase tc = GetParam();
+    const PrintingTestCase test_case = GetParam();
     std::stringstream ss;
-    ss << tc.input;
-    ASSERT_EQ(ss.str(), tc.expected);
+    ss << test_case.input;
+    ASSERT_EQ(ss.str(), test_case.expected);
 }
 
 TEST(CoordinateDirection, is_negated_WorksAsExpected)

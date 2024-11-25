@@ -2,8 +2,6 @@
 
 #include <oscar/oscar.h>
 
-#include <array>
-#include <cstdint>
 #include <memory>
 
 using namespace osc::literals;
@@ -13,8 +11,8 @@ namespace
 {
     Mesh generate_plane()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             { 5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f, -5.0f},
@@ -23,7 +21,7 @@ namespace
             {-5.0f, -0.5f, -5.0f},
             { 5.0f, -0.5f, -5.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {2.0f, 0.0f},
             {0.0f, 0.0f},
             {0.0f, 2.0f},
@@ -32,8 +30,8 @@ namespace
             {0.0f, 2.0f},
             {2.0f, 2.0f},
         });
-        rv.set_indices({0, 2, 1,    3, 5, 4});
-        return rv;
+        mesh.set_indices({0, 2, 1,    3, 5, 4});
+        return mesh;
     }
 
     MouseCapturingCamera create_scene_camera()
@@ -84,8 +82,8 @@ public:
         scene_camera_.on_draw();
 
         // setup render texture
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        render_texture_.set_dimensions(dimensions_of(viewport_screenspace_rect));
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        render_texture_.set_dimensions(dimensions_of(viewport_screen_space_rect));
         render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         // render scene
@@ -102,7 +100,7 @@ public:
         scene_camera_.render_to(render_texture_);
 
         // render via a effect sampler
-        graphics::blit_to_screen(render_texture_, viewport_screenspace_rect, screen_material_);
+        graphics::blit_to_screen(render_texture_, viewport_screen_space_rect, screen_material_);
 
         // auxiliary UI
         log_viewer_.on_draw();

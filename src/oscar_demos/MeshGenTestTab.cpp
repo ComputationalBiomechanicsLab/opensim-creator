@@ -16,10 +16,9 @@ namespace
         std::vector<Vec2> rv;
         rv.reserve(10);
         for (size_t i = 0; i < 10; ++i) {
-            rv.emplace_back(
-                sin(static_cast<float>(i) * 0.2f) * 10.0f + 5.0f,
-                (static_cast<float>(i) - 5.0f) * 2.0f
-            );
+            const float x = sin(0.2f * static_cast<float>(i)) * 10.0f + 5.0f;
+            const float y = (static_cast<float>(i) - 5.0f) * 2.0f;
+            rv.emplace_back(x, y);
         }
         return rv;
     }
@@ -37,10 +36,10 @@ namespace
             {"circle", cache.circle_mesh()},
             {"100x100 grid", cache.grid_mesh()},
             {"cube (wire)", cache.cube_wireframe_mesh()},
-            {"yline", cache.yline_mesh()},
+            {"y-line", cache.yline_mesh()},
             {"quad", cache.quad_mesh()},
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
-            {"torusknot", TorusKnotGeometry{}},
+            {"torus_knot", TorusKnotGeometry{}},
             {"box", BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}},
             {"icosahedron", IcosahedronGeometry{}},
             {"dodecahedron", DodecahedronGeometry{}},
@@ -80,7 +79,7 @@ public:
             }
             ui::start_new_line();
 
-            Vec2 content_region = ui::get_content_region_available();
+            const Vec2 content_region = ui::get_content_region_available();
             render_params_.dimensions = elementwise_max(content_region, {0.0f, 0.0f});
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);
@@ -117,4 +116,3 @@ osc::MeshGenTestTab::MeshGenTestTab(Widget& parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::MeshGenTestTab::impl_on_draw() { private_data().on_draw(); }
-

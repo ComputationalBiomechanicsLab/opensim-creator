@@ -6,7 +6,7 @@ using namespace osc;
 
 TEST(Converter, automatically_defined_for_language_type_thats_implicitly_convertable)
 {
-    const auto converter = Converter<float, double>{};
+    constexpr auto converter = Converter<float, double>{};
     ASSERT_EQ(converter(5.0f), double(5.0f));
 }
 

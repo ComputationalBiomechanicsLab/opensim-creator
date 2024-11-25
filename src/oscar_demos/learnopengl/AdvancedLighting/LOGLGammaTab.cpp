@@ -26,8 +26,8 @@ namespace
 
     Mesh generate_plane()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             { 10.0f, -0.5f,  10.0f},
             {-10.0f, -0.5f,  10.0f},
             {-10.0f, -0.5f, -10.0f},
@@ -36,7 +36,7 @@ namespace
             {-10.0f, -0.5f, -10.0f},
             { 10.0f, -0.5f, -10.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {10.0f, 0.0f},
             {0.0f,  0.0f},
             {0.0f,  10.0f},
@@ -45,7 +45,7 @@ namespace
             {0.0f,  10.0f},
             {10.0f, 10.0f},
         });
-        rv.set_normals({
+        mesh.set_normals({
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -54,18 +54,18 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
         });
-        rv.set_indices({0, 2, 1, 3, 5, 4});
-        return rv;
+        mesh.set_indices({0, 2, 1, 3, 5, 4});
+        return mesh;
     }
 
     MouseCapturingCamera create_scene_camera()
     {
-        MouseCapturingCamera rv;
-        rv.set_position({0.0f, 0.0f, 3.0f});
-        rv.set_vertical_fov(45_deg);
-        rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
-        return rv;
+        MouseCapturingCamera camera;
+        camera.set_position({0.0f, 0.0f, 3.0f});
+        camera.set_vertical_fov(45_deg);
+        camera.set_clipping_planes({0.1f, 100.0f});
+        camera.set_background_color({0.1f, 0.1f, 0.1f, 1.0f});
+        return camera;
     }
 
     Material create_floor_material(IResourceLoader& loader)
@@ -75,14 +75,14 @@ namespace
             ColorSpace::sRGB
         );
 
-        Material rv{Shader{
+        Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/Gamma.vert"),
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/Gamma.frag"),
         }};
-        rv.set("uFloorTexture", wood_texture);
-        rv.set_array("uLightPositions", c_light_positions);
-        rv.set_array("uLightColors", c_light_colors);
-        return rv;
+        material.set("uFloorTexture", wood_texture);
+        material.set_array("uLightPositions", c_light_positions);
+        material.set_array("uLightColors", c_light_colors);
+        return material;
     }
 }
 

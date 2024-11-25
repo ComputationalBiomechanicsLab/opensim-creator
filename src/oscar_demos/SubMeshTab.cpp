@@ -16,12 +16,12 @@ namespace
 {
     template<rgs::range T, rgs::range U>
     requires std::same_as<typename T::value_type, typename U::value_type>
-    void append(T& out, U els)
+    void insert_at_back(T& out, U els)
     {
         out.insert(out.end(), els.begin(), els.end());
     }
 
-    Mesh generate_mesh_with_submeshes()
+    Mesh generate_mesh_with_sub_meshes()
     {
         const auto meshes = std::to_array<Mesh>({
             BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
@@ -29,18 +29,18 @@ namespace
             CircleGeometry{{.radius = 1.0f, .num_segments = 32}},
         });
 
-        std::vector<Vec3> all_verts;
+        std::vector<Vec3> all_vertices;
         std::vector<Vec3> all_normals;
         std::vector<uint32_t> all_indices;
         std::vector<SubMeshDescriptor> all_descriptors;
 
         for (const auto& mesh : meshes) {
-            const size_t first_vert = all_verts.size();
-            append(all_verts, mesh.vertices());
-            append(all_normals, mesh.normals());
+            const size_t first_vert = all_vertices.size();
+            insert_at_back(all_vertices, mesh.vertices());
+            insert_at_back(all_normals, mesh.normals());
 
             const size_t first_index = all_indices.size();
-            for (auto index : mesh.indices()) {
+            for (const auto index : mesh.indices()) {
                 all_indices.push_back(static_cast<uint32_t>(first_vert + index));
             }
             const size_t num_indices = all_indices.size() - first_index;
@@ -49,7 +49,7 @@ namespace
         }
 
         Mesh rv;
-        rv.set_vertices(all_verts);
+        rv.set_vertices(all_vertices);
         rv.set_normals(all_normals);
         rv.set_indices(all_indices);
         rv.set_submesh_descriptors(all_descriptors);
@@ -75,14 +75,15 @@ public:
 
     void on_draw()
     {
-        for (size_t submesh_index = 0; submesh_index < mesh_with_submeshes_.num_submesh_descriptors(); ++submesh_index) {
+        const size_t num_sub_mesh_descriptors = mesh_with_sub_meshes_.num_submesh_descriptors();
+        for (size_t sub_mesh_index = 0; sub_mesh_index < num_sub_mesh_descriptors; ++sub_mesh_index) {
             graphics::draw(
-                mesh_with_submeshes_,
+                mesh_with_sub_meshes_,
                 identity<Transform>(),
                 material_,
                 camera_,
                 std::nullopt,
-                submesh_index
+                sub_mesh_index
             );
         }
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
@@ -93,7 +94,7 @@ private:
     ResourceLoader loader_ = App::resource_loader();
     Camera camera_;
     MeshBasicMaterial material_;
-    Mesh mesh_with_submeshes_ = generate_mesh_with_submeshes();
+    Mesh mesh_with_sub_meshes_ = generate_mesh_with_sub_meshes();
 };
 
 

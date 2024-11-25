@@ -2,7 +2,6 @@
 
 #include <oscar/oscar.h>
 
-#include <cstdint>
 #include <memory>
 #include <optional>
 
@@ -14,8 +13,8 @@ namespace
     // this matches the plane vertices used in the LearnOpenGL tutorial
     Mesh generate_learnopengl_plane_mesh()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             { 25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f,  25.0f},
             {-25.0f, -0.5f, -25.0f},
@@ -24,7 +23,7 @@ namespace
             {-25.0f, -0.5f, -25.0f},
             { 25.0f, -0.5f, -25.0f},
         });
-        rv.set_normals({
+        mesh.set_normals({
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
@@ -33,7 +32,7 @@ namespace
             {0.0f, 1.0f, 0.0f},
             {0.0f, 1.0f, 0.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {25.0f,  0.0f},
             {0.0f,  0.0f},
             {0.0f, 25.0f},
@@ -42,16 +41,16 @@ namespace
             {0.0f, 25.0f},
             {25.0f, 25.0f},
         });
-        rv.set_indices({0, 1, 2, 3, 4, 5});
-        return rv;
+        mesh.set_indices({0, 1, 2, 3, 4, 5});
+        return mesh;
     }
 
     MouseCapturingCamera create_camera()
     {
-        MouseCapturingCamera rv;
-        rv.set_position({-2.0f, 1.0f, 0.0f});
-        rv.set_clipping_planes({0.1f, 100.0f});
-        return rv;
+        MouseCapturingCamera camera;
+        camera.set_position({-2.0f, 1.0f, 0.0f});
+        camera.set_clipping_planes({0.1f, 100.0f});
+        return camera;
     }
 
     RenderTexture create_depth_texture()
@@ -97,8 +96,8 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 top_left = top_left_rh(viewport_screenspace_rect);
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 top_left = top_left_rh(viewport_screen_space_rect);
         constexpr float depth_overlay_size = 200.0f;
 
         render_shadows_to_depth_texture();
@@ -107,12 +106,12 @@ private:
 
         scene_material_.set("uLightWorldPos", light_pos_);
         scene_material_.set("uViewWorldPos", camera_.position());
-        scene_material_.set("uLightSpaceMat", latest_lightspace_matrix_);
+        scene_material_.set("uLightSpaceMat", latest_light_space_matrix_);
         scene_material_.set("uDiffuseTexture", wood_texture_);
         scene_material_.set("uShadowMapTexture", depth_texture_);
 
         draw_meshes_with_material(scene_material_);
-        camera_.set_pixel_rect(viewport_screenspace_rect);
+        camera_.set_pixel_rect(viewport_screen_space_rect);
         camera_.render_to_screen();
         camera_.set_pixel_rect(std::nullopt);
         graphics::blit_to_screen(depth_texture_, Rect{top_left - Vec2{0.0f, depth_overlay_size}, top_left + Vec2{depth_overlay_size, 0.0f}});
@@ -156,7 +155,7 @@ private:
         const float zfar = 7.5f;
         const Mat4 light_view_matrix = look_at(light_pos_, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
         const Mat4 light_projection_matrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, znear, zfar);
-        latest_lightspace_matrix_ = light_projection_matrix * light_view_matrix;
+        latest_light_space_matrix_ = light_projection_matrix * light_view_matrix;
 
         draw_meshes_with_material(depth_material_);
 
@@ -184,7 +183,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
     RenderTexture depth_texture_ = create_depth_texture();
-    Mat4 latest_lightspace_matrix_ = identity<Mat4>();
+    Mat4 latest_light_space_matrix_ = identity<Mat4>();
     Vec3 light_pos_ = {-2.0f, 4.0f, -1.0f};
 };
 

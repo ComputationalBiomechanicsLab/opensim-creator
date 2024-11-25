@@ -10,7 +10,7 @@ using namespace osc;
 
 namespace
 {
-    // worldspace positions of each cube (step 2)
+    // world-space positions of each cube (step 2)
     constexpr auto c_cube_positions = std::to_array<Vec3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
@@ -36,12 +36,12 @@ namespace
 
     Material make_box_material(IResourceLoader& loader)
     {
-        Material rv{Shader{
+        Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/GettingStarted/CoordinateSystems.vert"),
             loader.slurp("oscar_demos/learnopengl/shaders/GettingStarted/CoordinateSystems.frag"),
         }};
 
-        rv.set(
+        material.set(
             "uTexture1",
             load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/container.jpg"),
@@ -50,7 +50,7 @@ namespace
             )
         );
 
-        rv.set(
+        material.set(
             "uTexture2",
             load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
@@ -59,7 +59,7 @@ namespace
             )
         );
 
-        return rv;
+        return material;
     }
 }
 

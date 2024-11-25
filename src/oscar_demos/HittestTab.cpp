@@ -13,7 +13,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_triangle_verts = std::to_array<Vec3>({
+    constexpr auto c_triangle_vertices = std::to_array<Vec3>({
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
@@ -70,7 +70,7 @@ namespace
     Mesh generate_triangle_mesh()
     {
         Mesh rv;
-        rv.set_vertices(c_triangle_verts);
+        rv.set_vertices(c_triangle_vertices);
         rv.set_indices({0, 1, 2});
         return rv;
     }
@@ -113,7 +113,7 @@ public:
 
     void on_tick()
     {
-        // hittest spheres
+        // hit-test spheres
 
         const Line ray = get_camera_ray(camera_);
         float closest_distance = std::numeric_limits<float>::max();
@@ -122,12 +122,12 @@ public:
         for (SceneSphere& ss : scene_spheres_) {
             ss.is_hovered = false;
 
-            Sphere s{
-                ss.pos,
-                sphere_bounding_sphere_.radius
+            const Sphere hittest_sphere{
+                .origin = ss.pos,
+                .radius = sphere_bounding_sphere_.radius,
             };
 
-            std::optional<RayCollision> collision = find_collision(ray, s);
+            const std::optional<RayCollision> collision = find_collision(ray, hittest_sphere);
             if (collision and collision->distance >= 0.0f and collision->distance < closest_distance) {
                 closest_distance = collision->distance;
                 closest_sphere = &ss;
@@ -194,12 +194,12 @@ public:
             );
         }
 
-        // hittest + draw triangle
+        // hit-test + draw triangle
         {
             const Line ray = get_camera_ray(camera_);
             const std::optional<RayCollision> maybe_collision = find_collision(
                 ray,
-                Triangle{c_triangle_verts.at(0), c_triangle_verts.at(1), c_triangle_verts.at(2)}
+                Triangle{c_triangle_vertices.at(0), c_triangle_vertices.at(1), c_triangle_vertices.at(2)}
             );
 
             graphics::draw(
@@ -211,22 +211,23 @@ public:
             );
         }
 
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
 
         // draw crosshair overlay
         graphics::draw(
             crosshair_mesh_,
-            camera_.inverse_view_projection_matrix(aspect_ratio_of(viewport_screenspace_rect)),
+            camera_.inverse_view_projection_matrix(aspect_ratio_of(viewport_screen_space_rect)),
             material_,
             camera_,
             black_color_material_props_
         );
 
         // draw scene to screen
-        camera_.set_pixel_rect(viewport_screenspace_rect);
+        camera_.set_pixel_rect(viewport_screen_space_rect);
         camera_.render_to_screen();
     }
 
+private:
     MouseCapturingCamera camera_;
     MeshBasicMaterial material_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};

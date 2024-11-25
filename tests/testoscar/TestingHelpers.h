@@ -10,7 +10,6 @@
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/Vec4.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>

@@ -45,13 +45,13 @@ public:
 
     void on_draw()
     {
-        main_viewport_workspace_screenspace_rect_ = ui::get_main_viewport_workspace_screenspace_rect();
+        main_viewport_workspace_screen_space_rect_ = ui::get_main_viewport_workspace_screenspace_rect();
 
         material_.set("uRescale", Vec2{1.0f, 1.0f});
         material_.set("uOffset", Vec2{});
         material_.set("uNumIterations", num_iterations_);
         graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
-        camera_.set_pixel_rect(main_viewport_workspace_screenspace_rect_);
+        camera_.set_pixel_rect(main_viewport_workspace_screen_space_rect_);
         camera_.render_to_screen();
     }
 
@@ -82,7 +82,7 @@ private:
     ResourceLoader loader_ = App::resource_loader();
     int num_iterations_ = 16;
     Rect normalized_mandelbrot_viewport_ = {{}, {1.0f, 1.0f}};
-    Rect main_viewport_workspace_screenspace_rect_ = {};
+    Rect main_viewport_workspace_screen_space_rect_ = {};
     Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Material material_{Shader{
         loader_.slurp("oscar_demos/shaders/Mandelbrot.vert"),

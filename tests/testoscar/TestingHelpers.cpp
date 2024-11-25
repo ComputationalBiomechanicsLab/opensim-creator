@@ -2,6 +2,7 @@
 
 #include <oscar/Maths/MathHelpers.h>
 
+#include <algorithm>
 #include <numeric>
 #include <random>
 

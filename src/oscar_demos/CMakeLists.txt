@@ -64,8 +64,8 @@ add_library(oscar_demos STATIC
     CookiecutterScreen.h
     CustomWidgetsTab.cpp
     CustomWidgetsTab.h
-    FrustrumCullingTab.cpp
-    FrustrumCullingTab.h
+    FrustumCullingTab.cpp
+    FrustumCullingTab.h
     HittestTab.cpp
     HittestTab.h
     ImGuiDemoTab.cpp

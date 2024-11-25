@@ -21,8 +21,8 @@ namespace
 
     Mesh generate_plane()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             { 5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f,  5.0f},
             {-5.0f, -0.5f, -5.0f},
@@ -31,7 +31,7 @@ namespace
             {-5.0f, -0.5f, -5.0f},
             { 5.0f, -0.5f, -5.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {2.0f, 0.0f},
             {0.0f, 0.0f},
             {0.0f, 2.0f},
@@ -40,14 +40,14 @@ namespace
             {0.0f, 2.0f},
             {2.0f, 2.0f},
         });
-        rv.set_indices({0, 2, 1, 3, 5, 4});
-        return rv;
+        mesh.set_indices({0, 2, 1, 3, 5, 4});
+        return mesh;
     }
 
     Mesh generate_transparent()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             {0.0f,  0.5f, 0.0f},
             {0.0f, -0.5f, 0.0f},
             {1.0f, -0.5f, 0.0f},
@@ -56,7 +56,7 @@ namespace
             {1.0f, -0.5f, 0.0f},
             {1.0f,  0.5f, 0.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {0.0f, 0.0f},
             {0.0f, 1.0f},
             {1.0f, 1.0f},
@@ -65,8 +65,8 @@ namespace
             {1.0f, 1.0f},
             {1.0f, 0.0f},
         });
-        rv.set_indices({0, 1, 2, 3, 4, 5});
-        return rv;
+        mesh.set_indices({0, 1, 2, 3, 4, 5});
+        return mesh;
     }
 
     MouseCapturingCamera create_camera_that_matches_learnopengl()

@@ -9,9 +9,9 @@ using namespace osc;
 
 TEST(ClosedInterval, default_constructor_value_initializes)
 {
-    const ClosedInterval<float> r;
-    ASSERT_EQ(r.lower, float{});
-    ASSERT_EQ(r.upper, float{});
+    constexpr ClosedInterval<float> closed_interval;
+    ASSERT_EQ(closed_interval.lower, float{});
+    ASSERT_EQ(closed_interval.upper, float{});
 }
 
 TEST(ClosedInterval, can_use_structured_bindings_to_get_lower_and_upper)
@@ -33,8 +33,8 @@ TEST(ClosedInterval, reversing_lower_and_upper_is_allowed)
 
 TEST(ClosedInterval, can_be_constructed_from_time_points)
 {
-    using TP = std::chrono::system_clock::time_point;
-    [[maybe_unused]] ClosedInterval<TP> r{TP{}, TP{} + std::chrono::seconds{1}};
+    using TimePoint = std::chrono::system_clock::time_point;
+    [[maybe_unused]] ClosedInterval<TimePoint> r{TimePoint{}, TimePoint{} + std::chrono::seconds{1}};
 }
 
 TEST(ClosedInterval, normalized_interpolant_at_returns_zero_if_equal_to_lower)

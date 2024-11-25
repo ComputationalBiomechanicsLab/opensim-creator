@@ -104,12 +104,12 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        draw_3D_render();
+        draw_3d_render();
         perf_panel_.on_draw();
     }
 
 private:
-    void draw_3D_render()
+    void draw_3d_render()
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 

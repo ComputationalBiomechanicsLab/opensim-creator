@@ -6,11 +6,11 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class FrustrumCullingTab final : public Tab {
+    class FrustumCullingTab final : public Tab {
     public:
         static CStringView id();
 
-        explicit FrustrumCullingTab(Widget&);
+        explicit FrustumCullingTab(Widget&);
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;

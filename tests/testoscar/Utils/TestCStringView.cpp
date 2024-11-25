@@ -42,7 +42,7 @@ TEST(CStringView, c_str_is_not_nullptr_when_CStringView_is_constructed_from_null
 
 TEST(CStringView, three_way_comparison_operator_behaves_identically_to_std_string_view)
 {
-    const auto input_strings = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
+    constexpr auto input_strings = std::to_array<const char*>({ "x", "somestring", "somethingelse", "", "_i hope it works ;)" });
     for (const char* const cstring : input_strings) {
 
         const std::string_view string_view{cstring};

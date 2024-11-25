@@ -19,7 +19,7 @@ TEST(metasuite_2, test_1)
 {
     // this is here to ensure that the test actually turns up in the output/IDE
     //
-    // (should be grouped seperately)
+    // (should be grouped separately)
 }
 
 int main(int argc, char** argv)

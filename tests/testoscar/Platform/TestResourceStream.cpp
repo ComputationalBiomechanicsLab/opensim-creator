@@ -16,9 +16,9 @@ namespace
 {
     std::string slurp(std::istream& is)
     {
-        std::istreambuf_iterator<char> beg{is};
-        const std::istreambuf_iterator<char> end;
-        return std::string{beg, end};
+        std::istreambuf_iterator<char> begin{is};
+        constexpr std::istreambuf_iterator<char> end;
+        return std::string{begin, end};
     }
 
     std::string slurp(const std::filesystem::path& p)

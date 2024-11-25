@@ -109,7 +109,7 @@ namespace
         return irradiance_cubemap;
     }
 
-    Material CreateMaterial(IResourceLoader& loader)
+    Material create_material(IResourceLoader& loader)
     {
         Material rv{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/PBR.vert"),
@@ -148,13 +148,13 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        draw_3D_render();
+        draw_3d_render();
         draw_background();
-        draw_2D_ui();
+        draw_2d_ui();
     }
 
 private:
-    void draw_3D_render()
+    void draw_3d_render()
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
@@ -208,7 +208,7 @@ private:
         camera_.set_clear_flags(CameraClearFlag::Default);
     }
 
-    void draw_2D_ui()
+    void draw_2d_ui()
     {
         if (ui::begin_panel("Controls")) {
             float ao = pbr_material_.get<float>("uAO").value_or(1.0f);
@@ -236,7 +236,7 @@ private:
     }};
 
     Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
-    Material pbr_material_ = CreateMaterial(loader_);
+    Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     MouseCapturingCamera camera_ = create_camera();
 };

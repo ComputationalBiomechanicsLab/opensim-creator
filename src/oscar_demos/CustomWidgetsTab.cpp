@@ -2,8 +2,6 @@
 
 #include <oscar/oscar.h>
 
-#include <cmath>
-#include <array>
 #include <memory>
 
 using namespace osc;
@@ -12,20 +10,20 @@ namespace
 {
     void draw_widget_title(CStringView title, Vec2 pos)
     {
-        const Vec2 text_topleft = pos + ui::get_style_frame_padding();
-        ui::get_panel_draw_list().add_text(text_topleft, ui::get_color(ui::ColorVar::Text), title);
+        const Vec2 text_top_left = pos + ui::get_style_frame_padding();
+        ui::get_panel_draw_list().add_text(text_top_left, ui::get_color(ui::ColorVar::Text), title);
     }
 }
 
 // toggle
 namespace
 {
-    void draw_toggle(bool enabled, bool hovered, Vec2 pos, Vec2 size)
+    void draw_toggler(bool enabled, bool hovered, Vec2 pos, Vec2 size)
     {
         const float radius = size.y * 0.5f;
         const float rounding = size.y * 0.25f;
         const float slot_half_height = size.y * 0.5f;
-        const bool circular_grab = false;
+        const bool draw_circular_grabber = false;
 
         const Color bg_color = hovered ?
             ui::get_color(enabled ? ui::ColorVar::FrameBgActive : ui::ColorVar::FrameBgHovered) :
@@ -43,7 +41,7 @@ namespace
         ui::DrawListView draw_list = ui::get_panel_draw_list();
         draw_list.add_rect_filled(bg_rect, bg_color, rounding);
 
-        if (circular_grab) {
+        if (draw_circular_grabber) {
             draw_list.add_circle_filled({pmid, radius * 0.8f}, ui::get_color(ui::ColorVar::SliderGrab));
         }
         else {
@@ -52,7 +50,7 @@ namespace
         }
     }
 
-    bool Toggle(CStringView label, bool* v)
+    bool draw_toggle(CStringView label, bool* v)
     {
         ui::push_style_color(ui::ColorVar::Button, Color::clear());
 
@@ -70,8 +68,8 @@ namespace
 
         ui::pop_id();
         ui::pop_style_var();
-        const Vec2 pmin = ui::get_item_topleft();
-        const Vec2 pmax = ui::get_item_bottomright();
+        const Vec2 button_top_left = ui::get_item_topleft();
+        const Vec2 button_bottom_right = ui::get_item_bottomright();
 
         draw_widget_title(label, p);
 
@@ -79,10 +77,10 @@ namespace
         const Vec2 frame_padding = ui::get_style_frame_padding();
         const Vec2 toggle_size = {toggle_height * 1.75f, toggle_height};
         const Vec2 toggle_pos{
-            pmax.x - toggle_size.x - frame_padding.x,
-            pmin.y + (title_height - toggle_size.y)/2.0f + frame_padding.y,
+            button_bottom_right.x - toggle_size.x - frame_padding.x,
+            button_top_left.y + (title_height - toggle_size.y)/2.0f + frame_padding.y,
         };
-        draw_toggle(*v, ui::is_item_hovered(), toggle_pos, toggle_size);
+        draw_toggler(*v, ui::is_item_hovered(), toggle_pos, toggle_size);
 
         ui::pop_style_color();
 
@@ -104,7 +102,7 @@ public:
         ui::draw_float_input("standardinput", &float_value_);
         ui::draw_float_circular_slider("custom slider", &float_value_, 15.0f, 5.0f);
         ui::draw_text("%f", float_value_);
-        Toggle("custom toggle", &toggle_state_);
+        draw_toggle("custom toggle", &toggle_state_);
         ui::end_panel();
     }
 

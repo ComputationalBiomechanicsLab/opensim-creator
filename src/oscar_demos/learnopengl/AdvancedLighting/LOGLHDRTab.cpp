@@ -17,7 +17,7 @@ namespace
         { 0.8f, -1.7f, 6.0f},
     });
 
-    std::array<Color, c_light_positions.size()> GetLightColors()
+    std::array<Color, c_light_positions.size()> get_light_colors()
     {
         return std::to_array<Color>({
             to_srgb_colorspace({200.0f, 200.0f, 200.0f, 1.0f}),
@@ -45,20 +45,20 @@ namespace
 
     Material create_scene_material(IResourceLoader& loader)
     {
-        Texture2D wood_texture = load_texture2D_from_image(
+        const Texture2D wood_texture = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
             ColorSpace::sRGB
         );
 
-        Material rv{Shader{
+        Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/HDR/Scene.vert"),
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/HDR/Scene.frag"),
         }};
-        rv.set_array("uSceneLightPositions", c_light_positions);
-        rv.set_array("uSceneLightColors", GetLightColors());
-        rv.set("uDiffuseTexture", wood_texture);
-        rv.set("uInverseNormals", true);
-        return rv;
+        material.set_array("uSceneLightPositions", c_light_positions);
+        material.set_array("uSceneLightColors", get_light_colors());
+        material.set("uDiffuseTexture", wood_texture);
+        material.set("uInverseNormals", true);
+        return material;
     }
 
     Material create_tonemap_material(IResourceLoader& loader)
@@ -125,18 +125,18 @@ private:
 
     void draw_hdr_texture_via_tonemapper_to_screen()
     {
-        Camera ortho_camera;
-        ortho_camera.set_background_color(Color::clear());
-        ortho_camera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
-        ortho_camera.set_projection_matrix_override(identity<Mat4>());
-        ortho_camera.set_view_matrix_override(identity<Mat4>());
+        Camera orthogonal_camera;
+        orthogonal_camera.set_background_color(Color::clear());
+        orthogonal_camera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        orthogonal_camera.set_projection_matrix_override(identity<Mat4>());
+        orthogonal_camera.set_view_matrix_override(identity<Mat4>());
 
         tonemap_material_.set("uTexture", scene_hdr_texture_);
         tonemap_material_.set("uUseTonemap", use_tonemap_);
         tonemap_material_.set("uExposure", exposure_);
 
-        graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, ortho_camera);
-        ortho_camera.render_to_screen();
+        graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, orthogonal_camera);
+        orthogonal_camera.render_to_screen();
 
         tonemap_material_.unset("uTexture");
     }

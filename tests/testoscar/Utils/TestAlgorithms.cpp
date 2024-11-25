@@ -13,14 +13,14 @@ namespace rgs = std::ranges;
 
 TEST(all_of, works_as_expected)
 {
-    const auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
+    constexpr auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
     ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v > -4; }));
     ASSERT_TRUE(rgs::all_of(vs, [](int v){ return v <  4; }));
     ASSERT_FALSE(rgs::all_of(vs, [](int v){ return v > 0; }));
 }
 TEST(at, works_as_expected)
 {
-    const auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
+    constexpr auto vs = std::to_array({-1, -2, -3, 0, 1, 2, 3});
     ASSERT_EQ(at(vs, 0), -1);
     ASSERT_EQ(at(vs, 1), -2);
     ASSERT_EQ(at(vs, 2), -3);
@@ -138,27 +138,27 @@ TEST(lookup_or_nullptr, can_mutate_via_the_returned_pointer)
 
 TEST(min_element, works_as_expected)
 {
-    const auto els = std::to_array({1, 5, 8, -4, 13});
+    constexpr auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min_element(els), els.begin() + 3);
 }
 
 TEST(min, works_as_expected)
 {
-    const auto els = std::to_array({1, 5, 8, -4, 13});
+    constexpr auto els = std::to_array({1, 5, 8, -4, 13});
     ASSERT_EQ(rgs::min(els), -4);
 }
 
 TEST(minmax_element, works_as_expected)
 {
-    const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
-    const auto [minit, maxit] = rgs::minmax_element(els);
-    ASSERT_EQ(minit, els.begin() + 3);
-    ASSERT_EQ(maxit, els.end() - 1);
+    constexpr auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    const auto [min_iter, max_iter] = rgs::minmax_element(els);
+    ASSERT_EQ(min_iter, els.begin() + 3);
+    ASSERT_EQ(max_iter, els.end() - 1);
 }
 
 TEST(minmax, works_as_expected)
 {
-    const auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
+    constexpr auto els = std::to_array({1, 5, 8, -4, -4, 13, 13, 13});
     const auto [min, max] = rgs::minmax(els);
     ASSERT_EQ(min, -4);
     ASSERT_EQ(max, 13);
@@ -195,7 +195,7 @@ namespace
 
 TEST(is_eq_downcasted, works_as_expected)
 {
-    // basic case: both types are the same and don't require downcasting
+    // basic case: both types are the same and don't require down-casting
     ASSERT_TRUE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{1}));
     ASSERT_FALSE(is_eq_downcasted<Derived1>(Derived1{1}, Derived1{2}));
     ASSERT_TRUE(is_eq_downcasted<Derived2>(Derived2{1.0}, Derived2{1.0}));

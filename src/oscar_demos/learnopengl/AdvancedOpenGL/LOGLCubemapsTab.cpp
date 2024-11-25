@@ -25,31 +25,31 @@ namespace
     Cubemap load_cubemap(ResourceLoader& loader)
     {
         // load the first face, so we know the width
-        Texture2D t = load_texture2D_from_image(
+        Texture2D face_texture = load_texture2D_from_image(
             loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames.front()),
             ColorSpace::sRGB
         );
 
-        const Vec2i texture_dimensions = t.dimensions();
+        const Vec2i texture_dimensions = face_texture.dimensions();
         OSC_ASSERT(texture_dimensions.x == texture_dimensions.y);
 
         // load all face data into the cubemap
         static_assert(num_options<CubemapFace>() == c_skybox_texture_filenames.size());
 
-        const auto faces = make_option_iterable<CubemapFace>();
-        auto face_iterator = faces.begin();
-        Cubemap cubemap{texture_dimensions.x, t.texture_format()};
-        cubemap.set_pixel_data(*face_iterator++, t.pixel_data());
-        for (; face_iterator != faces.end(); ++face_iterator)
+        const auto cubemap_faces = make_option_iterable<CubemapFace>();
+        auto face_iterator = cubemap_faces.begin();
+        Cubemap cubemap{texture_dimensions.x, face_texture.texture_format()};
+        cubemap.set_pixel_data(*face_iterator++, face_texture.pixel_data());
+        for (; face_iterator != cubemap_faces.end(); ++face_iterator)
         {
-            t = load_texture2D_from_image(
+            face_texture = load_texture2D_from_image(
                 loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
-            OSC_ASSERT(t.dimensions().x == texture_dimensions.x);
-            OSC_ASSERT(t.dimensions().y == texture_dimensions.x);
-            OSC_ASSERT(t.texture_format() == cubemap.texture_format());
-            cubemap.set_pixel_data(*face_iterator, t.pixel_data());
+            OSC_ASSERT(face_texture.dimensions().x == texture_dimensions.x);
+            OSC_ASSERT(face_texture.dimensions().y == texture_dimensions.x);
+            OSC_ASSERT(face_texture.texture_format() == cubemap.texture_format());
+            cubemap.set_pixel_data(*face_iterator, face_texture.pixel_data());
         }
 
         return cubemap;

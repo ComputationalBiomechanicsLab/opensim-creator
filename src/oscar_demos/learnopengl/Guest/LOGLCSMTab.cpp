@@ -100,9 +100,9 @@ namespace
         constexpr auto normalized_cascade_planes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
         // precompute transforms
-        const Mat4 model2light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction}, {0.0f, 1.0f, 0.0f});
-        const Mat4 view2model = inverse(camera.view_matrix());
-        const Mat4 view2light = model2light * view2model;
+        const Mat4 model_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction}, {0.0f, 1.0f, 0.0f});
+        const Mat4 view_to_model = inverse(camera.view_matrix());
+        const Mat4 view_to_light = model_to_light * view_to_model;
 
         // precompute necessary values to figure out the corners of the view frustum
         const auto [view_znear, view_zfar] = camera.clipping_planes();
@@ -141,10 +141,10 @@ namespace
             };
 
             // compute the bounds in light-space by projecting each corner into light-space and min-maxing
-            Vec3 light_bounds_min = transform_point(view2light, view_frustum_corners.front());
+            Vec3 light_bounds_min = transform_point(view_to_light, view_frustum_corners.front());
             Vec3 light_bounds_max = light_bounds_min;
             for (size_t corner = 1; corner < view_frustum_corners.size(); ++corner) {
-                const Vec3 lightCorner = transform_point(view2light, view_frustum_corners[corner]);
+                const Vec3 lightCorner = transform_point(view_to_light, view_frustum_corners[corner]);
                 light_bounds_min = elementwise_min(light_bounds_min, lightCorner);
                 light_bounds_max = elementwise_max(light_bounds_max, lightCorner);
             }
@@ -252,9 +252,9 @@ private:
             light_camera.set_direction(light_direction_);
             light_camera.set_projection_matrix_override(cascade_projection_mat4);
 
-            shadowmapping_material_.set_color(Color::clear().with_element(i, 1.0f));
+            shadow_mapping_material_.set_color(Color::clear().with_element(i, 1.0f));
             for (const auto& decoration : decorations_) {
-                graphics::draw(decoration.mesh, decoration.transform, shadowmapping_material_, light_camera);
+                graphics::draw(decoration.mesh, decoration.transform, shadow_mapping_material_, light_camera);
             }
 
             light_camera.render_to(cascade_rasters_[i]);
@@ -301,7 +301,7 @@ private:
     ResourceLoader resource_loader_ = App::resource_loader();
     MouseCapturingCamera user_camera_;
     std::vector<TransformedMesh> decorations_ = generate_decorations();
-    MeshBasicMaterial shadowmapping_material_{{
+    MeshBasicMaterial shadow_mapping_material_{{
         .color = Color::red(),  // TODO: should be depth-only
     }};
     Material csm_material_{Shader{

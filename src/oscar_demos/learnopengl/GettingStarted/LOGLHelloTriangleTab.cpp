@@ -2,8 +2,6 @@
 
 #include <oscar/oscar.h>
 
-#include <array>
-#include <cstdint>
 #include <memory>
 
 using namespace osc;
@@ -12,19 +10,19 @@ namespace
 {
     Mesh generate_triangle_mesh()
     {
-        Mesh m;
-        m.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             {-1.0f, -1.0f, 0.0f},  // bottom-left
             { 1.0f, -1.0f, 0.0f},  // bottom-right
             { 0.0f,  1.0f, 0.0f},  // top-middle
         });
-        m.set_colors({
+        mesh.set_colors({
             Color::red(),
             Color::green(),
             Color::blue(),
         });
-        m.set_indices({0, 1, 2});
-        return m;
+        mesh.set_indices({0, 1, 2});
+        return mesh;
     }
 
     Camera create_scene_camera()

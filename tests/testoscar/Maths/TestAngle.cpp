@@ -106,7 +106,7 @@ TEST(Turn, division_by_a_scalar_works_as_expected)
 
 TEST(Angle, is_compatible_with_projected_clamp_algorithm)
 {
-    // just a "it'd be nice to know osc::Angle inter-operates with std::ranges::clamp algs"
+    // just "it'd be nice to know osc::Angle interoperates with std::ranges::clamp algorithms"
     struct S {
         Degrees ang;
     };

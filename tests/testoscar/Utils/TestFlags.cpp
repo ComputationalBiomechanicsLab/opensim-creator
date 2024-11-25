@@ -10,7 +10,7 @@ using namespace osc;
 namespace
 {
     enum class ExampleDenseFlag {
-        None,
+        None  = 0,
         Flag1 = 1<<0,
         Flag2 = 1<<1,
         Flag3 = 1<<2,
@@ -66,7 +66,7 @@ TEST(Flags, operator_amphresand_returns_AND_of_two_flags)
         Flags rhs;
         Flags expected;
     };
-    const auto testCases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {
             .lhs = Flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
             .rhs = Flags{ExampleDenseFlag::Flag1},
@@ -89,8 +89,8 @@ TEST(Flags, operator_amphresand_returns_AND_of_two_flags)
         },
     });
 
-    for (const auto& testCase : testCases) {
-        ASSERT_EQ(testCase.lhs & testCase.rhs, testCase.expected);
+    for (const auto& test_case : test_cases) {
+        ASSERT_EQ(test_case.lhs & test_case.rhs, test_case.expected);
     }
 }
 
@@ -102,7 +102,7 @@ TEST(Flags, operator_or_works_as_expected)
         Flags rhs;
         Flags expected;
     };
-    const auto testCases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {
             .lhs = Flags{ExampleDenseFlag::None},
             .rhs = Flags{ExampleDenseFlag::Flag1},
@@ -125,10 +125,10 @@ TEST(Flags, operator_or_works_as_expected)
         },
     });
 
-    for (const auto& testCase : testCases) {
-        const Flags lhs = testCase.lhs;
-        const Flags result = lhs | testCase.rhs;
-        ASSERT_EQ(result, testCase.expected);
+    for (const auto& test_case : test_cases) {
+        const Flags lhs = test_case.lhs;
+        const Flags result = lhs | test_case.rhs;
+        ASSERT_EQ(result, test_case.expected);
     }
 }
 
@@ -140,7 +140,7 @@ TEST(Flags, operator_or_equals_works_as_expected)
         Flags rhs;
         Flags expected;
     };
-    const auto test_cases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {
             .lhs = Flags{ExampleDenseFlag::None},
             .rhs = Flags{ExampleDenseFlag::Flag1},
@@ -182,11 +182,11 @@ TEST(Flags, lowest_set_returns_lowest_flag_for_non_None_values)
     ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2}.lowest_set(), ExampleDenseFlag::Flag2);
     ASSERT_EQ(Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag3}.lowest_set(), ExampleDenseFlag::Flag3);
     {
-        const auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+        constexpr auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
         ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag2);
     }
     {
-        const auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+        constexpr auto flags = Flags<ExampleDenseFlag>{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
         ASSERT_EQ(flags.lowest_set(), ExampleDenseFlag::Flag1);
     }
 }

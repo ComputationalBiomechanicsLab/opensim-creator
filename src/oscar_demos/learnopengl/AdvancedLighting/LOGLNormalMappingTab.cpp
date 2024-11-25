@@ -2,11 +2,7 @@
 
 #include <oscar/oscar.h>
 
-#include <array>
-#include <cstdint>
 #include <memory>
-#include <span>
-#include <vector>
 
 using namespace osc::literals;
 using namespace osc;
@@ -16,40 +12,40 @@ namespace
     // matches the quad used in LearnOpenGL's normal mapping tutorial
     Mesh generate_quad()
     {
-        Mesh rv;
-        rv.set_vertices({
+        Mesh mesh;
+        mesh.set_vertices({
             {-1.0f,  1.0f, 0.0f},
             {-1.0f, -1.0f, 0.0f},
             { 1.0f, -1.0f, 0.0f},
             { 1.0f,  1.0f, 0.0f},
         });
-        rv.set_normals({
+        mesh.set_normals({
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
             {0.0f, 0.0f, 1.0f},
         });
-        rv.set_tex_coords({
+        mesh.set_tex_coords({
             {0.0f, 1.0f},
             {0.0f, 0.0f},
             {1.0f, 0.0f},
             {1.0f, 1.0f},
         });
-        rv.set_indices({
+        mesh.set_indices({
             0, 1, 2,
             0, 2, 3,
         });
-        rv.recalculate_tangents();
-        return rv;
+        mesh.recalculate_tangents();
+        return mesh;
     }
 
     MouseCapturingCamera create_camera()
     {
-        MouseCapturingCamera rv;
-        rv.set_position({0.0f, 0.0f, 3.0f});
-        rv.set_vertical_fov(45_deg);
-        rv.set_clipping_planes({0.1f, 100.0f});
-        return rv;
+        MouseCapturingCamera camera;
+        camera.set_position({0.0f, 0.0f, 3.0f});
+        camera.set_vertical_fov(45_deg);
+        camera.set_clipping_planes({0.1f, 100.0f});
+        return camera;
     }
 
     Material create_normal_mapping_material(IResourceLoader& loader)
@@ -73,7 +69,7 @@ namespace
         return rv;
     }
 
-    Material create_lightcube_material(IResourceLoader& loader)
+    Material create_light_cube_material(IResourceLoader& loader)
     {
         return Material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/LightCube.vert"),
@@ -148,7 +144,7 @@ private:
 
     // rendering state
     Material normal_mapping_material_ = create_normal_mapping_material(loader_);
-    Material light_cube_material_ = create_lightcube_material(loader_);
+    Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
     Mesh quad_mesh_ = generate_quad();
 

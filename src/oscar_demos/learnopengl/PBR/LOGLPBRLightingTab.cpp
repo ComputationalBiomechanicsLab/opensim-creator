@@ -28,7 +28,7 @@ namespace
     constexpr int c_num_cols = 7;
     constexpr float c_cell_spacing = 2.5f;
 
-    MouseCapturingCamera CreateCamera()
+    MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 20.0f});
@@ -38,7 +38,7 @@ namespace
         return rv;
     }
 
-    Material CreateMaterial(IResourceLoader& rl)
+    Material load_pbr_material(IResourceLoader& rl)
     {
         Material rv{Shader{
             rl.slurp("oscar_demos/learnopengl/shaders/PBR/lighting/PBR.vert"),
@@ -77,12 +77,12 @@ public:
     void on_draw()
     {
         camera_.on_draw();
-        draw3DRender();
-        draw_2D_ui();
+        draw_3d_render();
+        draw_2d_ui();
     }
 
 private:
-    void draw3DRender()
+    void draw_3d_render()
     {
         camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
 
@@ -123,15 +123,15 @@ private:
         }
     }
 
-    void draw_2D_ui()
+    void draw_2d_ui()
     {
         perf_panel_.on_draw();
     }
 
     ResourceLoader loader_ = App::resource_loader();
-    MouseCapturingCamera camera_ = CreateCamera();
+    MouseCapturingCamera camera_ = create_camera();
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
-    Material pbr_material_ = CreateMaterial(loader_);
+    Material pbr_material_ = load_pbr_material(loader_);
     PerfPanel perf_panel_;
 };
 

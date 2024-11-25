@@ -188,22 +188,22 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_screenspace_rect);
-        const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const AntiAliasingLevel anti_aliasing_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
         {
-            gbuffer_.reformat(viewport_dimensions, aa_level);
+            gbuffer_.reformat(viewport_dimensions, anti_aliasing_level);
             output_texture_.set_dimensions(viewport_dimensions);
-            output_texture_.set_anti_aliasing_level(aa_level);
+            output_texture_.set_anti_aliasing_level(anti_aliasing_level);
         }
 
         render_3d_scene_to_gbuffers();
         render_lighting_pass();
         render_light_cubes();
-        graphics::blit_to_screen(output_texture_, viewport_screenspace_rect);
-        draw_gbuffer_overlays(viewport_screenspace_rect);
+        graphics::blit_to_screen(output_texture_, viewport_screen_space_rect);
+        draw_gbuffer_overlays(viewport_screen_space_rect);
     }
 
     void render_3d_scene_to_gbuffers()
@@ -223,23 +223,23 @@ private:
         camera_.render_to(gbuffer_.render_target);
     }
 
-    void draw_gbuffer_overlays(const Rect& viewport_screenspace_rect) const
+    void draw_gbuffer_overlays(const Rect& viewport_screen_space_rect) const
     {
         constexpr float overlay_size = 200.0f;
-        const Vec2 viewport_topleft = top_left_rh(viewport_screenspace_rect);
-        const Vec2 overlays_bottomleft = viewport_topleft - Vec2{0.0f, overlay_size};
+        const Vec2 viewport_top_left = top_left_rh(viewport_screen_space_rect);
+        const Vec2 overlays_bottom_left = viewport_top_left - Vec2{0.0f, overlay_size};
 
         graphics::blit_to_screen(
             gbuffer_.albedo,
-            Rect{overlays_bottomleft + Vec2{0.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{0.0f*overlay_size, 0.0f} + overlay_size}
+            Rect{overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f} + overlay_size}
         );
         graphics::blit_to_screen(
             gbuffer_.normal,
-            Rect{overlays_bottomleft + Vec2{1.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{1.0f*overlay_size, 0.0f} + overlay_size}
+            Rect{overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f} + overlay_size}
         );
         graphics::blit_to_screen(
             gbuffer_.position,
-            Rect{overlays_bottomleft + Vec2{2.0f*overlay_size, 0.0f}, overlays_bottomleft + Vec2{2.0f*overlay_size, 0.0f} + overlay_size}
+            Rect{overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f} + overlay_size}
         );
     }
 

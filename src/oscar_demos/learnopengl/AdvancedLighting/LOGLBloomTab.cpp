@@ -82,11 +82,11 @@ namespace
 
     MouseCapturingCamera create_camera_that_matches_learnopengl()
     {
-        MouseCapturingCamera rv;
-        rv.set_position({0.0f, 0.5f, 5.0f});
-        rv.set_clipping_planes({0.1f, 100.0f});
-        rv.set_background_color(Color::black());
-        return rv;
+        MouseCapturingCamera camera;
+        camera.set_position({0.0f, 0.5f, 5.0f});
+        camera.set_clipping_planes({0.1f, 100.0f});
+        camera.set_background_color(Color::black());
+        return camera;
     }
 }
 
@@ -127,14 +127,14 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screenspace_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_screenspace_rect);
+        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
 
         reformat_all_textures(viewport_dimensions);
         render_scene_mrt();
         render_blurred_brightness();
-        render_combined_scene(viewport_screenspace_rect);
-        draw_overlays(viewport_screenspace_rect);
+        render_combined_scene(viewport_screen_space_rect);
+        draw_overlays(viewport_screen_space_rect);
     }
 
     void reformat_all_textures(const Vec2& viewport_dimensions)
@@ -147,7 +147,7 @@ private:
             .color_format = ColorRenderBufferFormat::DefaultHDR,
         };
 
-        // direct render targets are multisampled HDR textures
+        // direct render targets are multi-sampled HDR textures
         scene_hdr_color_output_.reformat(params);
         scene_hdr_thresholded_output_.reformat(params);
 
@@ -278,25 +278,25 @@ private:
         final_compositing_material_.unset("uHDRSceneRender");
     }
 
-    void draw_overlays(const Rect& viewport_screenspace_rect)
+    void draw_overlays(const Rect& viewport_screen_space_rect)
     {
-        constexpr float w = 200.0f;
+        constexpr float overlay_width = 200.0f;
 
-        const auto texture_ptrs = std::to_array<const RenderTexture*>({
+        const auto texture_pointers = std::to_array<const RenderTexture*>({
             &scene_hdr_color_output_,
             &scene_hdr_thresholded_output_,
             ping_pong_blur_output_buffers_.data(),
             ping_pong_blur_output_buffers_.data() + 1,
         });
 
-        for (size_t i = 0; i < texture_ptrs.size(); ++i) {
-            const Vec2 offset = {static_cast<float>(i)*w, 0.0f};
+        for (size_t i = 0; i < texture_pointers.size(); ++i) {
+            const Vec2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
             const Rect overlay_rect{
-                viewport_screenspace_rect.p1 + offset,
-                viewport_screenspace_rect.p1 + offset + w,
+                viewport_screen_space_rect.p1 + offset,
+                viewport_screen_space_rect.p1 + offset + overlay_width,
             };
 
-            graphics::blit_to_screen(*texture_ptrs[i], overlay_rect);
+            graphics::blit_to_screen(*texture_pointers[i], overlay_rect);
         }
     }
 

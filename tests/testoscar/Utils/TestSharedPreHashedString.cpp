@@ -31,9 +31,9 @@ TEST(SharedPreHashedString, default_constructed_size_is_zero)
 
 TEST(SharedPreHashedString, can_construct_from_cstring)
 {
-    const SharedPreHashedString prehashed_string{"some string"};
-    ASSERT_FALSE(prehashed_string.empty());
-    ASSERT_EQ(prehashed_string, "some string"sv);
+    const SharedPreHashedString pre_hashed_string{"some string"};
+    ASSERT_FALSE(pre_hashed_string.empty());
+    ASSERT_EQ(pre_hashed_string, "some string"sv);
 }
 
 TEST(SharedPreHashedString, separately_constructed_strings_dont_share_use_count)
@@ -71,10 +71,8 @@ TEST(SharedPreHashedString, use_count_decrements_when_lifetime_is_dropped)
 TEST(SharedPreHashedString, can_move_construct)
 {
     SharedPreHashedString str{"source string"};
-    {
-        const SharedPreHashedString move_constructed{std::move(str)};
-        ASSERT_EQ(move_constructed, std::string_view{"source string"});
-    }
+    const SharedPreHashedString move_constructed{std::move(str)};
+    ASSERT_EQ(move_constructed, std::string_view{"source string"});
 }
 
 TEST(SharedPreHashedString, can_copy_assign)
@@ -106,7 +104,7 @@ TEST(SharedPreHashedString, can_implicitly_convert_to_CStringView)
 
 TEST(SharedPreHashedString, can_iterate_over_characters)
 {
-    std::string_view characters{"abcdef"};
+    const std::string_view characters{"abcdef"};
     const SharedPreHashedString str{characters};
 
     size_t i = 0;

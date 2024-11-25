@@ -15,7 +15,7 @@ TEST(signed_distance_between, produces_expected_answers_in_precalculated_cases)
         float expected;
     };
 
-    const auto precalculated_cases = std::to_array<TestCase>({
+    constexpr auto precalculated_cases = std::to_array<TestCase>({
          // origin    // normal                // point                 // expected signed distance
         {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f,  0.5f, 0.0f},  0.5f                      },
         {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f, -0.5f, 0.0f}, -0.5f                      },
@@ -36,7 +36,7 @@ TEST(is_in_front_of, produces_expected_answers_in_precalculated_cases)
         bool expected;
     };
 
-    const auto precalculated_cases = std::to_array<TestCase>({
+    constexpr auto precalculated_cases = std::to_array<TestCase>({
         // origin                     // normal                  // min                 // max                  // is in front of plane
         {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{ 1.0f,  1.0f,  1.0f}, { 2.0f,  2.0f,  2.0f}}, true},
         {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},

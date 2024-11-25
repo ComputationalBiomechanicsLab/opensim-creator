@@ -16,17 +16,17 @@ namespace
 
     Material generate_uv_testing_texture_mapped_material(IResourceLoader& loader)
     {
-        Material rv{Shader{
+        Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.vert"),
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        rv.set("uTexture", load_texture2D_from_image(
+        material.set("uTexture", load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/uv_checker.png"),
             ColorSpace::sRGB
         ));
 
-        return rv;
+        return material;
     }
 
     MouseCapturingCamera create_camera_that_matches_learnopengl()

@@ -17,7 +17,7 @@ namespace
         VariantType input;
         std::string_view expected_output;
     };
-    const auto c_expected_varianttype_strings = std::to_array<VariantTypeStringTestCases>({
+    constexpr auto c_expected_variant_type_strings = std::to_array<VariantTypeStringTestCases>({
         {VariantType::None, "NoneType"},
         {VariantType::Bool, "bool"},
         {VariantType::Color, "Color"},
@@ -28,12 +28,12 @@ namespace
         {VariantType::Vec2, "Vec2"},
         {VariantType::Vec3, "Vec3"},
     });
-    static_assert(num_options<VariantType>() == std::tuple_size<decltype(c_expected_varianttype_strings)>());
+    static_assert(num_options<VariantType>() == std::tuple_size<decltype(c_expected_variant_type_strings)>());
 }
 
 TEST(VariantType, pipe_to_ostream_works_as_intended)
 {
-    for (const auto& [input, expected_output] : c_expected_varianttype_strings) {
+    for (const auto& [input, expected_output] : c_expected_variant_type_strings) {
         std::stringstream ss;
         ss << input;
         ASSERT_EQ(ss.str(), expected_output);
@@ -42,7 +42,7 @@ TEST(VariantType, pipe_to_ostream_works_as_intended)
 
 TEST(VariantType, stream_to_string_returns_expected_results)
 {
-    for (const auto& [input, expected_output] : c_expected_varianttype_strings) {
+    for (const auto& [input, expected_output] : c_expected_variant_type_strings) {
         ASSERT_EQ(stream_to_string(input), expected_output);
     }
 }
