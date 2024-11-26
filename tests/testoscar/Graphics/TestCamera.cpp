@@ -143,13 +143,13 @@ TEST(Camera, set_clear_flags_works_as_expected)
 {
     Camera camera;
 
-    const auto flagsToTest = std::to_array<CameraClearFlags>({
+    constexpr auto flags_to_test = std::to_array<CameraClearFlags>({
         {CameraClearFlag::SolidColor},
         {CameraClearFlag::Depth},
         {CameraClearFlag::SolidColor, CameraClearFlag::Depth},
     });
 
-    for (CameraClearFlags flags : flagsToTest) {
+    for (CameraClearFlags flags : flags_to_test) {
         camera.set_clear_flags(flags);
         ASSERT_EQ(camera.clear_flags(), flags);
     }

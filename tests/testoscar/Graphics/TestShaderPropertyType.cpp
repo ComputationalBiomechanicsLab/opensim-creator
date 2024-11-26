@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <oscar/Utils/EnumHelpers.h>
 
+#include <cstddef>
 #include <sstream>
 
 using namespace osc;

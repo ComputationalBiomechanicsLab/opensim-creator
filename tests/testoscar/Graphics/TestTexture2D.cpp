@@ -144,9 +144,9 @@ TEST(Texture2D, set_pixel_data_with_8_bit_single_component_data_followed_by_get_
     Texture2D texture_2d{dimensions, TextureFormat::R8};
     texture_2d.set_pixel_data(single_component_pixels);
 
-    for (const Color32& pixel : texture_2d.pixels32()) {
+    for (const Color32& pixel_color : texture_2d.pixels32()) {
         const Color32 expected{color, 0x00, 0x00, 0xff};
-        ASSERT_EQ(pixel, expected);
+        ASSERT_EQ(pixel_color, expected);
     }
 }
 

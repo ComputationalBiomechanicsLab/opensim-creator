@@ -220,8 +220,8 @@ TEST(MaterialPropertyBlock, set_int_causes_get_int_to_return_the_int)
 TEST(MaterialPropertyBlock, MaterialPropertyBlockSetBoolCausesGetterToReturnSetValue)
 {
     MaterialPropertyBlock mpb;
-    std::string key = "someKey";
-    bool value = generate<bool>();
+    const std::string key = "someKey";
+    const bool value = generate<bool>();
 
     ASSERT_FALSE(mpb.get<bool>(key));
 
@@ -234,12 +234,12 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetTextureOnMaterialCausesGetTe
 {
     MaterialPropertyBlock mpb;
 
-    std::string key = "someKey";
-    Texture2D t = generate_red_texture();
+    const std::string key = "someKey";
+    const Texture2D texture = generate_red_texture();
 
     ASSERT_FALSE(mpb.get<Texture2D>(key));
 
-    mpb.set<Texture2D>(key, t);
+    mpb.set<Texture2D>(key, texture);
 
     ASSERT_TRUE(mpb.get<Texture2D>(key));
 }

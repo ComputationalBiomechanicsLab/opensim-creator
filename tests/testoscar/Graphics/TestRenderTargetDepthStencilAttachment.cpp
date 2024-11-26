@@ -12,7 +12,7 @@ TEST(RenderTargetDepthStencilAttachment, can_construct_from_parts_of_a_RenderTex
 {
     RenderTexture render_texture;
 
-    RenderTargetDepthStencilAttachment attachment{
+    const RenderTargetDepthStencilAttachment attachment{
         render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
@@ -26,7 +26,7 @@ TEST(RenderTargetDepthStencilAttachment, can_construct_from_parts_of_a_RenderTex
 TEST(RenderTargetDepthStencilAttachment, compares_equal_to_copies)
 {
     RenderTexture render_texture;
-    RenderTargetDepthStencilAttachment attachment{
+    const RenderTargetDepthStencilAttachment attachment{
         render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
@@ -58,7 +58,7 @@ TEST(RenderTargetDepthStencilAttachment, compares_false_if_something_in_a_copy_i
 {
     RenderTexture first_render_texture;
     RenderTexture second_render_texture;
-    RenderTargetDepthStencilAttachment attachment{
+    const RenderTargetDepthStencilAttachment attachment{
         first_render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,

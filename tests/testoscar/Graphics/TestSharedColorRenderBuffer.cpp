@@ -1,8 +1,7 @@
 #include <oscar/Graphics/SharedColorRenderBuffer.h>
 
-#include <oscar/Graphics/ColorRenderBufferParams.h>
-#include <oscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <gtest/gtest.h>
+#include <oscar/Graphics/ColorRenderBufferParams.h>
 
 using namespace osc;
 

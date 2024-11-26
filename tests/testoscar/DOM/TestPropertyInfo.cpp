@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(PropertyInfo, has_no_name_and_nil_default_value_when_default_constructed)
 {
-    PropertyInfo info;
+    const PropertyInfo info;
     ASSERT_EQ(info.name(), "");
     ASSERT_EQ(info.type(), VariantType::None);
     ASSERT_EQ(info.default_value(), Variant{});
@@ -91,8 +91,8 @@ TEST(PropertyInfo, constructor_throws_exception_if_name_contains_any_ASCII_contr
         ASSERT_ANY_THROW({ PropertyInfo(std::string("inner") + c + std::string("usage"), Variant{true}); });
     };
 
-    constexpr char c_last_acii_control_character = 0x1F;
-    for (char c = 0; c <= c_last_acii_control_character; ++c) {
+    constexpr char c_last_ascii_control_character = 0x1F;
+    for (char c = 0; c <= c_last_ascii_control_character; ++c) {
         test(c);
     }
     test(0x7F);  // DEL

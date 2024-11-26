@@ -4,7 +4,6 @@
 #include <oscar/Graphics/VertexAttributeFormat.h>
 #include <oscar/Graphics/Detail/VertexAttributeFormatTraits.h>
 #include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/NonTypelist.h>
 
 #include <array>
 

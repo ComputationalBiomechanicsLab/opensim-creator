@@ -29,7 +29,7 @@ namespace
 
 TEST(Class, default_constructor_returns_class_name_of_object_no_parent_class_no_properties)
 {
-    Class c;
+    const Class c;
     ASSERT_EQ(c.name(), "Object");
     ASSERT_EQ(c.parent_class(), std::nullopt);
     ASSERT_TRUE(c.properties().empty());

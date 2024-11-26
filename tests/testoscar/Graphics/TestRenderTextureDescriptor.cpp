@@ -75,10 +75,10 @@ TEST(RenderTextureParams, compares_equivalent_when_independently_constructed_wit
 
 TEST(RenderTextureParams, can_be_streamed_to_string)
 {
-    RenderTextureParams params;
+    const RenderTextureParams params;
     std::stringstream ss;
     ss << params;
 
-    std::string str{ss.str()};
+    const std::string str{ss.str()};
     ASSERT_TRUE(contains_case_insensitive(str, "RenderTextureParams"));
 }

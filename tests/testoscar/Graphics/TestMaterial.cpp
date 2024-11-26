@@ -11,11 +11,14 @@
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringHelpers.h>
 
+#include <algorithm>
 #include <array>
 #include <memory>
+#include <ranges>
 
 using namespace osc;
 using namespace osc::testing;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -140,7 +143,7 @@ namespace
             // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
             //
             // only really works with perspective cameras: orthogonal cameras
-            // don't need this unprojection math trick
+            // don't need this un-projection math trick
 
             float z = depth * 2.0 - 1.0;
             return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
@@ -258,28 +261,28 @@ TEST_F(MaterialTest, set_Color_makes_get_Color_return_the_Color)
 
 TEST_F(MaterialTest, MaterialGetColorArrayReturnsEmptyOnNewMaterial)
 {
-    Material mat = generate_material();
+    const Material material = generate_material();
 
-    ASSERT_FALSE(mat.get_array<Color>("someKey"));
+    ASSERT_FALSE(material.get_array<Color>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialCanCallSetColorArrayOnNewMaterial)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
     const auto colors = std::to_array({Color::black(), Color::blue()});
 
-    mat.set_array<Color>("someKey", colors);
+    material.set_array<Color>("someKey", colors);
 }
 
 TEST_F(MaterialTest, MaterialCallingGetColorArrayOnMaterialAfterSettingThemReturnsTheSameColors)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
     const auto colors = std::to_array({Color::red(), Color::green(), Color::blue()});
     const CStringView key = "someKey";
 
-    mat.set_array<Color>(key, colors);
+    material.set_array<Color>(key, colors);
 
-    std::optional<std::span<const Color>> rv = mat.get_array<Color>(key);
+    const std::optional<std::span<const Color>> rv = material.get_array<Color>(key);
 
     ASSERT_TRUE(rv);
     ASSERT_EQ(std::size(*rv), std::size(colors));
@@ -288,543 +291,545 @@ TEST_F(MaterialTest, MaterialCallingGetColorArrayOnMaterialAfterSettingThemRetur
 
 TEST_F(MaterialTest, MaterialGetFloatOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<float>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<float>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get_array<float>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get_array<float>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<Vec2>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<Vec2>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<Vec3>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<Vec3>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get_array<Vec3>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get_array<Vec3>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<Vec4>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<Vec4>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<Mat3>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<Mat3>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<Mat4>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<Mat4>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<int>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<int>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetBoolOnNewMaterialReturnsEmptyOptional)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get<bool>("someKey"));
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get<bool>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialSetFloatOnMaterialCausesGetFloatToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    float value = generate<float>();
+    const std::string key = "someKey";
+    const float value = generate<float>();
 
-    mat.set<float>(key, value);
+    material.set<float>(key, value);
 
-    ASSERT_EQ(*mat.get<float>(key), value);
+    ASSERT_EQ(*material.get<float>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnTheProvidedValues)
 {
-    Material mat = generate_material();
-    std::string key = "someKey";
-    std::array<float, 4> values = {generate<float>(), generate<float>(), generate<float>(), generate<float>()};
+    Material material = generate_material();
+    const std::string key = "someKey";
+    const auto values = std::to_array({ generate<float>(), generate<float>(), generate<float>(), generate<float>() });
 
-    ASSERT_FALSE(mat.get_array<float>(key));
+    ASSERT_FALSE(material.get_array<float>(key));
 
-    mat.set_array<float>(key, values);
+    material.set_array<float>(key, values);
 
-    std::span<const float> rv = mat.get_array<float>(key).value();
-    ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
+    const std::span<const float> rv = material.get_array<float>(key).value();
+    ASSERT_TRUE(rgs::equal(rv, values));
 }
 
 TEST_F(MaterialTest, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Vec2 value = generate<Vec2>();
+    const std::string key = "someKey";
+    const Vec2 value = generate<Vec2>();
 
-    mat.set<Vec2>(key, value);
+    material.set<Vec2>(key, value);
 
-    ASSERT_EQ(*mat.get<Vec2>(key), value);
+    ASSERT_EQ(*material.get<Vec2>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Vec2 value = generate<Vec2>();
+    const std::string key = "someKey";
+    const Vec2 value = generate<Vec2>();
 
-    ASSERT_FALSE(mat.get<Vec2>(key).has_value());
+    ASSERT_FALSE(material.get<Vec2>(key).has_value());
 
-    mat.set<Vec2>(key, value);
+    material.set<Vec2>(key, value);
 
-    ASSERT_TRUE(mat.get<Vec2>(key).has_value());
+    ASSERT_TRUE(material.get<Vec2>(key).has_value());
 
-    mat.set<Vec3>(key, {});
+    material.set<Vec3>(key, {});
 
-    ASSERT_TRUE(mat.get<Vec3>(key));
-    ASSERT_FALSE(mat.get<Vec2>(key));
+    ASSERT_TRUE(material.get<Vec3>(key));
+    ASSERT_FALSE(material.get<Vec2>(key));
 }
 
 TEST_F(MaterialTest, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
 {
-    Material mat = generate_material();
-    Material copy{mat};
+    Material material = generate_material();
+    const Material copy{material};
 
-    mat.set<Vec2>("someKey", generate<Vec2>());
+    material.set<Vec2>("someKey", generate<Vec2>());
 
-    ASSERT_NE(mat, copy);
+    ASSERT_NE(material, copy);
 }
 
 TEST_F(MaterialTest, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Vec3 value = generate<Vec3>();
+    const std::string key = "someKey";
+    const Vec3 value = generate<Vec3>();
 
-    mat.set<Vec3>(key, value);
+    material.set<Vec3>(key, value);
 
-    ASSERT_EQ(*mat.get<Vec3>(key), value);
+    ASSERT_EQ(*material.get<Vec3>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProvidedValues)
 {
-    Material mat = generate_material();
-    std::string key = "someKey";
-    std::array<Vec3, 4> values = {generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
+    Material material = generate_material();
+    const std::string key = "someKey";
+    const auto values = std::to_array({ generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>() });
 
-    ASSERT_FALSE(mat.get_array<Vec3>(key));
+    ASSERT_FALSE(material.get_array<Vec3>(key));
 
-    mat.set_array<Vec3>(key, values);
+    material.set_array<Vec3>(key, values);
 
-    std::span<const Vec3> rv = mat.get_array<Vec3>(key).value();
-    ASSERT_TRUE(std::equal(rv.begin(), rv.end(), values.begin(), values.end()));
+    const std::span<const Vec3> rv = material.get_array<Vec3>(key).value();
+    ASSERT_TRUE(rgs::equal(rv, values));
 }
 
 TEST_F(MaterialTest, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Vec4 value = generate<Vec4>();
+    const std::string key = "someKey";
+    const Vec4 value = generate<Vec4>();
 
-    mat.set<Vec4>(key, value);
+    material.set<Vec4>(key, value);
 
-    ASSERT_EQ(*mat.get<Vec4>(key), value);
+    ASSERT_EQ(*material.get<Vec4>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Mat3 value = generate<Mat3>();
+    const std::string key = "someKey";
+    const Mat3 value = generate<Mat3>();
 
-    mat.set<Mat3>(key, value);
+    material.set<Mat3>(key, value);
 
-    ASSERT_EQ(*mat.get<Mat3>(key), value);
+    ASSERT_EQ(*material.get<Mat3>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Mat4 value = generate<Mat4>();
+    const std::string key = "someKey";
+    const Mat4 value = generate<Mat4>();
 
-    mat.set<Mat4>(key, value);
+    material.set<Mat4>(key, value);
 
-    ASSERT_EQ(*mat.get<Mat4>(key), value);
+    ASSERT_EQ(*material.get<Mat4>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialGetMat4ArrayInitiallyReturnsNothing)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.get_array<Mat4>("someKey").has_value());
+    const Material material = generate_material();
+    ASSERT_FALSE(material.get_array<Mat4>("someKey").has_value());
 }
 
 TEST_F(MaterialTest, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    const auto mat4Array = std::to_array<Mat4>({
+    const auto mat4_array = std::to_array<Mat4>({
         generate<Mat4>(),
         generate<Mat4>(),
         generate<Mat4>(),
         generate<Mat4>()
     });
 
-    Material mat = generate_material();
-    mat.set_array<Mat4>("someKey", mat4Array);
+    Material material = generate_material();
+    material.set_array<Mat4>("someKey", mat4_array);
 
-    std::optional<std::span<const Mat4>> rv = mat.get_array<Mat4>("someKey");
+    std::optional<std::span<const Mat4>> rv = material.get_array<Mat4>("someKey");
     ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(mat4Array.size(), rv->size());
-    ASSERT_TRUE(std::equal(mat4Array.begin(), mat4Array.end(), rv->begin()));
+    ASSERT_EQ(mat4_array.size(), rv->size());
+    ASSERT_TRUE(std::equal(mat4_array.begin(), mat4_array.end(), rv->begin()));
 }
 
 TEST_F(MaterialTest, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    int value = generate<int>();
+    const std::string key = "someKey";
+    const int value = generate<int>();
 
-    mat.set<int>(key, value);
+    material.set<int>(key, value);
 
-    ASSERT_EQ(*mat.get<int>(key), value);
+    ASSERT_EQ(*material.get<int>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetBoolOnMaterialCausesGetBoolToReturnTheProvidedValue)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    bool value = generate<bool>();
+    const std::string key = "someKey";
+    const bool value = generate<bool>();
 
-    mat.set<bool>(key, value);
+    material.set<bool>(key, value);
 
-    ASSERT_EQ(*mat.get<bool>(key), value);
+    ASSERT_EQ(*material.get<bool>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetTextureOnMaterialCausesGetTextureToReturnTheTexture)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Texture2D t = generate_red_texture();
+    const std::string key = "someKey";
+    const Texture2D texture_2d = generate_red_texture();
 
-    ASSERT_FALSE(mat.get<Texture2D>(key));
+    ASSERT_FALSE(material.get<Texture2D>(key));
 
-    mat.set(key, t);
+    material.set(key, texture_2d);
 
-    ASSERT_TRUE(mat.get<Texture2D>(key));
+    ASSERT_TRUE(material.get<Texture2D>(key));
 }
 
 TEST_F(MaterialTest, MaterialUnsetTextureOnMaterialCausesGetTextureToReturnNothing)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    Texture2D t = generate_red_texture();
+    const std::string key = "someKey";
+    const Texture2D texture_2d = generate_red_texture();
 
-    ASSERT_FALSE(mat.get<Texture2D>(key));
+    ASSERT_FALSE(material.get<Texture2D>(key));
 
-    mat.set(key, t);
+    material.set(key, texture_2d);
 
-    ASSERT_TRUE(mat.get<Texture2D>(key));
+    ASSERT_TRUE(material.get<Texture2D>(key));
 
-    mat.unset(key);
+    material.unset(key);
 
-    ASSERT_FALSE(mat.get<Texture2D>(key));
+    ASSERT_FALSE(material.get<Texture2D>(key));
 }
 
 TEST_F(MaterialTest, MaterialSetRenderTextureCausesGetRenderTextureToReturnTheTexture)
 {
-    Material mat = generate_material();
-    RenderTexture renderTex = generate_render_texture();
-    std::string key = "someKey";
+    Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<RenderTexture>(key));
+    const std::string key = "someKey";
+    const RenderTexture render_texture = generate_render_texture();
 
-    mat.set(key, renderTex);
+    ASSERT_FALSE(material.get<RenderTexture>(key));
 
-    ASSERT_EQ(*mat.get<RenderTexture>(key), renderTex);
+    material.set(key, render_texture);
+
+    ASSERT_EQ(*material.get<RenderTexture>(key), render_texture);
 }
 
 TEST_F(MaterialTest, MaterialSetRenderTextureFollowedByUnsetClearsTheRenderTexture)
 {
-    Material mat = generate_material();
-    RenderTexture renderTex = generate_render_texture();
-    std::string key = "someKey";
+    Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<RenderTexture>(key));
+    const std::string key = "someKey";
+    const RenderTexture render_texture = generate_render_texture();
 
-    mat.set(key, renderTex);
+    ASSERT_FALSE(material.get<RenderTexture>(key));
 
-    ASSERT_EQ(*mat.get<RenderTexture>(key), renderTex);
+    material.set(key, render_texture);
 
-    mat.unset(key);
+    ASSERT_EQ(*material.get<RenderTexture>(key), render_texture);
 
-    ASSERT_FALSE(mat.get<RenderTexture>(key));
+    material.unset(key);
+
+    ASSERT_FALSE(material.get<RenderTexture>(key));
 }
 
 TEST_F(MaterialTest, MaterialGetCubemapInitiallyReturnsNothing)
 {
-    const Material mat = generate_material();
+    const Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_FALSE(material.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(MaterialTest, MaterialGetCubemapReturnsSomethingAfterSettingCubemap)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_FALSE(material.get<Cubemap>("cubemap").has_value());
 
     const Cubemap cubemap{1, TextureFormat::RGBA32};
 
-    mat.set("cubemap", cubemap);
+    material.set("cubemap", cubemap);
 
-    ASSERT_TRUE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_TRUE(material.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(MaterialTest, MaterialGetCubemapReturnsTheCubemapThatWasLastSet)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_FALSE(material.get<Cubemap>("cubemap").has_value());
 
-    const Cubemap firstCubemap{1, TextureFormat::RGBA32};
-    const Cubemap secondCubemap{2, TextureFormat::RGBA32};  // different
+    const Cubemap first_cubemap{1, TextureFormat::RGBA32};
+    const Cubemap second_cubemap{2, TextureFormat::RGBA32};  // different
 
-    mat.set<Cubemap>("cubemap", firstCubemap);
-    ASSERT_EQ(mat.get<Cubemap>("cubemap"), firstCubemap);
+    material.set<Cubemap>("cubemap", first_cubemap);
+    ASSERT_EQ(material.get<Cubemap>("cubemap"), first_cubemap);
 
-    mat.set<Cubemap>("cubemap", secondCubemap);
-    ASSERT_EQ(mat.get<Cubemap>("cubemap"), secondCubemap);
+    material.set<Cubemap>("cubemap", second_cubemap);
+    ASSERT_EQ(material.get<Cubemap>("cubemap"), second_cubemap);
 }
 
 TEST_F(MaterialTest, MaterialUnsetCubemapClearsTheCubemap)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_FALSE(material.get<Cubemap>("cubemap").has_value());
 
     const Cubemap cubemap{1, TextureFormat::RGBA32};
 
-    mat.set("cubemap", cubemap);
+    material.set("cubemap", cubemap);
 
-    ASSERT_TRUE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_TRUE(material.get<Cubemap>("cubemap").has_value());
 
-    mat.unset("cubemap");
+    material.unset("cubemap");
 
-    ASSERT_FALSE(mat.get<Cubemap>("cubemap").has_value());
+    ASSERT_FALSE(material.get<Cubemap>("cubemap").has_value());
 }
 
 TEST_F(MaterialTest, MaterialGetTransparentIsInitiallyFalse)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.is_transparent());
+    Material material = generate_material();
+    ASSERT_FALSE(material.is_transparent());
 }
 
 TEST_F(MaterialTest, MaterialSetTransparentBehavesAsExpected)
 {
-    Material mat = generate_material();
-    mat.set_transparent(true);
-    ASSERT_TRUE(mat.is_transparent());
-    mat.set_transparent(false);
-    ASSERT_FALSE(mat.is_transparent());
-    mat.set_transparent(true);
-    ASSERT_TRUE(mat.is_transparent());
+    Material material = generate_material();
+    material.set_transparent(true);
+    ASSERT_TRUE(material.is_transparent());
+    material.set_transparent(false);
+    ASSERT_FALSE(material.is_transparent());
+    material.set_transparent(true);
+    ASSERT_TRUE(material.is_transparent());
 }
 
 TEST_F(MaterialTest, Material_source_blending_factor_returns_Default_when_not_set)
 {
-    const Material mat = generate_material();
-    ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Default);
+    const Material material = generate_material();
+    ASSERT_EQ(material.source_blending_factor(), SourceBlendingFactor::Default);
 }
 
 TEST_F(MaterialTest, Material_set_source_blending_factor_sets_source_blending_factor)
 {
     static_assert(SourceBlendingFactor::Default != SourceBlendingFactor::Zero);
 
-    Material mat = generate_material();
-    mat.set_source_blending_factor(SourceBlendingFactor::Zero);
-    ASSERT_EQ(mat.source_blending_factor(), SourceBlendingFactor::Zero);
+    Material material = generate_material();
+    material.set_source_blending_factor(SourceBlendingFactor::Zero);
+    ASSERT_EQ(material.source_blending_factor(), SourceBlendingFactor::Zero);
 }
 
 TEST_F(MaterialTest, Material_destination_blending_factor_returns_Default_when_not_set)
 {
-    const Material mat = generate_material();
-    ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::Default);
+    const Material material = generate_material();
+    ASSERT_EQ(material.destination_blending_factor(), DestinationBlendingFactor::Default);
 }
 
 TEST_F(MaterialTest, Material_set_destination_blending_factor_sets_destination_blending_factor)
 {
     static_assert(DestinationBlendingFactor::Default != DestinationBlendingFactor::SourceAlpha);
 
-    Material mat = generate_material();
-    mat.set_destination_blending_factor(DestinationBlendingFactor::SourceAlpha);
-    ASSERT_EQ(mat.destination_blending_factor(), DestinationBlendingFactor::SourceAlpha);
+    Material material = generate_material();
+    material.set_destination_blending_factor(DestinationBlendingFactor::SourceAlpha);
+    ASSERT_EQ(material.destination_blending_factor(), DestinationBlendingFactor::SourceAlpha);
 }
 
 TEST_F(MaterialTest, Material_blending_equation_returns_Default_when_not_set)
 {
-    const Material mat = generate_material();
-    ASSERT_EQ(mat.blending_equation(), BlendingEquation::Default);
+    const Material material = generate_material();
+    ASSERT_EQ(material.blending_equation(), BlendingEquation::Default);
 }
 
 TEST_F(MaterialTest, Material_set_blending_equation_sets_blending_equation)
 {
     static_assert(BlendingEquation::Default != BlendingEquation::Max);
 
-    Material mat = generate_material();
-    mat.set_blending_equation(BlendingEquation::Max);
-    ASSERT_EQ(mat.blending_equation(), BlendingEquation::Max);
+    Material material = generate_material();
+    material.set_blending_equation(BlendingEquation::Max);
+    ASSERT_EQ(material.blending_equation(), BlendingEquation::Max);
 }
 
 TEST_F(MaterialTest, MaterialGetDepthTestedIsInitiallyTrue)
 {
-    Material mat = generate_material();
-    ASSERT_TRUE(mat.is_depth_tested());
+    const Material material = generate_material();
+    ASSERT_TRUE(material.is_depth_tested());
 }
 
 TEST_F(MaterialTest, MaterialSetDepthTestedBehavesAsExpected)
 {
-    Material mat = generate_material();
-    mat.set_depth_tested(false);
-    ASSERT_FALSE(mat.is_depth_tested());
-    mat.set_depth_tested(true);
-    ASSERT_TRUE(mat.is_depth_tested());
-    mat.set_depth_tested(false);
-    ASSERT_FALSE(mat.is_depth_tested());
+    Material material = generate_material();
+    material.set_depth_tested(false);
+    ASSERT_FALSE(material.is_depth_tested());
+    material.set_depth_tested(true);
+    ASSERT_TRUE(material.is_depth_tested());
+    material.set_depth_tested(false);
+    ASSERT_FALSE(material.is_depth_tested());
 }
 
 TEST_F(MaterialTest, MaterialGetDepthFunctionIsInitiallyDefault)
 {
-    Material mat = generate_material();
-    ASSERT_EQ(mat.depth_function(), DepthFunction::Default);
+    const Material material = generate_material();
+    ASSERT_EQ(material.depth_function(), DepthFunction::Default);
 }
 
 TEST_F(MaterialTest, MaterialSetDepthFunctionBehavesAsExpected)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    ASSERT_EQ(mat.depth_function(), DepthFunction::Default);
+    ASSERT_EQ(material.depth_function(), DepthFunction::Default);
 
     static_assert(DepthFunction::Default != DepthFunction::LessOrEqual);
 
-    mat.set_depth_function(DepthFunction::LessOrEqual);
+    material.set_depth_function(DepthFunction::LessOrEqual);
 
-    ASSERT_EQ(mat.depth_function(), DepthFunction::LessOrEqual);
+    ASSERT_EQ(material.depth_function(), DepthFunction::LessOrEqual);
 }
 
 TEST_F(MaterialTest, MaterialGetWireframeModeIsInitiallyFalse)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.is_wireframe());
+    Material material = generate_material();
+    ASSERT_FALSE(material.is_wireframe());
 }
 
 TEST_F(MaterialTest, MaterialSetWireframeModeBehavesAsExpected)
 {
-    Material mat = generate_material();
-    mat.set_wireframe(false);
-    ASSERT_FALSE(mat.is_wireframe());
-    mat.set_wireframe(true);
-    ASSERT_TRUE(mat.is_wireframe());
-    mat.set_wireframe(false);
-    ASSERT_FALSE(mat.is_wireframe());
+    Material material = generate_material();
+    material.set_wireframe(false);
+    ASSERT_FALSE(material.is_wireframe());
+    material.set_wireframe(true);
+    ASSERT_TRUE(material.is_wireframe());
+    material.set_wireframe(false);
+    ASSERT_FALSE(material.is_wireframe());
 }
 
 TEST_F(MaterialTest, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
 {
-    Material mat = generate_material();
-    ASSERT_FALSE(mat.is_wireframe());
-    Material copy{mat};
-    ASSERT_EQ(mat, copy);
+    Material material = generate_material();
+    ASSERT_FALSE(material.is_wireframe());
+    Material copy{material};
+    ASSERT_EQ(material, copy);
     copy.set_wireframe(true);
-    ASSERT_NE(mat, copy);
+    ASSERT_NE(material, copy);
 }
 
 TEST_F(MaterialTest, MaterialGetCullModeIsInitiallyDefault)
 {
-    Material mat = generate_material();
-    ASSERT_EQ(mat.cull_mode(), CullMode::Default);
+    const Material material = generate_material();
+    ASSERT_EQ(material.cull_mode(), CullMode::Default);
 }
 
 TEST_F(MaterialTest, MaterialSetCullModeBehavesAsExpected)
 {
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    constexpr CullMode newCullMode = CullMode::Front;
+    constexpr CullMode new_cull_mode = CullMode::Front;
 
-    ASSERT_NE(mat.cull_mode(), newCullMode);
-    mat.set_cull_mode(newCullMode);
-    ASSERT_EQ(mat.cull_mode(), newCullMode);
+    ASSERT_NE(material.cull_mode(), new_cull_mode);
+    material.set_cull_mode(new_cull_mode);
+    ASSERT_EQ(material.cull_mode(), new_cull_mode);
 }
 
 TEST_F(MaterialTest, MaterialSetCullModeCausesMaterialCopiesToBeNonEqual)
 {
-    constexpr CullMode newCullMode = CullMode::Front;
+    constexpr CullMode new_cull_mode = CullMode::Front;
 
-    Material mat = generate_material();
-    Material copy{mat};
+    Material material = generate_material();
+    const Material material_copy{material};
 
-    ASSERT_EQ(mat, copy);
-    ASSERT_NE(mat.cull_mode(), newCullMode);
-    mat.set_cull_mode(newCullMode);
-    ASSERT_NE(mat, copy);
+    ASSERT_EQ(material, material_copy);
+    ASSERT_NE(material.cull_mode(), new_cull_mode);
+    material.set_cull_mode(new_cull_mode);
+    ASSERT_NE(material, material_copy);
 }
 
 TEST_F(MaterialTest, MaterialCanCompareEquals)
 {
-    Material mat = generate_material();
-    Material copy{mat};  // NOLINT(performance-unnecessary-copy-initialization)
+    const Material material = generate_material();
+    const Material material_copy{material};  // NOLINT(performance-unnecessary-copy-initialization)
 
-    ASSERT_EQ(mat, copy);
+    ASSERT_EQ(material, material_copy);
 }
 
 TEST_F(MaterialTest, MaterialCanCompareNotEquals)
 {
-    Material m1 = generate_material();
-    Material m2 = generate_material();
+    const Material material_a = generate_material();
+    const Material material_b = generate_material();
 
-    ASSERT_NE(m1, m2);
+    ASSERT_NE(material_a, material_b);
 }
 
 TEST_F(MaterialTest, MaterialCanPrintToStringStream)
 {
-    Material m1 = generate_material();
+    const Material material = generate_material();
 
     std::stringstream ss;
-    ss << m1;
+    ss << material;
 }
 
 TEST_F(MaterialTest, MaterialOutputStringContainsUsefulInformation)
 {
-    Material m1 = generate_material();
+    const Material material = generate_material();
     std::stringstream ss;
 
-    ss << m1;
+    ss << material;
 
-    std::string str{ss.str()};
+    const std::string str{ss.str()};
 
     ASSERT_TRUE(contains_case_insensitive(str, "Material"));
 
@@ -834,18 +839,18 @@ TEST_F(MaterialTest, MaterialOutputStringContainsUsefulInformation)
 TEST_F(MaterialTest, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
 {
     // compound test: when the caller sets a Vec3 then calling get_int with the same key should return empty
-    Material mat = generate_material();
+    Material material = generate_material();
 
-    std::string key = "someKey";
-    float floatValue = generate<float>();
-    Vec3 vecValue = generate<Vec3>();
+    const std::string key = "someKey";
+    const float float_value = generate<float>();
+    const Vec3 vec3_value = generate<Vec3>();
 
-    mat.set<float>(key, floatValue);
+    material.set<float>(key, float_value);
 
-    ASSERT_TRUE(mat.get<float>(key));
+    ASSERT_TRUE(material.get<float>(key));
 
-    mat.set<Vec3>(key, vecValue);
+    material.set<Vec3>(key, vec3_value);
 
-    ASSERT_TRUE(mat.get<Vec3>(key));
-    ASSERT_FALSE(mat.get<float>(key));
+    ASSERT_TRUE(material.get<Vec3>(key));
+    ASSERT_FALSE(material.get<float>(key));
 }

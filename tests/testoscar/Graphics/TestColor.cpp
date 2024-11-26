@@ -416,7 +416,7 @@ TEST(Color, try_parse_html_color_string_parses_LDR_RGBx32_hex_string_to_Color)
     ASSERT_EQ(try_parse_html_color_string("#ffff00ff"), Color::yellow());
     ASSERT_EQ(try_parse_html_color_string("#00000000"), Color::clear());
 
-    // no colorspace conversion occurs on intermediate values (e.g. no sRGB-to-linear)
+    // no color-space conversion occurs on intermediate values (e.g. no sRGB-to-linear)
     ASSERT_EQ(try_parse_html_color_string("#110000ff"), Color((1.0f*16.0f + 1.0f)/255.0f, 0.0f, 0.0f, 1.0f));
 
     // when caller specifies 3 components, assume alpha == 1.0

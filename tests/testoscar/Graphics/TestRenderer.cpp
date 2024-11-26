@@ -8,36 +8,20 @@
 #include <oscar/Formats/Image.h>
 #include <oscar/Graphics/Materials/MeshDepthWritingMaterial.h>
 #include <oscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
-#include <oscar/Graphics/AntiAliasingLevel.h>
 #include <oscar/Graphics/Camera.h>
-#include <oscar/Graphics/Color.h>
-#include <oscar/Graphics/ColorRenderBufferFormat.h>
-#include <oscar/Graphics/ColorSpace.h>
-#include <oscar/Graphics/Cubemap.h>
-#include <oscar/Graphics/CullMode.h>
-#include <oscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <oscar/Graphics/Graphics.h>
 #include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Graphics/MeshTopology.h>
-#include <oscar/Graphics/RenderTexture.h>
 #include <oscar/Graphics/Shader.h>
-#include <oscar/Graphics/ShaderPropertyType.h>
 #include <oscar/Graphics/SubMeshDescriptor.h>
 #include <oscar/Graphics/Texture2D.h>
-#include <oscar/Graphics/TextureFormat.h>
 #include <oscar/Maths/Mat3.h>
 #include <oscar/Maths/Mat4.h>
-#include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Quat.h>
-#include <oscar/Maths/Vec2.h>
-#include <oscar/Maths/Vec3.h>
-#include <oscar/Maths/Vec4.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Utils/CStringView.h>
-#include <oscar/Utils/EnumHelpers.h>
-#include <oscar/Utils/StringHelpers.h>
 
 #include <algorithm>
 #include <array>
@@ -176,7 +160,7 @@ namespace
             // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
             //
             // only really works with perspective cameras: orthogonal cameras
-            // don't need this unprojection math trick
+            // don't need this un-projection math trick
 
             float z = depth * 2.0 - 1.0;
             return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
@@ -198,7 +182,7 @@ namespace
         return Material{shader};
     }
 }
-TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
+TEST_F(Renderer, graphics_draw_does_not_throw_with_standard_args)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
@@ -208,7 +192,7 @@ TEST_F(Renderer, DrawMeshDoesNotThrowWithStandardArgs)
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera); });
 }
 
-TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
+TEST_F(Renderer, graphics_draw_throws_if_given_out_of_bounds_sub_mesh_index)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
@@ -218,7 +202,7 @@ TEST_F(Renderer, DrawMeshThrowsIfGivenOutOfBoundsSubMeshIndex)
     ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
 }
 
-TEST_F(Renderer, DrawMeshDoesNotThrowIfGivenInBoundsSubMesh)
+TEST_F(Renderer, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
 {
     Mesh mesh;
     mesh.push_submesh_descriptor({0, 0, MeshTopology::Triangles});

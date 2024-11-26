@@ -11,7 +11,7 @@ using namespace osc;
 TEST(RenderTargetColorAttachment, can_construct_from_parts_of_a_RenderTexture)
 {
     RenderTexture render_texture;
-    RenderTargetColorAttachment attachment{
+    const RenderTargetColorAttachment attachment{
         render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
@@ -27,13 +27,13 @@ TEST(RenderTargetColorAttachment, can_construct_from_parts_of_a_RenderTexture)
 TEST(RenderTargetColorAttachment, compares_equal_to_its_copy)
 {
     RenderTexture render_texture;
-    RenderTargetColorAttachment attachment{
+    const RenderTargetColorAttachment attachment{
         render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
-    RenderTargetColorAttachment attachment_copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
+    const RenderTargetColorAttachment attachment_copy = attachment;  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(attachment_copy, attachment);
 }
@@ -42,13 +42,13 @@ TEST(RenderTargetColorAttachment, compares_equal_to_separately_constructed_insta
 {
     RenderTexture render_texture;
 
-    RenderTargetColorAttachment attachment_a{
+    const RenderTargetColorAttachment attachment_a{
         render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
         Color::red(),
     };
-    RenderTargetColorAttachment attachment_b{
+    const RenderTargetColorAttachment attachment_b{
         render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
@@ -62,7 +62,7 @@ TEST(RenderTargetColorAttachment, compares_false_to_a_copy_after_copy_is_modifie
 {
     RenderTexture first_render_texture;
     RenderTexture second_render_texture;
-    RenderTargetColorAttachment attachment{
+    const RenderTargetColorAttachment attachment{
         first_render_texture.upd_color_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,

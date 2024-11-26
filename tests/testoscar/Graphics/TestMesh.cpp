@@ -30,6 +30,7 @@
 #include <functional>
 #include <iterator>
 #include <random>
+#include <ranges>
 #include <span>
 #include <sstream>
 #include <utility>
@@ -38,6 +39,7 @@
 using namespace osc;
 using namespace osc::literals;
 using namespace osc::testing;
+namespace rgs = std::ranges;
 
 TEST(Mesh, can_be_default_constructed)
 {
@@ -332,10 +334,10 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
 {
     Mesh mesh;
 
-    // generate "original" verts
+    // generate "original" vertices
     const auto original_vertices = generate_vertices(30);
 
-    // create "transformed" version of the verts
+    // create "transformed" version of the vertices
     const auto new_vertices = project_into_vector(original_vertices, [](const Vec3& v) { return v + 1.0f; });
 
     // sanity check that `set_vertices` works as expected
@@ -352,7 +354,7 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
     });
     ASSERT_EQ(vertices_passed_to_transform_vertices, original_vertices);
 
-    // applying the transformation should return the transformed verts
+    // applying the transformation should return the transformed vertices
     mesh.transform_vertices([&new_vertices, i = 0](Vec3) mutable
     {
         return new_vertices.at(i++);
@@ -379,20 +381,20 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
         .position = {1.0f, 0.25f, 0.125f},
     };
 
-    // generate "original" verts
+    // generate "original" vertices
     const auto original = generate_vertices(30);
 
-    // precompute "expected" verts
+    // precompute "expected" vertices
     const auto expected = project_into_vector(original, [&transform](const auto& p) { return transform_point(transform, p); });
 
-    // create mesh with "original" verts
+    // create mesh with "original" vertices
     Mesh mesh;
     mesh.set_vertices(original);
 
     // then apply the transform
     mesh.transform_vertices(transform);
 
-    // the mesh's verts should match expectations
+    // the mesh's vertices should match expectations
     ASSERT_EQ(mesh.vertices(), expected);
 }
 
@@ -414,20 +416,20 @@ TEST(Mesh, transform_vertices_with_Mat4_applies_transform_to_vertices)
         .position = {1.0f, 0.25f, 0.125f},
     });
 
-    // generate "original" verts
+    // generate "original" vertices
     const auto original = generate_vertices(30);
 
-    // precompute "expected" verts
+    // precompute "expected" vertices
     const auto expected = project_into_vector(original, [&mat](const auto& p) { return transform_point(mat, p); });
 
-    // create mesh with "original" verts
+    // create mesh with "original" vertices
     Mesh mesh;
     mesh.set_vertices(original);
 
     // then apply the transform
     mesh.transform_vertices(mat);
 
-    // the mesh's verts should match expectations
+    // the mesh's vertices should match expectations
     ASSERT_EQ(mesh.vertices(), expected);
 }
 
@@ -497,7 +499,7 @@ TEST(Mesh, has_normals_returns_false_if_only_vertices_are_set)
 
 TEST(Mesh, normals_returns_empty_on_default_construction)
 {
-    Mesh mesh;
+    const Mesh mesh;
     ASSERT_TRUE(mesh.normals().empty());
 }
 
@@ -524,7 +526,7 @@ TEST(Mesh, set_normals_with_fewer_normals_than_vertices_assigns_no_normals)
 {
     Mesh mesh;
     mesh.set_vertices(generate_vertices(9));
-    mesh.set_normals(generate_normals(6));  // note: less than num verts
+    mesh.set_normals(generate_normals(6));  // note: less than num vertices
     ASSERT_FALSE(mesh.has_normals()) << "normals were not assigned: different size from vertices";
 }
 
@@ -552,7 +554,7 @@ TEST(Mesh, transform_normals_applies_transform_function_to_each_normal)
     const auto transform = [](Vec3 n) { return -n; };
     const auto original = generate_normals(16);
     auto expected{original};
-    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
+    rgs::transform(expected, expected.begin(), transform);
 
     Mesh mesh;
     mesh.set_vertices(generate_vertices(16));
@@ -603,7 +605,7 @@ TEST(Mesh, set_vertices_blank_and_then_set_tex_coords_blank_makes_has_tex_coords
 
 TEST(Mesh, tex_coords_is_empty_on_default_constructed_Mesh)
 {
-    Mesh mesh;
+    const Mesh mesh;
     ASSERT_TRUE(mesh.tex_coords().empty());
 }
 
@@ -656,7 +658,7 @@ TEST(Mesh, transform_tex_coords_applies_provided_function_to_each_tex_coord)
     const auto transform = [](Vec2 uv) { return 0.287f * uv; };
     const auto original = generate_texture_coordinates(3);
     auto expected{original};
-    std::transform(expected.begin(), expected.end(), expected.begin(), transform);
+    rgs::transform(expected, expected.begin(), transform);
 
     Mesh mesh;
     mesh.set_vertices(generate_vertices(3));
@@ -676,7 +678,7 @@ TEST(Mesh, colors_remains_empty_if_assigned_when_Mesh_has_no_vertices)
     Mesh mesh;
     ASSERT_TRUE(mesh.colors().empty());
     mesh.set_colors(generate_colors(3));
-    ASSERT_TRUE(mesh.colors().empty()) << "no verticies to assign colors to";
+    ASSERT_TRUE(mesh.colors().empty()) << "no vertices to assign colors to";
 }
 
 TEST(Mesh, colors_returns_set_colors_when_correctly_assigned_to_vertices)
@@ -707,7 +709,7 @@ TEST(Mesh, set_colors_files_if_given_more_colors_than_vertices)
 
 TEST(Mesh, tangents_is_empty_on_default_construction)
 {
-    Mesh m;
+    const Mesh m;
     ASSERT_TRUE(m.tangents().empty());
 }
 
@@ -752,11 +754,11 @@ TEST(Mesh, num_indices_returns_zero_on_default_construction)
 
 TEST(Mesh, num_indices_returns_number_of_indices_assigned_by_set_indices)
 {
-    const auto verts = generate_vertices(3);
+    const auto vertices = generate_vertices(3);
     const auto indices = iota_index_range(0, 3);
 
     Mesh m;
-    m.set_vertices(verts);
+    m.set_vertices(vertices);
     m.set_indices(indices);
 
     ASSERT_EQ(m.num_indices(), 3);
@@ -781,12 +783,12 @@ TEST(Mesh, set_indices_can_be_called_with_an_initializer_list_of_indices)
     const std::vector<uint32_t> expected = {0, 1, 2};
     const auto got = m.indices();
 
-    ASSERT_TRUE(std::equal(got.begin(), got.end(), expected.begin(), expected.end()));
+    ASSERT_TRUE(rgs::equal(got, expected));
 }
 
 TEST(Mesh, set_indices_also_works_if_the_indices_only_index_some_of_the_vertices)
 {
-    const auto indices = iota_index_range(3, 6);  // only indexes half the verts
+    const auto indices = iota_index_range(3, 6);  // only indexes half the vertices
 
     Mesh m;
     m.set_vertices(generate_vertices(6));
@@ -802,7 +804,7 @@ TEST(Mesh, set_indices_throws_if_an_index_is_out_of_bounds_for_the_vertices)
 
 TEST(Mesh, set_indices_with_u16_integers_works_with_empty_vector)
 {
-    std::vector<uint16_t> indices;
+    const std::vector<uint16_t> indices;
     Mesh m;
     m.set_vertices(generate_vertices(3));
     m.set_indices(indices);  // should just work
@@ -811,7 +813,7 @@ TEST(Mesh, set_indices_with_u16_integers_works_with_empty_vector)
 
 TEST(Mesh, set_indices_with_u32_integers_works_with_empty_vector)
 {
-    std::vector<uint32_t> indices;
+    const std::vector<uint32_t> indices;
     Mesh m;
     m.set_vertices(generate_vertices(3));
     m.set_indices(indices);  // should just work
@@ -849,18 +851,18 @@ TEST(Mesh, set_indices_with_DontRecalculateBounds_does_not_recalculate_bounds)
 
 TEST(Mesh, for_each_indexed_vertex_is_not_called_when_given_empty_Mesh)
 {
-    size_t ncalls = 0;
-    Mesh{}.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    size_t num_function_calls = 0;
+    Mesh{}.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, for_each_indexed_vertex_is_not_called_when_only_vertices_with_no_indices_supplied)
 {
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
-    size_t ncalls = 0;
-    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, for_each_indexed_vertex_called_as_expected_when_supplied_correctly_indexed_mesh)
@@ -868,9 +870,9 @@ TEST(Mesh, for_each_indexed_vertex_called_as_expected_when_supplied_correctly_in
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2}));
-    size_t ncalls = 0;
-    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 3);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 3);
 }
 
 TEST(Mesh, for_each_indexed_vertex_called_even_when_mesh_is_non_triangular)
@@ -879,25 +881,25 @@ TEST(Mesh, for_each_indexed_vertex_called_even_when_mesh_is_non_triangular)
     m.set_topology(MeshTopology::Lines);
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 3}));
-    size_t ncalls = 0;
-    m.for_each_indexed_vertex([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 4);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 4);
 }
 
 TEST(Mesh, for_each_indexed_triangle_not_called_when_given_empty_Mesh)
 {
-    size_t ncalls = 0;
-    Mesh{}.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    size_t num_function_calls = 0;
+    Mesh{}.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, for_each_indexed_triangle_not_called_when_Mesh_contains_no_indices)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});  // unindexed
-    size_t ncalls = 0;
-    m.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});  // note: no indices
+    size_t num_function_calls = 0;
+    m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, for_each_indexed_triangle_is_called_if_Mesh_contains_indexed_triangles)
@@ -905,9 +907,9 @@ TEST(Mesh, for_each_indexed_triangle_is_called_if_Mesh_contains_indexed_triangle
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2}));
-    size_t ncalls = 0;
-    m.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 1);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 1);
 }
 
 TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_contains_insufficient_indices)
@@ -915,9 +917,9 @@ TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_contains_insufficient_in
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1}));  // too few
-    size_t ncalls = 0;
-    m.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, for_each_indexed_triangle_called_multiple_times_when_Mesh_contains_multiple_triangles)
@@ -925,9 +927,9 @@ TEST(Mesh, for_each_indexed_triangle_called_multiple_times_when_Mesh_contains_mu
     Mesh m;
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
-    size_t ncalls = 0;
-    m.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 2);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 2);
 }
 
 TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_has_Lines_topology)
@@ -936,9 +938,9 @@ TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_has_Lines_topology)
     m.set_topology(MeshTopology::Lines);
     m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
-    size_t ncalls = 0;
-    m.for_each_indexed_triangle([&ncalls](auto&&) { ++ncalls; });
-    ASSERT_EQ(ncalls, 0);
+    size_t num_function_calls = 0;
+    m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
+    ASSERT_EQ(num_function_calls, 0);
 }
 
 TEST(Mesh, get_triangle_at_returns_expected_triangle_for_typical_case)
@@ -1025,7 +1027,7 @@ TEST(Mesh, bounds_on_empty_Mesh_returns_empty_AABB)
 
 TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 {
-    const auto pyramid = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
@@ -1033,24 +1035,24 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
     });
 
     Mesh m;
-    m.set_vertices(pyramid);
-    const AABB empty;
-    ASSERT_EQ(m.bounds(), empty) << "should be empty, because the caller forgot to provide indices";
+    m.set_vertices(pyramid_vertices);
+    constexpr AABB empty_aabb;
+    ASSERT_EQ(m.bounds(), empty_aabb) << "should be empty, because the caller forgot to provide indices";
 }
 
 TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
 {
-    const auto pyramid = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    const auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
+    constexpr auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 
-    Mesh m;
-    m.set_vertices(pyramid);
-    m.set_indices(pyramid_indices);
-    ASSERT_EQ(m.bounds(), bounding_aabb_of(pyramid));
+    Mesh mesh;
+    mesh.set_vertices(pyramid_vertices);
+    mesh.set_indices(pyramid_indices);
+    ASSERT_EQ(mesh.bounds(), bounding_aabb_of(pyramid_vertices));
 }
 
 TEST(Mesh, can_be_compared_for_equality)
@@ -1066,14 +1068,14 @@ TEST(Mesh, unmodified_copies_are_equivalent)
     ASSERT_EQ(m, copy);
 }
 
-TEST(Mesh, CanBeComparedForNotEquals)
+TEST(Mesh, can_be_compared_for_inequality)
 {
     static_assert(std::equality_comparable<Mesh>);
 }
 
 TEST(Mesh, can_be_written_to_a_std_ostream_for_debugging)
 {
-    Mesh m;
+    const Mesh m;
     std::stringstream ss;
 
     ss << m;
@@ -1088,18 +1090,18 @@ TEST(Mesh, num_submesh_descriptors_on_empty_Mesh_returns_zero)
 
 TEST(Mesh, num_submesh_descriptors_returns_zero_for_Mesh_with_data_but_no_descriptors)
 {
-    const auto pyramid = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vec3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
     });
-    const auto pyramic_indices = std::to_array<uint16_t>({0, 1, 2});
+    constexpr auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
 
-    Mesh m;
-    m.set_vertices(pyramid);
-    m.set_indices(pyramic_indices);
+    Mesh mesh;
+    mesh.set_vertices(pyramid_vertices);
+    mesh.set_indices(pyramid_indices);
 
-    ASSERT_EQ(m.num_submesh_descriptors(), 0);
+    ASSERT_EQ(mesh.num_submesh_descriptors(), 0);
 }
 
 TEST(Mesh, push_submesh_descriptor_increments_num_submesh_descriptors)
@@ -1248,7 +1250,7 @@ TEST(Mesh, num_vertex_attribute_decrements_when_normals_are_cleared)
     ASSERT_EQ(m.num_vertex_attributes(), 1);
     m.set_normals(generate_normals(12));
     ASSERT_EQ(m.num_vertex_attributes(), 2);
-    m.set_vertices({});  // clear verts: should clear vertices + attributes (here: normals)
+    m.set_vertices({});  // clear vertices: should clear vertices + attributes (here: normals)
     ASSERT_EQ(m.num_vertex_attributes(), 0);
 }
 
@@ -1392,7 +1394,7 @@ TEST(Mesh, num_vertex_attributes_behaves_as_expected_for_multiple_attributes)
         ASSERT_EQ(copy.num_vertex_attributes(), 0);
     }
 
-    // ... and clearing the verts first clears all attributes
+    // ... and clearing the vertices first clears all attributes
     {
         Mesh copy = m;
         ASSERT_EQ(copy.num_vertex_attributes(), 5);
@@ -1613,189 +1615,196 @@ TEST(Mesh, set_vertex_buffer_params_with_empty_descriptor_clears_all_attributes_
 
 TEST(Mesh, set_vertex_buffer_params_with_larger_N_expands_positions_with_zeroed_vectors)
 {
-    const auto verts = generate_vertices(6);
+    const auto vertices = generate_vertices(6);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_vertex_buffer_params(12, {
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_vertex_buffer_params(12, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
     });
 
-    auto expected{verts};
-    expected.resize(12, Vec3{});
+    auto expected_vertices{vertices};
+    expected_vertices.resize(12, Vec3{});
 
-    ASSERT_EQ(m.vertices(), expected);
+    ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
 
 TEST(Mesh, set_vertex_buffer_params_with_smaller_N_shrinks_existing_data)
 {
-    const auto verts = generate_vertices(12);
+    const auto vertices = generate_vertices(12);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_vertex_buffer_params(6, {
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_vertex_buffer_params(6, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3}
     });
 
-    auto expected{verts};
-    expected.resize(6);
+    auto expected_vertices{vertices};
+    expected_vertices.resize(6);
 
-    ASSERT_EQ(m.vertices(), expected);
+    ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
 
 TEST(Mesh, set_vertex_buffer_params_when_dimensionality_of_vertices_is_2_zeroes_missing_dimension)
 {
-    const auto verts = generate_vertices(6);
+    const auto vertices = generate_vertices(6);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_vertex_buffer_params(6, {
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_vertex_buffer_params(6, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // 2D storage
     });
 
-    const auto expected = project_into_vector(verts, [](const Vec3& v) { return Vec3{v.x, v.y, 0.0f}; });
+    const auto expected_vertices = project_into_vector(vertices, [](const Vec3& v) { return Vec3{v.x, v.y, 0.0f}; });
 
-    ASSERT_EQ(m.vertices(), expected);
+    ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
 
 TEST(Mesh, set_vertex_buffer_params_can_be_used_to_remove_a_particular_attribute)
 {
-    const auto verts = generate_vertices(6);
+    const auto vertices = generate_vertices(6);
     const auto tangents = generate_tangent_vectors(6);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_normals(generate_normals(6));
-    m.set_tangents(tangents);
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_normals(generate_normals(6));
+    mesh.set_tangents(tangents);
 
-    ASSERT_EQ(m.num_vertex_attributes(), 3);
+    ASSERT_EQ(mesh.num_vertex_attributes(), 3);
 
-    m.set_vertex_buffer_params(6, {
+    mesh.set_vertex_buffer_params(6, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
-        // i.e. remove the normals
+        // i.e. remove the normals from the vertex buffer
     });
 
-    ASSERT_EQ(m.num_vertices(), 6);
-    ASSERT_EQ(m.num_vertex_attributes(), 2);
-    ASSERT_EQ(m.vertices(), verts);
-    ASSERT_EQ(m.tangents(), tangents);
+    ASSERT_EQ(mesh.num_vertices(), 6);
+    ASSERT_EQ(mesh.num_vertex_attributes(), 2);
+    ASSERT_EQ(mesh.vertices(), vertices);
+    ASSERT_EQ(mesh.tangents(), tangents);
 }
 
 TEST(Mesh, set_vertex_buffer_params_can_be_used_to_add_a_particular_attribute_as_zeroed_data)
 {
-    const auto verts = generate_vertices(6);
+    const auto vertices = generate_vertices(6);
     const auto tangents = generate_tangent_vectors(6);
 
-    Mesh m;
-    m.set_vertices(verts);
-    m.set_tangents(tangents);
+    Mesh mesh;
+    mesh.set_vertices(vertices);
+    mesh.set_tangents(tangents);
 
-    ASSERT_EQ(m.num_vertex_attributes(), 2);
+    ASSERT_EQ(mesh.num_vertex_attributes(), 2);
 
-    m.set_vertex_buffer_params(6, {
+    mesh.set_vertex_buffer_params(6, {
         // existing
         {VertexAttribute::Position,  VertexAttributeFormat::Float32x3},
         {VertexAttribute::Tangent,   VertexAttributeFormat::Float32x4},
-        // new
+
+        // new (i.e. add these to the vertex buffer as zero vectors)
         {VertexAttribute::Color,     VertexAttributeFormat::Float32x4},
         {VertexAttribute::TexCoord0, VertexAttributeFormat::Float32x2},
     });
 
-    ASSERT_EQ(m.vertices(), verts);
-    ASSERT_EQ(m.tangents(), tangents);
-    ASSERT_EQ(m.colors(), std::vector<Color>(6));
-    ASSERT_EQ(m.tex_coords(), std::vector<Vec2>(6));
+    ASSERT_EQ(mesh.vertices(), vertices);
+    ASSERT_EQ(mesh.tangents(), tangents);
+    ASSERT_EQ(mesh.colors(), std::vector<Color>(6));
+    ASSERT_EQ(mesh.tex_coords(), std::vector<Vec2>(6));
 }
 
 TEST(Mesh, set_vertex_buffer_params_throws_if_it_causes_Mesh_indices_to_go_out_of_bounds)
 {
-    Mesh m;
-    m.set_vertices(generate_vertices(6));
-    m.set_indices(iota_index_range(0, 6));
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(6));
+    mesh.set_indices(iota_index_range(0, 6));
 
-    ASSERT_ANY_THROW({ m.set_vertex_buffer_params(3, m.vertex_format()); })  << "should throw because indices are now OOB";
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_params(3, mesh.vertex_format()); })  << "should throw because indices are now OOB";
 }
 
 TEST(Mesh, set_vertex_buffer_params_can_be_used_to_reformat_a_float_attribute_to_Unorm8)
 {
     const auto colors = generate_colors(9);
 
-    Mesh m;
-    m.set_vertices(generate_vertices(9));
-    m.set_colors(colors);
+    Mesh mesh;
+    mesh.set_vertices(generate_vertices(9));
+    mesh.set_colors(colors);
 
-    ASSERT_EQ(m.colors(), colors);
+    ASSERT_EQ(mesh.colors(), colors);
 
-    m.set_vertex_buffer_params(9, {
+    mesh.set_vertex_buffer_params(9, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
         {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
     });
 
-    const auto expected = project_into_vector(colors, [](const Color& c) {
+    // i.e. the expectation is that the vertex buffer implementation converts the color
+    // to Unorm8x4 (osc::Color32) for storage but, on retrieval, converts it back to Float32x4
+    // (osc::Color).
+    const auto expected_colors = project_into_vector(colors, [](const Color& c) {
         return Color{Color32{c}};
     });
 
-    ASSERT_EQ(m.colors(), expected);
+    ASSERT_EQ(mesh.colors(), expected_colors);
 }
 
 TEST(Mesh, get_vertex_buffer_stride_returns_expected_results)
 {
-    Mesh m;
-    ASSERT_EQ(m.vertex_buffer_stride(), 0);
+    Mesh mesh;
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 0);
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 3*sizeof(float));
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 3*sizeof(float));
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 2*sizeof(float));
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float));
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
         {VertexAttribute::Color,    VertexAttributeFormat::Float32x4},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 2*sizeof(float)+4*sizeof(float));
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float)+4*sizeof(float));
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
         {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 2*sizeof(float)+4);
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float)+4);
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Unorm8x4},
         {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 4+4);
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 4+4);
 
-    m.set_vertex_buffer_params(3, {
+    mesh.set_vertex_buffer_params(3, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},
         {VertexAttribute::Tangent,  VertexAttributeFormat::Float32x4},
         {VertexAttribute::Color,    VertexAttributeFormat::Unorm8x4},
     });
-    ASSERT_EQ(m.vertex_buffer_stride(), 2*sizeof(float) + 4 + 4*sizeof(float));
+    ASSERT_EQ(mesh.vertex_buffer_stride(), 2*sizeof(float) + 4 + 4*sizeof(float));
 }
 
 TEST(Mesh, set_vertex_buffer_data_works_for_simplest_case_of_just_positional_data)
 {
-    struct Entry final {
-        Vec3 vert = generate<Vec3>();
+    class Entry final {
+    public:
+        const Vec3& vertex() const { return vertex_;  }
+    private:
+        Vec3 vertex_ = generate<Vec3>();
     };
     const std::vector<Entry> data(12);
 
-    Mesh m;
-    m.set_vertex_buffer_params(12, {
+    Mesh mesh;
+    mesh.set_vertex_buffer_params(12, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
     });
-    m.set_vertex_buffer_data(data);
+    mesh.set_vertex_buffer_data(data);
 
-    const auto expected = project_into_vector(data, [](const auto& entry) { return entry.vert; });
+    const auto expected_vertices = project_into_vector(data, &Entry::vertex);
 
-    ASSERT_EQ(m.vertices(), expected);
+    ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
 
 TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_data_mismatche_VertexFormat)
@@ -1805,11 +1814,11 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_data_mismatche_VertexF
     };
     const std::vector<Entry> data(12);
 
-    Mesh m;
-    m.set_vertex_buffer_params(12, {
+    Mesh mesh;
+    mesh.set_vertex_buffer_params(12, {
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // uh oh: wrong dimensionality for `Entry`
     });
-    ASSERT_ANY_THROW({ m.set_vertex_buffer_data(data); });
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); });
 }
 
 TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_N_mismatches)
@@ -1819,11 +1828,11 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_N_mismatches)
     };
     const std::vector<Entry> data(12);
 
-    Mesh m;
-    m.set_vertex_buffer_params(6, {  // uh oh: wrong N for the given number of entries
+    Mesh mesh;
+    mesh.set_vertex_buffer_params(6, {  // uh oh: wrong N for the given number of entries
         {VertexAttribute::Position, VertexAttributeFormat::Float32x3},
     });
-    ASSERT_ANY_THROW({ m.set_vertex_buffer_data(data); });
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); });
 }
 
 TEST(Mesh, set_vertex_buffer_data_doesnt_fail_if_caller_luckily_has_same_layout)
@@ -1833,11 +1842,11 @@ TEST(Mesh, set_vertex_buffer_data_doesnt_fail_if_caller_luckily_has_same_layout)
     };
     const std::vector<Entry> data(12);
 
-    Mesh m;
-    m.set_vertex_buffer_params(24, {  // uh oh
+    Mesh mesh;
+    mesh.set_vertex_buffer_params(24, {  // uh oh
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // ah, but, the total size will now luckily match...
     });
-    ASSERT_NO_THROW({ m.set_vertex_buffer_data(data); });  // and it won't throw because the API cannot know any better...
+    ASSERT_NO_THROW({ mesh.set_vertex_buffer_data(data); });  // and it won't throw because the API cannot know any better...
 }
 
 TEST(Mesh, set_vertex_buffer_data_throws_if_no_layout_provided)
@@ -1847,13 +1856,13 @@ TEST(Mesh, set_vertex_buffer_data_throws_if_no_layout_provided)
     };
     const std::vector<Entry> data(12);
 
-    Mesh m;
-    ASSERT_ANY_THROW({ m.set_vertex_buffer_data(data); }) << "should throw: caller didn't call 'set_vertex_buffer_params' first";
+    Mesh mesh;
+    ASSERT_ANY_THROW({ mesh.set_vertex_buffer_data(data); }) << "should throw: caller didn't call 'set_vertex_buffer_params' first";
 }
 
 TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
 {
-    // specific case-test: ImGui writes a drawlist that roughly follows this format, so
+    // specific case-test: ImGui writes a draw list that roughly follows this format, so
     // this is just testing that it's compatible with `oscar`'s rendering API
 
     struct SimilarToImGuiVert final {
@@ -1927,14 +1936,14 @@ TEST(Mesh, recalculate_normals_assigns_normals_if_none_exist)
 
     const auto normals = mesh.normals();
     ASSERT_EQ(normals.size(), 3);
-    ASSERT_TRUE(std::all_of(normals.begin(), normals.end(), [first = normals.front()](const Vec3& normal){ return normal == first; }));
+    ASSERT_TRUE(rgs::all_of(normals, [first = normals.front()](const Vec3& normal){ return normal == first; }));
     ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
 }
 
 TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
 {
     // create a "tent" mesh, where two 45-degree-angled triangles
-    // are joined on one edge (two verts) on the top
+    // are joined on one edge (two vertices) on the top
     //
     // `recalculate_normals` should ensure that the normals at the
     // vertices on the top are calculated by averaging each participating
@@ -1949,7 +1958,7 @@ TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
 
     Mesh mesh;
     mesh.set_vertices(vertices);
-    mesh.set_indices({0, 1, 2,   3, 2, 1});  // shares two verts per triangle
+    mesh.set_indices({0, 1, 2,   3, 2, 1});  // shares two vertices per triangle
 
     const Vec3 lhs_normal = triangle_normal({ vertices[0], vertices[1], vertices[2] });
     const Vec3 rhs_normal = triangle_normal({ vertices[3], vertices[2], vertices[1] });

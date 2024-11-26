@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringHelpers.h>
 
@@ -258,7 +257,7 @@ namespace
             gl_Position = origVertexPos + normalVec;
             EmitVertex();
 
-            // emit line primitve
+            // emit line primitive
             EndPrimitive();
         }
 
@@ -412,7 +411,7 @@ TEST_F(ShaderTest, can_be_written_to_a_std_ostream)
 
 TEST_F(ShaderTest, writes_expected_content_to_a_std_ostream)
 {
-    // this test is flakey, but is just ensuring that the string printout has enough information
+    // this test is flaky, but is just ensuring that the string printout has enough information
     // to help debugging etc.
 
     const Shader shader{c_vertex_shader_src, c_fragment_shader_src};

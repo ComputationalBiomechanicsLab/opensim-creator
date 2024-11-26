@@ -34,8 +34,8 @@ TEST(RenderTexture, set_dimensionality_sets_the_dimensionality)
 
 TEST(RenderTexture, set_dimensionality_to_Cube_throws_if_RenderTexture_is_multisampled)
 {
-    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
-    // so loudly throw an error if the caller is trying to render a multisampled
+    // edge-case: OpenGL doesn't support rendering to a multi-sampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multi-sampled
     // cubemap
     RenderTexture render_texture;
     render_texture.set_anti_aliasing_level(AntiAliasingLevel{2});
@@ -44,8 +44,8 @@ TEST(RenderTexture, set_dimensionality_to_Cube_throws_if_RenderTexture_is_multis
 
 TEST(RenderTexture, set_anti_aliasing_level_throws_if_RenderRexture_dimensionality_is_Cube)
 {
-    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
-    // so loudly throw an error if the caller is trying to render a multisampled
+    // edge-case: OpenGL doesn't support rendering to a multi-sampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multi-sampled
     // cubemap
     RenderTexture render_texture;
     render_texture.set_dimensionality(TextureDimensionality::Cube);
@@ -54,8 +54,8 @@ TEST(RenderTexture, set_anti_aliasing_level_throws_if_RenderRexture_dimensionali
 
 TEST(RenderTexture, constructor_throws_if_constructed_with_Cube_dimensionality_and_anti_aliasing)
 {
-    // edge-case: OpenGL doesn't support rendering to a multisampled cube texture,
-    // so loudly throw an error if the caller is trying to render a multisampled
+    // edge-case: OpenGL doesn't support rendering to a multi-sampled cube texture,
+    // so loudly throw an error if the caller is trying to render a multi-sampled
     // cubemap
 
     // allowed: RenderTextureDescriptor is non-throwing until the texture is actually constructed
@@ -110,7 +110,7 @@ TEST(RenderTexture, set_dimensions_throws_if_set_on_RenderTexture_with_cube_dime
 
 TEST(RenderTexture, set_dimension_changes_equality)
 {
-    RenderTexture texture_a;
+    const RenderTexture texture_a;
     RenderTexture texture_b{texture_a};
 
     ASSERT_EQ(texture_a, texture_b);
@@ -123,7 +123,7 @@ TEST(RenderTexture, set_dimension_changes_equality)
 TEST(RenderTexture, can_be_constructed_from_dimensions_vector)
 {
     const Vec2i dimensions = {12, 12};
-    RenderTexture render_texture{{.dimensions = dimensions}};
+    const RenderTexture render_texture{{.dimensions = dimensions}};
     ASSERT_EQ(render_texture.dimensions(), dimensions);
 }
 

@@ -206,7 +206,7 @@ TEST(NodePath, std_distance_returns_expected_values_for_a_variety_of_inputs)
         NodePath::iterator::difference_type expectedOutput;
     };
 
-    const auto test_cases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {"", 0},
         {"/", 0},
         {"a", 1},
@@ -235,7 +235,7 @@ TEST(NodePath, normalizes_the_input_string_as_expected_for_a_variety_of_inputs)
         std::string_view expectedOutput;
     };
 
-    const auto test_cases = std::to_array<TestCase>({
+    constexpr auto test_cases = std::to_array<TestCase>({
         {"",                       "" },
         {"/",                      "/" },
         {"a/b/c",                  "a/b/c" },
@@ -281,7 +281,7 @@ TEST(NodePath, normalizes_the_input_string_as_expected_for_a_variety_of_inputs)
 
 TEST(NodePath, constructor_throws_if_given_invalid_input)
 {
-    const auto inputs = std::to_array<std::string_view>({
+    constexpr auto inputs = std::to_array<std::string_view>({
         "a/../..",
         "./a/../..",
         "/..",

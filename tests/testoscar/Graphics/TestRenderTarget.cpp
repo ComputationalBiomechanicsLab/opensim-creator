@@ -4,8 +4,6 @@
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/ColorRenderBufferParams.h>
 #include <oscar/Graphics/DepthStencilRenderBufferParams.h>
-#include <oscar/Graphics/RenderBufferLoadAction.h>
-#include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTargetColorAttachment.h>
 #include <oscar/Graphics/RenderTexture.h>
 

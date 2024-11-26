@@ -14,7 +14,7 @@ using namespace osc;
 
 TEST(write_as_dae, works_for_empty_scene)
 {
-    DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
+    const DAEMetadata metadata{TESTOSCAR_APPNAME_STRING, TESTOSCAR_APPNAME_STRING};
 
     std::stringstream ss;
     write_as_dae(ss, {}, metadata);
