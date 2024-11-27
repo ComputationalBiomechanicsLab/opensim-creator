@@ -80,7 +80,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the parameter that should be defaulted");
         OpenSim_DECLARE_PROPERTY(default_value, std::string, "The default value of the parameter (a string that requires parsing, based on the declarations)");
 
-        ScalingParameterDefault()
+        explicit ScalingParameterDefault()
         {
             constructProperty_parameter_name("unknown");
             constructProperty_default_value("unknown_value");
@@ -234,7 +234,7 @@ namespace
     class BodyMassesScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep);
     public:
-        BodyMassesScalingStep() :
+        explicit BodyMassesScalingStep() :
             ScalingStep{"Scale Body Masses to Subject Mass"}
         {
             setDescription("Scales the masses of bodies in the model to match the subject's mass");
@@ -248,24 +248,24 @@ namespace
         }
     };
 
-    // A `ScalingStep` that scales an `OpenSim::Mesh` in the source model by
+    // A `ScalingStep` that scales `OpenSim::Mesh`es in the source model by
     // using the Thin-Plate Spline (TPS) warping algorithm on landmark pairs
     // loaded from associated files.
-    class ThinPlateSplineMeshScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshScalingStep, ScalingStep);
+    class ThinPlateSplineMeshesScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ScalingStep);
 
-        OpenSim_DECLARE_PROPERTY(mesh, std::string, "Component path, relative to the model, that locates the mesh that should be scaled by this scaling step (e.g. /bodyset/torso/torso_geom_4)");
-        OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the mesh's `mesh_file` path, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv). The variable `mesh_filename` is exposed to this property, and can be used as a stand-in for the mesh's `mesh_file` path, without file extensions (e.g. ${mesh_filename}.landmarks.csv)");
-        OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the mesh's `mesh_file` path, where a CSV containing the destination landmarks can be loaded from (e.g. ../DestinationGeometry/torso.landmarks.csv). The variable 'mesh_filename' is exposed to this property and can be used as a stand-in for the mesh's `mesh_file` path, without file extensions (e.g. ../DestinationGeometry/${mesh_filename}.landmarks.csv)");
+        OpenSim_DECLARE_LIST_PROPERTY(meshes, std::string, "Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
 
     public:
-        explicit ThinPlateSplineMeshScalingStep() :
-            ScalingStep{"Apply Thin-Plate Spline Warp to Mesh"}
+        explicit ThinPlateSplineMeshesScalingStep() :
+            ScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Meshes"}
         {
-            setDescription("Warps a mesh in the source model in a non-uniform way by applying a Thin-Plate Spline (TPS) warp to each vertex in the souce mesh.");
-            constructProperty_mesh("");
-            constructProperty_source_landmarks_file("${mesh_filename}.landmarks.csv");
-            constructProperty_destination_landmarks_file("../DestinationGeometry/${mesh_filename}.landmarks.csv");
+            setDescription("Warps mesh(es) in the source model by applying a Thin-Plate Spline (TPS) warp to each vertex in the souce mesh(es).");
+            constructProperty_meshes();
+            constructProperty_source_landmarks_file({});
+            constructProperty_destination_landmarks_file({});
         }
 
     private:
@@ -281,53 +281,74 @@ namespace
         {
             std::vector<ScalingStepValidationMessage> messages;
 
-            if (not FindComponent<OpenSim::Mesh>(sourceModel, get_mesh())) {
+            // Ensure the model has a filesystem location (prerequisite).
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (not modelFilesystemLocation) {
+                messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location (required to locate source/destination landmarks).");
+                return messages;
+            }
+
+            // Ensure at least one mesh is specified.
+            if (getProperty_meshes().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "No mesh(es) given (e.g. `/bodyset/torso/torso_geom`).");
+            }
+
+            // Ensure all specified meshes can be found in the source model.
+            for (int i = 0; i < getProperty_meshes().size(); ++i) {
+                const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                if (not mesh) {
+                    std::stringstream msg;
+                    msg << get_meshes(i) << ": Cannot find this mesh in the source model";
+                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                }
+            }
+
+            // Ensure the `source_landmarks_file` can be found (relative to the model osim).
+            if (get_source_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`source_landmarks_file` is empty.");
+            }
+            else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+                not std::filesystem::exists(sourceLandmarksPath)) {
+
                 std::stringstream msg;
-                msg << get_mesh() << ": cannot find this mesh in the source model";
+                msg << sourceLandmarksPath.string() << ": Cannot find source landmarks file on filesystem";
                 messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
             }
 
-            // check that the source landmarks file exists
-            if (const auto resolvedFilepath = calcResolvedFilepath(get_source_landmarks_file());
-                not std::filesystem::exists(resolvedFilepath)) {
-
-                std::stringstream msg;
-                msg << resolvedFilepath << ": cannot find source landmarks file";
-                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            // Ensure the `destination_landmarks_file` can be found (relative to the model osim).
+            if (get_destination_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`destination_landmarks_file` is empty.");
             }
-
-            // check that the destination landmarks file exists
-            if (const auto resolvedFilepath = calcResolvedFilepath(get_destination_landmarks_file());
-                not std::filesystem::exists(resolvedFilepath)) {
+            else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+                not std::filesystem::exists(destinationLandmarksPath)) {
 
                 std::stringstream msg;
-                msg << resolvedFilepath << ": cannot find destination landmarks file";
+                msg << destinationLandmarksPath.string() << ": Cannot find destination landmarks file on filesystem";
                 messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
             }
 
             return messages;
-        }
-
-        std::string calcResolvedFilepath(const std::string& unresolvedProperty) const
-        {
-            const std::string filename = std::filesystem::path{get_mesh()}.replace_extension().filename().string();
-            return replace(unresolvedProperty, "${mesh_filename}", filename);
         }
     };
 
     // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any `OpenSim::Station`s it
     // can find via the `stations` search string. Note: muscle points in the model are usually
     // `OpenSim::Station`s, so this can also be used to warp muscle points.
-    class ThinPlateSplineStationScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationScalingStep, ScalingStep);
+    class ThinPlateSplineStationsScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationsScalingStep, ScalingStep);
 
         OpenSim_DECLARE_LIST_PROPERTY(stations, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find meshes in the source model that should be warped by this scaling step.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)");
+
     public:
-        ThinPlateSplineStationScalingStep() :
+        explicit ThinPlateSplineStationsScalingStep() :
             ScalingStep{"Apply Thin-Plate Spline to Stations"}
         {
             setDescription("Scales the masses of bodies in the model to match the subject's mass");
             constructProperty_stations();
+            constructProperty_source_landmarks_file({});
+            constructProperty_destination_landmarks_file({});
         }
     private:
         void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
@@ -336,16 +357,34 @@ namespace
         }
     };
 
+    class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ScalingStep);
+
+        OpenSim_DECLARE_PROPERTY(offset_frame, std::string, "Component path, relative to the model, that locates the offset frame that should be transformed by this scaling step (e.g. /jointset/elbow_l/parent_offset)");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. ../DestinationGeometry/torso.landmarks.csv).");
+    public:
+        explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
+            ScalingStep{"Apply Thin-Plate Spline Warp to Offset Frame Translation"}
+        {
+            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to shift the translation property of the given offset frame. The orientation/rotation of the offset frame is unaffected by this operation.");
+            constructProperty_offset_frame({});
+            constructProperty_source_landmarks_file({});
+            constructProperty_destination_landmarks_file({});
+        }
+    };
+
     // Returns a list of `ScalingStep` prototypes, so that downstream code is able to present
     // them as available options etc.
     const auto& getScalingStepPrototypes()
     {
-        static const auto s_Prototypes = std::to_array<std::unique_ptr<ScalingStep>>({
-            std::make_unique<ThinPlateSplineMeshScalingStep>(),
+        static const auto s_ScalingStepPrototypes = std::to_array<std::unique_ptr<ScalingStep>>({
+            std::make_unique<ThinPlateSplineMeshesScalingStep>(),
             std::make_unique<BodyMassesScalingStep>(),
-            std::make_unique<ThinPlateSplineStationScalingStep>(),
+            std::make_unique<ThinPlateSplineStationsScalingStep>(),
+            std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
         });
-        return s_Prototypes;
+        return s_ScalingStepPrototypes;
     }
 
     // Top-level document that describes a sequence of `ScalingStep`s that can be applied to
@@ -849,7 +888,7 @@ namespace
             if (m_State->hasScalingSteps()) {
                 size_t i = 0;
                 for (const ScalingStep& step : m_State->iterateScalingSteps()) {
-                    ui::push_id(i);
+                    ui::push_id(step.getAbsolutePathString());
                     draw_design_mode_scaling_step(i, step);
                     ui::pop_id();
                     ++i;
@@ -866,9 +905,16 @@ namespace
 
         void draw_design_mode_scaling_step(size_t stepIndex, const ScalingStep& step)
         {
-            // draw header, help marker, etc.
-            ui::draw_text("#%zu: %s", stepIndex + 1, step.label().c_str());
-            ui::same_line();
+            // draw collapsing header, don't render content if it's collapsed
+            {
+                std::stringstream header;
+                header << '#' << stepIndex + 1 << ": " << step.label();
+                if (not ui::draw_collapsing_header(std::move(header).str())) {
+                    return;  // header is collapsed
+                }
+            }
+            // else: header isn't collapsed
+
             ui::draw_help_marker(step.getDescription());
 
             // draw deletion button
