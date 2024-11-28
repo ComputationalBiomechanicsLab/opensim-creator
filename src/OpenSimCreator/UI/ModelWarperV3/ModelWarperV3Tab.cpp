@@ -75,7 +75,7 @@ namespace
     // A chosen scaling parameter default, which is usually provided by the top-level document
     // to override the default provided via the `ScalingParameterDeclaration`.
     class ScalingParameterDefault final : public OpenSim::Object {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterDefault, OpenSim::Object);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterDefault, OpenSim::Object)
     public:
         OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the parameter that should be defaulted");
         OpenSim_DECLARE_PROPERTY(default_value, std::string, "The default value of the parameter (a string that requires parsing, based on the declarations)");
@@ -152,7 +152,7 @@ namespace
     // order to yield the "result" or "scaled" model. Each scaling step can
     // request external data (`ScalingParameterDeclaration`).
     class ScalingStep : public OpenSim::Component {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(ScalingStep, Component);
+        OpenSim_DECLARE_ABSTRACT_OBJECT(ScalingStep, Component)
 
         OpenSim_DECLARE_PROPERTY(label, std::string, "a user-facing label for the scaling step");
     protected:
@@ -232,7 +232,7 @@ namespace
 
     // A `ScalingStep` that scales the masses of bodies in the model.
     class BodyMassesScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep);
+        OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
     public:
         explicit BodyMassesScalingStep() :
             ScalingStep{"Scale Body Masses to Subject Mass"}
@@ -252,7 +252,7 @@ namespace
     // using the Thin-Plate Spline (TPS) warping algorithm on landmark pairs
     // loaded from associated files.
     class ThinPlateSplineMeshesScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ScalingStep);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(meshes, std::string, "Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
@@ -335,7 +335,7 @@ namespace
     // can find via the `stations` search string. Note: muscle points in the model are usually
     // `OpenSim::Station`s, so this can also be used to warp muscle points.
     class ThinPlateSplineStationsScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationsScalingStep, ScalingStep);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationsScalingStep, ScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(stations, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find meshes in the source model that should be warped by this scaling step.");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
@@ -358,7 +358,7 @@ namespace
     };
 
     class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ScalingStep);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ScalingStep)
 
         OpenSim_DECLARE_PROPERTY(offset_frame, std::string, "Component path, relative to the model, that locates the offset frame that should be transformed by this scaling step (e.g. /jointset/elbow_l/parent_offset)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv).");
@@ -393,7 +393,7 @@ namespace
         public OpenSim::Component,
         public IVersionedComponentAccessor {
 
-        OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperV3Document, OpenSim::Component);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperV3Document, OpenSim::Component)
 
         OpenSim_DECLARE_LIST_PROPERTY(parameter_defaults, ScalingParameterDefault, "A list of scaling parameter defaults that should be shown to the user. These override the defaults produced by each `ScalingStep`'s implementation.");
     public:
@@ -483,12 +483,12 @@ namespace
             return *this;
         }
 
-        bool implCanUpdComponent() const
+        bool implCanUpdComponent() const final
         {
             return true;
         }
 
-        OpenSim::Component& implUpdComponent()
+        OpenSim::Component& implUpdComponent() final
         {
             throw std::runtime_error{ "component updating not implemented for this IComponentAccessor" };
         }
