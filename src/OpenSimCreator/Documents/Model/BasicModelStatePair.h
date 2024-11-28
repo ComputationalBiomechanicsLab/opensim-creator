@@ -26,6 +26,7 @@ namespace osc
         BasicModelStatePair();
         explicit BasicModelStatePair(const IModelStatePair&);
         explicit BasicModelStatePair(const std::filesystem::path&);
+        explicit BasicModelStatePair(OpenSim::Model&&);
         BasicModelStatePair(const OpenSim::Model&, const SimTK::State&);
         BasicModelStatePair(const BasicModelStatePair&);
         BasicModelStatePair(BasicModelStatePair&&) noexcept;

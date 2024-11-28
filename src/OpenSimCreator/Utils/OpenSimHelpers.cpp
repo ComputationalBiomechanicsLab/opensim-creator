@@ -24,7 +24,6 @@
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -56,7 +55,6 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/Log.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/Perf.h>
@@ -283,7 +281,7 @@ namespace
 
 // public API
 
-bool osc::IsConcreteClassNameLexographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
+bool osc::IsConcreteClassNameLexicographicallyLowerThan(const OpenSim::Component& a, const OpenSim::Component& b)
 {
     return a.getConcreteClassName() < b.getConcreteClassName();
 }
@@ -1052,14 +1050,14 @@ void osc::FinalizeFromProperties(OpenSim::Model& model)
 
 std::optional<size_t> osc::FindJointInParentJointSet(const OpenSim::Joint& joint)
 {
-    const auto* parentJointset = GetOwner<OpenSim::JointSet>(joint);
-    if (not parentJointset) {
+    const auto* parentJointSet = GetOwner<OpenSim::JointSet>(joint);
+    if (not parentJointSet) {
         // it's a joint, but it's not owned by a JointSet, so the implementation cannot switch
         // the joint type
         return std::nullopt;
     }
 
-    return IndexOf(*parentJointset, joint);
+    return IndexOf(*parentJointSet, joint);
 }
 
 std::string osc::GetDisplayName(const OpenSim::Geometry& g)
@@ -1136,8 +1134,8 @@ Color osc::to_color(const OpenSim::Appearance& appearance)
 
 Color osc::GetSuggestedBoneColor()
 {
-    Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
-    float brightenAmount = 0.1f;
+    const Color usualDefault = {232.0f / 255.0f, 216.0f / 255.0f, 200.0f/255.0f, 1.0f};
+    const float brightenAmount = 0.1f;
     return lerp(usualDefault, Color::white(), brightenAmount);
 }
 
@@ -1397,7 +1395,7 @@ namespace
         };
 
         if (length2(force) < epsilon_v<float>) {
-            return std::nullopt;  // edge-case: no force is actually being exherted
+            return std::nullopt;  // edge-case: no force is actually being exerted
         }
 
         const Vec3 torque{
@@ -1410,7 +1408,7 @@ namespace
     }
 
     // helper: convert an OpenSim::ContactHalfSpace, which is defined in a frame with an offset,
-    //         etc. into a simpler "plane in groundspace" representation that's more useful
+    //         etc. into a simpler "plane in ground-space" representation that's more useful
     //         for rendering
     Plane ToAnalyticPlaneInGround(
         const OpenSim::ContactHalfSpace& halfSpace,
@@ -1419,7 +1417,7 @@ namespace
         // go through the contact geometries that are attached to the force
         //
         // - if there's a plane, then the plane's location+normal are needed in order
-        //   to figure out where the force is exherted
+        //   to figure out where the force is exerted
         const auto body2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
         const auto geom2body = to<Transform>(halfSpace.getTransform());
 
@@ -1774,10 +1772,10 @@ std::unordered_map<int, int> osc::CreateStorageIndexToModelStatevarMappingWithWa
     if (not mapping.stateVariablesMissingInStorage.empty()) {
         std::stringstream ss;
         ss << "the provided STO file is missing the following columns:\n";
-        std::string_view delim;
+        std::string_view delimiter;
         for (const std::string& el : mapping.stateVariablesMissingInStorage) {
-            ss << delim << el;
-            delim = ", ";
+            ss << delimiter << el;
+            delimiter = ", ";
         }
         log_warn("%s", std::move(ss).str().c_str());
         log_warn("The STO file was loaded successfully, but beware: the missing state variables have been defaulted in order for this to work");
@@ -1812,7 +1810,7 @@ StorageIndexToModelStateVarMappingResult osc::CreateStorageIndexToModelStatevarM
     // care: The storage's column labels do not match the model's state variable names
     //       1:1. STO files have changed over time. OpenSim pre-4.0 used different naming
     //       conventions for the column labels, so you *need* to map the storage column
-    //       strings carefully onto the model statevars.
+    //       strings carefully onto the model state variables.
     for (int modelIndex = 0; modelIndex < modelStateVars.size(); ++modelIndex) {
         const std::string& modelStateVarname = modelStateVars[modelIndex];
         const int storageIndex = OpenSim::TableUtilities::findStateLabelIndex(storageColumnsIncludingTime, modelStateVarname);
@@ -1847,7 +1845,7 @@ void osc::UpdateStateVariablesFromStorageRow(
             stateValsBuf[modelIdx] = cols[valueIdx];
         }
         else {
-            throw std::runtime_error{"an index in the stroage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
+            throw std::runtime_error{"an index in the storage lookup was invalid: this is probably a developer error that needs to be investigated (report it)"};
         }
     }
 

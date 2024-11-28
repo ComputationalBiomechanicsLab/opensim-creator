@@ -1352,7 +1352,7 @@ namespace
             if (not m_MaybeNestedEditor) {
                 if (const auto componentPtr = tryGetComponentSharedPtr()) {
                     m_MaybeNestedEditor.emplace(tryGetParentWidget(), componentPtr, [&params]() { return &params; });
-                }    
+                }
             }
             ObjectPropertiesEditor& nestedEditor = *m_MaybeNestedEditor;
 

@@ -31,6 +31,13 @@ public:
         InitializeState(*m_Model);
     }
 
+    explicit Impl(OpenSim::Model&& model) :
+        m_Model{std::make_unique<OpenSim::Model>(std::move(model))}
+    {
+        InitializeModel(*m_Model);
+        InitializeState(*m_Model);
+    }
+
     Impl(const OpenSim::Model& m, const SimTK::State& st) :
         Impl{m, st, 1.0f}
     {}
@@ -112,6 +119,9 @@ osc::BasicModelStatePair::BasicModelStatePair(const IModelStatePair& p) :
 
 osc::BasicModelStatePair::BasicModelStatePair(const std::filesystem::path& p) :
     m_Impl{std::make_unique<Impl>(p)}
+{}
+osc::BasicModelStatePair::BasicModelStatePair(OpenSim::Model&& model) :
+    m_Impl{std::make_unique<Impl>(std::move(model))}
 {}
 
 osc::BasicModelStatePair::BasicModelStatePair(const OpenSim::Model& model, const SimTK::State& state) :

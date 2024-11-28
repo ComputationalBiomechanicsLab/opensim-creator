@@ -6,11 +6,10 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/VecFunctions.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/ParalellizationHelpers.h>
 #include <oscar/Utils/Perf.h>
 
-#include <iostream>
+#include <ostream>
 #include <ranges>
 #include <span>
 #include <vector>
@@ -19,7 +18,7 @@ using namespace osc;
 
 namespace
 {
-    // this is effectviely the "U" term in the TPS algorithm literature
+    // this is effectively the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
     float RadialBasisFunction3D(const Vec3& controlPoint, const Vec3& p)
@@ -40,10 +39,10 @@ namespace
 std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D& inputs)
 {
     o << "TPSCoefficientSolverInputs3D{landmarks = [";
-    std::string_view delim;
+    std::string_view delimiter;
     for (const LandmarkPair3D& landmark : inputs.landmarks) {
-        o << delim << landmark;
-        delim = ", ";
+        o << delimiter << landmark;
+        delimiter = ", ";
     }
     o << "]}";
     return o;
@@ -81,7 +80,7 @@ TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inpu
     //
     // 3. This algorithm uses the input + output to solve for the linear coefficients.
     //    Once those coefficients are known, we then have a linear equation that we
-    //    we can pump new inputs into (e.g. mesh points, muscle points)
+    //    can pump new inputs into (e.g. mesh points, muscle points)
     //
     // 4. So, given the equation L * [w a] = [v o], where L is a matrix of linear terms,
     //    [w a] is a vector of the linear coefficients (we're solving for these), and [v o]

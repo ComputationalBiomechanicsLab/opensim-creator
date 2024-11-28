@@ -2,7 +2,6 @@
 
 #include <oscar/Utils/Algorithms.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <ranges>
@@ -66,12 +65,10 @@ public:
     void pushParam(std::string_view name, std::string_view description, ParamValue v)
     {
         Param* p = find(std::string{name});
-        if (p)
-        {
+        if (p) {
             *p = Param{name, description, v};
         }
-        else
-        {
+        else {
             m_Params.emplace_back(name, description, v);
         }
     }

@@ -232,22 +232,22 @@ namespace osc
         return std::ranges::adjacent_find(buffer, std::ranges::equal_to{}, [](const auto& wrapper) { return wrapper.get(); }) == buffer.end();
     }
 
-    // returns true if the first argument has a lexographically lower class name
-    bool IsConcreteClassNameLexographicallyLowerThan(
+    // returns true if the first argument has a lexicographically lower class name
+    bool IsConcreteClassNameLexicographicallyLowerThan(
         const OpenSim::Component&,
         const OpenSim::Component&
     );
 
-    // returns true if the first argument points to a component that has a lexographically lower class
+    // returns true if the first argument points to a component that has a lexicographically lower class
     // name than the component pointed to by second argument
     //
     // (it's a helper method that's handy for use with pointers, unique_ptr, shared_ptr, etc.)
     template<DereferencesTo<const OpenSim::Component&> ComponentPtrLike>
-    bool IsConcreteClassNameLexographicallyLowerThan(
+    bool IsConcreteClassNameLexicographicallyLowerThan(
         const ComponentPtrLike& a,
         const ComponentPtrLike& b)
     {
-        return IsConcreteClassNameLexographicallyLowerThan(*a, *b);
+        return IsConcreteClassNameLexicographicallyLowerThan(*a, *b);
     }
 
     bool IsNameLexographicallyLowerThan(
@@ -345,7 +345,7 @@ namespace osc
     // returns the number of direct children that the component owns
     size_t GetNumChildren(const OpenSim::Component&);
 
-    // returns `true` if `c == parent` or `c` is a descendent of `parent`
+    // returns `true` if `c == parent` or `c` is a descendant of `parent`
     bool IsInclusiveChildOf(
         const OpenSim::Component* parent,
         const OpenSim::Component* c
@@ -384,20 +384,20 @@ namespace osc
         return FindAncestorWithType<T>(&c) != nullptr;
     }
 
-    // returns the first descendent (including `component`) that satisfies `predicate(descendent);`
+    // returns the first descendant (including `component`) that satisfies `predicate(descendant);`
     const OpenSim::Component* FindFirstDescendentInclusive(
         const OpenSim::Component& component,
         bool(*predicate)(const OpenSim::Component&)
     );
 
-    // returns the first descendent of `component` that satisfies `predicate(descendent)`
+    // returns the first descendant of `component` that satisfies `predicate(descendant)`
     const OpenSim::Component* FindFirstDescendent(
         const OpenSim::Component& component,
         bool(*predicate)(const OpenSim::Component&)
     );
 
-    // returns the first direct descendent of `component` that has type `T`, or
-    // `nullptr` if no such descendent exists
+    // returns the first direct descendant of `component` that has type `T`, or
+    // `nullptr` if no such descendant exists
     template<std::derived_from<OpenSim::Component> T>
     const T* FindFirstDescendentOfType(const OpenSim::Component& c)
     {
@@ -445,7 +445,7 @@ namespace osc
         std::ostream&
     );
 
-    // writes the given model's multibody system (i.e. kinematic chain) to the output stream
+    // writes the given model's multi-body system (i.e. kinematic chain) to the output stream
     // as a dotviz `digraph`
     void WriteModelMultibodySystemGraphAsDotViz(
         const OpenSim::Model&,
@@ -782,21 +782,21 @@ namespace osc
     bool CanExtractPointInfoFrom(const OpenSim::Component&, const SimTK::State&);
     std::optional<PointInfo> TryExtractPointInfo(const OpenSim::Component&, const SimTK::State&);
 
-    // adds a component to an appropriate location in the model (e.g. jointset for a joint) and
+    // adds a component to an appropriate location in the model (e.g. joint-set for a joint) and
     // returns a reference to the placed component
     OpenSim::Component& AddComponentToAppropriateSet(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
 
-    // adds a model component to the componentset of a model and returns a reference to the component
+    // adds a model component to the component set of a model and returns a reference to the component
     OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>);
 
-    // adds a specific (T) model component to the componentset of the model and returns a reference to the component
+    // adds a specific (T) model component to the component set of the model and returns a reference to the component
     template<std::derived_from<OpenSim::ModelComponent> T>
     T& AddModelComponent(OpenSim::Model& model, std::unique_ptr<T> p)
     {
         return static_cast<T&>(AddModelComponent(model, static_cast<std::unique_ptr<OpenSim::ModelComponent>&&>(std::move(p))));
     }
 
-    // constructs a specific (T) model component in the componentset of the model and returns a reference to the component
+    // constructs a specific (T) model component in the component set of the model and returns a reference to the component
     template<std::derived_from<OpenSim::ModelComponent> T, typename... Args>
     requires std::constructible_from<T, Args&&...>
     T& AddModelComponent(OpenSim::Model& model, Args&&... args)
@@ -804,7 +804,7 @@ namespace osc
         return AddModelComponent(model, std::make_unique<T>(std::forward<Args>(args)...));
     }
 
-    // adds a new component to the componentset of the component and returns a reference to the new component
+    // adds a new component to the component set of the component and returns a reference to the new component
     OpenSim::Component& AddComponent(OpenSim::Component&, std::unique_ptr<OpenSim::Component>);
 
     template<std::derived_from<OpenSim::Component> T>

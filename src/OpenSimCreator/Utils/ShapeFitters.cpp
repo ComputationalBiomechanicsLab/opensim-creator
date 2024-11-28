@@ -14,11 +14,9 @@
 #include <oscar/Shims/Cpp23/numeric.h>
 #include <oscar/Utils/Assertions.h>
 
-#include <cmath>
 #include <algorithm>
 #include <array>
 #include <complex>
-#include <numeric>
 #include <ranges>
 #include <span>
 #include <vector>
@@ -270,11 +268,8 @@ namespace
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 3; ++col) {
                 double accumulator = 0.0;
-                for (size_t i = 0; i < vs.size(); ++i)
-                {
-                    const float lhs = vs[i][row];
-                    const float rhs = vs[i][col];
-                    accumulator += lhs * rhs;
+                for (const Vec3& v : vs) {
+                    accumulator += v[row] * v[col];
                 }
                 rv(row, col) = accumulator;
             }
@@ -302,7 +297,7 @@ namespace
         return planeSurfacePoint.x*basis1 + planeSurfacePoint.y*basis2;
     }
 
-    // part of solving this algeberic form for an ellipsoid:
+    // part of solving this algebraic form for an ellipsoid:
     //
     //     - Ax^2 + By^2 + Cz^2 + 2Dxy + 2Exz + 2Fyz + 2Gx + 2Hy + 2Iz + J = 0
     //
@@ -343,7 +338,7 @@ namespace
         }
 
         // note: SimTK and MATLAB behave slightly different when given inputs
-        //       that are signular or badly scaled.
+        //       that are singular or badly scaled.
         //
         //       I'm using a hard-coded rcond here to match MATLAB's error message,
         //       so that I can verify that SimTK's behavior can be modified to yield
@@ -457,7 +452,7 @@ Sphere osc::FitSphere(const Mesh& mesh)
     // # Background Reading:
     //
     // the original inspiration for this implementation came from the
-    // shape fitting code found in the supplamentary information of:
+    // shape fitting code found in the supplementary information of:
     //
     //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
@@ -551,7 +546,7 @@ Plane osc::FitPlane(const Mesh& mesh)
     // # Background Reading:
     //
     // the original inspiration for this implementation came from the
-    // shape fitting code found in the supplamentary information of:
+    // shape fitting code found in the supplementary information of:
     //
     //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
@@ -599,7 +594,7 @@ Plane osc::FitPlane(const Mesh& mesh)
     //    - Un-projecting the plane-space points back into the original space
     //
     // I can't read minds, but I (AK) guess the reason why the midpoint's location is used
-    // is because it is computed in an along-the-normal-ignoring way. However, I can't say
+    // is that it is computed in an along-the-normal-ignoring way. However, I can't say
     // why the centroid of a bounding rectangle on the plane surface is superior to (e.g.)
     // the mean, or just picking one point and projecting-then-unprojecting it to some
     // point on the plane's surface: mathematically, they're all the same plane
@@ -653,7 +648,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     // # Background Reading:
     //
     // the original inspiration for this implementation came from the
-    // shape fitting code found in the supplamentary information of:
+    // shape fitting code found in the supplementary information of:
     //
     //     Bishop, P., Cuff, A., & Hutchinson, J. (2021). How to build a dinosaur: Musculoskeletal modeling and simulation of locomotor biomechanics in extinct animals. Paleobiology, 47(1), 1-38. doi:10.1017/pab.2020.46
     //         https://datadryad.org/stash/dataset/doi:10.5061/dryad.73n5tb2v9
@@ -663,7 +658,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     //
     //      Yury (2023). Ellipsoid fit (https://www.mathworks.com/matlabcentral/fileexchange/24693-ellipsoid-fit), MATLAB Central File Exchange. Retrieved October 12, 2023.
     //
-    // Yury's implementation refers to using a 10-parameter algebreic description
+    // Yury's implementation refers to using a 10-parameter algebraic description
     // of an ellipsoid, and the implementation solved an eigen problem at some point,
     // but it isn't clear why. A 10-parameter description of an ellipsoid is mentioned
     // in this paper:
@@ -683,7 +678,7 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     // solve for ellipsoid origin
     const auto ellipsoidOrigin = CalcEllipsoidOrigin(A, v);
 
-    // use Eigenanalysis to solve for the ellipsoid's radii and and frame
+    // use Eigenanalysis to solve for the ellipsoid's radii and frame
     auto [evecs, evals] = SolveEigenProblem(A, ellipsoidOrigin);
 
     // OpenSimCreator modification (this is slightly different behavior from "How to Build a Dinosaur"'s MATLAB code)
