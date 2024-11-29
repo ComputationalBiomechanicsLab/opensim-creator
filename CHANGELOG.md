@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The backend now supports HighDPI scaling for the 2D UI elements. This means that the
+  `[experimental_feature] high_dpi_mode` in the configuration is now always `true`. HighDPI
+  scaling for 3D UI elements is on our TODO list.
 - Fixed 'Wireframe' appearance causing the component's decoration to disappear, rather
   than showing as a wireframe (#952).
 - Workflow links on the splash screen were reordered slightly.
@@ -17,15 +20,18 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   about a "pelvis MRI scan" (#949).
 - The documentation banner now includes "OpenSim Creator", rather than just showing
   the icon logo.
-- A CC-BY license was added to `resources/icons` (#944)
+- A CC-BY license was added to `resources/icons` (#944).
 - "Windows Fullscreen" was dropped from the about page: the "Fullscreen" button now
-  always follows "windowed fullscreen" behavior (exclusive fullscreen usage was deemed
-  to be niche).
-- The `[experimental_feature] high_dpi_mode` is now always `true`, because the new SDL3
-  backend defaults to HighDPI mode. This means that the configuration option no longer
-  does anything.
+  always follows "windowed fullscreen" behavior (oldskool exclusive fullscreen usage
+  was deemed to be niche).
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
+- Internal: the platform backend was changed from SDL2 to SDL3, which has better
+  HighDPI and file dialog support (#950).
+- Internal: a prototype of a new model warping UI was added in this release. It isn't
+  ready for production yet, but should make supporting features like only warping the
+  `translation` part of an offset frame (#894) or explicltly assigning specific TPS
+  warps to specific stations in the model (#891) possible - once it works ;)
 
 
 ## [0.5.16] - 2024/11/04
