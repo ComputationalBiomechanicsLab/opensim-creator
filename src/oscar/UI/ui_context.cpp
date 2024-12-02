@@ -142,6 +142,7 @@ namespace
         {}
 
         SDL_Window*                                      Window = nullptr;
+        SDL_Window*                                      ImeWindow = nullptr;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
         std::string                                      ClipboardText;
         bool                                             WantUpdateMonitors = true;
         bool                                             WantChangeDisplayScale = false;
@@ -285,13 +286,30 @@ namespace
     }
 }
 
-// Note: native IME will only display if user calls SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1") _before_ SDL_CreateWindow().
-static void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData* data)
+
+// note: the native IME UI will only display if user calls `SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1")`
+//       before `SDL_CreateWindow`.
+//
+//       However, even if the native overlay isn't showing it's still __VERY IMPORTANT__ to handle
+//       IME correctly, because ImGui's text input widgets use text input events, rather than key
+//       events, to track user input.
+static void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport* viewport, ImGuiPlatformImeData* ime_data)
 {
-    if (data->WantVisible) {
-        const Vec2 top_left = {data->InputPos.x, data->InputPos.y};
-        const Vec2 dimensions = {1.0f, data->InputLineHeight};
-        App::upd().set_unicode_input_rect(Rect{top_left, top_left + dimensions});
+    BackendData* bd = try_get_ui_backend_data();
+    SDL_Window* viewport_window = static_cast<SDL_Window*>(viewport->PlatformHandle);
+
+    if (bd->ImeWindow and (not ime_data->WantVisible or bd->ImeWindow != viewport_window)) {
+        SDL_StopTextInput(std::exchange(bd->ImeWindow, nullptr));
+    }
+
+    if (ime_data->WantVisible) {
+        const Vec2 input_top_left = to<Vec2>(ime_data->InputPos);
+        const Vec2 input_dimensions = {1.0f, ime_data->InputLineHeight};
+        const Rect input_rect = Rect{input_top_left, input_top_left + input_dimensions};
+
+        App::upd().set_unicode_input_rect(input_rect);
+        SDL_StartTextInput(bd->Window);
+        bd->ImeWindow = viewport_window;
     }
 }
 
