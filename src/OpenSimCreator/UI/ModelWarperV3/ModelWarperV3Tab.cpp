@@ -290,7 +290,7 @@ namespace
             ScalingCache&,
             const ScalingParameters&,
             const OpenSim::Model&,
-            OpenSim::Model&) const
+            OpenSim::Model&) const final
         {}
     };
 
