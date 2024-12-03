@@ -635,7 +635,7 @@ namespace
         }
         void resetSourceModel()
         {
-            // TODO
+            sourceModel = std::make_shared<BasicModelStatePair>();
         }
 
         // scaling
@@ -699,19 +699,38 @@ namespace
         }
         void resetScalingDocument()
         {
-            // TODO
+            scalingDocument = std::make_shared<ModelWarperV3Document>();
+            scalingDocument->finalizeConnections(*scalingDocument);
+            scalingDocument->finalizeFromProperties();
         }
-        void loadScalingDocument(const std::filesystem::path&)
+        void loadScalingDocument(const std::filesystem::path& path)
         {
-            // TODO
+            const auto ptr = std::shared_ptr<OpenSim::Object>{OpenSim::Object::makeObjectFromFile(path.string())};
+            if (auto downcasted = std::dynamic_pointer_cast<ModelWarperV3Document>(ptr)) {
+                scalingDocument = std::move(downcasted);
+                scalingDocument->finalizeConnections(*scalingDocument);
+                scalingDocument->finalizeFromProperties();
+            }
+            else {
+                std::stringstream ss;
+                ss << path.string() << ": is a valid object file, but doesn't contain a ModelWarperV3Document";
+                throw std::runtime_error{std::move(ss).str()};
+            }
         }
         std::optional<std::filesystem::path> scalingDocumentFilesystemLocation() const
         {
-            return std::nullopt;  // TODO
+            if (const auto filename = scalingDocument->getDocumentFileName(); not filename.empty()) {
+                return std::filesystem::path{filename};
+            }
+            else {
+                return std::nullopt;
+            }
         }
-        void saveScalingDocumentTo(const std::filesystem::path&)
+        void saveScalingDocumentTo(const std::filesystem::path& p)
         {
-            // TODO
+            if (scalingDocument->print(p.string())) {
+                scalingDocument->setInlined(true, p.string());
+            }
         }
 
         // parameters
@@ -1160,6 +1179,9 @@ namespace
     private:
         void draw_content()
         {
+            int id = 0;
+
+            ui::push_id(id++);
             ui::draw_vertical_separator();
             ui::same_line();
             ui::draw_text("Source Model: ");
@@ -1174,8 +1196,10 @@ namespace
             });
             ui::same_line();
             ui::draw_vertical_separator();
+            ui::pop_id();
 
 
+            ui::push_id(id++);
             ui::same_line();
             ui::draw_text("Scaling Document: ");
             ui::same_line();
@@ -1192,30 +1216,32 @@ namespace
             }
             ui::same_line();
             ui::draw_vertical_separator();
+            ui::pop_id();
 
 
+            ui::push_id(id++);
             ui::same_line();
             m_UndoButton.on_draw();
+            ui::pop_id();
+            ui::push_id(id++);
             ui::same_line();
             m_RedoButton.on_draw();
             ui::same_line();
             ui::draw_vertical_separator();
+            ui::pop_id();
 
+
+            ui::push_id(id++);
             ui::same_line();
-            {
-                bool v = m_State->isCameraLinked();
-                if (ui::draw_checkbox("link cameras", &v)) {
-                    m_State->setCameraLinked(v);
-                }
+            if (bool v = m_State->isCameraLinked(); ui::draw_checkbox("link cameras", &v)) {
+                m_State->setCameraLinked(v);
             }
 
             ui::same_line();
-            {
-                bool v = m_State->isOnlyCameraRotationLinked();
-                if (ui::draw_checkbox("only link rotation", &v)) {
-                    m_State->setOnlyCameraRotationLinked(v);
-                }
+            if (bool v = m_State->isOnlyCameraRotationLinked(); ui::draw_checkbox("only link rotation", &v)) {
+                m_State->setOnlyCameraRotationLinked(v);
             }
+            ui::pop_id();
         }
 
         std::string m_Label;
@@ -1460,6 +1486,17 @@ public:
     Impl(Tab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
     {
+        // Ensure `ModelWarperV3Document` can be loaded from the filesystem via OpenSim.
+        [[maybe_unused]] static const bool s_TypesRegistered = []()
+        {
+            OpenSim::Object::registerType(BodyMassesScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameTranslationScalingStep{});
+            OpenSim::Object::registerType(ModelWarperV3Document{});
+            return true;
+        }();
+
         m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](std::string_view panelName)
         {
             return std::make_shared<ModelWarperV3ControlPanel>(panelName, state);
