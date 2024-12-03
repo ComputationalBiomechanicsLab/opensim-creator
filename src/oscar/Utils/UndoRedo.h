@@ -115,9 +115,15 @@ namespace osc
     public:
         virtual ~UndoRedoBase() noexcept;
 
+        // Moves the current head to the undo entries, creates a new head from
+        // the current scratch space, and clears the redo entries.
         void commit_scratch(std::string_view commit_message);
+
         const UndoRedoEntryBase& head() const;
         UID head_id() const;
+
+        // Copy-assigns the current head over the scratch space.
+        void rollback();
 
         size_t num_undo_entries() const;
         const UndoRedoEntryBase& undo_entry_at(size_t pos) const;

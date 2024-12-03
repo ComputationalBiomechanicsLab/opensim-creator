@@ -65,8 +65,10 @@ public:
         m_Environment{o.m_Environment}
     {
         InitializeModel(*m_Model);
-        InitializeState(*m_Model);
-        m_Model->updWorkingState() = o.m_Model->getWorkingState();
+        SimTK::State& state = m_Model->initializeState();
+        state = o.m_Model->getWorkingState();
+        m_Model->equilibrateMuscles(state);
+        m_Model->realizeDynamics(state);
     }
     Impl(Impl&&) noexcept = default;
     Impl& operator=(const Impl&) = delete;

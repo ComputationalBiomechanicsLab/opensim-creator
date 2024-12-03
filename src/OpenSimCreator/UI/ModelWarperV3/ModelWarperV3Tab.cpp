@@ -1,5 +1,6 @@
 #include "ModelWarperV3Tab.h"
 
+#include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
@@ -8,6 +9,7 @@
 #include <OpenSimCreator/UI/Shared/ModelViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/OpenSim.h>
@@ -24,7 +26,9 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::mow;
 
+// Scaling document related functions/datastructures.
 namespace
 {
     // Tries to delete an item from an `OpenSim::Set`.
@@ -97,11 +101,39 @@ namespace
 
     // Runtime scaling parameters, as collected by the runtime.
     class ScalingParameters final {
+    public:
+        template<typename T>
+        std::optional<T> lookup(const std::string& key) const
+        {
+            const auto it = m_Values.find(key);
+            if (it == m_Values.end()) {
+                return std::nullopt;
+            }
+
+            const T* value = std::get_if<T>(&it->second);
+            if (not value) {
+                return std::nullopt;
+            }
+
+            return *value;
+        }
+    public:
+        std::unordered_map<std::string, ScalingParameterValue> m_Values;
     };
 
     // Persisted state between separate scaling executions, to improve the performance
     // (esp. when scaling via UI edits).
     class ScalingCache final {
+    public:
+        std::unique_ptr<InMemoryMesh> lookupTPSMeshWarp(
+            [[maybe_unused]] const OpenSim::Mesh& mesh,
+            [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
+            [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath,
+            [[maybe_unused]] double blendingFactor)
+        {
+            log_info("TODO: implement warping + caching");
+            return std::make_unique<InMemoryMesh>();
+        }
     };
 
     // The state of a validation check performed by a `ScalingStep`.
@@ -253,6 +285,13 @@ namespace
             callback(ScalingParameterDeclaration{"blending_factor", 1.0});
             callback(ScalingParameterDeclaration{"subject_mass", 75.0});
         }
+
+        void implApplyScalingStep(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model&,
+            OpenSim::Model&) const
+        {}
     };
 
     // A `ScalingStep` that scales `OpenSim::Mesh`es in the source model by
@@ -282,12 +321,36 @@ namespace
         }
 
         void implApplyScalingStep(
-            ScalingCache&,
-            const ScalingParameters&,
-            const OpenSim::Model&,
+            ScalingCache& scalingCache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model&) const final
         {
-            log_info("TODO: scale %s", getAbsolutePathString().c_str());
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
+
+            OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
+            const std::filesystem::path sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+
+            OSC_ASSERT_ALWAYS(not get_destination_landmarks_file().empty());
+            const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+
+            for (int i = 0; i < getProperty_meshes().size(); ++i) {
+                const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                OSC_ASSERT_ALWAYS(mesh && "could not find a mesh in the source model");
+
+                const std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
+                    *mesh,
+                    sourceLandmarksPath,
+                    destinationLandmarksPath,
+                    *blendingFactor
+                );
+
+                log_info("TODO: overwrite the mesh in the model with the in-memory mesh");
+            }
         }
 
         std::vector<ScalingStepValidationMessage> implValidate(
@@ -408,7 +471,6 @@ namespace
     class ModelWarperV3Document final :
         public OpenSim::Component,
         public IVersionedComponentAccessor {
-
         OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperV3Document, OpenSim::Component)
 
         OpenSim_DECLARE_LIST_PROPERTY(parameter_defaults, ScalingParameterDefault, "A list of scaling parameter defaults that should be shown to the user. These override the defaults produced by each `ScalingStep`'s implementation.");
@@ -451,7 +513,9 @@ namespace
                 componentsProp.removeValueAtIndex(idx);
             }
 
+            clearConnections();
             finalizeConnections(*this);
+            finalizeFromProperties();
         }
 
         bool hasScalingParameters() const
@@ -479,14 +543,14 @@ namespace
             std::map<std::string, ScalingParameterValue> mergedDefaults;
             for (const ScalingStep& step : iterateScalingSteps()) {
                 step.forEachScalingParameterDeclaration([&step, &mergedDefaults](const ScalingParameterDeclaration& decl)
-                {
-                    const auto [it, inserted] = mergedDefaults.try_emplace(decl.name(), decl.default_value());
-                    if (not inserted and it->second.index() != decl.default_value().index()) {
-                        std::stringstream msg;
-                        msg << step.getAbsolutePath() << ": declares a scaling parameter (" << decl.name() << ") that has the same name as another scaling parameter, but different type: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it";
-                        throw std::runtime_error{std::move(msg).str()};
-                    }
-                });
+                    {
+                        const auto [it, inserted] = mergedDefaults.try_emplace(decl.name(), decl.default_value());
+                        if (not inserted and it->second.index() != decl.default_value().index()) {
+                            std::stringstream msg;
+                            msg << step.getAbsolutePath() << ": declares a scaling parameter (" << decl.name() << ") that has the same name as another scaling parameter, but different type: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it";
+                            throw std::runtime_error{ std::move(msg).str() };
+                        }
+                    });
             }
             for (const auto& [name, value] : mergedDefaults) {
                 callback(ScalingParameterDefault{name, to_string(value)});
@@ -510,50 +574,217 @@ namespace
         }
     };
 
+    // A top-level message produced by validating an entire scaling document (not just `ScalingStep`s,
+    // but any top-level validation concerns also).
     struct ScalingDocumentValidationMessage {
         OpenSim::ComponentPath sourceScalingStepAbsPath;
         ScalingStepValidationMessage payload;
     };
 
-    // Top-level shared UI state that the tab is manipulating.
-    class ModelWarperV3UIState final {
+    // Top-level input state that's required to actually perform model scaling.
+    class ScalingState final {
     public:
-        explicit ModelWarperV3UIState()
+        explicit ScalingState()
         {
-            m_ScalingDocument->finalizeConnections(*m_ScalingDocument);
+            scalingDocument->finalizeConnections(*scalingDocument);
+            scalingDocument->finalizeFromProperties();
         }
 
+        ScalingState(const ScalingState& other) :
+            sourceModel{std::make_shared<BasicModelStatePair>(*other.sourceModel)},
+            scalingDocument{std::make_shared<ModelWarperV3Document>(*other.scalingDocument)},
+            scalingParameters{other.scalingParameters}
+        {
+            // care: separate `ScalingState`s should act like separate instances with no
+            //       reference sharing between them, but the shared pointers in the "main"
+            //       `ScalingState` might already be divvied out to UI components, so we
+            //       can't just switch the pointers around.
+            scalingDocument->clearConnections();
+            scalingDocument->finalizeConnections(*scalingDocument);
+            scalingDocument->finalizeFromProperties();
+        }
+
+        ScalingState& operator=(const ScalingState& other)
+        {
+            // care: separate `ScalingState`s should act like separate instances with no
+            //       reference sharing between them, but the shared pointers in the "main"
+            //       `ScalingState` might already be divvied out to UI components, so we
+            //       can't just switch the pointers around.
+            if (&other == this) {
+                return *this;
+            }
+            *sourceModel = *other.sourceModel;
+            *scalingDocument = *other.scalingDocument;
+            scalingDocument->clearConnections();
+            scalingDocument->finalizeConnections(*scalingDocument);
+            scalingDocument->finalizeFromProperties();
+            scalingParameters = other.scalingParameters;
+            return *this;
+        }
+
+        ~ScalingState() noexcept = default;
+
+        // model
+        const BasicModelStatePair& getSourceModel() const { return *sourceModel; }
+        std::shared_ptr<BasicModelStatePair> getSourceModelPtr() { return sourceModel; }
+        void loadSourceModelFromOsim(const std::filesystem::path& path)
+        {
+            App::singleton<RecentFiles>()->push_back(path);
+            sourceModel = std::make_shared<BasicModelStatePair>(path);
+        }
+
+        // scaling
+        std::shared_ptr<const ModelWarperV3Document> getScalingDocumentPtr() const { return scalingDocument; }
+        bool hasScalingSteps() const { return scalingDocument->hasScalingSteps(); }
+        auto iterateScalingSteps() const { return scalingDocument->iterateScalingSteps(); }
+        void addScalingStep(std::unique_ptr<ScalingStep> step) { scalingDocument->addScalingStep(std::move(step)); }
+        void eraseScalingStep(ScalingStep& step) { scalingDocument->removeScalingStep(step); }
+        template<typename T = OpenSim::Component>
+        T* findScalingComponentMut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scalingDocument, p); }
+        void applyScalingObjectPropertyEdit(ObjectPropertyEdit edit)
+        {
+            OpenSim::Component* component = findScalingComponentMut(edit.getComponentAbsPath());
+            if (not component) {
+                return;
+            }
+            OpenSim::AbstractProperty* property = FindPropertyMut(*component, edit.getPropertyName());
+            if (not property) {
+                return;
+            }
+            edit.apply(*property);
+            scalingDocument->clearConnections();
+            scalingDocument->finalizeConnections(*scalingDocument);
+            scalingDocument->finalizeFromProperties();
+        }
+        void disableScalingStep(const OpenSim::ComponentPath& path)
+        {
+            if (auto* scalingStep = findScalingComponentMut<ScalingStep>(path)) {
+                scalingStep->set_enabled(false);
+                scalingDocument->clearConnections();
+                scalingDocument->finalizeConnections(*scalingDocument);
+                scalingDocument->finalizeFromProperties();
+            }
+        }
+        std::vector<ScalingDocumentValidationMessage> getEnabledScalingStepValidationMessages(ScalingCache& scalingCache) const
+        {
+            std::vector<ScalingDocumentValidationMessage> rv;
+
+            if (not hasScalingSteps()) {
+                return rv;
+            }
+            for (const auto& scalingStep : scalingDocument->getComponentList<ScalingStep>()) {
+                if (not scalingStep.get_enabled()) {
+                    // Only aggregate validation errors from enabled `ScalingStep`s at the document-level.
+                    continue;
+                }
+                auto stepMessages = scalingStep.validate(scalingCache, scalingParameters, *sourceModel);
+                rv.reserve(rv.size() + stepMessages.size());
+                for (auto& stepMessage : stepMessages) {
+                    rv.push_back(ScalingDocumentValidationMessage{
+                        .sourceScalingStepAbsPath = scalingStep.getAbsolutePath(),
+                        .payload = std::move(stepMessage),
+                    });
+                }
+            }
+            return rv;
+        }
+        bool hasScalingStepValidationIssues(ScalingCache& scalingCache) const
+        {
+            return not getEnabledScalingStepValidationMessages(scalingCache).empty();
+        }
+
+        // parameters
+        bool hasScalingParameterDeclarations() const { return scalingDocument->hasScalingParameters(); }
+        const ScalingParameters& getScalingParameters() const { return scalingParameters; }
+        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)> callback) const { scalingDocument->forEachScalingParameterDefault(callback); }
+
+
+        // scaled model generation (ultimately, what we're trying to do)
+        std::unique_ptr<BasicModelStatePair> tryGenerateScaledModel(ScalingCache& scalingCache) const
+        {
+            if (hasScalingStepValidationIssues(scalingCache)) {
+                return nullptr;  // validation errors: can't update the scaled model
+            }
+
+            // copy the source model to the scaled model, ready for scaling
+            OpenSim::Model resultModel = sourceModel->getModel();
+            resultModel.clearConnections();
+            resultModel.finalizeConnections(resultModel);
+            resultModel.finalizeFromProperties();
+
+            if (not hasScalingSteps()) {
+                // no scaling steps, we're done
+                return std::make_unique<BasicModelStatePair>(std::move(resultModel));
+            }
+
+            // apply each scaling step to the scaled model
+            for (auto& step : scalingDocument->updComponentList<ScalingStep>()) {
+                step.applyScalingStep(scalingCache, scalingParameters, *sourceModel, resultModel);
+            }
+
+            // set the current scaled model as the result model
+            return std::make_unique<BasicModelStatePair>(std::move(resultModel));
+        }
+
+    private:
+        std::shared_ptr<BasicModelStatePair> sourceModel = std::make_shared<BasicModelStatePair>();
+        std::shared_ptr<ModelWarperV3Document> scalingDocument = std::make_shared<ModelWarperV3Document>();
+        ScalingParameters scalingParameters;
+    };
+}
+
+// UI datastructures
+namespace
+{
+    // Top-level UI state that's shared between panels/widget that the UI manipulates.
+    class ModelWarperV3UIState final {
+    public:
         // lifecycle stuff
         void on_tick()
         {
-            if (not m_DeferredActions.empty()) {
-                for (auto& deferredAction : m_DeferredActions) {
-                    deferredAction(*this);
-                }
-                m_DeferredActions.clear();
+            try {
+                if (not m_DeferredActions.empty()) {
+                    for (auto& deferredAction : m_DeferredActions) {
+                        deferredAction(*this);
+                    }
+                    m_DeferredActions.clear();
 
-                updateScaledModel();
+                    updateScaledModel();
+                }
+            }
+            catch (const std::exception& ex) {
+                log_error("error processing deferred actions: %s", ex.what());
             }
         }
 
-        std::shared_ptr<ModelWarperV3Document> getDocumentPtr() { return m_ScalingDocument; }
-
         // scaling step stuff
-        bool hasScalingSteps() const { return m_ScalingDocument->hasScalingSteps(); }
-        auto iterateScalingSteps() const { return m_ScalingDocument->iterateScalingSteps(); }
+        std::shared_ptr<const ModelWarperV3Document> getDocumentPtr()
+        {
+            return m_ScalingState->scratch().getScalingDocumentPtr();
+        }
+        bool hasScalingSteps() const
+        {
+            return m_ScalingState->scratch().hasScalingSteps();
+        }
+        auto iterateScalingSteps() const
+        {
+            return m_ScalingState->scratch().iterateScalingSteps();
+        }
         void addScalingStepDeferred(std::unique_ptr<ScalingStep> step)
         {
             m_DeferredActions.push_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](ModelWarperV3UIState& state) mutable
             {
-                state.m_ScalingDocument->addScalingStep(std::unique_ptr<ScalingStep>{s->clone()});
+                state.m_ScalingState->upd_scratch().addScalingStep(std::unique_ptr<ScalingStep>{s->clone()});
+                state.m_ScalingState->commit_scratch("Add scaling step");
             });
         }
         void eraseScalingStepDeferred(const ScalingStep& step)
         {
             m_DeferredActions.push_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
             {
-                if (auto* step = FindComponentMut<ScalingStep>(*state.m_ScalingDocument, path)) {
-                    state.m_ScalingDocument->removeScalingStep(*step);
+                if (auto* step = state.m_ScalingState->upd_scratch().findScalingComponentMut<ScalingStep>(path)) {
+                    state.m_ScalingState->upd_scratch().eraseScalingStep(*step);
+                    state.m_ScalingState->commit_scratch("Erase scaling step");
                 }
             });
         }
@@ -561,28 +792,40 @@ namespace
         {
             return step.validate(
                 m_ScalingCache,
-                m_ScalingParameters,
-                *m_SourceModel
+                m_ScalingState->scratch().getScalingParameters(),
+                m_ScalingState->scratch().getSourceModel()
             );
         }
 
         // scaling parameter stuff
-        bool hasScalingParameters() const { return m_ScalingDocument->hasScalingParameters(); }
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)> callback) const { m_ScalingDocument->forEachScalingParameterDefault(callback); }
+        bool hasScalingParameters() const
+        {
+            return m_ScalingState->scratch().hasScalingParameterDeclarations();
+        }
+        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const
+        {
+            m_ScalingState->scratch().forEachScalingParameterDefault(callback);
+        }
 
         // source model stuff
-        std::shared_ptr<IModelStatePair> sourceModel() { return m_SourceModel; }
+        std::shared_ptr<IModelStatePair> sourceModel()
+        {
+            return m_ScalingState->upd_scratch().getSourceModelPtr();
+        }
 
         // result model stuff (note: might not be available if there's validation issues)
-        using ScaledModelOrValidationErrors = std::variant<
-            std::shared_ptr<IModelStatePair>,          // scaled model
-            std::vector<ScalingDocumentValidationMessage>  // vaidation messages
+        using ScaledModelOrValidationErrorsOrScalingErrors = std::variant<
+            std::shared_ptr<IModelStatePair>,               // successfully scaled model
+            std::vector<ScalingDocumentValidationMessage>,  // vaidation messages
+            std::string                                     // runtime scaling error message (i.e. after validation passed but during sclaing)
         >;
-        ScaledModelOrValidationErrors scaledModelOrDocumentValidationMessages()
+        ScaledModelOrValidationErrorsOrScalingErrors scaledModelOrDocumentValidationMessages()
         {
-            std::vector<ScalingDocumentValidationMessage> msgs = getEnabledScalingStepValidationMessages();
-            if (not msgs.empty()) {
-                return msgs;
+            if (m_ScalingErrorMessage) {
+                return m_ScalingErrorMessage.value();
+            }
+            else if (const auto validationMessages = m_ScalingState->scratch().getEnabledScalingStepValidationMessages(m_ScalingCache); not validationMessages.empty()) {
+                return validationMessages;
             }
             else {
                 return m_ScaledModel;
@@ -597,6 +840,9 @@ namespace
         const PolarPerspectiveCamera& getLinkedCamera() const { return m_LinkedCamera; }
         void setLinkedCamera(const PolarPerspectiveCamera& camera) { m_LinkedCamera = camera; }
 
+        // undo/redo stuff
+        std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
+
         // actions
         void actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
         {
@@ -606,95 +852,68 @@ namespace
 
             if (path) {
                 App::singleton<RecentFiles>()->push_back(*path);
-                m_SourceModel = std::make_shared<BasicModelStatePair>(std::move(path).value());
+                m_ScalingState->upd_scratch().loadSourceModelFromOsim(*path);
+                m_ScalingState->commit_scratch("Loaded osim file");
                 updateScaledModel();
             }
         }
 
         void actionApplyObjectEditToScalingDocument(ObjectPropertyEdit edit)
         {
-            OpenSim::Component* component = FindComponentMut(*m_ScalingDocument, edit.getComponentAbsPath());
-            if (not component) {
-                return;
-            }
-            OpenSim::AbstractProperty* property = FindPropertyMut(*component, edit.getPropertyName());
-            if (not property) {
-                return;
-            }
-            edit.apply(*property);
-            m_ScalingDocument->finalizeConnections(*m_ScalingDocument);
+            m_ScalingState->upd_scratch().applyScalingObjectPropertyEdit(std::move(edit));
+            m_ScalingState->commit_scratch("change scaling property");
             updateScaledModel();
         }
 
         void actionDisableScalingStep(const OpenSim::ComponentPath& path)
         {
-            if (auto* scalingStep = FindComponentMut<ScalingStep>(*m_ScalingDocument, path)) {
-                scalingStep->set_enabled(false);
-                m_ScalingDocument->finalizeConnections(*m_ScalingDocument);
-                updateScaledModel();
-            }
+            m_ScalingState->upd_scratch().disableScalingStep(path);
+            m_ScalingState->commit_scratch("disable scaling step");
+            updateScaledModel();
+        }
+
+        void actionRollback()
+        {
+            m_ScalingState->rollback();
+        }
+
+        void actionRetryScalingDeferred()
+        {
+            m_DeferredActions.push_back([](ModelWarperV3UIState& state) mutable
+            {
+                state.updateScaledModel();
+            });
+        }
+
+        bool canUndo() const { return m_ScalingState->can_undo(); }
+        void actionUndo()
+        {
+            m_ScalingState->undo();
         }
     private:
-        std::vector<ScalingDocumentValidationMessage> getEnabledScalingStepValidationMessages()
-        {
-            std::vector<ScalingDocumentValidationMessage> rv;
-
-            if (not m_ScalingDocument->hasScalingSteps()) {
-                return rv;
-            }
-            for (const auto& scalingStep : m_ScalingDocument->getComponentList<ScalingStep>()) {
-                if (not scalingStep.get_enabled()) {
-                    // Only aggregate validation errors from enabled `ScalingStep`s at the document-level.
-                    continue;
-                }
-                auto stepMessages = scalingStep.validate(m_ScalingCache, m_ScalingParameters, *m_SourceModel);
-                rv.reserve(rv.size() + stepMessages.size());
-                for (auto& stepMessage : stepMessages) {
-                    rv.push_back(ScalingDocumentValidationMessage{
-                        .sourceScalingStepAbsPath = scalingStep.getAbsolutePath(),
-                        .payload = std::move(stepMessage),
-                    });
-                }
-            }
-            return rv;
-        }
-
         void updateScaledModel()
         {
-            if (not getEnabledScalingStepValidationMessages().empty()) {
-                return;  // validation errors: can't update the scaled model
+            try {
+                auto scaledModel = m_ScalingState->scratch().tryGenerateScaledModel(m_ScalingCache);
+                if (not scaledModel) {
+                    return;
+                }
+
+                m_ScaledModel = std::move(scaledModel);
+                m_ScalingErrorMessage.reset();
             }
-
-            // copy the source model to the scaled model, ready for scaling
-            OpenSim::Model resultModel = m_SourceModel->getModel();
-            resultModel.finalizeConnections();
-
-            if (not m_ScalingDocument->hasScalingSteps()) {
-                return;  // no scaling steps, we're done
+            catch (const std::exception& ex) {
+                m_ScalingErrorMessage = ex.what();
             }
-
-            // apply each scaling step to the scaled model
-            for (auto& step : m_ScalingDocument->updComponentList<ScalingStep>()) {
-                step.applyScalingStep(m_ScalingCache, m_ScalingParameters, *m_SourceModel, resultModel);
-            }
-
-            // set the current scaled model as the result model
-            *m_ScaledModel = BasicModelStatePair{std::move(resultModel)};
-
-
-            // - if there's no validation issues then:
-            //   - copy the source model to create a new mutable result model
-            //   - perform each scaling step in-place, using the `ScalingStep` API
-            log_info("UPDATE SCALED MODEL OR VALIDATION CHECKS");
         }
 
-        std::shared_ptr<BasicModelStatePair> m_SourceModel = std::make_shared<BasicModelStatePair>();
-        std::shared_ptr<BasicModelStatePair> m_ScaledModel = m_SourceModel;
-        std::shared_ptr<ModelWarperV3Document> m_ScalingDocument = std::make_shared<ModelWarperV3Document>();
-        ScalingCache m_ScalingCache;
-        ScalingParameters m_ScalingParameters;
-        std::vector<std::function<void(ModelWarperV3UIState&)>> m_DeferredActions;
+        std::shared_ptr<UndoRedo<ScalingState>> m_ScalingState = std::make_shared<UndoRedo<ScalingState>>();
 
+        ScalingCache m_ScalingCache;
+        std::shared_ptr<BasicModelStatePair> m_ScaledModel = std::make_shared<BasicModelStatePair>();
+        std::optional<std::string> m_ScalingErrorMessage;
+
+        std::vector<std::function<void(ModelWarperV3UIState&)>> m_DeferredActions;
         bool m_LinkCameras = true;
         bool m_OnlyLinkRotation = false;
         PolarPerspectiveCamera m_LinkedCamera;
@@ -766,6 +985,7 @@ namespace
             std::visit(Overload{
                 [this](std::shared_ptr<IModelStatePair> scaledModel) { draw_scaled_model_visualization(scaledModel); },
                 [this](std::vector<ScalingDocumentValidationMessage> messages) { draw_validation_error_message(messages); },
+                [this](std::string scalingErrorMessage) { draw_scaling_error_message(std::move(scalingErrorMessage)); },
             }, m_State->scaledModelOrDocumentValidationMessages());
         }
 
@@ -836,6 +1056,21 @@ namespace
             }
         }
 
+        void draw_scaling_error_message(std::string message)
+        {
+            const float h = ui::get_content_region_available().y;
+            const float lineHeight = ui::get_text_line_height();
+            constexpr float numLines = 3.0f;
+            const float top = 0.5f * (h - numLines*lineHeight);
+
+            ui::set_cursor_pos({0.0f, top});
+            ui::draw_text_centered("An error occured while trying to scale the model:");
+            ui::draw_text_centered(message);
+            if (ui::draw_button_centered(OSC_ICON_RECYCLE " Retry Scaling")) {
+                m_State->actionRetryScalingDeferred();
+            }
+        }
+
         std::shared_ptr<ModelWarperV3UIState> m_State;
     };
 
@@ -863,7 +1098,11 @@ namespace
             });
 
             ui::same_line();
+            m_UndoButton.on_draw();
+            ui::same_line();
+            m_RedoButton.on_draw();
 
+            ui::same_line();
             {
                 bool v = m_State->isCameraLinked();
                 if (ui::draw_checkbox("link cameras", &v)) {
@@ -882,6 +1121,8 @@ namespace
 
         std::string m_Label;
         std::shared_ptr<ModelWarperV3UIState> m_State;
+        UndoButton m_UndoButton{m_State->getUndoRedoPtr()};
+        RedoButton m_RedoButton{m_State->getUndoRedoPtr()};
     };
 
     // control panel (design, set parameters, etc.)
@@ -1166,9 +1407,40 @@ public:
 
     void on_draw()
     {
-        ui::enable_dockspace_over_main_viewport();
-        m_PanelManager->on_draw();
-        m_Toolbar.on_draw();
+        try {
+            ui::enable_dockspace_over_main_viewport();
+            m_PanelManager->on_draw();
+            m_Toolbar.on_draw();
+            m_ExceptionThrownLastFrame = false;
+        } catch (const std::exception& ex) {
+            log_error("an exception was thrown, probably due to an error in the document: %s", ex.what());
+
+            // The exception might've left the UI context in an invalid state, so reset it.
+            log_error("resetting the UI");
+            App::notify<ResetUIContextEvent>(*parent());
+
+            if (std::exchange(m_ExceptionThrownLastFrame, true)) {
+                // An exception was also thrown last frame - try to undo the state to try
+                // and fix the problem for the user.
+                if (m_State->canUndo()) {
+                    log_error("attempting to fix the problem by undo-ing the document");
+                    m_State->actionUndo();
+                }
+                else {
+                    // Undoing isn't possible, so we must defer this error to a higher level
+                    // of the system.
+                    log_critical("the document cannot be undone, elevating the exception");
+                    throw;
+                }
+            }
+            else {
+                // No exception thrown last frame, it's likely that the exception is due to
+                // an edit to the scratch space last frame, so try to softly roll the model
+                // back.
+                log_error("rolling back the document");
+                m_State->actionRollback();
+            }
+        }
     }
 
 private:
@@ -1178,6 +1450,8 @@ private:
     WindowMenu m_WindowMenu{m_PanelManager};
     MainMenuAboutTab m_AboutTab;
     ModelWarperV3Toolbar m_Toolbar{"##ModelWarperV3Toolbar", m_State};
+
+    bool m_ExceptionThrownLastFrame = false;
 };
 
 CStringView osc::ModelWarperV3Tab::id() { return Impl::static_label(); }

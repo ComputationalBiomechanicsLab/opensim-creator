@@ -120,6 +120,7 @@ add_executable(testoscar
     Utils/TestTemporaryFile.cpp
     Utils/TestTransparentStringHasher.cpp
     Utils/TestTypelist.cpp
+    Utils/TestUndoRedo.cpp
     # Utils/TestVariableLengthArray.cpp  # disabled, because MacOS doesn't support `std::pmr::memory_resource`
 
     Variant/TestVariant.cpp

@@ -36,6 +36,11 @@ UID osc::UndoRedoBase::head_id() const
     return head_.id();
 }
 
+void osc::UndoRedoBase::rollback()
+{
+    impl_copy_assign_scratch_from_commit(head_);
+}
+
 size_t osc::UndoRedoBase::num_undo_entries() const
 {
     return undo_.size();
