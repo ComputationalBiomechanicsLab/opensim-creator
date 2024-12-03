@@ -83,8 +83,8 @@ namespace
     class ScalingParameterDefault final : public OpenSim::Object {
         OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterDefault, OpenSim::Object)
     public:
-        OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the parameter that should be defaulted");
-        OpenSim_DECLARE_PROPERTY(default_value, std::string, "The default value of the parameter (a string that requires parsing, based on the declarations)");
+        OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the parameter that should be defaulted.");
+        OpenSim_DECLARE_PROPERTY(default_value, std::string, "The default value of the parameter (a string that requires parsing, based on the declarations).");
 
         explicit ScalingParameterDefault()
         {
@@ -575,7 +575,8 @@ namespace
     };
 
     // A top-level message produced by validating an entire scaling document (not just `ScalingStep`s,
-    // but any top-level validation concerns also).
+    // but any top-level validation concerns also). In MVC parlance, this is the M - so it shouldn't
+    // directly use or refer to the UI.
     struct ScalingDocumentValidationMessage {
         OpenSim::ComponentPath sourceScalingStepAbsPath;
         ScalingStepValidationMessage payload;
@@ -631,6 +632,10 @@ namespace
         {
             App::singleton<RecentFiles>()->push_back(path);
             sourceModel = std::make_shared<BasicModelStatePair>(path);
+        }
+        void resetSourceModel()
+        {
+            // TODO
         }
 
         // scaling
@@ -692,6 +697,22 @@ namespace
         {
             return not getEnabledScalingStepValidationMessages(scalingCache).empty();
         }
+        void resetScalingDocument()
+        {
+            // TODO
+        }
+        void loadScalingDocument(const std::filesystem::path&)
+        {
+            // TODO
+        }
+        std::optional<std::filesystem::path> scalingDocumentFilesystemLocation() const
+        {
+            return std::nullopt;  // TODO
+        }
+        void saveScalingDocumentTo(const std::filesystem::path&)
+        {
+            // TODO
+        }
 
         // parameters
         bool hasScalingParameterDeclarations() const { return scalingDocument->hasScalingParameters(); }
@@ -733,13 +754,14 @@ namespace
     };
 }
 
-// UI datastructures
+// Controller datastructures (i.e. middleware between the UI and the underlying model).
 namespace
 {
     // Top-level UI state that's shared between panels/widget that the UI manipulates.
     class ModelWarperV3UIState final {
     public:
-        // lifecycle stuff
+
+        // Should be regularly called by the UI once per frame.
         void on_tick()
         {
             try {
@@ -757,11 +779,13 @@ namespace
             }
         }
 
-        // scaling step stuff
-        std::shared_ptr<const ModelWarperV3Document> getDocumentPtr()
+        // Returns a shared readonly pointer to the top-level model warping document.
+        std::shared_ptr<const ModelWarperV3Document> getDocumentPtr() const
         {
             return m_ScalingState->scratch().getScalingDocumentPtr();
         }
+
+
         bool hasScalingSteps() const
         {
             return m_ScalingState->scratch().hasScalingSteps();
@@ -797,7 +821,7 @@ namespace
             );
         }
 
-        // scaling parameter stuff
+
         bool hasScalingParameters() const
         {
             return m_ScalingState->scratch().hasScalingParameterDeclarations();
@@ -807,11 +831,12 @@ namespace
             m_ScalingState->scratch().forEachScalingParameterDefault(callback);
         }
 
-        // source model stuff
+
         std::shared_ptr<IModelStatePair> sourceModel()
         {
             return m_ScalingState->upd_scratch().getSourceModelPtr();
         }
+
 
         // result model stuff (note: might not be available if there's validation issues)
         using ScaledModelOrValidationErrorsOrScalingErrors = std::variant<
@@ -832,6 +857,7 @@ namespace
             }
         }
 
+
         // camera stuff
         bool isCameraLinked() const { return m_LinkCameras; }
         void setCameraLinked(bool v) { m_LinkCameras = v; }
@@ -840,10 +866,19 @@ namespace
         const PolarPerspectiveCamera& getLinkedCamera() const { return m_LinkedCamera; }
         void setLinkedCamera(const PolarPerspectiveCamera& camera) { m_LinkedCamera = camera; }
 
+
         // undo/redo stuff
         std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
 
+
         // actions
+        void actionCreateNewSourceModel()
+        {
+            m_ScalingState->upd_scratch().resetSourceModel();
+            updateScaledModel();
+            m_ScalingState->commit_scratch("Create new source model");
+        }
+
         void actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
         {
             if (not path) {
@@ -853,23 +888,50 @@ namespace
             if (path) {
                 App::singleton<RecentFiles>()->push_back(*path);
                 m_ScalingState->upd_scratch().loadSourceModelFromOsim(*path);
-                m_ScalingState->commit_scratch("Loaded osim file");
                 updateScaledModel();
+                m_ScalingState->commit_scratch("Loaded osim file");
             }
+        }
+
+        void actionCreateNewScalingDocument()
+        {
+            m_ScalingState->upd_scratch().resetScalingDocument();
+            updateScaledModel();
+            m_ScalingState->commit_scratch("Create new scaling document");
+        }
+
+        void actionOpenScalingDocument()
+        {
+            if (const auto path = prompt_user_to_select_file({"xml"})) {
+                m_ScalingState->upd_scratch().loadScalingDocument(*path);
+                updateScaledModel();
+                m_ScalingState->commit_scratch("Loaded scaling document");
+            }
+        }
+
+        void actionSaveScalingDocument()
+        {
+            if (const auto existingPath = m_ScalingState->scratch().scalingDocumentFilesystemLocation()) {
+                m_ScalingState->upd_scratch().saveScalingDocumentTo(*existingPath);
+            }
+            else if (const auto userSelectedPath = prompt_user_for_file_save_location_add_extension_if_necessary("xml")) {
+                m_ScalingState->upd_scratch().saveScalingDocumentTo(*userSelectedPath);
+            }
+            // else: doesn't have an existing filesystem location and the user cancelled the dialog: do nothing
         }
 
         void actionApplyObjectEditToScalingDocument(ObjectPropertyEdit edit)
         {
             m_ScalingState->upd_scratch().applyScalingObjectPropertyEdit(std::move(edit));
-            m_ScalingState->commit_scratch("change scaling property");
             updateScaledModel();
+            m_ScalingState->commit_scratch("change scaling property");
         }
 
         void actionDisableScalingStep(const OpenSim::ComponentPath& path)
         {
             m_ScalingState->upd_scratch().disableScalingStep(path);
-            m_ScalingState->commit_scratch("disable scaling step");
             updateScaledModel();
+            m_ScalingState->commit_scratch("disable scaling step");
         }
 
         void actionRollback()
@@ -885,7 +947,10 @@ namespace
             });
         }
 
-        bool canUndo() const { return m_ScalingState->can_undo(); }
+        bool canUndo() const
+        {
+            return m_ScalingState->can_undo();
+        }
         void actionUndo()
         {
             m_ScalingState->undo();
@@ -918,7 +983,10 @@ namespace
         bool m_OnlyLinkRotation = false;
         PolarPerspectiveCamera m_LinkedCamera;
     };
+}
 
+namespace
+{
     Color ui_color(const ScalingStepValidationMessage& message)
     {
         switch (message.getState()) {
@@ -1032,7 +1100,7 @@ namespace
             // header line
             {
                 std::stringstream ss;
-                ss << "Cannot show model: " << messages.size() << " validation error" << (messages.size() == 1 ? "s" : "") << " detected";
+                ss << "Cannot show model: " << messages.size() << " validation error" << (messages.size() > 1 ? "s" : "") << " detected:";
                 ui::draw_text_centered(std::move(ss).str());
             }
 
@@ -1048,7 +1116,7 @@ namespace
                 ui::pop_style_color();
 
                 ui::same_line();
-                if (ui::draw_small_button("disable")) {
+                if (ui::draw_small_button("Disable Scaling Step")) {
                     m_State->actionDisableScalingStep(message.sourceScalingStepAbsPath);
                 }
 
@@ -1092,15 +1160,46 @@ namespace
     private:
         void draw_content()
         {
+            ui::draw_vertical_separator();
+            ui::same_line();
+            ui::draw_text("Source Model: ");
+            ui::same_line();
+            if (ui::draw_button(OSC_ICON_FILE)) {
+                m_State->actionCreateNewSourceModel();
+            }
+            ui::same_line();
             DrawOpenModelButtonWithRecentFilesDropdown([this](auto maybeSelection)
             {
                 m_State->actionOpenOsimOrPromptUser(std::move(maybeSelection));
             });
+            ui::same_line();
+            ui::draw_vertical_separator();
+
+
+            ui::same_line();
+            ui::draw_text("Scaling Document: ");
+            ui::same_line();
+            if (ui::draw_button(OSC_ICON_FILE)) {
+                m_State->actionCreateNewScalingDocument();
+            }
+            ui::same_line();
+            if (ui::draw_button(OSC_ICON_FOLDER_OPEN)) {
+                m_State->actionOpenScalingDocument();
+            }
+            ui::same_line();
+            if (ui::draw_button(OSC_ICON_SAVE)) {
+                m_State->actionSaveScalingDocument();
+            }
+            ui::same_line();
+            ui::draw_vertical_separator();
+
 
             ui::same_line();
             m_UndoButton.on_draw();
             ui::same_line();
             m_RedoButton.on_draw();
+            ui::same_line();
+            ui::draw_vertical_separator();
 
             ui::same_line();
             {
