@@ -1,13 +1,22 @@
 #include "LandmarkHelpers.h"
 
+#include <OpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
+
 #include <oscar/Formats/CSV.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 #include <oscar/Utils/StringHelpers.h>
 
+#include <algorithm>
+#include <cstddef>
+#include <filesystem>
+#include <fstream>
+#include <functional>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -18,6 +27,7 @@ using osc::lm::CSVParseWarning;
 using osc::lm::Landmark;
 using osc::lm::NamedLandmark;
 using namespace osc;
+namespace rgs = std::ranges;
 
 namespace
 {
@@ -84,6 +94,18 @@ namespace
 
         return Landmark{std::move(maybeName), Vec3{*x, *y, *z}};
     }
+
+    bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)
+    {
+        return a.maybeName == b.maybeName;
+    }
+
+    std::string GenerateName(size_t suffix)
+    {
+        std::stringstream ss;
+        ss << "unnamed_" << suffix;
+        return std::move(ss).str();
+    }
 }
 
 std::string osc::lm::to_string(const CSVParseWarning& warning)
@@ -109,6 +131,22 @@ void osc::lm::ReadLandmarksFromCSV(
             [](SkipRow) {}
         }, ParseRow(line, cols));
     }
+}
+
+std::vector<Landmark> osc::lm::ReadLandmarksFromCSVIntoVectorOrThrow(
+    const std::filesystem::path& path)
+{
+    std::vector<Landmark> rv;
+
+    std::ifstream in{path};
+    if (not in) {
+        std::stringstream ss;
+        ss << path.string() << ": cannot open landmarks file for reading";
+        throw std::runtime_error{std::move(ss).str()};
+    }
+
+    ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward<decltype(lm)>(lm)); });
+    return rv;
 }
 
 void osc::lm::WriteLandmarksToCSV(
@@ -186,4 +224,32 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
         rv.push_back(NamedLandmark{getName(lm), lm.position});
     }
     return rv;
+}
+
+void osc::lm::TryPairingLandmarks(
+    std::vector<Landmark> a,
+    std::vector<Landmark> b,
+    std::function<void(const MaybeNamedLandmarkPair&)> consumer)
+{
+    size_t nunnamed = 0;
+
+    // handle/pair all elements in `a`
+    for (auto& lm : a) {
+        const auto it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
+        std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
+
+        if (it != b.end()) {
+            consumer(MaybeNamedLandmarkPair{std::move(name), lm.position, it->position});
+            b.erase(it);  // pop element from b
+        }
+        else {
+            consumer(MaybeNamedLandmarkPair{std::move(name), lm.position, std::nullopt});
+        }
+    }
+
+    // handle remaining (unpaired) elements in `b`
+    for (auto& lm : b) {
+        std::string name = lm.maybeName ? std::move(lm.maybeName).value() : GenerateName(nunnamed++);
+        consumer(MaybeNamedLandmarkPair{name, std::nullopt, lm.position});
+    }
 }

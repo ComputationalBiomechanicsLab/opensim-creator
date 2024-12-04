@@ -1,6 +1,8 @@
 #include "ModelWarperV3Tab.h"
 
 #include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <OpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <OpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
 #include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
@@ -183,6 +185,25 @@ namespace
             [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
             [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath)
         {
+            // Read source+destination landmark files into independent collections
+            const auto sourceLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(sourceLandmarksPath);
+            const auto destinationLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(destinationLandmarksPath);
+
+            // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
+            TPSCoefficientSolverInputs3D inputs;
+            inputs.landmarks.reserve(max(sourceLandmarks.size(), destinationLandmarks.size()));
+            lm::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs](const MaybeNamedLandmarkPair& p)
+            {
+                if (const auto landmark3d = p.tryGetPairedLocations()) {
+                    inputs.landmarks.push_back(*landmark3d);
+                }
+                else {
+                    // TODO: partially-paired landmark might merit a warning etc.
+                }
+            });
+
+            // Solve the coefficients
+            m_CoefficientsTODO = CalcCoefficients(inputs);
             return m_CoefficientsTODO;
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenSimCreator/Utils/LandmarkPair3D.h>
+
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -9,12 +10,12 @@
 #include <string>
 #include <utility>
 
-namespace osc::mow
+namespace osc
 {
     // a possibly-not-completely-paired landmark
-    class MaybePairedLandmark final {
+    class MaybeNamedLandmarkPair final {
     public:
-        MaybePairedLandmark(
+        MaybeNamedLandmarkPair(
             std::string name_,
             std::optional<Vec3> maybeSourcePos_,
             std::optional<Vec3> maybeDestinationPos_) :

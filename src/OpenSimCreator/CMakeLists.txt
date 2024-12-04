@@ -64,6 +64,7 @@ add_library(OpenSimCreator STATIC
     Documents/Landmarks/LandmarkCSVFlags.h
     Documents/Landmarks/LandmarkHelpers.cpp
     Documents/Landmarks/LandmarkHelpers.h
+    Documents/Landmarks/MaybeNamedLandmarkPair.h
     Documents/Landmarks/NamedLandmark.h
 
     Documents/MeshImporter/Body.cpp
@@ -149,7 +150,6 @@ add_library(OpenSimCreator STATIC
     Documents/ModelWarper/IValidateable.cpp
     Documents/ModelWarper/IValidateable.h
     Documents/ModelWarper/IWarpDetailProvider.h
-    Documents/ModelWarper/MaybePairedLandmark.h
     Documents/ModelWarper/ModelWarpConfiguration.cpp
     Documents/ModelWarper/ModelWarpConfiguration.h
     Documents/ModelWarper/PointWarperFactories.cpp

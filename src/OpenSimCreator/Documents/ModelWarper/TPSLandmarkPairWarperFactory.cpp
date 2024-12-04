@@ -46,79 +46,42 @@ namespace
         return expected;
     }
 
-    std::vector<Landmark> TryReadLandmarksFromCSVIntoVector(const std::filesystem::path& path)
+    std::vector<MaybeNamedLandmarkPair> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
     {
-        std::vector<Landmark> rv;
-
-        std::ifstream in{path};
-        if (!in) {
-            log_info("%s: cannot open landmark file", path.string().c_str());
-            return rv;
-        }
-
-        ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward<decltype(lm)>(lm)); });
+        std::vector<MaybeNamedLandmarkPair> rv;
+        TryPairingLandmarks(a, b, [&rv](const MaybeNamedLandmarkPair& p) { rv.push_back(p); });
         return rv;
     }
 
-    bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)
-    {
-        return a.maybeName == b.maybeName;
-    }
-
-    std::string GenerateName(size_t suffix)
-    {
-        std::stringstream ss;
-        ss << "unnamed_" << suffix;
-        return std::move(ss).str();
-    }
-
-    std::vector<MaybePairedLandmark> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
-    {
-        size_t nunnamed = 0;
-        std::vector<MaybePairedLandmark> rv;
-
-        // handle/pair all elements in `a`
-        for (auto& lm : a) {
-            const auto it = rgs::find_if(b, std::bind_front(SameNameOrBothUnnamed, std::cref(lm)));
-            std::string name = lm.maybeName ? *std::move(lm.maybeName) : GenerateName(nunnamed++);
-
-            if (it != b.end()) {
-                rv.emplace_back(std::move(name), lm.position, it->position);
-                b.erase(it);  // pop element from b
-            }
-            else {
-                rv.emplace_back(std::move(name), lm.position, std::nullopt);
-            }
-        }
-
-        // handle remaining (unpaired) elements in `b`
-        for (auto& lm : b) {
-            std::string name = lm.maybeName ? std::move(lm.maybeName).value() : GenerateName(nunnamed++);
-            rv.emplace_back(name, std::nullopt, lm.position);
-        }
-
-        return rv;
-    }
-
-    std::vector<MaybePairedLandmark> TryLoadPairedLandmarks(
+    std::vector<MaybeNamedLandmarkPair> TryLoadPairedLandmarks(
         [[maybe_unused]] const std::optional<std::filesystem::path>& maybeSourceLandmarksCSV,
         [[maybe_unused]] const std::optional<std::filesystem::path>& maybeDestinationLandmarksCSV)
     {
         std::vector<Landmark> src;
         if (maybeSourceLandmarksCSV) {
-            src = TryReadLandmarksFromCSVIntoVector(*maybeSourceLandmarksCSV);
+            try {
+                src = ReadLandmarksFromCSVIntoVectorOrThrow(*maybeSourceLandmarksCSV);
+            }
+            catch (const std::exception& ex) {
+                log_error("%s", ex.what());
+            }
         }
         std::vector<Landmark> dest;
         if (maybeDestinationLandmarksCSV) {
-            dest = TryReadLandmarksFromCSVIntoVector(*maybeDestinationLandmarksCSV);
+            try {
+                dest = ReadLandmarksFromCSVIntoVectorOrThrow(*maybeDestinationLandmarksCSV);
+            }
+            catch (const std::exception& ex) {
+                log_error("%s", ex.what());
+            }
         }
         return PairLandmarks(std::move(src), std::move(dest));
     }
 
-    TPSCoefficients3D TryCalcTPSCoefficients(std::span<const MaybePairedLandmark> maybePairs)
+    TPSCoefficients3D TryCalcTPSCoefficients(std::span<const MaybeNamedLandmarkPair> maybePairs)
     {
         TPSCoefficientSolverInputs3D rv;
-        for (const MaybePairedLandmark& maybePair: maybePairs) {
+        for (const MaybeNamedLandmarkPair& maybePair: maybePairs) {
             if (auto pair = maybePair.tryGetPairedLocations()) {
                 rv.landmarks.push_back(*pair);
             }
@@ -214,17 +177,17 @@ size_t osc::mow::TPSLandmarkPairWarperFactory::getNumLandmarks() const
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumSourceLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::hasSource);
+    return rgs::count_if(m_Landmarks, &MaybeNamedLandmarkPair::hasSource);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumDestinationLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::hasDestination);
+    return rgs::count_if(m_Landmarks, &MaybeNamedLandmarkPair::hasDestination);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumFullyPairedLandmarks() const
 {
-    return rgs::count_if(m_Landmarks, &MaybePairedLandmark::isFullyPaired);
+    return rgs::count_if(m_Landmarks, &MaybeNamedLandmarkPair::isFullyPaired);
 }
 
 size_t osc::mow::TPSLandmarkPairWarperFactory::getNumUnpairedLandmarks() const
@@ -249,12 +212,12 @@ bool osc::mow::TPSLandmarkPairWarperFactory::hasUnpairedLandmarks() const
 
 bool osc::mow::TPSLandmarkPairWarperFactory::hasLandmarkNamed(std::string_view name) const
 {
-    return cpp23::contains(m_Landmarks, name, &MaybePairedLandmark::name);
+    return cpp23::contains(m_Landmarks, name, &MaybeNamedLandmarkPair::name);
 }
 
-const MaybePairedLandmark* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
+const MaybeNamedLandmarkPair* osc::mow::TPSLandmarkPairWarperFactory::tryGetLandmarkPairingByName(std::string_view name) const
 {
-    return find_or_nullptr(m_Landmarks, name, &MaybePairedLandmark::name);
+    return find_or_nullptr(m_Landmarks, name, &MaybeNamedLandmarkPair::name);
 }
 
 std::unique_ptr<IPointWarperFactory> osc::mow::TPSLandmarkPairWarperFactory::implClone() const

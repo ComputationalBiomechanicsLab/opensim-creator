@@ -5,6 +5,7 @@
 #include <OpenSimCreator/Documents/Landmarks/NamedLandmark.h>
 
 #include <cstddef>
+#include <filesystem>
 #include <functional>
 #include <iosfwd>
 #include <optional>
@@ -12,6 +13,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+namespace osc { class MaybeNamedLandmarkPair; }
 
 namespace osc::lm
 {
@@ -28,6 +31,10 @@ namespace osc::lm
         const std::function<void(CSVParseWarning)>& warningConsumer = [](auto){}
     );
 
+    std::vector<Landmark> ReadLandmarksFromCSVIntoVectorOrThrow(
+        const std::filesystem::path&
+    );
+
     void WriteLandmarksToCSV(
         std::ostream&,
         const std::function<std::optional<Landmark>()>& landmarkProducer,
@@ -39,5 +46,11 @@ namespace osc::lm
     std::vector<NamedLandmark> GenerateNames(
         std::span<const Landmark>,
         std::string_view prefix = "unnamed_"
+    );
+
+    void TryPairingLandmarks(
+        std::vector<Landmark>,
+        std::vector<Landmark>,
+        std::function<void(const MaybeNamedLandmarkPair&)> consumer
     );
 }

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <OpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <OpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
-#include <OpenSimCreator/Documents/ModelWarper/MaybePairedLandmark.h>
 #include <OpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
 #include <OpenSimCreator/Documents/ModelWarper/WarpDetail.h>
 #include <OpenSimCreator/Utils/TPS3D.h>
@@ -60,7 +60,7 @@ namespace osc::mow
         bool hasUnpairedLandmarks() const;
 
         bool hasLandmarkNamed(std::string_view) const;
-        const MaybePairedLandmark* tryGetLandmarkPairingByName(std::string_view) const;
+        const MaybeNamedLandmarkPair* tryGetLandmarkPairingByName(std::string_view) const;
 
     private:
         std::unique_ptr<IPointWarperFactory> implClone() const override;
@@ -79,7 +79,7 @@ namespace osc::mow
         std::filesystem::path m_ExpectedDestinationLandmarksAbsoluteFilepath;
         bool m_DestinationLandmarksFileExists;
 
-        std::vector<MaybePairedLandmark> m_Landmarks;
+        std::vector<MaybeNamedLandmarkPair> m_Landmarks;
 
         CopyOnUpdPtr<TPSCoefficients3D> m_TPSCoefficients;
     };
