@@ -3,14 +3,16 @@
 #include <OpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
 #include <OpenSimCreator/Documents/Model/BasicModelStatePair.h>
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
 #include <OpenSimCreator/Platform/RecentFiles.h>
 #include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/MainMenu.h>
 #include <OpenSimCreator/UI/Shared/ModelViewerPanel.h>
 #include <OpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
 #include <OpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <OpenSimCreator/Utils/SimTKConverters.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
+#include <OpenSimCreator/Utils/SimTKConverters.h>
+#include <OpenSimCreator/Utils/TPS3D.h>
 
 #include <OpenSim/OpenSim.h>
 #include <oscar/oscar.h>
@@ -43,6 +45,28 @@ namespace
             }
         }
         return false;
+    }
+
+    // Tries to overwride `oldGeometry` in the given `model` with `newGeometry`.
+    //
+    // This is useful when transforming geometry (e.g. TPS warping) and overwriting it
+    // in a model.
+    void OverwriteGeometry(
+        OpenSim::Model& model,
+        OpenSim::Geometry& oldGeometry,
+        std::unique_ptr<OpenSim::Geometry> newGeometry)
+    {
+        newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
+        newGeometry->set_Appearance(oldGeometry.get_Appearance());
+        newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
+        newGeometry->setName(oldGeometry.getName());
+        OpenSim::Component* owner = UpdOwner(model, oldGeometry);
+        OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
+        OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
+        InitializeModel(model);
+        InitializeState(model);
+        owner->addComponent(newGeometry.release());
+        FinalizeConnections(model);
     }
 
     // A single, potentially user-provided, scaling parameter.
@@ -117,6 +141,11 @@ namespace
 
             return *value;
         }
+
+        void try_emplace(const std::string& name, const ScalingParameterValue& value)
+        {
+            m_Values.try_emplace(name, value);
+        }
     public:
         std::unordered_map<std::string, ScalingParameterValue> m_Values;
     };
@@ -126,14 +155,38 @@ namespace
     class ScalingCache final {
     public:
         std::unique_ptr<InMemoryMesh> lookupTPSMeshWarp(
-            [[maybe_unused]] const OpenSim::Mesh& mesh,
-            [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
-            [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath,
-            [[maybe_unused]] double blendingFactor)
+            const OpenSim::Model& model,
+            const SimTK::State& state,
+            const OpenSim::Mesh& inputMesh,
+            const std::filesystem::path& sourceLandmarksPath,
+            const std::filesystem::path& destinationLandmarksPath,
+            double blendingFactor)
         {
-            log_info("TODO: implement warping + caching");
-            return std::make_unique<InMemoryMesh>();
+            // Compile the TPS coefficients from the source+destination landmarks
+            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
+
+            // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
+            Mesh mesh = ToOscMesh(model, state, inputMesh);
+
+            // Warp the verticies in-place.
+            auto vertices = mesh.vertices();
+            ApplyThinPlateWarpToPointsInPlace(coefficients, vertices, static_cast<float>(blendingFactor));
+
+            // Assign the vertices back to the OSC mesh and emit it as an `InMemoryMesh` component
+            mesh.set_vertices(vertices);
+            mesh.recalculate_normals();
+            return std::make_unique<InMemoryMesh>(mesh);
         }
+
+    private:
+        const TPSCoefficients3D& lookupTPSCoefficients(
+            [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
+            [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath)
+        {
+            return m_CoefficientsTODO;
+        }
+
+        TPSCoefficients3D m_CoefficientsTODO;
     };
 
     // The state of a validation check performed by a `ScalingStep`.
@@ -324,8 +377,9 @@ namespace
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
             const OpenSim::Model& sourceModel,
-            OpenSim::Model&) const final
+            OpenSim::Model& resultModel) const final
         {
+            // Lookup/validate warping inputs.
             const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
@@ -338,18 +392,25 @@ namespace
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
             OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
 
+            // Warp each mesh specified by the `meshes` property.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
+                // Find the mesh in the source model and use it produce the warped mesh.
                 const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(mesh && "could not find a mesh in the source model");
-
-                const std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
+                std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
+                    sourceModel,
+                    sourceModel.getWorkingState(),
                     *mesh,
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *blendingFactor
                 );
+                OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
 
-                log_info("TODO: overwrite the mesh in the model with the in-memory mesh");
+                // Overwrite the mesh in the result model with the warped mesh.
+                auto* resultMesh = FindComponentMut<OpenSim::Mesh>(resultModel, get_meshes(i));
+                OSC_ASSERT_ALWAYS(resultMesh && "could not find a corresponding mesh in the result model");
+                OverwriteGeometry(resultModel, *resultMesh, std::move(warpedMesh));
             }
         }
 
@@ -499,13 +560,13 @@ namespace
             addComponent(step.release());
         }
 
-        void removeScalingStep(ScalingStep& step)
+        bool removeScalingStep(ScalingStep& step)
         {
             if (not step.hasOwner()) {
-                return;
+                return false;
             }
             if (&step.getOwner() != this) {
-                return;
+                return false;
             }
 
             auto& componentsProp = updProperty_components();
@@ -516,6 +577,7 @@ namespace
             clearConnections();
             finalizeConnections(*this);
             finalizeFromProperties();
+            return true;
         }
 
         bool hasScalingParameters() const
@@ -594,7 +656,7 @@ namespace
         ScalingState(const ScalingState& other) :
             sourceModel{std::make_shared<BasicModelStatePair>(*other.sourceModel)},
             scalingDocument{std::make_shared<ModelWarperV3Document>(*other.scalingDocument)},
-            scalingParameters{other.scalingParameters}
+            userEnactedScalingParameters{other.userEnactedScalingParameters}
         {
             // care: separate `ScalingState`s should act like separate instances with no
             //       reference sharing between them, but the shared pointers in the "main"
@@ -619,13 +681,14 @@ namespace
             scalingDocument->clearConnections();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
-            scalingParameters = other.scalingParameters;
+            userEnactedScalingParameters = other.userEnactedScalingParameters;
             return *this;
         }
 
         ~ScalingState() noexcept = default;
 
-        // model
+    // Source Model Methods
+
         const BasicModelStatePair& getSourceModel() const { return *sourceModel; }
         std::shared_ptr<BasicModelStatePair> getSourceModelPtr() { return sourceModel; }
         void loadSourceModelFromOsim(const std::filesystem::path& path)
@@ -638,14 +701,34 @@ namespace
             sourceModel = std::make_shared<BasicModelStatePair>();
         }
 
-        // scaling
+    // Scaling Document Methods
+
         std::shared_ptr<const ModelWarperV3Document> getScalingDocumentPtr() const { return scalingDocument; }
         bool hasScalingSteps() const { return scalingDocument->hasScalingSteps(); }
         auto iterateScalingSteps() const { return scalingDocument->iterateScalingSteps(); }
-        void addScalingStep(std::unique_ptr<ScalingStep> step) { scalingDocument->addScalingStep(std::move(step)); }
-        void eraseScalingStep(ScalingStep& step) { scalingDocument->removeScalingStep(step); }
-        template<typename T = OpenSim::Component>
-        T* findScalingComponentMut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scalingDocument, p); }
+        void addScalingStep(std::unique_ptr<ScalingStep> step)
+        {
+            scalingDocument->addScalingStep(std::move(step));
+        }
+        bool eraseScalingStep(ScalingStep& step)
+        {
+            if (scalingDocument->removeScalingStep(step)) {
+                ensureUserScalingEnactedScalingParametersAreUpToDate();
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        bool eraseScalingStep(const OpenSim::ComponentPath& path)
+        {
+            if (auto* scalingStep = findScalingComponentMut<ScalingStep>(path)) {
+                return eraseScalingStep(*scalingStep);
+            }
+            else {
+                return false;
+            }
+        }
         void applyScalingObjectPropertyEdit(ObjectPropertyEdit edit)
         {
             OpenSim::Component* component = findScalingComponentMut(edit.getComponentAbsPath());
@@ -660,14 +743,19 @@ namespace
             scalingDocument->clearConnections();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
+            ensureUserScalingEnactedScalingParametersAreUpToDate();
         }
-        void disableScalingStep(const OpenSim::ComponentPath& path)
+        bool disableScalingStep(const OpenSim::ComponentPath& path)
         {
             if (auto* scalingStep = findScalingComponentMut<ScalingStep>(path)) {
                 scalingStep->set_enabled(false);
                 scalingDocument->clearConnections();
                 scalingDocument->finalizeConnections(*scalingDocument);
                 scalingDocument->finalizeFromProperties();
+                return true;
+            }
+            else {
+                return false;
             }
         }
         std::vector<ScalingDocumentValidationMessage> getEnabledScalingStepValidationMessages(ScalingCache& scalingCache) const
@@ -682,7 +770,7 @@ namespace
                     // Only aggregate validation errors from enabled `ScalingStep`s at the document-level.
                     continue;
                 }
-                auto stepMessages = scalingStep.validate(scalingCache, scalingParameters, *sourceModel);
+                auto stepMessages = scalingStep.validate(scalingCache, userEnactedScalingParameters, *sourceModel);
                 rv.reserve(rv.size() + stepMessages.size());
                 for (auto& stepMessage : stepMessages) {
                     rv.push_back(ScalingDocumentValidationMessage{
@@ -702,6 +790,7 @@ namespace
             scalingDocument = std::make_shared<ModelWarperV3Document>();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
+            ensureUserScalingEnactedScalingParametersAreUpToDate();
         }
         void loadScalingDocument(const std::filesystem::path& path)
         {
@@ -733,33 +822,39 @@ namespace
             }
         }
 
-        // parameters
+    // Scaling Parameter Methods
+
         bool hasScalingParameterDeclarations() const { return scalingDocument->hasScalingParameters(); }
-        const ScalingParameters& getScalingParameters() const { return scalingParameters; }
+        const ScalingParameters& getScalingParameters() const { return userEnactedScalingParameters; }
         void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)> callback) const { scalingDocument->forEachScalingParameterDefault(callback); }
 
+    // Model Scaling
 
-        // scaled model generation (ultimately, what we're trying to do)
+        // Tries to generate a scaled version of the source model using the current
+        // scaling steps and scaling parameters.
         std::unique_ptr<BasicModelStatePair> tryGenerateScaledModel(ScalingCache& scalingCache) const
         {
             if (hasScalingStepValidationIssues(scalingCache)) {
-                return nullptr;  // validation errors: can't update the scaled model
+                return nullptr;  // there are validation errors, so scaling isn't possible
             }
 
-            // copy the source model to the scaled model, ready for scaling
+            // Create an independent copy of the source model, which will be scaled in-place.
             OpenSim::Model resultModel = sourceModel->getModel();
             resultModel.clearConnections();
             resultModel.finalizeConnections(resultModel);
             resultModel.finalizeFromProperties();
 
             if (not hasScalingSteps()) {
-                // no scaling steps, we're done
+                // There are no scaling steps, so a copy of the source model is a scaled model (trivially).
                 return std::make_unique<BasicModelStatePair>(std::move(resultModel));
             }
 
-            // apply each scaling step to the scaled model
+            // Calculate the effective scaling parameters (defaults + user-enacted overrides)
+            const ScalingParameters scalingParams = calcEffectiveScalingParameters();
+
+            // Apply each scaling step to the scaled model
             for (auto& step : scalingDocument->updComponentList<ScalingStep>()) {
-                step.applyScalingStep(scalingCache, scalingParameters, *sourceModel, resultModel);
+                step.applyScalingStep(scalingCache, scalingParams, *sourceModel, resultModel);
             }
 
             // set the current scaled model as the result model
@@ -767,9 +862,36 @@ namespace
         }
 
     private:
+        void ensureUserScalingEnactedScalingParametersAreUpToDate()
+        {
+            // TODO: ensure that all user-enacted scaling parameters are applicable to
+            //       the current scaling steps (disabled steps should be treated as part
+            //       of the set so that when a user re-enables a step it re-remembers the
+            //       user's last override).
+        }
+
+        ScalingParameters calcEffectiveScalingParameters() const
+        {
+            // Copy the user-enacted scaling parameters followed in inserting default
+            // values whenever a scaling parameter declaration isn't satisfied by a
+            // user-enacted value (i.e. user-enacted parameters take precendence over
+            // defaults).
+            ScalingParameters rv  = userEnactedScalingParameters;
+            for (const ScalingStep& step : iterateScalingSteps()) {
+                step.forEachScalingParameterDeclaration([&rv](const ScalingParameterDeclaration& decl)
+                {
+                    rv.try_emplace(decl.name(), decl.default_value());
+                });
+            }
+            return rv;
+        }
+
+        template<typename T = OpenSim::Component>
+        T* findScalingComponentMut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scalingDocument, p); }
+
         std::shared_ptr<BasicModelStatePair> sourceModel = std::make_shared<BasicModelStatePair>();
         std::shared_ptr<ModelWarperV3Document> scalingDocument = std::make_shared<ModelWarperV3Document>();
-        ScalingParameters scalingParameters;
+        ScalingParameters userEnactedScalingParameters;
     };
 }
 
@@ -825,8 +947,7 @@ namespace
         {
             m_DeferredActions.push_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
             {
-                if (auto* step = state.m_ScalingState->upd_scratch().findScalingComponentMut<ScalingStep>(path)) {
-                    state.m_ScalingState->upd_scratch().eraseScalingStep(*step);
+                if (state.m_ScalingState->upd_scratch().eraseScalingStep(path)) {
                     state.m_ScalingState->commit_scratch("Erase scaling step");
                 }
             });
