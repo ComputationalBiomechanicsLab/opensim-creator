@@ -1,0 +1,352 @@
+{
+  "UNDO": {
+    "file": "arrow-rotate-left.svg",
+    "unicode": "f0e2",
+    "author": "Font Awesome"
+  },
+  "REDO": {
+    "file": "arrow-rotate-right.svg",
+    "unicode": "f01e",
+    "author": "Font Awesome"
+  },
+  "CARET_DOWN": {
+    "file": "caret-down.svg",
+    "unicode": "f0d7",
+    "author": "Font Awesome"
+  },
+  "SPIDER": {
+    "file": "spider.svg",
+    "unicode": "f717",
+    "author": "Font Awesome"
+  },
+  "COOKIE": {
+    "file": "cookie.svg",
+    "unicode": "f563",
+    "author": "Font Awesome"
+  },
+  "BEZIER_CURVE": {
+    "file": "bezier-curve.svg",
+    "unicode": "f55b",
+    "author": "Font Awesome"
+  },
+  "ARROWS_ALT": {
+    "file": "up-down-left-right.svg",
+    "unicode": "f0b2",
+    "author": "Font Awesome"
+  },
+  "EXPAND_ARROWS_ALT": {
+    "file": "up-right-and-down-left-from-center.svg",
+    "unicode": "f424",
+    "author": "Font Awesome"
+  },
+  "EXPAND": {
+    "file": "expand.svg",
+    "unicode": "f065",
+    "author": "Font Awesome"
+  },
+  "EXPAND_ALT": {
+    "file": "up-right-and-down-left-from-center.svg",
+    "unicode": "f424",
+    "author": "Font Awesome"
+  },
+  "COMPRESS_ARROWS_ALT": {
+    "file": "minimize.svg",
+    "unicode": "f78c",
+    "author": "Font Awesome"
+  },
+  "DOT_CIRCLE": {
+    "file": "circle-dot.svg",
+    "unicode": "f192",
+    "author": "Font Awesome"
+  },
+  "CIRCLE": {
+    "file": "circle.svg",
+    "unicode": "f111",
+    "author": "Font Awesome"
+  },
+  "LINK": {
+    "file": "link.svg",
+    "unicode": "f0c1",
+    "author": "Font Awesome"
+  },
+  "CUBE": {
+    "file": "cube.svg",
+    "unicode": "f1b2",
+    "author": "Font Awesome"
+  },
+  "CUBES": {
+    "file": "cubes.svg",
+    "unicode": "f1b3",
+    "author": "Font Awesome"
+  },
+  "MAP_PIN": {
+    "file": "map-pin.svg",
+    "unicode": "f276",
+    "author": "Font Awesome"
+  },
+  "MAGIC": {
+    "file": "wand-magic.svg",
+    "unicode": "f0d0",
+    "author": "Font Awesome"
+  },
+  "FILE": {
+    "file": "file.svg",
+    "unicode": "f15b",
+    "author": "Font Awesome"
+  },
+  "FILE_IMPORT": {
+    "file": "file-import.svg",
+    "unicode": "f56f",
+    "author": "Font Awesome"
+  },
+  "FILE_EXPORT": {
+    "file": "file-export.svg",
+    "unicode": "f56e",
+    "author": "Font Awesome"
+  },
+  "FOLDER": {
+    "file": "folder.svg",
+    "unicode": "f07b",
+    "author": "Font Awesome"
+  },
+  "FOLDER_OPEN": {
+    "file": "folder-open.svg",
+    "unicode": "f07c",
+    "author": "Font Awesome"
+  },
+  "SAVE": {
+    "file": "floppy-disk.svg",
+    "unicode": "f0c7",
+    "author": "Font Awesome"
+  },
+  "LOCK": {
+    "file": "lock.svg",
+    "unicode": "f023",
+    "author": "Font Awesome"
+  },
+  "UNLOCK": {
+    "file": "unlock.svg",
+    "unicode": "f09c",
+    "author": "Font Awesome"
+  },
+  "TRASH": {
+    "file": "trash.svg",
+    "unicode": "f1f8",
+    "author": "Font Awesome"
+  },
+  "INFO_CIRCLE": {
+    "file": "circle-info.svg",
+    "unicode": "f05a",
+    "author": "Font Awesome"
+  },
+  "ERASER": {
+    "file": "eraser.svg",
+    "unicode": "f12d",
+    "author": "Font Awesome"
+  },
+  "CHECK": {
+    "file": "check.svg",
+    "unicode": "f00c",
+    "author": "Font Awesome"
+  },
+  "EXCLAMATION": {
+    "file": "exclamation.svg",
+    "unicode": "f12a",
+    "author": "Font Awesome"
+  },
+  "TIMES": {
+    "file": "xmark.svg",
+    "unicode": "f00d",
+    "author": "Font Awesome"
+  },
+  "COG": {
+    "file": "gear.svg",
+    "unicode": "f013",
+    "author": "Font Awesome"
+  },
+  "PLAY": {
+    "file": "play.svg",
+    "unicode": "f04b",
+    "author": "Font Awesome"
+  },
+  "EDIT": {
+    "file": "pen-to-square.svg",
+    "unicode": "f044",
+    "author": "Font Awesome"
+  },
+  "UPLOAD": {
+    "file": "file-arrow-up.svg",
+    "unicode": "f574",
+    "author": "Font Awesome"
+  },
+  "COPY": {
+    "file": "copy.svg",
+    "unicode": "f0c5",
+    "author": "Font Awesome"
+  },
+  "RECYCLE": {
+    "file": "recycle.svg",
+    "unicode": "f1b8",
+    "author": "Font Awesome"
+  },
+  "TIMES_CIRCLE": {
+    "file": "circle-xmark.svg",
+    "unicode": "f057",
+    "author": "Font Awesome"
+  },
+  "BARS": {
+    "file": "bars.svg",
+    "unicode": "f0c9",
+    "author": "Font Awesome"
+  },
+  "FAST_BACKWARD": {
+    "file": "backward-fast.svg",
+    "unicode": "f049",
+    "author": "Font Awesome"
+  },
+  "STEP_BACKWARD": {
+    "file": "backward-step.svg",
+    "unicode": "f048",
+    "author": "Font Awesome"
+  },
+  "PAUSE": {
+    "file": "pause.svg",
+    "unicode": "f04c",
+    "author": "Font Awesome"
+  },
+  "STEP_FORWARD": {
+    "file": "forward-step.svg",
+    "unicode": "f051",
+    "author": "Font Awesome"
+  },
+  "FAST_FORWARD": {
+    "file": "forward-fast.svg",
+    "unicode": "f050",
+    "author": "Font Awesome"
+  },
+  "PLUS": {
+    "file": "plus.svg",
+    "unicode": "f067",
+    "author": "Font Awesome"
+  },
+  "PLUS_CIRCLE": {
+    "file": "circle-plus.svg",
+    "unicode": "f055",
+    "author": "Font Awesome"
+  },
+  "ARROW_UP": {
+    "file": "arrow-up.svg",
+    "unicode": "f062",
+    "author": "Font Awesome"
+  },
+  "ARROW_DOWN": {
+    "file": "arrow-down.svg",
+    "unicode": "f063",
+    "author": "Font Awesome"
+  },
+  "ARROW_LEFT": {
+    "file": "arrow-left.svg",
+    "unicode": "f060",
+    "author": "Font Awesome"
+  },
+  "ARROW_RIGHT": {
+    "file": "arrow-right.svg",
+    "unicode": "f061",
+    "author": "Font Awesome"
+  },
+  "EYE": {
+    "file": "eye.svg",
+    "unicode": "f06e",
+    "author": "Font Awesome"
+  },
+  "BOLT": {
+    "file": "bolt.svg",
+    "unicode": "f0e7",
+    "author": "Font Awesome"
+  },
+  "MOUSE_POINTER": {
+    "file": "arrow-pointer.svg",
+    "unicode": "f245",
+    "author": "Font Awesome"
+  },
+  "BORDER_ALL": {
+    "file": "border-all.svg",
+    "unicode": "f84c",
+    "author": "Font Awesome"
+  },
+  "DIVIDE": {
+    "file": "divide.svg",
+    "unicode": "f529",
+    "author": "Font Awesome"
+  },
+  "WEIGHT": {
+    "file": "weight-scale.svg",
+    "unicode": "f496",
+    "author": "Font Awesome"
+  },
+  "CAMERA": {
+    "file": "camera.svg",
+    "unicode": "f030",
+    "author": "Font Awesome"
+  },
+  "EXTERNAL_LINK_ALT": {
+    "file": "up-right-from-square.svg",
+    "unicode": "f35d",
+    "author": "Font Awesome"
+  },
+  "PAINT_ROLLER": {
+    "file": "paint-roller.svg",
+    "unicode": "f5aa",
+    "author": "Font Awesome"
+  },
+  "SEARCH": {
+    "file": "magnifying-glass.svg",
+    "unicode": "f002",
+    "author": "Font Awesome"
+  },
+  "SEARCH_MINUS": {
+    "file": "magnifying-glass-minus.svg",
+    "unicode": "f010",
+    "author": "Font Awesome"
+  },
+  "SEARCH_PLUS": {
+    "file": "magnifying-glass-plus.svg",
+    "unicode": "f00e",
+    "author": "Font Awesome"
+  },
+  "CALCULATOR": {
+    "file": "calculator.svg",
+    "unicode": "f1ec",
+    "author": "Font Awesome"
+  },
+  "GRIP_LINES": {
+    "file": "grip-lines.svg",
+    "unicode": "f7a4",
+    "author": "Font Awesome"
+  },
+  "HOME": {
+    "file": "house.svg",
+    "unicode": "f015",
+    "author": "Font Awesome"
+  },
+  "BOOK": {
+    "file": "book.svg",
+    "unicode": "f02d",
+    "author": "Font Awesome"
+  },
+  "CHART_LINE": {
+    "file": "chart-line.svg",
+    "unicode": "f201",
+    "author": "Font Awesome"
+  },
+  "CLIPBOARD": {
+    "file": "clipboard.svg",
+    "unicode": "f328",
+    "author": "Font Awesome"
+  },
+  "WINDOW_RESTORE": {
+    "file": "window-restore.svg",
+    "unicode": "f2d2",
+    "author": "Font Awesome"
+  }
+}

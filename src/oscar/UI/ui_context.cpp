@@ -270,7 +270,7 @@ namespace
                 config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
                 config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
                 static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-                add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/fa-solid-900.ttf", c_icon_ranges.data());
+                add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/OpenSimCreatorIconFont.ttf", c_icon_ranges.data());
             }
 
             io.Fonts->Build();
