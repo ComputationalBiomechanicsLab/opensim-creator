@@ -142,82 +142,64 @@ private:
         // we cache the list because searching+filtering all possible connectees is
         // very slow in OpenSim (#384)
         m_EditedParams.modelVersion = m_Model->getModelVersion();
-        if (m_EditedParams != m_Params)
-        {
+        if (m_EditedParams != m_Params) {
             m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
             m_Params = m_EditedParams;
         }
 
         // check: ensure the "from" side of the socket still exists
         const OpenSim::Component* component = FindComponent(m_Model->getModel(), m_Params.componentPath);
-        if (!component)
-        {
+        if (not component) {
             request_close();
             return;
         }
 
         // check: ensure the socket still exists
         const OpenSim::AbstractSocket* socket = FindSocket(*component, m_Params.socketName);
-        if (!socket)
-        {
+        if (not socket) {
             request_close();
             return;
         }
 
         // draw UI
 
-        ui::draw_text("connect socket '%s' (type: %s) from '%s' to:", socket->getName().c_str(), socket->getConnecteeTypeName().c_str(), socket->getConnecteeAsObject().getName().c_str());
-
-        ui::draw_dummy({0.0f, 0.1f * ui::get_text_line_height()});
-        ui::draw_separator();
-        ui::draw_dummy({0.0f, 0.25f * ui::get_text_line_height()});
+        ui::draw_text("%s's new connectee:", socket->getName().c_str());
 
         DrawSearchBar(m_EditedParams.search);
 
-        std::optional<OpenSim::ComponentPath> userSelection;
         ui::begin_child_panel(
             "##componentlist",
-            Vec2{512.0f, 256.0f},
-            ui::ChildPanelFlag::Border,
-            {ui::WindowFlag::HorizontalScrollbar, ui::WindowFlag::AlwaysVerticalScrollbar}
+            Vec2{-1.0f, 16.0f*ui::get_text_line_height()},
+            ui::ChildPanelFlag::Border
         );
 
         int id = 0;  // care: necessary because multiple connectees may have the same name
-        for (const ConnecteeOption& option : m_Options)
-        {
+        for (const ConnecteeOption& option : m_Options) {
             ui::push_id(id++);
-            if (ui::draw_selectable(option.name))
-            {
-                userSelection = option.absPath;
+            if (ui::draw_selectable(option.name, option.absPath == m_UserSelectionAbsPath)) {
+                m_UserSelectionAbsPath = option.absPath;
             }
             ui::draw_tooltip_if_item_hovered(option.absPath.toString());
             ui::pop_id();
         }
         ui::end_child_panel();
 
-        if (!m_Error.empty())
-        {
+        if (not m_Error.empty()) {
             ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_text_wrapped(m_Error);
         }
 
-        // add ability to re-express a component in a new frame (#326)
-        tryDrawReexpressPropertyInFrameCheckbox(*component, *socket);
+        ui::start_new_line();  // breathing room
 
-        if (ui::draw_button("Cancel"))
-        {
-            request_close();
-            return;
+        if (not m_UserSelectionAbsPath) {
+            ui::begin_disabled();
         }
-
-        // if the user selected something, try to form the connection in the active model
-        if (userSelection)
-        {
+        if (ui::draw_button("Ok") and m_UserSelectionAbsPath) {
             const SocketReassignmentFlags flags = m_TryReexpressInDifferentFrame ?
                 SocketReassignmentFlags::TryReexpressComponentInNewConnectee :
                 SocketReassignmentFlags::None;
 
-            const OpenSim::Component* selected = FindComponent(m_Model->getModel(), *userSelection);
+            const OpenSim::Component* selected = FindComponent(m_Model->getModel(), *m_UserSelectionAbsPath);
 
             if (selected && ActionReassignComponentSocket(*m_Model, m_Params.componentPath, m_Params.socketName, *selected, flags, m_Error))
             {
@@ -225,6 +207,25 @@ private:
                 return;
             }
         }
+        if (ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
+            if (not m_UserSelectionAbsPath) {
+                ui::draw_tooltip("Disabled", "A new connectee hasn't been selected.");
+            }
+        }
+        if (not m_UserSelectionAbsPath) {
+            ui::end_disabled();
+        }
+        ui::same_line();
+        if (ui::draw_button("Cancel")) {
+            request_close();
+            return;
+        }
+        // Add a checkbox that lets the user re-express a component in a new frame (#326),
+        // make sure the checkbox is hard to miss (#959).
+        ui::same_line();
+        ui::draw_vertical_separator();
+        ui::same_line();
+        tryDrawReexpressPropertyInFrameCheckbox(*component, *socket);
     }
 
     void impl_on_close() final
@@ -265,12 +266,15 @@ private:
         }
 
         ui::draw_checkbox(label, &m_TryReexpressInDifferentFrame);
+        ui::same_line();
+        ui::draw_help_marker("Component Re-Expression", "This will recalculate the socket owner's appropriate spatial property such that it remains in the same location in ground after changing this socket.");
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
     PopupParams m_Params;
     PopupParams m_EditedParams = m_Params;
     std::vector<ConnecteeOption> m_Options = GenerateSelectionOptions(m_Model->getModel(), m_EditedParams);
+    std::optional<OpenSim::ComponentPath> m_UserSelectionAbsPath;
     std::string m_Error;
     bool m_TryReexpressInDifferentFrame = false;
 };

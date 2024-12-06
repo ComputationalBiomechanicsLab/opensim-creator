@@ -436,24 +436,10 @@ void osc::DrawSimulationParams(const ParamBlock& params)
 
 void osc::DrawSearchBar(std::string& out)
 {
-    if (!out.empty())
-    {
-        if (ui::draw_button("X"))
-        {
-            out.clear();
-        }
-        ui::draw_tooltip_body_only_if_item_hovered("Clear the search string");
-    }
-    else
-    {
-        ui::draw_text(OSC_ICON_SEARCH);
-    }
-
-    // draw search bar
-
-    ui::same_line();
     ui::set_next_item_width(ui::get_content_region_available().x);
-    ui::draw_string_input("##hirarchtsearchbar", out);
+    ui::push_style_var(ui::StyleVar::FrameRounding, 5.0f);
+    ui::draw_string_input_with_hint("##hirarchtsearchbar", OSC_ICON_SEARCH " search...",  out);
+    ui::pop_style_var();
 }
 
 void osc::DrawOutputNameColumn(

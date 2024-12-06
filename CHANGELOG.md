@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The socket reassignment popup was given a makeover, and tries to draw more attention
+  to the `Re-Express $COMPONENT in new frame` option (thanks @tgeijten, #959).
 - The backend now supports HighDPI scaling for the 2D UI elements. This means that the
   `[experimental_feature] high_dpi_mode` in the configuration is now always `true`. HighDPI
   scaling for 3D UI elements is on our TODO list.
