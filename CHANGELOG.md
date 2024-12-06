@@ -24,12 +24,24 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - "Windows Fullscreen" was dropped from the about page: the "Fullscreen" button now
   always follows "windowed fullscreen" behavior (oldskool exclusive fullscreen usage
   was deemed to be niche).
-- The `Fly` model (+meshes) was dropped from the examples. It was only used to address
-  small-model issues (e.g. #116, #616), which haven't been addressed/requested for
-  multiple years.
-- Meshes related to the `SockerKickingModel.osim` are now model-local (e.g. in a
-  `Geometry/` directory next to the model) and use OBJs, to prevent the meshes
-  polluting the global mesh directory, and to make the mesh files smaller.
+- Several (potentially, but unlikely, breaking) changes to the shared `geometry/`
+  directory and example models were made. This is to accomodate minimizing the
+  shared geometry directory (model designers should prefer a model-local `Geometry/`
+  directory):
+  - The following ellipsoid mesh files were deleted from the shared `geometry`
+    directory. None are unused by any example model. Prefer using an `<Ellipsoid>`
+    geometry in the model to these:
+    - `ellipsoid.vtp`
+    - `ellipsoid_center.vtp`
+    - `ellipsoid.stl`
+    - `ellipsoid_center.stl`
+  - Meshes related to the `SockerKickingModel.osim` are now model-local (in a
+    `Geometry/` directory next to the model). The meshes were decimated and
+    converted to OBJs. This is to prevent these (very specific) meshes from
+    polluting the global mesh directory, and to make the mesh files smaller.
+  - The `Fly` model (+meshes) was dropped from the examples. It was only used to
+    address small-model issues (e.g. #116, #616), which haven't been
+    addressed/requested for multiple years.
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
 - Internal: the platform backend was changed from SDL2 to SDL3, which has better
