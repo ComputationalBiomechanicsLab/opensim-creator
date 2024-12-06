@@ -28,8 +28,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   small-model issues (e.g. #116, #616), which haven't been addressed/requested for
   multiple years.
 - Meshes related to the `SockerKickingModel.osim` are now model-local (e.g. in a
-  `Geometry/` directory next to the model), to prevent the meshes polluting the
-  global mesh directory (which is planned for freezing).
+  `Geometry/` directory next to the model) and use OBJs, to prevent the meshes
+  polluting the global mesh directory, and to make the mesh files smaller.
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
 - Internal: the platform backend was changed from SDL2 to SDL3, which has better
