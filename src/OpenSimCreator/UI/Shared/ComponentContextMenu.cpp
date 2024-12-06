@@ -421,17 +421,17 @@ private:
         });
 
         if (ui::begin_menu("Display", m_Model->canUpdModel())) {
-            const bool shouldDisable = m_Model->isReadonly() or not AnyDescendentInclusiveHasAppearanceProperty(*c);
+            const bool isEnabled = m_Model->canUpdModel() and AnyDescendentInclusiveHasAppearanceProperty(*c);
 
-            if (ui::draw_menu_item("Show", {}, nullptr, shouldDisable)) {
+            if (ui::draw_menu_item("Show", {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
             }
 
-            if (ui::draw_menu_item("Show Only This", {}, nullptr, shouldDisable)) {
+            if (ui::draw_menu_item("Show Only This", {}, nullptr, isEnabled)) {
                 ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
             }
 
-            if (ui::draw_menu_item("Hide", {}, nullptr, shouldDisable)) {
+            if (ui::draw_menu_item("Hide", {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
             }
 
@@ -442,7 +442,7 @@ private:
             // redundantly put a "Show All" option here, also, so that the user doesn't have
             // to "know" that they need to right-click in the middle of nowhere or on the
             // model
-            if (ui::draw_menu_item("Show All", {}, nullptr, shouldDisable)) {
+            if (ui::draw_menu_item("Show All", {}, nullptr, isEnabled)) {
                 ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
             }
 

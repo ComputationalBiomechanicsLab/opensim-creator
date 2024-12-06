@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed a regression where the `Display` context menu would always be greyed out in
+  the model editor (thanks @tgeijten, #958).
 - The socket reassignment popup was given a makeover, and tries to draw more attention
   to the `Re-Express $COMPONENT in new frame` option (thanks @tgeijten, #957).
 - The Coordinates panel now contains a `Pose` dropdown that exposes the ability to zero
