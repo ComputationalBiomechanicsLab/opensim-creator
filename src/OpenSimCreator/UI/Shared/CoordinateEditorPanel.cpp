@@ -52,6 +52,9 @@ public:
             return;
         }
 
+        // Draw a menu for bulk-manipulating the model's pose.
+        drawPoseDropdownButton();
+
         // else: there's coordinates, which should be shown in a table
         const ui::TableFlags flags = {
             ui::TableFlag::NoSavedSettings,
@@ -100,6 +103,25 @@ public:
     }
 
 private:
+    void drawPoseDropdownButton()
+    {
+        if (m_Model->isReadonly()) {
+            ui::begin_disabled();
+        }
+        ui::draw_button("Pose " OSC_ICON_CARET_DOWN);
+        if (ui::begin_popup_context_menu("##PosePopup", ui::PopupFlag::MouseButtonLeft)) {
+            // Draw a button that can be used to zero all coordinates, which can be a cheap way
+            // of resetting a model's pose (#957).
+            if (ui::draw_menu_item("Zero All Coordinates")) {
+                ActionZeroAllCoordinates(*m_Model);
+            }
+            ui::end_popup();
+        }
+        if (m_Model->isReadonly()) {
+            ui::end_disabled();
+        }
+    }
+
     void drawRow(const OpenSim::Coordinate& c)
     {
         ui::table_next_row();

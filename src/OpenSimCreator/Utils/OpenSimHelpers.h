@@ -396,6 +396,12 @@ namespace osc
         bool(*predicate)(const OpenSim::Component&)
     );
 
+    // returns the first descendant of `component` that satisfies `predicate(descendant)`
+    OpenSim::Component* FindFirstDescendentMut(
+        OpenSim::Component& component,
+        bool(*predicate)(const OpenSim::Component&)
+    );
+
     // returns the first direct descendant of `component` that has type `T`, or
     // `nullptr` if no such descendant exists
     template<std::derived_from<OpenSim::Component> T>
@@ -406,6 +412,18 @@ namespace osc
             return dynamic_cast<const T*>(&el) != nullptr;
         });
         return dynamic_cast<const T*>(rv);
+    }
+
+    // returns the first direct descendant of `component` that has type `T`, or
+    // `nullptr` if no such descendant exists
+    template<std::derived_from<OpenSim::Component> T>
+    T* FindFirstDescendentOfTypeMut(OpenSim::Component& c)
+    {
+        OpenSim::Component* rv = FindFirstDescendentMut(c, [](const OpenSim::Component& el)
+        {
+            return dynamic_cast<const T*>(&el) != nullptr;
+        });
+        return dynamic_cast<T*>(rv);
     }
 
     // returns a vector containing pointers to all user-editable coordinates in the model

@@ -462,6 +462,18 @@ const OpenSim::Component* osc::FindFirstDescendent(
     return nullptr;
 }
 
+OpenSim::Component* osc::FindFirstDescendentMut(
+    OpenSim::Component& component,
+    bool(*predicate)(const OpenSim::Component&))
+{
+    for (OpenSim::Component& descendent : component.updComponentList()) {
+        if (predicate(descendent)) {
+            return &descendent;
+        }
+    }
+    return nullptr;
+}
+
 std::vector<const OpenSim::Coordinate*> osc::GetCoordinatesInModel(const OpenSim::Model& model)
 {
     std::vector<const OpenSim::Coordinate*> rv;

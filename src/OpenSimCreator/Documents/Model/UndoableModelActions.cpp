@@ -1457,6 +1457,30 @@ bool osc::ActionRemoveWrapObjectFromGeometryPathWraps(
     }
 }
 
+bool osc::ActionZeroAllCoordinates(IModelStatePair& model)
+{
+    if (model.isReadonly()) {
+        return false;
+    }
+
+    try {
+        OpenSim::Model& mutModel = model.updModel();
+        for (auto& coordinate : mutModel.updComponentList<OpenSim::Coordinate>()) {
+            const double rangeMin = min(coordinate.getRangeMin(), coordinate.getRangeMax());
+            const double rangeMax = max(coordinate.getRangeMin(), coordinate.getRangeMax());
+            coordinate.set_default_value(clamp(0.0, rangeMin, rangeMax));
+        }
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+        model.commit("zeroed all coordinates");
+        return true;
+    }
+    catch (const std::exception&) {
+        std::throw_with_nested(std::runtime_error{"error detected while zeroing all coordinates in the model"});
+        return false;
+    }
+}
+
 bool osc::ActionSetCoordinateSpeed(
     IModelStatePair& model,
     const OpenSim::Coordinate& coord,

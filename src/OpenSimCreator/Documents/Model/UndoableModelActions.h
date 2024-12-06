@@ -285,6 +285,12 @@ namespace osc
         const OpenSim::WrapObject&
     );
 
+    // Zeroes all `OpenSim::Coordinates` in the model. If a coordinate is clamped
+    // then this tries to get as close to zero as possible while obeying the clamp
+    bool ActionZeroAllCoordinates(
+        IModelStatePair&
+    );
+
     // set the speed of a coordinate
     bool ActionSetCoordinateSpeed(
         IModelStatePair&,

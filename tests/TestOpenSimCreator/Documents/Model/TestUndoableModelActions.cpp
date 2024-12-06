@@ -417,3 +417,21 @@ TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
     model.doUndo();
     ASSERT_TRUE(IsShowingForces(model.getModel()));
 }
+
+// related issue: #957
+//
+// This is a very basic test to ensure that the zeroing functionality works in the most trivial case.
+TEST(OpenSimActions, ActionZeroAllCoordinatesZeroesAllCoordinatesInAModel)
+{
+    UndoableModelStatePair model;
+    model.updModel().addBody(new OpenSim::Body("somebody", 1.0, {}, SimTK::Inertia{1.0}));  // should automatically add a FreeJoint
+    model.updModel().finalizeFromProperties();
+    model.updModel().finalizeConnections();
+    auto* fj = FindFirstDescendentOfTypeMut<OpenSim::FreeJoint>(model.updModel());
+    ASSERT_NE(fj, nullptr);
+    fj->updCoordinate(OpenSim::FreeJoint::Coord::TranslationY).set_default_value(1.0);
+
+    ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 1.0);
+    ActionZeroAllCoordinates(model);
+    ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 0.0);
+}
