@@ -302,7 +302,7 @@ private:
         ImageLoadingFlag::FlipVertically
     );
     Texture2D specular_map_ = load_texture2D_from_image(
-        loader_.open("oscar_demos/learnopengl/textures/container2_specular.png"),
+        loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
         ColorSpace::sRGB,
         ImageLoadingFlag::FlipVertically
     );

@@ -1,6 +1,6 @@
 #include "TPS2DTab.h"
 
-#include <oscar/Formats/Image.h>
+#include <oscar/Formats/SVG.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
@@ -477,9 +477,8 @@ private:
     float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = load_texture2D_from_image(
-        m_Loader.open("textures/container.jpg"),
-        ColorSpace::sRGB
+    Texture2D m_BoxTexture = load_texture2D_from_svg(
+        m_Loader.open("textures/uv_checker.svg")
     );
     Mesh m_InputGrid = PlaneGeometry{{
         .width = 2.0f,

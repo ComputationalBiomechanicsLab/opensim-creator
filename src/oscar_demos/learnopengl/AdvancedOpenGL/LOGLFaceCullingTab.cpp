@@ -21,9 +21,8 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        material.set("uTexture", load_texture2D_from_image(
-            loader.open("oscar_demos/learnopengl/textures/uv_checker.png"),
-            ColorSpace::sRGB
+        material.set("uTexture", load_texture2D_from_svg(
+            loader.open("oscar_demos/learnopengl/textures/uv_checker.svg")
         ));
 
         return material;
