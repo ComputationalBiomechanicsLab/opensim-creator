@@ -24,6 +24,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - "Windows Fullscreen" was dropped from the about page: the "Fullscreen" button now
   always follows "windowed fullscreen" behavior (oldskool exclusive fullscreen usage
   was deemed to be niche).
+- The `Fly` model (+meshes) was dropped from the examples. It was only used to address
+  small-model issues (e.g. #116, #616), which haven't been addressed/requested for
+  multiple years.
+- Meshes related to the `SockerKickingModel.osim` are now model-local (e.g. in a
+  `Geometry/` directory next to the model), to prevent the meshes polluting the
+  global mesh directory (which is planned for freezing).
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
 - Internal: the platform backend was changed from SDL2 to SDL3, which has better
