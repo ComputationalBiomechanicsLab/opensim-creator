@@ -124,25 +124,16 @@ private:
     Response drawWithResponse()
     {
         Response rv;
-        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
         drawFilterAndSearchRow();
+        ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
         drawNavigationTreeChildPanel(rv);
         return rv;
     }
 
     void drawFilterAndSearchRow()
     {
-        ui::draw_text_unformatted(OSC_ICON_EYE);
-        if (ui::begin_popup_context_menu("##filterpopup")) {
-            ui::draw_checkbox("frames", &m_ShowFrames);
-            ui::end_popup();
-        }
-        ui::same_line();
         DrawSearchBar(m_CurrentSearch);
-
-        ui::draw_dummy({0.0f, 3.0f});
-        ui::draw_separator();
-        ui::draw_dummy({0.0f, 3.0f});
     }
 
     void drawNavigationTreeChildPanel(Response& rv)

@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The search bar in the `Navigator` panel was cleaned up slightly.
 - Fixed a regression where the `Display` context menu would always be greyed out in
   the model editor (thanks @tgeijten, #958).
 - The socket reassignment popup was given a makeover, and tries to draw more attention
