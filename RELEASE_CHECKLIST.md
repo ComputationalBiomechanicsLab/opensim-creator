@@ -26,6 +26,10 @@ These are required for some parts of the release procedure:
 - [ ] Clean-build a debug (+ libASAN) version of OSC on Ubuntu:
 
 ```bash
+# machine setup (+wsl2):
+# sudo apt install clang clang-tidy cmake pkg-config libgtk-3-dev libblas-dev liblapack-dev
+# sudo apt install mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev  # (wsl2)
+
 git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
 cd opensim-creator
 ./scripts/build_linux_debugging.sh
