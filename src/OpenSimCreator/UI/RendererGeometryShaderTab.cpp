@@ -110,7 +110,7 @@ private:
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
     bool m_IsMouseCaptured = false;
-    EulerAngles m_CameraEulers = {};
+    EulerAngles m_CameraEulers;
     Color m_MeshColor = Color::white();
 };
 

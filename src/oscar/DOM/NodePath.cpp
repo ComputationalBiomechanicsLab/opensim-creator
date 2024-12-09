@@ -1,8 +1,7 @@
 #include "NodePath.h"
 
-#include <oscar/Utils/Algorithms.h>
-
 #include <algorithm>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <string_view>

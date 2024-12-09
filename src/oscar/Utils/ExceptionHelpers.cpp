@@ -18,9 +18,6 @@ namespace
         catch (const std::exception& nested_exception) {
             print_exception(nested_exception, out, indent + 1);
         }
-        catch (...) {
-            // do nothing (stop recursing, and swallow the exception)
-        }
     }
 }
 

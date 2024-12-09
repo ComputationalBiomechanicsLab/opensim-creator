@@ -67,12 +67,22 @@ namespace osc
 
         constexpr Flags with(TEnum flag) const
         {
-            return Flags{value_ | static_cast<underlying_type>(flag)};
+            return Flags{static_cast<underlying_type>(value_ | static_cast<underlying_type>(flag))};
         }
 
         constexpr Flags without(TEnum flag) const
         {
-            return Flags{value_ & ~static_cast<underlying_type>(flag)};
+            return Flags{static_cast<underlying_type>(value_ & ~static_cast<underlying_type>(flag))};
+        }
+
+        constexpr bool get(TEnum flag) const
+        {
+            return *this & flag;
+        }
+
+        constexpr void set(TEnum flag, bool v)
+        {
+            *this = v ? this->with(flag) : this->without(flag);
         }
 
         constexpr underlying_type underlying_value() const

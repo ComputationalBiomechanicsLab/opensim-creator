@@ -224,7 +224,7 @@ private:
 
     void flush_camera_render_queue_to_mrt()
     {
-        RenderTarget mrt{
+        const RenderTarget mrt{
             RenderTargetColorAttachment{
                 scene_hdr_color_output_.upd_color_buffer(),
                 RenderBufferLoadAction::Clear,

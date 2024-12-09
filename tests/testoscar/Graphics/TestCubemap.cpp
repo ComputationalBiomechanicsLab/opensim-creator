@@ -17,12 +17,12 @@ TEST(Cubemap, can_construct_1x1_RGBA32_Cubemap)
 
 TEST(Cubemap, constructor_throws_if_given_zero_width)
 {
-    ASSERT_ANY_THROW({ Cubemap cubemap(0, TextureFormat::RGBA32); });
+    ASSERT_ANY_THROW({ const Cubemap cubemap(0, TextureFormat::RGBA32); });
 }
 
 TEST(Cubemap, constructor_throws_if_given_negative_width)
 {
-    ASSERT_ANY_THROW({ Cubemap cubemap(-5, TextureFormat::RGBA32); });
+    ASSERT_ANY_THROW({ const Cubemap cubemap(-5, TextureFormat::RGBA32); });
 }
 
 TEST(Cubemap, can_copy_construct)
@@ -142,7 +142,7 @@ TEST(Cubemap, set_pixel_data_works_for_any_face_when_given_the_correct_number_of
     const std::vector<uint8_t> data(num_bytes_per_face);
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
+    for (const CubemapFace face : make_option_iterable<CubemapFace>()) {
         cubemap.set_pixel_data(face, data);
     }
 }
@@ -156,7 +156,7 @@ TEST(Cubemap, set_pixel_data_throws_exception_if_given_invalid_number_of_bytes_f
     const std::vector<uint8_t> invalid_data(invalid_num_bytes_per_face);
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
+    for (const CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, invalid_data); });
     }
 }
@@ -170,7 +170,7 @@ TEST(Cubemap, set_pixel_data_throws_if_given_invalid_number_of_bytes_for_RGB24)
     const std::vector<uint8_t> invalid_data(invalid_num_bytes_per_face);
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
+    for (const CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, invalid_data); });
     }
 }
@@ -185,7 +185,7 @@ TEST(Cubemap, set_pixel_data_throws_if_given_invalid_number_of_bytes_for_its_wid
     const std::vector<uint8_t> invalid_data(incorrect_num_bytes);
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
+    for (const CubemapFace face : make_option_iterable<CubemapFace>()) {
         ASSERT_ANY_THROW({ cubemap.set_pixel_data(face, invalid_data); });
     }
 }
@@ -199,7 +199,7 @@ TEST(Cubemap, set_pixel_data_works_with_floating_point_texture_format)
     const std::vector<uint8_t> data(num_bytes_per_face);
 
     Cubemap cubemap{width, format};
-    for (CubemapFace face : make_option_iterable<CubemapFace>()) {
+    for (const CubemapFace face : make_option_iterable<CubemapFace>()) {
         cubemap.set_pixel_data(face, data);
     }
 }

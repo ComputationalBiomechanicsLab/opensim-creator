@@ -355,7 +355,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         jointParentPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *parentFrame));
 
         // care: ownership change happens here (#642)
-        OpenSim::PhysicalOffsetFrame& pof = AddFrame(*joint, std::move(jointParentPof));
+        const OpenSim::PhysicalOffsetFrame& pof = AddFrame(*joint, std::move(jointParentPof));
         joint->connectSocket_parent_frame(pof);
     }
     {
@@ -365,7 +365,7 @@ void osc::fd::ActionCreateBodyFromFrame(
         jointChildPof->setOffsetTransform(jointFrame->findTransformBetween(model->getState(), *meshFrame));
 
         // care: ownership change happens here (#642)
-        OpenSim::PhysicalOffsetFrame& pof = AddFrame(*joint, std::move(jointChildPof));
+        const OpenSim::PhysicalOffsetFrame& pof = AddFrame(*joint, std::move(jointChildPof));
         joint->connectSocket_child_frame(pof);
     }
 

@@ -243,7 +243,7 @@ private:
     std::vector<SceneSphere> scene_spheres_ = generate_scene_spheres();
     AABB scene_sphere_aabb_ = sphere_mesh_.bounds();
     Sphere sphere_bounding_sphere_ = bounding_sphere_of(sphere_mesh_);
-    EulerAngles camera_eulers{};
+    EulerAngles camera_eulers;
     bool showing_aabbs_ = true;
 };
 

@@ -215,10 +215,10 @@ TEST_F(Renderer, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
 
 TEST_F(Renderer, MeshDepthWritingMaterial_can_default_construct)
 {
-    [[maybe_unused]] MeshDepthWritingMaterial default_constructed;  // should compile, run, etc.
+    [[maybe_unused]] const MeshDepthWritingMaterial default_constructed;  // should compile, run, etc.
 }
 
 TEST_F(Renderer, MeshNormalVectorsMaterial_can_default_construct)
 {
-    [[maybe_unused]] MeshNormalVectorsMaterial default_constructed;  // should compile, run, etc.
+    [[maybe_unused]] const MeshNormalVectorsMaterial default_constructed;  // should compile, run, etc.
 }

@@ -931,7 +931,7 @@ namespace osc::gl
     };
 
     // https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindFramebuffer.xhtml
-    inline void bind_framebuffer(GLenum target, const FrameBuffer& framebuffer)
+    inline void bind_framebuffer(GLenum target, FrameBuffer& framebuffer)
     {
         glBindFramebuffer(target, framebuffer.get());
     }

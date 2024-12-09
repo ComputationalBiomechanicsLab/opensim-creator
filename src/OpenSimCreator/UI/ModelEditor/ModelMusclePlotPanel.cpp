@@ -350,8 +350,8 @@ namespace
 
     double GetStepBetweenXValues(const PlotParameters& p, const OpenSim::Coordinate& c)
     {
-        double start = GetFirstXValue(p, c);
-        double end = GetLastXValue(p, c);
+        const double start = GetFirstXValue(p, c);
+        const double end = GetLastXValue(p, c);
 
         return (end - start) / max(1, p.getNumRequestedDataPoints() - 1);
     }
@@ -520,7 +520,7 @@ namespace
                 return PlottingTaskStatus::Cancelled;
             }
 
-            double xVal = firstXValue + (i * stepBetweenXValues);
+            const double xVal = firstXValue + (i * stepBetweenXValues);
             coord.setValue(state, xVal);
 
             model->equilibrateMuscles(state);
@@ -554,7 +554,7 @@ namespace
         try
         {
             inputs.shared->setStatus(PlottingTaskStatus::Running);
-            PlottingTaskStatus status = ComputePlotPointsUnguarded(stopToken, inputs);
+            const PlottingTaskStatus status = ComputePlotPointsUnguarded(stopToken, inputs);
             inputs.shared->setStatus(status);
             return 0;
         }
@@ -747,7 +747,7 @@ namespace
     std::optional<PlotDataPoint> FindNearestPoint(const Plot& p, float x)
     {
         auto lock = p.lockDataPoints();
-        std::span<const PlotDataPoint> points = *lock;
+        const std::span<const PlotDataPoint> points = *lock;
 
         if (points.empty())
         {
@@ -890,7 +890,7 @@ namespace
 
                 // else: append column as ($independent, $dependent[col]) to the plots vector
                 columnsAsPlots.resize(max(columnsAsPlots.size(), dependentCol));
-                columnsAsPlots[dependentCol-1].push_back({*independentVar, *dependentVar});
+                columnsAsPlots[dependentCol-1].emplace_back(*independentVar, *dependentVar);
             }
         }
 
@@ -1372,7 +1372,7 @@ namespace
                     cols.emplace_back();  // blank cell
                 }
 
-                std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
+                const std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
                 if (LessThanAssumingEmptyHighest(maybeDataX, maybeNextX))
                 {
                     maybeNextX = maybeDataX;
@@ -1568,7 +1568,7 @@ namespace
                 );
                 plot::setup_finish();
 
-                std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
+                const std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
                 drawPlotLines(coord);
                 drawOverlays(coord, maybeMouseX);
                 handleMouseEvents(coord, maybeMouseX);
@@ -1605,14 +1605,14 @@ namespace
             // the plot title should contain combo boxes that users can use to change plot
             // parameters visually (#397)
 
-            std::string muscleName = truncate_with_ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
-            float muscleNameWidth = ui::calc_text_size(muscleName).x + 2.0f*ui::get_style_frame_padding().x;
-            std::string outputName = truncate_with_ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
-            float outputNameWidth = ui::calc_text_size(outputName).x + 2.0f*ui::get_style_frame_padding().x;
-            std::string coordName = truncate_with_ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
-            float coordNameWidth = ui::calc_text_size(coordName).x + 2.0f*ui::get_style_frame_padding().x;
+            const std::string muscleName = truncate_with_ellipsis(getShared().getPlotParams().getMusclePath().getComponentName(), 15);
+            const float muscleNameWidth = ui::calc_text_size(muscleName).x + 2.0f*ui::get_style_frame_padding().x;
+            const std::string outputName = truncate_with_ellipsis(getShared().getPlotParams().getPlottedOutput().getName(), 15);
+            const float outputNameWidth = ui::calc_text_size(outputName).x + 2.0f*ui::get_style_frame_padding().x;
+            const std::string coordName = truncate_with_ellipsis(getShared().getPlotParams().getCoordinatePath().getComponentName(), 15);
+            const float coordNameWidth = ui::calc_text_size(coordName).x + 2.0f*ui::get_style_frame_padding().x;
 
-            float totalWidth =
+            const float totalWidth =
                 muscleNameWidth +
                 ui::calc_text_size("'s").x +
                 ui::get_style_item_spacing().x +
@@ -1626,7 +1626,7 @@ namespace
                 ui::calc_text_size(OSC_ICON_BARS " Options").x +
                 ui::get_style_frame_padding().x;
 
-            float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
+            const float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
             ui::set_cursor_pos_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
@@ -1651,7 +1651,7 @@ namespace
             ui::set_next_item_width(outputNameWidth);
             if (ui::begin_combobox("##outputname", outputName, ui::ComboFlag::NoArrowButton))
             {
-                PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
+                const PlottableOutput current = getShared().getPlotParams().getPlottedOutput();
                 for (const PlottableOutput& output : getShared().availableOutputs())
                 {
                     bool selected = output == current;
@@ -1813,7 +1813,7 @@ namespace
             const OpenSim::Coordinate& coord,
             std::optional<float> maybeMouseX)
         {
-            double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
+            const double coordinateXInDegrees = ConvertCoordValueToDisplayValue(coord, coord.getValue(getShared().getModel().getState()));
 
             // draw vertical drop line where the coordinate's value currently is
             {
@@ -1822,7 +1822,7 @@ namespace
                 // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                 // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                 // which looks very very glitchy (#490)
-                plot::drag_line_x(10, &v, OSCColors::scrub_current(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                plot::drag_line_x(10, &v, OSCColors::scrub_current(), 1.0f, {plot::DragToolFlag::NoInputs, plot::DragToolFlag::NoFit});
             }
 
             // also, draw an X tag on the axes where the coordinate's value currently is
@@ -1836,7 +1836,7 @@ namespace
                 // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                 // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                 // which looks very very glitchy (#490)
-                plot::drag_line_x(11, &v, OSCColors::scrub_hovered(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                plot::drag_line_x(11, &v, OSCColors::scrub_hovered(), 1.0f, {plot::DragToolFlag::NoInputs, plot::DragToolFlag::NoFit});
 
                 // also, draw a faded X tag on the axes where the mouse currently is (in X)
                 plot::tag_x(*maybeMouseX, Color::white().with_alpha(0.6f));
@@ -1860,7 +1860,7 @@ namespace
                         // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                         // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                         // which looks very very glitchy (#490)
-                        plot::drag_line_y(13, &v, OSCColors::scrub_current(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::drag_line_y(13, &v, OSCColors::scrub_current(), 1.0f, {plot::DragToolFlag::NoInputs, plot::DragToolFlag::NoFit});
                         plot::draw_annotation({coordinateXInDegrees, *maybeCoordinateY}, Color::white(), {10.0f, 10.0f}, true, "%f", *maybeCoordinateY);
                     }
                 }
@@ -1874,7 +1874,7 @@ namespace
                         // CARE: this drag line shouldn't cause the plotter to re-fit because it will
                         // make the plotter re-fit the plot as the user's mouse moves/drags over it,
                         // which looks very very glitchy (#490)
-                        plot::drag_line_y(14, &v, OSCColors::scrub_hovered(), 1.0f, plot::DragToolFlags::NoInputs | plot::DragToolFlags::NoFit);
+                        plot::drag_line_y(14, &v, OSCColors::scrub_hovered(), 1.0f, {plot::DragToolFlag::NoInputs, plot::DragToolFlag::NoFit});
                         plot::draw_annotation({*maybeMouseX, *maybeHoverY}, Color::white().with_alpha(0.6f), {10.0f, 10.0f}, true, "%f", *maybeHoverY);
                     }
                 }
@@ -1897,7 +1897,7 @@ namespace
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
-                    double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    const double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
                     ActionSetCoordinateValue(updShared().updModel(), coord, storedValue);
                 }
             }
@@ -1912,12 +1912,12 @@ namespace
                     ui::draw_tooltip("scrubbing disabled", "you cannot scrub this plot because the coordinate is locked");
                 }
                 else {
-                    double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
+                    const double storedValue = ConvertCoordDisplayValueToStorageValue(coord, *maybeMouseX);
                     ActionSetCoordinateValueAndSave(updShared().updModel(), coord, storedValue);
 
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
-                    ModelStateCommit commitAfter = getShared().getModel().getLatestCommit();
+                    const ModelStateCommit commitAfter = getShared().getModel().getLatestCommit();
                     m_Lines.setActivePlotCommit(commitAfter);
                 }
             }
@@ -2002,7 +2002,7 @@ namespace
             names.reserve(availableOutputs.size());
 
             size_t active = 0;
-            PlottableOutput currentOutput = getShared().getPlottedOutput();
+            const PlottableOutput currentOutput = getShared().getPlottedOutput();
 
             for (size_t i = 0; i < availableOutputs.size(); ++i) {
                 const PlottableOutput& o = availableOutputs[i];

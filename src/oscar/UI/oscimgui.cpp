@@ -676,7 +676,7 @@ bool osc::ui::begin_menu(CStringView sv, bool enabled)
 
 void osc::ui::end_menu()
 {
-    return ImGui::EndMenu();
+    ImGui::EndMenu();
 }
 
 bool osc::ui::draw_menu_item(
@@ -1159,7 +1159,7 @@ void osc::ui::pop_style_var(int count)
 
 void osc::ui::open_popup(CStringView str_id, PopupFlags popup_flags)
 {
-    return ImGui::OpenPopup(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
+    ImGui::OpenPopup(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
 }
 
 bool osc::ui::begin_popup(CStringView str_id, WindowFlags flags)
@@ -1431,7 +1431,7 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
     }
 
     // solid color material
-    Material material{Shader{
+    const Material material{Shader{
         App::slurp("oscar/shaders/PerVertexColor.vert"),
         App::slurp("oscar/shaders/PerVertexColor.frag"),
     }};
@@ -1441,10 +1441,10 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
 
     {
         // project screen-space overlays into NDC
-        float L = 0.0f;
-        float R = static_cast<float>(target.dimensions().x);
-        float T = 0.0f;
-        float B = static_cast<float>(target.dimensions().y);
+        const float L = 0.0f;
+        const float R = static_cast<float>(target.dimensions().x);
+        const float T = 0.0f;
+        const float B = static_cast<float>(target.dimensions().y);
         const Mat4 proj = {
             { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
             { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
@@ -1725,7 +1725,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     const Rect& viewport_rect,
     std::optional<AABB> maybe_scene_aabb)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
 
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
     // is classed as a mouse interaction
@@ -1810,7 +1810,7 @@ void osc::ui::draw_image(
 
 void osc::ui::draw_image(const RenderTexture& texture)
 {
-    return draw_image(texture, texture.dimensions());
+    draw_image(texture, texture.dimensions());
 }
 
 void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)
@@ -2139,7 +2139,7 @@ bool osc::ui::is_mouse_in_main_viewport_workspace()
 bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, WindowFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)
     return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, to<ImGuiWindowFlags>(flags));
 }
 
@@ -2147,7 +2147,7 @@ bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, Windo
 bool osc::ui::begin_main_viewport_bottom_bar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));
+    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)
     const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     const float height = ui::get_frame_height() + ui::get_style_panel_padding().y;
 
@@ -2401,7 +2401,7 @@ bool osc::ui::draw_float_circular_slider(
     // go ahead and assume that it's doing the interaction/hittest/mutation logic
     // and leaves rendering to us.
     ImRect grab_bounding_box{};
-    bool value_changed = ImGui::SliderBehaviorT<float, float, float>(
+    const bool value_changed = ImGui::SliderBehaviorT<float, float, float>(
         frame_bounds,
         id,
         ImGuiDataType_Float,
@@ -2896,9 +2896,10 @@ namespace
 
     constexpr ImPlotDragToolFlags to_ImPlotDragToolFlags(plot::DragToolFlags flags)
     {
-        static_assert(cpp23::to_underlying(plot::DragToolFlags::None) == ImPlotDragToolFlags_None);
-        static_assert(cpp23::to_underlying(plot::DragToolFlags::NoFit) == ImPlotDragToolFlags_NoFit);
-        static_assert(cpp23::to_underlying(plot::DragToolFlags::NoInputs) == ImPlotDragToolFlags_NoInputs);
+        static_assert(cpp23::to_underlying(plot::DragToolFlag::None) == ImPlotDragToolFlags_None);
+        static_assert(cpp23::to_underlying(plot::DragToolFlag::NoFit) == ImPlotDragToolFlags_NoFit);
+        static_assert(cpp23::to_underlying(plot::DragToolFlag::NoInputs) == ImPlotDragToolFlags_NoInputs);
+        static_assert(num_flags<plot::DragToolFlag>() == 2);
         return static_cast<ImPlotDigitalFlags>(flags);
     }
 

@@ -160,14 +160,14 @@ namespace
         rv.reserve(static_cast<size_t>(2) + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
 
         {
-            OutputExtractor out{AuxiliaryVariableOutputExtractor{
+            const OutputExtractor out{AuxiliaryVariableOutputExtractor{
                 "Wall time",
                 "Total cumulative time spent computing the simulation",
                 GetWalltimeUID(),
             }};
             rv.push_back(out);
 
-            OutputExtractor out2{AuxiliaryVariableOutputExtractor{
+            const OutputExtractor out2{AuxiliaryVariableOutputExtractor{
                 "Step Wall Time",
                 "How long it took, in wall time, to compute the last integration step",
                 GetStepDurationUID(),
@@ -235,7 +235,7 @@ namespace
 
         // populate integrator outputs
         {
-            int numOutputs = GetNumIntegratorOutputExtractors();
+            const int numOutputs = GetNumIntegratorOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
@@ -246,7 +246,7 @@ namespace
 
         // populate mbs outputs
         {
-            int numOutputs = GetNumMultiBodySystemOutputExtractors();
+            const int numOutputs = GetNumMultiBodySystemOutputExtractors();
             auxValues.reserve(auxValues.size() + numOutputs);
             for (int i = 0; i < numOutputs; ++i)
             {
@@ -281,12 +281,12 @@ namespace
 
         // immediately report t = start
         {
-            std::chrono::duration<float> wallDur = std::chrono::high_resolution_clock::now() - tSimStart;
+            const std::chrono::duration<float> wallDur = std::chrono::high_resolution_clock::now() - tSimStart;
             input.emitReport(CreateSimulationReport(wallDur, {}, input.getMultiBodySystem(), *integ));
         }
 
         // integrate (t0..tfinal]
-        SimulationClock::time_point tStart = GetSimulationTime(*integ);
+        const SimulationClock::time_point tStart = GetSimulationTime(*integ);
         SimulationClock::time_point tLastReport = tStart;
         int step = 1;
         while (!integ->isSimulationOver())
@@ -298,12 +298,12 @@ namespace
             }
 
             // calculate next reporting time
-            SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
+            const SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
 
             // perform an integration step
-            std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
-            SimTK::Integrator::SuccessfulStepStatus timestepRv = ts.stepTo(tNext.time_since_epoch().count());
-            std::chrono::high_resolution_clock::time_point tStepEnd = std::chrono::high_resolution_clock::now();
+            const std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
+            const SimTK::Integrator::SuccessfulStepStatus timestepRv = ts.stepTo(tNext.time_since_epoch().count());
+            const std::chrono::high_resolution_clock::time_point tStepEnd = std::chrono::high_resolution_clock::now();
 
             // handle integrator response
             if (integ->isSimulationOver() &&
@@ -316,8 +316,8 @@ namespace
             else if (timestepRv == SimTK::Integrator::ReachedReportTime)
             {
                 // report the step and continue
-                std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
-                std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
+                const std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
+                const std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
                 input.emitReport(CreateSimulationReport(wallDur, stepDur, input.getMultiBodySystem(), *integ));
                 tLastReport = GetSimulationTime(*integ);
                 ++step;
@@ -328,11 +328,11 @@ namespace
                 // if the simulation endpoint is sufficiently ahead of the last report time
                 // (1 % of step size), then *also* report the simulation end time. Otherwise,
                 // assume that there's an adjacent-enough report
-                SimulationClock::time_point t = GetSimulationTime(*integ);
+                const SimulationClock::time_point t = GetSimulationTime(*integ);
                 if ((tLastReport + 0.01*params.reportingInterval) < t)
                 {
-                    std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
-                    std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
+                    const std::chrono::duration<float> wallDur = tStepEnd - tSimStart;
+                    const std::chrono::duration<float> stepDur = tStepEnd - tStepStart;
                     input.emitReport(CreateSimulationReport(wallDur, stepDur, input.getMultiBodySystem(), *integ));
                     tLastReport = t;
                 }
@@ -471,12 +471,12 @@ void osc::ForwardDynamicSimulator::join()
 
 void osc::ForwardDynamicSimulator::requestStop()
 {
-    return m_Impl->requestStop();
+    m_Impl->requestStop();
 }
 
 void osc::ForwardDynamicSimulator::stop()
 {
-    return m_Impl->stop();
+    m_Impl->stop();
 }
 
 const ForwardDynamicSimulatorParams& osc::ForwardDynamicSimulator::params() const

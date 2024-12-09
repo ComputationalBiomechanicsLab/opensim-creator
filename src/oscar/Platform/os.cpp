@@ -101,7 +101,7 @@ std::filesystem::path osc::user_data_directory(
 std::string osc::get_clipboard_text()
 {
     if (char* str = SDL_GetClipboardText()) {
-        ScopeGuard guard{[str]() { SDL_free(str); }};
+        const ScopeGuard guard{[str]() { SDL_free(str); }};
         return str;
     }
     else {
@@ -194,7 +194,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
     std::vector<std::filesystem::path> rv;
 
     if (result == NFD_OKAY) {
-        size_t len = NFD_PathSet_GetCount(&s);
+        const size_t len = NFD_PathSet_GetCount(&s);
         rv.reserve(len);
         for (size_t i = 0; i < len; ++i) {
             rv.emplace_back(std::filesystem::weakly_canonical(NFD_PathSet_GetPath(&s, i)));
@@ -368,15 +368,13 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 {
     std::array<void*, 50> ary{};
     const int size = backtrace(ary.data(), ary.size());
-    std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
+    const std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
 
-    if (!messages)
-    {
+    if (not messages) {
         return;
     }
 
-    for (int i = 0; i < size; ++i)
-    {
+    for (int i = 0; i < size; ++i) {
         log_message(lvl, "%s", messages.get()[i]);
     }
 }
@@ -466,7 +464,7 @@ void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
 void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
 {
     // fork a subprocess
-    pid_t pid = fork();
+    const pid_t pid = fork();
 
     if (pid == -1)
     {
@@ -498,7 +496,7 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
         //
         // immediately `exec` into `xdg-open`, which will aggro-replace this process
         // image (+ this thread) with xdg-open
-        int rv = execlp("xdg-open", "xdg-open", fp.c_str(), static_cast<char*>(nullptr));
+        const int rv = execlp("xdg-open", "xdg-open", fp.c_str(), static_cast<char*>(nullptr));
 
         // this thread only reaches here if there is some kind of error in `exec`
         //

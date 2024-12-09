@@ -209,8 +209,7 @@ TEST(ConstraintRegistry, CanAddAnyConstraintWithoutASegfault)
             model.finalizeFromProperties();
             model.buildSystem();
         }
-        catch (const std::exception&)
-        {
+        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the constraint might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -240,8 +239,7 @@ TEST(ForceRegistry, CanAddAnyForceWithoutASegfault)
             model.finalizeFromProperties();
             model.buildSystem();
         }
-        catch (const std::exception&)
-        {
+        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the constraint might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -270,8 +268,7 @@ TEST(ControllerRegistry, CanAddAnyControllerWithoutASegfault)
             model.finalizeFromProperties();
             model.buildSystem();
         }
-        catch (const std::exception&)
-        {
+        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the controller might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)
@@ -322,8 +319,7 @@ TEST(UngroupedRegistry, CanAddAnyUngroupedComponentWithoutASegfault)
             model.finalizeFromProperties();
             model.buildSystem();
         }
-        catch (const std::exception&)
-        {
+        catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
             // ok: it might throw because the component might need more information
             //
             // (but it definitely shouldn't segfault etc. - the error should be recoverable)

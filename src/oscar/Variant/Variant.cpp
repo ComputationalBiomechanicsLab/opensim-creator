@@ -46,7 +46,7 @@ namespace
         // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
         // for floating-point values
 
-        std::string s{str};
+        const std::string s{str};
         size_t pos = 0;
         try {
             return std::stof(s, &pos);
@@ -234,7 +234,7 @@ std::ostream& osc::operator<<(std::ostream& out, const Variant& variant)
     return out << to<std::string>(variant);
 }
 
-size_t std::hash<osc::Variant>::operator()(const Variant& variant) const noexcept
+size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
 {
     // note: you might be wondering why this isn't `std::hash<std::variant>{}(v.data_)`
     //

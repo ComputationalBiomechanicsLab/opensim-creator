@@ -65,7 +65,7 @@ TEST(RenderTexture, constructor_throws_if_constructed_with_Cube_dimensionality_a
     };
 
     // throws because the descriptor is bad
-    ASSERT_ANY_THROW(RenderTexture render_texture(render_texture_params));
+    ASSERT_ANY_THROW(const RenderTexture render_texture(render_texture_params));
 }
 
 TEST(RenderTexture, reformat_throws_if_given_CubeDimensionality_and_anti_aliasing)
@@ -89,7 +89,7 @@ TEST(RenderTexture, throws_if_given_non_square_dimensions_but_Cube_dimensionalit
     };
 
     // throws because non-square
-    ASSERT_ANY_THROW(RenderTexture render_texture(render_texture_params));
+    ASSERT_ANY_THROW(const RenderTexture render_texture(render_texture_params));
 }
 
 TEST(RenderTexture, set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_dimensions)

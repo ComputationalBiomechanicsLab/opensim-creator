@@ -598,7 +598,7 @@ namespace
                 "CustomJoint",
                 []()
                 {
-                    OpenSim::Coordinate independentCoord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*pi_v<double>, +3*pi_v<double>};
+                    const OpenSim::Coordinate independentCoord{"rx", OpenSim::Coordinate::MotionType::Rotational, 0.0, -3*pi_v<double>, +3*pi_v<double>};
 
                     OpenSim::Array<std::string> independentCoordNames;
                     independentCoordNames.append(independentCoord.getName());
@@ -650,13 +650,11 @@ namespace
             if (auto it = protoLut.find(name); it != protoLut.end())
             {
                 // it has already been manually created in the prototype LUT - use that
-                std::shared_ptr<const T> p = std::dynamic_pointer_cast<const T>(it->second);
-                if (p)
-                {
+                const std::shared_ptr<const T> p = std::dynamic_pointer_cast<const T>(it->second);
+                if (p) {
                     rv.push_back(p);
                 }
-                else
-                {
+                else {
                     rv.emplace_back(Clone(v));
                 }
             }
@@ -720,7 +718,7 @@ namespace
         const auto& lut = GetComponentDescriptionLookup();
         for (const std::shared_ptr<const T>& el : protoLut)
         {
-            std::string elName = el->getConcreteClassName();
+            const std::string elName = el->getConcreteClassName();
             std::string elDescription;
             if (auto it = lut.find(elName); it != lut.end())
             {

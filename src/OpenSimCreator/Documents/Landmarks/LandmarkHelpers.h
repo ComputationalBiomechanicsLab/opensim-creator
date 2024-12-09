@@ -51,6 +51,6 @@ namespace osc::lm
     void TryPairingLandmarks(
         std::vector<Landmark>,
         std::vector<Landmark>,
-        std::function<void(const MaybeNamedLandmarkPair&)> consumer
+        const std::function<void(const MaybeNamedLandmarkPair&)>& consumer
     );
 }

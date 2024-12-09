@@ -149,7 +149,7 @@ TEST(Camera, set_clear_flags_works_as_expected)
         {CameraClearFlag::SolidColor, CameraClearFlag::Depth},
     });
 
-    for (CameraClearFlags flags : flags_to_test) {
+    for (const CameraClearFlags flags : flags_to_test) {
         camera.set_clear_flags(flags);
         ASSERT_EQ(camera.clear_flags(), flags);
     }
@@ -207,7 +207,7 @@ TEST(Camera, set_direction_to_standard_direction_causes_direction_to_return_new_
 
     ASSERT_EQ(camera.direction(), default_direction);
 
-    Vec3 new_direction = normalize(Vec3{1.0f, 2.0f, -0.5f});
+    const Vec3 new_direction = normalize(Vec3{1.0f, 2.0f, -0.5f});
     camera.set_direction(new_direction);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
@@ -228,11 +228,11 @@ TEST(Camera, set_direction_to_different_direction_gives_accurate_enough_results)
 
     Camera camera;
 
-    Vec3 new_direction = normalize(Vec3{1.0f, 1.0f, 1.0f});
+    const Vec3 new_direction = normalize(Vec3{1.0f, 1.0f, 1.0f});
 
     camera.set_direction(new_direction);
 
-    Vec3 returned_direction = camera.direction();
+    const Vec3 returned_direction = camera.direction();
 
     ASSERT_GT(dot(new_direction, returned_direction), 0.999f);
 }
@@ -268,7 +268,7 @@ TEST(Camera, set_view_matrix_override_makes_view_matrix_return_the_override)
 TEST(Camera, set_view_matrix_override_to_nullopt_resets_view_matrix_to_use_camera_position_and_up)
 {
     Camera camera;
-    Mat4 initial_view_matrix = camera.view_matrix();
+    const Mat4 initial_view_matrix = camera.view_matrix();
 
     Mat4 view_matrix = identity<Mat4>();
     view_matrix[0][1] = 9.0f;  // change some part of it
@@ -367,7 +367,7 @@ TEST(Camera, inverse_view_projection_matrix_returns_expected_matrix)
 
 TEST(Camera, clear_flags_defaults_to_Default)
 {
-    Camera camera;
+    const Camera camera;
     ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
 }
 
@@ -383,7 +383,7 @@ TEST(Camera, set_clear_flags_causes_clear_flags_to_return_new_flags)
 TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
 {
     Camera camera;
-    Camera copy = camera;
+    const Camera copy = camera;
 
     ASSERT_EQ(camera, copy);
     ASSERT_EQ(camera.clear_flags(), CameraClearFlag::Default);
@@ -393,7 +393,7 @@ TEST(Camera, set_clear_flags_causes_copy_to_compare_not_equivalent)
 
 TEST(Camera, can_call_clipping_planes)
 {
-    Camera camera;
+    const Camera camera;
     const auto [znear, zfar] = camera.clipping_planes();
     ASSERT_FALSE(isnan(znear));
     ASSERT_FALSE(isnan(zfar));

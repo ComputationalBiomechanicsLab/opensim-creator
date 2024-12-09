@@ -23,18 +23,18 @@ TEST(ClosedInterval, can_use_structured_bindings_to_get_lower_and_upper)
 
 TEST(ClosedInterval, can_be_constructed_from_ints)
 {
-    [[maybe_unused]] ClosedInterval<int> r{0, 1}; // shouldn't throw etc
+    [[maybe_unused]] const ClosedInterval<int> r{0, 1}; // shouldn't throw etc
 }
 
 TEST(ClosedInterval, reversing_lower_and_upper_is_allowed)
 {
-    [[maybe_unused]] ClosedInterval<int> r{1, 0};
+    [[maybe_unused]] const ClosedInterval<int> r{1, 0};
 }
 
 TEST(ClosedInterval, can_be_constructed_from_time_points)
 {
     using TimePoint = std::chrono::system_clock::time_point;
-    [[maybe_unused]] ClosedInterval<TimePoint> r{TimePoint{}, TimePoint{} + std::chrono::seconds{1}};
+    [[maybe_unused]] const ClosedInterval<TimePoint> r{TimePoint{}, TimePoint{} + std::chrono::seconds{1}};
 }
 
 TEST(ClosedInterval, normalized_interpolant_at_returns_zero_if_equal_to_lower)
@@ -50,7 +50,7 @@ TEST(ClosedInterval, normalized_interpolant_at_returns_1_if_equal_to_upper)
 TEST(ClosedInterval, normalized_interpolant_at_returns_0_for_any_finite_input_if_lower_equals_upper)
 {
     // note: this matches `std::lerp`'s inverse behavior
-    for (float v : {-5.0f, 0.0f, 1.0f, 7.0f}) {
+    for (const float v : {-5.0f, 0.0f, 1.0f, 7.0f}) {
         ASSERT_EQ(ClosedInterval(1.0f, 1.0f).normalized_interpolant_at(v), 0.0f);
     }
 }

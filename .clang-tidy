@@ -1,14 +1,18 @@
 ---
 Checks: >
   clang-analyzer-*,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
   bugprone-*,
   -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
   -bugprone-lambda-function-name,
   -bugprone-branch-clone,
+  -bugprone-unchecked-optional-access,
   misc-*,
   -misc-no-recursion,
   -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-const-correctness,
   concurrency-*,
   modernize-*,
   -modernize-loop-convert,
@@ -22,7 +26,11 @@ Checks: >
   -cppcoreguidelines-pro-type-const-cast,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
   performance-*,
+  -performance-avoid-endl,
+  -performance-enum-size,
   portability-*,
   google-*,
   -google-readability-namespace-comments,
@@ -43,6 +51,8 @@ Checks: >
   -readability-named-parameter,
   -readability-convert-member-functions-to-static,
   -readability-qualified-auto,
+  -readability-avoid-nested-conditional-operator,
+  -readability-simplify-boolean-expr,
   cert-*
   -cert-dcl21-cpp
 

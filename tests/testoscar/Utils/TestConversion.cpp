@@ -39,16 +39,16 @@ TEST(Converter, automatically_defined_implementation_uses_ideal_constructor)
     enum class ConstructionMethod { Copy, Move };
     struct A {};
     struct B {
-        explicit B(A&&) : method{ConstructionMethod::Move} {}
-        explicit B(const A&) : method{ConstructionMethod::Copy} {}
+        explicit B([[maybe_unused]] A&&) : method{ConstructionMethod::Move} {}
+        explicit B([[maybe_unused]] const A&) : method{ConstructionMethod::Copy} {}
 
         ConstructionMethod method;
     };
 
     const A lvalue;
-    ConstructionMethod lvalue_method = Converter<A, B>{}(lvalue).method;
+    const ConstructionMethod lvalue_method = Converter<A, B>{}(lvalue).method;
     ASSERT_EQ(lvalue_method, ConstructionMethod::Copy);
-    ConstructionMethod rvalue_method = Converter<A, B>{}(A{}).method;
+    const ConstructionMethod rvalue_method = Converter<A, B>{}(A{}).method;
     ASSERT_EQ(rvalue_method, ConstructionMethod::Move);
 }
 
@@ -57,8 +57,8 @@ TEST(Converter, to_correctly_uses_lvalues_and_rvalues)
     enum class ConstructionMethod { Copy, Move };
     struct A {};
     struct B {
-        explicit B(A&&) : method{ConstructionMethod::Move} {}
-        explicit B(const A&) : method{ConstructionMethod::Copy} {}
+        explicit B([[maybe_unused]] A&&) : method{ConstructionMethod::Move} {}
+        explicit B([[maybe_unused]] const A&) : method{ConstructionMethod::Copy} {}
 
         ConstructionMethod method;
     };

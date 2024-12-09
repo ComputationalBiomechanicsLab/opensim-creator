@@ -851,13 +851,13 @@ namespace
 
             const GeometryPathPoint& point = pps[i];
             const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = length(prevToPos);
-            float traversalPos = prevTraversalPos + prevToPosLen;
-            float excess = traversalPos - tendonLen;
+            const float prevToPosLen = length(prevToPos);
+            const float traversalPos = prevTraversalPos + prevToPosLen;
+            const float excess = traversalPos - tendonLen;
 
             if (excess > 0.0f) {
-                float scaler = (prevToPosLen - excess)/prevToPosLen;
-                Vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
+                const float scaler = (prevToPosLen - excess)/prevToPosLen;
+                const Vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitTendonCylinder(prevPoint.locationInGround, tendonEnd);
                 emitTendonSphere(GeometryPathPoint{tendonEnd});
@@ -885,15 +885,15 @@ namespace
         while (i < pps.size() && prevTraversalPos < fiberEnd) {
 
             const GeometryPathPoint& point = pps[i];
-            Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = length(prevToPos);
-            float traversalPos = prevTraversalPos + prevToPosLen;
-            float excess = traversalPos - fiberEnd;
+            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const float prevToPosLen = length(prevToPos);
+            const float traversalPos = prevTraversalPos + prevToPosLen;
+            const float excess = traversalPos - fiberEnd;
 
             if (excess > 0.0f) {
                 // emit end point and then exit
-                float scaler = (prevToPosLen - excess)/prevToPosLen;
-                Vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
+                const float scaler = (prevToPosLen - excess)/prevToPosLen;
+                const Vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitFiberCylinder(prevPoint.locationInGround, fiberEndPos);
                 emitFiberSphere(GeometryPathPoint{fiberEndPos});
@@ -920,9 +920,9 @@ namespace
         while (i < pps.size()) {
 
             const GeometryPathPoint& point = pps[i];
-            Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
-            float prevToPosLen = length(prevToPos);
-            float traversalPos = prevTraversalPos + prevToPosLen;
+            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const float prevToPosLen = length(prevToPos);
+            const float traversalPos = prevTraversalPos + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
             emitTendonSphere(point);
@@ -1424,7 +1424,7 @@ Mesh osc::ToOscMesh(
     const OpenSim::Mesh& mesh)
 {
     SceneCache cache;
-    OpenSimDecorationOptions opts;
+    const OpenSimDecorationOptions opts;
     return ToOscMesh(cache, model, state, mesh, opts, 1.0f);
 }
 
@@ -1453,7 +1453,7 @@ float osc::GetRecommendedScaleFactor(
         state,
         opts,
         1.0f,
-        [&aabb](const OpenSim::Component&, SceneDecoration&& dec)
+        [&aabb](const OpenSim::Component&, const SceneDecoration& dec)
         {
             aabb = bounding_aabb_of(aabb, worldspace_bounds_of(dec));
         }

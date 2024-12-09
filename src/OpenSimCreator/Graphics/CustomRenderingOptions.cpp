@@ -77,9 +77,8 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
 
 void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
-    for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata())
-    {
-        callback(metadata.id, static_cast<bool>(m_Flags & metadata.value));
+    for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
+        callback(metadata.id, Variant{m_Flags & metadata.value});
     }
 }
 
@@ -87,7 +86,7 @@ void osc::CustomRenderingOptions::tryUpdFromValues(std::string_view keyPrefix, c
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
 
-        std::string key = std::string{keyPrefix} + metadata.id;
+        const std::string key = std::string{keyPrefix} + metadata.id;
         if (const auto* v = lookup_or_nullptr(lut, key); v and v->type() == VariantType::Bool) {
             SetOption(m_Flags, metadata.value, to<bool>(*v));
         }

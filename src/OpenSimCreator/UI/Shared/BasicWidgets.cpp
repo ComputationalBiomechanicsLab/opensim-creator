@@ -109,7 +109,7 @@ namespace
         const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
     {
         bool outputAdded = false;
-        ComponentOutputSubfield supportedSubfields = GetSupportedSubfields(o);
+        ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
 
         // can plot suboutputs
         if (ui::begin_menu(("  " + o.getName())))
@@ -857,7 +857,7 @@ void osc::DrawCalculateRadiiDirectionsMenu(
     const SimTK::State& state,
     const OpenSim::Ellipsoid& ellipsoid)
 {
-    return DrawCalculateAxisDirectionsMenu(root, state, ellipsoid.getFrame());
+    DrawCalculateAxisDirectionsMenu(root, state, ellipsoid.getFrame());
 }
 
 void osc::DrawCalculateScaledRadiiDirectionsMenu(

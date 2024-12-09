@@ -40,12 +40,12 @@ TEST(RenderTargetDepthStencilAttachment, compares_equal_to_separately_constructe
 {
     RenderTexture render_texture;
 
-    RenderTargetDepthStencilAttachment a{
+    const RenderTargetDepthStencilAttachment a{
         render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,
     };
-    RenderTargetDepthStencilAttachment b{
+    const RenderTargetDepthStencilAttachment b{
         render_texture.upd_depth_buffer(),
         RenderBufferLoadAction::Clear,
         RenderBufferStoreAction::Resolve,

@@ -62,7 +62,7 @@ public:
                 const LogLevel current_log_level = logger->level();
                 ui::set_next_item_width(200.0f);
                 if (ui::begin_combobox("log_level_", to_cstringview(current_log_level))) {
-                    for (LogLevel log_level : make_option_iterable<LogLevel>()) {
+                    for (const LogLevel log_level : make_option_iterable<LogLevel>()) {
                         bool active = log_level == current_log_level;
                         if (ui::draw_selectable(to_cstringview(log_level), &active)) {
                             logger->set_level(log_level);

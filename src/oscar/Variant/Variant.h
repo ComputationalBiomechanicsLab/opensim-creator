@@ -73,5 +73,5 @@ namespace osc
 
 template<>
 struct std::hash<osc::Variant> final {
-    size_t operator()(const osc::Variant&) const noexcept;
+    size_t operator()(const osc::Variant&) const;
 };

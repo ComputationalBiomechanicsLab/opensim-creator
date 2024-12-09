@@ -404,7 +404,7 @@ TEST(OpenSimModel, ReassigningAJointsChildToGroundDoesNotSegfault)
         // doing that shouldn't segfault
         model.buildSystem();
     }
-    catch (const std::exception&) {
+    catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
         // but OpenSim is pemitted to throw an exception whining about it
     }
 }
@@ -470,7 +470,7 @@ TEST(OpenSimModel, ReassigningAnOffsetFrameForJointChildToParentDoesNotSegfault)
         // doing that shouldn't segfault
         model.buildSystem();
     }
-    catch (const std::exception&) {
+    catch (const std::exception&) {  // NOLINT(bugprone-empty-catch)
         // but OpenSim is pemitted to throw an exception whining about it
     }
 }

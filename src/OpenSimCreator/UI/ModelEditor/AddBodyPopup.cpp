@@ -179,7 +179,7 @@ private:
             ui::draw_help_marker("Attaches visual geometry to the new body. This is what the OpenSim::Body looks like in the UI. The geometry is purely cosmetic and does not affect the simulation");
             ui::next_column();
             {
-                std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
+                const std::string label = m_BodyDetails.maybeGeometry ? GetDisplayName(*m_BodyDetails.maybeGeometry) : std::string{"attach"};
 
                 if (ui::draw_button(label)) {
                     // open geometry selection popup

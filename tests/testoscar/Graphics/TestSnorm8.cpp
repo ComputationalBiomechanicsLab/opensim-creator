@@ -15,7 +15,7 @@ TEST(Snorm8, is_not_trivially_constructible)
 
 TEST(Snorm8, can_default_construct)
 {
-    [[maybe_unused]] Snorm8 default_constructed;
+    [[maybe_unused]] const Snorm8 default_constructed;
 }
 
 TEST(Snorm8, default_constructed_compares_equal_to_zero)
@@ -68,7 +68,7 @@ TEST(Snorm8, implicit_conversion_to_int8_is_equivalent_to_calling_raw_value)
 
 TEST(Snorm8, can_be_placed_into_vec)
 {
-    [[maybe_unused]] Vec<3, Snorm8> should_compile;
+    [[maybe_unused]] const Vec<3, Snorm8> should_compile;
 }
 
 TEST(Snorm8, value_type_returns_int8_t)

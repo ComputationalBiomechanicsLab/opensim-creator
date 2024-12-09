@@ -16,7 +16,7 @@ namespace
 {
     std::string slurp(std::istream& is)
     {
-        std::istreambuf_iterator<char> begin{is};
+        const std::istreambuf_iterator<char> begin{is};
         constexpr std::istreambuf_iterator<char> end;
         return std::string{begin, end};
     }

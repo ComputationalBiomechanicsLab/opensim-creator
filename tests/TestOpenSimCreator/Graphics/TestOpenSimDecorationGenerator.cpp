@@ -50,14 +50,14 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsWithOpenSimMuscleColoringGen
         state,
         opts,
         1.0f,
-        [&passedTest](const OpenSim::Component& c, SceneDecoration&& dec)
+        [&passedTest](const OpenSim::Component& c, const SceneDecoration& dec)
         {
             if (contains_case_insensitive(c.getName(), "muscle1")) {
 
                 ASSERT_TRUE(std::holds_alternative<Color>(dec.shading)) << "should have an assigned color";
 
                 // check that it's red
-                const Color& color = std::get<Color>(dec.shading);
+                const auto& color = std::get<Color>(dec.shading);
                 ASSERT_GT(color.r, 0.5f);
                 ASSERT_GT(color.r, 5.0f*color.g);
                 ASSERT_GT(color.r, 5.0f*color.b);
@@ -224,7 +224,7 @@ TEST(OpenSimDecorationGenerator, DoesntIncludeTheModelsDirectDecorations)
         model.getWorkingState(),
         opts,
         1.0f,
-        [&model, &empty](const OpenSim::Component& c, SceneDecoration&&)
+        [&model, &empty](const OpenSim::Component& c, const SceneDecoration&)
         {
             ASSERT_NE(&c, &model);
             empty = false;
@@ -256,7 +256,7 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
         model.getWorkingState(),
         opts,
         1.0f,
-        [&empty](const OpenSim::Component&, SceneDecoration&&) { empty = false; }
+        [&empty](const OpenSim::Component&, const SceneDecoration&) { empty = false; }
     );
     ASSERT_FALSE(empty);
 }
@@ -293,7 +293,7 @@ TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigament
         model.getWorkingState(),
         opts,
         1.0f,
-        [&ligament, &numDecorationsTaggedWithLigament](const OpenSim::Component& component, SceneDecoration&&)
+        [&ligament, &numDecorationsTaggedWithLigament](const OpenSim::Component& component, const SceneDecoration&)
         {
             if (&component == &ligament) {
                 ++numDecorationsTaggedWithLigament;

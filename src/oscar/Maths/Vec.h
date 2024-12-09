@@ -54,7 +54,7 @@ struct std::tuple_element<I, osc::Vec<L, T>> {
 
 template<size_t L, osc::Scalar T>
 struct std::hash<osc::Vec<L, T>> final {
-    size_t operator()(const osc::Vec<L, T>& vec) const
+    size_t operator()(const osc::Vec<L, T>& vec) const noexcept(noexcept(osc::hash_range(vec)))
     {
         return osc::hash_range(vec);
     }

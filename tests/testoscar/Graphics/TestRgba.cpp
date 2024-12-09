@@ -11,12 +11,12 @@ using namespace osc;
 
 TEST(Rgba, can_be_instantiated_with_float_template_arg)
 {
-    [[maybe_unused]] Rgba<float> this_should_compile;
+    [[maybe_unused]] const Rgba<float> this_should_compile;
 }
 
 TEST(Rgba, can_be_instantiated_with_Unorm8_template_arg)
 {
-    [[maybe_unused]] Rgba<Unorm8> this_should_compile;
+    [[maybe_unused]] const Rgba<Unorm8> this_should_compile;
 }
 
 TEST(Rgba, can_write_float_components_to_std_ostream)
@@ -75,7 +75,7 @@ TEST(Rgba, value_ptr_works_for_Unorm8)
 TEST(Rgba, float_rgba_can_be_hashed)
 {
     Rgba<float> rgba{0.125f, 0.25f, 0.5f, 1.0f};
-    std::hash<Rgba<float>> hasher{};
+    const std::hash<Rgba<float>> hasher{};
 
     size_t last_hash = 0;
     for (auto& component : rgba) {
@@ -89,7 +89,7 @@ TEST(Rgba, float_rgba_can_be_hashed)
 TEST(Rgba, Unorm8_rgba_can_be_hashed)
 {
     Rgba<Unorm8> rgba{0.125f, 0.25f, 0.5f, 1.0f};
-    std::hash<Rgba<Unorm8>> hasher{};
+    const std::hash<Rgba<Unorm8>> hasher{};
 
     size_t last_hash = 0;
     for (auto& component : rgba) {

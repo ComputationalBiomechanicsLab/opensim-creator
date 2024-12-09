@@ -104,7 +104,7 @@ namespace
                 void impl_log_message(std::string_view payload, osim::LogLevel level) final
                 {
                     static_assert(num_options<osim::LogLevel>() == 2);
-                    std::string str{payload};
+                    const std::string str{payload};
                     switch (level) {
                     case osim::LogLevel::info: osc::log_info("%s", str.c_str()); return;
                     case osim::LogLevel::warn: osc::log_warn("%s", str.c_str()); return;

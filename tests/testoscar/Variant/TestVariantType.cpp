@@ -49,6 +49,6 @@ TEST(VariantType, stream_to_string_returns_expected_results)
 
 TEST(VariantType, passing_bullshit_value_into_stream_to_string_throws)
 {
-    const auto bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);
+    const auto bs = static_cast<VariantType>(std::numeric_limits<std::underlying_type_t<VariantType>>::max()-1);  // NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     ASSERT_ANY_THROW({ stream_to_string(bs); });
 }

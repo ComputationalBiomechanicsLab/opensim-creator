@@ -22,6 +22,7 @@
 #include <concepts>
 #include <cstdarg>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <optional>
@@ -1122,18 +1123,15 @@ namespace osc::ui
             NUM_OPTIONS,
         };
 
-        enum class DragToolFlags {
-            None     = 0,
-            NoInputs = 1<<2,
-            NoFit    = 1<<1,
+        enum class DragToolFlag : uint8_t {
+            None      = 0,
+            NoFit     = 1<<1,
+            NoInputs  = 1<<2,
+            NUM_FLAGS =    2,
 
             Default = None,
         };
-
-        constexpr DragToolFlags operator|(DragToolFlags lhs, DragToolFlags rhs)
-        {
-            return static_cast<DragToolFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
-        }
+        using DragToolFlags = Flags<DragToolFlag>;
 
         enum class Location {
             Center,
@@ -1259,7 +1257,7 @@ namespace osc::ui
             Vec2d* location,
             const Color&,
             float size = 4,
-            DragToolFlags = DragToolFlags::Default
+            DragToolFlags = DragToolFlag::Default
         );
 
         // draws a draggable vertical guideline at an x-value in the plot area
@@ -1268,7 +1266,7 @@ namespace osc::ui
             double* x,
             const Color&,
             float thickness = 1,
-            DragToolFlags = DragToolFlags::Default
+            DragToolFlags = DragToolFlag::Default
         );
 
         // draws a draggable horizontal guideline at a y-value in the plot area
@@ -1277,7 +1275,7 @@ namespace osc::ui
             double* y,
             const Color&,
             float thickness = 1,
-            DragToolFlags = DragToolFlags::Default
+            DragToolFlags = DragToolFlag::Default
         );
 
         // draws a tag on the x-axis at the specified x value

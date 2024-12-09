@@ -142,6 +142,7 @@ namespace osc
         WindowMoved,
         WindowResized,
         WindowDisplayScaleChanged,
+        Unknown,
         NUM_OPTIONS,
     };
     class WindowEvent final : public Event {
@@ -152,7 +153,7 @@ namespace osc
         const SDL_Window* window() const { return window_; }
         uint32_t window_id() const { return window_id_; }
     private:
-        WindowEventType type_ = WindowEventType::WindowMoved;
+        WindowEventType type_ = WindowEventType::Unknown;
         SDL_Window* window_ = nullptr;
         uint32_t window_id_ = 0;
     };

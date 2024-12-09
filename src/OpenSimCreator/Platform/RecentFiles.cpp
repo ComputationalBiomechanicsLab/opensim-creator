@@ -71,8 +71,8 @@ namespace
             ss >> path;
 
             // calc tertiary data
-            bool exists = std::filesystem::exists(path);
-            std::chrono::seconds timestampSecs{timestamp};
+            const bool exists = std::filesystem::exists(path);
+            const std::chrono::seconds timestampSecs{timestamp};
 
             rv.push_back(RecentFile{exists, timestampSecs, std::move(path)});
         }

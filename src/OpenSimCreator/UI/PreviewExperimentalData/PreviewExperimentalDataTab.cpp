@@ -490,5 +490,5 @@ void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(
 void osc::PreviewExperimentalDataTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::PreviewExperimentalDataTab::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::PreviewExperimentalDataTab::impl_on_tick() { private_data().on_tick(); }
-void osc::PreviewExperimentalDataTab::impl_on_draw_main_menu() { return private_data().on_draw_main_menu(); }
+void osc::PreviewExperimentalDataTab::impl_on_draw_main_menu() { private_data().on_draw_main_menu(); }
 void osc::PreviewExperimentalDataTab::impl_on_draw() { private_data().on_draw(); }

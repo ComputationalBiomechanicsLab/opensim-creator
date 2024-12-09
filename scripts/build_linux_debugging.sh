@@ -7,7 +7,9 @@
 #     usage (must be ran in repository root): `bash build_linux_debugging.sh`
 
 set -xeuo pipefail
-OSC_BUILD_CONCURRENCY=$(nproc)
+OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(nproc)}
+export CC=clang
+export CXX=clang++
 
 mkdir -p osc-build
 
@@ -15,10 +17,10 @@ mkdir -p osc-build
 cat << EOF > osc-build/dlclose.c
 #include <stdio.h>
 int dlclose(void *handle) {
-    ;
+    return 0;
 }
 EOF
-gcc -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
+${CC} -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
 
 # create suppressions file for OpenSim, which contains this leak:
 # #11 0x7f99fcf96cbc in OpenSim::FreeJoint::FreeJoint(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, OpenSim::PhysicalFrame const&, OpenSim::PhysicalFrame const&) /home/adam/opensim-creator/third_party/opensim-core/OpenSim/Simulation/SimbodyEngine/FreeJoint.h:96:25
@@ -26,9 +28,6 @@ gcc -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
 cat << EOF > osc-build/opensim_suppressions.supp
 leak:OpenSim::Coordinate
 EOF
-
-export CC=clang
-export CXX=clang++
 
 # configure+build dependencies
 CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake -S third_party/ -B osc-deps-build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install

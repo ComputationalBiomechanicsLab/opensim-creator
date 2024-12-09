@@ -172,12 +172,12 @@ namespace
 
         Mat4 m;
 
-        float l = p.l;
-        float r = p.r;
-        float b = p.b;
-        float t = p.t;
-        float n = p.n;
-        float f = p.f;
+        const float l = p.l;
+        const float r = p.r;
+        const float b = p.b;
+        const float t = p.t;
+        const float n = p.n;
+        const float f = p.f;
 
         m[0][0] = 2.0f/(r - l); m[0][1] = 0.0f;         m[0][2] = 0.0f;         m[0][3] = -(r + l)/(r - l);
         m[1][0] = 0.0f;         m[1][1] = 2.0f/(t - b); m[1][2] = 0.0f;         m[1][3] = -(t + b)/(t - b);

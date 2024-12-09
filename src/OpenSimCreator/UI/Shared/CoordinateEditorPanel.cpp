@@ -199,7 +199,7 @@ private:
         ui::push_style_color(ui::ColorVar::ButtonHovered, Color::clear());
         ui::push_style_var(ui::StyleVar::FramePadding, {0.0f, ui::get_style_frame_padding().y});
         if (ui::draw_button(c.getLocked(m_Model->getState()) ? OSC_ICON_LOCK : OSC_ICON_UNLOCK)) {
-            bool newValue = !c.getLocked(m_Model->getState());
+            const bool newValue = !c.getLocked(m_Model->getState());
             ActionSetCoordinateLockedAndSave(*m_Model, c, newValue);
         }
         ui::pop_style_var();
@@ -258,10 +258,10 @@ private:
 };
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
-    std::string_view panelName_,
-    Widget& mainUIStateAPI_,
-    std::shared_ptr<IModelStatePair> uum_) :
+    std::string_view panelName,
+    Widget& parent,
+    std::shared_ptr<IModelStatePair> model) :
 
-    Panel{std::make_unique<Impl>(*this, panelName_, mainUIStateAPI_, std::move(uum_))}
+    Panel{std::make_unique<Impl>(*this, panelName, parent, std::move(model))}
 {}
 void osc::CoordinateEditorPanel::impl_draw_content() { private_data().draw_content(); }

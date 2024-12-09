@@ -150,7 +150,7 @@ R"(# configuration options
         std::string_view application_config_file_name)
     {
         const auto user_data_dir = user_data_directory(std::string{organization_name}, std::string{application_name});
-        const auto full_path = user_data_dir / application_config_file_name;
+        auto full_path = user_data_dir / application_config_file_name;
 
         if (std::filesystem::exists(full_path)) {
             return full_path;

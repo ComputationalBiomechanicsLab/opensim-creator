@@ -285,7 +285,7 @@ public:
         // of spawned tabs
         for (size_t ith_panel = 0; ith_panel < spawnable_panels_.size(); ++ith_panel) {
 
-            SpawnablePanel& panel = spawnable_panels_[ith_panel];
+            const SpawnablePanel& panel = spawnable_panels_[ith_panel];
             for (size_t i = 0; i < panel.num_initially_opened_panels(); ++i) {
                 create_dynamic_panel(ith_panel);
             }
@@ -386,7 +386,7 @@ private:
         // number with the same spawnable panel
 
         std::vector<bool> used(dynamic_panels_.size());
-        for (DynamicPanel& panel : dynamic_panels_) {
+        for (const DynamicPanel& panel : dynamic_panels_) {
             if (panel.spawnable_panel_id() == spawnable_id) {
                 const size_t instance_number = panel.instance_number();
                 used.resize(max(instance_number, used.size()));

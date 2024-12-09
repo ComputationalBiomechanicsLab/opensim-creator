@@ -5,7 +5,6 @@
 #include <oscar/Utils/StringHelpers.h>
 #include <oscar/Utils/StringName.h>
 
-#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <memory>
@@ -13,6 +12,7 @@
 #include <span>
 #include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>

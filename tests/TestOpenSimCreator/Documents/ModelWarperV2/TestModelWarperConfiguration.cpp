@@ -207,7 +207,7 @@ namespace
     public:
         template<std::ranges::input_range Range>
         requires std::convertible_to<std::ranges::range_value_t<Range>, ValidationCheckResult>
-        void setChecks(Range&& checks)
+        void setChecks(const Range& checks)
         {
             m_Checks.assign(rgs::begin(checks), rgs::end(checks));
         }

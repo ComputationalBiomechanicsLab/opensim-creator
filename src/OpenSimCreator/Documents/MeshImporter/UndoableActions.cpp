@@ -48,7 +48,7 @@ bool osc::mi::TryAssignMeshAttachments(
         return false;  // bogus ID passed
     }
 
-    for (UID id : meshIDs)
+    for (const UID id : meshIDs)
     {
         auto* const ptr = doc.tryUpdByID<Mesh>(id);
         if (!ptr)
@@ -361,7 +361,7 @@ void osc::mi::RotateAxis(
     int axis,
     Radians radians)
 {
-    Document& doc = udoc.upd_scratch();
+    const Document& doc = udoc.upd_scratch();
     el.setXform(doc, rotate_axis(el.getXForm(doc), axis, radians));
     udoc.commit_scratch("reoriented " + el.getLabel());
 }
@@ -451,7 +451,7 @@ bool osc::mi::AddStationAtLocation(
     UID attachment,
     const Vec3& loc)
 {
-    Document& doc = udoc.upd_scratch();
+    const Document& doc = udoc.upd_scratch();
 
     const auto* const obj = doc.tryGetByID(attachment);
     if (!obj)

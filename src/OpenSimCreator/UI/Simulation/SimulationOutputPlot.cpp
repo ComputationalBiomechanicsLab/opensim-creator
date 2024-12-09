@@ -374,7 +374,7 @@ private:
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);
-                    plot::drag_point(0, &currentVal, OSCColors::scrub_current(), 4.0f, plot::DragToolFlags::NoInputs);
+                    plot::drag_point(0, &currentVal, OSCColors::scrub_current(), 4.0f, plot::DragToolFlag::NoInputs);
                 }
 
                 plot::end();

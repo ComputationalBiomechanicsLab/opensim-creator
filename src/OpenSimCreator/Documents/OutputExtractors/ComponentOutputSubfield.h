@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/Flags.h>
 
 #include <cstdint>
 #include <optional>
@@ -27,16 +27,7 @@ namespace osc
 
         Default = None,
     };
-
-    constexpr ComponentOutputSubfield operator|(ComponentOutputSubfield lhs, ComponentOutputSubfield rhs)
-    {
-        return static_cast<ComponentOutputSubfield>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
-    }
-
-    constexpr bool operator&(ComponentOutputSubfield lhs, ComponentOutputSubfield rhs)
-    {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
-    }
+    using ComponentOutputSubfields = Flags<ComponentOutputSubfield>;
 
     std::optional<CStringView> GetOutputSubfieldLabel(ComponentOutputSubfield);
     std::span<const ComponentOutputSubfield> GetAllSupportedOutputSubfields();
@@ -44,8 +35,8 @@ namespace osc
     // tests if the output produces numeric values (e.g. float, Vec3, etc. - as opposed to std::string)
     bool ProducesExtractableNumericValues(const OpenSim::AbstractOutput&);
 
-    // returns applicable ComponentOutputSubfield ORed together
-    ComponentOutputSubfield GetSupportedSubfields(const OpenSim::AbstractOutput&);
+    // returns `ComponentOutputSubfield`s that are usable with the given output.
+    ComponentOutputSubfields GetSupportedSubfields(const OpenSim::AbstractOutput&);
 
     using SubfieldExtractorFunc = double(*)(const OpenSim::AbstractOutput&, const SimTK::State&);
     SubfieldExtractorFunc GetExtractorFuncOrNull(const OpenSim::AbstractOutput&, ComponentOutputSubfield);

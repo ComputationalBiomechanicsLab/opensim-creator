@@ -223,7 +223,7 @@ osc::DisplayStateChangeEvent::DisplayStateChangeEvent(const SDL_Event&) :
 osc::WindowEvent::WindowEvent(const SDL_Event& e) :
     Event{EventType::Window}
 {
-    static_assert(num_options<WindowEventType>() == 8);
+    static_assert(num_options<WindowEventType>() == 9);
     OSC_ASSERT(SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST);
 
     switch (e.type) {
@@ -235,6 +235,7 @@ osc::WindowEvent::WindowEvent(const SDL_Event& e) :
     case SDL_EVENT_WINDOW_MOVED:                 type_ = WindowEventType::WindowMoved;               break;
     case SDL_EVENT_WINDOW_RESIZED:               type_ = WindowEventType::WindowResized;             break;
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: type_ = WindowEventType::WindowDisplayScaleChanged; break;
+    default:                                     type_ = WindowEventType::Unknown;                   break;
     }
     window_ = SDL_GetWindowFromID(e.window.windowID);
     window_id_ = e.window.windowID;

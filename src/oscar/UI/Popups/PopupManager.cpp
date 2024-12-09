@@ -13,7 +13,7 @@ osc::PopupManager::~PopupManager() noexcept = default;
 
 void osc::PopupManager::open_all()
 {
-    for (std::shared_ptr<IPopup>& popup : popups_) {
+    for (const std::shared_ptr<IPopup>& popup : popups_) {
         popup->open();
     }
 }

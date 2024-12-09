@@ -92,7 +92,7 @@ namespace
         // },
     });
 
-    static_assert(c_CustomDecorationOptionLabels.size() == num_flags<OpenSimDecorationOptionFlags>());
+    static_assert(c_CustomDecorationOptionLabels.size() == num_flags<OpenSimDecorationOptionFlag>());
 }
 
 
@@ -101,25 +101,13 @@ const OpenSimDecorationOptionMetadata& osc::GetIthOptionMetadata(size_t i)
     return c_CustomDecorationOptionLabels.at(i);
 }
 
-OpenSimDecorationOptionFlags osc::GetIthOption(size_t i)
+OpenSimDecorationOptionFlag osc::GetIthOption(size_t i)
 {
-    auto v = 1u << min(i, num_flags<OpenSimDecorationOptionFlags>()-1);
-    return static_cast<OpenSimDecorationOptionFlags>(v);
+    auto v = 1u << min(i, num_flags<OpenSimDecorationOptionFlag>()-1);
+    return static_cast<OpenSimDecorationOptionFlag>(v);
 }
 
 void osc::SetIthOption(OpenSimDecorationOptionFlags& flags, size_t i, bool v)
 {
-    SetOption(flags, GetIthOption(i), v);
-}
-
-void osc::SetOption(OpenSimDecorationOptionFlags& flags, OpenSimDecorationOptionFlags flag, bool v)
-{
-    if (v)
-    {
-        flags = static_cast<OpenSimDecorationOptionFlags>(cpp23::to_underlying(flags) | cpp23::to_underlying(flag));
-    }
-    else
-    {
-        flags = static_cast<OpenSimDecorationOptionFlags>(cpp23::to_underlying(flags) & ~cpp23::to_underlying(flag));
-    }
+    flags.set(GetIthOption(i), v);
 }

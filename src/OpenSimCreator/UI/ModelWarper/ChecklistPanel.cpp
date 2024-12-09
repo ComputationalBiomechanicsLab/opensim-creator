@@ -91,7 +91,7 @@ namespace
         ui::indent(5.0f);
         int id = 0;
         for (auto&& check : state.validate(c)) {
-            ui::push_id(id);
+            ui::push_id(id++);
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ui::same_line();

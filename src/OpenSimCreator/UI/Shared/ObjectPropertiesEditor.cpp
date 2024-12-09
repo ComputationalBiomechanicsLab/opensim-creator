@@ -495,7 +495,7 @@ namespace
                 // list is a blank (probably from the last time the user clicked "Add Entry")
                 const bool disabled =
                     (m_EditedProperty.size() >= m_EditedProperty.getMaxListSize()) or
-                    (m_EditedProperty.size() > 0 and m_EditedProperty[m_EditedProperty.size() - 1] == std::string{});
+                    (not m_EditedProperty.empty() and m_EditedProperty[m_EditedProperty.size() - 1].empty());
 
                 if (disabled) {
                     ui::begin_disabled();
@@ -1427,7 +1427,7 @@ namespace
             }
         }
 
-        std::unique_ptr<IPopup> createGeometryPathEditorPopup(std::shared_ptr<const IComponentAccessor> componentPtr)
+        std::unique_ptr<IPopup> createGeometryPathEditorPopup(const std::shared_ptr<const IComponentAccessor>& componentPtr)
         {
             const auto accessor = getDowncastedPropertyAccessor();
             return std::make_unique<GeometryPathEditorPopup>(

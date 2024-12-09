@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(ColorRenderBufferParams, can_default_construct)
 {
-    [[maybe_unused]] ColorRenderBufferParams default_constructed;
+    [[maybe_unused]] const ColorRenderBufferParams default_constructed;
 }
 
 TEST(ColorRenderBufferParams, default_constructed_has_1x1_dimensions)

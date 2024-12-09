@@ -978,14 +978,14 @@ Mat4 osc::mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
 {
     const float cos_theta = dot(dir1, dir2);
 
-    if (cos_theta >= static_cast<float>(1.0f) - epsilon_v<float>) {
+    if (cos_theta >= 1.0f - epsilon_v<float>) {
         // `a` and `b` point in the same direction: return identity transform
         return identity<Mat4>();
     }
 
     Radians theta{};
     Vec3 rotation_axis{};
-    if (cos_theta < static_cast<float>(-1.0f) + epsilon_v<float>) {
+    if (cos_theta < -1.0f + epsilon_v<float>) {
         // `a` and `b` point in opposite directions
         //
         // - there is no "ideal" rotation axis
@@ -1187,7 +1187,7 @@ Mat4 osc::mat4_transform_between(const Disc& src_disc, const Disc& dest_disc)
     const Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - src_disc.normal));
     const Mat4 scaler = scale(identity<Mat4>(), scalers);
 
-    float cos_theta = dot(src_disc.normal, dest_disc.normal);
+    const float cos_theta = dot(src_disc.normal, dest_disc.normal);
     Mat4 rotator;
     if (cos_theta > 0.9999f) {
         rotator = identity<Mat4>();
@@ -1369,7 +1369,7 @@ void osc::apply_worldspace_rotation(
     const EulerAngles& euler_angles,
     const Vec3& rotation_center)
 {
-    Quat q = to_worldspace_rotation_quat(euler_angles);
+    const Quat q = to_worldspace_rotation_quat(euler_angles);
     application_target.position = q*(application_target.position - rotation_center) + rotation_center;
     application_target.rotation = normalize(q*application_target.rotation);
 }

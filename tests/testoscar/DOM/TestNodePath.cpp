@@ -311,6 +311,6 @@ TEST(NodePath, constructor_throws_if_given_invalid_input)
     });
 
     for (const auto& input : inputs) {
-        ASSERT_ANY_THROW({ NodePath p(input); }) << std::string{"input was: "} + std::string{input};
+        ASSERT_ANY_THROW({ const NodePath p(input); }) << std::string{"input was: "} + std::string{input};
     }
 }

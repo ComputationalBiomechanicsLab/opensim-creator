@@ -185,25 +185,27 @@ bool osc::ProducesExtractableNumericValues(const OpenSim::AbstractOutput& ao)
     return false;
 }
 
-ComponentOutputSubfield osc::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
+ComponentOutputSubfields osc::GetSupportedSubfields(const OpenSim::AbstractOutput& ao)
 {
     if (dynamic_cast<const OpenSim::Output<SimTK::Vec3>*>(&ao)) {
-        return
-            ComponentOutputSubfield::X |
-            ComponentOutputSubfield::Y |
-            ComponentOutputSubfield::Z |
-            ComponentOutputSubfield::Magnitude;
+        return {
+            ComponentOutputSubfield::X,
+            ComponentOutputSubfield::Y,
+            ComponentOutputSubfield::Z,
+            ComponentOutputSubfield::Magnitude,
+        };
     }
     else if (dynamic_cast<const OpenSim::Output<SimTK::SpatialVec>*>(&ao)) {
-        return
-            ComponentOutputSubfield::X |
-            ComponentOutputSubfield::Y |
-            ComponentOutputSubfield::Z |
-            ComponentOutputSubfield::Magnitude |
-            ComponentOutputSubfield::RX |
-            ComponentOutputSubfield::RY |
-            ComponentOutputSubfield::RZ |
-            ComponentOutputSubfield::RMagnitude;
+        return {
+            ComponentOutputSubfield::X,
+            ComponentOutputSubfield::Y,
+            ComponentOutputSubfield::Z,
+            ComponentOutputSubfield::Magnitude,
+            ComponentOutputSubfield::RX,
+            ComponentOutputSubfield::RY,
+            ComponentOutputSubfield::RZ,
+            ComponentOutputSubfield::RMagnitude,
+        };
     }
     else {
         return ComponentOutputSubfield::None;

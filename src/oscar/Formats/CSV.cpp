@@ -1,12 +1,14 @@
 #include "CSV.h"
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <iostream>
-#include <ranges>
+#include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 using namespace osc;
 namespace rgs = std::ranges;

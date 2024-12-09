@@ -284,7 +284,7 @@ namespace
         }
 
         // lookup each side of the joint, creating the bodies if necessary
-        JointAttachmentCachedLookupResult parent = LookupPhysFrame(doc, model, visitedBodies, joint.getParentID());
+        const JointAttachmentCachedLookupResult parent = LookupPhysFrame(doc, model, visitedBodies, joint.getParentID());
         JointAttachmentCachedLookupResult child = LookupPhysFrame(doc, model, visitedBodies, joint.getChildID());
 
         // create the parent OpenSim::PhysicalOffsetFrame

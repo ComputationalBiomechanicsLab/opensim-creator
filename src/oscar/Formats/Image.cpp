@@ -62,7 +62,7 @@ namespace
         {
             // stbi: returns nonzero if we are at end of file/data
 
-            std::istream& in = *static_cast<std::istream*>(user);
+            const std::istream& in = *static_cast<const std::istream*>(user);
             return in.eof() ? -1 : 0;
         }
     };

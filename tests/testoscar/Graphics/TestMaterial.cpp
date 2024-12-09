@@ -645,7 +645,7 @@ TEST_F(MaterialTest, MaterialUnsetCubemapClearsTheCubemap)
 
 TEST_F(MaterialTest, MaterialGetTransparentIsInitiallyFalse)
 {
-    Material material = generate_material();
+    const Material material = generate_material();
     ASSERT_FALSE(material.is_transparent());
 }
 
@@ -743,7 +743,7 @@ TEST_F(MaterialTest, MaterialSetDepthFunctionBehavesAsExpected)
 
 TEST_F(MaterialTest, MaterialGetWireframeModeIsInitiallyFalse)
 {
-    Material material = generate_material();
+    const Material material = generate_material();
     ASSERT_FALSE(material.is_wireframe());
 }
 
@@ -760,7 +760,7 @@ TEST_F(MaterialTest, MaterialSetWireframeModeBehavesAsExpected)
 
 TEST_F(MaterialTest, MaterialSetWireframeModeCausesMaterialCopiesToReturnNonEqual)
 {
-    Material material = generate_material();
+    const Material material = generate_material();
     ASSERT_FALSE(material.is_wireframe());
     Material copy{material};
     ASSERT_EQ(material, copy);

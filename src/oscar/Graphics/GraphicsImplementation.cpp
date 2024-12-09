@@ -670,7 +670,7 @@ namespace
         explicit operator bool () const { return value_ != c_senteniel_index_value; }
         size_t operator*() const { return value_; }
     private:
-        static inline constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
+        static constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
         size_t value_ = c_senteniel_index_value;
     };
 
@@ -1592,7 +1592,7 @@ namespace
                 for (size_t component = 0; component < num_components; ++component) {
                     const size_t component_begin = pixel_begin + component*num_bytes_per_component;
 
-                    std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
+                    const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
 
@@ -1649,7 +1649,7 @@ namespace
                 for (size_t component = 0; component < num_components; ++component) {
                     const size_t component_begin = pixel_begin + component*sizeof(float);
 
-                    std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
+                    const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
                     const auto component_float = cpp20::bit_cast<float>(tmp_array);
@@ -4318,11 +4318,12 @@ namespace
             template<typename AttrValueRange>
             static value_type at(AttrValueRange&& range, difference_type pos)
             {
-                const auto beg = range.begin();
-                if (pos >= std::distance(beg, range.end())) {
+                if (pos < rgs::size(range)) {
+                    return std::forward<AttrValueRange>(range)[pos];
+                }
+                else {
                     throw std::out_of_range{"an attribute value was out-of-range: this is usually because of out-of-range mesh indices"};
                 }
-                return beg[pos];
             }
 
             std::span<Byte> data_{};
@@ -4383,7 +4384,7 @@ namespace
         auto iter(VertexAttribute attribute) const
         {
             if (const auto layout = vertex_format_.attribute_layout(attribute)) {
-                std::span<const std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
+                const std::span<const std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
 
                 return AttributeValueRange<T, true>{
                     offset_span,
@@ -4400,7 +4401,7 @@ namespace
         auto iter(VertexAttribute attribute)
         {
             if (const auto layout = vertex_format_.attribute_layout(attribute)) {
-                std::span<std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
+                const std::span<std::byte> offset_span{data_.data() + layout->offset(), data_.size()};
                 return AttributeValueRange<T, false>{
                     offset_span,
                     vertex_format_.stride(),
@@ -5016,34 +5017,18 @@ private:
         const bool should_recalculate_bounds = not (flags & MeshUpdateFlag::DontRecalculateBounds);
 
         if (should_check_indices and should_recalculate_bounds) {
-            if (num_indices_ == 0) {
-                aabb_ = {};
-                return;
-            }
-
-            // recalculate bounds while also checking indices
-            aabb_.min = {
-                std::numeric_limits<float>::max(),
-                std::numeric_limits<float>::max(),
-                std::numeric_limits<float>::max(),
-            };
-            aabb_.max = {
-                std::numeric_limits<float>::lowest(),
-                std::numeric_limits<float>::lowest(),
-                std::numeric_limits<float>::lowest(),
-            };
-
-            auto vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
-            for (auto index : indices()) {
-                Vec3 pos = vertices.at(index);  // bounds-check index
-                aabb_.min = elementwise_min(aabb_.min, pos);
-                aabb_.max = elementwise_max(aabb_.max, pos);
-            }
+            aabb_ = bounding_aabb_of(indices(), [vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position)](const auto& index)
+            {
+                return vertices.at(index);  // `at` serves the dual-purpose of getting and range-checking
+            });
         }
         else if (should_check_indices and not should_recalculate_bounds) {
-            for (auto mesh_index : indices()) {
-                OSC_ASSERT(mesh_index < vertex_buffer_.num_vertices() && "a mesh index is out of bounds");
-            }
+            const auto num_vertices = vertex_buffer_.num_vertices();
+            const auto is_less_than_number_of_vertices = [num_vertices](const auto mesh_index)
+            {
+                return mesh_index < num_vertices;
+            };
+            OSC_ASSERT_ALWAYS(rgs::all_of(indices(), is_less_than_number_of_vertices) && "a mesh index is out of bounds");
         }
         else {
             return;  // do nothing
@@ -5668,7 +5653,7 @@ private:
     CameraClearFlags clear_flags_ = CameraClearFlag::Default;
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
-    Vec3 position_ = {};
+    Vec3 position_;
     Quat rotation_ = identity<Quat>();
     std::optional<Mat4> maybe_view_matrix_override_;
     std::optional<Mat4> maybe_projection_matrix_override_;
@@ -6338,7 +6323,10 @@ private:
     gl::ArrayBuffer<float, GL_STREAM_DRAW> instance_gpu_buffer_;
 };
 
-static std::unique_ptr<osc::GraphicsContext::Impl> g_graphics_context_impl = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+namespace
+{
+    std::unique_ptr<osc::GraphicsContext::Impl> g_graphics_context_impl = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+}
 
 osc::GraphicsContext::GraphicsContext(SDL_Window& window)
 {
@@ -6366,7 +6354,7 @@ bool osc::GraphicsContext::is_vsync_enabled() const
 
 void osc::GraphicsContext::set_vsync_enabled(bool v)
 {
-    return g_graphics_context_impl->set_vsync_enabled(v);
+    g_graphics_context_impl->set_vsync_enabled(v);
 }
 
 bool osc::GraphicsContext::is_in_debug_mode() const
@@ -6792,7 +6780,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
     case variant_index<MaterialValue, Texture2D>():
     {
         auto& texture_impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(material_value).impl_);
-        gl::Texture2D& texture = texture_impl.updTexture();
+        const gl::Texture2D& texture = texture_impl.updTexture();
 
         gl::active_texture(GL_TEXTURE0 + texture_slot);
         gl::bind_texture(texture);

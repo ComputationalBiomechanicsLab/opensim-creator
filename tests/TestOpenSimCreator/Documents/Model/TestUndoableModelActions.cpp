@@ -424,7 +424,7 @@ TEST(OpenSimActions, ActionToggleForcesTogglesTheForces)
 TEST(OpenSimActions, ActionZeroAllCoordinatesZeroesAllCoordinatesInAModel)
 {
     UndoableModelStatePair model;
-    model.updModel().addBody(new OpenSim::Body("somebody", 1.0, {}, SimTK::Inertia{1.0}));  // should automatically add a FreeJoint
+    model.updModel().addBody(std::make_unique<OpenSim::Body>("somebody", 1.0, SimTK::Vec3(0.0), SimTK::Inertia{1.0}).release());  // should automatically add a FreeJoint
     model.updModel().finalizeFromProperties();
     model.updModel().finalizeConnections();
     auto* fj = FindFirstDescendentOfTypeMut<OpenSim::FreeJoint>(model.updModel());

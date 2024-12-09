@@ -160,7 +160,7 @@ std::string osc::truncate_with_ellipsis(std::string_view v, size_t max_length)
         return std::string{v};
     }
 
-    std::string_view substring = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
+    const std::string_view substring = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
     std::string rv;
     rv.reserve(substring.length() + 3);
     rv = substring;

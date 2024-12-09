@@ -331,12 +331,12 @@ void osc::ForwardDynamicSimulation::implRequestNewEndTime(SimulationClock::time_
 
 void osc::ForwardDynamicSimulation::implRequestStop()
 {
-    return m_Impl->requestStop();
+    m_Impl->requestStop();
 }
 
 void osc::ForwardDynamicSimulation::implStop()
 {
-    return m_Impl->stop();
+    m_Impl->stop();
 }
 
 float osc::ForwardDynamicSimulation::implGetFixupScaleFactor() const

@@ -120,7 +120,7 @@ public:
             draw_bvh(
                 *App::singleton<SceneCache>(),
                 m_MeshBVH,
-                [this](SceneDecoration&& dec)
+                [this](const SceneDecoration& dec)
                 {
                     graphics::draw(m_CubeLinesMesh, dec.transform, m_Material, m_Camera);
                 }

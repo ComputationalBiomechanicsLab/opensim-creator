@@ -9,11 +9,11 @@ using namespace osc;
 
 namespace
 {
-    enum class ExampleDenseFlag {
-        None  = 0,
-        Flag1 = 1<<0,
-        Flag2 = 1<<1,
-        Flag3 = 1<<2,
+    enum class ExampleDenseFlag : uint8_t {
+        None      = 0,
+        Flag1     = 1<<0,
+        Flag2     = 1<<1,
+        Flag3     = 1<<2,
         NUM_FLAGS = 3,
     };
 }
@@ -222,6 +222,46 @@ TEST(Flags, without_doesnt_set_already_unset_flag)
     const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
     const Flags<ExampleDenseFlag> flags_after = flags.without(ExampleDenseFlag::Flag2);
     ASSERT_EQ(flags, flags_after);
+}
+
+TEST(Flags, get_returns_true_if_given_flag_is_set)
+{
+    const Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    ASSERT_TRUE(flags.get(ExampleDenseFlag::Flag1));
+    ASSERT_FALSE(flags.get(ExampleDenseFlag::Flag2));
+    ASSERT_TRUE(flags.get(ExampleDenseFlag::Flag3));
+}
+
+TEST(Flags, set_true_sets_the_given_flag)
+{
+    Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    flags.set(ExampleDenseFlag::Flag2, true);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+    ASSERT_TRUE(flags == expected);
+}
+
+TEST(Flags, set_false_unsets_the_given_flag)
+{
+    Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    flags.set(ExampleDenseFlag::Flag1, false);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag3};
+    ASSERT_EQ(flags, expected);
+}
+
+TEST(Flags, set_true_on_already_set_flag_does_nothing)
+{
+    Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    flags.set(ExampleDenseFlag::Flag1, true);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    ASSERT_EQ(flags, expected);
+}
+
+TEST(Flags, set_false_on_not_already_set_flag_does_nothing)
+{
+    Flags<ExampleDenseFlag> flags{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    flags.set(ExampleDenseFlag::Flag2, false);
+    const Flags<ExampleDenseFlag> expected{ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag3};
+    ASSERT_EQ(flags, expected);
 }
 
 TEST(Flags, has_a_to_underlying_specialization)

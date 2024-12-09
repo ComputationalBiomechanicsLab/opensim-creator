@@ -24,8 +24,8 @@ TEST(BasicModelStatePair, HasAFullyRealizedStateWhenCopied)
 {
     BasicModelStatePair p;
     ASSERT_EQ(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
-    BasicModelStatePair copy{p};
-    ASSERT_EQ(p.getState(). getSystemStage(), SimTK::Stage::Dynamics);
+    const BasicModelStatePair copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
+    ASSERT_EQ(copy.getState(). getSystemStage(), SimTK::Stage::Dynamics);
 }
 
 TEST(BasicModelStatePair, CanGenerateDecorationsFromCopy)
@@ -38,6 +38,6 @@ TEST(BasicModelStatePair, CanGenerateDecorationsFromCopy)
     BasicModelStatePair p{modelPath};
     SceneCache cache;
     ASSERT_NO_THROW({ GenerateModelDecorations(cache, p); });
-    BasicModelStatePair copy{p};
+    const BasicModelStatePair copy{p};  // NOLINT(performance-unnecessary-copy-initialization)
     ASSERT_NO_THROW({ GenerateModelDecorations(cache, copy); });
 }

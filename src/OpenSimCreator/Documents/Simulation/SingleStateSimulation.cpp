@@ -61,7 +61,7 @@ public:
 
     void setFixupScaleFactor(float v)
     {
-        return m_ModelState.lock()->setFixupScaleFactor(v);
+        m_ModelState.lock()->setFixupScaleFactor(v);
     }
 
     std::shared_ptr<Environment> implUpdAssociatedEnvironment()

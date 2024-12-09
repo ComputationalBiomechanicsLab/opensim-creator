@@ -94,7 +94,7 @@ namespace
     public:
         explicit ScalingParameterDeclaration(std::string name, ScalingParameterValue defaultValue) :
             m_Name{std::move(name)},
-            m_DefaultValue{std::move(defaultValue)}
+            m_DefaultValue{defaultValue}
         {}
 
         const std::string& name() const { return m_Name; }
@@ -148,7 +148,7 @@ namespace
         {
             m_Values.try_emplace(name, value);
         }
-    public:
+    private:
         std::unordered_map<std::string, ScalingParameterValue> m_Values;
     };
 
@@ -229,7 +229,7 @@ namespace
 
             m_MaybePropertyName{std::move(propertyName)},
             m_State{state},
-            m_Message{message}
+            m_Message{std::move(message)}
         {}
 
         // Constructs a validation message that's in some (general) way related to
@@ -565,7 +565,7 @@ namespace
         bool hasScalingSteps() const
         {
             if (getNumImmediateSubcomponents() == 0) {
-                return 0;
+                return false;
             }
             const auto lst = getComponentList<ScalingStep>();
             return lst.begin() != lst.end();
@@ -616,7 +616,7 @@ namespace
             return false;
         }
 
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)> callback) const
+        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const
         {
             if (not hasScalingSteps()) {
                 return;
@@ -666,7 +666,7 @@ namespace
     };
 
     // Top-level input state that's required to actually perform model scaling.
-    class ScalingState final {
+    class ScalingState final {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
     public:
         explicit ScalingState()
         {
@@ -847,7 +847,7 @@ namespace
 
         bool hasScalingParameterDeclarations() const { return scalingDocument->hasScalingParameters(); }
         const ScalingParameters& getScalingParameters() const { return userEnactedScalingParameters; }
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)> callback) const { scalingDocument->forEachScalingParameterDefault(callback); }
+        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const { scalingDocument->forEachScalingParameterDefault(callback); }
 
     // Model Scaling
 
@@ -958,7 +958,7 @@ namespace
         }
         void addScalingStepDeferred(std::unique_ptr<ScalingStep> step)
         {
-            m_DeferredActions.push_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](ModelWarperV3UIState& state) mutable
+            m_DeferredActions.emplace_back([s = std::shared_ptr<ScalingStep>{std::move(step)}](ModelWarperV3UIState& state) mutable
             {
                 state.m_ScalingState->upd_scratch().addScalingStep(std::unique_ptr<ScalingStep>{s->clone()});
                 state.m_ScalingState->commit_scratch("Add scaling step");
@@ -966,7 +966,7 @@ namespace
         }
         void eraseScalingStepDeferred(const ScalingStep& step)
         {
-            m_DeferredActions.push_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
+            m_DeferredActions.emplace_back([path = step.getAbsolutePath()](ModelWarperV3UIState& state)
             {
                 if (state.m_ScalingState->upd_scratch().eraseScalingStep(path)) {
                     state.m_ScalingState->commit_scratch("Erase scaling step");
@@ -1010,7 +1010,7 @@ namespace
             if (m_ScalingErrorMessage) {
                 return m_ScalingErrorMessage.value();
             }
-            else if (const auto validationMessages = m_ScalingState->scratch().getEnabledScalingStepValidationMessages(m_ScalingCache); not validationMessages.empty()) {
+            else if (auto validationMessages = m_ScalingState->scratch().getEnabledScalingStepValidationMessages(m_ScalingCache); not validationMessages.empty()) {
                 return validationMessages;
             }
             else {
@@ -1081,9 +1081,9 @@ namespace
             // else: doesn't have an existing filesystem location and the user cancelled the dialog: do nothing
         }
 
-        void actionApplyObjectEditToScalingDocument(ObjectPropertyEdit edit)
+        void actionApplyObjectEditToScalingDocument(const ObjectPropertyEdit& edit)
         {
-            m_ScalingState->upd_scratch().applyScalingObjectPropertyEdit(std::move(edit));
+            m_ScalingState->upd_scratch().applyScalingObjectPropertyEdit(edit);
             updateScaledModel();
             m_ScalingState->commit_scratch("change scaling property");
         }
@@ -1102,7 +1102,7 @@ namespace
 
         void actionRetryScalingDeferred()
         {
-            m_DeferredActions.push_back([](ModelWarperV3UIState& state) mutable
+            m_DeferredActions.emplace_back([](ModelWarperV3UIState& state) mutable
             {
                 state.updateScaledModel();
             });
@@ -1212,13 +1212,13 @@ namespace
         void impl_draw_content() final
         {
             std::visit(Overload{
-                [this](std::shared_ptr<IModelStatePair> scaledModel) { draw_scaled_model_visualization(scaledModel); },
-                [this](std::vector<ScalingDocumentValidationMessage> messages) { draw_validation_error_message(messages); },
-                [this](std::string scalingErrorMessage) { draw_scaling_error_message(std::move(scalingErrorMessage)); },
+                [this](const std::shared_ptr<IModelStatePair>& scaledModel) { draw_scaled_model_visualization(scaledModel); },
+                [this](const std::vector<ScalingDocumentValidationMessage>& messages) { draw_validation_error_message(messages); },
+                [this](const std::string& scalingErrorMessage) { draw_scaling_error_message(scalingErrorMessage); },
             }, m_State->scaledModelOrDocumentValidationMessages());
         }
 
-        void draw_scaled_model_visualization(std::shared_ptr<IModelStatePair> scaledModel)
+        void draw_scaled_model_visualization(const std::shared_ptr<IModelStatePair>& scaledModel)
         {
             // handle camera linking
             if (m_State->isCameraLinked()) {
@@ -1285,7 +1285,7 @@ namespace
             }
         }
 
-        void draw_scaling_error_message(std::string message)
+        void draw_scaling_error_message(CStringView message)
         {
             const float h = ui::get_content_region_available().y;
             const float lineHeight = ui::get_text_line_height();
@@ -1401,7 +1401,7 @@ namespace
         {}
 
     private:
-        void impl_draw_content()
+        void impl_draw_content() final
         {
             draw_design_mode_scaling_mode_toggler();
 

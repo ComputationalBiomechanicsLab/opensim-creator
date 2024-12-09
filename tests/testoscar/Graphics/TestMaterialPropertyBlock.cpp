@@ -262,16 +262,16 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetSharedDepthRenderBufferOnMat
 
 TEST(MaterialPropertyBlock, MaterialPropertyBlockCanCompareEquals)
 {
-    MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
+    const MaterialPropertyBlock m1;
+    const MaterialPropertyBlock m2;
 
     ASSERT_TRUE(m1 == m2);
 }
 
 TEST(MaterialPropertyBlock, MaterialPropertyBlockCopyConstructionComparesEqual)
 {
-    MaterialPropertyBlock m;
-    MaterialPropertyBlock copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
+    const MaterialPropertyBlock m;
+    const MaterialPropertyBlock copy{m};  // NOLINT(performance-unnecessary-copy-initialization)
 
     ASSERT_EQ(m, copy);
 }
@@ -279,7 +279,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCopyConstructionComparesEqual)
 TEST(MaterialPropertyBlock, MaterialPropertyBlockCopyAssignmentComparesEqual)
 {
     MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
+    const MaterialPropertyBlock m2;
 
     m1.set<float>("someKey", generate<float>());
 
@@ -293,7 +293,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCopyAssignmentComparesEqual)
 TEST(MaterialPropertyBlock, MaterialPropertyBlockDifferentMaterialBlocksCompareNotEqual)
 {
     MaterialPropertyBlock m1;
-    MaterialPropertyBlock m2;
+    const MaterialPropertyBlock m2;
 
     m1.set<float>("someKey", generate<float>());
 
@@ -302,7 +302,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockDifferentMaterialBlocksCompareN
 
 TEST(MaterialPropertyBlock, MaterialPropertyBlockCanPrintToOutputStream)
 {
-    MaterialPropertyBlock m1;
+    const MaterialPropertyBlock m1;
     std::stringstream ss;
 
     ss << m1;  // just ensure this compiles and runs
@@ -310,7 +310,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockCanPrintToOutputStream)
 
 TEST(MaterialPropertyBlock, MaterialPropertyBlockPrintingToOutputStreamMentionsMaterialPropertyBlock)
 {
-    MaterialPropertyBlock m1;
+    const MaterialPropertyBlock m1;
     std::stringstream ss;
 
     ss << m1;

@@ -221,7 +221,7 @@ private:
         std::vector<lm::Landmark> lms;
         lm::ReadLandmarksFromCSV(
             ifs,
-            [&lms](lm::Landmark&& lm) { lms.push_back(lm); },
+            [&lms](lm::Landmark&& lm) { lms.push_back(std::move(lm)); },
             [this](const lm::CSVParseWarning& warning) { m_ImportWarnings.push_back(to_string(warning)); }
         );
         m_ImportedLandmarks = GenerateNames(lms);

@@ -272,7 +272,7 @@ private:
             graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .position = light_positions_[i]}, light_box_material_, camera_);
         }
 
-        RenderTarget render_target{
+        const RenderTarget render_target{
             RenderTargetColorAttachment{
                 output_texture_.upd_color_buffer(),
                 RenderBufferLoadAction::Load,

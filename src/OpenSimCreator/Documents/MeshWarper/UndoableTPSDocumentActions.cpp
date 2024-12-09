@@ -352,7 +352,7 @@ void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSV
 
         if (!(flags & lm::LandmarkCSVFlags::NoNames))
         {
-            cols.emplace_back(std::string{p.name});
+            cols.emplace_back(p.name);
         }
         cols.push_back(to_string(p.source.x));
         cols.push_back(to_string(p.source.y));

@@ -136,8 +136,6 @@ void osc::lm::ReadLandmarksFromCSV(
 std::vector<Landmark> osc::lm::ReadLandmarksFromCSVIntoVectorOrThrow(
     const std::filesystem::path& path)
 {
-    std::vector<Landmark> rv;
-
     std::ifstream in{path};
     if (not in) {
         std::stringstream ss;
@@ -145,6 +143,7 @@ std::vector<Landmark> osc::lm::ReadLandmarksFromCSVIntoVectorOrThrow(
         throw std::runtime_error{std::move(ss).str()};
     }
 
+    std::vector<Landmark> rv;
     ReadLandmarksFromCSV(in, [&rv](auto&& lm) { rv.push_back(std::forward<decltype(lm)>(lm)); });
     return rv;
 }
@@ -229,7 +228,7 @@ std::vector<NamedLandmark> osc::lm::GenerateNames(
 void osc::lm::TryPairingLandmarks(
     std::vector<Landmark> a,
     std::vector<Landmark> b,
-    std::function<void(const MaybeNamedLandmarkPair&)> consumer)
+    const std::function<void(const MaybeNamedLandmarkPair&)>& consumer)
 {
     size_t nunnamed = 0;
 

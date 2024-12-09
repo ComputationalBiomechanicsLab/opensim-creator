@@ -49,7 +49,7 @@ namespace
     std::vector<MaybeNamedLandmarkPair> PairLandmarks(std::vector<Landmark> a, std::vector<Landmark> b)
     {
         std::vector<MaybeNamedLandmarkPair> rv;
-        TryPairingLandmarks(a, b, [&rv](const MaybeNamedLandmarkPair& p) { rv.push_back(p); });
+        TryPairingLandmarks(std::move(a), std::move(b), [&rv](const MaybeNamedLandmarkPair& p) { rv.push_back(p); });
         return rv;
     }
 

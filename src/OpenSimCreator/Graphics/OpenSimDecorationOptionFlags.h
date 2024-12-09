@@ -1,7 +1,7 @@
 #pragma once
 
-#include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
+#include <oscar/Utils/Flags.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -9,7 +9,7 @@
 
 namespace osc
 {
-    enum class OpenSimDecorationOptionFlags : uint32_t {
+    enum class OpenSimDecorationOptionFlag : uint32_t {
         None                                                = 0,
         ShouldShowScapulo                                   = 1<<0,
         ShouldShowEffectiveLinesOfActionForOrigin           = 1<<1,
@@ -26,11 +26,7 @@ namespace osc
 
         Default = ShouldShowPointToPointSprings,
     };
-
-    constexpr bool operator&(OpenSimDecorationOptionFlags lhs, OpenSimDecorationOptionFlags rhs)
-    {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
-    }
+    using OpenSimDecorationOptionFlags = Flags<OpenSimDecorationOptionFlag>;
 
     struct OpenSimDecorationOptionMetadata final {
         CStringView id;
@@ -38,7 +34,6 @@ namespace osc
         std::optional<CStringView> maybeDescription;
     };
     const OpenSimDecorationOptionMetadata& GetIthOptionMetadata(size_t);
-    OpenSimDecorationOptionFlags GetIthOption(size_t);
+    OpenSimDecorationOptionFlag GetIthOption(size_t);
     void SetIthOption(OpenSimDecorationOptionFlags&, size_t, bool);
-    void SetOption(OpenSimDecorationOptionFlags&, OpenSimDecorationOptionFlags, bool);
 }

@@ -99,7 +99,7 @@ void osc::OverlayDecorationOptions::setDrawBVH(bool v)
 void osc::OverlayDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     for (const auto& metadata : GetAllOverlayDecorationOptionFlagsMetadata()) {
-        callback(metadata.id, static_cast<bool>(m_Flags & metadata.value));
+        callback(metadata.id, Variant{m_Flags & metadata.value});
     }
 }
 

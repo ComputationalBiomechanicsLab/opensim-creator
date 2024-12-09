@@ -14,7 +14,7 @@ TEST(NullStreambuf, can_be_default_constructed)
 TEST(NullStreambuf, can_be_wrapped_into_a_std_ostream)
 {
     NullStreambuf buf;
-    ASSERT_NO_THROW({ std::ostream o{&buf}; });
+    ASSERT_NO_THROW({ const std::ostream o{&buf}; });
 }
 
 TEST(NullStreambuf, can_be_written_to_via_a_std_ostream)

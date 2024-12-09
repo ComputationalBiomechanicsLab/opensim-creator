@@ -13,8 +13,8 @@ using namespace osc;
 osc::TemporaryFile::TemporaryFile(const TemporaryFileParameters& params)
 {
     auto [stream, path] = mkstemp(params.suffix, params.prefix);
-    absolute_path_ = std::move(path);
-    handle_ = std::move(stream);
+    absolute_path_ = std::move(path);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
+    handle_ = std::move(stream);  // NOLINT(cppcoreguidelines-prefer-member-initializer)
 }
 
 osc::TemporaryFile::TemporaryFile(TemporaryFile&& tmp) noexcept :

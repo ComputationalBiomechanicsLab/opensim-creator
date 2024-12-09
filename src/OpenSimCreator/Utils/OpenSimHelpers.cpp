@@ -760,7 +760,7 @@ const OpenSim::AbstractOutput* osc::FindOutput(
     try {
         rv = &c.getOutput(outputName);
     }
-    catch (const OpenSim::Exception&) {
+    catch (const OpenSim::Exception&) {  // NOLINT(bugprone-empty-catch)
         // OpenSim, innit :(
     }
     return rv;
@@ -1876,5 +1876,5 @@ void osc::UpdateStateFromStorageTime(
     const OpenSim::Storage& storage,
     double time)
 {
-    return UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
+    UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
 }

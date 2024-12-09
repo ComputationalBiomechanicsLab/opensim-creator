@@ -171,7 +171,7 @@ namespace
             .color_format = ColorRenderBufferFormat::R16G16_SFLOAT,
         }};
 
-        Material material{Shader{
+        const Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/BRDF.vert"),
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/BRDF.frag"),
         }};

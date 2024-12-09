@@ -411,7 +411,7 @@ private:
         const Rect rim_rect_uv = ndc_rect_to_screenspace_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
 
         // compute where the quad needs to eventually be drawn in the scene
-        Transform quad_mesh_to_rims_quad{
+        const Transform quad_mesh_to_rims_quad{
             .scale = {0.5f * dimensions_of(rim_ndc_rect), 1.0f},
             .position = {centroid_of(rim_ndc_rect), 0.0f},
         };

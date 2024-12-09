@@ -247,7 +247,7 @@ private:
             }
 
             const OpenSim::ComponentPath absPath = GetAbsolutePath(c);
-            bool selected = absPath == connectee;
+            const bool selected = absPath == connectee;
 
             ui::push_id(innerID++);
             if (ui::draw_selectable(c.getName(), selected)) {

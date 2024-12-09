@@ -160,7 +160,7 @@ public:
 
                     App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
                 };
-                ModelViewerPanelParameters panelParams{m_Model, onRightClick};
+                const ModelViewerPanelParameters panelParams{m_Model, onRightClick};
 
                 return std::make_shared<ModelViewerPanel>(panelName, panelParams);
             },

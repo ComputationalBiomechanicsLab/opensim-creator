@@ -208,7 +208,7 @@ namespace
         SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
 #endif
         SDL_PropertiesID properties = SDL_CreateProperties();
-        ScopeGuard g{[&]{ SDL_DestroyProperties(properties); }};
+        const ScopeGuard g{[&]{ SDL_DestroyProperties(properties); }};
 
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
@@ -629,11 +629,11 @@ public:
             msg << "SDL_GetDisplays: error: " << error;
             throw std::runtime_error{std::move(msg).str()};
         }
-        ScopeGuard displays_deleter{[first_display]{ SDL_free(first_display); }};
+        const ScopeGuard displays_deleter{[first_display]{ SDL_free(first_display); }};
         const std::span<const SDL_DisplayID> display_ids{first_display, static_cast<size_t>(display_count)};
 
         rv.reserve(display_count);
-        for (SDL_DisplayID display_id : display_ids) {
+        for (const SDL_DisplayID display_id : display_ids) {
             SDL_Rect display_bounds;
             SDL_GetDisplayBounds(display_id, &display_bounds);
 
@@ -642,9 +642,9 @@ public:
             SDL_Rect usable_bounds;
             SDL_GetDisplayUsableBounds(display_id, &usable_bounds);
 #else
-            SDL_Rect usable_bounds = display_bounds;
+            const SDL_Rect usable_bounds = display_bounds;
 #endif
-            float dpi = SDL_GetDisplayContentScale(display_id) * 96.0f;
+            const float dpi = SDL_GetDisplayContentScale(display_id) * 96.0f;
             rv.emplace_back(to<Rect>(display_bounds), to<Rect>(usable_bounds), dpi);
         }
 
@@ -788,7 +788,7 @@ public:
 
     void add_frame_annotation(std::string_view label, Rect screen_rect)
     {
-        frame_annotations_.push_back(ScreenshotAnnotation{std::string{label}, screen_rect});
+        frame_annotations_.emplace_back(std::string{label}, screen_rect);
     }
 
     std::future<Screenshot> request_screenshot()
