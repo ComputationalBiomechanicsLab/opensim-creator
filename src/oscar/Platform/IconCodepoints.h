@@ -73,3 +73,17 @@
 #define OSC_ICON_CHART_LINE "\xef\x88\x81"  // U+f201
 #define OSC_ICON_CLIPBOARD "\xef\x8c\xa8"  // U+f328
 #define OSC_ICON_WINDOW_RESTORE "\xef\x8b\x92"  // U+f2d2
+#define OSC_ICON_MUSCLE "\xef\x8b\x93"  // U+f2d3
+#define OSC_ICON_COORDINATE "\xef\x8b\x94"  // U+f2d4
+#define OSC_ICON_WRAP "\xef\x8b\x95"  // U+f2d5
+#define OSC_ICON_PROBE "\xef\x8b\x96"  // U+f2d6
+#define OSC_ICON_JOINT "\xef\x8b\x97"  // U+f2d7
+#define OSC_ICON_COMPONENT "\xef\x8b\x98"  // U+f2d8
+#define OSC_ICON_MODEL "\xef\x8b\x99"  // U+f2d9
+#define OSC_ICON_MESH "\xef\x8b\x9a"  // U+f2da
+#define OSC_ICON_BODY "\xef\x8b\x9c"  // U+f2dc
+#define OSC_ICON_CONTACT "\xef\x8b\x9d"  // U+f2dd
+#define OSC_ICON_MARKER "\xef\x8b\x9e"  // U+f2de
+#define OSC_ICON_CONSTRAINT "\xef\x8b\x9f"  // U+f2df
+#define OSC_ICON_SPLINE "\xef\x8b\xa0"  // U+f2e0
+#define OSC_ICON_FRAME "\xef\x8b\xa1"  // U+f2e1
