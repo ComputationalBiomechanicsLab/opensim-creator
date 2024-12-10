@@ -5,50 +5,50 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The search bar in the `Navigator` panel was cleaned up slightly.
-- Fixed a regression where the `Display` context menu would always be greyed out in
-  the model editor (thanks @tgeijten, #958).
-- The socket reassignment popup was given a makeover, and tries to draw more attention
-  to the `Re-Express $COMPONENT in new frame` option (thanks @tgeijten, #957).
+- Several (potentially, but unlikely, breaking) changes to the shared `geometry/`
+  directory and example models were made. This is to accomodate minimizing the
+  shared geometry directory. Looking forward, model designers should prefer a
+  model-local `Geometry/` directory:
+  - The following ellipsoid mesh files were deleted. None are used by any example
+    model. Prefer an `<Ellipsoid>` geometry component in your model to these:
+    - `ellipsoid.vtp`
+    - `ellipsoid_center.vtp`
+    - `ellipsoid.stl`
+    - `ellipsoid_center.stl`
+  - Meshes related to the `SoccerKickingModel.osim` are now model-local (i.e. were
+    copied to a `Geometry/` directory next to the model). It is unlikely that models
+    in the wild used (e.g.) the football mesh. If yours did, it can be fixed by adding
+    the relevant meshes to a model-local `Geometry` directory.
+  - The `SoccerKickingModel.osim` meshes were decimated and converted to OBJs to minimize
+    their disk usage (previously: the football was 1.5 MB).
+  - The `Fly` model (+meshes) was dropped from the examples. This model was only present
+    for internal OpenSim Creator testing (e.g. #116, #616) and contained nothing of
+    research interest (muscles, correct joints, etc.).
+- The 2D backend was updated to support HighDPI scaling (3D is WIP). This means that
+  the `[experimental_feature] high_dpi_mode` in the configuration is now always `true`.
 - The Coordinates panel now contains a `Pose` dropdown that exposes the ability to zero
   all joint coordinates in the model (thanks @tgeijten, #959).
-- The backend now supports HighDPI scaling for the 2D UI elements. This means that the
-  `[experimental_feature] high_dpi_mode` in the configuration is now always `true`. HighDPI
-  scaling for 3D UI elements is on our TODO list.
-- Fixed 'Wireframe' appearance causing the component's decoration to disappear, rather
-  than showing as a wireframe (#952).
+- The socket reassignment popup was given a makeover, and tries to draw more attention
+  to the `Re-Express $COMPONENT in new frame` option (thanks @tgeijten, #957).
+- The search bar in the `Navigator` panel was cleaned up slightly.
 - Workflow links on the splash screen were reordered slightly.
+- "Fullscreen" was dropped from the about tab. The "Fullscreen" button now always follows
+  "windowed fullscreen" behavior (oldskool exclusive fullscreen usage isn't very useful
+  for a tooling application).
 - The "Frame Definition" workflow is now labelled as deprecated, because we anticipate
   that it isn't used very much. If you think otherwise, then post a comment on issue
   #951.
 - The documentation now contains an explanation for how to install OSC on MacOSes
   that have a newer, more draconian, gatekeeper (#942).
+- The documentation banner now includes the text "OpenSim Creator", rather than
+  just showing the OpenSim Creator logo.
+- A CC-BY license was added to `resources/icons` (#944).
+- Fixed a regression where the `Display` context menu would always be greyed out in
+  the model editor (thanks @tgeijten, #958).
+- Fixed 'Wireframe' appearance causing the component's decoration to disappear, rather
+  than showing as a wireframe (#952).
 - Fixed a typo where tutorial 5 referred to a "femur CT scan" when the content was
   about a "pelvis MRI scan" (#949).
-- The documentation banner now includes "OpenSim Creator", rather than just showing
-  the icon logo.
-- A CC-BY license was added to `resources/icons` (#944).
-- "Windows Fullscreen" was dropped from the about page: the "Fullscreen" button now
-  always follows "windowed fullscreen" behavior (oldskool exclusive fullscreen usage
-  was deemed to be niche).
-- Several (potentially, but unlikely, breaking) changes to the shared `geometry/`
-  directory and example models were made. This is to accomodate minimizing the
-  shared geometry directory (model designers should prefer a model-local `Geometry/`
-  directory):
-  - The following ellipsoid mesh files were deleted from the shared `geometry`
-    directory. None are unused by any example model. Prefer using an `<Ellipsoid>`
-    geometry in the model to these:
-    - `ellipsoid.vtp`
-    - `ellipsoid_center.vtp`
-    - `ellipsoid.stl`
-    - `ellipsoid_center.stl`
-  - Meshes related to the `SockerKickingModel.osim` are now model-local (in a
-    `Geometry/` directory next to the model). The meshes were decimated and
-    converted to OBJs. This is to prevent these (very specific) meshes from
-    polluting the global mesh directory, and to make the mesh files smaller.
-  - The `Fly` model (+meshes) was dropped from the examples. It was only used to
-    address small-model issues (e.g. #116, #616), which haven't been
-    addressed/requested for multiple years.
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
 - Internal: the platform backend was changed from SDL2 to SDL3, which has better
