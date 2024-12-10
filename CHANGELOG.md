@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.5.17] - 2024/12/10
+
 - Several (potentially, but unlikely, breaking) changes to the shared `geometry/`
   directory and example models were made. This is to accomodate minimizing the
   shared geometry directory. Looking forward, model designers should prefer a
