@@ -65,7 +65,7 @@ install(
 # packaging: package installation as a DEB
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libstdc++6 libglvnd0")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libstdc++6, libglvnd0")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 # CPack vars etc. now fully configured, so include it
