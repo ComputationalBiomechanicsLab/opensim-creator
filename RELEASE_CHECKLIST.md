@@ -31,7 +31,9 @@ sudo apt install clang clang++ clang-tidy cmake pkg-config libgtk-3-dev libblas-
 git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
 cd opensim-creator
 ./scripts/build_linux_debugging.sh
+```
 
+```bash
 # Ubuntu 20.04:
 #!/usr/bin/env bash
 
