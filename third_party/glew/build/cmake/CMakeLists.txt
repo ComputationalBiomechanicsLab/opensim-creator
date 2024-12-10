@@ -40,11 +40,12 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+cmake_policy(SET CMP0072 NEW)
 find_package (OpenGL REQUIRED)
 
 # X11 required except for Windows and Apple OSX platforms
 if (NOT WIN32 AND NOT APPLE)
-  find_package (X11)
+  find_package (X11 REQUIRED)
 endif()
 
 if (WIN32)
@@ -54,7 +55,7 @@ else ()
   set (DLL_PREFIX lib)
 endif ()
 
-set (GLEW_LIBRARIES ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
+set (GLEW_LIBRARIES OpenGL::GL ${X11_LIBRARIES})
 
 add_definitions (-DGLEW_NO_GLU)
 
@@ -79,7 +80,7 @@ if (GLEW_OSMESA)
     set (OSMESA_LIB_NAME OSMesa)
   endif ()
   add_definitions (-DGLEW_OSMESA)
-  set (GLEW_LIBRARIES ${OSMESA_LIB_NAME} ${OPENGL_LIBRARIES})
+  set (GLEW_LIBRARIES ${OSMESA_LIB_NAME} OpenGL::GL)
   set (X11_LIBRARIES)
 endif ()
 
@@ -90,7 +91,7 @@ if (GLEW_EGL AND UNIX)
   if (OpenGL::EGL)
     message (FATAL_ERROR "EGL library set but not found.")
   endif()
-  set (GLEW_LIBRARIES ${OPENGL_LIBRARIES} ${OPENGL_egl_LIBRARY})
+  set (GLEW_LIBRARIES OpenGL::GL OpenGL::EGL)
 endif ()
 
 #### GLEW ####

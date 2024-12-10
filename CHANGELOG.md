@@ -62,6 +62,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   warps to specific stations in the model (#891) possible - once it works ;)
 - Internal: `oscar_demo` resources were JPEG compressed at a lower quality (the assets
   are really only for development and don't need to look perfect).
+- Internal: `oscar` now uses GLVND as its OpenGL context source
 
 
 ## [0.5.16] - 2024/11/04

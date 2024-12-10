@@ -12,6 +12,7 @@ if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
     # source code).
+    cmake_policy(SET CMP0072 NEW)
     find_package(OpenGL REQUIRED)
     find_package(glew REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)

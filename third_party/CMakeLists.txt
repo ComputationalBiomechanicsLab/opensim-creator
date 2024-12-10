@@ -74,6 +74,7 @@ if(${OSCDEPS_GET_SDL})
     # SDL3 will silently drop (i.e. not configure) 3D context support, which
     # won't surface as an issue until the downstream application's test suite
     # runs (#961)
+    cmake_policy(SET CMP0072 NEW)
     find_package(OpenGL REQUIRED)
     ExternalProject_Add(sdl
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
