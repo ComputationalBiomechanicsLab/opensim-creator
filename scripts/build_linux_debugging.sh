@@ -23,10 +23,14 @@ int dlclose(void *handle) {
 EOF
 ${CC} -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
 
-# create suppressions file for OpenSim, which contains this leak:
-# #11 0x7f99fcf96cbc in OpenSim::FreeJoint::FreeJoint(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, OpenSim::PhysicalFrame const&, OpenSim::PhysicalFrame const&) /home/adam/opensim-creator/third_party/opensim-core/OpenSim/Simulation/SimbodyEngine/FreeJoint.h:96:25
-# #12 0x7f99fbf4a099 in OpenSim::Component::finalizeConnections(OpenSim::Component&) /home/adam/opensim-creator/third_party/opensim-core/OpenSim/Common/Component.cpp:332:5
+# create supressions file for oscar, which has a little leak from X11 on Ubuntu-20.04
+cat << EOF > osc-build/oscar_suppressions.supp
+leak:_XlcDefaultMapModifiers
+EOF
+
+# create suppressions file for OpenSim Creator, which contains the above leak and a leak from OpenSim
 cat << EOF > osc-build/opensim_suppressions.supp
+leak:_XlcDefaultMapModifiers
 leak:OpenSim::Coordinate
 EOF
 
@@ -37,7 +41,7 @@ cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 # configure+build OpenSimCreator
 # also: `-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use;-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;"`
 
-CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
+CCFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address,undefined,bounds -fno-sanitize-recover=all" LDFLAGS="-rdynamic" cmake -S . -B osc-build -DCMAKE_BUILD_TYPE=Debug -DOSC_FORCE_ASSERTS_ENABLED=ON -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_demos
@@ -48,6 +52,6 @@ cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimCreator
 export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (due to poor library design)
-./osc-build/tests/testoscar/testoscar
-./osc-build/tests/testoscar_demos/testoscar_demos
+LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/tests/testoscar/testoscar
+LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/tests/testoscar_demos/testoscar_demos
 LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
