@@ -70,6 +70,11 @@ if(${OSCDEPS_GET_LUNASVG})
 endif()
 
 if(${OSCDEPS_GET_SDL})
+    # Ensure that OpenGL is available before trying to configure SDL3, because
+    # SDL3 will silently drop (i.e. not configure) 3D context support, which
+    # won't surface as an issue until the downstream application's test suite
+    # runs (#961)
+    find_package(OpenGL REQUIRED)
     ExternalProject_Add(sdl
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
