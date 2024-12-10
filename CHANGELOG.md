@@ -52,6 +52,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   than showing as a wireframe (#952).
 - Fixed a typo where tutorial 5 referred to a "femur CT scan" when the content was
   about a "pelvis MRI scan" (#949).
+- Fixed the `deb` package not listing all of its runtime dependencies (e.g. `libopengl0`),
+  which made installing OpenSim Creator on fresh debian VMs more difficult.
 - Internal: `imgui`, `implot`, `lunasvg`, and `stb` were updated (#948)
 - Internal: UI panels now uniformly use the `osc::Panel` and `osc::Widget` APIs.
 - Internal: the platform backend was changed from SDL2 to SDL3, which has better

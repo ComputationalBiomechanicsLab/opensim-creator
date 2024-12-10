@@ -65,7 +65,7 @@ install(
 # packaging: package installation as a DEB
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libstdc++6, libopengl0, libgtk-3-common")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libstdc++6, libblas3, liblapack3, libgl1, libopengl0, libglx0, libsm6, libice6, libgtk-3-0")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
 # CPack vars etc. now fully configured, so include it
