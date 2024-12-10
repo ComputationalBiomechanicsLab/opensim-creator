@@ -348,5 +348,75 @@
     "file": "window-restore.svg",
     "unicode": "f2d2",
     "author": "Font Awesome"
+  },
+  "MUSCLE": {
+    "file": "muscle.svg",
+    "unicode": "f2d3",
+    "author": "Adam Kewley"
+  },
+  "COORDINATE": {
+    "file": "coordinate.svg",
+    "unicode": "f2d4",
+    "author": "Adam Kewley"
+  },
+  "WRAP": {
+    "file": "wrap.svg",
+    "unicode": "f2d5",
+    "author": "Adam Kewley"
+  },
+  "PROBE": {
+    "file": "probe.svg",
+    "unicode": "f2d6",
+    "author": "Adam Kewley"
+  },
+  "JOINT": {
+    "file": "joint.svg",
+    "unicode": "f2d7",
+    "author": "Adam Kewley"
+  },
+  "COMPONENT": {
+    "file": "component.svg",
+    "unicode": "f2d8",
+    "author": "Adam Kewley"
+  },
+  "MODEL": {
+    "file": "model.svg",
+    "unicode": "f2d9",
+    "author": "Adam Kewley"
+  },
+  "MESH": {
+    "file": "mesh.svg",
+    "unicode": "f2da",
+    "author": "Adam Kewley"
+  },
+  "BODY": {
+    "file": "body.svg",
+    "unicode": "f2dc",
+    "author": "Adam Kewley"
+  },
+  "CONTACT": {
+    "file": "contact.svg",
+    "unicode": "f2dd",
+    "author": "Adam Kewley"
+  },
+  "MARKER": {
+    "file": "marker.svg",
+    "unicode": "f2de",
+    "author": "Adam Kewley"
+  },
+  "CONSTRAINT": {
+    "file": "constraint.svg",
+    "unicode": "f2df",
+    "author": "Adam Kewley"
+  },
+  "SPLINE": {
+    "file": "spline.svg",
+    "unicode": "f2e0",
+    "author": "Adam Kewley"
+  },
+  "FRAME": {
+    "file": "frame_bw.svg",
+    "unicode": "f2e1",
+    "author": "Adam Kewley"
   }
 }

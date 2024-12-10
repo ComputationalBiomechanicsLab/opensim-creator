@@ -86,6 +86,52 @@ namespace
             return contains_case_insensitive(c->getName(), searchStr);
         });
     }
+
+    CStringView iconFor(const OpenSim::Component& c)
+    {
+        if (dynamic_cast<const OpenSim::Muscle*>(&c)) {
+            return OSC_ICON_MUSCLE;
+        }
+        else if (dynamic_cast<const OpenSim::Coordinate*>(&c)) {
+            return OSC_ICON_COORDINATE;
+        }
+        else if (dynamic_cast<const OpenSim::WrapObject*>(&c)) {
+            return OSC_ICON_WRAP;
+        }
+        else if (dynamic_cast<const OpenSim::Probe*>(&c)) {
+            return OSC_ICON_PROBE;
+        }
+        else if (dynamic_cast<const OpenSim::Joint*>(&c)) {
+            return OSC_ICON_JOINT;
+        }
+        else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
+            return OSC_ICON_MESH;
+        }
+        else if (dynamic_cast<const OpenSim::Body*>(&c)) {
+            return OSC_ICON_BODY;
+        }
+        else if (dynamic_cast<const OpenSim::ContactGeometry*>(&c)) {
+            return OSC_ICON_CONTACT;
+        }
+        else if (dynamic_cast<const OpenSim::Station*>(&c)) {
+            return OSC_ICON_MARKER;
+        }
+        else if (dynamic_cast<const OpenSim::Constraint*>(&c)) {
+            return OSC_ICON_CONSTRAINT;
+        }
+        else if (dynamic_cast<const OpenSim::Function*>(&c)) {
+            return OSC_ICON_SPLINE;
+        }
+        else if (dynamic_cast<const OpenSim::Frame*>(&c)) {
+            return OSC_ICON_FRAME;
+        }
+        else if (dynamic_cast<const OpenSim::Model*>(&c)) {
+            return OSC_ICON_MODEL;
+        }
+        else {
+            return OSC_ICON_COMPONENT;
+        }
+    }
 }
 
 class osc::NavigatorPanel::Impl final : public PanelPrivate {
@@ -259,7 +305,9 @@ private:
 
             // draw the tree leaf/node
             ui::push_id(imguiId);
-            if (ui::draw_tree_node_ex(cur->getName(), nodeFlags)) {
+            std::stringstream ss;
+            ss << iconFor(*cur) << ' ' << cur->getName();
+            if (ui::draw_tree_node_ex(std::move(ss).str(), nodeFlags)) {
                 ui::unindent(unindentPerLevel);
                 ++imguiTreeDepth;
             }
