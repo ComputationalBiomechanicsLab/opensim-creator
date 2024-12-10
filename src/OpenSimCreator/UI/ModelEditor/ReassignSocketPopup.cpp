@@ -247,21 +247,23 @@ private:
 
         const auto* const physFrameSocket =
             dynamic_cast<const OpenSim::Socket<OpenSim::PhysicalFrame>*>(&abstractSocket);
-        if (!physFrameSocket)
-        {
-            bool v = false;
+        if (not physFrameSocket) {
+            bool v = false;  // always `false`
+            ui::begin_disabled();
             ui::draw_checkbox(label, &v);
             ui::draw_tooltip_body_only_if_item_hovered("Disabled: the socket doesn't connect to a physical frame");
+            ui::end_disabled();
             return;
         }
 
         const auto componentSpatialRepresentation =
             TryGetSpatialRepresentation(component, m_Model->getState());
-        if (!componentSpatialRepresentation)
-        {
-            bool v = false;
+        if (not componentSpatialRepresentation) {
+            bool v = false;  // always `false`
+            ui::begin_disabled();
             ui::draw_checkbox(label, &v);
             ui::draw_tooltip_body_only_if_item_hovered("Disabled: the component doesn't have a spatial representation that OSC knows how to re-express");
+            ui::end_disabled();
             return;
         }
 
