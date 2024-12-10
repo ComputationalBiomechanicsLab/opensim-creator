@@ -8,7 +8,7 @@ set(OSCDEPS_GET_LUNASVG ON CACHE BOOL "enable getting lunasvg")
 set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
 set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
 set(OSCDEPS_GET_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
-set(OSCDEPS_GET_GLEW ON CACHE BOOL "enable getting glew")
+set(OSCDEPS_GET_GLAD ON CACHE BOOL "enable getting glad")
 set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
 set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
@@ -108,15 +108,12 @@ if(${OSCDEPS_GET_UNORDERED_DENSE})
     )
 endif()
 
-if(${OSCDEPS_GET_GLEW})
-    ExternalProject_Add(glew
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glew
-        SOURCE_SUBDIR build/cmake
+if(${OSCDEPS_GET_GLAD})
+    ExternalProject_Add(glad
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DBUILD_UTILS:BOOL=OFF
-            -DBUILD_SHARED_LIBS:BOOL=OFF
     )
 endif()
 

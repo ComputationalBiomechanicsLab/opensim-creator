@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Internal: The OpenGL loader was switched from `glew` to `glad` to make the
+  build simpler and remove a dependency on GLX
+
 
 ## [0.5.17] - 2024/12/10
 

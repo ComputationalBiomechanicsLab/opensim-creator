@@ -89,8 +89,9 @@
 #include <oscar/Utils/UID.h>
 
 #include <ankerl/unordered_dense.h>
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
 #undef main
 
 #include <algorithm>
@@ -5925,13 +5926,12 @@ namespace
             SDL_GL_SetSwapInterval(1);
         }
 
-        // initialize GLEW
+        // initialize GLAD
         //
-        // effectively, enables the OpenGL API used by this application
-        if (const auto err = glewInit(); err != GLEW_OK) {
+        // this effectively loads the extensions this application requires at runtime
+        if (gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress) == 0) {
             std::stringstream ss;
-            ss << "glewInit() failed: ";
-            ss << glewGetErrorString(err);
+            ss << "gladLoadGLLoader() failed: (no error message available)";
             throw std::runtime_error{ss.str()};
         }
 
