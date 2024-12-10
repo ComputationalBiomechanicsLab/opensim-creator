@@ -79,14 +79,14 @@ googletest
 - Licensed under the BSD 3-Clause "New" or "Revised" License
 - Copyright 2008, Google Inc.
 
-glew
+glad
 ----
 
-- https://glew.sourceforge.net/ or https://github.com/nigels-com/glew
-- Licensed under an Apache 2-style license
-- Copyright (C) 2002-2007, Milan Ikits <milan ikits[]ieee org>
-- Copyright (C) 2002-2007, Marcelo E. Magallon <mmagallo[]debian org>
-- Copyright (C) 2002, Lev Povalahev
+- https://github.com/Dav1dde/glad
+- The `glad` code included in OpenSim Creator, generated via https://glad.dav1d.de/
+  is any of public domain, WTFPL, or CC0 license. The headers also contain code from
+  Khronos, which is Apache 2.0 licensed.
+- Author: David Herberth <github@dav1d.de>
 
 sdl
 ---

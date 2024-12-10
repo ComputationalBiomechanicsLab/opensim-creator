@@ -12,9 +12,7 @@ if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
     # source code).
-    cmake_policy(SET CMP0072 NEW)
-    find_package(OpenGL REQUIRED)
-    find_package(glew REQUIRED CONFIG)
+    find_package(glad REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
@@ -644,7 +642,6 @@ target_compile_definitions(oscar
 PUBLIC
     $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
     $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
-    GLEW_NO_GLU
 PRIVATE
     $<$<BOOL:${OSC_ADD_LINUX_DEF}>:__LINUX__>
 )
@@ -654,8 +651,7 @@ target_include_directories(oscar PUBLIC
 target_link_libraries(oscar PRIVATE
     # these libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out)
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:OpenGL::GL>
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:GLEW::glew_s>
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:glad>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 

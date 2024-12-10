@@ -10,7 +10,7 @@
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Concepts.h>
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 
 #include <concepts>
 #include <cstddef>
