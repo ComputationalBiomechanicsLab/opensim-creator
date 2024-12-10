@@ -27,6 +27,8 @@ These are required for some parts of the release procedure:
 
 ```bash
 # Ubuntu > 20.04:
+# WSL2 on Ubuntu24: ln -sf  /mnt/wslg/runtime-dir/wayland-* $XDG_RUNTIME_DIR/
+
 sudo apt install clang clang++ clang-tidy cmake pkg-config libgtk-3-dev libblas-dev liblapack-dev
 git clone --recurse-submodules https://github.com/ComputationalBiomechanicsLab/opensim-creator
 cd opensim-creator
