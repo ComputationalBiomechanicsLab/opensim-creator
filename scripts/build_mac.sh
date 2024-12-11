@@ -134,7 +134,14 @@ cmake \
 ctest --test-dir osc-build --output-on-failure
 
 # build final package
-cmake \
-    --build "osc-build" \
-    --target ${OSC_BUILD_TARGET} \
-    -j${OSC_BUILD_CONCURRENCY}
+
+# FIXME: this is in a retry loop because packaging
+# can sometimes fail in GitHub's macos-13 runner
+for i in {1..8}; do
+    set +e
+    cmake \
+        --build "osc-build" \
+        --target ${OSC_BUILD_TARGET} \
+        -j${OSC_BUILD_CONCURRENCY} && break ; sleep 2
+    set -e
+done
