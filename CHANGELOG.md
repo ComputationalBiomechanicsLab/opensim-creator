@@ -5,11 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Internal: The OpenGL loader was switched from `glew` to `glad` to make the
-  build simpler and remove a dependency on GLX
 
-
-## [0.5.17] - 2024/12/10
+## [0.5.17] - 2024/12/11
 
 - Several (potentially, but unlikely, breaking) changes to the shared `geometry/`
   directory and example models were made. This is to accomodate minimizing the
@@ -67,7 +64,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   warps to specific stations in the model (#891) possible - once it works ;)
 - Internal: `oscar_demo` resources were JPEG compressed at a lower quality (the assets
   are really only for development and don't need to look perfect).
-- Internal: `oscar` now uses GLVND as its OpenGL context source
+- Internal: The OpenGL loader was switched from `glew` to `glad` to make the
+  build simpler and remove a dependency on GLX.
 
 
 ## [0.5.16] - 2024/11/04
