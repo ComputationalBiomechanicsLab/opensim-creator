@@ -13,7 +13,6 @@
     #include <nfd.h>
 #endif
 #include <SDL3/SDL_clipboard.h>
-#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_stdinc.h>
@@ -130,10 +129,20 @@ void osc::set_environment_variable(std::string_view name, std::string_view value
     SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
 }
 
+std::optional<std::filesystem::path> osc::get_initial_directory_to_show_fallback()
+{
+    return *g_initial_directory_to_show_fallback.lock();
+}
+
 void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
 {
     auto guard = g_initial_directory_to_show_fallback.lock();
     *guard = p;
+}
+
+void osc::set_initial_directory_to_show_fallback(std::nullopt_t)
+{
+    g_initial_directory_to_show_fallback.lock()->reset();
 }
 
 std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
@@ -148,7 +157,7 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
 
     if (not initial_directory_to_show) {
         // defer to the application-wide fallback, if set
-        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+        initial_directory_to_show = get_initial_directory_to_show_fallback();
     }
 
     auto [path, result] = [&]()
@@ -170,7 +179,7 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
 
     if (path and result == NFD_OKAY) {
         static_assert(std::is_same_v<nfdchar_t, char>);
-        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+        set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
         return std::filesystem::weakly_canonical(path.get());
     }
     else {
@@ -191,7 +200,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 
     if (not initial_directory_to_show) {
         // defer to the application-wide fallback, if set
-        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+        initial_directory_to_show = get_initial_directory_to_show_fallback();
     }
 
     const std::string comma_delimited_extensions = join(file_extensions, ",");
@@ -212,7 +221,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
         }
 
         NFD_PathSet_Free(&s);
-        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+        set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
     }
     else if (result == NFD_CANCEL) {
     }
@@ -238,7 +247,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
     }
     if (not maybe_initial_directory_to_open) {
         // defer to the application-wide fallback, if set
-        maybe_initial_directory_to_open = *g_initial_directory_to_show_fallback.lock();
+        maybe_initial_directory_to_open = get_initial_directory_to_show_fallback();
     }
 
     auto [path, result] = [&]()
@@ -276,7 +285,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         }
     }
 
-    g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+    set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
     return p;
 #endif
 }

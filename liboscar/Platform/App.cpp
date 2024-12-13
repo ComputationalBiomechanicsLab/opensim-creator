@@ -35,6 +35,7 @@
 #include <TargetConditionals.h>  // `TARGET_OS_IOS`
 #endif
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keyboard.h>
@@ -654,6 +655,20 @@ namespace
         // current stack of application-level cursor overrides
         std::vector<CursorShape> cursor_stack_;
     };
+
+    // Internal event that's used by the application to marshal a callback to
+    // the main thread.
+    class AppMarshalledCallbackEvent final : public Event {
+    public:
+        explicit AppMarshalledCallbackEvent(std::function<void()> callback) :
+            Event{EventType::Custom},
+            callback_{std::move(callback)}
+        {}
+
+        void invoke_callback() { callback_(); }
+    private:
+        std::function<void()> callback_;
+    };
 }
 
 // main application state
@@ -703,22 +718,34 @@ public:
             for (SDL_Event e; should_wait ? SDL_WaitEventTimeout(&e, 1000) : SDL_PollEvent(&e);) {
                 should_wait = false;
 
-                // edge-case: it's an `SDL_USEREVENT`, which should only propagate from this
-                // compilation unit, and is always either blank (`data1 == nullptr`) or has
-                // two pointers: a not-owned `Widget*` receiver and an owned `Event*`.
+                // edge-case: it's an `SDL_EVENT_USER`:
+                //
+                // - `SDL_EVENT_USER`'s are only launched from this compilation unit (search for it)
+                // - They're either:
+                //   - A custom event posted to a `Widget`
+                //   - A custom event posted to "the top-level application". The only situation where
+                //     that's permitted is thread marshalling.
+                //   - A "blank" event, used to crank the event loop and make the application redraw
+                //     the screen
                 if (e.type == SDL_EVENT_USER) {
-                    if (e.user.data1) {
-                        // it's an application-enacted (i.e. not spontaneous, OS-enacted, etc.) event
-                        // that should be immediately dispatched.
-                        auto* receiver = static_cast<Widget*>(e.user.data1);
-                        auto  event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
-                        notify(*receiver, *event);
+                    if (e.user.data1 and e.user.data2) {
+                        // a custom event posted to a `Widget`
+                        auto* receiver_widget = static_cast<Widget*>(e.user.data1);
+                        auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
+                        notify(*receiver_widget, *custom_event);
                         continue;  // event handled - go get the next one
                     }
+                    else if (not e.user.data1 and e.user.data2) {
+                        // a custom event posted to "the top-level application" (thread marshalling)
+                        auto custom_event = std::unique_ptr<Event>(static_cast<Event*>(e.user.data2));
+                        if (auto* marshalled_event = dynamic_cast<AppMarshalledCallbackEvent*>(custom_event.get())) {
+                            marshalled_event->invoke_callback();
+                        }
+                        continue;  // assume event is handled
+                    }
                     else {
-                        // it's a blank user event from `request_redraw` that's being used to wake
-                        // up the event loop
-                        continue;  // handled - it woke up the event loop
+                        // a "blank" event (`request_redraw`)
+                        continue;
                     }
                 }
 
@@ -879,6 +906,105 @@ public:
         int window_y = 0;
         SDL_GetWindowPosition(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), &window_x, &window_y);
         return {static_cast<float>(window_x), static_cast<float>(window_y)};
+    }
+
+    void request_invoke_on_main_thread(std::function<void()> callback)
+    {
+        SDL_Event e{};
+        e.type = SDL_EVENT_USER;
+        e.user.data1 = nullptr;
+        e.user.data2 = std::make_unique<AppMarshalledCallbackEvent>(std::move(callback)).release();
+        SDL_PushEvent(&e);  // Push the event onto the main thread's event queue (i.e. marshal it).
+    }
+
+    void prompt_user_to_select_file_async(
+        std::function<void(FileDialogResponse)> callback,
+        std::span<const FileDialogFilter> filters,
+        std::optional<std::filesystem::path> initial_directory_to_show,
+        bool allow_many)
+    {
+        // State that's stored in the sdl3 callback.
+        struct SDL3CallbackState final {
+            // Constructs the callback state that's stored in SDL3's dialog system.
+            explicit SDL3CallbackState(
+                std::function<void(FileDialogResponse)>&& callback_,
+                std::span<const FileDialogFilter> filters_) :
+                caller_callback{std::move(callback_)},
+                caller_filters(filters_.begin(), filters_.end())
+            {
+                // The caller's filters are lifetime-controlled (`std::string`s), the SDL
+                // filters are not-lifetime-controlled views (`const char*`s). The SDL3
+                // API for `SDL_ShowOpenFileDialog` mandates that "the filters' data
+                // must be valid at least until `sdl3_callback` is called", so we keep
+                // both alive.
+                sdl3_filters.reserve(caller_filters.size());
+                for (const FileDialogFilter& filter : caller_filters) {
+                    sdl3_filters.push_back(SDL_DialogFileFilter{
+                        .name = filter.name().c_str(),
+                        .pattern = filter.pattern().c_str(),
+                    });
+                }
+            }
+
+            std::function<void(FileDialogResponse)> caller_callback;
+            std::vector<FileDialogFilter> caller_filters;
+            std::vector<SDL_DialogFileFilter> sdl3_filters;
+        };
+
+        // This free function is what SDL calls with `SDL3CallbackState` when the user is
+        // finished with the dialog.
+        const auto sdl3_callback = [](void* userdata, const char* const* filelist, int) -> void
+        {
+            // Unpack callback state.
+            const std::unique_ptr<SDL3CallbackState> state{static_cast<SDL3CallbackState*>(userdata)};
+
+            // If there's an error, emit a `FileDialogResponse` that contains the error.
+            if (not filelist) {
+                App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]()
+                {
+                    caller_callback(std::move(response));
+                });
+                return;
+            }
+
+            // Convert SDL's file list to an oscar `FileDialogResponse`
+            std::vector<std::filesystem::path> files;
+            while (*filelist) {
+                files.emplace_back(*filelist);
+                ++filelist;
+            }
+
+            // Marshal the call to the user's callback onto the main thread by packing it
+            // into an `AppMarshalledCallbackEvent`.
+            App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]()
+            {
+                // Call the user's callback (the event's callback happens on the main thread).
+                caller_callback(std::move(response));
+            });
+        };
+
+        // Setup `SDL_ShowOpenFileDialog` arguments.
+        auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
+        const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
+        const auto sdl3_num_filters = static_cast<int>(sdl3_callback_state->sdl3_filters.size());
+        std::string default_location;
+        if (initial_directory_to_show) {
+            default_location = initial_directory_to_show->string();
+        }
+        else if (const auto fallback = get_initial_directory_to_show_fallback()) {
+            default_location = fallback->string();
+        }
+
+        // Call into SDL3's dialog implementation.
+        SDL_ShowOpenFileDialog(
+            sdl3_callback,
+            sdl3_callback_state.release(),
+            main_window_.get(),  // make it modal in the main window
+            sdl3_filters_ptr,
+            sdl3_num_filters,
+            default_location.empty() ? nullptr : default_location.c_str(),
+            allow_many
+        );
     }
 
     std::vector<Monitor> monitors() const
@@ -1440,13 +1566,13 @@ private:
 
 App& osc::App::upd()
 {
-    OSC_ASSERT(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
+    OSC_ASSERT_ALWAYS(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_app_global;
 }
 
 const App& osc::App::get()
 {
-    OSC_ASSERT(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
+    OSC_ASSERT_ALWAYS(g_app_global && "App is not initialized: have you constructed a (singleton) instance of App?");
     return *g_app_global;
 }
 
@@ -1550,6 +1676,25 @@ void osc::App::request_quit()
 Vec2 osc::App::window_position(WindowID window_id) const
 {
     return impl_->window_position(window_id);
+}
+
+void osc::App::request_invoke_on_main_thread(std::function<void()> callback)
+{
+    impl_->request_invoke_on_main_thread(std::move(callback));
+}
+
+void osc::App::prompt_user_to_select_file_async(
+    std::function<void(FileDialogResponse)> callback,
+    std::span<const FileDialogFilter> filters,
+    std::optional<std::filesystem::path> initial_directory_to_show,
+    bool allow_many)
+{
+    impl_->prompt_user_to_select_file_async(
+        std::move(callback),
+        filters,
+        std::move(initial_directory_to_show),
+        allow_many
+    );
 }
 
 std::vector<Monitor> osc::App::monitors() const

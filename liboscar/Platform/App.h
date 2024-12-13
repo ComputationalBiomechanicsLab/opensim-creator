@@ -6,6 +6,8 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/AppClock.h>
 #include <liboscar/Platform/AppMainLoopStatus.h>
+#include <liboscar/Platform/FileDialogFilter.h>
+#include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourceStream.h>
 #include <liboscar/Platform/Monitor.h>
@@ -16,7 +18,10 @@
 #include <filesystem>
 #include <functional>
 #include <future>
+#include <initializer_list>
 #include <memory>
+#include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -190,6 +195,49 @@ namespace osc
         // time (usually, after it's done handling some part of the top-level
         // application rendering loop)
         void request_quit();
+
+        // Requests that the given function is executed on the main thread.
+        //
+        // Main thread means "the thread that's responsible for pumping the main event queue".
+        // Usually, this is whichever thread is calling `show` or `do_main_loop_step`. The
+        // callback may NOT be called if the application quits, or is destructed before being
+        // able to process all events.
+        void request_invoke_on_main_thread(std::function<void()>);
+
+        // TODO: WORK IN PROGRESS: SDL3's FILE DIALOG IMPLEMENTATION HAS ISSUES: https://github.com/libsdl-org/SDL/pull/11660#issuecomment-2551778826
+        //
+        // Prompts a user to select file(s), followed by calling `callback` from the ui thread
+        // with the user's selection.
+        //
+        // - `callback` is called by the implementation when the user chooses a file, cancels,
+        //   or there's an error. It is not called if the application quits/destructs before
+        //   those happen (related: `request_invoke_on_ui_thread`).
+        //
+        // - `filters` should be a sequence of permitted `FileDialogFilter`s, and will constrain
+        //   which files the user can select in the dialog in an implementation-defined way.
+        //
+        // - `initial_directory_to_show` should be a filesystem path to a directory that should
+        //   initially be shown to the user. If it isn't provided, then an implementation-defined
+        //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
+        void prompt_user_to_select_file_async(
+            std::function<void(FileDialogResponse)> callback,
+            std::span<const FileDialogFilter> filters = {},
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
+            bool allow_many = false
+        );
+        inline void prompt_user_to_select_file_async(
+            std::function<void(FileDialogResponse)> callback,
+            std::initializer_list<const FileDialogFilter> filters = {},
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
+            bool allow_many = false)
+        {
+            return prompt_user_to_select_file_async(
+                std::move(callback),
+                std::span<const FileDialogFilter>{filters},
+                std::move(initial_directory_to_show),
+                allow_many
+            );
+        }
 
         // returns a sequence of all physical monitors associated with the windowing system that
         // this `App` is connected to.

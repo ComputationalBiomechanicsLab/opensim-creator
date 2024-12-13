@@ -7,6 +7,8 @@
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/AppSettingScope.h>
 #include <liboscar/Platform/Events.h>
+#include <liboscar/Platform/FileDialogFilter.h>
+#include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/FilesystemResourceLoader.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/ILogSink.h>
