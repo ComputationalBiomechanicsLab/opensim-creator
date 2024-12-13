@@ -1,11 +1,14 @@
 #pragma once
 
+#include <oscar/Platform/FileDialogFilter.h>
+#include <oscar/Platform/FileDialogResponse.h>
 #include <oscar/Platform/LogLevel.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <initializer_list>
 #include <optional>
 #include <span>
@@ -89,6 +92,12 @@ namespace osc
     // the user cancelling out of the dialog (i.e. if the user cancels then this fallback
     // will remain in-place).
     void set_initial_directory_to_show_fallback(const std::filesystem::path&);
+
+    void show_open_file_dialog(
+        std::function<void(FileDialogResponse)> callback,
+        std::span<const FileDialogFilter> filters = {},
+        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
+    );
 
     // synchronously prompt a user to select a single file using the OS's native file
     // browser

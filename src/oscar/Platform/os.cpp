@@ -125,6 +125,79 @@ void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
     *guard = p;
 }
 
+void osc::show_open_file_dialog(
+    std::function<void(FileDialogResponse)> callback,
+    std::span<const FileDialogFilter> filters,
+    std::optional<std::filesystem::path> initial_directory_to_show)
+{
+    // State that's stored in the sdl3 callback.
+    struct SDL3CallbackState final {
+        explicit SDL3CallbackState(
+            std::function<void(FileDialogResponse)>&& callback_,
+            std::span<const FileDialogFilter> filters_) :
+            user_callback{std::move(callback_)},
+            user_filters(filters_.begin(), filters_.end())
+        {
+            // We keep both the user filters and the sdl3 filters because
+            // sdl3 mandates that the filters' data must be valid at least
+            // until the sdl3 callback is called.
+
+            sdl3_filters.reserve(user_filters.size());
+            for (const FileDialogFilter& filter : user_filters) {
+                sdl3_filters.push_back(SDL_DialogFileFilter{
+                    .name = filter.name().c_str(),
+                    .pattern = filter.pattern().c_str(),
+                });
+            }
+        }
+
+        std::function<void(FileDialogResponse)> user_callback;
+        std::vector<FileDialogFilter> user_filters;
+        std::vector<SDL_DialogFileFilter> sdl3_filters;
+    };
+
+    // Setup args ready for `SDL_ShowOpenFileDialog`
+
+    const auto sdl3_callback = [](void* userdata, const char* const* filelist, int) -> void
+    {
+        // unpack type-erased state
+        const std::unique_ptr<SDL3CallbackState> state{static_cast<SDL3CallbackState*>(userdata)};
+
+        if (not filelist) {
+            state->user_callback(FileDialogResponse{SDL_GetError()});  // emit error
+            return;
+        }
+
+        std::vector<std::filesystem::path> files;
+        while (*filelist) {
+            files.emplace_back(*filelist);
+            ++filelist;
+        }
+        state->user_callback(FileDialogResponse{std::move(files)});
+    };
+    auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
+    SDL_Window* window_ptr = nullptr;  // makes the dialog modal in this window (NYI)
+    const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
+    const auto sdl3_num_filters = static_cast<int>(sdl3_callback_state->sdl3_filters.size());
+    std::string default_location;
+    if (initial_directory_to_show) {
+        default_location = initial_directory_to_show->string();
+    }
+    else if (const auto fallback = g_initial_directory_to_show_fallback.lock(); *fallback) {
+        default_location = (*fallback)->string();
+    }
+
+    SDL_ShowOpenFileDialog(
+        sdl3_callback,
+        sdl3_callback_state.release(),
+        window_ptr,
+        sdl3_filters_ptr,
+        sdl3_num_filters,
+        default_location.empty() ? nullptr : default_location.c_str(),
+        false  // ALLOW MANY
+    );
+}
+
 std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
     std::span<const std::string_view> file_extensions,
     std::optional<std::filesystem::path> initial_directory_to_show)

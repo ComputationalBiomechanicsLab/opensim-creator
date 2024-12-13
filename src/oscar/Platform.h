@@ -8,6 +8,8 @@
 #include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/Event.h>
 #include <oscar/Platform/EventType.h>
+#include <oscar/Platform/FileDialogFilter.h>
+#include <oscar/Platform/FileDialogResponse.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/IEventListener.h>

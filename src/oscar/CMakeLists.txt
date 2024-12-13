@@ -282,6 +282,8 @@ add_library(oscar STATIC
     Platform/Event.cpp
     Platform/Event.h
     Platform/EventType.h
+    Platform/FileDialogFilter.h
+    Platform/FileDialogResponse.h
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/IconCodepoints.h
@@ -395,6 +397,7 @@ add_library(oscar STATIC
     UI/oscimgui.h
     UI/oscimgui_config.h
     UI/Panels.h
+    UI/Popups.h
     UI/Screens.h
     UI/Tabs.h
     UI/ui_context.cpp
@@ -479,7 +482,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- "UI/Popups.h")
+)
 
 set_target_properties(oscar PROPERTIES
     CXX_EXTENSIONS OFF
