@@ -109,6 +109,7 @@ namespace
         };
         rv.set_pixel_data({pixel_data, num_bytes});
         rv.set_filter_mode(TextureFilterMode::Linear);
+        io.Fonts->ClearTexData();  // it's not needed by ImGui: it'll use the GPU texture
 
         return rv;
     }
