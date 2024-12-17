@@ -1,7 +1,5 @@
 #pragma once
 
-#include <oscar/Platform/FileDialogFilter.h>
-#include <oscar/Platform/FileDialogResponse.h>
 #include <oscar/Platform/LogLevel.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -83,6 +81,8 @@ namespace osc
     // `name` exists
     void set_environment_variable(CStringView name, CStringView value, bool overwrite);
 
+    std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
+
     // Sets the directory that should be shown to the user if a call to one of the
     // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
     // global fallback isn't provided, the implementation will fallback to whatever the
@@ -92,12 +92,7 @@ namespace osc
     // the user cancelling out of the dialog (i.e. if the user cancels then this fallback
     // will remain in-place).
     void set_initial_directory_to_show_fallback(const std::filesystem::path&);
-
-    void show_open_file_dialog(
-        std::function<void(FileDialogResponse)> callback,
-        std::span<const FileDialogFilter> filters = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
-    );
+    void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
     // synchronously prompt a user to select a single file using the OS's native file
     // browser

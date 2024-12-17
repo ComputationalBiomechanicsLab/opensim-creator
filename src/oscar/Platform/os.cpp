@@ -13,7 +13,6 @@
     #include <nfd.h>
 #endif
 #include <SDL3/SDL_clipboard.h>
-#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_stdinc.h>
@@ -119,83 +118,20 @@ void osc::set_environment_variable(CStringView name, CStringView value, bool ove
     SDL_setenv_unsafe(name.c_str(), value.c_str(), overwrite ? 1 : 0);
 }
 
+std::optional<std::filesystem::path> osc::get_initial_directory_to_show_fallback()
+{
+    return *g_initial_directory_to_show_fallback.lock();
+}
+
 void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
 {
     auto guard = g_initial_directory_to_show_fallback.lock();
     *guard = p;
 }
 
-void osc::show_open_file_dialog(
-    std::function<void(FileDialogResponse)> callback,
-    std::span<const FileDialogFilter> filters,
-    std::optional<std::filesystem::path> initial_directory_to_show)
+void osc::set_initial_directory_to_show_fallback(std::nullopt_t)
 {
-    // State that's stored in the sdl3 callback.
-    struct SDL3CallbackState final {
-        explicit SDL3CallbackState(
-            std::function<void(FileDialogResponse)>&& callback_,
-            std::span<const FileDialogFilter> filters_) :
-            user_callback{std::move(callback_)},
-            user_filters(filters_.begin(), filters_.end())
-        {
-            // We keep both the user filters and the sdl3 filters because
-            // sdl3 mandates that the filters' data must be valid at least
-            // until the sdl3 callback is called.
-
-            sdl3_filters.reserve(user_filters.size());
-            for (const FileDialogFilter& filter : user_filters) {
-                sdl3_filters.push_back(SDL_DialogFileFilter{
-                    .name = filter.name().c_str(),
-                    .pattern = filter.pattern().c_str(),
-                });
-            }
-        }
-
-        std::function<void(FileDialogResponse)> user_callback;
-        std::vector<FileDialogFilter> user_filters;
-        std::vector<SDL_DialogFileFilter> sdl3_filters;
-    };
-
-    // Setup args ready for `SDL_ShowOpenFileDialog`
-
-    const auto sdl3_callback = [](void* userdata, const char* const* filelist, int) -> void
-    {
-        // unpack type-erased state
-        const std::unique_ptr<SDL3CallbackState> state{static_cast<SDL3CallbackState*>(userdata)};
-
-        if (not filelist) {
-            state->user_callback(FileDialogResponse{SDL_GetError()});  // emit error
-            return;
-        }
-
-        std::vector<std::filesystem::path> files;
-        while (*filelist) {
-            files.emplace_back(*filelist);
-            ++filelist;
-        }
-        state->user_callback(FileDialogResponse{std::move(files)});
-    };
-    auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
-    SDL_Window* window_ptr = nullptr;  // makes the dialog modal in this window (NYI)
-    const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
-    const auto sdl3_num_filters = static_cast<int>(sdl3_callback_state->sdl3_filters.size());
-    std::string default_location;
-    if (initial_directory_to_show) {
-        default_location = initial_directory_to_show->string();
-    }
-    else if (const auto fallback = g_initial_directory_to_show_fallback.lock(); *fallback) {
-        default_location = (*fallback)->string();
-    }
-
-    SDL_ShowOpenFileDialog(
-        sdl3_callback,
-        sdl3_callback_state.release(),
-        window_ptr,
-        sdl3_filters_ptr,
-        sdl3_num_filters,
-        default_location.empty() ? nullptr : default_location.c_str(),
-        false  // ALLOW MANY
-    );
+    g_initial_directory_to_show_fallback.lock()->reset();
 }
 
 std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
@@ -210,7 +146,7 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
 
     if (not initial_directory_to_show) {
         // defer to the application-wide fallback, if set
-        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+        initial_directory_to_show = get_initial_directory_to_show_fallback();
     }
 
     auto [path, result] = [&]()
@@ -232,7 +168,7 @@ std::optional<std::filesystem::path> osc::prompt_user_to_select_file(
 
     if (path and result == NFD_OKAY) {
         static_assert(std::is_same_v<nfdchar_t, char>);
-        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+        set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
         return std::filesystem::weakly_canonical(path.get());
     }
     else {
@@ -253,7 +189,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 
     if (not initial_directory_to_show) {
         // defer to the application-wide fallback, if set
-        initial_directory_to_show = *g_initial_directory_to_show_fallback.lock();
+        initial_directory_to_show = get_initial_directory_to_show_fallback();
     }
 
     const std::string comma_delimited_extensions = join(file_extensions, ",");
@@ -274,7 +210,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
         }
 
         NFD_PathSet_Free(&s);
-        g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+        set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
     }
     else if (result == NFD_CANCEL) {
     }
@@ -300,7 +236,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
     }
     if (not maybe_initial_directory_to_open) {
         // defer to the application-wide fallback, if set
-        maybe_initial_directory_to_open = *g_initial_directory_to_show_fallback.lock();
+        maybe_initial_directory_to_open = get_initial_directory_to_show_fallback();
     }
 
     auto [path, result] = [&]()
@@ -337,7 +273,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         }
     }
 
-    g_initial_directory_to_show_fallback.lock()->reset();  // reset application-wide fallback
+    set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
     return p;
 #endif
 }
