@@ -656,7 +656,8 @@ public:
     void prompt_user_to_select_file_async(
         std::function<void(FileDialogResponse)> callback,
         std::span<const FileDialogFilter> filters,
-        std::optional<std::filesystem::path> initial_directory_to_show)
+        std::optional<std::filesystem::path> initial_directory_to_show,
+        bool allow_many)
     {
         // State that's stored in the sdl3 callback.
         struct SDL3CallbackState final {
@@ -720,7 +721,6 @@ public:
 
         // Setup `SDL_ShowOpenFileDialog` arguments.
         auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
-        SDL_Window* window_ptr = nullptr;  // makes the dialog modal in this window (NYI)
         const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
         const auto sdl3_num_filters = static_cast<int>(sdl3_callback_state->sdl3_filters.size());
         std::string default_location;
@@ -735,11 +735,11 @@ public:
         SDL_ShowOpenFileDialog(
             sdl3_callback,
             sdl3_callback_state.release(),
-            window_ptr,
+            main_window_.get(),  // make it modal in the main window
             sdl3_filters_ptr,
             sdl3_num_filters,
             default_location.empty() ? nullptr : default_location.c_str(),
-            false  // ALLOW MANY
+            allow_many
         );
     }
 
@@ -1352,9 +1352,15 @@ void osc::App::request_invoke_on_main_thread(std::function<void()> callback)
 void osc::App::prompt_user_to_select_file_async(
     std::function<void(FileDialogResponse)> callback,
     std::span<const FileDialogFilter> filters,
-    std::optional<std::filesystem::path> initial_directory_to_show)
+    std::optional<std::filesystem::path> initial_directory_to_show,
+    bool allow_many)
 {
-    impl_->prompt_user_to_select_file_async(std::move(callback), filters, std::move(initial_directory_to_show));
+    impl_->prompt_user_to_select_file_async(
+        std::move(callback),
+        filters,
+        std::move(initial_directory_to_show),
+        allow_many
+    );
 }
 
 std::vector<Monitor> osc::App::monitors() const
