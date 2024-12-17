@@ -91,6 +91,11 @@ namespace
                     return;  // widget was deleted at some point
                 }
 
+                if (response.has_error()) {
+                    log_error("Error opening dialog: %s", response.error().c_str());
+                    return;
+                }
+
                 for (const auto& path : response) {
                     OpenOsimInLoadingTab(*widget_ptr, path);
                 }

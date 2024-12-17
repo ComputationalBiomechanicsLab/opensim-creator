@@ -19,7 +19,7 @@ namespace osc
             filelist_{std::move(filelist)}
         {}
 
-        explicit operator bool() { return error_.empty() and not filelist_.empty(); }
+        bool has_error() const { return not error_.empty(); }
         CStringView error() const { return error_; }
         size_t size() const { return filelist_.size(); }
         auto begin() const { return filelist_.begin(); }
