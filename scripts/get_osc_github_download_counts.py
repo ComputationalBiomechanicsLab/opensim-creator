@@ -17,8 +17,8 @@ class Row:
         self.downloads = downloads
 
 urls = [
-    "https://api.github.com/repos/adamkewley/opensim-creator/releases",
-    "https://api.github.com/repos/ComputationalBiomechanicsLab/opensim-creator/releases",
+    "https://api.github.com/repos/adamkewley/opensim-creator/releases?per_page=100",
+    "https://api.github.com/repos/ComputationalBiomechanicsLab/opensim-creator/releases?per_page=100",
 ]
 
 version_pattern = re.compile(r"\d+\.\d+.\d+")
