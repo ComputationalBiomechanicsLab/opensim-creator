@@ -31,3 +31,4 @@
 #include <oscar/Platform/Screenshot.h>
 #include <oscar/Platform/ScreenshotAnnotation.h>
 #include <oscar/Platform/Widget.h>
+#include <oscar/Platform/WindowID.h>

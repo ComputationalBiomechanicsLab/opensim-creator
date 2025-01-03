@@ -10,6 +10,7 @@
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceLoader.h>
 #include <oscar/Platform/ResourcePath.h>
+#include <oscar/Platform/WindowID.h>
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/ImGuizmo.h>
@@ -100,12 +101,12 @@ namespace
     // The internal backend data associated with one UI context.
     struct BackendData final {
 
-        explicit BackendData(SDL_Window* window) :
-            Window{window}
+        explicit BackendData(WindowID window_id) :
+            Window{window_id}
         {}
 
-        SDL_Window*                                      Window = nullptr;
-        SDL_Window*                                      ImeWindow = nullptr;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
+        WindowID                                         Window;
+        WindowID                                         ImeWindow;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
         std::string                                      ClipboardText;
         bool                                             WantUpdateMonitors = true;
         bool                                             WantChangeDisplayScale = false;
@@ -256,11 +257,12 @@ namespace
     //       events, to track user input.
     void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport* viewport, ImGuiPlatformImeData* ime_data)
     {
+        App& app = App::upd();
         BackendData* bd = try_get_ui_backend_data();
-        auto* viewport_window = static_cast<SDL_Window*>(viewport->PlatformHandle);
+        WindowID viewport_window{viewport->PlatformHandle};
 
         if (bd->ImeWindow and (not ime_data->WantVisible or bd->ImeWindow != viewport_window)) {
-            SDL_StopTextInput(std::exchange(bd->ImeWindow, nullptr));
+            app.stop_text_input(std::exchange(bd->ImeWindow, WindowID{}));
         }
 
         if (ime_data->WantVisible) {
@@ -268,8 +270,8 @@ namespace
             const Vec2 input_dimensions = {1.0f, ime_data->InputLineHeight};
             const Rect input_rect = Rect{input_top_left, input_top_left + input_dimensions};
 
-            App::upd().set_unicode_input_rect(input_rect);
-            SDL_StartTextInput(bd->Window);
+            app.set_unicode_input_rect(input_rect);
+            app.start_text_input(bd->Window);
             bd->ImeWindow = viewport_window;
         }
     }
@@ -370,19 +372,19 @@ namespace
                 return true;
             }
             case WindowEventType::WindowClosed: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(window_event.window()))) {
+                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
                     viewport->PlatformRequestClose = true;
                 }
                 return true;
             }
             case WindowEventType::WindowMoved: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(window_event.window()))) {
+                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
                     viewport->PlatformRequestMove = true;
                 }
                 return true;
             }
             case WindowEventType::WindowResized: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(window_event.window()))) {
+                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
                     viewport->PlatformRequestResize = true;
                 }
                 return true;
@@ -406,13 +408,13 @@ namespace
     EM_JS(void, ImGui_ImplOscar_EmscriptenOpenURL, (char const* url), { url = url ? UTF8ToString(url) : null; if (url) window.open(url, '_blank'); });
 #endif
 
-    void ImGui_ImplOscar_Init(SDL_Window* window)
+    void ImGui_ImplOscar_Init(WindowID window_id)
     {
         ImGuiIO& io = ImGui::GetIO();
         OSC_ASSERT_ALWAYS(io.BackendPlatformUserData == nullptr && "Already initialized a platform backend!");
 
         // init `BackendData` and setup `ImGuiIO` pointers etc.
-        io.BackendPlatformUserData = static_cast<void*>(new BackendData{window});
+        io.BackendPlatformUserData = static_cast<void*>(new BackendData{window_id});
         io.BackendPlatformName = "imgui_impl_oscar";
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
@@ -430,7 +432,7 @@ namespace
         //
         // Our mouse update function expect PlatformHandle to be filled for the main viewport
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->PlatformHandle = cpp20::bit_cast<void*>(window);
+        main_viewport->PlatformHandle = to<void*>(window_id);
         main_viewport->PlatformHandleRaw = nullptr;
     }
 
@@ -454,23 +456,23 @@ namespace
     // This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
     void ImGui_ImplSDL2_UpdateMouseData()
     {
-        const App& app = App::get();
+        App& app = App::upd();
         BackendData* bd = try_get_ui_backend_data();
         ImGuiIO& io = ImGui::GetIO();
 
         // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
-        SDL_Window* focused_window = nullptr;
+        WindowID focused_window;
         bool is_app_focused = false;
         if (app.can_query_mouse_state_globally()) {
             // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
             SDL_CaptureMouse(bd->MouseButtonsDown != 0);
 
-            focused_window = SDL_GetKeyboardFocus();
-            is_app_focused = (focused_window != nullptr && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(focused_window)) != nullptr));
+            focused_window = app.get_keyboard_focus();
+            is_app_focused = (focused_window && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(to<void*>(focused_window)) != nullptr));
         }
         else {
             focused_window = bd->Window;
-            is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0; // SDL 2.0.3 and non-windowed systems: single-viewport only
+            is_app_focused = app.has_input_focus(bd->Window); // SDL 2.0.3 and non-windowed systems: single-viewport only
         }
 
         if (is_app_focused) {
@@ -482,7 +484,7 @@ namespace
                     SDL_WarpMouseGlobal(scale * io.MousePos.x, scale * io.MousePos.y);
                 }
                 else {
-                    SDL_WarpMouseInWindow(bd->Window, scale * io.MousePos.x, scale * io.MousePos.y);
+                    app.warp_mouse_in_window(bd->Window, scale * to<Vec2>(io.MousePos));
                 }
             }
 
@@ -490,18 +492,13 @@ namespace
             if (app.can_query_mouse_state_globally() && bd->MouseButtonsDown == 0) {
                 // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
                 // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
-                float mouse_x = 0;
-                float mouse_y = 0;
-                SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
+                Vec2 mouse_pos{};
+                SDL_GetGlobalMouseState(&mouse_pos.x, &mouse_pos.y);
                 if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
-                    int window_x = 0;
-                    int window_y = 0;
-                    SDL_GetWindowPosition(focused_window, &window_x, &window_y);
-                    mouse_x -= static_cast<float>(window_x);
-                    mouse_y -= static_cast<float>(window_y);
+                    mouse_pos -= app.window_position(focused_window);
                 }
                 const float scale = App::get().os_to_main_window_device_independent_ratio();
-                io.AddMousePosEvent(scale * mouse_x, scale * mouse_y);
+                io.AddMousePosEvent(scale * mouse_pos.x, scale * mouse_pos.y);
             }
         }
 
@@ -632,7 +629,7 @@ void osc::ui::context::init(App& app)
 #endif
 
     // init ImGui for oscar
-    ImGui_ImplOscar_Init(app.upd_underlying_window());
+    ImGui_ImplOscar_Init(app.main_window_id());
 
     // init ImGui for oscar's graphics backend (OpenGL)
     graphics_backend::init();

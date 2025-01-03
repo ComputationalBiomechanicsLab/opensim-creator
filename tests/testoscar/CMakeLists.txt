@@ -92,6 +92,7 @@ add_executable(testoscar
     Platform/TestResourceLoader.cpp
     Platform/TestResourcePath.cpp
     Platform/TestResourceStream.cpp
+    Platform/TestWindowID.cpp
 
     Shims/Cpp20/TestBit.cpp
     Shims/Cpp23/TestCstddef.cpp

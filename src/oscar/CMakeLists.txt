@@ -313,6 +313,7 @@ add_library(oscar STATIC
     Platform/Widget.cpp
     Platform/Widget.h
     Platform/WidgetPrivate.h
+    Platform/WindowID.h
 
     Shims/Cpp20/bit.h
     Shims/Cpp20/stop_token.h
@@ -395,6 +396,7 @@ add_library(oscar STATIC
     UI/oscimgui.h
     UI/oscimgui_config.h
     UI/Panels.h
+    UI/Popups.h
     UI/Screens.h
     UI/Tabs.h
     UI/ui_context.cpp
@@ -479,7 +481,7 @@ add_library(oscar STATIC
     UI.h
     Utils.h
     Variant.h
- "UI/Popups.h")
+)
 
 set_target_properties(oscar PROPERTIES
     CXX_EXTENSIONS OFF

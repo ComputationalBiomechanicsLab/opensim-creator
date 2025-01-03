@@ -19,6 +19,7 @@
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Screen.h>
 #include <oscar/Platform/Screenshot.h>
+#include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
@@ -643,6 +644,17 @@ public:
         quit_requested_ = true;
     }
 
+    Vec2 window_position(WindowID window_id) const
+    {
+        if (not window_id) {
+            return Vec2{};
+        }
+        int window_x = 0;
+        int window_y = 0;
+        SDL_GetWindowPosition(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), &window_x, &window_y);
+        return {static_cast<float>(window_x), static_cast<float>(window_y)};
+    }
+
     std::vector<Monitor> monitors() const
     {
         std::vector<Monitor> rv;
@@ -675,6 +687,11 @@ public:
         }
 
         return rv;
+    }
+
+    WindowID main_window_id() const
+    {
+        return WindowID{main_window_.get()};
     }
 
     Vec2 main_window_dimensions() const
@@ -744,9 +761,24 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), true);
     }
 
+    WindowID get_keyboard_focus() const
+    {
+        return WindowID{SDL_GetKeyboardFocus()};
+    }
+
     void disable_main_window_grab()
     {
         SDL_SetWindowMouseGrab(main_window_.get(), false);
+    }
+
+    void warp_mouse_in_window(WindowID window_id, Vec2 pos)
+    {
+        SDL_WarpMouseInWindow(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
+    }
+
+    bool has_input_focus(WindowID window_id) const
+    {
+        return SDL_GetWindowFlags(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS;
     }
 
     void set_unicode_input_rect(const Rect& rect)
@@ -760,6 +792,16 @@ public:
             .h = static_cast<int>(device_independent_to_sdl3_ratio * dimensions_of(rect).y),
         };
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
+    }
+
+    void start_text_input(WindowID window_id)
+    {
+        SDL_StartTextInput(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)));
+    }
+
+    void stop_text_input(WindowID window_id)
+    {
+        SDL_StopTextInput(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)));
     }
 
     void set_show_cursor(bool v)
@@ -975,8 +1017,6 @@ public:
         }
         return it->second;
     }
-
-    sdl::Window& upd_window() { return main_window_; }
 
     GraphicsContext& upd_graphics_context() { return graphics_context_; }
 
@@ -1263,9 +1303,19 @@ void osc::App::request_quit()
     impl_->request_quit();
 }
 
+Vec2 osc::App::window_position(WindowID window_id) const
+{
+    return impl_->window_position(window_id);
+}
+
 std::vector<Monitor> osc::App::monitors() const
 {
     return impl_->monitors();
+}
+
+WindowID osc::App::main_window_id() const
+{
+    return impl_->main_window_id();
 }
 
 Vec2 osc::App::main_window_dimensions() const
@@ -1323,14 +1373,39 @@ void osc::App::enable_main_window_grab()
     impl_->enable_main_window_grab();
 }
 
+WindowID osc::App::get_keyboard_focus() const
+{
+    return impl_->get_keyboard_focus();
+}
+
 void osc::App::disable_main_window_grab()
 {
     impl_->disable_main_window_grab();
 }
 
+void osc::App::warp_mouse_in_window(WindowID window_id, Vec2 pos)
+{
+    impl_->warp_mouse_in_window(window_id, pos);
+}
+
+bool osc::App::has_input_focus(WindowID id) const
+{
+    return impl_->has_input_focus(id);
+}
+
 void osc::App::set_unicode_input_rect(const Rect& rect)
 {
     impl_->set_unicode_input_rect(rect);
+}
+
+void osc::App::start_text_input(WindowID window_id)
+{
+    impl_->start_text_input(window_id);
+}
+
+void osc::App::stop_text_input(WindowID window_id)
+{
+    impl_->stop_text_input(window_id);
 }
 
 void osc::App::make_windowed_fullscreen()
@@ -1513,9 +1588,4 @@ std::shared_ptr<void> osc::App::upd_singleton(
     const std::function<std::shared_ptr<void>()>& singleton_constructor)
 {
     return impl_->upd_singleton(type_info, singleton_constructor);
-}
-
-SDL_Window* osc::App::upd_underlying_window()
-{
-    return impl_->upd_window().get();
 }

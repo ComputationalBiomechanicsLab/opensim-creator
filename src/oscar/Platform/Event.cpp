@@ -237,7 +237,7 @@ osc::WindowEvent::WindowEvent(const SDL_Event& e) :
     case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED: type_ = WindowEventType::WindowDisplayScaleChanged; break;
     default:                                     type_ = WindowEventType::Unknown;                   break;
     }
-    window_ = SDL_GetWindowFromID(e.window.windowID);
+    window_ = WindowID{SDL_GetWindowFromID(e.window.windowID)};
     window_id_ = e.window.windowID;
 }
 

@@ -10,6 +10,7 @@
 #include <oscar/Platform/ResourceStream.h>
 #include <oscar/Platform/Monitor.h>
 #include <oscar/Platform/Screenshot.h>
+#include <oscar/Platform/WindowID.h>
 
 #include <concepts>
 #include <filesystem>
@@ -23,8 +24,6 @@
 #include <utility>
 #include <vector>
 
-struct SDL_Window;
-namespace osc { class App; }
 namespace osc { class AppSettings; }
 namespace osc { class AppMetadata; }
 namespace osc { class Cursor; }
@@ -197,6 +196,12 @@ namespace osc
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;
 
+        // returns the position of the given window, or {0, 0} if it cannot be found, or an error occurs.
+        Vec2 window_position(WindowID) const;
+
+        // returns the ID of the main window
+        WindowID main_window_id() const;
+
         // Returns the dimensions of the main application window in device-independent pixels.
         Vec2 main_window_dimensions() const;
 
@@ -248,6 +253,17 @@ namespace osc
         void enable_main_window_grab();
         void disable_main_window_grab();
 
+        // moves the mouse cursor to the given position within the window.
+        void warp_mouse_in_window(WindowID, Vec2);
+
+        // returns `true` if the given window has input focus
+        bool has_input_focus(WindowID) const;
+
+        // returns the ID of the window, if any, that currently has the user's keyboard focus.
+        //
+        // a default-constructed `WindowID` is returned if no window has keyboard focus.
+        WindowID get_keyboard_focus() const;
+
         // sets the rectangle that's used to type unicode text inputs
         //
         // native input methods can place a window with word suggestions near the input
@@ -255,6 +271,15 @@ namespace osc
         // the OS where the input rectangle is so that it can place the overlay in the
         // correct location.
         void set_unicode_input_rect(const Rect&);
+
+        // start accepting unicode text input events for the given window
+        //
+        // it's usually necessary to call `set_unicode_input_rect` before calling this, so that
+        // the text input UI is placed correctly.
+        void start_text_input(WindowID);
+
+        // stop accepting unicode text input events for the given window
+        void stop_text_input(WindowID);
 
         // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
         void make_windowed_fullscreen();
@@ -365,10 +390,6 @@ namespace osc
 
         // try and retrieve a singleton that has the same lifetime as the app
         std::shared_ptr<void> upd_singleton(const std::type_info&, const std::function<std::shared_ptr<void>()>&);
-
-        // HACK: the 2D ui currently needs to access this
-        friend void ui::context::init(App&);
-        SDL_Window* upd_underlying_window();
 
         class Impl;
         std::unique_ptr<Impl> impl_;

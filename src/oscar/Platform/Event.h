@@ -3,6 +3,7 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/EventType.h>
 #include <oscar/Platform/Key.h>
+#include <oscar/Platform/WindowID.h>
 #include <oscar/Shims/Cpp23/utility.h>
 #include <oscar/Utils/CStringView.h>
 
@@ -12,7 +13,6 @@
 #include <string>
 
 union SDL_Event;
-struct SDL_Window;
 
 namespace osc
 {
@@ -150,11 +150,11 @@ namespace osc
         explicit WindowEvent(const SDL_Event&);
 
         WindowEventType type() const { return type_; }
-        const SDL_Window* window() const { return window_; }
+        WindowID window() const { return window_; }
         uint32_t window_id() const { return window_id_; }
     private:
         WindowEventType type_ = WindowEventType::Unknown;
-        SDL_Window* window_ = nullptr;
+        WindowID window_;
         uint32_t window_id_ = 0;
     };
 
