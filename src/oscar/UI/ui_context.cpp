@@ -25,7 +25,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <implot.h>
-#include <SDL3/SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten/em_js.h>
 #endif
@@ -113,7 +112,7 @@ namespace
         std::optional<AppClock::time_point>              LastFrameTime;
 
         // Mouse handling
-        Uint32                                           MouseWindowID = 0;
+        WindowID                                         MouseWindowID;
         std::optional<CursorShape>                       CurrentCustomCursor;
         int                                              MouseButtonsDown = 0;
         int                                              MouseLastLeaveFrame = 0;
@@ -355,7 +354,7 @@ namespace
 
             switch (window_event.type()) {
             case WindowEventType::GainedMouseFocus: {
-                bd->MouseWindowID = window_event.window_id();
+                bd->MouseWindowID = window_event.window();
                 bd->MouseLastLeaveFrame = 0;
                 return true;
             }
@@ -465,7 +464,7 @@ namespace
         bool is_app_focused = false;
         if (app.can_query_mouse_state_globally()) {
             // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
-            SDL_CaptureMouse(bd->MouseButtonsDown != 0);
+            app.capture_mouse_globally(bd->MouseButtonsDown != 0);
 
             focused_window = app.get_keyboard_focus();
             is_app_focused = (focused_window && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(to<void*>(focused_window)) != nullptr));
@@ -479,12 +478,11 @@ namespace
 
             // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
             if (io.WantSetMousePos) {
-                const float scale = App::get().main_window_device_independent_to_os_ratio();
                 if (app.can_query_mouse_state_globally() and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
-                    SDL_WarpMouseGlobal(scale * io.MousePos.x, scale * io.MousePos.y);
+                    app.warp_mouse_globally(to<Vec2>(io.MousePos));
                 }
                 else {
-                    app.warp_mouse_in_window(bd->Window, scale * to<Vec2>(io.MousePos));
+                    app.warp_mouse_in_window(bd->Window, to<Vec2>(io.MousePos));
                 }
             }
 
@@ -492,8 +490,7 @@ namespace
             if (app.can_query_mouse_state_globally() && bd->MouseButtonsDown == 0) {
                 // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
                 // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
-                Vec2 mouse_pos{};
-                SDL_GetGlobalMouseState(&mouse_pos.x, &mouse_pos.y);
+                Vec2 mouse_pos = app.mouse_global_position();
                 if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
                     mouse_pos -= app.window_position(focused_window);
                 }
@@ -511,8 +508,8 @@ namespace
         // - [X] SDL backend correctly reports this regardless of another viewport behind focused and dragged from (we need this to find a useful drag and drop target).
         if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
             ImGuiID mouse_viewport_id = 0;
-            if (SDL_Window* sdl_mouse_window = SDL_GetWindowFromID(bd->MouseWindowID)) {
-                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(sdl_mouse_window))) {
+            if (app.is_alive(bd->MouseWindowID)) {
+                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(bd->MouseWindowID))) {
                     mouse_viewport_id = mouse_viewport->ID;
                 }
             }
@@ -584,7 +581,7 @@ namespace
 
         // Handle mouse leaving the window
         if (bd.MouseLastLeaveFrame and (bd.MouseLastLeaveFrame >= ImGui::GetFrameCount()) and bd.MouseButtonsDown == 0) {
-            bd.MouseWindowID = 0;
+            bd.MouseWindowID.reset();
             bd.MouseLastLeaveFrame = 0;
             io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
         }

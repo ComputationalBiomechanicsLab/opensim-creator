@@ -44,3 +44,11 @@ TEST(WindowID, converting_to_and_from_a_void_ptr_compares_equal_to_original_ID)
 
 	ASSERT_EQ(reconstructed_id, original_id);
 }
+
+TEST(WindowID, reset_resets_the_internal_state_to_be_falsey)
+{
+	WindowID id{cpp20::bit_cast<void*>(uintptr_t{0x1})};
+	ASSERT_TRUE(id);
+	id.reset();
+	ASSERT_FALSE(id);
+}

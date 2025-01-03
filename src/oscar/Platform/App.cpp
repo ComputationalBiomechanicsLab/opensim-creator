@@ -735,6 +735,23 @@ public:
         return can_query_mouse_state_globally_;
     }
 
+    void capture_mouse_globally(bool enabled)
+    {
+        SDL_CaptureMouse(enabled);
+    }
+
+    Vec2 mouse_global_position() const
+    {
+        Vec2 rv;
+        SDL_GetGlobalMouseState(&rv.x, &rv.y);
+        return rv;
+    }
+
+    void warp_mouse_globally(Vec2 new_position)
+    {
+        SDL_WarpMouseGlobal(new_position.x, new_position.y);
+    }
+
     bool can_query_if_mouse_is_hovering_main_window_globally() const
     {
         // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
@@ -773,6 +790,7 @@ public:
 
     void warp_mouse_in_window(WindowID window_id, Vec2 pos)
     {
+        pos *= main_window_device_independent_to_os_ratio();  // HACK: assume the window is always the main window...
         SDL_WarpMouseInWindow(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
     }
 
@@ -1351,6 +1369,21 @@ bool osc::App::is_main_window_minimized() const
 bool osc::App::can_query_mouse_state_globally() const
 {
     return impl_->can_query_mouse_state_globally();
+}
+
+void osc::App::capture_mouse_globally(bool enabled)
+{
+    impl_->capture_mouse_globally(enabled);
+}
+
+Vec2 osc::App::mouse_global_position() const
+{
+    return impl_->mouse_global_position();
+}
+
+void osc::App::warp_mouse_globally(Vec2 new_position)
+{
+    impl_->warp_mouse_globally(new_position);
 }
 
 bool osc::App::can_query_if_mouse_is_hovering_main_window_globally() const

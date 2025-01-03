@@ -23,6 +23,9 @@ namespace osc
         // when `WindowID`s are stored by third-party libraries.
         explicit operator void* () const { return handle_; }
 
+        // Resets the state of the `WindowID` to the default-constructed (false-y) state.
+        void reset() { handle_ = nullptr; }
+
     private:
         void* handle_ = nullptr;
     };

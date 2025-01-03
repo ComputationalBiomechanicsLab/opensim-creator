@@ -196,7 +196,10 @@ namespace osc
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;
 
-        // returns the position of the given window, or {0, 0} if it cannot be found, or an error occurs.
+        // checks if the given `WindowID` is still alive (e.g. not removed or closed)
+        bool is_alive(WindowID window_id) const { return static_cast<bool>(window_id); }
+
+        // Returns the desktop-relative position of the given window in physical pixels.
         Vec2 window_position(WindowID) const;
 
         // returns the ID of the main window
@@ -239,6 +242,27 @@ namespace osc
         // returns `true` if mouse data can be acquired from the operating system directly
         bool can_query_mouse_state_globally() const;
 
+        // captures the mouse in order to track input outside of the application windows
+        //
+        // capturing enables the application to obtain mouse events globally, rather than just
+        // within its windows. Not all backends support this function, use `can_query_mouse_state_globally`
+        // to figure out whether the backend that's used at runtime does support it.
+        //
+        // this might also deny mouse inputs to other windows--both those in this `App`, and others
+        // on the system--so it should be used sparingly, and in small bursts. E.g. you might want
+        // to use it to track the mouse when the user is dragging something and multi-window dragging
+        // is supported by the UI.
+        //
+        // see: https://wiki.libsdl.org/SDL3/SDL_CaptureMouse for a comprehensive explanation of the
+        //      behavior/pitfalls of this function.
+        void capture_mouse_globally(bool enabled);
+
+        // returns the desktop-relative platform-cursor position, expressed in physical pixels.
+        Vec2 mouse_global_position() const;
+
+        // moves the mouse to the given position in a desktop-relative, physical pixel position.
+        void warp_mouse_globally(Vec2 new_position);
+
         // returns `true` if the global hover state of the mouse can be queried to ask if it's
         // currently hovering the main window (even if the window isn't focused).
         bool can_query_if_mouse_is_hovering_main_window_globally() const;
@@ -253,7 +277,7 @@ namespace osc
         void enable_main_window_grab();
         void disable_main_window_grab();
 
-        // moves the mouse cursor to the given position within the window.
+        // moves the mouse cursor to the given position within the window (virtual pixels).
         void warp_mouse_in_window(WindowID, Vec2);
 
         // returns `true` if the given window has input focus
