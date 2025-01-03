@@ -24,7 +24,6 @@
 #include <oscar/UI/Tabs/ScreenshotTab.h>
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistry.h>
-#include <oscar/UI/ui_context.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>

@@ -399,8 +399,6 @@ add_library(oscar STATIC
     UI/Popups.h
     UI/Screens.h
     UI/Tabs.h
-    UI/ui_context.cpp
-    UI/ui_context.h
     UI/ui_graphics_backend.cpp
     UI/ui_graphics_backend.h
     UI/Widgets.h

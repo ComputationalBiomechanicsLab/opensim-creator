@@ -9,7 +9,7 @@
 #include <OpenSim/Common/Component.h>
 #include <gtest/gtest.h>
 #include <oscar/Platform/Widget.h>
-#include <oscar/UI/ui_context.h>
+#include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/ScopeGuard.h>
 
 #include <exception>

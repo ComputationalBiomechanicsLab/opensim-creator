@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include <OpenSimCreator/Platform/OpenSimCreatorApp.h>
 #include <oscar/Platform/Screen.h>
-#include <oscar/UI/ui_context.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <filesystem>
 

@@ -31,7 +31,9 @@
 #include <string_view>
 #include <utility>
 
+namespace osc { class App; }
 namespace osc { class Camera; }
+namespace osc { class Event; }
 namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
@@ -49,6 +51,25 @@ namespace osc
 
 namespace osc::ui
 {
+    // functions related to top-level ui context management
+    namespace context
+    {
+        // init global UI context
+        void init(App&);
+
+        // shutdown UI context
+        void shutdown(App&);
+
+        // returns true if the UI handled the event
+        bool on_event(Event&);
+
+        // should be called at the start of each frame (e.g. `IScreen::on_draw()`)
+        void on_start_new_frame(App&);
+
+        // should be called at the end of each frame (e.g. the end of `IScreen::on_draw()`)
+        void render();
+    }
+
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
 

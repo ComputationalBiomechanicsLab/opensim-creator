@@ -4,7 +4,7 @@
 #include <oscar/Platform/ScreenPrivate.h>
 #include <oscar/UI/Tabs/Tab.h>
 #include <oscar/UI/Tabs/TabRegistryEntry.h>
-#include <oscar/UI/ui_context.h>
+#include <oscar/UI/oscimgui.h>
 
 #include <cstddef>
 #include <memory>
