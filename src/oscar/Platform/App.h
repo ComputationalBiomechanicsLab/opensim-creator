@@ -231,6 +231,13 @@ namespace osc
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
 
+        // returns `true` if mouse data can be acquired from the operating system directly
+        bool can_query_mouse_state_globally() const;
+
+        // returns `true` if the global hover state of the mouse can be queried to ask if it's
+        // currently hovering the main window (even if the window isn't focused).
+        bool can_query_if_mouse_is_hovering_main_window_globally() const;
+
         // pushes the given cursor onto the application-wide cursor stack, making it
         // the currently-active cursor until it is either popped, via `pop_cursor_override`,
         // or another cursor is pushed.

@@ -25,9 +25,6 @@
 #include <imgui_internal.h>
 #include <implot.h>
 #include <SDL3/SDL.h>
-#if defined(__APPLE__)
-#include <TargetConditionals.h>
-#endif
 #ifdef __EMSCRIPTEN__
 #include <emscripten/em_js.h>
 #endif
@@ -42,12 +39,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-
-#if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1  // NOLINT(cppcoreguidelines-macro-usage)
-#else
-#define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0  // NOLINT(cppcoreguidelines-macro-usage)
-#endif
 
 using namespace osc;
 namespace rgs = std::ranges;
@@ -76,34 +67,6 @@ struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
 
 namespace
 {
-    // Returns whether global (OS-level, rather than window-level) mouse data
-    // can be acquired from the OS.
-    bool can_mouse_use_global_state()
-    {
-        // Check and store if we are on a SDL backend that supports global mouse position
-        // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
-        bool mouse_can_use_global_state = false;
-#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
-        const auto sdl_backend = std::string_view{SDL_GetCurrentVideoDriver()};
-        const auto global_mouse_whitelist = std::to_array<std::string_view>({"windows", "cocoa", "x11", "DIVE", "VMAN"});
-        mouse_can_use_global_state = rgs::any_of(global_mouse_whitelist, [sdl_backend](std::string_view whitelisted) { return sdl_backend.starts_with(whitelisted); });
-#endif
-        return mouse_can_use_global_state;
-    }
-
-    // Returns whether the global hover state of the mouse can be queried to ask if it's
-    // currently hovering a given UI viewport.
-    bool can_mouse_report_hovered_viewport(bool mouse_can_use_global_state)
-    {
-        // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
-        // We will use 'MouseCanReportHoveredViewport' to set 'ImGuiBackendFlags_HasMouseHoveredViewport' dynamically each frame.
-#ifndef __APPLE__
-        return mouse_can_use_global_state;
-#else
-        return false;
-#endif
-    }
-
 #ifndef EMSCRIPTEN
     // this is necessary because ImGui will take ownership and be responsible for
     // freeing the memory with `ImGui::MemFree`
@@ -153,9 +116,6 @@ namespace
         std::optional<CursorShape>                       CurrentCustomCursor;
         int                                              MouseButtonsDown = 0;
         int                                              MouseLastLeaveFrame = 0;
-        bool                                             MouseCanUseGlobalState = can_mouse_use_global_state();
-        // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
-        bool                                             MouseCanReportHoveredViewport = can_mouse_report_hovered_viewport(MouseCanUseGlobalState);
     };
 
     // Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
@@ -494,26 +454,31 @@ namespace
     // This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
     void ImGui_ImplSDL2_UpdateMouseData()
     {
+        const App& app = App::get();
         BackendData* bd = try_get_ui_backend_data();
         ImGuiIO& io = ImGui::GetIO();
 
         // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
-    #if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
-        // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
-        SDL_CaptureMouse(bd->MouseButtonsDown != 0);
-        SDL_Window* focused_window = SDL_GetKeyboardFocus();
-        const bool is_app_focused = (focused_window != nullptr && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(focused_window)) != nullptr));
-    #else
-        SDL_Window* focused_window = bd->Window;
-        const bool is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0; // SDL 2.0.3 and non-windowed systems: single-viewport only
-    #endif
+        SDL_Window* focused_window = nullptr;
+        bool is_app_focused = false;
+        if (app.can_query_mouse_state_globally()) {
+            // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
+            SDL_CaptureMouse(bd->MouseButtonsDown != 0);
+
+            focused_window = SDL_GetKeyboardFocus();
+            is_app_focused = (focused_window != nullptr && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(focused_window)) != nullptr));
+        }
+        else {
+            focused_window = bd->Window;
+            is_app_focused = (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_INPUT_FOCUS) != 0; // SDL 2.0.3 and non-windowed systems: single-viewport only
+        }
 
         if (is_app_focused) {
 
             // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
             if (io.WantSetMousePos) {
                 const float scale = App::get().main_window_device_independent_to_os_ratio();
-                if (SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
+                if (app.can_query_mouse_state_globally() and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
                     SDL_WarpMouseGlobal(scale * io.MousePos.x, scale * io.MousePos.y);
                 }
                 else {
@@ -522,7 +487,7 @@ namespace
             }
 
             // (Optional) Fallback to provide mouse position when focused (SDL_MOUSEMOTION already provides this when hovered or captured)
-            if (bd->MouseCanUseGlobalState && bd->MouseButtonsDown == 0) {
+            if (app.can_query_mouse_state_globally() && bd->MouseButtonsDown == 0) {
                 // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
                 // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
                 float mouse_x = 0;
@@ -629,7 +594,8 @@ namespace
 
         // Our io.AddMouseViewportEvent() calls will only be valid when not capturing.
         // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rigorous, but testing for payload reduces noise and potential side effects.
-        if (bd.MouseCanReportHoveredViewport and ImGui::GetDragDropPayload() == nullptr) {
+        // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
+        if (app.can_query_if_mouse_is_hovering_main_window_globally() and ImGui::GetDragDropPayload() == nullptr) {
             io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
         }
         else {

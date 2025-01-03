@@ -28,6 +28,9 @@
 #include <oscar/Utils/SynchronizedValue.h>
 
 #include <ankerl/unordered_dense.h>
+#if defined(__APPLE__)
+#include <TargetConditionals.h>  // `TARGET_OS_IOS`
+#endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
@@ -44,11 +47,19 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
+#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
 
+#if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
+    #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1  // NOLINT(cppcoreguidelines-macro-usage)
+#else
+    #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0  // NOLINT(cppcoreguidelines-macro-usage)
+#endif
+
 using namespace osc;
+namespace rgs = std::ranges;
 
 template<>
 struct osc::Converter<SDL_Rect, Rect> final {
@@ -255,6 +266,21 @@ namespace
         auto rv = user_data_directory(organization_name, application_name);
         log_info("user data directory: %s", rv.string().c_str());
         return rv;
+    }
+
+    // Returns whether global (OS-level, rather than window-level) mouse data
+    // can be acquired from the OS.
+    bool can_mouse_use_global_state()
+    {
+        // Check and store if we are on a SDL backend that supports global mouse position
+        // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
+        bool mouse_can_use_global_state = false;
+#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
+        const auto sdl_backend = std::string_view{SDL_GetCurrentVideoDriver()};
+        const auto global_mouse_whitelist = std::to_array<std::string_view>({"windows", "cocoa", "x11", "DIVE", "VMAN"});
+        mouse_can_use_global_state = rgs::any_of(global_mouse_whitelist, [sdl_backend](std::string_view whitelisted) { return sdl_backend.starts_with(whitelisted); });
+#endif
+        return mouse_can_use_global_state;
     }
 }
 
@@ -687,6 +713,22 @@ public:
         return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
     }
 
+    bool can_query_mouse_state_globally() const
+    {
+        return can_query_mouse_state_globally_;
+    }
+
+    bool can_query_if_mouse_is_hovering_main_window_globally() const
+    {
+        // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
+        // We will use 'MouseCanReportHoveredViewport' to set 'ImGuiBackendFlags_HasMouseHoveredViewport' dynamically each frame.
+#ifndef __APPLE__
+        return can_query_mouse_state_globally();
+#else
+        return false;
+#endif
+    }
+
     void push_cursor_override(const Cursor& cursor)
     {
         cursor_handler_.push_cursor_override(cursor);
@@ -1061,6 +1103,9 @@ private:
     // application-wide handler for the mouse cursor
     CursorHandler cursor_handler_;
 
+    // flag that indicates if the mouse state can be queried at a global (OS) level.
+    bool can_query_mouse_state_globally_ = can_mouse_use_global_state();
+
     // get performance counter frequency (for the delta clocks)
     Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
 
@@ -1251,6 +1296,16 @@ float osc::App::main_window_device_independent_to_os_ratio() const
 bool osc::App::is_main_window_minimized() const
 {
     return impl_->is_main_window_minimized();
+}
+
+bool osc::App::can_query_mouse_state_globally() const
+{
+    return impl_->can_query_mouse_state_globally();
+}
+
+bool osc::App::can_query_if_mouse_is_hovering_main_window_globally() const
+{
+    return impl_->can_query_if_mouse_is_hovering_main_window_globally();
 }
 
 void osc::App::push_cursor_override(const Cursor& cursor)
