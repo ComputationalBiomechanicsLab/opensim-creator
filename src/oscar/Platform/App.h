@@ -30,7 +30,6 @@ namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class Screen; }
 namespace osc { class Widget; }
-namespace osc::ui::context { void init(App&); }
 
 namespace osc
 {
