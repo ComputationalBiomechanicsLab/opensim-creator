@@ -17,7 +17,7 @@ namespace osc
         // (whether you stop or not is up to you - but you should probably stop)
         static AppMainLoopStatus quit_requested() { return Status::QuitRequested; }
 
-        operator bool () const { return status_ == Status::Ok; }
+        explicit operator bool () const { return status_ == Status::Ok; }
 
     private:
         enum class Status { Ok, QuitRequested };

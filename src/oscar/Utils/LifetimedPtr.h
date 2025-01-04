@@ -98,7 +98,7 @@ namespace osc
             return ptr_;
         }
 
-        operator bool() const noexcept
+        explicit operator bool() const noexcept
         {
             return ptr_ and not lifetime_watcher_.expired();
         }

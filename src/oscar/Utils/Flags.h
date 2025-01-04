@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bit>
+#include <concepts>
 #include <initializer_list>
 #include <type_traits>
 
@@ -33,7 +34,7 @@ namespace osc
             return !static_cast<bool>(*this);
         }
 
-        constexpr operator bool () const
+        explicit constexpr operator bool () const
         {
             return value_ != 0;
         }
@@ -77,7 +78,7 @@ namespace osc
 
         constexpr bool get(TEnum flag) const
         {
-            return *this & flag;
+            return static_cast<bool>(*this & flag);
         }
 
         constexpr void set(TEnum flag, bool v)

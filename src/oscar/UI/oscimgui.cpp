@@ -3915,7 +3915,7 @@ namespace
         static_assert(cpp23::to_underlying(plot::DragToolFlag::NoFit) == ImPlotDragToolFlags_NoFit);
         static_assert(cpp23::to_underlying(plot::DragToolFlag::NoInputs) == ImPlotDragToolFlags_NoInputs);
         static_assert(num_flags<plot::DragToolFlag>() == 2);
-        return static_cast<ImPlotDigitalFlags>(flags);
+        return static_cast<ImPlotDragToolFlags>(flags.underlying_value());
     }
 
     constexpr ImPlotLocation to_ImPlotLocation(plot::Location location)

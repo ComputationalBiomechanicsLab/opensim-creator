@@ -5,6 +5,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Custom icons have been rolled out to the navigator panel. The icons are currently
+  work-in-progress, and this change marks a "now they're integrated into the icon
+  atlas" milestone.
+- Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline
+  to flicker between a "hovering" and "not hovering" state (#967).
+- Internal: ImGui, ImGuizmo, and ImPlot are now entirely encapsulated in the `oscimgui`
+  abstraction, which should shield OSC against external API changes.
+- Internal: ImGui no longer directly talks to SDL. Instead, all of its OS communication
+  goes via OSC APIs, which should help centralize OS interactions and shield the UI
+  against external API changes (e.g. virtual pixels, OSC event types, etc.).
+
 
 ## [0.5.17] - 2024/12/11
 

@@ -45,7 +45,7 @@ namespace osc
         // returns `true` if this `SceneDecoration` is rim highlighted (any group)
         bool is_rim_highlighted() const
         {
-            return flags & SceneDecorationFlag::AllRimHighlightGroups;
+            return flags.get(SceneDecorationFlag::AllRimHighlightGroups);
         }
 
         Mesh mesh{};
