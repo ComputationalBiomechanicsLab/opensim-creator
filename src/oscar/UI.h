@@ -11,5 +11,3 @@
 #include <oscar/UI/IconCache.h>
 #include <oscar/UI/MouseCapturingCamera.h>
 #include <oscar/UI/oscimgui.h>
-#include <oscar/UI/oscimgui_config.h>
-#include <oscar/UI/ui_graphics_backend.h>
