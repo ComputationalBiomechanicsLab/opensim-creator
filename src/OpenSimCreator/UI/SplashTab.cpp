@@ -28,6 +28,7 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Events/OpenTabEvent.h>

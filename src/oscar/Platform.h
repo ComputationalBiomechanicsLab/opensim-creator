@@ -7,6 +7,7 @@
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/AppSettingScope.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events.h>
 #include <oscar/Platform/EventType.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IconCodepoints.h>

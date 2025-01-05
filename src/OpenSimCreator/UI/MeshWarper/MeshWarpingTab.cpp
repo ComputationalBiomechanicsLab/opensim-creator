@@ -11,6 +11,7 @@
 
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>

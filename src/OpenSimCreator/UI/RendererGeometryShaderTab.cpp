@@ -17,6 +17,7 @@
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/oscimgui.h>
 

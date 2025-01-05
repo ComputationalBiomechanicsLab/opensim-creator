@@ -1,6 +1,7 @@
-#include "Event.h"
+#include "Events.h"
 
 #include <oscar/Platform/App.h>
+#include <oscar/Platform/Event.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Utils/Assertions.h>
 #include <oscar/Utils/Conversion.h>
@@ -41,7 +42,7 @@ private:
         {SDL_KMOD_RALT, KeyModifier::RightAlt},
         {SDL_KMOD_LGUI, KeyModifier::LeftGui},
         {SDL_KMOD_RGUI, KeyModifier::RightGui},
-    });
+        });
 };
 
 template<>
@@ -171,7 +172,7 @@ struct osc::Converter<SDL_Keycode, Key> final {
         case SDLK_AC_BACK: return Key::AppBack;
         case SDLK_AC_FORWARD: return Key::AppForward;
         default: return Key::Unknown;
-    }
+        }
     }
 };
 
@@ -276,35 +277,4 @@ osc::MouseWheelEvent::MouseWheelEvent(const SDL_Event& e) :
     input_source_{e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse}
 {
     OSC_ASSERT(e.type == SDL_EVENT_MOUSE_WHEEL);
-}
-
-std::unique_ptr<Event> osc::try_parse_into_event(const SDL_Event& e)
-{
-    if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
-        return std::make_unique<DropFileEvent>(e);
-    }
-    else if (e.type == SDL_EVENT_KEY_DOWN or e.type == SDL_EVENT_KEY_UP) {
-        return std::make_unique<KeyEvent>(e);
-    }
-    else if (e.type == SDL_EVENT_QUIT) {
-        return std::make_unique<QuitEvent>(e);
-    }
-    else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN or e.type == SDL_EVENT_MOUSE_BUTTON_UP or e.type == SDL_EVENT_MOUSE_MOTION) {
-        return std::make_unique<MouseEvent>(e);
-    }
-    else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-        return std::make_unique<MouseWheelEvent>(e);
-    }
-    else if (e.type == SDL_EVENT_TEXT_INPUT) {
-        return std::make_unique<TextInputEvent>(e);
-    }
-    else if (SDL_EVENT_DISPLAY_FIRST <= e.type and e.type <=  SDL_EVENT_DISPLAY_LAST) {
-        return std::make_unique<DisplayStateChangeEvent>(e);
-    }
-    else if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
-        return std::make_unique<WindowEvent>(e);
-    }
-    else {
-        return nullptr;
-    }
 }

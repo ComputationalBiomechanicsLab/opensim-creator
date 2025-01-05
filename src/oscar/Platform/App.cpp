@@ -11,6 +11,7 @@
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
 #include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/os.h>
@@ -283,6 +284,38 @@ namespace
 #endif
         return mouse_can_use_global_state;
     }
+
+    std::unique_ptr<Event> try_parse_into_event(const SDL_Event& e)
+    {
+        if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
+            return std::make_unique<DropFileEvent>(e);
+        }
+        else if (e.type == SDL_EVENT_KEY_DOWN or e.type == SDL_EVENT_KEY_UP) {
+            return std::make_unique<KeyEvent>(e);
+        }
+        else if (e.type == SDL_EVENT_QUIT) {
+            return std::make_unique<QuitEvent>(e);
+        }
+        else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN or e.type == SDL_EVENT_MOUSE_BUTTON_UP or e.type == SDL_EVENT_MOUSE_MOTION) {
+            return std::make_unique<MouseEvent>(e);
+        }
+        else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
+            return std::make_unique<MouseWheelEvent>(e);
+        }
+        else if (e.type == SDL_EVENT_TEXT_INPUT) {
+            return std::make_unique<TextInputEvent>(e);
+        }
+        else if (SDL_EVENT_DISPLAY_FIRST <= e.type and e.type <=  SDL_EVENT_DISPLAY_LAST) {
+            return std::make_unique<DisplayStateChangeEvent>(e);
+        }
+        else if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
+            return std::make_unique<WindowEvent>(e);
+        }
+        else {
+            return nullptr;
+        }
+    }
+
 }
 
 namespace
