@@ -174,7 +174,7 @@ private:
 };
 
 
-CStringView osc::MeshHittestTab::id() { return "oscar_simbody/MeshHittest"; }
+CStringView osc::MeshHittestTab::id() { return "OpenSim/MeshHittest"; }
 
 osc::MeshHittestTab::MeshHittestTab(Widget& parent) :
     Tab{std::make_unique<Impl>(*this, parent)}

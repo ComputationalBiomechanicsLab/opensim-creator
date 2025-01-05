@@ -2,6 +2,8 @@
 
 #include <OpenSimCreator/Graphics/SimTKMeshLoader.h>
 
+#include <oscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <oscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <oscar/Graphics/Camera.h>
 #include <oscar/Graphics/Color.h>
 #include <oscar/Graphics/Graphics.h>
@@ -93,20 +95,8 @@ private:
         }
     }
 
-    Material m_SceneMaterial{
-        Shader{
-            App::slurp("shaders/GeometryShaderTab/Scene.vert"),
-            App::slurp("shaders/GeometryShaderTab/Scene.frag"),
-        },
-    };
-
-    Material m_NormalsMaterial{
-        Shader{
-            App::slurp("shaders/GeometryShaderTab/DrawNormals.vert"),
-            App::slurp("shaders/GeometryShaderTab/DrawNormals.geom"),
-            App::slurp("shaders/GeometryShaderTab/DrawNormals.frag"),
-        },
-    };
+    MeshBasicMaterial m_SceneMaterial;
+    MeshNormalVectorsMaterial m_NormalsMaterial;
 
     Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs_scap.vtp"));
     Camera m_SceneCamera;
@@ -116,7 +106,7 @@ private:
 };
 
 
-CStringView osc::RendererGeometryShaderTab::id() { return "oscar_simbody/RendererGeometryShader"; }
+CStringView osc::RendererGeometryShaderTab::id() { return "OpenSim/RendererGeometryShader"; }
 
 osc::RendererGeometryShaderTab::RendererGeometryShaderTab(Widget& parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
