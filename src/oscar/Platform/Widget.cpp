@@ -1,6 +1,5 @@
 #include "Widget.h"
 
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/WidgetPrivate.h>
 #include <oscar/Utils/LifetimedPtr.h>
 

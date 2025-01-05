@@ -10,8 +10,8 @@
 #include <OpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Event.h>
-#include <oscar/Platform/Events.h>
+#include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/KeyEvent.h>
 #include <oscar/UI/Panels/LogViewerPanel.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Panels/PerfPanel.h>

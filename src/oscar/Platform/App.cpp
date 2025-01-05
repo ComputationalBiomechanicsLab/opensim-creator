@@ -10,7 +10,6 @@
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/Events.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/Log.h>

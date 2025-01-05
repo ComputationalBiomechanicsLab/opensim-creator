@@ -1,7 +1,6 @@
 #include "MeshImporterSharedState.h"
 
-#include <oscar/Platform/Event.h>
-#include <oscar/Platform/Events.h>
+#include <oscar/Platform/Events/DropFileEvent.h>
 
 bool osc::mi::MeshImporterSharedState::onEvent(Event& ev)
 {

@@ -38,8 +38,8 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Event.h>
-#include <oscar/Platform/Events.h>
+#include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/KeyEvent.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>

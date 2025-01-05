@@ -6,15 +6,13 @@
 #include <oscar/Platform/AppMetadata.h>
 #include <oscar/Platform/AppSettings.h>
 #include <oscar/Platform/AppSettingScope.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/Events.h>
-#include <oscar/Platform/EventType.h>
 #include <oscar/Platform/FilesystemResourceLoader.h>
 #include <oscar/Platform/IconCodepoints.h>
-#include <oscar/Platform/IEventListener.h>
 #include <oscar/Platform/ILogSink.h>
 #include <oscar/Platform/IResourceLoader.h>
 #include <oscar/Platform/Key.h>
+#include <oscar/Platform/KeyModifier.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/Platform/Logger.h>
 #include <oscar/Platform/LogLevel.h>
@@ -22,6 +20,8 @@
 #include <oscar/Platform/LogMessageView.h>
 #include <oscar/Platform/LogSink.h>
 #include <oscar/Platform/Monitor.h>
+#include <oscar/Platform/MouseButton.h>
+#include <oscar/Platform/MouseInputSource.h>
 #include <oscar/Platform/os.h>
 #include <oscar/Platform/ResourceDirectoryEntry.h>
 #include <oscar/Platform/ResourceLoader.h>

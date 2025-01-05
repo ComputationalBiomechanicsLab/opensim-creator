@@ -25,8 +25,9 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <oscar/Platform/App.h>
-#include <oscar/Platform/Event.h>
-#include <oscar/Platform/Events.h>
+#include <oscar/Platform/Events/DropFileEvent.h>
+#include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/KeyEvent.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/Log.h>
 #include <oscar/UI/Events/CloseTabEvent.h>

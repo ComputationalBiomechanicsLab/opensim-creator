@@ -44,9 +44,9 @@
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
 #include <oscar/Maths/VecFunctions.h>
+#include <oscar/Platform/Events/Event.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/AppMetadata.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/IconCodepoints.h>
 #include <oscar/Platform/os.h>
 #include <oscar/UI/Events/CloseTabEvent.h>

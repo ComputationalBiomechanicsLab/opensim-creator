@@ -1,7 +1,7 @@
 #pragma once
 
 #include <OpenSim/Common/ComponentPath.h>
-#include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events/Event.h>
 
 #include <utility>
 

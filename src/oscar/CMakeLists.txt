@@ -268,6 +268,26 @@ add_library(oscar STATIC
     Maths/Vec3.h
     Maths/Vec4.h
 
+    Platform/Events/DisplayStateChangeEvent.cpp
+    Platform/Events/DisplayStateChangeEvent.h
+    Platform/Events/DropFileEvent.cpp
+    Platform/Events/DropFileEvent.h
+    Platform/Events/Event.h
+    Platform/Events/EventType.h
+    Platform/Events/IEventListener.h
+    Platform/Events/KeyEvent.cpp
+    Platform/Events/KeyEvent.h
+    Platform/Events/MouseEvent.cpp
+    Platform/Events/MouseEvent.h
+    Platform/Events/MouseWheelEvent.cpp
+    Platform/Events/MouseWheelEvent.h
+    Platform/Events/QuitEvent.cpp
+    Platform/Events/QuitEvent.h
+    Platform/Events/TextInputEvent.cpp
+    Platform/Events/TextInputEvent.h
+    Platform/Events/WindowEvent.cpp
+    Platform/Events/WindowEvent.h
+    Platform/Events/WindowEventType.h
     Platform/App.cpp
     Platform/App.h
     Platform/AppClock.h
@@ -279,18 +299,15 @@ add_library(oscar STATIC
     Platform/AppSettingScope.h
     Platform/Cursor.h
     Platform/CursorShape.h
-    Platform/Event.h
-    Platform/Events.cpp
     Platform/Events.h
-    Platform/EventType.h
     Platform/FilesystemResourceLoader.cpp
     Platform/FilesystemResourceLoader.h
     Platform/IconCodepoints.h
-    Platform/IEventListener.h
     Platform/ILogSink.h
     Platform/IResourceLoader.cpp
     Platform/IResourceLoader.h
     Platform/Key.h
+    Platform/KeyModifier.h
     Platform/Log.cpp
     Platform/Log.h
     Platform/Logger.h
@@ -300,6 +317,8 @@ add_library(oscar STATIC
     Platform/LogMessageView.h
     Platform/LogSink.h
     Platform/Monitor.h
+    Platform/MouseButton.h
+    Platform/MouseInputSource.h
     Platform/os.cpp
     Platform/os.h
     Platform/ResourceLoader.h

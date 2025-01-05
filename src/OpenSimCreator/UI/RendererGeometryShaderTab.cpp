@@ -13,10 +13,10 @@
 #include <oscar/Maths/MathHelpers.h>
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec3.h>
+#include <oscar/Platform/Events/Event.h>
 #include <oscar/Platform/App.h>
 #include <oscar/Platform/Cursor.h>
 #include <oscar/Platform/CursorShape.h>
-#include <oscar/Platform/Event.h>
 #include <oscar/Platform/Events.h>
 #include <oscar/UI/Tabs/TabPrivate.h>
 #include <oscar/UI/oscimgui.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <oscar/Platform/Event.h>
+#include <oscar/Platform/Events/Event.h>
 
 namespace osc
 {
