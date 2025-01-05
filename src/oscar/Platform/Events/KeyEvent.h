@@ -4,13 +4,19 @@
 #include <oscar/Platform/KeyModifier.h>
 #include <oscar/Platform/Key.h>
 
-union SDL_Event;
-
 namespace osc
 {
     class KeyEvent final : public Event {
     public:
-        explicit KeyEvent(const SDL_Event&);
+        static KeyEvent key_up(KeyModifier modifier, Key key)
+        {
+            return KeyEvent{EventType::KeyUp, modifier, key};
+        }
+
+        static KeyEvent key_down(KeyModifier modifier, Key key)
+        {
+            return KeyEvent{EventType::KeyDown, modifier, key};
+        }
 
         KeyModifier modifier() const { return modifier_; }
         Key key() const { return key_; }
@@ -19,6 +25,12 @@ namespace osc
         bool matches(KeyModifier modifier, Key key) const { return (modifier & modifier_) and (key == key_); }
         bool matches(KeyModifier modifier1, KeyModifier modifier2, Key key) const { return (modifier1 & modifier_) and (modifier2 & modifier_) and (key == key_); }
     private:
+        explicit KeyEvent(EventType event_type, KeyModifier key_modifier, Key key) :
+            Event{event_type},
+            modifier_{key_modifier},
+            key_{key}
+        {}
+
         KeyModifier modifier_;
         Key key_;
     };

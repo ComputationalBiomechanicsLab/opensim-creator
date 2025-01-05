@@ -268,24 +268,16 @@ add_library(oscar STATIC
     Maths/Vec3.h
     Maths/Vec4.h
 
-    Platform/Events/DisplayStateChangeEvent.cpp
     Platform/Events/DisplayStateChangeEvent.h
-    Platform/Events/DropFileEvent.cpp
     Platform/Events/DropFileEvent.h
     Platform/Events/Event.h
     Platform/Events/EventType.h
     Platform/Events/IEventListener.h
-    Platform/Events/KeyEvent.cpp
     Platform/Events/KeyEvent.h
-    Platform/Events/MouseEvent.cpp
     Platform/Events/MouseEvent.h
-    Platform/Events/MouseWheelEvent.cpp
     Platform/Events/MouseWheelEvent.h
-    Platform/Events/QuitEvent.cpp
     Platform/Events/QuitEvent.h
-    Platform/Events/TextInputEvent.cpp
     Platform/Events/TextInputEvent.h
-    Platform/Events/WindowEvent.cpp
     Platform/Events/WindowEvent.h
     Platform/Events/WindowEventType.h
     Platform/App.cpp

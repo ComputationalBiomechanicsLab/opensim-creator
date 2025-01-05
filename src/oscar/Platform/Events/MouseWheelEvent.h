@@ -2,15 +2,18 @@
 
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/EventType.h>
 #include <oscar/Platform/MouseInputSource.h>
-
-union SDL_Event;
 
 namespace osc
 {
     class MouseWheelEvent final : public Event {
     public:
-        explicit MouseWheelEvent(const SDL_Event&);
+        explicit MouseWheelEvent(Vec2 delta, MouseInputSource input_source) :
+            Event{EventType::MouseWheel},
+            delta_{delta},
+            input_source_{input_source}
+        {}
 
         MouseInputSource input_source() const { return input_source_; }
         Vec2 delta() const { return delta_; }

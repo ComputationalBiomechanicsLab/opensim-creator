@@ -1,16 +1,19 @@
 #pragma once
 
 #include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/EventType.h>
 
 #include <filesystem>
-
-union SDL_Event;
+#include <utility>
 
 namespace osc
 {
     class DropFileEvent final : public Event {
     public:
-        explicit DropFileEvent(const SDL_Event&);
+        explicit DropFileEvent(std::filesystem::path path) :
+            Event{EventType::DropFile},
+            path_{std::move(path)}
+        {}
 
         const std::filesystem::path& path() const { return path_; }
 

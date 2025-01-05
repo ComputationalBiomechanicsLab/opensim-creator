@@ -1,17 +1,20 @@
 #pragma once
 
 #include <oscar/Platform/Events/Event.h>
+#include <oscar/Platform/Events/EventType.h>
 #include <oscar/Utils/CStringView.h>
 
 #include <string>
-
-union SDL_Event;
+#include <utility>
 
 namespace osc
 {
     class TextInputEvent final : public Event {
     public:
-        explicit TextInputEvent(const SDL_Event&);
+        explicit TextInputEvent(std::string utf8_text) :
+            Event{EventType::TextInput},
+            utf8_text_{std::move(utf8_text)}
+        {}
 
         CStringView utf8_text() const { return utf8_text_; }
     private:

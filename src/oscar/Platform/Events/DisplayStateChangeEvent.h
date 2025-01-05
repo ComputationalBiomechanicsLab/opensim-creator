@@ -1,8 +1,7 @@
 #pragma once
 
 #include <oscar/Platform/Events/Event.h>
-
-union SDL_Event;
+#include <oscar/Platform/Events/EventType.h>
 
 namespace osc
 {
@@ -14,6 +13,8 @@ namespace osc
     // - display resolution changed (maybe DPI change)
     class DisplayStateChangeEvent final : public Event {
     public:
-        explicit DisplayStateChangeEvent(const SDL_Event&);
+        explicit DisplayStateChangeEvent() :
+            Event{EventType::DisplayStateChange}
+        {}
     };
 }

@@ -5,13 +5,24 @@
 #include <oscar/Platform/MouseButton.h>
 #include <oscar/Platform/MouseInputSource.h>
 
-union SDL_Event;
-
 namespace osc
 {
     class MouseEvent final : public Event {
     public:
-        explicit MouseEvent(const SDL_Event&);
+        static MouseEvent button_down(MouseInputSource source, MouseButton button)
+        {
+            return MouseEvent{EventType::MouseButtonDown, source, button};
+        }
+
+        static MouseEvent button_up(MouseInputSource source, MouseButton button)
+        {
+            return MouseEvent{EventType::MouseButtonUp, source, button};
+        }
+
+        static MouseEvent motion(MouseInputSource source, Vec2 relative_delta, Vec2 position_in_window)
+        {
+            return MouseEvent{source, relative_delta, position_in_window};
+        }
 
         MouseInputSource input_source() const { return input_source_; }
         MouseButton button() const { return button_; }
@@ -25,6 +36,27 @@ namespace osc
         Vec2 position_in_window() const { return position_in_window_; }
 
     private:
+        explicit MouseEvent(
+            EventType event_type,
+            MouseInputSource input_source,
+            MouseButton button) :
+
+            Event{event_type},
+            input_source_{input_source},
+            button_{button}
+        {}
+
+        explicit MouseEvent(
+            MouseInputSource input_source,
+            Vec2 relative_delta,
+            Vec2 position_in_window) :
+
+            Event{EventType::MouseMove},
+            relative_delta_{relative_delta},
+            position_in_window_{position_in_window},
+            input_source_{input_source}
+        {}
+
         Vec2 relative_delta_;
         Vec2 position_in_window_;
         MouseInputSource input_source_ = MouseInputSource::Mouse;

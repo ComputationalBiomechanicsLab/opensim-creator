@@ -6,13 +6,19 @@
 
 #include <cstdint>
 
-union SDL_Event;
-
 namespace osc
 {
     class WindowEvent final : public Event {
     public:
-        explicit WindowEvent(const SDL_Event&);
+        explicit WindowEvent(
+            WindowEventType type,
+            WindowID window,
+            uint32_t window_id) :
+
+            type_{type},
+            window_{window},
+            window_id_{window_id}
+        {}
 
         WindowEventType type() const { return type_; }
         WindowID window() const { return window_; }

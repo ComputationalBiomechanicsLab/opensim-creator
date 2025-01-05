@@ -1,13 +1,12 @@
 #pragma once
 
 #include <oscar/Platform/Events/Event.h>
-
-union SDL_Event;
+#include <oscar/Platform/Events/EventType.h>
 
 namespace osc
 {
     class QuitEvent final : public Event {
     public:
-        explicit QuitEvent(const SDL_Event&);
+        explicit QuitEvent() : Event{EventType::Quit} {}
     };
 }
