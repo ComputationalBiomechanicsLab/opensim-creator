@@ -10,6 +10,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `Watch Output` context menu now only shows the outputs of the right-clicked
   component, rather than traversing through each parent of the component. This was
   done to simplify the menu.
+- The `Sockets` context menu now lists the type of conectee that the socket supports.
 - Custom icons have been rolled out to various parts of the UI. The icons are currently
   work-in-progress, and this change marks a "now they're integrated into the icon
   atlas" milestone.

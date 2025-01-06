@@ -543,8 +543,9 @@ private:
             if (not socketNames.empty()) {
                 ui::push_style_var(ui::StyleVar::CellPadding, {0.5f*ui::get_text_line_height(), 0.5f*ui::get_text_line_height()});
 
-                if (ui::begin_table("sockets table", 3, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
+                if (ui::begin_table("sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
                     ui::table_setup_column("Socket Name");
+                    ui::table_setup_column("Connectee Type");
                     ui::table_setup_column("Connectee");
                     ui::table_setup_column("Actions");
 
@@ -560,6 +561,9 @@ private:
 
                         ui::table_set_column_index(column++);
                         ui::draw_text_disabled(socketName);
+
+                        ui::table_set_column_index(column++);
+                        ui::draw_text(socket.getConnecteeTypeName());
 
                         ui::table_set_column_index(column++);
                         if (ui::draw_small_button(socket.getConnecteeAsObject().getName())) {
