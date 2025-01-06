@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <typeinfo>
 
 namespace osc { class BVH; }
 namespace osc { class MeshBasicMaterial; }
@@ -69,10 +71,36 @@ namespace osc
             const ResourcePath& fragment_shader_path
         );
 
+        // Returns an object with the given type via `typeid`, default-constructing it if it isn't
+        // already in the cache
+        //
+        // - `T` must be exactly the required type, not something derived from it (it's typeid-based)
+        // - If an instance of `T` doesn't already exist in this cache, it will be default-constructed
+        //   and placed in the cache.
+        // - This typeid-based caching mechanism is independent of other caching methods. E.g. if some
+        //   other member method of the cache returns an instance of `T` then it operates independently
+        //   of this method.
+        template<typename T>
+        requires std::is_default_constructible_v<T> and std::is_destructible_v<T>
+        const T& get()
+        {
+            if (const void* ptr = try_get(typeid(T))) [[likely]] {
+                return *static_cast<const T*>(ptr);
+            }
+
+            auto constructed = std::make_shared<T>();
+            const T& rv = *constructed;
+            insert(typeid(T), std::move(constructed));
+            return rv;
+        }
+
         const MeshBasicMaterial& basic_material();
         const MeshBasicMaterial& wireframe_material();
 
     private:
+        const void* try_get(const std::type_info&) const;
+        void insert(const std::type_info&, std::shared_ptr<void>);
+
         class Impl;
         std::unique_ptr<Impl> impl_;
     };

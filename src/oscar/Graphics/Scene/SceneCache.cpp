@@ -12,6 +12,7 @@
 #include <oscar/Platform/ResourcePath.h>
 #include <oscar/Utils/HashHelpers.h>
 #include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/TypeInfoReference.h>
 
 #include <ankerl/unordered_dense.h>
 
@@ -208,6 +209,22 @@ public:
         }
     }
 
+    const void* try_get(const std::type_info& type_info) const
+    {
+        const auto guard = generic_objects_.lock();
+        if (const auto it = guard->find(type_info); it != guard->end()) {
+            return it->second.get();
+        }
+        else {
+            return nullptr;
+        }
+    }
+
+    void insert(const std::type_info& type_info, std::shared_ptr<void> ptr)
+    {
+        generic_objects_.lock()->insert_or_assign(type_info, ptr);
+    }
+
     const MeshBasicMaterial& basic_material()
     {
         return basic_material_.emplace();
@@ -246,6 +263,9 @@ private:
     SynchronizedValue<ankerl::unordered_dense::map<ShaderLookupKey, Shader>> shader_cache_;
     std::optional<MeshBasicMaterial> basic_material_;
     std::optional<MeshBasicMaterial> wireframe_material_;
+
+    // typeid (generic) cache
+    SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> generic_objects_;
 };
 
 osc::SceneCache::SceneCache() :
@@ -304,6 +324,16 @@ const Shader& osc::SceneCache::get_shader(
     const ResourcePath& fragment_shader_path)
 {
     return impl_->load(vertex_shader_path, geometry_shader_path, fragment_shader_path);
+}
+
+const void* osc::SceneCache::try_get(const std::type_info& type_info) const
+{
+    return impl_->try_get(type_info);
+}
+
+void osc::SceneCache::insert(const std::type_info& type_info, std::shared_ptr<void> ptr)
+{
+    impl_->insert(type_info, ptr);
 }
 
 const MeshBasicMaterial& osc::SceneCache::basic_material()

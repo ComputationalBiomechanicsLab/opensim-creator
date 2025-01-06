@@ -141,41 +141,375 @@ namespace
     // the `Material` that's used to shade the main scene (colored `SceneDecoration`s)
     class SceneMainMaterial final : public Material {
     public:
-        explicit SceneMainMaterial(SceneCache& cache) :
-            Material{cache.get_shader(
-                "oscar/shaders/SceneRenderer/DrawColoredObjects.vert",
-                "oscar/shaders/SceneRenderer/DrawColoredObjects.frag"
-            )}
+        explicit SceneMainMaterial() :
+            Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {}
+
+    private:
+        static constexpr CStringView c_vertex_shader_src = R"(
+            #version 330 core
+
+            uniform mat4 uViewProjMat;
+            uniform mat4 uLightSpaceMat;
+            uniform vec3 uLightDir;
+            uniform vec3 uViewPos;
+            uniform float uDiffuseStrength = 0.85f;
+            uniform float uSpecularStrength = 0.4f;
+            uniform float uShininess = 8;
+
+            layout (location = 0) in vec3 aPos;
+            layout (location = 2) in vec3 aNormal;
+            layout (location = 6) in mat4 aModelMat;
+            layout (location = 10) in mat3 aNormalMat;
+
+            out vec3 FragWorldPos;
+            out vec4 FragLightSpacePos;
+            out vec3 NormalWorldDir;
+            out float NonAmbientBrightness;
+
+            void main()
+            {
+                vec3 normalDir = normalize(aNormalMat * aNormal);
+                vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
+                vec3 frag2viewDir = normalize(uViewPos - fragPos);
+                vec3 frag2lightDir = normalize(-uLightDir);  // light dir is in the opposite direction
+                vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
+
+                // care: these lighting calculations use "double-sided normals", because
+                // mesh data from users can have screwed normals/winding, but OSC still
+                // should try its best to render it "correct enough" (#168, #318)
+                float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
+                float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
+
+                vec4 worldPos = aModelMat * vec4(aPos, 1.0);
+
+                FragWorldPos = vec3(aModelMat * vec4(aPos, 1.0));
+                FragLightSpacePos = uLightSpaceMat * worldPos;
+                NormalWorldDir = normalDir;
+                NonAmbientBrightness = diffuseAmt + specularAmt;
+
+                gl_Position = uViewProjMat * worldPos;
+            }
+        )";
+
+        static constexpr CStringView c_fragment_shader_src = R"(
+            #version 330 core
+
+            uniform bool uHasShadowMap = false;
+            uniform vec3 uLightDir;
+            uniform sampler2D uShadowMapTexture;
+            uniform float uAmbientStrength = 0.15f;
+            uniform vec4 uLightColor;
+            uniform vec4 uDiffuseColor = vec4(1.0, 1.0, 1.0, 1.0);
+            uniform float uNear;
+            uniform float uFar;
+
+            in vec3 FragWorldPos;
+            in vec4 FragLightSpacePos;
+            in vec3 NormalWorldDir;
+            in float NonAmbientBrightness;
+
+            out vec4 Color0Out;
+
+            float CalculateShadowAmount()
+            {
+                // perspective divide
+                vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
+
+                // map to [0, 1]
+                projCoords = 0.5*projCoords + 0.5;
+
+                // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+                float closestDepth = texture(uShadowMapTexture, projCoords.xy).r;
+
+                // get depth of current fragment from light's perspective
+                float currentDepth = projCoords.z;
+
+                // calculate bias (based on depth map resolution and slope)
+                float bias = max(0.025 * (1.0 - abs(dot(NormalWorldDir, uLightDir))), 0.0025);
+
+                // check whether current frag pos is in shadow
+                // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+                // PCF
+                float shadow = 0.0;
+                vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+                for(int x = -1; x <= 1; ++x)
+                {
+                    for(int y = -1; y <= 1; ++y)
+                    {
+                        float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r;
+                        if (pcfDepth < 1.0)
+                        {
+                            shadow += (currentDepth - bias) > pcfDepth  ? 1.0 : 0.0;
+                        }
+                    }
+                }
+                shadow /= 9.0;
+
+                return shadow;
+            }
+
+            float LinearizeDepth(float depth)
+            {
+                // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+                //
+                // only really works with perspective cameras: orthogonal cameras
+                // don't need this unprojection math trick
+
+                float z = depth * 2.0 - 1.0;
+                return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+            }
+
+            void main()
+            {
+                float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
+                float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
+                Color0Out = vec4(brightness * vec3(uLightColor), 1.0) * uDiffuseColor;
+                Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
+                Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
+            }
+        )";
     };
 
     // the `Material` that's used to shade the scene's floor (special case)
     class SceneFloorMaterial final : public Material {
     public:
-        explicit SceneFloorMaterial(SceneCache& cache) :
-            Material{cache.get_shader(
-                "oscar/shaders/SceneRenderer/DrawTexturedObjects.vert",
-                "oscar/shaders/SceneRenderer/DrawTexturedObjects.frag"
-            )}
+        SceneFloorMaterial() :
+            Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {
             set<Texture2D>("uDiffuseTexture", ChequeredTexture{});
             set("uTextureScale", Vec2{200.0f, 200.0f});
             set_transparent(true);
         }
+
+    private:
+        static constexpr CStringView c_vertex_shader_src = R"(
+            #version 330 core
+
+            uniform mat4 uViewProjMat;
+            uniform mat4 uLightSpaceMat;
+            uniform vec3 uLightDir;
+            uniform vec3 uViewPos;
+            uniform vec2 uTextureScale = vec2(1.0, 1.0);
+            uniform float uDiffuseStrength;
+            uniform float uSpecularStrength;
+            uniform float uShininess;
+
+            layout (location = 0) in vec3 aPos;
+            layout (location = 1) in vec2 aTexCoord;
+            layout (location = 2) in vec3 aNormal;
+            layout (location = 6) in mat4 aModelMat;
+            layout (location = 10) in mat3 aNormalMat;
+
+            out vec3 FragWorldPos;
+            out vec4 FragLightSpacePos;
+            out vec3 NormalWorldDir;
+            out float NonAmbientBrightness;
+            out vec2 TexCoord;
+
+            void main()
+            {
+                vec3 normalDir = normalize(aNormalMat * aNormal);
+                vec3 fragPos = vec3(aModelMat * vec4(aPos, 1.0));
+                vec3 frag2viewDir = normalize(uViewPos - fragPos);
+                vec3 frag2lightDir = normalize(-uLightDir);
+                vec3 halfwayDir = 0.5 * (frag2lightDir + frag2viewDir);
+
+                // care: these lighting calculations use "double-sided normals", because
+                // mesh data from users can have screwed normals/winding, but OSC still
+                // should try its best to render it "correct enough" (#168, #318)
+                float diffuseAmt = uDiffuseStrength * abs(dot(normalDir, frag2lightDir));
+                float specularAmt = uSpecularStrength * pow(abs(dot(normalDir, halfwayDir)), uShininess);
+
+                vec4 worldPos = aModelMat * vec4(aPos, 1.0);
+
+                FragWorldPos = vec3(worldPos);
+                FragLightSpacePos = uLightSpaceMat * vec4(FragWorldPos, 1.0);
+                NormalWorldDir = normalDir;
+                NonAmbientBrightness = diffuseAmt + specularAmt;
+                TexCoord = uTextureScale * aTexCoord;
+
+                gl_Position = uViewProjMat * worldPos;
+            }
+        )";
+
+        static constexpr CStringView c_fragment_shader_src = R"(
+            #version 330 core
+
+            uniform bool uHasShadowMap = false;
+            uniform sampler2D uDiffuseTexture;
+            uniform vec3 uLightDir;
+            uniform sampler2D uShadowMapTexture;
+            uniform float uAmbientStrength;
+            uniform vec4 uLightColor;
+            uniform float uNear;
+            uniform float uFar;
+
+            in vec3 FragWorldPos;
+            in vec4 FragLightSpacePos;
+            in vec3 NormalWorldDir;
+            in float NonAmbientBrightness;
+            in vec2 TexCoord;
+
+            out vec4 Color0Out;
+
+            float CalculateShadowAmount()
+            {
+                // perspective divide
+                vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
+
+                // map to [0, 1]
+                projCoords = 0.5*projCoords + 0.5;
+
+                // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+                float closestDepth = texture(uShadowMapTexture, projCoords.xy).r;
+
+                // get depth of current fragment from light's perspective
+                float currentDepth = projCoords.z;
+
+                // calculate bias (based on depth map resolution and slope)
+                float bias = max(0.025 * (1.0 - abs(dot(NormalWorldDir, uLightDir))), 0.0025);
+
+                // check whether current frag pos is in shadow
+                // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+                // PCF
+                float shadow = 0.0;
+                vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+                for(int x = -1; x <= 1; ++x)
+                {
+                    for(int y = -1; y <= 1; ++y)
+                    {
+                        float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y)*texelSize).r;
+                        if (pcfDepth < 1.0)
+                        {
+                            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;
+                        }
+                    }
+                }
+                shadow /= 9.0;
+
+                return shadow;
+            }
+
+            float LinearizeDepth(float depth)
+            {
+                // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+                //
+                // only really works with perspective cameras: orthogonal cameras
+                // don't need this unprojection math trick
+
+                float z = depth * 2.0 - 1.0;
+                return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+            }
+
+            void main()
+            {
+                float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0;
+                float brightness = clamp(uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness), 0.0, 1.0);
+                Color0Out = brightness * vec4(brightness * vec3(uLightColor), 1.0) * texture(uDiffuseTexture, TexCoord);
+                Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
+                Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
+            }
+        )";
     };
 
     // the `Material` that's used to detect the edges, per color component, in the input texture (used for rim-highlighting)
     class EdgeDetectionMaterial final : public Material {
     public:
-        explicit EdgeDetectionMaterial(SceneCache& cache) :
-            Material{cache.get_shader(
-                "oscar/shaders/SceneRenderer/EdgeDetector.vert",
-                "oscar/shaders/SceneRenderer/EdgeDetector.frag"
-            )}
+        explicit EdgeDetectionMaterial() :
+            Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {
             set_transparent(true);    // so that anti-aliased edged alpha-blend correctly
             set_depth_tested(false);  // not required: it's handling a single quad
         }
+
+    private:
+        static constexpr CStringView c_vertex_shader_src = R"(
+            #version 330 core
+
+            uniform mat4 uModelMat;
+            uniform mat4 uViewProjMat;
+            uniform vec2 uTextureOffset = vec2(0.0, 0.0);
+            uniform vec2 uTextureScale = vec2(1.0, 1.0);
+
+            layout (location = 0) in vec3 aPos;
+            layout (location = 1) in vec2 aTexCoord;
+
+            out vec2 TexCoords;
+
+            void main()
+            {
+                TexCoords = uTextureOffset + (uTextureScale * aTexCoord);
+                gl_Position = uViewProjMat * uModelMat * vec4(aPos, 1.0);
+            }
+        )";
+
+        static constexpr CStringView c_fragment_shader_src = R"(
+            #version 330 core
+
+            uniform sampler2D uScreenTexture;
+            uniform vec4 uRim0Color;
+            uniform vec4 uRim1Color;
+            uniform vec2 uRimThickness;
+
+            in vec2 TexCoords;
+            out vec4 FragColor;
+
+            // sampling offsets to use when retrieving samples to feed
+            // into the kernel
+            const vec2 g_TextureOffsets[9] = vec2[](
+                vec2(-1.0,  1.0), // top-left
+                vec2( 0.0,  1.0), // top-center
+                vec2( 1.0,  1.0), // top-right
+                vec2(-1.0,  0.0), // center-left
+                vec2( 0.0,  0.0), // center-center
+                vec2( 1.0,  0.0), // center-right
+                vec2(-1.0, -1.0), // bottom-left
+                vec2( 0.0, -1.0), // bottom-center
+                vec2( 1.0, -1.0)  // bottom-right
+            );
+
+            // https://computergraphics.stackexchange.com/questions/2450/opengl-detection-of-edges
+            //
+            // this is known as a "Sobel Kernel"
+            const vec2 g_KernelCoefficients[9] = vec2[](
+                vec2( 1.0,  1.0),  // top-left
+                vec2( 0.0,  2.0),  // top-center
+                vec2(-1.0,  1.0),  // top-right
+
+                vec2( 2.0,  0.0),  // center-left
+                vec2( 0.0,  0.0),  // center
+                vec2(-2.0,  0.0),  // center-right
+
+                vec2( 1.0, -1.0),  // bottom-left
+                vec2( 0.0, -2.0),  // bottom-center
+                vec2(-1.0, -1.0)   // bottom-right
+            );
+
+            void main(void)
+            {
+                vec2 rim0XY = vec2(0.0, 0.0);
+                vec2 rim1XY = vec2(0.0, 0.0);
+                for (int i = 0; i < g_KernelCoefficients.length(); ++i) {
+                    vec2 offset = uRimThickness * g_TextureOffsets[i];
+                    vec2 coord = TexCoords + offset;
+                    vec2 v = texture(uScreenTexture, coord).rg;
+                    rim0XY += v.r * g_KernelCoefficients[i];
+                    rim1XY += v.g * g_KernelCoefficients[i];
+                }
+
+                // the maximum value from the Sobel Kernel is sqrt(3^2 + 3^2) == sqrt(18)
+                //
+                // but lowering the scaling factor a bit is handy for making the rims more solid
+                float rim0Strength = length(rim0XY) / 4.242640;
+                float rim1Strength = length(rim1XY) / 4.242640;
+
+                vec4 rim0Color = rim0Strength * uRim0Color;
+                vec4 rim1Color = rim1Strength * uRim1Color;
+
+                FragColor = rim0Color + rim1Color;
+            }
+        )";
     };
 
     // a `Material` that colors `SceneDecoration`s in the rim color (groups)
@@ -198,11 +532,11 @@ class osc::SceneRenderer::Impl final {
 public:
     explicit Impl(SceneCache& cache) :
 
-        scene_main_material_{cache},
-        scene_floor_material_{cache},
+        scene_main_material_{cache.get<SceneMainMaterial>()},
+        scene_floor_material_{cache.get<SceneFloorMaterial>()},
         rim_filler_material_{cache},
         wireframe_material_{cache.wireframe_material()},
-        edge_detection_material_{cache},
+        edge_detection_material_{cache.get<EdgeDetectionMaterial>()},
         quad_mesh_{cache.quad_mesh()}
     {
         wireframe_material_.set_color(Color::black());

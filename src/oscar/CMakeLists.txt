@@ -462,6 +462,7 @@ add_library(oscar STATIC
     Utils/TemporaryFile.h
     Utils/TemporaryFileParameters.h
     Utils/TransparentStringHasher.h
+    Utils/TypeInfoReference.h
     Utils/Typelist.h
     Utils/UID.cpp
     Utils/UID.h

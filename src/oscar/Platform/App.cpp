@@ -28,6 +28,7 @@
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/ScopeGuard.h>
 #include <oscar/Utils/SynchronizedValue.h>
+#include <oscar/Utils/TypeInfoReference.h>
 
 #include <ankerl/unordered_dense.h>
 #if defined(__APPLE__)
@@ -561,20 +562,6 @@ namespace
         std::vector<ScreenshotAnnotation> annotations;
     };
 
-    // wrapper class for storing std::type_info as a hash-able type
-    class TypeInfoReference final {
-    public:
-        explicit TypeInfoReference(const std::type_info& type_info) :
-            type_info_{&type_info}
-        {}
-
-        const std::type_info& get() const { return *type_info_; }
-
-        friend bool operator==(const TypeInfoReference&, const TypeInfoReference&) = default;
-    private:
-        const std::type_info* type_info_;
-    };
-
     // A handle to a single OS mouse cursor (that the UI may switch to at runtime).
     class SystemCursor final {
     public:
@@ -668,14 +655,6 @@ namespace
         std::vector<CursorShape> cursor_stack_;
     };
 }
-
-template<>
-struct std::hash<TypeInfoReference> final {
-    size_t operator()(const TypeInfoReference& ref) const noexcept
-    {
-        return ref.get().hash_code();
-    }
-};
 
 // main application state
 //
