@@ -101,7 +101,9 @@ namespace
 
     void DrawOutputTooltip(const OpenSim::AbstractOutput& o)
     {
-        ui::draw_tooltip(o.getTypeName());
+        ui::begin_tooltip();
+        ui::draw_text_disabled(o.getTypeName());
+        ui::end_tooltip();
     }
 
     bool DrawOutputWithSubfieldsMenu(
@@ -424,7 +426,7 @@ bool osc::DrawWatchOutputMenu(
 
     if (ui::begin_menu("Watch Output")) {
         if (c.getNumOutputs() == 0) {
-            ui::draw_text_disabled("%s has no outputs", truncate_with_ellipsis(c.getName(), 15).c_str());
+            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
         }
         else {
             int id = 0;

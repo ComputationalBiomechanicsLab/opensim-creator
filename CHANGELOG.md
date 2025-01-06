@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The `Display` context menu now also shows model-level toggles, such as toggles
+  for frame visualization (#966).
 - The `Watch Output` context menu now only shows the outputs of the right-clicked
   component, rather than traversing through each parent of the component. This was
   done to simplify the menu.

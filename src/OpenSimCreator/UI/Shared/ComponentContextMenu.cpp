@@ -34,6 +34,7 @@
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/UI/Events/OpenNamedPanelEvent.h>
 #include <oscar/UI/Events/OpenPopupEvent.h>
+#include <oscar/UI/IconCache.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/UI/Panels/PanelManager.h>
 #include <oscar/UI/Popups/StandardPopup.h>
@@ -421,58 +422,7 @@ private:
         });
 
         if (ui::begin_menu("Display", m_Model->canUpdModel())) {
-            const bool isEnabled = m_Model->canUpdModel() and AnyDescendentInclusiveHasAppearanceProperty(*c);
-
-            if (ui::draw_menu_item("Show", {}, nullptr, isEnabled)) {
-                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), true);
-            }
-
-            if (ui::draw_menu_item("Show Only This", {}, nullptr, isEnabled)) {
-                ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(*c));
-            }
-
-            if (ui::draw_menu_item("Hide", {}, nullptr, isEnabled)) {
-                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(*c), false);
-            }
-
-            // add a seperator between probably commonly-used, simple, diplay toggles and the more
-            // advanced ones
-            ui::draw_separator();
-
-            // redundantly put a "Show All" option here, also, so that the user doesn't have
-            // to "know" that they need to right-click in the middle of nowhere or on the
-            // model
-            if (ui::draw_menu_item("Show All", {}, nullptr, isEnabled)) {
-                ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
-            }
-
-            {
-                std::stringstream ss;
-                ss << "Show All '" << c->getConcreteClassName() << "' Components";
-                const std::string label = std::move(ss).str();
-                if (ui::draw_menu_item(label, {}, nullptr, m_Model->canUpdModel())) {
-                    ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
-                        *m_Model,
-                        GetAbsolutePath(m_Model->getModel()),
-                        c->getConcreteClassName(),
-                        true
-                    );
-                }
-            }
-
-            {
-                std::stringstream ss;
-                ss << "Hide All '" << c->getConcreteClassName() << "' Components";
-                const std::string label = std::move(ss).str();
-                if (ui::draw_menu_item(label, {}, nullptr, m_Model->canUpdModel())) {
-                    ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
-                        *m_Model,
-                        GetAbsolutePath(m_Model->getModel()),
-                        c->getConcreteClassName(),
-                        false
-                    );
-                }
-            }
+            drawDisplayMenuContent(*c);
             ui::end_menu();
         }
 
@@ -520,6 +470,69 @@ private:
         else if (const auto* geomPathPtr = dynamic_cast<const OpenSim::GeometryPath*>(c)) {
             DrawGeometryPathContextualActions(*m_Model, *geomPathPtr);
         }
+    }
+
+    void drawDisplayMenuContent(const OpenSim::Component& c)
+    {
+        const bool isEnabled = m_Model->canUpdModel() and AnyDescendentInclusiveHasAppearanceProperty(c);
+
+        // togges that are specific to this components (+ its descendants)
+
+        if (ui::draw_menu_item("Show", {}, nullptr, isEnabled)) {
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(c), true);
+        }
+
+        if (ui::draw_menu_item("Show Only This", {}, nullptr, isEnabled)) {
+            ActionShowOnlyComponentAndAllChildren(*m_Model, GetAbsolutePath(c));
+        }
+
+        if (ui::draw_menu_item("Hide", {}, nullptr, isEnabled)) {
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetAbsolutePath(c), false);
+        }
+
+        // add a seperator between probably commonly-used, simple, diplay toggles and the more
+        // advanced ones
+        ui::draw_separator();
+
+        // redundantly put a "Show All" option here, also, so that the user doesn't have
+        // to "know" that they need to right-click in the middle of nowhere or on the
+        // model
+        if (ui::draw_menu_item("Show All", {}, nullptr, isEnabled)) {
+            ActionSetComponentAndAllChildrensIsVisibleTo(*m_Model, GetRootComponentPath(), true);
+        }
+
+        {
+            std::stringstream ss;
+            ss << "Show All '" << c.getConcreteClassName() << "' Components";
+            const std::string label = std::move(ss).str();
+            if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
+                ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+                    *m_Model,
+                    GetAbsolutePath(m_Model->getModel()),
+                    c.getConcreteClassName(),
+                    true
+                );
+            }
+        }
+
+        {
+            std::stringstream ss;
+            ss << "Hide All '" << c.getConcreteClassName() << "' Components";
+            const std::string label = std::move(ss).str();
+            if (ui::draw_menu_item(label, {}, nullptr, isEnabled)) {
+                ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
+                    *m_Model,
+                    GetAbsolutePath(m_Model->getModel()),
+                    c.getConcreteClassName(),
+                    false
+                );
+            }
+        }
+
+        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+        ui::draw_text_disabled("Model Visual Preferences");
+        ui::draw_separator();
+        DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
     }
 
     void drawSocketMenu(const OpenSim::Component& c)
@@ -606,6 +619,10 @@ private:
     OpenSim::ComponentPath m_Path;
     ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_Model};
     ComponentContextMenuFlags m_Flags;
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+        App::resource_loader().with_prefix("icons/"),
+        ui::get_text_line_height()/128.0f
+    );
 };
 
 
