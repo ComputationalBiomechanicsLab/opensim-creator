@@ -281,7 +281,7 @@ namespace
 
     void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)
     {
-        ui::draw_text_unformatted(c.getName());
+        ui::draw_text_unformatted(truncate_with_ellipsis(c.getName(), 15));
         ui::same_line();
         ui::begin_disabled();
         ui::draw_text(c.getConcreteClassName());
@@ -422,38 +422,20 @@ bool osc::DrawWatchOutputMenu(
 {
     bool outputAdded = false;
 
-    if (ui::begin_menu("Watch Output"))
-    {
-        ui::draw_help_marker("Watch the selected output. This makes it appear in the 'Output Watches' window in the editor panel and the 'Output Plots' window during a simulation");
-
-        // iterate from the selected component upwards to the root
-        int imguiId = 0;
-        for (const OpenSim::Component* p = &c; p; p = GetOwner(*p))
-        {
-            ui::push_id(imguiId++);
-
-            ui::draw_dummy({0.0f, 2.0f});
-            ui::draw_text_disabled("%s (%s)", p->getName().c_str(), p->getConcreteClassName().c_str());
-            ui::draw_separator();
-
-            if (p->getNumOutputs() == 0)
-            {
-                ui::draw_text_disabled("  (has no outputs)");
-            }
-            else
-            {
-                for (const auto& [name, output] : p->getOutputs())
-                {
-                    if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection))
-                    {
-                        outputAdded = true;
-                    }
-                }
-            }
-
-            ui::pop_id();
+    if (ui::begin_menu("Watch Output")) {
+        if (c.getNumOutputs() == 0) {
+            ui::draw_text_disabled("%s has no outputs", truncate_with_ellipsis(c.getName(), 15).c_str());
         }
-
+        else {
+            int id = 0;
+            for (const auto& [name, output] : c.getOutputs()) {
+                ui::push_id(id++);
+                if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+                    outputAdded = true;
+                }
+                ui::pop_id();
+            }
+        }
         ui::end_menu();
     }
 
