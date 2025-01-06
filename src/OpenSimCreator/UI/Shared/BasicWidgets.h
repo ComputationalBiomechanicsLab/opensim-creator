@@ -41,6 +41,9 @@ namespace SimTK { class State; }
 
 namespace osc
 {
+    // returns the recommended icon codepoint for the given component
+    CStringView IconFor(const OpenSim::Component&);
+
     void DrawComponentHoverTooltip(
         const OpenSim::Component&
     );

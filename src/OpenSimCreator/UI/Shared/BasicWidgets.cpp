@@ -278,10 +278,67 @@ namespace
 
         write_as_stl(outputFileStream, oscMesh, stlMetadata);
     }
+
+    void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)
+    {
+        ui::draw_text_unformatted(c.getName());
+        ui::same_line();
+        ui::begin_disabled();
+        ui::draw_text(c.getConcreteClassName());
+        ui::same_line();
+        ui::draw_text(IconFor(c));
+        ui::end_disabled();
+    }
 }
 
 
 // public API
+
+CStringView osc::IconFor(const OpenSim::Component& c)
+{
+    if (dynamic_cast<const OpenSim::Muscle*>(&c)) {
+        return OSC_ICON_MUSCLE;
+    }
+    else if (dynamic_cast<const OpenSim::Coordinate*>(&c)) {
+        return OSC_ICON_COORDINATE;
+    }
+    else if (dynamic_cast<const OpenSim::WrapObject*>(&c)) {
+        return OSC_ICON_WRAP;
+    }
+    else if (dynamic_cast<const OpenSim::Probe*>(&c)) {
+        return OSC_ICON_PROBE;
+    }
+    else if (dynamic_cast<const OpenSim::Joint*>(&c)) {
+        return OSC_ICON_JOINT;
+    }
+    else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
+        return OSC_ICON_MESH;
+    }
+    else if (dynamic_cast<const OpenSim::Body*>(&c)) {
+        return OSC_ICON_BODY;
+    }
+    else if (dynamic_cast<const OpenSim::ContactGeometry*>(&c)) {
+        return OSC_ICON_CONTACT;
+    }
+    else if (dynamic_cast<const OpenSim::Station*>(&c)) {
+        return OSC_ICON_MARKER;
+    }
+    else if (dynamic_cast<const OpenSim::Constraint*>(&c)) {
+        return OSC_ICON_CONSTRAINT;
+    }
+    else if (dynamic_cast<const OpenSim::Function*>(&c)) {
+        return OSC_ICON_SPLINE;
+    }
+    else if (dynamic_cast<const OpenSim::Frame*>(&c)) {
+        return OSC_ICON_FRAME;
+    }
+    else if (dynamic_cast<const OpenSim::Model*>(&c)) {
+        return OSC_ICON_MODEL;
+    }
+    else {
+        return OSC_ICON_COMPONENT;
+    }
+}
 
 void osc::DrawNothingRightClickedContextMenuHeader()
 {
@@ -297,7 +354,7 @@ void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
 
 void osc::DrawRightClickedComponentContextMenuHeader(const OpenSim::Component& c)
 {
-    DrawContextMenuHeader(truncate_with_ellipsis(c.getName(), 15), c.getConcreteClassName());
+    drawTooltipOrContextMenuContentText(c);
 }
 
 void osc::DrawContextMenuSeparator()
@@ -309,11 +366,7 @@ void osc::DrawContextMenuSeparator()
 void osc::DrawComponentHoverTooltip(const OpenSim::Component& hovered)
 {
     ui::begin_tooltip();
-
-    ui::draw_text_unformatted(hovered.getName());
-    ui::same_line();
-    ui::draw_text_disabled(hovered.getConcreteClassName());
-
+    drawTooltipOrContextMenuContentText(hovered);
     ui::end_tooltip();
 }
 

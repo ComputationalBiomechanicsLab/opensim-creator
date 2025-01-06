@@ -5,7 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Custom icons have been rolled out to the navigator panel. The icons are currently
+- Custom icons have been rolled out to various parts of the UI. The icons are currently
   work-in-progress, and this change marks a "now they're integrated into the icon
   atlas" milestone.
 - Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline

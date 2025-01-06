@@ -1,6 +1,7 @@
 #include "ModelStatusBar.h"
 
 #include <OpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <OpenSimCreator/UI/Shared/BasicWidgets.h>
 #include <OpenSimCreator/UI/Shared/ComponentContextMenu.h>
 #include <OpenSimCreator/Utils/OpenSimHelpers.h>
 
@@ -39,18 +40,24 @@ private:
         if (c) {
             const std::vector<const OpenSim::Component*> els = GetPathElements(*c);
             for (ptrdiff_t i = 0; i < std::ssize(els)-1; ++i) {
+                const OpenSim::Component& el = *els[i];
+
                 ui::push_id(i);
-                const std::string label = truncate_with_ellipsis(els[i]->getName(), 15);
+                ui::draw_text(IconFor(el));
+                ui::same_line();
+                const std::string label = truncate_with_ellipsis(el.getName(), 15);
                 if (ui::draw_small_button(label)) {
-                    m_Model->setSelected(els[i]);
+                    m_Model->setSelected(&el);
                 }
-                drawMouseInteractionStuff(*els[i]);
+                drawMouseInteractionStuff(el);
                 ui::same_line();
                 ui::draw_text_disabled("/");
                 ui::same_line();
                 ui::pop_id();
             }
             if (not els.empty()) {
+                ui::draw_text(IconFor(*els.back()));
+                ui::same_line();
                 const std::string label = truncate_with_ellipsis(els.back()->getName(), 15);
                 ui::draw_text_unformatted(label);
                 drawMouseInteractionStuff(*els.back());
