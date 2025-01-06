@@ -619,6 +619,32 @@ namespace
                 to<EulerAngles>(M_cpof2.R())
             );
         }
+
+        void implDrawExtraOnUsingOverlays(
+            ui::DrawListView drawList,
+            const Mat4& viewMatrix,
+            const Mat4& projectionMatrix,
+            const Rect& screenRect) const final
+        {
+            const OpenSim::Joint* joint = findSelection();
+            if (not joint) {
+                return;  // lookup failed
+            }
+
+            // If the user is manipulating a joint center then provide an in-UI
+            // annotation that highlights the fact that moving a joint center
+            // manipulates both the parent and child frames of the joint
+
+            std::stringstream ss;
+            ss << "Note: manipulating the joint center moves both the parent (" << joint->getParentFrame().getName() << ") and\nchild (" << joint->getParentFrame().getName() << ") frames.";
+            const std::string label = std::move(ss).str();
+            const Vec3 worldPos{getCurrentTransformInGround()[3]};
+            const Vec2 screenPos = project_onto_screen_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height()};
+
+            drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);
+            drawList.add_text(screenPos + offset, Color::white(), label);
+        }
     };
 
     // a compile-time `Typelist` containing all concrete implementations of
