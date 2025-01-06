@@ -127,6 +127,8 @@ struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
     }
 };
 
+static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset());
+
 namespace
 {
     using InternalTextureID = unsigned long long;

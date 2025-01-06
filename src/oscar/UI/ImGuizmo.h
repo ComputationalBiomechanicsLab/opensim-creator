@@ -56,6 +56,8 @@ using ImU32 = unsigned int;
 
 namespace ImGuizmo
 {
+    inline constexpr float AnnotationOffset() { return 15.0f; }
+
    void CreateContext();
    void DestroyContext();
 

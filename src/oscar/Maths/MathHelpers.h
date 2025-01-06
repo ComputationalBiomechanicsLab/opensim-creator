@@ -77,6 +77,15 @@ namespace osc
     // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
     Rect ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
+    // returns the location where `worldspace_location` would occur when projected via the
+    // given `view_matrix` and `projection_matrix`es onto `screen_rect`
+    Vec2 project_onto_screen_rect(
+        const Vec3& worldspace_location,
+        const Mat4& view_matrix,
+        const Mat4& projection_matrix,
+        const Rect& screen_rect
+    );
+
 
     // ----- `Sphere` helpers -----
 

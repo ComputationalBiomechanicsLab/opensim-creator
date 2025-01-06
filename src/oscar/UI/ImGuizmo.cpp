@@ -1405,8 +1405,8 @@ namespace ImGuizmo
          ImVec2 destinationPosOnScreen = circlePos[1];
          char tmps[512];
          ImFormatString(tmps, sizeof(tmps), rotationInfoMask[type - MT_ROTATE_X], (gCurrentContext->mRotationAngle / ZPI) * 180.f, gCurrentContext->mRotationAngle);
-         drawList->AddText(ImVec2(destinationPosOnScreen.x + 15, destinationPosOnScreen.y + 15), GetColorU32(TEXT_SHADOW), tmps);
-         drawList->AddText(ImVec2(destinationPosOnScreen.x + 14, destinationPosOnScreen.y + 14), GetColorU32(TEXT), tmps);
+         drawList->AddText(ImVec2(destinationPosOnScreen.x + AnnotationOffset()+1.0f, destinationPosOnScreen.y + AnnotationOffset()+1.0f), GetColorU32(TEXT_SHADOW), tmps);
+         drawList->AddText(ImVec2(destinationPosOnScreen.x + AnnotationOffset(), destinationPosOnScreen.y + AnnotationOffset()), GetColorU32(TEXT), tmps);
       }
    }
 
@@ -1948,8 +1948,8 @@ namespace ImGuizmo
                , (bounds[4] - bounds[1]) * gCurrentContext->mBoundsMatrix.component[1].Length() * scale.component[1].Length()
                , (bounds[5] - bounds[2]) * gCurrentContext->mBoundsMatrix.component[2].Length() * scale.component[2].Length()
             );
-            drawList->AddText(ImVec2(destinationPosOnScreen.x + 15, destinationPosOnScreen.y + 15), GetColorU32(TEXT_SHADOW), tmps);
-            drawList->AddText(ImVec2(destinationPosOnScreen.x + 14, destinationPosOnScreen.y + 14), GetColorU32(TEXT), tmps);
+            drawList->AddText(ImVec2(destinationPosOnScreen.x + AnnotationOffset() + 1.0f, destinationPosOnScreen.y + AnnotationOffset()+1.0f), GetColorU32(TEXT_SHADOW), tmps);
+            drawList->AddText(ImVec2(destinationPosOnScreen.x + AnnotationOffset(), destinationPosOnScreen.y + AnnotationOffset()), GetColorU32(TEXT), tmps);
          }
 
          if (!io.MouseDown[0]) {

@@ -650,20 +650,12 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_screen_rect(
     const Vec3& worldspace_location,
     const Rect& screen_rect) const
 {
-    const Vec2 screen_dims = dimensions_of(screen_rect);
-    const Mat4 view_proj_mtx = projection_matrix(screen_dims.x/screen_dims.y) * view_matrix();
-
-    Vec4 ndc = view_proj_mtx * Vec4{worldspace_location, 1.0f};
-    ndc /= ndc.w;  // perspective divide
-
-    Vec2 ndc2D;
-    ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
-    ndc2D += 1.0f;                  // [0, 2]
-    ndc2D *= 0.5f;                  // [0, 1]
-    ndc2D *= screen_dims;           // [0, w]
-    ndc2D += screen_rect.p1;        // [x, x + w]
-
-    return ndc2D;
+    return osc::project_onto_screen_rect(
+        worldspace_location,
+        view_matrix(),
+        projection_matrix(aspect_ratio_of(screen_rect)),
+        screen_rect
+    );
 }
 
 Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
@@ -1120,6 +1112,27 @@ Rect osc::ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect
     rv.p2 += viewport.p1;
 
     return rv;
+}
+
+Vec2 osc::project_onto_screen_rect(
+    const Vec3& worldspace_location,
+    const Mat4& view_matrix,
+    const Mat4& projection_matrix,
+    const Rect& screen_rect)
+{
+    const Vec2 screen_dims = dimensions_of(screen_rect);
+
+    Vec4 ndc = projection_matrix * view_matrix * Vec4{worldspace_location, 1.0f};
+    ndc /= ndc.w;  // perspective divide
+
+    Vec2 ndc2D;
+    ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
+    ndc2D += 1.0f;                  // [0, 2]
+    ndc2D *= 0.5f;                  // [0, 1]
+    ndc2D *= screen_dims;           // [0, w]
+    ndc2D += screen_rect.p1;        // [x, x + w]
+
+    return ndc2D;
 }
 
 Sphere osc::bounding_sphere_of(std::span<const Vec3> points)

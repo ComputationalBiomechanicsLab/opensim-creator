@@ -75,11 +75,26 @@ namespace
         {
             implOnSave();
         }
+
+        void drawExtraOnUsingOverlays(
+            ui::DrawListView drawList,
+            const Mat4& viewMatrix,
+            const Mat4& projectionMatrix,
+            const Rect& screenRect) const
+        {
+            implDrawExtraOnUsingOverlays(drawList, viewMatrix, projectionMatrix, screenRect);
+        }
     private:
         virtual ui::GizmoOperations implGetSupportedManipulationOps() const = 0;
         virtual Mat4 implGetCurrentTransformInGround() const = 0;
         virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
         virtual void implOnSave() = 0;
+        virtual void implDrawExtraOnUsingOverlays(
+            ui::DrawListView,
+            const Mat4&,
+            const Mat4&,
+            const Rect&) const
+        {}
     };
 
     // abstract implementation of an `ISelectionManipulator` for the
@@ -353,6 +368,35 @@ namespace
             }
         }
 
+        void implDrawExtraOnUsingOverlays(
+            ui::DrawListView drawList,
+            const Mat4& viewMatrix,
+            const Mat4& projectionMatrix,
+            const Rect& screenRect) const final
+        {
+            if (not m_IsChildFrameOfJoint) {
+                return;  // "normal" offset frames have no additional overlays
+            }
+            const OpenSim::PhysicalOffsetFrame* pof = findSelection();
+            if (not pof) {
+                return;  // lookup failed
+            }
+
+            // If the user is manipulating a child offset frame, then provide an in-UI
+            // annotation that explains that the user isn't actually manipulating the
+            // child frame, but its parent, to try and reduce user confusion (#955).
+
+            std::stringstream ss;
+            ss << "Note: this is effectively moving " << pof->getParentFrame().getName() << ", because " << pof->getName() << " is\nconstrained by a joint.";
+            const std::string label = std::move(ss).str();
+            const Vec3 worldPos{getCurrentTransformInGround()[3]};
+            const Vec2 screenPos = project_onto_screen_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height()};
+
+            drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);
+            drawList.add_text(screenPos + offset, Color::white(), label);
+        }
+
         bool m_IsChildFrameOfJoint = false;
     };
 
@@ -624,12 +668,15 @@ namespace
 
         // draw the manipulator
         Mat4 modelMatrix = manipulator.getCurrentTransformInGround();
-        const auto userEditInGround = gizmo.draw(
-            modelMatrix,
-            camera.view_matrix(),
-            camera.projection_matrix(aspect_ratio_of(screenRect)),
-            screenRect
-        );
+        const Mat4 viewMatrix = camera.view_matrix();
+        const Mat4 projectionMatrix = camera.projection_matrix(aspect_ratio_of(screenRect));
+
+        const auto userEditInGround = gizmo.draw(modelMatrix, viewMatrix, projectionMatrix, screenRect);
+
+        if (gizmo.is_using()) {  // note: using != manipulating
+            // draw any additional annotations over the top
+            manipulator.drawExtraOnUsingOverlays(ui::get_panel_draw_list(), viewMatrix, projectionMatrix, screenRect);
+        }
 
         if (userEditInGround) {
             // propagate user edit to the model via the `ISelectionManipulator` interface

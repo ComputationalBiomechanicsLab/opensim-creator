@@ -1011,6 +1011,11 @@ namespace osc::ui
         bool was_using_last_frame_ = false;
     };
 
+    constexpr float gizmo_annotation_offset()
+    {
+        return 15.0f;
+    }
+
     void gizmo_demo_draw_grid(
         const Mat4& model_matrix,
         const Mat4& view_matrix,

@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- When using a 3D gizmo to move a physical offset frame that's constrained because
+  it's child of a joint, a tooltip will now appear next to the user's mouse explaining
+  the manipulation (i.e. it's manipulating the parent of the child, #955, #966).
 - The `Display` context menu now also shows model-level toggles, such as toggles
   for frame visualization (#966).
 - The `Watch Output` context menu now only shows the outputs of the right-clicked
