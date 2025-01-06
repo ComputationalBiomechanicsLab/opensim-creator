@@ -16,6 +16,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   atlas" milestone.
 - Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline
   to flicker between a "hovering" and "not hovering" state (#967).
+- Fixed a bug where plotting one output against another output would cause a mutex
+  recursion exception or crash the application with a deadlock (#969).
 - Internal: ImGui, ImGuizmo, and ImPlot are now entirely encapsulated in the `oscimgui`
   abstraction, which should shield OSC against external API changes.
 - Internal: ImGui no longer directly talks to SDL. Instead, all of its OS communication

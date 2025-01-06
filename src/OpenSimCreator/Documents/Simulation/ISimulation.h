@@ -135,6 +135,7 @@ namespace osc
 
         std::shared_ptr<Environment> tryUpdEnvironment() { return implUpdAssociatedEnvironment(); }
     private:
+        // TODO: this shouldn't be mutex-xed: it can cause runtime issues
         virtual SynchronizedValueGuard<const OpenSim::Model> implGetModel() const = 0;
 
         virtual ptrdiff_t implGetNumReports() const = 0;

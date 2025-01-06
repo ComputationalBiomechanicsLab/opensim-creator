@@ -88,8 +88,13 @@ namespace
         static_assert(num_options<OutputExtractorDataType>() == 3);
         OSC_ASSERT(oneDimensionalOutputExtractor.getOutputType() == OutputExtractorDataType::Float);
 
+        // HACK: pre-acquire the environment, because `*simulation.getModel()` acquires the model
+        //       mutex for the entire duration of the `ForEachComponentInclusive`, and acquiring
+        //       the environment inside this function then causes a recursion error/deadlock (#969)
+        auto environment = simulation.tryUpdEnvironment();
+
         int id = 0;
-        ForEachComponentInclusive(*simulation.getModel(), [&](const auto& component)
+        ForEachComponentInclusive(*simulation.getModel(), [&, environment](const auto& component)
         {
             const auto numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {
@@ -109,11 +114,11 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&simulation, &oneDimensionalOutputExtractor](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&simulation, &oneDimensionalOutputExtractor, &environment](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
-                            simulation.tryUpdEnvironment()->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
+                            environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
                         ui::pop_id();
                     }
