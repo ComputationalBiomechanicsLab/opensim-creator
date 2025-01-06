@@ -31,7 +31,6 @@
 #include <oscar/Maths/Transform.h>
 #include <oscar/Maths/Vec2.h>
 #include <oscar/Maths/Vec3.h>
-#include <oscar/Platform/ResourcePath.h>
 #include <oscar/Utils/Perf.h>
 #include <oscar/Utils/StdVariantHelpers.h>
 
@@ -526,7 +525,6 @@ namespace
         }
     };
 }
-
 
 class osc::SceneRenderer::Impl final {
 public:
