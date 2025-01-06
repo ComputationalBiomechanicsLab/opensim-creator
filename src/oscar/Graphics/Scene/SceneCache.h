@@ -84,7 +84,7 @@ namespace osc
         requires std::is_default_constructible_v<T> and std::is_destructible_v<T>
         const T& get()
         {
-            if (const void* ptr = try_get(typeid(T))) [[likely]] {
+            if (const void* ptr = try_get(typeid(T))) {
                 return *static_cast<const T*>(ptr);
             }
 
