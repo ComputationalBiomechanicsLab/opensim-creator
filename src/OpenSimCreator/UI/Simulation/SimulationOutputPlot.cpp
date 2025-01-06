@@ -94,7 +94,7 @@ namespace
         auto environment = simulation.tryUpdEnvironment();
 
         int id = 0;
-        ForEachComponentInclusive(*simulation.getModel(), [&, environment](const auto& component)
+        ForEachComponentInclusive(*simulation.getModel(), [&oneDimensionalOutputExtractor, environment, &id](const auto& component)
         {
             const auto numOutputs = component.getNumOutputs();
             if (numOutputs <= 0) {
@@ -114,7 +114,7 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&simulation, &oneDimensionalOutputExtractor, &environment](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
                         {
                             OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
