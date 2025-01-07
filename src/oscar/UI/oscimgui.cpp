@@ -169,6 +169,48 @@ namespace
         }
     )";
 
+    // HACK: this shouldn't be necessary, but is, because the legacy draw list
+    // rendering code was dependent on it.
+    constexpr CStringView c_custom_ui_renderer_vertex_shader_src = R"(
+        #version 330 core
+
+        uniform mat4 uProjMat;
+        uniform mat4 uViewMat;
+        uniform mat4 uModelMat;
+
+        layout (location = 0) in vec3 aPos;
+        layout (location = 3) in vec4 aColor;
+
+        out vec4 aVertColor;
+
+        void main()
+        {
+            gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
+            aVertColor = aColor;
+        }
+    )";
+
+    // HACK: this shouldn't be necessary, but is, because the legacy draw list
+    // rendering code was dependent on it.
+    constexpr CStringView c_custom_ui_renderer_fragment_shader_src = R"(
+        #version 330 core
+
+        uniform mat4 uProjMat;
+        uniform mat4 uViewMat;
+        uniform mat4 uModelMat;
+
+        layout (location = 0) in vec3 aPos;
+        layout (location = 3) in vec4 aColor;
+
+        out vec4 aVertColor;
+
+        void main()
+        {
+            gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
+            aVertColor = aColor;
+        }
+    )";
+
     ImTextureID to_imgui_texture_id(UID id)
     {
         static_assert(std::is_same_v<ImTextureID, InternalTextureID>);
@@ -2449,8 +2491,8 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
 
     // solid color material
     const Material material{Shader{
-        App::slurp("oscar/shaders/PerVertexColor.vert"),
-        App::slurp("oscar/shaders/PerVertexColor.frag"),
+        c_custom_ui_renderer_vertex_shader_src,
+        c_custom_ui_renderer_fragment_shader_src,
     }};
 
     Camera c;
