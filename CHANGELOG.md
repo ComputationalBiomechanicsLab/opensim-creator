@@ -20,6 +20,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Custom icons have been rolled out to various parts of the UI. The icons are currently
   work-in-progress, and this change marks a "now they're integrated into the icon
   atlas" milestone.
+- The `resources` directory was cleaned up and reorganized to try and separate the
+  relationship between `osc`, `oscar`, and `oscar_demos` modules.
 - Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline
   to flicker between a "hovering" and "not hovering" state (#967).
 - Fixed a bug where plotting one output against another output would cause a mutex

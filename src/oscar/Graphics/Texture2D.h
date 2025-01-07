@@ -19,6 +19,11 @@ namespace osc
     // a handle to a 2D texture that can be rendered by the graphics backend
     class Texture2D final {
     public:
+        // Default-constructs a single-pixel texture as a placeholder
+        Texture2D() :
+            Texture2D{Vec2i{1, 1}}
+        {}
+
         explicit Texture2D(
             Vec2i dimensions,
             TextureFormat = TextureFormat::RGBA32,

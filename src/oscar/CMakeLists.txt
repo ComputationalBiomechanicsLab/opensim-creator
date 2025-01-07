@@ -105,6 +105,8 @@ add_library(oscar STATIC
 
     Graphics/Materials/MeshBasicMaterial.cpp
     Graphics/Materials/MeshBasicMaterial.h
+    Graphics/Materials/MeshBasicTexturedMaterial.cpp
+    Graphics/Materials/MeshBasicTexturedMaterial.h
     Graphics/Materials/MeshDepthWritingMaterial.cpp
     Graphics/Materials/MeshDepthWritingMaterial.h
     Graphics/Materials/MeshNormalVectorsMaterial.cpp

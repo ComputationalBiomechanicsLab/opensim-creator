@@ -5,8 +5,8 @@
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Geometries/PlaneGeometry.h>
 #include <oscar/Graphics/Graphics.h>
-#include <oscar/Graphics/Material.h>
 #include <oscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <oscar/Graphics/Materials/MeshBasicTexturedMaterial.h>
 #include <oscar/Graphics/Mesh.h>
 #include <oscar/Maths/Mat4.h>
 #include <oscar/Maths/MatFunctions.h>
@@ -303,7 +303,7 @@ public:
     explicit Impl(TPS2DTab& owner, Widget& parent) :
         TabPrivate{owner, &parent, OSC_ICON_BEZIER_CURVE " TPS2DTab"}
     {
-        m_Material.set("uTextureSampler", m_BoxTexture);
+        m_TexturedMaterial.set_texture(m_BoxTexture);
         wireframe_material_.set_color({0.0f, 0.0f, 0.0f, 0.15f});
         wireframe_material_.set_transparent(true);
         wireframe_material_.set_wireframe(true);
@@ -393,7 +393,7 @@ private:
             .anti_aliasing_level = App::get().anti_aliasing_level()
         };
         out.emplace(textureParameters);
-        graphics::draw(mesh, identity<Transform>(), m_Material, m_Camera);
+        graphics::draw(mesh, identity<Transform>(), m_TexturedMaterial, m_Camera);
         graphics::draw(mesh, identity<Transform>(), wireframe_material_, m_Camera);
 
         OSC_ASSERT(out.has_value());
@@ -469,8 +469,6 @@ private:
         }
     }
 
-    ResourceLoader m_Loader = App::resource_loader();
-
     // TPS algorithm state
     GUIMouseState m_MouseState = GUIInitialMouseState{};
     std::vector<LandmarkPair2D> m_LandmarkPairs;
@@ -478,7 +476,7 @@ private:
 
     // GUI state (rendering, colors, etc.)
     Texture2D m_BoxTexture = load_texture2D_from_svg(
-        m_Loader.open("textures/uv_checker.svg")
+        App::resource_loader().open("textures/uv_checker.svg")
     );
     Mesh m_InputGrid = PlaneGeometry{{
         .width = 2.0f,
@@ -487,7 +485,7 @@ private:
         .num_height_segments = 50,
     }};
     Mesh m_OutputGrid = m_InputGrid;
-    Material m_Material{Shader{m_Loader.slurp("shaders/TPS2D/Textured.vert"), m_Loader.slurp("shaders/TPS2D/Textured.frag")}};
+    MeshBasicTexturedMaterial m_TexturedMaterial;
     MeshBasicMaterial wireframe_material_;
 
     Camera m_Camera;

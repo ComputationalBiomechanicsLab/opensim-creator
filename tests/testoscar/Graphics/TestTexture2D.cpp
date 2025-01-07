@@ -35,6 +35,20 @@ namespace
     }
 }
 
+TEST(Texture2D, default_constructor_constructs_a_1x1_white_RGBA32_sRGB_texture)
+{
+    Texture2D default_constructed;
+    ASSERT_EQ(default_constructed.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(default_constructed.texture_format(), TextureFormat::RGBA32);
+    ASSERT_EQ(default_constructed.color_space(), ColorSpace::sRGB);
+    ASSERT_EQ(default_constructed.wrap_mode(), TextureWrapMode::Repeat);
+    ASSERT_EQ(default_constructed.filter_mode(), TextureFilterMode::Linear);
+
+    const auto pixels = default_constructed.pixels();
+    ASSERT_EQ(pixels.size(), 1);
+    ASSERT_EQ(pixels.front(), Color::white());
+}
+
 TEST(Texture2D, constructor_throws_if_given_zero_or_negatively_sized_dimensions)
 {
     ASSERT_ANY_THROW({ Texture2D(Vec2i(0, 0)); });   // x and y are zero
