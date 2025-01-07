@@ -20,6 +20,9 @@ OSC_DEPS_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 # build type for OSC
 OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 
+# the argument passed to cmake's -G argument
+OSC_BUILD_GENERATOR=${OSC_BUILD_GENERATOR-"Unix Makefiles"}
+
 # maximum number of build jobs to run concurrently
 #
 # defaulted to 1, rather than `nproc`, because OpenSim requires a large
@@ -100,6 +103,7 @@ make --version
 
 echo "----- building OSC's dependencies -----"
 cmake \
+    -G "${OSC_BUILD_GENERATOR}" \
     -S third_party \
     -B "osc-deps-build" \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
@@ -111,6 +115,7 @@ cmake \
 echo "----- building OSC -----"
 # configure
 cmake \
+    -G "${OSC_BUILD_GENERATOR}" \
     -S . \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
@@ -123,7 +128,7 @@ cmake \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-ctest --test-dir osc-build --output-on-failure
+ctest --test-dir osc-build -j ${OSC_BUILD_CONCURRENCY} --output-on-failure
 
 # build final package
 cmake \
