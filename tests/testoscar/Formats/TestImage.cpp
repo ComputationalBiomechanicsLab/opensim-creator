@@ -55,7 +55,7 @@ TEST(load_texture2D_from_image, throws_when_called_with_an_invalid_path)
     ASSERT_ANY_THROW(
     {
         load_texture2D_from_image(
-            ResourceStream{"textures/doesnt_exist.png"},
+            ResourceStream{"oscar/textures/doesnt_exist.png"},
             ColorSpace::sRGB
         );
     });

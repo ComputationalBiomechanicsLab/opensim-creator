@@ -299,7 +299,7 @@ namespace
                     DrawSceneScaleFactorEditorControls(m_UiState->updModel());
                     if (not m_IconCache) {
                         m_IconCache = App::singleton<IconCache>(
-                            App::resource_loader().with_prefix("icons/"),
+                            App::resource_loader().with_prefix("OpenSimCreator/icons/"),
                             ui::get_text_line_height()/128.0f
                         );
                     }

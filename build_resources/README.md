@@ -11,8 +11,9 @@ resource:
 - `font-mappings.json`: maps icon codepoint identifiers, which are used in the
    OpenSim Creator source code (e.g. `OSC_ICON_LIGHTNING`) to a combination of
    a unicode codepoint (used to compile the runtime icon font) and svg file (in
-   `icons/`). This file was initially generated via a script (`compile_icon_font.py`)
-   and subsequently manually updated whenever a new icon comes along.
+   `resources/OpenSimCreator/icons/`). This file was initially generated via a
+   script (`compile_icon_font.py`) and subsequently manually updated whenever a
+   new icon comes along.
 
 - `icons/`: SVG icons, which are combined with `font-mappings.json` to create
   the OpenSim Creator icon font using a [FontForge](https://fontforge.org) script

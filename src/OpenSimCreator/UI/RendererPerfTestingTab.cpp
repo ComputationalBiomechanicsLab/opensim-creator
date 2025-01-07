@@ -110,7 +110,7 @@ private:
     SceneRenderer m_Renderer{m_SceneCache};
     ModelRendererParams m_ModelRendererParams;
 
-    UndoableModelStatePair m_Model{App::resource_filepath("models/RajagopalModel/Rajagopal2015.osim")};
+    UndoableModelStatePair m_Model{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2015.osim")};
     std::vector<SceneDecoration> m_Decorations = GenerateModelDecorations(m_SceneCache, m_Model);
 };
 

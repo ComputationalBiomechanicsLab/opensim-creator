@@ -47,10 +47,8 @@
 #include <oscar/Utils/Perf.h>
 #include <SimTKcommon.h>
 
-#include <ankerl/unordered_dense.h>
-
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -59,6 +57,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -544,7 +543,7 @@ namespace
 
         RendererState* m_RendererState;
         OpenSim::ForceProducer const* m_AssociatedForceProducer;
-        ankerl::unordered_dense::map<const OpenSim::PhysicalFrame*, SimTK::SpatialVec> m_AccumulatedBodySpatialVecs;
+        std::unordered_map<const OpenSim::PhysicalFrame*, SimTK::SpatialVec> m_AccumulatedBodySpatialVecs;
     };
 
     // OSC-specific decoration handler that decorates the body forces/torques applied by

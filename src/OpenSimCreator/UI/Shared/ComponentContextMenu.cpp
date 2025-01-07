@@ -624,7 +624,7 @@ private:
     ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_Model};
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
-        App::resource_loader().with_prefix("icons/"),
+        App::resource_loader().with_prefix("OpenSimCreator/icons/"),
         ui::get_text_line_height()/128.0f
     );
 };

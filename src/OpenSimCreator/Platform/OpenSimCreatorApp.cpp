@@ -171,7 +171,7 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
     App{metadata}
 {
     GloballyInitOpenSim();
-    GloballyAddDirectoryToOpenSimGeometrySearchPath(resource_filepath("geometry"));
+    GloballyAddDirectoryToOpenSimGeometrySearchPath(resource_filepath("OpenSimCreator/geometry"));
     InitializeTabRegistry(*singleton<TabRegistry>());
     InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());
     g_opensimcreator_app_global = this;

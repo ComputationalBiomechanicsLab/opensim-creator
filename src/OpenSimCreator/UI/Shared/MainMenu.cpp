@@ -42,7 +42,7 @@ osc::MainMenuFileTab::MainMenuFileTab(Widget& parent) :
     exampleOsimFiles
     {
         find_files_with_extensions_recursive(
-            App::resource_filepath("models"),
+            App::resource_filepath("OpenSimCreator/models"),
             std::to_array({std::string_view{".osim"}})
         )
     }

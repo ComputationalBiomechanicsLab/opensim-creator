@@ -156,7 +156,7 @@ private:
     Camera m_Camera;
 
     MeshBasicMaterial m_Material;
-    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("geometry/hat_ribs.vtp"));
+    Mesh m_Mesh = LoadMeshViaSimTK(App::resource_filepath("OpenSimCreator/geometry/hat_ribs.vtp"));
     Mesh m_SphereMesh = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
     Mesh m_CubeLinesMesh = AABBGeometry{};
 

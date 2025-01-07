@@ -38,8 +38,8 @@ install(
 # use NSIS to package everything into a self-extracting installer
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
 set(CPACK_GENERATOR NSIS)
-set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/textures/logo.ico")
-set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/textures/logo.ico")
+set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/OpenSimCreator/textures/logo.ico")
 set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
 set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
 set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")

@@ -27,7 +27,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     // the central `geometry/` directory
     {
         GloballyInitOpenSim();
-        GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
+        GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/geometry");
     }
 
     SceneCache meshCache;
@@ -37,7 +37,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     OpenSimDecorationOptions decorationOpts;
     decorationOpts.setShouldShowEverything(true);
 
-    const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "models";
+    const std::filesystem::path examplesDir = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models";
     ASSERT_TRUE(std::filesystem::exists(examplesDir) && std::filesystem::is_directory(examplesDir));
 
     size_t nExamplesTested = 0;
@@ -79,7 +79,7 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
     // the central `geometry/` directory
     {
         GloballyInitOpenSim();
-        GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
+        GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/geometry");
     }
 
     // load model

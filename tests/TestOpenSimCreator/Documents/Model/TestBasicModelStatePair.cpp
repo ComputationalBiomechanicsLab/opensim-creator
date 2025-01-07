@@ -14,7 +14,7 @@ using namespace osc;
 
 TEST(BasicModelStatePair, WhenConstructedFromFilepathLoadsTheOsimFileAndInitializesIt)
 {
-    const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim";
+    const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/Arm26/arm26.osim";
 
     BasicModelStatePair p{modelPath};
     ASSERT_GE(p.getState().getSystemStage(), SimTK::Stage::Dynamics);
@@ -33,7 +33,7 @@ TEST(BasicModelStatePair, CanGenerateDecorationsFromCopy)
     GloballyInitOpenSim();
     GloballyAddDirectoryToOpenSimGeometrySearchPath(std::filesystem::path{OSC_RESOURCES_DIR} / "geometry");
 
-    const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "models" / "Arm26" / "arm26.osim";
+    const std::filesystem::path modelPath = std::filesystem::path{OSC_RESOURCES_DIR} / "OpenSimCreator/models/Arm26/arm26.osim";
 
     BasicModelStatePair p{modelPath};
     SceneCache cache;
