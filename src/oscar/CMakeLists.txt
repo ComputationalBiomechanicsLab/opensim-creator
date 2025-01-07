@@ -402,8 +402,8 @@ add_library(oscar STATIC
     UI/Icon.h
     UI/IconCache.cpp
     UI/IconCache.h
-    UI/ImGuizmo.cpp
-    UI/ImGuizmo.h
+    UI/Detail/ImGuizmo.cpp
+    UI/Detail/ImGuizmo.h
     UI/MouseCapturingCamera.cpp
     UI/MouseCapturingCamera.h
     UI/oscimgui.cpp

@@ -49,7 +49,7 @@
 #include <oscar/Shims/Cpp20/bit.h>
 #include <oscar/Shims/Cpp23/ranges.h>
 #include <oscar/Shims/Cpp23/utility.h>
-#include <oscar/UI/ImGuizmo.h>
+#include <oscar/UI/Detail/ImGuizmo.h>
 #include <oscar/UI/oscimgui.h>
 #include <oscar/Utils/Algorithms.h>
 #include <oscar/Utils/Assertions.h>
