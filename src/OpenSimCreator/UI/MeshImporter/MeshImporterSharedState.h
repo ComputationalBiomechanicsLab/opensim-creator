@@ -413,7 +413,7 @@ namespace osc::mi
             // render
             scene_renderer_.render(decs, p);
 
-            // send texture to ImGui
+            // draw texture in ui
             ui::draw_image(scene_renderer_.upd_render_texture());
 
             // handle hittesting, etc.

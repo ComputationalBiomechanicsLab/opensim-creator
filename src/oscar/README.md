@@ -12,6 +12,6 @@ typically necessary when creating research tooling:
 | `Maths/` | Common mathematical classes/algorithms for UI/scene rendering |
 | `Platform/` | Configuration, window creation, logging, error handling, stacktrace dumping, etc. |
 | `Shims/` | Shims for upcoming but not-yet-supported versions of C++ |
-| `UI/` | Anything related to rendering a 2D UI via ImGui |
+| `UI/` | Anything related to rendering a 2D UI |
 | `Utils/` | Commonly-used helper classes/functions that typically augment the standard C++ library. |
 | `Variant/` | A flexible runtime type (WIP: will be handy for scripting ,generic UIs, etc.) |

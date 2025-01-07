@@ -1,10 +1,10 @@
 #include <oscar/Utils/TransparentStringHasher.h>
 
-#include <ankerl/unordered_dense.h>
+#include <gtest/gtest.h>
+#include <oscar/InternalVendoredCode/include/ankerl/unordered_dense.h>
 #include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/SharedPreHashedString.h>
 #include <oscar/Utils/StringName.h>
-#include <gtest/gtest.h>
 
 #include <algorithm>
 #include <array>

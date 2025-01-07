@@ -12,17 +12,12 @@ if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
     # source code).
-    find_package(glad REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
-find_package(imgui REQUIRED CONFIG)
-find_package(implot REQUIRED CONFIG)
-find_package(stb REQUIRED CONFIG)
-find_package(lunasvg REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
-find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
+add_subdirectory(InternalVendoredCode)
 
 add_library(oscar STATIC
     DOM/Class.cpp
@@ -657,21 +652,15 @@ PUBLIC
 PRIVATE
     $<$<BOOL:${OSC_ADD_LINUX_DEF}>:__LINUX__>
 )
-target_include_directories(oscar PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <oscar/HEADER.h>` works
-)
+target_include_directories(oscar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)  # so that `#include <oscar/HEADER.h>` works
+target_include_directories(oscar SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/InternalVendoredCode/include)  # so that includes within vendored includes work)
 target_link_libraries(oscar PRIVATE
     # these libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out)
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:glad>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
-    imgui
-    implot
-    stb
-    unordered_dense::unordered_dense
+    oscar_internal_code
     tomlplusplus::tomlplusplus
-    lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3
 )

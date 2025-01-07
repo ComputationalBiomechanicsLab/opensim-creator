@@ -1,30 +1,15 @@
-[submodule "third_party/implot"]
-	path = third_party/implot
-	url = https://github.com/ComputationalBiomechanicsLab/implot
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/ComputationalBiomechanicsLab/googletest
-[submodule "third_party/imgui"]
-	path = third_party/imgui
-	url = https://github.com/ComputationalBiomechanicsLab/imgui
 [submodule "third_party/nativefiledialog"]
 	path = third_party/nativefiledialog
 	url = https://github.com/ComputationalBiomechanicsLab/nativefiledialog
 [submodule "third_party/SDL"]
 	path = third_party/SDL
 	url = https://github.com/ComputationalBiomechanicsLab/SDL
-[submodule "third_party/stb"]
-	path = third_party/stb
-	url = https://github.com/ComputationalBiomechanicsLab/stb
 [submodule "third_party/tomlplusplus"]
 	path = third_party/tomlplusplus
 	url = https://github.com/ComputationalBiomechanicsLab/tomlplusplus
-[submodule "third_party/lunasvg"]
-	path = third_party/lunasvg
-	url = https://github.com/ComputationalBiomechanicsLab/lunasvg
-[submodule "third_party/unordered_dense"]
-	path = third_party/unordered_dense
-	url = https://github.com/ComputationalBiomechanicsLab/unordered_dense
 [submodule "third_party/osim"]
 	path = third_party/osim
 	url = https://github.com/ComputationalBiomechanicsLab/osim

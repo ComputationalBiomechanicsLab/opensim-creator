@@ -4,15 +4,9 @@ project(osc-dependencies)
 # -------------- gather user-facing build cache vars ---------------- #
 
 set(OSCDEPS_GET_GOOGLETEST ON CACHE BOOL "enable getting googletest")
-set(OSCDEPS_GET_LUNASVG ON CACHE BOOL "enable getting lunasvg")
 set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
 set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
-set(OSCDEPS_GET_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
-set(OSCDEPS_GET_GLAD ON CACHE BOOL "enable getting glad")
-set(OSCDEPS_GET_STB ON CACHE BOOL "enable getting stb headers")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
-set(OSCDEPS_GET_IMGUI ON CACHE BOOL "enable getting imgui")
-set(OSCDEPS_GET_IMPLOT ON CACHE BOOL "enable gettting implot")
 set(OSCDEPS_OSIM_BUILD_OPENBLAS OFF CACHE BOOL "enable transitively getting+building OpenBLAS for osim")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
@@ -59,16 +53,6 @@ if(${OSCDEPS_GET_GOOGLETEST})
     )
 endif()
 
-if(${OSCDEPS_GET_LUNASVG})
-    ExternalProject_Add(lunasvg
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DBUILD_SHARED_LIBS:BOOL=OFF
-    )
-endif()
-
 if(${OSCDEPS_GET_SDL})
     # Ensure that OpenGL is available before trying to configure SDL3, because
     # SDL3 will silently drop (i.e. not configure) 3D context support, which
@@ -99,38 +83,6 @@ if(${OSCDEPS_GET_TOMLPLUSPLUS})
     )
 endif()
 
-if(${OSCDEPS_GET_UNORDERED_DENSE})
-    ExternalProject_Add(unordered_dense
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_GET_GLAD})
-    ExternalProject_Add(glad
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if (${OSCDEPS_GET_STB})
-    ExternalProject_Add(stb
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stb.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in" <SOURCE_DIR>/stbConfig.cmake.in
-
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
 if(${OSCDEPS_GET_NATIVEFILEDIALOG})
     ExternalProject_Add(nativefiledialog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog
@@ -142,37 +94,6 @@ if(${OSCDEPS_GET_NATIVEFILEDIALOG})
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if (${OSCDEPS_GET_IMGUI})
-    ExternalProject_Add(imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
-
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-    )
-endif()
-
-if(${OSCDEPS_GET_IMPLOT})
-    ExternalProject_Add(implot
-        DEPENDS imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
-
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -Dimgui_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/imgui
     )
 endif()
 

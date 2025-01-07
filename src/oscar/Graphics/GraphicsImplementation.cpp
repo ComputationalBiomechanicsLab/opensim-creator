@@ -3,8 +3,9 @@
 #include <oscar/Graphics/CameraClearFlags.h>
 #include <oscar/Graphics/CameraProjection.h>
 #include <oscar/Graphics/Color.h>
-#include <oscar/Graphics/ColorRenderBufferParams.h>
 #include <oscar/Graphics/Color32.h>
+#include <oscar/Graphics/ColorRenderBufferFormat.h>
+#include <oscar/Graphics/ColorRenderBufferParams.h>
 #include <oscar/Graphics/ColorSpace.h>
 #include <oscar/Graphics/Cubemap.h>
 #include <oscar/Graphics/DepthFunction.h>
@@ -34,7 +35,6 @@
 #include <oscar/Graphics/OpenGL/DepthStencilRenderBufferFormatOpenGLHelpers.h>
 #include <oscar/Graphics/OpenGL/Gl.h>
 #include <oscar/Graphics/OpenGL/TextureFormatOpenGLTraits.h>
-#include <oscar/Graphics/ColorRenderBufferFormat.h>
 #include <oscar/Graphics/RenderBufferLoadAction.h>
 #include <oscar/Graphics/RenderBufferStoreAction.h>
 #include <oscar/Graphics/RenderTarget.h>
@@ -93,7 +93,6 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
-#undef main
 
 #include <algorithm>
 #include <array>
