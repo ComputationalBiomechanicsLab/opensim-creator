@@ -22,6 +22,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   atlas" milestone.
 - The `resources` directory was cleaned up and reorganized to try clearly separate
   the resources required by `OpenSimCreator`, `oscar`, and `oscar_demos`.
+- Smaller, IO- and system-independent library code was vendored in-tree, in order to
+  make building `oscar` easier and less dependent on `git submodule`s (the longer
+  term intention is to start patching some libraries with `oscar`-specific features).
 - Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline
   to flicker between a "hovering" and "not hovering" state (#967).
 - Fixed a bug where plotting one output against another output would cause a mutex

@@ -17,7 +17,7 @@ if (NOT ${OSC_EMSCRIPTEN})
 endif()
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
-add_subdirectory(InternalVendoredCode)
+add_subdirectory(InternalVendoredCode EXCLUDE_FROM_ALL SYSTEM)
 
 add_library(oscar STATIC
     DOM/Class.cpp
