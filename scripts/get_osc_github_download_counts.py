@@ -16,14 +16,34 @@ class Row:
         self.created_at = created_at
         self.downloads = downloads
 
+
+# these counters come from OSMV, which covers roughly the first 6-12 months
+# of OSC's development.
+#
+# OSMV was originally hosted at https://github.com/adamkewley/osmv and later
+# renamed to https://github.com/adamkewley/opensim-creator . This python script
+# used to track the legacy repo and the current repo, but the legacy repo was
+# gradually deprecated (first, with a warning message) and finally deleted to
+# make it impossible for a user to accidently download a very very old version
+# of the software. Because the repo is deleted, the API for the legacy counters
+# no longer works, so their final numbers were baked into this script.
+legacy_download_counters = [
+    Row('osmv', '0.0.1', datetime.datetime.strptime('01-13-21', '%m-%d-%y'), 10),
+    Row('osmv', '0.0.2', datetime.datetime.strptime('04-12-21', '%m-%d-%y'), 24),
+    Row('osmv', '0.0.3', datetime.datetime.strptime('07-14-21', '%m-%d-%y'), 17),
+    Row('osmv', '0.0.4', datetime.datetime.strptime('09-22-21', '%m-%d-%y'), 11),
+    Row('osmv', '0.0.5', datetime.datetime.strptime('11-05-21', '%m-%d-%y'), 45),
+    Row('osmv', '0.0.6', datetime.datetime.strptime('11-12-21', '%m-%d-%y'), 15),
+    Row('osmv', '0.0.7', datetime.datetime.strptime('01-27-22', '%m-%d-%y'), 77),
+]
+
 urls = [
-    "https://api.github.com/repos/adamkewley/opensim-creator/releases?per_page=100",
     "https://api.github.com/repos/ComputationalBiomechanicsLab/opensim-creator/releases?per_page=100",
 ]
 
 version_pattern = re.compile(r"\d+\.\d+.\d+")
 
-rows = []
+rows = legacy_download_counters.copy()
 for url in urls:
     resp = requests.get(url=url)
 
@@ -42,7 +62,7 @@ for url in urls:
 aggregate = []
 for key, group in itertools.groupby(rows, lambda row: row.version):
     first = next(group)
-    name = first.version
+    name = first.name.split('-')[0]
     version = first.version
     created_at = first.created_at
     downloads = functools.reduce(lambda acc,el: acc + el.downloads, group, first.downloads)
