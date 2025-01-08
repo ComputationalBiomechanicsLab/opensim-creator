@@ -20,11 +20,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Custom icons have been rolled out to various parts of the UI. The icons are currently
   work-in-progress, and this change marks a "now they're integrated into the icon
   atlas" milestone.
+- The navigator panel was tidied up and now shows a slightly different color per-row
+  to make it easier to read.
 - The `resources` directory was cleaned up and reorganized to try clearly separate
   the resources required by `OpenSimCreator`, `oscar`, and `oscar_demos`.
-- Smaller, IO- and system-independent library code was vendored in-tree, in order to
-  make building `oscar` easier and less dependent on `git submodule`s (the longer
-  term intention is to start patching some libraries with `oscar`-specific features).
 - Fixed a bug where dragging the mouse over a muscle plot panel caused the dropline
   to flicker between a "hovering" and "not hovering" state (#967).
 - Fixed a bug where plotting one output against another output would cause a mutex
@@ -34,6 +33,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: ImGui no longer directly talks to SDL. Instead, all of its OS communication
   goes via OSC APIs, which should help centralize OS interactions and shield the UI
   against external API changes (e.g. virtual pixels, OSC event types, etc.).
+- Internal: Smaller, IO- and system-independent library code was vendored in-tree, in
+  order to make building `oscar` easier and less dependent on `git submodule`s (the
+  longer term intention is to start patching some libraries with `oscar`-specific
+  features).
 
 
 ## [0.5.17] - 2024/12/11

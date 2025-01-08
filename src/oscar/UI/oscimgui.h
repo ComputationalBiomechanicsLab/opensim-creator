@@ -449,6 +449,7 @@ namespace osc::ui
         FrameBgActive,
         CheckMark,
         SliderGrab,
+        WindowBg,
         NUM_OPTIONS,
     };
 

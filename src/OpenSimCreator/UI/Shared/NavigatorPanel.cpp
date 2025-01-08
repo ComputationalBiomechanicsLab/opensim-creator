@@ -124,9 +124,9 @@ private:
     Response drawWithResponse()
     {
         Response rv;
-        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
         drawFilterAndSearchRow();
-        ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
+        ui::draw_separator();
         drawNavigationTreeChildPanel(rv);
         return rv;
     }
@@ -176,6 +176,7 @@ private:
         ComponentTreePathPointers lookaheadPath = computeComponentTreePath(root, root);
         int imguiTreeDepth = 0;
         int imguiId = 0;
+        int row = 0;
 
         while (lookahead) {
 
@@ -232,7 +233,15 @@ private:
 
             // handle display mode (node vs leaf)
             const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            const ui::TreeNodeFlags nodeFlags = isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlags{ui::TreeNodeFlag::Leaf, ui::TreeNodeFlag::Bullet};
+            const ui::TreeNodeFlags nodeFlags = isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlags{ui::TreeNodeFlag::Leaf};
+
+            // handle alternating background colors
+            if (row++ % 2) {
+                const auto offset = ui::get_cursor_screen_pos() - ui::get_cursor_pos();
+                const auto topLeft = Vec2{0.0f, ui::get_cursor_pos().y};
+                const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing()};
+                ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::WindowBg), 1.2f));
+            }
 
             // handle coloring
             int pushedStyles = 0;

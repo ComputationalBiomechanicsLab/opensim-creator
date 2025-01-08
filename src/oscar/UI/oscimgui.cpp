@@ -1373,7 +1373,7 @@ template<>
 struct osc::Converter<ui::ColorVar, ImGuiCol> final {
     ImGuiCol operator()(ui::ColorVar option) const
     {
-        static_assert(num_options<ui::ColorVar>() == 10);
+        static_assert(num_options<ui::ColorVar>() == 11);
 
         switch (option) {
         case ui::ColorVar::Text:           return ImGuiCol_Text;
@@ -1386,6 +1386,7 @@ struct osc::Converter<ui::ColorVar, ImGuiCol> final {
         case ui::ColorVar::FrameBgActive:  return ImGuiCol_FrameBgActive;
         case ui::ColorVar::CheckMark:      return ImGuiCol_CheckMark;
         case ui::ColorVar::SliderGrab:     return ImGuiCol_SliderGrab;
+        case ui::ColorVar::WindowBg:       return ImGuiCol_WindowBg;
         default:                           return ImGuiCol_Text;
         }
     }
