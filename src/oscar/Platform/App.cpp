@@ -436,8 +436,8 @@ namespace
 
     // computes the user's data directory and also logs it to the console for user-facing feedback
     std::filesystem::path get_current_user_dir_and_log_it(
-        CStringView organization_name,
-        CStringView application_name)
+        std::string_view organization_name,
+        std::string_view application_name)
     {
         auto rv = user_data_directory(organization_name, application_name);
         log_info("user data directory: %s", rv.string().c_str());

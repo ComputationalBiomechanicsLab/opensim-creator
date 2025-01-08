@@ -73,6 +73,14 @@ namespace
 
         return std::filesystem::weakly_canonical(sv);
     }
+
+    // returns a `std::tm` populated 'as-if' by calling `std::gmtime(&t)`, but in
+    // an implementation-defined threadsafe way
+    std::tm gmtime_threadsafe(std::time_t);
+
+    // returns a `std::string` describing the given error number (errnum), but in
+    // an implementation-defined threadsafe way
+    std::string strerror_threadsafe(int errnum);
 }
 
 std::tm osc::system_calendar_time()
@@ -88,11 +96,14 @@ std::filesystem::path osc::current_executable_directory()
 }
 
 std::filesystem::path osc::user_data_directory(
-    CStringView organization_name,
-    CStringView application_name)
+    std::string_view organization_name,
+    std::string_view application_name)
 {
+    const std::string organization_name_str{organization_name};
+    const std::string application_name_str{application_name};
+
     const std::unique_ptr<char, decltype(&SDL_free)> p{
-        SDL_GetPrefPath(organization_name.c_str(), application_name.c_str()),
+        SDL_GetPrefPath(organization_name_str.c_str(), application_name_str.c_str()),
         SDL_free,
     };
     return convert_SDL_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
@@ -109,14 +120,14 @@ std::string osc::get_clipboard_text()
     }
 }
 
-bool osc::set_clipboard_text(CStringView content)
+bool osc::set_clipboard_text(std::string_view content)
 {
-    return SDL_SetClipboardText(content.c_str());
+    return SDL_SetClipboardText(std::string{content}.c_str());
 }
 
-void osc::set_environment_variable(CStringView name, CStringView value, bool overwrite)
+void osc::set_environment_variable(std::string_view name, std::string_view value, bool overwrite)
 {
-    SDL_setenv_unsafe(name.c_str(), value.c_str(), overwrite ? 1 : 0);
+    SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
 }
 
 void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
@@ -214,7 +225,7 @@ std::vector<std::filesystem::path> osc::prompt_user_to_select_files(
 }
 
 std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add_extension_if_necessary(
-    std::optional<CStringView> maybe_extension,
+    std::optional<std::string_view> maybe_extension,
     std::optional<std::filesystem::path> maybe_initial_directory_to_open)
 {
 #ifdef EMSCRIPTEN
@@ -234,7 +245,7 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
     {
         nfdchar_t* ptr = nullptr;
         const nfdresult_t res = NFD_SaveDialog(
-            maybe_extension ? maybe_extension->c_str() : nullptr,
+            maybe_extension ? std::string{*maybe_extension}.c_str() : nullptr,
             maybe_initial_directory_to_open ? maybe_initial_directory_to_open->string().c_str() : nullptr,
             &ptr
         );
@@ -258,9 +269,10 @@ std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add
         // NFD requires) but the user may have manually written a string that is
         // suffixed with the dot-less version of the extension (e.g. "somecsv")
 
-        const std::string fullExtension = std::string{"."} + *maybe_extension;
-        if (!std::string_view{path.get()}.ends_with(fullExtension)) {
-            p += fullExtension;
+        std::stringstream full_extension;
+        full_extension << "." << *maybe_extension;
+        if (!std::string_view{path.get()}.ends_with(full_extension.str())) {
+            p += full_extension.str();
         }
     }
 
@@ -334,37 +346,41 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
 
 using osc::log_error;
 
-std::tm osc::gmtime_threadsafe(std::time_t t)
+namespace
 {
-    std::tm rv{};
-    gmtime_r(&t, &rv);
-    return rv;
+    std::tm gmtime_threadsafe(std::time_t t)
+    {
+        std::tm rv{};
+        gmtime_r(&t, &rv);
+        return rv;
+    }
+
+    std::string strerror_threadsafe(int errnum)
+    {
+        std::array<char, 1024> buffer{};
+
+        auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
+        if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
+        {
+            log_warn("a call to strerror_r failed with error code %i", maybeErr);
+            return {};
+        }
+        else
+        {
+            static_cast<void>(maybeErr);
+        }
+
+        std::string rv{buffer.data()};
+        if (rv.size() == buffer.size())
+        {
+            log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
+        }
+        return rv;
+    }
 }
 
-std::string osc::strerror_threadsafe(int errnum)
-{
-    std::array<char, 1024> buffer{};
 
-    auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
-    if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
-    {
-        log_warn("a call to strerror_r failed with error code %i", maybeErr);
-        return {};
-    }
-    else
-    {
-        static_cast<void>(maybeErr);
-    }
-
-    std::string rv{buffer.data()};
-    if (rv.size() == buffer.size())
-    {
-        log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
-    }
-    return rv;
-}
-
-void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
+void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
 {
     std::array<void*, 50> ary{};
     const int size = backtrace(ary.data(), ary.size());
@@ -375,7 +391,7 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
     }
 
     for (int i = 0; i < size; ++i) {
-        log_message(lvl, "%s", messages.get()[i]);
+        callback(messages.get()[i]);
     }
 }
 
@@ -510,10 +526,10 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
     }
 }
 
-void osc::open_url_in_os_default_web_browser(CStringView vw)
+void osc::open_url_in_os_default_web_browser(std::string_view url)
 {
     // (we know that xdg-open handles this automatically)
-    open_file_in_os_default_application(std::filesystem::path{std::string{vw}});
+    open_file_in_os_default_application(std::filesystem::path{url});
 }
 
 #elif defined(__APPLE__)
@@ -528,25 +544,28 @@ using osc::log_error;
 using osc::log_message;
 using osc::log_warn;
 
-std::tm osc::gmtime_threadsafe(std::time_t t)
+namespace
 {
-    std::tm rv;
-    gmtime_r(&t, &rv);
-    return rv;
-}
-
-std::string osc::strerror_threadsafe(int errnum)
-{
-    std::array<char, 512> buffer{};
-    if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE)
+    std::tm gmtime_threadsafe(std::time_t t)
     {
-        log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        std::tm rv;
+        gmtime_r(&t, &rv);
+        return rv;
     }
-    return std::string{buffer.data()};
+
+    std::string strerror_threadsafe(int errnum)
+    {
+        std::array<char, 512> buffer{};
+        if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE)
+        {
+            log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        }
+        return std::string{buffer.data()};
+    }
 }
 
 
-void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
+void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
 {
     void* array[50];
     int size = backtrace(array, 50);
@@ -557,9 +576,8 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
         return;
     }
 
-    for (int i = 0; i < size; ++i)
-    {
-        log_message(lvl, "%s", messages.get()[i]);
+    for (int i = 0; i < size; ++i) {
+        callback(messages.get()[i]);
     }
 }
 
@@ -569,7 +587,7 @@ namespace
     {
         log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
         log_error("backtrace:");
-        osc::write_this_thread_backtrace_to_log(osc::LogLevel::err);
+        for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { osc::log_error("%s", entry); });
         exit(EXIT_FAILURE);
     }
 }
@@ -599,10 +617,11 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& p)
     system(cmd.c_str());
 }
 
-void osc::open_url_in_os_default_web_browser(CStringView url)
+void osc::open_url_in_os_default_web_browser(std::string_view url)
 {
-    std::string cmd = "open " + std::string{url};
-    system(cmd.c_str());
+    std::stringstream cmd;
+    cmd << "open " << url;
+    system(std::move(cmd).c_str());
 }
 
 #elif defined(WIN32)
@@ -620,23 +639,26 @@ using osc::LogMessageView;
 using osc::LogSink;
 using osc::to_cstringview;
 
-std::tm osc::gmtime_threadsafe(std::time_t t)
+namespace
 {
-    std::tm rv;
-    gmtime_s(&rv, &t);
-    return rv;
-}
-
-std::string osc::strerror_threadsafe(int errnum)
-{
-    std::array<char, 512> buf{};
-    if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0) {
-        log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
+    std::tm gmtime_threadsafe(std::time_t t)
+    {
+        std::tm rv;
+        gmtime_s(&rv, &t);
+        return rv;
     }
-    return std::string{buf.data()};
+
+    std::string strerror_threadsafe(int errnum)
+    {
+        std::array<char, 512> buf{};
+        if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0) {
+            log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
+        }
+        return std::string{buf.data()};
+    }
 }
 
-void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
+void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
 {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;
@@ -646,9 +668,7 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
     // populate [0, n) with return addresses (see MSDN)
     USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
 
-    log_message(lvl, "backtrace:");
-    for (size_t i = 0; i < n; ++i)
-    {
+    for (size_t i = 0; i < n; ++i) {
         // figure out where the address is relative to the start of the page range the address
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
@@ -674,13 +694,11 @@ void osc::write_this_thread_backtrace_to_log(LogLevel lvl)
 
         PVOID relative_addr = cpp20::bit_cast<PVOID>(cpp20::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
 
-        log_message(lvl, "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]);
+        std::array<char, 1024> formatted_buffer{};
+        if (const auto size = std::snprintf(formatted_buffer.data(), formatted_buffer.size(), "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]); size > 0) {
+            callback(std::string_view{formatted_buffer.data(), static_cast<size_t>(size)});
+        }
     }
-    log_message(lvl, "note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
-    log_message(lvl, "to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
-
-    // in windbg: ln osc.exe+ADDR
-    // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 }
 
 namespace
@@ -751,7 +769,7 @@ namespace
             auto sink = std::make_shared<CrashFileSink>(*maybe_crash_report_ostream);
 
             global_default_logger()->sinks().push_back(sink);
-            write_this_thread_backtrace_to_log(osc::LogLevel::err);
+            for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
             global_default_logger()->sinks().erase(global_default_logger()->sinks().end() - 1);
 
             *maybe_crash_report_ostream << "----- /traceback -----\n";
@@ -760,9 +778,15 @@ namespace
             // (no crash dump file, but still write it to stdout etc.)
 
             *maybe_crash_report_ostream << "----- traceback -----\n";
-            write_this_thread_backtrace_to_log(osc::LogLevel::err);
+            for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
             *maybe_crash_report_ostream << "----- /traceback -----\n";
         }
+
+        log_error("note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
+        log_error("to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
+
+        // in windbg: ln osc.exe+ADDR
+        // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
 
         return EXCEPTION_CONTINUE_SEARCH;
     }
@@ -770,7 +794,7 @@ namespace
     void signal_handler(int)
     {
         log_error("signal caught by application: printing backtrace");
-        write_this_thread_backtrace_to_log(osc::LogLevel::err);
+        for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
     }
 }
 
@@ -795,20 +819,24 @@ void osc::open_file_in_os_default_application(const std::filesystem::path& p)
     ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW);
 }
 
-void osc::open_url_in_os_default_web_browser(CStringView url)
+void osc::open_url_in_os_default_web_browser(std::string_view url)
 {
-    ShellExecute(0, 0, url.c_str(), 0, 0 , SW_SHOW);
+    ShellExecute(0, 0, std::string{url}.c_str(), 0, 0 , SW_SHOW);
 }
 
 #elif EMSCRIPTEN
 
-void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&) {}
+void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
+{}
 
-std::tm osc::gmtime_threadsafe(std::time_t t)
+namespace
 {
-    std::tm rv{};
-    gmtime_r(&t, &rv);
-    return rv;
+    std::tm gmtime_threadsafe(std::time_t t)
+    {
+        std::tm rv{};
+        gmtime_r(&t, &rv);
+        return rv;
+    }
 }
 
 #else
