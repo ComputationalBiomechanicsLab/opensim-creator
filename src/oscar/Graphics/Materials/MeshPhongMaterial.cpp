@@ -2,14 +2,15 @@
 
 #include <oscar/Graphics/Shader.h>
 #include <oscar/Graphics/Material.h>
-#include <oscar/Utils/CStringView.h>
 #include <oscar/Utils/StringName.h>
+
+#include <string_view>
 
 using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_vertex_shader_src = R"(
+    constexpr std::string_view c_vertex_shader_src = R"(
 #version 330 core
 
 uniform mat4 uModelMat;
@@ -30,7 +31,7 @@ void main()
     gl_Position = uViewProjMat * vec4(FragPos, 1.0);
 }
 )";
-    constexpr CStringView c_fragment_shader_src = R"(
+    constexpr std::string_view c_fragment_shader_src = R"(
 #version 330 core
 
 uniform vec3 uLightPos;

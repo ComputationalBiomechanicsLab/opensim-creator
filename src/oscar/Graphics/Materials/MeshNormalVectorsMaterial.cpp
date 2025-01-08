@@ -1,12 +1,12 @@
 #include "MeshNormalVectorsMaterial.h"
 
-#include <oscar/Utils/CStringView.h>
+#include <string_view>
 
 using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_vertex_shader_src = R"(
+    constexpr std::string_view c_vertex_shader_src = R"(
 #version 330 core
 
 // draw_normals: program that draws mesh normals
@@ -27,7 +27,7 @@ void main()
     vs_out.normal = aNormal;
 }
 )";
-    constexpr CStringView c_geometry_shader_src = R"(
+    constexpr std::string_view c_geometry_shader_src = R"(
 #version 330 core
 
 // draw_normals: program that draws mesh normals
@@ -79,7 +79,7 @@ void main()
 }
 
 )";
-    constexpr CStringView c_fragment_shader_src = R"(
+    constexpr std::string_view c_fragment_shader_src = R"(
 #version 330 core
 
 // draw_normals: program that draws mesh normals

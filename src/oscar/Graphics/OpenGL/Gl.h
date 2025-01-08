@@ -19,6 +19,7 @@
 #include <ranges>
 #include <span>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -78,7 +79,7 @@ namespace osc::gl
     };
 
     // compile a shader from source
-    void compile_from_source(const ShaderHandle&, const GLchar* src);
+    void compile_from_source(const ShaderHandle&, std::string_view src);
 
     // a shader of a particular type (e.g. GL_FRAGMENT_SHADER) that owns a
     // shader handle
@@ -103,7 +104,7 @@ namespace osc::gl
     class GeometryShader : public Shader<GL_GEOMETRY_SHADER> {};
 
     template<typename TShader>
-    inline TShader compile_from_source(const GLchar* shader_src)
+    inline TShader compile_from_source(std::string_view shader_src)
     {
         TShader rv;
         compile_from_source(rv.handle(), shader_src);

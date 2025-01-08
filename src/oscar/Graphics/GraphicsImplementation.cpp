@@ -178,7 +178,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr CStringView c_quad_vertex_shader_src = R"(
+    constexpr std::string_view c_quad_vertex_shader_src = R"(
         #version 330 core
 
         layout (location = 0) in vec3 aPos;
@@ -198,7 +198,7 @@ namespace
     // it's here, rather than in an external resource file, because it is eagerly
     // loaded while the graphics backend is initialized (i.e. potentially before
     // the application is fully loaded)
-    constexpr CStringView c_quad_fragment_shader_src = R"(
+    constexpr std::string_view c_quad_fragment_shader_src = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -2783,22 +2783,22 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTexture&)
 namespace
 {
     gl::Program compile_program_with_shimming(
-        CStringView vertex_shader_src,
-        CStringView fragment_shader_src,
-        std::optional<CStringView> geometry_shader_src = std::nullopt)
+        std::string_view vertex_shader_src,
+        std::string_view fragment_shader_src,
+        std::optional<std::string_view> geometry_shader_src = std::nullopt)
     {
 #ifndef EMSCRIPTEN
         if (geometry_shader_src) {
             return gl::create_program_from(
-                gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
-                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str()),
-                gl::compile_from_source<gl::GeometryShader>(geometry_shader_src->c_str())
+                gl::compile_from_source<gl::VertexShader>(vertex_shader_src),
+                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src),
+                gl::compile_from_source<gl::GeometryShader>(*geometry_shader_src)
             );
         }
         else {
             return gl::create_program_from(
-                gl::compile_from_source<gl::VertexShader>(vertex_shader_src.c_str()),
-                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src.c_str())
+                gl::compile_from_source<gl::VertexShader>(vertex_shader_src),
+                gl::compile_from_source<gl::FragmentShader>(fragment_shader_src)
             );
         }
 #else
@@ -2860,8 +2860,8 @@ namespace
 class osc::Shader::Impl final {
 public:
     Impl(
-        CStringView vertex_shader_src,
-        CStringView fragment_shader_src) :
+        std::string_view vertex_shader_src,
+        std::string_view fragment_shader_src) :
 
         program_{compile_program_with_shimming(vertex_shader_src, fragment_shader_src)}
     {
@@ -2869,9 +2869,9 @@ public:
     }
 
     Impl(
-        CStringView vertex_shader_src,
-        CStringView geometry_shader_src,
-        CStringView fragment_shader_src) :
+        std::string_view vertex_shader_src,
+        std::string_view geometry_shader_src,
+        std::string_view fragment_shader_src) :
 
         program_{compile_program_with_shimming(vertex_shader_src, fragment_shader_src, geometry_shader_src)}
     {
@@ -3025,16 +3025,16 @@ std::ostream& osc::operator<<(std::ostream& o, ShaderPropertyType shader_type)
 }
 
 osc::Shader::Shader(
-    CStringView vertex_shader_src,
-    CStringView fragment_shader_src) :
+    std::string_view vertex_shader_src,
+    std::string_view fragment_shader_src) :
 
     impl_{make_cow<Impl>(vertex_shader_src, fragment_shader_src)}
 {}
 
 osc::Shader::Shader(
-    CStringView vertex_shader_src,
-    CStringView geometry_shader_src,
-    CStringView fragment_shader_src) :
+    std::string_view vertex_shader_src,
+    std::string_view geometry_shader_src,
+    std::string_view fragment_shader_src) :
 
     impl_{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
 {}

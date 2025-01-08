@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <memory>
 #include <span>
+#include <string_view>
 #include <utility>
 
 using namespace osc::literals;
@@ -145,7 +146,7 @@ namespace
         {}
 
     private:
-        static constexpr CStringView c_vertex_shader_src = R"(
+        static constexpr std::string_view c_vertex_shader_src = R"(
             #version 330 core
 
             uniform mat4 uViewProjMat;
@@ -191,7 +192,7 @@ namespace
             }
         )";
 
-        static constexpr CStringView c_fragment_shader_src = R"(
+        static constexpr std::string_view c_fragment_shader_src = R"(
             #version 330 core
 
             uniform bool uHasShadowMap = false;
@@ -282,7 +283,7 @@ namespace
         }
 
     private:
-        static constexpr CStringView c_vertex_shader_src = R"(
+        static constexpr std::string_view c_vertex_shader_src = R"(
             #version 330 core
 
             uniform mat4 uViewProjMat;
@@ -332,7 +333,7 @@ namespace
             }
         )";
 
-        static constexpr CStringView c_fragment_shader_src = R"(
+        static constexpr std::string_view c_fragment_shader_src = R"(
             #version 330 core
 
             uniform bool uHasShadowMap = false;
@@ -423,7 +424,7 @@ namespace
         }
 
     private:
-        static constexpr CStringView c_vertex_shader_src = R"(
+        static constexpr std::string_view c_vertex_shader_src = R"(
             #version 330 core
 
             uniform mat4 uModelMat;
@@ -443,7 +444,7 @@ namespace
             }
         )";
 
-        static constexpr CStringView c_fragment_shader_src = R"(
+        static constexpr std::string_view c_fragment_shader_src = R"(
             #version 330 core
 
             uniform sampler2D uScreenTexture;
