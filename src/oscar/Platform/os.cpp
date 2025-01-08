@@ -621,7 +621,7 @@ void osc::open_url_in_os_default_web_browser(std::string_view url)
 {
     std::stringstream cmd;
     cmd << "open " << url;
-    system(std::move(cmd).str());
+    system(std::move(cmd).str().c_str());
 }
 
 #elif defined(WIN32)
