@@ -937,6 +937,7 @@ namespace
         io.BackendPlatformName = "imgui_impl_oscar";
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
         io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
+        io.ConfigDebugHighlightIdConflicts = false;  // disable this highlight (annoying for users, #964)
 
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         platform_io.Platform_SetClipboardTextFn = ui_set_clipboard_text;
