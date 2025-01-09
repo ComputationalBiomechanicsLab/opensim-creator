@@ -1,12 +1,11 @@
 on: [push]
 
 env:
-  OSC_BUILD_DOCS: 1
   OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
 
 jobs:
   windows2022msvc:
-    name: Windows 2022 (MSVC)
+    name: Windows 2022 (x86_64, MSVC)
     runs-on: windows-2022
     steps:
 
@@ -27,7 +26,7 @@ jobs:
         if-no-files-found: error
 
   ubuntu2004clang:
-    name: Ubuntu 20.04 (Clang)
+    name: Ubuntu 20.04 (x86_64, clang)
     runs-on: ubuntu-20.04
     steps:
 
@@ -42,7 +41,7 @@ jobs:
         sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
         export CC=clang
-        export CXX=clang++  # C++20 support (g++ on this CI node isn't new enough)
+        export CXX=clang++
         xvfb-run ./scripts/build_debian-buster.sh
 
     - uses: actions/upload-artifact@v4
@@ -51,23 +50,8 @@ jobs:
         path: osc/osc-build/*.deb
         if-no-files-found: error
 
-#  ubuntu2004emscripten:
-#    name: Ubuntu 20.04 (emsdk)
-#    runs-on: ubuntu-20.04
-#    steps:
-
-#    - uses: actions/checkout@v4
-#      with:
-#        path: osc
-#        submodules: 'recursive'
-
-#    - name: run build script
-#      run: |
-#        cd $GITHUB_WORKSPACE/osc
-#        ./scripts/build_emscripten.sh
-
   macos11clang:
-    name: MacOS 13 (XCode)
+    name: MacOS 13 (x86_64, XCode 15.2, targeting 14.2)
     runs-on: macos-13
     steps:
 
@@ -78,6 +62,7 @@ jobs:
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE
+        OSC_CMAKE_CONFIG_EXTRA="-Werror=dev -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=14 -DCMAKE_OSX_ARCHITECTURES=x86_64"
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac.sh
 
@@ -87,9 +72,8 @@ jobs:
         path: osc-build/*.dmg
         if-no-files-found: error
 
-  # for compiler verification (gcc)
   ubuntu2204gcc:
-    name: Ubuntu 22.04 (gcc-12)
+    name: Ubuntu 22.04 (x86_64, gcc-12)
     runs-on: ubuntu-22.04
     steps:
 
@@ -106,3 +90,4 @@ jobs:
         export CC=gcc-12
         export CXX=g++-12
         xvfb-run ./scripts/build_debian-buster.sh
+
