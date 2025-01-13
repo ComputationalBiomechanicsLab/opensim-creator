@@ -77,12 +77,6 @@ namespace
     // scaling engine at scale-time.
     using ScalingParameterValue = double;
 
-    // Returns a string representation of a `ScalingParameterValue`.
-    std::string to_string(const ScalingParameterValue& v)
-    {
-        return std::to_string(v);
-    }
-
     // A declaration of a scaling parameter.
     //
     // `ScalingStep`s can declare that they may/must use a named `ScalingParameterValue`s
