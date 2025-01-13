@@ -75,21 +75,20 @@ namespace
     //
     // It is the responsibility of the engine/UI to gather/provide this to the
     // scaling engine at scale-time.
-    using ScalingParameterValue = std::variant<double>;
+    using ScalingParameterValue = double;
 
     // Returns a string representation of a `ScalingParameterValue`.
     std::string to_string(const ScalingParameterValue& v)
     {
-        return std::visit(Overload{
-            [](const auto& inner) { return std::to_string(inner); },
-        }, v);
+        return std::to_string(v);
     }
 
     // A declaration of a scaling parameter.
     //
     // `ScalingStep`s can declare that they may/must use a named `ScalingParameterValue`s
-    // at runtime. This class is how they express that requirement. It's the
-    // scaling engine/UI's responsibility to handle this declaration.
+    // at runtime. This class is how they express that requirement. It's the scaling
+    // engine/UI's responsibility to provide `ScalingParameters` that satisfy all
+    // `ScalingStep`'s declarations.
     class ScalingParameterDeclaration final {
     public:
         explicit ScalingParameterDeclaration(std::string name, ScalingParameterValue defaultValue) :
@@ -104,56 +103,60 @@ namespace
         ScalingParameterValue m_DefaultValue;
     };
 
-    // A chosen scaling parameter default, which is usually provided by the top-level document
-    // to override the default provided via the `ScalingParameterDeclaration`.
-    class ScalingParameterDefault final : public OpenSim::Object {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterDefault, OpenSim::Object)
+    // A scaling parameter value override, which is usually provided by the top-level
+    // document to override the default that a `ScalingStep` would typically declare
+    // in a `ScalingParameterDeclaration`.
+    class ScalingParameterOverride final : public OpenSim::Object {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ScalingParameterOverride, OpenSim::Object)
     public:
-        OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the parameter that should be defaulted.");
-        OpenSim_DECLARE_PROPERTY(default_value, std::string, "The default value of the parameter (a string that requires parsing, based on the declarations).");
+        OpenSim_DECLARE_PROPERTY(parameter_name, std::string, "The name of the scaling parameter that should have its default overridden.");
+        OpenSim_DECLARE_PROPERTY(parameter_value, ScalingParameterValue, "The value to override the scaling parameter with. Note: it must have the correct datatype for the given scaling parameter.");
 
-        explicit ScalingParameterDefault()
+        explicit ScalingParameterOverride()
         {
             constructProperty_parameter_name("unknown");
-            constructProperty_default_value("unknown_value");
+            constructProperty_parameter_value(1.0);
         }
 
-        explicit ScalingParameterDefault(std::string_view name, std::string_view value)
+        explicit ScalingParameterOverride(std::string name, ScalingParameterValue value)
         {
-            constructProperty_parameter_name(std::string{name});
-            constructProperty_default_value(std::string{value});
+            constructProperty_parameter_name(std::move(name));
+            constructProperty_parameter_value(std::move(value));
         }
     };
 
-    // Runtime scaling parameters, as collected by the runtime.
+    // A collection of runtime scaling parameters, usually created by aggregating
+    // from individual `ScalingStep`s and `ScalingParameterOverride`s.
     class ScalingParameters final {
     public:
-        template<typename T>
+        template<std::same_as<double> T>
         std::optional<T> lookup(const std::string& key) const
         {
             const auto it = m_Values.find(key);
             if (it == m_Values.end()) {
                 return std::nullopt;
             }
-
-            const T* value = std::get_if<T>(&it->second);
-            if (not value) {
-                return std::nullopt;
-            }
-
-            return *value;
+            return it->second;
         }
 
-        void try_emplace(const std::string& name, const ScalingParameterValue& value)
+        auto begin() const { return m_Values.begin(); }
+        auto end() const { return m_Values.end(); }
+
+        auto try_emplace(const std::string& name, const ScalingParameterValue& value)
         {
-            m_Values.try_emplace(name, value);
+            return m_Values.try_emplace(name, value);
+        }
+
+        auto insert_or_assign(const std::string& name, const ScalingParameterValue& value)
+        {
+            return m_Values.insert_or_assign(name, value);
         }
     private:
-        std::unordered_map<std::string, ScalingParameterValue> m_Values;
+        std::map<std::string, ScalingParameterValue> m_Values;
     };
 
-    // Persisted state between separate scaling executions, to improve the performance
-    // (esp. when scaling via UI edits).
+    // A cache that is (presumed to be) persisted between multiple executions of the
+    // model warping pipeline, in order to improve performance.
     class ScalingCache final {
     public:
         std::unique_ptr<InMemoryMesh> lookupTPSMeshWarp(
@@ -555,11 +558,11 @@ namespace
         public IVersionedComponentAccessor {
         OpenSim_DECLARE_CONCRETE_OBJECT(ModelWarperV3Document, OpenSim::Component)
 
-        OpenSim_DECLARE_LIST_PROPERTY(parameter_defaults, ScalingParameterDefault, "A list of scaling parameter defaults that should be shown to the user. These override the defaults produced by each `ScalingStep`'s implementation.");
+        OpenSim_DECLARE_LIST_PROPERTY(scaling_parameter_overrides, ScalingParameterOverride, "A sequence of `ScalingParameterOverride`s that should be used in place of the default values used by the `ScalingStep`s.");
     public:
         ModelWarperV3Document()
         {
-            constructProperty_parameter_defaults();
+            constructProperty_scaling_parameter_overrides();
         }
 
         bool hasScalingSteps() const
@@ -616,31 +619,61 @@ namespace
             return false;
         }
 
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const
+        ScalingParameters getEffectiveScalingParameters() const
         {
-            if (not hasScalingSteps()) {
-                return;
+            ScalingParameters rv;
+
+            // Get/merge values from the scaling steps
+            for (const ScalingStep& step : iterateScalingSteps()) {
+                step.forEachScalingParameterDeclaration([&step, &rv](const ScalingParameterDeclaration& decl)
+                {
+                    const auto [it, inserted] = rv.try_emplace(decl.name(), decl.default_value());
+                    if (not inserted and it->second != decl.default_value()) {
+                        std::stringstream msg;
+                        msg << step.getAbsolutePath() << ": declares a scaling parameter (" << decl.name() << ") that has the same name as another scaling parameter, but they differ: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it";
+                        throw std::runtime_error{std::move(msg).str()};
+                    }
+                });
             }
 
-            // Merge scaling parameter declarations accross steps.
-            std::map<std::string, ScalingParameterValue> mergedDefaults;
-            for (const ScalingStep& step : iterateScalingSteps()) {
-                step.forEachScalingParameterDeclaration([&step, &mergedDefaults](const ScalingParameterDeclaration& decl)
-                    {
-                        const auto [it, inserted] = mergedDefaults.try_emplace(decl.name(), decl.default_value());
-                        if (not inserted and it->second.index() != decl.default_value().index()) {
-                            std::stringstream msg;
-                            msg << step.getAbsolutePath() << ": declares a scaling parameter (" << decl.name() << ") that has the same name as another scaling parameter, but different type: the engine cannot figure out how to rectify this difference. The parameter should have a different name, or a disambiguating prefix added to it";
-                            throw std::runtime_error{ std::move(msg).str() };
-                        }
-                    });
+            // Apply overrides to the effective scaling parameters
+            {
+                const OpenSim::Property<ScalingParameterOverride>& overrides = getProperty_scaling_parameter_overrides();
+                for (int i = 0; i < overrides.size(); ++i) {
+                    const ScalingParameterOverride& o = overrides.getValue(i);
+                    rv.insert_or_assign(o.get_parameter_name(), o.get_parameter_value());
+                }
             }
-            for (const auto& [name, value] : mergedDefaults) {
-                callback(ScalingParameterDefault{name, to_string(value)});
-            }
+
+            return rv;
+        }
+
+        bool setScalingParameterOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
+        {
+            mutateScalingParammeterOverridesWithNewOverride(scalingParamName, newValue);
+            finalizeFromProperties();
+            return true;
         }
 
     private:
+        void mutateScalingParammeterOverridesWithNewOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
+        {
+            // First, try to find an existing override with the same name and overwrite it
+            const OpenSim::Property<ScalingParameterOverride>& overrides = getProperty_scaling_parameter_overrides();
+            for (int i = 0; i < overrides.size(); ++i) {
+                const ScalingParameterOverride& o = overrides.getValue(i);
+                if (o.get_parameter_name() == scalingParamName) {
+                    updProperty_scaling_parameter_overrides().updValue(i).set_parameter_value(newValue);
+                    return;  // found and overwritten
+                }
+            }
+
+            // Otherwise, add a new override
+            int idx = updProperty_scaling_parameter_overrides().appendValue(ScalingParameterOverride{scalingParamName, newValue});
+            updProperty_scaling_parameter_overrides().updValue(idx).set_parameter_name(scalingParamName);
+            updProperty_scaling_parameter_overrides().updValue(idx).set_parameter_value(newValue);
+        }
+
         const OpenSim::Component& implGetComponent() const final
         {
             return *this;
@@ -676,8 +709,7 @@ namespace
 
         ScalingState(const ScalingState& other) :
             sourceModel{std::make_shared<BasicModelStatePair>(*other.sourceModel)},
-            scalingDocument{std::make_shared<ModelWarperV3Document>(*other.scalingDocument)},
-            userEnactedScalingParameters{other.userEnactedScalingParameters}
+            scalingDocument{std::make_shared<ModelWarperV3Document>(*other.scalingDocument)}
         {
             // care: separate `ScalingState`s should act like separate instances with no
             //       reference sharing between them, but the shared pointers in the "main"
@@ -702,7 +734,6 @@ namespace
             scalingDocument->clearConnections();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
-            userEnactedScalingParameters = other.userEnactedScalingParameters;
             return *this;
         }
 
@@ -733,13 +764,7 @@ namespace
         }
         bool eraseScalingStep(ScalingStep& step)
         {
-            if (scalingDocument->removeScalingStep(step)) {
-                ensureUserScalingEnactedScalingParametersAreUpToDate();
-                return true;
-            }
-            else {
-                return false;
-            }
+            return scalingDocument->removeScalingStep(step);
         }
         bool eraseScalingStep(const OpenSim::ComponentPath& path)
         {
@@ -764,7 +789,6 @@ namespace
             scalingDocument->clearConnections();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
-            ensureUserScalingEnactedScalingParametersAreUpToDate();
         }
         bool disableScalingStep(const OpenSim::ComponentPath& path)
         {
@@ -786,12 +810,15 @@ namespace
             if (not hasScalingSteps()) {
                 return rv;
             }
+
+            const ScalingParameters scalingParameters = getEffectiveScalingParameters();
+
             for (const auto& scalingStep : scalingDocument->getComponentList<ScalingStep>()) {
                 if (not scalingStep.get_enabled()) {
                     // Only aggregate validation errors from enabled `ScalingStep`s at the document-level.
                     continue;
                 }
-                auto stepMessages = scalingStep.validate(scalingCache, userEnactedScalingParameters, *sourceModel);
+                auto stepMessages = scalingStep.validate(scalingCache, scalingParameters, *sourceModel);
                 rv.reserve(rv.size() + stepMessages.size());
                 for (auto& stepMessage : stepMessages) {
                     rv.push_back(ScalingDocumentValidationMessage{
@@ -811,7 +838,6 @@ namespace
             scalingDocument = std::make_shared<ModelWarperV3Document>();
             scalingDocument->finalizeConnections(*scalingDocument);
             scalingDocument->finalizeFromProperties();
-            ensureUserScalingEnactedScalingParametersAreUpToDate();
         }
         void loadScalingDocument(const std::filesystem::path& path)
         {
@@ -839,15 +865,16 @@ namespace
         void saveScalingDocumentTo(const std::filesystem::path& p)
         {
             if (scalingDocument->print(p.string())) {
-                scalingDocument->setInlined(true, p.string());
+                //scalingDocument->setInlined(false, p.string());
             }
         }
 
-    // Scaling Parameter Methods
-
         bool hasScalingParameterDeclarations() const { return scalingDocument->hasScalingParameters(); }
-        const ScalingParameters& getScalingParameters() const { return userEnactedScalingParameters; }
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const { scalingDocument->forEachScalingParameterDefault(callback); }
+        ScalingParameters getEffectiveScalingParameters() const { return scalingDocument->getEffectiveScalingParameters(); }
+        bool setScalingParameterOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
+        {
+            return scalingDocument->setScalingParameterOverride(scalingParamName, std::move(newValue));
+        }
 
     // Model Scaling
 
@@ -871,7 +898,7 @@ namespace
             }
 
             // Calculate the effective scaling parameters (defaults + user-enacted overrides)
-            const ScalingParameters scalingParams = calcEffectiveScalingParameters();
+            const ScalingParameters scalingParams = getEffectiveScalingParameters();
 
             // Apply each scaling step to the scaled model
             for (auto& step : scalingDocument->updComponentList<ScalingStep>()) {
@@ -883,36 +910,11 @@ namespace
         }
 
     private:
-        void ensureUserScalingEnactedScalingParametersAreUpToDate()
-        {
-            // TODO: ensure that all user-enacted scaling parameters are applicable to
-            //       the current scaling steps (disabled steps should be treated as part
-            //       of the set so that when a user re-enables a step it re-remembers the
-            //       user's last override).
-        }
-
-        ScalingParameters calcEffectiveScalingParameters() const
-        {
-            // Copy the user-enacted scaling parameters followed in inserting default
-            // values whenever a scaling parameter declaration isn't satisfied by a
-            // user-enacted value (i.e. user-enacted parameters take precendence over
-            // defaults).
-            ScalingParameters rv  = userEnactedScalingParameters;
-            for (const ScalingStep& step : iterateScalingSteps()) {
-                step.forEachScalingParameterDeclaration([&rv](const ScalingParameterDeclaration& decl)
-                {
-                    rv.try_emplace(decl.name(), decl.default_value());
-                });
-            }
-            return rv;
-        }
-
         template<typename T = OpenSim::Component>
         T* findScalingComponentMut(const OpenSim::ComponentPath& p) { return FindComponentMut<T>(*scalingDocument, p); }
 
         std::shared_ptr<BasicModelStatePair> sourceModel = std::make_shared<BasicModelStatePair>();
         std::shared_ptr<ModelWarperV3Document> scalingDocument = std::make_shared<ModelWarperV3Document>();
-        ScalingParameters userEnactedScalingParameters;
     };
 }
 
@@ -977,7 +979,7 @@ namespace
         {
             return step.validate(
                 m_ScalingCache,
-                m_ScalingState->scratch().getScalingParameters(),
+                m_ScalingState->scratch().getEffectiveScalingParameters(),
                 m_ScalingState->scratch().getSourceModel()
             );
         }
@@ -987,9 +989,18 @@ namespace
         {
             return m_ScalingState->scratch().hasScalingParameterDeclarations();
         }
-        void forEachScalingParameterDefault(const std::function<void(const ScalingParameterDefault&)>& callback) const
+        ScalingParameters getEffectiveScalingParameters() const
         {
-            m_ScalingState->scratch().forEachScalingParameterDefault(callback);
+            return m_ScalingState->scratch().getEffectiveScalingParameters();
+        }
+        void setScalingParameterValueDeferred(const std::string& scalingParamName, ScalingParameterValue newValue)
+        {
+            m_DeferredActions.emplace_back([scalingParamName, newValue](ModelWarperV3UIState& state)
+            {
+                if (state.m_ScalingState->upd_scratch().setScalingParameterOverride(scalingParamName, newValue)) {
+                    state.m_ScalingState->commit_scratch("Set scaling parameter");
+                }
+            });
         }
 
 
@@ -1403,86 +1414,35 @@ namespace
     private:
         void impl_draw_content() final
         {
-            draw_design_mode_scaling_mode_toggler();
-
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
-
-            if (m_IsInDesignMode) {
-                draw_design_mode_content();
-            }
-            else {
-                draw_user_mode_content();
-            }
-        }
-
-        void draw_design_mode_scaling_mode_toggler()
-        {
-            constexpr Color activeButtonColor = Color::dark_green();
-
-            constexpr float spacing = 1.0f;
-            const float w = ui::calc_button_width("Design Mode") + spacing + ui::calc_button_width("Scaling Mode");
-            const float lhs = 0.5f*(ui::get_content_region_available().x - w);
-
-            ui::set_cursor_pos_x(lhs);
-
-            {
-                int stylesPushed = 0;
-                if (m_IsInDesignMode) {
-                    ui::push_style_color(ui::ColorVar::Button, activeButtonColor);
-                    ui::push_style_color(ui::ColorVar::ButtonHovered, multiply_luminance(activeButtonColor, 1.1f));
-                    ui::push_style_color(ui::ColorVar::ButtonActive, multiply_luminance(activeButtonColor, 1.2f));
-                    stylesPushed += 3;
-                }
-                if (ui::draw_button(m_IsInDesignMode ? "Design Mode" OSC_ICON_CHECK : "Design Mode")) {
-                    m_IsInDesignMode = true;
-                }
-                ui::pop_style_color(stylesPushed);
-            }
-
-            ui::same_line(0.0f, spacing);
-
-            {
-                int stylesPushed = 0;
-                if (not m_IsInDesignMode) {
-                    ui::push_style_color(ui::ColorVar::Button, activeButtonColor);
-                    ui::push_style_color(ui::ColorVar::ButtonHovered, multiply_luminance(activeButtonColor, 1.2f));
-                    ui::push_style_color(ui::ColorVar::ButtonActive, multiply_luminance(activeButtonColor, 1.1f));
-                    stylesPushed += 3;
-                }
-
-                if (ui::draw_button(not m_IsInDesignMode ? "Scaling Mode" OSC_ICON_CHECK : "Scaling Mode")) {
-                    m_IsInDesignMode = false;
-                }
-                ui::pop_style_color(stylesPushed);
-            }
-        }
-
-        void draw_design_mode_content()
-        {
-            draw_design_mode_scaling_parameters();
+            draw_scaling_parameters();
             ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height()});
-            draw_design_mode_scaling_steps();
+            draw_scaling_steps();
         }
 
-        void draw_design_mode_scaling_parameters()
+        void draw_scaling_parameters()
         {
             ui::draw_text_centered("Scaling Parameters");
             ui::draw_separator();
             ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
             if (m_State->hasScalingParameters()) {
                 if (ui::begin_table("##ScalingParameters", 2)) {
-                    ui::table_setup_column("Parameter Name");
-                    ui::table_setup_column("Default Value");
+                    ui::table_setup_column("Name");
+                    ui::table_setup_column("Value");
                     ui::table_headers_row();
 
-                    m_State->forEachScalingParameterDefault([](const ScalingParameterDefault& decl)
-                    {
+                    int id = 0;
+                    for (const auto& [name, value] : m_State->getEffectiveScalingParameters()) {
+                        ui::push_id(id++);
                         ui::table_next_row();
                         ui::table_set_column_index(0);
-                        ui::draw_text(decl.get_parameter_name());
+                        ui::draw_text(name);
                         ui::table_set_column_index(1);
-                        ui::draw_text(decl.get_default_value());
-                    });
+                        auto valueCopy{value};
+                        if (ui::draw_double_input("##valueeditor", &valueCopy, 0.0, 0.0, "%.6f", ui::TextInputFlag::EnterReturnsTrue)) {
+                            m_State->setScalingParameterValueDeferred(name, valueCopy);
+                        }
+                        ui::pop_id();
+                    }
                     ui::end_table();
                 }
             }
@@ -1492,7 +1452,7 @@ namespace
             }
         }
 
-        void draw_design_mode_scaling_steps()
+        void draw_scaling_steps()
         {
             ui::draw_text_centered("Scaling Steps");
             ui::draw_separator();
@@ -1502,7 +1462,7 @@ namespace
                 size_t i = 0;
                 for (const ScalingStep& step : m_State->iterateScalingSteps()) {
                     ui::push_id(step.getAbsolutePathString());
-                    draw_design_mode_scaling_step(i, step);
+                    draw_scaling_step(i, step);
                     ui::pop_id();
                     ++i;
                 }
@@ -1513,10 +1473,10 @@ namespace
             }
 
             ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
-            draw_design_mode_add_scaling_step_context_button();
+            draw_add_scaling_step_context_button();
         }
 
-        void draw_design_mode_scaling_step(size_t stepIndex, const ScalingStep& step)
+        void draw_scaling_step(size_t stepIndex, const ScalingStep& step)
         {
             // draw collapsing header, don't render content if it's collapsed
             {
@@ -1590,7 +1550,7 @@ namespace
             ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
         }
 
-        void draw_design_mode_add_scaling_step_context_button()
+        void draw_add_scaling_step_context_button()
         {
             ui::draw_button(OSC_ICON_PLUS "Add Scaling Step", {ui::get_content_region_available().x, ui::calc_button_size("").y});
             if (ui::begin_popup_context_menu("##AddScalingStepPopupMenu", ui::PopupFlag::MouseButtonLeft)) {
@@ -1606,16 +1566,6 @@ namespace
             }
         }
 
-        void draw_user_mode_content()
-        {
-            if (not m_State->hasScalingSteps()) {
-                ui::draw_text_disabled_and_centered("No scaling steps.");
-                ui::draw_text_disabled_and_centered("(the model will be left unmodified)");
-                ui::draw_text_disabled_and_centered("Switch to design mode to add scaling steps");
-            }
-        }
-
-        bool m_IsInDesignMode = true;
         std::shared_ptr<ModelWarperV3UIState> m_State;
         std::unordered_map<std::string, ObjectPropertiesEditor> m_StepPropertyEditors;
     };
@@ -1631,6 +1581,7 @@ public:
         // Ensure `ModelWarperV3Document` can be loaded from the filesystem via OpenSim.
         [[maybe_unused]] static const bool s_TypesRegistered = []()
         {
+            OpenSim::Object::registerType(ScalingParameterOverride{});
             OpenSim::Object::registerType(BodyMassesScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
