@@ -82,6 +82,10 @@ namespace osc
     // evaluates the TPS equation with the given coefficients and input point
     Vec3 EvaluateTPSEquation(const TPSCoefficients3D&, Vec3);
 
+    // evaluates the TPS equation with the given coefficients and input point, lerping the result
+    // by `blendingFactor` between the input point and the "fully warped" point.
+    Vec3 EvaluateTPSEquation(const TPSCoefficients3D&, Vec3, float blendingFactor);
+
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
     Mesh ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D&, const Mesh&, float blendingFactor);
 

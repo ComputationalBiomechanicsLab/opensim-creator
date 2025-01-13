@@ -232,6 +232,11 @@ Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 p)
     return rv;
 }
 
+Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 vert, float blendingFactor)
+{
+    return lerp(vert, EvaluateTPSEquation(coefs, vert), blendingFactor);
+}
+
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
 Mesh osc::ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D& coefs, const Mesh& mesh, float blendingFactor)
 {
@@ -268,6 +273,6 @@ void osc::ApplyThinPlateWarpToPointsInPlace(
     OSC_PERF("ApplyThinPlateWarpToPointsInPlace");
     for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](Vec3& vert)
     {
-        vert = lerp(vert, EvaluateTPSEquation(coefs, vert), blendingFactor);
+        vert = EvaluateTPSEquation(coefs, vert, blendingFactor);
     });
 }
