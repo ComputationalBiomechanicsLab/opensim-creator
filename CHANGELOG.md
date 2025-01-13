@@ -38,6 +38,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   order to make building `oscar` easier and less dependent on `git submodule`s (the
   longer term intention is to start patching some libraries with `oscar`-specific
   features).
+- Internal: The project's source code tree was reorganized from separate top-level
+  directories (i.e. `apps/`, `src/`, `tests/`) to per-project directories (i.e. `liboscar/`,
+  `liboscar_demos/`, `libOpenSimCreator/`) so that unit test code is next to the units
+  it's testing and to make it easier to add new source files (cmake uses globbing now),
+  along with making room for top-level integration/functional/packaging tests in `tests/`
 
 
 ## [0.5.17] - 2024/12/11

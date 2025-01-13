@@ -83,7 +83,7 @@ if [[ -z ${OSC_SKIP_APT:+x} ]]; then
     ${sudo} apt-get update
 
     # osc: main dependencies
-    ${sudo} apt-get install -y build-essential cmake libsdl2-dev libgtk-3-dev liblapack-dev
+    ${sudo} apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
 
     # osc: docs dependencies (if OSC_BUILD_DOCS is set)
     [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} apt-get install python3 python3-pip

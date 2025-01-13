@@ -1,0 +1,21 @@
+#pragma once
+
+#include <liboscar/Graphics/Geometries/AABBGeometry.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/CircleGeometry.h>
+#include <liboscar/Graphics/Geometries/CylinderGeometry.h>
+#include <liboscar/Graphics/Geometries/ConeGeometry.h>
+#include <liboscar/Graphics/Geometries/DodecahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/GridGeometry.h>
+#include <liboscar/Graphics/Geometries/IcosahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/LatheGeometry.h>
+#include <liboscar/Graphics/Geometries/OctahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/PolyhedronGeometry.h>
+#include <liboscar/Graphics/Geometries/RingGeometry.h>
+#include <liboscar/Graphics/Geometries/SolidGeometries.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Graphics/Geometries/TetrahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusKnotGeometry.h>
+#include <liboscar/Graphics/Geometries/WireframeGeometry.h>

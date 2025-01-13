@@ -7,6 +7,7 @@
 #     usage (must be ran in repository root): `bash build_linux_debugging.sh`
 
 set -xeuo pipefail
+
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(nproc)}
 export CC=${CC:-clang}
 export CXX=${CXX:-clang++}
@@ -52,6 +53,6 @@ cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target TestOpenSimCreator
 export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (due to poor library design)
-LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/tests/testoscar/testoscar
-LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/tests/testoscar_demos/testoscar_demos
-LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
+LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/liboscar/testing/testoscar
+LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/liboscar_demos/testing/testoscar_demos
+LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/libOpenSimCreator/testing/TestOpenSimCreator

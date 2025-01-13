@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'OpenSim Creator'
-copyright = '2024, Adam Kewley'
+copyright = '2025, Adam Kewley'
 author = 'Adam Kewley'
 github_username = 'ComputationalBiomechanicsLab'
 github_repository = 'https://github.com/ComputationalBiomechanicsLab/opensim-creator'
@@ -56,8 +56,8 @@ numfig = True
 # a list of builtin themes.
 #
 html_theme = 'sphinx_book_theme'
-html_logo = '../../resources/OpenSimCreator/textures/banner_vertical.svg'
-html_favicon = '../../resources/OpenSimCreator/textures/logo.svg'
+html_logo = '_static/banner_vertical.svg'
+html_favicon = '_static/logo.svg'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -1,5 +1,0 @@
-add_subdirectory(oscar)
-add_subdirectory(oscar_demos)
-if (${OSC_BUILD_OPENSIMCREATOR})
-    add_subdirectory(OpenSimCreator)
-endif()

@@ -24,7 +24,4 @@ cmake --build osc-build/ -j$(nproc)
 
 valgrind_cmd="valgrind --leak-check=full --suppressions=scripts/valgrind_suppressions.supp"
 
-${valgrind_cmd} -- ./osc-build/tests/testoscar/testoscar
-${valgrind_cmd} -- ./osc-build/tests/testoscar_demos/testoscar_demos
-${valgrind_cmd} -- ./osc-build/tests/TestOpenSimCreator/TestOpenSimCreator
-
+${valgrind_cmd} ctest --test-dir osc-build --output-on-failure

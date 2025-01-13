@@ -13,7 +13,7 @@ import argparse
 import os
 import re
 
-_blacklisted_directories = {'resources', 'MacOS', 'Linux', 'Windows'}
+_blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows'}
 
 def num_leading_tabs(s):
     rv = 0

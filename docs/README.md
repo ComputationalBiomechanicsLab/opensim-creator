@@ -9,9 +9,7 @@
 
 This documentation is mostly self-standing, but may contain links to
 `files.opensimcreator.com` (usually, when an asset is large or shared, such as
-video tutorials). The concrete deployment steps that we use to handle
-`files.opensimcreator.com` and actually deploy the documentation to
-`docs.opensimcreator.com` is described in OpenSim Creator's [README.md](../README.md).
+video tutorials).
 
 To build the documentation, you will need to setup your development
 environment with:
@@ -57,18 +55,3 @@ sphinx-autobuild source/ build/
 
 # ... and then browse to `localhost:8000`
 ```
-
-
-## 🕊️ Releasing
-
-The documentation is built+released alongside OpenSim Creator, so the release
-procedure for the documentation is part of the release procedure for OpenSim
-Creator itself. See [RELEASE_CHECKLIST.md](../RELEASE_CHECKLIST.md).
-
-
-## 🚀 Deploying
-
-The deployment procedure happens post-release and is described in
-[RELEASE_CHECKLIST.md](../RELEASE_CHECKLIST.md). That procedure is subject to change,
-but *probably* involves something like `rsync`ing the built assets to a webserver, or
-GitHub Pages.
