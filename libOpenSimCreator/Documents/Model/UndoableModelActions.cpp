@@ -84,9 +84,29 @@ namespace
 
     void DoOpenFileViaDialog(Widget& api)
     {
-        for (const auto& path : prompt_user_to_select_files({"osim"})) {
-            OpenOsimInLoadingTab(api, path);
-        }
+        App::upd().prompt_user_to_select_file_async(
+            [widget_ptr = api.weak_ref()](FileDialogResponse response)
+            {
+                if (not widget_ptr) {
+                    return;  // widget was deleted at some point
+                }
+
+                if (response.has_error()) {
+                    log_error("Error opening dialog: %s", response.error().c_str());
+                    return;
+                }
+
+                for (const auto& path : response) {
+                    OpenOsimInLoadingTab(*widget_ptr, path);
+                }
+            },
+            {
+                FileDialogFilter{"OpenSim Model (osim)", "osim"},
+                FileDialogFilter{"All Files", "*"},
+            },
+            std::nullopt,  // initial directory
+            true  // allow many
+        );
     }
 
     std::optional<std::filesystem::path> PromptSaveOneFile()
