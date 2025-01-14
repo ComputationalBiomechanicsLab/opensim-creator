@@ -145,6 +145,7 @@ private:
             ui::WindowFlag::NoBackground
         );
 
+        ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height()});
         drawNavigationTreeContent(rv);
 
         ui::end_child_panel();
