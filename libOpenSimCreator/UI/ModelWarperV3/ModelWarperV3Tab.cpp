@@ -177,10 +177,11 @@ namespace
             return std::make_unique<InMemoryMesh>(mesh);
         }
 
-        SimTK::Vec3 lookupTPSWarpedStationLocation(
+        SimTK::Vec3 lookupTPSWarpedRigidPoint(
             [[maybe_unused]] const OpenSim::Model& model,
             const SimTK::State& state,
-            const OpenSim::Station& inputStation,
+            const SimTK::Vec3& locationInParent,
+            const OpenSim::Frame& parentFrame,
             const std::filesystem::path& sourceLandmarksPath,
             const std::filesystem::path& destinationLandmarksPath,
             const OpenSim::Frame& landmarksFrame,
@@ -188,13 +189,15 @@ namespace
         {
             const TPSCoefficients3D& coefficients =
                 lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
-            const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state) * inputStation.getParentFrame().getTransformInGround(state);
-            const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * inputStation.get_location();
+            const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state) * parentFrame.getTransformInGround(state);
+            const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
             const SimTK::Vec3 warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
             return warpedLocationInStationParentFrame;
         }
+
     private:
+
         const TPSCoefficients3D& lookupTPSCoefficients(
             [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
             [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath)
@@ -362,7 +365,7 @@ namespace
         OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
     public:
         explicit BodyMassesScalingStep() :
-            ScalingStep{"Scale Body Masses to Subject Mass"}
+            ScalingStep{"TODO: Scale Body Masses to Subject Mass"}
         {
             setDescription("Scales the masses of bodies in the model to match the subject's mass");
         }
@@ -375,9 +378,9 @@ namespace
         }
     };
 
-    // A `ScalingStep` that scales `OpenSim::Mesh`es in the source model by
-    // using the Thin-Plate Spline (TPS) warping algorithm on landmark pairs
-    // loaded from associated files.
+    // A `ScalingStep` that warps `OpenSim::Mesh`es in the source model by using
+    // the Thin-Plate Spline (TPS) warping algorithm on landmark pairs loaded from
+    // associated files.
     class ThinPlateSplineMeshesScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ScalingStep)
 
@@ -499,13 +502,12 @@ namespace
         }
     };
 
-    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any `OpenSim::Station`s it
-    // can find via the `stations` search string. Note: muscle points in the model are usually
-    // `OpenSim::Station`s, so this can also be used to warp muscle points.
+    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any
+    // `OpenSim::Station`s it can find via the `stations` search string.
     class ThinPlateSplineStationsScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationsScalingStep, ScalingStep)
 
-        OpenSim_DECLARE_LIST_PROPERTY(stations, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find meshes in the source model that should be warped by this scaling step.");
+        OpenSim_DECLARE_LIST_PROPERTY(stations, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find stations in the source model that should be warped by this scaling step.");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the stations to/from the coordinate system of the warp transform.");
@@ -514,7 +516,7 @@ namespace
         explicit ThinPlateSplineStationsScalingStep() :
             ScalingStep{"Apply Thin-Plate Spline to Stations"}
         {
-            setDescription("Scales the masses of bodies in the model to match the subject's mass");
+            setDescription("Warps the locations of stations in the model using the Thin-Plate Spline (TPS) warping algorithm.");
             constructProperty_stations();
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
@@ -610,14 +612,15 @@ namespace
 
             // Warp each station specified by the `stations` property.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
-                // Find the station in the source model and use it produce the warped mesh.
+                // Find the station in the source model and use it produce the warped station.
                 const auto* station = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
-                OSC_ASSERT_ALWAYS(station && "could not find a mesh in the source model");
+                OSC_ASSERT_ALWAYS(station && "could not find a station in the source model");
 
-                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedStationLocation(
+                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
                     sourceModel,
                     sourceModel.getWorkingState(),
-                    *station,
+                    station->get_location(),
+                    station->getParentFrame(),
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *landmarksFrame,
@@ -631,20 +634,269 @@ namespace
         }
     };
 
+    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any
+    // `OpenSim::PathPoint`s it can find via the `path_points` search string.
+    class ThinPlateSplinePathPointsScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplinePathPointsScalingStep, ScalingStep)
+
+        OpenSim_DECLARE_LIST_PROPERTY(path_points, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)");
+        OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the path points to/from the coordinate system of the warp transform.");
+
+    public:
+        explicit ThinPlateSplinePathPointsScalingStep() :
+            ScalingStep{"Apply Thin-Plate Spline to Path Points"}
+        {
+            setDescription("Warps the locations of path points in the model using the Thin-Plate Spline (TPS) warping algorithm.");
+            constructProperty_path_points();
+            constructProperty_source_landmarks_file({});
+            constructProperty_destination_landmarks_file({});
+            constructProperty_landmarks_frame("/ground");
+        }
+    private:
+        void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
+        {
+            callback(ScalingParameterDeclaration{"blending_factor", 1.0});
+        }
+
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model& sourceModel) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+
+            // Ensure every entry in `path_points` can be found in the source model.
+            for (int i = 0; i < getProperty_path_points().size(); ++i) {
+                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                if (not pathPoint) {
+                    std::stringstream msg;
+                    msg << get_path_points(i) << ": Cannot find this path point in the source model";
+                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                }
+            }
+
+            // Ensure the model has a filesystem location (prerequisite for checking files).
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (not modelFilesystemLocation) {
+                messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
+                return messages;
+            }
+
+            // Ensure the `source_landmarks_file` can be found (relative to the model osim).
+            if (get_source_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`source_landmarks_file` is empty.");
+            }
+            else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+                not std::filesystem::exists(sourceLandmarksPath)) {
+
+                std::stringstream msg;
+                msg << sourceLandmarksPath.string() << ": Cannot find source landmarks file on filesystem";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure the `destination_landmarks_file` can be found (relative to the model osim).
+            if (get_destination_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`destination_landmarks_file` is empty.");
+            }
+            else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+                not std::filesystem::exists(destinationLandmarksPath)) {
+
+                std::stringstream msg;
+                msg << destinationLandmarksPath.string() << ": Cannot find destination landmarks file on filesystem";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure `landmarks_frame` exists in the model
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            if (not landmarksFrame) {
+                std::stringstream msg;
+                msg << get_landmarks_frame() << ": Cannot find this frame in the source model";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache& scalingCache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel,
+            OpenSim::Model& resultModel) const final
+        {
+            // Lookup/validate warping inputs.
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
+
+            OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
+            const std::filesystem::path sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+
+            OSC_ASSERT_ALWAYS(not get_destination_landmarks_file().empty());
+            const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+
+            OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            OSC_ASSERT_ALWAYS(landmarksFrame && "could not find the landmarks frame in the model");
+
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+
+            // Warp each path point specified by the `path_points` property.
+            for (int i = 0; i < getProperty_path_points().size(); ++i) {
+                // Find the path point in the source model and use it produce the warped path point.
+                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                OSC_ASSERT_ALWAYS(pathPoint && "could not find a path point in the source model");
+
+                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
+                    sourceModel.getWorkingState(),
+                    pathPoint->get_location(),
+                    pathPoint->getParentFrame(),
+                    sourceLandmarksPath,
+                    destinationLandmarksPath,
+                    *landmarksFrame,
+                    *blendingFactor
+                );
+
+                auto* resultPathPoint = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));
+                OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a corresponding path point in the result model");
+                resultPathPoint->set_location(warpedLocation);
+            }
+        }
+    };
+
+    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to the
+    // `translation` property of an `OpenSim::OffsetFrame`, leaving the `orientation`
+    // as-is.
     class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ScalingStep)
 
-        OpenSim_DECLARE_PROPERTY(offset_frame, std::string, "Component path, relative to the model, that locates the offset frame that should be transformed by this scaling step (e.g. /jointset/elbow_l/parent_offset)");
+        OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source.");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. ../DestinationGeometry/torso.landmarks.csv).");
+        OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the path points to/from the coordinate system of the warp transform.");
+
     public:
         explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
-            ScalingStep{"Apply Thin-Plate Spline Warp to Offset Frame Translation"}
+            ScalingStep{"TODO: Apply Thin-Plate Spline Warp to Offset Frame Translation"}
         {
             setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to shift the translation property of the given offset frame. The orientation/rotation of the offset frame is unaffected by this operation.");
-            constructProperty_offset_frame({});
+            constructProperty_offset_frames();
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
+            constructProperty_landmarks_frame("/ground");
+        }
+
+    private:
+        void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
+        {
+            callback(ScalingParameterDeclaration{"blending_factor", 1.0});
+        }
+
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model& sourceModel) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+
+            // Ensure every entry in `offset_frames` can be found in the source model.
+            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
+                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                if (not offsetFrame) {
+                    std::stringstream msg;
+                    msg << get_offset_frames(i) << ": Cannot find this `PhysicalOffsetFrame` in the source model";
+                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                }
+            }
+
+            // Ensure the model has a filesystem location (prerequisite for checking files).
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (not modelFilesystemLocation) {
+                messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
+                return messages;
+            }
+
+            // Ensure the `source_landmarks_file` can be found (relative to the model osim).
+            if (get_source_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`source_landmarks_file` is empty.");
+            }
+            else if (const auto sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+                not std::filesystem::exists(sourceLandmarksPath)) {
+
+                std::stringstream msg;
+                msg << sourceLandmarksPath.string() << ": Cannot find `source_landmarks_file` on the filesystem";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure the `destination_landmarks_file` can be found (relative to the model osim).
+            if (get_destination_landmarks_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`destination_landmarks_file` is empty.");
+            }
+            else if (const auto destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+                not std::filesystem::exists(destinationLandmarksPath)) {
+
+                std::stringstream msg;
+                msg << destinationLandmarksPath.string() << ": Cannot find `destination_landmarks_file` on the filesystem";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure `landmarks_frame` exists in the model
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            if (not landmarksFrame) {
+                std::stringstream msg;
+                msg << get_landmarks_frame() << ": Cannot find this `Frame` for the landmarks in the source model";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache& scalingCache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel,
+            OpenSim::Model& resultModel) const final
+        {
+            // Lookup/validate warping inputs.
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
+
+            OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
+            const std::filesystem::path sourceLandmarksPath = modelFilesystemLocation->parent_path() / get_source_landmarks_file();
+
+            OSC_ASSERT_ALWAYS(not get_destination_landmarks_file().empty());
+            const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
+
+            OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            OSC_ASSERT_ALWAYS(landmarksFrame && "could not find the landmarks frame in the model");
+
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+
+            // Warp each offset frame `translation` specified by the `offset_frames` property.
+            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
+                // Find the path point in the source model and use it produce the warped path point.
+                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(offsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
+
+                const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
+                    sourceModel.getWorkingState(),
+                    offsetFrame->get_translation(),
+                    offsetFrame->getParentFrame(),
+                    sourceLandmarksPath,
+                    destinationLandmarksPath,
+                    *landmarksFrame,
+                    *blendingFactor
+                );
+
+                auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
+                resultOffsetFrame->set_translation(warpedLocation);
+            }
         }
     };
 
@@ -656,6 +908,7 @@ namespace
             std::make_unique<ThinPlateSplineMeshesScalingStep>(),
             std::make_unique<BodyMassesScalingStep>(),
             std::make_unique<ThinPlateSplineStationsScalingStep>(),
+            std::make_unique<ThinPlateSplinePathPointsScalingStep>(),
             std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
         });
         return s_ScalingStepPrototypes;
