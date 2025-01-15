@@ -22,7 +22,7 @@ Installing on Windows (10 or newer)
   its installation location (defaults to ``C:\Program Files\OpenSimCreator\``).
 
 
-Installing on MacOS (Ventura or newer)
+Installing on MacOS (Sonoma or newer)
 --------------------------------------
 
 - Download a ``dmg``-based installer from the `GitHub Releases Page`_

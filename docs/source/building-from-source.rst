@@ -87,7 +87,7 @@ easiest way to build OpenSim Creator is with the python script located at
 4. The ``osc-build`` directory should contain the built installer
 
 
-Building on MacOS (Ventura or newer)
+Building on MacOS (Sonoma or newer)
 ------------------------------------
 
 1. Get ``brew``:
