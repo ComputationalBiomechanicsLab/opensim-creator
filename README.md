@@ -76,6 +76,6 @@ development supported and stable.
   </tr>
 </table>
 
-We'd also like to thank the wider open-source community. OpenSim Creator wouldn't be
-possible without access to high-quality open-source libraries and technical literature
-from thousands of contributors.
+Finally, we would also like to thank the wider open-source community. OpenSim Creator
+wouldn't be possible without using and learning from high-quality open-source libraries
+and technical literature from thousands of contributors.

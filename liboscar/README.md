@@ -1,4 +1,4 @@
-﻿# `liboscar`: The underlying engine that powers OpenSim Creator
+﻿# `liboscar`: Engine code for CAD projects
 
 `liboscar` is the "engine" part of OpenSim Creator. It's designed to have
 a minimal, OpenSim-independent, dependency set while providing what's

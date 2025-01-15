@@ -17,6 +17,3 @@ long as OpenSim Creator's main build can find the necessary libraries, it doesn'
 matter where they came from (or whether they were built from here). This is
 useful to know if you plan on (e.g.) using an OS-provided LAPACK, or want to
 build against a different version of `osim`, etc.
-
-**note**: developers should update `README.osc` with the corresponding upstream
-version when not using `git submodule`s.

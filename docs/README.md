@@ -1,4 +1,4 @@
-# `docs/`: OpenSim Creator's User-Facing Documentation
+# OpenSim Creator's User-Facing Documentation
 
 > The source code behind https://docs.opensimcreator.com, which is a user-facing
 > manual for the [OpenSim Creator Project](https://github.com/ComputationalBiomechanicsLab/opensim-creator).
