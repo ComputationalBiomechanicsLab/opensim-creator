@@ -12,10 +12,12 @@ if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
     # source code).
+    find_package(glad REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(tomlplusplus REQUIRED CONFIG)
+find_package(lunasvg REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
 add_subdirectory(InternalVendoredCode EXCLUDE_FROM_ALL SYSTEM)
 
@@ -200,11 +202,13 @@ target_include_directories(oscar SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Inte
 target_link_libraries(oscar PRIVATE
     # these libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out)
+    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:glad>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
     oscar_internal_code
     tomlplusplus::tomlplusplus
+    lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3
 )
 

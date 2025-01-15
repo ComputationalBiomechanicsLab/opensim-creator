@@ -7,6 +7,7 @@ set(OSCDEPS_GET_GOOGLETEST ON CACHE BOOL "enable getting googletest")
 set(OSCDEPS_GET_LUNASVG ON CACHE BOOL "enable getting lunasvg")
 set(OSCDEPS_GET_SDL ON CACHE BOOL "enable getting SDL")
 set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
+set(OSCDEPS_GET_GLAD ON CACHE BOOL "enable getting glad")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
 set(OSCDEPS_OSIM_BUILD_OPENBLAS OFF CACHE BOOL "enable transitively getting+building OpenBLAS for osim")
 set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
@@ -91,6 +92,15 @@ endif()
 if(${OSCDEPS_GET_TOMLPLUSPLUS})
     ExternalProject_Add(tomlplusplus
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_GET_GLAD})
+    ExternalProject_Add(glad
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
