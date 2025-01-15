@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // MIT License
 
 // Copyright (c) 2023 Evan Pezent
@@ -5888,3 +5890,5 @@ bool BeginPlot(const char* title, const char* x_label, const char* y1_label, con
 }  // namespace ImPlot
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

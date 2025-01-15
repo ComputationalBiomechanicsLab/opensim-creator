@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // MIT License
 
 // Copyright (c) 2023 Evan Pezent
@@ -1669,3 +1671,5 @@ void Locator_SymLog(ImPlotTicker& ticker, const ImPlotRange& range, float pixels
 } // namespace ImPlot
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

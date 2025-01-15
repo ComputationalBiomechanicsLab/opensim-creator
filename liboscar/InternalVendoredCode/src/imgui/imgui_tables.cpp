@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // dear imgui, v1.91.6
 // (tables and columns code)
 
@@ -4466,3 +4468,5 @@ void ImGui::Columns(int columns_count, const char* id, bool borders)
 //-------------------------------------------------------------------------
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // dear imgui, v1.91.6
 // (main code and documentation)
 
@@ -22727,3 +22729,5 @@ void ImGui::DebugHookIdInfo(ImGuiID, ImGuiDataType, const void*, const void*) {}
 //-----------------------------------------------------------------------------
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

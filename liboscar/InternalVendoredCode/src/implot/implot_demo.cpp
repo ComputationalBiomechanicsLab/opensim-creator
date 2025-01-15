@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // MIT License
 
 // Copyright (c) 2023 Evan Pezent
@@ -2480,3 +2482,5 @@ void PlotCandlestick(const char* label_id, const double* xs, const double* opens
 } // namespace MyImplot
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

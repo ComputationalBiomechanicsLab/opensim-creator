@@ -130,8 +130,6 @@ static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset()
 
 namespace
 {
-    using InternalTextureID = unsigned long long;
-
     constexpr CStringView c_ui_vertex_shader_src = R"(
         #version 330 core
 
@@ -212,7 +210,7 @@ namespace
 
     ImTextureID to_imgui_texture_id(UID id)
     {
-        static_assert(std::is_same_v<ImTextureID, InternalTextureID>);
+        static_assert(sizeof(decltype(id.get())) <= sizeof(ImTextureID));
         return static_cast<ImTextureID>(id.get());
     }
 
@@ -487,12 +485,12 @@ namespace osc::ui::graphics_backend
         }
     }
 
-    InternalTextureID allocate_texture_for_current_frame(const Texture2D& texture)
+    ImTextureID allocate_texture_for_current_frame(const Texture2D& texture)
     {
         return ::allocate_texture_for_current_frame(texture);
     }
 
-    InternalTextureID allocate_texture_for_current_frame(const RenderTexture& texture)
+    ImTextureID allocate_texture_for_current_frame(const RenderTexture& texture)
     {
         return ::allocate_texture_for_current_frame(texture);
     }

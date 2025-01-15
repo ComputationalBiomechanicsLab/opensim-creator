@@ -2,6 +2,7 @@
 Checks: >
   clang-analyzer-*,
   -clang-analyzer-optin.core.EnumCastOutOfRange,
+  -clang-analyzer-optin.performance.Padding,
   bugprone-*,
   -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
@@ -53,6 +54,7 @@ Checks: >
   -readability-qualified-auto,
   -readability-avoid-nested-conditional-operator,
   -readability-simplify-boolean-expr,
+  -readability-make-member-function-const,
   cert-*
   -cert-dcl21-cpp
 

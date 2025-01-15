@@ -389,7 +389,7 @@ namespace
 }
 
 
-void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
+void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
 {
     std::array<void*, 50> ary{};
     const int size = backtrace(ary.data(), ary.size());
@@ -574,7 +574,7 @@ namespace
 }
 
 
-void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
+void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
 {
     void* array[50];
     int size = backtrace(array, 50);
@@ -667,7 +667,7 @@ namespace
     }
 }
 
-void osc::for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)> callback)
+void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
 {
     constexpr size_t skipped_frames = 0;
     constexpr size_t num_frames = 16;

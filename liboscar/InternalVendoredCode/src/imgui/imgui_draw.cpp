@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // dear imgui, v1.91.6
 // (drawing and font code)
 
@@ -4811,3 +4813,5 @@ static const char* GetDefaultCompressedFontDataTTF(int* out_size)
 #endif // #ifndef IMGUI_DISABLE_DEFAULT_FONT
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

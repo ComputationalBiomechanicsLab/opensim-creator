@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // dear imgui, v1.91.6
 // (demo code)
 
@@ -10701,3 +10703,5 @@ void ImGui::ShowFontSelector(const char* label) {}
 #endif
 
 #endif // #ifndef IMGUI_DISABLE
+
+// NOLINTEND

@@ -962,7 +962,7 @@ public:
             if (not filelist) {
                 App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]()
                 {
-                    caller_callback(std::move(response));
+                    caller_callback(response);
                 });
                 return;
             }
@@ -979,7 +979,7 @@ public:
             App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]()
             {
                 // Call the user's callback (the event's callback happens on the main thread).
-                caller_callback(std::move(response));
+                caller_callback(response);
             });
         };
 
@@ -1148,7 +1148,7 @@ public:
 
     bool has_input_focus(WindowID window_id) const
     {
-        return SDL_GetWindowFlags(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS;
+        return (SDL_GetWindowFlags(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
     void set_unicode_input_rect(const Rect& rect)

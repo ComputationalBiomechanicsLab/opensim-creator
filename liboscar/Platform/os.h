@@ -34,7 +34,7 @@ namespace osc
     );
 
     // calls the callback with each entry in the calling thread's stack
-    void for_each_stacktrace_entry_in_this_thread(std::function<void(std::string_view)>);
+    void for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>&);
 
     // installs a signal handler for crashes (SIGABRT/SIGSEGV, etc.) that will
     // print a thread backtrace to the process-wide log, followed by trying to

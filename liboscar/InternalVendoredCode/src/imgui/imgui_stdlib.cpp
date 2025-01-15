@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 // dear imgui: wrappers for C++ standard library (STL) types (std::string, etc.)
 // This is also an example of how you may wrap your own similar types.
 
@@ -83,3 +85,5 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
+
+// NOLINTEND

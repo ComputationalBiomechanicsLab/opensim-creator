@@ -112,10 +112,10 @@ namespace
             constructProperty_parameter_value(1.0);
         }
 
-        explicit ScalingParameterOverride(std::string name, ScalingParameterValue value)
+        explicit ScalingParameterOverride(const std::string& name, ScalingParameterValue value)
         {
-            constructProperty_parameter_name(std::move(name));
-            constructProperty_parameter_value(std::move(value));
+            constructProperty_parameter_name(name);
+            constructProperty_parameter_value(value);
         }
     };
 
@@ -191,7 +191,7 @@ namespace
                 lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
             const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state) * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
-            const SimTK::Vec3 warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(blendingFactor)));
+            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
             return warpedLocationInStationParentFrame;
         }
@@ -1236,7 +1236,7 @@ namespace
         ScalingParameters getEffectiveScalingParameters() const { return scalingDocument->getEffectiveScalingParameters(); }
         bool setScalingParameterOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
-            return scalingDocument->setScalingParameterOverride(scalingParamName, std::move(newValue));
+            return scalingDocument->setScalingParameterOverride(scalingParamName, newValue);
         }
 
     // Model Scaling
