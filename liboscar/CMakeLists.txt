@@ -18,6 +18,7 @@ if (NOT ${OSC_EMSCRIPTEN})
 endif()
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
+find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
 add_subdirectory(InternalVendoredCode EXCLUDE_FROM_ALL SYSTEM)
 
@@ -207,6 +208,7 @@ target_link_libraries(oscar PRIVATE
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
     oscar_internal_code
+    unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
     lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3
