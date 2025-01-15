@@ -110,11 +110,6 @@ endif()
 if(${OSCDEPS_GET_NATIVEFILEDIALOG})
     ExternalProject_Add(nativefiledialog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog
-
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialog.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nativefiledialogConfig.cmake.in" <SOURCE_DIR>/nativefiledialogConfig.cmake.in
-
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
