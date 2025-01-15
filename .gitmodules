@@ -4,9 +4,6 @@
 [submodule "third_party/SDL"]
 	path = third_party/SDL
 	url = https://github.com/ComputationalBiomechanicsLab/SDL
-[submodule "third_party/tomlplusplus"]
-	path = third_party/tomlplusplus
-	url = https://github.com/ComputationalBiomechanicsLab/tomlplusplus
 [submodule "third_party/osim"]
 	path = third_party/osim
 	url = https://github.com/ComputationalBiomechanicsLab/osim
