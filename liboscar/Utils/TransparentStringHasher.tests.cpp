@@ -1,10 +1,10 @@
 #include "TransparentStringHasher.h"
 
-#include <liboscar/InternalVendoredCode/include/ankerl/unordered_dense.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/SharedPreHashedString.h>
 #include <liboscar/Utils/StringName.h>
 
+#include <ankerl/unordered_dense.h>
 #include <gtest/gtest.h>
 
 #include <algorithm>
