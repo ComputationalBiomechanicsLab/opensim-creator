@@ -53,3 +53,26 @@ TEST(SimTKDecorationGenerator, PropagatesHiddenRepresentation)
     });
     ASSERT_EQ(ncalls, 1) << "should only emit one is_wireframe sphere";
 }
+
+// ensure that the `SimTKDecorationGenerator` propagates negative scale factors,
+// because some users use them to mirror-image geometry (#974)
+TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
+{
+    SceneCache cache;
+
+    SimTK::MultibodySystem sys;
+    SimTK::SimbodyMatterSubsystem matter{sys};
+    SimTK::State state = sys.realizeTopology();
+    sys.realize(state);
+
+    SimTK::DecorativeSphere sphere;
+    sphere.setBodyId(0);
+    sphere.setRepresentation(SimTK::DecorativeGeometry::Hide);
+    sphere.setRadius(1.0);
+    sphere.setScaleFactors(SimTK::Vec3(1.0, -1.0, 1.0));  // note: negative
+
+    osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const SceneDecoration& dec)
+    {
+        ASSERT_EQ(dec.transform.scale.y, -1.0f);
+    });
+}

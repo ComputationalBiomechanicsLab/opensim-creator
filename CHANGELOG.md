@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The application now has a MacOS-specific logo that more closely follows Apple's icon
   guidelines.
+- Negative scale factors are now supported by the 3D renderer, which can be handy for
+  mirroring meshes (thanks @carlosedubarreto, #974)
 
 ## [0.5.18] - 2025/01/16
 

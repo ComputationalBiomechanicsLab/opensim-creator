@@ -19,6 +19,7 @@
 #include <SimTKcommon/internal/PolygonalMesh.h>
 #include <SimTKcommon/internal/State.h>
 
+#include <cmath>
 #include <cstddef>
 #include <filesystem>
 
@@ -37,7 +38,9 @@ namespace
         SimTK::Vec3 sf = geom.getScaleFactors();
 
         for (int i = 0; i < 3; ++i) {
-            sf[i] = sf[i] <= 0.0 ? 1.0 : sf[i];
+            // filter out NaNs, but keep negative values, because some
+            // users use negative scales to mimic mirror imaging (#974)
+            sf[i] = not std::isnan(sf[i]) ? sf[i] : 0.0;
         }
 
         return to<Vec3>(sf);
