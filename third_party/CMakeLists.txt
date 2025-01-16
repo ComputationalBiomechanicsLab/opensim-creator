@@ -10,8 +10,9 @@ set(OSCDEPS_GET_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
 set(OSCDEPS_GET_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
 set(OSCDEPS_GET_GLAD ON CACHE BOOL "enable getting glad")
 set(OSCDEPS_GET_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
-set(OSCDEPS_OSIM_BUILD_OPENBLAS OFF CACHE BOOL "enable transitively getting+building OpenBLAS for osim")
-set(OSCDEPS_GET_OPENSIM ON CACHE BOOL "enable getting OpenSim (+its dependencies)")
+set(OSCDEPS_GET_OPENBLAS OFF CACHE BOOL "enable getting + building OpenBLAS from source")
+set(OSCDEPS_GET_SPDLOG ON CACHE BOOL "enable getting + building spdlog from source")
+set(OSCDEPS_GET_PYBIND11 OFF CACHE BOOL "enable getting + building pybind11 from source")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
@@ -126,23 +127,44 @@ if(${OSCDEPS_GET_NATIVEFILEDIALOG})
     )
 endif()
 
-if(${OSCDEPS_GET_OPENSIM})
-    # build osim's dependencies
-    ExternalProject_Add(osim-third-party
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/osim/third_party
-	INSTALL_COMMAND ""  # it's an ExternalProject that does some of its own building
+if(${OSCDEPS_GET_OPENBLAS})
+    ExternalProject_Add(OpenBLAS
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenBLAS
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DOSIMDEPS_GET_OPENBLAS:BOOL=${OSCDEPS_OSIM_BUILD_OPENBLAS}
+            -DC_LAPACK:BOOL=ON
+            -DBUILD_STATIC_LIBS:BOOL=ON
     )
-    # build osim
-    ExternalProject_Add(osim
-        DEPENDS osim-third-party
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/osim
+endif()
+
+if(${OSCDEPS_GET_SPDLOG})
+    if(MSVC)
+        # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
+	set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+    else()
+        set(SPDLOC_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    endif()
+    ExternalProject_Add(spdlog
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DCMAKE_PREFIX_PATH:STRING=${CMAKE_INSTALL_PREFIX}
+            -DSPDLOG_BUILD_BENCH:BOOL=OFF
+            -DSPDLOG_BUILD_TESTS:BOOL=OFF
+            -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
+            -DSPDLOG_BUILD_SHARED:BOOL=OFF
+            -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS}
+    )
+endif()
+
+if(${OSCDEPS_GET_PYBIND11})
+    ExternalProject_Add(pybind11
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/pybind11
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DPYBIND11_CMAKECONFIG_INSTALL_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/pybind11
+            -DPYBIND11_TEST:BOOL=OFF
     )
 endif()

@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+include("${CMAKE_CURRENT_LIST_DIR}/osimTargets.cmake")
+
+# BLAS/LAPACK can be built into your CMAKE_PREFIX_PATH by
+# "superbuild"ing `osim/third_party`. However, you don't
+# have to: it's sometimes better to use the OS-provided
+# BLAS/LAPACK
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+
+# this should be built by the "superbuild"ing `osim/third_party`
+# because OpenSim strongly depends on a particular version of
+# spdlog (grrr)
+find_package(spdlog REQUIRED)
+

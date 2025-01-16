@@ -39,9 +39,11 @@ add_subdirectory(liboscar)
 add_subdirectory(liboscar_demos)
 add_subdirectory(hellooscar)
 if (${OSC_BUILD_OPENSIMCREATOR})
+    add_subdirectory(libosim libosim SYSTEM)  # uses OpenSim headers
     add_subdirectory(libOpenSimCreator)
     add_subdirectory(osc)
 endif()
 if(${OSC_BUILD_DOCS})
     add_subdirectory(docs)
 endif()
+

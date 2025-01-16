@@ -1,10 +1,7 @@
 # `libOpenSimCreator`: Implementation code for the OpenSim Creator UI
 
-This project directly integrates the [OpenSim API](https://github.com/opensim-org/opensim-core)
-against the `oscar` API.
-
-The general structure of this project is work-in-progress, primarly because
-I'm midway through refactoring `oscar` into a more sane layout.
+`libOpenSimCreator` combines `liboscar` (a UI engine) with `libosim`
+(OpenSim + Simbody bindings) to create a UI for OpenSim.
 
 | Directory | Description |
 | - | - |
@@ -15,3 +12,4 @@ I'm midway through refactoring `oscar` into a more sane layout.
 | `UI/` | Code for rendering OpenSimCreator's 2D UI |
 | `Utils/` | Lightweight utility code that doesn't depend on any of the above |
 | `testing/` | Code related to unit tests |
+

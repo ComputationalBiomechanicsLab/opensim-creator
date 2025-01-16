@@ -1,22 +1,3 @@
-set(
-    OSC_BUILD_OSIM_INLINED OFF
-    CACHE BOOL
-    "Enable/disable building osim as part of building OpenSimCreator (via `add_subdirectory`) rather\
-     than acquiring it externally (via `find_package`). This is useful for developing/testing\
-     Simbody/OpenSim as part of OpenSim Creator's integration"
-)
-
-if(${OSC_BUILD_OSIM_INLINED})
-    add_subdirectory(
-        ${PROJECT_SOURCE_DIR}/third_party/osim
-        osim              # build directory
-        EXCLUDE_FROM_ALL  # we don't want to build every part of it (transitive target)
-        SYSTEM            # the headers from osim (i.e. OpenSim headers) shouldn't be subject to the same warning flags as OSC
-    )
-else()
-    find_package(osim REQUIRED)
-endif()
-
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES
     LIST_DIRECTORIES FALSE
     "*.cpp"

@@ -6,6 +6,7 @@
 #include <libOpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
 #include <libOpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
 
+#include <libosim/osim.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/AppSettings.h>
@@ -19,7 +20,6 @@
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <osim/osim.h>
 
 #include <array>
 #include <clocale>
