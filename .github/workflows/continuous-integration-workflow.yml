@@ -65,6 +65,8 @@ jobs:
         OSC_CMAKE_CONFIG_EXTRA="-Werror=dev -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=14 -DCMAKE_OSX_ARCHITECTURES=x86_64"
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac.sh
+        ./scripts/macos_check-dependencies.py osc-build/osc/osc
+        ./scripts/macos_check-sdk.py 14.shouldfail osc-build/osc/osc
 
     - uses: actions/upload-artifact@v4
       with:
