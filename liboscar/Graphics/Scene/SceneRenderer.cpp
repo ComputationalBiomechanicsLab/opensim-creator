@@ -50,7 +50,7 @@ namespace
     Transform calc_floor_transform(Vec3 floor_origin, float fixup_scale_factor)
     {
         return {
-            .scale = {100.0f * fixup_scale_factor, 100.0f * fixup_scale_factor, 1.0f},
+            .scale = {10000.0f * fixup_scale_factor, 10000.0f * fixup_scale_factor, 1.0f},
             .rotation = angle_axis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
             .position = floor_origin,
         };
@@ -278,7 +278,7 @@ namespace
             Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {
             set<Texture2D>("uDiffuseTexture", ChequeredTexture{});
-            set("uTextureScale", Vec2{200.0f, 200.0f});
+            set("uTextureScale", Vec2{20000.0f});
             set_transparent(true);
         }
 
