@@ -5,7 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-(nothing here yet)
+- The application now has a MacOS-specific logo that more closely follows Apple's icon
+  guidelines.
 
 ## [0.5.18] - 2025/01/16
 
