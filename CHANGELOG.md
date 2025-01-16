@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Using the mouse wheel to zoom into a 3D scene now has a maximium step size, lower
+  (0.1 m), and upper (1 km) limit, which should make it behave better in MacOS (#971)
 - The project is now buildable on Apple Silicon. Installers for both of Apple's
   supported architectures (legacy intel and apple silicon) will be supplied separately.
 - When using a 3D gizmo to move a physical offset frame that's constrained because

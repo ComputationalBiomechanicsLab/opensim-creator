@@ -611,8 +611,8 @@ void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
     // znear and zfar are only really dictated by the camera's radius, because
     // the radius is effectively the distance from the camera's focal point
 
-    znear = 0.02f * radius;
-    zfar = 20.0f * radius;
+    znear = 0.1f * radius;
+    zfar = 100000.0f * radius;
 }
 
 Mat4 osc::PolarPerspectiveCamera::view_matrix() const
