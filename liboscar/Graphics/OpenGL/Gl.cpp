@@ -13,7 +13,7 @@ void osc::gl::compile_from_source(const ShaderHandle& shader_handle, std::string
 {
     OSC_ASSERT_ALWAYS(not shader_src.empty() && "empty source code passed to the shader compiler");
     const GLchar* shader_src_ptr = shader_src.data();
-    const GLint shader_src_length = static_cast<GLint>(shader_src.size());
+    const auto shader_src_length = static_cast<GLint>(shader_src.size());
     glShaderSource(shader_handle.get(), 1, &shader_src_ptr, &shader_src_length);
     glCompileShader(shader_handle.get());
 

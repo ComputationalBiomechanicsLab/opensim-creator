@@ -333,7 +333,7 @@ const void* osc::SceneCache::try_get(const std::type_info& type_info) const
 
 void osc::SceneCache::insert(const std::type_info& type_info, std::shared_ptr<void> ptr)
 {
-    impl_->insert(type_info, ptr);
+    impl_->insert(type_info, std::move(ptr));
 }
 
 const MeshBasicMaterial& osc::SceneCache::basic_material()
