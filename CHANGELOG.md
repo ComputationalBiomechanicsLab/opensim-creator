@@ -5,10 +5,17 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Using the mouse wheel to zoom into a 3D scene now has a maximium step size, lower
-  (0.1 m), and upper (1 km) limit, which should make it behave better in MacOS (#971)
+(nothing here yet)
+
+## [0.5.18] - 2025/01/16
+
 - The project is now buildable on Apple Silicon. Installers for both of Apple's
   supported architectures (legacy intel and apple silicon) will be supplied separately.
+- Custom icons have been rolled out to various parts of the UI. The icons are currently
+  work-in-progress, and this change marks a "now they're integrated into the icon
+  atlas" milestone.
+- Using the mouse wheel to zoom into a 3D scene now has a maximium step size, lower
+  (0.1 m), and upper (1 km) limit, which should make it behave better in MacOS (#971)
 - When using a 3D gizmo to move a physical offset frame that's constrained because
   it's child of a joint, a tooltip will now appear next to the user's mouse explaining
   the manipulation (i.e. it's manipulating the parent of the child, #955, #966).
@@ -21,9 +28,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   component, rather than traversing through each parent of the component. This was
   done to simplify the menu.
 - The `Sockets` context menu now lists the type of conectee that the socket supports.
-- Custom icons have been rolled out to various parts of the UI. The icons are currently
-  work-in-progress, and this change marks a "now they're integrated into the icon
-  atlas" milestone.
 - The navigator panel was tidied up and now shows a slightly different color per-row
   to make it easier to read.
 - The `resources` directory was cleaned up and reorganized to try clearly separate
