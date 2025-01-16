@@ -144,7 +144,8 @@ private:
     {
         ui::set_next_item_width(ui::calc_text_size("0.000x").x + 2.0f*ui::get_style_frame_padding().x);
         float speed = m_SimulatorAPI->getSimulationPlaybackSpeed();
-        if (ui::draw_float_input("speed", &speed, 0.0f, 0.0f, "%.3f", ui::TextInputFlag::EnterReturnsTrue)) {
+        ui::draw_float_input("speed", &speed, 0.0f, 0.0f, "%.3f");
+        if (ui::is_item_deactivated_after_edit()) {
             m_SimulatorAPI->setSimulationPlaybackSpeed(speed);
         }
     }
