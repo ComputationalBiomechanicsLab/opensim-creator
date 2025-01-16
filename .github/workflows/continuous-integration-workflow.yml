@@ -66,7 +66,7 @@ jobs:
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac.sh
         ./scripts/macos_check-dependencies.py osc-build/osc/osc
-        ./scripts/macos_check-sdk.py 14.shouldfail osc-build/osc/osc
+        ./scripts/macos_check-sdk.py 14.2 osc-build/osc/osc
 
     - uses: actions/upload-artifact@v4
       with:
