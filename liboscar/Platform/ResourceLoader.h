@@ -19,6 +19,11 @@ namespace osc
         operator IResourceLoader& () { return *impl_; }
         operator const IResourceLoader& () const { return *impl_; }
 
+        bool resource_exists(const ResourcePath& resource_path)
+        {
+            return impl_->resource_exists(resource_path);
+        }
+
         ResourceStream open(const ResourcePath& resource_path)
         {
             return impl_->open(prefix_ / resource_path);

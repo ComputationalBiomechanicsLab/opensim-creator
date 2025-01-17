@@ -18,6 +18,7 @@ namespace osc
         {}
 
     private:
+        bool impl_resource_exists(const ResourcePath&) final;
         ResourceStream impl_open(const ResourcePath&) final;
         std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&) final;
 

@@ -21,6 +21,7 @@ namespace osc
     public:
         virtual ~IResourceLoader() noexcept = default;
 
+        bool resource_exists(const ResourcePath& resource_path) { return impl_resource_exists(resource_path); }
         ResourceStream open(const ResourcePath& resource_path) { return impl_open(resource_path); }
         std::string slurp(const ResourcePath&);
 
@@ -30,6 +31,7 @@ namespace osc
         }
 
     private:
+        virtual bool impl_resource_exists(const ResourcePath&) = 0;
         virtual ResourceStream impl_open(const ResourcePath&) = 0;
         virtual std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&)
         {

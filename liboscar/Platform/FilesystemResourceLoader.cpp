@@ -19,6 +19,12 @@ namespace
     }
 }
 
+bool osc::FilesystemResourceLoader::impl_resource_exists(const ResourcePath& resource_path)
+{
+    const std::filesystem::path full_path = calc_full_path(root_directory_, resource_path);
+    return std::filesystem::exists(full_path);
+}
+
 ResourceStream osc::FilesystemResourceLoader::impl_open(const ResourcePath& resource_path)
 {
     if (log_level() <= LogLevel::debug) {
