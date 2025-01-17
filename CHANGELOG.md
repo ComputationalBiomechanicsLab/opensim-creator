@@ -9,6 +9,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   guidelines.
 - Negative scale factors are now supported by the 3D renderer, which can be handy for
   mirroring meshes (thanks @carlosedubarreto, #974)
+- `imgui_base_config.ini` is now optional, and should now be located at
+  `resources/OpenSimCreator`, rather than in the root `resources/` directory.
 
 ## [0.5.18] - 2025/01/16
 
