@@ -1,4 +1,4 @@
-set(OSIM_INSTALL_OPENSIM_HEADERS ON CACHE BOOL "enable/disable installing libosim.a with Simbody/OpenSim headers (used by OpenSim Creator)")
+set(OSIM_INSTALL_OPENSIM_HEADERS OFF CACHE BOOL "enable/disable installing libosim.a with Simbody/OpenSim headers (used by OpenSim Creator)")
 
 include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
 include(CMakePackageConfigHelpers)  # configure_package_config_file
