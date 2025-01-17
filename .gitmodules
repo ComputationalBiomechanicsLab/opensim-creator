@@ -4,3 +4,6 @@
 [submodule "libosim/opensim-core"]
 	path = libosim/opensim-core
 	url = https://github.com/ComputationalBiomechanicsLab/opensim-core
+[submodule "opensimcreator/nanobind"]
+	path = opensimcreator/nanobind
+	url = https://github.com/wjakob/nanobind.git

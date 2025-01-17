@@ -14,6 +14,10 @@ set_target_properties(oscar_demos PROPERTIES
 target_compile_features(oscar_demos PUBLIC
     cxx_std_20
 )
+include(${PROJECT_SOURCE_DIR}/cmake/osc_strict_compiler_options.cmake)
+target_compile_options(oscar_demos PRIVATE
+    ${OSC_STRICT_COMPILER_OPTIONS}
+)
 target_include_directories(oscar_demos PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..      # so that `#include "liboscar-demos/HEADER.h"` works
 )

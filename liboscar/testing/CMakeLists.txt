@@ -24,6 +24,10 @@ set_target_properties(testoscar PROPERTIES
 target_compile_features(testoscar PUBLIC
     cxx_std_20
 )
+include(${PROJECT_SOURCE_DIR}/cmake/osc_strict_compiler_options.cmake)
+target_compile_options(testoscar PRIVATE
+    ${OSC_STRICT_COMPILER_OPTIONS}
+)
 target_include_directories(testoscar PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated"  # so that `#include <liboscar/testing/testoscarconfig.h>` works
 )

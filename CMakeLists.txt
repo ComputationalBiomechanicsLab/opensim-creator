@@ -15,6 +15,10 @@ set(OSC_DISCOVER_TESTS ON
     CACHE BOOL
     "enable/disable automatically running test discovery (IDE integration)"
 )
+set(OSC_BUILD_PYTHON_BINDINGS ON
+    CACHE BOOL
+    "enable/disable building python bindings"
+)
 
 
 # note: this has to be done at the top-level, so that `ctest --show-only` works for
@@ -28,6 +32,9 @@ if (${OSC_BUILD_OPENSIMCREATOR})
     add_subdirectory(libosim)
     add_subdirectory(libopensimcreator)
     add_subdirectory(osc)
+    if(${OSC_BUILD_PYTHON_BINDINGS})
+        add_subdirectory(opensimcreator)
+    endif()
 endif()
 if(${OSC_BUILD_DOCS})
     add_subdirectory(docs)

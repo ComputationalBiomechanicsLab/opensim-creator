@@ -17,6 +17,9 @@ jobs:
     - name: run build_windows.py
       run: |
         cd $env:GITHUB_WORKSPACE\osc
+        python -m venv venv
+        ./venv/Scripts/activate
+        pip install pytest
         python scripts\\build_windows.py -j2 || exit /b
 
     - uses: actions/upload-artifact@v4
@@ -37,7 +40,7 @@ jobs:
 
     - name: setup system
       run: |
-        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev python3-dev python3-pytest
         sudo apt-get install -y xvfb  # virtual desktop, for tests
 
     - name: run build script
@@ -66,6 +69,10 @@ jobs:
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install pytest
+
         OSC_CMAKE_CONFIG_EXTRA="-Werror=dev -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=14 -DCMAKE_OSX_ARCHITECTURES=x86_64"
         export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
         ./scripts/build_mac.sh
@@ -90,7 +97,7 @@ jobs:
 
     - name: setup system
       run: |
-        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev python3-dev python3-pytest
         sudo apt-get install -y xvfb  # virtual desktop, for tests
 
     - name: run build script
@@ -100,4 +107,3 @@ jobs:
         export CC=gcc-12
         export CXX=g++-12
         xvfb-run ./scripts/build_ubuntu-20.04.sh
-

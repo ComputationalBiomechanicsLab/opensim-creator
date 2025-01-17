@@ -15,8 +15,9 @@ set_target_properties(OpenSimCreator PROPERTIES
 target_compile_features(OpenSimCreator PUBLIC
     cxx_std_20
 )
-target_compile_options(OpenSimCreator PUBLIC
-
+include(${PROJECT_SOURCE_DIR}/cmake/osc_strict_compiler_options.cmake)
+target_compile_options(OpenSimCreator
+PUBLIC
     # gcc/clang
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
         # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
@@ -28,6 +29,8 @@ target_compile_options(OpenSimCreator PUBLIC
         # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
         -Wno-array-bounds
     >
+PRIVATE
+    ${OSC_STRICT_COMPILER_OPTIONS}
 )
 target_compile_definitions(OpenSimCreator PRIVATE
     # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`

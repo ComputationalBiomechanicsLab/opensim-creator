@@ -14,6 +14,10 @@ set_target_properties(testoscar_demos PROPERTIES
 target_compile_features(testoscar_demos PUBLIC
     cxx_std_20
 )
+include(${PROJECT_SOURCE_DIR}/cmake/osc_strict_compiler_options.cmake)
+target_compile_options(testoscar_demos PRIVATE
+    ${OSC_STRICT_COMPILER_OPTIONS}
+)
 target_include_directories(testoscar_demos PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <testoscar_demos/HEADER.h>` works
 )

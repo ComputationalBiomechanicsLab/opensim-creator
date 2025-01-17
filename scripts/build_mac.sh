@@ -74,26 +74,19 @@ cmake \
     -B "osc-deps-build" \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_INSTALL_PREFIX="osc-deps-install" \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     ${OSC_CMAKE_CONFIG_EXTRA}
-
-cmake \
-    --build "osc-deps-build" \
-    -j${OSC_BUILD_CONCURRENCY}
+cmake --build "osc-deps-build" -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
-
-# configure
 cmake \
     -S . \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     ${OSC_CMAKE_CONFIG_EXTRA}
-
-# build all
-cmake \
-    --build "osc-build" \
-    -j${OSC_BUILD_CONCURRENCY}
+cmake --build "osc-build" -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
 ctest --test-dir osc-build --output-on-failure -j${OSC_BUILD_CONCURRENCY}
