@@ -12,7 +12,7 @@ target_link_libraries(hellooscar PRIVATE
 )
 
 # -------------- installation/packaging ------------- #
-if(${OSC_EMSCRIPTEN})
+if(DEFINED OSC_EMSCRIPTEN AND ${OSC_EMSCRIPTEN})
     include(${CMAKE_CURRENT_SOURCE_DIR}/Emscripten/Packaging.cmake)
 endif()
 

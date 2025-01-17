@@ -11,10 +11,6 @@ set(OSC_BUILD_DOCS OFF
     CACHE BOOL
     "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
 )
-set(OSC_EMSCRIPTEN OFF
-    CACHE BOOL
-    "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
-)
 set(OSC_DISCOVER_TESTS ON
     CACHE BOOL
     "enable/disable automatically running test discovery (IDE integration)"
@@ -46,4 +42,3 @@ endif()
 if(${OSC_BUILD_DOCS})
     add_subdirectory(docs)
 endif()
-

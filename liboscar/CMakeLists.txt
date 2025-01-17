@@ -7,6 +7,10 @@ set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
     CACHE BOOL
     "enable/disable whether performance counters are collected at runtime whenever the `OSC_PERF` macro is used in the source code"
 )
+set(OSC_EMSCRIPTEN OFF
+    CACHE BOOL
+    "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
+)
 
 if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
