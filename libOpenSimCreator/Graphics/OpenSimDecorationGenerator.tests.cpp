@@ -14,16 +14,20 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/StringHelpers.h>
+#include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <algorithm>
 #include <filesystem>
+#include <ranges>
 #include <utility>
 #include <variant>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // test that telling OSC to generate OpenSim-colored muscles
 // results in red muscle lines (as opposed to muscle lines that
@@ -369,4 +373,46 @@ TEST(GenerateModelDecorations, ShortHandOverloadWithModelStatePairWorksAsExpecte
     const std::vector<SceneDecoration> easyDecorations = GenerateModelDecorations(cache, modelState, opts, 1.0);
 
     ASSERT_EQ(decorations, easyDecorations);
+}
+
+// user reported that `OpenSim::ContactGeometry` cannot be toggled _off_ via its
+// `Appearance::is_visible` flag (#980).
+//
+// This test ensures the reverse (i.e. when it is visible) operates within expectations.
+TEST(GenerateModelDecorations, GeneratesContactGeometrySphereWhenVisibilityFlagIsEnabled)
+{
+    OpenSim::Model model;
+    auto* sphere = new OpenSim::ContactSphere(1.0, SimTK::Vec3{0.0}, model.getGround());
+    model.addContactGeometry(sphere);
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const SceneDecoration& dec) { return dec.id == p; };
+
+    ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 1);
+}
+
+// user reported that `OpenSim::ContactGeometry` cannot be toggled _off_ via its
+// `Appearance::is_visible` flag (#980).
+//
+// This test checks that turning the flag off prevents the decoration generator from
+// generating a decoration for it.
+TEST(GenerateModelDecorations, DoesNotGenerateContactGeometrySphereWhenVisibilityFlagIsDisabled)
+{
+    OpenSim::Model model;
+    auto* sphere = new OpenSim::ContactSphere(1.0, SimTK::Vec3{0.0}, model.getGround());
+    sphere->upd_Appearance().set_visible(false);  // should prevent it from emitting
+    model.addContactGeometry(sphere);
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    const auto decorations = GenerateModelDecorations(cache, model, state);
+    const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const SceneDecoration& dec) { return dec.id == p; };
+
+    ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 0);
 }

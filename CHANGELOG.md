@@ -11,6 +11,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   mirroring meshes (thanks @carlosedubarreto, #974)
 - `imgui_base_config.ini` is now optional, and should now be located at
   `resources/OpenSimCreator`, rather than in the root `resources/` directory.
+- Fixed a bug in upstream OpenSim Core where the `is_visible` flag of `ContactGeometry`
+  was being ignored (thanks @carlosedubarreto, #980).
 - Internal: fixed a bug where the screenshot tab was unable to render the screenshot
   to an image file (#981).
 
