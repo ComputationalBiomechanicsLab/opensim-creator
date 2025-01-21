@@ -10,6 +10,9 @@ These are some generic tips that might be handy when setting up your own develop
 Visual Studio 2022
 ------------------
 
+- Open a terminal/powershell window
+- Run ``git clone --recursive https://github.com/ComputationalBiomechanicsLab/opensim-creator`` to get a complete copy of OpenSim Creator's sourcecode
+- ``cd opensim-creator``
 - Run ``python scripts/build_windows.py --skip-osc`` (described above) to get a
   complete build of OSC's dependencies.
 - In Visual Studio 2020, open ``opensim-creator`` as a folder project

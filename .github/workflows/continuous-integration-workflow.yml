@@ -35,14 +35,18 @@ jobs:
         path: osc
         submodules: 'recursive'
 
+    - name: setup system
+      run: |
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
+        sudo apt-get install -y xvfb  # virtual desktop, for tests
+
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE/osc
-        sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
         export CC=clang
         export CXX=clang++
-        xvfb-run ./scripts/build_debian-buster.sh
+        xvfb-run ./scripts/build_ubuntu-20.04.sh
 
     - uses: actions/upload-artifact@v4
       with:
@@ -84,12 +88,16 @@ jobs:
         path: osc
         submodules: 'recursive'
 
+    - name: setup system
+      run: |
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
+        sudo apt-get install -y xvfb  # virtual desktop, for tests
+
     - name: run build script
       run: |
         cd $GITHUB_WORKSPACE/osc
-        sudo apt-get install xvfb  # virtual desktop, for tests
         export OSC_BUILD_CONCURRENCY=$(nproc)
         export CC=gcc-12
         export CXX=g++-12
-        xvfb-run ./scripts/build_debian-buster.sh
+        xvfb-run ./scripts/build_ubuntu-20.04.sh
 

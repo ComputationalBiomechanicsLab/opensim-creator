@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# `macos_check-sdk.py`: checks that the specified binary uses the
+# specified version of the MacOS SDK. This is handy for double-checking
+# that the build system is using the correct SDK, which can impact
+# which versions of MacOS can run the binary.
 
 import argparse
 import subprocess

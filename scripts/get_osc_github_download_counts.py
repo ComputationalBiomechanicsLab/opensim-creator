@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-# `get_osc_github_download_counts`: print the GitHub download counters for
+# `get_osc_github_download_counts.py`: print the GitHub download counters for
 # all releases of OpenSim Creator to the standard output
 
 import datetime
 import itertools
 import functools
-import requests
+import requests  # must be installed via pip: `pip install requests`
 import re
 
 class Row:

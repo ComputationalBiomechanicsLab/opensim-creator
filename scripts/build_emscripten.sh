@@ -4,7 +4,9 @@
 # of OpenSim Creator using the Emscripten SDK (`emmake`, `emcc`, etc.) toolchain
 # to build a wasm version of the binary
 #
-#     usage (must be ran in repository root): `bash build_emscripten.sh`
+#     usage (must be ran in repository root): `bash scripts/build_emscripten.sh`
+#     note: assumes `emsdk` is already active (e.g. `./emsdk/emsdk activate latest`)
+#     note: assumes `emsdk` is sourced (e.g. `./emsdk/emsdk_env.sh`)
 
 set -xeuo pipefail
 
@@ -16,18 +18,6 @@ OSC_DEPS_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 
 # build type for OSC
 OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
-
-# install emsdk
-if [ ! -d emsdk ]; then
-     git clone https://github.com/emscripten-core/emsdk.git
-     cd emsdk/
-     ./emsdk install latest
-     cd -
-fi
-
-# activate emsdk
-./emsdk/emsdk activate latest
-source ./emsdk/emsdk_env.sh
 
 # build oscar (only) with emsdk
 #

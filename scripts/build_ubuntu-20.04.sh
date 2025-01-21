@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# `build_debian-buster.sh`: performs an end-to-end build of OpenSim Creator
+# `build_ubuntu-20.04.sh`: performs an end-to-end build of OpenSim Creator
 # on Debian platforms
 #
-#     usage (must be ran in repository root): `bash build_debian-buster.sh`
+#     usage (must be ran in repository root): `bash build_ubuntu-20.04.sh`
 
 # error out of this script if it fails for any reason
 set -xeuo pipefail
@@ -35,14 +35,6 @@ OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
 #     package    package everything into a .deb installer
 OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 
-# set this if you want to skip installing system-level deps
-#
-#     OSC_SKIP_APT
-
-# set this if you want to build the docs
-#
-#     OSC_BUILD_DOCS
-
 set +x
 echo "----- starting build -----"
 echo ""
@@ -53,49 +45,13 @@ echo "    OSC_DEPS_BUILD_TYPE   = ${OSC_DEPS_BUILD_TYPE}"
 echo "    OSC_BUILD_TYPE        = ${OSC_BUILD_TYPE}"
 echo "    OSC_BUILD_CONCURRENCY = ${OSC_BUILD_CONCURRENCY}"
 echo "    OSC_BUILD_TARGET      = ${OSC_BUILD_TARGET}"
-echo "    OSC_SKIP_APT          = ${OSC_SKIP_APT:-OFF}"
-echo "    OSC_BUILD_DOCS        = ${OSC_BUILD_DOCS:-OFF}"
 echo ""
 set -x
 
-
-echo "----- printing system (pre-dependency install) info -----"
+echo "----- printing system info -----"
 df  # print disk usage
 ls -la .  # print build dir contents
 uname -a  # print distro details
-
-
-echo "----- ensuring all submodules are up-to-date -----"
-git submodule update --init --recursive
-
-
-if [[ -z ${OSC_SKIP_APT:+x} ]]; then
-    echo "----- getting system-level dependencies -----"
-
-    # if root is running this script then do not use `sudo` (some distros
-    # do not have 'sudo' available)
-    if [[ "${UID}" == 0 ]]; then
-        sudo=''
-    else
-        sudo='sudo'
-    fi
-
-    ${sudo} apt-get update
-
-    # osc: main dependencies
-    ${sudo} apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
-
-    # osc: docs dependencies (if OSC_BUILD_DOCS is set)
-    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} apt-get install python3 python3-pip
-    [[ ! -z "${OSC_BUILD_DOCS:+z}" ]] && ${sudo} pip3 install -r docs/requirements.txt
-
-    echo "----- finished getting system-level dependencies -----"
-else
-    echo "----- skipping getting system-level dependencies (OSC_SKIP_APT is set) -----"
-fi
-
-
-echo "----- printing system (post-dependency install) info -----"
 cc --version
 c++ --version
 cmake --version

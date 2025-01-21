@@ -8,4 +8,4 @@ cmake -S third_party -B osc-dependencies-build -G Ninja -DCMAKE_BUILD_TYPE=%OSC_
 cmake --build osc-dependencies-build --config %OSC_BUILD_TYPE% -v
 cmake -S . -B osc-build -G Ninja -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% -DCMAKE_PREFIX_PATH=%cd%/osc-dependencies-install
 cmake --build osc-build --config %OSC_BUILD_TYPE% -v
-ctest --test-dir osc-build
+ctest --test-dir osc-build -j%NUMBER_OF_PROCESSORS%

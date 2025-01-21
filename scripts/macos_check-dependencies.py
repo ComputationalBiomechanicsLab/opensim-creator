@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+# `macos_check_dependencies.py`: checks that the given binary only (natively)
+# depends on common, or system-level, binaries.
+#
+# This is useful for double-checking that the native buildsystem isn't sneakliy
+# linking to something installed somewhere else on the build machine, which might
+# prevent end-users from being able to run the binary.
+
 import argparse
 import subprocess
 
