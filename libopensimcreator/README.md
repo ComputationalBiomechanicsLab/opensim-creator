@@ -1,4 +1,4 @@
-# `libopensimcrealibopensimcreatorion code for the OpenSim Creator UI
+# `libopensimcreator`: Core code for the OpenSim Creator UI
 
 `libopensimcreator` combines `liboscar` (a UI engine) with `libosim`
 (OpenSim + Simbody bindings) to create a UI for OpenSim.
