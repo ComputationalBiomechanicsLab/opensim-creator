@@ -35,9 +35,9 @@ source ./emsdk/emsdk_env.sh
 #   with emsdk yet
 
 CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B osc-deps-build \
-    -DOSCDEPS_GET_SDL=OFF \
-    -DOSCDEPS_GET_NATIVEFILEDIALOG=OFF \
-    -DOSCDEPS_GET_OPENSIM=OFF \
+    -DOSCDEPS_BUILD_SDL=OFF \
+    -DOSCDEPS_BUILD_NATIVEFILEDIALOG=OFF \
+    -DOSCDEPS_BUILD_OPENSIM=OFF \
     -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install \
     -DCMAKE_INSTALL_LIBDIR=${PWD}/osc-deps-install/lib
 emmake cmake --build osc-deps-build -j$(nproc) -v
