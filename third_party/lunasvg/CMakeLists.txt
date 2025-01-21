@@ -25,21 +25,9 @@ if(LUNASVG_BUILD_EXAMPLES)
     target_include_directories(svg2png PRIVATE 3rdparty/stb)
 endif()
 
-set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include)
-
-install(FILES
-    include/lunasvg.h
-    DESTINATION ${LUNASVG_INCDIR}
-)
-
-install(TARGETS lunasvg
-    EXPORT lunasvg-config
-    LIBRARY     DESTINATION    ${LUNASVG_LIBDIR}
-    ARCHIVE     DESTINATION    ${LUNASVG_LIBDIR}
-    INCLUDES    DESTINATION    ${LUNASVG_INCDIR}
-)
-install(EXPORT lunasvg-config
-    DESTINATION ${LUNASVG_LIBDIR}/cmake/lunasvg
-    NAMESPACE lunasvg::
-)
+# opensim-creator: ensure the installation creates a standard layout that doesn't
+# include the host's machine
+include(GNUInstallDirs)
+install(FILES include/lunasvg.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS lunasvg EXPORT lunasvg-config)
+install(EXPORT lunasvg-config DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg NAMESPACE lunasvg::)

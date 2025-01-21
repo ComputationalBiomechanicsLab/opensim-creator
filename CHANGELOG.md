@@ -15,6 +15,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   was being ignored (thanks @carlosedubarreto, #980).
 - Internal: fixed a bug where the screenshot tab was unable to render the screenshot
   to an image file (#981).
+- Internal: the lunasvg dependency no longer installs files that include absolute paths
+  on the developers/build machine's filesystem
 
 ## [0.5.18] - 2025/01/16
 
