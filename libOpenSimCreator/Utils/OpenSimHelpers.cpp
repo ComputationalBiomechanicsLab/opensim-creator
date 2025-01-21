@@ -1,7 +1,7 @@
 #include "OpenSimHelpers.h"
 
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Plane.h>

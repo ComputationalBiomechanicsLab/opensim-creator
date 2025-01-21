@@ -1,8 +1,8 @@
 #include "SingleStateSimulation.h"
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/ParamBlock.h>
 
 #include <liboscar/Utils/SynchronizedValue.h>
 #include <liboscar/Utils/SynchronizedValueGuard.h>

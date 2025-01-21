@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 
 #include <liboscar/Maths/Vec3.h>
 

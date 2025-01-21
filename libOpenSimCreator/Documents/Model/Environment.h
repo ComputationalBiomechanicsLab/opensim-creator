@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Utils/ParamBlock.h>
 
 #include <vector>
 

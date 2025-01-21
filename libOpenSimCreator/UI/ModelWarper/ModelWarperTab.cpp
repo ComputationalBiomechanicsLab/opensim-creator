@@ -1,12 +1,12 @@
 #include "ModelWarperTab.h"
 
-#include <libOpenSimCreator/UI/ModelWarper/ChecklistPanel.h>
-#include <libOpenSimCreator/UI/ModelWarper/MainMenu.h>
-#include <libOpenSimCreator/UI/ModelWarper/ModelWarperTabInitialPopup.h>
-#include <libOpenSimCreator/UI/ModelWarper/ResultModelViewerPanel.h>
-#include <libOpenSimCreator/UI/ModelWarper/SourceModelViewerPanel.h>
-#include <libOpenSimCreator/UI/ModelWarper/Toolbar.h>
-#include <libOpenSimCreator/UI/ModelWarper/UIState.h>
+#include <libopensimcreator/UI/ModelWarper/ChecklistPanel.h>
+#include <libopensimcreator/UI/ModelWarper/MainMenu.h>
+#include <libopensimcreator/UI/ModelWarper/ModelWarperTabInitialPopup.h>
+#include <libopensimcreator/UI/ModelWarper/ResultModelViewerPanel.h>
+#include <libopensimcreator/UI/ModelWarper/SourceModelViewerPanel.h>
+#include <libopensimcreator/UI/ModelWarper/Toolbar.h>
+#include <libopensimcreator/UI/ModelWarper/UIState.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>

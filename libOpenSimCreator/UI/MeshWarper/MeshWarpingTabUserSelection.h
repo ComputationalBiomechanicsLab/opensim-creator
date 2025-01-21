@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 
 #include <utility>
 #include <unordered_set>

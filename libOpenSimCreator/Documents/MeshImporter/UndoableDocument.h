@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
 
 #include <liboscar/Utils/UndoRedo.h>
 

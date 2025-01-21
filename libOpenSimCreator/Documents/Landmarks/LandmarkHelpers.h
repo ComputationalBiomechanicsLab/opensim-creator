@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/Landmark.h>
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libOpenSimCreator/Documents/Landmarks/NamedLandmark.h>
+#include <libopensimcreator/Documents/Landmarks/Landmark.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 
 #include <cstddef>
 #include <filesystem>

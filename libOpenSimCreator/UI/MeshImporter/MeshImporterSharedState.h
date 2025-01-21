@@ -1,20 +1,20 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/Body.h>
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/DocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Ground.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Joint.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Mesh.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
-#include <libOpenSimCreator/Documents/MeshImporter/OpenSimBridge.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Station.h>
-#include <libOpenSimCreator/Documents/MeshImporter/UndoableDocument.h>
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <libOpenSimCreator/UI/MeshImporter/DrawableThing.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshLoader.h>
+#include <libopensimcreator/Documents/MeshImporter/Body.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/DocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/Ground.h>
+#include <libopensimcreator/Documents/MeshImporter/Joint.h>
+#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/OpenSimBridge.h>
+#include <libopensimcreator/Documents/MeshImporter/Station.h>
+#include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
+#include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Geometries.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/IObjectFinder.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/IObjectFinder.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
 
 #include <liboscar/Utils/ClonePtr.h>
 #include <liboscar/Utils/UID.h>

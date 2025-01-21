@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/CStringView.h>

@@ -1,11 +1,11 @@
 #include "ObjectPropertiesEditor.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/IVersionedComponentAccessor.h>
-#include <libOpenSimCreator/UI/Shared/FunctionCurveViewerPopup.h>
-#include <libOpenSimCreator/UI/Shared/GeometryPathEditorPopup.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
+#include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/MathHelpers.h>

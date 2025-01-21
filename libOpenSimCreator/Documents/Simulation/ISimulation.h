@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationClocks.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationStatus.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
 #include <liboscar/Utils/SynchronizedValueGuard.h>
 

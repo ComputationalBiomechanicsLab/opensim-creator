@@ -1,9 +1,9 @@
 #include "ImportStationsFromCSVPopup.h"
 
-#include <libOpenSimCreator/Documents/Landmarks/Landmark.h>
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <libOpenSimCreator/Documents/Landmarks/NamedLandmark.h>
-#include <libOpenSimCreator/Documents/MeshImporter/UndoableActions.h>
+#include <libopensimcreator/Documents/Landmarks/Landmark.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
+#include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/IconCodepoints.h>

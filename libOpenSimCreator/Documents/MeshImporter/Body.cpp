@@ -1,8 +1,8 @@
 #include "Body.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIStrings.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TransformFunctions.h>

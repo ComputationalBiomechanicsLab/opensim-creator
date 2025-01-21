@@ -1,9 +1,9 @@
 #include "ModelStatusBar.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Shared/ComponentContextMenu.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>

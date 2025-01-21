@@ -1,12 +1,12 @@
 #include "OpenSimDecorationGenerator.h"
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
-#include <libOpenSimCreator/Graphics/MuscleColorSource.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationOptions.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <libopensimcreator/Graphics/MuscleColorSource.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>

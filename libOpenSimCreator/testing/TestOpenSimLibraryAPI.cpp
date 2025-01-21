@@ -1,10 +1,10 @@
 // no associated header: these tests are just checking how the
 // OpenSim API behaves
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <Simbody.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>

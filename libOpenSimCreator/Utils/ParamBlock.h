@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Utils/ParamValue.h>
+#include <libopensimcreator/Utils/ParamValue.h>
 
 #include <liboscar/Utils/ClonePtr.h>
 

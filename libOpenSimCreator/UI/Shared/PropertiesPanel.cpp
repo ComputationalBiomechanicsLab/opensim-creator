@@ -1,11 +1,11 @@
 #include "PropertiesPanel.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/UI/Events/OpenComponentContextMenuEvent.h>
-#include <libOpenSimCreator/UI/ModelEditor/SelectComponentPopup.h>
-#include <libOpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
+#include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
+#include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>

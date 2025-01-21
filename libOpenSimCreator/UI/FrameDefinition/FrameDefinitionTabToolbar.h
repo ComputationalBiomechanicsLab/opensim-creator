@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Utils/LifetimedPtr.h>

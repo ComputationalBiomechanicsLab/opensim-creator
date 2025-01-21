@@ -1,6 +1,6 @@
 #include "ComponentRegistryEntryBase.h"
 
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <OpenSim/Common/Component.h>
 
 #include <memory>

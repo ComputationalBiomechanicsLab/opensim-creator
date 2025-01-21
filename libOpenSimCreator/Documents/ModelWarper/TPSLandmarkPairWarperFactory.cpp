@@ -1,9 +1,9 @@
 #include "TPSLandmarkPairWarperFactory.h"
 
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpableModel.h>
-#include <libOpenSimCreator/Utils/TPS3D.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpableModel.h>
+#include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/Log.h>

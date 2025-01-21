@@ -1,6 +1,6 @@
 #include "OverlayDecorationGenerator.h"
 
-#include <libOpenSimCreator/Graphics/OverlayDecorationOptions.h>
+#include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 

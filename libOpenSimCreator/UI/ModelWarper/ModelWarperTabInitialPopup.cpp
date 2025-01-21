@@ -1,6 +1,6 @@
 #include "ModelWarperTabInitialPopup.h"
 
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>

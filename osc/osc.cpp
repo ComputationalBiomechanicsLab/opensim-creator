@@ -1,8 +1,8 @@
 #include <osc/osc_config.h>
 
 #include <liboscar/Platform/AppMetadata.h>
-#include <libOpenSimCreator/UI/MainUIScreen.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/UI/MainUIScreen.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <cstdlib>
 #include <iostream>

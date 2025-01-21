@@ -1,13 +1,13 @@
 #include "MeshWarpingTab.h"
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabInputMeshPanel.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabMainMenu.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabNavigatorPanel.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabResultMeshPanel.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabInputMeshPanel.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabMainMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabNavigatorPanel.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabResultMeshPanel.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabStatusBar.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabToolbar.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Events/Event.h>

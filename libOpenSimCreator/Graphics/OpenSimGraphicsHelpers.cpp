@@ -1,10 +1,10 @@
 #include "OpenSimGraphicsHelpers.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
-#include <libOpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <libopensimcreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>

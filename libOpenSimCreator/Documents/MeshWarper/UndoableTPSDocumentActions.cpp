@@ -1,16 +1,16 @@
 #include "UndoableTPSDocumentActions.h"
 
-#include <libOpenSimCreator/Documents/Landmarks/Landmark.h>
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.h>
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Documents/Landmarks/Landmark.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Formats/OBJ.h>

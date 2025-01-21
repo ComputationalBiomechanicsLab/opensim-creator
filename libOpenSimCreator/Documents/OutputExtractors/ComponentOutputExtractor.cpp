@@ -1,9 +1,9 @@
 #include "ComponentOutputExtractor.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Utils/Algorithms.h>

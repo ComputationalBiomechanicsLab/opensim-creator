@@ -1,12 +1,12 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/NamedLandmarkPair3D.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElement.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Utils/LandmarkPair3D.h>
+#include <libopensimcreator/Documents/MeshWarper/NamedLandmarkPair3D.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElement.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vec3.h>

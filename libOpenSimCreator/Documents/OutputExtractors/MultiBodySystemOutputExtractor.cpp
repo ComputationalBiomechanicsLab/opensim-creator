@@ -1,6 +1,6 @@
 #include "MultiBodySystemOutputExtractor.h"
 
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Utils/Assertions.h>

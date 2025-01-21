@@ -1,7 +1,7 @@
 #include "CachedModelWarper.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/WarpableModel.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpableModel.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

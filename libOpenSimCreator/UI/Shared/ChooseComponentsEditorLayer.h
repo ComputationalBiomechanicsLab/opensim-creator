@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
+#include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
 
 #include <memory>
 

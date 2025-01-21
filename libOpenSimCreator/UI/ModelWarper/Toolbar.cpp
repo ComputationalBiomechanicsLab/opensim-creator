@@ -1,7 +1,7 @@
 #include "Toolbar.h"
 
-#include <libOpenSimCreator/UI/ModelWarper/ModelWarperUIHelpers.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/ModelWarper/ModelWarperUIHelpers.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/IconCodepoints.h>

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
-#include <libOpenSimCreator/Platform/OSCColors.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <libopensimcreator/Platform/OSCColors.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Maths/Circle.h>
 #include <liboscar/Maths/MathHelpers.h>

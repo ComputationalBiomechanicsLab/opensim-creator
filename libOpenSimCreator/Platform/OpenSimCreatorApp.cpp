@@ -1,10 +1,10 @@
-#include "libOpenSimCreator/Platform/OpenSimCreatorApp.h"
+#include "OpenSimCreatorApp.h"
 
-#include <libOpenSimCreator/UI/OpenSimCreatorTabRegistry.h>
-#include <libOpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
-#include <libOpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
-#include <libOpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
-#include <libOpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
+#include <libopensimcreator/UI/OpenSimCreatorTabRegistry.h>
+#include <libopensimcreator/Documents/CustomComponents/SphereLandmark.h>
+#include <libopensimcreator/Documents/CustomComponents/PointToPointEdge.h>
+#include <libopensimcreator/Documents/CustomComponents/MidpointLandmark.h>
+#include <libopensimcreator/Documents/CustomComponents/CrossProductEdge.h>
 
 #include <libosim/osim.h>
 #include <liboscar/Platform/App.h>
@@ -16,7 +16,7 @@
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar_demos/OscarDemosTabRegistry.h>
+#include <liboscar-demos/OscarDemosTabRegistry.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>

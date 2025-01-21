@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <vector>
 

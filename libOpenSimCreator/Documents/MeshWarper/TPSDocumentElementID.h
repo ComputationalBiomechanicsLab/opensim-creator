@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 
 #include <liboscar/Utils/HashHelpers.h>
 #include <liboscar/Utils/UID.h>

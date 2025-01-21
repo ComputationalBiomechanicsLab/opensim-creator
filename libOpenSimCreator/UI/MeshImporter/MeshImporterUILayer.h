@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
+#include <libopensimcreator/UI/MeshImporter/IMeshImporterUILayerHost.h>
 
 namespace osc { class Event; }
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>

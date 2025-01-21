@@ -1,10 +1,10 @@
 #include "ChecklistPanel.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpableOpenSimComponent.h>
-#include <libOpenSimCreator/UI/ModelWarper/ModelWarperUIHelpers.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpableOpenSimComponent.h>
+#include <libopensimcreator/UI/ModelWarper/ModelWarperUIHelpers.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/UI/oscimgui.h>

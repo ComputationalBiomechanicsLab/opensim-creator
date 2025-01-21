@@ -1,6 +1,6 @@
 #include "MeshLoader.h"
 
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>

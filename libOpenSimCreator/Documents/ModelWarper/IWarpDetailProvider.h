@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <vector>
 

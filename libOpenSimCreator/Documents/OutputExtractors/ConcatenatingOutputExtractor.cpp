@@ -1,8 +1,8 @@
 #include "ConcatenatingOutputExtractor.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Utils/Algorithms.h>

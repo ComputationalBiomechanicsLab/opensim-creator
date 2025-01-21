@@ -1,9 +1,9 @@
 #include "ModelWarperConfiguration.h"
 
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Utils/LandmarkPair3D.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Utils/LandmarkPair3D.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Utils/StringHelpers.h>

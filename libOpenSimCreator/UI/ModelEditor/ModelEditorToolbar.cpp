@@ -1,10 +1,10 @@
 #include "ModelEditorToolbar.h"
 
-#include <libOpenSimCreator/Documents/Model/Environment.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
+#include <libopensimcreator/Documents/Model/Environment.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec2.h>

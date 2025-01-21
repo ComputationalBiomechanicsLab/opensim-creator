@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/ICloneable.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IWarpDetailProvider.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IFrameWarper.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IValidateable.h>
+#include <libopensimcreator/Documents/ModelWarper/ICloneable.h>
+#include <libopensimcreator/Documents/ModelWarper/IWarpDetailProvider.h>
+#include <libopensimcreator/Documents/ModelWarper/IFrameWarper.h>
+#include <libopensimcreator/Documents/ModelWarper/IValidateable.h>
 
 namespace osc::mow { class WarpableModel; }
 

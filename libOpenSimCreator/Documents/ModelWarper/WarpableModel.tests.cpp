@@ -1,6 +1,6 @@
 #include "WarpableModel.h"
 
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Maths/Constants.h>

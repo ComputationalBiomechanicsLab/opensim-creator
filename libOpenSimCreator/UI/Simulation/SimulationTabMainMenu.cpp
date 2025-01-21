@@ -1,7 +1,7 @@
 #include "SimulationTabMainMenu.h"
 
-#include <libOpenSimCreator/Documents/Simulation/Simulation.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
 
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>

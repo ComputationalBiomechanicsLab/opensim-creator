@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/Landmark.h>
+#include <libopensimcreator/Documents/Landmarks/Landmark.h>
 
 #include <liboscar/Maths/Vec3.h>
 

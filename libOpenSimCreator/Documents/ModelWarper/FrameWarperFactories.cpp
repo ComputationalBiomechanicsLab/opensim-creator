@@ -1,8 +1,8 @@
 #include "FrameWarperFactories.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/IdentityFrameWarperFactory.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
-#include <libOpenSimCreator/Documents/ModelWarper/StationDefinedFrameWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/IdentityFrameWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/ModelWarpConfiguration.h>
+#include <libopensimcreator/Documents/ModelWarper/StationDefinedFrameWarperFactory.h>
 
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>

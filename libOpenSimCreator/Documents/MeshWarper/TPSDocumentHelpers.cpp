@@ -1,10 +1,10 @@
 #include "TPSDocumentHelpers.h"
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Maths/Vec3.h>

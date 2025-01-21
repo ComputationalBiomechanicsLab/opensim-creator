@@ -1,8 +1,8 @@
 #include "SimulationScrubber.h"
 
-#include <libOpenSimCreator/Documents/Simulation/Simulation.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <libOpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>

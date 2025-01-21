@@ -1,6 +1,6 @@
-# `libOpenSimCreator`: Implementation code for the OpenSim Creator UI
+# `libopensimcrealibopensimcreatorion code for the OpenSim Creator UI
 
-`libOpenSimCreator` combines `liboscar` (a UI engine) with `libosim`
+`libopensimcreator` combines `liboscar` (a UI engine) with `libosim`
 (OpenSim + Simbody bindings) to create a UI for OpenSim.
 
 | Directory | Description |

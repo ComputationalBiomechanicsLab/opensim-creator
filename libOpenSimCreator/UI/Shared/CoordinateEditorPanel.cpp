@@ -1,10 +1,10 @@
 #include "CoordinateEditorPanel.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Platform/OSCColors.h>
-#include <libOpenSimCreator/UI/Shared/ComponentContextMenu.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/OSCColors.h>
+#include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>

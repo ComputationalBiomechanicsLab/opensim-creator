@@ -1,6 +1,6 @@
 #include "OpenSimCreatorTabRegistry.h"
 
-#include <libOpenSimCreator/UI/OpenSimCreatorTabs.h>
+#include <libopensimcreator/UI/OpenSimCreatorTabs.h>
 
 #include <liboscar/UI/Tabs/TabRegistry.h>
 

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Documents/Simulation/ISimulation.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationStatus.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 
 #include <liboscar/Utils/SynchronizedValueGuard.h>
 

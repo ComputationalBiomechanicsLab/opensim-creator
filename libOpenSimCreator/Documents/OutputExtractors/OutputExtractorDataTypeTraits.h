@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 
 #include <liboscar/Variant/VariantType.h>
 

@@ -1,9 +1,9 @@
 #include "SimulationToolbar.h"
 
-#include <libOpenSimCreator/Documents/Simulation/Simulation.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Simulation/SimulationScrubber.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Simulation/SimulationScrubber.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec2.h>

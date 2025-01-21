@@ -1,11 +1,11 @@
 #include "ModelMusclePlotPanel.h"
 
-#include <libOpenSimCreator/Documents/Model/ModelStateCommit.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Platform/OSCColors.h>
-#include <libOpenSimCreator/UI/Events/AddMusclePlotEvent.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/ModelStateCommit.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/OSCColors.h>
+#include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Graphics/Color.h>

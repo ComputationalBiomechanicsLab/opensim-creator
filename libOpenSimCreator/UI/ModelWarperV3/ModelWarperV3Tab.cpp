@@ -1,20 +1,20 @@
 #include "ModelWarperV3Tab.h"
 
-#include <libOpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkHelpers.h>
-#include <libOpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libOpenSimCreator/Platform/RecentFiles.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanel.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
-#include <libOpenSimCreator/UI/Shared/ObjectPropertiesEditor.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
-#include <libOpenSimCreator/Utils/TPS3D.h>
+#include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
+#include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanel.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/oscar.h>
 #include <OpenSim/OpenSim.h>

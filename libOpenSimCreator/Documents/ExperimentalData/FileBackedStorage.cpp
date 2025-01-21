@@ -1,6 +1,6 @@
 #include "FileBackedStorage.h"
 
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/Storage.h>
 

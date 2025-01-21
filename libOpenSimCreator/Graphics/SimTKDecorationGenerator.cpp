@@ -1,7 +1,7 @@
 #include "SimTKDecorationGenerator.h"
 
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>

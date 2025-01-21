@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/Graphics/MuscleColorSource.h>
-#include <libOpenSimCreator/Graphics/MuscleDecorationStyle.h>
-#include <libOpenSimCreator/Graphics/MuscleSizingStyle.h>
-#include <libOpenSimCreator/Graphics/MuscleColorSourceScaling.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationOptionFlags.h>
+#include <libopensimcreator/Graphics/MuscleColorSource.h>
+#include <libopensimcreator/Graphics/MuscleDecorationStyle.h>
+#include <libopensimcreator/Graphics/MuscleSizingStyle.h>
+#include <libopensimcreator/Graphics/MuscleColorSourceScaling.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationOptionFlags.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Variant/Variant.h>

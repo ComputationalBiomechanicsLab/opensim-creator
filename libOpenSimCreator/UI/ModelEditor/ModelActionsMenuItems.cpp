@@ -1,11 +1,11 @@
 #include "ModelActionsMenuItems.h"
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <libOpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/UI/ModelEditor/AddBodyPopup.h>
-#include <libOpenSimCreator/UI/ModelEditor/AddComponentPopup.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
+#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/UI/ModelEditor/AddBodyPopup.h>
+#include <libopensimcreator/UI/ModelEditor/AddComponentPopup.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>

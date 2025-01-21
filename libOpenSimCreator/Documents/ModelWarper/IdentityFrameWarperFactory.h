@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/IFrameWarper.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <libopensimcreator/Documents/ModelWarper/IFrameWarper.h>
+#include <libopensimcreator/Documents/ModelWarper/IFrameWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <memory>
 #include <vector>

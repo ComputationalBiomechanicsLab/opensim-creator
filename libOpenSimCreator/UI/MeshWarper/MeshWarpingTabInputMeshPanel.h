@@ -1,14 +1,14 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabContextMenu.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabContextMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Geometries/SolidGeometries.h>

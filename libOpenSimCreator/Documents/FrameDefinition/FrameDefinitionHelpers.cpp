@@ -1,10 +1,10 @@
 #include "FrameDefinitionHelpers.h"
 
-#include <libOpenSimCreator/Documents/CustomComponents/Edge.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Documents/CustomComponents/Edge.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec3.h>

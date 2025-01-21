@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/MIObjectCRTP.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObjectFlags.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObjectCRTP.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObjectFlags.h>
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Transform.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <liboscar/Variant.h>
 

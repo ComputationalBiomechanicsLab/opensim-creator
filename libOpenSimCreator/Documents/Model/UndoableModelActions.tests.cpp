@@ -1,13 +1,13 @@
 #include "UndoableModelActions.h"
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistryEntry.h>
-#include <libOpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
-#include <libOpenSimCreator/Documents/Model/ObjectPropertyEdit.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistryEntry.h>
+#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/Model/ObjectPropertyEdit.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Maths/MathHelpers.h>

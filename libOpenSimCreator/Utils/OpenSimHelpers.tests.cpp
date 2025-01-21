@@ -1,10 +1,10 @@
 #include "OpenSimHelpers.h"
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <libOpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
+#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Platform/Log.h>

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/ModelWarper/FrameWarperFactories.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IValidateable.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
-#include <libOpenSimCreator/Documents/ModelWarper/PointWarperFactories.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/ModelWarper/FrameWarperFactories.h>
+#include <libopensimcreator/Documents/ModelWarper/IValidateable.h>
+#include <libopensimcreator/Documents/ModelWarper/ModelWarpConfiguration.h>
+#include <libopensimcreator/Documents/ModelWarper/PointWarperFactories.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 

@@ -1,6 +1,6 @@
 #include "RecentFiles.h"
 
-#include <libOpenSimCreator/Platform/RecentFile.h>
+#include <libopensimcreator/Platform/RecentFile.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>

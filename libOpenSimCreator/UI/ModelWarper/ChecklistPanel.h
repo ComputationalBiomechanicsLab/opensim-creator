@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/ModelWarper/UIState.h>
+#include <libopensimcreator/UI/ModelWarper/UIState.h>
 
 #include <liboscar/UI/Panels/Panel.h>
 

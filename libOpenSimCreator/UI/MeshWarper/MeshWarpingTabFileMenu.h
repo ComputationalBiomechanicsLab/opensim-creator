@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>

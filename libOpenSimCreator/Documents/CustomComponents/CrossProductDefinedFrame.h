@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/CustomComponents/Edge.h>
+#include <libopensimcreator/Documents/CustomComponents/Edge.h>
 
 #include <liboscar/Maths/CoordinateDirection.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>

@@ -1,6 +1,6 @@
 #include "SimTKMeshLoader.h"
 
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshTopology.h>

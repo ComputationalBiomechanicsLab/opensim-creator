@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanel.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanel.h>
 
 #include <memory>
 #include <string_view>

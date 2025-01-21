@@ -1,15 +1,15 @@
 #include "ChooseComponentsEditorLayer.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libOpenSimCreator/Graphics/OpenSimGraphicsHelpers.h>
-#include <libOpenSimCreator/Graphics/OverlayDecorationGenerator.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelState.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>

@@ -1,6 +1,6 @@
 #include "ConstantOutputExtractor.h"
 
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Station.h>

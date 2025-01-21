@@ -126,7 +126,7 @@ def build_osc(conf: BuildConfiguration):
         # build+run OpenSimCreator test suite
         #
         # (--gtest_filter the tests that won't work in CI because of rendering issues)
-        test_osc_path = os.path.join(conf.get_osc_build_dir(), 'libOpenSimCreator', 'testing', conf.get_osc_build_type(), 'TestOpenSimCreator')
+        test_osc_path = os.path.join(conf.get_osc_build_dir(), 'libopensimcreator', 'testing', conf.get_osc_build_type(), 'TestOpenSimCreator')
         _run(f'cmake --build {conf.get_osc_build_dir()} --target TestOpenSimCreator {other_build_args}')
         _run(f'{test_osc_path} --gtest_filter="-AddComponentPopup*:RegisteredOpenSimCreatorTabs*:LoadingTab*"')
 

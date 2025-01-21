@@ -1,11 +1,11 @@
 #include "AddBodyPopup.h"
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <libOpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/UI/ModelEditor/SelectGeometryPopup.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
+#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>

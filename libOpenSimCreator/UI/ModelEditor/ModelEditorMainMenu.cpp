@@ -1,16 +1,16 @@
 #include "ModelEditorMainMenu.h"
 
-#include <libOpenSimCreator/Documents/Model/Environment.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/UI/ModelEditor/ExportPointsPopup.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelActionsMenuItems.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelMusclePlotPanel.h>
-#include <libOpenSimCreator/UI/PerformanceAnalyzerTab.h>
-#include <libOpenSimCreator/UI/Shared/ImportStationsFromCSVPopup.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
-#include <libOpenSimCreator/UI/Shared/ParamBlockEditorPopup.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/Environment.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/UI/ModelEditor/ExportPointsPopup.h>
+#include <libopensimcreator/UI/ModelEditor/ModelActionsMenuItems.h>
+#include <libopensimcreator/UI/ModelEditor/ModelMusclePlotPanel.h>
+#include <libopensimcreator/UI/PerformanceAnalyzerTab.h>
+#include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>

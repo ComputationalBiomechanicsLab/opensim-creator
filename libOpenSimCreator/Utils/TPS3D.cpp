@@ -1,6 +1,6 @@
 #include "TPS3D.h"
 
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Vec3.h>

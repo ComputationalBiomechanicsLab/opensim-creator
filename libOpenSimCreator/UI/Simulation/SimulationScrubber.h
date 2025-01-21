@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
 #include <memory>
 #include <string_view>

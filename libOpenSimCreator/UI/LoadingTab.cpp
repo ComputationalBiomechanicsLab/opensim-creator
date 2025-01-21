@@ -1,9 +1,9 @@
 #include "LoadingTab.h"
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Platform/RecentFiles.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>

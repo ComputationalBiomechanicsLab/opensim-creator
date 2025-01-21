@@ -1,7 +1,7 @@
 #include "Document.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/Ground.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/Ground.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
 #include <liboscar/Utils/ClonePtr.h>
 

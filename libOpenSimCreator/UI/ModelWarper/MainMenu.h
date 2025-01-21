@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/ModelWarper/FileMenu.h>
-#include <libOpenSimCreator/UI/ModelWarper/UIState.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/ModelWarper/FileMenu.h>
+#include <libopensimcreator/UI/ModelWarper/UIState.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
 
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>

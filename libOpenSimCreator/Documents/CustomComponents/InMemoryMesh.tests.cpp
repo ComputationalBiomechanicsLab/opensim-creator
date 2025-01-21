@@ -1,7 +1,7 @@
 #include "InMemoryMesh.h"
 
 #include <gtest/gtest.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

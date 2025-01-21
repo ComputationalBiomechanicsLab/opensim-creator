@@ -1,10 +1,10 @@
 #include "FrameDefinitionUIHelpers.h"
 
-#include <libOpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>

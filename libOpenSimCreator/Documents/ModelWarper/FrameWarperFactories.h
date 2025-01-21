@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/IFrameWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/IFrameWarperFactory.h>
 
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/ClonePtr.h>

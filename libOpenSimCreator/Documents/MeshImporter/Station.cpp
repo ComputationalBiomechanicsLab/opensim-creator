@@ -1,9 +1,9 @@
 #include "Station.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIStrings.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/VecFunctions.h>
 #include <liboscar/Maths/Vec3.h>

@@ -1,6 +1,6 @@
 #include "MidpointLandmark.h"
 
-#include <libOpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Point.h>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 
 #include <liboscar/Utils/UID.h>
 

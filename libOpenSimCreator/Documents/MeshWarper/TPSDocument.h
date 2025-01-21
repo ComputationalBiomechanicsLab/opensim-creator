@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
 #include <liboscar/Graphics/Mesh.h>
 

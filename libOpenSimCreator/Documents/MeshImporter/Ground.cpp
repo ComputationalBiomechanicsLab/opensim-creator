@@ -1,8 +1,8 @@
 #include "Ground.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIStrings.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Utils/CStringView.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/Normalized.h>

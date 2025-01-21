@@ -1,6 +1,6 @@
 #include "CrossProductDefinedFrame.h"
 
-#include <libOpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <liboscar/Maths/CoordinateDirection.h>
 #include <OpenSim/Common/Exception.h>

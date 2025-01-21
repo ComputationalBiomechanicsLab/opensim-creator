@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Simulation/IntegratorMethod.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <libOpenSimCreator/Utils/ParamBlock.h>
+#include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Utils/ParamBlock.h>
 
 namespace osc
 {

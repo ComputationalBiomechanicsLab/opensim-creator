@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataType.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeList.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractorDataTypeTraits.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeList.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeTraits.h>
 
 #include <liboscar/Utils/EnumHelpers.h>
 

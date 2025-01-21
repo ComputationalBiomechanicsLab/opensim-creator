@@ -1,9 +1,9 @@
 #include "SimulationHelpers.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Formats/CSV.h>

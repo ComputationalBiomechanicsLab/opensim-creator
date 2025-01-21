@@ -1,6 +1,6 @@
 #include "CustomRenderingOptions.h"
 
-#include <libOpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
+#include <libopensimcreator/Graphics/CustomRenderingOptionFlags.h>
 
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Utils/Algorithms.h>

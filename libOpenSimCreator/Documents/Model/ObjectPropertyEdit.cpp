@@ -1,6 +1,6 @@
 #include "ObjectPropertyEdit.h"
 
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Common/Component.h>

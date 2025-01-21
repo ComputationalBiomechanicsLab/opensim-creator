@@ -1,12 +1,12 @@
 #include "DocumentHelpers.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/Body.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Joint.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Mesh.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Station.h>
+#include <libopensimcreator/Documents/MeshImporter/Body.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/Joint.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
+#include <libopensimcreator/Documents/MeshImporter/Station.h>
 
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Maths/MathHelpers.h>

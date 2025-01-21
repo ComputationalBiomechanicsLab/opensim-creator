@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/ModelWarper/CachedModelWarper.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpableModel.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpDetail.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/ModelWarper/CachedModelWarper.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpableModel.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpDetail.h>
 
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Platform/Widget.h>

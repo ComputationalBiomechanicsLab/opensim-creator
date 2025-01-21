@@ -1,10 +1,10 @@
 #include "SimulationModelStatePair.h"
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Documents/Simulation/Simulation.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Documents/Simulation/SingleStateSimulation.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/Simulation/SingleStateSimulation.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Common/Component.h>

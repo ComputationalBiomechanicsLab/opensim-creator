@@ -1,13 +1,13 @@
 #include "FrameDefinitionActions.h"
 
-#include <libOpenSimCreator/Documents/CustomComponents/CrossProductDefinedFrame.h>
-#include <libOpenSimCreator/Documents/CustomComponents/CrossProductEdge.h>
-#include <libOpenSimCreator/Documents/CustomComponents/MidpointLandmark.h>
-#include <libOpenSimCreator/Documents/CustomComponents/PointToPointEdge.h>
-#include <libOpenSimCreator/Documents/CustomComponents/SphereLandmark.h>
-#include <libOpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/CustomComponents/CrossProductDefinedFrame.h>
+#include <libopensimcreator/Documents/CustomComponents/CrossProductEdge.h>
+#include <libopensimcreator/Documents/CustomComponents/MidpointLandmark.h>
+#include <libopensimcreator/Documents/CustomComponents/PointToPointEdge.h>
+#include <libopensimcreator/Documents/CustomComponents/SphereLandmark.h>
+#include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/StringHelpers.h>

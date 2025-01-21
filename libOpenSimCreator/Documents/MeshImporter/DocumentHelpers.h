@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
 
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Utils/UID.h>

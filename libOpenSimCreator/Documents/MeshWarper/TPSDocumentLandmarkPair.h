@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElement.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementType.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElement.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/StringName.h>

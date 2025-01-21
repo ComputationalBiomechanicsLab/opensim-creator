@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
 
 #include <liboscar/Utils/UID.h>
 

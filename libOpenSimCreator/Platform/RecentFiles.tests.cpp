@@ -1,6 +1,6 @@
 #include "RecentFiles.h"
 
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 

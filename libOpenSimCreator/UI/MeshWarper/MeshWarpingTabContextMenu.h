@@ -1,13 +1,13 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElement.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentElementID.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElement.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>

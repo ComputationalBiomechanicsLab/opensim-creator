@@ -1,12 +1,12 @@
 #include "CachedModelWarper.h"
 
-#include <libOpenSimCreator/Documents/CustomComponents/InMemoryMesh.h>
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpableModel.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/ModelWarper/IPointWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpableModel.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Formats/OBJ.h>
 #include <liboscar/Platform/Log.h>

@@ -1,8 +1,8 @@
 #include "UIState.h"
 
-#include <libOpenSimCreator/Platform/RecentFiles.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>

@@ -1,6 +1,6 @@
 #include "IValidateable.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <liboscar/Utils/Algorithms.h>
 

@@ -1,15 +1,15 @@
 #include "MainMenu.h"
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/Documents/Simulation/Simulation.h>
-#include <libOpenSimCreator/Documents/Simulation/StoFileSimulation.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/Platform/RecentFiles.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <libOpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
-#include <libOpenSimCreator/UI/Simulation/SimulationTab.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/Documents/Simulation/StoFileSimulation.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
+#include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
+#include <libopensimcreator/UI/Simulation/SimulationTab.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Platform/App.h>

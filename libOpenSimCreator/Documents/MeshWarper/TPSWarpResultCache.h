@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Utils/TPS3D.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vec3.h>

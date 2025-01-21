@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistryEntryBase.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistryEntryBase.h>
 
 #include <memory>
 #include <string_view>

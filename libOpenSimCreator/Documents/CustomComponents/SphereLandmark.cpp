@@ -1,6 +1,6 @@
 #include "SphereLandmark.h"
 
-#include <libOpenSimCreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
+#include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <Simbody.h>  // TODO: OpenSim's Appearance header doesn't include simbody properly
 #include <OpenSim/Simulation/Model/Appearance.h>

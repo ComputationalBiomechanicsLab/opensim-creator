@@ -1,13 +1,13 @@
 #include "OpenSimDecorationGenerator.h"
 
-#include <libOpenSimCreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Graphics/ComponentAbsPathDecorationTagger.h>
-#include <libOpenSimCreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationOptions.h>
-#include <libOpenSimCreator/Graphics/SimTKDecorationGenerator.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Graphics/ComponentAbsPathDecorationTagger.h>
+#include <libopensimcreator/Graphics/ComponentSceneDecorationFlagsTagger.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Graphics/SimTKDecorationGenerator.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Mesh.h>

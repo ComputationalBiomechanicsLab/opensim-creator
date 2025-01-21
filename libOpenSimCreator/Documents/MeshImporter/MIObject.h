@@ -1,9 +1,9 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObjectFlags.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIVariant.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObjectFlags.h>
+#include <libopensimcreator/Documents/MeshImporter/MIVariant.h>
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/EulerAngles.h>

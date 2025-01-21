@@ -1,9 +1,9 @@
 #include "RendererPerfTestingTab.h"
 
-#include <libOpenSimCreator/Graphics/OpenSimGraphicsHelpers.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>

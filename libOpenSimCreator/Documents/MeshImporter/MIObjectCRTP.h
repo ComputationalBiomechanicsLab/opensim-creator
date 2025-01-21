@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIVariant.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/MIVariant.h>
 
 #include <memory>
 #include <type_traits>

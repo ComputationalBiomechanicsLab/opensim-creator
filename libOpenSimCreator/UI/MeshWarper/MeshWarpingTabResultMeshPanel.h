@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/LandmarkCSVFlags.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabPanel.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Graphics/RenderTexture.h>
 #include <liboscar/Graphics/Scene/CachedSceneRenderer.h>

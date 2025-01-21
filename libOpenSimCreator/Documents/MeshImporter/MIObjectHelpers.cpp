@@ -1,12 +1,12 @@
 #include "MIObjectHelpers.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/Body.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Ground.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Joint.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Mesh.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Station.h>
+#include <libopensimcreator/Documents/MeshImporter/Body.h>
+#include <libopensimcreator/Documents/MeshImporter/Ground.h>
+#include <libopensimcreator/Documents/MeshImporter/Joint.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
+#include <libopensimcreator/Documents/MeshImporter/Station.h>
 
 #include <liboscar/Graphics/MeshFunctions.h>
 #include <liboscar/Maths/Vec3.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Utils/LandmarkPair3D.h>
+#include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Utils/StringName.h>
 

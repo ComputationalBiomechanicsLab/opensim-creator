@@ -1,8 +1,8 @@
 #include "PointWarperFactories.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
-#include <libOpenSimCreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/ModelWarper/IPointWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/Log.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

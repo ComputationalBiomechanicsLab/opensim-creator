@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Utils/LandmarkPair3D.h>
+#include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CStringView.h>

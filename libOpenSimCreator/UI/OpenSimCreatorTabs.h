@@ -1,16 +1,16 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
-#include <libOpenSimCreator/UI/MeshHittestTab.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libOpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
-#include <libOpenSimCreator/UI/ModelWarperV3/ModelWarperV3Tab.h>
-#include <libOpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
-#include <libOpenSimCreator/UI/RendererGeometryShaderTab.h>
-#include <libOpenSimCreator/UI/RendererPerfTestingTab.h>
-#include <libOpenSimCreator/UI/TPS2DTab.h>
+#include <libopensimcreator/UI/FrameDefinition/FrameDefinitionTab.h>
+#include <libopensimcreator/UI/MeshHittestTab.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTab.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/UI/ModelWarper/ModelWarperTab.h>
+#include <libopensimcreator/UI/ModelWarperV3/ModelWarperV3Tab.h>
+#include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
+#include <libopensimcreator/UI/RendererGeometryShaderTab.h>
+#include <libopensimcreator/UI/RendererPerfTestingTab.h>
+#include <libopensimcreator/UI/TPS2DTab.h>
 
 #include <liboscar/Utils/Typelist.h>
 

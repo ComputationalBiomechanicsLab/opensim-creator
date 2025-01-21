@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <liboscar/Utils/CStringView.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelLayerFlags.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelLayerFlags.h>
 
 namespace osc { class ModelViewerPanelParameters; }
 namespace osc { class ModelViewerPanelState; }

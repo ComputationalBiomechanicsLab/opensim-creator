@@ -1,16 +1,16 @@
 #include "SplashTab.h"
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelActions.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/Platform/RecentFile.h>
-#include <libOpenSimCreator/Platform/RecentFiles.h>
-#include <libOpenSimCreator/UI/FrameDefinition/FrameDefinitionTab.h>
-#include <libOpenSimCreator/UI/LoadingTab.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTab.h>
-#include <libOpenSimCreator/UI/ModelWarper/ModelWarperTab.h>
-#include <libOpenSimCreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/Platform/RecentFile.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/FrameDefinition/FrameDefinitionTab.h>
+#include <libopensimcreator/UI/LoadingTab.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTab.h>
+#include <libopensimcreator/UI/ModelWarper/ModelWarperTab.h>
+#include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
 
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Color.h>

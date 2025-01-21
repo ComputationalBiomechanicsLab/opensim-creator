@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabActionsMenu.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabEditMenu.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabFileMenu.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
-#include <libOpenSimCreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabActionsMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabEditMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabFileMenu.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/UI/Shared/MainMenu.h>
 
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>

@@ -1,8 +1,8 @@
 #include "DataSeriesAnnotation.h"
 
-#include <libOpenSimCreator/Documents/ExperimentalData/DataPointType.h>
+#include <libopensimcreator/Documents/ExperimentalData/DataPointType.h>
 
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/QuaternionFunctions.h>

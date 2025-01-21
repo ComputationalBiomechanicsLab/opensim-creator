@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Graphics/CustomRenderingOptionFlags.h>
+#include <libopensimcreator/Graphics/CustomRenderingOptionFlags.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Variant/Variant.h>

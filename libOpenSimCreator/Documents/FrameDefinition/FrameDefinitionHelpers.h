@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/CustomComponents/EdgePoints.h>
+#include <libopensimcreator/Documents/CustomComponents/EdgePoints.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec3.h>

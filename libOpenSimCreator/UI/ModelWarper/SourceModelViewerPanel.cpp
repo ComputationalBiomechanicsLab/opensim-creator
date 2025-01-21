@@ -1,8 +1,8 @@
 #include "SourceModelViewerPanel.h"
 
-#include <libOpenSimCreator/UI/ModelWarper/UIState.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanel.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <libopensimcreator/UI/ModelWarper/UIState.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanel.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
 
 #include <memory>
 #include <string_view>

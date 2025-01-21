@@ -1,7 +1,7 @@
 #include "Environment.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/Simulation/ForwardDynamicSimulatorParams.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>

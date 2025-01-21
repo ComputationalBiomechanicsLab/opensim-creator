@@ -1,6 +1,6 @@
 #include "LandmarkHelpers.h"
 
-#include <libOpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
+#include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Maths/Vec3.h>

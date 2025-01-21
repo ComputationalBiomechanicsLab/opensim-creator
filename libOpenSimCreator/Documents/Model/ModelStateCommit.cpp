@@ -1,7 +1,7 @@
 #include "ModelStateCommit.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/SynchronizedValueGuard.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Platform/RecentFile.h>
+#include <libopensimcreator/Platform/RecentFile.h>
 
 #include <filesystem>
 #include <vector>

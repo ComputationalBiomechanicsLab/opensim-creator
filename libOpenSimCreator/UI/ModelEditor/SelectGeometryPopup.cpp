@@ -1,6 +1,6 @@
 #include "SelectGeometryPopup.h"
 
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>

@@ -1,8 +1,8 @@
 #include "UndoableModelStatePair.h"
 
-#include <libOpenSimCreator/Documents/Model/Environment.h>
-#include <libOpenSimCreator/Documents/Model/ModelStateCommit.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/Environment.h>
+#include <libopensimcreator/Documents/Model/ModelStateCommit.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Algorithms.h>

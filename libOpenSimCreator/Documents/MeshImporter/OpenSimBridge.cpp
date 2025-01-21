@@ -1,18 +1,18 @@
 #include "OpenSimBridge.h"
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistry.h>
-#include <libOpenSimCreator/ComponentRegistry/StaticComponentRegistries.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Body.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/DocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Joint.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Mesh.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
-#include <libOpenSimCreator/Documents/MeshImporter/OpenSimExportFlags.h>
-#include <libOpenSimCreator/Documents/MeshImporter/Station.h>
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
-#include <libOpenSimCreator/Utils/SimTKConverters.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
+#include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/MeshImporter/Body.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/DocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/Joint.h>
+#include <libopensimcreator/Documents/MeshImporter/Mesh.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
+#include <libopensimcreator/Documents/MeshImporter/Station.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Mat4.h>

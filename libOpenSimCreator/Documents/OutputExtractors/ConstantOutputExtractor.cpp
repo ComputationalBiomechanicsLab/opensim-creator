@@ -1,6 +1,6 @@
 #include "ConstantOutputExtractor.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputValueExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/HashHelpers.h>

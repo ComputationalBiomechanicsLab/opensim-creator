@@ -700,7 +700,7 @@ namespace
         // load application-level ImGui settings, then the user one,
         // so that the user settings takes precedence
         {
-            // TODO: this should be provided externally by osc/libOpenSimCreator, so that
+            // TODO: this should be provided externally by osc/libopensimcreator, so that
             // OpenSim-independent codebases aren't dependent on it
             if (loader.resource_exists("OpenSimCreator/imgui_base_config.ini")) {
                 const std::string base_ini_data = loader.slurp("OpenSimCreator/imgui_base_config.ini");

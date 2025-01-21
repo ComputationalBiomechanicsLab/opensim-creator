@@ -1,8 +1,8 @@
 #include "SimulationHelpers.h"
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/Simulation/ISimulation.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <liboscar/Utils/EnumHelpers.h>
 #include <OpenSim/Simulation/Model/Model.h>

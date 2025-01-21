@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/BasicModelStatePair.h>
+#include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 
 #include <liboscar/UI/Tabs/Tab.h>
 

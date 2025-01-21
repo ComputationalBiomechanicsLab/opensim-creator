@@ -15,7 +15,7 @@ target_compile_features(oscar_demos PUBLIC
     cxx_std_20
 )
 target_include_directories(oscar_demos PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/..      # so that `#include "liboscar_demos/HEADER.h"` works
+    ${CMAKE_CURRENT_SOURCE_DIR}/..      # so that `#include "liboscar-demos/HEADER.h"` works
 )
 target_link_libraries(oscar_demos PUBLIC
     oscar

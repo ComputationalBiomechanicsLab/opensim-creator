@@ -1,9 +1,9 @@
 #include "MainUIScreen.h"
 
-#include <libOpenSimCreator/UI/LoadingTab.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterTab.h>
-#include <libOpenSimCreator/UI/ModelEditor/ModelEditorTab.h>
-#include <libOpenSimCreator/UI/SplashTab.h>
+#include <libopensimcreator/UI/LoadingTab.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/UI/SplashTab.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>

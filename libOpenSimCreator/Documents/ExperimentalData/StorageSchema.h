@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ExperimentalData/DataSeriesAnnotation.h>
+#include <libopensimcreator/Documents/ExperimentalData/DataSeriesAnnotation.h>
 
 #include <utility>
 #include <vector>

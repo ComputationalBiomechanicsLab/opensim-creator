@@ -1,7 +1,7 @@
 #include "WarpableModel.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Utils/Algorithms.h>
 #include <OpenSim/Simulation/Model/Model.h>

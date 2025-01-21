@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 
 #include <filesystem>
 #include <memory>

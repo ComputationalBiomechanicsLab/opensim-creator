@@ -1,6 +1,6 @@
 #include "ModelWarperUIHelpers.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/IconCodepoints.h>

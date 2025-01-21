@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistryEntryBase.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistryEntryBase.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <OpenSim/Common/Component.h>

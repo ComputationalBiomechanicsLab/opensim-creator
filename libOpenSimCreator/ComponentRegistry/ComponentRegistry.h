@@ -1,7 +1,7 @@
 #pragma once
 
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistryBase.h>
-#include <libOpenSimCreator/ComponentRegistry/ComponentRegistryEntry.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistryBase.h>
+#include <libopensimcreator/ComponentRegistry/ComponentRegistryEntry.h>
 
 #include <cstddef>
 #include <memory>

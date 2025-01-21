@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelFlags.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Vec3.h>

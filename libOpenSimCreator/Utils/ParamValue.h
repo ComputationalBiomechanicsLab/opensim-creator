@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Simulation/IntegratorMethod.h>
+#include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 
 #include <variant>
 

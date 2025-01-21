@@ -3,7 +3,7 @@ find_package(GTest REQUIRED CONFIG)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/libOpenSimCreator/testing/TestOpenSimCreatorConfig.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopensimcreator/testing/TestOpenSimCreatorConfig.h"
 )
 file(GLOB_RECURSE OSC_OPENSIMCREATOR_TEST_SOURCES
     LIST_DIRECTORIES FALSE
@@ -11,7 +11,7 @@ file(GLOB_RECURSE OSC_OPENSIMCREATOR_TEST_SOURCES
 )
 add_executable(TestOpenSimCreator
 
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/libOpenSimCreator/testing/TestOpenSimCreatorConfig.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopensimcreator/testing/TestOpenSimCreatorConfig.h"
     ${OSC_OPENSIMCREATOR_TEST_SOURCES}
     TestDocumentationModels.cpp
     TestOpenSimLibraryAPI.cpp
@@ -23,7 +23,7 @@ target_compile_features(TestOpenSimCreator PUBLIC
     cxx_std_20
 )
 target_include_directories(TestOpenSimCreator PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>` works
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>` works
 )
 target_link_libraries(TestOpenSimCreator PRIVATE
     OpenSimCreator

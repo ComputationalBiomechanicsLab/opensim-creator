@@ -1,10 +1,10 @@
 #include "Mesh.h"
 
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIStrings.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>

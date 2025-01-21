@@ -54,5 +54,5 @@ export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_s
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (due to poor library design)
 LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/liboscar/testing/testoscar
-LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/liboscar_demos/testing/testoscar_demos
-LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/libOpenSimCreator/testing/TestOpenSimCreator
+LSAN_OPTIONS="suppressions=osc-build/oscar_suppressions.supp" ./osc-build/liboscar-demos/testing/testoscar_demos
+LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/libopensimcreator/testing/TestOpenSimCreator

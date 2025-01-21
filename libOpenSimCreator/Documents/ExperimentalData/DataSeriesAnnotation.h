@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/ExperimentalData/DataPointType.h>
+#include <libopensimcreator/Documents/ExperimentalData/DataPointType.h>
 
 #include <string>
 #include <vector>

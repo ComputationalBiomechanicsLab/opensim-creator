@@ -1,6 +1,6 @@
 #include "OscarDemosTabRegistry.h"
 
-#include <liboscar_demos/OscarDemoTabs.h>
+#include <liboscar-demos/OscarDemoTabs.h>
 
 #include <liboscar/UI/Tabs/TabRegistry.h>
 

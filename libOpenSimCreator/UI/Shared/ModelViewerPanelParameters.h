@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
 
 #include <functional>
 #include <memory>

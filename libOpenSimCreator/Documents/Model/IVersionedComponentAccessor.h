@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Model/IComponentAccessor.h>
+#include <libopensimcreator/Documents/Model/IComponentAccessor.h>
 
 namespace osc
 {

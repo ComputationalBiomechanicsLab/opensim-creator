@@ -1,7 +1,7 @@
 #include "ModelWarperConfiguration.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckState.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckState.h>
 
 #include <liboscar/Utils/HashHelpers.h>
 #include <OpenSim/Common/Component.h>

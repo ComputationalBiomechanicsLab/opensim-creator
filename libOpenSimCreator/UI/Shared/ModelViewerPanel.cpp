@@ -1,14 +1,14 @@
 #include "ModelViewerPanel.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Graphics/CachedModelRenderer.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Shared/ModelSelectionGizmo.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelParameters.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelState.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Graphics/CachedModelRenderer.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/ModelSelectionGizmo.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelRightClickEvent.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelState.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>

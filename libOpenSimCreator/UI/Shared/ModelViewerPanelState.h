@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Graphics/CachedModelRenderer.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelFlags.h>
-#include <libOpenSimCreator/UI/Shared/ModelViewerPanelLayer.h>
+#include <libopensimcreator/Graphics/CachedModelRenderer.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
+#include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
 
 #include <liboscar/Graphics/Scene/SceneCollision.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>

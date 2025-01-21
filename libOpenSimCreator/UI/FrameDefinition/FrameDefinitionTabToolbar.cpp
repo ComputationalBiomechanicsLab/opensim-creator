@@ -1,9 +1,9 @@
 #include "FrameDefinitionTabToolbar.h"
 
-#include <libOpenSimCreator/Documents/Model/UndoableModelStatePair.h>
-#include <libOpenSimCreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/IconCodepoints.h>

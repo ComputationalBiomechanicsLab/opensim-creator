@@ -1,10 +1,10 @@
 #include "CachedModelRenderer.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Documents/Model/ModelStatePairInfo.h>
-#include <libOpenSimCreator/Graphics/ModelRendererParams.h>
-#include <libOpenSimCreator/Graphics/OpenSimGraphicsHelpers.h>
-#include <libOpenSimCreator/Graphics/OverlayDecorationGenerator.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/ModelStatePairInfo.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
 
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>

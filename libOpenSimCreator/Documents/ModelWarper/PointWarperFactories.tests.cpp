@@ -1,9 +1,9 @@
 #include "PointWarperFactories.h"
 
-#include <libOpenSimCreator/Documents/ModelWarper/ModelWarpConfiguration.h>
-#include <libOpenSimCreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Documents/ModelWarper/ModelWarpConfiguration.h>
+#include <libopensimcreator/Documents/ModelWarper/TPSLandmarkPairWarperFactory.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 #include <OpenSim/Simulation/Model/Model.h>

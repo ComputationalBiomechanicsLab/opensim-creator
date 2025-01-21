@@ -1,14 +1,14 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocument.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
-#include <libOpenSimCreator/Documents/MeshWarper/TPSWarpResultCache.h>
-#include <libOpenSimCreator/Documents/MeshWarper/UndoableTPSDocument.h>
-#include <libOpenSimCreator/Graphics/CustomRenderingOptions.h>
-#include <libOpenSimCreator/Graphics/OverlayDecorationOptions.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabHover.h>
-#include <libOpenSimCreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
+#include <libopensimcreator/Documents/MeshWarper/TPSWarpResultCache.h>
+#include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
+#include <libopensimcreator/Graphics/CustomRenderingOptions.h>
+#include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
+#include <libopensimcreator/UI/MeshWarper/MeshWarpingTabUserSelection.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Material.h>

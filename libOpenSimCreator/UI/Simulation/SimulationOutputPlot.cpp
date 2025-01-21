@@ -1,18 +1,18 @@
 #include "SimulationOutputPlot.h"
 
-#include <libOpenSimCreator/Documents/Model/Environment.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/IOutputExtractor.h>
-#include <libOpenSimCreator/Documents/OutputExtractors/OutputExtractor.h>
-#include <libOpenSimCreator/Documents/Simulation/ISimulation.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationClock.h>
-#include <libOpenSimCreator/Documents/Simulation/SimulationReport.h>
-#include <libOpenSimCreator/Platform/OSCColors.h>
-#include <libOpenSimCreator/UI/Shared/BasicWidgets.h>
-#include <libOpenSimCreator/UI/Simulation/ISimulatorUIAPI.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/Environment.h>
+#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <libopensimcreator/Documents/OutputExtractors/ConcatenatingOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/IOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
+#include <libopensimcreator/Documents/Simulation/ISimulation.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Platform/OSCColors.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/MathHelpers.h>

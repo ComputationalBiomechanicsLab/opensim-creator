@@ -1,8 +1,8 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDescriptor.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIClass.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObjectCRTP.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
+#include <libopensimcreator/Documents/MeshImporter/MIClass.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObjectCRTP.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/AABB.h>

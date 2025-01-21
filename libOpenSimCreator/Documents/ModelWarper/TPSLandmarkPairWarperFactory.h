@@ -1,10 +1,10 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
-#include <libOpenSimCreator/Documents/ModelWarper/IPointWarperFactory.h>
-#include <libOpenSimCreator/Documents/ModelWarper/ValidationCheckResult.h>
-#include <libOpenSimCreator/Documents/ModelWarper/WarpDetail.h>
-#include <libOpenSimCreator/Utils/TPS3D.h>
+#include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
+#include <libopensimcreator/Documents/ModelWarper/IPointWarperFactory.h>
+#include <libopensimcreator/Documents/ModelWarper/ValidationCheckResult.h>
+#include <libopensimcreator/Documents/ModelWarper/WarpDetail.h>
+#include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>

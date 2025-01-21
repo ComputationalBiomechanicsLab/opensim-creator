@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
+#include <libopensimcreator/Documents/CustomComponents/ICustomDecorationGenerator.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <OpenSim/Simulation/Model/Geometry.h>

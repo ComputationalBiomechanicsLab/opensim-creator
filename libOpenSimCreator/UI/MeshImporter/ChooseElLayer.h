@@ -1,12 +1,12 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/Document.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
-#include <libOpenSimCreator/Documents/MeshImporter/MIObject.h>
-#include <libOpenSimCreator/UI/MeshImporter/DrawableThing.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterHover.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterSharedState.h>
-#include <libOpenSimCreator/UI/MeshImporter/MeshImporterUILayer.h>
+#include <libopensimcreator/Documents/MeshImporter/Document.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MIObject.h>
+#include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
+#include <libopensimcreator/UI/MeshImporter/MeshImporterUILayer.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>

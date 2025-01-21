@@ -1,10 +1,10 @@
 #include "UndoableModelStatePair.h"
 
-#include <libOpenSimCreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libOpenSimCreator/Graphics/OpenSimDecorationOptions.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Formats/DAE.h>

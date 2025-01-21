@@ -1,7 +1,7 @@
 #include "LoadingTab.h"
 
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
-#include <libOpenSimCreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Platform/Screen.h>

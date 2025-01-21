@@ -1,7 +1,7 @@
 #include "ModelStatePairInfo.h"
 
-#include <libOpenSimCreator/Documents/Model/IModelStatePair.h>
-#include <libOpenSimCreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 osc::ModelStatePairInfo::ModelStatePairInfo() = default;
 

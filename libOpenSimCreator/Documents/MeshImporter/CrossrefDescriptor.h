@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/CrossrefDirection.h>
+#include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>

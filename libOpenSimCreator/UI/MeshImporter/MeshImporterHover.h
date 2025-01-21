@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libOpenSimCreator/Documents/MeshImporter/MIIDs.h>
+#include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/UID.h>

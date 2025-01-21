@@ -1,7 +1,7 @@
 #include "ShapeFitters.h"
 
-#include <libOpenSimCreator/Graphics/SimTKMeshLoader.h>
-#include <libOpenSimCreator/testing/TestOpenSimCreatorConfig.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
 #include <liboscar/Graphics/Geometries/SphereGeometry.h>
