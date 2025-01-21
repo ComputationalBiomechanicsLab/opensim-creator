@@ -96,7 +96,7 @@ cmake \
     -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-ctest --test-dir osc-build --output-on-failure
+ctest --test-dir osc-build --output-on-failure -j${OSC_BUILD_CONCURRENCY}
 
 # build final package
 
