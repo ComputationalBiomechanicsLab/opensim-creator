@@ -12,6 +12,7 @@ set(OSC_EMSCRIPTEN OFF
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 
+# gather library targets and vendored code targets
 if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
@@ -24,8 +25,9 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
-add_subdirectory(InternalVendoredCode EXCLUDE_FROM_ALL SYSTEM)
+add_subdirectory(InternalVendoredCode)
 
+# gather source code, exclude tests and internal vendored code
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES
     LIST_DIRECTORIES FALSE
     "*.cpp"
@@ -203,7 +205,6 @@ PRIVATE
     $<$<BOOL:${OSC_ADD_LINUX_DEF}>:__LINUX__>
 )
 target_include_directories(oscar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)  # so that `#include <liboscar/HEADER.h>` works
-target_include_directories(oscar SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/InternalVendoredCode/include)  # so that includes within vendored includes work)
 target_link_libraries(oscar PRIVATE
     # these libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out)
