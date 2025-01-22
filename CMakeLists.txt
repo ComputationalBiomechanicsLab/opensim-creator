@@ -17,25 +17,15 @@ set(OSC_DISCOVER_TESTS ON
 )
 
 
-# enable testing in this top-level project, so that `ctest` works when
-# (e.g.) IDEs get a list of tests when they use `ctest --show-only`
-# to list all tests project-wide
-#
-# see:
-#
-# - https://cmake.org/cmake/help/latest/command/enable_testing.html
-# - https://developercommunity.visualstudio.com/t/test-explorer-doesnt-detect-tests/482451
-# - https://stackoverflow.com/a/67984312
-#
-# `include(CTest)` declares `BUILD_TESTING`, calls `enable_testing` if `BUILD_TESTING` is
-# `true` (default)
-include(CTest)
+# note: this has to be done at the top-level, so that `ctest --show-only` works for
+#       all test suites, which is how IDEs typically detect tests
+include(CTest)  # declares `BUILD_TESTING` and calls `enable_testing` if it's set
 
 add_subdirectory(liboscar)
 add_subdirectory(liboscar-demos)
 add_subdirectory(hellooscar)
 if (${OSC_BUILD_OPENSIMCREATOR})
-    add_subdirectory(libosim libosim SYSTEM)  # uses OpenSim headers
+    add_subdirectory(libosim)
     add_subdirectory(libopensimcreator)
     add_subdirectory(osc)
 endif()

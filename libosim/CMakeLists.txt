@@ -11,6 +11,7 @@ set(OSIM_OPENSIM_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/opensim-core")
 set(OSIM_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/simbody")
 
 add_library(osim STATIC
+
     # Simbody sources
     ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaMersonIntegrator.cpp
     ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/ExplicitEulerIntegrator.cpp
@@ -266,7 +267,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerations.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimization.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerationsSolver.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/Actuation.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/Kinematics.cpp
@@ -290,7 +291,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/IO.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Assertion.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Exception.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBool.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ExpressionBasedFunction.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ComponentSocket.cpp
@@ -339,7 +340,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Property.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/GCVSpline.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunction.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/MultivariatePolynomialFunction.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/StepFunction.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/FunctionAdapter.cpp
@@ -351,7 +352,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Reporter.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/RegisterTypes_osimCommon.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimulationUtilities.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/VisualizerUtilities.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Control.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/TrackingController.cpp
@@ -493,7 +494,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/GenericModelMaker.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CorrectionController.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/InverseDynamicsTool.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/Measurement.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTargetFast.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ForwardTool.cpp
@@ -554,7 +555,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Schutte1993Muscle_Deprecated.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/SpringGeneralizedForce.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused by OpenSim Creator
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/RegisterTypes_osimActuators.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/ToyReflexController.cpp
@@ -645,6 +646,15 @@ PUBLIC
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
 )
 target_compile_features(osim PUBLIC cxx_std_17)
+set_target_properties(osim PROPERTIES
+
+    # Treat it as a system library, which means that any downstream compiler warnings
+    # won't apply to it.
+    #
+    # This is necessary because we're compiling OpenSim/Simbody headers, which might not
+    # be compile-able with stricter compiler flags.
+    SYSTEM TRUE
+)
 
 target_link_libraries(osim
 PUBLIC
