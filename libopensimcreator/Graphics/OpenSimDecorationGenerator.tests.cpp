@@ -14,6 +14,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/StringHelpers.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
@@ -21,6 +22,7 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <limits>
 #include <ranges>
 #include <utility>
 #include <variant>
@@ -415,4 +417,140 @@ TEST(GenerateModelDecorations, DoesNotGenerateContactGeometrySphereWhenVisibilit
     const auto isContactSphereDecoration = [p = sphere->getAbsolutePathString()](const SceneDecoration& dec) { return dec.id == p; };
 
     ASSERT_EQ(rgs::count_if(decorations, isContactSphereDecoration), 0);
+}
+
+namespace
+{
+    // A mock component that emits a cylinder with NaN radius.
+    class ComponentThatGeneratesNaNCylinder : public OpenSim::ModelComponent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentThatGeneratesNaNCylinder, OpenSim::ModelComponent);
+
+    public:
+        void generateDecorations(
+            bool fixed,
+            const OpenSim::ModelDisplayHints&,
+            const SimTK::State&,
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+        {
+            if (fixed) {
+                return;
+            }
+            SimTK::DecorativeCylinder cylinder{std::numeric_limits<double>::quiet_NaN(), 0.5};
+            out.push_back(cylinder);
+        }
+    };
+}
+
+// This was found when diagnosing an `OpenSim::ExpressionBasedBushingForce`. The OpenSim
+// `generateDecorations` backend was generating NaNs for the object's transform, which was
+// propagating through to the renderer and causing hittest issues (#976).
+TEST(GenerateModelDecorations, FiltersOutCylinderWithNANRadius)
+{
+    OpenSim::Model model;
+    model.updDisplayHints().set_show_frames(false);
+    auto* mockComponent = new ComponentThatGeneratesNaNCylinder{};
+    model.addModelComponent(mockComponent);
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    const auto decorations = GenerateModelDecorations(cache, model, state);
+
+    ASSERT_EQ(decorations.size(), 0);
+}
+
+namespace
+{
+    // A mock component that generates `SimTK::DecorativeSphere`s with NaNed rotations.
+    class ComponentThatGeneratesNaNRotationSphere : public OpenSim::ModelComponent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentThatGeneratesNaNRotationSphere, OpenSim::ModelComponent);
+
+    public:
+        void generateDecorations(
+            bool fixed,
+            const OpenSim::ModelDisplayHints&,
+            const SimTK::State&,
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+        {
+            if (fixed) {
+                return;
+            }
+            SimTK::DecorativeSphere sphere;
+            sphere.setTransform(SimTK::Transform{
+                // NaNed rotation
+                SimTK::Rotation{std::numeric_limits<double>::quiet_NaN(), SimTK::CoordinateAxis::XCoordinateAxis{}},
+                SimTK::Vec3{0.0},
+            });
+            out.push_back(sphere);
+        }
+    };
+}
+
+// This was found when simulating `arm26.osim`. A forward-dynamic simulation of it exploded
+// for some probably-physics-related internal reason, and that resulted in the backend emitting
+// geometry containing NaNed transforms. That geometry then propagated through the UI and caused
+// mayhem related to hittesting and finding scene bounds (#976).
+TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNRotations)
+{
+    OpenSim::Model model;
+    model.updDisplayHints().set_show_frames(false);
+    auto* mockComponent = new ComponentThatGeneratesNaNRotationSphere{};
+    model.addModelComponent(mockComponent);
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    const auto decorations = GenerateModelDecorations(cache, model, state);
+
+    ASSERT_EQ(decorations.size(), 0);
+}
+
+namespace
+{
+    // A mock component that generates `SimTK::DecorativeSphere`s with NaNed translation.
+    class ComponentThatGeneratesNaNTranslationSphere : public OpenSim::ModelComponent {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentThatGeneratesNaNTranslationSphere, OpenSim::ModelComponent);
+
+    public:
+        void generateDecorations(
+            bool fixed,
+            const OpenSim::ModelDisplayHints&,
+            const SimTK::State&,
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+        {
+            if (fixed) {
+                return;
+            }
+            SimTK::DecorativeSphere sphere;
+            sphere.setTransform(SimTK::Transform{
+                // NaNed rotation
+                SimTK::Rotation{},
+                SimTK::Vec3{std::numeric_limits<double>::quiet_NaN()},
+            });
+            out.push_back(sphere);
+        }
+    };
+}
+
+
+// This was found when simulating `arm26.osim`. A forward-dynamic simulation of it exploded
+// for some probably-physics-related internal reason, and that resulted in the backend emitting
+// geometry containing NaNed transforms. That geometry then propagated through the UI and caused
+// mayhem related to hittesting and finding scene bounds (#976).
+TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
+{
+    OpenSim::Model model;
+    model.updDisplayHints().set_show_frames(false);
+    auto* mockComponent = new ComponentThatGeneratesNaNTranslationSphere{};
+    model.addModelComponent(mockComponent);
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+    const auto decorations = GenerateModelDecorations(cache, model, state);
+
+    ASSERT_EQ(decorations.size(), 0);
 }

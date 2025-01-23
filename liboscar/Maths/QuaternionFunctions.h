@@ -16,6 +16,13 @@
 
 namespace osc
 {
+    // returns a vector containing `isnan(qv)` for each `qv` in `q`
+    template<std::floating_point T>
+    Vec<4, bool> isnan(const Qua<T>& q)
+    {
+        return {isnan(q.w), isnan(q.x), isnan(q.y), isnan(q.z)};
+    }
+
     template<typename T>
     requires std::is_arithmetic_v<T>
     constexpr Qua<T> conjugate(const Qua<T>& q)

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <liboscar/Maths/Angle.h>
+#include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/EulerAngles.h>
+#include <liboscar/Maths/Functors.h>
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/MatFunctions.h>
 #include <liboscar/Maths/Mat3.h>
@@ -204,5 +206,12 @@ namespace osc
         const Quat q = angle_axis(angle, ax);
 
         return transform.with_rotation(normalize(q * transform.rotation));
+    }
+
+    // returns `true` if any element in `transform`'s `scale`, `rotation`, or
+    // `position` is NaN.
+    inline bool any_element_is_nan(const Transform& transform)
+    {
+        return any_of(isnan(transform.scale)) or any_of(isnan(transform.rotation)) or any_of(isnan(transform.position));
     }
 }

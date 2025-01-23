@@ -303,6 +303,12 @@ namespace
 
         void consume(const OpenSim::Component& component, SceneDecoration&& dec)
         {
+            // Filter out any scene decorations that have transforms that have any
+            // NaN elements. This is a precaution to guard against bad maths in
+            // OpenSim or OSC's custom decoration generator code (#976).
+            if (any_element_is_nan(dec.transform)) {
+                return;
+            }
             m_Out(component, std::move(dec));
         }
 
