@@ -430,7 +430,7 @@ namespace
             bool fixed,
             const OpenSim::ModelDisplayHints&,
             const SimTK::State&,
-            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const final
         {
             if (fixed) {
                 return;
@@ -471,7 +471,7 @@ namespace
             bool fixed,
             const OpenSim::ModelDisplayHints&,
             const SimTK::State&,
-            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const final
         {
             if (fixed) {
                 return;
@@ -518,7 +518,7 @@ namespace
             bool fixed,
             const OpenSim::ModelDisplayHints&,
             const SimTK::State&,
-            SimTK::Array_<SimTK::DecorativeGeometry>& out) const
+            SimTK::Array_<SimTK::DecorativeGeometry>& out) const final
         {
             if (fixed) {
                 return;
