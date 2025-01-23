@@ -17,6 +17,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `resources/OpenSimCreator`, rather than in the root `resources/` directory.
 - Fixed a bug in upstream OpenSim Core where the `is_visible` flag of `ContactGeometry`
   was being ignored (thanks @carlosedubarreto, #980).
+- Fixed a bug in upstream simbody where STL files were having the square of the number
+  of normals added, causing massive memory usage (#987).
 - The graphics backend will now filter out any geometry that's emitted by OpenSim that
   has a NaN anywhere in the decoration's transform (#976).
 - The graphics backend will now override the color of all elements of a `SimTK::DecorativeFrame`
@@ -25,6 +27,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to an image file (#981).
 - Internal: the lunasvg dependency no longer installs files that include absolute paths
   on the developers/build machine's filesystem
+
 
 ## [0.5.18] - 2025/01/16
 
