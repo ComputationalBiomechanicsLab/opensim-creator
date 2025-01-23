@@ -19,11 +19,14 @@
 #include <SimTKcommon/internal/PolygonalMesh.h>
 #include <SimTKcommon/internal/State.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <filesystem>
+#include <ranges>
 
 using namespace osc;
+namespace rgs = std::ranges;
 
 // helper functions
 namespace
@@ -46,15 +49,29 @@ namespace
         return to<Vec3>(sf);
     }
 
-    // extracts RGBA color from geometry
-    Color GetColor(const SimTK::DecorativeGeometry& geom)
+    float GetOpacity(const SimTK::DecorativeGeometry& geometry)
     {
-        const SimTK::Vec3& rgb = geom.getColor();
+        const float rv = static_cast<float>(geometry.getOpacity());
+        return rv >= 0.0f ? rv : 1.0f;
+    }
 
-        auto ar = static_cast<float>(geom.getOpacity());
-        ar = ar < 0.0f ? 1.0f : ar;
+    // returns the color of `geometry`, with any defaults saturated to `1.0f`
+    Color GetColor(const SimTK::DecorativeGeometry& geometry)
+    {
+        Vec3 rgb = to<Vec3>(geometry.getColor());
 
-        return Color{to<Vec3>(rgb), ar};
+        // Simbody uses `-1` to mean "use default`. We use a default of `1.0f`
+        // whenever this, or a NaN, occurs.
+        for (auto& component : rgb) {
+            component = component >= 0.0f ? component : 1.0f;
+        }
+        return Color{rgb, GetOpacity(geometry)};
+    }
+
+    // Returns `true` if `geometry` has a defaulted color
+    bool IsDefaultColor(const SimTK::DecorativeGeometry& geometry)
+    {
+        return geometry.getColor() == SimTK::Vec3{-1.0, -1.0, -1.0};
     }
 
     SceneDecorationFlags GetFlags(const SimTK::DecorativeGeometry& geom)
@@ -246,6 +263,13 @@ namespace
         {
             const Transform t = ToOscTransform(d);
 
+            // if the calling code explicitly sets the color of a frame as non-white, then
+            // that override should be obeyed, rather than using OSC's custom coloring
+            // scheme (#985).
+            const std::optional<Color> colorOverride = IsDefaultColor(d)  or d.getColor() == SimTK::Vec3{1.0, 1.0, 1.0} ?
+                std::optional<Color>{} :
+                GetColor(d);
+
             // emit origin sphere
             {
                 const float radius = 0.05f * c_FrameAxisLengthRescale * m_FixupScaleFactor;
@@ -254,7 +278,7 @@ namespace
                 m_Consumer(SceneDecoration{
                     .mesh = m_MeshCache.sphere_mesh(),
                     .transform = sphereXform,
-                    .shading = Color::white(),
+                    .shading = colorOverride ? *colorOverride : Color::white(),
                     .flags = GetFlags(d),
                 });
             }
@@ -264,13 +288,11 @@ namespace
             const float legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
             const auto flags = GetFlags(d);
-            for (int axis = 0; axis < 3; ++axis)
-            {
+            for (int axis = 0; axis < 3; ++axis) {
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                const LineSegment line =
-                {
+                const LineSegment line = {
                     t.position,
                     t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
@@ -282,7 +304,7 @@ namespace
                 m_Consumer(SceneDecoration{
                     .mesh = m_MeshCache.cylinder_mesh(),
                     .transform = legXform,
-                    .shading = color,
+                    .shading = colorOverride ? *colorOverride : color,
                     .flags = flags,
                 });
             }

@@ -1,5 +1,7 @@
 #include "SimTKDecorationGenerator.h"
 
+#include <libopensimcreator/Utils/SimTKConverters.h>
+
 #include <gtest/gtest.h>
 #include <liboscar/oscar.h>
 #include <Simbody.h>
@@ -74,5 +76,27 @@ TEST(SimTKDecorationGenerator, PropagatesNegativeScaleFactors)
     osc::GenerateDecorations(cache, matter, state, sphere, 1.0f, [&](const SceneDecoration& dec)
     {
         ASSERT_EQ(dec.transform.scale.y, -1.0f);
+    });
+}
+
+TEST(SimTKDecorationGenerator, UsesColorOverrideWhenEmittingFrames)
+{
+    SceneCache cache;
+
+    SimTK::MultibodySystem sys;
+    SimTK::SimbodyMatterSubsystem matter{sys};
+    SimTK::State state = sys.realizeTopology();
+    sys.realize(state);
+
+    const Color overrideColor = Color::red();
+
+    SimTK::DecorativeFrame frame;
+    frame.setBodyId(0);
+    frame.setColor(to<SimTK::Vec3>(overrideColor));
+
+    GenerateDecorations(cache, matter, state, frame, 1.0f, [&](const SceneDecoration& dec)
+    {
+        ASSERT_TRUE(std::holds_alternative<Color>(dec.shading));
+        ASSERT_EQ(std::get<Color>(dec.shading), overrideColor);
     });
 }

@@ -13,6 +13,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `resources/OpenSimCreator`, rather than in the root `resources/` directory.
 - Fixed a bug in upstream OpenSim Core where the `is_visible` flag of `ContactGeometry`
   was being ignored (thanks @carlosedubarreto, #980).
+- The graphics backend will now override the color of all elements of a `SimTK::DecorativeFrame`
+  when it's emitted from OpenSim/simbody with a custom, non-white, color (#985).
 - Internal: fixed a bug where the screenshot tab was unable to render the screenshot
   to an image file (#981).
 - Internal: the lunasvg dependency no longer installs files that include absolute paths
