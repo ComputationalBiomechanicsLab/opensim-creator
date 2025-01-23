@@ -8,7 +8,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The application now has a MacOS-specific logo that more closely follows Apple's icon
   guidelines.
 - Negative scale factors are now supported by the 3D renderer, which can be handy for
-  mirroring meshes (thanks @carlosedubarreto, #974)
+  mirroring meshes (thanks @carlosedubarreto, #974).
+- `ExpressionBasedBushingForce` in OpenSim Creator's fork of OpenSim was patched to not
+  emit its own, custom, frame geometry and, instead, rely on model-level frame geoemtry
+  rendering. Additionally, it was patched to handle zeroed `moment_visual_scale`,
+  `force_visual_scale` and `visual_aspect_ratio` better.
 - `imgui_base_config.ini` is now optional, and should now be located at
   `resources/OpenSimCreator`, rather than in the root `resources/` directory.
 - Fixed a bug in upstream OpenSim Core where the `is_visible` flag of `ContactGeometry`
