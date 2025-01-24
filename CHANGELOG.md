@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.19] - 2025/01/24
+
 - The application now has a MacOS-specific logo that more closely follows Apple's icon
   guidelines.
 - Negative scale factors are now supported by the 3D renderer, which can be handy for
