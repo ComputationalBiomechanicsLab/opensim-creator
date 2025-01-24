@@ -1,5 +1,3 @@
-// NOLINTBEGIN
-
 // MIT License
 
 // Copyright (c) 2023 Evan Pezent
@@ -2814,4 +2812,3 @@ void PlotDummy(const char* label_id, ImPlotDummyFlags flags) {
 
 #endif // #ifndef IMGUI_DISABLE
 
-// NOLINTEND

@@ -655,6 +655,9 @@ set_target_properties(osim PROPERTIES
     # be compile-able with stricter compiler flags.
     SYSTEM TRUE
 )
+# ensure linting doesn't happen for OpenSim/Simbody sources
+set_property(TARGET osim PROPERTY CXX_CLANG_TIDY)
+set_property(TARGET osim PROPERTY C_CLANG_TIDY)
 
 target_link_libraries(osim
 PUBLIC

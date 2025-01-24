@@ -26,7 +26,6 @@
 #include <ranges>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 // helper functions
 namespace
@@ -51,7 +50,7 @@ namespace
 
     float GetOpacity(const SimTK::DecorativeGeometry& geometry)
     {
-        const float rv = static_cast<float>(geometry.getOpacity());
+        const auto rv = static_cast<float>(geometry.getOpacity());
         return rv >= 0.0f ? rv : 1.0f;
     }
 

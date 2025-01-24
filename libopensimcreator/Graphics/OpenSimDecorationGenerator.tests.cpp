@@ -448,8 +448,7 @@ TEST(GenerateModelDecorations, FiltersOutCylinderWithNANRadius)
 {
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
-    auto* mockComponent = new ComponentThatGeneratesNaNCylinder{};
-    model.addModelComponent(mockComponent);
+    model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNCylinder>().release());
     model.buildSystem();
     const SimTK::State& state = model.initializeState();
 
@@ -495,8 +494,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNRotations)
 {
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
-    auto* mockComponent = new ComponentThatGeneratesNaNRotationSphere{};
-    model.addModelComponent(mockComponent);
+    model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNRotationSphere>().release());
     model.buildSystem();
     const SimTK::State& state = model.initializeState();
 
@@ -543,8 +541,7 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
 {
     OpenSim::Model model;
     model.updDisplayHints().set_show_frames(false);
-    auto* mockComponent = new ComponentThatGeneratesNaNTranslationSphere{};
-    model.addModelComponent(mockComponent);
+    model.addModelComponent(std::make_unique<ComponentThatGeneratesNaNTranslationSphere>().release());
     model.buildSystem();
     const SimTK::State& state = model.initializeState();
 

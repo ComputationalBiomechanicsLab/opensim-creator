@@ -10,8 +10,14 @@ add_library(oscar_internal_code STATIC ${OSC_VENDORED_CODE_SOURCES})
 target_include_directories(oscar_internal_code PUBLIC include/)
 set_target_properties(oscar_internal_code PROPERTIES
 	CXX_EXTENSIONS OFF
+
+	# ensure including a vendored code header file doesn't
+	# trigger higher warning levels
 	SYSTEM ON
 )
+# ensure linter doesn't run on vendoered code
+set_property(TARGET oscar_internal_code PROPERTY CXX_CLANG_TIDY)
+set_property(TARGET oscar_internal_code PROPERTY C_CLANG_TIDY)
 target_compile_features(oscar_internal_code PRIVATE cxx_std_17)
 target_compile_definitions(oscar_internal_code PUBLIC
 	# this is necessary until we move away from our legacy `imgui.ini` and
