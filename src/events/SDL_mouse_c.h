@@ -118,7 +118,11 @@ typedef struct
     int double_click_radius;
     bool touch_mouse_events;
     bool mouse_touch_events;
+    bool pen_mouse_events;
+    bool pen_touch_events;
     bool was_touch_mouse_events; // Was a touch-mouse event pending?
+    bool added_mouse_touch_device;  // did we SDL_AddTouch() a virtual touch device for the mouse?
+    bool added_pen_touch_device;  // did we SDL_AddTouch() a virtual touch device for pens?
 #ifdef SDL_PLATFORM_VITA
     Uint8 vita_touch_mouse_device;
 #endif

@@ -147,6 +147,8 @@ static ATOM SDL_HelperWindowClass = 0;
    - WS_CAPTION: this seems to enable the Windows minimize animation
    - WS_SYSMENU: enables system context menu on task bar
    This will also cause the task bar to overlap the window and other windowed behaviors, so only use this for windows that shouldn't appear to be fullscreen
+   - WS_THICKFRAME: allows hit-testing to resize window (doesn't actually add a frame to a borderless window).
+   - WS_MAXIMIZEBOX: window will respond to Windows maximize commands sent to all windows, and the window will fill the usable desktop area rather than the whole screen
  */
 
 #define STYLE_BASIC               (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
@@ -162,7 +164,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
     DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        style |= WS_POPUP | WS_THICKFRAME;
+        style |= WS_POPUP;
     } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
@@ -183,20 +185,22 @@ static DWORD GetWindowStyle(SDL_Window *window)
         /* The WS_MAXIMIZEBOX style flag needs to be retained for as long as the window is maximized,
          * or restoration from minimized can fail, and leaving maximized can result in an odd size.
          */
-        if ((window->flags & SDL_WINDOW_RESIZABLE) || (window->internal && window->internal->force_resizable)) {
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
             /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
                see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
              */
             if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
-                SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", false)) {
+                SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", true)) {
                 style |= STYLE_RESIZABLE;
-            } else if (window->flags & SDL_WINDOW_BORDERLESS) {
-                /* Even if the resizable style hint isn't set, WS_MAXIMIZEBOX is still needed, or
-                 * maximizing the window will make it fullscreen and cover the taskbar, instead
-                 * of entering a normal maximized state that fills the usable desktop area.
-                 */
-                style |= WS_MAXIMIZEBOX;
             }
+        }
+
+        if (window->internal && window->internal->force_ws_maximizebox) {
+            /* Even if the resizable flag is cleared, WS_MAXIMIZEBOX is still needed as long
+             * as the window is maximized, or de-maximizing or minimizing and restoring the
+             * maximized window can result in the window disappearing or being the wrong size.
+             */
+            style |= WS_MAXIMIZEBOX;
         }
 
         // Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window
@@ -1375,27 +1379,30 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
            https://bugzilla.libsdl.org/show_bug.cgi?id=3215 can reproduce!
         */
         if (data->windowed_mode_was_maximized && !data->in_window_deactivation) {
-            style |= WS_MAXIMIZE;
             enterMaximized = true;
+            data->disable_move_size_events = true;
         }
 
         menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, menu,
                                       &x, &y,
                                       &w, &h,
-                                      data->windowed_mode_was_maximized ? SDL_WINDOWRECT_WINDOWED : SDL_WINDOWRECT_FLOATING);
+                                      SDL_WINDOWRECT_FLOATING);
         data->windowed_mode_was_maximized = false;
     }
+
+    /* Always reset the window to the base floating size before possibly re-applying the maximized state,
+     * otherwise, the base floating size can seemingly be lost in some cases.
+     */
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = true;
+    SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
+    data->expected_resize = false;
+    data->disable_move_size_events = false;
 
-    if (!enterMaximized) {
-        SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
-    } else {
+    if (enterMaximized) {
         WIN_MaximizeWindow(_this, window);
     }
-
-    data->expected_resize = false;
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_SetWindowFullscreen: %d finished. Set window to %d,%d, %dx%d", (int)fullscreen, x, y, w, h);

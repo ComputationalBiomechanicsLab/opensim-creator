@@ -1435,10 +1435,16 @@ static void decoration_frame_commit(struct libdecor_frame *frame, void *user_dat
     }
 }
 
+static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data)
+{
+    // NOP
+}
+
 static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_configure,
     decoration_frame_close,
     decoration_frame_commit,
+    decoration_dismiss_popup
 };
 #endif
 
@@ -1832,6 +1838,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
+            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, !(window->flags & SDL_WINDOW_BORDERLESS));
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
@@ -1917,6 +1924,14 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             xdg_toplevel_set_app_id(data->shell_surface.xdg.toplevel.xdg_toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.toplevel.xdg_toplevel, &toplevel_listener_xdg, data);
 
+            // Create the window decorations
+            if (c->decoration_manager) {
+                data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
+                zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
+                const enum zxdg_toplevel_decoration_v1_mode mode = !(window->flags & SDL_WINDOW_BORDERLESS) ? ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE : ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+                zxdg_toplevel_decoration_v1_set_mode(data->server_decoration, mode);
+            }
+
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
                 zxdg_exported_v2_add_listener(data->exported, &exported_v2_listener, data);
@@ -1955,13 +1970,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else
 #endif
         if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP || data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
-
-        // Create the window decorations
-        if (data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP && data->shell_surface.xdg.toplevel.xdg_toplevel && c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
-            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
-        }
-
         /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
          * libdecor will call this as part of their configure event!
          * -flibit
@@ -2004,7 +2012,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 #endif
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
-    Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
 
     // We're finally done putting the window together, raise if possible
     if (c->activation_manager) {
@@ -2844,7 +2851,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
     // TODO: Add high-DPI icon support
     Wayland_ReleaseSHMBuffer(&wind->icon);
-    if (Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon) != 0) {
+    if (!Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon)) {
         return SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
     }
 
