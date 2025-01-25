@@ -5,6 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Internal: the file dialog (open/save/save as, etc.) is now handled by a mixture of
+  `SDL3` and `nativefiledialog` (previously, just `nativefiledialog`). The intention
+  is that all usages will be moved over to `SDL3` over the next few releases.
+
+
 ## [0.5.19] - 2025/01/24
 
 - The application now has a MacOS-specific logo that more closely follows Apple's icon
