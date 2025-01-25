@@ -55,3 +55,5 @@ osc-deps-install/
 # python binaries
 __pycache__/
 *.pyd
+
+.pytest_cache
