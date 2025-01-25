@@ -59,8 +59,8 @@ import java.util.Locale;
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 3;
-    private static final int SDL_MINOR_VERSION = 1;
-    private static final int SDL_MICRO_VERSION = 8;
+    private static final int SDL_MINOR_VERSION = 2;
+    private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
@@ -231,6 +231,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static boolean mSDLMainFinished = false;
     protected static boolean mActivityCreated = false;
     private static SDLFileDialogState mFileDialogState = null;
+    protected static boolean mDispatchingKeyEvent = false;
 
     protected static SDLGenericMotionListener_API14 getMotionListener() {
         if (mMotionListener == null) {
@@ -807,7 +808,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             ) {
             return false;
         }
-        return super.dispatchKeyEvent(event);
+        mDispatchingKeyEvent = true;
+        boolean result = super.dispatchKeyEvent(event);
+        mDispatchingKeyEvent = false;
+        return result;
+    }
+
+    public static boolean dispatchingKeyEvent() {
+        return mDispatchingKeyEvent;
     }
 
     /* Transition to next state */
@@ -1495,7 +1503,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
                 // they are ignored here because sending them as mouse input to SDL is messy
                 if ((keyCode == KeyEvent.KEYCODE_BACK) || (keyCode == KeyEvent.KEYCODE_FORWARD)) {
-    Log.v("SDL", "keycode is back or forward");
                     switch (event.getAction()) {
                     case KeyEvent.ACTION_DOWN:
                     case KeyEvent.ACTION_UP:
@@ -1508,6 +1515,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            onNativeKeyDown(keyCode);
+
             if (isTextInputEvent(event)) {
                 if (ic != null) {
                     ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
@@ -1515,7 +1524,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
                 }
             }
-            onNativeKeyDown(keyCode);
             return true;
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
             onNativeKeyUp(keyCode);

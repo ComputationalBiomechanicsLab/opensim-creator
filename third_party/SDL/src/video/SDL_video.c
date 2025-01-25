@@ -51,10 +51,14 @@
 #include <SDL3/SDL_opengles2.h>
 #endif // SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
 
-#ifndef SDL_VIDEO_OPENGL
-#ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
-#define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
+// GL_CONTEXT_RELEASE_BEHAVIOR and GL_CONTEXT_RELEASE_BEHAVIOR_KHR have the same number.
+#ifndef GL_CONTEXT_RELEASE_BEHAVIOR
+#define GL_CONTEXT_RELEASE_BEHAVIOR 0x82FB
 #endif
+
+// GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH and GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_KHR have the same number.
+#ifndef GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH
+#define GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH 0x82FC
 #endif
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -170,6 +174,10 @@ static VideoBootStrap *bootstrap[] = {
 // Support for macOS fullscreen spaces
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking);
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+extern void SDL_UpdateLifecycleObserver(void);
 #endif
 
 static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
@@ -313,10 +321,9 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
     if (!data) {
         SDL_Renderer *renderer = NULL;
         const char *render_driver = NULL;
-        const char *hint;
 
         // See if there's a render driver being requested
-        hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+        const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint && *hint != '0' && *hint != '1' &&
             SDL_strcasecmp(hint, "true") != 0 &&
             SDL_strcasecmp(hint, "false") != 0 &&
@@ -325,20 +332,45 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         }
 
         if (!render_driver) {
-            hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-            if (hint && *hint && SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0) {
-                render_driver = hint;
+            render_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+        }
+
+        char *render_driver_copy = NULL;
+        if (render_driver && *render_driver) {
+            render_driver_copy = SDL_strdup(render_driver);
+            render_driver = render_driver_copy;
+            if (render_driver_copy) {  // turn any "software" requests into "xxxxxxxx" so we don't end up in infinite recursion.
+                char *prev = render_driver_copy;
+                char *ptr = prev;
+                while ((ptr = SDL_strchr(ptr, ',')) != NULL) {
+                    *ptr = '\0';
+                    const bool is_sw = (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0);
+                    *ptr = ',';
+                    if (is_sw) {
+                        SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                        ptr = prev;
+                    } else {
+                        ptr++;
+                        prev = ptr;
+                    }
+                }
+
+                if (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0) {
+                    SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                }
             }
         }
 
         // Check to see if there's a specific driver requested
         if (render_driver) {
             renderer = SDL_CreateRenderer(window, render_driver);
+            SDL_free(render_driver_copy);
             if (!renderer) {
                 // The error for this specific renderer has already been set
                 return false;
             }
         } else {
+            SDL_assert(render_driver_copy == NULL);
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
@@ -743,7 +775,7 @@ SDL_SystemTheme SDL_GetSystemTheme(void)
     }
 }
 
-static void SDL_UpdateDesktopBounds(void)
+void SDL_UpdateDesktopBounds(void)
 {
     SDL_Rect rect;
     SDL_zero(rect);
@@ -2467,6 +2499,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     // Make sure window pixel size is up to date
     SDL_CheckWindowPixelSizeChanged(window);
 
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
+
     SDL_ClearError();
 
     return window;
@@ -3939,6 +3975,8 @@ void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
         // Send an expose event so the application can redraw
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     }
+
+    SDL_PumpEventMaintenance();
 }
 
 static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window)
@@ -4198,6 +4236,10 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_free(window);
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
 }
 
 bool SDL_ScreenSaverEnabled(void)
@@ -4808,11 +4850,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
         attrib = GL_SAMPLES;
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
-#ifdef SDL_VIDEO_OPENGL
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
-#else
-        attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
-#endif
         break;
     case SDL_GL_BUFFER_SIZE:
     {
@@ -4910,12 +4948,12 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
             }
-            // glGetFramebufferAttachmentParameterivFunc may cause GL_INVALID_OPERATION when querying depth/stencil size if the 
+            // glGetFramebufferAttachmentParameterivFunc may cause GL_INVALID_OPERATION when querying depth/stencil size if the
             // bits is 0. From the GL docs:
             //      If the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE, then either no framebuffer is bound to target;
             //      or a default framebuffer is queried, attachment is GL_DEPTH or GL_STENCIL, and the number of depth or stencil bits,
             //      respectively, is zero. In this case querying pname GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME will return zero, and all
-            //      other queries will generate an error. 
+            //      other queries will generate an error.
             GLint fbo_type = GL_FRAMEBUFFER_DEFAULT;
             if (attachment == GL_DEPTH || attachment == GL_STENCIL) {
                 glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &fbo_type);
@@ -4957,6 +4995,12 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
         }
         return SDL_SetError("OpenGL error: %08X", error);
     }
+
+    // convert GL_CONTEXT_RELEASE_BEHAVIOR values back to SDL_GL_CONTEXT_RELEASE_BEHAVIOR values
+    if (attr == SDL_GL_CONTEXT_RELEASE_BEHAVIOR) {
+        *value = (*value == GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH) ? SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH : SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE;
+    }
+
     return true;
 #else
     return SDL_Unsupported();

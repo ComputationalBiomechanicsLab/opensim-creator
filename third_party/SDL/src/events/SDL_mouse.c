@@ -143,13 +143,13 @@ static void SDLCALL SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *
         switch (*hint) {
         default:
         case '0':
-            mouse->vita_touch_mouse_device = 0;
-            break;
-        case '1':
             mouse->vita_touch_mouse_device = 1;
             break;
-        case '2':
+        case '1':
             mouse->vita_touch_mouse_device = 2;
+            break;
+        case '2':
+            mouse->vita_touch_mouse_device = 3;
             break;
         }
     }
@@ -169,7 +169,41 @@ static void SDLCALL SDL_MouseTouchEventsChanged(void *userdata, const char *name
     mouse->mouse_touch_events = SDL_GetStringBoolean(hint, default_value);
 
     if (mouse->mouse_touch_events) {
-        SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
+        if (!mouse->added_mouse_touch_device) {
+            SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
+            mouse->added_mouse_touch_device = true;
+        }
+    } else {
+        if (mouse->added_mouse_touch_device) {
+            SDL_DelTouch(SDL_MOUSE_TOUCHID);
+            mouse->added_mouse_touch_device = false;
+        }
+    }
+}
+
+static void SDLCALL SDL_PenMouseEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->pen_mouse_events = SDL_GetStringBoolean(hint, true);
+}
+
+static void SDLCALL SDL_PenTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->pen_touch_events = SDL_GetStringBoolean(hint, true);
+
+    if (mouse->pen_touch_events) {
+        if (!mouse->added_pen_touch_device) {
+            SDL_AddTouch(SDL_PEN_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "pen_input");
+            mouse->added_pen_touch_device = true;
+        }
+    } else {
+        if (mouse->added_pen_touch_device) {
+            SDL_DelTouch(SDL_PEN_TOUCHID);
+            mouse->added_pen_touch_device = false;
+        }
     }
 }
 
@@ -238,6 +272,12 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
+                        SDL_PenMouseEventsChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
+                        SDL_PenTouchEventsChanged, mouse);
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
@@ -328,7 +368,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
     SDL_free(SDL_mice[mouse_index].name);
 
     if (mouse_index != SDL_mouse_count - 1) {
-        SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
+        SDL_memmove(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
     }
     --SDL_mouse_count;
 
@@ -339,7 +379,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
         if (source->mouseID == mouseID) {
             SDL_free(source->clickstate);
             if (i != mouse->num_sources - 1) {
-                SDL_memcpy(&mouse->sources[i], &mouse->sources[i + 1], (mouse->num_sources - i - 1) * sizeof(mouse->sources[i]));
+                SDL_memmove(&mouse->sources[i], &mouse->sources[i + 1], (mouse->num_sources - i - 1) * sizeof(mouse->sources[i]));
             }
             --mouse->num_sources;
             break;
@@ -388,6 +428,7 @@ const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
 {
     int mouse_index = SDL_GetMouseIndex(instance_id);
     if (mouse_index < 0) {
+        SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
         return NULL;
     }
     return SDL_GetPersistentString(SDL_mice[mouse_index].name);
@@ -669,13 +710,14 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     if (relative) {
         if (mouse->relative_mode) {
-            if (mouse->enable_relative_speed_scale) {
-                x *= mouse->relative_speed_scale;
-                y *= mouse->relative_speed_scale;
-            } else if (mouse->enable_relative_system_scale) {
+            if (mouse->enable_relative_system_scale) {
                 if (mouse->ApplySystemScale) {
                     mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
                 }
+            }
+            if (mouse->enable_relative_speed_scale) {
+                x *= mouse->relative_speed_scale;
+                y *= mouse->relative_speed_scale;
             }
         } else {
             if (mouse->enable_normal_speed_scale) {
@@ -985,6 +1027,14 @@ void SDL_QuitMouse(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    if (mouse->added_mouse_touch_device) {
+        SDL_DelTouch(SDL_MOUSE_TOUCHID);
+    }
+
+    if (mouse->added_pen_touch_device) {
+        SDL_DelTouch(SDL_PEN_TOUCHID);
+    }
+
     if (mouse->CaptureMouse) {
         SDL_CaptureMouse(false);
         SDL_UpdateMouseCapture(true);
@@ -1041,6 +1091,12 @@ void SDL_QuitMouse(void)
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
+
+    SDL_RemoveHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
+                        SDL_PenMouseEventsChanged, mouse);
+
+    SDL_RemoveHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
+                        SDL_PenTouchEventsChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);

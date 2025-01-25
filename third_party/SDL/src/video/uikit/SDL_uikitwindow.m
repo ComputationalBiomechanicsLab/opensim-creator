@@ -319,7 +319,6 @@ SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
 void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef SDL_PLATFORM_TVOS
-#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
     @autoreleasepool {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
         SDL_uikitviewcontroller *viewcontroller = data.viewcontroller;
@@ -327,7 +326,6 @@ void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window)
             [viewcontroller setNeedsUpdateOfPrefersPointerLocked];
         }
     }
-#endif // defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
 #endif // !SDL_PLATFORM_TVOS
 }
 
