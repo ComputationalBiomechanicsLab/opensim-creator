@@ -55,5 +55,7 @@ osc-deps-install/
 # python binaries
 __pycache__/
 *.pyd
+*.ilk
+*.pdb
 
 .pytest_cache
