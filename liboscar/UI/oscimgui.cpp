@@ -729,7 +729,8 @@ namespace
         io.DisplayFramebufferScale = {scale, scale};
 
         // setup fonts to use correct pixel scale
-        {
+        ResourceLoader loader = app.upd_resource_loader();
+        if (loader.resource_exists("oscar/fonts/Ruda-Bold.ttf")) {
             io.Fonts->Clear();
             io.FontDefault = nullptr;
 
@@ -738,16 +739,16 @@ namespace
             base_config.RasterizerDensity = scale;
             base_config.PixelSnapH = true;
             base_config.FontDataOwnedByAtlas = true;
-            add_resource_as_font(app.upd_resource_loader(), base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+            add_resource_as_font(loader, base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
 
-            // add FontAwesome icon support
-            {
+            // add icon support
+            if (loader.resource_exists("oscar/fonts/OpenSimCreatorIconFont.ttf")) {
                 ImFontConfig config = base_config;
                 config.MergeMode = true;
                 config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
                 config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
                 static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-                add_resource_as_font(app.upd_resource_loader(), config, *io.Fonts, "oscar/fonts/OpenSimCreatorIconFont.ttf", c_icon_ranges.data());
+                add_resource_as_font(loader, config, *io.Fonts, "oscar/fonts/OpenSimCreatorIconFont.ttf", c_icon_ranges.data());
             }
 
             io.Fonts->Build();
