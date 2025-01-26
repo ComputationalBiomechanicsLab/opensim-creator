@@ -386,10 +386,8 @@ void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
         return;  // couldn't open for writing
     }
 
-    const AppMetadata& appMetadata = App::get().metadata();
-    const ObjMetadata objMetadata
-    {
-        calc_full_application_name_with_version_and_build_id(appMetadata),
+    const ObjMetadata objMetadata{
+        App::get().application_name_with_version_and_buildid(),
     };
 
     write_as_obj(
@@ -419,10 +417,8 @@ void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
         return;  // couldn't open for writing
     }
 
-    const AppMetadata& appMetadata = App::get().metadata();
-    const StlMetadata stlMetadata
-    {
-        calc_full_application_name_with_version_and_build_id(appMetadata),
+    const StlMetadata stlMetadata{
+        App::get().application_name_with_version_and_buildid()
     };
 
     write_as_stl(outputFileStream, mesh, stlMetadata);

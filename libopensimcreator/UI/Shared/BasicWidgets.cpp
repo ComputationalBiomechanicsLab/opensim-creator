@@ -88,11 +88,9 @@ namespace
             return;
         }
 
-        const AppMetadata& appMetadata = App::get().metadata();
-        DAEMetadata daeMetadata
-        {
-            calc_human_readable_application_name(appMetadata),
-            calc_full_application_name_with_version_and_build_id(appMetadata),
+        DAEMetadata daeMetadata{
+            App::get().human_readable_name(),
+            App::get().application_name_with_version_and_buildid(),
         };
 
         write_as_dae(outfile, scene, daeMetadata);
@@ -224,10 +222,8 @@ namespace
             return;
         }
 
-        const AppMetadata& appMetadata = App::get().metadata();
-        const ObjMetadata objMetadata
-        {
-            calc_full_application_name_with_version_and_build_id(appMetadata),
+        const ObjMetadata objMetadata{
+            App::get().application_name_with_version_and_buildid(),
         };
 
         write_as_obj(
@@ -272,10 +268,8 @@ namespace
             return;
         }
 
-        const AppMetadata& appMetadata = App::get().metadata();
-        const StlMetadata stlMetadata
-        {
-            calc_full_application_name_with_version_and_build_id(appMetadata),
+        const StlMetadata stlMetadata{
+            App::get().application_name_with_version_and_buildid(),
         };
 
         write_as_stl(outputFileStream, oscMesh, stlMetadata);

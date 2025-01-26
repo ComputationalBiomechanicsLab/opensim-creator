@@ -385,7 +385,7 @@ private:
         };
 
         ui::DrawListView dl = ui::get_foreground_draw_list();
-        const std::string text = calc_full_application_name_with_version_and_build_id(App::get().metadata());
+        const std::string text = App::get().application_name_with_version_and_buildid();
         dl.add_text(pos, Color::black(), text);
     }
 

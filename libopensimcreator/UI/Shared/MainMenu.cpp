@@ -293,12 +293,12 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::draw_text_unformatted("VERSION");
         ui::next_column();
-        ui::draw_text_unformatted(metadata.maybe_version_string().value_or("(not known)"));
+        ui::draw_text_unformatted(metadata.version_string.value_or("(not known)"));
         ui::next_column();
 
         ui::draw_text_unformatted("BUILD_ID");
         ui::next_column();
-        ui::draw_text_unformatted(metadata.maybe_build_id().value_or("(not known)"));
+        ui::draw_text_unformatted(metadata.build_id.value_or("(not known)"));
         ui::next_column();
 
         ui::draw_text_unformatted("GRAPHICS_VENDOR");
@@ -391,7 +391,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::pop_id();
         ui::next_column();
 
-        if (auto repoURL = App::get().metadata().maybe_repository_url())
+        if (auto repoURL = App::get().metadata().repository_url)
         {
             ui::draw_text_unformatted("OpenSim Creator Repository");
             ui::next_column();
@@ -405,7 +405,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::next_column();
         }
 
-        if (auto helpURL = App::get().metadata().maybe_help_url())
+        if (auto helpURL = App::get().metadata().help_url)
         {
             ui::draw_text_unformatted("OpenSim Creator Help");
             ui::next_column();

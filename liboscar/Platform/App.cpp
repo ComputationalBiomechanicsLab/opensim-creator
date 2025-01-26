@@ -681,6 +681,8 @@ public:
     {}
 
     const AppMetadata& metadata() const { return metadata_; }
+    std::string human_readable_name() const { return std::string{metadata().human_readable_application_name()}; }
+    std::string application_name_with_version_and_buildid() const { return metadata().application_name_with_version_and_buildid(); }
     const std::filesystem::path& executable_directory() const { return executable_dir_; }
     const std::filesystem::path& user_data_directory() const { return user_data_dir_; }
 
@@ -1341,8 +1343,8 @@ public:
         *title_lock = subtitle;
 
         const std::string new_title = subtitle.empty() ?
-            std::string{calc_human_readable_application_name(metadata_)} :
-            (std::string{subtitle} + " - " + calc_human_readable_application_name(metadata_));
+            std::string{metadata_.human_readable_application_name()} :
+            (std::string{subtitle} + " - " + metadata_.human_readable_application_name());
 
         SDL_SetWindowTitle(main_window_.get(), new_title.c_str());
     }
@@ -1471,8 +1473,9 @@ private:
 
     // top-level application configuration
     AppSettings config_{
-        metadata_.organization_name(),
-        metadata_.application_name()
+        metadata_.organization_name,
+        metadata_.application_name,
+        metadata_.config_filename,
     };
 
     // initialization-time resources dir (so that it doesn't have to be fetched
@@ -1484,8 +1487,8 @@ private:
 
     // path to the write-able user data directory
     std::filesystem::path user_data_dir_ = get_current_user_dir_and_log_it(
-        metadata_.organization_name(),
-        metadata_.application_name()
+        metadata_.organization_name,
+        metadata_.application_name
     );
 
     // ensures that the global application log is configured according to the
@@ -1502,7 +1505,7 @@ private:
     sdl::Context sdl_context_{SDL_INIT_VIDEO};
 
     // SDL main application window
-    sdl::Window main_window_ = create_main_app_window(config_, calc_human_readable_application_name(metadata_));
+    sdl::Window main_window_ = create_main_app_window(config_, metadata_.human_readable_application_name());
 
     // cache for the current (caller-set) window subtitle
     SynchronizedValue<std::string> main_window_subtitle_;
@@ -1621,6 +1624,16 @@ osc::App::~App() noexcept
 const AppMetadata& osc::App::metadata() const
 {
     return impl_->metadata();
+}
+
+std::string osc::App::human_readable_name() const
+{
+    return impl_->human_readable_name();
+}
+
+std::string osc::App::application_name_with_version_and_buildid() const
+{
+    return impl_->application_name_with_version_and_buildid();
 }
 
 const std::filesystem::path& osc::App::executable_directory() const

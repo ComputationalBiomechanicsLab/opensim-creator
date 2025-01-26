@@ -30,11 +30,11 @@
 #include <vector>
 
 namespace osc { class AppSettings; }
-namespace osc { class AppMetadata; }
 namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class Screen; }
 namespace osc { class Widget; }
+namespace osc { struct AppMetadata; }
 
 namespace osc
 {
@@ -93,6 +93,13 @@ namespace osc
 
         // returns the application's metadata (name, organization, repo URL, version, etc.)
         const AppMetadata& metadata() const;
+
+        // returns a human-readable (i.e. may be long-form) representation of the application name
+        std::string human_readable_name() const;
+
+        // returns a string representation of the name of the application, its version, and
+        // its build id (usually useful for logging, file headers, etc.)
+        std::string application_name_with_version_and_buildid() const;
 
         // returns the filesystem path to the current application executable
         const std::filesystem::path& executable_directory() const;
