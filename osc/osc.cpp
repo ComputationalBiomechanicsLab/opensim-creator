@@ -23,16 +23,16 @@ namespace
 
     AppMetadata GetOpenSimCreatorAppMetadata()
     {
-        return AppMetadata{
-            .organization_name = OSC_ORGNAME_STRING,
-            .application_name = OSC_APPNAME_STRING,
-            .config_filename = "osc.toml",
-            .long_application_name = OSC_LONG_APPNAME_STRING,
-            .version_string = OSC_VERSION_STRING,
-            .build_id = OSC_BUILD_ID,
-            .repository_url = OSC_REPO_URL,
-            .help_url = OSC_HELP_URL,
-        };
+        AppMetadata metadata;
+        metadata.set_organization_name(OSC_ORGNAME_STRING);
+        metadata.set_application_name(OSC_APPNAME_STRING);
+        metadata.set_config_filename("osc.toml");
+        metadata.set_long_application_name(OSC_LONG_APPNAME_STRING);
+        metadata.set_version_string(OSC_VERSION_STRING);
+        metadata.set_build_id(OSC_BUILD_ID);
+        metadata.set_repository_url(OSC_REPO_URL);
+        metadata.set_help_url(OSC_HELP_URL);
+        return metadata;
     }
 }
 

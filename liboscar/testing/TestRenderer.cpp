@@ -42,7 +42,9 @@ namespace
     protected:
         static void SetUpTestSuite()
         {
-            const AppMetadata metadata{TESTOSCAR_ORGNAME_STRING, TESTOSCAR_APPNAME_STRING};
+            AppMetadata metadata;
+            metadata.set_organization_name(TESTOSCAR_ORGNAME_STRING);
+            metadata.set_application_name(TESTOSCAR_APPNAME_STRING);
             g_renderer_app = std::make_unique<App>(metadata);
         }
 

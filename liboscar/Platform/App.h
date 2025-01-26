@@ -29,12 +29,12 @@
 #include <utility>
 #include <vector>
 
+namespace osc { class AppMetadata; }
 namespace osc { class AppSettings; }
 namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class Screen; }
 namespace osc { class Widget; }
-namespace osc { struct AppMetadata; }
 
 namespace osc
 {

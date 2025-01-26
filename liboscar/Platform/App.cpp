@@ -1473,9 +1473,9 @@ private:
 
     // top-level application configuration
     AppSettings config_{
-        metadata_.organization_name,
-        metadata_.application_name,
-        metadata_.config_filename,
+        metadata_.organization_name(),
+        metadata_.application_name(),
+        metadata_.config_filename(),
     };
 
     // initialization-time resources dir (so that it doesn't have to be fetched
@@ -1487,8 +1487,8 @@ private:
 
     // path to the write-able user data directory
     std::filesystem::path user_data_dir_ = get_current_user_dir_and_log_it(
-        metadata_.organization_name,
-        metadata_.application_name
+        metadata_.organization_name(),
+        metadata_.application_name()
     );
 
     // ensures that the global application log is configured according to the
