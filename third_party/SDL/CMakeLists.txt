@@ -1586,8 +1586,8 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     CheckVulkan()
     CheckQNXScreen()
 
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/unix/*.c")
-    set(HAVE_SDL_TRAY TRUE)
+    # sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/unix/*.c")  # ComputationalBiomechanicsLab/opensim-creator#993
+    # set(HAVE_SDL_TRAY TRUE)  # ComputationalBiomechanicsLab/opensim-creator#993
   endif()
 
   if(UNIX)
