@@ -52,8 +52,8 @@ echo "----- printing system info -----"
 df  # print disk usage
 ls -la .  # print build dir contents
 uname -a  # print distro details
-cc --version
-c++ --version
+${CC:-cc} --version
+${CXX:-c++} --version
 cmake --version
 make --version
 
