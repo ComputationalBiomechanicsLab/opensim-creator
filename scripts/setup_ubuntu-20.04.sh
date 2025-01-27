@@ -8,7 +8,7 @@ sudo apt install -y libssl-dev  # OpenSSL headers, for cmake
 wget https://github.com/Kitware/CMake/releases/download/v3.31.2/cmake-3.31.2.tar.gz
 tar xvf cmake-3.31.2.tar.gz
 cd cmake-3.31.2
-./bootstrap
-make -j$(nproc) && sudo make install
+CXX=clang++-11 CC=clang-11 ./bootstrap
+CXX=clang++-11 CC=clang-11 make -j$(nproc) && sudo make install
 cd -
 
