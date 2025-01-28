@@ -85,7 +85,7 @@ namespace
     void DoOpenFileViaDialog(Widget& api)
     {
         App::upd().prompt_user_to_select_file_async(
-            [widget_ptr = api.weak_ref()](FileDialogResponse response)
+            [widget_ptr = api.weak_ref()](FileDialogResponse response)  // NOLINT(performance-unnecessary-value-param)
             {
                 if (not widget_ptr) {
                     return;  // widget was deleted at some point
