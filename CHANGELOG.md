@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+## [0.5.20] - 2025/01/28
+
 - Fixed a GTK3 symbol collision between SDL3 and nativefiledialog that causes
   opening a file dialog to crash the application in Ubuntu (#993)
 - Internal: the file dialog (open/save/save as, etc.) is now handled by a mixture of
