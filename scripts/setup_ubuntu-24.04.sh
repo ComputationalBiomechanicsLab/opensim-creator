@@ -2,5 +2,5 @@
 
 # WSL2 on Ubuntu24: ln -sf  /mnt/wslg/runtime-dir/wayland-* $XDG_RUNTIME_DIR/
 
-sudo apt install clang clang-tidy cmake pkg-config libgtk-3-dev libblas-dev liblapack-dev
+sudo apt install clang clang-tidy cmake pkg-config libgtk-3-dev libblas-dev liblapack-dev xdg-desktop-portal-gtk
 
