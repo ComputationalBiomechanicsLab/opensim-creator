@@ -5,6 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Internal: Updated internal opensim-core to include the upstream change to
+  `ExpressionBasedBushingForce`, which will hide the frames if the user sets
+  the appropriate visual properties to zero (previously: would NaN them and cause
+  rendering issues).
+
 ## [0.5.20] - 2025/01/28
 
 - Fixed a GTK3 symbol collision between SDL3 and nativefiledialog that causes
