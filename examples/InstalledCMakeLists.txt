@@ -1,0 +1,107 @@
+# Build the Simbody examples from the current directory which should have
+# the structure of the installed examples/src directory. These will be
+# linked against the installed version of Simbody. The full name of the
+# current directory will be compiled into the examples so that they will
+# know where to look for auxiliary files.
+#
+# The executables will end up in the current binary directory or in
+# the subdirectories associated with the "SUBDIR_EXAMPLES" listed below.
+# For multi-configuration generators (e.g. Visual Studio or Xcode), the
+# executables will be in configuration subdirectories like Release/.
+#
+cmake_minimum_required(VERSION 2.8)
+project(SimbodyExamples)
+
+# All subdirectory examples must be listed here.  A subdirectory is needed
+# for any example that consists of more than just one source file and one
+# header file.
+set(SUBDIR_EXAMPLES
+    BricardMechanism
+    Gazebo2Simbody
+    TaskSpaceControl-UR10
+    TaskSpaceControl-Atlas
+)
+
+# This depends on SimbodyConfig.cmake being located somewhere predictable
+# on your machine. If you have installed it somewhere that CMake won't be
+# able to guess, you'll need to tell find_package where to look.
+find_package(Simbody REQUIRED)
+
+include_directories(${Simbody_INCLUDE_DIR})
+
+# Don't leave the build type blank on single-configuration generators;
+# make sure Release examples get built by default.
+if(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release build"
+        FORCE)
+endif()
+
+# Default to building with the C++11 ABI; user must change this if
+# the installed libraries were built with C++03.
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+   ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+
+    # If using either of these compilers, provide the option of
+    # compiling using the c++11 standard.
+    option(SIMBODY_STANDARD_11
+        "Compile using the C++11 standard, if using GCC or Clang." ON)
+
+    if(${SIMBODY_STANDARD_11})
+        # Using C++11 on OSX requires using libc++ instead of libstd++.
+        # libc++ is an implementation of the C++ standard library for OSX.
+        if(APPLE)
+            if(XCODE)
+                set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
+                set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
+            else()
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+                if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+                    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+                endif()
+            endif()
+        else() # not APPLE
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        endif()
+    endif()
+endif()
+
+# CMAKE_CURRENT_SOURCE_DIR is an absolute path.
+add_definitions(
+    "-DSIMBODY_EXAMPLES_INSTALL_SRC=\"${CMAKE_CURRENT_SOURCE_DIR}/\"")
+
+# Examples can depend on any Simbody includes, and may depend on headers
+# in the examples/shared directory, in which case they are
+# included as #include "shared/SharedHeaderFile.h".
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+# First build examples that have their own subdirectories and CMakeLists
+# files.
+foreach(EX_NAME ${SUBDIR_EXAMPLES})
+    add_subdirectory(${EX_NAME})
+endforeach()
+
+# Next pick up stragglers that consist solely of a .cpp file in the top
+# level examples directory, with a single .h file of the same name.
+# The example name is the source file name with ".cpp" removed, and
+# the generated executable will have that name.
+
+file(GLOB EXAMPLES "*.cpp")
+foreach(EX_PROG ${EXAMPLES})
+    get_filename_component(EX_SRC  ${EX_PROG} NAME)
+    get_filename_component(EX_NAME ${EX_PROG} NAME_WE)
+    set(EX_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/${EX_NAME}.h")
+    if(NOT EXISTS ${EX_HEADER})
+        unset(EX_HEADER)
+    endif()
+
+    # Link with shared library
+    add_executable(${EX_NAME} ${EX_PROG} ${EX_HEADER})
+    if(GUI_NAME)
+        add_dependencies(${EX_NAME} ${GUI_NAME})
+    endif()
+    set_target_properties(${EX_NAME}
+    PROPERTIES
+      COMPILE_FLAGS "-DSIMBODY_EXAMPLE_NAME=\"${EX_NAME}\""
+      PROJECT_LABEL "Example - ${EX_NAME}")
+    target_link_libraries(${EX_NAME} ${Simbody_LIBRARIES})
+endforeach()
