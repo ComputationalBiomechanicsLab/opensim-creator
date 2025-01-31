@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="20303">
+  <SerializableObject name="TestObject">
+    <defaults>
+      <SerializableObject2 name="default">
+        <Test_DblArray2>7 8 9</Test_DblArray2>
+        <Test_Bool2>true</Test_Bool2>
+      </SerializableObject2>
+    </defaults>
+      <!--Comment on a boolean-->
+		<Test_Bool>true</Test_Bool>
+		<!--Comment on a Int-->
+		<Test_Int>0</Test_Int>
+		<!--Comment on a Double-->
+		<Test_Dbl>1.23456</Test_Dbl>
+		<!--Comment on a String-->
+		<Test_Str>ABC</Test_Str>
+		<!--Comment on an Object-->
+		<SerializableObject2 name="Test_Obj">
+			<Test_Bool2>false</Test_Bool2>
+			<Test_DblArray2> 0.1 0.1 0.1</Test_DblArray2>
+		</SerializableObject2>
+		<!--Comment on an int-array-->
+		<Test_IntArray> 0 1 2 3</Test_IntArray>
+		<!--Comment on a Dbl-array-->
+		<Test_DblArray> 0 1 2 3</Test_DblArray>
+		<!--Comment on a str-array-->
+		<Test_StrArray> abc def ghi jkl</Test_StrArray>
+		<!--Comment on Object Array-->
+		<Test_ObjArray>
+			<SerializableObject2 name="Obj1">
+				<Test_Bool2>false</Test_Bool2>
+				<Test_DblArray2> 0.1 0.1 0.1</Test_DblArray2>
+			</SerializableObject2>
+			<SerializableObject2 name="Obj2">
+			</SerializableObject2>
+			<SerializableObject2 name="Obj3">
+				<Test_Bool2>false</Test_Bool2>
+				<Test_DblArray2> 0.1 0.1 0.1</Test_DblArray2>
+			</SerializableObject2>
+		</Test_ObjArray>
+		<MyTransformProperty> 2 1 0.5 3 2 1</MyTransformProperty>
+	</SerializableObject>
+</OpenSimDocument>
