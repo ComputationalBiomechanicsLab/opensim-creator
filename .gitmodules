@@ -1,6 +1,0 @@
-[submodule "libosim/simbody"]
-	path = libosim/simbody
-	url = https://github.com/ComputationalBiomechanicsLab/simbody
-[submodule "libosim/opensim-core"]
-	path = libosim/opensim-core
-	url = https://github.com/ComputationalBiomechanicsLab/opensim-core
