@@ -11,7 +11,7 @@ Visual Studio 2022
 ------------------
 
 - Open a terminal/powershell window
-- Run ``git clone --recursive https://github.com/ComputationalBiomechanicsLab/opensim-creator`` to get a complete copy of OpenSim Creator's sourcecode
+- Run ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`` to get a complete copy of OpenSim Creator's sourcecode
 - ``cd opensim-creator``
 - Run ``python scripts/build_windows.py --skip-osc`` (described above) to get a
   complete build of OSC's dependencies.
