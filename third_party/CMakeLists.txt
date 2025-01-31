@@ -3,15 +3,16 @@ project(osc-dependencies)
 
 # -------------- gather user-facing build cache vars ---------------- #
 
-set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable getting googletest")
-set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable getting lunasvg")
-set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable getting SDL")
-set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable gettting tomlplusplus")
-set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable getting unordered-dense")
-set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable getting glad")
-set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable getting nativefiledialog")
-set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable getting + building OpenBLAS from source")
-set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable getting + building spdlog from source")
+set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
+set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
+set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
+set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
+set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
+set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
+set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable building nativefiledialog from source")
+set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
+set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source (used by OpenSim)")
+set(OSCDEPS_BUILD_ROBIN_MAP ON CACHE BOOL "enable building robin map from source (used by nanobind)")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
@@ -162,3 +163,11 @@ if(${OSCDEPS_BUILD_SPDLOG})
     )
 endif()
 
+if(${OSCDEPS_BUILD_ROBIN_MAP})
+    ExternalProject_Add(robin-map
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/robin-map
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()

@@ -7,7 +7,8 @@ find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
 find_package(Pytest REQUIRED)
 
 # use `nanobind` to map C++ types to the underlying python library
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/nanobind)
+set(NB_USE_SUBMODULE_DEPS OFF)
+add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opensimcreator/nanobind)
 
 # compile the C++ to a "core" module that the python (wrapping) code
 # can call into
