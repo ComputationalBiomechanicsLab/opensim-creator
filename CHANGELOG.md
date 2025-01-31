@@ -9,6 +9,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `ExpressionBasedBushingForce`, which will hide the frames if the user sets
   the appropriate visual properties to zero (previously: would NaN them and cause
   rendering issues).
+- Internal: switched from using `git submodule` to using `git subtree` to handle
+  all external code, in order to make long-term archiving of OpenSim Creator's
+  source code easy (everything is in-tree).
 
 ## [0.5.20] - 2025/01/28
 
