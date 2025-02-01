@@ -12,7 +12,7 @@ set(OSC_EMSCRIPTEN OFF
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
 
-# gather library targets and vendored code targets
+# find library packages
 if (NOT ${OSC_EMSCRIPTEN})
     # These libraries are either provided by emscripten later on, or aren't
     # supported by the emscripten build (they're #ifdef'd out in `oscar`'s
@@ -22,19 +22,18 @@ if (NOT ${OSC_EMSCRIPTEN})
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(imgui REQUIRED CONFIG)
+find_package(implot REQUIRED CONFIG)
 find_package(tomlplusplus REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
-add_subdirectory(InternalVendoredCode)
 
-# gather source code, exclude tests and internal vendored code
+# gather source code, exclude tests
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES
     LIST_DIRECTORIES FALSE
     "*.cpp"
 )
-list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "InternalVendoredCode")
 list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "testing")
 list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "\.tests\.cpp")
 list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "VariableLengthArray")  # hacked out: can't compile on MacOS yet
@@ -77,10 +76,10 @@ PRIVATE
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
-    oscar_internal_code
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
     imgui
+    implot
     stb
     lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3

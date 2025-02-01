@@ -9,7 +9,6 @@ also pulling in OpenSim.
 | `DOM/` | **WIP**: Document object model: classes, properties, objects, and nodes |
 | `Formats/` | Parsers/Writers for file formats |
 | `Graphics/` | Backend-independent, Unity-inspired graphics API |
-| `InternalVendoredCode/` | Third-party code that has been copied+pasted into `liboscar`, potentially with modifications |
 | `Maths/` | Common mathematical classes/algorithms for UI/scene rendering |
 | `Platform/` | Configuration, window creation, logging, error handling, stacktrace dumping, etc. |
 | `Shims/` | Shims for upcoming but not-yet-supported versions of C++ |

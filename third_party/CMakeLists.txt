@@ -11,6 +11,7 @@ set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
 set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable building nativefiledialog from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
+set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
 set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
 set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source (used by OpenSim)")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
@@ -140,6 +141,17 @@ if (${OSCDEPS_BUILD_IMGUI})
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_IMPLOT})
+    ExternalProject_Add(implot
+        DEPENDS imgui
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -Dimgui_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/imgui
     )
 endif()
 
