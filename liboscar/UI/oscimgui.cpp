@@ -74,7 +74,7 @@
          operator osc::Vec2() const { return osc::Vec2(x,y); }
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <imgui_stdlib.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
 #ifdef __EMSCRIPTEN__
     #include <emscripten/em_js.h>

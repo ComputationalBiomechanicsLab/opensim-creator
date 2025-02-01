@@ -19579,7 +19579,7 @@ ImGuiID ImGui::DockSpaceOverViewport(ImGuiID dockspace_id, const ImGuiViewport* 
         host_window_flags |= ImGuiWindowFlags_NoMouseInputs;
 
     char label[32];
-    ImFormatString(label, IM_ARRAYSIZE(label), "WindowOverViewport_%08X", viewport->ID);
+    ImFormatString(label, IM_ARRAYSIZE(label), "DockSpaceViewport_%08X", viewport->ID);  // opensim-creator: use legacy label for backwards config compat
 
     PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

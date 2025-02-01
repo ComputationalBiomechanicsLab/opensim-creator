@@ -6,7 +6,7 @@ file(GLOB_RECURSE OSC_VENDORED_CODE_SOURCES
 	src/*.h
 )
 add_library(oscar_internal_code STATIC ${OSC_VENDORED_CODE_SOURCES})
-
+target_link_libraries(oscar_internal_code PUBLIC imgui)
 target_include_directories(oscar_internal_code PUBLIC include/)
 set_target_properties(oscar_internal_code PROPERTIES
 	CXX_EXTENSIONS OFF
@@ -19,10 +19,3 @@ set_target_properties(oscar_internal_code PROPERTIES
 set_property(TARGET oscar_internal_code PROPERTY CXX_CLANG_TIDY)
 set_property(TARGET oscar_internal_code PROPERTY C_CLANG_TIDY)
 target_compile_features(oscar_internal_code PRIVATE cxx_std_17)
-target_compile_definitions(oscar_internal_code PUBLIC
-	# this is necessary until we move away from our legacy `imgui.ini` and
-	# `imgui_base_config.ini` files because existing users have already encoded
-	# the legacy CRC checks into their local `imgui.ini` file (and we don't want
-	# it to screw up when they update the software)
-	IMGUI_USE_LEGACY_CRC32_ADLER
-)
