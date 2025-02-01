@@ -22,6 +22,7 @@ if (NOT ${OSC_EMSCRIPTEN})
     find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(tomlplusplus REQUIRED CONFIG)
+find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
@@ -78,6 +79,7 @@ PRIVATE
     oscar_internal_code
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus
+    stb
     lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3
 )

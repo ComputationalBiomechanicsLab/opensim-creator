@@ -12,6 +12,7 @@ set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
 set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable building nativefiledialog from source")
 set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
 set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source (used by OpenSim)")
+set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
 set(OSCDEPS_BUILD_ROBIN_MAP ON CACHE BOOL "enable building robin map from source (used by nanobind)")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
@@ -160,6 +161,14 @@ if(${OSCDEPS_BUILD_SPDLOG})
             -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
             -DSPDLOG_BUILD_SHARED:BOOL=OFF
             -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS}
+    )
+endif()
+
+if (${OSCDEPS_BUILD_STB})
+    ExternalProject_Add(stb
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
 endif()
 
