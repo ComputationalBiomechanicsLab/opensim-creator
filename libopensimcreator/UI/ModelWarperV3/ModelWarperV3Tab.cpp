@@ -947,6 +947,9 @@ namespace
         void addScalingStep(std::unique_ptr<ScalingStep> step)
         {
             addComponent(step.release());
+            clearConnections();
+            finalizeConnections(*this);
+            finalizeFromProperties();
         }
 
         bool removeScalingStep(ScalingStep& step)
