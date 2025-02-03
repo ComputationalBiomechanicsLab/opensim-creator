@@ -906,10 +906,12 @@ namespace
     {
         static const auto s_ScalingStepPrototypes = std::to_array<std::unique_ptr<ScalingStep>>({
             std::make_unique<ThinPlateSplineMeshesScalingStep>(),
-            std::make_unique<BodyMassesScalingStep>(),
             std::make_unique<ThinPlateSplineStationsScalingStep>(),
             std::make_unique<ThinPlateSplinePathPointsScalingStep>(),
             std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
+
+            // Put TODO `ScalingStep`s at the bottom
+            std::make_unique<BodyMassesScalingStep>(),
         });
         return s_ScalingStepPrototypes;
     }
