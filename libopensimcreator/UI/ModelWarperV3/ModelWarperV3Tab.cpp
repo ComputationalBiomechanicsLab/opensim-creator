@@ -779,7 +779,7 @@ namespace
 
     public:
         explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
-            ScalingStep{"TODO: Apply Thin-Plate Spline Warp to Offset Frame Translation"}
+            ScalingStep{"Apply Thin-Plate Spline Warp to Offset Frame Translation"}
         {
             setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to shift the translation property of the given offset frame. The orientation/rotation of the offset frame is unaffected by this operation.");
             constructProperty_offset_frames();
