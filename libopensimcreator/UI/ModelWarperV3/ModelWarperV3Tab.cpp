@@ -159,8 +159,12 @@ namespace
             const OpenSim::Mesh& inputMesh,
             const std::filesystem::path& sourceLandmarksPath,
             const std::filesystem::path& destinationLandmarksPath,
+            const OpenSim::Frame& landmarksFrame,
             double blendingFactor)
         {
+            // Figure out the transform between the input mesh and the landmarks frame
+            const Transform mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
+
             // Compile the TPS coefficients from the source+destination landmarks
             const TPSCoefficients3D& coefficients = lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
 
@@ -169,7 +173,13 @@ namespace
 
             // Warp the verticies in-place.
             auto vertices = mesh.vertices();
+            for (auto& vertex : vertices) {
+                vertex = transform_point(mesh2landmarks, vertex);  // put vertex into landmark frame
+            }
             ApplyThinPlateWarpToPointsInPlace(coefficients, vertices, static_cast<float>(blendingFactor));
+            for (auto& vertex : vertices) {
+                vertex = inverse_transform_point(mesh2landmarks, vertex);  // put vertex back into mesh frame
+            }
 
             // Assign the vertices back to the OSC mesh and emit it as an `InMemoryMesh` component
             mesh.set_vertices(vertices);
@@ -387,6 +397,7 @@ namespace
         OpenSim_DECLARE_LIST_PROPERTY(meshes, std::string, "Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
+        OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the mesh vertices to/from the coordinate system of the warp transform.");
 
     public:
         explicit ThinPlateSplineMeshesScalingStep() :
@@ -396,6 +407,7 @@ namespace
             constructProperty_meshes();
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
+            constructProperty_landmarks_frame("/ground");
         }
 
     private:
@@ -457,6 +469,14 @@ namespace
                 messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
             }
 
+            // Ensure `landmarks_frame` exists in the model
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            if (not landmarksFrame) {
+                std::stringstream msg;
+                msg << get_landmarks_frame() << ": Cannot find this frame in the source model";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
             return messages;
         }
 
@@ -476,6 +496,10 @@ namespace
             OSC_ASSERT_ALWAYS(not get_destination_landmarks_file().empty());
             const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
 
+            OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            OSC_ASSERT_ALWAYS(landmarksFrame && "could not find the landmarks frame in the model");
+
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
             OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
 
@@ -490,6 +514,7 @@ namespace
                     *mesh,
                     sourceLandmarksPath,
                     destinationLandmarksPath,
+                    *landmarksFrame,
                     *blendingFactor
                 );
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
@@ -1951,9 +1976,12 @@ public:
         {
             OpenSim::Object::registerType(ScalingParameterOverride{});
             OpenSim::Object::registerType(BodyMassesScalingStep{});
+
             OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplinePathPointsScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineOffsetFrameTranslationScalingStep{});
+
             OpenSim::Object::registerType(ModelWarperV3Document{});
             return true;
         }();
