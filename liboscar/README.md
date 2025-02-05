@@ -6,6 +6,7 @@ also pulling in OpenSim.
 
 | Directory | Description |
 | - | - |
+| `Concepts/` | Custom C++20 concepts |
 | `DOM/` | **WIP**: Document object model: classes, properties, objects, and nodes |
 | `Formats/` | Parsers/Writers for file formats |
 | `Graphics/` | Backend-independent, Unity-inspired graphics API |

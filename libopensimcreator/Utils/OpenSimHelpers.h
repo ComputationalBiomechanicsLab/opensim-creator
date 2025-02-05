@@ -1,9 +1,9 @@
 #pragma once
 
+#include <liboscar/Concepts/DereferencesTo.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/PointDirection.h>
 #include <liboscar/Maths/Vec3.h>
-#include <liboscar/Utils/Concepts.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
 #include <OpenSim/Common/ComponentPath.h>

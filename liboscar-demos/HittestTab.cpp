@@ -119,18 +119,18 @@ public:
         float closest_distance = std::numeric_limits<float>::max();
         SceneSphere* closest_sphere = nullptr;
 
-        for (SceneSphere& ss : scene_spheres_) {
-            ss.is_hovered = false;
+        for (SceneSphere& scene_sphere : scene_spheres_) {
+            scene_sphere.is_hovered = false;
 
             const Sphere hittest_sphere{
-                .origin = ss.pos,
+                .origin = scene_sphere.pos,
                 .radius = sphere_bounding_sphere_.radius,
             };
 
             const std::optional<RayCollision> collision = find_collision(ray, hittest_sphere);
             if (collision and collision->distance >= 0.0f and collision->distance < closest_distance) {
                 closest_distance = collision->distance;
-                closest_sphere = &ss;
+                closest_sphere = &scene_sphere;
             }
         }
 
@@ -144,14 +144,14 @@ public:
         camera_.on_draw();
 
         // render spheres
-        for (const SceneSphere& sphere : scene_spheres_) {
+        for (const SceneSphere& scene_sphere : scene_spheres_) {
 
             graphics::draw(
                 sphere_mesh_,
-                {.position = sphere.pos},
+                {.position = scene_sphere.pos},
                 material_,
                 camera_,
-                sphere.is_hovered ? blue_color_material_props_ : red_color_material_props_
+                scene_sphere.is_hovered ? blue_color_material_props_ : red_color_material_props_
             );
 
             // draw sphere AABBs
@@ -159,7 +159,7 @@ public:
 
                 graphics::draw(
                     wireframe_mesh_,
-                    {.scale = half_widths_of(scene_sphere_aabb_), .position = sphere.pos},
+                    {.scale = half_widths_of(scene_sphere_aabb_), .position = scene_sphere.pos},
                     material_,
                     camera_,
                     black_color_material_props_

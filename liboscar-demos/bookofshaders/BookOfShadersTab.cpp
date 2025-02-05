@@ -2,6 +2,7 @@
 
 #include <liboscar/oscar.h>
 
+#include <chrono>
 #include <memory>
 #include <vector>
 

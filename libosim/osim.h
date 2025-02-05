@@ -16,10 +16,10 @@ namespace osim
     public:
         virtual ~InitConfiguration() noexcept = default;
 
-        // Called when `osim::init` wants to emit an informational log message
+        // Called when `osim::init` wants to emit an informational log message.
         void log_info(std::string_view payload) { impl_log_message(payload, LogLevel::info); }
 
-        // Called when `osim::init` wants to emit a warning log message
+        // Called when `osim::init` wants to emit a warning log message.
         void log_warn(std::string_view payload) { impl_log_message(payload, LogLevel::warn); }
     private:
 

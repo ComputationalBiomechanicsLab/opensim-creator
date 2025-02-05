@@ -1,5 +1,7 @@
 #pragma once
 
+#include <liboscar/Concepts/BitCastable.h>
+#include <liboscar/Concepts/IsAnyOf.h>
 #include <liboscar/Maths/Mat3.h>
 #include <liboscar/Maths/Mat4.h>
 #include <liboscar/Maths/MatFunctions.h>
@@ -8,7 +10,6 @@
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Maths/VecFunctions.h>
 #include <liboscar/Shims/Cpp20/bit.h>
-#include <liboscar/Utils/Concepts.h>
 
 #include <glad/glad.h>
 

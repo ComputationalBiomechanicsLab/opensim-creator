@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/Concepts.h>
+#include <liboscar/Concepts/IsAnyOf.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Station.h>

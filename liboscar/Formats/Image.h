@@ -1,9 +1,9 @@
 #pragma once
 
+#include <liboscar/Concepts/NamedInputStream.h>
 #include <liboscar/Formats/ImageLoadingFlags.h>
 #include <liboscar/Graphics/ColorSpace.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Utils/Concepts.h>
 
 #include <iosfwd>
 #include <utility>

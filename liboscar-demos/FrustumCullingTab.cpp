@@ -7,6 +7,7 @@
 #include <ranges>
 #include <memory>
 #include <random>
+#include <vector>
 
 using namespace osc;
 using namespace osc::literals;

@@ -5,7 +5,6 @@
 #include <liboscar/Utils/ChronoHelpers.h>
 #include <liboscar/Utils/CircularBuffer.h>
 #include <liboscar/Utils/ClonePtr.h>
-#include <liboscar/Utils/Concepts.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/CStringView.h>

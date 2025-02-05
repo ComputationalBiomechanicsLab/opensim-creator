@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/Concepts.h>
 #include <liboscar/DOM.h>
 #include <liboscar/Formats.h>
 #include <liboscar/Graphics.h>

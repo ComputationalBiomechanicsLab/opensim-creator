@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Utils/Concepts.h>
+#include <liboscar/Concepts/IsAnyOf.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
 #include <cstdint>

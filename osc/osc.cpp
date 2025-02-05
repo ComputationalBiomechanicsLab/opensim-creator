@@ -38,21 +38,17 @@ namespace
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string_view> unnamedArgs;
-    for (int i = 1; i < argc; ++i)
-    {
+    std::vector<std::string_view> unnamed_args;
+    for (int i = 1; i < argc; ++i) {
         const std::string_view arg{argv[i]};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-        if (arg.empty())
-        {
+        if (arg.empty()) {
             // do nothing (this shouldn't happen)
         }
-        else if (arg.front() != '-')
-        {
-            unnamedArgs.push_back(arg);
+        else if (arg.front() != '-') {
+            unnamed_args.push_back(arg);
         }
-        else if (arg == "--help")
-        {
+        else if (arg == "--help") {
             std::cout << c_Usage << '\n' << c_Help << '\n';
             return EXIT_SUCCESS;
         }
@@ -65,8 +61,8 @@ int main(int argc, char* argv[])
     auto screen = std::make_unique<MainUIScreen>();
 
     // load each unnamed arg as a file in the UI
-    for (const auto& unnamedArg : unnamedArgs) {
-        screen->open(unnamedArg);
+    for (const auto& unnamed_arg : unnamed_args) {
+        screen->open(unnamed_arg);
     }
 
     // enter main application loop

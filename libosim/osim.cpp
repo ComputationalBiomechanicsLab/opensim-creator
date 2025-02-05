@@ -56,8 +56,7 @@ namespace
     {
         // disable lint because this function is only called once at application
         // init time
-        if (std::setlocale(category, locale) == nullptr)  // NOLINT(concurrency-mt-unsafe)
-        {
+        if (std::setlocale(category, locale) == nullptr) { // NOLINT(concurrency-mt-unsafe)
             std::stringstream content;
             content << "error setting locale category " << category << " to " << locale;
             config.log_warn(std::move(content).str());

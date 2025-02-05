@@ -3,10 +3,11 @@
 #include <liboscar/oscar.h>
 
 #include <array>
+#include <concepts>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <ranges>
-#include <span>
 #include <vector>
 
 using namespace osc;

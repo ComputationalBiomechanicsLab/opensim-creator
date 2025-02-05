@@ -52,7 +52,6 @@
 #include <liboscar/UI/Detail/ImGuizmo.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/Concepts.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>

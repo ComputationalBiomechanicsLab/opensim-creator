@@ -1,8 +1,10 @@
 #pragma once
 
-#include <liboscar/Utils/Concepts.h>
+#include <liboscar/Concepts/AssociativeContainer.h>
+#include <liboscar/Concepts/AssociativeContainerKey.h>
 
 #include <algorithm>
+#include <concepts>
 #include <functional>
 #include <iterator>
 #include <memory>

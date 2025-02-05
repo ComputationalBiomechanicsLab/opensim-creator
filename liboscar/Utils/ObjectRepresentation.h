@@ -1,6 +1,7 @@
 #pragma once
 
-#include <liboscar/Utils/Concepts.h>
+#include <liboscar/Concepts/BitCastable.h>
+#include <liboscar/Concepts/ObjectRepresentationByte.h>
 
 #include <cstddef>
 #include <ranges>

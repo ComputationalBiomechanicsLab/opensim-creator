@@ -1,5 +1,6 @@
 #pragma once
 
+#include <liboscar/Concepts/BitCastable.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/MeshIndicesView.h>
 #include <liboscar/Graphics/MeshTopology.h>
@@ -10,7 +11,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
-#include <liboscar/Utils/Concepts.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/ObjectRepresentation.h>
 
