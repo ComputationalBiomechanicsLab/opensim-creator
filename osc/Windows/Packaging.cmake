@@ -35,7 +35,8 @@ install(
         "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
         "${PROJECT_SOURCE_DIR}/resources/oscar"
         $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:"${PROJECT_SOURCE_DIR}/resources/oscar_demos">
-    DESTINATION "."
+    DESTINATION
+        "resources/"
 )
 
 # use NSIS to package everything into a self-extracting installer

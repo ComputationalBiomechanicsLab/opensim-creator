@@ -46,7 +46,7 @@ install(
         "${PROJECT_SOURCE_DIR}/resources/oscar"
         $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:"${PROJECT_SOURCE_DIR}/resources/oscar_demos">
     DESTINATION
-        osc.app/Contents/MacOS/
+        osc.app/Contents/MacOS/resources/
 )
 
 # install-time: copy the Mac-specific desktop icon (.icns)

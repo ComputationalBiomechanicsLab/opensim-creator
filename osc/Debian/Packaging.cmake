@@ -52,7 +52,7 @@ install(
         "${PROJECT_SOURCE_DIR}/resources/oscar"
         $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:"${PROJECT_SOURCE_DIR}/resources/oscar_demos">
     DESTINATION
-        "."
+        "resources/"
 )
 
 install(
