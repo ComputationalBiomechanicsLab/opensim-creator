@@ -6,6 +6,7 @@
 #include <string>
 
 namespace osc { class AppMetdata; }
+namespace osc { class TabRegistry; }
 
 namespace osc
 {
@@ -38,6 +39,8 @@ namespace osc
         ~OpenSimCreatorApp() noexcept;
 
         using App::show;
+
+        TabRegistry& upd_tab_registry();
 
         std::string docs_url() const;
     };

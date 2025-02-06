@@ -41,7 +41,6 @@ target_include_directories(OpenSimCreator PUBLIC
 )
 target_link_libraries(OpenSimCreator PUBLIC
     oscar
-    oscar_demos
     osim
 )
 

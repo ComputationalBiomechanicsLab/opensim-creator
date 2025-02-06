@@ -16,7 +16,6 @@
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar-demos/OscarDemosTabRegistry.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -131,13 +130,6 @@ namespace
         return true;
     }
 
-    // registers user-accessible tabs
-    void InitializeTabRegistry(TabRegistry& registry)
-    {
-        register_demo_tabs(registry);
-        RegisterOpenSimCreatorTabs(registry);
-    }
-
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
     {
         for (const auto& [setting_id, default_state] : c_default_panel_states) {
@@ -172,7 +164,7 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
 {
     GloballyInitOpenSim();
     GloballyAddDirectoryToOpenSimGeometrySearchPath(resource_filepath("OpenSimCreator/geometry"));
-    InitializeTabRegistry(*singleton<TabRegistry>());
+    RegisterOpenSimCreatorTabs(upd_tab_registry());
     InitializeOpenSimCreatorSpecificSettingDefaults(upd_settings());
     g_opensimcreator_app_global = this;
 }
@@ -180,6 +172,11 @@ osc::OpenSimCreatorApp::OpenSimCreatorApp(const AppMetadata& metadata) :
 osc::OpenSimCreatorApp::~OpenSimCreatorApp() noexcept
 {
     g_opensimcreator_app_global = nullptr;
+}
+
+TabRegistry& osc::OpenSimCreatorApp::upd_tab_registry()
+{
+    return *singleton<TabRegistry>();
 }
 
 std::string osc::OpenSimCreatorApp::docs_url() const

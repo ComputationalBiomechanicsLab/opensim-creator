@@ -1,8 +1,10 @@
 #include <osc/osc_config.h>
 
-#include <liboscar/Platform/AppMetadata.h>
-#include <libopensimcreator/UI/MainUIScreen.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
+#include <libopensimcreator/UI/MainUIScreen.h>
+#include <liboscar/Platform/AppMetadata.h>
+#include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar-demos/OscarDemosTabRegistry.h>
 
 #include <cstdlib>
 #include <iostream>
@@ -56,6 +58,9 @@ int main(int argc, char* argv[])
 
     // init top-level application state
     OpenSimCreatorApp app{GetOpenSimCreatorAppMetadata()};
+
+    // also, register the demo tabs
+    register_demo_tabs(app.upd_tab_registry());
 
     // init top-level screen (tab host)
     auto screen = std::make_unique<MainUIScreen>();

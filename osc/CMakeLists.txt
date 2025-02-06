@@ -102,6 +102,7 @@ target_compile_options(osc PRIVATE
 )
 target_link_libraries(osc PRIVATE
     OpenSimCreator
+    oscar_demos
 )
 target_include_directories(osc PRIVATE
 
