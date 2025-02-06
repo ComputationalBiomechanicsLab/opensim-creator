@@ -47,13 +47,6 @@ namespace
         }
     )";
 
-    struct TorusParameters final {
-        float torus_radius = 1.0f;
-        float tube_radius = 0.4f;
-
-        friend bool operator==(const TorusParameters&, const TorusParameters&) = default;
-    };
-
     class HelloTriangleScreen final : public Screen {
     public:
         HelloTriangleScreen()
@@ -111,6 +104,8 @@ namespace
             ui::draw_text("source code");
             ui::draw_float_slider("torus_radius", &edited_torus_parameters_.torus_radius, 0.0f, 5.0f);
             ui::draw_float_slider("tube_radius", &edited_torus_parameters_.tube_radius, 0.0f, 5.0f);
+            ui::draw_size_t_input("p", &edited_torus_parameters_.p);
+            ui::draw_size_t_input("q", &edited_torus_parameters_.q);
             ui::end_panel();
 
             ui::context::render();
@@ -121,15 +116,12 @@ namespace
             if (torus_parameters_ == edited_torus_parameters_) {
                 return;
             }
-            mesh_ = TorusKnotGeometry{{
-                .torus_radius = edited_torus_parameters_.torus_radius,
-                .tube_radius = edited_torus_parameters_.tube_radius,
-            }};
+            mesh_ = TorusKnotGeometry{edited_torus_parameters_};
             torus_parameters_ = edited_torus_parameters_;
         }
 
-        TorusParameters torus_parameters_;
-        TorusParameters edited_torus_parameters_;
+        TorusKnotGeometryParams torus_parameters_;
+        TorusKnotGeometryParams edited_torus_parameters_;
         TorusKnotGeometry mesh_;
         Color torus_color_ = Color::blue();
         MeshPhongMaterial material_{{

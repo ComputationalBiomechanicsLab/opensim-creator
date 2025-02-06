@@ -248,6 +248,7 @@ namespace osc::ui
     bool draw_float_slider(CStringView label, float* v, float v_min, float v_max, const char* format = "%.3f", SliderFlags = {});
     bool draw_scalar_input(CStringView label, DataType data_type, void* p_data, const void* p_step = nullptr, const void* p_step_fast = nullptr, const char* format = nullptr, TextInputFlags = {});
     bool draw_int_input(CStringView label, int* v, int step = 1, int step_fast = 100, TextInputFlags = {});
+    bool draw_size_t_input(CStringView label, size_t* v, size_t step = 1, size_t step_fast = 100, TextInputFlags = {});
     bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", TextInputFlags = {});
     bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", TextInputFlags = {});
     bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", TextInputFlags = {});

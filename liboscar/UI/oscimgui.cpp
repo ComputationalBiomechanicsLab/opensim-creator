@@ -414,6 +414,17 @@ namespace
         const UID texture_uid = bd->textures_allocated_this_frame.try_emplace(UID{}, texture).first->first;
         return to_imgui_texture_id(texture_uid);
     }
+
+    template<typename>
+    ImGuiDataType data_type_for();
+
+    template<>
+    constexpr ImGuiDataType data_type_for<size_t>()
+    {
+        static_assert(std::is_unsigned_v<size_t>);
+        static_assert(sizeof(size_t) == 8 or sizeof(size_t) == 4);
+        return sizeof(size_t) == 8 ? ImGuiDataType_U64 : ImGuiDataType_U32;
+    }
 }
 
 namespace osc::ui::graphics_backend
@@ -1850,6 +1861,11 @@ bool osc::ui::draw_scalar_input(CStringView label, DataType data_type, void* p_d
 bool osc::ui::draw_int_input(CStringView label, int* v, int step, int step_fast, TextInputFlags flags)
 {
     return ImGui::InputInt(label.c_str(), v, step, step_fast, to<ImGuiInputTextFlags>(flags));
+}
+
+bool osc::ui::draw_size_t_input(CStringView label, size_t* v, size_t step, size_t step_fast, TextInputFlags flags)
+{
+    return ImGui::InputScalar(label.c_str(), data_type_for<size_t>(), v, &step, &step_fast, nullptr, to<ImGuiInputTextFlags>(flags));
 }
 
 bool osc::ui::draw_double_input(CStringView label, double* v, double step, double step_fast, const char* format, TextInputFlags flags)
