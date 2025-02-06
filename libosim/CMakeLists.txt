@@ -7,8 +7,8 @@ find_package(LAPACK REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(spdlog REQUIRED)
 
-set(OSIM_OPENSIM_BASEDIR "${PROJECT_SOURCE_DIR}/third_party/opensim-core")
-set(OSIM_SIMBODY_BASEDIR "${PROJECT_SOURCE_DIR}/third_party/simbody")
+set(OSIM_OPENSIM_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/opensim-core")
+set(OSIM_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/simbody")
 
 add_library(osim STATIC
 
