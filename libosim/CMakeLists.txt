@@ -641,6 +641,7 @@ PUBLIC
     SimTK_USE_STATIC_LIBRARIES=1
     LEPTON_BUILDING_STATIC_LIBRARY=1
     OPENSIM_USE_STATIC_LIBRARIES=1
+    OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1  # disable objects being registered during static init time
 
     # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
     $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
