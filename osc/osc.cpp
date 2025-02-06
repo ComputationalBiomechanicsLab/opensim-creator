@@ -1,4 +1,4 @@
-#include <osc/osc_config.h>
+#include <osc/osc_config.h>  // static configuration
 
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/UI/MainUIScreen.h>
@@ -59,8 +59,10 @@ int main(int argc, char* argv[])
     // init top-level application state
     OpenSimCreatorApp app{GetOpenSimCreatorAppMetadata()};
 
+#ifdef OSC_BUNDLE_OSCAR_DEMOS
     // also, register the demo tabs
     register_demo_tabs(app.upd_tab_registry());
+#endif
 
     // init top-level screen (tab host)
     auto screen = std::make_unique<MainUIScreen>();

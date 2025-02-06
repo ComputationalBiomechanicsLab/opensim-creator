@@ -47,8 +47,12 @@ install(
 
 # install-time: copy `resources/` (assets) dir
 install(
-    DIRECTORY "${PROJECT_SOURCE_DIR}/resources"
-    DESTINATION "."
+    DIRECTORY
+        "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
+        "${PROJECT_SOURCE_DIR}/resources/oscar"
+        $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:"${PROJECT_SOURCE_DIR}/resources/oscar_demos">
+    DESTINATION
+        "."
 )
 
 install(

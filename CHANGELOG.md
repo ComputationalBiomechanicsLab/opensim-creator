@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- `oscar_demos` are no longer bundled with the application by default, to reduce
+  the size of the installer (most users don't use the demos).
 - Internal: Updated internal opensim-core to include the upstream change to
   `ExpressionBasedBushingForce`, which will hide the frames if the user sets
   the appropriate visual properties to zero (previously: would NaN them and cause

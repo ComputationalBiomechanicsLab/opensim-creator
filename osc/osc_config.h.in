@@ -38,3 +38,8 @@
 // the internet location for a "help site", which is loosely defined as somewhere the user
 // can go to ask for help. This data is used by in-app links, shortcuts, etc.
 #define OSC_HELP_URL "@OSC_HELP_URL@"
+
+// define
+//
+// set if the application should also bundle the demo tabs
+#cmakedefine OSC_BUNDLE_OSCAR_DEMOS

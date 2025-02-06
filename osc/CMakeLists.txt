@@ -43,6 +43,10 @@ set(
     CACHE STRING
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
+set(OSC_BUNDLE_OSCAR_DEMOS OFF
+    CACHE BOOL
+    "enable/disable bundling oscar demos with the `osc` application"
+)
 
 # set OSC_BUILD_ID
 #
@@ -102,7 +106,7 @@ target_compile_options(osc PRIVATE
 )
 target_link_libraries(osc PRIVATE
     OpenSimCreator
-    oscar_demos
+    $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>
 )
 target_include_directories(osc PRIVATE
 
