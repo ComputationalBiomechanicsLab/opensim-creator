@@ -17,7 +17,7 @@
 
 ## 👓 Overview
 
-![screenshot](docs/source/_static/screenshot.png)
+![screenshot](docs/source/_static/screenshot.jpg)
 
 OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It's available
