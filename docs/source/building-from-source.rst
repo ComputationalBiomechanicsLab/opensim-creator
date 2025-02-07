@@ -138,8 +138,7 @@ Building on Ubuntu (20.04 or newer)
     2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt && pip install -r docs/requirements-dev.txt```
 8. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
-    1. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables point to
-       compilers that are compatible with C++20. E.g. ``export CC=clang-12``, ``export CXX=clang++-12``
+    1. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables point to compilers that are compatible with C++20. E.g. ``export CC=clang-12``, ``export CXX=clang++-12``
     3. Run the build script: ``scripts/build_ubuntu-20.04.sh``
     4. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu-20.04.sh``
 9. Done:

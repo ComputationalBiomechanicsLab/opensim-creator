@@ -169,7 +169,7 @@ that, you will need to:
 
 Once loaded, it should look something like this:
 
-.. figure:: _static/tut7_walkthrough-after-marker-data-loaded.png
+.. figure:: _static/tut7_walkthrough-after-marker-data-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading ``subject01_walk.trc``. The
@@ -214,7 +214,7 @@ model + trajectory in the preview experimental data UI with the following steps:
 Once loaded, you should be able to see the raw marker data, your model, and its
 motion all overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-IK.png
+.. figure:: _static/tut7_walkthrough-after-IK.jpg
     :width: 60%
 
     The preview experimental data UI after loading the raw marker data, the model,
@@ -240,7 +240,7 @@ This step is identical to `Load Raw Marker Data`_ :
 Once loaded, you should be able to see the marker data, your model, the model's motion,
 and your GRF vectors overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-grfs-loaded.png
+.. figure:: _static/tut7_walkthrough-after-grfs-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading the marker data, model, IK
@@ -365,7 +365,7 @@ Once loaded, you should be able to see the marker data, your model, the model's
 motion, your raw GRF vectors, and the ``ExternalForces`` from the ``ExternalLoads``
 file overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-externalloads-loaded.png
+.. figure:: _static/tut7_walkthrough-after-externalloads-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading the marker data, model, IK

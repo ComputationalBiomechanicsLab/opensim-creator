@@ -28,7 +28,7 @@ compared to standard scaling, is that it makes non-uniform, subject-specific
 scaling possible.
 
 .. _model-warper-ui:
-.. figure:: _static/tut6_model-warper.png
+.. figure:: _static/tut6_model-warper.jpg
     :width: 60%
 
     A screenshot of the model warping UI, showing how it can be used to warp
@@ -155,7 +155,7 @@ Opening the Model Warping UI
 The model warping warping UI is an independent "workflow" UI that can be
 accessed from OpenSim Creator's splash screen:
 
-.. figure:: _static/tut6_open-model-warper-from-splash-screen.png
+.. figure:: _static/tut6_open-model-warper-from-splash-screen.jpg
   :width: 80%
 
   A screenshot of OpenSim Creator's main splash screen. The model warping UI
@@ -170,7 +170,7 @@ After opening the model warping UI, you will be presented with a UI containing
 three panels (``Checklist``, ``Source Model``, and ``Result Model``) and a
 toolbar:
 
-.. figure:: _static/tut6_model-warper-ui-blank-model.png
+.. figure:: _static/tut6_model-warper-ui-blank-model.jpg
   :width: 80%
 
   A screenshot of the model warping UI after opening it. It initially shows a

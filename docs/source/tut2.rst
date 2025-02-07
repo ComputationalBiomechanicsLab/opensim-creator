@@ -5,7 +5,7 @@ Make a Bouncing Block
 
 In this tutorial, we will be making a bouncing block using OpenSim Creator:
 
-.. figure:: _static/tut2_constraints-added.png
+.. figure:: _static/tut2_constraints-added.jpg
     :width: 60%
 
     The model that's made in this tutorial. It is a three-body system with a spring attached between the head to the foot. Contact geometries are used to make the model bounce on the floor, and constraints are used to prevent it from rolling around (:download:`download model <_static/tut2_constraints-added.osim>`).
@@ -58,7 +58,7 @@ You can then raise ``foot`` above the ground slightly by altering the ``ground_t
 
 This should produce a model with a red sphere (``foot``) that is raised above the ground:
 
-.. figure:: _static/tut2_added-foot.png
+.. figure:: _static/tut2_added-foot.jpg
     :width: 60%
 
     The model after adding the ``foot`` body and changing ``ground_to_foot``'s ``ty`` to ``0.5`` (:download:`download model <_static/tut2_added-foot.osim>`)
@@ -85,7 +85,7 @@ To attach a collidable floor (a ``ContactHalfSpace``) to the ground of the model
 * Open the ``Contact Geometry`` sub-menu and click ``ContactHalfSpace``
 * In the popup, create a ``ContactHalfSpace`` with the following properties:
 
-.. figure:: _static/tut2_floor-properties.png
+.. figure:: _static/tut2_floor-properties.jpg
 
     Properties for the ``floor_contact`` component (a ``ContactHalfSpace``) attached to the ground. Careful that ``orientation`` is set to ``-90`` (degrees) in Z. ``+90`` would behave differently, because a ``ContactHalfSpace`` only collides on one side.
 
@@ -96,7 +96,7 @@ To attach a collidable sphere (a ``ContactSphere``) to ``foot``:
 * Open the ``Contact Geometry`` sub-menu and click ``ContactSphere``
 * In the popup, create a ``ContactSphere`` with the following properties:
 
-.. figure:: _static/tut2_footcontact-properties.png
+.. figure:: _static/tut2_footcontact-properties.jpg
 
     Properties for the ``foot_contact`` component (a ``ContactSphere``). The ``radius`` is set to match the ``Sphere`` decoration used on the ``foot``. The ``ContactSphere`` is attached to ``foot`` so that collisions it encounters affect ``foot``. **Note**: You can edit the ``radius`` property of ``foot_contact`` if you can't see it in the scene. It may be hidden inside the ``foot`` sphere (they have the same radius).
 
@@ -114,14 +114,14 @@ To add a contact force (``HuntCrossleyForce``) to the model:
 * Click ``Add Contact Geometry`` button
 * Use that action to add ``floor_contact`` and ``foot_contact`` to the force. They should end up being listed in ``HuntCrossleyForce``'s properties
 
-.. figure:: _static/tut2_assigncontactgeometry.png
+.. figure:: _static/tut2_assigncontactgeometry.jpg
     :width: 60%
 
     The model after assigning ``floor_contact`` and ``foot_contact`` to  ``HuntCrossleyForce``.
 
 With the contact force added, simulating this model should show ``foot`` hit ``floor``, bounce a little, then stop. You can change the ``HuntCrossleyForce``'s properties to change how stiff the contact force is, how much energy is dissipated by the contact, etc.
 
-.. figure:: _static/tut2_collision-forces-added.png
+.. figure:: _static/tut2_collision-forces-added.jpg
     :width: 60%
 
     The model after adding ``floor_contact``, ``foot_contact`` and a ``HuntCrossleyForce``. Simulating (``Ctrl+R``) the model should show the ``foot`` sphere fall through the scene until it collides with the surface. It should then bounce a little and stop (:download:`download model <_static/tut2_added-contact-stuff.osim>`).
@@ -146,7 +146,7 @@ To add the ``head`` to the model:
 
 These steps should create all the necessary bodies in the system, but it will look a little bit unusual (the "links" are missing):
 
-.. figure:: _static/tut2_bodies-added.png
+.. figure:: _static/tut2_bodies-added.jpg
     :width: 60%
 
     The model after adding the ``knee`` and ``head`` bodies. The bodies are joined to each over with ``PinJoint`` s that pivot on the knee and head respectively. The model looks unusual because there are no visual "links" between the bodies and because the model isn't angled yet (:download:`download model <_static/tut2_bodies-added.osim>`).
@@ -165,7 +165,7 @@ To add a decorative link between the ``foot`` and ``knee``:
 * Select the brick through the navigator (``/bodyset/foot/foot_offsetframe/foot_offsetframe_geom_1``), or by clicking it in the 3D viewport
 * Use the properties panel to edit the brick's ``half_widths`` property to something like ``(0.025, 0.25, 0.025)``. This creates a thin "rod" between ``foot`` and ``knee``
 
-.. figure:: _static/tut2_after-adding-first-decorative-link.png
+.. figure:: _static/tut2_after-adding-first-decorative-link.jpg
     :width: 60%
 
     The model after adding the first decorative link. (:download:`download model <_static/tut2_after-adding-first-decorative-link.osim>`)
@@ -185,7 +185,7 @@ To add a decorative link between the ``knee`` and ``head``:
 
 These steps add *decorative* features to the model that make it easier to see what's going on. After doing them, you should have something that looks like this:
 
-.. figure:: _static/tut2_decorations-added.png
+.. figure:: _static/tut2_decorations-added.jpg
     :width: 60%
 
     The model after adding decorative bricks between the ``foot`` and the ``knee`` and between the ``knee`` and the ``head`` (:download:`download model <_static/tut2_decorations-added.osim>`).
@@ -200,7 +200,7 @@ To make the simulation more interesting, we are going to angle the whole model a
 
 These steps should put the model into a more interesting arrangement:
 
-.. figure:: _static/tut2_angles-added.png
+.. figure:: _static/tut2_angles-added.jpg
     :width: 60%
 
     The model after altering the ``ground_to_foot``'s and ``foot_to_knee``'s ``rz`` values. Altering those values puts the model into a more interesting arrangement (:download:`download model <_static/tut2_angles-added.osim>`).
@@ -221,7 +221,7 @@ To add a ``PointToPointSpring`` between ``foot`` and ``head``:
 * Open the ``Force`` sub-menu and click ``PointToPointSpring``
 * In the popup menu, give the spring the following properties:
 
-.. figure:: _static/tut2_add-spring-popup.png
+.. figure:: _static/tut2_add-spring-popup.jpg
     :width: 60%
 
     Properties for a ``PointToPointSpring`` between the ``foot`` and the ``head`` in the model. The spring's ``stiffness`` and ``rest_length`` properties are chosen to try and make the model equilibrate towards the ``foot`` being separated from the ``head`` slightly (after a few bounces).
@@ -229,7 +229,7 @@ To add a ``PointToPointSpring`` between ``foot`` and ``head``:
 
 If you simulate the model after adding the spring, you should see that the model hits the floor, collides, bounces a little bit, and then starts to roll:
 
-.. figure:: _static/tut2_spring-added.png
+.. figure:: _static/tut2_spring-added.jpg
     :width: 60%
 
     The model after adding a ``PointToPointSpring`` between the ``foot`` and the ``head``. The spring prevents the ``head`` from clipping through the ``foot`` and makes the simulation more interesting-looking. However, when simulating, the model bounces around a little bit and begins to roll around. This is because the model isn't constrained along the vertical axis (:download:`download model <_static/tut2_spring-added.osim>`).
@@ -258,7 +258,7 @@ To constrain ``foot`` to only be allowed to roll along the Y axis, follow these 
 * Open the ``Constraint`` sub-menu and click ``PointOnLineConstraint``
 * In the popup menu, give the constraint the following properties:
 
-.. figure:: _static/tut2_foot-Y-lock-properties.png
+.. figure:: _static/tut2_foot-Y-lock-properties.jpg
     :width: 60%
 
     Properties for ``foot_Y_lock``. This constraint prevents the foot from being able to roll along the floor to a different X/Z coordinate in the scene by enforcing ``foot`` to *follow* the ``(0.0, 1.0, 0.0)`` line from ``ground``.
@@ -271,14 +271,14 @@ To constrain ``head``, such that is only follows along Y in ``ground``, follow t
 * Open the ``Constraint`` sub-menu and click ``PointOnLineConstraint``
 * In the popup menu, give the constraint the following properties:
 
-.. figure:: _static/tut2_head-y-lock-properties.png
+.. figure:: _static/tut2_head-y-lock-properties.jpg
     :width: 60%
 
     Properties for ``head_Y_lock``. This constraint prevents ``head`` from being able to swing around the ``foot`` wildly, which ensures that it always bounces towards ``foot`` straight-on.
 
 With both of those constraints in place, the model now bounces up and down without rolling around. This is very useful for figuring out what tuning parameters (e.g. ``head`` weight, ``foot_to_head_spring`` stiffness) lead to an optimal bounce without having to *also* handle balancing.
 
-.. figure:: _static/tut2_constraints-added.png
+.. figure:: _static/tut2_constraints-added.jpg
     :width: 60%
 
     The final model after adding ``PointOnLineConstraint`` s that make the ``head`` and ``foot`` bodies stay along the Y axis, rather than having the freedom to roll around (:download:`download model <_static/tut2_constraints-added.osim>`).

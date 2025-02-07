@@ -5,7 +5,7 @@ OpenSim Creator is a UI for building OpenSim models. These pages are the officia
 documentation for OpenSim Creator, where you can find basic installation instructions
 and introduction tutorials.
 
-.. figure:: _static/screenshot.png
+.. figure:: _static/screenshot.jpg
     :width: 60%
 
     Screenshot of OpenSim Creator's ``osim`` editor screen.
