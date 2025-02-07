@@ -35,7 +35,7 @@ namespace osc
         VariantType type() const;
 
         // implicit conversions
-        operator bool() const;
+        explicit operator bool() const;
         operator Color() const;
         operator float() const;
         operator int() const;
