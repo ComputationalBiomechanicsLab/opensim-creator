@@ -78,6 +78,29 @@ namespace osc
         // returns the top- (application-)level resource loader
         static ResourceLoader& resource_loader();
 
+        // Convenience function that initializes an instance of `App` according to the target
+        // platform's requirements and immediately starts showing the given `TScreen` according
+        // to the target platform's main application loop requirements.
+        //
+        // This function should only be called once per-process, and should be the last statement
+        // in the application's `main` function (i.e. `return App::main(...)` from `main`), because
+        // the target platform might have unusual lifetime behavior (e.g. emscripten in web browsers
+        // continues to run after `main` has completed).
+        template<std::derived_from<Screen> TScreen, typename... Args>
+        requires std::constructible_from<TScreen, Args&&...>
+        static int main(const AppMetadata& metadata = {}, Args&&... args)
+        {
+            // Pack the `TScreen` constructor arguments into a type-erased `std::function` and defer
+            // to the internal implementation.
+            return main_internal(metadata, [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::unique_ptr<Screen>
+            {
+                return std::apply([](auto&&... inner_args) -> std::unique_ptr<Screen>
+                {
+                    return std::make_unique<TScreen>(std::forward<Args>(inner_args)...);
+                }, std::move(args_tuple));
+            });
+        }
+
         // constructs an `App` from a default-constructed `AppMetadata`
         App();
 
@@ -211,8 +234,6 @@ namespace osc
         // able to process all events.
         void request_invoke_on_main_thread(std::function<void()>);
 
-        // TODO: WORK IN PROGRESS: SDL3's FILE DIALOG IMPLEMENTATION HAS ISSUES: https://github.com/libsdl-org/SDL/pull/11660#issuecomment-2551778826
-        //
         // Prompts a user to select file(s), followed by calling `callback` from the ui thread
         // with the user's selection.
         //
@@ -463,6 +484,8 @@ namespace osc
         ResourceStream go_load_resource(const ResourcePath&);
 
     private:
+        static int main_internal(const AppMetadata& metadata, std::function<std::unique_ptr<Screen>()> screen_ctor);
+
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path get_resource_filepath(const ResourcePath&) const;
 

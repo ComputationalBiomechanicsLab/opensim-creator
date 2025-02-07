@@ -2000,6 +2000,27 @@ ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
     return impl_->load_resource(rp);
 }
 
+int osc::App::main_internal(const AppMetadata& metadata, std::function<std::unique_ptr<Screen>()> screen_ctor)
+{
+    // If running via EMSCRIPTEN, then the engine (usually, browser) is
+    // responsible for calling into each step of the render loop.
+#ifdef EMSCRIPTEN
+    App* app = new App{metadata};
+    app->setup_main_loop(screen_ctor());
+    emscripten_set_main_loop_arg([](void* ptr) -> void
+    {
+        if (not static_cast<App*>(ptr)->do_main_loop_step()) {
+            throw std::runtime_error{"exit"};
+        }
+    }, app, 0, EM_TRUE);
+    return 0;
+#else
+    App app{metadata};
+    app.show(screen_ctor());
+    return 0;
+#endif
+}
+
 std::shared_ptr<void> osc::App::upd_singleton(
     const std::type_info& type_info,
     const std::function<std::shared_ptr<void>()>& singleton_constructor)

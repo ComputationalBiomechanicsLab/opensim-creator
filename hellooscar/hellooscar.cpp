@@ -1,52 +1,9 @@
 #include <liboscar/oscar.h>
 
-#ifdef EMSCRIPTEN
-    #include <emscripten.h>
-#endif
-#include <liboscar/Utils/Assertions.h>
-
-#include <array>
-#include <cstdlib>
-#include <new>
-#include <sstream>
-#include <stdexcept>
-#include <utility>
-
 using namespace osc;
 
 namespace
 {
-    constexpr CStringView c_gamma_correcting_vertex_shader_src = R"(
-        #version 330 core
-
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec2 aTexCoord;
-
-        out vec2 TexCoord;
-
-        void main()
-        {
-            TexCoord = aTexCoord;
-            gl_Position = vec4(aPos, 1.0);
-        }
-    )";
-
-    constexpr CStringView c_gamma_correcting_fragment_shader_src = R"(
-        #version 330 core
-
-        uniform sampler2D uTexture;
-
-        in vec2 TexCoord;
-        out vec4 FragColor;
-
-        void main()
-        {
-            // linear --> sRGB
-            vec4 linearColor = texture(uTexture, TexCoord);
-            FragColor = vec4(pow(linearColor.rgb, vec3(1.0/2.2)), linearColor.a);
-        }
-    )";
-
     class HelloTriangleScreen final : public Screen {
     public:
         HelloTriangleScreen()
@@ -92,13 +49,7 @@ namespace
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
-
-            if (App::get().is_main_window_gamma_corrected()) {
-                graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
-            }
-            else {
-                graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()}, gamma_correcter_);
-            }
+            graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
 
             ui::begin_panel("window");
             ui::draw_text("source code");
@@ -129,28 +80,12 @@ namespace
             .diffuse_color = 0.5f * torus_color_,
             .specular_color = 0.5f * torus_color_,
         }};
-        Material gamma_correcter_{Shader{c_gamma_correcting_vertex_shader_src, c_gamma_correcting_fragment_shader_src}};
         Camera camera_;
         RenderTexture target_texture_;
     };
 }
 
-
 int main(int, char**)
 {
-#ifdef EMSCRIPTEN
-    osc::App* app = new osc::App{};
-    app->setup_main_loop<HelloTriangleScreen>();
-    emscripten_set_main_loop_arg([](void* ptr) -> void
-    {
-        if (not static_cast<App*>(ptr)->do_main_loop_step()) {
-            throw std::runtime_error{"exit"};
-        }
-    }, app, 0, EM_TRUE);
-    return 0;
-#else
-    osc::App app;
-    app.show<HelloTriangleScreen>();
-    return 0;
-#endif
+    return App::main<HelloTriangleScreen>();
 }
