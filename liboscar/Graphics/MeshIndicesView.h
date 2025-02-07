@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Concepts/IsAnyOf.h>
+#include <liboscar/Concepts/SameAsAnyOf.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
 #include <cstdint>
@@ -98,7 +98,7 @@ namespace osc
         {}
 
         template<std::ranges::contiguous_range Range>
-        requires IsAnyOf<typename Range::value_type, uint16_t, uint32_t>
+        requires SameAsAnyOf<typename Range::value_type, uint16_t, uint32_t>
         MeshIndicesView(const Range& range) :
             MeshIndicesView{std::ranges::data(range), std::ranges::size(range)}
         {}

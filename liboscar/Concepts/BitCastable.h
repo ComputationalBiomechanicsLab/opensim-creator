@@ -4,11 +4,11 @@
 
 namespace osc
 {
-    // see:
+    // Satisfied if `T` is bit-castable and, therefore, can be used with `std::bit_cast`.
     //
-    // - std::bit_cast (similar constraints)
-    // - https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
-    //   > "For TriviallyCopyable types, value representation is a part of the object representation"
+    // > "For TriviallyCopyable types, value representation is a part of the object representation"
+    // >
+    // > source: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     template<typename T>
-    concept BitCastable = std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
+    concept BitCastable = std::is_trivially_copyable_v<T> and std::is_trivially_destructible_v<T>;
 }

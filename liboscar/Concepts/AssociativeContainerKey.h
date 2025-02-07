@@ -7,6 +7,8 @@
 
 namespace osc
 {
+    // Satisfied if `Key` is a valid key for the given associative
+    // container `Container`.
     template<typename Key, typename Container>
     concept AssociativeContainerKey = requires(Container& c, Key key) {
         requires AssociativeContainer<Container>;

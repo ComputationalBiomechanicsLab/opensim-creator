@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Concepts/BitCastable.h>
-#include <liboscar/Concepts/IsAnyOf.h>
+#include <liboscar/Concepts/SameAsAnyOf.h>
 #include <liboscar/Maths/Mat3.h>
 #include <liboscar/Maths/Mat4.h>
 #include <liboscar/Maths/MatFunctions.h>
@@ -710,7 +710,7 @@ namespace osc::gl
     };
 
     template<typename T>
-    concept ElementIndex = IsAnyOf<uint16_t, uint32_t>;
+    concept ElementIndex = SameAsAnyOf<uint16_t, uint32_t>;
 
     template<ElementIndex T, GLenum Usage = GL_STATIC_DRAW>
     class ElementArrayBuffer : public Buffer<T, GL_ELEMENT_ARRAY_BUFFER, Usage> {

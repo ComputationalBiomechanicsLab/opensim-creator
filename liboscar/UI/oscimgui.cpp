@@ -406,7 +406,7 @@ namespace
         mesh.clear();
     }
 
-    template<IsAnyOf<Texture2D, RenderTexture> Texture>
+    template<SameAsAnyOf<Texture2D, RenderTexture> Texture>
     ImTextureID allocate_texture_for_current_frame(const Texture& texture)
     {
         OscarImguiBackendData* bd = get_graphics_backend_data();

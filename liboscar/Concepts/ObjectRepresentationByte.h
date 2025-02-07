@@ -1,12 +1,15 @@
 #pragma once
 
-#include <liboscar/Concepts/IsAnyOf.h>
+#include <liboscar/Concepts/SameAsAnyOf.h>
 
 #include <cstddef>
 
 namespace osc
 {
-    // see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
+    // Satisfied if `T` is a a valid representation of one byte of a
+    // C++ object.
+    //
+    // > see: https://en.cppreference.com/w/cpp/language/object#Object_representation_and_value_representation
     template<typename T>
-    concept ObjectRepresentationByte = IsAnyOf<T, unsigned char, std::byte>;
+    concept ObjectRepresentationByte = SameAsAnyOf<T, unsigned char, std::byte>;
 }

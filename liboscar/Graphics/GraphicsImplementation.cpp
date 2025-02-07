@@ -2231,7 +2231,7 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params
 
 namespace
 {
-    template<IsAnyOf<ColorRenderBufferParams, DepthStencilRenderBufferParams> RenderBufferParams>
+    template<SameAsAnyOf<ColorRenderBufferParams, DepthStencilRenderBufferParams> RenderBufferParams>
     class RenderBufferImpl {
     public:
         explicit RenderBufferImpl(const RenderBufferParams& params) : params_{params}
@@ -3862,11 +3862,11 @@ namespace
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
     template<typename T>
-    concept UserFacingVertexData = IsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
+    concept UserFacingVertexData = SameAsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
 
     // types that are encode-/decode-able into a vertex buffer
     template<typename T>
-    concept VertexBufferComponent = IsAnyOf<T, float, Unorm8, Snorm8>;
+    concept VertexBufferComponent = SameAsAnyOf<T, float, Unorm8, Snorm8>;
 
     // low-level single-component decoder function
     //
