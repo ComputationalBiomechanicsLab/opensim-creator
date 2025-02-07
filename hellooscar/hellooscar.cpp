@@ -87,5 +87,5 @@ namespace
 
 int main(int, char**)
 {
-    return App::main<HelloTriangleScreen>();
+    return App::main<HelloTriangleScreen>(AppMetadata{});
 }

@@ -84,11 +84,11 @@ namespace osc
         //
         // This function should only be called once per-process, and should be the last statement
         // in the application's `main` function (i.e. `return App::main(...)` from `main`), because
-        // the target platform might have unusual lifetime behavior (e.g. emscripten in web browsers
-        // continues to run after `main` has completed).
+        // the target platform might have unusual lifetime behavior (e.g. web browsers may continue
+        // to run after `main` has completed).
         template<std::derived_from<Screen> TScreen, typename... Args>
         requires std::constructible_from<TScreen, Args&&...>
-        static int main(const AppMetadata& metadata = {}, Args&&... args)
+        static int main(const AppMetadata& metadata, Args&&... args)
         {
             // Pack the `TScreen` constructor arguments into a type-erased `std::function` and defer
             // to the internal implementation.
