@@ -75,9 +75,6 @@
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
 #include <implot.h>
-#ifdef __EMSCRIPTEN__
-    #include <emscripten/em_js.h>
-#endif
 
 #include <algorithm>
 #include <array>
@@ -129,7 +126,7 @@ static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset()
 
 namespace
 {
-    constexpr CStringView c_ui_vertex_shader_src = R"(
+    constexpr std::string_view c_ui_vertex_shader_src = R"(
         #version 330 core
 
         uniform mat4 uProjMat;
@@ -149,7 +146,7 @@ namespace
         }
     )";
 
-    constexpr CStringView c_ui_fragment_shader_src = R"(
+    constexpr std::string_view c_ui_fragment_shader_src = R"(
         #version 330 core
 
         uniform sampler2D uTexture;
@@ -167,7 +164,7 @@ namespace
 
     // HACK: this shouldn't be necessary, but is, because the legacy draw list
     // rendering code was dependent on it.
-    constexpr CStringView c_custom_ui_renderer_vertex_shader_src = R"(
+    constexpr std::string_view c_custom_ui_renderer_vertex_shader_src = R"(
         #version 330 core
 
         uniform mat4 uProjMat;
@@ -188,7 +185,7 @@ namespace
 
     // HACK: this shouldn't be necessary, but is, because the legacy draw list
     // rendering code was dependent on it.
-    constexpr CStringView c_custom_ui_renderer_fragment_shader_src = R"(
+    constexpr std::string_view c_custom_ui_renderer_fragment_shader_src = R"(
         #version 330 core
 
         in vec4 aVertColor;
@@ -590,7 +587,6 @@ namespace
 
 namespace
 {
-#ifndef EMSCRIPTEN
     // this is necessary because ImGui will take ownership and be responsible for
     // freeing the memory with `ImGui::MemFree`
     char* to_imgui_allocated_copy(std::span<const char> span)
@@ -618,7 +614,6 @@ namespace
             glyph_ranges
         );
     }
-#endif
 
     // The internal backend data associated with one UI context.
     struct BackendData final {
@@ -698,7 +693,6 @@ namespace
         set_clipboard_text(text);
     }
 
-#ifndef EMSCRIPTEN
     void load_imgui_config(const std::filesystem::path& user_data_directory, ResourceLoader& loader)
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -725,13 +719,9 @@ namespace
             io.IniFilename = s_user_imgui_ini_file_path.c_str();
         }
     }
-#endif
 
     void setup_scaling_dependent_fonts_and_styling(App& app)
     {
-#ifdef EMSCRIPTEN
-        static_cast<void>(app);
-#else
         ImGuiIO& io = ImGui::GetIO();
         const float scale = app.main_window_device_pixel_ratio();
 
@@ -770,7 +760,6 @@ namespace
             ImGui::GetStyle() = ImGuiStyle{};
             ui::apply_dark_theme();
         }
-#endif
     }
 
     // note: the native IME UI will only display if user calls `SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1")`
@@ -820,9 +809,6 @@ namespace
         case EventType::MouseWheel: {
             const auto& wheel_event = dynamic_cast<const MouseWheelEvent&>(e);
             auto [x, y] = wheel_event.delta();
-#ifdef __EMSCRIPTEN__
-            x /= 100.0f;
-#endif
             io.AddMouseSourceEvent(wheel_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
             io.AddMouseWheelEvent(x, y);
             return true;
@@ -928,10 +914,6 @@ namespace
         }
     }
 
-#ifdef __EMSCRIPTEN__
-    EM_JS(void, ImGui_ImplOscar_EmscriptenOpenURL, (char const* url), { url = url ? UTF8ToString(url) : null; if (url) window.open(url, '_blank'); });
-#endif
-
     void ImGui_ImplOscar_Init(WindowID window_id)
     {
         ImGuiIO& io = ImGui::GetIO();
@@ -949,9 +931,11 @@ namespace
         platform_io.Platform_GetClipboardTextFn = ui_get_clipboard_text;
         platform_io.Platform_ClipboardUserData = nullptr;
         platform_io.Platform_SetImeDataFn = ImGui_ImplOscar_PlatformSetImeData;
-    #ifdef __EMSCRIPTEN__
-        platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url) { ImGui_ImplOscar_EmscriptenOpenURL(url); return true; };
-    #endif
+        platform_io.Platform_OpenInShellFn = [](ImGuiContext*, const char* url)
+        {
+            osc::open_url_in_os_default_web_browser(url);
+            return true;
+        };
 
         // init `ImGuiViewport` for main viewport
         //
@@ -1590,16 +1574,10 @@ void osc::ui::context::init(App& app)
     ImGui::CreateContext();
 
     // load `imgui.ini`
-#ifdef EMSCRIPTEN
-    ImGui::GetIO().IniFilename = nullptr;
-#else
     load_imgui_config(app.user_data_directory(), app.upd_resource_loader());
-#endif
 
     // setup fonts + styling
-#ifndef EMSCRIPTEN
     setup_scaling_dependent_fonts_and_styling(app);
-#endif
 
     // init ImGui for oscar
     ImGui_ImplOscar_Init(app.main_window_id());
