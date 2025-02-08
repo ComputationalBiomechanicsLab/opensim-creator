@@ -13,7 +13,8 @@ set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable building nativefiledial
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
 set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
 set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
-set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source (used by OpenSim)")
+set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
+set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
 set(OSCDEPS_BUILD_ROBIN_MAP ON CACHE BOOL "enable building robin map from source (used by nanobind)")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
@@ -183,6 +184,24 @@ if(${OSCDEPS_BUILD_SPDLOG})
             -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
             -DSPDLOG_BUILD_SHARED:BOOL=OFF
             -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_LIBOSIM})
+    if(${OSCDEPS_BUILD_OPENBLAS})
+        list(APPEND OSCDEPS_LIBOSIM_DEPS OpenBLAS)
+    endif()
+    if(${OSCDEPS_BUILD_SPDLOG})
+        list(APPEND OSCDEPS_LIBOSIM_DEPS spdlog)
+    endif()
+    ExternalProject_Add(libosim
+        DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
+	BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+	    -DOSIM_INSTALL_OPENSIM_HEADERS:BOOL=1
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
     )
 endif()
 
