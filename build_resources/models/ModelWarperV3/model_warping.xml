@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40600">
+	<ModelWarperV3Document name="modelwarperv3document">
+		<!--List of components that this component owns and serializes.-->
+		<components>
+			<ThinPlateSplineMeshesScalingStep name="thinplatesplinemeshesscalingstep">
+				<!--a user-facing label for the scaling step-->
+				<label>Apply Thin-Plate Spline (TPS) Warp to Meshes</label>
+				<!--Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)-->
+				<meshes>/ground/ground_geom_1</meshes>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/source_landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/destination_landmarks.csv</destination_landmarks_file>
+			</ThinPlateSplineMeshesScalingStep>
+			<ThinPlateSplineOffsetFrameTranslationScalingStep name="thinplatesplineoffsetframetranslationscalingstep">
+				<!--Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source.-->
+				<offset_frames>/jointset/weldjoint/ground_offset /ground/ground_offsetframe</offset_frames>
+				<!--Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv).-->
+				<source_landmarks_file>Geometry/source_landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. ../DestinationGeometry/torso.landmarks.csv).-->
+				<destination_landmarks_file>Geometry/destination_landmarks.csv</destination_landmarks_file>
+			</ThinPlateSplineOffsetFrameTranslationScalingStep>
+			<ThinPlateSplinePathPointsScalingStep name="thinplatesplinepathpointsscalingstep">
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.-->
+				<path_points>/forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P1 /forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P2</path_points>
+				<!--Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).-->
+				<source_landmarks_file>Geometry/source_landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)-->
+				<destination_landmarks_file>Geometry/destination_landmarks.csv</destination_landmarks_file>
+			</ThinPlateSplinePathPointsScalingStep>
+						<ThinPlateSplinePathPointsScalingStep name="thinplatesplinepathpointsscalingstep">
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.-->
+				<path_points>/forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P1 /forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P2</path_points>
+				<!--Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).-->
+				<source_landmarks_file>Geometry/source_landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)-->
+				<destination_landmarks_file>Geometry/destination_landmarks.csv</destination_landmarks_file>
+			</ThinPlateSplinePathPointsScalingStep>
+						<ThinPlateSplinePathPointsScalingStep name="thinplatesplinepathpointsscalingstep">
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.-->
+				<path_points>/forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P1 /forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P2</path_points>
+				<!--Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).-->
+				<source_landmarks_file>Geometry/source_landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)-->
+				<destination_landmarks_file>Geometry/destination_landmarks.csv</destination_landmarks_file>
+			</ThinPlateSplinePathPointsScalingStep>
+		</components>
+		<!--A sequence of `ScalingParameterOverride`s that should be used in place of the default values used by the `ScalingStep`s.-->
+		<scaling_parameter_overrides>
+			<ScalingParameterOverride>
+				<!--The name of the scaling parameter that should have its default overridden.-->
+				<parameter_name>subject_mass</parameter_name>
+				<!--The value to override the scaling parameter with. Note: it must have the correct datatype for the given scaling parameter.-->
+				<parameter_value>150</parameter_value>
+			</ScalingParameterOverride>
+			<ScalingParameterOverride>
+				<!--The name of the scaling parameter that should have its default overridden.-->
+				<parameter_name>blending_factor</parameter_name>
+				<!--The value to override the scaling parameter with. Note: it must have the correct datatype for the given scaling parameter.-->
+				<parameter_value>0.10000000000000001</parameter_value>
+			</ScalingParameterOverride>
+		</scaling_parameter_overrides>
+	</ModelWarperV3Document>
+</OpenSimDocument>
