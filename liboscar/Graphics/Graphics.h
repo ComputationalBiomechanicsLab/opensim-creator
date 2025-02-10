@@ -22,8 +22,11 @@ namespace osc { struct Transform; }
 // these perform the necessary backend steps to get something useful done
 namespace osc::graphics
 {
-    // draw: enqueue drawable elements onto the camera ready for rendering
-
+    // Queues the given `Mesh` + `Transform` + `Material` + extras against
+    // the `Camera`.
+    //
+    // Once everything is queued against the `Camera`, the caller should call
+    // `Camera::render()` or `Camera::render_to()` to flush the queue.
     void draw(
         const Mesh&,
         const Transform&,
@@ -33,6 +36,11 @@ namespace osc::graphics
         std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
+    // Queues the given `Mesh` + `Mat4` + `Material` + extras against
+    // the `Camera`.
+    //
+    // Once everything is queued against the `Camera`, the caller should call
+    // `Camera::render()` or `Camera::render_to()` to flush the queue.
     void draw(
         const Mesh&,
         const Mat4&,
@@ -42,23 +50,39 @@ namespace osc::graphics
         std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
-    // blit: use a shader to copy a GPU texture to a GPU render texture or
-    // the screen
-
+    // Blits (copies) the `Texture` to the `RenderTexture`.
     void blit(
         const Texture2D&,
         RenderTexture&
     );
 
+    // Blits the texture into a rectangular area of the screen.
+    //
+    // The rectangle should be defined in screen space, which:
+    //
+    // - Is measured in device-independent pixels
+    // - Starts in the bottom-left corner
+    // - Ends in the top-right corner
     void blit_to_screen(
         const RenderTexture&,
         const Rect&,
         BlitFlags = {}
     );
 
-    // assigns the source RenderTexture to the texture uniform "uTexture"
+    // Renders the texture to a quad via the given `Material` into a rectangular area
+    // of the screen.
     //
-    // (the glsl uniform may be `sampler2D` or `samplerCube`, depending on the source `RenderTexture`)
+    // The rectangle should be defined in screen space, which:
+    //
+    // - Is measured in device-independent pixels
+    // - Starts in the bottom-left corner
+    // - Ends in the top-right corner
+    //
+    // The `Material` should:
+    //
+    // - Have a `sampler2D` or `samplerCube` property called "uTexture". The texture
+    //   will be assigned to this property. The texture's `dimensionality()` dictates
+    //   whether to use a `sampler2D` or `samplerCube` in the shader.
     void blit_to_screen(
         const RenderTexture&,
         const Rect&,
@@ -66,6 +90,13 @@ namespace osc::graphics
         BlitFlags = {}
     );
 
+    // Blits the texture into a rectangular area of the screen.
+    //
+    // The rectangle should be defined in screen space, which:
+    //
+    // - Is measured in device-independent pixels
+    // - Starts in the bottom-left corner
+    // - Ends in the top-right corner
     void blit_to_screen(
         const Texture2D&,
         const Rect&

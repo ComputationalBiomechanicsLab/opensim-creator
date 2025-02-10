@@ -33,7 +33,12 @@ namespace osc
 
         void clear_screen(const Color&);
 
-        // returns a future that asynchronously yields a complete screenshot of the next complete frame
+        // Returns a future that asynchronously yields a complete screenshot
+        // of the next frame once it has been rendered.
+        //
+        // - Completion of the future depends on the main thread continuing to
+        //   draw/pump stuff, so you can't `get()` this future from the main
+        //   thread (it's a deadlock or, at least, an exception, to do so).
         std::future<Texture2D> request_screenshot();
 
         // execute the "swap chain" operation, which makes the current backbuffer the frontbuffer and

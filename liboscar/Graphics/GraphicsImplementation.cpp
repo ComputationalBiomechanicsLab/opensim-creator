@@ -6291,6 +6291,7 @@ public:
 
             // copy GPU-side window framebuffer into response
             const Vec2i dims = App::get().main_window_pixel_dimensions();
+            const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
@@ -6307,6 +6308,7 @@ public:
 
             Texture2D screenshot{dims, TextureFormat::RGBA32, ColorSpace::sRGB};
             screenshot.set_pixel_data(pixels);
+            screenshot.set_device_pixel_ratio(device_pixel_ratio);
 
             // pump out responses
             for (auto& request : screenshot_request_queue_) {
