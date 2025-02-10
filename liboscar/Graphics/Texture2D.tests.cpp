@@ -466,3 +466,38 @@ TEST(Texture2D, can_be_written_to_a_std_ostream)
 
     ASSERT_FALSE(ss.str().empty());
 }
+
+TEST(Texture2D, device_independent_dimensions_equal_dimensions_on_construction)
+{
+    const Texture2D texture_2d{{7, 7}};
+
+    ASSERT_EQ(texture_2d.dimensions(), Vec2i(7, 7));
+    ASSERT_EQ(Vec2(texture_2d.dimensions()), texture_2d.device_independent_dimensions());
+}
+
+TEST(Texture2D, device_independent_dimensions_are_scaled_by_device_pixel_ratio)
+{
+    Texture2D texture_2d{Vec2i{7, 7}};
+
+    ASSERT_EQ(texture_2d.device_independent_dimensions(), Vec2(7.0f, 7.0f));
+    texture_2d.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(texture_2d.device_independent_dimensions(), Vec2(7.0f,7.0f)/2.0f);
+    texture_2d.set_device_pixel_ratio(0.5f);
+    ASSERT_EQ(texture_2d.device_independent_dimensions(), Vec2(7.0f,7.0f)/0.5f);
+}
+
+TEST(Texture2D, device_pixel_ratio_is_initially_1)
+{
+    const Texture2D texture_2d;
+    ASSERT_EQ(texture_2d.device_pixel_ratio(), 1.0f);
+}
+
+TEST(Texture2D, set_device_pixel_ratio_sets_pixel_ratio)
+{
+    Texture2D texture_2d;
+    ASSERT_EQ(texture_2d.device_pixel_ratio(), 1.0f);
+    texture_2d.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(texture_2d.device_pixel_ratio(), 2.0f);
+    texture_2d.set_device_pixel_ratio(0.25f);
+    ASSERT_EQ(texture_2d.device_pixel_ratio(), 0.25f);
+}

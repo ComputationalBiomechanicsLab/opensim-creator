@@ -1763,6 +1763,11 @@ public:
         return dimensions_;
     }
 
+    Vec2 device_independent_dimensions() const
+    {
+        return Vec2{dimensions()} / device_pixel_ratio();
+    }
+
     TextureFormat texture_format() const
     {
         return texture_format_;
@@ -1865,6 +1870,16 @@ public:
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
     }
 
+    float device_pixel_ratio() const
+    {
+        return device_pixel_ratio_;
+    }
+
+    void set_device_pixel_ratio(float new_ratio)
+    {
+        device_pixel_ratio_ = new_ratio;
+    }
+
     // non PIMPL method
 
     gl::Texture2D& updTexture()
@@ -1938,6 +1953,7 @@ private:
     TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
     TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
     std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * dimensions_.x * dimensions_.y, 0xff);
+    float device_pixel_ratio_ = 1.0f;
     UID texture_params_version_;
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
 };
@@ -2015,6 +2031,11 @@ osc::Texture2D::Texture2D(
 Vec2i osc::Texture2D::dimensions() const
 {
     return impl_->dimensions();
+}
+
+Vec2 osc::Texture2D::device_independent_dimensions() const
+{
+    return impl_->device_independent_dimensions();
 }
 
 TextureFormat osc::Texture2D::texture_format() const
@@ -2105,6 +2126,16 @@ std::span<const uint8_t> osc::Texture2D::pixel_data() const
 void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
 {
     impl_.upd()->set_pixel_data(pixel_components_row_by_row);
+}
+
+float osc::Texture2D::device_pixel_ratio() const
+{
+    return impl_->device_pixel_ratio();
+}
+
+void osc::Texture2D::set_device_pixel_ratio(float new_ratio)
+{
+    impl_.upd()->set_device_pixel_ratio(new_ratio);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
