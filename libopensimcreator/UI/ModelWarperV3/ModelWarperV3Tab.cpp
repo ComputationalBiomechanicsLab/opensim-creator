@@ -158,20 +158,12 @@ namespace
             std::filesystem::path destinationLandmarksPath_,
             double sourceLandmarksPrescale_,
             double destinationLandmarksPrescale_,
-            bool applyAffineTranslation_,
-            bool applyAffineScale_,
-            bool applyAffineRotation_,
-            bool applyNonAffineWarp_,
             double blendingFactor_) :
 
             sourceLandmarksPath{std::move(sourceLandmarksPath_)},
             destinationLandmarksPath{std::move(destinationLandmarksPath_)},
             sourceLandmarksPrescale{sourceLandmarksPrescale_},
             destinationLandmarksPrescale{destinationLandmarksPrescale_},
-            applyAffineTranslation{applyAffineTranslation_},
-            applyAffineScale{applyAffineScale_},
-            applyAffineRotation{applyAffineRotation_},
-            applyNonAffineWarp{applyNonAffineWarp_},
             blendingFactor{blendingFactor_}
         {}
 
@@ -179,11 +171,11 @@ namespace
         std::filesystem::path destinationLandmarksPath;
         double sourceLandmarksPrescale;
         double destinationLandmarksPrescale;
-        bool applyAffineTranslation;
-        bool applyAffineScale;
-        bool applyAffineRotation;
-        bool applyNonAffineWarp;
-        double blendingFactor;
+        bool applyAffineTranslation = true;
+        bool applyAffineScale = true;
+        bool applyAffineRotation = true;
+        bool applyNonAffineWarp = true;
+        double blendingFactor = 1.0;
     };
 
     // A cache that is (presumed to be) persisted between multiple executions of the
@@ -236,6 +228,18 @@ namespace
             const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
             return warpedLocationInStationParentFrame;
+        }
+
+        SimTK::Rotation lookupTPSReorientation(
+            [[maybe_unused]] const SimTK::State& state,
+            [[maybe_unused]] const OpenSim::Frame& parentFrame,
+            [[maybe_unused]] const OpenSim::Frame& landmarksFrame,
+            [[maybe_unused]] const ThinPlateSplineCommonInputs& tpsInputs)
+        {
+            OSC_ASSERT_ALWAYS(tpsInputs.applyAffineRotation && "affine rotation must be requested in order to figure out the reorientation matrix");
+            [[maybe_unused]] const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+            // TODO figure it out O_o
+            return {};
         }
 
     private:
@@ -444,10 +448,6 @@ namespace
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.");
         OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
-        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
-        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
-        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
-        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
 
     protected:
 
@@ -460,10 +460,6 @@ namespace
             constructProperty_landmarks_frame("/ground");
             constructProperty_source_landmarks_prescale(1.0);
             constructProperty_destination_landmarks_prescale(1.0);
-            constructProperty_apply_affine_translation(true);
-            constructProperty_apply_affine_scale(true);
-            constructProperty_apply_affine_rotation(true);
-            constructProperty_apply_non_affine_warp(true);
         }
 
         // Overriders should still call this base method.
@@ -552,10 +548,6 @@ namespace
                     destinationLandmarksPath,
                     get_source_landmarks_prescale(),
                     get_destination_landmarks_prescale(),
-                    get_apply_affine_translation(),
-                    get_apply_affine_scale(),
-                    get_apply_affine_rotation(),
-                    get_apply_non_affine_warp(),
                     *blendingFactor,
                 },
                 .landmarksFrame = landmarksFrame,
@@ -563,17 +555,50 @@ namespace
         }
     };
 
+    // An abstract base class for a `ThinPlateSplineScalingStep` that has user-editable
+    // toggles for parts of the TPS algorithm.
+    class ToggleableThinPlateSplineScalingStep : public ThinPlateSplineScalingStep {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(ToggleableThinPlateSplineScalingStep, ThinPlateSplineScalingStep)
+    public:
+        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
+        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
+
+    protected:
+        explicit ToggleableThinPlateSplineScalingStep(std::string_view label) :
+            ThinPlateSplineScalingStep{label}
+        {
+            constructProperty_apply_affine_translation(true);
+            constructProperty_apply_affine_scale(true);
+            constructProperty_apply_affine_rotation(true);
+            constructProperty_apply_non_affine_warp(true);
+        }
+
+        ThinPlateSplineScalingStepCommonParams calcTPSScalingStepCommonParams(
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel) const
+        {
+            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, sourceModel);
+            rv.tpsInputs.applyAffineTranslation = get_apply_affine_translation();
+            rv.tpsInputs.applyAffineScale = get_apply_affine_scale();
+            rv.tpsInputs.applyAffineRotation = get_apply_affine_rotation();
+            rv.tpsInputs.applyNonAffineWarp = get_apply_non_affine_warp();
+            return rv;
+        }
+    };
+
     // A `ScalingStep` that warps `OpenSim::Mesh`es in the source model by using
     // the Thin-Plate Spline (TPS) warping algorithm on landmark pairs loaded from
     // associated files.
-    class ThinPlateSplineMeshesScalingStep final : public ThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ThinPlateSplineScalingStep)
+    class ThinPlateSplineMeshesScalingStep final : public ToggleableThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshesScalingStep, ToggleableThinPlateSplineScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(meshes, std::string, "Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)");
 
     public:
         explicit ThinPlateSplineMeshesScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Meshes"}
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Meshes"}
         {
             setDescription("Warps mesh(es) in the source model by applying a Thin-Plate Spline (TPS) warp to each vertex in the souce mesh(es).");
             constructProperty_meshes();
@@ -590,8 +615,8 @@ namespace
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
-            // Get `ThinPlateSplineScalingStep` validation messages.
-            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            // Get base class validation messages.
+            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
 
             // Ensure at least one mesh is specified.
             if (getProperty_meshes().empty()) {
@@ -643,14 +668,14 @@ namespace
 
     // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any
     // `OpenSim::Station`s it can find via the `stations` search string.
-    class ThinPlateSplineStationsScalingStep final : public ThinPlateSplineScalingStep {
+    class ThinPlateSplineStationsScalingStep final : public ToggleableThinPlateSplineScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineStationsScalingStep, ThinPlateSplineScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(stations, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find stations in the source model that should be warped by this scaling step.");
 
     public:
         explicit ThinPlateSplineStationsScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Stations"}
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Stations"}
         {
             setDescription("Warps the locations of stations in the model using the Thin-Plate Spline (TPS) warping algorithm.");
             constructProperty_stations();
@@ -661,8 +686,8 @@ namespace
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
-            // Get `ThinPlateSplineScalingStep` validation messages.
-            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            // Get base class validation messages.
+            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
 
             // Ensure every entry in `stations` can be found in the source model.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
@@ -709,14 +734,14 @@ namespace
 
     // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to any
     // `OpenSim::PathPoint`s it can find via the `path_points` search string.
-    class ThinPlateSplinePathPointsScalingStep final : public ThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplinePathPointsScalingStep, ThinPlateSplineScalingStep)
+    class ThinPlateSplinePathPointsScalingStep final : public ToggleableThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplinePathPointsScalingStep, ToggleableThinPlateSplineScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(path_points, std::string, "Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.");
 
     public:
         explicit ThinPlateSplinePathPointsScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Path Points"}
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Path Points"}
         {
             setDescription("Warps the locations of path points in the model using the Thin-Plate Spline (TPS) warping algorithm.");
             constructProperty_path_points();
@@ -727,8 +752,8 @@ namespace
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
-            // Get `ThinPlateSplineScalingStep` validation messages.
-            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            // Get base class validation messages.
+            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
 
             // Ensure every entry in `path_points` can be found in the source model.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
@@ -775,14 +800,14 @@ namespace
 
     // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to the
     // `translation` property of an `OpenSim::PhysicalOffsetFrame`.
-    class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ThinPlateSplineScalingStep)
+    class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ToggleableThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ToggleableThinPlateSplineScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source model.");
 
     public:
         explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame translation"}
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame translation"}
         {
             setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to warp the translation of the given offset frames.");
             constructProperty_offset_frames();
@@ -795,8 +820,8 @@ namespace
             const ScalingParameters& params,
             const OpenSim::Model& sourceModel) const final
         {
-            // Get `ThinPlateSplineScalingStep` validation messages.
-            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+            // Get base class validation messages.
+            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
 
             // Ensure every entry in `offset_frames` can be found in the source model.
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
@@ -838,6 +863,72 @@ namespace
                 auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
                 resultOffsetFrame->set_translation(warpedLocation);
+            }
+        }
+    };
+
+    // A `ScalingStep` that decomposes a Thin-Plate Spline (TPS) warp to apply its
+    // affine rotation to the `orientation` property of an `OpenSim::PhysicalOffsetFrame`.
+    class ThinPlateSplineOffsetFrameAffineOrientationScalingStep final : public ThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameAffineOrientationScalingStep, ThinPlateSplineScalingStep)
+
+        OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source model.");
+
+    public:
+        explicit ThinPlateSplineOffsetFrameAffineOrientationScalingStep() :
+            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame orientation (affine)"}
+        {
+            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm compute the affine orientation warp and apply it to the orientation of the given offset frames.");
+            constructProperty_offset_frames();
+        }
+
+    private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache& cache,
+            const ScalingParameters& params,
+            const OpenSim::Model& sourceModel) const final
+        {
+            // Get base class validation messages.
+            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+
+            // Ensure every entry in `offset_frames` can be found in the source model.
+            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
+                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                if (not offsetFrame) {
+                    std::stringstream msg;
+                    msg << get_offset_frames(i) << ": Cannot find this `PhysicalOffsetFrame` in the source model";
+                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                }
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache& scalingCache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel,
+            OpenSim::Model& resultModel) const final
+        {
+            // Lookup/validate warping inputs.
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+
+            // Warp each offset frame `translation` specified by the `offset_frames` property.
+            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
+                // Find the path point in the source model and use it produce the warped path point.
+                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(offsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
+
+                const SimTK::Rotation rotation = scalingCache.lookupTPSReorientation(
+                    sourceModel.getWorkingState(),
+                    offsetFrame->getParentFrame(),
+                    *commonParams.landmarksFrame,
+                    commonParams.tpsInputs
+                );
+
+                auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
+                resultOffsetFrame->set_orientation(rotation.convertRotationToBodyFixedXYZ());
             }
         }
     };
