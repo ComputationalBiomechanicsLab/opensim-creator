@@ -210,7 +210,7 @@ namespace
 
             // Assign the vertices back to the OSC mesh and emit it as an `InMemoryMesh` component
             mesh.set_vertices(vertices);
-            mesh.recalculate_normals();
+            mesh.recalculate_normals();  // maybe should be a runtime param
             return std::make_unique<InMemoryMesh>(mesh);
         }
 
@@ -231,15 +231,19 @@ namespace
         }
 
         SimTK::Rotation lookupTPSReorientation(
-            [[maybe_unused]] const SimTK::State& state,
-            [[maybe_unused]] const OpenSim::Frame& parentFrame,
-            [[maybe_unused]] const OpenSim::Frame& landmarksFrame,
-            [[maybe_unused]] const ThinPlateSplineCommonInputs& tpsInputs)
+            const ThinPlateSplineCommonInputs& tpsInputs)
         {
             OSC_ASSERT_ALWAYS(tpsInputs.applyAffineRotation && "affine rotation must be requested in order to figure out the reorientation matrix");
-            [[maybe_unused]] const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
-            // TODO figure it out O_o
-            return {};
+            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+            const Vec3d x{normalize(coefficients.a2)};
+            const Vec3d y{normalize(coefficients.a3)};
+            const Vec3d z{normalize(coefficients.a4)};
+            const SimTK::Mat33 rotationMatrix{
+                x[0], y[0], z[0],
+                x[1], y[1], z[1],
+                x[2], y[2], z[2],
+            };
+            return SimTK::Rotation{rotationMatrix};
         }
 
     private:
@@ -569,9 +573,9 @@ namespace
         explicit ToggleableThinPlateSplineScalingStep(std::string_view label) :
             ThinPlateSplineScalingStep{label}
         {
-            constructProperty_apply_affine_translation(true);
+            constructProperty_apply_affine_translation(false);
             constructProperty_apply_affine_scale(true);
-            constructProperty_apply_affine_rotation(true);
+            constructProperty_apply_affine_rotation(false);
             constructProperty_apply_non_affine_warp(true);
         }
 
@@ -602,12 +606,6 @@ namespace
         {
             setDescription("Warps mesh(es) in the source model by applying a Thin-Plate Spline (TPS) warp to each vertex in the souce mesh(es).");
             constructProperty_meshes();
-
-            // By default, meshes should only be scaled+warped, because they're usually oriented
-            // differently from eachover because the subject might be oriented in the measurement
-            // device differently.
-            set_apply_affine_translation(false);
-            set_apply_affine_rotation(false);
         }
     private:
         std::vector<ScalingStepValidationMessage> implValidate(
@@ -863,72 +861,6 @@ namespace
                 auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
                 resultOffsetFrame->set_translation(warpedLocation);
-            }
-        }
-    };
-
-    // A `ScalingStep` that decomposes a Thin-Plate Spline (TPS) warp to apply its
-    // affine rotation to the `orientation` property of an `OpenSim::PhysicalOffsetFrame`.
-    class ThinPlateSplineOffsetFrameAffineOrientationScalingStep final : public ThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameAffineOrientationScalingStep, ThinPlateSplineScalingStep)
-
-        OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source model.");
-
-    public:
-        explicit ThinPlateSplineOffsetFrameAffineOrientationScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame orientation (affine)"}
-        {
-            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm compute the affine orientation warp and apply it to the orientation of the given offset frames.");
-            constructProperty_offset_frames();
-        }
-
-    private:
-        std::vector<ScalingStepValidationMessage> implValidate(
-            ScalingCache& cache,
-            const ScalingParameters& params,
-            const OpenSim::Model& sourceModel) const final
-        {
-            // Get base class validation messages.
-            auto messages = ThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
-
-            // Ensure every entry in `offset_frames` can be found in the source model.
-            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
-                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
-                if (not offsetFrame) {
-                    std::stringstream msg;
-                    msg << get_offset_frames(i) << ": Cannot find this `PhysicalOffsetFrame` in the source model";
-                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
-                }
-            }
-
-            return messages;
-        }
-
-        void implApplyScalingStep(
-            ScalingCache& scalingCache,
-            const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
-            OpenSim::Model& resultModel) const final
-        {
-            // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
-
-            // Warp each offset frame `translation` specified by the `offset_frames` property.
-            for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
-                // Find the path point in the source model and use it produce the warped path point.
-                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
-                OSC_ASSERT_ALWAYS(offsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
-
-                const SimTK::Rotation rotation = scalingCache.lookupTPSReorientation(
-                    sourceModel.getWorkingState(),
-                    offsetFrame->getParentFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
-                );
-
-                auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
-                OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
-                resultOffsetFrame->set_orientation(rotation.convertRotationToBodyFixedXYZ());
             }
         }
     };
