@@ -200,3 +200,59 @@ TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copi
 
     ASSERT_NE(copy.upd_depth_buffer(), rt.upd_depth_buffer());
 }
+
+TEST(RenderTexture, device_independent_dimensions_equal_dimensions_on_construction)
+{
+    RenderTexture render_texture;
+    render_texture.set_dimensions({7, 7});
+
+    ASSERT_EQ(render_texture.dimensions(), Vec2i(7, 7));
+    ASSERT_EQ(Vec2(render_texture.dimensions()), render_texture.device_independent_dimensions());
+}
+
+TEST(RenderTexture, device_independent_dimensions_are_scaled_by_device_pixel_ratio)
+{
+    RenderTexture render_texture;
+    render_texture.set_dimensions({7, 7});
+
+    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f, 7.0f));
+    render_texture.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f,7.0f)/2.0f);
+    render_texture.set_device_pixel_ratio(0.5f);
+    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f,7.0f)/0.5f);
+}
+
+TEST(RenderTexture, device_pixel_ratio_is_initially_1)
+{
+    const RenderTexture render_texture;
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 1.0f);
+}
+
+TEST(RenderTexture, set_device_pixel_ratio_sets_pixel_ratio)
+{
+    RenderTexture render_texture;
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 1.0f);
+    render_texture.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 2.0f);
+    render_texture.set_device_pixel_ratio(0.25f);
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 0.25f);
+}
+
+TEST(RenderTexture, device_pixel_ratio_is_propagated_from_params)
+{
+    const RenderTexture render_texture{{
+        .device_pixel_ratio = 3.0f,
+    }};
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 3.0f);
+}
+
+TEST(RenderTexture, device_pixel_ratio_from_params_affects_device_independent_dimensions)
+{
+    const RenderTexture render_texture{{
+        .dimensions = {13, 13},
+        .device_pixel_ratio = 2.5f,
+    }};
+    ASSERT_EQ(render_texture.dimensions(), Vec2i(13, 13));
+    ASSERT_EQ(render_texture.device_pixel_ratio(), 2.5f);
+    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(13.0f, 13.0f)/2.5f);
+}

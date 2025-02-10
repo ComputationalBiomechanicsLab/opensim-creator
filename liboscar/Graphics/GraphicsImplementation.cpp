@@ -1768,6 +1768,16 @@ public:
         return Vec2{dimensions()} / device_pixel_ratio();
     }
 
+    float device_pixel_ratio() const
+    {
+        return device_pixel_ratio_;
+    }
+
+    void set_device_pixel_ratio(float new_ratio)
+    {
+        device_pixel_ratio_ = new_ratio;
+    }
+
     TextureFormat texture_format() const
     {
         return texture_format_;
@@ -1868,16 +1878,6 @@ public:
         OSC_ASSERT(pixel_components_row_by_row.size() == pixel_data_.size());
 
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
-    }
-
-    float device_pixel_ratio() const
-    {
-        return device_pixel_ratio_;
-    }
-
-    void set_device_pixel_ratio(float new_ratio)
-    {
-        device_pixel_ratio_ = new_ratio;
     }
 
     // non PIMPL method
@@ -2038,6 +2038,16 @@ Vec2 osc::Texture2D::device_independent_dimensions() const
     return impl_->device_independent_dimensions();
 }
 
+float osc::Texture2D::device_pixel_ratio() const
+{
+    return impl_->device_pixel_ratio();
+}
+
+void osc::Texture2D::set_device_pixel_ratio(float new_ratio)
+{
+    impl_.upd()->set_device_pixel_ratio(new_ratio);
+}
+
 TextureFormat osc::Texture2D::texture_format() const
 {
     return impl_->texture_format();
@@ -2126,16 +2136,6 @@ std::span<const uint8_t> osc::Texture2D::pixel_data() const
 void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
 {
     impl_.upd()->set_pixel_data(pixel_components_row_by_row);
-}
-
-float osc::Texture2D::device_pixel_ratio() const
-{
-    return impl_->device_pixel_ratio();
-}
-
-void osc::Texture2D::set_device_pixel_ratio(float new_ratio)
-{
-    impl_.upd()->set_device_pixel_ratio(new_ratio);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
@@ -2254,6 +2254,7 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params
     return o <<
         "RenderTextureParams(width = " << params.dimensions.x
         << ", height = " << params.dimensions.y
+        << ", device_pixel_ratio = " << params.device_pixel_ratio
         << ", antialiasing_level = " << params.anti_aliasing_level
         << ", color_format = " << params.color_format
         << ", depth_stencil_format = " << params.depth_stencil_format
@@ -2605,14 +2606,16 @@ public:
 
     explicit Impl(const RenderTextureParams& params) :
         color_buffer_{to<ColorRenderBufferParams>(params)},
-        depth_buffer_{to<DepthStencilRenderBufferParams>(params)}
+        depth_buffer_{to<DepthStencilRenderBufferParams>(params)},
+        device_pixel_ratio_{params.device_pixel_ratio}
     {}
 
     // note: independent `RenderTexture::Impl` should have independent data, so value-copy
     //       the underlying `RenderBuffer` here
     Impl(const Impl& src) :
         color_buffer_{src.color_buffer_.clone()},
-        depth_buffer_{src.depth_buffer_.clone()}
+        depth_buffer_{src.depth_buffer_.clone()},
+        device_pixel_ratio_{src.device_pixel_ratio_}
     {}
 
     Impl(Impl&&) noexcept = default;
@@ -2624,6 +2627,7 @@ public:
         }
         color_buffer_ = src.color_buffer_.clone();
         depth_buffer_ = src.depth_buffer_.clone();
+        device_pixel_ratio_ = src.device_pixel_ratio_;
         return *this;
     }
 
@@ -2642,6 +2646,21 @@ public:
             color_buffer_.impl_->set_dimensions(new_dimensions);
             depth_buffer_.impl_->set_dimensions(new_dimensions);
         }
+    }
+
+    Vec2 device_independent_dimensions() const
+    {
+        return Vec2{dimensions()} / device_pixel_ratio_;
+    }
+
+    float device_pixel_ratio() const
+    {
+        return device_pixel_ratio_;
+    }
+
+    void set_device_pixel_ratio(float new_ratio)
+    {
+        device_pixel_ratio_ = new_ratio;
     }
 
     TextureDimensionality dimensionality() const
@@ -2730,6 +2749,7 @@ private:
 
     SharedColorRenderBuffer color_buffer_;
     SharedDepthStencilRenderBuffer depth_buffer_;
+    float device_pixel_ratio_ = 1.0f;
 };
 
 osc::RenderTexture::RenderTexture() :
@@ -2748,6 +2768,21 @@ Vec2i osc::RenderTexture::dimensions() const
 void osc::RenderTexture::set_dimensions(Vec2i new_dimensions)
 {
     impl_.upd()->set_dimensions(new_dimensions);
+}
+
+Vec2 osc::RenderTexture::device_independent_dimensions() const
+{
+    return impl_->device_independent_dimensions();
+}
+
+float osc::RenderTexture::device_pixel_ratio() const
+{
+    return impl_->device_pixel_ratio();
+}
+
+void osc::RenderTexture::set_device_pixel_ratio(float new_ratio)
+{
+    impl_.upd()->set_device_pixel_ratio(new_ratio);
 }
 
 TextureDimensionality osc::RenderTexture::dimensionality() const

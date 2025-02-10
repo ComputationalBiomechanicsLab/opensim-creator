@@ -34,6 +34,12 @@ TEST(RenderTextureParams, can_be_copy_assigned)
     lhs = rhs;
 }
 
+TEST(RenderTextureParams, device_pixel_ratio_defaults_to_1)
+{
+    const RenderTextureParams params;
+    ASSERT_EQ(params.device_pixel_ratio, 1.0f);
+}
+
 TEST(RenderTextureParams, anti_aliasing_level_defaults_to_1)
 {
     const RenderTextureParams params;
@@ -68,8 +74,8 @@ TEST(RenderTextureParams, compares_equivalent_on_copy_construction)
 
 TEST(RenderTextureParams, compares_equivalent_when_independently_constructed_with_same_params)
 {
-    const RenderTextureParams first{.dimensions = {3, 3}, .dimensionality = TextureDimensionality::Cube};
-    const RenderTextureParams second{.dimensions = {3, 3}, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams first{.dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams second{.dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
 
     ASSERT_EQ(first, second);
 }

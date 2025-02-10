@@ -14,16 +14,33 @@
 
 namespace osc
 {
-    // render texture
-    //
-    // a texture that can be rendered to
+    // A texture that can receive the result of a render pass.
     class RenderTexture final {
     public:
         RenderTexture();
         explicit RenderTexture(const RenderTextureParams&);
 
+        // Returns the dimensions of the texture in physical pixels.
         Vec2i dimensions() const;
+
+        // Sets the dimensions of the texture in physical pixels.
         void set_dimensions(Vec2i);
+
+        // Returns the dimensions of the texture in device-independent pixels.
+        //
+        // These dimensions should be used when compositing the texture in a
+        // user interface.
+        //
+        // The return value is equivalent to `texture.dimensions() / texture.device_pixel_ratio()`.
+        Vec2 device_independent_dimensions() const;
+
+        // Returns the ratio of the resolution of the texture in physical pixels
+        // to the resolution of it in device-independent pixels.
+        float device_pixel_ratio() const;
+
+        // Sets the device-to-pixel ratio for the texture, which has the effect
+        // of scaling the `device_independent_dimensions()` of the texture.
+        void set_device_pixel_ratio(float);
 
         TextureDimensionality dimensionality() const;
         void set_dimensionality(TextureDimensionality);

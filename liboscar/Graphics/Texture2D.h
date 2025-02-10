@@ -43,6 +43,14 @@ namespace osc
         // The return value is equivalent to `texture.dimensions() / texture.device_pixel_ratio()`.
         Vec2 device_independent_dimensions() const;
 
+        // Returns the ratio of the resolution of the texture in physical pixels
+        // to the resolution of it in device-independent pixels.
+        float device_pixel_ratio() const;
+
+        // Sets the device-to-pixel ratio for the texture, which has the effect
+        // of scaling the `device_independent_dimensions()` of the texture.
+        void set_device_pixel_ratio(float);
+
         // Returns the format of the underlying pixel data.
         TextureFormat texture_format() const;
 
@@ -83,14 +91,6 @@ namespace osc
         // - will not perform any internal conversion of the data (it's a memcpy)
         std::span<const uint8_t> pixel_data() const;
         void set_pixel_data(std::span<const uint8_t>);
-
-        // Returns the ratio of the resolution of the texture in physical pixels
-        // to the resolution of it in device-independent pixels.
-        float device_pixel_ratio() const;
-
-        // Sets the device-to-pixel ratio for the texture, which has the effect
-        // of scaling the `device_independent_dimensions()` of the texture.
-        void set_device_pixel_ratio(float);
 
         friend bool operator==(const Texture2D&, const Texture2D&) = default;
 
