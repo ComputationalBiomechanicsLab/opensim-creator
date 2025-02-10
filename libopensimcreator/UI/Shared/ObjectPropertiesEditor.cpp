@@ -103,7 +103,7 @@ namespace
     // draws the property name and (optionally) comment tooltip
     void DrawPropertyName(const OpenSim::AbstractProperty& property)
     {
-        ui::draw_text_unformatted(property.getName());
+        ui::draw_text(property.getName());
 
         if (not property.getComment().empty()) {
             ui::same_line();
@@ -1769,7 +1769,7 @@ private:
         ui::draw_separator();
         DrawPropertyName(prop);
         ui::next_column();
-        ui::draw_text_unformatted(prop.toString());
+        ui::draw_text(prop.toString());
         ui::next_column();
     }
 

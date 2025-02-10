@@ -219,7 +219,7 @@ void osc::MainMenuAboutTab::onDraw()
     constexpr float menuWidth = 400;
     ui::draw_dummy({menuWidth, 0});
 
-    ui::draw_text_unformatted("graphics");
+    ui::draw_text("graphics");
     ui::same_line();
     ui::draw_help_marker("OSMV's global graphical settings");
     ui::draw_separator();
@@ -227,12 +227,12 @@ void osc::MainMenuAboutTab::onDraw()
     {
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted("FPS");
+        ui::draw_text("FPS");
         ui::next_column();
         ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
         ui::next_column();
 
-        ui::draw_text_unformatted("MSXAA");
+        ui::draw_text("MSXAA");
         ui::same_line();
         ui::draw_help_marker("the log_level_ of MultiSample Anti-Aliasing to use. This only affects 3D renders *within* the UI, not the whole UI (panels etc. will not be affected)");
         ui::next_column();
@@ -255,7 +255,7 @@ void osc::MainMenuAboutTab::onDraw()
         }
         ui::next_column();
 
-        ui::draw_text_unformatted("window");
+        ui::draw_text("window");
         ui::next_column();
 
         if (ui::draw_button(OSC_ICON_EXPAND " fullscreen")) {
@@ -266,7 +266,7 @@ void osc::MainMenuAboutTab::onDraw()
         }
         ui::next_column();
 
-        ui::draw_text_unformatted("VSYNC");
+        ui::draw_text("VSYNC");
         ui::same_line();
         ui::draw_help_marker("whether the backend uses vertical sync (VSYNC), which will cap the rendering FPS to your monitor's refresh rate");
         ui::next_column();
@@ -281,7 +281,7 @@ void osc::MainMenuAboutTab::onDraw()
     }
 
     ui::draw_dummy({0.0f, 2.0f});
-    ui::draw_text_unformatted("properties");
+    ui::draw_text("properties");
     ui::same_line();
     ui::draw_help_marker("general software properties: useful information for bug reporting etc.");
     ui::draw_separator();
@@ -291,32 +291,32 @@ void osc::MainMenuAboutTab::onDraw()
 
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted("VERSION");
+        ui::draw_text("VERSION");
         ui::next_column();
-        ui::draw_text_unformatted(metadata.version_string().value_or("(not known)"));
-        ui::next_column();
-
-        ui::draw_text_unformatted("BUILD_ID");
-        ui::next_column();
-        ui::draw_text_unformatted(metadata.build_id().value_or("(not known)"));
+        ui::draw_text(metadata.version_string().value_or("(not known)"));
         ui::next_column();
 
-        ui::draw_text_unformatted("GRAPHICS_VENDOR");
+        ui::draw_text("BUILD_ID");
+        ui::next_column();
+        ui::draw_text(metadata.build_id().value_or("(not known)"));
+        ui::next_column();
+
+        ui::draw_text("GRAPHICS_VENDOR");
         ui::next_column();
         ui::draw_text(App::get().graphics_backend_vendor_string());
         ui::next_column();
 
-        ui::draw_text_unformatted("GRAPHICS_RENDERER");
+        ui::draw_text("GRAPHICS_RENDERER");
         ui::next_column();
         ui::draw_text(App::get().graphics_backend_renderer_string());
         ui::next_column();
 
-        ui::draw_text_unformatted("GRAPHICS_RENDERER_VERSION");
+        ui::draw_text("GRAPHICS_RENDERER_VERSION");
         ui::next_column();
         ui::draw_text(App::get().graphics_backend_version_string());
         ui::next_column();
 
-        ui::draw_text_unformatted("GRAPHICS_SHADER_VERSION");
+        ui::draw_text("GRAPHICS_SHADER_VERSION");
         ui::next_column();
         ui::draw_text(App::get().graphics_backend_shading_language_version_string());
         ui::next_column();
@@ -325,7 +325,7 @@ void osc::MainMenuAboutTab::onDraw()
     }
 
     ui::draw_dummy({0.0f, 2.5f});
-    ui::draw_text_unformatted("debugging utilities:");
+    ui::draw_text("debugging utilities:");
     ui::same_line();
     ui::draw_help_marker("standard utilities that can help with development, debugging, etc.");
     ui::draw_separator();
@@ -334,7 +334,7 @@ void osc::MainMenuAboutTab::onDraw()
     {
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted("OSC Install Location");
+        ui::draw_text("OSC Install Location");
         ui::same_line();
         ui::draw_help_marker("opens OSC's installation location in your OS's default file browser");
         ui::next_column();
@@ -346,7 +346,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::pop_id();
         ui::next_column();
 
-        ui::draw_text_unformatted("User Data Dir");
+        ui::draw_text("User Data Dir");
         ui::same_line();
         ui::draw_help_marker("opens your OSC user data directory in your OS's default file browser");
         ui::next_column();
@@ -357,7 +357,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::pop_id();
         ui::next_column();
 
-        ui::draw_text_unformatted("Debug mode");
+        ui::draw_text("Debug mode");
         ui::same_line();
         ui::draw_help_marker("Toggles whether the application is in debug mode or not: enabling this can reveal more inforamtion about bugs");
         ui::next_column();
@@ -372,7 +372,7 @@ void osc::MainMenuAboutTab::onDraw()
     }
 
     ui::draw_dummy({0.0f, 2.5f});
-    ui::draw_text_unformatted("useful links:");
+    ui::draw_text("useful links:");
     ui::same_line();
     ui::draw_help_marker("links to external sites that might be useful");
     ui::draw_separator();
@@ -380,7 +380,7 @@ void osc::MainMenuAboutTab::onDraw()
     {
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted("OpenSim Creator Documentation");
+        ui::draw_text("OpenSim Creator Documentation");
         ui::next_column();
         ui::push_id(id++);
         if (ui::draw_button(OSC_ICON_LINK " open"))
@@ -393,7 +393,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         if (auto repoURL = App::get().metadata().repository_url())
         {
-            ui::draw_text_unformatted("OpenSim Creator Repository");
+            ui::draw_text("OpenSim Creator Repository");
             ui::next_column();
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
@@ -407,7 +407,7 @@ void osc::MainMenuAboutTab::onDraw()
 
         if (auto helpURL = App::get().metadata().help_url())
         {
-            ui::draw_text_unformatted("OpenSim Creator Help");
+            ui::draw_text("OpenSim Creator Help");
             ui::next_column();
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
@@ -419,7 +419,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::next_column();
         }
 
-        ui::draw_text_unformatted("OpenSim Documentation");
+        ui::draw_text("OpenSim Documentation");
         ui::next_column();
         ui::push_id(id++);
         if (ui::draw_button(OSC_ICON_LINK " open"))

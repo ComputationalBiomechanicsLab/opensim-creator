@@ -25,7 +25,7 @@ public:
     void draw_content()
     {
         ui::set_num_columns(2);
-        ui::draw_text_unformatted("FPS");
+        ui::draw_text("FPS");
         ui::next_column();
         ui::draw_text("%.0f", static_cast<double>(ui::get_framerate()));
         ui::next_column();
@@ -78,7 +78,7 @@ public:
                 int column = 0;
                 ui::table_next_row();
                 ui::table_set_column_index(column++);
-                ui::draw_text_unformatted(measurement.label());
+                ui::draw_text(measurement.label());
                 ui::table_set_column_index(column++);
                 ui::draw_text("%s:%u", measurement.filename().c_str(), measurement.line());
                 ui::table_set_column_index(column++);

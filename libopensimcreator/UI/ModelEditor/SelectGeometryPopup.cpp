@@ -110,7 +110,7 @@ private:
         // let user select from a shorter sequence of analytical geometry that can be
         // generated without a mesh file
         {
-            ui::draw_text_unformatted("Generated geometry");
+            ui::draw_text("Generated geometry");
             ui::same_line();
             ui::draw_help_marker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ui::draw_separator();
@@ -128,7 +128,7 @@ private:
         //
         // let the user select a mesh file that the implementation should load + use
         ui::draw_dummy({0.0f, 3.0f});
-        ui::draw_text_unformatted("mesh file");
+        ui::draw_text("mesh file");
         ui::same_line();
         ui::draw_help_marker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ui::draw_separator();

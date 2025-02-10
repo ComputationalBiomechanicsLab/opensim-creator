@@ -81,10 +81,10 @@ public:
                     env->removeUserOutputExtractor(outputIdx);
                 }
                 ui::same_line();
-                ui::draw_text_unformatted(o.getName());
+                ui::draw_text(o.getName());
 
                 ui::table_set_column_index(column++);
-                ui::draw_text_unformatted(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
+                ui::draw_text(o.getValueString(m_Model->getModel(), m_CachedReport.simulationReport));
 
                 ui::pop_id();
             }

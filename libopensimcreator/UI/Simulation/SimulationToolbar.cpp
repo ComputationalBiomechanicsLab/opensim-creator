@@ -75,7 +75,7 @@ private:
     void drawScaleFactorGroup()
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-        ui::draw_text_unformatted(OSC_ICON_EXPAND_ALT);
+        ui::draw_text(OSC_ICON_EXPAND_ALT);
         ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
         ui::same_line();
 
@@ -95,7 +95,7 @@ private:
         ui::draw_text_disabled("simulator status:");
         ui::same_line();
         ui::push_style_color(ui::ColorVar::Text, CalcStatusColor(status));
-        ui::draw_text_unformatted(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
+        ui::draw_text(GetAllSimulationStatusStrings()[static_cast<size_t>(status)]);
         ui::pop_style_color();
     }
 

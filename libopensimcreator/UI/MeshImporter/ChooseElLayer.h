@@ -254,7 +254,7 @@ namespace osc::mi
             if (se)
             {
                 ui::begin_tooltip_nowrap();
-                ui::draw_text_unformatted(se->getLabel());
+                ui::draw_text(se->getLabel());
                 ui::same_line();
                 ui::draw_text_disabled("(%s, click to choose)", se->getClass().getName().c_str());
                 ui::end_tooltip_nowrap();

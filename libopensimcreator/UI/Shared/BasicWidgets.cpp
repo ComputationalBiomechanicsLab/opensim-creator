@@ -277,7 +277,7 @@ namespace
 
     void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)
     {
-        ui::draw_text_unformatted(truncate_with_ellipsis(c.getName(), 15));
+        ui::draw_text(truncate_with_ellipsis(c.getName(), 15));
         ui::same_line();
         ui::begin_disabled();
         ui::draw_text(c.getConcreteClassName());
@@ -343,7 +343,7 @@ void osc::DrawNothingRightClickedContextMenuHeader()
 
 void osc::DrawContextMenuHeader(CStringView title, CStringView subtitle)
 {
-    ui::draw_text_unformatted(title);
+    ui::draw_text(title);
     ui::same_line();
     ui::draw_text_disabled(subtitle);
 }
@@ -441,7 +441,7 @@ bool osc::DrawWatchOutputMenu(
 void osc::DrawSimulationParams(const ParamBlock& params)
 {
     ui::draw_dummy({0.0f, 1.0f});
-    ui::draw_text_unformatted("parameters:");
+    ui::draw_text("parameters:");
     ui::same_line();
     ui::draw_help_marker("The parameters used when this simulation was launched. These must be set *before* running the simulation");
     ui::draw_separator();
@@ -454,7 +454,7 @@ void osc::DrawSimulationParams(const ParamBlock& params)
         const std::string& description = params.getDescription(i);
         const ParamValue& value = params.getValue(i);
 
-        ui::draw_text_unformatted(name);
+        ui::draw_text(name);
         ui::same_line();
         ui::draw_help_marker(name, description);
         ui::next_column();
@@ -484,7 +484,7 @@ void osc::DrawOutputNameColumn(
     }
     else
     {
-        ui::draw_text_unformatted(output.getName());
+        ui::draw_text(output.getName());
     }
 
     // if it's specifically a component ouptut, then hover/clicking the text should
@@ -1533,7 +1533,7 @@ void osc::DrawAllDecorationToggleButtons(IModelStatePair& model, IconCache& icon
 void osc::DrawSceneScaleFactorEditorControls(IModelStatePair& model)
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
-    ui::draw_text_unformatted(OSC_ICON_EXPAND_ALT);
+    ui::draw_text(OSC_ICON_EXPAND_ALT);
     ui::draw_tooltip_if_item_hovered("Scene Scale Factor", "Rescales decorations in the model by this amount. Changing this can be handy when working on extremely small/large models.");
     ui::same_line();
 

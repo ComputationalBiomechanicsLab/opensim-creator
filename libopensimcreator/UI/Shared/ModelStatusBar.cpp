@@ -59,7 +59,7 @@ private:
                 ui::draw_text(IconFor(*els.back()));
                 ui::same_line();
                 const std::string label = truncate_with_ellipsis(els.back()->getName(), 15);
-                ui::draw_text_unformatted(label);
+                ui::draw_text(label);
                 drawMouseInteractionStuff(*els.back());
             }
         }

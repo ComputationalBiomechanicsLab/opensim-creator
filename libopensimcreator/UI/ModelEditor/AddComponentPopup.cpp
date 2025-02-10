@@ -158,7 +158,7 @@ private:
     {
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted("name");
+        ui::draw_text("name");
         ui::same_line();
         ui::draw_help_marker("Name the newly-added component will have after being added into the model. Note: this is used to derive the name of subcomponents (e.g. path points)");
         ui::next_column();
@@ -173,7 +173,7 @@ private:
 
     void drawPropertyEditors()
     {
-        ui::draw_text_unformatted("Properties");
+        ui::draw_text("Properties");
         ui::same_line();
         ui::draw_help_marker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
         ui::draw_separator();
@@ -195,7 +195,7 @@ private:
             return;
         }
 
-        ui::draw_text_unformatted("Socket assignments (required)");
+        ui::draw_text("Socket assignments (required)");
         ui::same_line();
         ui::draw_help_marker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ui::draw_separator();
@@ -217,7 +217,7 @@ private:
 
         ui::set_num_columns(2);
 
-        ui::draw_text_unformatted(socket.getName());
+        ui::draw_text(socket.getName());
         ui::same_line();
         ui::draw_help_marker(m_Proto->getPropertyByName("socket_" + socket.getName()).getComment());
         ui::draw_text_disabled(socket.getConnecteeTypeName());
@@ -225,7 +225,7 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
-        ui::draw_text_unformatted(OSC_ICON_SEARCH);
+        ui::draw_text(OSC_ICON_SEARCH);
         ui::same_line();
         ui::set_next_item_width(ui::get_content_region_available().x);
         ui::draw_string_input("##search", m_SocketSearchStrings[i]);
@@ -404,7 +404,7 @@ private:
         }
 
         // header
-        ui::draw_text_unformatted("Path Points (at least 2 required)");
+        ui::draw_text("Path Points (at least 2 required)");
         ui::same_line();
         ui::draw_help_marker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ui::draw_separator();

@@ -113,7 +113,7 @@ private:
                 ui::table_next_row();
                 int column = 0;
                 ui::table_set_column_index(column++);
-                ui::draw_text_unformatted(station.name);
+                ui::draw_text(station.name);
                 ui::table_set_column_index(column++);
                 ui::draw_text("%f", station.position.x);
                 ui::table_set_column_index(column++);
@@ -157,7 +157,7 @@ private:
             for (const auto& warning : m_ImportWarnings)
             {
                 ui::push_id(id++);
-                ui::draw_text_unformatted(warning);
+                ui::draw_text(warning);
                 ui::pop_id();
             }
             ui::end_tooltip();

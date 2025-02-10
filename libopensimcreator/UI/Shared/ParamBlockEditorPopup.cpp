@@ -87,7 +87,7 @@ private:
         for (int i = 0, len = m_LocalCopy.size(); i < len; ++i) {
             ui::push_id(i);
 
-            ui::draw_text_unformatted(m_LocalCopy.getName(i));
+            ui::draw_text(m_LocalCopy.getName(i));
             ui::same_line();
             ui::draw_help_marker(m_LocalCopy.getName(i), m_LocalCopy.getDescription(i));
             ui::next_column();

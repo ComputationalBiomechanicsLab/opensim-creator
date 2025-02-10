@@ -104,7 +104,7 @@ public:
                 ui::table_next_row();
                 int column = 0;
                 ui::table_set_column_index(column++);
-                ui::draw_text_unformatted(m.label());
+                ui::draw_text(m.label());
                 ui::table_set_column_index(column++);
                 ui::draw_progress_bar(sim.getProgress());
                 ui::table_set_column_index(column++);

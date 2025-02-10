@@ -116,7 +116,7 @@ public:
             ui::begin_panel("Controls");
             for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
                 ui::push_id(id++);
-                ui::draw_text_unformatted(annotation.label());
+                ui::draw_text(annotation.label());
                 ui::pop_id();
             }
             ui::end_panel();

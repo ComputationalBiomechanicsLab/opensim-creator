@@ -1645,7 +1645,7 @@ void osc::ui::align_text_to_frame_padding()
 
 void osc::ui::draw_text(CStringView sv)
 {
-    ImGui::TextUnformatted(sv.c_str(), sv.c_str() + sv.size());
+    ImGui::TextUnformatted(sv.data(), sv.data() + sv.size());
 }
 
 void osc::ui::detail::draw_text_v(CStringView fmt, va_list args)
@@ -1673,16 +1673,6 @@ void osc::ui::detail::draw_text_wrapped_v(CStringView fmt, va_list args)
     ImGui::TextWrappedV(fmt.c_str(), args);
 }
 
-void osc::ui::draw_text_unformatted(std::string_view sv)
-{
-    ImGui::TextUnformatted(sv.data(), sv.data() + sv.size());
-}
-
-void osc::ui::draw_bullet_point()
-{
-    ImGui::Bullet();
-}
-
 void osc::ui::draw_text_bullet_pointed(CStringView str)
 {
     ImGui::BulletText("%s", str.c_str());
@@ -1691,6 +1681,11 @@ void osc::ui::draw_text_bullet_pointed(CStringView str)
 bool osc::ui::draw_text_link(CStringView str)
 {
     return ImGui::TextLink(str.c_str());
+}
+
+void osc::ui::draw_bullet_point()
+{
+    ImGui::Bullet();
 }
 
 bool osc::ui::draw_tree_node_ex(CStringView label, ui::TreeNodeFlags flags)
@@ -3010,7 +3005,7 @@ void osc::ui::end_tooltip(std::optional<float>)
 
 void osc::ui::draw_tooltip_header_text(CStringView content)
 {
-    draw_text_unformatted(content);
+    draw_text(content);
 }
 
 void osc::ui::draw_tooltip_description_spacer()
@@ -3227,7 +3222,7 @@ void osc::ui::draw_text_centered(CStringView content)
     const float text_width   = ui::calc_text_size(content).x;
 
     ui::set_cursor_pos_x(0.5f * (panel_width - text_width));
-    draw_text_unformatted(content);
+    draw_text(content);
 }
 
 void osc::ui::draw_text_panel_centered(CStringView content)
@@ -3236,7 +3231,7 @@ void osc::ui::draw_text_panel_centered(CStringView content)
     const auto text_dimensions = ui::calc_text_size(content);
 
     ui::set_cursor_pos(0.5f * (panel_dimensions - text_dimensions));
-    draw_text_unformatted(content);
+    draw_text(content);
 }
 
 void osc::ui::draw_text_disabled_and_centered(CStringView content)
@@ -3260,20 +3255,20 @@ void osc::ui::draw_text_column_centered(CStringView content)
     const float text_width = ui::calc_text_size(content).x;
 
     ui::set_cursor_pos_x(column_offset + 0.5f*(column_width-text_width));
-    draw_text_unformatted(content);
+    draw_text(content);
 }
 
 void osc::ui::draw_text_faded(CStringView content)
 {
     ui::push_style_color(ColorVar::Text, Color::light_grey());
-    draw_text_unformatted(content);
+    draw_text(content);
     ui::pop_style_color();
 }
 
 void osc::ui::draw_text_warning(CStringView content)
 {
     push_style_color(ColorVar::Text, Color::yellow());
-    draw_text_unformatted(content);
+    draw_text(content);
     pop_style_color();
 }
 

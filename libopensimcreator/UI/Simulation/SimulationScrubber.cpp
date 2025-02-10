@@ -174,8 +174,8 @@ private:
 
         if (ui::is_item_hovered()) {
             ui::begin_tooltip();
-            ui::draw_text_unformatted("Left-Click: Change simulation time being shown");
-            ui::draw_text_unformatted("Ctrl-Click: Type in the simulation time being shown");
+            ui::draw_text("Left-Click: Change simulation time being shown");
+            ui::draw_text("Ctrl-Click: Type in the simulation time being shown");
             ui::end_tooltip();
         }
     }

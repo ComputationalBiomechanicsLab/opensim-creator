@@ -84,7 +84,7 @@ namespace
         const SimTK::State& state)
     {
         ui::begin_tooltip();
-        ui::draw_text_unformatted(component.getName());
+        ui::draw_text(component.getName());
         ui::same_line();
         ui::draw_text_disabled(component.getConcreteClassName());
 

@@ -151,7 +151,7 @@ private:
             ++stylesPushed;
         }
 
-        ui::draw_text_unformatted(c.getName());
+        ui::draw_text(c.getName());
         ui::pop_style_color(std::exchange(stylesPushed, 0));
 
         if (ui::is_item_hovered()) {

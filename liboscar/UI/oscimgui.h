@@ -127,13 +127,10 @@ namespace osc::ui
         detail::draw_text_wrapped(fmt, std::forward<Args>(args)...);
     }
 
-    void draw_text_unformatted(std::string_view);
+    void draw_text_bullet_pointed(CStringView);
+    bool draw_text_link(CStringView);
 
     void draw_bullet_point();
-
-    void draw_text_bullet_pointed(CStringView);
-
-    bool draw_text_link(CStringView);
 
     enum class TreeNodeFlag : unsigned {
         None        = 0,

@@ -35,7 +35,7 @@ namespace
     void DrawIcon(const EntryStyling& style)
     {
         ui::push_style_color(ui::ColorVar::Text, style.color);
-        ui::draw_text_unformatted(style.icon);
+        ui::draw_text(style.icon);
         ui::pop_style_color();
     }
 
@@ -46,7 +46,7 @@ namespace
     {
         DrawIcon(style);
         ui::same_line();
-        ui::draw_text_unformatted(component.getName());
+        ui::draw_text(component.getName());
     }
 
     template<WarpableOpenSimComponent T>
@@ -57,7 +57,7 @@ namespace
 
     void DrawTooltipHeader(const UIState&, const OpenSim::Component& component)
     {
-        ui::draw_text_unformatted(GetAbsolutePathString(component));
+        ui::draw_text(GetAbsolutePathString(component));
         ui::same_line();
         ui::draw_text_disabled(component.getConcreteClassName());
         ui::draw_separator();
@@ -76,9 +76,9 @@ namespace
             for (auto&& detail : state.details(c)) {
                 ui::table_next_row();
                 ui::table_set_column_index(0);
-                ui::draw_text_unformatted(detail.name());
+                ui::draw_text(detail.name());
                 ui::table_set_column_index(1);
-                ui::draw_text_unformatted(detail.value());
+                ui::draw_text(detail.value());
             }
 
             ui::end_table();
@@ -95,7 +95,7 @@ namespace
             auto style = ToStyle(check.state());
             DrawIcon(style);
             ui::same_line();
-            ui::draw_text_unformatted(check.description());
+            ui::draw_text(check.description());
             ui::pop_id();
         }
         ui::unindent(5.0f);

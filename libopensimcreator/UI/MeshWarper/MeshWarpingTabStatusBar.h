@@ -66,7 +66,7 @@ namespace osc
 
         void drawColorCodedXYZ(Vec3 pos)
         {
-            ui::draw_text_unformatted("(");
+            ui::draw_text("(");
             ui::same_line();
             for (int i = 0; i < 3; ++i) {
                 Color color = {0.5f, 0.5f, 0.5f, 1.0f};
@@ -77,7 +77,7 @@ namespace osc
                 ui::same_line();
                 ui::pop_style_color();
             }
-            ui::draw_text_unformatted(")");
+            ui::draw_text(")");
         }
 
         std::string m_Label;

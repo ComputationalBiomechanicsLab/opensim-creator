@@ -1663,7 +1663,7 @@ namespace
                 ui::end_combobox();
             }
             ui::same_line();
-            ui::draw_text_unformatted("vs.");
+            ui::draw_text("vs.");
             ui::same_line();
             ui::set_next_item_width(coordNameWidth);
             if (ui::begin_combobox("##coordname", coordName, ui::ComboFlag::NoArrowButton))

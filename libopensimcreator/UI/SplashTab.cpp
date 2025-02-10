@@ -90,7 +90,7 @@ namespace
         // long file names (#784)
         if (ui::is_item_hovered()) {
             ui::begin_tooltip_nowrap();
-            ui::draw_text_unformatted(path.filename().string());
+            ui::draw_text(path.filename().string());
             ui::end_tooltip_nowrap();
         }
         ui::pop_id();

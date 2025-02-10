@@ -16,7 +16,7 @@ public:
 
     void impl_draw_content() final
     {
-        ui::draw_text_unformatted(config_.content);
+        ui::draw_text(config_.content);
 
         if (ui::draw_button("Yes")) {
             if (config_.on_user_clicked_save()) {

@@ -39,7 +39,7 @@ public:
     {
         {
             ui::draw_dummy({0.0f, 1.0f});
-            ui::draw_text_unformatted("info:");
+            ui::draw_text("info:");
             ui::same_line();
             ui::draw_help_marker("Top-level information about the simulation");
             ui::draw_separator();
@@ -78,7 +78,7 @@ private:
 
         ui::draw_dummy({0.0f, 1.0f});
         ui::set_num_columns(2);
-        ui::draw_text_unformatted("plots:");
+        ui::draw_text("plots:");
         ui::same_line();
         ui::draw_help_marker("Various statistics collected when the simulation was ran");
         ui::next_column();
