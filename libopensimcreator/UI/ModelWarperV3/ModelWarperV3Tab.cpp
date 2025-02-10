@@ -773,18 +773,18 @@ namespace
         }
     };
 
-    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to an
-    // `OpenSim::PhysicalOffsetFrame`.
-    class ThinPlateSplineOffsetFrameScalingStep final : public ThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameScalingStep, ThinPlateSplineScalingStep)
+    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to the
+    // `translation` property of an `OpenSim::PhysicalOffsetFrame`.
+    class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ThinPlateSplineScalingStep)
 
-        OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source.");
+        OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source model.");
 
     public:
-        explicit ThinPlateSplineOffsetFrameScalingStep() :
-            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame"}
+        explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
+            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame translation"}
         {
-            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to warp the translation (and, optionally, the orientation) of the given offset frames.");
+            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to warp the translation of the given offset frames.");
             constructProperty_offset_frames();
         }
 
@@ -868,7 +868,7 @@ namespace
             std::make_unique<ThinPlateSplineMeshesScalingStep>(),
             std::make_unique<ThinPlateSplineStationsScalingStep>(),
             std::make_unique<ThinPlateSplinePathPointsScalingStep>(),
-            std::make_unique<ThinPlateSplineOffsetFrameScalingStep>(),
+            std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
 
             // Put TODO `ScalingStep`s at the bottom
             std::make_unique<BodyMassesScalingStep>(),
@@ -1915,7 +1915,7 @@ public:
             OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplinePathPointsScalingStep{});
-            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameTranslationScalingStep{});
 
             OpenSim::Object::registerType(ModelWarperV3Document{});
             return true;
