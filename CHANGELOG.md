@@ -14,6 +14,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: switched from using `git submodule` to using `git subtree` to handle
   all external code, in order to make long-term archiving of OpenSim Creator's
   source code easy (everything is in-tree).
+- Internal: ModelWarperV3 TPS warps now have options for configuring the input
+  mesh/landmark prescale and whether or not to use the translational/rotational
+  part of a TPS warp.
 
 ## [0.5.20] - 2025/01/28
 

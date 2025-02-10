@@ -160,13 +160,28 @@ namespace
             const std::filesystem::path& sourceLandmarksPath,
             const std::filesystem::path& destinationLandmarksPath,
             const OpenSim::Frame& landmarksFrame,
+            double sourceLandmarksPrescale,
+            double destinationLandmarksPrescale,
+            bool applyAffineTranslation,
+            bool applyAffineScale,
+            bool applyAffineRotation,
+            bool applyNonAffineWarp,
             double blendingFactor)
         {
             // Figure out the transform between the input mesh and the landmarks frame
             const Transform mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
 
             // Compile the TPS coefficients from the source+destination landmarks
-            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
+            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(
+                sourceLandmarksPath,
+                destinationLandmarksPath,
+                sourceLandmarksPrescale,
+                destinationLandmarksPrescale,
+                applyAffineTranslation,
+                applyAffineScale,
+                applyAffineRotation,
+                applyNonAffineWarp
+            );
 
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
             Mesh mesh = ToOscMesh(model, state, inputMesh);
@@ -195,10 +210,24 @@ namespace
             const std::filesystem::path& sourceLandmarksPath,
             const std::filesystem::path& destinationLandmarksPath,
             const OpenSim::Frame& landmarksFrame,
+            double sourceLandmarksPrescale,
+            double destinationLandmarksPrescale,
+            bool applyAffineTranslation,
+            bool applyAffineScale,
+            bool applyAffineRotation,
+            bool applyNonAffineWarp,
             double blendingFactor)
         {
-            const TPSCoefficients3D& coefficients =
-                lookupTPSCoefficients(sourceLandmarksPath, destinationLandmarksPath);
+            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(
+                sourceLandmarksPath,
+                destinationLandmarksPath,
+                sourceLandmarksPrescale,
+                destinationLandmarksPrescale,
+                applyAffineTranslation,
+                applyAffineScale,
+                applyAffineRotation,
+                applyNonAffineWarp
+            );
             const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state) * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
             const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(blendingFactor)));
@@ -209,8 +238,14 @@ namespace
     private:
 
         const TPSCoefficients3D& lookupTPSCoefficients(
-            [[maybe_unused]] const std::filesystem::path& sourceLandmarksPath,
-            [[maybe_unused]] const std::filesystem::path& destinationLandmarksPath)
+            const std::filesystem::path& sourceLandmarksPath,
+            const std::filesystem::path& destinationLandmarksPath,
+            double sourceLandmarksPrescale,
+            double destinationLandmarksPrescale,
+            bool applyAffineTranslation,
+            bool applyAffineScale,
+            bool applyAffineRotation,
+            bool applyNonAffineWarp)
         {
             // Read source+destination landmark files into independent collections
             const auto sourceLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(sourceLandmarksPath);
@@ -219,18 +254,39 @@ namespace
             // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
             TPSCoefficientSolverInputs3D inputs;
             inputs.landmarks.reserve(max(sourceLandmarks.size(), destinationLandmarks.size()));
-            lm::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs](const MaybeNamedLandmarkPair& p)
+            lm::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs, sourceLandmarksPrescale, destinationLandmarksPrescale](const MaybeNamedLandmarkPair& p)
             {
-                if (const auto landmark3d = p.tryGetPairedLocations()) {
+                if (auto landmark3d = p.tryGetPairedLocations()) {
+                    landmark3d->source = sourceLandmarksPrescale * landmark3d->source;
+                    landmark3d->destination = destinationLandmarksPrescale * landmark3d->destination;
                     inputs.landmarks.push_back(*landmark3d);
                 }
                 else {
-                    // TODO: partially-paired landmark might merit a warning etc.
+                    log_warn("The landmarks %s could not be paired, might be missing in the source/destination?", p.name().c_str());
                 }
             });
 
             // Solve the coefficients
             m_CoefficientsTODO = CalcCoefficients(inputs);
+
+            // If required, modify the coefficients
+            if (not applyAffineTranslation) {
+                m_CoefficientsTODO.a1 = {};
+            }
+            if (not applyAffineScale) {
+                m_CoefficientsTODO.a2 = normalize(m_CoefficientsTODO.a2);
+                m_CoefficientsTODO.a3 = normalize(m_CoefficientsTODO.a3);
+                m_CoefficientsTODO.a4 = normalize(m_CoefficientsTODO.a4);
+            }
+            if (not applyAffineRotation) {
+                m_CoefficientsTODO.a2 = {length(m_CoefficientsTODO.a2), 0.0f, 0.0f};
+                m_CoefficientsTODO.a3 = {0.0f, length(m_CoefficientsTODO.a3), 0.0f};
+                m_CoefficientsTODO.a4 = {0.0f, 0.0f, length(m_CoefficientsTODO.a4)};
+            }
+            if (not applyNonAffineWarp) {
+                m_CoefficientsTODO.nonAffineTerms.clear();
+            }
+
             return m_CoefficientsTODO;
         }
 
@@ -275,6 +331,7 @@ namespace
         }
         ScalingStepValidationState getState() const { return m_State; }
         CStringView getMessage() const { return m_Message; }
+
     private:
         std::string m_MaybePropertyName;
         ScalingStepValidationState m_State;
@@ -292,12 +349,14 @@ namespace
     public:
         OpenSim_DECLARE_PROPERTY(enabled, bool, "toggles applying this scaling step when scaling the model");
         OpenSim_DECLARE_PROPERTY(label, std::string, "a user-facing label for the scaling step");
+
     protected:
         explicit ScalingStep(std::string_view label)
         {
             constructProperty_enabled(true);
             constructProperty_label(std::string{label});
         }
+
     public:
         // Returns a user-facing label that describes this `ScalingStep`.
         CStringView label() const { return get_label(); }
@@ -342,6 +401,7 @@ namespace
         {
             return implValidate(scalingCache, scalingParameters, sourceModel);
         }
+
     private:
         // Implementors should provide the callback with any `ScalingParameterDeclaration`s in order
         // to ensure that the runtime can later provide the `ScalingParameterValue` during model
@@ -398,6 +458,12 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the mesh vertices to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the application of the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the application of the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
+        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
 
     public:
         explicit ThinPlateSplineMeshesScalingStep() :
@@ -408,6 +474,12 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_source_landmarks_prescale(1.0);
+            constructProperty_destination_landmarks_prescale(1.0);
+            constructProperty_apply_affine_translation(false);
+            constructProperty_apply_affine_scale(true);
+            constructProperty_apply_affine_rotation(false);
+            constructProperty_apply_non_affine_warp(true);
         }
 
     private:
@@ -515,6 +587,12 @@ namespace
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *landmarksFrame,
+                    get_source_landmarks_prescale(),
+                    get_destination_landmarks_prescale(),
+                    get_apply_affine_translation(),
+                    get_apply_affine_scale(),
+                    get_apply_affine_rotation(),
+                    get_apply_non_affine_warp(),
                     *blendingFactor
                 );
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
@@ -536,6 +614,12 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the stations to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the application of the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the application of the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
+        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
 
     public:
         explicit ThinPlateSplineStationsScalingStep() :
@@ -546,6 +630,12 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_source_landmarks_prescale(1.0);
+            constructProperty_destination_landmarks_prescale(1.0);
+            constructProperty_apply_affine_translation(true);
+            constructProperty_apply_affine_scale(true);
+            constructProperty_apply_affine_rotation(true);
+            constructProperty_apply_non_affine_warp(true);
         }
     private:
         void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
@@ -649,6 +739,12 @@ namespace
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *landmarksFrame,
+                    get_source_landmarks_prescale(),
+                    get_destination_landmarks_prescale(),
+                    get_apply_affine_translation(),
+                    get_apply_affine_scale(),
+                    get_apply_affine_rotation(),
+                    get_apply_non_affine_warp(),
                     *blendingFactor
                 );
 
@@ -668,6 +764,12 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. Geometry/torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. DestinationGeometry/torso.landmarks.csv)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the path points to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the application of the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the application of the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
+        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
 
     public:
         explicit ThinPlateSplinePathPointsScalingStep() :
@@ -678,6 +780,12 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_source_landmarks_prescale(1.0);
+            constructProperty_destination_landmarks_prescale(1.0);
+            constructProperty_apply_affine_translation(true);
+            constructProperty_apply_affine_scale(true);
+            constructProperty_apply_affine_rotation(true);
+            constructProperty_apply_non_affine_warp(true);
         }
     private:
         void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
@@ -781,6 +889,12 @@ namespace
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *landmarksFrame,
+                    get_source_landmarks_prescale(),
+                    get_destination_landmarks_prescale(),
+                    get_apply_affine_translation(),
+                    get_apply_affine_scale(),
+                    get_apply_affine_rotation(),
+                    get_apply_non_affine_warp(),
                     *blendingFactor
                 );
 
@@ -791,26 +905,37 @@ namespace
         }
     };
 
-    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to the
-    // `translation` property of an `OpenSim::OffsetFrame`, leaving the `orientation`
-    // as-is.
-    class ThinPlateSplineOffsetFrameTranslationScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameTranslationScalingStep, ScalingStep)
+    // A `ScalingStep` that applies the Thin-Plate Spline (TPS) warp to an
+    // `OpenSim::PhysicalOffsetFrame`.
+    class ThinPlateSplineOffsetFrameScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineOffsetFrameScalingStep, ScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(offset_frames, std::string, "Absolute paths (e.g. `/jointset/joint/parent_frame`) that the engine should use to find the offset frames in the source.");
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the source landmarks can be loaded from (e.g. torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model, where a CSV containing the destination landmarks can be loaded from (e.g. ../DestinationGeometry/torso.landmarks.csv).");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the path points to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_translation, bool, "Enable/disable applying the application of the affine translational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_affine_scale, bool, "Enable/disable applying the application of the affine scaling part of the TPS warp to the output. This can be useful/necessary for visually inspecting the difference between the non-affine scaling components and the affine parts.");
+        OpenSim_DECLARE_PROPERTY(apply_affine_rotation, bool, "Enable/disable applying the application of the affine rotational part of the TPS warp to the output. This can be useful/necessary if/when it's handled by some other part of the model (e.g. an offset frame, joint frame).");
+        OpenSim_DECLARE_PROPERTY(apply_non_affine_warp, bool, "Enable/disable applying the non-affine (i.e. the 'warp-ey part') of the TPS warp to the output.");
 
     public:
-        explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
-            ScalingStep{"Apply Thin-Plate Spline Warp to Offset Frame Translation"}
+        explicit ThinPlateSplineOffsetFrameScalingStep() :
+            ScalingStep{"Apply Thin-Plate Spline Warp to Offset Frame"}
         {
-            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to shift the translation property of the given offset frame. The orientation/rotation of the offset frame is unaffected by this operation.");
+            setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to warp the translation (and, optionally, the orientation) of the given offset frames.");
             constructProperty_offset_frames();
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_source_landmarks_prescale(1.0);
+            constructProperty_destination_landmarks_prescale(1.0);
+            constructProperty_apply_affine_translation(true);
+            constructProperty_apply_affine_scale(true);
+            constructProperty_apply_affine_rotation(true);
+            constructProperty_apply_non_affine_warp(true);
         }
 
     private:
@@ -915,6 +1040,12 @@ namespace
                     sourceLandmarksPath,
                     destinationLandmarksPath,
                     *landmarksFrame,
+                    get_source_landmarks_prescale(),
+                    get_destination_landmarks_prescale(),
+                    get_apply_affine_translation(),
+                    get_apply_affine_scale(),
+                    get_apply_affine_rotation(),
+                    get_apply_non_affine_warp(),
                     *blendingFactor
                 );
 
@@ -933,7 +1064,7 @@ namespace
             std::make_unique<ThinPlateSplineMeshesScalingStep>(),
             std::make_unique<ThinPlateSplineStationsScalingStep>(),
             std::make_unique<ThinPlateSplinePathPointsScalingStep>(),
-            std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
+            std::make_unique<ThinPlateSplineOffsetFrameScalingStep>(),
 
             // Put TODO `ScalingStep`s at the bottom
             std::make_unique<BodyMassesScalingStep>(),
@@ -1980,7 +2111,7 @@ public:
             OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
             OpenSim::Object::registerType(ThinPlateSplinePathPointsScalingStep{});
-            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameTranslationScalingStep{});
+            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameScalingStep{});
 
             OpenSim::Object::registerType(ModelWarperV3Document{});
             return true;
