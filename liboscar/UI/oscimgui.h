@@ -39,15 +39,6 @@ namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 
 struct ImDrawList;
-enum ImGuiKey : int;
-
-namespace osc
-{
-    template<>
-    struct Converter<Key, ImGuiKey> final {
-        ImGuiKey operator()(Key) const;
-    };
-}
 
 namespace osc::ui
 {
@@ -151,7 +142,6 @@ namespace osc::ui
     void draw_progress_bar(float fraction);
 
     bool begin_menu(CStringView sv, bool enabled = true);
-
     void end_menu();
 
     bool draw_menu_item(
