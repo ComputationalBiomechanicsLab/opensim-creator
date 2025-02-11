@@ -805,7 +805,7 @@ namespace
 
     public:
         explicit ThinPlateSplineOffsetFrameTranslationScalingStep() :
-            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) Warp to Offset Frame translation"}
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to Offset Frame translation"}
         {
             setDescription("Uses the Thin-Plate Spline (TPS) warping algorithm to warp the translation of the given offset frames.");
             constructProperty_offset_frames();
@@ -865,6 +865,24 @@ namespace
         }
     };
 
+    // A `ThinPlateSpline` scaling step that substitutes a single new mesh in place of the
+    // original one by using the TPS translation + rotation terms to reorient/scale the mesh
+    // correctly.
+    class ThinPlateSplineMeshSubstitutionScalingStep : public ThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshSubstitutionScalingStep, ThinPlateSplineScalingStep)
+    public:
+        OpenSim_DECLARE_PROPERTY(source_mesh_component_path, std::string, "TODO");
+        OpenSim_DECLARE_PROPERTY(destination_mesh_filepath, std::string, "TODO");
+
+        explicit ThinPlateSplineMeshSubstitutionScalingStep() :
+            ThinPlateSplineScalingStep{"TODO: Substitute Mesh via Inverse Thin-Plate Spline (TPS) Affine Transform"}
+        {
+            setDescription("Substitutes the source mesh in the model with a new mesh file. The mesh's affine rotation and translation (i.e. frame) will be computed from the inverse of the Thin-Plate Spline (TPS) between the source and destination landmarks (i.e. it'll use them to figure out how to go _from_ the destination mesh coordinate system _to_ the source mesh coordinate system in a way that doesn't rescale or warp the destination mesh).");
+            constructProperty_source_mesh_component_path("");
+            constructProperty_destination_mesh_filepath("");
+        }
+    };
+
     // A `ScalingStep` that scales the masses of bodies in the model.
     class BodyMassesScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
@@ -883,19 +901,27 @@ namespace
         }
     };
 
+    // Compile-time `Typelist` containing all `ScalingStep`s that this UI handles.
+    using AllScalingStepTypes = Typelist<
+        ThinPlateSplineMeshesScalingStep,
+        ThinPlateSplineStationsScalingStep,
+        ThinPlateSplinePathPointsScalingStep,
+        ThinPlateSplineOffsetFrameTranslationScalingStep,
+        ThinPlateSplineMeshSubstitutionScalingStep,
+        BodyMassesScalingStep
+    >;
+
     // Returns a list of `ScalingStep` prototypes, so that downstream code is able to present
     // them as available options etc.
     const auto& getScalingStepPrototypes()
     {
-        static const auto s_ScalingStepPrototypes = std::to_array<std::unique_ptr<ScalingStep>>({
-            std::make_unique<ThinPlateSplineMeshesScalingStep>(),
-            std::make_unique<ThinPlateSplineStationsScalingStep>(),
-            std::make_unique<ThinPlateSplinePathPointsScalingStep>(),
-            std::make_unique<ThinPlateSplineOffsetFrameTranslationScalingStep>(),
+        static const auto s_ScalingStepPrototypes = []<typename... TScalingStep>(Typelist<TScalingStep...>)
+        {
+            return std::to_array<std::unique_ptr<ScalingStep>>({
+                std::make_unique<TScalingStep>()...
+            });
+        }(AllScalingStepTypes{});
 
-            // Put TODO `ScalingStep`s at the bottom
-            std::make_unique<BodyMassesScalingStep>(),
-        });
         return s_ScalingStepPrototypes;
     }
 
@@ -1930,19 +1956,13 @@ public:
         TabPrivate{owner, parent, static_label()}
     {
         // Ensure `ModelWarperV3Document` can be loaded from the filesystem via OpenSim.
-        [[maybe_unused]] static const bool s_TypesRegistered = []()
+        [[maybe_unused]] static const bool s_TypesRegistered = []<typename... TScalingStep>(Typelist<TScalingStep...>)
         {
             OpenSim::Object::registerType(ScalingParameterOverride{});
-            OpenSim::Object::registerType(BodyMassesScalingStep{});
-
-            OpenSim::Object::registerType(ThinPlateSplineMeshesScalingStep{});
-            OpenSim::Object::registerType(ThinPlateSplineStationsScalingStep{});
-            OpenSim::Object::registerType(ThinPlateSplinePathPointsScalingStep{});
-            OpenSim::Object::registerType(ThinPlateSplineOffsetFrameTranslationScalingStep{});
-
+            (OpenSim::Object::registerType(TScalingStep{}), ...);
             OpenSim::Object::registerType(ModelWarperV3Document{});
             return true;
-        }();
+        }(AllScalingStepTypes{});
 
         m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](std::string_view panelName)
         {
