@@ -38,6 +38,7 @@ namespace osc
             const IModelStatePair&,
             const ModelRendererParams&,
             Vec2 dims,
+            float devicePixelRatio,
             AntiAliasingLevel antiAliasingLevel
         );
         RenderTexture& updRenderTexture();

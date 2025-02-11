@@ -236,7 +236,11 @@ public:
     void on_draw()
     {
         const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        output_render_.set_dimensions(dimensions_of(viewport_screen_space_rect));
+        const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
+        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * dimensions_of(viewport_screen_space_rect);
+
+        output_render_.set_dimensions(viewport_pixel_dimensions);
+        output_render_.set_device_pixel_ratio(device_pixel_ratio);
         output_render_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         camera_.on_draw();

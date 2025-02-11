@@ -24,15 +24,16 @@ using namespace osc;
 SceneRendererParams osc::CalcSceneRendererParams(
     const ModelRendererParams& renderParams,
     Vec2 viewportDims,
+    float viewportDevicePixelRatio,
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
 {
     SceneRendererParams rv;
 
     if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f) {
-        rv.dimensions = viewportDims;
+        rv.virtual_pixel_dimensions = viewportDims;
     }
-
+    rv.device_pixel_ratio = viewportDevicePixelRatio;
     rv.antialiasing_level = antiAliasingLevel;
     rv.light_direction = recommended_light_direction(renderParams.camera);
     renderParams.renderingOptions.applyTo(rv);

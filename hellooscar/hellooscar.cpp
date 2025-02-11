@@ -40,7 +40,8 @@ namespace
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
-                .dimensions = App::get().main_window_dimensions(),
+                .dimensions = App::get().main_window_pixel_dimensions(),
+                .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = App::get().anti_aliasing_level()
             });
 

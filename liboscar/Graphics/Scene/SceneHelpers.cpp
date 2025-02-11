@@ -318,19 +318,21 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
 SceneRendererParams osc::calc_standard_dark_scene_render_params(
     const PolarPerspectiveCamera& camera,
     AntiAliasingLevel aa_level,
-    Vec2 render_dims)
+    Vec2 render_virtual_pixel_dimensions,
+    float render_device_pixel_ratio)
 {
-    SceneRendererParams rv;
-    rv.dimensions = render_dims;
-    rv.antialiasing_level = aa_level;
-    rv.draw_mesh_normals = false;
-    rv.draw_floor = false;
-    rv.view_matrix = camera.view_matrix();
-    rv.projection_matrix = camera.projection_matrix(aspect_ratio_of(render_dims));
-    rv.view_pos = camera.position();
-    rv.light_direction = recommended_light_direction(camera);
-    rv.background_color = {0.1f, 1.0f};
-    return rv;
+    return SceneRendererParams{
+        .virtual_pixel_dimensions = render_virtual_pixel_dimensions,
+        .device_pixel_ratio = render_device_pixel_ratio,
+        .antialiasing_level = aa_level,
+        .draw_mesh_normals = false,
+        .draw_floor = false,
+        .view_matrix = camera.view_matrix(),
+        .projection_matrix = camera.projection_matrix(aspect_ratio_of(render_virtual_pixel_dimensions)),
+        .view_pos = camera.position(),
+        .light_direction = recommended_light_direction(camera),
+        .background_color = {0.1f, 1.0f},
+    };
 }
 
 BVH osc::create_triangle_bvh(const Mesh& mesh)

@@ -1059,7 +1059,7 @@ namespace
             if (app.is_main_window_minimized()) {
                 window_dimensions = {0.0f, 0.0f};
             }
-            io.DisplaySize = {window_dimensions.x, window_dimensions.y};
+            io.DisplaySize = to<ImVec2>(window_dimensions);
         }
 
         // Update monitors
@@ -2839,7 +2839,7 @@ Rect osc::ui::content_region_avail_as_screen_rect()
 
 void osc::ui::draw_image(const Texture2D& texture)
 {
-    draw_image(texture, texture.dimensions());
+    draw_image(texture, texture.device_independent_dimensions());
 }
 
 void osc::ui::draw_image(const Texture2D& texture, Vec2 dimensions)
@@ -2861,7 +2861,7 @@ void osc::ui::draw_image(
 
 void osc::ui::draw_image(const RenderTexture& texture)
 {
-    draw_image(texture, texture.dimensions());
+    draw_image(texture, texture.device_independent_dimensions());
 }
 
 void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)

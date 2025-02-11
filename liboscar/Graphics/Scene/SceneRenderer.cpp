@@ -674,7 +674,8 @@ public:
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        output_rendertexture_.set_dimensions(params.dimensions);
+        output_rendertexture_.set_dimensions(params.device_pixel_ratio * params.virtual_pixel_dimensions);
+        output_rendertexture_.set_device_pixel_ratio(params.device_pixel_ratio);
         output_rendertexture_.set_anti_aliasing_level(params.antialiasing_level);
         camera_.render_to(output_rendertexture_);
 
@@ -729,7 +730,7 @@ private:
         Rect& rim_ndc_rect = *maybe_rim_ndc_rect;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        const Vec2 rim_ndc_thickness = 2.0f*params.rim_thickness_in_pixels / Vec2{params.dimensions};
+        const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness_in_virtual_pixels/params.virtual_pixel_dimensions;
 
         // expand by the rim thickness, so that the output has space for the rims
         rim_ndc_rect = expand_by_absolute_amount(rim_ndc_rect, rim_ndc_thickness);
@@ -782,7 +783,8 @@ private:
 
         // configure the off-screen solid-colored texture
         rims_rendertexture_.reformat({
-            .dimensions = params.dimensions,
+            .dimensions = params.virtual_pixel_dimensions,
+            .device_pixel_ratio = params.device_pixel_ratio,
             .anti_aliasing_level = params.antialiasing_level,
         });
 

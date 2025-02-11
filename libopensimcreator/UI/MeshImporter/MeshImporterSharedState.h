@@ -39,6 +39,7 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
@@ -382,16 +383,19 @@ namespace osc::mi
 
         void drawScene(std::span<const DrawableThing> drawables)
         {
+            const App& app = App::get();
+
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = dimensions_of(get3DSceneRect());
-            p.antialiasing_level = App::get().anti_aliasing_level();
+            p.virtual_pixel_dimensions = dimensions_of(get3DSceneRect());
+            p.device_pixel_ratio = app.settings().get_value<float>("graphics/render_scale", 1.0f) * app.main_window_device_pixel_ratio();
+            p.antialiasing_level = app.anti_aliasing_level();
             p.draw_rims = true;
             p.draw_floor = false;
             p.near_clipping_plane = m_3DSceneCamera.znear;
             p.far_clipping_plane = m_3DSceneCamera.zfar;
             p.view_matrix = m_3DSceneCamera.view_matrix();
-            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.dimensions));
+            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.virtual_pixel_dimensions));
             p.view_pos = m_3DSceneCamera.position();
             p.light_direction = recommended_light_direction(m_3DSceneCamera);
             p.light_color = Color::white();

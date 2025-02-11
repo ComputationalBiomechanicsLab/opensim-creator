@@ -321,7 +321,7 @@ public:
         {
             const Vec2 windowDims = ui::get_content_region_available();
             const float minDim = min(windowDims.x, windowDims.y);
-            const Vec2i texDims = Vec2i{minDim, minDim};
+            const Vec2 texDims = {minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
@@ -386,10 +386,11 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(const Mesh& mesh, Vec2i dims, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vec2 dims, std::optional<RenderTexture>& out)
     {
         const RenderTextureParams textureParameters = {
-            .dimensions = dims,
+            .dimensions = App::get().main_window_device_pixel_ratio() * dims,
+            .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
             .anti_aliasing_level = App::get().anti_aliasing_level()
         };
         out.emplace(textureParameters);

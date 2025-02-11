@@ -17,6 +17,7 @@
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/Utils/CStringView.h>
@@ -85,6 +86,7 @@ public:
         const SceneRendererParams params = CalcSceneRendererParams(
             m_ModelRendererParams,
             dimensions_of(viewportRect),
+            App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
             1.0f
         );

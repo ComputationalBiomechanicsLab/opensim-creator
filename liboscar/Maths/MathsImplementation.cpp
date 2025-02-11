@@ -664,7 +664,7 @@ Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, V
         pos / dimensions,
         this->position(),
         view_matrix(),
-        projection_matrix(dimensions.x/dimensions.y)
+        projection_matrix(aspect_ratio_of(dimensions))
     );
 }
 

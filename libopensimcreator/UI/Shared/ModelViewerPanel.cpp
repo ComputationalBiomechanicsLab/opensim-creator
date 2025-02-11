@@ -15,6 +15,7 @@
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
@@ -424,6 +425,7 @@ public:
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
                 dimensions_of(m_State.viewportRect),
+                App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
                 App::get().anti_aliasing_level()
             );
             ui::draw_image(

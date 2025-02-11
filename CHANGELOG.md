@@ -5,6 +5,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- HighDPI support has now been rolled out to 3D UI elements (previously, it was
+  only rolled out to 2D UI elements - #950), #1001.
+- A new configuration option, `graphics.render_scale`, can now be set in
+  `osc.toml`. This configuration option can be used to upscale/downscale
+  3D UI elements by a scale factor, e.g. to combine a HighDPI 2D UI with
+  LowDPI 3D viewports (#1001).
 - `oscar_demos` are no longer bundled with the application by default, to reduce
   the size of the installer (most users don't use the demos).
 - Internal: Updated internal opensim-core to include the upstream change to

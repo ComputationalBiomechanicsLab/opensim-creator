@@ -108,8 +108,13 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
+            const Vec2 viewport_dimensions = ui::get_main_viewport_workspace_screen_dimensions();
+            const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
+            const Vec2 viewport_pixel_dimensions = device_pixel_ratio * viewport_dimensions;
+
             RenderTextureParams params = {
-                .dimensions = ui::get_main_viewport_workspace_screen_dimensions(),
+                .dimensions = viewport_pixel_dimensions,
+                .device_pixel_ratio = device_pixel_ratio,
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             };
             if (use_16bit_format_) {

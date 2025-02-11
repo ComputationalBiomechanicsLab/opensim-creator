@@ -32,6 +32,7 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
@@ -210,7 +211,8 @@ namespace osc
             SceneRendererParams params = calc_standard_dark_scene_render_params(
                 m_Camera,
                 App::get().anti_aliasing_level(),
-                dims
+                dims,
+                App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio()
             );
             m_State->getCustomRenderingOptions().applyTo(params);
             const std::vector<SceneDecoration> decorations = generateDecorations(maybeMeshCollision, maybeLandmarkCollision);

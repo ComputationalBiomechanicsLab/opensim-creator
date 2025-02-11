@@ -162,7 +162,7 @@ private:
     {
         Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         // pretend the attributation bar isn't there (avoid it)
-        tabUIRect.p2.y -= static_cast<float>(max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y)) - 2.0f*ui::get_style_panel_padding().y;
+        tabUIRect.p2.y -= max(m_TudLogo.device_independent_dimensions().y, m_CziLogo.device_independent_dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
 
         const Vec2 menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         const Vec2 menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
@@ -195,7 +195,8 @@ private:
         ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.dimensions = dimensions_of(viewportUIRect);
+        params.virtual_pixel_dimensions = dimensions_of(viewportUIRect);
+        params.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
         params.antialiasing_level = App::get().anti_aliasing_level();
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(viewportUIRect));
 
@@ -223,9 +224,10 @@ private:
     {
         // center the menu window
         const Rect mmr = calcMainMenuRect();
+        const Vec2 dims = dimensions_of(mmr);
         ui::set_next_panel_pos(mmr.p1);
-        ui::set_next_panel_size({dimensions_of(mmr).x, -1.0f});
-        ui::set_next_panel_size_constraints(dimensions_of(mmr), dimensions_of(mmr));
+        ui::set_next_panel_size({dims.x, -1.0f});
+        ui::set_next_panel_size_constraints(dims, dims);
 
         if (ui::begin_panel("Splash screen", nullptr, ui::WindowFlag::NoTitleBar)) {
             drawMenuContent();
@@ -358,15 +360,15 @@ private:
     {
         const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         Vec2 loc = viewportUIRect.p2;
-        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - static_cast<float>(m_CziLogo.dimensions().x) - 2.0f*ui::get_style_item_spacing().x - static_cast<float>(m_TudLogo.dimensions().x);
-        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - static_cast<float>(max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y));
+        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
+        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
 
         ui::set_next_panel_pos(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
-        loc.x += static_cast<float>(m_CziLogo.dimensions().x) + 2.0f*ui::get_style_item_spacing().x;
+        loc.x += m_CziLogo.device_independent_dimensions().x + 2.0f*ui::get_style_item_spacing().x;
         ui::set_next_panel_pos(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);
@@ -402,7 +404,7 @@ private:
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    Vec2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
+    Vec2 m_MainAppLogoDims =  m_MainAppLogo.device_independent_dimensions();
     Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state

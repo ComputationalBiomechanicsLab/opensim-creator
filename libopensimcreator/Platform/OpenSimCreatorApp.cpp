@@ -133,8 +133,9 @@ namespace
     void InitializeOpenSimCreatorSpecificSettingDefaults(AppSettings& settings)
     {
         for (const auto& [setting_id, default_state] : c_default_panel_states) {
-            settings.set_value(setting_id, default_state, AppSettingScope::System);
+            settings.set_value_if_not_found(setting_id, default_state, AppSettingScope::System);
         }
+        settings.set_value_if_not_found("graphics/render_scale", Variant{1.0f}, AppSettingScope::System);
     }
 }
 

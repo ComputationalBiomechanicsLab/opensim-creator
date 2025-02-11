@@ -19,7 +19,7 @@ public:
     {
         const Mat4 view_matrix = scene_camera_.view_matrix();
         const Rect viewport_ui_rect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(dimensions_of(viewport_ui_rect)));
+        const Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(viewport_ui_rect));
 
         ui::gizmo_demo_draw_grid(identity<Mat4>(), view_matrix, projection_matrix, 100.0f, viewport_ui_rect);
         ui::gizmo_demo_draw_cube(model_matrix_, view_matrix, projection_matrix, viewport_ui_rect);

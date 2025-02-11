@@ -31,6 +31,20 @@ namespace osc
         std::optional<std::filesystem::path> system_configuration_file_location() const;
 
         std::optional<Variant> find_value(std::string_view key) const;
+        Variant get_value(std::string_view key, Variant fallback = Variant{}) const
+        {
+            return find_value(key).value_or(std::move(fallback));
+        }
+        template<std::convertible_to<Variant> T>
+        T get_value(std::string_view key, T fallback = T{}) const
+        {
+            if (auto v = find_value(key)) {
+                return v->operator T();
+            }
+            else {
+                return std::move(fallback);
+            }
+        }
         void set_value(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
         void set_value_if_not_found(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
 

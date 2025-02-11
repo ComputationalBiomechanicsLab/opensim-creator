@@ -157,15 +157,17 @@ private:
     {
         const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
         const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
+        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * viewport_dimensions;
 
         // ensure textures/buffers have correct dimensions
         {
             constexpr AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
-            gbuffer_state_.reformat(viewport_dimensions, anti_aliasing_level);
-            ssao_state_.reformat(viewport_dimensions, anti_aliasing_level);
-            blur_state_.reformat(viewport_dimensions, anti_aliasing_level);
-            lighting_state_.reformat(viewport_dimensions, anti_aliasing_level);
+            gbuffer_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            ssao_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            blur_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            lighting_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
         }
 
         render_geometry_pass_to_gbuffers();
@@ -315,11 +317,12 @@ private:
             },
         };
 
-        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
+        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = dimensions,
+                    .dimensions = pixel_dimensions,
+                    .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
                 });
@@ -331,9 +334,10 @@ private:
         Material material = load_ssao_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
+        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(dimensions);
+            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
     } ssao_state_;
@@ -342,9 +346,10 @@ private:
         Material material = load_blur_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
+        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(dimensions);
+            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
     } blur_state_;
@@ -353,9 +358,10 @@ private:
         Material material = load_lighting_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
 
-        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
+        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(dimensions);
+            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
     } lighting_state_;

@@ -21,6 +21,7 @@ namespace osc
 
         const Texture2D& image() const { return image_; }
         Vec2i dimensions() const { return image_.dimensions(); }
+        Vec2 device_independent_dimensions() const { return image_.device_independent_dimensions(); }
         std::span<const ScreenshotAnnotation> annotations() const { return annotations_; }
 
     private:

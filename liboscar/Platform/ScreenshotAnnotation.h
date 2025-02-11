@@ -15,7 +15,10 @@ namespace osc
         {}
 
         const std::string& label() const { return label_; }
+
+        // Returns the bounding rectangle of the annotation in device-independent pixels.
         const Rect& rect() const { return rect_; }
+
     private:
         std::string label_;
         Rect rect_;

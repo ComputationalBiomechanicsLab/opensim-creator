@@ -129,6 +129,7 @@ public:
         const IModelStatePair& modelState,
         const ModelRendererParams& renderParams,
         Vec2 dims,
+        float devicePixelRatio,
         AntiAliasingLevel antiAliasingLevel)
     {
         OSC_PERF("CachedModelRenderer/on_draw");
@@ -137,6 +138,7 @@ public:
         const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             renderParams,
             dims,
+            devicePixelRatio,
             antiAliasingLevel,
             modelState.getFixupScaleFactor()
         );
@@ -201,12 +203,14 @@ RenderTexture& osc::CachedModelRenderer::onDraw(
     const IModelStatePair& modelState,
     const ModelRendererParams& renderParams,
     Vec2 dims,
+    float devicePixelRatio,
     AntiAliasingLevel antiAliasingLevel)
 {
     return m_Impl->onDraw(
         modelState,
         renderParams,
         dims,
+        devicePixelRatio,
         antiAliasingLevel
     );
 }

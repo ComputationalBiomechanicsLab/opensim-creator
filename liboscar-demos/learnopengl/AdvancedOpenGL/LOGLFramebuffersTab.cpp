@@ -83,7 +83,11 @@ public:
 
         // setup render texture
         const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        render_texture_.set_dimensions(dimensions_of(viewport_screen_space_rect));
+        const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
+        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * dimensions_of(viewport_screen_space_rect);
+
+        render_texture_.set_dimensions(viewport_pixel_dimensions);
+        render_texture_.set_device_pixel_ratio(device_pixel_ratio);
         render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         // render scene

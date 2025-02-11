@@ -129,11 +129,12 @@ namespace
             },
         };
 
-        void reformat(Vec2 dimensions, AntiAliasingLevel aa_level)
+        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = dimensions,
+                    .dimensions = pixel_dimensions,
+                    .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
                 });
@@ -190,12 +191,14 @@ private:
     {
         const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
         const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const float device_pixel_scale = App::get().main_window_device_pixel_ratio();
+        const Vec2 viewport_pixel_dimensions = device_pixel_scale * viewport_dimensions;
         const AntiAliasingLevel anti_aliasing_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
         {
-            gbuffer_.reformat(viewport_dimensions, anti_aliasing_level);
-            output_texture_.set_dimensions(viewport_dimensions);
+            gbuffer_.reformat(viewport_pixel_dimensions, device_pixel_scale, anti_aliasing_level);
+            output_texture_.set_dimensions(viewport_pixel_dimensions);
             output_texture_.set_anti_aliasing_level(anti_aliasing_level);
         }
 

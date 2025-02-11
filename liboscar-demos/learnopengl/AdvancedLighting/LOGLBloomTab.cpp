@@ -128,21 +128,23 @@ private:
     void draw_3d_scene()
     {
         const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
+        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * dimensions_of(viewport_screen_space_rect);
 
-        reformat_all_textures(viewport_dimensions);
+        reformat_all_textures(viewport_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
         render_blurred_brightness();
         render_combined_scene(viewport_screen_space_rect);
         draw_overlays(viewport_screen_space_rect);
     }
 
-    void reformat_all_textures(const Vec2& viewport_dimensions)
+    void reformat_all_textures(const Vec2& viewport_pixel_dimensions, float device_pixel_ratio)
     {
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         RenderTextureParams params = {
-            .dimensions = viewport_dimensions,
+            .dimensions = viewport_pixel_dimensions,
+            .device_pixel_ratio = device_pixel_ratio,
             .anti_aliasing_level = aa_level,
             .color_format = ColorRenderBufferFormat::DefaultHDR,
         };

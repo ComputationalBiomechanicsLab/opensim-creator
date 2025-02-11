@@ -24,6 +24,7 @@ namespace osc
     SceneRendererParams CalcSceneRendererParams(
         const ModelRendererParams&,
         Vec2 viewportDims,
+        float viewportDevicePixelRatio,
         AntiAliasingLevel,
         float fixupScaleFactor
     );

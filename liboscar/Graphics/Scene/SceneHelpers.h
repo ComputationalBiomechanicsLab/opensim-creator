@@ -136,7 +136,8 @@ namespace osc
     SceneRendererParams calc_standard_dark_scene_render_params(
         const PolarPerspectiveCamera&,
         AntiAliasingLevel,
-        Vec2 render_dims
+        Vec2 render_dims,
+        float render_device_pixel_ratio
     );
 
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty

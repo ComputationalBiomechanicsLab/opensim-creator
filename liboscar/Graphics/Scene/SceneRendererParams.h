@@ -39,7 +39,8 @@ namespace osc
         friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
 
         // output parameters
-        Vec2i dimensions = {1, 1};
+        Vec2 virtual_pixel_dimensions = {1.0f, 1.0f};
+        float device_pixel_ratio = 1.0f;
         AntiAliasingLevel antialiasing_level = AntiAliasingLevel::none();
 
         // flags
@@ -67,7 +68,7 @@ namespace osc
             Color{0.95f, 0.4f, 0.0f, 1.0f},
             Color{0.95f, 0.2f, 0.0f, 0.4f},
         });
-        Vec2 rim_thickness_in_pixels = {1.0f, 1.0f};
+        Vec2 rim_thickness_in_virtual_pixels = {1.0f, 1.0f};
 
         // scene parameters
         Vec3 floor_location = default_floor_location();
