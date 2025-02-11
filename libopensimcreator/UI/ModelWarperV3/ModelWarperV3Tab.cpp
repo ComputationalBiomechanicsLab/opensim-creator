@@ -230,11 +230,13 @@ namespace
             return warpedLocationInStationParentFrame;
         }
 
-        SimTK::Rotation lookupTPSReorientation(
+        SimTK::Transform lookupTPSAffineTransformWithoutScaling(
             const ThinPlateSplineCommonInputs& tpsInputs)
         {
-            OSC_ASSERT_ALWAYS(tpsInputs.applyAffineRotation && "affine rotation must be requested in order to figure out the reorientation matrix");
+            OSC_ASSERT_ALWAYS(tpsInputs.applyAffineRotation && "affine rotation must be requested in order to figure out the transform");
+            OSC_ASSERT_ALWAYS(tpsInputs.applyAffineTranslation && "affine translation must be requested in order to figure out the transform");
             const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+
             const Vec3d x{normalize(coefficients.a2)};
             const Vec3d y{normalize(coefficients.a3)};
             const Vec3d z{normalize(coefficients.a4)};
@@ -243,9 +245,10 @@ namespace
                 x[1], y[1], z[1],
                 x[2], y[2], z[2],
             };
-            return SimTK::Rotation{rotationMatrix};
+            const SimTK::Rotation rotation{rotationMatrix};
+            const SimTK::Vec3 translation = to<SimTK::Vec3>(coefficients.a1);
+            return SimTK::Transform{rotation, translation};
         }
-
     private:
 
         const TPSCoefficients3D& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
@@ -868,18 +871,108 @@ namespace
     // A `ThinPlateSpline` scaling step that substitutes a single new mesh in place of the
     // original one by using the TPS translation + rotation terms to reorient/scale the mesh
     // correctly.
-    class ThinPlateSplineMeshSubstitutionScalingStep : public ThinPlateSplineScalingStep {
+    class ThinPlateSplineMeshSubstitutionScalingStep final : public ThinPlateSplineScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshSubstitutionScalingStep, ThinPlateSplineScalingStep)
     public:
         OpenSim_DECLARE_PROPERTY(source_mesh_component_path, std::string, "TODO");
-        OpenSim_DECLARE_PROPERTY(destination_mesh_filepath, std::string, "TODO");
+        OpenSim_DECLARE_PROPERTY(destination_mesh_file, std::string, "TODO");
 
         explicit ThinPlateSplineMeshSubstitutionScalingStep() :
             ThinPlateSplineScalingStep{"TODO: Substitute Mesh via Inverse Thin-Plate Spline (TPS) Affine Transform"}
         {
             setDescription("Substitutes the source mesh in the model with a new mesh file. The mesh's affine rotation and translation (i.e. frame) will be computed from the inverse of the Thin-Plate Spline (TPS) between the source and destination landmarks (i.e. it'll use them to figure out how to go _from_ the destination mesh coordinate system _to_ the source mesh coordinate system in a way that doesn't rescale or warp the destination mesh).");
             constructProperty_source_mesh_component_path("");
-            constructProperty_destination_mesh_filepath("");
+            constructProperty_destination_mesh_file("");
+        }
+
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache& scalingCache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel) const final
+        {
+            auto messages = ThinPlateSplineScalingStep::implValidate(scalingCache, parameters, sourceModel);
+
+            // Ensure the model has a filesystem location (prerequisite).
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (not modelFilesystemLocation) {
+                messages.emplace_back(ScalingStepValidationState::Error, "The source model has no filesystem location.");
+                return messages;
+            }
+
+            // Ensure the `destination_mesh_filepath` can be found (relative to the model osim).
+            if (get_destination_mesh_file().empty()) {
+                messages.emplace_back(ScalingStepValidationState::Error, "`destination_mesh_file` is empty.");
+            }
+            else if (const auto destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
+                not std::filesystem::exists(destinationMeshPath)) {
+
+                std::stringstream msg;
+                msg << destinationMeshPath.string() << ": Cannot find `destination_mesh_file` on filesystem";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure `source_mesh_component_path` exists in the model
+            const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
+            if (not sourceMesh) {
+                std::stringstream msg;
+                msg << get_landmarks_frame() << ": Cannot find `source_mesh_component_path` in the source model";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache& cache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& sourceModel,
+            OpenSim::Model& resultModel) const final
+        {
+            // Lookup/validate warping inputs.
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+
+            // Lookup/validate warping inputs.
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
+
+            OSC_ASSERT_ALWAYS(not get_destination_mesh_file().empty());
+            const std::filesystem::path destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
+
+            OSC_ASSERT_ALWAYS(not get_source_mesh_component_path().empty());
+            const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
+            OSC_ASSERT_ALWAYS(sourceMesh && "could not find `source_mesh_component_path` in the model");
+
+            // TODO: everything below is a hack because manipulating models
+            // via OpenSim is like pulling teeth, underwater, from a shark,
+            // with rabies, using your bare hands.
+
+            const SimTK::Transform t = cache.lookupTPSAffineTransformWithoutScaling(commonParams.tpsInputs);
+            const SimTK::Vec3 newScaleFactors =
+                (commonParams.tpsInputs.destinationLandmarksPrescale/commonParams.tpsInputs.sourceLandmarksPrescale) * sourceMesh->get_scale_factors();
+
+            // Find existing mesh
+            auto* destinationMesh = FindComponentMut<OpenSim::Mesh>(resultModel, get_source_mesh_component_path());
+            OSC_ASSERT_ALWAYS(destinationMesh && "could not find `source_mesh_component_path` in the result model");
+            const std::string existingMeshName = destinationMesh->getName();
+            // Figure out existing mesh's frame
+            auto* oldParentFrame = FindComponentMut<OpenSim::PhysicalFrame>(resultModel, destinationMesh->getFrame().getAbsolutePath());
+            OSC_ASSERT_ALWAYS(oldParentFrame);
+            // Delete existing mesh from model
+            OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(resultModel, *destinationMesh));
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
+
+            // Add new frame + mesh to the model
+            auto* newFrame = new OpenSim::PhysicalOffsetFrame{*oldParentFrame, t.invert()};
+            newFrame->updSocket("parent").setConnecteePath(oldParentFrame->getAbsolutePathString());
+            resultModel.addComponent(newFrame);
+
+            auto* newMesh = new OpenSim::Mesh{};
+            newMesh->setName(existingMeshName);
+            newMesh->set_scale_factors(newScaleFactors);
+            newMesh->set_mesh_file(destinationMeshPath.string());
+            newMesh->updSocket("frame").setConnecteePath(newFrame->getAbsolutePathString());
+            resultModel.addComponent(newMesh);
         }
     };
 
