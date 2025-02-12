@@ -68,7 +68,16 @@ namespace
         OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
         InitializeModel(model);
         InitializeState(model);
-        owner->addComponent(newGeometry.release());
+        // TODO/HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
+        // in frames, because we don't have a way to delete things from the generic
+        // component list (yet) #1003
+        if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
+            fr->attachGeometry(newGeometry.release());
+        }
+        else {
+            owner->addComponent(newGeometry.release());
+        }
+
         FinalizeConnections(model);
     }
 
@@ -1534,6 +1543,9 @@ namespace
             InitializeModel(*copy);
             InitializeState(*copy);
             {
+                // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
+                // of being able to export warped models, but it isn't very clean or robust (#1003).
+
                 // Create warped geom dir
                 const auto warpedGeometryDir = modelFilesystemLocation->parent_path() / "WarpedGeometry";
                 if (not std::filesystem::exists(warpedGeometryDir)) {
