@@ -1517,12 +1517,51 @@ namespace
 
             auto scalingResult = scaledModelOrDocumentValidationMessages();
             if (not std::holds_alternative<std::shared_ptr<IModelStatePair>>(scalingResult)) {
-                return;  // wasn't warped
+                log_error("cannot export scaled model: could not create a warped model");
+                return;
+            }
+
+            const OpenSim::Model& sourceModel = m_ScalingState->scratch().getSourceModel();
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (not modelFilesystemLocation) {
+                log_error("cannot export scaled model: can't figure out where the source model is on-disk");
+                return;
             }
 
             std::shared_ptr<IModelStatePair> scaled = std::get<std::shared_ptr<IModelStatePair>>(scalingResult);
-            // TODO: `setShouldWriteWarpedMeshesToDisk` as a warp option?
-            auto editor = std::make_unique<ModelEditorTab>(*parent_, scaled->getModel());
+
+            std::unique_ptr<OpenSim::Model> copy = std::make_unique<OpenSim::Model>(scaled->getModel());
+            InitializeModel(*copy);
+            InitializeState(*copy);
+            {
+                // Create warped geom dir
+                const auto warpedGeometryDir = modelFilesystemLocation->parent_path() / "WarpedGeometry";
+                if (not std::filesystem::exists(warpedGeometryDir)) {
+                    std::filesystem::create_directories(warpedGeometryDir);
+                }
+
+                // Export `InMemoryMesh`es to disk (#1003)
+                for (const InMemoryMesh& mesh : scaled->getModel().getComponentList<InMemoryMesh>()) {
+                    // Figure out output file name.
+                    const OpenSim::Mesh& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
+                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
+
+                    // Write warped mesh data to disk in an OBJ format.
+                    {
+                        std::ofstream objStream{warpedMeshAbsPath, std::ios::trunc};
+                        objStream.exceptions(std::ios::badbit | std::ios::failbit);
+                        write_as_obj(objStream, mesh.getOscMesh(), ObjMetadata{"osc-model-warper"});
+                    }
+
+                    // Overwrite the `InMemoryMesh` in `copy`
+                    InMemoryMesh& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
+                    auto newMesh = std::make_unique<OpenSim::Mesh>();
+                    newMesh->set_mesh_file(warpedMeshAbsPath.string());
+                    OverwriteGeometry(*copy, copyMesh, std::move(newMesh));
+                }
+            }
+
+            auto editor = std::make_unique<ModelEditorTab>(*parent_, std::move(copy));
             App::post_event<OpenTabEvent>(*parent_, std::move(editor));
         }
 

@@ -22,6 +22,8 @@ namespace osc::mow
         {
             // do nothing: OpenSim Creator will detect `ICustomDecorationDecorator` and use that
         }
+
+        const Mesh& getOscMesh() const { return m_OscMesh; }
     private:
         void implGenerateCustomDecorations(const SimTK::State&, const std::function<void(SceneDecoration&&)>&) const override;
 
