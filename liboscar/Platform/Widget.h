@@ -17,7 +17,7 @@ namespace osc
 {
     class Widget {
     public:
-        Widget();
+        Widget(Widget* parent = nullptr);
         virtual ~Widget() noexcept;
 
         // Returns `impl_on_event(e)`.
