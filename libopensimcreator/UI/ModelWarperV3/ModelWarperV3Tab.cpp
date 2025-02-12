@@ -223,7 +223,7 @@ namespace
             const ThinPlateSplineCommonInputs& tpsInputs)
         {
             const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
-            const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state) * parentFrame.getTransformInGround(state);
+            const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state).invert() * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
             const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
