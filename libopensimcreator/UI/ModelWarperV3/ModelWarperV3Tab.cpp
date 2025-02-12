@@ -7,6 +7,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanel.h>
@@ -1395,6 +1396,10 @@ namespace
     class ModelWarperV3UIState final {
     public:
 
+        explicit ModelWarperV3UIState(Widget* parent) :
+            parent_{parent}
+        {}
+
         // Should be regularly called by the UI once per frame.
         void on_tick()
         {
@@ -1499,11 +1504,27 @@ namespace
             }
         }
 
-        bool canScaleModel() const
+        bool canExportWarpedModel() const
         {
             return not m_ScalingErrorMessage.has_value();
         }
 
+        void exportWarpedModelToModelEditor()
+        {
+            if (not canExportWarpedModel()) {
+                return;  // can't warp
+            }
+
+            auto scalingResult = scaledModelOrDocumentValidationMessages();
+            if (not std::holds_alternative<std::shared_ptr<IModelStatePair>>(scalingResult)) {
+                return;  // wasn't warped
+            }
+
+            std::shared_ptr<IModelStatePair> scaled = std::get<std::shared_ptr<IModelStatePair>>(scalingResult);
+            // TODO: `setShouldWriteWarpedMeshesToDisk` as a warp option?
+            auto editor = std::make_unique<ModelEditorTab>(*parent_, scaled->getModel());
+            App::post_event<OpenTabEvent>(*parent_, std::move(editor));
+        }
 
         // camera stuff
         bool isCameraLinked() const { return m_LinkCameras; }
@@ -1618,6 +1639,8 @@ namespace
                 m_ScalingErrorMessage = ex.what();
             }
         }
+
+        Widget* parent_ = nullptr;
 
         std::shared_ptr<UndoRedo<ScalingState>> m_ScalingState = std::make_shared<UndoRedo<ScalingState>>();
 
@@ -1888,13 +1911,13 @@ namespace
                 ui::push_id(id++);
                 ui::same_line();
                 bool disabled = false;
-                if (not m_State->canScaleModel()) {
+                if (not m_State->canExportWarpedModel()) {
                     ui::begin_disabled();
                     disabled = true;
                 }
                 ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
                 if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
-                    log_info("Model exporting TODO (#1003)");
+                    m_State->exportWarpedModelToModelEditor();
                 }
                 ui::pop_style_color();
                 if (disabled) {
@@ -2195,7 +2218,7 @@ public:
     }
 
 private:
-    std::shared_ptr<ModelWarperV3UIState> m_State = std::make_shared<ModelWarperV3UIState>();
+    std::shared_ptr<ModelWarperV3UIState> m_State = std::make_shared<ModelWarperV3UIState>(&this->owner());
 
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     WindowMenu m_WindowMenu{m_PanelManager};
