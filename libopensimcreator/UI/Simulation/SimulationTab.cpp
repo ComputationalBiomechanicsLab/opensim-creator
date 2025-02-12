@@ -172,7 +172,7 @@ public:
                     },
                 };
 
-                return std::make_shared<ModelViewerPanel>(panelName, std::move(params));
+                return std::make_shared<ModelViewerPanel>(&this->owner(), panelName, std::move(params));
             },
             1  // by default, open one viewer
         );

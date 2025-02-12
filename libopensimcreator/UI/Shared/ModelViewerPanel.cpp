@@ -316,11 +316,12 @@ public:
 
     explicit Impl(
         ModelViewerPanel& owner_,
+        Widget* parent_,
         std::string_view panelName_,
         ModelViewerPanelParameters parameters_,
         ModelViewerPanelFlags flags_) :
 
-        PanelPrivate{owner_, nullptr, panelName_},
+        PanelPrivate{owner_, parent_, panelName_},
         m_Parameters{std::move(parameters_)},
         m_State{name(), flags_}
     {
@@ -571,11 +572,12 @@ private:
 
 
 osc::ModelViewerPanel::ModelViewerPanel(
+    Widget* parent_,
     std::string_view panelName_,
     const ModelViewerPanelParameters& parameters_,
     ModelViewerPanelFlags flags_) :
 
-    Panel{std::make_unique<Impl>(*this, panelName_, parameters_, flags_)}
+    Panel{std::make_unique<Impl>(*this, parent_, panelName_, parameters_, flags_)}
 {}
 bool osc::ModelViewerPanel::isMousedOver() const { return private_data().isMousedOver(); }
 bool osc::ModelViewerPanel::isLeftClicked() const { return private_data().isLeftClicked(); }

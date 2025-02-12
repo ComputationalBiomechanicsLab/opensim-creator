@@ -1018,7 +1018,7 @@ public:
                 };
                 SetupDefault3DViewportRenderingParams(panelParams.updRenderParams());
 
-                return std::make_shared<ModelViewerPanel>(panelName, panelParams);
+                return std::make_shared<ModelViewerPanel>(&this->owner(), panelName, panelParams);
             },
             1
         );

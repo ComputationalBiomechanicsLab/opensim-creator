@@ -1499,6 +1499,11 @@ namespace
             }
         }
 
+        bool canScaleModel() const
+        {
+            return not m_ScalingErrorMessage.has_value();
+        }
+
 
         // camera stuff
         bool isCameraLinked() const { return m_LinkCameras; }
@@ -1641,8 +1646,12 @@ namespace
     // source model 3D viewer
     class ModelWarperV3SourceModelViewerPanel final : public ModelViewerPanel {
     public:
-        ModelWarperV3SourceModelViewerPanel(std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
-            ModelViewerPanel{label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
+        explicit ModelWarperV3SourceModelViewerPanel(
+            Widget* parent,
+            std::string_view label,
+            std::shared_ptr<ModelWarperV3UIState> state) :
+
+            ModelViewerPanel{parent, label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
             m_State{std::move(state)}
         {}
 
@@ -1684,8 +1693,12 @@ namespace
     // result model 3D viewer
     class ModelWarperV3ResultModelViewerPanel final : public ModelViewerPanel {
     public:
-        ModelWarperV3ResultModelViewerPanel(std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
-            ModelViewerPanel{label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
+        ModelWarperV3ResultModelViewerPanel(
+            Widget* parent,
+            std::string_view label,
+            std::shared_ptr<ModelWarperV3UIState> state) :
+
+            ModelViewerPanel{parent, label, ModelViewerPanelParameters{state->sourceModel()}, ModelViewerPanelFlag::NoHittest},
             m_State{std::move(state)}
         {}
 
@@ -1784,22 +1797,39 @@ namespace
         std::shared_ptr<ModelWarperV3UIState> m_State;
     };
 
-    // main toolbar
-    class ModelWarperV3Toolbar final {
+    class WarpedModelExporterPopup final : public StandardPopup {
     public:
-        ModelWarperV3Toolbar(std::string_view label, std::shared_ptr<ModelWarperV3UIState> state) :
+        explicit WarpedModelExporterPopup() :
+            StandardPopup{"hello, popup world!"}
+        {}
+
+    private:
+        void impl_draw_content() final
+        {
+            ui::draw_text("hello, popup content!");
+        }
+    };
+
+    // main toolbar
+    class ModelWarperV3Toolbar final : public Widget {
+    public:
+        explicit ModelWarperV3Toolbar(
+            Widget* parent,
+            std::string_view label,
+            std::shared_ptr<ModelWarperV3UIState> state) :
+            Widget{parent},
             m_Label{label},
             m_State{std::move(state)}
         {}
-
-        void on_draw()
+    private:
+        void impl_on_draw() final
         {
             if (BeginToolbar(m_Label)) {
                 draw_content();
             }
             ui::end_panel();
         }
-    private:
+
         void draw_content()
         {
             int id = 0;
@@ -1853,6 +1883,27 @@ namespace
             ui::draw_vertical_separator();
             ui::pop_id();
 
+            // Draw green "Warp Model" button
+            {
+                ui::push_id(id++);
+                ui::same_line();
+                bool disabled = false;
+                if (not m_State->canScaleModel()) {
+                    ui::begin_disabled();
+                    disabled = true;
+                }
+                ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
+                if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
+                    log_info("Model exporting TODO (#1003)");
+                }
+                ui::pop_style_color();
+                if (disabled) {
+                    ui::end_disabled();
+                }
+                ui::same_line();
+                ui::draw_vertical_separator();
+                ui::pop_id();
+            }
 
             ui::push_id(id++);
             ui::same_line();
@@ -1876,8 +1927,12 @@ namespace
     // control panel (design, set parameters, etc.)
     class ModelWarperV3ControlPanel final : public Panel {
     public:
-        ModelWarperV3ControlPanel(std::string_view panelName, std::shared_ptr<ModelWarperV3UIState> state) :
-            Panel{nullptr, panelName},
+        explicit ModelWarperV3ControlPanel(
+            Widget* parent,
+            std::string_view panelName,
+            std::shared_ptr<ModelWarperV3UIState> state) :
+
+            Panel{parent, panelName},
             m_State{std::move(state)}
         {}
 
@@ -2045,7 +2100,7 @@ class osc::ModelWarperV3Tab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "OpenSim/ModelWarperV3"; }
 
-    Impl(Tab& owner, Widget* parent) :
+    explicit Impl(Tab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
     {
         // Ensure `ModelWarperV3Document` can be loaded from the filesystem via OpenSim.
@@ -2057,17 +2112,17 @@ public:
             return true;
         }(AllScalingStepTypes{});
 
-        m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Control Panel", [this, state = m_State](std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3ControlPanel>(panelName, state);
+            return std::make_shared<ModelWarperV3ControlPanel>(&this->owner(), panelName, state);
         });
-        m_PanelManager->register_toggleable_panel("Source Model", [state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Source Model", [this, state = m_State](std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3SourceModelViewerPanel>(panelName, state);
+            return std::make_shared<ModelWarperV3SourceModelViewerPanel>(&this->owner(), panelName, state);
         });
-        m_PanelManager->register_toggleable_panel("Result Model", [state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Result Model", [this, state = m_State](std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3ResultModelViewerPanel>(panelName, state);
+            return std::make_shared<ModelWarperV3ResultModelViewerPanel>(&this->owner(), panelName, state);
         });
         m_PanelManager->register_toggleable_panel("Log", [](std::string_view panelName)
         {
@@ -2145,7 +2200,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     WindowMenu m_WindowMenu{m_PanelManager};
     MainMenuAboutTab m_AboutTab;
-    ModelWarperV3Toolbar m_Toolbar{"##ModelWarperV3Toolbar", m_State};
+    ModelWarperV3Toolbar m_Toolbar{&this->owner(), "##ModelWarperV3Toolbar", m_State};
 
     bool m_ExceptionThrownLastFrame = false;
 };

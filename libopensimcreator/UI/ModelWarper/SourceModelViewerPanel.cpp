@@ -11,10 +11,11 @@
 using namespace osc;
 
 osc::mow::SourceModelViewerPanel::SourceModelViewerPanel(
+    Widget* parent_,
     std::string_view panelName_,
     std::shared_ptr<UIState> state_) :
 
-    ModelViewerPanel{panelName_, ModelViewerPanelParameters{state_->modelstatePtr()}, ModelViewerPanelFlag::NoHittest},
+    ModelViewerPanel{parent_, panelName_, ModelViewerPanelParameters{state_->modelstatePtr()}, ModelViewerPanelFlag::NoHittest},
     m_State{std::move(state_)}
 {}
 

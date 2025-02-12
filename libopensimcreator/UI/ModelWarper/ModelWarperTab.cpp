@@ -39,17 +39,17 @@ public:
 
         m_PanelManager->register_toggleable_panel(
             "Source Model",
-            [state = m_State](std::string_view panelName)
+            [this, state = m_State](std::string_view panelName)
             {
-                return std::make_shared<SourceModelViewerPanel>(panelName, state);
+                return std::make_shared<SourceModelViewerPanel>(&this->owner(), panelName, state);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Result Model",
-            [state = m_State](std::string_view panelName)
+            [this, state = m_State](std::string_view panelName)
             {
-                return std::make_shared<ResultModelViewerPanel>(panelName, state);
+                return std::make_shared<ResultModelViewerPanel>(&this->owner(), panelName, state);
             }
         );
 

@@ -164,7 +164,7 @@ public:
                 };
                 const ModelViewerPanelParameters panelParams{m_Model, onRightClick};
 
-                return std::make_shared<ModelViewerPanel>(panelName, panelParams);
+                return std::make_shared<ModelViewerPanel>(&this->owner(), panelName, panelParams);
             },
             1  // have one viewer open at the start
         );
