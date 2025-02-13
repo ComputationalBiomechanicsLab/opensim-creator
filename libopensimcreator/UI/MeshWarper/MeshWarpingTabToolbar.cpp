@@ -6,6 +6,8 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
 #include <liboscar/Platform/IconCodepoints.h>
+#include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Widgets/RedoButton.h>
 #include <liboscar/UI/Widgets/UndoButton.h>
@@ -15,19 +17,23 @@
 #include <string_view>
 #include <utility>
 
-class osc::MeshWarpingTabToolbar::Impl final {
+class osc::MeshWarpingTabToolbar::Impl final : public WidgetPrivate {
 public:
-    Impl(
+    explicit Impl(
+        Widget& owner,
+        Widget* parent,
         std::string_view label,
         std::shared_ptr<MeshWarpingTabSharedState> tabState_) :
 
-        m_Label{label},
+        WidgetPrivate{owner, parent},
         m_State{std::move(tabState_)}
-    {}
+    {
+        set_name(label);
+    }
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label)) {
+        if (BeginToolbar(name())) {
             drawContent();
         }
         ui::end_panel();
@@ -149,22 +155,15 @@ private:
         }
     }
 
-    std::string m_Label;
     std::shared_ptr<MeshWarpingTabSharedState> m_State;
-    UndoButton m_UndoButton{m_State->getUndoableSharedPtr()};
-    RedoButton m_RedoButton{m_State->getUndoableSharedPtr()};
+    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr()};
+    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr()};
 };
 
 osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(
+    Widget* parent,
     std::string_view label,
     std::shared_ptr<MeshWarpingTabSharedState> sharedState) :
-    m_Impl{std::make_unique<Impl>(label, std::move(sharedState))}
+    Widget{std::make_unique<Impl>(*this, parent, label, std::move(sharedState))}
 {}
-osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(MeshWarpingTabToolbar&&) noexcept = default;
-osc::MeshWarpingTabToolbar& osc::MeshWarpingTabToolbar::operator=(MeshWarpingTabToolbar&&) noexcept = default;
-osc::MeshWarpingTabToolbar::~MeshWarpingTabToolbar() noexcept = default;
-
-void osc::MeshWarpingTabToolbar::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::MeshWarpingTabToolbar::impl_on_draw() { private_data().onDraw(); }

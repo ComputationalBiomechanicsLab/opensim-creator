@@ -67,8 +67,8 @@ class osc::LOGLCoordinateSystemsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/CoordinateSystems"; }
 
-    explicit Impl(LOGLCoordinateSystemsTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLCoordinateSystemsTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -153,13 +153,13 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
     bool show_step1_ = false;
     Transform step1_transform_;
-    PerfPanel perf_panel_;
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLCoordinateSystemsTab::id() { return Impl::static_label(); }
 
-osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget& parent) :
+osc::LOGLCoordinateSystemsTab::LOGLCoordinateSystemsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLCoordinateSystemsTab::impl_on_mount() { private_data().on_mount(); }

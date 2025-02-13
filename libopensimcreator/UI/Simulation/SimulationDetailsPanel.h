@@ -13,6 +13,7 @@ namespace osc
     class SimulationDetailsPanel final : public Panel {
     public:
         explicit SimulationDetailsPanel(
+            Widget* parent,
             std::string_view panelName,
             ISimulatorUIAPI*,
             std::shared_ptr<const Simulation>

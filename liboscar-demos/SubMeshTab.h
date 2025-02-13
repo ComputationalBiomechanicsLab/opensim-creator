@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit SubMeshTab(Widget&);
+        explicit SubMeshTab(Widget*);
 
     private:
         void impl_on_draw() final;

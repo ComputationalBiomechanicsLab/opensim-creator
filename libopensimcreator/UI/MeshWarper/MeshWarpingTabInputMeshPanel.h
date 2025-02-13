@@ -52,12 +52,13 @@ namespace osc
     // an "input" panel (i.e. source or destination mesh, before warping)
     class MeshWarpingTabInputMeshPanel final : public MeshWarpingTabPanel {
     public:
-        MeshWarpingTabInputMeshPanel(
+        explicit MeshWarpingTabInputMeshPanel(
+            Widget* parent,
             std::string_view panelName_,
             std::shared_ptr<MeshWarpingTabSharedState> state_,
             TPSDocumentInputIdentifier documentIdentifier_) :
 
-            MeshWarpingTabPanel{nullptr, panelName_},
+            MeshWarpingTabPanel{parent, panelName_},
             m_State{std::move(state_)},
             m_DocumentIdentifier{documentIdentifier_}
         {

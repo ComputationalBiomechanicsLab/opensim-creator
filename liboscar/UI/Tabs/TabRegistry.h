@@ -17,7 +17,7 @@ namespace osc
     template<typename T>
     concept StandardRegisterableTab =
         std::derived_from<T, Tab> and
-        std::constructible_from<T, Widget&> and
+        std::constructible_from<T, Widget*> and
         requires (T) {
             { T::id() } -> std::same_as<CStringView>;
         };
@@ -44,7 +44,7 @@ namespace osc
         {
             register_tab(TabRegistryEntry{
                 T::id(),
-                [](Widget& parent) { return std::make_unique<T>(parent); },
+                [](Widget* parent) { return std::make_unique<T>(parent); },
             });
         }
 

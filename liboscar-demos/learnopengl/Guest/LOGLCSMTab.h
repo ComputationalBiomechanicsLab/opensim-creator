@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLCSMTab(Widget&);
+        explicit LOGLCSMTab(Widget*);
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;

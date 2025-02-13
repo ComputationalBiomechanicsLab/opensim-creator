@@ -12,11 +12,12 @@ namespace osc::mow
 {
     class ChecklistPanel final : public Panel {
     public:
-        ChecklistPanel(
+        explicit ChecklistPanel(
+            Widget* parent,
             std::string_view panelName_,
             std::shared_ptr<UIState> state_) :
 
-            Panel{nullptr, panelName_},
+            Panel{parent, panelName_},
             m_State{std::move(state_)}
         {}
     private:

@@ -25,39 +25,39 @@ class osc::mow::ModelWarperTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "Model Warper (" OSC_ICON_MAGIC " experimental)"; }
 
-    explicit Impl(ModelWarperTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()},
+    explicit Impl(ModelWarperTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()},
         m_State{std::make_shared<UIState>(parent)}
     {
         m_PanelManager->register_toggleable_panel(
             "Checklist",
-            [state = m_State](std::string_view panelName)
+            [state = m_State](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<ChecklistPanel>(panelName, state);
+                return std::make_shared<ChecklistPanel>(parent, panelName, state);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Source Model",
-            [this, state = m_State](std::string_view panelName)
+            [state = m_State](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<SourceModelViewerPanel>(&this->owner(), panelName, state);
+                return std::make_shared<SourceModelViewerPanel>(parent, panelName, state);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Result Model",
-            [this, state = m_State](std::string_view panelName)
+            [state = m_State](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<ResultModelViewerPanel>(&this->owner(), panelName, state);
+                return std::make_shared<ResultModelViewerPanel>(parent, panelName, state);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             }
         );
 
@@ -84,7 +84,7 @@ public:
 
     void on_draw_main_menu()
     {
-        m_MainMenu.onDraw();
+        m_MainMenu.on_draw();
     }
 
     void on_draw()
@@ -98,16 +98,16 @@ public:
 
 private:
     std::shared_ptr<UIState> m_State;
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
     PopupManager m_PopupManager;
-    MainMenu m_MainMenu{m_State, m_PanelManager};
+    MainMenu m_MainMenu{&owner(), m_State, m_PanelManager};
     Toolbar m_Toolbar{"##ModelWarperToolbar", m_State};
 };
 
 
 CStringView osc::mow::ModelWarperTab::id() { return Impl::static_label(); }
 
-osc::mow::ModelWarperTab::ModelWarperTab(Widget& parent) :
+osc::mow::ModelWarperTab::ModelWarperTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::mow::ModelWarperTab::impl_on_mount() { private_data().on_mount(); }

@@ -11,7 +11,7 @@ namespace osc
 {
     class IconWithMenu final {
     public:
-        IconWithMenu(
+        explicit IconWithMenu(
             Icon icon,
             CStringView title,
             CStringView description,

@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MeshHittestTab(Widget&);
+        explicit MeshHittestTab(Widget*);
 
     private:
         void impl_on_tick() final;

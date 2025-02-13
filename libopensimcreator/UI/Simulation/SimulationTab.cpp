@@ -72,26 +72,26 @@ class osc::SimulationTab::Impl final :
     public ISimulatorUIAPI {
 public:
 
-    Impl(
+    explicit Impl(
         SimulationTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         std::shared_ptr<Simulation> simulation_) :
 
-        TabPrivate{owner, &parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
+        TabPrivate{owner, parent_, OSC_ICON_PLAY " Simulation_" + std::to_string(GetNextSimulationNumber())},
         m_Simulation{std::move(simulation_)}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_ShownModelState,
-                    [this](const OpenSim::ComponentPath& p)
+                    [this, parent](const OpenSim::ComponentPath& p)
                     {
                         auto popup = std::make_shared<ComponentContextMenu>(
+                            parent,
                             "##componentcontextmenu",
-                            this->owner(),
                             m_ShownModelState,
                             p.toString(),
                             ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
@@ -104,37 +104,38 @@ public:
         );
         m_PanelManager->register_toggleable_panel(
             "Properties",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_ShownModelState);
+                return std::make_shared<PropertiesPanel>(parent, panelName, m_ShownModelState);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Coordinates",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, *parent(), m_ShownModelState);
+                return std::make_shared<CoordinateEditorPanel>(parent, panelName, m_ShownModelState);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Performance",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<PerfPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Output Watches",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<OutputPlotsPanel>(
+                    parent,
                     panelName,
                     m_Simulation->tryUpdEnvironment(),
                     this
@@ -143,9 +144,10 @@ public:
         );
         m_PanelManager->register_toggleable_panel(
             "Simulation Details",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<SimulationDetailsPanel>(
+                    parent,
                     panelName,
                     this,
                     m_Simulation
@@ -154,15 +156,15 @@ public:
         );
         m_PanelManager->register_spawnable_panel(
             "viewer",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 ModelViewerPanelParameters params{
                     m_ShownModelState,
-                    [this, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
+                    [this, parent, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
                     {
                         auto popup = std::make_shared<ComponentContextMenu>(
+                            parent,
                             menuName,
-                            this->owner(),
                             m_ShownModelState,
                             OpenSim::ComponentPath{e.componentAbsPathOrEmpty},
                             ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
@@ -172,7 +174,7 @@ public:
                     },
                 };
 
-                return std::make_shared<ModelViewerPanel>(&this->owner(), panelName, std::move(params));
+                return std::make_shared<ModelViewerPanel>(parent, panelName, std::move(params));
             },
             1  // by default, open one viewer
         );
@@ -233,8 +235,8 @@ public:
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(
+                &this->owner(),
                 "##componentcontextmenu",
-                this->owner(),
                 m_ShownModelState,
                 contextMenuEvent->path().toString(),
                 ComponentContextMenuFlag::NoPlotVsCoordinate  // #922: shouldn't open in simulator screen
@@ -445,7 +447,7 @@ private:
             //
             // this might be less necessary once the integrator correctly reports errors to
             // this UI panel (#625)
-            LogViewerPanel p{"Log"};
+            LogViewerPanel p{&owner(), "Log"};
             p.on_draw();
         }
     }
@@ -466,7 +468,7 @@ private:
     std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
 
     // manager for toggleable and spawnable UI panels
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
 
     // non-toggleable UI panels/menus/toolbars
     SimulationTabMainMenu m_MainMenu{&owner(), m_Simulation, m_PanelManager};
@@ -479,7 +481,7 @@ private:
 
 
 osc::SimulationTab::SimulationTab(
-    Widget& parent_,
+    Widget* parent_,
     std::shared_ptr<Simulation> simulation_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(simulation_))}

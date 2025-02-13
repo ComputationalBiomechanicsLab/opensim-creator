@@ -13,6 +13,7 @@ namespace osc
     class OutputPlotsPanel final : public Panel {
     public:
         explicit OutputPlotsPanel(
+            Widget* parent,
             std::string_view panelName,
             std::shared_ptr<Environment>,
             ISimulatorUIAPI*

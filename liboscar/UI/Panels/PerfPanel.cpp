@@ -18,8 +18,8 @@ namespace rgs = std::ranges;
 
 class osc::PerfPanel::Impl final : public PanelPrivate {
 public:
-    explicit Impl(PerfPanel& owner, std::string_view panel_name) :
-        PanelPrivate{owner, nullptr, panel_name}
+    explicit Impl(PerfPanel& owner, Widget* parent, std::string_view panel_name) :
+        PanelPrivate{owner, parent, panel_name}
     {}
 
     void draw_content()
@@ -99,7 +99,7 @@ private:
     bool is_paused_ = false;
 };
 
-osc::PerfPanel::PerfPanel(std::string_view panel_name) :
-    Panel{std::make_unique<Impl>(*this, panel_name)}
+osc::PerfPanel::PerfPanel(Widget* parent, std::string_view panel_name) :
+    Panel{std::make_unique<Impl>(*this, parent, panel_name)}
 {}
 void osc::PerfPanel::impl_draw_content() { private_data().draw_content(); }

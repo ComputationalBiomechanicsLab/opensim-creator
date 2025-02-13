@@ -12,8 +12,8 @@ namespace osc
 {
     class SimulationTab final : public Tab {
     public:
-        SimulationTab(
-            Widget&,
+        explicit SimulationTab(
+            Widget*,
             std::shared_ptr<Simulation>
         );
 

@@ -6,13 +6,15 @@
 
 #include <memory>
 
-osc::RedoButton::RedoButton(std::shared_ptr<UndoRedoBase> undo_redo) :
+osc::RedoButton::RedoButton(
+    Widget* parent,
+    std::shared_ptr<UndoRedoBase> undo_redo) :
+
+    Widget{parent},
     undo_redo_{std::move(undo_redo)}
 {}
 
-osc::RedoButton::~RedoButton() noexcept = default;
-
-void osc::RedoButton::on_draw()
+void osc::RedoButton::impl_on_draw()
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 

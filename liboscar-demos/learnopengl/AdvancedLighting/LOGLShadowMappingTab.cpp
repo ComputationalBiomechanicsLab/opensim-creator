@@ -66,8 +66,8 @@ class osc::LOGLShadowMappingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/ShadowMapping"; }
 
-    explicit Impl(LOGLShadowMappingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLShadowMappingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -189,7 +189,7 @@ private:
 
 CStringView osc::LOGLShadowMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLShadowMappingTab::LOGLShadowMappingTab(Widget& parent) :
+osc::LOGLShadowMappingTab::LOGLShadowMappingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLShadowMappingTab::impl_on_mount() { private_data().on_mount(); }

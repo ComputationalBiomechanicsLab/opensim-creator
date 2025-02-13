@@ -90,6 +90,6 @@ void osc::fd::ActionExportFrameDefinitionSceneModelToEditorTab(
     Widget& parent,
     const OpenSim::Model& model)
 {
-    auto tab = std::make_unique<ModelEditorTab>(parent, MakeUndoableModelFromSceneModel(model));
+    auto tab = std::make_unique<ModelEditorTab>(&parent, MakeUndoableModelFromSceneModel(model));
     App::post_event<OpenTabEvent>(parent, std::move(tab));
 }

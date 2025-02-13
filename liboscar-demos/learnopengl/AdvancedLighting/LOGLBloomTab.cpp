@@ -94,8 +94,8 @@ class osc::LOGLBloomTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/Bloom"; }
 
-    explicit Impl(LOGLBloomTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLBloomTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {
         scene_material_.set_array("uLightPositions", c_scene_light_positions);
         scene_material_.set_array("uLightColors", get_scene_light_colors());
@@ -345,7 +345,7 @@ private:
 
 CStringView osc::LOGLBloomTab::id() { return Impl::static_label(); }
 
-osc::LOGLBloomTab::LOGLBloomTab(Widget& parent) :
+osc::LOGLBloomTab::LOGLBloomTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLBloomTab::impl_on_mount() { private_data().on_mount(); }

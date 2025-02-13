@@ -73,8 +73,8 @@ class osc::LOGLPointShadowsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/PointShadows"; }
 
-    explicit Impl(LOGLPointShadowsTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLPointShadowsTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -214,13 +214,13 @@ private:
     bool soft_shadows_ = true;
     bool use_soft_shadows_ = false;
 
-    PerfPanel perf_panel_;
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLPointShadowsTab::id() { return Impl::static_label(); }
 
-osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget& parent) :
+osc::LOGLPointShadowsTab::LOGLPointShadowsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLPointShadowsTab::impl_on_mount() { private_data().on_mount(); }

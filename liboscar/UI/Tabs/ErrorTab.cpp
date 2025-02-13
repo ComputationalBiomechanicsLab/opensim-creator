@@ -61,7 +61,7 @@ public:
 
 private:
     std::string error_message_;
-    LogViewer log_viewer_;
+    LogViewer log_viewer_{&owner()};
 };
 
 osc::ErrorTab::ErrorTab(Widget& parent, const std::exception& exception) :

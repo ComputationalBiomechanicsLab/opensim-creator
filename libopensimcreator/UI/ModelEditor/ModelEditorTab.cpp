@@ -64,22 +64,22 @@ using namespace osc;
 
 class osc::ModelEditorTab::Impl final : public TabPrivate {
 public:
-    Impl(
+    explicit Impl(
         ModelEditorTab& owner,
-        Widget& parent_) :
+        Widget* parent_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>()}
     {}
 
-    Impl(
+    explicit Impl(
         ModelEditorTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         const OpenSim::Model& model_) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(model_)}
     {}
 
-    Impl(
+    explicit Impl(
         ModelEditorTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         std::unique_ptr<OpenSim::Model> model_,
         float fixupScaleFactor) :
         Impl{owner, parent_, std::make_unique<UndoableModelStatePair>(std::move(model_))}
@@ -87,26 +87,26 @@ public:
         m_Model->setFixupScaleFactor(fixupScaleFactor);
     }
 
-    Impl(
+    explicit Impl(
         ModelEditorTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         std::unique_ptr<UndoableModelStatePair> model_) :
 
-        TabPrivate{owner, &parent_, "ModelEditorTab"},
+        TabPrivate{owner, parent_, "ModelEditorTab"},
         m_Model{std::move(model_)}
     {
         // register all panels that the editor tab supports
 
         m_PanelManager->register_toggleable_panel(
             "Navigator",
-            [this](std::string_view panelName)
+            [this](Widget*, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_Model,
                     [this](const OpenSim::ComponentPath& p)
                     {
-                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), m_Model, p);
+                        auto popup = std::make_unique<ComponentContextMenu>(&this->owner(), "##componentcontextmenu", m_Model, p);
                         App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                     }
                 );
@@ -114,53 +114,53 @@ public:
         );
         m_PanelManager->register_toggleable_panel(
             "Properties",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_Model);
+                return std::make_shared<PropertiesPanel>(parent, panelName, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Coordinates",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, this->owner(), m_Model);
+                return std::make_shared<CoordinateEditorPanel>(parent, panelName, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Performance",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<PerfPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Output Watches",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<OutputWatchesPanel>(panelName, m_Model);
+                return std::make_shared<OutputWatchesPanel>(parent, panelName, m_Model);
             }
         );
         m_PanelManager->register_spawnable_panel(
             "viewer",
-            [this](std::string_view panelName)
+            [this](Widget*, std::string_view panelName)
             {
-                auto onRightClick = [model = m_Model, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
+                auto onRightClick = [this, model = m_Model, menuName = std::string{panelName} + "_contextmenu"](const ModelViewerPanelRightClickEvent& e)
                 {
                     auto popup = std::make_unique<ComponentContextMenu>(
+                        &this->owner(),
                         menuName,
-                        editorAPI->owner(),
                         model,
                         e.componentAbsPathOrEmpty
                     );
 
-                    App::post_event<OpenPopupEvent>(editorAPI->owner(), std::move(popup));
+                    App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
                 };
                 const ModelViewerPanelParameters panelParams{m_Model, onRightClick};
 
@@ -170,9 +170,9 @@ public:
         );
         m_PanelManager->register_spawnable_panel(
             "muscleplot",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<ModelMusclePlotPanel>(this->owner(), m_Model, panelName);
+                return std::make_shared<ModelMusclePlotPanel>(parent, m_Model, panelName);
             },
             0  // no muscle plots open at the start
         );
@@ -228,8 +228,8 @@ public:
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(
+                &this->owner(),
                 "##componentcontextmenu",
-                this->owner(),
                 m_Model,
                 contextMenuEvent->path()
             );
@@ -242,7 +242,7 @@ public:
             m_PanelManager->push_dynamic_panel(
                 "muscleplot",
                 std::make_shared<ModelMusclePlotPanel>(
-                    owner(),
+                    &owner(),
                     m_Model,
                     name,
                     addMusclePlotEvent->getCoordinateAbsPath(),
@@ -431,7 +431,7 @@ private:
     };
 
     // manager for toggleable and spawnable UI panels
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
 
     // non-toggleable UI panels/menus/toolbars
     ModelEditorMainMenu m_MainMenu{&owner(), m_PanelManager, m_Model};
@@ -446,25 +446,25 @@ private:
 };
 
 osc::ModelEditorTab::ModelEditorTab(
-    Widget& parent_) :
+    Widget* parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    Widget& parent_,
+    Widget* parent_,
     const OpenSim::Model& model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, model_)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    Widget& parent_,
+    Widget* parent_,
     std::unique_ptr<OpenSim::Model> model_,
     float fixupScaleFactor) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_), fixupScaleFactor)}
 {}
 osc::ModelEditorTab::ModelEditorTab(
-    Widget& parent_,
+    Widget* parent_,
     std::unique_ptr<UndoableModelStatePair> model_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}

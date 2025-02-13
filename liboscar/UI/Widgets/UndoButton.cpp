@@ -1,18 +1,19 @@
 #include "UndoButton.h"
 
 #include <liboscar/Platform/IconCodepoints.h>
+#include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/UndoRedo.h>
 
 #include <memory>
+#include <utility>
 
-osc::UndoButton::UndoButton(std::shared_ptr<UndoRedoBase> undo_redo) :
+osc::UndoButton::UndoButton(Widget* parent, std::shared_ptr<UndoRedoBase> undo_redo) :
+    Widget{parent},
     undo_redo_{std::move(undo_redo)}
 {}
 
-osc::UndoButton::~UndoButton() noexcept = default;
-
-void osc::UndoButton::on_draw()
+void osc::UndoButton::impl_on_draw()
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
 

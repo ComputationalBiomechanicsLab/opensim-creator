@@ -55,8 +55,8 @@ class osc::MeshGenTestTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/MeshGenTest"; }
 
-    explicit Impl(MeshGenTestTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(MeshGenTestTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {
         camera_.radius = 5.0f;
     }
@@ -113,7 +113,7 @@ private:
 
 CStringView osc::MeshGenTestTab::id() { return Impl::static_label(); }
 
-osc::MeshGenTestTab::MeshGenTestTab(Widget& parent) :
+osc::MeshGenTestTab::MeshGenTestTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::MeshGenTestTab::impl_on_draw() { private_data().on_draw(); }

@@ -124,8 +124,8 @@ class osc::LOGLSSAOTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/SSAO"; }
 
-    explicit Impl(LOGLSSAOTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLSSAOTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -366,12 +366,12 @@ private:
         }
     } lighting_state_;
 
-    PerfPanel perf_panel_;
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLSSAOTab::id() { return Impl::static_label(); }
-osc::LOGLSSAOTab::LOGLSSAOTab(Widget& parent) :
+osc::LOGLSSAOTab::LOGLSSAOTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLSSAOTab::impl_on_mount() { private_data().on_mount(); }

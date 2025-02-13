@@ -26,11 +26,12 @@ class osc::SimulationDetailsPanel::Impl final : public PanelPrivate {
 public:
     explicit Impl(
         SimulationDetailsPanel& owner,
+        Widget* parent,
         std::string_view panelName,
         ISimulatorUIAPI* simulatorUIAPI,
         std::shared_ptr<const Simulation> simulation) :
 
-        PanelPrivate{owner, nullptr, panelName},
+        PanelPrivate{owner, parent, panelName},
         m_SimulatorUIAPI{simulatorUIAPI},
         m_Simulation{std::move(simulation)}
     {}
@@ -124,10 +125,11 @@ private:
 };
 
 osc::SimulationDetailsPanel::SimulationDetailsPanel(
+    Widget* parent,
     std::string_view panelName,
     ISimulatorUIAPI* simulatorUIAPI,
     std::shared_ptr<const Simulation> simulation) :
 
-    Panel{std::make_unique<Impl>(*this, panelName, simulatorUIAPI, std::move(simulation))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName, simulatorUIAPI, std::move(simulation))}
 {}
 void osc::SimulationDetailsPanel::impl_draw_content() { private_data().draw_content(); }

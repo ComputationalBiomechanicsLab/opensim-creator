@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit CustomWidgetsTab(Widget&);
+        explicit CustomWidgetsTab(Widget*);
 
     private:
         void impl_on_draw() final;

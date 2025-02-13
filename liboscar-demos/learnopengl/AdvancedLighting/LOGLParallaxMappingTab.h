@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLParallaxMappingTab(Widget&);
+        explicit LOGLParallaxMappingTab(Widget*);
 
     private:
         void impl_on_mount() final;

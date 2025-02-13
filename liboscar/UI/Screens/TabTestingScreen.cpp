@@ -20,7 +20,7 @@ public:
     void on_mount()
     {
         ui::context::init(App::upd());
-        current_tab_ = registry_entry_.construct_tab(owner());
+        current_tab_ = registry_entry_.construct_tab(&owner());
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();
     }

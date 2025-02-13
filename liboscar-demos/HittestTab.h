@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit HittestTab(Widget&);
+        explicit HittestTab(Widget*);
 
     private:
         void impl_on_mount() final;

@@ -14,12 +14,12 @@ namespace osc
     class ModelMusclePlotPanel final : public Panel {
     public:
         explicit ModelMusclePlotPanel(
-            Widget&,
+            Widget*,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName
         );
         explicit ModelMusclePlotPanel(
-            Widget&,
+            Widget*,
             std::shared_ptr<UndoableModelStatePair>,
             std::string_view panelName,
             const OpenSim::ComponentPath& coordPath,

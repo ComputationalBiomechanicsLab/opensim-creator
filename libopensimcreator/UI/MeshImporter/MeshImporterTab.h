@@ -13,8 +13,8 @@ namespace osc::mi
     public:
         static CStringView id() { return "OpenSim/MeshImporter"; }
 
-        explicit MeshImporterTab(Widget&);
-        MeshImporterTab(Widget&, std::vector<std::filesystem::path>);
+        explicit MeshImporterTab(Widget*);
+        explicit MeshImporterTab(Widget*, std::vector<std::filesystem::path>);
 
     private:
         bool impl_is_unsaved() const final;

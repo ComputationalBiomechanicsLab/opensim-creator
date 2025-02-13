@@ -24,8 +24,8 @@ namespace osc::mow
 {
     class UIState final {
     public:
-        explicit UIState(Widget& parent) :
-            m_Parent{parent.weak_ref()}
+        explicit UIState(Widget* parent) :
+            m_Parent{parent}
         {}
 
         const OpenSim::Model& model() const { return m_Document->getModel(); }
@@ -68,7 +68,7 @@ namespace osc::mow
 
         void actionWarpModelAndOpenInModelEditor();
     private:
-        LifetimedPtr<Widget> m_Parent;
+        Widget* m_Parent;
         std::shared_ptr<WarpableModel> m_Document = std::make_shared<WarpableModel>();
         CachedModelWarper m_ModelWarper;
 

@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLPBRSpecularIrradianceTexturedTab(Widget&);
+        explicit LOGLPBRSpecularIrradianceTexturedTab(Widget*);
 
     private:
         void impl_on_mount() final;

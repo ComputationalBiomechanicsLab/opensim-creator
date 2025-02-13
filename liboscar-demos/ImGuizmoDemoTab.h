@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit ImGuizmoDemoTab(Widget&);
+        explicit ImGuizmoDemoTab(Widget*);
 
     private:
         void impl_on_draw() final;

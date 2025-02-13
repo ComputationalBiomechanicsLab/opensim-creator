@@ -10,7 +10,7 @@ namespace osc
 {
     class ErrorTab final : public Tab {
     public:
-        ErrorTab(Widget&, const std::exception&);
+        explicit ErrorTab(Widget&, const std::exception&);
 
     private:
         void impl_on_draw() final;

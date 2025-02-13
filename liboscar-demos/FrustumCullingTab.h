@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit FrustumCullingTab(Widget&);
+        explicit FrustumCullingTab(Widget*);
     private:
         void impl_on_mount() final;
         void impl_on_unmount() final;

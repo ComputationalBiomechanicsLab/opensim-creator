@@ -24,8 +24,8 @@ class osc::LOGLBasicLightingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/Lighting/BasicLighting"; }
 
-    explicit Impl(LOGLBasicLightingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLBasicLightingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -111,7 +111,7 @@ private:
 
 CStringView osc::LOGLBasicLightingTab::id() { return Impl::static_label(); }
 
-osc::LOGLBasicLightingTab::LOGLBasicLightingTab(Widget& parent) :
+osc::LOGLBasicLightingTab::LOGLBasicLightingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLBasicLightingTab::impl_on_mount() { private_data().on_mount(); }

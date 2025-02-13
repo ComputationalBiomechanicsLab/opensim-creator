@@ -51,10 +51,11 @@ public:
 
     explicit Impl(
         OutputWatchesPanel& owner,
+        Widget* parent,
         std::string_view panelName_,
         std::shared_ptr<const IModelStatePair> model_) :
 
-        PanelPrivate{owner, nullptr, panelName_},
+        PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
     {}
 
@@ -103,9 +104,10 @@ private:
 };
 
 osc::OutputWatchesPanel::OutputWatchesPanel(
+    Widget* parent,
     std::string_view panelName_,
     std::shared_ptr<const IModelStatePair> model_) :
 
-    Panel{std::make_unique<Impl>(*this, panelName_, std::move(model_))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(model_))}
 {}
 void osc::OutputWatchesPanel::impl_draw_content() { private_data().draw_content(); }

@@ -20,9 +20,9 @@ namespace osc
 
     class ComponentContextMenu final : public IPopup {
     public:
-        ComponentContextMenu(
+        explicit ComponentContextMenu(
+            Widget* parent,
             std::string_view popupName,
-            Widget& parent,
             std::shared_ptr<IModelStatePair>,
             const OpenSim::ComponentPath&,
             ComponentContextMenuFlags = {}

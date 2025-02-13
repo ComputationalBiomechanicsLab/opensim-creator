@@ -33,11 +33,12 @@ namespace osc
     // a "result" panel (i.e. after applying a warp to the source)
     class MeshWarpingTabResultMeshPanel final : public MeshWarpingTabPanel {
     public:
-        MeshWarpingTabResultMeshPanel(
+        explicit MeshWarpingTabResultMeshPanel(
+            Widget* parent,
             std::string_view panelName_,
             std::shared_ptr<MeshWarpingTabSharedState> state_) :
 
-            MeshWarpingTabPanel{nullptr, panelName_},
+            MeshWarpingTabPanel{parent, panelName_},
             m_State{std::move(state_)}
         {}
     private:

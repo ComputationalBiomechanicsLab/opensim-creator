@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLFaceCullingTab(Widget&);
+        explicit LOGLFaceCullingTab(Widget*);
 
     private:
         void impl_on_mount() final;

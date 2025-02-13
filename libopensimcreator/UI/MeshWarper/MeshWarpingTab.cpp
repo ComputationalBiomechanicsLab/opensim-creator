@@ -28,66 +28,66 @@ using namespace osc;
 class osc::MeshWarpingTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(MeshWarpingTab& owner, Widget& parent_) :
-        TabPrivate{owner, &parent_, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
-        m_Shared{std::make_shared<MeshWarpingTabSharedState>(id(), parent_, App::singleton<SceneCache>(App::resource_loader()))}
+    explicit Impl(MeshWarpingTab& owner, Widget* parent_) :
+        TabPrivate{owner, parent_, OSC_ICON_BEZIER_CURVE " Mesh Warping"},
+        m_Shared{std::make_shared<MeshWarpingTabSharedState>(id(), owner, App::singleton<SceneCache>(App::resource_loader()))}
     {
         m_PanelManager->register_toggleable_panel(
             "Source Mesh",
-            [state = m_Shared](std::string_view panelName)
+            [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Source);
+                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, TPSDocumentInputIdentifier::Source);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Destination Mesh",
-            [state = m_Shared](std::string_view panelName)
+            [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabInputMeshPanel>(panelName, state, TPSDocumentInputIdentifier::Destination);
+                return std::make_shared<MeshWarpingTabInputMeshPanel>(parent, panelName, state, TPSDocumentInputIdentifier::Destination);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "Result",
-            [state = m_Shared](std::string_view panelName)
+            [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabResultMeshPanel>(panelName, state);
+                return std::make_shared<MeshWarpingTabResultMeshPanel>(parent, panelName, state);
             }
         );
 
         m_PanelManager->register_toggleable_panel(
             "History",
-            [state = m_Shared](std::string_view panelName)
+            [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<UndoRedoPanel>(panelName, state->getUndoableSharedPtr());
+                return std::make_shared<UndoRedoPanel>(parent, panelName, state->getUndoableSharedPtr());
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         m_PanelManager->register_toggleable_panel(
             "Landmark Navigator",
-            [state = m_Shared](std::string_view panelName)
+            [state = m_Shared](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<MeshWarpingTabNavigatorPanel>(panelName, state);
+                return std::make_shared<MeshWarpingTabNavigatorPanel>(parent, panelName, state);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
 
         m_PanelManager->register_toggleable_panel(
             "Performance",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<PerfPanel>(parent, panelName);
             },
             ToggleablePanelFlags::Default - ToggleablePanelFlags::IsEnabledByDefault
         );
@@ -135,7 +135,7 @@ public:
     {
         ui::enable_dockspace_over_main_viewport();
 
-        m_TopToolbar.onDraw();
+        m_TopToolbar.on_draw();
         m_PanelManager->on_draw();
         m_StatusBar.onDraw();
         m_Shared->on_draw();
@@ -183,18 +183,18 @@ private:
     std::shared_ptr<MeshWarpingTabSharedState> m_Shared;
 
     // available/active panels that the user can toggle via the `window` menu
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
 
     // not-user-toggleable widgets
-    MeshWarpingTabMainMenu m_MainMenu{m_Shared, m_PanelManager};
-    MeshWarpingTabToolbar m_TopToolbar{"##MeshWarpingTabToolbar", m_Shared};
+    MeshWarpingTabMainMenu m_MainMenu{&owner(), m_Shared, m_PanelManager};
+    MeshWarpingTabToolbar m_TopToolbar{&owner(), "##MeshWarpingTabToolbar", m_Shared};
     MeshWarpingTabStatusBar m_StatusBar{"##MeshWarpingTabStatusBar", m_Shared};
 };
 
 
 CStringView osc::MeshWarpingTab::id() { return "OpenSim/Warping"; }
 
-osc::MeshWarpingTab::MeshWarpingTab(Widget& parent_) :
+osc::MeshWarpingTab::MeshWarpingTab(Widget* parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::MeshWarpingTab::impl_on_mount() { private_data().on_mount(); }

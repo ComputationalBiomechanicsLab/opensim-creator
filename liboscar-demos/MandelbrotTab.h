@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MandelbrotTab(Widget&);
+        explicit MandelbrotTab(Widget*);
 
     private:
         bool impl_on_event(Event&) final;

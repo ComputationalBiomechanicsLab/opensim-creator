@@ -22,10 +22,11 @@ namespace osc
     class MeshWarpingTabNavigatorPanel final : public Panel {
     public:
         MeshWarpingTabNavigatorPanel(
+            Widget* parent,
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_) :
 
-            Panel{nullptr, label_},
+            Panel{parent, label_},
             m_State{std::move(shared_)}
         {}
     private:

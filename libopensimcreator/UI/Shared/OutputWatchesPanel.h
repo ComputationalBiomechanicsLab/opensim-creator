@@ -12,6 +12,7 @@ namespace osc
     class OutputWatchesPanel final : public Panel {
     public:
         explicit OutputWatchesPanel(
+            Widget* parent,
             std::string_view panelName,
             std::shared_ptr<const IModelStatePair>
         );

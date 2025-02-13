@@ -83,19 +83,19 @@ class osc::mi::MeshImporterTab::Impl final :
 public:
     explicit Impl(
         MeshImporterTab& owner,
-        Widget& parent_) :
+        Widget* parent_) :
 
-        TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Shared{std::make_shared<MeshImporterSharedState>()}
+        TabPrivate{owner, parent_, "MeshImporterTab"},
+        m_Shared{std::make_shared<MeshImporterSharedState>(&owner)}
     {}
 
     explicit Impl(
         MeshImporterTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         std::vector<std::filesystem::path> meshPaths_) :
 
-        TabPrivate{owner, &parent_, "MeshImporterTab"},
-        m_Shared{std::make_shared<MeshImporterSharedState>(std::move(meshPaths_))}
+        TabPrivate{owner, parent_, "MeshImporterTab"},
+        m_Shared{std::make_shared<MeshImporterSharedState>(&owner, std::move(meshPaths_))}
     {}
 
     bool isUnsaved() const
@@ -162,11 +162,11 @@ public:
         // if some screen generated an OpenSim::Model, transition to the main editor
         if (m_Shared->hasOutputModel()) {
             auto tab = std::make_unique<ModelEditorTab>(
-                *parent(),
+                parent(),
                 std::move(m_Shared->updOutputModel()),
                 m_Shared->getSceneScaleFactor()
             );
-            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
+            App::post_event<OpenTabEvent>(owner(), std::move(tab));
         }
 
         set_name(m_Shared->getRecommendedTitle());
@@ -179,7 +179,7 @@ public:
 
         if (m_Shared->isNewMeshImpoterTabRequested())
         {
-            App::post_event<OpenTabEvent>(*parent(), std::make_unique<MeshImporterTab>(*parent()));
+            App::post_event<OpenTabEvent>(*parent(), std::make_unique<MeshImporterTab>(parent()));
             m_Shared->resetRequestNewMeshImporter();
         }
     }
@@ -2423,12 +2423,12 @@ private:
 
 
 osc::mi::MeshImporterTab::MeshImporterTab(
-    Widget& parent_) :
+    Widget* parent_) :
 
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 osc::mi::MeshImporterTab::MeshImporterTab(
-    Widget& parent_,
+    Widget* parent_,
     std::vector<std::filesystem::path> files_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}

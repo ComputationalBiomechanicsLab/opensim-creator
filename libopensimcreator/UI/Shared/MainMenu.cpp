@@ -148,7 +148,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
                     maybeModel->getFixupScaleFactor(),
                     maybeModel->tryUpdEnvironment()
                 });
-                auto tab = std::make_unique<SimulationTab>(*parent(), simulation);
+                auto tab = std::make_unique<SimulationTab>(parent(), simulation);
                 App::post_event<OpenTabEvent>(*parent(), std::move(tab));
             }
             catch (const std::exception& ex) {
@@ -205,13 +205,13 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
         if (parent()) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(*parent());
+            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
     if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data")) {
         if (parent()) {
-            auto tab = std::make_unique<PreviewExperimentalDataTab>(*parent());
+            auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }

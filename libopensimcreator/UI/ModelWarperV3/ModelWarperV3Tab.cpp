@@ -1573,7 +1573,7 @@ namespace
                 }
             }
 
-            auto editor = std::make_unique<ModelEditorTab>(*parent_, std::move(copy));
+            auto editor = std::make_unique<ModelEditorTab>(parent_, std::move(copy));
             App::post_event<OpenTabEvent>(*parent_, std::move(editor));
         }
 
@@ -1892,13 +1892,14 @@ namespace
             std::string_view label,
             std::shared_ptr<ModelWarperV3UIState> state) :
             Widget{parent},
-            m_Label{label},
             m_State{std::move(state)}
-        {}
+        {
+            set_name(label);
+        }
     private:
         void impl_on_draw() final
         {
-            if (BeginToolbar(m_Label)) {
+            if (BeginToolbar(name())) {
                 draw_content();
             }
             ui::end_panel();
@@ -1992,10 +1993,9 @@ namespace
             ui::pop_id();
         }
 
-        std::string m_Label;
         std::shared_ptr<ModelWarperV3UIState> m_State;
-        UndoButton m_UndoButton{m_State->getUndoRedoPtr()};
-        RedoButton m_RedoButton{m_State->getUndoRedoPtr()};
+        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr()};
+        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr()};
     };
 
     // control panel (design, set parameters, etc.)
@@ -2186,25 +2186,25 @@ public:
             return true;
         }(AllScalingStepTypes{});
 
-        m_PanelManager->register_toggleable_panel("Control Panel", [this, state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Control Panel", [state = m_State](Widget* parent, std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3ControlPanel>(&this->owner(), panelName, state);
+            return std::make_shared<ModelWarperV3ControlPanel>(parent, panelName, state);
         });
-        m_PanelManager->register_toggleable_panel("Source Model", [this, state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Source Model", [state = m_State](Widget* parent, std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3SourceModelViewerPanel>(&this->owner(), panelName, state);
+            return std::make_shared<ModelWarperV3SourceModelViewerPanel>(parent, panelName, state);
         });
-        m_PanelManager->register_toggleable_panel("Result Model", [this, state = m_State](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Result Model", [state = m_State](Widget* parent, std::string_view panelName)
         {
-            return std::make_shared<ModelWarperV3ResultModelViewerPanel>(&this->owner(), panelName, state);
+            return std::make_shared<ModelWarperV3ResultModelViewerPanel>(parent, panelName, state);
         });
-        m_PanelManager->register_toggleable_panel("Log", [](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Log", [](Widget* parent, std::string_view panelName)
         {
-            return std::make_shared<LogViewerPanel>(panelName);
+            return std::make_shared<LogViewerPanel>(parent, panelName);
         });
-        m_PanelManager->register_toggleable_panel("Performance", [](std::string_view panelName)
+        m_PanelManager->register_toggleable_panel("Performance", [](Widget* parent, std::string_view panelName)
         {
-            return std::make_shared<PerfPanel>(panelName);
+            return std::make_shared<PerfPanel>(parent, panelName);
         });
     }
 
@@ -2271,8 +2271,8 @@ public:
 private:
     std::shared_ptr<ModelWarperV3UIState> m_State = std::make_shared<ModelWarperV3UIState>(&this->owner());
 
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
-    WindowMenu m_WindowMenu{m_PanelManager};
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
+    WindowMenu m_WindowMenu{&owner(), m_PanelManager};
     MainMenuAboutTab m_AboutTab;
     ModelWarperV3Toolbar m_Toolbar{&this->owner(), "##ModelWarperV3Toolbar", m_State};
 
@@ -2281,8 +2281,8 @@ private:
 
 CStringView osc::ModelWarperV3Tab::id() { return Impl::static_label(); }
 
-osc::ModelWarperV3Tab::ModelWarperV3Tab(Widget& parent) :
-    Tab{std::make_unique<Impl>(*this, &parent)}
+osc::ModelWarperV3Tab::ModelWarperV3Tab(Widget* parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::ModelWarperV3Tab::impl_on_mount() { private_data().on_mount(); }
 void osc::ModelWarperV3Tab::impl_on_unmount() { private_data().on_unmount(); }

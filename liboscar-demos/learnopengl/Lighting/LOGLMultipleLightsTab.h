@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLMultipleLightsTab(Widget&);
+        explicit LOGLMultipleLightsTab(Widget*);
 
     private:
         void impl_on_mount() final;

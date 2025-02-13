@@ -13,8 +13,8 @@ namespace osc
     class CoordinateEditorPanel final : public Panel {
     public:
         explicit CoordinateEditorPanel(
+            Widget* parent,
             std::string_view panelName,
-            Widget& parent,
             std::shared_ptr<IModelStatePair>
         );
 

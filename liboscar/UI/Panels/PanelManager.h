@@ -10,30 +10,35 @@
 #include <string_view>
 
 namespace osc { class Panel; }
+namespace osc { class Widget; }
 
 namespace osc
 {
     // manages a collection of panels that may be toggled, disabled, spawned, etc.
     class PanelManager final {
     public:
-        PanelManager();
+        explicit PanelManager(Widget* parent);
         PanelManager(const PanelManager&) = delete;
         PanelManager(PanelManager&&) noexcept;
         PanelManager& operator=(const PanelManager&) = delete;
         PanelManager& operator=(PanelManager&&) noexcept;
         ~PanelManager() noexcept;
 
+        const Widget* parent() const;
+        Widget* parent();
+        void set_parent(Widget*);
+
         // register a panel that can be toggled on/off
         void register_toggleable_panel(
             std::string_view base_name,
-            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
             ToggleablePanelFlags flags = ToggleablePanelFlags::Default
         );
 
         // register a panel that can spawn N copies (e.g. visualizers)
         void register_spawnable_panel(
             std::string_view base_name,
-            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
             size_t num_initially_opened_panels
         );
 

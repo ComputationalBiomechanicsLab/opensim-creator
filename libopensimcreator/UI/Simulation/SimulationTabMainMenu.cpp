@@ -26,7 +26,7 @@ public:
         WidgetPrivate{owner, parent},
         m_Simulation{std::move(simulation)},
         m_MainMenuFileTab{&owner},
-        m_MainMenuWindowTab{std::move(panelManager)}
+        m_MainMenuWindowTab{&owner, std::move(panelManager)}
     {}
 
     void onDraw()

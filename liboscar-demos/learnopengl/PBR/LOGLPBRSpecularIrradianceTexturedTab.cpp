@@ -212,8 +212,8 @@ class osc::LOGLPBRSpecularIrradianceTexturedTab::Impl final : public TabPrivate 
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/PBR/SpecularIrradianceTextured"; }
 
-    explicit Impl(LOGLPBRSpecularIrradianceTexturedTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLPBRSpecularIrradianceTexturedTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -347,13 +347,13 @@ private:
 
     MouseCapturingCamera camera_ = create_camera();
 
-    PerfPanel perf_panel_;
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLPBRSpecularIrradianceTexturedTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(Widget& owner) :
+osc::LOGLPBRSpecularIrradianceTexturedTab::LOGLPBRSpecularIrradianceTexturedTab(Widget* owner) :
     Tab{std::make_unique<Impl>(*this, owner)}
 {}
 void osc::LOGLPBRSpecularIrradianceTexturedTab::impl_on_mount() { private_data().on_mount(); }

@@ -10,7 +10,7 @@ namespace osc
 {
     class IconWithoutMenu final {
     public:
-        IconWithoutMenu(
+        explicit IconWithoutMenu(
             Icon icon,
             CStringView title,
             CStringView description

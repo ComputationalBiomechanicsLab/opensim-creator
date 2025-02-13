@@ -116,13 +116,13 @@ class osc::PropertiesPanel::Impl final : public PanelPrivate {
 public:
     explicit Impl(
         PropertiesPanel& owner,
+        Widget* parent,
         std::string_view panelName,
-        Widget& parent,
         std::shared_ptr<IModelStatePair> model) :
 
-        PanelPrivate{owner, &parent, panelName},
+        PanelPrivate{owner, parent, panelName},
         m_Model{std::move(model)},
-        m_SelectionPropertiesEditor{&parent, m_Model, [model = m_Model](){ return model->getSelected(); }}
+        m_SelectionPropertiesEditor{&owner, m_Model, [model = m_Model](){ return model->getSelected(); }}
     {}
 
     void draw_content()
@@ -162,9 +162,9 @@ private:
 };
 
 osc::PropertiesPanel::PropertiesPanel(
+    Widget* parent,
     std::string_view panelName,
-    Widget& parent,
     std::shared_ptr<IModelStatePair> model) :
-    Panel{std::make_unique<Impl>(*this, panelName, parent, std::move(model))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model))}
 {}
 void osc::PropertiesPanel::impl_draw_content() { private_data().draw_content(); }

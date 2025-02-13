@@ -1,22 +1,20 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 
 namespace osc { class UndoRedoBase; }
 
 namespace osc
 {
-    class RedoButton final {
+    class RedoButton final : public Widget {
     public:
-        explicit RedoButton(std::shared_ptr<UndoRedoBase>);
-        RedoButton(const RedoButton&) = delete;
-        RedoButton(RedoButton&&) noexcept = default;
-        RedoButton& operator=(const RedoButton&) = delete;
-        RedoButton& operator=(RedoButton&&) noexcept = default;
-        ~RedoButton() noexcept;
+        explicit RedoButton(Widget* parent, std::shared_ptr<UndoRedoBase>);
 
-        void on_draw();
     private:
+        void impl_on_draw();
+
         std::shared_ptr<UndoRedoBase> undo_redo_;
     };
 }

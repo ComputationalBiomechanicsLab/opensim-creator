@@ -91,11 +91,10 @@ public:
             // add newly-loaded model to the "Recent Files" list
             App::singleton<RecentFiles>()->push_back(m_OsimPath);
 
-            // there is an existing editor state
-            //
-            // recycle it so that users can keep their running sims, local edits, etc.
-            App::post_event<OpenTabEvent>(*parent(), std::make_unique<ModelEditorTab>(*parent(), std::move(result)));
-            App::post_event<CloseTabEvent>(*parent(), id());
+            // Post relevant "loaded" events to this widget, which should
+            // propagate up to something that can handle them.
+            App::post_event<OpenTabEvent>(owner(), std::make_unique<ModelEditorTab>(&owner(), std::move(result)));
+            App::post_event<CloseTabEvent>(owner(), id());
             m_IsFinishedLoading = true;
         }
     }

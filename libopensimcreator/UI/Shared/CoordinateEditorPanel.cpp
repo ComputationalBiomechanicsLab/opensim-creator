@@ -33,11 +33,11 @@ public:
 
     explicit Impl(
         CoordinateEditorPanel& owner,
+        Widget* parent,
         std::string_view panelName_,
-        Widget& parent,
         std::shared_ptr<IModelStatePair> model_) :
 
-        PanelPrivate{owner, &parent, panelName_},
+        PanelPrivate{owner, parent, panelName_},
         m_Model{std::move(model_)}
     {}
 
@@ -169,8 +169,8 @@ private:
         }
         else if (ui::is_item_clicked(ui::MouseButton::Right)) {
             auto popup = std::make_unique<ComponentContextMenu>(
+                parent(),
                 "##componentcontextmenu",
-                *parent(),
                 m_Model,
                 GetAbsolutePath(c)
             );
@@ -258,10 +258,10 @@ private:
 };
 
 osc::CoordinateEditorPanel::CoordinateEditorPanel(
+    Widget* parent,
     std::string_view panelName,
-    Widget& parent,
     std::shared_ptr<IModelStatePair> model) :
 
-    Panel{std::make_unique<Impl>(*this, panelName, parent, std::move(model))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model))}
 {}
 void osc::CoordinateEditorPanel::impl_draw_content() { private_data().draw_content(); }

@@ -59,7 +59,7 @@ namespace
     {
         if (auto maybeRequestedTab = settings.find_value("initial_tab")) {
             if (std::optional<TabRegistryEntry> maybeEntry = tabRegistry.find_by_name(to<std::string>(*maybeRequestedTab))) {
-                return maybeEntry->construct_tab(parent);
+                return maybeEntry->construct_tab(&parent);
             }
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab).c_str());
@@ -536,11 +536,11 @@ public:
     void drawAddNewTabMenu()
     {
         if (ui::draw_menu_item(OSC_ICON_EDIT " Editor")) {
-            impl_select_tab(addTab(std::make_unique<ModelEditorTab>(owner())));
+            impl_select_tab(addTab(std::make_unique<ModelEditorTab>(&owner())));
         }
 
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Importer")) {
-            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(owner())));
+            impl_select_tab(addTab(std::make_unique<mi::MeshImporterTab>(&owner())));
         }
 
         const std::shared_ptr<const TabRegistry> tabRegistry = App::singleton<TabRegistry>();
@@ -548,7 +548,7 @@ public:
             if (ui::begin_menu("Experimental Tabs")) {
                 for (auto&& tabRegistryEntry : *tabRegistry) {
                     if (ui::draw_menu_item(tabRegistryEntry.name())) {
-                        impl_select_tab(addTab(tabRegistryEntry.construct_tab(owner())));
+                        impl_select_tab(addTab(tabRegistryEntry.construct_tab(&owner())));
                     }
                 }
                 ui::end_menu();
@@ -728,7 +728,7 @@ public:
         }
 
         if (m_MaybeScreenshotRequest.valid() and m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
-            const UID tabID = addTab(std::make_unique<ScreenshotTab>(owner(), m_MaybeScreenshotRequest.get()));
+            const UID tabID = addTab(std::make_unique<ScreenshotTab>(&owner(), m_MaybeScreenshotRequest.get()));
             impl_select_tab(tabID);
         }
     }

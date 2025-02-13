@@ -194,8 +194,8 @@ class osc::LOGLCSMTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/Guest/CSM"; }
 
-    explicit Impl(LOGLCSMTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLCSMTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {
         // setup camera
         user_camera_.set_clipping_planes({0.1f, 10.0f});
@@ -312,12 +312,12 @@ private:
     std::vector<RenderTexture> cascade_rasters_ = std::vector<RenderTexture>(3, RenderTexture{{.dimensions = {256, 256}}});
 
     // ui
-    LogViewerPanel log_viewer_;
+    LogViewerPanel log_viewer_{&owner()};
 };
 
 
 osc::CStringView osc::LOGLCSMTab::id() { return Impl::static_label(); }
-osc::LOGLCSMTab::LOGLCSMTab(Widget& parent) :
+osc::LOGLCSMTab::LOGLCSMTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLCSMTab::impl_on_mount() { private_data().on_mount(); }

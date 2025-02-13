@@ -159,8 +159,8 @@ class osc::LOGLDeferredShadingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/DeferredShading"; }
 
-    explicit Impl(LOGLDeferredShadingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLDeferredShadingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -325,7 +325,7 @@ private:
 
 CStringView osc::LOGLDeferredShadingTab::id() { return Impl::static_label(); }
 
-osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(Widget& parent) :
+osc::LOGLDeferredShadingTab::LOGLDeferredShadingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLDeferredShadingTab::impl_on_mount() { private_data().on_mount(); }

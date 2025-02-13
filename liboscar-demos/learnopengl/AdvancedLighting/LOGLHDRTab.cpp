@@ -74,8 +74,8 @@ class osc::LOGLHDRTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/HDR"; }
 
-    explicit Impl(LOGLHDRTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLHDRTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -173,7 +173,7 @@ private:
 
 CStringView osc::LOGLHDRTab::id() { return Impl::static_label(); }
 
-osc::LOGLHDRTab::LOGLHDRTab(Widget& parent) :
+osc::LOGLHDRTab::LOGLHDRTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLHDRTab::impl_on_mount() { private_data().on_mount(); }

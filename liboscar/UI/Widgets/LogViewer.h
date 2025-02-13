@@ -1,23 +1,18 @@
 #pragma once
 
-#include <memory>
+#include <liboscar/Platform/Widget.h>
 
 namespace osc
 {
-    class LogViewer final {
+    class LogViewer final : public Widget {
     public:
-        LogViewer();
-        LogViewer(const LogViewer&) = delete;
-        LogViewer(LogViewer&&) noexcept;
-        LogViewer& operator=(const LogViewer&) = delete;
-        LogViewer& operator=(LogViewer&&) noexcept;
-        ~LogViewer() noexcept;
-
-        // assumes caller handles `ui::begin_panel(panel_name, nullptr, `ui::PanelFlag::MenuBar`)`
-        void on_draw();
+        explicit LogViewer(Widget* parent);
 
     private:
+        // assumes caller handles `ui::begin_panel(panel_name, nullptr, `ui::PanelFlag::MenuBar`)`
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> impl_;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

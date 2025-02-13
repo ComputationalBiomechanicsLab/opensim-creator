@@ -14,19 +14,19 @@ namespace osc
         static CStringView id() { return "OpenSim/ModelEditor"; }
 
         explicit ModelEditorTab(
-            Widget&
+            Widget*
         );
         explicit ModelEditorTab(
-            Widget&,
+            Widget*,
             const OpenSim::Model&
         );
         explicit ModelEditorTab(
-            Widget&,
+            Widget*,
             std::unique_ptr<OpenSim::Model>,
             float fixupScaleFactor = 1.0f
         );
         explicit ModelEditorTab(
-            Widget&,
+            Widget*,
             std::unique_ptr<UndoableModelStatePair>
         );
 

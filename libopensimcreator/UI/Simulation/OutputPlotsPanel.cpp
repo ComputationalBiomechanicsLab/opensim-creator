@@ -36,11 +36,12 @@ class osc::OutputPlotsPanel::Impl final : public PanelPrivate {
 public:
     explicit Impl(
         OutputPlotsPanel& owner,
+        Widget* parent,
         std::string_view panelName_,
         std::shared_ptr<Environment> environment,
         ISimulatorUIAPI* api) :
 
-        PanelPrivate{owner, nullptr, panelName_},
+        PanelPrivate{owner, parent, panelName_},
         m_Environment{std::move(environment)},
         m_SimulatorUIAPI{api}
     {}
@@ -96,10 +97,11 @@ private:
 };
 
 osc::OutputPlotsPanel::OutputPlotsPanel(
+    Widget* parent,
     std::string_view panelName_,
     std::shared_ptr<Environment> environment,
     ISimulatorUIAPI* api) :
 
-    Panel{std::make_unique<Impl>(*this, panelName_, std::move(environment), api)}
+    Panel{std::make_unique<Impl>(*this, parent, panelName_, std::move(environment), api)}
 {}
 void osc::OutputPlotsPanel::impl_draw_content() { private_data().draw_content(); }

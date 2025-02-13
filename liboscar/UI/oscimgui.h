@@ -54,10 +54,10 @@ namespace osc::ui
         // returns true if the UI handled the event
         bool on_event(Event&);
 
-        // should be called at the start of each frame (e.g. `IScreen::on_draw()`)
+        // should be called at the start of each frame (e.g. `Screen::on_draw()`)
         void on_start_new_frame(App&);
 
-        // should be called at the end of each frame (e.g. the end of `IScreen::on_draw()`)
+        // should be called at the end of each frame (e.g. the end of `Screen::on_draw()`)
         void render();
     }
 
@@ -1076,7 +1076,7 @@ namespace osc::ui
             // `Vec2`: additional fit padding as a percentage of the fit extents (e.g. Vec2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
             FitPadding,
 
-            // `Vec2`: padding between widget frame and plot area, labels, or outside legends (i.e. main padding)
+            // `Vec2`: padding between the item frame and plot area, labels, or outside legends (i.e. main padding)
             PlotPadding,
 
             // `float`: thickness of the border around plot area

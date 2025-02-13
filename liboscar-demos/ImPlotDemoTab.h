@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit ImPlotDemoTab(Widget&);
+        explicit ImPlotDemoTab(Widget*);
 
     private:
         void impl_on_draw() final;

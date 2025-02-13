@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit ModelWarperV3Tab(Widget&);
+        explicit ModelWarperV3Tab(Widget*);
 
     private:
         void impl_on_mount() final;

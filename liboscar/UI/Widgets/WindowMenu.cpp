@@ -7,14 +7,12 @@
 #include <memory>
 #include <utility>
 
-osc::WindowMenu::WindowMenu(std::shared_ptr<PanelManager> panel_manager) :
+osc::WindowMenu::WindowMenu(Widget* parent, std::shared_ptr<PanelManager> panel_manager) :
+    Widget{parent},
     panel_manager_{std::move(panel_manager)}
 {}
-osc::WindowMenu::WindowMenu(WindowMenu&&) noexcept = default;
-osc::WindowMenu& osc::WindowMenu::operator=(WindowMenu&&) noexcept = default;
-osc::WindowMenu::~WindowMenu() noexcept = default;
 
-void osc::WindowMenu::on_draw()
+void osc::WindowMenu::impl_on_draw()
 {
     if (ui::begin_menu("Window")) {
         draw_content();

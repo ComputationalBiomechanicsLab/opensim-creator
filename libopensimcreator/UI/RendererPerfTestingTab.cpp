@@ -48,8 +48,8 @@ namespace
 
 class osc::RendererPerfTestingTab::Impl final : public TabPrivate {
 public:
-    Impl(RendererPerfTestingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, "RendererPerfTesting"}
+    Impl(RendererPerfTestingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, "RendererPerfTesting"}
     {}
 
     void on_mount()
@@ -118,7 +118,7 @@ private:
 
 CStringView osc::RendererPerfTestingTab::id() { return "OpenSimCreator/RendererPerfTesting"; }
 
-osc::RendererPerfTestingTab::RendererPerfTestingTab(Widget& parent) :
+osc::RendererPerfTestingTab::RendererPerfTestingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::RendererPerfTestingTab::impl_on_mount() { private_data().on_mount(); }

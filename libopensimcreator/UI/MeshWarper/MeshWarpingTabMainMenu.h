@@ -6,6 +6,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
+#include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>
 
@@ -14,18 +15,19 @@
 namespace osc
 {
     // widget: the main menu (contains multiple submenus: 'file', 'edit', 'about', etc.)
-    class MeshWarpingTabMainMenu final {
+    class MeshWarpingTabMainMenu final : public Widget {
     public:
         explicit MeshWarpingTabMainMenu(
+            Widget* parent,
             const std::shared_ptr<MeshWarpingTabSharedState>& tabState_,
             const std::shared_ptr<PanelManager>& panelManager_) :
 
+            Widget{parent},
             m_FileMenu{tabState_},
             m_EditMenu{tabState_},
             m_ActionsMenu{tabState_},
-            m_WindowMenu{panelManager_}
-        {
-        }
+            m_WindowMenu{this, panelManager_}
+        {}
 
         void onDraw()
         {

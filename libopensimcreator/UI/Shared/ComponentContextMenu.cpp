@@ -356,15 +356,15 @@ namespace
 
 class osc::ComponentContextMenu::Impl final : public StandardPopup {
 public:
-    Impl(
+    explicit Impl(
+        Widget* parent_,
         std::string_view popupName_,
-        Widget& parent_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_,
         ComponentContextMenuFlags flags_) :
 
         StandardPopup{popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
-        m_Parent{parent_.weak_ref()},
+        m_Parent{parent_},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)},
         m_Flags{flags_}
@@ -618,10 +618,10 @@ private:
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
+    Widget* m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{m_Parent.get(), m_Model};
+    ModelActionsMenuItems m_ModelActionsMenuBar{m_Parent, m_Model};
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
@@ -631,13 +631,13 @@ private:
 
 
 osc::ComponentContextMenu::ComponentContextMenu(
+    Widget* parent_,
     std::string_view popupName_,
-    Widget& parent_,
     std::shared_ptr<IModelStatePair> model_,
     const OpenSim::ComponentPath& path_,
     ComponentContextMenuFlags flags_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, parent_, std::move(model_), path_, flags_)}
+    m_Impl{std::make_unique<Impl>(parent_, popupName_, std::move(model_), path_, flags_)}
 {}
 osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
 osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;

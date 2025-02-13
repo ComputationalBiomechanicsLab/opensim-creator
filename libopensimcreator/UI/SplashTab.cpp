@@ -258,7 +258,7 @@ private:
             ActionOpenModel(*parent());
         }
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(*parent());
+            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
@@ -270,28 +270,28 @@ private:
     void drawWorkflowsMenuSectionContent()
     {
         if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Mesh Importer")) {
-            auto tab = std::make_unique<mi::MeshImporterTab>(*parent());
+            auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
 
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data")) {
-            auto tab = std::make_unique<PreviewExperimentalDataTab>(*parent());
+            auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         if (ui::draw_menu_item(OSC_ICON_CUBE " Mesh Warping")) {
-            auto tab = std::make_unique<MeshWarpingTab>(*parent());
+            auto tab = std::make_unique<MeshWarpingTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
 
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
-            auto tab = std::make_unique<mow::ModelWarperTab>(*parent());
+            auto tab = std::make_unique<mow::ModelWarperTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
 
         if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition (" OSC_ICON_TIMES " deprecated)")) {
-            auto tab = std::make_unique<FrameDefinitionTab>(*parent());
+            auto tab = std::make_unique<FrameDefinitionTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         ui::draw_tooltip_if_item_hovered("Frame Definition Workflow", "This feature is currently scheduled for deprecation. If you think it shouldn't be deprecated, then post a comment on GitHub issue #951.");
@@ -410,7 +410,7 @@ private:
     // UI state
     std::unique_ptr<MainMenuFileTab> m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
-    LogViewer m_LogViewer;
+    LogViewer m_LogViewer{&owner()};
 };
 
 osc::SplashTab::SplashTab(Widget& parent_) :

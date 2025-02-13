@@ -56,8 +56,8 @@ class osc::LOGLFramebuffersTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedOpenGL/Framebuffers"; }
 
-    explicit Impl(LOGLFramebuffersTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLFramebuffersTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -141,14 +141,14 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Framebuffers/Filter.frag"),
     }};
 
-    LogViewerPanel log_viewer_;
-    PerfPanel perf_panel_;
+    LogViewerPanel log_viewer_{&owner()};
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLFramebuffersTab::id() { return Impl::static_label(); }
 
-osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget& parent) :
+osc::LOGLFramebuffersTab::LOGLFramebuffersTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLFramebuffersTab::impl_on_mount() { private_data().on_mount(); }

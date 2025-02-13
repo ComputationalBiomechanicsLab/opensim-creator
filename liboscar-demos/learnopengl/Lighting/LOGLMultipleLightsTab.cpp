@@ -111,8 +111,8 @@ class osc::LOGLMultipleLightsTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/Lighting/MultipleLights"; }
 
-    explicit Impl(LOGLMultipleLightsTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLMultipleLightsTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {
         log_viewer_.open();
         perf_panel_.open();
@@ -190,14 +190,14 @@ private:
 
     float material_shininess_ = 64.0f;
 
-    LogViewerPanel log_viewer_;
-    PerfPanel perf_panel_;
+    LogViewerPanel log_viewer_{&owner()};
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLMultipleLightsTab::id() { return Impl::static_label(); }
 
-osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(Widget& parent) :
+osc::LOGLMultipleLightsTab::LOGLMultipleLightsTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLMultipleLightsTab::impl_on_mount() { private_data().on_mount(); }

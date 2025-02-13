@@ -4,6 +4,7 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CircularBuffer.h>
 #include <liboscar/Utils/EnumHelpers.h>
@@ -46,8 +47,12 @@ namespace
     }
 }
 
-class osc::LogViewer::Impl final {
+class osc::LogViewer::Impl final : public WidgetPrivate {
 public:
+    explicit Impl(Widget& owner, Widget* parent) :
+        WidgetPrivate{owner, parent}
+    {}
+
     void on_draw()
     {
         const auto logger = global_default_logger();
@@ -116,14 +121,7 @@ private:
 };
 
 
-osc::LogViewer::LogViewer() :
-    impl_{std::make_unique<Impl>()}
+osc::LogViewer::LogViewer(Widget* parent) :
+    Widget{std::make_unique<Impl>(*this, parent)}
 {}
-osc::LogViewer::LogViewer(LogViewer&&) noexcept = default;
-osc::LogViewer& osc::LogViewer::operator=(LogViewer&&) noexcept = default;
-osc::LogViewer::~LogViewer() noexcept = default;
-
-void osc::LogViewer::on_draw()
-{
-    impl_->on_draw();
-}
+void osc::LogViewer::impl_on_draw() { private_data().on_draw(); }

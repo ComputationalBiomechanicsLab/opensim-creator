@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit CookiecutterTab(Widget&);
+        explicit CookiecutterTab(Widget* parent);
 
     private:
         void impl_on_mount() final;

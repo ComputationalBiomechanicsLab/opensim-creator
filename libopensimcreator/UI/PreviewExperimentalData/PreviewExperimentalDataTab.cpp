@@ -322,68 +322,68 @@ class osc::PreviewExperimentalDataTab::Impl final : public TabPrivate {
 public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
-        Widget& parent) :
-        TabPrivate{owner, &parent, OSC_ICON_DOT_CIRCLE " Experimental Data"}
+        Widget* parent) :
+        TabPrivate{owner, parent, OSC_ICON_DOT_CIRCLE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
                     m_UiState->updSharedModelPtr(),
-                    [this](const OpenSim::ComponentPath& p)
+                    [this, parent](const OpenSim::ComponentPath& p)
                     {
-                        auto popup = std::make_unique<ComponentContextMenu>("##componentcontextmenu", this->owner(), m_UiState->updSharedModelPtr(), p);
-                        App::post_event<OpenPopupEvent>(this->owner(), std::move(popup));
+                        auto popup = std::make_unique<ComponentContextMenu>(parent, "##componentcontextmenu", m_UiState->updSharedModelPtr(), p);
+                        App::post_event<OpenPopupEvent>(*parent, std::move(popup));
                     }
                 );
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Properties",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_UiState->updSharedModelPtr());
+                return std::make_shared<PropertiesPanel>(parent, panelName, m_UiState->updSharedModelPtr());
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Coordinates",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<CoordinateEditorPanel>(panelName, this->owner(),  m_UiState->updSharedModelPtr());
+                return std::make_shared<CoordinateEditorPanel>(parent, panelName, m_UiState->updSharedModelPtr());
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Performance",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<PerfPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Output Watches",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<OutputWatchesPanel>(panelName, m_UiState->updSharedModelPtr());
+                return std::make_shared<OutputWatchesPanel>(parent, panelName, m_UiState->updSharedModelPtr());
             }
         );
         m_PanelManager->register_spawnable_panel(
             "viewer",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                auto onRightClick = [model = m_UiState->updSharedModelPtr(), menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
+                auto onRightClick = [model = m_UiState->updSharedModelPtr(), parent, menuName = std::string{panelName} + "_contextmenu", editorAPI = this](const ModelViewerPanelRightClickEvent& e)
                 {
                     auto popup = std::make_unique<ComponentContextMenu>(
+                        parent,
                         menuName,
-                        editorAPI->owner(),
                         model,
                         e.componentAbsPathOrEmpty
                     );
@@ -392,7 +392,7 @@ public:
                 };
                 ModelViewerPanelParameters panelParams{m_UiState->updSharedModelPtr(), onRightClick};
 
-                return std::make_shared<ModelViewerPanel>(&this->owner(), panelName, panelParams);
+                return std::make_shared<ModelViewerPanel>(parent, panelName, panelParams);
             },
             1  // have one viewer open at the start
         );
@@ -426,8 +426,8 @@ public:
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<ComponentContextMenu>(
+                &owner(),
                 "##componentcontextmenu",
-                this->owner(),
                 m_UiState->updSharedModelPtr(),
                 contextMenuEvent->path()
             );
@@ -472,9 +472,9 @@ public:
 
 private:
     std::shared_ptr<PreviewExperimentalDataUiState> m_UiState = std::make_shared<PreviewExperimentalDataUiState>();
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
     PreviewExperimentalDataTabToolbar m_Toolbar{m_UiState};
-    WindowMenu m_WindowMenu{m_PanelManager};
+    WindowMenu m_WindowMenu{&owner(), m_PanelManager};
     ModelStatusBar m_StatusBar{parent(), m_UiState->updSharedModelPtr()};
     PopupManager m_PopupManager;
     bool m_ThrewExceptionLastFrame = false;
@@ -483,8 +483,8 @@ private:
 
 CStringView osc::PreviewExperimentalDataTab::id() { return "OpenSim/Experimental/PreviewExperimentalData"; }
 
-osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(Widget& ptr) :
-    Tab{std::make_unique<Impl>(*this, ptr)}
+osc::PreviewExperimentalDataTab::PreviewExperimentalDataTab(Widget* parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::PreviewExperimentalDataTab::impl_on_mount() { private_data().on_mount(); }
 void osc::PreviewExperimentalDataTab::impl_on_unmount() { private_data().on_unmount(); }

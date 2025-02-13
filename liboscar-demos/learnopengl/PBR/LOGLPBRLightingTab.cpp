@@ -53,8 +53,8 @@ class osc::LOGLPBRLightingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/PBR/Lighting"; }
 
-    explicit Impl(LOGLPBRLightingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLPBRLightingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
    void on_mount()
@@ -132,13 +132,13 @@ private:
     MouseCapturingCamera camera_ = create_camera();
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     Material pbr_material_ = load_pbr_material(loader_);
-    PerfPanel perf_panel_;
+    PerfPanel perf_panel_{&owner()};
 };
 
 
 CStringView osc::LOGLPBRLightingTab::id() { return Impl::static_label(); }
 
-osc::LOGLPBRLightingTab::LOGLPBRLightingTab(Widget& parent) :
+osc::LOGLPBRLightingTab::LOGLPBRLightingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLPBRLightingTab::impl_on_mount() { private_data().on_mount(); }

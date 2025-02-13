@@ -53,7 +53,7 @@ public:
         WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)},
         m_MainMenuFileTab{&owner_},
-        m_WindowMenu{std::move(panelManager_)}
+        m_WindowMenu{&owner_, std::move(panelManager_)}
     {}
 
     void onDraw()

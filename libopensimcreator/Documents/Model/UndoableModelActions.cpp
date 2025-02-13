@@ -288,10 +288,10 @@ void osc::ActionSaveCurrentModelAs(IModelStatePair& uim)
     App::singleton<RecentFiles>()->push_back(*maybePath);
 }
 
-void osc::ActionNewModel(Widget& api)
+void osc::ActionNewModel(Widget& parent)
 {
-    auto tab = std::make_unique<ModelEditorTab>(api);
-    App::post_event<OpenTabEvent>(api, std::move(tab));
+    auto tab = std::make_unique<ModelEditorTab>(&parent);
+    App::post_event<OpenTabEvent>(parent, std::move(tab));
 }
 
 void osc::ActionOpenModel(Widget& api)
@@ -417,7 +417,7 @@ bool osc::ActionLoadSTOFileAgainstModel(
         InitializeState(*modelCopy);
 
         auto simulation = std::make_shared<Simulation>(StoFileSimulation{std::move(modelCopy), stoPath, uim.getFixupScaleFactor(), uim.tryUpdEnvironment()});
-        auto tab = std::make_unique<SimulationTab>(parent, simulation);
+        auto tab = std::make_unique<SimulationTab>(&parent, simulation);
         App::post_event<OpenTabEvent>(parent, std::move(tab));
 
         return true;
@@ -436,7 +436,7 @@ bool osc::ActionStartSimulatingModel(
     ForwardDynamicSimulatorParams params = FromParamBlock(uim.tryUpdEnvironment()->getSimulationParams());
 
     auto simulation = std::make_shared<Simulation>(ForwardDynamicSimulation{std::move(modelState), params});
-    auto tab = std::make_unique<SimulationTab>(parent, std::move(simulation));
+    auto tab = std::make_unique<SimulationTab>(&parent, std::move(simulation));
     App::post_event<OpenTabEvent>(parent, std::move(tab));
 
     return true;

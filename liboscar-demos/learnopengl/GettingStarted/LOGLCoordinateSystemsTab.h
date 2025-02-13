@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLCoordinateSystemsTab(Widget&);
+        explicit LOGLCoordinateSystemsTab(Widget*);
 
     private:
         void impl_on_mount() final;

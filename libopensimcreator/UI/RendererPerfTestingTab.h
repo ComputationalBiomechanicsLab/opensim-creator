@@ -11,7 +11,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit RendererPerfTestingTab(Widget&);
+        explicit RendererPerfTestingTab(Widget*);
 
     private:
         void impl_on_mount() final;

@@ -84,8 +84,8 @@ private:
         if (ui::is_item_clicked(ui::MouseButton::Right)) {
             if (parent()) {
                 auto menu = std::make_unique<ComponentContextMenu>(
+                    parent(),
                     "##hovermenu",
-                    *parent(),
                     m_Model,
                     GetAbsolutePath(c)
                 );

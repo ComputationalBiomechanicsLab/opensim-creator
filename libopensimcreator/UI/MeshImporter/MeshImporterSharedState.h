@@ -79,11 +79,13 @@ namespace osc::mi
     // data that's shared between multiple UI states.
     class MeshImporterSharedState final {
     public:
-        MeshImporterSharedState() :
-            MeshImporterSharedState{std::vector<std::filesystem::path>{}}
+        MeshImporterSharedState(Widget* parent) :
+            MeshImporterSharedState{parent, std::vector<std::filesystem::path>{}}
         {}
 
-        explicit MeshImporterSharedState(std::vector<std::filesystem::path> meshFiles)
+        explicit MeshImporterSharedState(Widget* parent, std::vector<std::filesystem::path> meshFiles) :
+            m_Logviewer{parent},
+            m_PerfPanel{parent}
         {
             m_FloorMaterial.set_transparent(true);
             pushMeshLoadRequests(std::move(meshFiles));

@@ -66,8 +66,8 @@ class osc::FrustumCullingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/FrustumCulling"; }
 
-    explicit Impl(FrustumCullingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(FrustumCullingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {
         user_camera_.set_clipping_planes({0.1f, 10.0f});
         top_down_camera_.set_position({0.0f, 9.5f, 0.0f});
@@ -144,7 +144,7 @@ private:
 
 osc::CStringView osc::FrustumCullingTab::id() { return Impl::static_label(); }
 
-osc::FrustumCullingTab::FrustumCullingTab(Widget& parent) :
+osc::FrustumCullingTab::FrustumCullingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::FrustumCullingTab::impl_on_mount() { private_data().on_mount(); }

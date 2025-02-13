@@ -8,7 +8,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLGammaTab(Widget&);
+        explicit LOGLGammaTab(Widget*);
 
     private:
         void impl_on_mount() final;

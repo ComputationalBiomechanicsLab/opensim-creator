@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLBlendingTab(Widget&);
+        explicit LOGLBlendingTab(Widget*);
 
     private:
         void impl_on_mount() final;

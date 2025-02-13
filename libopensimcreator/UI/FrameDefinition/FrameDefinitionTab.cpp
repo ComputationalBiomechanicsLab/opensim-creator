@@ -911,14 +911,16 @@ namespace
 // other panels/widgets
 namespace
 {
-    class FrameDefinitionTabMainMenu final {
+    class FrameDefinitionTabMainMenu final : public Widget {
     public:
         explicit FrameDefinitionTabMainMenu(
+            Widget* parent,
             std::shared_ptr<UndoableModelStatePair> model_,
             std::shared_ptr<PanelManager> panelManager_) :
 
+            Widget{parent},
             m_Model{std::move(model_)},
-            m_WindowMenu{std::move(panelManager_)}
+            m_WindowMenu{this, std::move(panelManager_)}
         {}
 
         void onDraw()
@@ -952,13 +954,13 @@ namespace
 class osc::FrameDefinitionTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(FrameDefinitionTab& owner, Widget& parent_) :
-        TabPrivate{owner, &parent_, c_TabStringID},
-        m_Toolbar{&parent_, "##FrameDefinitionToolbar", m_Model}
+    explicit Impl(FrameDefinitionTab& owner, Widget* parent_) :
+        TabPrivate{owner, parent_, c_TabStringID},
+        m_Toolbar{&owner, "##FrameDefinitionToolbar", m_Model}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
-            [this](std::string_view panelName)
+            [this](Widget*, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
                     panelName,
@@ -978,28 +980,28 @@ public:
         );
         m_PanelManager->register_toggleable_panel(
             "Properties",
-            [this](std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PropertiesPanel>(panelName, this->owner(), m_Model);
+                return std::make_shared<PropertiesPanel>(parent, panelName, m_Model);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Log",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<LogViewerPanel>(panelName);
+                return std::make_shared<LogViewerPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_toggleable_panel(
             "Performance",
-            [](std::string_view panelName)
+            [](Widget* parent, std::string_view panelName)
             {
-                return std::make_shared<PerfPanel>(panelName);
+                return std::make_shared<PerfPanel>(parent, panelName);
             }
         );
         m_PanelManager->register_spawnable_panel(
             "framedef_viewer",
-            [this](std::string_view panelName)
+            [this](Widget*, std::string_view panelName)
             {
                 ModelViewerPanelParameters panelParams
                 {
@@ -1109,16 +1111,16 @@ private:
     }
 
     std::shared_ptr<UndoableModelStatePair> m_Model = MakeSharedUndoableFrameDefinitionModel();
-    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
+    std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());
     PopupManager m_PopupManager;
-    FrameDefinitionTabMainMenu m_MainMenu{m_Model, m_PanelManager};
+    FrameDefinitionTabMainMenu m_MainMenu{&owner(), m_Model, m_PanelManager};
     FrameDefinitionTabToolbar m_Toolbar;
 };
 
 
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(Widget& parent_) :
+osc::FrameDefinitionTab::FrameDefinitionTab(Widget* parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }

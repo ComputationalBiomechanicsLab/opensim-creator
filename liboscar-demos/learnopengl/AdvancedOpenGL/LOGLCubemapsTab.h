@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLCubemapsTab(Widget&);
+        explicit LOGLCubemapsTab(Widget*);
 
     private:
         void impl_on_mount() final;

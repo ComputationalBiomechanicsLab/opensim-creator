@@ -28,7 +28,7 @@ namespace
     public:
         ToggleablePanel(
             std::string_view name,
-            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
             ToggleablePanelFlags flags) :
 
             name_{name},
@@ -57,10 +57,10 @@ namespace
             return instance_.has_value();
         }
 
-        void activate()
+        void activate(Widget* parent)
         {
             if (not instance_) {
-                instance_ = panel_constructor_(name_);
+                instance_ = panel_constructor_(parent, name_);
             }
         }
 
@@ -69,14 +69,14 @@ namespace
             instance_.reset();
         }
 
-        void toggle_activated()
+        void toggle_activated(Widget* parent)
         {
             if (instance_ and (*instance_)->is_open()) {
                 (*instance_)->close();
                 instance_.reset();
             }
             else {
-                instance_ = panel_constructor_(name_);
+                instance_ = panel_constructor_(parent, name_);
                 (*instance_)->open();
             }
         }
@@ -98,7 +98,7 @@ namespace
 
     private:
         std::string name_;
-        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor_;
+        std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor_;
         ToggleablePanelFlags flags_;
         std::optional<std::shared_ptr<Panel>> instance_;
     };
@@ -158,7 +158,7 @@ namespace
     public:
         SpawnablePanel(
             std::string_view base_name,
-            std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+            std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
             size_t num_initially_opened_panels) :
 
             base_name_{base_name},
@@ -176,12 +176,12 @@ namespace
             return base_name_;
         }
 
-        DynamicPanel spawn_dynamic_panel(size_t instance_number, std::string_view panel_name)
+        DynamicPanel spawn_dynamic_panel(Widget* parent, size_t instance_number, std::string_view panel_name)
         {
             return DynamicPanel{
                 base_name_,
                 instance_number,
-                panel_constructor_(panel_name),
+                panel_constructor_(parent, panel_name),
             };
         }
 
@@ -192,7 +192,7 @@ namespace
 
     private:
         std::string base_name_;
-        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor_;
+        std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor_;
         size_t num_initially_opened_panels_;
     };
 }
@@ -200,9 +200,17 @@ namespace
 class osc::PanelManager::Impl final {
 public:
 
+    explicit Impl(Widget* parent) :
+        parent_{parent}
+    {}
+
+    const Widget* parent() const { return parent_; }
+    Widget* parent() { return parent_; }
+    void set_parent(Widget* new_parent) { parent_ = new_parent; }
+
     void register_toggleable_panel(
         std::string_view base_name,
-        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+        std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
         ToggleablePanelFlags flags)
     {
         toggleable_panels_.emplace_back(base_name, std::move(panel_constructor), flags);
@@ -210,7 +218,7 @@ public:
 
     void register_spawnable_panel(
         std::string_view base_name,
-        std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+        std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
         size_t num_initially_opened_panels)
     {
         spawnable_panels_.emplace_back(base_name, std::move(panel_constructor), num_initially_opened_panels);
@@ -254,7 +262,7 @@ public:
     {
         ToggleablePanel& panel = toggleable_panels_.at(pos);
         if (panel.is_activated() != v) {
-            panel.toggle_activated();
+            panel.toggle_activated(parent_);
         }
     }
 
@@ -277,7 +285,7 @@ public:
         // initialize default-open tabs
         for (ToggleablePanel& panel : toggleable_panels_) {
             if (panel.is_enabled_by_default()) {
-                panel.activate();
+                panel.activate(parent_);
             }
         }
 
@@ -363,7 +371,7 @@ public:
         const size_t ith_instance = calc_dynamic_panel_instance_number(spawnable.id());
         const std::string panel_name = calc_panel_name(spawnable.base_name(), ith_instance);
 
-        push_dynamic_panel(spawnable.spawn_dynamic_panel(ith_instance, panel_name));
+        push_dynamic_panel(spawnable.spawn_dynamic_panel(parent_, ith_instance, panel_name));
     }
 
     std::string suggested_dynamic_panel_name(std::string_view base_name)
@@ -414,6 +422,7 @@ private:
         });
     }
 
+    Widget* parent_;
     std::vector<ToggleablePanel> toggleable_panels_;
     std::vector<DynamicPanel> dynamic_panels_;
     std::vector<SpawnablePanel> spawnable_panels_;
@@ -421,16 +430,20 @@ private:
 };
 
 
-osc::PanelManager::PanelManager() :
-    impl_{std::make_unique<Impl>()}
+osc::PanelManager::PanelManager(Widget* parent) :
+    impl_{std::make_unique<Impl>(parent)}
 {}
 osc::PanelManager::PanelManager(PanelManager&&) noexcept = default;
 osc::PanelManager& osc::PanelManager::operator=(PanelManager&&) noexcept = default;
 osc::PanelManager::~PanelManager() noexcept = default;
 
+const Widget* osc::PanelManager::parent() const { return impl_->parent(); }
+Widget* osc::PanelManager::parent() { return impl_->parent(); }
+void osc::PanelManager::set_parent(Widget* new_parent) { impl_->set_parent(new_parent); }
+
 void osc::PanelManager::register_toggleable_panel(
     std::string_view base_name,
-    std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+    std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
     ToggleablePanelFlags flags)
 {
     impl_->register_toggleable_panel(base_name, std::move(panel_constructor), flags);
@@ -438,7 +451,7 @@ void osc::PanelManager::register_toggleable_panel(
 
 void osc::PanelManager::register_spawnable_panel(
     std::string_view base_name,
-    std::function<std::shared_ptr<Panel>(std::string_view)> panel_constructor,
+    std::function<std::shared_ptr<Panel>(Widget*, std::string_view)> panel_constructor,
     size_t num_initially_opened_panels)
 {
     impl_->register_spawnable_panel(base_name, std::move(panel_constructor), num_initially_opened_panels);

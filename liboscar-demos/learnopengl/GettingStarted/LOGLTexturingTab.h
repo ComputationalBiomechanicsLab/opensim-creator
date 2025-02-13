@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLTexturingTab(Widget&);
+        explicit LOGLTexturingTab(Widget*);
 
     private:
         void impl_on_draw() final;

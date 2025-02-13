@@ -82,8 +82,8 @@ class osc::LOGLNormalMappingTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/learnopengl/AdvancedLighting/NormalMapping"; }
 
-    explicit Impl(LOGLNormalMappingTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(LOGLNormalMappingTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     void on_mount()
@@ -161,7 +161,7 @@ private:
 
 CStringView osc::LOGLNormalMappingTab::id() { return Impl::static_label(); }
 
-osc::LOGLNormalMappingTab::LOGLNormalMappingTab(Widget& parent) :
+osc::LOGLNormalMappingTab::LOGLNormalMappingTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::LOGLNormalMappingTab::impl_on_mount() { private_data().on_mount(); }

@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit TPS2DTab(Widget&);
+        explicit TPS2DTab(Widget*);
 
     private:
         void impl_on_draw() final;

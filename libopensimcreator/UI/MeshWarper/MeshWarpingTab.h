@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MeshWarpingTab(Widget&);
+        explicit MeshWarpingTab(Widget*);
 
     private:
         void impl_on_mount() final;

@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLFramebuffersTab(Widget&);
+        explicit LOGLFramebuffersTab(Widget*);
 
     private:
         void impl_on_mount() final;

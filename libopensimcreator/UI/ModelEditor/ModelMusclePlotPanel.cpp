@@ -2197,25 +2197,25 @@ public:
 
     explicit Impl(
         ModelMusclePlotPanel& owner,
-        Widget& parent,
+        Widget* parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName) :
 
-        PanelPrivate{owner, &parent, panelName},
-        m_SharedData{parent, std::move(uim)},
+        PanelPrivate{owner, parent, panelName},
+        m_SharedData{*parent, std::move(uim)},
         m_ActiveState{std::make_unique<PickMuscleState>(m_SharedData)}
     {}
 
     explicit Impl(
         ModelMusclePlotPanel& owner,
-        Widget& parent,
+        Widget* parent,
         std::shared_ptr<UndoableModelStatePair> uim,
         std::string_view panelName,
         const OpenSim::ComponentPath& coordPath,
         const OpenSim::ComponentPath& musclePath) :
 
-        PanelPrivate{owner, &parent, panelName},
-        m_SharedData{parent, std::move(uim), coordPath, musclePath},
+        PanelPrivate{owner, parent, panelName},
+        m_SharedData{*parent, std::move(uim), coordPath, musclePath},
         m_ActiveState{std::make_unique<ShowingPlotState>(m_SharedData)}
     {}
 
@@ -2235,14 +2235,14 @@ private:
 };
 
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    Widget& parent,
+    Widget* parent,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName) :
 
     Panel{std::make_unique<Impl>(*this, parent, std::move(uim), panelName)}
 {}
 osc::ModelMusclePlotPanel::ModelMusclePlotPanel(
-    Widget& parent,
+    Widget* parent,
     std::shared_ptr<UndoableModelStatePair> uim,
     std::string_view panelName,
     const OpenSim::ComponentPath& coordPath,

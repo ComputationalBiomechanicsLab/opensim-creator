@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit BookOfShadersTab(Widget&);
+        explicit BookOfShadersTab(Widget*);
 
     private:
         void impl_on_draw() final;

@@ -1,22 +1,19 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 
 namespace osc { class PanelManager; }
 
 namespace osc
 {
-    class WindowMenu final {
+    class WindowMenu final : public Widget {
     public:
-        explicit WindowMenu(std::shared_ptr<PanelManager>);
-        WindowMenu(const WindowMenu&) = delete;
-        WindowMenu(WindowMenu&&) noexcept;
-        WindowMenu& operator=(const WindowMenu&) = delete;
-        WindowMenu& operator=(WindowMenu&&) noexcept;
-        ~WindowMenu() noexcept;
+        explicit WindowMenu(Widget* parent, std::shared_ptr<PanelManager>);
 
-        void on_draw();
     private:
+        void impl_on_draw() final;
         void draw_content();
 
         std::shared_ptr<PanelManager> panel_manager_;

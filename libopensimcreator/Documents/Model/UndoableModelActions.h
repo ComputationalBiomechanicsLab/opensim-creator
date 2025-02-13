@@ -44,7 +44,7 @@ namespace osc
 
     // create a new model and show it in a new tab
     void ActionNewModel(
-        Widget&
+        Widget& parent
     );
 
     // prompt a user to open a model file and open it in a new tab

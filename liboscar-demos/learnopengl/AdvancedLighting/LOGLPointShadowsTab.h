@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLPointShadowsTab(Widget&);
+        explicit LOGLPointShadowsTab(Widget*);
 
     private:
         void impl_on_mount() final;

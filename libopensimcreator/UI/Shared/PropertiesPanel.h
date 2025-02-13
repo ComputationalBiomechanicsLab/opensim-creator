@@ -13,8 +13,8 @@ namespace osc
     class PropertiesPanel final : public Panel {
     public:
         explicit PropertiesPanel(
+            Widget* parent,
             std::string_view panelName,
-            Widget& parent,
             std::shared_ptr<IModelStatePair>
         );
 

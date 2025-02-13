@@ -22,8 +22,8 @@ class osc::MandelbrotTab::Impl final : public TabPrivate {
 public:
     static CStringView static_label() { return "oscar_demos/Mandelbrot"; }
 
-    explicit Impl(MandelbrotTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, static_label()}
+    explicit Impl(MandelbrotTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, static_label()}
     {}
 
     bool on_event(Event& ev)
@@ -94,7 +94,7 @@ private:
 
 CStringView osc::MandelbrotTab::id() { return Impl::static_label(); }
 
-osc::MandelbrotTab::MandelbrotTab(Widget& parent) :
+osc::MandelbrotTab::MandelbrotTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 bool osc::MandelbrotTab::impl_on_event(Event& e) { return private_data().on_event(e); }

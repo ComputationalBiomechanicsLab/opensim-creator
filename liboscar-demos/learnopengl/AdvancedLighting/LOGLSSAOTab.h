@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit LOGLSSAOTab(Widget&);
+        explicit LOGLSSAOTab(Widget*);
 
     private:
         void impl_on_mount() final;

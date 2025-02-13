@@ -40,8 +40,8 @@ using namespace osc;
 class osc::MeshHittestTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(MeshHittestTab& owner, Widget& parent) :
-        TabPrivate{owner, &parent, OSC_ICON_COOKIE " MeshHittestTab"}
+    explicit Impl(MeshHittestTab& owner, Widget* parent) :
+        TabPrivate{owner, parent, OSC_ICON_COOKIE " MeshHittestTab"}
     {
         m_Camera.set_background_color(Color::white());
     }
@@ -170,13 +170,13 @@ private:
     Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
     Line m_Ray{};
 
-    PerfPanel m_PerfPanel;
+    PerfPanel m_PerfPanel{&owner()};
 };
 
 
 CStringView osc::MeshHittestTab::id() { return "OpenSim/MeshHittest"; }
 
-osc::MeshHittestTab::MeshHittestTab(Widget& parent) :
+osc::MeshHittestTab::MeshHittestTab(Widget* parent) :
     Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::MeshHittestTab::impl_on_tick() { private_data().on_tick(); }

@@ -9,7 +9,7 @@ namespace osc
 {
     class ScreenshotTab final : public Tab {
     public:
-        ScreenshotTab(Widget&, Screenshot&&);
+        explicit ScreenshotTab(Widget*, Screenshot&&);
 
     private:
         void impl_on_draw_main_menu() final;

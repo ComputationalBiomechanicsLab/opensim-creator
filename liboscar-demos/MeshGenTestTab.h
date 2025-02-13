@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit MeshGenTestTab(Widget&);
+        explicit MeshGenTestTab(Widget*);
 
     private:
         void impl_on_draw() final;

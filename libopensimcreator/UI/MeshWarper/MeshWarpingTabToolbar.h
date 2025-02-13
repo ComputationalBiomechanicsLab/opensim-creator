@@ -1,5 +1,7 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 #include <string_view>
 
@@ -8,22 +10,18 @@ namespace osc { class MeshWarpingTabSharedState; }
 namespace osc
 {
     // the top toolbar (contains icons for new, save, open, undo, redo, etc.)
-    class MeshWarpingTabToolbar final {
+    class MeshWarpingTabToolbar final : public Widget {
     public:
-        MeshWarpingTabToolbar(
+        explicit MeshWarpingTabToolbar(
+            Widget* parent,
             std::string_view label,
             std::shared_ptr<MeshWarpingTabSharedState>
         );
-        MeshWarpingTabToolbar(const MeshWarpingTabToolbar&) = delete;
-        MeshWarpingTabToolbar(MeshWarpingTabToolbar&&) noexcept;
-        MeshWarpingTabToolbar& operator=(const MeshWarpingTabToolbar&) = delete;
-        MeshWarpingTabToolbar& operator=(MeshWarpingTabToolbar&&) noexcept;
-        ~MeshWarpingTabToolbar() noexcept;
-
-        void onDraw();
 
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }
