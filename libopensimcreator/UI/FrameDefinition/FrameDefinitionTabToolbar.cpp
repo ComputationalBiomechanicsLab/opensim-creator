@@ -16,18 +16,19 @@
 #include <utility>
 
 osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
-    std::string_view label_,
-    Widget& tabHost_,
+    Widget* parent,
+    std::string_view name,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Label{label_},
-    m_Parent{tabHost_.weak_ref()},
+    Widget{parent},
     m_Model{std::move(model_)}
-{}
-
-void osc::FrameDefinitionTabToolbar::onDraw()
 {
-    if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f})) {
+    set_name(name);
+}
+
+void osc::FrameDefinitionTabToolbar::impl_on_draw()
+{
+    if (BeginToolbar(name(), Vec2{5.0f, 5.0f})) {
         drawContent();
     }
     ui::end_panel();
@@ -50,7 +51,9 @@ void osc::FrameDefinitionTabToolbar::drawExportToOpenSimButton()
         ui::begin_disabled();
     }
     if (ui::draw_button(OSC_ICON_FILE_EXPORT " Export to OpenSim")) {
-        fd::ActionExportFrameDefinitionSceneModelToEditorTab(*m_Parent, *m_Model);
+        if (parent()) {
+            fd::ActionExportFrameDefinitionSceneModelToEditorTab(*parent(), *m_Model);
+        }
     }
     if (numBodies == 0) {
         ui::end_disabled();

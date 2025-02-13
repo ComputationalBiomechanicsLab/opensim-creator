@@ -954,7 +954,7 @@ public:
 
     explicit Impl(FrameDefinitionTab& owner, Widget& parent_) :
         TabPrivate{owner, &parent_, c_TabStringID},
-        m_Toolbar{"##FrameDefinitionToolbar", parent_, m_Model}
+        m_Toolbar{&parent_, "##FrameDefinitionToolbar", m_Model}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
@@ -1080,7 +1080,7 @@ public:
     {
         ui::enable_dockspace_over_main_viewport();
 
-        m_Toolbar.onDraw();
+        m_Toolbar.on_draw();
         m_PanelManager->on_draw();
         m_PopupManager.on_draw();
     }

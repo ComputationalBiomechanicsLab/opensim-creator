@@ -16,6 +16,7 @@
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPanelEvent.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
@@ -1655,14 +1656,15 @@ namespace
 }
 
 // top-level implementation of the properties editor
-class osc::ObjectPropertiesEditor::Impl final {
+class osc::ObjectPropertiesEditor::Impl final : public WidgetPrivate {
 public:
-    Impl(
-        Widget* parentWidget,
+    explicit Impl(
+        Widget& owner,
+        Widget* parent,
         std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Object*()> objectGetter) :
 
-        m_ParentWidget{parentWidget ? parentWidget->weak_ref() : nullptr},
+        WidgetPrivate{owner, parent},
         m_TargetComponent{std::move(targetComponent)},
         m_ObjectGetter{std::move(objectGetter)}
     {}
@@ -1782,7 +1784,7 @@ private:
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
             it->second = c_Registry.tryCreateEditor({
-                .parent = m_ParentWidget,
+                .parent = parent()->weak_ref(),
                 .component = m_TargetComponent,
                 .objectAccessor = m_ObjectGetter,
                 .propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName()),
@@ -1792,7 +1794,6 @@ private:
         return it->second.get();
     }
 
-    LifetimedPtr<Widget> m_ParentWidget;
     std::shared_ptr<const IVersionedComponentAccessor> m_TargetComponent;
     std::function<const OpenSim::Object*()> m_ObjectGetter;
     std::unordered_set<std::string> m_Blacklist;
@@ -1802,14 +1803,12 @@ private:
 
 
 osc::ObjectPropertiesEditor::ObjectPropertiesEditor(
-    Widget* parentWidget,
+    Widget* parent,
     std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Object*()> objectGetter) :
 
-    m_Impl{std::make_unique<Impl>(parentWidget, std::move(targetComponent), std::move(objectGetter))}
+    Widget{std::make_unique<Impl>(*this, parent, std::move(targetComponent), std::move(objectGetter))}
 {}
-osc::ObjectPropertiesEditor::ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept = default;
-osc::ObjectPropertiesEditor& osc::ObjectPropertiesEditor::operator=(ObjectPropertiesEditor&&) noexcept = default;
-osc::ObjectPropertiesEditor::~ObjectPropertiesEditor() noexcept = default;
-void osc::ObjectPropertiesEditor::insertInBlacklist(std::string_view propertyName) { m_Impl->insertInBlacklist(propertyName); }
-std::optional<ObjectPropertyEdit> osc::ObjectPropertiesEditor::onDraw() { return m_Impl->onDraw(); }
+void osc::ObjectPropertiesEditor::insertInBlacklist(std::string_view propertyName) { private_data().insertInBlacklist(propertyName); }
+std::optional<ObjectPropertyEdit> osc::ObjectPropertiesEditor::onDraw() { return private_data().onDraw(); }
+void osc::ObjectPropertiesEditor::impl_on_draw() { private_data().onDraw(); }

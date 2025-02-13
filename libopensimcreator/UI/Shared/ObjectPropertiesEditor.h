@@ -2,6 +2,8 @@
 
 #include <libopensimcreator/Documents/Model/ObjectPropertyEdit.h>
 
+#include <liboscar/Platform/Widget.h>
+
 #include <functional>
 #include <memory>
 #include <optional>
@@ -12,18 +14,13 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class ObjectPropertiesEditor final {
+    class ObjectPropertiesEditor final : public Widget {
     public:
         explicit ObjectPropertiesEditor(
-            Widget* parentWidget,
+            Widget* parent,
             std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
             std::function<const OpenSim::Object*()> objectGetter
         );
-        ObjectPropertiesEditor(const ObjectPropertiesEditor&) = delete;
-        ObjectPropertiesEditor(ObjectPropertiesEditor&&) noexcept;
-        ObjectPropertiesEditor& operator=(const ObjectPropertiesEditor&) = delete;
-        ObjectPropertiesEditor& operator=(ObjectPropertiesEditor&&) noexcept;
-        ~ObjectPropertiesEditor() noexcept;
 
         void insertInBlacklist(std::string_view propertyName);
 
@@ -31,7 +28,9 @@ namespace osc
         std::optional<ObjectPropertyEdit> onDraw();
 
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

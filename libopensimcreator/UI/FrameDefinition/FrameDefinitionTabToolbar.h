@@ -1,32 +1,30 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
-
 #include <liboscar/Platform/Widget.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <cstddef>
 #include <memory>
 #include <string_view>
 
+namespace osc { class UndoableModelStatePair; }
+
 namespace osc
 {
-    class FrameDefinitionTabToolbar final {
+    class FrameDefinitionTabToolbar final : public Widget {
     public:
-        FrameDefinitionTabToolbar(
-            std::string_view,
-            Widget&,
+        explicit FrameDefinitionTabToolbar(
+            Widget* parent,
+            std::string_view name,
             std::shared_ptr<UndoableModelStatePair>
         );
 
-        void onDraw();
     private:
+        void impl_on_draw() final;
+
         void drawContent();
         void drawExportToOpenSimButton();
         void drawExportToOpenSimTooltipContent(size_t);
 
-        std::string m_Label;
-        LifetimedPtr<Widget> m_Parent;
         std::shared_ptr<UndoableModelStatePair> m_Model;
     };
 }
