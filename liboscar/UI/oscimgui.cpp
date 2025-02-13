@@ -1358,29 +1358,29 @@ private:
 };
 
 template<>
-struct osc::Converter<ui::WindowFlags, ImGuiWindowFlags> final {
-    ImGuiWindowFlags operator()(ui::WindowFlags flags) const
+struct osc::Converter<ui::PanelFlags, ImGuiWindowFlags> final {
+    ImGuiWindowFlags operator()(ui::PanelFlags flags) const
     {
         return c_mappings_(flags);
     }
 private:
-    static constexpr FlagMapper<ui::WindowFlag, ImGuiWindowFlags> c_mappings_ = {
-        {ui::WindowFlag::NoMove                 , ImGuiWindowFlags_NoMove                 },
-        {ui::WindowFlag::NoTitleBar             , ImGuiWindowFlags_NoTitleBar             },
-        {ui::WindowFlag::NoResize               , ImGuiWindowFlags_NoResize               },
-        {ui::WindowFlag::NoSavedSettings        , ImGuiWindowFlags_NoSavedSettings        },
-        {ui::WindowFlag::NoScrollbar            , ImGuiWindowFlags_NoScrollbar            },
-        {ui::WindowFlag::NoInputs               , ImGuiWindowFlags_NoInputs               },
-        {ui::WindowFlag::NoBackground           , ImGuiWindowFlags_NoBackground           },
-        {ui::WindowFlag::NoCollapse             , ImGuiWindowFlags_NoCollapse             },
-        {ui::WindowFlag::NoDecoration           , ImGuiWindowFlags_NoDecoration           },
-        {ui::WindowFlag::NoDocking              , ImGuiWindowFlags_NoDocking              },
+    static constexpr FlagMapper<ui::PanelFlag, ImGuiWindowFlags> c_mappings_ = {
+        {ui::PanelFlag::NoMove                 , ImGuiWindowFlags_NoMove                 },
+        {ui::PanelFlag::NoTitleBar             , ImGuiWindowFlags_NoTitleBar             },
+        {ui::PanelFlag::NoResize               , ImGuiWindowFlags_NoResize               },
+        {ui::PanelFlag::NoSavedSettings        , ImGuiWindowFlags_NoSavedSettings        },
+        {ui::PanelFlag::NoScrollbar            , ImGuiWindowFlags_NoScrollbar            },
+        {ui::PanelFlag::NoInputs               , ImGuiWindowFlags_NoInputs               },
+        {ui::PanelFlag::NoBackground           , ImGuiWindowFlags_NoBackground           },
+        {ui::PanelFlag::NoCollapse             , ImGuiWindowFlags_NoCollapse             },
+        {ui::PanelFlag::NoDecoration           , ImGuiWindowFlags_NoDecoration           },
+        {ui::PanelFlag::NoDocking              , ImGuiWindowFlags_NoDocking              },
 
-        {ui::WindowFlag::NoNav                  , ImGuiWindowFlags_NoNav                  },
-        {ui::WindowFlag::MenuBar                , ImGuiWindowFlags_MenuBar                },
-        {ui::WindowFlag::AlwaysAutoResize       , ImGuiWindowFlags_AlwaysAutoResize       },
-        {ui::WindowFlag::HorizontalScrollbar    , ImGuiWindowFlags_HorizontalScrollbar    },
-        {ui::WindowFlag::AlwaysVerticalScrollbar, ImGuiWindowFlags_AlwaysVerticalScrollbar},
+        {ui::PanelFlag::NoNav                  , ImGuiWindowFlags_NoNav                  },
+        {ui::PanelFlag::MenuBar                , ImGuiWindowFlags_MenuBar                },
+        {ui::PanelFlag::AlwaysAutoResize       , ImGuiWindowFlags_AlwaysAutoResize       },
+        {ui::PanelFlag::HorizontalScrollbar    , ImGuiWindowFlags_HorizontalScrollbar    },
+        {ui::PanelFlag::AlwaysVerticalScrollbar, ImGuiWindowFlags_AlwaysVerticalScrollbar},
     };
 };
 
@@ -1425,8 +1425,8 @@ private:
         {ui::HoveredFlag::AllowWhenOverlapped         , ImGuiHoveredFlags_AllowWhenOverlapped         },
         {ui::HoveredFlag::DelayNormal                 , ImGuiHoveredFlags_DelayNormal                 },
         {ui::HoveredFlag::ForTooltip                  , ImGuiHoveredFlags_ForTooltip                  },
-        {ui::HoveredFlag::RootAndChildWindows         , ImGuiHoveredFlags_RootAndChildWindows         },
-        {ui::HoveredFlag::ChildWindows                , ImGuiHoveredFlags_ChildWindows                },
+        {ui::HoveredFlag::RootAndChildPanels          , ImGuiHoveredFlags_RootAndChildWindows         },
+        {ui::HoveredFlag::ChildPanels                 , ImGuiHoveredFlags_ChildWindows                },
     };
 };
 
@@ -1507,7 +1507,7 @@ struct osc::Converter<ui::ColorVar, ImGuiCol> final {
         case ui::ColorVar::FrameBgActive:  return ImGuiCol_FrameBgActive;
         case ui::ColorVar::CheckMark:      return ImGuiCol_CheckMark;
         case ui::ColorVar::SliderGrab:     return ImGuiCol_SliderGrab;
-        case ui::ColorVar::WindowBg:       return ImGuiCol_WindowBg;
+        case ui::ColorVar::PanelBg:        return ImGuiCol_WindowBg;
         default:                           return ImGuiCol_Text;
         }
     }
@@ -1529,7 +1529,7 @@ struct osc::Converter<ui::StyleVar, ImGuiStyleVar> final {
         case ui::StyleVar::ItemInnerSpacing: return ImGuiStyleVar_ItemInnerSpacing;
         case ui::StyleVar::ItemSpacing:      return ImGuiStyleVar_ItemSpacing;
         case ui::StyleVar::TabRounding:      return ImGuiStyleVar_TabRounding;
-        case ui::StyleVar::WindowPadding:    return ImGuiStyleVar_WindowPadding;
+        case ui::StyleVar::PanelPadding:    return ImGuiStyleVar_WindowPadding;
         default:                             return ImGuiStyleVar_Alpha;
         }
     }
@@ -1934,7 +1934,7 @@ void osc::ui::enable_dockspace_over_main_viewport()
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
-bool osc::ui::begin_panel(CStringView name, bool* p_open, WindowFlags flags)
+bool osc::ui::begin_panel(CStringView name, bool* p_open, PanelFlags flags)
 {
     return ImGui::Begin(name.c_str(), p_open, to<ImGuiWindowFlags>(flags));
 }
@@ -1944,7 +1944,7 @@ void osc::ui::end_panel()
     ImGui::End();
 }
 
-bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ChildPanelFlags child_flags, WindowFlags panel_flags)
+bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ChildPanelFlags child_flags, PanelFlags panel_flags)
 {
     return ImGui::BeginChild(str_id.c_str(), size, to<ImGuiChildFlags>(child_flags), to<ImGuiWindowFlags>(panel_flags));
 }
@@ -2209,7 +2209,7 @@ void osc::ui::open_popup(CStringView str_id, PopupFlags popup_flags)
     ImGui::OpenPopup(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
 }
 
-bool osc::ui::begin_popup(CStringView str_id, WindowFlags flags)
+bool osc::ui::begin_popup(CStringView str_id, PanelFlags flags)
 {
     return ImGui::BeginPopup(str_id.c_str(), to<ImGuiWindowFlags>(flags));
 }
@@ -2219,7 +2219,7 @@ bool osc::ui::begin_popup_context_menu(CStringView str_id, PopupFlags popup_flag
     return ImGui::BeginPopupContextItem(str_id.c_str(), to<ImGuiPopupFlags>(popup_flags));
 }
 
-bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, WindowFlags flags)
+bool osc::ui::begin_popup_modal(CStringView name, bool* p_open, PanelFlags flags)
 {
     return ImGui::BeginPopupModal(name.c_str(), p_open, to<ImGuiWindowFlags>(flags));
 }
@@ -3135,20 +3135,20 @@ bool osc::ui::draw_angle_slider(CStringView label, Radians& v, Radians min, Radi
     return false;
 }
 
-ui::WindowFlags osc::ui::get_minimal_panel_flags()
+ui::PanelFlags osc::ui::get_minimal_panel_flags()
 {
     return {
-        ui::WindowFlag::NoBackground,
-        ui::WindowFlag::NoCollapse,
-        ui::WindowFlag::NoDecoration,
-        ui::WindowFlag::NoDocking,
-        ui::WindowFlag::NoInputs,
-        ui::WindowFlag::NoMove,
-        ui::WindowFlag::NoNav,
-        ui::WindowFlag::NoResize,
-        ui::WindowFlag::NoSavedSettings,
-        ui::WindowFlag::NoScrollbar,
-        ui::WindowFlag::NoTitleBar,
+        ui::PanelFlag::NoBackground,
+        ui::PanelFlag::NoCollapse,
+        ui::PanelFlag::NoDecoration,
+        ui::PanelFlag::NoDocking,
+        ui::PanelFlag::NoInputs,
+        ui::PanelFlag::NoMove,
+        ui::PanelFlag::NoNav,
+        ui::PanelFlag::NoResize,
+        ui::PanelFlag::NoSavedSettings,
+        ui::PanelFlag::NoScrollbar,
+        ui::PanelFlag::NoTitleBar,
     };
 }
 
@@ -3190,7 +3190,7 @@ bool osc::ui::is_mouse_in_main_viewport_workspace()
     return is_intersecting(hitRect, mousepos);
 }
 
-bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, WindowFlags flags)
+bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, PanelFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)

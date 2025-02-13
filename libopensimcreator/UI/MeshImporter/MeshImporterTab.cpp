@@ -238,7 +238,7 @@ public:
         if (m_Shared->isPanelEnabled(MeshImporterSharedState::PanelIndex::Log))
         {
             bool v = true;
-            if (ui::begin_panel("Log", &v, ui::WindowFlag::MenuBar))
+            if (ui::begin_panel("Log", &v, ui::PanelFlag::MenuBar))
             {
                 m_Shared->updLogViewer().on_draw();
             }
@@ -2360,13 +2360,13 @@ private:
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
             ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
-            ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
-            const ui::WindowFlags modalFlags = {
-                ui::WindowFlag::AlwaysAutoResize,
-                ui::WindowFlag::NoTitleBar,
-                ui::WindowFlag::NoMove,
-                ui::WindowFlag::NoResize,
+            const ui::PanelFlags modalFlags = {
+                ui::PanelFlag::AlwaysAutoResize,
+                ui::PanelFlag::NoTitleBar,
+                ui::PanelFlag::NoMove,
+                ui::PanelFlag::NoResize,
             };
 
             if (ui::begin_popup_modal("##visualizermodalpopup", nullptr, modalFlags))
@@ -2382,7 +2382,7 @@ private:
         }
         else
         {
-            ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f});
+            ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
             if (ui::begin_panel("wizard_3dViewer"))
             {
                 ui::pop_style_var();

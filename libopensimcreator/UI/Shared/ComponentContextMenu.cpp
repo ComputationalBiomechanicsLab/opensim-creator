@@ -363,7 +363,7 @@ public:
         OpenSim::ComponentPath path_,
         ComponentContextMenuFlags flags_) :
 
-        StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
+        StandardPopup{popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
         m_Parent{parent_.weak_ref()},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)},

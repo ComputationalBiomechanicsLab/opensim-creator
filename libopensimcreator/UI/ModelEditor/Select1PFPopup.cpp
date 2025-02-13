@@ -30,7 +30,7 @@ private:
     {
         const OpenSim::PhysicalFrame* selected = nullptr;
 
-        ui::begin_child_panel("pflist", Vec2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::WindowFlag::HorizontalScrollbar);
+        ui::begin_child_panel("pflist", Vec2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
         for (const auto& pf : m_Model->getModel().getComponentList<OpenSim::PhysicalFrame>()) {
             if (ui::draw_selectable(pf.getName())) {
                 selected = &pf;

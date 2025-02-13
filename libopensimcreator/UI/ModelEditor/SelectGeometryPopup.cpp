@@ -142,7 +142,7 @@ private:
             "mesh list",
             Vec2{ui::get_content_region_available().x, 256},
             ui::ChildPanelFlags{},
-            ui::WindowFlag::HorizontalScrollbar);
+            ui::PanelFlag::HorizontalScrollbar);
 
         if (!m_RecentUserChoices.empty())
         {

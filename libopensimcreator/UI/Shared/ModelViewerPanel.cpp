@@ -444,7 +444,7 @@ public:
             // check if the window is conditionally hovered: this returns true if no other window is
             // overlapping the editor panel, _but_ it also returns true if the user is only hovering
             // the title bar of the window, rather than specifically the render
-            const bool windowHovered = ui::is_panel_hovered(ui::HoveredFlag::ChildWindows);
+            const bool windowHovered = ui::is_panel_hovered(ui::HoveredFlag::ChildPanels);
 
             // check if the 3D render is hovered - ignore blocking and overlapping because the layer
             // stack might be screwing with this
@@ -525,16 +525,16 @@ private:
         {
             ModelViewerPanelLayer& layer = **it;
 
-            ui::WindowFlags windowFlags = ui::get_minimal_panel_flags().without(ui::WindowFlag::NoInputs);
+            ui::PanelFlags windowFlags = ui::get_minimal_panel_flags().without(ui::PanelFlag::NoInputs);
 
             // if any layer above this one captures mouse inputs then disable this layer's inputs
             if (find_if(it+1, m_Layers.end(), [](const auto& layerPtr) -> bool { return layerPtr->getFlags() & ModelViewerPanelLayerFlags::CapturesMouseInputs; }) != m_Layers.end())
             {
-                windowFlags |= ui::WindowFlag::NoInputs;
+                windowFlags |= ui::PanelFlag::NoInputs;
             }
 
             // layers always have a background (although, it can be entirely invisible)
-            windowFlags = windowFlags.without(ui::WindowFlag::NoBackground);
+            windowFlags = windowFlags.without(ui::PanelFlag::NoBackground);
             ui::set_next_panel_bg_alpha(layer.getBackgroundAlpha());
 
             // draw the layer in a child window, so that ImGui understands that hittests
@@ -592,5 +592,5 @@ const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return 
 void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }
 void osc::ModelViewerPanel::setModelState(const std::shared_ptr<IModelStatePair>& newModelState) { private_data().setModelState(newModelState); }
 void osc::ModelViewerPanel::impl_draw_content() { private_data().draw_content(); }
-void osc::ModelViewerPanel::impl_before_imgui_begin() { ui::push_style_var(ui::StyleVar::WindowPadding, {0.0f, 0.0f}); }
+void osc::ModelViewerPanel::impl_before_imgui_begin() { ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f}); }
 void osc::ModelViewerPanel::impl_after_imgui_begin() { ui::pop_style_var(); }

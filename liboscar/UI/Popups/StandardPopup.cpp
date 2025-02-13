@@ -10,18 +10,18 @@
 #include <string_view>
 
 osc::StandardPopup::StandardPopup(std::string_view popup_name) :
-    StandardPopup{popup_name, {512.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize}
+    StandardPopup{popup_name, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize}
 {}
 
 osc::StandardPopup::StandardPopup(
     std::string_view popup_name,
     Vec2 dimensions,
-    ui::WindowFlags popup_flags) :
+    ui::PanelFlags panel_flags) :
 
     popup_name_{popup_name},
     dimensions_{dimensions},
     maybe_position_{std::nullopt},
-    popup_flags_{popup_flags},
+    panel_flags_{panel_flags},
     should_open_{false},
     should_close_{false},
     just_opened_{false},
@@ -78,7 +78,7 @@ bool osc::StandardPopup::impl_begin_popup()
         //
         // else, set the position every frame, because the __nonzero__ dimensions
         // will stretch out the modal accordingly
-        if (not (popup_flags_ & ui::WindowFlag::AlwaysAutoResize)) {
+        if (not (panel_flags_ & ui::PanelFlag::AlwaysAutoResize)) {
             ui::set_next_panel_size(
                 Vec2{dimensions_},
                 ui::Conditional::Appearing
@@ -92,7 +92,7 @@ bool osc::StandardPopup::impl_begin_popup()
 
         // try to begin the modal window
         impl_before_imgui_begin_popup();
-        const bool opened = ui::begin_popup_modal(popup_name_, nullptr, popup_flags_);
+        const bool opened = ui::begin_popup_modal(popup_name_, nullptr, panel_flags_);
         impl_after_imgui_begin_popup();
 
         if (not opened) {
@@ -117,7 +117,7 @@ bool osc::StandardPopup::impl_begin_popup()
 
         // try to begin the popup window
         impl_before_imgui_begin_popup();
-        const bool opened = ui::begin_popup(popup_name_, popup_flags_);
+        const bool opened = ui::begin_popup(popup_name_, panel_flags_);
         impl_after_imgui_begin_popup();
 
         // try to show popup

@@ -268,7 +268,7 @@ namespace osc::ui
     Vec2 get_main_viewport_center();
     void enable_dockspace_over_main_viewport();
 
-    enum class WindowFlag : unsigned {
+    enum class PanelFlag : unsigned {
         None                    = 0,
 
         NoMove                  = 1<<0,
@@ -290,9 +290,9 @@ namespace osc::ui
 
         NUM_FLAGS               = 15,
     };
-    using WindowFlags = Flags<WindowFlag>;
+    using PanelFlags = Flags<PanelFlag>;
 
-    bool begin_panel(CStringView name, bool* p_open = nullptr, WindowFlags = {});
+    bool begin_panel(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_panel();
 
     enum class ChildPanelFlag : unsigned {
@@ -303,7 +303,7 @@ namespace osc::ui
     using ChildPanelFlags = Flags<ChildPanelFlag>;
 
     // Begins a child panel within a parent panel with the given ID, device-independent pixel size, and flags.
-    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ChildPanelFlags child_flags = {}, WindowFlags panel_flags = {});
+    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ChildPanelFlags child_flags = {}, PanelFlags panel_flags = {});
     void end_child_panel();
 
     void close_current_popup();
@@ -378,8 +378,8 @@ namespace osc::ui
         AllowWhenOverlapped          = 1<<3,
         DelayNormal                  = 1<<4,
         ForTooltip                   = 1<<5,
-        RootAndChildWindows          = 1<<6,
-        ChildWindows                 = 1<<7,
+        RootAndChildPanels           = 1<<6,
+        ChildPanels                  = 1<<7,
         NUM_FLAGS                    =    8,
     };
     using HoveredFlags = Flags<HoveredFlag>;
@@ -437,7 +437,7 @@ namespace osc::ui
         FrameBgActive,
         CheckMark,
         SliderGrab,
-        WindowBg,
+        PanelBg,
         NUM_OPTIONS,
     };
 
@@ -462,7 +462,7 @@ namespace osc::ui
         ItemInnerSpacing,
         ItemSpacing,
         TabRounding,
-        WindowPadding,
+        PanelPadding,
         NUM_OPTIONS,
     };
 
@@ -479,9 +479,9 @@ namespace osc::ui
     using PopupFlags = Flags<PopupFlag>;
 
     void open_popup(CStringView str_id, PopupFlags = {});
-    bool begin_popup(CStringView str_id, WindowFlags = {});
+    bool begin_popup(CStringView str_id, PanelFlags = {});
     bool begin_popup_context_menu(CStringView str_id = {}, PopupFlags = PopupFlag::MouseButtonRight);
-    bool begin_popup_modal(CStringView name, bool* p_open = nullptr, WindowFlags = {});
+    bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
     Vec2 get_mouse_pos();
@@ -823,7 +823,7 @@ namespace osc::ui
     );
 
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
-    WindowFlags get_minimal_panel_flags();
+    PanelFlags get_minimal_panel_flags();
 
     // returns a `Rect` that indicates where the current workspace area is in the main viewport
     //
@@ -857,7 +857,7 @@ namespace osc::ui
     bool begin_main_viewport_top_bar(
         CStringView label,
         float height = ui::get_frame_height(),
-        WindowFlags = {WindowFlag::NoScrollbar, WindowFlag::NoSavedSettings, WindowFlag::MenuBar}
+        PanelFlags = {PanelFlag::NoScrollbar, PanelFlag::NoSavedSettings, PanelFlag::MenuBar}
     );
 
     // begin a menu that's attached to the bottom of a viewport, end it with `ui::end_panel()`
@@ -1092,7 +1092,7 @@ namespace osc::ui
             // plot line/outline color (defaults to the next unused color in the current colormap)
             Line,
 
-            // plot area background color (defaults to `ImGuiCol_WindowBg`)
+            // plot area background color (defaults to `ColorVar::PanelBg`)
             PlotBackground,
 
             NUM_OPTIONS,

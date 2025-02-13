@@ -23,7 +23,7 @@ osc::PanelPrivate::PanelPrivate(
     Panel& owner,
     Widget* parent,
     std::string_view panel_name,
-    ui::WindowFlags window_flags) :
+    ui::PanelFlags window_flags) :
 
     WidgetPrivate{owner, parent},
     panel_enabled_config_key_{create_panel_enabled_config_key(panel_name)},

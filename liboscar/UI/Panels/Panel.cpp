@@ -10,8 +10,8 @@
 osc::Panel::Panel() :
     Panel{std::make_unique<PanelPrivate>(*this)}
 {}
-osc::Panel::Panel(Widget* parent, std::string_view panel_name, ui::WindowFlags window_flags) :
-    Panel{std::make_unique<PanelPrivate>(*this, parent, panel_name, window_flags)}
+osc::Panel::Panel(Widget* parent, std::string_view panel_name, ui::PanelFlags panel_flags) :
+    Panel{std::make_unique<PanelPrivate>(*this, parent, panel_name, panel_flags)}
 {}
 osc::Panel::Panel(std::unique_ptr<PanelPrivate>&& ptr) :
     Widget{std::move(ptr)}

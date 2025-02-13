@@ -190,7 +190,7 @@ private:
         ui::set_next_panel_pos(viewportUIRect.p1);
         ui::set_next_panel_size(dimensions_of(viewportUIRect));
 
-        ui::push_style_var(ui::StyleVar::WindowPadding, { 0.0f, 0.0f });
+        ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 
@@ -229,7 +229,7 @@ private:
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
-        if (ui::begin_panel("Splash screen", nullptr, ui::WindowFlag::NoTitleBar)) {
+        if (ui::begin_panel("Splash screen", nullptr, ui::PanelFlag::NoTitleBar)) {
             drawMenuContent();
         }
         ui::end_panel();

@@ -73,7 +73,7 @@ class osc::ParamBlockEditorPopup::Impl final : public StandardPopup {
 public:
 
     Impl(std::string_view popupName, ParamBlock* paramBlock) :
-        StandardPopup{popupName, {512.0f, 0.0f}, ui::WindowFlag::AlwaysAutoResize},
+        StandardPopup{popupName, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
         m_OutputTarget{paramBlock},
         m_LocalCopy{*m_OutputTarget}
     {}

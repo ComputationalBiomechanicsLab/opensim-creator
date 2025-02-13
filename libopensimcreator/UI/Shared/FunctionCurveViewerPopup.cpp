@@ -34,7 +34,7 @@ public:
         std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Function*()> functionGetter) :
 
-        PanelPrivate{owner, nullptr, popupName, ui::WindowFlag::AlwaysAutoResize},
+        PanelPrivate{owner, nullptr, popupName, ui::PanelFlag::AlwaysAutoResize},
         m_Component{std::move(targetComponent)},
         m_FunctionGetter{std::move(functionGetter)}
     {}

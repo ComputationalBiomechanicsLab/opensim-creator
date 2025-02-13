@@ -142,7 +142,7 @@ private:
             "##componentnavigatorvieweritems",
             Vec2{0.0, 0.0},
             ui::ChildPanelFlags{},
-            ui::WindowFlag::NoBackground
+            ui::PanelFlag::NoBackground
         );
 
         ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height()});
@@ -241,7 +241,7 @@ private:
                 const auto offset = ui::get_cursor_screen_pos() - ui::get_cursor_pos();
                 const auto topLeft = Vec2{0.0f, ui::get_cursor_pos().y};
                 const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing()};
-                ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::WindowBg), 1.2f));
+                ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f));
             }
 
             // handle coloring

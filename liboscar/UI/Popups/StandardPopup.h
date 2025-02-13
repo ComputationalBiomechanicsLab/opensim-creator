@@ -31,7 +31,7 @@ namespace osc
         StandardPopup(
             std::string_view popup_name,
             Vec2 dimensions,
-            ui::WindowFlags
+            ui::PanelFlags
         );
 
     protected:
@@ -62,7 +62,7 @@ namespace osc
         std::string popup_name_;
         Vec2i dimensions_;
         std::optional<Vec2i> maybe_position_;
-        ui::WindowFlags popup_flags_;
+        ui::PanelFlags panel_flags_;
         bool should_open_;
         bool should_close_;
         bool just_opened_;

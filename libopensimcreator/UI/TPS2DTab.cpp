@@ -372,7 +372,7 @@ public:
             const float panelHeight = 50.0f;
             ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
-            ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::WindowFlag::NoInputs));
+            ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::PanelFlag::NoInputs));
             ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_float_slider("##blend", &m_BlendingFactor, 0.0f, 1.0f);
             ui::end_panel();

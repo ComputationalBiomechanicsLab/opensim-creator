@@ -13,7 +13,7 @@ class osc::LogViewerPanel::Impl final : public PanelPrivate {
 public:
 
     explicit Impl(LogViewerPanel& owner, std::string_view panel_name) :
-        PanelPrivate{owner, nullptr, panel_name, ui::WindowFlag::MenuBar}
+        PanelPrivate{owner, nullptr, panel_name, ui::PanelFlag::MenuBar}
     {}
 
     void draw_content() { log_viewer_.on_draw(); }

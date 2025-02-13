@@ -863,7 +863,7 @@ namespace
             OpenSim::ComponentPath componentPath_,
             std::optional<ModelViewerPanelRightClickEvent> maybeSourceVisualizerEvent_ = std::nullopt) :
 
-            StandardPopup{popupName_, {10.0f, 10.0f}, ui::WindowFlag::NoMove},
+            StandardPopup{popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
             m_PanelManager{std::move(panelManager_)},
             m_Model{std::move(model_)},
             m_ComponentPath{std::move(componentPath_)},

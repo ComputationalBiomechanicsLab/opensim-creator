@@ -136,7 +136,7 @@ private:
         if (ui::draw_button("visualization options " OSC_ICON_COG)) {
             ui::open_popup("visualization_options_popup");
         }
-        if (ui::begin_popup("visualization_options_popup", {ui::WindowFlag::AlwaysAutoResize, ui::WindowFlag::NoTitleBar, ui::WindowFlag::NoSavedSettings})) {
+        if (ui::begin_popup("visualization_options_popup", {ui::PanelFlag::AlwaysAutoResize, ui::PanelFlag::NoTitleBar, ui::PanelFlag::NoSavedSettings})) {
             DrawRenderingOptionsEditor(m_State->updCustomRenderingOptions());
             DrawOverlayOptionsEditor(m_State->updOverlayDecorationOptions());
             {

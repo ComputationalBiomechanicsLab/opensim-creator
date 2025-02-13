@@ -175,7 +175,7 @@ public:
         ModelViewerPanelParameters& panelParams,
         ModelViewerPanelState& panelState)
     {
-        const bool layerIsHovered = ui::is_panel_hovered(ui::HoveredFlag::RootAndChildWindows);
+        const bool layerIsHovered = ui::is_panel_hovered(ui::HoveredFlag::RootAndChildPanels);
 
         // update this layer's state from provided state
         m_State.renderParams = panelParams.getRenderParams();
