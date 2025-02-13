@@ -383,7 +383,7 @@ private:
             DrawNothingRightClickedContextMenuHeader();
             DrawContextMenuSeparator();
             if (ui::begin_menu("Add", m_Model->canUpdModel())) {
-                m_ModelActionsMenuBar.onDraw();
+                m_ModelActionsMenuBar.on_draw();
                 ui::end_menu();
             }
 
@@ -621,7 +621,7 @@ private:
     LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{*m_Parent, m_Model};
+    ModelActionsMenuItems m_ModelActionsMenuBar{m_Parent.get(), m_Model};
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),

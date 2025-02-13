@@ -12,6 +12,7 @@ osc::Widget::~Widget() noexcept = default;
 
 Widget* osc::Widget::parent() { return data_->parent(); }
 const Widget* osc::Widget::parent() const { return data_->parent(); }
+void osc::Widget::set_parent(Widget* new_parent) { data_->set_parent(new_parent); }
 
 LifetimedPtr<Widget> osc::Widget::weak_ref()
 {

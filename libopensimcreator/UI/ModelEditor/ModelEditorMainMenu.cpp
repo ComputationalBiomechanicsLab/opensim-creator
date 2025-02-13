@@ -14,6 +14,7 @@
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/oscimgui.h>
@@ -41,16 +42,17 @@ namespace
     }
 }
 
-class osc::ModelEditorMainMenu::Impl final {
+class osc::ModelEditorMainMenu::Impl final : public WidgetPrivate {
 public:
-    Impl(
-        Widget& parent_,
+    explicit Impl(
+        Widget& owner_,
+        Widget* parent_,
         std::shared_ptr<PanelManager> panelManager_,
         std::shared_ptr<IModelStatePair> model_) :
 
-        m_Parent{parent_.weak_ref()},
+        WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)},
-        m_MainMenuFileTab{parent_},
+        m_MainMenuFileTab{&owner_},
         m_WindowMenu{std::move(panelManager_)}
     {}
 
@@ -95,7 +97,7 @@ private:
     void drawMainMenuAddTab()
     {
         if (ui::begin_menu("Add")) {
-            m_MainMenuAddTabMenuItems.onDraw();
+            m_MainMenuAddTabMenuItems.on_draw();
             ui::end_menu();
         }
     }
@@ -104,36 +106,44 @@ private:
     {
         if (ui::begin_menu("Tools")) {
             if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R")) {
-                ActionStartSimulatingModel(*m_Parent, *m_Model);
+                ActionStartSimulatingModel(owner(), *m_Model);
             }
 
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
-                auto popup = std::make_unique<ParamBlockEditorPopup>(
-                    "simulation parameters",
-                    &m_Model->tryUpdEnvironment()->updSimulationParams()
-                );
-                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                if (parent()) {
+                    auto popup = std::make_unique<ParamBlockEditorPopup>(
+                        "simulation parameters",
+                        &m_Model->tryUpdEnvironment()->updSimulationParams()
+                    );
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
             }
 
             if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
-                auto popup = std::make_unique<ImportStationsFromCSVPopup>(
-                    "Import Points",
-                    [model = m_Model](auto lms)
-                    {
-                        ActionImportLandmarks(*model, lms.landmarks, lms.maybeLabel);
-                    }
-                );
-                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                if (parent()) {
+                    auto popup = std::make_unique<ImportStationsFromCSVPopup>(
+                        "Import Points",
+                        [model = m_Model](auto lms)
+                        {
+                            ActionImportLandmarks(*model, lms.landmarks, lms.maybeLabel);
+                        }
+                    );
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
             }
 
             if (ui::draw_menu_item("         Export Points")) {
                 auto popup = std::make_unique<ExportPointsPopup>("Export Points", m_Model);
-                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                if (parent()) {
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
             }
 
             if (ui::begin_menu("         Experimental Tools")) {
                 if (ui::draw_menu_item("Simulate Against All Integrators (advanced)")) {
-                    ActionSimulateAgainstAllIntegrators(*m_Parent, *m_Model);
+                    if (parent()) {
+                        ActionSimulateAgainstAllIntegrators(*parent(), *m_Model);
+                    }
                 }
                 ui::draw_tooltip_if_item_hovered("Simulate Against All Integrators", "Simulate the given model against all available SimTK integrators. This takes the current simulation parameters and permutes the integrator, reporting the overall simulation wall-time to the user. It's an advanced feature that's handy for developers to figure out which integrator best-suits a particular model");
 
@@ -173,27 +183,23 @@ private:
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelActionsMenuItems m_MainMenuAddTabMenuItems{*m_Parent, m_Model};
+    ModelActionsMenuItems m_MainMenuAddTabMenuItems{&owner(), m_Model};
     WindowMenu m_WindowMenu;
     MainMenuAboutTab m_MainMenuAboutTab;
 };
 
 
 osc::ModelEditorMainMenu::ModelEditorMainMenu(
-    Widget& parent_,
+    Widget* parent_,
     std::shared_ptr<PanelManager> panelManager_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(panelManager_), std::move(model_))}
+    Widget{std::make_unique<Impl>(*this, parent_, std::move(panelManager_), std::move(model_))}
 {}
-osc::ModelEditorMainMenu::ModelEditorMainMenu(ModelEditorMainMenu&&) noexcept = default;
-osc::ModelEditorMainMenu& osc::ModelEditorMainMenu::operator=(ModelEditorMainMenu&&) noexcept = default;
-osc::ModelEditorMainMenu::~ModelEditorMainMenu() noexcept = default;
 
-void osc::ModelEditorMainMenu::onDraw()
+void osc::ModelEditorMainMenu::impl_on_draw()
 {
-    m_Impl->onDraw();
+    private_data().onDraw();
 }

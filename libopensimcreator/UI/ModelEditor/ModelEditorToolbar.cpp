@@ -11,6 +11,7 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
@@ -22,34 +23,37 @@
 #include <string_view>
 #include <utility>
 
-class osc::ModelEditorToolbar::Impl final {
+class osc::ModelEditorToolbar::Impl final : public WidgetPrivate {
 public:
-    Impl(
+    explicit Impl(
+        Widget& owner_,
+        Widget* parent_,
         std::string_view label_,
-        Widget& parent_,
         std::shared_ptr<UndoableModelStatePair> model_) :
 
-        m_Label{label_},
-        m_Parent{parent_.weak_ref()},
+        WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)}
-    {}
+    {
+        set_name(label_);
+    }
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f}))
-        {
+        if (BeginToolbar(name(), Vec2{5.0f, 5.0f})) {
             drawContent();
         }
         ui::end_panel();
     }
+
+    OSC_OWNER_GETTERS(ModelEditorToolbar);
 private:
     void drawModelFileRelatedButtons()
     {
-        DrawNewModelButton(*m_Parent);
+        DrawNewModelButton(owner());
         ui::same_line();
-        DrawOpenModelButtonWithRecentFilesDropdown(*m_Parent);
+        DrawOpenModelButtonWithRecentFilesDropdown(owner());
         ui::same_line();
-        DrawSaveModelButton(*m_Parent, *m_Model);
+        DrawSaveModelButton(*m_Model);
         ui::same_line();
         DrawReloadModelButton(*m_Model);
     }
@@ -59,9 +63,10 @@ private:
         ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 0.0f});
 
         ui::push_style_color(ui::ColorVar::Text, Color::dark_green());
-        if (ui::draw_button(OSC_ICON_PLAY))
-        {
-            ActionStartSimulatingModel(*m_Parent, *m_Model);
+        if (ui::draw_button(OSC_ICON_PLAY)) {
+            if (parent()) {
+                ActionStartSimulatingModel(*parent(), *m_Model);
+            }
         }
         ui::pop_style_color();
         App::upd().add_frame_annotation("Simulate Button", ui::get_last_drawn_item_screen_rect());
@@ -75,7 +80,7 @@ private:
                 "simulation parameters",
                 &m_Model->tryUpdEnvironment()->updSimulationParams()
             );
-            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Edit Simulation Settings", "Change the parameters used when simulating the model");
 
@@ -99,8 +104,6 @@ private:
         DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
     }
 
-    std::string m_Label;
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<UndoableModelStatePair> m_Model;
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
@@ -109,19 +112,15 @@ private:
     );
 };
 
-
 osc::ModelEditorToolbar::ModelEditorToolbar(
+    Widget* parent_,
     std::string_view label_,
-    Widget& parent_,
     std::shared_ptr<UndoableModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(label_, parent_, std::move(model_))}
+    Widget{std::make_unique<Impl>(*this, parent_, label_, std::move(model_))}
 {}
-osc::ModelEditorToolbar::ModelEditorToolbar(ModelEditorToolbar&&) noexcept = default;
-osc::ModelEditorToolbar& osc::ModelEditorToolbar::operator=(ModelEditorToolbar&&) noexcept = default;
-osc::ModelEditorToolbar::~ModelEditorToolbar() noexcept = default;
 
-void osc::ModelEditorToolbar::onDraw()
+void osc::ModelEditorToolbar::impl_on_draw()
 {
-    m_Impl->onDraw();
+    private_data().onDraw();
 }

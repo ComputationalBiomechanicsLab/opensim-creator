@@ -454,7 +454,7 @@ public:
             ui::enable_dockspace_over_main_viewport();
             m_Toolbar.onDraw();
             m_PanelManager->on_draw();
-            m_StatusBar.onDraw();
+            m_StatusBar.on_draw();
             m_PopupManager.on_draw();
             m_ThrewExceptionLastFrame = false;
         }
@@ -475,7 +475,7 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
     PreviewExperimentalDataTabToolbar m_Toolbar{m_UiState};
     WindowMenu m_WindowMenu{m_PanelManager};
-    ModelStatusBar m_StatusBar{*parent(), m_UiState->updSharedModelPtr()};
+    ModelStatusBar m_StatusBar{parent(), m_UiState->updSharedModelPtr()};
     PopupManager m_PopupManager;
     bool m_ThrewExceptionLastFrame = false;
 };

@@ -9,6 +9,7 @@
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
@@ -26,14 +27,15 @@
 #include <sstream>
 #include <utility>
 
-class osc::ModelActionsMenuItems::Impl final {
+class osc::ModelActionsMenuItems::Impl final : public WidgetPrivate {
 public:
 
-    Impl(
-        Widget& parent,
+    explicit Impl(
+        Widget& owner,
+        Widget* parent,
         std::shared_ptr<IModelStatePair> uum_) :
 
-        m_Parent{parent.weak_ref()},
+        WidgetPrivate{owner, parent},
         m_Model{std::move(uum_)}
     {}
 
@@ -50,8 +52,10 @@ public:
         {
             // draw button
             if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
-                auto popup = std::make_unique<AddBodyPopup>("add body", *m_Parent, m_Model);
-                App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                if (parent()) {
+                    auto popup = std::make_unique<AddBodyPopup>("add body", *parent(), m_Model);
+                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                }
             }
 
             // draw tooltip (if hovered)
@@ -85,13 +89,15 @@ private:
         if (ui::begin_menu(registry.name(), m_Model->canUpdModel())) {
             for (const auto& entry : registry) {
                 if (ui::draw_menu_item(entry.name())) {
-                    auto popup = std::make_unique<AddComponentPopup>(
-                        "Add " + registry.name(),
-                        *m_Parent,
-                        m_Model,
-                        entry.instantiate()
-                    );
-                    App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                    if (parent()) {
+                        auto popup = std::make_unique<AddComponentPopup>(
+                            "Add " + registry.name(),
+                            *parent(),
+                            m_Model,
+                            entry.instantiate()
+                        );
+                        App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                    }
                 }
 
                 if (ui::is_item_hovered(ui::HoveredFlag::DelayNormal)) {
@@ -107,16 +113,12 @@ private:
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget& parent, std::shared_ptr<IModelStatePair> m) :
-    m_Impl{std::make_unique<Impl>(parent, std::move(m))}
+osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget* parent, std::shared_ptr<IModelStatePair> m) :
+    Widget{std::make_unique<Impl>(*this, parent, std::move(m))}
 {}
-osc::ModelActionsMenuItems::ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept = default;
-osc::ModelActionsMenuItems& osc::ModelActionsMenuItems::operator=(ModelActionsMenuItems&&) noexcept = default;
-osc::ModelActionsMenuItems::~ModelActionsMenuItems() noexcept = default;
 
-void osc::ModelActionsMenuItems::onDraw() { m_Impl->onDraw(); }
+void osc::ModelActionsMenuItems::impl_on_draw() { private_data().onDraw(); }

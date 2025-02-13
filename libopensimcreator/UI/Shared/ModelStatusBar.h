@@ -1,25 +1,21 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 
 namespace osc { class IModelStatePair; }
-namespace osc { class Widget; }
 
 namespace osc
 {
-    class ModelStatusBar final {
+    class ModelStatusBar final : public Widget {
     public:
-        ModelStatusBar(Widget&, std::shared_ptr<IModelStatePair>);
-        ModelStatusBar(const ModelStatusBar&) = delete;
-        ModelStatusBar(ModelStatusBar&&) noexcept;
-        ModelStatusBar& operator=(const ModelStatusBar&) = delete;
-        ModelStatusBar& operator=(ModelStatusBar&&) noexcept;
-        ~ModelStatusBar() noexcept;
-
-        void onDraw();
+        explicit ModelStatusBar(Widget* parent, std::shared_ptr<IModelStatePair>);
 
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

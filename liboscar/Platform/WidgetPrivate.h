@@ -25,6 +25,8 @@ namespace osc
         Widget* parent() { return parent_; }
         const Widget* parent() const { return parent_; }
 
+        void set_parent(Widget* new_parent) { parent_ = new_parent; }
+
         CStringView name() const { return name_; }
         void set_name(std::string_view name) { name_ = name; }
 

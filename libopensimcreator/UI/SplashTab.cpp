@@ -102,7 +102,7 @@ public:
 
     explicit Impl(SplashTab& owner, Widget& parent_) :
         TabPrivate{owner, &parent_, OSC_ICON_HOME},
-        m_MainMenuFileTab{parent_}
+        m_MainMenuFileTab{std::make_unique<MainMenuFileTab>(&owner)}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
         m_CziLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -114,7 +114,7 @@ public:
         // edge-case: reset the file tab whenever the splash screen is (re)mounted,
         // because actions within other tabs may have updated things like recently
         // used files etc. (#618)
-        m_MainMenuFileTab = MainMenuFileTab{*parent()};
+        m_MainMenuFileTab = std::make_unique<MainMenuFileTab>(&owner());
 
         App::upd().make_main_loop_waiting();
     }
@@ -138,7 +138,7 @@ public:
 
     void drawMainMenu()
     {
-        m_MainMenuFileTab.onDraw();
+        m_MainMenuFileTab->onDraw();
         m_MainMenuAboutTab.onDraw();
     }
 
@@ -341,12 +341,12 @@ private:
 
     void drawMenuRightColumnContent(int& imguiID)
     {
-        if (not m_MainMenuFileTab.exampleOsimFiles.empty()) {
+        if (not m_MainMenuFileTab->exampleOsimFiles.empty()) {
 
             ui::draw_text_disabled("Example Models");
             ui::draw_dummy({0.0f, 2.0f});
 
-            for (const std::filesystem::path& examplePath : m_MainMenuFileTab.exampleOsimFiles) {
+            for (const std::filesystem::path& examplePath : m_MainMenuFileTab->exampleOsimFiles) {
                 DrawRecentOrExampleFileMenuItem(
                     examplePath,
                     *parent(),
@@ -408,7 +408,7 @@ private:
     Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state
-    MainMenuFileTab m_MainMenuFileTab;
+    std::unique_ptr<MainMenuFileTab> m_MainMenuFileTab;
     MainMenuAboutTab m_MainMenuAboutTab;
     LogViewer m_LogViewer;
 };

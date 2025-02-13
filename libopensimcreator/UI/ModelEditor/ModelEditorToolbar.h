@@ -1,30 +1,25 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 #include <string_view>
 
 namespace osc { class UndoableModelStatePair; }
-namespace osc { class Widget; }
 
 namespace osc
 {
-    class ModelEditorToolbar final {
+    class ModelEditorToolbar final : public Widget {
     public:
-        ModelEditorToolbar(
+        explicit ModelEditorToolbar(
+            Widget* parent,
             std::string_view label,
-            Widget&,
             std::shared_ptr<UndoableModelStatePair>
         );
-        ModelEditorToolbar(const ModelEditorToolbar&) = delete;
-        ModelEditorToolbar(ModelEditorToolbar&&) noexcept;
-        ModelEditorToolbar& operator=(const ModelEditorToolbar&) = delete;
-        ModelEditorToolbar& operator=(ModelEditorToolbar&&) noexcept;
-        ~ModelEditorToolbar() noexcept;
-
-        void onDraw();
-
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

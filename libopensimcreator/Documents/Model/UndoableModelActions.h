@@ -60,7 +60,6 @@ namespace osc
 
     // try to save the given model file to disk
     bool ActionSaveModel(
-        Widget&,
         IModelStatePair&
     );
 

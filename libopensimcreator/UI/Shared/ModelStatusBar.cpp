@@ -7,6 +7,7 @@
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/LifetimedPtr.h>
@@ -17,11 +18,14 @@
 #include <utility>
 
 
-class osc::ModelStatusBar::Impl final {
+class osc::ModelStatusBar::Impl final : public WidgetPrivate {
 public:
-    Impl(Widget& parent_, std::shared_ptr<IModelStatePair> model_) :
+    explicit Impl(
+        Widget& owner_,
+        Widget* parent_,
+        std::shared_ptr<IModelStatePair> model_) :
 
-        m_Parent{parent_.weak_ref()},
+        WidgetPrivate{owner_, parent_},
         m_Model{std::move(model_)}
     {}
 
@@ -78,33 +82,27 @@ private:
             ui::end_tooltip();
         }
         if (ui::is_item_clicked(ui::MouseButton::Right)) {
-            auto menu = std::make_unique<ComponentContextMenu>(
-                "##hovermenu",
-                *m_Parent,
-                m_Model,
-                GetAbsolutePath(c)
-            );
-            menu->open();
-            App::post_event<OpenPopupEvent>(*m_Parent, std::move(menu));
+            if (parent()) {
+                auto menu = std::make_unique<ComponentContextMenu>(
+                    "##hovermenu",
+                    *parent(),
+                    m_Model,
+                    GetAbsolutePath(c)
+                );
+                menu->open();
+                App::post_event<OpenPopupEvent>(*parent(), std::move(menu));
+            }
         }
     }
 
-    LifetimedPtr<Widget> m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
 };
 
 
 osc::ModelStatusBar::ModelStatusBar(
-    Widget& parent_,
+    Widget* parent_,
     std::shared_ptr<IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, std::move(model_))}
+    Widget{std::make_unique<Impl>(*this, parent_, std::move(model_))}
 {}
-osc::ModelStatusBar::ModelStatusBar(ModelStatusBar&&) noexcept = default;
-osc::ModelStatusBar& osc::ModelStatusBar::operator=(ModelStatusBar&&) noexcept = default;
-osc::ModelStatusBar::~ModelStatusBar() noexcept = default;
-
-void osc::ModelStatusBar::onDraw()
-{
-    m_Impl->onDraw();
-}
+void osc::ModelStatusBar::impl_on_draw() { private_data().onDraw(); }

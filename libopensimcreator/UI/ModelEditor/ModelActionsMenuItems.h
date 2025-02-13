@@ -1,5 +1,7 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 
 namespace osc { class IModelStatePair; }
@@ -7,19 +9,17 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class ModelActionsMenuItems final {
+    class ModelActionsMenuItems final : public Widget {
     public:
-        ModelActionsMenuItems(Widget&, std::shared_ptr<IModelStatePair>);
-        ModelActionsMenuItems(const ModelActionsMenuItems&) = delete;
-        ModelActionsMenuItems(ModelActionsMenuItems&&) noexcept;
-        ModelActionsMenuItems& operator=(const ModelActionsMenuItems&) = delete;
-        ModelActionsMenuItems& operator=(ModelActionsMenuItems&&) noexcept;
-        ~ModelActionsMenuItems() noexcept;
-
-        void onDraw();
+        explicit ModelActionsMenuItems(
+            Widget* parent,
+            std::shared_ptr<IModelStatePair>
+        );
 
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

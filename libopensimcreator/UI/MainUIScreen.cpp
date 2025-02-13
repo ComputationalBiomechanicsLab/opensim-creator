@@ -579,6 +579,7 @@ public:
 
     UID impl_add_tab(std::unique_ptr<Tab> tab)
     {
+        tab->set_parent(&this->owner());
         return m_Tabs.emplace_back(std::move(tab))->id();
     }
 

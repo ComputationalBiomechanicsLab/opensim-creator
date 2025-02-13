@@ -4,6 +4,7 @@
 #include <libopensimcreator/UI/Shared/MainMenu.h>
 
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>
@@ -14,15 +15,17 @@
 
 using namespace osc;
 
-class osc::SimulationTabMainMenu::Impl final {
+class osc::SimulationTabMainMenu::Impl final : public WidgetPrivate {
 public:
     Impl(
-        Widget& parent,
+        Widget& owner,
+        Widget* parent,
         std::shared_ptr<Simulation> simulation,
         std::shared_ptr<PanelManager> panelManager) :
 
+        WidgetPrivate{owner, parent},
         m_Simulation{std::move(simulation)},
-        m_MainMenuFileTab{parent},
+        m_MainMenuFileTab{&owner},
         m_MainMenuWindowTab{std::move(panelManager)}
     {}
 
@@ -83,13 +86,10 @@ private:
 };
 
 osc::SimulationTabMainMenu::SimulationTabMainMenu(
-    Widget& parent,
+    Widget* parent,
     std::shared_ptr<Simulation> simulation,
     std::shared_ptr<PanelManager> panelManager) :
 
-    m_Impl{std::make_unique<Impl>(parent, std::move(simulation), std::move(panelManager))}
+    Widget{std::make_unique<Impl>(*this, parent, std::move(simulation), std::move(panelManager))}
 {}
-osc::SimulationTabMainMenu::SimulationTabMainMenu(SimulationTabMainMenu&&) noexcept = default;
-osc::SimulationTabMainMenu& osc::SimulationTabMainMenu::operator=(SimulationTabMainMenu&&) noexcept = default;
-osc::SimulationTabMainMenu::~SimulationTabMainMenu() noexcept = default;
-void osc::SimulationTabMainMenu::onDraw() { m_Impl->onDraw(); }
+void osc::SimulationTabMainMenu::impl_on_draw() { private_data().onDraw(); }

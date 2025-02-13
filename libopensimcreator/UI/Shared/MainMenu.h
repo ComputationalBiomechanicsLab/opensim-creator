@@ -1,7 +1,7 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Popups/SaveChangesPopup.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
 #include <vector>
@@ -12,15 +12,17 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class MainMenuFileTab final {
+    class MainMenuFileTab final : public Widget {
     public:
-        explicit MainMenuFileTab(Widget&);
+        explicit MainMenuFileTab(Widget* parent);
 
         void onDraw(IModelStatePair* = nullptr);
 
-        LifetimedPtr<Widget> m_Parent;
         std::vector<std::filesystem::path> exampleOsimFiles;
         std::optional<SaveChangesPopup> maybeSaveChangesPopup;
+
+    private:
+        void impl_on_draw() final { onDraw(); }
     };
 
     class MainMenuAboutTab final {

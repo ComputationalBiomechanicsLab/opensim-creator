@@ -1375,11 +1375,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
 }
 
 void osc::DrawSaveModelButton(
-    Widget& api,
     IModelStatePair& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {
-        ActionSaveModel(api, model);
+        ActionSaveModel(model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
 }

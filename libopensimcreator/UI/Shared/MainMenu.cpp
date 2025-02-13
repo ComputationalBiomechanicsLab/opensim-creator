@@ -37,8 +37,8 @@
 
 namespace rgs = std::ranges;
 
-osc::MainMenuFileTab::MainMenuFileTab(Widget& parent) :
-    m_Parent{parent.weak_ref()},
+osc::MainMenuFileTab::MainMenuFileTab(Widget* parent) :
+    Widget{parent},
     exampleOsimFiles
     {
         find_files_with_extensions_recursive(
@@ -59,16 +59,20 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         bool mod = ui::is_ctrl_or_super_down();
 
         if (mod and ui::is_key_pressed(Key::N)) {
-            ActionNewModel(*m_Parent);
+            if (parent()) {
+                ActionNewModel(*parent());
+            }
         }
         else if (mod and ui::is_key_pressed(Key::O)) {
-            ActionOpenModel(*m_Parent);
+            if (parent()) {
+                ActionOpenModel(*parent());
+            }
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
             ActionSaveCurrentModelAs(*undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
-            ActionSaveModel(*m_Parent, *undoableModel);
+            ActionSaveModel(*undoableModel);
         }
         else if (undoableModel and ui::is_key_pressed(Key::F5)) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
@@ -85,11 +89,15 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     }
 
     if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N")) {
-        ActionNewModel(*m_Parent);
+        if (parent()) {
+            ActionNewModel(*parent());
+        }
     }
 
     if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
-        ActionOpenModel(*m_Parent);
+        if (parent()) {
+            ActionOpenModel(*parent());
+        }
     }
 
     int imgui_id = 0;
@@ -100,7 +108,9 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         for (const RecentFile& rf : *recentFiles) {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(rf.path.filename().string())) {
-                ActionOpenModel(*m_Parent, rf.path);
+                if (parent()) {
+                    ActionOpenModel(*parent(), rf.path);
+                }
             }
             ui::pop_id();
         }
@@ -112,7 +122,9 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         for (const std::filesystem::path& ex : exampleOsimFiles) {
             ui::push_id(++imgui_id);
             if (ui::draw_menu_item(ex.filename().string())) {
-                ActionOpenModel(*m_Parent, ex);
+                if (parent()) {
+                    ActionOpenModel(*parent(), ex);
+                }
             }
             ui::pop_id();
         }
@@ -124,7 +136,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Load Motion", {}, false, maybeModel != nullptr)) {
         std::optional<std::filesystem::path> maybePath = prompt_user_to_select_file({"sto", "mot"});
-        if (maybePath and maybeModel) {
+        if (maybePath and maybeModel and parent()) {
             try {
                 std::unique_ptr<OpenSim::Model> cpy = std::make_unique<OpenSim::Model>(maybeModel->getModel());
                 InitializeModel(*cpy);
@@ -136,8 +148,8 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
                     maybeModel->getFixupScaleFactor(),
                     maybeModel->tryUpdEnvironment()
                 });
-                auto tab = std::make_unique<SimulationTab>(*m_Parent, simulation);
-                App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
+                auto tab = std::make_unique<SimulationTab>(*parent(), simulation);
+                App::post_event<OpenTabEvent>(*parent(), std::move(tab));
             }
             catch (const std::exception& ex) {
                 log_error("encountered error while trying to load an STO file against the model: %s", ex.what());
@@ -149,7 +161,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveModel(*m_Parent, *undoableModel);
+            ActionSaveModel(*undoableModel);
         }
     }
 
@@ -192,12 +204,16 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     ui::draw_separator();
 
     if (ui::draw_menu_item(OSC_ICON_FILE_IMPORT " Import Meshes")) {
-        auto tab = std::make_unique<mi::MeshImporterTab>(*m_Parent);
-        App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
+        if (parent()) {
+            auto tab = std::make_unique<mi::MeshImporterTab>(*parent());
+            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
+        }
     }
     if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data")) {
-        auto tab = std::make_unique<PreviewExperimentalDataTab>(*m_Parent);
-        App::post_event<OpenTabEvent>(*m_Parent, std::move(tab));
+        if (parent()) {
+            auto tab = std::make_unique<PreviewExperimentalDataTab>(*parent());
+            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
+        }
     }
     App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
 

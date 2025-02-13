@@ -1,30 +1,26 @@
 #pragma once
 
+#include <liboscar/Platform/Widget.h>
+
 #include <memory>
 
 namespace osc { class PanelManager; }
 namespace osc { class Simulation; }
-namespace osc { class Widget; }
 
 namespace osc
 {
-    class SimulationTabMainMenu final {
+    class SimulationTabMainMenu final : public Widget {
     public:
         SimulationTabMainMenu(
-            Widget&,
+            Widget* parent,
             std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>
         );
-        SimulationTabMainMenu(const SimulationTabMainMenu&) = delete;
-        SimulationTabMainMenu(SimulationTabMainMenu&&) noexcept;
-        SimulationTabMainMenu& operator=(const SimulationTabMainMenu&) = delete;
-        SimulationTabMainMenu& operator=(SimulationTabMainMenu&&) noexcept;
-        ~SimulationTabMainMenu() noexcept;
-
-        void onDraw();
 
     private:
+        void impl_on_draw() final;
+
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

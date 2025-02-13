@@ -302,7 +302,7 @@ void osc::ActionOpenModel(Widget& api, const std::filesystem::path& path)
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(Widget&, IModelStatePair& model)
+bool osc::ActionSaveModel(IModelStatePair& model)
 {
     const auto maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
 

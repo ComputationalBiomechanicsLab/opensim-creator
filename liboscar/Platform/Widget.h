@@ -58,6 +58,9 @@ namespace osc
         // returns `nullptr`.
         const Widget* parent() const;
 
+        // Re-parents the `Widget`
+        void set_parent(Widget*);
+
         // Returns the name of this `Widget`, or an empty string if a name has not yet been
         // set on this instance.
         CStringView name() const;

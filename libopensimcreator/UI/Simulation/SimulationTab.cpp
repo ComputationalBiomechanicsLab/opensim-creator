@@ -254,7 +254,7 @@ public:
 
     void onDrawMainMenu()
     {
-        m_MainMenu.onDraw();
+        m_MainMenu.on_draw();
     }
 
     void onDraw()
@@ -433,7 +433,7 @@ private:
 
             OSC_PERF("draw simulation screen");
             m_PanelManager->on_draw();
-            m_StatusBar.onDraw();
+            m_StatusBar.on_draw();
             m_PopupManager.on_draw();
         }
         else {
@@ -469,9 +469,9 @@ private:
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>();
 
     // non-toggleable UI panels/menus/toolbars
-    SimulationTabMainMenu m_MainMenu{*parent(), m_Simulation, m_PanelManager};
+    SimulationTabMainMenu m_MainMenu{&owner(), m_Simulation, m_PanelManager};
     SimulationToolbar m_Toolbar{"##SimulationToolbar", this, m_Simulation};
-    ModelStatusBar m_StatusBar{*parent(), m_ShownModelState};
+    ModelStatusBar m_StatusBar{&owner(), m_ShownModelState};
 
     // manager for popups that are open in this tab
     PopupManager m_PopupManager;
