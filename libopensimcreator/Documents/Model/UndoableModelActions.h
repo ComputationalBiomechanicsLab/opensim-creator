@@ -409,4 +409,5 @@ namespace osc
     bool ActionExportModelGraphToDotviz(const OpenSim::Model&);
     bool ActionExportModelGraphToDotvizClipboard(const OpenSim::Model&);
     bool ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model&);
+    bool ActionBakeStationDefinedFrames(IModelStatePair&);
 }

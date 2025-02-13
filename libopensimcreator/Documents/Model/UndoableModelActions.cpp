@@ -55,6 +55,7 @@
 #include <OpenSim/Simulation/Model/PathPointSet.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -63,6 +64,7 @@
 #include <algorithm>
 #include <chrono>
 #include <exception>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -2328,5 +2330,51 @@ bool osc::ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model& model)
     std::stringstream ss;
     WriteModelMultibodySystemGraphAsDotViz(model.getModel(), ss);
     set_clipboard_text(std::move(ss).str());
+    return true;
+}
+
+bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
+{
+    if (model.isReadonly()) {
+        return false;
+    }
+
+    // Ensure there is at least one `StationDefinedFrame`s in the model.
+    {
+        auto lst = model.getModel().getComponentList<OpenSim::StationDefinedFrame>();
+        if (std::distance(lst.begin(), lst.end()) == 0) {
+            return false;
+        }
+    }
+
+    // Mutate the model by adding equivalent `PhysicalOffsetFrame`s to the
+    // model, reattaching stuff to it, and then deleting the `StationDefinedFrame`.
+    //
+    // TODO:
+    // - Create `PhysicalOffsetFrame` with a transform equivalent to the `StationDefinedFrame`
+    // - Copy over anything that the `StationDefinedFrame` owns (e.g. component list, AttachedGeometry)
+    // - Delete the `StationDefinedFrame` from the model.
+    // - Add the `PhysicalOffsetFrame` into the model in the exact same location + name, so that
+    //   all sockets, associations, etc. work as expected
+    OpenSim::Model& mutModel = model.updModel();
+    for (auto& sdf : mutModel.updComponentList<OpenSim::StationDefinedFrame>()) {
+        auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
+        //static_cast<OpenSim::Object&>(*pof) = sdf;
+        // TODO: copy component/frame stuff (attached geometry, wrap objects)
+        pof->setName(sdf.getName() + "_tmp");
+        const SimTK::Transform xform = sdf.findTransformInBaseFrame();
+        pof->set_translation(xform.p());
+        pof->set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+        pof->updSocket("parent").setConnecteePath(sdf.findBaseFrame().getAbsolutePathString());
+        //pof->connectSocket_parent(sdf.findBaseFrame());
+
+        // Add it into the model
+        mutModel.updComponent(sdf.getAbsolutePath().getParentPath()).addComponent(pof.release());
+        // TODO: reassign anything that links to the SDF to instead link to the POF
+    }
+    InitializeModel(mutModel);
+    InitializeState(mutModel);
+    model.commit("Bake `StationDefinedFrame`s");
+
     return true;
 }

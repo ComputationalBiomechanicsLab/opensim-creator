@@ -161,6 +161,11 @@ private:
                 }
                 ui::draw_tooltip_if_item_hovered("Writes the model's multibody system (kinematic chain) in dotviz format, so that it can be visualized in external tooling such as Graphviz Online");
 
+                if (ui::draw_menu_item("WIP: Bake Station Defined Frames")) {
+                    ActionBakeStationDefinedFrames(*m_Model);
+                }
+                ui::draw_tooltip_if_item_hovered("WORK IN PROGRESS (WIP): Converts any `StationDefinedFrame`s in the model into `PhysicalOffsetFrame`s. Effectively, \"baking\" the current (station-defined) frame transform.\n\nThe main reason to do this is backwards compatibility, OpenSim <= v4.5 doesn't have native support for `StationDefinedFrame`s (later versions should: see opensim-core/#3694)");
+
                 ui::end_menu();
             }
 
