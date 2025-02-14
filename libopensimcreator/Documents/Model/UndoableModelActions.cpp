@@ -2357,21 +2357,31 @@ bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
     // - Add the `PhysicalOffsetFrame` into the model in the exact same location + name, so that
     //   all sockets, associations, etc. work as expected
     OpenSim::Model& mutModel = model.updModel();
+    std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;
     for (auto& sdf : mutModel.updComponentList<OpenSim::StationDefinedFrame>()) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
-        //static_cast<OpenSim::Object&>(*pof) = sdf;
-        // TODO: copy component/frame stuff (attached geometry, wrap objects)
+        // TODO: copy
+        // - Subcomponents
+        // - Attached Geometry
+        // - Wrap Obects
         pof->setName(sdf.getName() + "_tmp");
         const SimTK::Transform xform = sdf.findTransformInBaseFrame();
         pof->set_translation(xform.p());
         pof->set_orientation(xform.R().convertRotationToBodyFixedXYZ());
         pof->updSocket("parent").setConnecteePath(sdf.findBaseFrame().getAbsolutePathString());
-        //pof->connectSocket_parent(sdf.findBaseFrame());
-
         // Add it into the model
+        auto& pofPtr = *pof;
         mutModel.updComponent(sdf.getAbsolutePath().getParentPath()).addComponent(pof.release());
-        // TODO: reassign anything that links to the SDF to instead link to the POF
+        pofPtr.finalizeConnections(mutModel);
+        // Reassign anything pointing to the SDF to instead point to the POF
+        RecursivelyReassignAllSockets(mutModel,sdf, pofPtr);
+        sdfsToDelete.push_back(&sdf);
     }
+
+    for (OpenSim::StationDefinedFrame* sdf : sdfsToDelete) {
+        TryDeleteComponentFromModel(mutModel, *sdf);
+    }
+    FinalizeConnections(mutModel);
     InitializeModel(mutModel);
     InitializeState(mutModel);
     model.commit("Bake `StationDefinedFrame`s");
