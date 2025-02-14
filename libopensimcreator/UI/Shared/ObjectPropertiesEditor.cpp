@@ -335,7 +335,7 @@ namespace
 
     // construction-time arguments for the property editor
     struct PropertyEditorArgs final {
-        LifetimedPtr<Widget> parent;
+        Widget* parent = nullptr;
         std::shared_ptr<const IVersionedComponentAccessor> component;
         std::function<const OpenSim::Object*()> objectAccessor;
         std::function<const OpenSim::AbstractProperty*()> propertyAccessor;
@@ -431,7 +431,7 @@ namespace
 
         Widget* tryGetParentWidget()
         {
-            return m_Args.parent.get();
+            return m_Args.parent;
         }
 
     private:
@@ -1784,7 +1784,7 @@ private:
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
             it->second = c_Registry.tryCreateEditor({
-                .parent = parent()->weak_ref(),
+                .parent = parent(),
                 .component = m_TargetComponent,
                 .objectAccessor = m_ObjectGetter,
                 .propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName()),

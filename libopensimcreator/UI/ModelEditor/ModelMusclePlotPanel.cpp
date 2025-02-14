@@ -1431,7 +1431,7 @@ namespace
             Widget& parent,
             std::shared_ptr<UndoableModelStatePair> uim) :
 
-            m_Parent{parent.weak_ref()},
+            m_Parent{&parent},
             m_Model{std::move(uim)}
         {}
 
@@ -1441,7 +1441,7 @@ namespace
             const OpenSim::ComponentPath& coordPath,
             const OpenSim::ComponentPath& musclePath) :
 
-            m_Parent{parent.weak_ref()},
+            m_Parent{&parent},
             m_Model{std::move(uim)},
             m_PlotParams{m_Model->getLatestCommit(), coordPath, musclePath, GetDefaultMuscleOutput(), c_DefaultNumPlotPoints}
         {}
@@ -1463,7 +1463,7 @@ namespace
         void setNumRequestedDataPoints(int v) { updPlotParams().setNumRequestedDataPoints(v); }
 
     private:
-        LifetimedPtr<Widget> m_Parent;
+        Widget* m_Parent = nullptr;
         std::shared_ptr<UndoableModelStatePair> m_Model;
         PlotParameters m_PlotParams{
             m_Model->getLatestCommit(),

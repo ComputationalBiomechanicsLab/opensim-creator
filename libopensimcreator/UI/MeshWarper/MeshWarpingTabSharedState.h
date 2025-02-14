@@ -19,6 +19,7 @@
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Popups/PopupManager.h>

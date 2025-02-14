@@ -34,7 +34,7 @@ public:
          std::shared_ptr<IModelStatePair> modelState) :
 
         StandardPopup{popupName},
-        m_Parent{parent.weak_ref()},
+        m_Parent{&parent},
         m_Model{std::move(modelState)}
     {}
 
@@ -224,7 +224,7 @@ private:
     }
 
     // the parent widget of this popup
-    LifetimedPtr<Widget> m_Parent;
+    Widget* m_Parent = nullptr;
 
     // the model that the body will be added to
     std::shared_ptr<IModelStatePair> m_Model;
