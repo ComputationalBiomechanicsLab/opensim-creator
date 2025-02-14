@@ -2358,6 +2358,7 @@ bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
     //   all sockets, associations, etc. work as expected
     OpenSim::Model& mutModel = model.updModel();
     std::vector<OpenSim::StationDefinedFrame*> sdfsToDelete;
+    std::vector<OpenSim::PhysicalOffsetFrame*> pofsToRename;
     for (auto& sdf : mutModel.updComponentList<OpenSim::StationDefinedFrame>()) {
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         // TODO: copy
@@ -2376,10 +2377,12 @@ bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
         // Reassign anything pointing to the SDF to instead point to the POF
         RecursivelyReassignAllSockets(mutModel,sdf, pofPtr);
         sdfsToDelete.push_back(&sdf);
+        pofsToRename.push_back(&pofPtr);
     }
-
-    for (OpenSim::StationDefinedFrame* sdf : sdfsToDelete) {
-        TryDeleteComponentFromModel(mutModel, *sdf);
+    for (size_t i = 0; i < sdfsToDelete.size(); ++i) {
+        std::string name = sdfsToDelete[i]->getName();
+        TryDeleteComponentFromModel(mutModel, *sdfsToDelete[i]);
+        pofsToRename[i]->setName(name);
     }
     FinalizeConnections(mutModel);
     InitializeModel(mutModel);
