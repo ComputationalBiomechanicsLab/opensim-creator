@@ -1,0 +1,16 @@
+muscle_emg	
+nRows=11	
+nColumns=2	
+endheader	
+time	BIClong.activation
+0	0.05
+0.1	0.05
+0.2	0.15
+0.3	0.25
+0.4	0.55
+0.5	0.75
+0.6	0.85
+0.7	0.95
+0.8	1
+0.9	0.95
+1	0.75
