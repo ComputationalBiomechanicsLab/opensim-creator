@@ -390,6 +390,7 @@ namespace osc
                 if (landmarkCollision && landmarkCollision->isHoveringASceneElement())
                 {
                     m_State->emplacePopup<MeshWarpingTabContextMenu>(
+                        this,
                         "##MeshInputContextMenu",
                         m_State,
                         *landmarkCollision->getSceneElementID()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/Utils/Flags.h>
 
 #include <memory>
@@ -18,7 +18,7 @@ namespace osc
     };
     using ComponentContextMenuFlags = Flags<ComponentContextMenuFlag>;
 
-    class ComponentContextMenu final : public IPopup {
+    class ComponentContextMenu final : public Popup {
     public:
         explicit ComponentContextMenu(
             Widget* parent,
@@ -27,21 +27,11 @@ namespace osc
             const OpenSim::ComponentPath&,
             ComponentContextMenuFlags = {}
         );
-        ComponentContextMenu(const ComponentContextMenu&) = delete;
-        ComponentContextMenu(ComponentContextMenu&&) noexcept;
-        ComponentContextMenu& operator=(const ComponentContextMenu&) = delete;
-        ComponentContextMenu& operator=(ComponentContextMenu&&) noexcept;
-        ~ComponentContextMenu() noexcept;
 
     private:
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        bool impl_begin_popup() final;
-        void impl_on_draw() final;
-        void impl_end_popup() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

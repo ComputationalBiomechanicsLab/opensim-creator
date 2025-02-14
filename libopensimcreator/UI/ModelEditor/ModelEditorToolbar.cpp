@@ -77,6 +77,7 @@ private:
         if (ui::draw_button(OSC_ICON_EDIT))
         {
             auto popup = std::make_unique<ParamBlockEditorPopup>(
+                &owner(),
                 "simulation parameters",
                 &m_Model->tryUpdEnvironment()->updSimulationParams()
             );

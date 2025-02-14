@@ -112,6 +112,7 @@ private:
             if (ui::draw_menu_item(OSC_ICON_EDIT " Edit simulation settings")) {
                 if (parent()) {
                     auto popup = std::make_unique<ParamBlockEditorPopup>(
+                        &owner(),
                         "simulation parameters",
                         &m_Model->tryUpdEnvironment()->updSimulationParams()
                     );
@@ -122,6 +123,7 @@ private:
             if (ui::draw_menu_item("         Import Points", {}, nullptr, m_Model->canUpdModel())) {
                 if (parent()) {
                     auto popup = std::make_unique<ImportStationsFromCSVPopup>(
+                        &owner(),
                         "Import Points",
                         [model = m_Model](auto lms)
                         {
@@ -133,7 +135,7 @@ private:
             }
 
             if (ui::draw_menu_item("         Export Points")) {
-                auto popup = std::make_unique<ExportPointsPopup>("Export Points", m_Model);
+                auto popup = std::make_unique<ExportPointsPopup>(&owner(), "Export Points", m_Model);
                 if (parent()) {
                     App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
                 }

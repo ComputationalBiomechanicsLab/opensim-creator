@@ -11,7 +11,7 @@
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/Utils/StringHelpers.h>
 
 #include <memory>
@@ -22,14 +22,15 @@
 
 namespace osc
 {
-    class MeshWarpingTabContextMenu final : public StandardPopup {
+    class MeshWarpingTabContextMenu final : public Popup {
     public:
-        MeshWarpingTabContextMenu(
+        explicit MeshWarpingTabContextMenu(
+            Widget* parent,
             std::string_view label_,
             std::shared_ptr<MeshWarpingTabSharedState> shared_,
             TPSDocumentElementID rightClickedID_) :
 
-            StandardPopup{label_},
+            Popup{parent, label_},
             m_State{std::move(shared_)},
             m_ElementID{std::move(rightClickedID_)}
         {

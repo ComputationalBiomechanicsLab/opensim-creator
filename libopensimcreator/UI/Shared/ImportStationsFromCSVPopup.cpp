@@ -8,7 +8,8 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 
 #include <filesystem>
 #include <fstream>
@@ -20,20 +21,21 @@
 #include <utility>
 #include <vector>
 
-class osc::ImportStationsFromCSVPopup::Impl final : public StandardPopup {
+class osc::ImportStationsFromCSVPopup::Impl final : public PopupPrivate {
 public:
-    Impl(
+    explicit Impl(
+        ImportStationsFromCSVPopup& owner,
+        Widget* parent,
         std::string_view popupName_,
         std::function<void(ImportedData)> onImport_) :
 
-        StandardPopup{popupName_},
+        PopupPrivate{owner, parent, popupName_},
         m_OnImportCallback{std::move(onImport_)}
     {
         set_modal(true);
     }
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         drawHelpText();
         ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
@@ -58,6 +60,7 @@ private:
         ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
     }
 
+private:
     void drawHelpText()
     {
         ui::draw_text_wrapped("Use this tool to import CSV data containing 3D locations as stations into the document. The CSV file should contain:");
@@ -181,7 +184,7 @@ private:
         }
         if (ui::draw_button("OK")) {
             actionAttachResultToModelGraph();
-            close();
+            owner().close();
         }
         if (disabledReason) {
             ui::end_disabled();
@@ -191,7 +194,7 @@ private:
         }
         ui::same_line();
         if (ui::draw_button("Cancel")) {
-            close();
+            owner().close();
         }
     }
 
@@ -246,43 +249,10 @@ private:
     std::vector<std::string> m_ImportWarnings;
 };
 
-
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
+    Widget* parent,
     std::string_view popupName_,
     std::function<void(ImportedData)> onImport) :
-    m_Impl{std::make_unique<Impl>(popupName_, std::move(onImport))}
-{
-}
-osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::ImportStationsFromCSVPopup& osc::ImportStationsFromCSVPopup::operator=(ImportStationsFromCSVPopup&&) noexcept = default;
-osc::ImportStationsFromCSVPopup::~ImportStationsFromCSVPopup() noexcept = default;
-
-bool osc::ImportStationsFromCSVPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ImportStationsFromCSVPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ImportStationsFromCSVPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::ImportStationsFromCSVPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::ImportStationsFromCSVPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::ImportStationsFromCSVPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+    Popup{std::make_unique<Impl>(*this, parent, popupName_, std::move(onImport))}
+{}
+void osc::ImportStationsFromCSVPopup::impl_draw_content() { private_data().draw_content(); }

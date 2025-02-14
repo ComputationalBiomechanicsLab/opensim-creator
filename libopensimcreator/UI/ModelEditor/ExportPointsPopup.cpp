@@ -10,7 +10,8 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
@@ -543,18 +544,19 @@ namespace
     }
 }
 
-class osc::ExportPointsPopup::Impl final : public StandardPopup {
+class osc::ExportPointsPopup::Impl final : public PopupPrivate {
 public:
-    Impl(
+    explicit Impl(
+        ExportPointsPopup& owner,
+        Widget* parent,
         std::string_view popupName_,
         std::shared_ptr<const IModelStatePair> model_) :
 
-        StandardPopup{popupName_},
+        PopupPrivate{owner, parent, popupName_},
         m_Model{std::move(model_)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         const OpenSim::Model& model = m_Model->getModel();
         const SimTK::State& state = m_Model->getState();
@@ -576,6 +578,7 @@ private:
         drawBottomButtons();
     }
 
+private:
     void drawBottomButtons()
     {
         if (ui::draw_button("Cancel"))
@@ -610,41 +613,10 @@ private:
 
 
 osc::ExportPointsPopup::ExportPointsPopup(
+    Widget* parent,
     std::string_view popupName,
     std::shared_ptr<const IModelStatePair> model_) :
 
-    m_Impl{std::make_unique<Impl>(popupName, std::move(model_))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model_))}
 {}
-osc::ExportPointsPopup::ExportPointsPopup(ExportPointsPopup&&) noexcept = default;
-osc::ExportPointsPopup& osc::ExportPointsPopup::operator=(ExportPointsPopup&&) noexcept = default;
-osc::ExportPointsPopup::~ExportPointsPopup() noexcept = default;
-
-bool osc::ExportPointsPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ExportPointsPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ExportPointsPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::ExportPointsPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::ExportPointsPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::ExportPointsPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::ExportPointsPopup::impl_draw_content() { private_data().draw_content(); }

@@ -4,7 +4,8 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -13,21 +14,23 @@
 #include <memory>
 #include <string_view>
 
-class osc::SelectComponentPopup::Impl final : public StandardPopup {
+class osc::SelectComponentPopup::Impl final : public PopupPrivate {
 public:
-    Impl(std::string_view popupName,
-         std::shared_ptr<const IModelStatePair> model,
-         std::function<void(const OpenSim::ComponentPath&)> onSelection,
-         std::function<bool(const OpenSim::Component&)> filter) :
+    explicit Impl(
+        SelectComponentPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        std::shared_ptr<const IModelStatePair> model,
+        std::function<void(const OpenSim::ComponentPath&)> onSelection,
+        std::function<bool(const OpenSim::Component&)> filter) :
 
-        StandardPopup{popupName},
+        PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_OnSelection{std::move(onSelection)},
         m_Filter{std::move(filter)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         const OpenSim::Component* selected = nullptr;
 
@@ -55,49 +58,19 @@ private:
         }
     }
 
+private:
     std::shared_ptr<const IModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
     std::function<bool(const OpenSim::Component&)> m_Filter;
 };
 
 osc::SelectComponentPopup::SelectComponentPopup(
+    Widget* parent,
     std::string_view popupName,
     std::shared_ptr<const IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onSelection,
     std::function<bool(const OpenSim::Component&)> filter) :
 
-    m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection), std::move(filter))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(onSelection), std::move(filter))}
 {}
-osc::SelectComponentPopup::SelectComponentPopup(SelectComponentPopup&&) noexcept = default;
-osc::SelectComponentPopup& osc::SelectComponentPopup::operator=(SelectComponentPopup&&) noexcept = default;
-osc::SelectComponentPopup::~SelectComponentPopup() noexcept = default;
-
-bool osc::SelectComponentPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::SelectComponentPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::SelectComponentPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::SelectComponentPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::SelectComponentPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::SelectComponentPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::SelectComponentPopup::impl_draw_content() { private_data().draw_content(); }

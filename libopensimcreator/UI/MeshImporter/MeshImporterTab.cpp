@@ -2279,6 +2279,7 @@ private:
             if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Import Stations from CSV"))
             {
                 auto popup = std::make_shared<ImportStationsFromCSVPopup>(
+                    &owner(),
                     "Import Stations from CSV",
                     [state = m_Shared](auto data)
                     {

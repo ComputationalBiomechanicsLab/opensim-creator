@@ -61,7 +61,7 @@ public:
             }
         );
 
-        m_PopupManager.emplace_back<ModelWarperTabInitialPopup>("Model Warper Experimental Warning").open();
+        m_PopupManager.emplace_back<ModelWarperTabInitialPopup>(&owner, "Model Warper Experimental Warning").open();
     }
 
     void on_mount()

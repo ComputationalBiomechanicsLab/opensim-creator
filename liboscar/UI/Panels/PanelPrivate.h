@@ -22,6 +22,9 @@ namespace osc
         void set_open(bool);
 
         ui::PanelFlags panel_flags() const { return panel_flags_; }
+
+    protected:
+        OSC_OWNER_GETTERS(Panel);
     private:
         std::string panel_enabled_config_key_;
         ui::PanelFlags panel_flags_;

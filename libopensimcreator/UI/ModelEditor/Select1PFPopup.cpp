@@ -4,7 +4,8 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -13,20 +14,21 @@
 #include <algorithm>
 #include <string>
 
-class osc::Select1PFPopup::Impl final : public StandardPopup {
+class osc::Select1PFPopup::Impl final : public PopupPrivate {
 public:
+    explicit Impl(
+        Select1PFPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        std::shared_ptr<const IModelStatePair> model,
+        std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
-    Impl(std::string_view popupName,
-         std::shared_ptr<const IModelStatePair> model,
-         std::function<void(const OpenSim::ComponentPath&)> onSelection) :
-
-        StandardPopup{popupName},
+        PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_OnSelection{std::move(onSelection)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         const OpenSim::PhysicalFrame* selected = nullptr;
 
@@ -44,48 +46,18 @@ private:
         }
     }
 
+private:
     std::shared_ptr<const IModelStatePair> m_Model;
     std::function<void(const OpenSim::ComponentPath&)> m_OnSelection;
 };
 
 
 osc::Select1PFPopup::Select1PFPopup(
+    Widget* parent,
     std::string_view popupName,
     std::shared_ptr<const IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onSelection) :
 
-    m_Impl{std::make_unique<Impl>(popupName, std::move(model), std::move(onSelection))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(onSelection))}
 {}
-osc::Select1PFPopup::Select1PFPopup(Select1PFPopup&&) noexcept = default;
-osc::Select1PFPopup& osc::Select1PFPopup::operator=(Select1PFPopup&&) noexcept = default;
-osc::Select1PFPopup::~Select1PFPopup() noexcept = default;
-
-bool osc::Select1PFPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::Select1PFPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::Select1PFPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::Select1PFPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::Select1PFPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::Select1PFPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::Select1PFPopup::impl_draw_content() { private_data().draw_content(); }

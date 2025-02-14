@@ -9,7 +9,7 @@ namespace osc
     class PerfPanel final : public Panel {
     public:
         explicit PerfPanel(
-            Widget* parent,
+            Widget* parent = nullptr,
             std::string_view panel_name = "Performance"
         );
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 
 #include <filesystem>
 #include <functional>
@@ -11,28 +11,19 @@ namespace OpenSim { class Geometry; }
 
 namespace osc
 {
-    class SelectGeometryPopup final : public IPopup {
+    class SelectGeometryPopup final : public Popup {
     public:
-        SelectGeometryPopup(
+        explicit SelectGeometryPopup(
+            Widget* parent,
             std::string_view popupName,
             const std::filesystem::path& geometryDir,
             std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection
         );
-        SelectGeometryPopup(const SelectGeometryPopup&) = delete;
-        SelectGeometryPopup(SelectGeometryPopup&&) noexcept;
-        SelectGeometryPopup& operator=(const SelectGeometryPopup&) = delete;
-        SelectGeometryPopup& operator=(SelectGeometryPopup&&) noexcept;
-        ~SelectGeometryPopup() noexcept;
 
     private:
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        bool impl_begin_popup() final;
-        void impl_on_draw() final;
-        void impl_end_popup() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

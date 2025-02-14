@@ -6,7 +6,8 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
@@ -121,21 +122,22 @@ namespace
     }
 }
 
-class osc::ReassignSocketPopup::Impl final : public StandardPopup {
+class osc::ReassignSocketPopup::Impl final : public PopupPrivate {
 public:
-    Impl(std::string_view popupName,
-         std::shared_ptr<IModelStatePair> model,
-         std::string_view componentAbsPath,
-         std::string_view socketName) :
+    explicit Impl(
+        ReassignSocketPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        std::shared_ptr<IModelStatePair> model,
+        std::string_view componentAbsPath,
+        std::string_view socketName) :
 
-        StandardPopup{popupName},
+        PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_Params{m_Model->getModelVersion(), std::string{componentAbsPath}, std::string{socketName}}
-    {
-    }
+    {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         // caching: regenerate cached socket list, if necessary
         //
@@ -228,12 +230,12 @@ private:
         tryDrawReexpressPropertyInFrameCheckbox(*component, *socket);
     }
 
-    void impl_on_close() final
+    void on_close()
     {
         m_EditedParams.search.clear();
         m_Error.clear();
     }
-
+private:
     void tryDrawReexpressPropertyInFrameCheckbox(
         const OpenSim::Component& component,
         const OpenSim::AbstractSocket& abstractSocket)
@@ -282,48 +284,14 @@ private:
 };
 
 
-// public API (PIMPL)
-
 osc::ReassignSocketPopup::ReassignSocketPopup(
+    Widget* parent,
     std::string_view popupName,
     std::shared_ptr<IModelStatePair> model,
     std::string_view componentAbsPath,
     std::string_view socketName) :
 
-    m_Impl{std::make_unique<Impl>(popupName, std::move(model), componentAbsPath, socketName)}
-{
-}
-
-osc::ReassignSocketPopup::ReassignSocketPopup(ReassignSocketPopup&&) noexcept = default;
-osc::ReassignSocketPopup& osc::ReassignSocketPopup::operator=(ReassignSocketPopup&&) noexcept = default;
-osc::ReassignSocketPopup::~ReassignSocketPopup() noexcept = default;
-
-bool osc::ReassignSocketPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ReassignSocketPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ReassignSocketPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::ReassignSocketPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::ReassignSocketPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::ReassignSocketPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), componentAbsPath, socketName)}
+{}
+void osc::ReassignSocketPopup::impl_draw_content() { private_data().draw_content(); }
+void osc::ReassignSocketPopup::impl_on_close() { private_data().on_close(); }

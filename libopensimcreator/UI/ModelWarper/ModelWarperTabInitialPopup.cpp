@@ -4,7 +4,8 @@
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <memory>
@@ -12,11 +13,11 @@
 
 using namespace osc;
 
-class osc::ModelWarperTabInitialPopup::Impl final : public StandardPopup {
+class osc::ModelWarperTabInitialPopup::Impl final : public PopupPrivate {
 public:
-    using StandardPopup::StandardPopup;
-private:
-    void impl_draw_content() final
+    using PopupPrivate::PopupPrivate;
+
+    void draw_content()
     {
         ui::draw_text_centered(OSC_ICON_MAGIC " This feature is experimental " OSC_ICON_MAGIC);
         ui::start_new_line();
@@ -33,16 +34,9 @@ private:
     }
 };
 
-osc::ModelWarperTabInitialPopup::ModelWarperTabInitialPopup(std::string_view popupName) :
-    m_Impl{std::make_unique<Impl>(popupName)}
+osc::ModelWarperTabInitialPopup::ModelWarperTabInitialPopup(
+    Widget* parent,
+    std::string_view popupName) :
+    Popup{std::make_unique<Impl>(*this, parent, popupName)}
 {}
-osc::ModelWarperTabInitialPopup::ModelWarperTabInitialPopup(ModelWarperTabInitialPopup&&) noexcept = default;
-ModelWarperTabInitialPopup& osc::ModelWarperTabInitialPopup::operator=(ModelWarperTabInitialPopup&&) noexcept = default;
-osc::ModelWarperTabInitialPopup::~ModelWarperTabInitialPopup() noexcept = default;
-
-bool osc::ModelWarperTabInitialPopup::impl_is_open() const { return m_Impl->is_open(); }
-void osc::ModelWarperTabInitialPopup::impl_open() { m_Impl->open(); }
-void osc::ModelWarperTabInitialPopup::impl_close() { m_Impl->close(); }
-bool osc::ModelWarperTabInitialPopup::impl_begin_popup() { return m_Impl->begin_popup(); }
-void osc::ModelWarperTabInitialPopup::impl_on_draw() { m_Impl->on_draw(); }
-void osc::ModelWarperTabInitialPopup::impl_end_popup() { m_Impl->end_popup(); }
+void osc::ModelWarperTabInitialPopup::impl_draw_content() { private_data().draw_content(); }

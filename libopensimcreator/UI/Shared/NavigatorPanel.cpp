@@ -92,11 +92,12 @@ class osc::NavigatorPanel::Impl final : public PanelPrivate {
 public:
     Impl(
         NavigatorPanel& owner,
+        Widget* parent,
         std::string_view panelName,
         std::shared_ptr<IModelStatePair> model,
         std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
-        PanelPrivate{owner, nullptr, panelName},
+        PanelPrivate{owner, parent, panelName},
         m_Model{std::move(model)},
         m_OnRightClick{std::move(onRightClick)}
     {}
@@ -329,10 +330,11 @@ private:
 };
 
 osc::NavigatorPanel::NavigatorPanel(
+    Widget* parent,
     std::string_view panelName,
     std::shared_ptr<IModelStatePair> model,
     std::function<void(const OpenSim::ComponentPath&)> onRightClick) :
 
-    Panel{std::make_unique<Impl>(*this, panelName, std::move(model), std::move(onRightClick))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(model), std::move(onRightClick))}
 {}
 void osc::NavigatorPanel::impl_draw_content() { private_data().draw_content(); }

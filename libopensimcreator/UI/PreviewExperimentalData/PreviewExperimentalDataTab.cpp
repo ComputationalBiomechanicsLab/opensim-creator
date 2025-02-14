@@ -330,6 +330,7 @@ public:
             [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
+                    parent,
                     panelName,
                     m_UiState->updSharedModelPtr(),
                     [this, parent](const OpenSim::ComponentPath& p)
@@ -413,10 +414,11 @@ public:
     bool on_event(Event& e)
     {
         if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
-            if (openPopupEvent->has_tab()) {
-                auto tab = openPopupEvent->take_tab();
-                tab->open();
-                m_PopupManager.push_back(std::move(tab));
+            if (openPopupEvent->has_popup()) {
+                auto popup = openPopupEvent->take_popup();
+                popup->set_parent(&owner());
+                popup->open();
+                m_PopupManager.push_back(std::move(popup));
                 return true;
             }
         }

@@ -27,7 +27,7 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             ui::context::on_start_new_frame(app);
             Widget parent;
             auto model = std::make_shared<UndoableModelStatePair>();
-            AddComponentPopup popup{"popupname", parent, model, entry.instantiate()};
+            AddComponentPopup popup{&parent, "popupname", model, entry.instantiate()};
             popup.open();
             popup.begin_popup();
             popup.on_draw();

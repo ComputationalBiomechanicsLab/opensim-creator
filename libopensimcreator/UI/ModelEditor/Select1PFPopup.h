@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 
 #include <functional>
 #include <memory>
@@ -11,28 +11,19 @@ namespace osc { class IModelStatePair; }
 
 namespace osc
 {
-    class Select1PFPopup final : public IPopup {
+    class Select1PFPopup final : public Popup {
     public:
-        Select1PFPopup(
+        explicit Select1PFPopup(
+            Widget* parent,
             std::string_view popupName,
             std::shared_ptr<const IModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onSelection
         );
-        Select1PFPopup(const Select1PFPopup&) = delete;
-        Select1PFPopup(Select1PFPopup&&) noexcept;
-        Select1PFPopup& operator=(const Select1PFPopup&) = delete;
-        Select1PFPopup& operator=(Select1PFPopup&&) noexcept;
-        ~Select1PFPopup() noexcept;
 
     private:
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        bool impl_begin_popup() final;
-        void impl_on_draw() final;
-        void impl_end_popup() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

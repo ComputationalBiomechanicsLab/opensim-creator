@@ -5,7 +5,8 @@
 #include <libopensimcreator/Utils/ParamValue.h>
 
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
 #include <span>
@@ -69,17 +70,21 @@ namespace
     }
 }
 
-class osc::ParamBlockEditorPopup::Impl final : public StandardPopup {
+class osc::ParamBlockEditorPopup::Impl final : public PopupPrivate {
 public:
 
-    Impl(std::string_view popupName, ParamBlock* paramBlock) :
-        StandardPopup{popupName, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
+    explicit Impl(
+        ParamBlockEditorPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        ParamBlock* paramBlock) :
+
+        PopupPrivate{owner, parent, popupName, {512.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
         m_OutputTarget{paramBlock},
         m_LocalCopy{*m_OutputTarget}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         m_WasEdited = false;
 
@@ -113,21 +118,17 @@ private:
         }
     }
 
+private:
     bool m_WasEdited = false;
     ParamBlock* m_OutputTarget = nullptr;
     ParamBlock m_LocalCopy;
 };
 
-osc::ParamBlockEditorPopup::ParamBlockEditorPopup(std::string_view popupName, ParamBlock* paramBlock) :
-    m_Impl{std::make_unique<Impl>(popupName, paramBlock)}
-{}
-osc::ParamBlockEditorPopup::ParamBlockEditorPopup(ParamBlockEditorPopup&&) noexcept = default;
-osc::ParamBlockEditorPopup& osc::ParamBlockEditorPopup::operator=(ParamBlockEditorPopup&&) noexcept = default;
-osc::ParamBlockEditorPopup::~ParamBlockEditorPopup() noexcept = default;
+osc::ParamBlockEditorPopup::ParamBlockEditorPopup(
+    Widget* parent,
+    std::string_view popupName,
+    ParamBlock* paramBlock) :
 
-bool osc::ParamBlockEditorPopup::impl_is_open() const { return m_Impl->is_open(); }
-void osc::ParamBlockEditorPopup::impl_open() { m_Impl->open(); }
-void osc::ParamBlockEditorPopup::impl_close() { m_Impl->close(); }
-bool osc::ParamBlockEditorPopup::impl_begin_popup() { return m_Impl->begin_popup(); }
-void osc::ParamBlockEditorPopup::impl_on_draw() { m_Impl->on_draw(); }
-void osc::ParamBlockEditorPopup::impl_end_popup() { m_Impl->end_popup(); }
+    Popup{std::make_unique<Impl>(*this, parent, popupName, paramBlock)}
+{}
+void osc::ParamBlockEditorPopup::impl_draw_content() { private_data().draw_content(); }

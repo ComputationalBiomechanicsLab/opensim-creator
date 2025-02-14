@@ -11,7 +11,8 @@
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/ExceptionHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
@@ -65,22 +66,43 @@ namespace
     };
 }
 
-class osc::AddComponentPopup::Impl final : public StandardPopup {
+class osc::AddComponentPopup::Impl final : public PopupPrivate {
 public:
-    Impl(
+    explicit Impl(
+        AddComponentPopup& owner,
+        Widget* parent,
         std::string_view popupName,
-        Widget& parent,
         std::shared_ptr<IModelStatePair> model,
         std::unique_ptr<OpenSim::Component> prototype) :
 
-        StandardPopup{popupName},
+        PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{&parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
     {}
 
-private:
+    void draw_content()
+    {
+        drawNameEditor();
 
+        drawPropertyEditors();
+
+        ui::draw_dummy({0.0f, 3.0f});
+
+        drawSocketEditors();
+
+        ui::draw_dummy({0.0f, 1.0f});
+
+        drawPathPointEditor();
+
+        drawAnyErrorMessages();
+
+        ui::draw_dummy({0.0f, 1.0f});
+
+        drawBottomButtons();
+    }
+
+private:
     std::unique_ptr<OpenSim::Component> tryCreateComponentFromState()
     {
         const OpenSim::Model& model = m_Model->getModel();
@@ -468,27 +490,6 @@ private:
         }
     }
 
-    void impl_draw_content() final
-    {
-        drawNameEditor();
-
-        drawPropertyEditors();
-
-        ui::draw_dummy({0.0f, 3.0f});
-
-        drawSocketEditors();
-
-        ui::draw_dummy({0.0f, 1.0f});
-
-        drawPathPointEditor();
-
-        drawAnyErrorMessages();
-
-        ui::draw_dummy({0.0f, 1.0f});
-
-        drawBottomButtons();
-    }
-
     // the model that the component should be added to
     std::shared_ptr<IModelStatePair> m_Model;
 
@@ -522,44 +523,15 @@ private:
 
 
 osc::AddComponentPopup::AddComponentPopup(
+    Widget* parent,
     std::string_view popupName,
-    Widget& parent,
     std::shared_ptr<IModelStatePair> model,
     std::unique_ptr<OpenSim::Component> prototype) :
 
-    m_Impl{std::make_unique<Impl>(popupName, parent, std::move(model), std::move(prototype))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(prototype))}
 {}
-osc::AddComponentPopup::AddComponentPopup(AddComponentPopup&&) noexcept = default;
-osc::AddComponentPopup& osc::AddComponentPopup::operator=(AddComponentPopup&&) noexcept = default;
-osc::AddComponentPopup::~AddComponentPopup() noexcept = default;
 
-bool osc::AddComponentPopup::impl_is_open() const
+void osc::AddComponentPopup::impl_draw_content()
 {
-    return m_Impl->is_open();
+    private_data().draw_content();
 }
-
-void osc::AddComponentPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::AddComponentPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::AddComponentPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::AddComponentPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::AddComponentPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
-

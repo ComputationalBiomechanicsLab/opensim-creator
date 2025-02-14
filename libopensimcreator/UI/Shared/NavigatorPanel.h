@@ -15,6 +15,7 @@ namespace osc
     class NavigatorPanel final : public Panel {
     public:
         explicit NavigatorPanel(
+            Widget* parent,
             std::string_view panelName,
             std::shared_ptr<IModelStatePair>,
             std::function<void(const OpenSim::ComponentPath&)> onRightClick = [](const auto&){}

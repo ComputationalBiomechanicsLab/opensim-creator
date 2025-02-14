@@ -7,9 +7,6 @@
 #include <string_view>
 #include <utility>
 
-osc::Panel::Panel() :
-    Panel{std::make_unique<PanelPrivate>(*this)}
-{}
 osc::Panel::Panel(Widget* parent, std::string_view panel_name, ui::PanelFlags panel_flags) :
     Panel{std::make_unique<PanelPrivate>(*this, parent, panel_name, panel_flags)}
 {}

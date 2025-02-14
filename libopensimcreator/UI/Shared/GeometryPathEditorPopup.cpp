@@ -5,7 +5,8 @@
 
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/CStringView.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
@@ -115,23 +116,24 @@ namespace
     }
 }
 
-class osc::GeometryPathEditorPopup::Impl final : public StandardPopup {
+class osc::GeometryPathEditorPopup::Impl final : public PopupPrivate {
 public:
-    Impl(
+    explicit Impl(
+        GeometryPathEditorPopup& owner,
+        Widget* parent,
         std::string_view popupName_,
         std::shared_ptr<const IComponentAccessor> targetComponent_,
         std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
         std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
-        StandardPopup{popupName_, {768.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
+        PopupPrivate{owner, parent, popupName_, {768.0f, 0.0f}, ui::PanelFlag::AlwaysAutoResize},
         m_TargetComponent{std::move(targetComponent_)},
         m_GeometryPathGetter{std::move(geometryPathGetter_)},
         m_OnLocalCopyEdited{std::move(onLocalCopyEdited_)},
         m_EditedGeometryPath{CopyOrDefaultGeometryPath(m_GeometryPathGetter)}
-    {
-    }
-private:
-    void impl_draw_content() final
+    {}
+
+    void draw_content()
     {
         if (m_GeometryPathGetter() == nullptr)
         {
@@ -155,6 +157,7 @@ private:
         drawBottomButtons();
     }
 
+private:
     void drawPathPointEditorTable()
     {
         OpenSim::PathPointSet& pps = m_EditedGeometryPath.updPathPointSet();
@@ -364,20 +367,12 @@ private:
 
 
 osc::GeometryPathEditorPopup::GeometryPathEditorPopup(
+    Widget* parent_,
     std::string_view popupName_,
     std::shared_ptr<const IComponentAccessor> targetComponent_,
     std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
     std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_) :
 
-    m_Impl{std::make_unique<Impl>(popupName_, std::move(targetComponent_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
+    Popup{std::make_unique<Impl>(*this, parent_, popupName_, std::move(targetComponent_), std::move(geometryPathGetter_), std::move(onLocalCopyEdited_))}
 {}
-osc::GeometryPathEditorPopup::GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept = default;
-osc::GeometryPathEditorPopup& osc::GeometryPathEditorPopup::operator=(GeometryPathEditorPopup&&) noexcept = default;
-osc::GeometryPathEditorPopup::~GeometryPathEditorPopup() noexcept = default;
-
-bool osc::GeometryPathEditorPopup::impl_is_open() const { return m_Impl->is_open(); }
-void osc::GeometryPathEditorPopup::impl_open() { m_Impl->open(); }
-void osc::GeometryPathEditorPopup::impl_close() { m_Impl->close(); }
-bool osc::GeometryPathEditorPopup::impl_begin_popup() { return m_Impl->begin_popup(); }
-void osc::GeometryPathEditorPopup::impl_on_draw() { m_Impl->on_draw(); }
-void osc::GeometryPathEditorPopup::impl_end_popup() { m_Impl->end_popup(); }
+void osc::GeometryPathEditorPopup::impl_draw_content() { private_data().draw_content(); }

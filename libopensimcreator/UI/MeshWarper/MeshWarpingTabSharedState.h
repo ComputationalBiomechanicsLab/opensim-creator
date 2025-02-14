@@ -38,13 +38,13 @@ namespace osc
     // top-level UI state that is shared by all UI panels
     class MeshWarpingTabSharedState final {
     public:
-        MeshWarpingTabSharedState(
+        explicit MeshWarpingTabSharedState(
             UID tabID_,
-            Widget& parent_,
+            Widget* parent_,
             std::shared_ptr<SceneCache> sceneCache_) :
 
             m_TabID{tabID_},
-            m_Parent{&parent_},
+            m_Parent{parent_},
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);
@@ -209,7 +209,7 @@ namespace osc
             m_UndoableTPSDocument->redo();
         }
 
-        template<std::derived_from<IPopup> TPopup, class... Args>
+        template<std::derived_from<Popup> TPopup, class... Args>
         requires std::constructible_from<TPopup, Args&&...>
         void emplacePopup(Args&&... args)
         {

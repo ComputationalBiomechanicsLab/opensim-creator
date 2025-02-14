@@ -1,31 +1,23 @@
 #pragma once
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 
 #include <memory>
 #include <string_view>
 
 namespace osc
 {
-    class ModelWarperTabInitialPopup final : public IPopup {
+    class ModelWarperTabInitialPopup final : public Popup {
     public:
-        explicit ModelWarperTabInitialPopup(std::string_view popupName);
-        ModelWarperTabInitialPopup(const ModelWarperTabInitialPopup&) = delete;
-        ModelWarperTabInitialPopup(ModelWarperTabInitialPopup&&) noexcept;
-        ModelWarperTabInitialPopup& operator=(const ModelWarperTabInitialPopup&) = delete;
-        ModelWarperTabInitialPopup& operator=(ModelWarperTabInitialPopup&&) noexcept;
-        ~ModelWarperTabInitialPopup() noexcept;
+        explicit ModelWarperTabInitialPopup(
+            Widget* parent,
+            std::string_view popupName
+        );
 
     private:
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-
-        bool impl_begin_popup() final;
-        void impl_on_draw() final;
-        void impl_end_popup() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

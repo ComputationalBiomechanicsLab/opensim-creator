@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-namespace osc { class IPopup; }
+namespace osc { class Popup; }
 
 namespace osc
 {
@@ -19,12 +19,12 @@ namespace osc
         PopupManager& operator=(PopupManager&&) noexcept;
         ~PopupManager() noexcept;
 
-        void push_back(std::shared_ptr<IPopup> ptr)
+        void push_back(std::shared_ptr<Popup> ptr)
         {
             popups_.push_back(std::move(ptr));
         }
 
-        template<std::derived_from<IPopup> T, typename... Args>
+        template<std::derived_from<Popup> T, typename... Args>
         requires std::constructible_from<T, Args&&...>
         T& emplace_back(Args&&... args)
         {
@@ -40,6 +40,6 @@ namespace osc
         [[nodiscard]] bool empty();
         void clear();
     private:
-        std::vector<std::shared_ptr<IPopup>> popups_;
+        std::vector<std::shared_ptr<Popup>> popups_;
     };
 }

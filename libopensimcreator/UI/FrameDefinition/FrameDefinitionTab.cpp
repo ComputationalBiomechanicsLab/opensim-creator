@@ -40,9 +40,8 @@
 #include <liboscar/UI/Panels/LogViewerPanel.h>
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupManager.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>
 #include <liboscar/Utils/Assertions.h>
@@ -854,16 +853,17 @@ namespace
     }
 
     // popup state for the frame definition tab's general context menu
-    class FrameDefinitionContextMenu final : public StandardPopup {
+    class FrameDefinitionContextMenu final : public Popup {
     public:
-        FrameDefinitionContextMenu(
+        explicit FrameDefinitionContextMenu(
+            Widget* parent,
             std::string_view popupName_,
             std::shared_ptr<PanelManager> panelManager_,
             std::shared_ptr<IModelStatePair> model_,
             OpenSim::ComponentPath componentPath_,
             std::optional<ModelViewerPanelRightClickEvent> maybeSourceVisualizerEvent_ = std::nullopt) :
 
-            StandardPopup{popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
+            Popup{parent, popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
             m_PanelManager{std::move(panelManager_)},
             m_Model{std::move(model_)},
             m_ComponentPath{std::move(componentPath_)},
@@ -960,14 +960,16 @@ public:
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",
-            [this](Widget*, std::string_view panelName)
+            [this](Widget* parent, std::string_view panelName)
             {
                 return std::make_shared<NavigatorPanel>(
+                    parent,
                     panelName,
                     m_Model,
                     [this](const OpenSim::ComponentPath& rightClickedPath)
                     {
                         auto popup = std::make_unique<FrameDefinitionContextMenu>(
+                            &this->owner(),
                             "##ContextMenu",
                             m_PanelManager,
                             m_Model,
@@ -1009,6 +1011,7 @@ public:
                     [this](const ModelViewerPanelRightClickEvent& e)
                     {
                         auto popup = std::make_unique<FrameDefinitionContextMenu>(
+                            &this->owner(),
                             "##ContextMenu",
                             m_PanelManager,
                             m_Model,
@@ -1042,15 +1045,17 @@ public:
     bool on_event(Event& e)
     {
         if (auto* openPopup = dynamic_cast<OpenPopupEvent*>(&e)) {
-            if (openPopup->has_tab()) {
-                auto tab = openPopup->take_tab();
-                tab->open();
-                m_PopupManager.push_back(std::move(tab));
+            if (openPopup->has_popup()) {
+                auto popup = openPopup->take_popup();
+                popup->set_parent(&owner());
+                popup->open();
+                m_PopupManager.push_back(std::move(popup));
                 return true;
             }
         }
         else if (auto* contextMenuEvent = dynamic_cast<OpenComponentContextMenuEvent*>(&e)) {
             auto popup = std::make_unique<FrameDefinitionContextMenu>(
+                &this->owner(),
                 "##ContextMenu",
                 m_PanelManager,
                 m_Model,

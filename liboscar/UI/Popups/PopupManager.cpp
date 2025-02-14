@@ -1,6 +1,6 @@
 #include "PopupManager.h"
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 
 #include <cstddef>
 #include <memory>
@@ -13,7 +13,7 @@ osc::PopupManager::~PopupManager() noexcept = default;
 
 void osc::PopupManager::open_all()
 {
-    for (const std::shared_ptr<IPopup>& popup : popups_) {
+    for (const std::shared_ptr<Popup>& popup : popups_) {
         popup->open();
     }
 }

@@ -528,8 +528,9 @@ public:
             return;
         }
 
-        if (m_MaybeSaveChangesPopup) {
+        if (m_MaybeSaveChangesPopup and m_MaybeSaveChangesPopup->begin_popup()) {
             m_MaybeSaveChangesPopup->on_draw();
+            m_MaybeSaveChangesPopup->end_popup();
         }
     }
 
@@ -707,7 +708,7 @@ public:
                 [this]() { return onUserCancelledOutOfSavePrompt(); },
                 ss.str(),
             };
-            m_MaybeSaveChangesPopup.emplace(cfg);
+            m_MaybeSaveChangesPopup.emplace(&owner(), cfg);
             m_MaybeSaveChangesPopup->open();
         }
         else {

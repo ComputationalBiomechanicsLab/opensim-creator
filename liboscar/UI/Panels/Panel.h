@@ -12,8 +12,11 @@ namespace osc
 {
     class Panel : public Widget {
     public:
-        Panel();
-        Panel(Widget* parent, std::string_view panel_name, ui::PanelFlags = {});
+        explicit Panel(
+            Widget* parent = nullptr,
+            std::string_view panel_name = "unnamed",
+            ui::PanelFlags = {}
+        );
 
         bool is_open() const;
         void open();

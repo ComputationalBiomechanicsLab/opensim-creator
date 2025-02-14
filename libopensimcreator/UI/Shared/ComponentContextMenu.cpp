@@ -25,7 +25,8 @@
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelManager.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/LifetimedPtr.h>
@@ -134,6 +135,7 @@ namespace
                     ActionAttachGeometryToPhysicalFrame(*modelState, pfPath, std::move(geom));
                 };
                 auto popup = std::make_unique<SelectGeometryPopup>(
+                    &parent,
                     "select geometry to attach",
                     App::resource_filepath("geometry"),
                     callback
@@ -206,7 +208,7 @@ namespace
             {
                 return dynamic_cast<const OpenSim::ContactGeometry*>(&c) != nullptr;
             };
-            auto popup = std::make_unique<SelectComponentPopup>("Select Contact Geometry", uim, onSelection, filter);
+            auto popup = std::make_unique<SelectComponentPopup>(&parent, "Select Contact Geometry", uim, onSelection, filter);
             App::post_event<OpenPopupEvent>(parent, std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Add Contact Geometry", "Add OpenSim::ContactGeometry to this OpenSim::HuntCrossleyForce.\n\nCollisions are evaluated for all OpenSim::ContactGeometry attached to the OpenSim::HuntCrossleyForce. E.g. if you want an OpenSim::ContactSphere component to collide with an OpenSim::ContactHalfSpace component during a simulation then you should add both of those components to this force");
@@ -220,7 +222,7 @@ namespace
     {
         if (ui::draw_menu_item("Add Path Point", {}, nullptr, modelState->canUpdModel())) {
             auto onSelection = [modelState, paPath](const OpenSim::ComponentPath& pfPath) { ActionAddPathPointToPathActuator(*modelState, paPath, pfPath); };
-            auto popup = std::make_unique<Select1PFPopup>("Select Physical Frame", modelState, onSelection);
+            auto popup = std::make_unique<Select1PFPopup>(&parent, "Select Physical Frame", modelState, onSelection);
             App::post_event<OpenPopupEvent>(parent, std::move(popup));
         }
         ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
@@ -354,17 +356,17 @@ namespace
     }
 }
 
-class osc::ComponentContextMenu::Impl final : public StandardPopup {
+class osc::ComponentContextMenu::Impl final : public PopupPrivate {
 public:
     explicit Impl(
+        ComponentContextMenu& owner,
         Widget* parent_,
         std::string_view popupName_,
         std::shared_ptr<IModelStatePair> model_,
         OpenSim::ComponentPath path_,
         ComponentContextMenuFlags flags_) :
 
-        StandardPopup{popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
-        m_Parent{parent_},
+        PopupPrivate{owner, parent_, popupName_, {10.0f, 10.0f}, ui::PanelFlag::NoMove},
         m_Model{std::move(model_)},
         m_Path{std::move(path_)},
         m_Flags{flags_}
@@ -373,8 +375,7 @@ public:
         OSC_ASSERT(m_Model != nullptr);
     }
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         const OpenSim::Component* c = FindComponent(m_Model->getModel(), m_Path);
         if (not c) {
@@ -418,7 +419,7 @@ private:
 
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)
-            App::post_event<OpenNamedPanelEvent>(*m_Parent, "Output Watches");
+            App::post_event<OpenNamedPanelEvent>(owner(), "Output Watches");
         });
 
         if (ui::begin_menu("Display", m_Model->canUpdModel())) {
@@ -437,20 +438,20 @@ private:
             DrawModelContextualActions(*m_Model);
         }
         else if (dynamic_cast<const OpenSim::PhysicalFrame*>(c)) {
-            DrawPhysicalFrameContextualActions(*m_Parent, m_Model, m_Path);
+            DrawPhysicalFrameContextualActions(owner(), m_Model, m_Path);
         }
         else if (dynamic_cast<const OpenSim::Joint*>(c)) {
             DrawJointContextualActions(*m_Model, m_Path);
         }
         else if (dynamic_cast<const OpenSim::HuntCrossleyForce*>(c)) {
-            DrawHCFContextualActions(*m_Parent, m_Model, m_Path);
+            DrawHCFContextualActions(owner(), m_Model, m_Path);
         }
         else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c)) {
             drawAddMusclePlotMenu(*musclePtr);
-            DrawPathActuatorContextualParams(*m_Parent, m_Model, m_Path);  // a muscle is a path actuator
+            DrawPathActuatorContextualParams(owner(), m_Model, m_Path);  // a muscle is a path actuator
         }
         else if (dynamic_cast<const OpenSim::PathActuator*>(c)) {
-            DrawPathActuatorContextualParams(*m_Parent, m_Model, m_Path);
+            DrawPathActuatorContextualParams(owner(), m_Model, m_Path);
         }
         else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c)) {
             DrawStationContextualActions(*m_Model, *stationPtr);
@@ -472,6 +473,7 @@ private:
         }
     }
 
+private:
     void drawDisplayMenuContent(const OpenSim::Component& c)
     {
         const bool isEnabled = m_Model->canUpdModel() and AnyDescendentInclusiveHasAppearanceProperty(c);
@@ -579,12 +581,13 @@ private:
                         ui::table_set_column_index(column++);
                         if (ui::draw_small_button("change")) {
                             auto popup = std::make_unique<ReassignSocketPopup>(
+                                &owner(),
                                 "Reassign " + socket.getName(),
                                 m_Model,
                                 GetAbsolutePathString(c),
                                 socketName
                             );
-                            App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                         }
 
                         ui::pop_id();
@@ -610,7 +613,7 @@ private:
         if (ui::begin_menu("Plot vs. Coordinate")) {
             for (const OpenSim::Coordinate& c : m_Model->getModel().getComponentList<OpenSim::Coordinate>()) {
                 if (ui::draw_menu_item(c.getName())) {
-                    App::post_event<AddMusclePlotEvent>(*m_Parent, c, m);
+                    App::post_event<AddMusclePlotEvent>(owner(), c, m);
                 }
             }
 
@@ -618,10 +621,9 @@ private:
         }
     }
 
-    Widget* m_Parent;
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{m_Parent, m_Model};
+    ModelActionsMenuItems m_ModelActionsMenuBar{&owner(), m_Model};
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
@@ -637,38 +639,6 @@ osc::ComponentContextMenu::ComponentContextMenu(
     const OpenSim::ComponentPath& path_,
     ComponentContextMenuFlags flags_) :
 
-    m_Impl{std::make_unique<Impl>(parent_, popupName_, std::move(model_), path_, flags_)}
+    Popup{std::make_unique<Impl>(*this, parent_, popupName_, std::move(model_), path_, flags_)}
 {}
-osc::ComponentContextMenu::ComponentContextMenu(ComponentContextMenu&&) noexcept = default;
-osc::ComponentContextMenu& osc::ComponentContextMenu::operator=(ComponentContextMenu&&) noexcept = default;
-osc::ComponentContextMenu::~ComponentContextMenu() noexcept = default;
-
-bool osc::ComponentContextMenu::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::ComponentContextMenu::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::ComponentContextMenu::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::ComponentContextMenu::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::ComponentContextMenu::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::ComponentContextMenu::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::ComponentContextMenu::impl_draw_content() { private_data().draw_content(); }

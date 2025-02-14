@@ -1871,10 +1871,10 @@ namespace
         std::shared_ptr<ModelWarperV3UIState> m_State;
     };
 
-    class WarpedModelExporterPopup final : public StandardPopup {
+    class WarpedModelExporterPopup final : public Popup {
     public:
-        explicit WarpedModelExporterPopup() :
-            StandardPopup{"hello, popup world!"}
+        explicit WarpedModelExporterPopup(Widget* parent) :
+            Popup{parent, "hello, popup world!"}
         {}
 
     private:

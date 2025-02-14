@@ -23,6 +23,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: ModelWarperV3 TPS warps now have options for configuring the input
   mesh/landmark prescale and whether or not to use the translational/rotational
   part of a TPS warp.
+- Internal: ModelWarperV3 can now export the model to the model editor (hackily:
+  it writes warped meshes to `${MODEL_DIR}/WarpedGeometry`).
+- Internal: Almost all UI classes have been refactored over to use the `osc::Widget`
+  API, so that various parts of the UI codebase can work more generically.
+
 
 ## [0.5.20] - 2025/01/28
 

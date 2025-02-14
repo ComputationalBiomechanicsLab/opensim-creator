@@ -53,8 +53,8 @@ public:
             // draw button
             if (ui::draw_menu_item("Body", {}, nullptr, m_Model->canUpdModel())) {
                 if (parent()) {
-                    auto popup = std::make_unique<AddBodyPopup>("add body", *parent(), m_Model);
-                    App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                    auto popup = std::make_unique<AddBodyPopup>(&owner(), "add body", m_Model);
+                    App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                 }
             }
 
@@ -91,12 +91,12 @@ private:
                 if (ui::draw_menu_item(entry.name())) {
                     if (parent()) {
                         auto popup = std::make_unique<AddComponentPopup>(
+                            &owner(),
                             "Add " + registry.name(),
-                            *parent(),
                             m_Model,
                             entry.instantiate()
                         );
-                        App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+                        App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                     }
                 }
 

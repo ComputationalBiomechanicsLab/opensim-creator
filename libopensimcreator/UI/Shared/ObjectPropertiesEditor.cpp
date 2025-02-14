@@ -1428,10 +1428,11 @@ namespace
             }
         }
 
-        std::unique_ptr<IPopup> createGeometryPathEditorPopup(const std::shared_ptr<const IComponentAccessor>& componentPtr)
+        std::unique_ptr<Popup> createGeometryPathEditorPopup(const std::shared_ptr<const IComponentAccessor>& componentPtr)
         {
             const auto accessor = getDowncastedPropertyAccessor();
             return std::make_unique<GeometryPathEditorPopup>(
+                tryGetParentWidget(),
                 "Edit Geometry Path",
                 componentPtr,
                 [accessor]() -> const OpenSim::GeometryPath*

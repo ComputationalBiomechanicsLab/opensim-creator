@@ -19,7 +19,6 @@ namespace osc
         void onDraw(IModelStatePair* = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
-        std::optional<SaveChangesPopup> maybeSaveChangesPopup;
 
     private:
         void impl_on_draw() final { onDraw(); }

@@ -79,11 +79,6 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         }
     }
 
-    // draw "save as", if necessary
-    if (maybeSaveChangesPopup) {
-        maybeSaveChangesPopup->on_draw();
-    }
-
     if (not ui::begin_menu("File")) {
         return;
     }

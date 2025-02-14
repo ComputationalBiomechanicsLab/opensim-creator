@@ -13,7 +13,8 @@
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -27,19 +28,19 @@
 #include <utility>
 
 
-class osc::AddBodyPopup::Impl final : public StandardPopup {
+class osc::AddBodyPopup::Impl final : public PopupPrivate {
 public:
-    Impl(std::string_view popupName,
-         Widget& parent,
-         std::shared_ptr<IModelStatePair> modelState) :
+    Impl(
+        AddBodyPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        std::shared_ptr<IModelStatePair> modelState) :
 
-        StandardPopup{popupName},
-        m_Parent{&parent},
+        PopupPrivate{owner, parent, popupName},
         m_Model{std::move(modelState)}
     {}
 
-private:
-    void impl_draw_content() final
+    void draw_content()
     {
         if (m_Model->isReadonly()) {
             ui::draw_text_centered(OSC_ICON_LOCK " cannot edit the model - it is locked");
@@ -184,11 +185,12 @@ private:
                 if (ui::draw_button(label)) {
                     // open geometry selection popup
                     auto popup = std::make_unique<SelectGeometryPopup>(
+                        &owner(),
                         "addbody_attachgeometry",
                         App::resource_filepath("geometry"),
                         [this](auto ptr) { onGeometrySelection(std::move(ptr)); }
                     );
-                    App::post_event<OpenPopupEvent>(*m_Parent, std::move(popup));
+                    App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                 }
                 App::upd().add_frame_annotation("AddBodyPopup::GeometryButton", ui::get_last_drawn_item_screen_rect());
             }
@@ -213,18 +215,15 @@ private:
         }
     }
 
-    void impl_on_close() final
+    void on_close()
     {
         m_BodyDetails = BodyDetails{};
     }
-
+private:
     void onGeometrySelection(std::unique_ptr<OpenSim::Geometry> ptr)
     {
         m_BodyDetails.maybeGeometry = std::move(ptr);
     }
-
-    // the parent widget of this popup
-    Widget* m_Parent = nullptr;
 
     // the model that the body will be added to
     std::shared_ptr<IModelStatePair> m_Model;
@@ -235,42 +234,11 @@ private:
 
 
 osc::AddBodyPopup::AddBodyPopup(
+    Widget* parent,
     std::string_view popupName,
-    Widget& parent,
     std::shared_ptr<IModelStatePair> modelState) :
 
-    m_Impl{std::make_unique<Impl>(popupName, parent, std::move(modelState))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(modelState))}
 {}
-osc::AddBodyPopup::AddBodyPopup(AddBodyPopup&&) noexcept = default;
-osc::AddBodyPopup& osc::AddBodyPopup::operator=(AddBodyPopup&&) noexcept = default;
-osc::AddBodyPopup::~AddBodyPopup() noexcept = default;
-
-bool osc::AddBodyPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::AddBodyPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::AddBodyPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::AddBodyPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::AddBodyPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::AddBodyPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::AddBodyPopup::impl_draw_content() { private_data().draw_content(); }
+void osc::AddBodyPopup::impl_on_close() { private_data().on_close(); }

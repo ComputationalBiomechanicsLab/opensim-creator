@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/UI/Popups/IPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
 
 #include <functional>
 #include <memory>
@@ -12,29 +12,20 @@ namespace osc { class IComponentAccessor; }
 namespace osc
 {
 
-    class GeometryPathEditorPopup final : public IPopup {
+    class GeometryPathEditorPopup final : public Popup {
     public:
-        GeometryPathEditorPopup(
+        explicit GeometryPathEditorPopup(
+            Widget* parent_,
             std::string_view popupName_,
             std::shared_ptr<const IComponentAccessor> targetComponent_,
             std::function<const OpenSim::GeometryPath*()> geometryPathGetter_,
             std::function<void(const OpenSim::GeometryPath&)> onLocalCopyEdited_
         );
-        GeometryPathEditorPopup(const GeometryPathEditorPopup&) = delete;
-        GeometryPathEditorPopup(GeometryPathEditorPopup&&) noexcept;
-        GeometryPathEditorPopup& operator=(const GeometryPathEditorPopup&) = delete;
-        GeometryPathEditorPopup& operator=(GeometryPathEditorPopup&&) noexcept;
-        ~GeometryPathEditorPopup() noexcept;
 
     private:
-        bool impl_is_open() const final;
-        void impl_open() final;
-        void impl_close() final;
-        bool impl_begin_popup() final;
-        void impl_on_draw() final;
-        void impl_end_popup() final;
+        void impl_draw_content() final;
 
         class Impl;
-        std::unique_ptr<Impl> m_Impl;
+        OSC_WIDGET_DATA_GETTERS(Impl);
     };
 }

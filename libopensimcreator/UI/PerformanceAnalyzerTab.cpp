@@ -203,7 +203,7 @@ private:
 
     OutputExtractor m_WalltimeExtractor = GetSimulatorOutputExtractor("Wall time");
     OutputExtractor m_StepsTakenExtractor = GetSimulatorOutputExtractor("NumStepsTaken");
-    ParamBlockEditorPopup m_ParamEditor{"parameditor", &m_BaseParams};
+    ParamBlockEditorPopup m_ParamEditor{&owner(), "parameditor", &m_BaseParams};
 };
 
 

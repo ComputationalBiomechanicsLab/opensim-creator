@@ -4,7 +4,8 @@
 
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Popups/StandardPopup.h>
+#include <liboscar/UI/Popups/Popup.h>
+#include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/FilesystemHelpers.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <SimTKcommon/SmallMatrix.h>
@@ -89,21 +90,21 @@ namespace
     }
 }
 
-class osc::SelectGeometryPopup::Impl final : public StandardPopup {
+class osc::SelectGeometryPopup::Impl final : public PopupPrivate {
 public:
-    Impl(std::string_view popupName,
-         const std::filesystem::path& geometryDir,
-         std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
+    explicit Impl(
+        SelectGeometryPopup& owner,
+        Widget* parent,
+        std::string_view popupName,
+        const std::filesystem::path& geometryDir,
+        std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
-        StandardPopup{popupName},
+        PopupPrivate{owner, parent, popupName},
         m_OnSelection{std::move(onSelection)},
         m_GeometryFiles{find_files_recursive(geometryDir)}
-    {
-    }
+    {}
 
-private:
-
-    void impl_draw_content() final
+    void draw_content()
     {
         // premade geometry section
         //
@@ -198,6 +199,7 @@ private:
         }
     }
 
+private:
     std::unique_ptr<OpenSim::Mesh> onMeshFileChosen(std::filesystem::path path)
     {
         auto rv = LoadGeometryFile(path);
@@ -243,42 +245,11 @@ private:
 
 
 osc::SelectGeometryPopup::SelectGeometryPopup(
+    Widget* parent,
     std::string_view popupName,
     const std::filesystem::path& geometryDir,
     std::function<void(std::unique_ptr<OpenSim::Geometry>)> onSelection) :
 
-    m_Impl{std::make_unique<Impl>(popupName, geometryDir, std::move(onSelection))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, geometryDir, std::move(onSelection))}
 {}
-osc::SelectGeometryPopup::SelectGeometryPopup(SelectGeometryPopup&&) noexcept = default;
-osc::SelectGeometryPopup& osc::SelectGeometryPopup::operator=(SelectGeometryPopup&&) noexcept = default;
-osc::SelectGeometryPopup::~SelectGeometryPopup() noexcept = default;
-
-bool osc::SelectGeometryPopup::impl_is_open() const
-{
-    return m_Impl->is_open();
-}
-
-void osc::SelectGeometryPopup::impl_open()
-{
-    m_Impl->open();
-}
-
-void osc::SelectGeometryPopup::impl_close()
-{
-    m_Impl->close();
-}
-
-bool osc::SelectGeometryPopup::impl_begin_popup()
-{
-    return m_Impl->begin_popup();
-}
-
-void osc::SelectGeometryPopup::impl_on_draw()
-{
-    m_Impl->on_draw();
-}
-
-void osc::SelectGeometryPopup::impl_end_popup()
-{
-    m_Impl->end_popup();
-}
+void osc::SelectGeometryPopup::impl_draw_content() { private_data().draw_content(); }
