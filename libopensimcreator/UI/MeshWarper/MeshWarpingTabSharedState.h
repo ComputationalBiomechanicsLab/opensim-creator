@@ -43,7 +43,7 @@ namespace osc
             std::shared_ptr<SceneCache> sceneCache_) :
 
             m_TabID{tabID_},
-            m_Parent{parent_.weak_ref()},
+            m_Parent{&parent_},
             m_SceneCache{std::move(sceneCache_)}
         {
             OSC_ASSERT(m_SceneCache != nullptr);
@@ -183,8 +183,9 @@ namespace osc
 
         void closeTab()
         {
-            CloseTabEvent e{m_TabID};
-            m_Parent->on_event(e);
+            if (m_Parent) {
+                App::post_event<CloseTabEvent>(*m_Parent, m_TabID);
+            }
         }
 
         bool canUndo() const
@@ -260,7 +261,7 @@ namespace osc
         UID m_TabID;
 
         // handle to the screen that owns the TPS3D tab
-        LifetimedPtr<Widget> m_Parent;
+        Widget* m_Parent;
 
         // cached TPS3D algorithm result (to prevent recomputing it over and over)
         TPSResultCache m_WarpingCache;
