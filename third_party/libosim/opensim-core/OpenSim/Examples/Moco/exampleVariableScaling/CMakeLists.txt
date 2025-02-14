@@ -1,1 +1,0 @@
-OpenSimAddExampleCXX(NAME exampleVariableScaling SUBDIR Moco)
