@@ -221,8 +221,9 @@ public:
             return true;
         }
         else if (auto* panel = dynamic_cast<OpenPanelEvent*>(&e)) {
-            if (panel->has_tab()) {
+            if (panel->has_panel()) {
                 auto panelPtr = panel->take_panel();
+                panelPtr->set_parent(&owner());
                 const std::string name{panelPtr->name()};
                 m_PanelManager->push_dynamic_panel(name, std::move(panelPtr));
                 return true;
