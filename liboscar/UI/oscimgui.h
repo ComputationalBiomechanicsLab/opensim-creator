@@ -566,9 +566,15 @@ namespace osc::ui
 
     Vec2 get_panel_size();
 
-    class DrawListView {
+    class DrawListAPI {
+    protected:
+        DrawListAPI() = default;
+        DrawListAPI(const DrawListAPI&) = default;
+        DrawListAPI(DrawListAPI&&) noexcept = default;
+        DrawListAPI& operator=(const DrawListAPI&) = default;
+        DrawListAPI& operator=(DrawListAPI&&) noexcept = default;
     public:
-        explicit DrawListView(ImDrawList* inner_list) : inner_list_{inner_list} {}
+        virtual ~DrawListAPI() noexcept = default;
 
         void add_rect(const Rect& rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
         void add_rect_filled(const Rect& rect, const Color& color, float rounding = 0.0f);
@@ -578,11 +584,23 @@ namespace osc::ui
         void add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness = 1.0f);
         void add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color);
 
+        void render_to(RenderTexture&);
     private:
+        virtual ImDrawList& impl_get_drawlist() = 0;
+    };
+
+    class DrawListView : public DrawListAPI {
+    public:
+        explicit DrawListView(ImDrawList* inner_list) :
+            inner_list_{inner_list}
+        {}
+    private:
+        ImDrawList& impl_get_drawlist() final { return *inner_list_; }
+
         ImDrawList* inner_list_;
     };
 
-    class DrawList final {
+    class DrawList final : public DrawListAPI {
     public:
         DrawList();
         DrawList(const DrawList&) = delete;
@@ -593,8 +611,9 @@ namespace osc::ui
 
         operator DrawListView () { return DrawListView{underlying_drawlist_.get()}; }
 
-        void render_to(RenderTexture&);
     private:
+        ImDrawList& impl_get_drawlist() final { return *underlying_drawlist_; }
+
         std::unique_ptr<ImDrawList> underlying_drawlist_;
     };
 

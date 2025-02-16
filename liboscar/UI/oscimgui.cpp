@@ -2393,64 +2393,46 @@ Vec2 osc::ui::get_panel_size()
     return ImGui::GetWindowSize();
 }
 
-void osc::ui::DrawListView::add_rect(const Rect& rect, const Color& color, float rounding, float thickness)
+void osc::ui::DrawListAPI::add_rect(const Rect& rect, const Color& color, float rounding, float thickness)
 {
-    inner_list_->AddRect(rect.p1, rect.p2, to_ImU32(color), rounding, 0, thickness);
+    impl_get_drawlist().AddRect(rect.p1, rect.p2, to_ImU32(color), rounding, 0, thickness);
 }
 
-void osc::ui::DrawListView::add_rect_filled(const Rect& rect, const Color& color, float rounding)
+void osc::ui::DrawListAPI::add_rect_filled(const Rect& rect, const Color& color, float rounding)
 {
-    inner_list_->AddRectFilled(rect.p1, rect.p2, to_ImU32(color), rounding);
+    impl_get_drawlist().AddRectFilled(rect.p1, rect.p2, to_ImU32(color), rounding);
 }
 
-void osc::ui::DrawListView::add_circle(const Circle& circle, const Color& color, int num_segments, float thickness)
+void osc::ui::DrawListAPI::add_circle(const Circle& circle, const Color& color, int num_segments, float thickness)
 {
-    inner_list_->AddCircle(circle.origin, circle.radius, to_ImU32(color), num_segments, thickness);
+    impl_get_drawlist().AddCircle(circle.origin, circle.radius, to_ImU32(color), num_segments, thickness);
 }
 
-void osc::ui::DrawListView::add_circle_filled(const Circle& circle, const Color& color, int num_segments)
+void osc::ui::DrawListAPI::add_circle_filled(const Circle& circle, const Color& color, int num_segments)
 {
-    inner_list_->AddCircleFilled(circle.origin, circle.radius, to_ImU32(color), num_segments);
+    impl_get_drawlist().AddCircleFilled(circle.origin, circle.radius, to_ImU32(color), num_segments);
 }
 
-void osc::ui::DrawListView::add_text(const Vec2& position, const Color& color, CStringView text)
+void osc::ui::DrawListAPI::add_text(const Vec2& position, const Color& color, CStringView text)
 {
-    inner_list_->AddText(position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
+    impl_get_drawlist().AddText(position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
 }
 
-void osc::ui::DrawListView::add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness)
+void osc::ui::DrawListAPI::add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness)
 {
-    inner_list_->AddLine(p1, p2, to_ImU32(color), thickness);
+    impl_get_drawlist().AddLine(p1, p2, to_ImU32(color), thickness);
 }
 
-void osc::ui::DrawListView::add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color)
+void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color)
 {
-    inner_list_->AddTriangleFilled(p0, p1, p2, to_ImU32(color));
+    impl_get_drawlist().AddTriangleFilled(p0, p1, p2, to_ImU32(color));
 }
 
-ui::DrawListView osc::ui::get_panel_draw_list()
-{
-    return ui::DrawListView{ImGui::GetWindowDrawList()};
-}
-
-ui::DrawListView osc::ui::get_foreground_draw_list()
-{
-    return ui::DrawListView{ImGui::GetForegroundDrawList()};
-}
-
-osc::ui::DrawList::DrawList() :
-    underlying_drawlist_{std::make_unique<ImDrawList>(ImGui::GetDrawListSharedData())}
-{
-    underlying_drawlist_->Flags |= ImDrawListFlags_AntiAliasedLines;
-    underlying_drawlist_->AddDrawCmd();
-}
-osc::ui::DrawList::DrawList(DrawList&&) noexcept = default;
-osc::ui::DrawList& osc::ui::DrawList::operator=(DrawList&&) noexcept = default;
-osc::ui::DrawList::~DrawList() noexcept = default;
-
-void osc::ui::DrawList::render_to(RenderTexture& target)
+void osc::ui::DrawListAPI::render_to(RenderTexture& target)
 {
     // TODO: this should be merged with `ui_graphics_backend`
+
+    ImDrawList& drawlist = impl_get_drawlist();
 
     // upload vertex positions/colors
     Mesh mesh;
@@ -2458,8 +2440,8 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
         // vertices
         {
             std::vector<Vec3> vertices;
-            vertices.reserve(underlying_drawlist_->VtxBuffer.size());
-            for (const ImDrawVert& vert : underlying_drawlist_->VtxBuffer) {
+            vertices.reserve(drawlist.VtxBuffer.size());
+            for (const ImDrawVert& vert : drawlist.VtxBuffer) {
                 vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
             }
             mesh.set_vertices(vertices);
@@ -2468,8 +2450,8 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
         // colors
         {
             std::vector<Color> colors;
-            colors.reserve(underlying_drawlist_->VtxBuffer.size());
-            for (const ImDrawVert& vert : underlying_drawlist_->VtxBuffer) {
+            colors.reserve(drawlist.VtxBuffer.size());
+            for (const ImDrawVert& vert : drawlist.VtxBuffer) {
                 const Color linear_color = to_color(vert.col);
                 colors.push_back(linear_color);
             }
@@ -2502,12 +2484,12 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
     }
     c.set_clear_flags(CameraClearFlag::None);
 
-    for (const ImDrawCmd& cmd : underlying_drawlist_->CmdBuffer) {
+    for (const ImDrawCmd& cmd : drawlist.CmdBuffer) {
         // upload indices
         std::vector<ImDrawIdx> indices;
         indices.reserve(cmd.ElemCount);
         for (auto offset = cmd.IdxOffset; offset < cmd.IdxOffset + cmd.ElemCount; ++offset) {
-            indices.push_back(underlying_drawlist_->IdxBuffer[static_cast<int>(offset)]);
+            indices.push_back(drawlist.IdxBuffer[static_cast<int>(offset)]);
         }
         mesh.set_indices(indices);
 
@@ -2517,6 +2499,27 @@ void osc::ui::DrawList::render_to(RenderTexture& target)
 
     c.render_to(target);
 }
+
+ui::DrawListView osc::ui::get_panel_draw_list()
+{
+    return ui::DrawListView{ImGui::GetWindowDrawList()};
+}
+
+ui::DrawListView osc::ui::get_foreground_draw_list()
+{
+    return ui::DrawListView{ImGui::GetForegroundDrawList()};
+}
+
+osc::ui::DrawList::DrawList() :
+    underlying_drawlist_{std::make_unique<ImDrawList>(ImGui::GetDrawListSharedData())}
+{
+    underlying_drawlist_->Flags |= ImDrawListFlags_AntiAliasedLines;
+    underlying_drawlist_->AddDrawCmd();
+}
+osc::ui::DrawList::DrawList(DrawList&&) noexcept = default;
+osc::ui::DrawList& osc::ui::DrawList::operator=(DrawList&&) noexcept = default;
+osc::ui::DrawList::~DrawList() noexcept = default;
+
 
 void osc::ui::show_demo_panel()
 {

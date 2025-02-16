@@ -2497,6 +2497,11 @@ osc::SharedColorRenderBuffer::SharedColorRenderBuffer(const ColorRenderBuffer& i
     impl_{std::make_shared<ColorRenderBuffer>(impl)}
 {}
 
+bool osc::SharedColorRenderBuffer::has_been_rendered_to() const
+{
+    return impl_->has_been_rendered_to();
+}
+
 SharedColorRenderBuffer osc::SharedColorRenderBuffer::clone() const
 {
     return SharedColorRenderBuffer{*impl_};
@@ -2572,6 +2577,11 @@ osc::SharedDepthStencilRenderBuffer::SharedDepthStencilRenderBuffer(const DepthS
 osc::SharedDepthStencilRenderBuffer::SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer& impl) :
     impl_{std::make_shared<DepthStencilRenderBuffer>(impl)}
 {}
+
+bool osc::SharedDepthStencilRenderBuffer::has_been_rendered_to() const
+{
+    return impl_->has_been_rendered_to();
+}
 
 SharedDepthStencilRenderBuffer osc::SharedDepthStencilRenderBuffer::clone() const
 {
@@ -5663,6 +5673,20 @@ public:
     {
         static_assert(CameraClearFlag::All == CameraClearFlags{CameraClearFlag::SolidColor, CameraClearFlag::Depth});
 
+        // If the color/depth buffer(s) haven't been rendered to yet, they should be
+        // cleared (so that new buffers have a predictable initial state).Otherwise,
+        // clearing is dictated by `CameraClearFlag`.
+        //
+        // Failing to clear a newly-allocated buffer can lead to weird behavior (e.g.
+        // depth test failing and then ending up with nothing rendering, which then
+        // results in an inordinate amount of wasted fucking time - not that I'd know ;)).
+        bool should_clear_color_buffer =
+            not render_texture.upd_color_buffer().has_been_rendered_to() or
+            (clear_flags() & CameraClearFlag::SolidColor);
+        bool should_clear_depth_stencil_buffer =
+            not render_texture.upd_depth_buffer().has_been_rendered_to() or
+            (clear_flags() & CameraClearFlag::Depth);
+
         const RenderTarget render_target
         {
             {
@@ -5672,9 +5696,7 @@ public:
                     render_texture.upd_color_buffer(),
 
                     // load the color buffer based on this camera's clear flags
-                    clear_flags() & CameraClearFlag::SolidColor ?
-                        RenderBufferLoadAction::Clear :
-                        RenderBufferLoadAction::Load,
+                    should_clear_color_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
 
                     RenderBufferStoreAction::Resolve,
 
@@ -5690,9 +5712,7 @@ public:
                 render_texture.upd_depth_buffer(),
 
                 // load the depth buffer based on this camera's clear flags
-                clear_flags() & CameraClearFlag::Depth ?
-                    RenderBufferLoadAction::Clear :
-                    RenderBufferLoadAction::Load,
+                should_clear_depth_stencil_buffer ? RenderBufferLoadAction::Clear : RenderBufferLoadAction::Load,
 
                 RenderBufferStoreAction::DontCare,
             },

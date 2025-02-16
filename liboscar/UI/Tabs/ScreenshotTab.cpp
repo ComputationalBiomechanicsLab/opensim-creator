@@ -194,7 +194,7 @@ private:
         RenderTexture render_texture{{.dimensions = image_texture_.dimensions()}};
 
         // blit the screenshot into the output
-        graphics::blit(image_texture_, render_texture);
+        //graphics::blit(image_texture_, render_texture);
 
         // draw overlays to a local ImGui draw list
         ui::DrawList draw_list;

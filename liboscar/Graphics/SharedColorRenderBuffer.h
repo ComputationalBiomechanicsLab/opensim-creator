@@ -61,11 +61,14 @@ namespace osc
         AntiAliasingLevel anti_aliasing_level() const;
 
     private:
+        friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
         class ColorRenderBuffer;
 
         explicit SharedColorRenderBuffer(const ColorRenderBuffer&);
+
+        bool has_been_rendered_to() const;
 
         std::shared_ptr<ColorRenderBuffer> impl_;
     };

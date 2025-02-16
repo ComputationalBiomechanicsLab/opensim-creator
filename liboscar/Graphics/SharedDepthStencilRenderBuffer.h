@@ -62,11 +62,14 @@ namespace osc
         DepthStencilRenderBufferFormat format() const;
 
     private:
+        friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
         class DepthStencilRenderBuffer;
 
         explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
+
+        bool has_been_rendered_to() const;
 
         std::shared_ptr<DepthStencilRenderBuffer> impl_;
     };
