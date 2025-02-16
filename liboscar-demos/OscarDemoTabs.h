@@ -10,6 +10,7 @@
 #include <liboscar-demos/learnopengl/PBR.h>
 
 #include <liboscar-demos/CustomWidgetsTab.h>
+#include <liboscar-demos/DrawingTestTab.h>
 #include <liboscar-demos/FrustumCullingTab.h>
 #include <liboscar-demos/HittestTab.h>
 #include <liboscar-demos/ImGuiDemoTab.h>
@@ -58,6 +59,7 @@ namespace osc
         LOGLPBRSpecularIrradianceTexturedTab,
 
         CustomWidgetsTab,
+        DrawingTestTab,
         FrustumCullingTab,
         HittestTab,
         ImGuiDemoTab,
