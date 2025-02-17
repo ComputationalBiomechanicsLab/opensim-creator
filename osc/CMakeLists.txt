@@ -24,7 +24,7 @@ set(
     "a longer, user-friendly name of the application"
 )
 set(
-    OSC_PACKAGE_NAME "OpenSimCreator"
+    OSC_PACKAGE_NAME "opensimcreator"
     CACHE STRING
     "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
 )
