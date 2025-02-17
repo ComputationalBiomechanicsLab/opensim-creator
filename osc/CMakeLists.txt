@@ -3,69 +3,89 @@ set(
     CACHE STRING
     "the internet location of the software's repo - used by in-app links, installers, etc."
 )
+mark_as_advanced(OSC_REPO_URL)
 set(
     OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
     CACHE STRING
     "the internet location of the software's help page - used by in-app links, installers, etc."
 )
+mark_as_advanced(OSC_HELP_URL)
 set(
     OSC_ORGNAME "cbl"
     CACHE STRING
     "the name of the organization that created the application (affects configuration location)"
 )
+mark_as_advanced(OSC_ORGNAME)
 set(
     OSC_APPNAME "osc"
     CACHE STRING
     "the short name for the application (affects configuration location)"
 )
+mark_as_advanced(OSC_APPNAME)
 set(
     OSC_LONG_APPNAME "OpenSim Creator"
     CACHE STRING
     "a longer, user-friendly name of the application"
 )
+mark_as_advanced(OSC_LONG_APPNAME)
 set(
     OSC_PACKAGE_NAME "opensimcreator"
     CACHE STRING
     "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
 )
+mark_as_advanced(OSC_PACKAGE_NAME)
 set(
     OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
     CACHE STRING
     "a desription of what the software does (shows in package installers on Debian, for example)"
 )
+mark_as_advanced(OSC_SOFTWARE_DESCRIPTION)
 set(
     OSC_AUTHOR "Adam Kewley"
     CACHE STRING
     "the user-facing name of the author (appears in installer, etc.)"
 )
+mark_as_advanced(OSC_AUTHOR)
 set(
     OSC_AUTHOR_EMAIL "contact@adamkewley.com"
     CACHE STRING
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
+mark_as_advanced(OSC_AUTHOR_EMAIL)
 set(OSC_BUNDLE_OSCAR_DEMOS OFF
     CACHE BOOL
     "enable/disable bundling oscar demos with the `osc` application"
 )
 
 # set OSC_BUILD_ID
-#
-# this is so that errors in the binary can potentially be linked to the source
-# that produced the binary later on (user errors, etc.)
-if(TRUE)
-
-    if(DEFINED ENV{OSC_BUILD_ID})
-        set(OSC_DEFAULT_BUILD_ID "$ENV{OSC_BUILD_ID}")
-    else()
-        set(OSC_DEFAULT_BUILD_ID "CUSTOM_BUILD")
-    endif()
-
-    set(
-        OSC_BUILD_ID "${OSC_DEFAULT_BUILD_ID}"
+if(DEFINED ENV{OSC_BUILD_ID})
+    set(OSC_BUILD_ID "$ENV{OSC_BUILD_ID}"
         CACHE STRING
         "a unique identifier for this particular build configuration (handy for bug tracing)"
     )
-    unset(OSC_DEFAULT_BUILD_ID)
+else()
+    set(OSC_BUILD_ID "CUSTOM_BUILD"
+        CACHE STRING
+        "a unique identifier for this particular build configuration (handy for bug tracing)"
+    )
+endif()
+
+# set OSC_PACKAGING_DIR
+if(TRUE)
+    if(WIN32)
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Windows")
+    elseif(UNIX AND NOT APPLE)
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Debian")
+    elseif(APPLE)
+        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/MacOS")
+    else()
+        set(OSC_PACKAGING_DIR_DEFAULT "UNKNOWN_PACKAGING_METHOD")
+    endif()
+
+    set(OSC_PACKAGING_DIR "${OSC_PACKAGING_DIR_DEFAULT}"
+        CACHE PATH
+        "a path to a directory containing a `Packaging.cmake` script that package's the application for the target platform"
+    )
 endif()
 
 # OpenSimCreatorConfig.h
@@ -135,7 +155,7 @@ target_link_options(osc PRIVATE
 
 # -------------- installation/packaging ------------- #
 
-# set shared CPack variables
+# set shared/common CPack variables
 set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
@@ -145,13 +165,7 @@ set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
 set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
 
 # `include` platform-specific packaging instructions
-if (WIN32)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/Windows/Packaging.cmake)
-elseif(UNIX AND NOT APPLE)  # i.e. it's Linux
-    include(${CMAKE_CURRENT_SOURCE_DIR}/Debian/Packaging.cmake)
-elseif(APPLE)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Packaging.cmake)
-endif()
+include(${OSC_PACKAGING_DIR}/Packaging.cmake)
 
 
 # -------------- development nice-to-haves ------------- #
