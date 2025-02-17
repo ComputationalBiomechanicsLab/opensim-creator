@@ -287,6 +287,18 @@ namespace osc::mi
             pushMeshLoadRequests(promptUserForMeshFiles());
         }
 
+        void reloadMeshes()
+        {
+            for (auto& mesh : m_ModelGraphSnapshots.upd_scratch().iter<mi::Mesh>()) {
+                try {
+                    mesh.reloadMeshDataFromDisk();
+                }
+                catch (const std::exception& ex) {
+                    log_info("%s: error reloading: %s", mesh.getLabel().c_str(), ex.what());
+                }
+            }
+        }
+
         //
         // UI OVERLAY STUFF
         //

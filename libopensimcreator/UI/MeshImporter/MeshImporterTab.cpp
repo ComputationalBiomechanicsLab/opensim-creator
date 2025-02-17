@@ -1844,6 +1844,13 @@ private:
             }
             ui::draw_tooltip_if_item_hovered(tooltipTitle, tooltipDesc);
         }
+
+        ui::same_line();
+
+        if (ui::draw_button(OSC_ICON_RECYCLE " Reload Meshes")) {
+            m_Shared->reloadMeshes();
+        }
+        ui::draw_tooltip_body_only_if_item_hovered("Reloads all meshes in the scene from disk");
     }
 
     std::optional<AABB> calcSceneAABB() const

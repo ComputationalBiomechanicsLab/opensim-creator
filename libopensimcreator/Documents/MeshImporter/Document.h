@@ -45,7 +45,7 @@ namespace osc::mi
             using value_type = T;
             using pointer = T*;
             using const_pointer = const T*;
-            using reference = const T&;
+            using reference = T&;
             using iterator_category = std::forward_iterator_tag;
 
             // caller-provided iterator

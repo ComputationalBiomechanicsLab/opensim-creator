@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The mesh importer now has a "Reload Meshes" button which, when pressed, will cause
+  the implementation to immediately reload all meshes in the scene from disk (#999).
 - Fixed a bug where directly opening an `.osim` from the command line/UI shell
   could sometimes result in gigantic icons (#997).
 - HighDPI support has now been rolled out to 3D UI elements (previously, it was

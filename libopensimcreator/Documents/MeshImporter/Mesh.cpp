@@ -5,6 +5,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>
@@ -36,6 +37,11 @@ osc::mi::Mesh::Mesh(
 AABB osc::mi::Mesh::calcBounds() const
 {
     return transform_aabb(m_Transform, m_MeshData.bounds());
+}
+
+void osc::mi::Mesh::reloadMeshDataFromDisk()
+{
+    m_MeshData = LoadMeshViaSimTK(getPath());
 }
 
 MIClass osc::mi::Mesh::CreateClass()

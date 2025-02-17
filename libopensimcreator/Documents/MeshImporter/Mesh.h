@@ -60,6 +60,8 @@ namespace osc::mi
 
         AABB calcBounds() const;
 
+        void reloadMeshDataFromDisk();
+
     private:
         friend class MIObjectCRTP<Mesh>;
         static MIClass CreateClass();
