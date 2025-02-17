@@ -11,6 +11,7 @@ set(OSC_EMSCRIPTEN OFF
     CACHE BOOL
     "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
 )
+mark_as_advanced(OSC_EMSCRIPTEN)
 
 # find library packages
 if (NOT ${OSC_EMSCRIPTEN})
