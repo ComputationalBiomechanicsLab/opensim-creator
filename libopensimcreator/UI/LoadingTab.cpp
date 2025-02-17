@@ -39,10 +39,10 @@ public:
 
     explicit Impl(
         LoadingTab& owner,
-        Widget& parent_,
+        Widget* parent_,
         std::filesystem::path path_) :
 
-        TabPrivate{owner, &parent_, "LoadingTab"},
+        TabPrivate{owner, parent_, "LoadingTab"},
         m_OsimPath{std::move(path_)},
         m_LoadingResult{std::async(std::launch::async, LoadOsimIntoUndoableModel, m_OsimPath)}
     {}
@@ -127,7 +127,7 @@ public:
                 ui::draw_dummy({0.0f, 5.0f});
 
                 if (ui::draw_button("try again")) {
-                    App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(*parent(), m_OsimPath));
+                    App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(parent(), m_OsimPath));
                     App::post_event<CloseTabEvent>(*parent(), id());
                 }
             }
@@ -161,7 +161,7 @@ private:
 
 
 osc::LoadingTab::LoadingTab(
-    Widget& parent_,
+    Widget* parent_,
     std::filesystem::path path_) :
 
     Tab{std::make_unique<Impl>(*this, parent_, std::move(path_))}

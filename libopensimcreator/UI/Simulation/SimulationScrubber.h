@@ -12,7 +12,7 @@ namespace osc
 {
     class SimulationScrubber final {
     public:
-        SimulationScrubber(
+        explicit SimulationScrubber(
             std::string_view label,
             ISimulatorUIAPI*,
             std::shared_ptr<const Simulation>

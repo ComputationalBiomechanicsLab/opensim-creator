@@ -1125,8 +1125,8 @@ private:
 
 CStringView osc::FrameDefinitionTab::id() { return c_TabStringID; }
 
-osc::FrameDefinitionTab::FrameDefinitionTab(Widget* parent_) :
-    Tab{std::make_unique<Impl>(*this, parent_)}
+osc::FrameDefinitionTab::FrameDefinitionTab(Widget* parent) :
+    Tab{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::FrameDefinitionTab::impl_on_mount() { private_data().on_mount(); }
 void osc::FrameDefinitionTab::impl_on_unmount() { private_data().on_unmount(); }

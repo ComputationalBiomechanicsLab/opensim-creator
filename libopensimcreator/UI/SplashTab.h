@@ -9,7 +9,7 @@ namespace osc
 {
     class SplashTab final : public Tab {
     public:
-        explicit SplashTab(Widget&);
+        explicit SplashTab(Widget* parent);
 
     private:
         void impl_on_mount() final;

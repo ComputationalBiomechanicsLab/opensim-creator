@@ -49,13 +49,13 @@ namespace
 class osc::PerformanceAnalyzerTab::Impl final : public TabPrivate {
 public:
 
-    Impl(
+    explicit Impl(
         PerformanceAnalyzerTab& owner,
-        Widget& parent,
+        Widget* parent,
         BasicModelStatePair baseModel,
         ParamBlock params) :
 
-        TabPrivate{owner, &parent, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
+        TabPrivate{owner, parent, OSC_ICON_FAST_FORWARD " PerformanceAnalyzerTab"},
         m_BaseModel{std::move(baseModel)},
         m_BaseParams{std::move(params)}
     {}
@@ -208,7 +208,7 @@ private:
 
 
 osc::PerformanceAnalyzerTab::PerformanceAnalyzerTab(
-    Widget& parent,
+    Widget* parent,
     BasicModelStatePair modelState,
     const ParamBlock& params) :
 

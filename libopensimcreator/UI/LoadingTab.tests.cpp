@@ -53,7 +53,7 @@ namespace
         }
 
         size_t m_NumFramesAfterLoading = 2;
-        LoadingTab m_LoadingTab{*this, std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim")};
+        LoadingTab m_LoadingTab{this, std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim")};
     };
 }
 

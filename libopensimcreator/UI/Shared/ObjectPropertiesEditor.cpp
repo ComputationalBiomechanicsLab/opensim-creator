@@ -1509,6 +1509,7 @@ namespace
                         // can change the accessor's behavior. This is a panel, so it should stick to
                         // whatever was selected when the panel was spawned.
                         auto panel = std::make_unique<FunctionCurveViewerPanel>(
+                            parentWidget,
                             generatePopupName(*prop),
                             componentPtr,
                             [component = componentPtr, parentPath = tryGetObjectAbsPath(), propname = prop->getName()]() -> const OpenSim::Function*

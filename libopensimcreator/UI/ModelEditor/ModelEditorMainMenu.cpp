@@ -33,7 +33,7 @@ namespace
         const IModelStatePair& model)
     {
         auto tab = std::make_unique<PerformanceAnalyzerTab>(
-            parent,
+            &parent,
             BasicModelStatePair{model},
             model.tryUpdEnvironment()->getSimulationParams()
         );

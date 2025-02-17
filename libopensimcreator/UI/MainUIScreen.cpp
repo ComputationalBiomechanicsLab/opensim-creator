@@ -142,7 +142,7 @@ public:
     {
         if (!std::exchange(m_HasBeenMountedBefore, true)) {
             // on first mount, place the splash tab at the front of the tabs collection
-            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(owner()));
+            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(&owner()));
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
@@ -260,7 +260,7 @@ public:
             handled = true;
         }
         else if (auto* openFileEv = dynamic_cast<OpenFileEvent*>(&e)) {
-            impl_select_tab(impl_add_tab(std::make_unique<LoadingTab>(owner(), openFileEv->path())));
+            impl_select_tab(impl_add_tab(std::make_unique<LoadingTab>(&owner(), openFileEv->path())));
             handled = true;
         }
         else if (dynamic_cast<ResetUIContextEvent*>(&e)) {

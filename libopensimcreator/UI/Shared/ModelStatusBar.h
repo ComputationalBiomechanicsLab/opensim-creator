@@ -10,7 +10,10 @@ namespace osc
 {
     class ModelStatusBar final : public Widget {
     public:
-        explicit ModelStatusBar(Widget* parent, std::shared_ptr<IModelStatePair>);
+        explicit ModelStatusBar(
+            Widget* parent,
+            std::shared_ptr<IModelStatePair>
+        );
 
     private:
         void impl_on_draw() final;

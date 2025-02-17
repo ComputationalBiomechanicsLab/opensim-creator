@@ -14,7 +14,7 @@ namespace osc
 {
     class ModelViewerPanelParameters final {
     public:
-        ModelViewerPanelParameters(
+        explicit ModelViewerPanelParameters(
             std::shared_ptr<IModelStatePair> model_,
             const std::function<void(const ModelViewerPanelRightClickEvent&)>& onRightClickedAComponent_ = [](const auto&) {}) :
 

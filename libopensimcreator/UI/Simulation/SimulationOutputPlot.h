@@ -12,7 +12,7 @@ namespace osc
 {
     class SimulationOutputPlot final {
     public:
-        SimulationOutputPlot(
+        explicit SimulationOutputPlot(
             ISimulatorUIAPI*,
             OutputExtractor,
             float height

@@ -84,7 +84,7 @@ namespace
 
         ui::push_id(++imguiID);
         if (ui::draw_menu_item(label)) {
-            auto tab = std::make_unique<LoadingTab>(parent_, path);
+            auto tab = std::make_unique<LoadingTab>(&parent_, path);
             App::post_event<OpenTabEvent>(parent_, std::move(tab));
         }
         // show the full path as a tooltip when the item is hovered (some people have
@@ -101,8 +101,8 @@ namespace
 class osc::SplashTab::Impl final : public TabPrivate {
 public:
 
-    explicit Impl(SplashTab& owner, Widget& parent_) :
-        TabPrivate{owner, &parent_, OSC_ICON_HOME},
+    explicit Impl(SplashTab& owner, Widget* parent_) :
+        TabPrivate{owner, parent_, OSC_ICON_HOME},
         m_MainMenuFileTab{std::make_unique<MainMenuFileTab>(&owner)}
     {
         m_MainAppLogo.set_filter_mode(TextureFilterMode::Linear);
@@ -129,8 +129,8 @@ public:
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
             if (HasModelFileExtension(dropfile->path())) {
-                auto tab = std::make_unique<LoadingTab>(*parent(), dropfile->path());
-                App::post_event<OpenTabEvent>(*parent(), std::move(tab));
+                auto tab = std::make_unique<LoadingTab>(&owner(), dropfile->path());
+                App::post_event<OpenTabEvent>(owner(), std::move(tab));
                 return true;
             }
         }
@@ -414,7 +414,7 @@ private:
     LogViewer m_LogViewer{&owner()};
 };
 
-osc::SplashTab::SplashTab(Widget& parent_) :
+osc::SplashTab::SplashTab(Widget* parent_) :
     Tab{std::make_unique<Impl>(*this, parent_)}
 {}
 void osc::SplashTab::impl_on_mount() { private_data().on_mount(); }

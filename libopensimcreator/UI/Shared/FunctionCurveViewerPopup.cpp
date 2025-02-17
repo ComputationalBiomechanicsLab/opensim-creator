@@ -28,13 +28,14 @@ namespace plot = osc::ui::plot;
 
 class osc::FunctionCurveViewerPanel::Impl final : public PanelPrivate {
 public:
-    Impl(
+    explicit Impl(
         FunctionCurveViewerPanel& owner,
+        Widget* parent,
         std::string_view popupName,
         std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
         std::function<const OpenSim::Function*()> functionGetter) :
 
-        PanelPrivate{owner, nullptr, popupName, ui::PanelFlag::AlwaysAutoResize},
+        PanelPrivate{owner, parent, popupName, ui::PanelFlag::AlwaysAutoResize},
         m_Component{std::move(targetComponent)},
         m_FunctionGetter{std::move(functionGetter)}
     {}
@@ -214,10 +215,11 @@ private:
 };
 
 osc::FunctionCurveViewerPanel::FunctionCurveViewerPanel(
+    Widget* parent,
     std::string_view panelName,
     std::shared_ptr<const IVersionedComponentAccessor> targetComponent,
     std::function<const OpenSim::Function*()> functionGetter) :
 
-    Panel{std::make_unique<Impl>(*this, panelName, std::move(targetComponent), std::move(functionGetter))}
+    Panel{std::make_unique<Impl>(*this, parent, panelName, std::move(targetComponent), std::move(functionGetter))}
 {}
 void osc::FunctionCurveViewerPanel::impl_draw_content() { private_data().draw_content(); }

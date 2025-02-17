@@ -78,10 +78,10 @@ using namespace osc;
 // helper functions
 namespace
 {
-    void OpenOsimInLoadingTab(Widget& api, std::filesystem::path p)
+    void OpenOsimInLoadingTab(Widget& parent, std::filesystem::path p)
     {
-        auto tab = std::make_unique<LoadingTab>(api, std::move(p));
-        App::post_event<OpenTabEvent>(api, std::move(tab));
+        auto tab = std::make_unique<LoadingTab>(&parent, std::move(p));
+        App::post_event<OpenTabEvent>(parent, std::move(tab));
     }
 
     void DoOpenFileViaDialog(Widget& api)

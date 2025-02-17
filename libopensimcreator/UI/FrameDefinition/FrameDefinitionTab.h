@@ -10,7 +10,7 @@ namespace osc
     public:
         static CStringView id();
 
-        explicit FrameDefinitionTab(Widget*);
+        explicit FrameDefinitionTab(Widget* parent);
 
     private:
         void impl_on_mount() final;

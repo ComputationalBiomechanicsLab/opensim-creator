@@ -11,8 +11,8 @@ namespace osc
 {
     class PerformanceAnalyzerTab final : public Tab {
     public:
-        PerformanceAnalyzerTab(
-            Widget&,
+        explicit PerformanceAnalyzerTab(
+            Widget* parent,
             BasicModelStatePair,
             const ParamBlock&
         );

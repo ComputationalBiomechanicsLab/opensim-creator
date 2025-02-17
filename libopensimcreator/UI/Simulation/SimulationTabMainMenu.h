@@ -11,7 +11,7 @@ namespace osc
 {
     class SimulationTabMainMenu final : public Widget {
     public:
-        SimulationTabMainMenu(
+        explicit SimulationTabMainMenu(
             Widget* parent,
             std::shared_ptr<Simulation>,
             std::shared_ptr<PanelManager>

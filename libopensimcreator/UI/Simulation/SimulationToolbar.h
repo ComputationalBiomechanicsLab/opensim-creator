@@ -10,7 +10,7 @@ namespace osc
 {
     class SimulationToolbar final {
     public:
-        SimulationToolbar(
+        explicit SimulationToolbar(
             std::string_view label,
             ISimulatorUIAPI*,
             std::shared_ptr<Simulation>
