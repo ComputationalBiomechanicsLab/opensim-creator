@@ -5,7 +5,7 @@
 > try to ensure anything else is more-stable, but some breakages should be
 > expected until stated otherwise.
 
-This directory contains python bindings for `libOpenSimCreator` and `libosim`,
+This directory contains python bindings for `libopensimcreator` and `libosim`,
 so that end-users can automate some parts of the model building/visualization
 process.
 
@@ -17,4 +17,3 @@ something that's fast and/or entirely compatible with OpenSim's APIs. Instead,
 we'll provide APIs for ingesting/producing OpenSim's **data** (e.g. `osim`,
 `sto`, `trc`) such that it can be separately fed into whatever version of
 the OpenSim API you're using.
-

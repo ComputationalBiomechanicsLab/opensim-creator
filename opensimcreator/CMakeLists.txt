@@ -4,8 +4,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # the builder's machine
 find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
 
-find_package(Pytest REQUIRED)
-
 # use `nanobind` to map C++ types to the underlying python library
 set(NB_USE_SUBMODULE_DEPS OFF)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opensimcreator/nanobind)
@@ -27,13 +25,21 @@ set_target_properties(opensimcreator_core PROPERTIES
 )
 
 if(BUILD_TESTING)
+    # find `pytest` (+ discovery functions)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindPytest.cmake)
+
+    file(GLOB OSC_PYTEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.py")
+
     # use `pytest` to automatically discover all of the available tests
     pytest_discover_tests(
-        PythonTest
+        opensimcreator_core
         PYTHON_PATH_PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests
-        DEPENDS opensimcreator_core
+        DEPENDS
+            opensimcreator_core
+            ${OSC_PYTEST_SOURCES}
         INCLUDE_FILE_PATH
     )
-endif()
 
+    unset(OSC_PYTEST_SOURCES)
+endif()

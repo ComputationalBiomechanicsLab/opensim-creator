@@ -21,9 +21,9 @@ cmake_minimum_required(VERSION 3.20...3.30)
 
 include(FindPackageHandleStandardArgs)
 
+# Find the `pytest` executable (on the PATH, venv, etc.).
 find_program(PYTEST_EXECUTABLE NAMES pytest pytest-3)
 mark_as_advanced(PYTEST_EXECUTABLE)
-
 if(PYTEST_EXECUTABLE)
     execute_process(
         COMMAND "${PYTEST_EXECUTABLE}" --version
@@ -37,6 +37,7 @@ if(PYTEST_EXECUTABLE)
     endif()
 endif()
 
+# Make this script compatible with `find_package`.
 find_package_handle_standard_args(
     Pytest
     REQUIRED_VARS
@@ -47,14 +48,17 @@ find_package_handle_standard_args(
     HANDLE_VERSION_RANGE
 )
 
+# If `pytest` is found, export relevant targets/scripts.
 if (Pytest_FOUND AND NOT TARGET Pytest::Pytest)
     add_executable(Pytest::Pytest IMPORTED)
     set_target_properties(Pytest::Pytest
         PROPERTIES
-            IMPORTED_LOCATION "${PYTEST_EXECUTABLE}")
+            IMPORTED_LOCATION "${PYTEST_EXECUTABLE}"
+    )
 
-    # Function to discover pytest tests and add them to CTest.
-    function(pytest_discover_tests NAME)
+    # Export `pytest_discover_tests`, which discovers pytest tests and exports them
+    # to CTest by writing the usual `CTestTestfile.cmake` to the binary directory.
+    function(pytest_discover_tests target)
         cmake_parse_arguments(
             PARSE_ARGV 1 "" "STRIP_PARAM_BRACKETS;INCLUDE_FILE_PATH;BUNDLE_TESTS"
             "WORKING_DIRECTORY;TRIM_FROM_NAME;TRIM_FROM_FULL_NAME"
@@ -94,6 +98,28 @@ if (Pytest_FOUND AND NOT TARGET Pytest::Pytest)
             set(_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
         endif()
 
+        get_property(
+            has_counter
+            TARGET ${target}
+            PROPERTY CTEST_DISCOVERED_TEST_COUNTER
+            SET
+        )
+        if(has_counter)
+            get_property(
+                counter
+                TARGET ${target}
+                PROPERTY CTEST_DISCOVERED_TEST_COUNTER
+            )
+            math(EXPR counter "${counter} + 1")
+        else()
+            set(counter 1)
+        endif()
+        set_property(
+            TARGET ${target}
+            PROPERTY CTEST_DISCOVERED_TEST_COUNTER
+            ${counter}
+        )
+
         get_filename_component(_WORKING_DIRECTORY "${_WORKING_DIRECTORY}" REALPATH)
 
         # Override option by environment variable if available.
@@ -102,45 +128,48 @@ if (Pytest_FOUND AND NOT TARGET Pytest::Pytest)
         endif()
 
         # Define file paths for generated CMake include files.
-        set(_include_file "${CMAKE_CURRENT_BINARY_DIR}/${NAME}_include.cmake")
-        set(_tests_file "${CMAKE_CURRENT_BINARY_DIR}/${NAME}_tests.cmake")
+        set(ctest_file_base "${CMAKE_CURRENT_BINARY_DIR}/${target}[${counter}]")
+        set(ctest_include_file "${ctest_file_base}_include.cmake")
+        set(ctest_tests_file "${ctest_file_base}_tests.cmake")
 
         add_custom_command(
-            VERBATIM
-            OUTPUT "${_tests_file}"
+            #TARGET ${target} POST_BUILD
+            OUTPUT "${ctest_tests_file}"
             DEPENDS ${_DEPENDS}
-            COMMAND ${CMAKE_COMMAND}
-            -D "PYTEST_EXECUTABLE=${PYTEST_EXECUTABLE}"
-            -D "TEST_GROUP_NAME=${NAME}"
-            -D "BUNDLE_TESTS=${_BUNDLE_TESTS}"
-            -D "LIBRARY_ENV_NAME=${LIBRARY_ENV_NAME}"
-            -D "LIBRARY_PATH=${LIBRARY_PATH}"
-            -D "PYTHON_PATH=${PYTHON_PATH}"
-            -D "TRIM_FROM_NAME=${_TRIM_FROM_NAME}"
-            -D "TRIM_FROM_FULL_NAME=${_TRIM_FROM_FULL_NAME}"
-            -D "STRIP_PARAM_BRACKETS=${_STRIP_PARAM_BRACKETS}"
-            -D "INCLUDE_FILE_PATH=${_INCLUDE_FILE_PATH}"
-            -D "WORKING_DIRECTORY=${_WORKING_DIRECTORY}"
-            -D "ENVIRONMENT=${_ENVIRONMENT}"
-            -D "TEST_PROPERTIES=${_PROPERTIES}"
-            -D "CTEST_FILE=${_tests_file}"
-            -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/PytestAddTests.cmake")
+            COMMAND "${CMAKE_COMMAND}"
+                -D "PYTEST_EXECUTABLE=${PYTEST_EXECUTABLE}"
+                -D "TEST_GROUP_NAME=${target}"
+                -D "BUNDLE_TESTS=${_BUNDLE_TESTS}"
+                -D "LIBRARY_ENV_NAME=${LIBRARY_ENV_NAME}"
+                -D "LIBRARY_PATH=${LIBRARY_PATH}"
+                -D "PYTHON_PATH=${PYTHON_PATH}"
+                -D "TRIM_FROM_NAME=${_TRIM_FROM_NAME}"
+                -D "TRIM_FROM_FULL_NAME=${_TRIM_FROM_FULL_NAME}"
+                -D "STRIP_PARAM_BRACKETS=${_STRIP_PARAM_BRACKETS}"
+                -D "INCLUDE_FILE_PATH=${_INCLUDE_FILE_PATH}"
+                -D "WORKING_DIRECTORY=${_WORKING_DIRECTORY}"
+                -D "ENVIRONMENT=${_ENVIRONMENT}"
+                -D "TEST_PROPERTIES=${_PROPERTIES}"
+                -D "CTEST_FILE=${ctest_tests_file}"
+                -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/PytestAddTests.cmake"
+            VERBATIM
+        )
+
+        file(WRITE "${ctest_include_file}"
+            "if(EXISTS \"${ctest_tests_file}\")\n"
+            "    include(\"${ctest_tests_file}\")\n"
+            "else()\n"
+            "    add_test(${target}_NOT_BUILT ${target}_NOT_BUILT)\n"
+            "endif()\n"
+        )
 
         # Create a custom target to run the tests.
-        add_custom_target(${NAME} ALL DEPENDS ${_tests_file})
-
-          file(WRITE "${_include_file}"
-              "if(EXISTS \"${_tests_file}\")\n"
-              "    include(\"${_tests_file}\")\n"
-              "else()\n"
-              "    add_test(${NAME}_NOT_BUILT ${NAME}_NOT_BUILT)\n"
-              "endif()\n"
-          )
+        add_custom_target(${target}_tests ALL DEPENDS ${ctest_tests_file})
 
         # Register the include file to be processed for tests.
         set_property(DIRECTORY
-            APPEND PROPERTY TEST_INCLUDE_FILES "${_include_file}")
+            APPEND PROPERTY TEST_INCLUDE_FILES "${ctest_include_file}"
+        )
 
     endfunction()
-
 endif()
