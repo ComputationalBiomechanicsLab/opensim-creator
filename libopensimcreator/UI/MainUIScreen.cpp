@@ -1,5 +1,6 @@
 #include "MainUIScreen.h"
 
+#include <libopensimcreator/UI/Events/OpenFileEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
@@ -130,7 +131,11 @@ public:
 
     void open(const std::filesystem::path& p)
     {
-        addTab(std::make_unique<LoadingTab>(owner(), p));
+        // Defer opening the file until the main event loop is set up
+        // otherwise, the resulting `LoadingTab`, `ModelEditorTab` etc.
+        // might be initialized before anything else (e.g. before the
+        // ui context).
+        App::post_event<OpenFileEvent>(owner(), p);
     }
 
     void on_mount()
@@ -252,6 +257,10 @@ public:
         }
         else if (auto* closeTabEv = dynamic_cast<CloseTabEvent*>(&e)) {
             impl_close_tab(closeTabEv->tabid_to_close());
+            handled = true;
+        }
+        else if (auto* openFileEv = dynamic_cast<OpenFileEvent*>(&e)) {
+            impl_select_tab(impl_add_tab(std::make_unique<LoadingTab>(owner(), openFileEv->path())));
             handled = true;
         }
         else if (dynamic_cast<ResetUIContextEvent*>(&e)) {

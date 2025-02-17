@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed a bug where directly opening an `.osim` from the command line/UI shell
+  could sometimes result in gigantic icons (#997).
 - HighDPI support has now been rolled out to 3D UI elements (previously, it was
   only rolled out to 2D UI elements - #950), #1001.
 - A new configuration option, `graphics.render_scale`, can now be set in
