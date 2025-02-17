@@ -21,8 +21,6 @@ public:
     void on_tick() {}
     void on_draw()
     {
-        const Rect r = ui::get_main_viewport_workspace_screenspace_rect();
-
         RenderTexture tex{{
             .dimensions = {256.0f, 256.0f},
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
