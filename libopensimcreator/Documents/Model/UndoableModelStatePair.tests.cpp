@@ -43,7 +43,7 @@ TEST(UndoableModelStatePair, CanLoadAndRenderAllUserFacingExampleFiles)
     size_t nExamplesTested = 0;
     for (const std::filesystem::directory_entry& e : std::filesystem::recursive_directory_iterator{examplesDir})
     {
-        if (e.is_regular_file() && e.path().extension() == ".osim")
+        if (e.is_regular_file() and HasModelFileExtension(e.path()))
         {
             // all files are loadable
             UndoableModelStatePair p{e.path()};

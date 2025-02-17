@@ -11,6 +11,7 @@
 #include <libopensimcreator/UI/ModelWarper/ModelWarperTab.h>
 #include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Color.h>
@@ -127,7 +128,7 @@ public:
     bool on_event(Event& e)
     {
         if (const auto* dropfile = dynamic_cast<const DropFileEvent*>(&e)) {
-            if (dropfile->path().extension() == ".osim") {
+            if (HasModelFileExtension(dropfile->path())) {
                 auto tab = std::make_unique<LoadingTab>(*parent(), dropfile->path());
                 App::post_event<OpenTabEvent>(*parent(), std::move(tab));
                 return true;

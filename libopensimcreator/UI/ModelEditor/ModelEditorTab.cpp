@@ -383,7 +383,7 @@ private:
         if (e.path().extension() == ".sto") {
             return ActionLoadSTOFileAgainstModel(owner(), *m_Model, e.path());
         }
-        else if (e.path().extension() == ".osim") {
+        else if (HasModelFileExtension(e.path())) {
             // if the user drops an osim file on this tab then it should be loaded
             auto tab = std::make_unique<LoadingTab>(owner(), e.path());
             App::post_event<OpenTabEvent>(owner(), std::move(tab));

@@ -396,3 +396,16 @@ TEST(OpenSimHelpers, RecommendedDocumentName_ReturnsFilenameIfProvidedLoadedMode
     OpenSim::Model model{modelPath.string()};
     ASSERT_EQ(RecommendedDocumentName(model), "blank.osim");
 }
+
+TEST(OpenSimHelpers, HasModelFileExtension_AcceptsCapitalizedOsimExtension)
+{
+    // Regression test: some OSIM files on SimTK.org etc. have non-standard
+    // file extensions, probably because they were authored on OSes with
+    // a case-insensitive filesystem (e.g. Windows). The codebase should try
+    // to ignore this error so that legacy files keep loading (#984).
+    ASSERT_TRUE(HasModelFileExtension("some/path/to/legacy/model.OSIM"));
+    ASSERT_TRUE(HasModelFileExtension("some/path/to/legacy/model.osim"));
+    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/model.jpeg"));
+    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/model"));
+    ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/osim"));
+}

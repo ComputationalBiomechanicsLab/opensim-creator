@@ -626,6 +626,9 @@ namespace osc
     // returns pointers to all wrap objects that are referenced by the given `GeometryPath`
     std::vector<const OpenSim::WrapObject*> GetAllWrapObjectsReferencedBy(const OpenSim::GeometryPath&);
 
+    // Returns `true` if `path` has a supported model file extension.
+    bool HasModelFileExtension(const std::filesystem::path& path);
+
     // returns a pointer to a not-yet-initialized model, loaded via an osim file at the given path
     std::unique_ptr<OpenSim::Model> LoadModel(const std::filesystem::path&);
 

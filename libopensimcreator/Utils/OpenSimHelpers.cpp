@@ -1028,6 +1028,14 @@ std::vector<const OpenSim::WrapObject*> osc::GetAllWrapObjectsReferencedBy(const
     return rv;
 }
 
+bool osc::HasModelFileExtension(const std::filesystem::path& path)
+{
+    // Some ".osim" files in the wild (e.g. on SimTK.org) have a capitalized extension
+    // (e.g. "SomeOldModel.OSIM"). Although technically invalid on case-sensitive
+    // filesystems/OSes, it should still be accepted (#984).
+    return is_equal_case_insensitive(path.extension().string(), ".osim");
+}
+
 std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path)
 {
     GloballyInitOpenSim();
