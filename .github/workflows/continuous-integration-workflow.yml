@@ -24,7 +24,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: OpenSimCreator_Win64.zip
+        name: opensimcreator_win64.zip
         path: osc/osc-build/*win64.exe
         if-no-files-found: error
 
@@ -54,7 +54,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: OpenSimCreator_Deb.zip
+        name: opensimcreator_deb.zip
         path: osc/osc-build/*.deb
         if-no-files-found: error
 
@@ -82,7 +82,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: OpenSimCreator_MacOSX.zip
+        name: opensimcreator_macos.zip
         path: osc-build/*.dmg
         if-no-files-found: error
 
