@@ -5,7 +5,7 @@ env:
 
 jobs:
   windows2022msvc:
-    name: Windows 2022 (x86_64, MSVC)
+    name: Windows 2022 (amd64, MSVC)
     runs-on: windows-2022
     steps:
 
@@ -24,12 +24,12 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator_win64.zip
-        path: osc/osc-build/*win64.exe
+        name: opensimcreator-windows-amd64.zip
+        path: osc/osc-build/*windows-amd64.exe
         if-no-files-found: error
 
   ubuntu2004clang:
-    name: Ubuntu 20.04 (x86_64, clang)
+    name: Ubuntu 20.04 (amd64, clang-11)
     runs-on: ubuntu-20.04
     steps:
 
@@ -54,12 +54,12 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator_deb.zip
+        name: opensimcreator-debian-amd64.zip
         path: osc/osc-build/*.deb
         if-no-files-found: error
 
   macos11clang:
-    name: MacOS 13 (x86_64, XCode 15.2, targeting 14.2)
+    name: MacOS 13 (amd64, XCode 15.2, targeting 14.2)
     runs-on: macos-13
     steps:
 
@@ -87,7 +87,7 @@ jobs:
         if-no-files-found: error
 
   ubuntu2204gcc:
-    name: Ubuntu 22.04 (x86_64, gcc-12)
+    name: Ubuntu 22.04 (amd64, gcc-12)
     runs-on: ubuntu-22.04
     steps:
 

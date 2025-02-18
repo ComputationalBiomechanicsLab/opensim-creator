@@ -39,6 +39,11 @@ install(
         "resources/"
 )
 
+# use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
+string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
+set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
+unset(OSC_ARCH_LOWERCASE)
+
 # use NSIS to package everything into a self-extracting installer
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
 set(CPACK_GENERATOR NSIS)
