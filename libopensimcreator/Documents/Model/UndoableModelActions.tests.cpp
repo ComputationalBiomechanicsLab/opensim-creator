@@ -516,8 +516,6 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesAttachedGeometry)
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
-    const SimTK::State& state = model.updModel().initializeState();
-    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
 
     // The SDF should still have the geometry attached
     ASSERT_EQ(sdf.getProperty_attached_geometry().size(), 2);
@@ -571,8 +569,6 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
-    const SimTK::State& state = model.updModel().initializeState();
-    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
 
     // The SDF should still have the wrap objects attached to it
     ASSERT_EQ(sdf.getWrapObjectSet().getSize(), 2);
@@ -623,8 +619,6 @@ TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
-    const SimTK::State& state = model.updModel().initializeState();
-    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
 
     // The SDF should contain the subcomponents
     {
