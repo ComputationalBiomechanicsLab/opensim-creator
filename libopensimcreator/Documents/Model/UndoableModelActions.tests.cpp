@@ -14,6 +14,7 @@
 #include <liboscar/Utils/Algorithms.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -434,4 +435,214 @@ TEST(OpenSimActions, ActionZeroAllCoordinatesZeroesAllCoordinatesInAModel)
     ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 1.0);
     ActionZeroAllCoordinates(model);
     ASSERT_EQ(fj->getCoordinate(OpenSim::FreeJoint::Coord::TranslationY).get_default_value(), 0.0);
+}
+
+// Test `ActionBakeStationDefinedFrames` feature (#1004) simple usage pattern.
+TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
+{
+    // Build basic model with SDF
+    UndoableModelStatePair model;
+    auto& a = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& sdf = AddModelComponent<OpenSim::StationDefinedFrame>(
+        model.updModel(),
+        "sdf",
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
+        a,
+        b,
+        c,
+        c
+    );
+
+    // Finalize/initialize the model
+    model.updModel().buildSystem();
+    const SimTK::State& state = model.updModel().initializeState();
+    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
+
+    // Ensure `StationDefinedFrame` is actually transforming
+    ASSERT_NE(sdfTransform, SimTK::Transform{}) << "The `StationDefinedFrame` should have a non-identity transform";
+
+    // Ensure counts are within expectations before baking
+    {
+        auto lst = model->getComponentList<OpenSim::StationDefinedFrame>();
+        ASSERT_EQ(std::distance(lst.begin(), lst.end()), 1) << "The model should only contain one `StationDefinedFrame`";
+        auto lst2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+        ASSERT_EQ(std::distance(lst2.begin(), lst2.end()), 0) << "The model should contain no `PhysicalOffsetFrame`s (hasn't been baked yet)";
+    }
+
+    // Bake the frames
+    ActionBakeStationDefinedFrames(model);
+
+    // Ensure counts are within expectations after baking
+    {
+        auto lst = model->getComponentList<OpenSim::StationDefinedFrame>();
+        ASSERT_EQ(std::distance(lst.begin(), lst.end()), 0) << "The model shouldn't contain any `StationDefinedFrame`s (baking should delete them)";
+        auto lst2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+        ASSERT_EQ(std::distance(lst2.begin(), lst2.end()), 1) << "The model should contain one `PhysicalOffsetFrame` (from baking)";
+    }
+
+    // Ensure transform after baking is equivalent to `StationDefinedFrame`'s original transform
+    const SimTK::State& stateAfter = model.updModel().initializeState();
+    const SimTK::Transform offsetTransform = model->getComponentList<OpenSim::PhysicalOffsetFrame>().begin()->getTransformInGround(stateAfter);
+
+    ASSERT_EQ(offsetTransform.p(), sdfTransform.p());
+    ASSERT_EQ(offsetTransform.R().convertRotationToBodyFixedXYZ(), sdfTransform.R().convertRotationToBodyFixedXYZ());
+}
+
+// Test `ActionBakeStationDefinedFrames` feature (#1004) also copies any attached geometry.
+TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesAttachedGeometry)
+{
+    // Build basic model with SDF
+    UndoableModelStatePair model;
+    auto& a = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& sdf = AddModelComponent<OpenSim::StationDefinedFrame>(
+        model.updModel(),
+        "sdf",
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
+        a,
+        b,
+        c,
+        c
+    );
+
+    // Attach geometry to the SDF
+    sdf.attachGeometry(new OpenSim::Sphere{2.5});
+    sdf.attachGeometry(new OpenSim::Ellipsoid{1.0, 2.0, 3.0});
+
+    // Finalize/initialize the model
+    model.updModel().buildSystem();
+    const SimTK::State& state = model.updModel().initializeState();
+    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
+
+    // The SDF should still have the geometry attached
+    ASSERT_EQ(sdf.getProperty_attached_geometry().size(), 2);
+
+    // Bake the frames
+    ActionBakeStationDefinedFrames(model);
+
+    // Find the baked `PhysicalOffsetFrame`
+    auto pofs = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+    ASSERT_EQ(std::distance(pofs.begin(), pofs.end()), 1);
+    const OpenSim::PhysicalOffsetFrame& pof = *pofs.begin();
+
+    // Ensure the baked frame also includes the attached geometry.
+    ASSERT_EQ(pof.getProperty_attached_geometry().size(), 2);
+
+    // Check first attached geometry.
+    {
+        const auto& sphere = dynamic_cast<const OpenSim::Sphere&>(pof.get_attached_geometry(0));
+        ASSERT_EQ(sphere.get_radius(), 2.5);
+    }
+
+    // Check second attached geometry.
+    {
+        const auto& ellipsoid = dynamic_cast<const OpenSim::Ellipsoid&>(pof.get_attached_geometry(1));
+        ASSERT_EQ(ellipsoid.get_radii(), SimTK::Vec3(1.0, 2.0, 3.0));
+    }
+}
+
+// Test `ActionBakeStationDefinedFrames` feature (#1004) also copies any associated wrap objects.
+TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
+{
+    // Build basic model with SDF
+    UndoableModelStatePair model;
+    auto& a = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& sdf = AddModelComponent<OpenSim::StationDefinedFrame>(
+        model.updModel(),
+        "sdf",
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
+        a,
+        b,
+        c,
+        c
+    );
+
+    // Add `OpenSim::WrapObject`s to the SDF
+    sdf.addWrapObject(new OpenSim::WrapSphere{});
+    sdf.addWrapObject(new OpenSim::WrapCylinder{});
+
+    // Finalize/initialize the model
+    model.updModel().buildSystem();
+    const SimTK::State& state = model.updModel().initializeState();
+    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
+
+    // The SDF should still have the wrap objects attached to it
+    ASSERT_EQ(sdf.getWrapObjectSet().getSize(), 2);
+
+    // Bake the SDF
+    ActionBakeStationDefinedFrames(model);
+
+    // Find the baked `PhysicalOffsetFrame`
+    auto pofs = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+    ASSERT_EQ(std::distance(pofs.begin(), pofs.end()), 1);
+    const OpenSim::PhysicalOffsetFrame& pof = *pofs.begin();
+
+    // Ensure the baked frame also includes the wrap objects.
+    ASSERT_EQ(pof.getWrapObjectSet().getSize(), 2);
+
+    // Check first wrap object.
+    ASSERT_NE(dynamic_cast<const OpenSim::WrapSphere*>(&pof.getWrapObjectSet()[0]), nullptr);
+
+    // Check second wrap object.
+    ASSERT_NE(dynamic_cast<const OpenSim::WrapCylinder*>(&pof.getWrapObjectSet()[1]), nullptr);
+}
+
+// Test `ActionBakeStationDefinedFrames` feature (#1004) also copies any subcomponents.
+//
+// `DISABLED_` because I haven't figured out how to copy subcomponent list properties
+TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
+{
+    // Build basic model with SDF
+    UndoableModelStatePair model;
+    auto& a = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    auto& b = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 1.0, 0.0});
+    auto& c = AddModelComponent<OpenSim::Station>(model.updModel(), model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    auto& sdf = AddModelComponent<OpenSim::StationDefinedFrame>(
+        model.updModel(),
+        "sdf",
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::XCoordinateAxis{}},
+        SimTK::CoordinateDirection{SimTK::CoordinateAxis::ZCoordinateAxis{}},
+        a,
+        b,
+        c,
+        c
+    );
+
+    // Add subcomponents to the SDF's component list (in this case, make it extra
+    // hard by making them dependent on the SDF ;)).
+    sdf.addComponent(new OpenSim::Marker{"marker1", sdf, SimTK::Vec3(1.0, 0.0, 0.0)});
+    sdf.addComponent(new OpenSim::Marker{"marker2", sdf, SimTK::Vec3(0.0, 1.0, 0.0)});
+
+    // Finalize/initialize the model
+    model.updModel().buildSystem();
+    const SimTK::State& state = model.updModel().initializeState();
+    const SimTK::Transform sdfTransform = sdf.getTransformInGround(state);
+
+    // The SDF should contain the subcomponents
+    {
+        auto lst = sdf.getComponentList<OpenSim::Marker>();
+        ASSERT_EQ(std::distance(lst.begin(), lst.end()), 2);
+    }
+
+    // Bake the SDF
+    ActionBakeStationDefinedFrames(model);
+
+    // Find the baked `PhysicalOffsetFrame`
+    auto pofs = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+    ASSERT_EQ(std::distance(pofs.begin(), pofs.end()), 1);
+    const OpenSim::PhysicalOffsetFrame& pof = *pofs.begin();
+
+    // The baked SDF should contain the subcomponents
+    {
+        auto lst = pof.getComponentList<OpenSim::Marker>();
+        ASSERT_EQ(std::distance(lst.begin(), lst.end()), 2);
+    }
 }

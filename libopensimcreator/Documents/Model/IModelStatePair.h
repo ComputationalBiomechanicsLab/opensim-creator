@@ -32,9 +32,8 @@ namespace osc
         virtual ~IModelStatePair() noexcept = default;
 
         const OpenSim::Model& getModel() const { return implGetModel(); }
-
-        // Implicitly converts a `const IModelStatePair&` into a `const OpenSim::Model&`
-        operator const OpenSim::Model& () const { return getModel(); }
+        operator const OpenSim::Model& () const { return implGetModel(); }
+        const OpenSim::Model* operator->() const { return &implGetModel(); }
 
         const SimTK::State& getState() const { return implGetState(); }
 

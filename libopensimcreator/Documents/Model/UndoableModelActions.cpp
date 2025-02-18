@@ -2363,12 +2363,13 @@ bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
         auto pof = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         // TODO: copy
         // - Subcomponents
-        // - Attached Geometry
         // - Wrap Obects
         pof->setName(sdf.getName() + "_tmp");
         const SimTK::Transform xform = sdf.findTransformInBaseFrame();
         pof->set_translation(xform.p());
         pof->set_orientation(xform.R().convertRotationToBodyFixedXYZ());
+        pof->updProperty_attached_geometry().assign(sdf.getProperty_attached_geometry());
+        pof->updProperty_WrapObjectSet().assign(sdf.getProperty_WrapObjectSet());
         pof->updSocket("parent").setConnecteePath(sdf.findBaseFrame().getAbsolutePathString());
         // Add it into the model
         auto& pofPtr = *pof;
