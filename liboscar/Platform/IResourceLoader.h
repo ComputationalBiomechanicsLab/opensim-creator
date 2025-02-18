@@ -36,7 +36,7 @@ namespace osc
         virtual std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&)
         {
             // i.e. "can't iterate anything"
-            return []() { return std::nullopt; };
+            return []{ return std::nullopt; };
         }
     };
 }

@@ -37,7 +37,7 @@ TEST(VariableLengthArray, can_construct_from_initializer_list)
 
 TEST(VariableLengthArray, immediately_spills_to_upstream_if_given_oversized_initializer_list)
 {
-    const auto fn = []() { VariableLengthArray<int, 1> vla({0, 1}, std::pmr::null_memory_resource()); };
+    const auto fn = []{ VariableLengthArray<int, 1> vla({0, 1}, std::pmr::null_memory_resource()); };
     ASSERT_THROW({ 	fn(); }, std::bad_alloc);
 }
 

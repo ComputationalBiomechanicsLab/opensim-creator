@@ -41,7 +41,7 @@ namespace
 
         std::function<std::optional<ResourceDirectoryEntry>()> impl_iterate_directory(const ResourcePath&) override
         {
-            return []() { return std::nullopt; };
+            return []{ return std::nullopt; };
         }
 
         std::shared_ptr<MockState> state_;

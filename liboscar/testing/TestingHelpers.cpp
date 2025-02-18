@@ -102,7 +102,7 @@ std::vector<Vec3> osc::testing::generate_vertices(size_t n)
 
 std::vector<Vec3> osc::testing::generate_normals(size_t n)
 {
-    return generate_into_vector(n, []() { return normalize(generate<Vec3>()); });
+    return generate_into_vector(n, []{ return normalize(generate<Vec3>()); });
 }
 
 std::vector<Vec2> osc::testing::generate_texture_coordinates(size_t n)

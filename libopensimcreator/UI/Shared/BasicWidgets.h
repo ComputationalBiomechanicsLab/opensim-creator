@@ -238,7 +238,7 @@ namespace osc
         ModelRendererParams&,
         std::span<const SceneDecoration>,
         IconCache&,
-        const std::function<bool()>& drawExtraElements = []() { return false; }
+        const std::function<bool()>& drawExtraElements = []{ return false; }
     );
     bool DrawCameraControlButtons(
         ModelRendererParams&,
@@ -254,7 +254,7 @@ namespace osc
         std::optional<AABB>,
         const Rect&,
         IconCache&,
-        const std::function<bool()>& drawExtraElementsInTop = []() { return false; }
+        const std::function<bool()>& drawExtraElementsInTop = []{ return false; }
     );
 
     // toolbar stuff

@@ -943,11 +943,11 @@ private:
     void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
-        const ScopeExit g1{[]() { ui::pop_style_var(); }};
+        const ScopeExit g1{[]{ ui::pop_style_var(); }};
 
         int imguiID = 0;
         ui::push_id(imguiID++);
-        const ScopeExit g2{[]() { ui::pop_id(); }};
+        const ScopeExit g2{[]{ ui::pop_id(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -1581,21 +1581,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             ui::push_id(UID::empty());
-            const ScopeExit g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]{ ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == MIIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
             ui::push_id(UID::empty());
-            const ScopeExit g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]{ ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (MIObject* el = m_Shared->updModelGraph().tryUpdByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             ui::push_id(el->getID());
-            const ScopeExit g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]{ ui::pop_id(); }};
             drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 
