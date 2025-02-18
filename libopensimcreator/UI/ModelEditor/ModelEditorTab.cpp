@@ -205,7 +205,18 @@ public:
         App::upd().make_main_loop_polling();
     }
 
-    bool onEvent(Event& e)
+    bool on_event(Event& e)
+    {
+        try {
+            return on_event_unguarded(e);
+        }
+        catch (const std::exception& ex) {
+            tryRecoveringFromException(ex);
+            return false;
+        }
+    }
+
+    bool on_event_unguarded(Event& e)
     {
         if (auto* openPopupEvent = dynamic_cast<OpenPopupEvent*>(&e)) {
             if (openPopupEvent->has_popup()) {
@@ -476,7 +487,7 @@ bool osc::ModelEditorTab::impl_is_unsaved() const { return private_data().isUnsa
 bool osc::ModelEditorTab::impl_try_save() { return private_data().trySave(); }
 void osc::ModelEditorTab::impl_on_mount() { private_data().on_mount(); }
 void osc::ModelEditorTab::impl_on_unmount() { private_data().on_unmount(); }
-bool osc::ModelEditorTab::impl_on_event(Event& e) { return private_data().onEvent(e); }
+bool osc::ModelEditorTab::impl_on_event(Event& e) { return private_data().on_event(e); }
 void osc::ModelEditorTab::impl_on_tick() { private_data().on_tick(); }
 void osc::ModelEditorTab::impl_on_draw_main_menu() { private_data().onDrawMainMenu();}
 void osc::ModelEditorTab::impl_on_draw() { private_data().onDraw(); }

@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The model editor UI now tries to revert/rollback the model when deleting components
+  using the `DEL` hotkey (previously: it would crash to an error tab) #992, #991.
 - The mesh importer now has a "Reload Meshes" button which, when pressed, will cause
   the implementation to immediately reload all meshes in the scene from disk (#999).
 - Fixed a bug where directly opening an `.osim` from the command line/UI shell
