@@ -13,7 +13,7 @@
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/Object.h>
 
@@ -133,7 +133,7 @@ public:
         }
 
         ui::push_id(m_Model->getSelected());
-        const ScopeGuard g{[]{ ui::pop_id(); }};
+        const ScopeExit g{[]{ ui::pop_id(); }};
 
         // draw an actions row with a button that opens the context menu
         //

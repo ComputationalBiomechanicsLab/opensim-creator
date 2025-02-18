@@ -26,7 +26,7 @@
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/Perf.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/SynchronizedValue.h>
 #include <liboscar/Utils/TypeInfoReference.h>
 
@@ -396,7 +396,7 @@ namespace
         SDL_SetHint(SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
 #endif
         SDL_PropertiesID properties = SDL_CreateProperties();
-        const ScopeGuard g{[&]{ SDL_DestroyProperties(properties); }};
+        const ScopeExit g{[&]{ SDL_DestroyProperties(properties); }};
 
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
         SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
@@ -882,7 +882,7 @@ public:
         setup_main_loop(std::move(screen));
 
         // ensure `teardown_main_loop` is called - even if there's an exception
-        const ScopeGuard scope_guard{[this]() { teardown_main_loop(); }};
+        const ScopeExit scope_guard{[this]() { teardown_main_loop(); }};
 
         while (do_main_loop_step()) {
             ;  // keep ticking the loop until it's not ok
@@ -1021,7 +1021,7 @@ public:
             msg << "SDL_GetDisplays: error: " << error;
             throw std::runtime_error{std::move(msg).str()};
         }
-        const ScopeGuard displays_deleter{[first_display]{ SDL_free(first_display); }};
+        const ScopeExit displays_deleter{[first_display]{ SDL_free(first_display); }};
         const std::span<const SDL_DisplayID> display_ids{first_display, static_cast<size_t>(display_count)};
 
         rv.reserve(display_count);

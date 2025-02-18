@@ -60,7 +60,7 @@
 #include <liboscar/UI/Widgets/LogViewer.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/UID.h>
 
 #include <cstddef>
@@ -943,11 +943,11 @@ private:
     void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
-        const ScopeGuard g1{[]() { ui::pop_style_var(); }};
+        const ScopeExit g1{[]() { ui::pop_style_var(); }};
 
         int imguiID = 0;
         ui::push_id(imguiID++);
-        const ScopeGuard g2{[]() { ui::pop_id(); }};
+        const ScopeExit g2{[]() { ui::pop_id(); }};
 
         if (CanAttachMeshTo(el))
         {
@@ -1076,7 +1076,7 @@ private:
                 ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
             }
         }
-        // ~ScopeGuard: implicitly calls ui::pop_id()
+        // ~ScopeExit: implicitly calls ui::pop_id()
     }
 
     void drawNothingActions()
@@ -1581,21 +1581,21 @@ private:
         {
             // context menu not open, but just draw the "nothing" menu
             ui::push_id(UID::empty());
-            const ScopeGuard g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (m_MaybeOpenedContextMenu.ID == MIIDs::RightClickedNothing())
         {
             // context menu was opened on "nothing" specifically
             ui::push_id(UID::empty());
-            const ScopeGuard g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]() { ui::pop_id(); }};
             drawNothingContextMenuContent();
         }
         else if (MIObject* el = m_Shared->updModelGraph().tryUpdByID(m_MaybeOpenedContextMenu.ID))
         {
             // context menu was opened on a scene element that exists in the modelgraph
             ui::push_id(el->getID());
-            const ScopeGuard g{[]() { ui::pop_id(); }};
+            const ScopeExit g{[]() { ui::pop_id(); }};
             drawContextMenuContent(*el, m_MaybeOpenedContextMenu.Pos);
         }
 

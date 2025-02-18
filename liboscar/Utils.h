@@ -28,7 +28,7 @@
 #include <liboscar/Utils/PerfMeasurement.h>
 #include <liboscar/Utils/PerfMeasurementMetadata.h>
 #include <liboscar/Utils/ScopedLifetime.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/SharedLifetimeBlock.h>
 #include <liboscar/Utils/SharedPreHashedString.h>
 #include <liboscar/Utils/Spsc.h>

@@ -7,7 +7,7 @@
 #include <libopensimcreator/Utils/ParamBlock.h>
 
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>

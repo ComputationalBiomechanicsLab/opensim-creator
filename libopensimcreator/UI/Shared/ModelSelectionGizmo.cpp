@@ -22,7 +22,7 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/Typelist.h>
 #include <OpenSim/Common/ComponentPath.h>

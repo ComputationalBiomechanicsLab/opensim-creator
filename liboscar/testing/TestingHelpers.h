@@ -76,4 +76,3 @@ namespace osc::testing
         return rv;
     }
 }
-

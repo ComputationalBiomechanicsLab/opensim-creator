@@ -5,7 +5,7 @@
 #include <liboscar/Platform/LogSink.h>
 #include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/ScopeGuard.h>
+#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/SynchronizedValue.h>
 
@@ -111,7 +111,7 @@ std::filesystem::path osc::user_data_directory(
 std::string osc::get_clipboard_text()
 {
     if (char* str = SDL_GetClipboardText()) {
-        const ScopeGuard guard{[str]() { SDL_free(str); }};
+        const ScopeExit guard{[str]() { SDL_free(str); }};
         return str;
     }
     else {
