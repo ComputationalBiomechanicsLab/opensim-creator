@@ -74,9 +74,7 @@ jobs:
         source venv/bin/activate
         pip install pytest
 
-        OSC_CMAKE_CONFIG_EXTRA="-Werror=dev -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=14 -DCMAKE_OSX_ARCHITECTURES=x86_64"
-        export OSC_BUILD_CONCURRENCY=$(sysctl -n hw.physicalcpu)
-        ./scripts/build_mac.sh
+        ./scripts/build_mac-amd64.sh
         ./scripts/macos_check-dependencies.py osc-build/osc/osc
         ./scripts/macos_check-sdk.py 14.2 osc-build/osc/osc
 
@@ -109,3 +107,4 @@ jobs:
         export CC=gcc-12
         export CXX=g++-12
         xvfb-run ./scripts/build_ubuntu-20.04.sh
+
