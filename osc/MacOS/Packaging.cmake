@@ -55,6 +55,11 @@ install(
     DESTINATION osc.app/Contents/Resources/
 )
 
+# use the naming convention `opensimcreator-$version-macos-$arch.dmg`
+string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
+set(CPACK_SYSTEM_NAME "macos-${OSC_ARCH_LOWERCASE}")
+unset(OSC_ARCH_LOWERCASE)
+
 set(CPACK_GENERATOR DragNDrop)
 
 # CPack vars etc. now fully configured, so include it

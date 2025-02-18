@@ -82,7 +82,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator_macos.zip
+        name: opensimcreator-macos-amd64.zip
         path: osc-build/*.dmg
         if-no-files-found: error
 
