@@ -5,6 +5,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The binary packages created by the OpenSim Creator build have a new naming
+  convention (#975):
+  - In most cases, it's `opensimcreator-$version-$os-$arch.$ext` (e.g. `opensimcreator-0.5.21-macos-arm64.dmg`)
+  - In Debian/Ubuntu's case, it's `opensimcreator_$version_$arch.deb`
+  - This is to accomodate additional packages in the future (e.g. ARM64 on
+    Windows, portable installers)
+  - Previous releases have been retrospectively renamed to follow this convention, to
+    make it easier to automatically archive/search them.
 - The model editor UI now tries to revert/rollback the model when deleting components
   using the `DEL` hotkey (previously: it would crash to an error tab) #992, #991.
 - The mesh importer now has a "Reload Meshes" button which, when pressed, will cause
