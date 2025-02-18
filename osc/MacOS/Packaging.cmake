@@ -56,8 +56,8 @@ install(
 )
 
 # use the naming convention `opensimcreator-$version-macos-$arch.dmg`
-if(DEFINED CMAKE_OSX_ARCHITECTURES)
-    if(${CMAKE_OSX_ARCHITECTURES} STREQUAL "x86_64")
+if(CMAKE_OSX_ARCHITECTURES)
+    if(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
         set(CPACK_SYSTEM_NAME "macos-amd64")
     else()
         set(CPACK_SYSTEM_NAME "macos-${CMAKE_OSX_ARCHITECTURES}")
