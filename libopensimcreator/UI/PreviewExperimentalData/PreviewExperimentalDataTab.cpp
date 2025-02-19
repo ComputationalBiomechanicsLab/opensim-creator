@@ -323,7 +323,7 @@ public:
     explicit Impl(
         PreviewExperimentalDataTab& owner,
         Widget* parent) :
-        TabPrivate{owner, parent, OSC_ICON_DOT_CIRCLE " Experimental Data"}
+        TabPrivate{owner, parent, OSC_ICON_BEZIER_CURVE " Experimental Data"}
     {
         m_PanelManager->register_toggleable_panel(
             "Navigator",

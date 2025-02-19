@@ -275,7 +275,7 @@ private:
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
 
-        if (ui::draw_menu_item(OSC_ICON_MAGIC " Preview Experimental Data")) {
+        if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
