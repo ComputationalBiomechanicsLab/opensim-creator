@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
+#include <liboscar/Utils/Flags.h>
 
 #include <cstdint>
 
@@ -38,20 +38,5 @@ namespace osc
 
         NUM_FLAGS    =    4,
     };
-
-    constexpr bool operator&(KeyModifier lhs, KeyModifier rhs)
-    {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
-    }
-
-    constexpr KeyModifier operator|(KeyModifier lhs, KeyModifier rhs)
-    {
-        return static_cast<KeyModifier>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
-    }
-
-    constexpr KeyModifier& operator|=(KeyModifier& lhs, KeyModifier rhs)
-    {
-        lhs = lhs | rhs;
-        return lhs;
-    }
+    using KeyModifiers = Flags<KeyModifier>;
 }

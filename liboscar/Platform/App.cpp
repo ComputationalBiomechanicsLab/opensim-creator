@@ -77,10 +77,10 @@ struct osc::Converter<SDL_Rect, Rect> final {
 };
 
 template<>
-struct osc::Converter<Uint16, KeyModifier> final {
-    KeyModifier operator()(Uint16 mod) const
+struct osc::Converter<Uint16, KeyModifiers> final {
+    KeyModifiers operator()(Uint16 mod) const
     {
-        KeyModifier rv = KeyModifier::None;
+        KeyModifiers rv;
         for (const auto& [sdl_modifier, osc_modifier] : c_mappings_) {
             if (mod & sdl_modifier) {
                 rv |= osc_modifier;
@@ -491,10 +491,10 @@ namespace
             return std::make_unique<DropFileEvent>(std::filesystem::path{e.drop.data});
         }
         else if (e.type == SDL_EVENT_KEY_DOWN) {
-            return std::make_unique<KeyEvent>(KeyEvent::key_down(to<KeyModifier>(e.key.mod), to<Key>(e.key.key)));
+            return std::make_unique<KeyEvent>(KeyEvent::key_down(to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)));
         }
         else if (e.type == SDL_EVENT_KEY_UP) {
-            return std::make_unique<KeyEvent>(KeyEvent::key_up(to<KeyModifier>(e.key.mod), to<Key>(e.key.key)));
+            return std::make_unique<KeyEvent>(KeyEvent::key_up(to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)));
         }
         else if (e.type == SDL_EVENT_QUIT) {
             return std::make_unique<QuitEvent>();

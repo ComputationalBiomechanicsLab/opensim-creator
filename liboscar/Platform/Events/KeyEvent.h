@@ -8,30 +8,32 @@ namespace osc
 {
     class KeyEvent final : public Event {
     public:
-        static KeyEvent key_up(KeyModifier modifier, Key key)
+        static KeyEvent key_up(KeyModifiers modifiers, Key key)
         {
-            return KeyEvent{EventType::KeyUp, modifier, key};
+            return KeyEvent{EventType::KeyUp, modifiers, key};
         }
 
-        static KeyEvent key_down(KeyModifier modifier, Key key)
+        static KeyEvent key_down(KeyModifiers modifiers, Key key)
         {
-            return KeyEvent{EventType::KeyDown, modifier, key};
+            return KeyEvent{EventType::KeyDown, modifiers, key};
         }
 
-        KeyModifier modifier() const { return modifier_; }
+        KeyModifiers modifiers() const { return modifiers_; }
         Key key() const { return key_; }
 
+        bool has_modifier(KeyModifier modifier) const { return static_cast<bool>(modifier & modifiers_); }
         bool matches(Key key) const { return key == key_; }
-        bool matches(KeyModifier modifier, Key key) const { return (modifier & modifier_) and (key == key_); }
-        bool matches(KeyModifier modifier1, KeyModifier modifier2, Key key) const { return (modifier1 & modifier_) and (modifier2 & modifier_) and (key == key_); }
+        bool matches(KeyModifier modifier, Key key) const { return modifiers_ & modifier and key == key_; }
+        bool matches(KeyModifier modifier1, KeyModifier modifier2, Key key) const { return (modifiers_ & modifier1) and (modifiers_ & modifier2) and key == key_; }
+        bool matches(KeyModifiers modifiers, Key key) const { return modifiers == modifiers_ and key == key_; }
     private:
-        explicit KeyEvent(EventType event_type, KeyModifier key_modifier, Key key) :
+        explicit KeyEvent(EventType event_type, KeyModifiers modifiers, Key key) :
             Event{event_type},
-            modifier_{key_modifier},
+            modifiers_{modifiers},
             key_{key}
         {}
 
-        KeyModifier modifier_;
+        KeyModifiers modifiers_;
         Key key_;
     };
 }
