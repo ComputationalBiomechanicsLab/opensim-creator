@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Modal popups (e.g. add body, add component) now immediately pop up with no
+  background fade-in, because the fade-in can be uneven when the UI is running
+  in an event-driven mode.
 - Replaced the keybind `Ctrl+A` with `Escape` for cleaing the selection in the model
   editor tab to make it consistent with other workflow keybinds.
 - The main menu now contains a `Close` button, which will close the currently-opened
