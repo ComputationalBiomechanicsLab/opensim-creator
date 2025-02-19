@@ -2585,6 +2585,9 @@ void osc::ui::apply_dark_theme()
     colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+
+    // Make modal windows pop up immediately without a fade-in effect, because
+    // oscar UIs might be running in an event-driven mode.
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4{0.0f, 0.0f, 0.0f, 0.0f};
 }
 
