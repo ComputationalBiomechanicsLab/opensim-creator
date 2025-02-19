@@ -144,27 +144,27 @@ public:
 private:
     bool onKeydownEvent(const KeyEvent& e)
     {
-        if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
+        if (e.matches(KeyModifier::Ctrl, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo
             m_Shared->redo();
             return true;
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
+        else if (e.matches(KeyModifier::Ctrl, Key::Z)) {
             // Ctrl+Z: undo
             m_Shared->undo();
             return true;
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::N)) {
+        else if (e.matches(KeyModifier::Ctrl, Key::N)) {
             // Ctrl+N: redo
             ActionCreateNewDocument(m_Shared->updUndoable());
             return true;
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::Q)) {
+        else if (e.matches(KeyModifier::Ctrl, Key::Q)) {
             // Ctrl+Q: quit
             App::upd().request_quit();
             return true;
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
+        else if (e.matches(KeyModifier::Ctrl, Key::A)) {
             // Ctrl+A: select all
             m_Shared->selectAll();
             return true;

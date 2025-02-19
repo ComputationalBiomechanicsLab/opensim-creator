@@ -83,13 +83,13 @@ public:
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
-        if (e.matches(KeyModifier::CtrlORGui, Key::P)) {
-            // `Ctrl+P` or `Super+P`: "take a screenshot"
+        if (e.matches(KeyModifier::Ctrl, Key::P)) {
+            // `Ctrl+P`: "take a screenshot"
             m_MaybeScreenshotRequest = App::upd().request_screenshot();
             return true;
         }
-        if (e.matches(KeyModifier::CtrlORGui, Key::PageUp) or e.matches(KeyModifier::Gui, KeyModifier::Alt, Key::LeftArrow)) {
-            // `Ctrl+PageUp` or `Super+PageUp` or `Command+Option+Left`: focus the tab to the left of the currently-active tab
+        if (e.matches(KeyModifier::Ctrl, Key::PageUp) or e.matches(KeyModifier::Ctrl, KeyModifier::Alt, Key::LeftArrow)) {
+            // `Ctrl+PageUp` or `Ctrl+Alt+Left`: focus the tab to the left of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.begin() and it != m_Tabs.end()) {
                 --it;  // previous
@@ -97,8 +97,8 @@ public:
             }
             return true;
         }
-        if (e.matches(KeyModifier::CtrlORGui, Key::PageDown) or e.matches(KeyModifier::Gui, KeyModifier::Alt, Key::RightArrow)) {
-            // `Ctrl+PageDown` or `Super+PageDown` or `Command+Option+Right`: focus the tab to the right of the currently-active tab
+        if (e.matches(KeyModifier::Ctrl, Key::PageDown) or e.matches(KeyModifier::Ctrl, KeyModifier::Alt, Key::RightArrow)) {
+            // `Ctrl+PageDown` or `Ctrl+Alt+Right`: focus the tab to the right of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.end()-1) {
                 ++it;  // next
@@ -106,8 +106,8 @@ public:
             }
             return true;
         }
-        if (e.matches(KeyModifier::CtrlORGui, Key::W) and m_Tabs.size() > 1 and m_ActiveTabID != m_Tabs.front()->id()) {
-            // `Ctrl+W` or `Command+W`: close the current tab - unless it's the splash tab
+        if (e.matches(KeyModifier::Ctrl, Key::W) and m_Tabs.size() > 1 and m_ActiveTabID != m_Tabs.front()->id()) {
+            // `Ctrl+W`: close the current tab - unless it's the splash tab
             impl_close_tab(m_ActiveTabID);
             return true;
         }

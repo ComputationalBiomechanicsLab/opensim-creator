@@ -93,12 +93,22 @@ private:
     static constexpr auto c_mappings_ = std::to_array<Mapping>({
         {SDL_KMOD_LSHIFT, KeyModifier::Shift},
         {SDL_KMOD_RSHIFT, KeyModifier::Shift},
-        {SDL_KMOD_LCTRL,  KeyModifier::Ctrl},
-        {SDL_KMOD_RCTRL,  KeyModifier::Ctrl},
         {SDL_KMOD_LALT,   KeyModifier::Alt},
         {SDL_KMOD_RALT,   KeyModifier::Alt},
-        {SDL_KMOD_LGUI,   KeyModifier::Gui},
-        {SDL_KMOD_RGUI,   KeyModifier::Gui},
+#if defined(__APPLE__)
+        // MacOS modifier keys are remapped so that application code
+        // can write keybinds as-if only writing for Windows/Linux.
+        // See the comment on `KeyModifier`
+        {SDL_KMOD_LCTRL,  KeyModifier::Meta},
+        {SDL_KMOD_RCTRL,  KeyModifier::Meta},
+        {SDL_KMOD_LGUI,   KeyModifier::Ctrl},
+        {SDL_KMOD_RGUI,   KeyModifier::Ctrl},
+#else
+        {SDL_KMOD_LCTRL,  KeyModifier::Ctrl},
+        {SDL_KMOD_RCTRL,  KeyModifier::Ctrl},
+        {SDL_KMOD_LGUI,   KeyModifier::Meta},
+        {SDL_KMOD_RGUI,   KeyModifier::Meta},
+#endif
     });
 };
 

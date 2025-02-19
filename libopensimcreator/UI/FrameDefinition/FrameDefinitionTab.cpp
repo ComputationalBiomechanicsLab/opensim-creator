@@ -1095,12 +1095,12 @@ public:
 private:
     bool onKeyDown(const KeyEvent& e)
     {
-        if (e.matches(KeyModifier::CtrlORGui, KeyModifier::Shift, Key::Z)) {
+        if (e.matches(KeyModifier::Ctrl, KeyModifier::Shift, Key::Z)) {
             // Ctrl+Shift+Z: redo
             m_Model->doRedo();
             return true;
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::Z)) {
+        else if (e.matches(KeyModifier::Ctrl, Key::Z)) {
             // Ctrl+Z: undo
             m_Model->doUndo();
             return true;
