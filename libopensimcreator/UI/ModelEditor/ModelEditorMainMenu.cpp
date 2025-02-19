@@ -86,8 +86,8 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item("         Deselect", {}, false, m_Model->getSelected() != nullptr)) {
-                m_Model->setSelected(nullptr);
+            if (ui::draw_menu_item("         Deselect", "Escape", false, m_Model->getSelected() != nullptr)) {
+                m_Model->clearSelected();
             }
 
             ui::end_menu();

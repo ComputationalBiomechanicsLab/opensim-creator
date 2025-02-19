@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Replaced the keybind `Ctrl+A` with `Escape` for cleaing the selection in the model
+  editor tab to make it consistent with other workflow keybinds.
 - The main menu now contains a `Close` button, which will close the currently-opened
   tab.
 - The binary packages created by the OpenSim Creator build have a new naming

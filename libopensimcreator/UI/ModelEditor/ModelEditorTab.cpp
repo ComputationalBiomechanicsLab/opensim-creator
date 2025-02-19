@@ -420,14 +420,14 @@ private:
             // Ctrl+R: start a new simulation from focused model
             return ActionStartSimulatingModel(owner(), *m_Model);
         }
-        else if (e.matches(KeyModifier::CtrlORGui, Key::A)) {
-            // Ctrl+A: clear selection
-            m_Model->clearSelected();
-            return true;
-        }
         else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {
             // BACKSPACE/DELETE: delete selection
             ActionTryDeleteSelectionFromEditedModel(*m_Model);
+            return true;
+        }
+        else if (e.matches(Key::Escape)) {
+            // Escape: clear selection
+            m_Model->clearSelected();
             return true;
         }
         else {
