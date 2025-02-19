@@ -9,6 +9,7 @@
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
 #include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
 #include <libopensimcreator/UI/Simulation/SimulationTab.h>
+#include <libopensimcreator/UI/SplashTab.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Scene/SceneCache.h>
@@ -17,6 +18,7 @@
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
@@ -166,6 +168,15 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         }
     }
 
+    {
+        Tab* parentTab = first_ancestor_of_type<Tab>();
+        // HACK: `SplashTab` is the only not-closeable tab
+        const bool enabled = undoableModel and parentTab and not dynamic_cast<const SplashTab*>(parentTab);
+        if (ui::draw_menu_item(OSC_ICON_TIMES " Close", "Ctrl+W", false, enabled)) {
+            App::post_event<CloseTabEvent>(*parentTab, parentTab->id());
+        }
+    }
+
     ui::draw_separator();
 
     {
@@ -204,13 +215,15 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
+    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
     if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
         if (parent()) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
-    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
+
+    ui::draw_separator();
 
     if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
         App::upd().request_quit();

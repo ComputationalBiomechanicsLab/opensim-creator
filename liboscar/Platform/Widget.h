@@ -54,6 +54,19 @@ namespace osc
         // returns `nullptr`.
         Widget* parent();
 
+        // If it has an ancestor of the given type, returns a pointer to that
+        // ancestor; otherwise, returns `nullptr`.
+        template<std::derived_from<Widget> T>
+        T* first_ancestor_of_type()
+        {
+            for (Widget* current = parent(); current; current = current->parent()) {
+                if (auto* downcasted = dynamic_cast<T*>(current)) {
+                    return downcasted;
+                }
+            }
+            return nullptr;
+        }
+
         // If it has a parent, returns a pointer to the parent of this `Widget`; otherwise,
         // returns `nullptr`.
         const Widget* parent() const;

@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The main menu now contains a `Close` button, which will close the currently-opened
+  tab.
 - The binary packages created by the OpenSim Creator build have a new naming
   convention (#975):
   - In most cases, it's `opensimcreator-$version-$os-$arch.$ext` (e.g. `opensimcreator-0.5.21-macos-arm64.dmg`)
