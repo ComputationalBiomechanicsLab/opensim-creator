@@ -6,20 +6,12 @@ namespace osc
 {
     enum class KeyModifier : unsigned {
         None         = 0,
-        LeftShift    = 1<<0,
-        RightShift   = 1<<1,
-        LeftCtrl     = 1<<2,
-        RightCtrl    = 1<<3,
-        LeftGui      = 1<<4,  // Windows key / MacOS command key / Ubuntu Key, etc.
-        RightGui     = 1<<5,  // Windows key / MacOS command key / Ubuntu Key, etc.
-        LeftAlt      = 1<<6,
-        RightAlt     = 1<<7,
-        NUM_FLAGS    =    8,
+        Shift        = 1<<0,
+        Ctrl         = 1<<1,
+        Gui          = 1<<2,  // Windows key / MacOS command key / Ubuntu Key, etc.
+        Alt          = 1<<3,
+        NUM_FLAGS    =    4,
 
-        Ctrl = LeftCtrl | RightCtrl,
-        Shift = LeftShift | RightShift,
-        Gui = LeftGui | RightGui,
-        Alt = LeftAlt | RightAlt,
         CtrlORGui = Ctrl | Gui,
     };
 

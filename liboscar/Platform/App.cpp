@@ -90,15 +90,15 @@ struct osc::Converter<Uint16, KeyModifier> final {
     }
 private:
     using Mapping = std::pair<SDL_Keymod, KeyModifier>;
-    static constexpr std::array<Mapping, num_flags<KeyModifier>()> c_mappings_ = std::to_array<Mapping>({
-        {SDL_KMOD_LSHIFT, KeyModifier::LeftShift},
-        {SDL_KMOD_RSHIFT, KeyModifier::RightShift},
-        {SDL_KMOD_LCTRL,  KeyModifier::LeftCtrl},
-        {SDL_KMOD_RCTRL,  KeyModifier::RightCtrl},
-        {SDL_KMOD_LALT,   KeyModifier::LeftAlt},
-        {SDL_KMOD_RALT,   KeyModifier::RightAlt},
-        {SDL_KMOD_LGUI,   KeyModifier::LeftGui},
-        {SDL_KMOD_RGUI,   KeyModifier::RightGui},
+    static constexpr auto c_mappings_ = std::to_array<Mapping>({
+        {SDL_KMOD_LSHIFT, KeyModifier::Shift},
+        {SDL_KMOD_RSHIFT, KeyModifier::Shift},
+        {SDL_KMOD_LCTRL,  KeyModifier::Ctrl},
+        {SDL_KMOD_RCTRL,  KeyModifier::Ctrl},
+        {SDL_KMOD_LALT,   KeyModifier::Alt},
+        {SDL_KMOD_RALT,   KeyModifier::Alt},
+        {SDL_KMOD_LGUI,   KeyModifier::Gui},
+        {SDL_KMOD_RGUI,   KeyModifier::Gui},
     });
 };
 
