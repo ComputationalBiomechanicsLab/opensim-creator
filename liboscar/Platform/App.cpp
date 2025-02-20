@@ -114,7 +114,7 @@ KeyModifiers osc::Converter<PhysicalKeyModifiers, KeyModifiers>::operator()(Phys
     // MacOS `PhysicalKeyModifiers` need to be remapped so that application code
     // can treat keybinds as-if only writing for Windows/Linux. This function maps
     // them.
-    modifiers = modifiers.modifiers.with_flag_values_swapped(PhysicalKeyModifier::Ctrl, PhysicalKeyModifier::Meta);
+    modifiers = modifiers.with_flag_values_swapped(PhysicalKeyModifier::Ctrl, PhysicalKeyModifier::Meta);
 #endif
 
     return KeyModifiers::from_underlying(to_underlying(modifiers));
