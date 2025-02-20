@@ -11,6 +11,6 @@ void osc::detail::on_assertion_failure(
     unsigned int file_line)
 {
     std::stringstream ss;
-    ss << file_name << ':' << function_name << ':' << ':' << file_line << ": OSC_ASSERT(" << failing_code << ") failed";
+    ss << file_name << ':' << function_name << ':' << file_line << ": OSC_ASSERT(" << failing_code << ") failed";
     throw std::runtime_error{std::move(ss).str()};
 }
