@@ -2,7 +2,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # ensure the necessary python development headers are available on
 # the builder's machine
-find_package(Python 3.12 COMPONENTS Interpreter Development.Module Development.SABIModule REQUIRED)
+find_package(Python 3.8 COMPONENTS Interpreter Development.Module Development.SABIModule REQUIRED)
 
 # use `nanobind` to map C++ types to the underlying python library
 set(NB_USE_SUBMODULE_DEPS OFF)
@@ -12,7 +12,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CUR
 # can call into
 nanobind_add_module(
     _opensimcreator_native
-    NB_STATIC STABLE_ABI
+    NB_STATIC # STABLE_ABI TODO
 
     # sources
     opensimcreator/src/_opensimcreator_native.cpp
