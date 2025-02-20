@@ -58,11 +58,11 @@ public:
 private:
     bool on_keyup(const KeyEvent& e)
     {
-        if (e.matches(Key::PageUp) and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
+        if (e.combination() == Key::PageUp and num_iterations_ < std::numeric_limits<decltype(num_iterations_)>::max()) {
             num_iterations_ *= 2;
             return true;
         }
-        if (e.matches(Key::PageDown) and num_iterations_ > 1) {
+        if (e.combination() == Key::PageDown and num_iterations_ > 1) {
             num_iterations_ /= 2;
             return true;
         }

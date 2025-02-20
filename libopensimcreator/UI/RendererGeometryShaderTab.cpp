@@ -53,7 +53,7 @@ public:
 
     bool on_event(Event& e)
     {
-        if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
+        if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == Key::Escape) {
             grab_mouse(false);
             return true;
         }

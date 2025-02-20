@@ -1095,18 +1095,15 @@ public:
 private:
     bool onKeyDown(const KeyEvent& e)
     {
-        if (e.matches(KeyModifier::Ctrl, KeyModifier::Shift, Key::Z)) {
-            // Ctrl+Shift+Z: redo
+        if (e.combination() == (KeyModifier::Ctrl | KeyModifier::Shift | Key::Z)) {
             m_Model->doRedo();
             return true;
         }
-        else if (e.matches(KeyModifier::Ctrl, Key::Z)) {
-            // Ctrl+Z: undo
+        else if (e.combination() == (KeyModifier::Ctrl | Key::Z)) {
             m_Model->doUndo();
             return true;
         }
-        else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {
-            // BACKSPACE/DELETE: delete selection
+        else if (e.combination() == Key::Backspace or e.combination() == Key::Delete) {
             ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }

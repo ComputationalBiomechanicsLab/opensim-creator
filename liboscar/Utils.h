@@ -2,6 +2,7 @@
 
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/BitwiseHelpers.h>
 #include <liboscar/Utils/ChronoHelpers.h>
 #include <liboscar/Utils/CircularBuffer.h>
 #include <liboscar/Utils/ClonePtr.h>

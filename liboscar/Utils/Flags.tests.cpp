@@ -1,9 +1,12 @@
 #include "Flags.h"
 
+#include <liboscar/Shims/Cpp23/utility.h>
+
 #include <gtest/gtest.h>
 
 #include <array>
 #include <cstdint>
+#include <functional>
 
 using namespace osc;
 
@@ -16,6 +19,12 @@ namespace
         Flag3     = 1<<2,
         NUM_FLAGS = 3,
     };
+}
+
+TEST(Flags, from_underlying_works)
+{
+    const auto flags = Flags<ExampleDenseFlag>::from_underlying(cpp23::to_underlying(ExampleDenseFlag::Flag3));
+    ASSERT_EQ(flags.underlying_value(), cpp23::to_underlying(ExampleDenseFlag::Flag3));
 }
 
 TEST(Flags, can_default_construct)
@@ -264,6 +273,41 @@ TEST(Flags, set_false_on_not_already_set_flag_does_nothing)
     ASSERT_EQ(flags, expected);
 }
 
+TEST(Flags, with_flag_values_swapped_works_as_intended)
+{
+    struct TestCase final {
+        Flags<ExampleDenseFlag> flags;
+        ExampleDenseFlag flag0;
+        ExampleDenseFlag flag1;
+        Flags<ExampleDenseFlag> expected;
+    };
+    const auto test_cases = std::to_array<TestCase>({
+        {
+            .flags = {ExampleDenseFlag::Flag2},
+            .flag0 = ExampleDenseFlag::Flag1,
+            .flag1 = ExampleDenseFlag::Flag2,
+            .expected = {ExampleDenseFlag::Flag1},
+        },
+        {
+            .flags = {},
+            .flag0 = ExampleDenseFlag::Flag3,
+            .flag1 = ExampleDenseFlag::Flag2,
+            .expected = {},
+        },
+        {
+            .flags = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2},
+            .flag0 = ExampleDenseFlag::Flag1,
+            .flag1 = ExampleDenseFlag::Flag3,
+            .expected = {ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3},
+        },
+    });
+    for (const auto& test_case : test_cases) {
+        const auto input = test_case.flags;
+        const auto output = input.with_flag_values_swapped(test_case.flag0, test_case.flag1);
+        ASSERT_EQ(output, test_case.expected);
+    }
+}
+
 TEST(Flags, has_a_to_underlying_specialization)
 {
     enum class Some16BitEnum : uint16_t {};
@@ -271,4 +315,14 @@ TEST(Flags, has_a_to_underlying_specialization)
 
     enum class SomeSigned32BitEnum : int32_t {};
     static_assert(std::is_same_v<decltype(to_underlying(Flags<SomeSigned32BitEnum>{})), int32_t>);
+}
+
+TEST(Flags, is_hashable)
+{
+    using ExampleDenseFlags = Flags<ExampleDenseFlag>;
+    const ExampleDenseFlags flags1 = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2};
+    const ExampleDenseFlags flags2 = {ExampleDenseFlag::Flag1, ExampleDenseFlag::Flag2, ExampleDenseFlag::Flag3};
+
+    const std::hash<ExampleDenseFlags> hasher;
+    ASSERT_NE(hasher(flags1), hasher(flags2));
 }

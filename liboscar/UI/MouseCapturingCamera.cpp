@@ -21,7 +21,7 @@ void osc::MouseCapturingCamera::on_unmount()
 
 bool osc::MouseCapturingCamera::on_event(Event& e)
 {
-    if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).matches(Key::Escape)) {
+    if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == Key::Escape) {
         grab_mouse(false);
     }
     else if (e.type() == EventType::MouseButtonDown and ui::is_mouse_in_main_viewport_workspace()) {

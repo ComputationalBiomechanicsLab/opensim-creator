@@ -15,6 +15,7 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/MouseButton.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/Platform/PhysicalKeyModifier.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
@@ -23,6 +24,7 @@
 #include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/BitwiseHelpers.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/Perf.h>
@@ -76,39 +78,72 @@ struct osc::Converter<SDL_Rect, Rect> final {
     }
 };
 
+PhysicalKeyModifiers osc::Converter<KeyModifiers, PhysicalKeyModifiers>::operator()(KeyModifiers modifiers) const
+{
+    // Ensure the remapping/casting tricks being done in this function are valid.
+    static_assert(num_flags<KeyModifier>() == num_flags<PhysicalKeyModifier>());
+    static_assert(num_flags<KeyModifier>() == 4);
+    static_assert(cpp23::to_underlying(KeyModifier::Shift) == cpp23::to_underlying(PhysicalKeyModifier::Shift));
+    static_assert(cpp23::to_underlying(KeyModifier::Ctrl)  == cpp23::to_underlying(PhysicalKeyModifier::Ctrl));
+    static_assert(cpp23::to_underlying(KeyModifier::Meta)  == cpp23::to_underlying(PhysicalKeyModifier::Meta));
+    static_assert(cpp23::to_underlying(KeyModifier::Alt)   == cpp23::to_underlying(PhysicalKeyModifier::Alt));
+    static_assert(std::is_same_v<KeyModifiers::underlying_type, PhysicalKeyModifiers::underlying_type>);
+
+#if defined(__APPLE__)
+    // MacOS `KeyModifiers` are remapped so that application code can write
+    // keybinds as-if only writing for Windows/Linux. This function un-maps
+    // them.
+    modifiers = modifiers.with_flag_values_swapped(KeyModifier::Ctrl, KeyModifier::Meta);
+#endif
+
+    return PhysicalKeyModifiers::from_underlying(to_underlying(modifiers));
+}
+
+KeyModifiers osc::Converter<PhysicalKeyModifiers, KeyModifiers>::operator()(PhysicalKeyModifiers modifiers) const
+{
+    // Ensure the remapping/casting tricks being done in this function are valid.
+    static_assert(num_flags<KeyModifier>() == num_flags<PhysicalKeyModifier>());
+    static_assert(num_flags<KeyModifier>() == 4);
+    static_assert(cpp23::to_underlying(KeyModifier::Shift) == cpp23::to_underlying(PhysicalKeyModifier::Shift));
+    static_assert(cpp23::to_underlying(KeyModifier::Ctrl)  == cpp23::to_underlying(PhysicalKeyModifier::Ctrl));
+    static_assert(cpp23::to_underlying(KeyModifier::Meta)  == cpp23::to_underlying(PhysicalKeyModifier::Meta));
+    static_assert(cpp23::to_underlying(KeyModifier::Alt)   == cpp23::to_underlying(PhysicalKeyModifier::Alt));
+    static_assert(std::is_same_v<KeyModifiers::underlying_type, PhysicalKeyModifiers::underlying_type>);
+
+#if defined(__APPLE__)
+    // MacOS `PhysicalKeyModifiers` need to be remapped so that application code
+    // can treat keybinds as-if only writing for Windows/Linux. This function maps
+    // them.
+    modifiers = modifiers.modifiers.with_flag_values_swapped(PhysicalKeyModifier::Ctrl, PhysicalKeyModifier::Meta);
+#endif
+
+    return KeyModifiers::from_underlying(to_underlying(modifiers));
+}
+
 template<>
 struct osc::Converter<Uint16, KeyModifiers> final {
     KeyModifiers operator()(Uint16 mod) const
     {
-        KeyModifiers rv;
-        for (const auto& [sdl_modifier, osc_modifier] : c_mappings_) {
+        PhysicalKeyModifiers physical_keymods;
+        for (const auto& [sdl_modifier, physical_keymod] : c_mappings_) {
             if (mod & sdl_modifier) {
-                rv |= osc_modifier;
+                physical_keymods |= physical_keymod;
             }
         }
-        return rv;
+        return to<KeyModifiers>(physical_keymods);
     }
 private:
-    using Mapping = std::pair<SDL_Keymod, KeyModifier>;
+    using Mapping = std::pair<SDL_Keymod, PhysicalKeyModifier>;
+
     static constexpr auto c_mappings_ = std::to_array<Mapping>({
-        {SDL_KMOD_LSHIFT, KeyModifier::Shift},
-        {SDL_KMOD_RSHIFT, KeyModifier::Shift},
-        {SDL_KMOD_LALT,   KeyModifier::Alt},
-        {SDL_KMOD_RALT,   KeyModifier::Alt},
-#if defined(__APPLE__)
-        // MacOS modifier keys are remapped so that application code
-        // can write keybinds as-if only writing for Windows/Linux.
-        // See the comment on `KeyModifier`
-        {SDL_KMOD_LCTRL,  KeyModifier::Meta},
-        {SDL_KMOD_RCTRL,  KeyModifier::Meta},
-        {SDL_KMOD_LGUI,   KeyModifier::Ctrl},
-        {SDL_KMOD_RGUI,   KeyModifier::Ctrl},
-#else
-        {SDL_KMOD_LCTRL,  KeyModifier::Ctrl},
-        {SDL_KMOD_RCTRL,  KeyModifier::Ctrl},
-        {SDL_KMOD_LGUI,   KeyModifier::Meta},
-        {SDL_KMOD_RGUI,   KeyModifier::Meta},
-#endif
+        {SDL_KMOD_LSHIFT, PhysicalKeyModifier::Shift},
+        {SDL_KMOD_RSHIFT, PhysicalKeyModifier::Shift},
+        {SDL_KMOD_LALT,   PhysicalKeyModifier::Alt},
+        {SDL_KMOD_RALT,   PhysicalKeyModifier::Alt},
+        {SDL_KMOD_LCTRL,  PhysicalKeyModifier::Ctrl},
+        {SDL_KMOD_RCTRL,  PhysicalKeyModifier::Ctrl},
+        {SDL_KMOD_LGUI,   PhysicalKeyModifier::Meta},
+        {SDL_KMOD_RGUI,   PhysicalKeyModifier::Meta},
     });
 };
 
@@ -491,10 +526,10 @@ namespace
             return std::make_unique<DropFileEvent>(std::filesystem::path{e.drop.data});
         }
         else if (e.type == SDL_EVENT_KEY_DOWN) {
-            return std::make_unique<KeyEvent>(KeyEvent::key_down(to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)));
+            return std::make_unique<KeyEvent>(KeyEvent::key_down(KeyCombination{to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)}));
         }
         else if (e.type == SDL_EVENT_KEY_UP) {
-            return std::make_unique<KeyEvent>(KeyEvent::key_up(to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)));
+            return std::make_unique<KeyEvent>(KeyEvent::key_up(KeyCombination{to<KeyModifiers>(e.key.mod), to<Key>(e.key.key)}));
         }
         else if (e.type == SDL_EVENT_QUIT) {
             return std::make_unique<QuitEvent>();

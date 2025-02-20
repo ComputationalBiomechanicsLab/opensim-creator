@@ -14,6 +14,7 @@
 #include <liboscar/Platform/ILogSink.h>
 #include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/Key.h>
+#include <liboscar/Platform/KeyCombination.h>
 #include <liboscar/Platform/KeyModifier.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Logger.h>

@@ -2,6 +2,8 @@
 
 #include <bit>
 #include <concepts>
+#include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <type_traits>
 
@@ -19,6 +21,11 @@ namespace osc
     class Flags final {
     public:
         using underlying_type = std::underlying_type_t<TEnum>;
+
+        static constexpr Flags from_underlying(underlying_type v)
+        {
+            return Flags{v};
+        }
 
         constexpr Flags() = default;
         constexpr Flags(TEnum flag) : value_{static_cast<underlying_type>(flag)} {}
@@ -86,6 +93,14 @@ namespace osc
             *this = v ? this->with(flag) : this->without(flag);
         }
 
+        constexpr Flags with_flag_values_swapped(TEnum flag0, TEnum flag1) const
+        {
+            Flags copy{*this};
+            copy = (*this & flag0) ? copy.with(flag1) : copy.without(flag1);
+            copy = (*this & flag1) ? copy.with(flag0) : copy.without(flag0);
+            return copy;
+        }
+
         constexpr underlying_type underlying_value() const
         {
             return value_;
@@ -104,3 +119,13 @@ namespace osc
         return e.underlying_value();
     }
 }
+
+template<typename T>
+struct std::hash<osc::Flags<T>> final {
+    size_t operator()(const osc::Flags<T>& flags) const noexcept
+    {
+        return inner_hasher_(flags.underlying_value());
+    }
+private:
+    std::hash<typename osc::Flags<T>::underlying_type> inner_hasher_{};
+};

@@ -406,27 +406,22 @@ private:
 
     bool onKeydownEvent(const KeyEvent& e)
     {
-        if (e.matches(KeyModifier::Ctrl, KeyModifier::Shift, Key::Z)) {
-            // Ctrl+Shift+Z : redo focused model
+        if (e.combination() == (KeyModifier::Ctrl | KeyModifier::Shift | Key::Z)) {
             m_Model->doRedo();
             return true;
         }
-        else if (e.matches(KeyModifier::Ctrl, Key::Z)) {
-            // Ctrl+Z: undo focused model
+        else if (e.combination() == (KeyModifier::Ctrl | Key::Z)) {
             m_Model->doUndo();
             return true;
         }
-        else if (e.matches(KeyModifier::Ctrl, Key::R)) {
-            // Ctrl+R: start a new simulation from focused model
+        else if (e.combination() == (KeyModifier::Ctrl | Key::R)) {
             return ActionStartSimulatingModel(owner(), *m_Model);
         }
-        else if (e.matches(Key::Backspace) or e.matches(Key::Delete)) {
-            // BACKSPACE/DELETE: delete selection
+        else if (e.combination() == Key::Backspace or e.combination() == Key::Delete) {
             ActionTryDeleteSelectionFromEditedModel(*m_Model);
             return true;
         }
-        else if (e.matches(Key::Escape)) {
-            // Escape: clear selection
+        else if (e.combination() == Key::Escape) {
             m_Model->clearSelected();
             return true;
         }

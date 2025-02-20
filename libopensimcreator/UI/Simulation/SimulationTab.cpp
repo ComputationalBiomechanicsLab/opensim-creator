@@ -248,7 +248,7 @@ public:
         }
 
         if (e.type() == EventType::KeyDown) {
-            if (dynamic_cast<const KeyEvent&>(e).matches(Key::Space)) {
+            if (dynamic_cast<const KeyEvent&>(e).combination() == Key::Space) {
                 togglePlaybackMode();
                 return true;
             }
