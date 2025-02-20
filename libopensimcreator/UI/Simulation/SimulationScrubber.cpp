@@ -158,7 +158,7 @@ private:
 
         ui::set_next_item_width(ui::get_font_size() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
-        const bool userScrubbed = ui::draw_float_slider(
+        const bool userScrubbed = ui::draw_float_circular_slider(
             "##scrubber",
             &v,
             static_cast<float>(tStart.time_since_epoch().count()),
