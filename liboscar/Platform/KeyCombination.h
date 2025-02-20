@@ -9,6 +9,7 @@
 
 namespace osc
 {
+    // Represents a combination of a single `Key` with zero or more `KeyModifier`s.
     class KeyCombination final {
     public:
         constexpr KeyCombination(Key key = Key::Unknown) : key_{key} {}

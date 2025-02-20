@@ -72,13 +72,13 @@ private:
     {
         if (ui::begin_menu("Edit")) {
             auto* undoable = dynamic_cast<UndoableModelStatePair*>(m_Model.get());
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, undoable != nullptr and undoable->canUndo())) {
+            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, undoable != nullptr and undoable->canUndo())) {
                 if (undoable) {
                     undoable->doUndo();
                 }
             }
 
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, undoable != nullptr and undoable->canRedo())) {
+            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, undoable != nullptr and undoable->canRedo())) {
                 if (undoable) {
                     undoable->doRedo();
                 }
@@ -86,7 +86,7 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item("         Deselect", "Escape", false, m_Model->getSelected() != nullptr)) {
+            if (ui::draw_menu_item("         Deselect", Key::Escape, false, m_Model->getSelected() != nullptr)) {
                 m_Model->clearSelected();
             }
 
@@ -105,7 +105,7 @@ private:
     void drawMainMenuToolsTab()
     {
         if (ui::begin_menu("Tools")) {
-            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", "Ctrl+R")) {
+            if (ui::draw_menu_item(OSC_ICON_PLAY " Simulate", KeyModifier::Ctrl | Key::R)) {
                 ActionStartSimulatingModel(owner(), *m_Model);
             }
 

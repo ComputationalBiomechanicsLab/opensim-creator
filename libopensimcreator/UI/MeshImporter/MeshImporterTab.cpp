@@ -2256,26 +2256,26 @@ private:
     {
         if (ui::begin_menu("File"))
         {
-            if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N"))
+            if (ui::draw_menu_item(OSC_ICON_FILE " New", KeyModifier::Ctrl | Key::N))
             {
                 m_Shared->requestNewMeshImporterTab();
             }
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Import", "Ctrl+O"))
+            if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Import", KeyModifier::Ctrl | Key::O))
             {
                 m_Shared->openOsimFileAsModelGraph();
             }
             ui::draw_tooltip_if_item_hovered("Import osim into mesh importer", "Try to import an existing osim file into the mesh importer.\n\nBEWARE: the mesh importer is *not* an OpenSim model editor. The import process will delete information from your osim in order to 'jam' it into this screen. The main purpose of this button is to export/import mesh editor scenes, not to edit existing OpenSim models.");
 
-            if (ui::draw_menu_item(OSC_ICON_SAVE " Export", "Ctrl+S"))
+            if (ui::draw_menu_item(OSC_ICON_SAVE " Export", KeyModifier::Ctrl | Key::S))
             {
                 m_Shared->exportModelGraphAsOsimFile();
             }
             ui::draw_tooltip_if_item_hovered("Export mesh impoter scene to osim", "Try to export the current mesh importer scene to an osim.\n\nBEWARE: the mesh importer scene may not map 1:1 onto an OpenSim model, so re-importing the scene *may* change a few things slightly. The main utility of this button is to try and save some progress in the mesh importer.");
 
-            if (ui::draw_menu_item(OSC_ICON_SAVE " Export As", "Shift+Ctrl+S"))
+            if (ui::draw_menu_item(OSC_ICON_SAVE " Export As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S))
             {
                 m_Shared->exportAsModelGraphAsOsimFile();
             }
@@ -2303,12 +2303,12 @@ private:
 
             ui::draw_separator();
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", "Ctrl+W"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W))
             {
                 m_Shared->request_close();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
             {
                 App::upd().request_quit();
             }
@@ -2321,11 +2321,11 @@ private:
     {
         if (ui::begin_menu("Edit"))
         {
-            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", "Ctrl+Z", false, m_Shared->canUndoCurrentModelGraph()))
+            if (ui::draw_menu_item(OSC_ICON_UNDO " Undo", KeyModifier::Ctrl | Key::Z, false, m_Shared->canUndoCurrentModelGraph()))
             {
                 m_Shared->undoCurrentModelGraph();
             }
-            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", "Ctrl+Shift+Z", false, m_Shared->canRedoCurrentModelGraph()))
+            if (ui::draw_menu_item(OSC_ICON_REDO " Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, false, m_Shared->canRedoCurrentModelGraph()))
             {
                 m_Shared->redoCurrentModelGraph();
             }

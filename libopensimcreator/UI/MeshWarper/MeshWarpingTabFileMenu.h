@@ -35,7 +35,7 @@ namespace osc
     private:
         void drawContent()
         {
-            if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N"))
+            if (ui::draw_menu_item(OSC_ICON_FILE " New", KeyModifier::Ctrl | Key::N))
             {
                 ActionCreateNewDocument(m_State->updUndoable());
             }
@@ -52,12 +52,12 @@ namespace osc
                 ui::end_menu();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", "Ctrl+W"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W))
             {
                 m_State->closeTab();
             }
 
-            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q"))
+            if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q))
             {
                 App::upd().request_quit();
             }

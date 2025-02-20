@@ -13,6 +13,7 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/Key.h>
+#include <liboscar/Platform/KeyCombination.h>
 #include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
@@ -146,14 +147,14 @@ namespace osc::ui
 
     bool draw_menu_item(
         CStringView label,
-        CStringView shortcut = {},
+        std::optional<KeyCombination> shortcut = {},
         bool selected = false,
         bool enabled = true
     );
 
     bool draw_menu_item(
         CStringView label,
-        CStringView shortcut,
+        std::optional<KeyCombination> shortcut,
         bool* p_selected,
         bool enabled = true
     );

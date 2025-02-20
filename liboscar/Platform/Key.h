@@ -2,6 +2,7 @@
 
 namespace osc
 {
+    // Represents a single key on a keyboard.
     enum class Key {
         Tab,
         LeftArrow,

@@ -85,13 +85,13 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         return;
     }
 
-    if (ui::draw_menu_item(OSC_ICON_FILE " New", "Ctrl+N")) {
+    if (ui::draw_menu_item(OSC_ICON_FILE " New", KeyModifier::Ctrl | Key::N)) {
         if (parent()) {
             ActionNewModel(*parent());
         }
     }
 
-    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", "Ctrl+O")) {
+    if (ui::draw_menu_item(OSC_ICON_FOLDER_OPEN " Open", KeyModifier::Ctrl | Key::O)) {
         if (parent()) {
             ActionOpenModel(*parent());
         }
@@ -156,13 +156,13 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(OSC_ICON_SAVE " Save", "Ctrl+S", false, undoableModel != nullptr)) {
+    if (ui::draw_menu_item(OSC_ICON_SAVE " Save", KeyModifier::Ctrl | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
             ActionSaveModel(*undoableModel);
         }
     }
 
-    if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", "Shift+Ctrl+S", false, undoableModel != nullptr)) {
+    if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
             ActionSaveCurrentModelAs(*undoableModel);
         }
@@ -172,7 +172,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
         Tab* parentTab = first_ancestor_of_type<Tab>();
         // HACK: `SplashTab` is the only not-closeable tab
         const bool enabled = undoableModel and parentTab and not dynamic_cast<const SplashTab*>(parentTab);
-        if (ui::draw_menu_item(OSC_ICON_TIMES " Close", "Ctrl+W", false, enabled)) {
+        if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W, false, enabled)) {
             App::post_event<CloseTabEvent>(*parentTab, parentTab->id());
         }
     }
@@ -182,7 +182,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     {
         const bool modelHasBackingFile = maybeModel != nullptr && HasInputFileName(maybeModel->getModel());
 
-        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", "F5", false, undoableModel != nullptr and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel != nullptr) {
+        if (ui::draw_menu_item(OSC_ICON_RECYCLE " Reload", Key::F5, false, undoableModel != nullptr and undoableModel->canUpdModel() and modelHasBackingFile) and undoableModel != nullptr) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
         }
         ui::draw_tooltip_if_item_hovered("Reload", "Attempts to reload the osim file from scratch. This can be useful if (e.g.) editing third-party files that OpenSim Creator doesn't automatically track.");
@@ -225,7 +225,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
 
     ui::draw_separator();
 
-    if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", "Ctrl+Q")) {
+    if (ui::draw_menu_item(OSC_ICON_TIMES_CIRCLE " Quit", KeyModifier::Ctrl | Key::Q)) {
         App::upd().request_quit();
     }
 

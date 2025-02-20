@@ -43,6 +43,7 @@
 #include <liboscar/Platform/Events.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/Platform/PhysicalKeyModifier.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/WindowID.h>
@@ -1242,6 +1243,155 @@ namespace
         ImGui_ImplSDL2_UpdateMouseData();
         ImGui_ImplOscar_UpdateMouseCursor(app);
     }
+
+    constexpr auto c_combo_lut = std::to_array<std::pair<PhysicalKeyModifier, std::string_view>>({
+        {PhysicalKeyModifier::Shift, "Shift "},
+        {PhysicalKeyModifier::Ctrl, "Ctrl "},
+        {PhysicalKeyModifier::Meta, "Command "},  // TODO
+        {PhysicalKeyModifier::Alt, "Alt "},
+    });
+
+    std::string_view to_human_readable(Key key)
+    {
+        static_assert(num_options<Key>() == 120);
+        switch (key) {
+        case Key::Tab: return "Tab";
+        case Key::LeftArrow: return "LeftArrow";
+        case Key::RightArrow: return "RightArrow";
+        case Key::UpArrow: return "UpArrow";
+        case Key::DownArrow: return "DownArrow";
+        case Key::PageUp: return "PageUp";
+        case Key::PageDown: return "PageDown";
+        case Key::Home: return "Home";
+        case Key::End: return "End";
+        case Key::Insert: return "Insert";
+        case Key::Delete: return "Delete";
+        case Key::Backspace: return "Backspace";
+        case Key::Space: return "Space";
+        case Key::Return: return "Return";
+        case Key::Escape: return "Escape";
+        case Key::Apostrophe: return "Apostrophe";
+        case Key::Comma: return "Comma";
+        case Key::Minus: return "Minus";
+        case Key::Period: return "Period";
+        case Key::Slash: return "Slash";
+        case Key::Semicolon: return "Semicolon";
+        case Key::Equals: return "Equals";
+        case Key::LeftBracket: return "LeftBracket";
+        case Key::Backslash: return "Backslash";
+        case Key::RightBracket: return "RightBracket";
+        case Key::Grave:  // backquote return "Grave";
+        case Key::CapsLock: return "CapsLock";
+        case Key::ScrollLock: return "ScrollLock";
+        case Key::NumLockClear: return "NumLockClear";
+        case Key::PrintScreen: return "PrintScreen";
+        case Key::Pause: return "Pause";
+        case Key::Keypad0: return "Keypad0";
+        case Key::Keypad1: return "Keypad1";
+        case Key::Keypad2: return "Keypad2";
+        case Key::Keypad3: return "Keypad3";
+        case Key::Keypad4: return "Keypad4";
+        case Key::Keypad5: return "Keypad5";
+        case Key::Keypad6: return "Keypad6";
+        case Key::Keypad7: return "Keypad7";
+        case Key::Keypad8: return "Keypad8";
+        case Key::Keypad9: return "Keypad9";
+        case Key::KeypadPeriod: return "KeypadPeriod";
+        case Key::KeypadDivide: return "KeypadDivide";
+        case Key::KeypadMultiply: return "KeypadMultiply";
+        case Key::KeypadMinus: return "KeypadMinus";
+        case Key::KeypadPlus: return "KeypadPlus";
+        case Key::KeypadEnter: return "KeypadEnter";
+        case Key::KeypadEquals: return "KeypadEquals";
+        case Key::LeftCtrl: return "LeftCtrl";
+        case Key::LeftShift: return "LeftShift";
+        case Key::LeftAlt: return "LeftAlt";
+        case Key::LeftGui: return "LeftGui";
+        case Key::RightCtrl: return "RightCtrl";
+        case Key::RightShift: return "RightShift";
+        case Key::RightAlt: return "RightAlt";
+        case Key::RightGui: return "RightGui";
+        case Key::Application: return "Application";
+        case Key::_0: return "0";
+        case Key::_1: return "1";
+        case Key::_2: return "2";
+        case Key::_3: return "3";
+        case Key::_4: return "4";
+        case Key::_5: return "5";
+        case Key::_6: return "6";
+        case Key::_7: return "7";
+        case Key::_8: return "8";
+        case Key::_9: return "9";
+        case Key::A: return "A";
+        case Key::B: return "B";
+        case Key::C: return "C";
+        case Key::D: return "D";
+        case Key::E: return "E";
+        case Key::F: return "F";
+        case Key::G: return "G";
+        case Key::H: return "H";
+        case Key::I: return "I";
+        case Key::J: return "J";
+        case Key::K: return "K";
+        case Key::L: return "L";
+        case Key::M: return "M";
+        case Key::N: return "N";
+        case Key::O: return "O";
+        case Key::P: return "P";
+        case Key::Q: return "Q";
+        case Key::R: return "R";
+        case Key::S: return "S";
+        case Key::T: return "T";
+        case Key::U: return "U";
+        case Key::V: return "V";
+        case Key::W: return "W";
+        case Key::X: return "X";
+        case Key::Y: return "Y";
+        case Key::Z: return "Z";
+        case Key::F1: return "F1";
+        case Key::F2: return "F2";
+        case Key::F3: return "F3";
+        case Key::F4: return "F4";
+        case Key::F5: return "F5";
+        case Key::F6: return "F6";
+        case Key::F7: return "F7";
+        case Key::F8: return "F8";
+        case Key::F9: return "F9";
+        case Key::F10: return "F10";
+        case Key::F11: return "F11";
+        case Key::F12: return "F12";
+        case Key::F13: return "F13";
+        case Key::F14: return "F14";
+        case Key::F15: return "F15";
+        case Key::F16: return "F16";
+        case Key::F17: return "F17";
+        case Key::F18: return "F18";
+        case Key::F19: return "F19";
+        case Key::F20: return "F20";
+        case Key::F21: return "F21";
+        case Key::F22: return "F22";
+        case Key::F23: return "F23";
+        case Key::F24: return "F24";
+        case Key::AppBack: return "AppBack";
+        case Key::AppForward: return "AppForward";
+        default:
+        case Key::Unknown: return "Unknown";
+        }
+    }
+
+    std::string to_human_readable_representation(KeyCombination shortcut)
+    {
+        const auto user_modifiers = to<PhysicalKeyModifiers>(shortcut.modifiers());
+
+        std::stringstream ss;
+        for (const auto& [mod, label] : c_combo_lut) {
+            if (mod & user_modifiers) {
+                ss << label;
+            }
+        }
+        ss << to_human_readable(shortcut.key());
+        return std::move(ss).str();
+    }
 }
 
 template<>
@@ -1725,20 +1875,20 @@ void osc::ui::end_menu()
 
 bool osc::ui::draw_menu_item(
     CStringView label,
-    CStringView shortcut,
+    std::optional<KeyCombination> shortcut,
     bool selected,
     bool enabled)
 {
-    return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), selected, enabled);
+    return ImGui::MenuItem(label.c_str(), shortcut ? to_human_readable_representation(*shortcut).c_str() : nullptr, selected, enabled);
 }
 
 bool osc::ui::draw_menu_item(
     CStringView label,
-    CStringView shortcut,
+    std::optional<KeyCombination> shortcut,
     bool* p_selected,
     bool enabled)
 {
-    return ImGui::MenuItem(label.c_str(), shortcut.empty() ? nullptr : shortcut.c_str(), p_selected, enabled);
+    return ImGui::MenuItem(label.c_str(), shortcut ? to_human_readable_representation(*shortcut).c_str() : nullptr, p_selected, enabled);
 }
 
 bool osc::ui::begin_tab_bar(CStringView str_id)

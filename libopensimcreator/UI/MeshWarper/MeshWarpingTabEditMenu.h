@@ -31,20 +31,20 @@ namespace osc
 
         void drawContent()
         {
-            if (ui::draw_menu_item("Undo", "Ctrl+Z", nullptr, m_State->canUndo()))
+            if (ui::draw_menu_item("Undo", KeyModifier::Ctrl | Key::Z, nullptr, m_State->canUndo()))
             {
                 m_State->undo();
             }
-            if (ui::draw_menu_item("Redo", "Ctrl+Shift+Z", nullptr, m_State->canRedo()))
+            if (ui::draw_menu_item("Redo", KeyModifier::Ctrl | KeyModifier::Shift | Key::Z, nullptr, m_State->canRedo()))
             {
                 m_State->redo();
             }
             ui::draw_separator();
-            if (ui::draw_menu_item("Select All", "Ctrl+A"))
+            if (ui::draw_menu_item("Select All", KeyModifier::Ctrl | Key::A))
             {
                 m_State->selectAll();
             }
-            if (ui::draw_menu_item("Deselect", "Escape", nullptr, m_State->hasSelection()))
+            if (ui::draw_menu_item("Deselect", Key::Escape, nullptr, m_State->hasSelection()))
             {
                 m_State->clearSelection();
             }
