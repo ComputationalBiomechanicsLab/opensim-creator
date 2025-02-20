@@ -20,8 +20,8 @@ namespace osc
         constexpr Key key() const { return key_; }
         constexpr KeyModifiers modifiers() const { return modifiers_; }
     private:
+        KeyModifiers modifiers_{};
         Key key_ = Key::Unknown;
-        KeyModifiers modifiers_;
     };
 
     constexpr KeyCombination operator|(KeyModifiers modifiers, Key key)
