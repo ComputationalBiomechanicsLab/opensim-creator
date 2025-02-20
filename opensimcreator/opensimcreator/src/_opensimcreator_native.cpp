@@ -15,9 +15,7 @@ namespace
     void calc_tps_coefficients(
         [[maybe_unused]] const Vec3Array& source_landmarks,
         [[maybe_unused]] const Vec3Array& destination_landmarks)
-    {
-        OSC_ASSERT(source_landmarks.size() == destination_landmarks.size());
-    }
+    {}
 }
 
 NB_MODULE(_opensimcreator_native, m) {
