@@ -200,7 +200,7 @@ namespace
             const ThinPlateSplineCommonInputs& tpsInputs)
         {
             // Compile the TPS coefficients from the source+destination landmarks
-            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+            const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
 
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
             Mesh mesh = ToOscMesh(model, state, inputMesh);
@@ -232,7 +232,7 @@ namespace
             const OpenSim::Frame& landmarksFrame,
             const ThinPlateSplineCommonInputs& tpsInputs)
         {
-            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+            const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
             const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state).invert() * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
             const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
@@ -245,7 +245,7 @@ namespace
         {
             OSC_ASSERT_ALWAYS(tpsInputs.applyAffineRotation && "affine rotation must be requested in order to figure out the transform");
             OSC_ASSERT_ALWAYS(tpsInputs.applyAffineTranslation && "affine translation must be requested in order to figure out the transform");
-            const TPSCoefficients3D& coefficients = lookupTPSCoefficients(tpsInputs);
+            const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
 
             const Vec3d x{normalize(coefficients.a2)};
             const Vec3d y{normalize(coefficients.a3)};
@@ -261,14 +261,14 @@ namespace
         }
     private:
 
-        const TPSCoefficients3D& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
+        const TPSCoefficients3D<float>& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
         {
             // Read source+destination landmark files into independent collections
             const auto sourceLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.sourceLandmarksPath);
             const auto destinationLandmarks = lm::ReadLandmarksFromCSVIntoVectorOrThrow(tpsInputs.destinationLandmarksPath);
 
             // Pair the source+destination landmarks together into a TPS coefficient solver's inputs
-            TPSCoefficientSolverInputs3D inputs;
+            TPSCoefficientSolverInputs3D<float> inputs;
             inputs.landmarks.reserve(max(sourceLandmarks.size(), destinationLandmarks.size()));
             lm::TryPairingLandmarks(sourceLandmarks, destinationLandmarks, [&inputs, &tpsInputs](const MaybeNamedLandmarkPair& p)
             {
@@ -306,7 +306,7 @@ namespace
             return m_CoefficientsTODO;
         }
 
-        TPSCoefficients3D m_CoefficientsTODO;
+        TPSCoefficients3D<float> m_CoefficientsTODO;
     };
 
     // The state of a validation check performed by a `ScalingStep`.

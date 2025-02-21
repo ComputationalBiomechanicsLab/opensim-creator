@@ -34,37 +34,69 @@ namespace
 
         return length(controlPoint - p);
     }
-}
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D& inputs)
-{
-    o << "TPSCoefficientSolverInputs3D{landmarks = [";
-    std::string_view delimiter;
-    for (const LandmarkPair3D& landmark : inputs.landmarks) {
-        o << delimiter << landmark;
-        delimiter = ", ";
+    template<std::floating_point T>
+    std::ostream& write_human_readable(std::ostream& o, const TPSCoefficientSolverInputs3D<T>& inputs)
+    {
+        o << "TPSCoefficientSolverInputs3D{landmarks = [";
+        std::string_view delimiter;
+        for (const LandmarkPair3D<T>& landmark : inputs.landmarks) {
+            o << delimiter << landmark;
+            delimiter = ", ";
+        }
+        o << "]}";
+        return o;
     }
-    o << "]}";
-    return o;
-}
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D& wt)
-{
-    return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
-}
-
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D& coefs)
-{
-    o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
-    for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i) {
-        o << ", w" << i << " = " << coefs.nonAffineTerms[i];
+    template<std::floating_point T>
+    std::ostream& write_human_readable(std::ostream& o, const TPSNonAffineTerm3D<T>& wt)
+    {
+        return o << "TPSNonAffineTerm3D{Weight = " << wt.weight << ", ControlPoint = " << wt.controlPoint << '}';
     }
-    o << '}';
-    return o;
+
+    template<std::floating_point T>
+    std::ostream& write_human_readable(std::ostream& o, const TPSCoefficients3D<T>& coefs)
+    {
+        o << "TPSCoefficients3D{a1 = " << coefs.a1 << ", a2 = " << coefs.a2 << ", a3 = " << coefs.a3 << ", a4 = " << coefs.a4;
+        for (size_t i = 0; i < coefs.nonAffineTerms.size(); ++i) {
+            o << ", w" << i << " = " << coefs.nonAffineTerms[i];
+        }
+        o << '}';
+        return o;
+    }
 }
 
-// computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inputs)
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<float>& inputs)
+{
+    return write_human_readable(o, inputs);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<double>& inputs)
+{
+    return write_human_readable(o, inputs);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D<float>& wt)
+{
+    return write_human_readable(o, wt);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D<double>& wt)
+{
+    return write_human_readable(o, wt);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D<float>& coefs)
+{
+    return write_human_readable(o, coefs);
+}
+
+std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D<double>& coefs)
+{
+    return write_human_readable(o, coefs);
+}
+
+TPSCoefficients3D<float> osc::CalcCoefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
 {
     // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
     //
@@ -118,7 +150,7 @@ TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inpu
 
     if (numPairs == 0) {
         // edge-case: there are no pairs, so return an identity-like transform
-        return TPSCoefficients3D{};
+        return TPSCoefficients3D<float>{};
     }
 
     // construct matrix L
@@ -195,7 +227,7 @@ TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inpu
     //
     // extract the coefficients into the return value
 
-    TPSCoefficients3D rv;
+    TPSCoefficients3D<float> rv;
 
     // populate affine a1, a2, a3, and a4 terms
     rv.a1 = {Cx[numPairs],   Cy[numPairs]  , Cz[numPairs]  };
@@ -215,7 +247,7 @@ TPSCoefficients3D osc::CalcCoefficients(const TPSCoefficientSolverInputs3D& inpu
 }
 
 // evaluates the TPS equation with the given coefficients and input point
-Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 p)
+Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D<float>& coefs, Vec3 p)
 {
     // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
     // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
@@ -225,20 +257,20 @@ Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 p)
     Vec3d rv = Vec3d{coefs.a1} + Vec3d{coefs.a2*p.x} + Vec3d{coefs.a3*p.y} + Vec3d{coefs.a4*p.z};
 
     // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
-    for (const TPSNonAffineTerm3D& term : coefs.nonAffineTerms) {
+    for (const TPSNonAffineTerm3D<float>& term : coefs.nonAffineTerms) {
         rv += term.weight * RadialBasisFunction3D(term.controlPoint, p);
     }
 
     return rv;
 }
 
-Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D& coefs, Vec3 vert, float blendingFactor)
+Vec3 osc::EvaluateTPSEquation(const TPSCoefficients3D<float>& coefs, Vec3 vert, float blendingFactor)
 {
     return lerp(vert, EvaluateTPSEquation(coefs, vert), blendingFactor);
 }
 
 // returns a mesh that is the equivalent of applying the 3D TPS warp to each vertex of the mesh
-Mesh osc::ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D& coefs, const Mesh& mesh, float blendingFactor)
+Mesh osc::ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D<float>& coefs, const Mesh& mesh, float blendingFactor)
 {
     OSC_PERF("ApplyThinPlateWarpToMeshVertices");
 
@@ -256,7 +288,7 @@ Mesh osc::ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D& coefs, const
 }
 
 std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
-    const TPSCoefficients3D& coefs,
+    const TPSCoefficients3D<float>& coefs,
     std::span<const Vec3> points,
     float blendingFactor)
 {
@@ -266,7 +298,7 @@ std::vector<Vec3> osc::ApplyThinPlateWarpToPoints(
 }
 
 void osc::ApplyThinPlateWarpToPointsInPlace(
-    const TPSCoefficients3D& coefs,
+    const TPSCoefficients3D<float>& coefs,
     std::span<Vec3> points,
     float blendingFactor)
 {

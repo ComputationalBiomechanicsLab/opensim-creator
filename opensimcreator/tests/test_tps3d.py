@@ -41,3 +41,12 @@ def test_solve_coefficients_accepts_named_arguments():
 	# I.e. the function argument names are named+fixed, so that downstream code
 	# can write in a more readable style.
 	tps3d.solve_coefficients(source_landmarks=slms, destination_landmarks=dlms)
+
+def test_solve_coefficients_returns_object_with_warp_point_method():
+	source_landmarks = np.array([[1,2,3]])
+	destination_landmarks = np.array([[4,5,6]])
+
+	coefs = tps3d.solve_coefficients(source_landmarks, destination_landmarks)
+	warped_point = coefs.warp_point(np.array([7,8,9]))
+
+	assert isinstance(warped_point, np.ndarray)

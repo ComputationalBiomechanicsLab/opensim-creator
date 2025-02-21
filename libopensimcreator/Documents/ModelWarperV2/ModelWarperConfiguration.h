@@ -337,7 +337,7 @@ namespace osc::mow
         PairedPoints() = default;
 
         template<std::ranges::input_range Range>
-        requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D>
+        requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D<float>>
         explicit PairedPoints(Range&& range, const OpenSim::ComponentPath& baseFrameAbsPath) :
             m_Data{make_cow<Data>(std::forward<Range>(range), baseFrameAbsPath)}
         {}
@@ -356,7 +356,7 @@ namespace osc::mow
             Data() = default;
 
             template<std::ranges::input_range Range>
-            requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D>
+            requires std::convertible_to<std::ranges::range_value_t<Range>, LandmarkPair3D<float>>
             explicit Data(Range&& range, const OpenSim::ComponentPath& baseFrameAbsPath_) :
                 pointsInBaseFrame{std::ranges::begin(range), std::ranges::end(range)},
                 baseFrameAbsPath{baseFrameAbsPath_}
@@ -364,7 +364,7 @@ namespace osc::mow
 
             friend bool operator==(const Data&, const Data&) = default;
 
-            std::vector<LandmarkPair3D> pointsInBaseFrame;
+            std::vector<LandmarkPair3D<float>> pointsInBaseFrame;
             OpenSim::ComponentPath baseFrameAbsPath;
         };
 

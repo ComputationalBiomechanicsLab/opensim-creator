@@ -143,7 +143,7 @@ TEST(PairedPoints, CanDefaultConstruct)
 
 TEST(PairedPoints, CanConstructFromRangeOfPairedPointsPlusBaseOffsetPath)
 {
-    const auto points = std::to_array<LandmarkPair3D>({
+    const auto points = std::to_array<LandmarkPair3D<float>>({
         {Vec3{0.0f}, Vec3{1.0f}},
         {Vec3{2.0f}, Vec3{3.0f}},
     });
@@ -157,7 +157,7 @@ TEST(PairedPoints, CanConstructFromRangeOfPairedPointsPlusBaseOffsetPath)
 
 TEST(PairedPoints, CopyingPointsWorksAsExpected)
 {
-    const auto points = std::to_array<LandmarkPair3D>({
+    const auto points = std::to_array<LandmarkPair3D<float>>({
         {Vec3{0.0f}, Vec3{1.0f}},
         {Vec3{2.0f}, Vec3{3.0f}},
     });
@@ -172,7 +172,7 @@ TEST(PairedPoints, CopyingPointsWorksAsExpected)
 
 TEST(PairedPoints, CopyComparesEqualToOriginal)
 {
-    const auto points = std::to_array<LandmarkPair3D>({
+    const auto points = std::to_array<LandmarkPair3D<float>>({
         {Vec3{0.0f}, Vec3{1.0f}},
         {Vec3{2.0f}, Vec3{3.0f}},
     });
@@ -186,7 +186,7 @@ TEST(PairedPoints, CopyComparesEqualToOriginal)
 
 TEST(PairedPoints, EqualityIsValueBased)
 {
-    const auto points = std::to_array<LandmarkPair3D>({
+    const auto points = std::to_array<LandmarkPair3D<float>>({
         {Vec3{0.0f}, Vec3{1.0f}},
         {Vec3{2.0f}, Vec3{3.0f}},
     });
@@ -240,7 +240,7 @@ namespace
 TEST(PairedPointsSource, getPairedPoints_returnsPairedPoints)
 {
     const PairedPoints points{
-        std::to_array<LandmarkPair3D>({
+        std::to_array<LandmarkPair3D<float>>({
             {Vec3{}, Vec3{}},
             {Vec3{}, Vec3{}},
         }),

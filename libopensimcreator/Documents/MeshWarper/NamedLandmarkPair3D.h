@@ -6,7 +6,7 @@
 
 namespace osc
 {
-    struct NamedLandmarkPair3D final : public LandmarkPair3D {
+    struct NamedLandmarkPair3D final : public LandmarkPair3D<float> {
         StringName name;
     };
 }

@@ -161,8 +161,8 @@ namespace osc
             }
         }
 
-        TPSCoefficientSolverInputs3D m_CachedInputs;
-        TPSCoefficients3D m_CachedCoefficients;
+        TPSCoefficientSolverInputs3D<float> m_CachedInputs;
+        TPSCoefficients3D<float> m_CachedCoefficients;
         Mesh m_CachedSourceMesh;
         float m_CachedBlendingFactor = 1.0f;
         bool m_CachedRecalculateNormalsState = false;

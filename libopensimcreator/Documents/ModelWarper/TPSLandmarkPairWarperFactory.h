@@ -81,6 +81,6 @@ namespace osc::mow
 
         std::vector<MaybeNamedLandmarkPair> m_Landmarks;
 
-        CopyOnUpdPtr<TPSCoefficients3D> m_TPSCoefficients;
+        CopyOnUpdPtr<TPSCoefficients3D<float>> m_TPSCoefficients;
     };
 }

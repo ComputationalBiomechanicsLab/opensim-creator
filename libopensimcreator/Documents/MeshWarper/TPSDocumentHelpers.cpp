@@ -158,21 +158,19 @@ bool osc::ContainsElementWithName(const TPSDocument& doc, const StringName& name
         FindNonParticipatingLandmarkByName(doc, name) != nullptr;
 }
 
-std::optional<LandmarkPair3D> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
+std::optional<LandmarkPair3D<float>> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
 {
-    if (IsFullyPaired(p))
-    {
-        return LandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation};
+    if (IsFullyPaired(p)) {
+        return LandmarkPair3D<float>{*p.maybeSourceLocation, *p.maybeDestinationLocation};
     }
-    else
-    {
+    else {
         return std::nullopt;
     }
 }
 
-std::vector<LandmarkPair3D> osc::GetLandmarkPairs(const TPSDocument& doc)
+std::vector<LandmarkPair3D<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
 {
-    std::vector<LandmarkPair3D> rv;
+    std::vector<LandmarkPair3D<float>> rv;
     rv.reserve(CountFullyPaired(doc));
     for (const auto& p : doc.landmarkPairs)
     {

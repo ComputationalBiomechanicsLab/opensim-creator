@@ -34,10 +34,10 @@ namespace osc
         bool hasSource() const { return m_MaybeSourcePos.has_value(); }
         bool hasDestination() const { return m_MaybeDestinationPos.has_value(); }
         bool isFullyPaired() const { return hasSource() && hasDestination(); }
-        std::optional<LandmarkPair3D> tryGetPairedLocations() const
+        std::optional<LandmarkPair3D<float>> tryGetPairedLocations() const
         {
             if (m_MaybeSourcePos && m_MaybeDestinationPos) {
-                return LandmarkPair3D{*m_MaybeSourcePos, *m_MaybeDestinationPos};
+                return LandmarkPair3D<float>{*m_MaybeSourcePos, *m_MaybeDestinationPos};
             }
             else {
                 return std::nullopt;

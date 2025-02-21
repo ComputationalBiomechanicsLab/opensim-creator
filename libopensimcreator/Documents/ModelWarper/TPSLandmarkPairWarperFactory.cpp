@@ -78,9 +78,9 @@ namespace
         return PairLandmarks(std::move(src), std::move(dest));
     }
 
-    TPSCoefficients3D TryCalcTPSCoefficients(std::span<const MaybeNamedLandmarkPair> maybePairs)
+    TPSCoefficients3D<float> TryCalcTPSCoefficients(std::span<const MaybeNamedLandmarkPair> maybePairs)
     {
-        TPSCoefficientSolverInputs3D rv;
+        TPSCoefficientSolverInputs3D<float> rv;
         for (const MaybeNamedLandmarkPair& maybePair: maybePairs) {
             if (auto pair = maybePair.tryGetPairedLocations()) {
                 rv.landmarks.push_back(*pair);
@@ -102,7 +102,7 @@ osc::mow::TPSLandmarkPairWarperFactory::TPSLandmarkPairWarperFactory(
     m_ExpectedDestinationLandmarksAbsoluteFilepath{CalcExpectedAssociatedLandmarksFile(m_ExpectedDestinationMeshAbsoluteFilepath)},
     m_DestinationLandmarksFileExists{std::filesystem::exists(m_ExpectedDestinationLandmarksAbsoluteFilepath)},
     m_Landmarks{TryLoadPairedLandmarks(tryGetSourceLandmarksFilepath(), tryGetDestinationLandmarksFilepath())},
-    m_TPSCoefficients{make_cow<TPSCoefficients3D>(TryCalcTPSCoefficients(m_Landmarks))}
+    m_TPSCoefficients{make_cow<TPSCoefficients3D<float>>(TryCalcTPSCoefficients(m_Landmarks))}
 {}
 
 std::filesystem::path osc::mow::TPSLandmarkPairWarperFactory::getSourceMeshAbsoluteFilepath() const
@@ -286,7 +286,7 @@ std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCre
 {
     class TPSWarper : public IPointWarper {
     public:
-        TPSWarper(CopyOnUpdPtr<TPSCoefficients3D> coefficients_, float blendingFactor_) :
+        TPSWarper(CopyOnUpdPtr<TPSCoefficients3D<float>> coefficients_, float blendingFactor_) :
             m_Coefficients{std::move(coefficients_)},
             m_BlendingFactor{blendingFactor_}
         {}
@@ -296,7 +296,7 @@ std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCre
             ApplyThinPlateWarpToPointsInPlace(*m_Coefficients, points, m_BlendingFactor);
         }
 
-        CopyOnUpdPtr<TPSCoefficients3D> m_Coefficients;
+        CopyOnUpdPtr<TPSCoefficients3D<float>> m_Coefficients;
         float m_BlendingFactor;
     };
 

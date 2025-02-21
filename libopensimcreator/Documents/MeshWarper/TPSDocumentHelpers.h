@@ -100,10 +100,10 @@ namespace osc
     }
 
     // returns source + destination landmark pair, if both are fully defined; otherwise, returns std::nullopt
-    std::optional<LandmarkPair3D> TryExtractLandmarkPair(const TPSDocumentLandmarkPair&);
+    std::optional<LandmarkPair3D<float>> TryExtractLandmarkPair(const TPSDocumentLandmarkPair&);
 
     // returns all fully paired landmarks in `doc`
-    std::vector<LandmarkPair3D> GetLandmarkPairs(const TPSDocument&);
+    std::vector<LandmarkPair3D<float>> GetLandmarkPairs(const TPSDocument&);
 
     // returns all fully paired landmarks, incl. their names, in `doc`
     std::vector<NamedLandmarkPair3D> GetNamedLandmarkPairs(const TPSDocument&);
