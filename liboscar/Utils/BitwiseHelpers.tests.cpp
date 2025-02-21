@@ -9,8 +9,8 @@ using namespace osc;
 TEST(swap_single_bit, returns_input_when_input_is_just_zeroes)
 {
     uint64_t v{};
-    for (int i = 0; i < 8*sizeof(v); ++i) {
-        for (int j = 0; j < 8*sizeof(v); ++j) {
+    for (int i = 0; i < static_cast<int>(8*sizeof(v)); ++i) {
+        for (int j = 0; j < static_cast<int>(8*sizeof(v)); ++j) {
             ASSERT_EQ(swap_single_bit(v, i, j), v);
         }
     }
