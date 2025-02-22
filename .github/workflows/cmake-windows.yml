@@ -1,0 +1,47 @@
+name: CMake Windows
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${ {github.event_name }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{github.event_name == 'pull_request'}}
+
+permissions: read-all
+
+jobs:
+  test_cmake-windows:
+    name: MSVC C++-17
+    runs-on: windows-2022
+
+    steps:
+    - uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{github.workspace}}/mdspan-build
+
+    - name: Check Out
+      uses: actions/checkout@v2
+      with:
+        path: ${{github.workspace}}/mdspan-src
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: cmake -DCMAKE_CXX_FLAGS=-EHsc $GITHUB_WORKSPACE/mdspan-src -DMDSPAN_CXX_STANDARD=17 -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/mdspan-install -DMDSPAN_ENABLE_TESTS=ON -DMDSPAN_ENABLE_EXAMPLES=ON 
+
+    - name: Build
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: cmake --build . --parallel 4 --config Debug
+
+    - name: Test
+      working-directory: ${{github.workspace}}/mdspan-build
+      shell: bash
+      run: ctest --output-on-failure
+
+    - name: Install
+      shell: bash
+      working-directory: ${{github.workspace}}/mdspan-build
+      run: cmake --build . --target install
