@@ -22,4 +22,4 @@ docs_url = "@PROJECT_SOURCE_DIR@/docs/build/index.html"
 
 # a scale factor that is multiplied by the number of physical pixels that comprise
 # each 3D element in the UI (e.g. you can use this to downscale HighDPI viewports)
-graphics.render_scale = 1.0
+# graphics.render_scale = 1.0

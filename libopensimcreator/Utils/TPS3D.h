@@ -4,6 +4,7 @@
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vec3.h>
+#include <liboscar/Shims/Cpp23/mdspan.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -84,21 +85,27 @@ namespace osc
     std::ostream& operator<<(std::ostream&, const TPSCoefficients3D<double>&);
 
     // computes all coefficients of the 3D TPS equation (a1, a2, a3, a4, and all the w's)
-    TPSCoefficients3D<float> CalcCoefficients(const TPSCoefficientSolverInputs3D<float>&);
+    TPSCoefficients3D<float> TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<float>&);
+    TPSCoefficients3D<double> TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<double>&);
+    TPSCoefficients3D<double> TPSCalcCoefficients(
+        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>,
+        cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride>
+    );
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec3 EvaluateTPSEquation(const TPSCoefficients3D<float>&, Vec3);
+    Vec3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vec3);
+    Vec3d TPSWarpPoint(const TPSCoefficients3D<double>&, Vec3d);
 
     // evaluates the TPS equation with the given coefficients and input point, lerping the result
     // by `blendingFactor` between the input point and the "fully warped" point.
-    Vec3 EvaluateTPSEquation(const TPSCoefficients3D<float>&, Vec3, float blendingFactor);
-
-    // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
-    Mesh ApplyThinPlateWarpToMeshVertices(const TPSCoefficients3D<float>&, const Mesh&, float blendingFactor);
+    Vec3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vec3, float blendingFactor);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<Vec3> ApplyThinPlateWarpToPoints(const TPSCoefficients3D<float>&, std::span<const Vec3>, float blendingFactor);
+    std::vector<Vec3> TPSWarpPoints(const TPSCoefficients3D<float>&, std::span<const Vec3>, float blendingFactor);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
-    void ApplyThinPlateWarpToPointsInPlace(const TPSCoefficients3D<float>&, std::span<Vec3>, float blendingFactor);
+    void TPSWarpPointsInPlace(const TPSCoefficients3D<float>&, std::span<Vec3>, float blendingFactor);
+
+    // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
+    Mesh TPSWarpMesh(const TPSCoefficients3D<float>&, const Mesh&, float blendingFactor);
 }

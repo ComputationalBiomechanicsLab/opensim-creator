@@ -17,6 +17,7 @@ set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
 set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
 set(OSCDEPS_BUILD_ROBIN_MAP ON CACHE BOOL "enable building robin map from source (used by nanobind)")
+set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
@@ -216,6 +217,15 @@ endif()
 if(${OSCDEPS_BUILD_ROBIN_MAP})
     ExternalProject_Add(robin-map
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/robin-map
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_MDSPAN})
+    ExternalProject_Add(mdspan
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}

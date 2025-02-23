@@ -213,7 +213,7 @@ namespace
             for (auto& vertex : vertices) {
                 vertex = transform_point(mesh2landmarks, vertex);  // put vertex into landmark frame
             }
-            ApplyThinPlateWarpToPointsInPlace(coefficients, vertices, static_cast<float>(tpsInputs.blendingFactor));
+            TPSWarpPointsInPlace(coefficients, vertices, static_cast<float>(tpsInputs.blendingFactor));
             for (auto& vertex : vertices) {
                 vertex = inverse_transform_point(mesh2landmarks, vertex);  // put vertex back into mesh frame
             }
@@ -235,7 +235,7 @@ namespace
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
             const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state).invert() * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
-            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(EvaluateTPSEquation(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
+            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(TPSWarpPoint(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
             return warpedLocationInStationParentFrame;
         }
@@ -283,7 +283,7 @@ namespace
             });
 
             // Solve the coefficients
-            m_CoefficientsTODO = CalcCoefficients(inputs);
+            m_CoefficientsTODO = TPSCalcCoefficients(inputs);
 
             // If required, modify the coefficients
             if (not tpsInputs.applyAffineTranslation) {

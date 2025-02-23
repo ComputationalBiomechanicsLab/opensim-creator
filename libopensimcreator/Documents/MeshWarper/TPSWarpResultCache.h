@@ -46,11 +46,11 @@ namespace osc
 
             if (updatedCoefficients || updatedNonParticipatingLandmarks || updatedMesh || updatedBlendingFactor || updatedRecalculateNormalsState)
             {
-                m_CachedResultMesh = ApplyThinPlateWarpToMeshVertices(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
+                m_CachedResultMesh = TPSWarpMesh(m_CachedCoefficients, m_CachedSourceMesh, m_CachedBlendingFactor);
                 if (m_CachedRecalculateNormalsState) {
                     m_CachedResultMesh.recalculate_normals();
                 }
-                m_CachedResultNonParticipatingLandmarks = ApplyThinPlateWarpToPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
+                m_CachedResultNonParticipatingLandmarks = TPSWarpPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
             }
         }
 
@@ -82,7 +82,7 @@ namespace osc
                 return false;
             }
 
-            TPSCoefficients3D newCoefficients = CalcCoefficients(m_CachedInputs);
+            TPSCoefficients3D newCoefficients = TPSCalcCoefficients(m_CachedInputs);
 
             if (newCoefficients != m_CachedCoefficients)
             {

@@ -86,7 +86,7 @@ namespace
                 rv.landmarks.push_back(*pair);
             }
         }
-        return CalcCoefficients(rv);
+        return TPSCalcCoefficients(rv);
     }
 }
 
@@ -293,7 +293,7 @@ std::unique_ptr<IPointWarper> osc::mow::TPSLandmarkPairWarperFactory::implTryCre
     private:
         void implWarpInPlace(std::span<Vec3> points) const override
         {
-            ApplyThinPlateWarpToPointsInPlace(*m_Coefficients, points, m_BlendingFactor);
+            TPSWarpPointsInPlace(*m_Coefficients, points, m_BlendingFactor);
         }
 
         CopyOnUpdPtr<TPSCoefficients3D<float>> m_Coefficients;

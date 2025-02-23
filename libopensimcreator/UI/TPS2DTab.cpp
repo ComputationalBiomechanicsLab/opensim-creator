@@ -116,7 +116,7 @@ namespace
     }
 
     // computes all coefficients of the TPS equation (a1, a2, a3, and all the w's)
-    TPSCoefficients2D CalcCoefficients(std::span<const LandmarkPair2D> landmarkPairs)
+    TPSCoefficients2D TPSCalcCoefficients(std::span<const LandmarkPair2D> landmarkPairs)
     {
         // this is based on the Bookstein Thin Plate Sline (TPS) warping algorithm
         //
@@ -263,7 +263,7 @@ namespace
     class ThinPlateWarper2D final {
     public:
         explicit ThinPlateWarper2D(std::span<const LandmarkPair2D> landmarkPairs) :
-            m_Coefficients{CalcCoefficients(landmarkPairs)}
+            m_Coefficients{TPSCalcCoefficients(landmarkPairs)}
         {}
 
         Vec2 transform(Vec2 p) const
@@ -277,7 +277,7 @@ namespace
 
     // returns a mesh that is the equivalent of applying the 2D TPS warp to all
     // vertices of the input mesh
-    Mesh ApplyThinPlateWarpToMeshVertices(const ThinPlateWarper2D& t, const Mesh& mesh)
+    Mesh TPSWarpMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
         rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(Vec2{v}), v.z}; });
@@ -355,7 +355,7 @@ public:
                     p.dest = lerp(p.src, p.dest, m_BlendingFactor);
                 }
                 ThinPlateWarper2D warper{pairs};
-                m_OutputGrid = ApplyThinPlateWarpToMeshVertices(warper, m_InputGrid);
+                m_OutputGrid = TPSWarpMesh(warper, m_InputGrid);
             }
 
             renderMesh(m_OutputGrid, texDims, m_OutputRender);
