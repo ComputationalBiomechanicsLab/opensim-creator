@@ -23,7 +23,7 @@ namespace
     //
     // Returns a numpy array that exposes a C++ `Vec<N, T>`'s data.
     template<size_t N, typename T>
-    nb::ndarray<T, nb::shape<N>, nb::device::cpu, nb::numpy> to_ndarray(const Vec<N, T>& vec)
+    nb::ndarray<T, nb::shape<static_cast<nb::ssize_t>(N)>, nb::device::cpu, nb::numpy> to_ndarray(const Vec<N, T>& vec)
     {
         // Heap-allocate the data so that python can reference-count it
         auto* dptr = new T[N];
@@ -35,10 +35,10 @@ namespace
     // Python `ndarray` --> Vec<N, T> converter
     //
     // Packs the given `ndarray` into a C++ `Vec<N, T>`
-    template<size_t N, typename T>
-    Vec<N, T> to_vec(const nb::ndarray<const T, nb::shape<N>, nb::device::cpu>& ndarray)
+    template<nb::ssize_t N, typename T>
+    Vec<static_cast<size_t>(N), T> to_vec(const nb::ndarray<const T, nb::shape<N>, nb::device::cpu>& ndarray)
     {
-        Vec<N, T> rv;
+        Vec<static_cast<size_t>(N), T> rv;
         for (size_t i = 0; i < N; ++i) {
             rv[i] = ndarray(i);
         }
