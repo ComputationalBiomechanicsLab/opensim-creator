@@ -176,7 +176,7 @@ std::vector<LandmarkPair3D<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
     {
         if (IsFullyPaired(p))
         {
-            rv.push_back(LandmarkPair3D{*p.maybeSourceLocation, *p.maybeDestinationLocation});
+            rv.push_back(LandmarkPair3D<float>{*p.maybeSourceLocation, *p.maybeDestinationLocation});
         }
     }
     return rv;
