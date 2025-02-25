@@ -149,7 +149,9 @@ namespace
 NB_MODULE(_opensimcreator_native, m) {
     // class: TPSCoefficients3D
     nb::class_<TPSCoefficients3D<double>>(m, "TPSCoefficients3D")
-        .def("__repr__", [](const TPSCoefficients3D<double>& coefs) { return repr(coefs); })
+        .def("__repr__",
+            [](const TPSCoefficients3D<double>& coefs) { return repr(coefs); }
+        )
         .def_prop_ro("a1",
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a1); },
             nb::rv_policy::take_ownership
@@ -166,7 +168,11 @@ NB_MODULE(_opensimcreator_native, m) {
             [](const TPSCoefficients3D<double>& coefs) { return to_owned_numpy_array(coefs.a4); },
             nb::rv_policy::take_ownership
         )
-        .def("warp_point", warp_point, nb::arg("point"), "Warps a single 3D point");
+        .def("warp_point",
+            warp_point,
+            nb::arg("point"),
+            "Warps a single 3D point"
+        );
 
     m.def(
         "solve_coefficients",
