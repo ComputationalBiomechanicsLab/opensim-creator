@@ -115,3 +115,25 @@ def test_solve_coefficients_returns_object_that_performs_expected_warp():
     assert warped[0] == pytest.approx(0, nan_ok=False)
     assert warped[1] == pytest.approx(1, nan_ok=False)
     assert warped[2] == pytest.approx(0, nan_ok=False)
+
+def test_solve_coefficients_returns_object_that_performs_non_identity_warp():
+    # Create a not-identity-like mapping
+    coefs = tps3d.solve_coefficients(
+        source_landmarks=np.array([
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+        ]),
+        destination_landmarks=np.array([
+            [9,  10, 11],
+            [12, 13, 14],
+            [15, 16, 17],
+        ])
+    )
+
+    # Warp a datapoint that's exactly on top of a source landmark
+    warped = coefs.warp_point(np.array([0, 1, 0]))
+
+    assert warped[0] != pytest.approx(0, nan_ok=False)
+    assert warped[1] != pytest.approx(1, nan_ok=False)
+    assert warped[2] != pytest.approx(0, nan_ok=False)
