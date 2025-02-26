@@ -69,6 +69,14 @@ simbody
 - Copyright (c) Stanford University and the Authors (various holders on a per-source basis)
 
 
+libuv
+-----
+
+- https://github.com/libuv/libuv
+- Licensed under the MIT license
+- Copyright (c) 2015-present libuv project contributors.
+
+
 lunasvg
 -------
 
