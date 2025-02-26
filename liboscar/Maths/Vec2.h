@@ -6,6 +6,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 
 namespace osc
 {
@@ -78,6 +79,9 @@ namespace osc
         constexpr const_reference operator[](size_type pos) const { return begin()[pos]; }
 
         friend constexpr bool operator==(const Vec<2, T>&, const Vec<2, T>&) = default;
+
+        constexpr operator std::span<T, 2>() { return {data(), 2}; }
+        constexpr operator std::span<const T, 2>() const { return {data(), 2}; }
 
         template<Scalar U>
         requires (not std::same_as<T, bool>)
