@@ -1,5 +1,5 @@
 OpenSim Creator
-Copyright 2024 Adam Kewley
+Copyright 2025 Adam Kewley
 License: Apache License Version 2.0
 
 This product includes software developed by third parties, listed
@@ -16,26 +16,16 @@ form. In all cases, the software has a permissive license.
 
 The following software libraries are used:
 
-tomlplusplus
-------------
 
-- https://github.com/marzer/tomlplusplus
-- Licensed under the MIT license
-- Copyright (c) Mark Gillard <mark.gillard@outlook.com.au>
-
-osim
+glad
 ----
 
-- https://github.com/ComputationalBiomechanicsLab/osim
-- Licensed under the Apache 2.0 license
-- Copyright (c) 2024 Adam Kewley
+- https://github.com/Dav1dde/glad
+- The `glad` code included in OpenSim Creator, generated via https://glad.dav1d.de/
+  is any of public domain, WTFPL, or CC0 license. The headers also contain code from
+  Khronos, which is Apache 2.0 licensed.
+- Author: David Herberth <github@dav1d.de>
 
-nativefiledialog
-----------------
-
-- https://github.com/mlabbe/nativefiledialog
-- Licensed under the zlib license
-- (assumed) Copyright Michael Labbe
 
 googletest
 ----------
@@ -44,7 +34,90 @@ googletest
 - Licensed under the BSD 3-Clause "New" or "Revised" License
 - Copyright 2008, Google Inc.
 
-sdl
+
+imgui
+-----
+
+- https://github.com/ocornut/imgui
+- Licensed under the MIT license
+- Copyright (c) 2014-2024 Omar Cornut
+
+
+ImPlot
+------
+
+- https://github.com/epezent/implot
+- Licensed under the MIT license
+- The source code was copied + pasted into OpenSim Creator's internal vendored
+  code directory
+- Copyright (c) 2020 Evan Pezent
+
+
+opensim-core
+------------
+
+- https://github.com/opensim-org/opensim-core
+- Licensed under the Apache 2.0 license
+- Copyright (c) 2024 the OpenSim Developers (various holders on a per-source basis)
+
+
+simbody
+-------
+
+- https://github.com/simbody/simbody.git
+- Licensed under the Apache 2.0 license
+- Copyright (c) Stanford University and the Authors (various holders on a per-source basis)
+
+
+lunasvg
+-------
+
+- https://github.com/sammycage/lunasvg
+- Licensed under the MIT license
+- Copyright (c) 2020-2024 Samuel Ugochukwu <sammycageagle@gmail.com>
+
+
+mdspan
+------
+
+- https://github.com/kokkos/mdspan
+- Licensed under the Apache License v2.0 with LLVM exceptions
+- Copyright (c) 2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+
+
+nanobind
+--------
+
+- https://github.com/wjakob/nanobind
+- Licensed under the BSD 3-Clause "New" or "Revised" License
+- Copyright (c) 2022 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
+
+
+nativefiledialog
+----------------
+
+- https://github.com/mlabbe/nativefiledialog
+- Licensed under the zlib license
+- (assumed) Copyright Michael Labbe
+
+
+OpenBLAS
+--------
+
+- https://github.com/OpenMathLib/OpenBLAS
+- Licensed under BSD 3-Clause "New" or "Revised" License
+- Copyright (c) 2011-2014, The OpenBLAS Project
+
+
+robin-map
+---------
+
+- https://github.com/Tessil/robin-map
+- Licensed under the MIT license
+- Copyright (c) 2017 Thibaut Goetghebuer-Planchon <tessil@gmx.com>
+
+
+SDL
 ---
 
 - https://github.com/libsdl-org/SDL
@@ -52,16 +125,52 @@ sdl
 - Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
 
 
+spdlog
+------
+
+- https://github.com/gabime/spdlog
+- Licensed under the MIT license
+- Copyright (c) 2016 Gabi Melman.
+
+
+stb
+---
+
+- https://github.com/nothings/stb
+- Licensed under the MIT license
+- The source code was copied + pasted into OpenSim Creator's internal vendored code directory
+- Copyright (c) 2017 Sean Barrett
+
+
+tomlplusplus
+------------
+
+- https://github.com/marzer/tomlplusplus
+- Licensed under the MIT license
+- Copyright (c) Mark Gillard <mark.gillard@outlook.com.au>
+
+
+unordered_dense
+---------------
+
+- https://github.com/martinus/unordered_dense
+- Licensed under the MIT license
+- The source code was copied + pasted into OpenSim Creator's internal vendored code directory
+- Copyright (c) 2022 Martin Leitner-Ankerl
+
+
+
 Source Code Forks (Copy + Paste + Modify)
 =========================================
 
 This product contains source code that was originally copied + pasted
-from its original project into this project's sourcetree. In all
-cases, the original source codes have a permissive license. The reason
-for these copy+paste forks was typically to support major,
-not-backwards-compatible, modifications.
+from its original project into this project's sourcetree. In all cases,
+the original source codes have a permissive license. The reason for
+these copy+paste forks is usually to accomodate major, not-backwards-compatible,
+modifications. The copyright holder---and license---for those changes is the
+same as the top-level OpenSim Creator project.
 
-The following source code was treated this way:
+The following source code was copied, pasted, and modified in-tree:
 
 OpenGL Mathematics (GLM)
 ------------------------
@@ -74,6 +183,7 @@ OpenGL Mathematics (GLM)
   `glm::conjugate` were copied into OpenSim Creator's `Maths/` library, followed by gradually
   changing them to meet OpenSim Creator's requirements.
 
+
 imgui_impl_sdl2
 ---------------
 
@@ -83,13 +193,6 @@ imgui_impl_sdl2
 - The source code was copied + pasted into OpenSim Creator's UI backend module, followed by
   gradually modifying it to instead use the `App` API that OpenSimCreator hosts.
 
-imgui
------
-
-- https://github.com/ocornut/imgui
-- Licensed under the MIT license
-- The source code was copied + pasted into OpenSim Creator's internal vendored
-- Copyright (c) 2014-2024 Omar Cornut
 
 ImGuizmo
 --------
@@ -101,46 +204,3 @@ ImGuizmo
   it to fix various application-specific issues (e.g. ability to reset the global context)
   in a backwards-compatibility-breaking way. It was then subsequently refactored to match the
   rest of the project.
-
-ImPlot
-------
-
-- https://github.com/epezent/implot
-- Licensed under the MIT license
-- The source code was copied + pasted into OpenSim Creator's internal vendored
-  code directory
-- Copyright (c) 2020 Evan Pezent
-
-glad
-----
-
-- https://github.com/Dav1dde/glad
-- The `glad` code included in OpenSim Creator, generated via https://glad.dav1d.de/
-  is any of public domain, WTFPL, or CC0 license. The headers also contain code from
-  Khronos, which is Apache 2.0 licensed.
-- The generated code was copied + pasted into OpenSim Creator's graphics backend
-- Author: David Herberth <github@dav1d.de>
-
-lunasvg
--------
-
-- https://github.com/sammycage/lunasvg
-- Licensed under the MIT license
-- The source code was copied + pasted into OpenSim Creator's internal vendored code directory
-- Copyright (c) 2020-2024 Samuel Ugochukwu <sammycageagle@gmail.com>
-
-stb
----
-
-- https://github.com/nothings/stb
-- Licensed under the MIT license
-- The source code was copied + pasted into OpenSim Creator's internal vendored code directory
-- Copyright (c) 2017 Sean Barrett
-
-unordered_dense
----------------
-
-- https://github.com/martinus/unordered_dense
-- Licensed under the MIT license
-- The source code was copied + pasted into OpenSim Creator's internal vendored code directory
-- Copyright (c) 2022 Martin Leitner-Ankerl
