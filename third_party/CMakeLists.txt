@@ -18,6 +18,7 @@ set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
 set(OSCDEPS_BUILD_ROBIN_MAP ON CACHE BOOL "enable building robin map from source (used by nanobind)")
 set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
+set(OSCDEPS_BUILD_LIBUV ON CACHE BOOL "enable building libuv")
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
@@ -229,5 +230,15 @@ if(${OSCDEPS_BUILD_MDSPAN})
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_LIBUV})
+    ExternalProject_Add(libuv
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libuv
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+	    -DLIBUV_BUILD_SHARED:BOOL=OFF
     )
 endif()

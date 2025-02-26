@@ -28,6 +28,7 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
+find_package(libuv REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
 
 # gather source code, exclude tests
@@ -84,6 +85,7 @@ PRIVATE
     stb
     lunasvg::lunasvg
     Threads::Threads  # implicitly required by SDL3
+    libuv::uv_a
 )
 
 if(BUILD_TESTING)
