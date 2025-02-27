@@ -54,7 +54,6 @@ Table of Contents
    use-the-mesh-importer
    make-an-arm
    use-the-mesh-warper
-   use-the-model-warper
    preview-experimental-data
 
 .. toctree::
@@ -73,6 +72,11 @@ Table of Contents
     OpenSim Creator GitHub <https://github.com/ComputationalBiomechanicsLab/opensim-creator>
     OpenSim GitHub <https://github.com/opensim-org/opensim-core>
     OpenSim Documentation <https://simtk-confluence.stanford.edu/display/OpenSim/Documentation>
+
+.. toctree::
+    :caption: Drafts
+   
+    use-the-model-warper
 
 
 .. _Indices and Tables:
