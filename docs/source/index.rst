@@ -77,6 +77,7 @@ Table of Contents
     :caption: Drafts
    
     use-the-model-warper
+    station-defined-frames
 
 
 .. _Indices and Tables:
