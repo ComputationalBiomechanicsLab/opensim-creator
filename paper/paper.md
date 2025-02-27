@@ -53,9 +53,9 @@ We initially studied existing open-source CAD software (e.g., @Blender) to find 
 
 To facilitate those requirements, OpenSim Creator took inspiration from the games industry, which is commonly associated with rapid prototyping and real-time rendering. We developed OpenSim Creator using a combination of C++, a high-performance language that directly integrates with the OpenSim API; a custom OpenGL renderer, to tightly control real-time 3D editing; and ImGui (@ImGui), which provides customizable low-level 2D UI.
 
-We adopted an open, iterative, development methodology. All releases, including alpha releases, of OpenSim Creator have been available on GitHub with an Apache 2.0 license as early as the first month of development, and a new releases are published every 1-2 months. As a consequence, we have been able to continuously receive feedback from researchers in the community, in addition to a healthy supply of real model-building challenges from our own research, which contributed heavily to OpenSim Creator's design and architecture (e.g. \autoref{fig:1}).
+We adopted an open, iterative, development methodology. All releases, including alpha releases, of OpenSim Creator have been available on GitHub with an Apache 2.0 license as early as the first month of development, and new releases are published every 1-2 months. As a consequence, we have been able to continuously receive feedback from researchers in the community, in addition to a healthy supply of real model-building challenges from our own research, which contributed heavily to OpenSim Creator's design and architecture (e.g. \autoref{fig:1}).
 
-![A selection of screenshots of OpenSim Creator, demonstrating its flexible UI architecture for real-time 3D editing. a) mesh importer, c) mesh warper, c) via point optimization (from @Heijerman:2023). \label{fig:1}](images/fig1.png)
+![A selection of screenshots of OpenSim Creator, demonstrating its flexible UI architecture for real-time 3D editing. a) mesh importer workflow, c) mesh warper workflow, c) via point optimization with live muscle plot updates (from @Heijerman:2023). \label{fig:1}](images/fig1.png)
 
 
 # Example use-cases
