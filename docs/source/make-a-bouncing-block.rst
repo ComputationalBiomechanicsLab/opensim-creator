@@ -311,6 +311,6 @@ Next Steps
 
 This tutorial was similar to :doc:`make-a-pendulum`, but it introduced some of the more practical parts of designing a model. Things like adding **collision geometry**, adding **forces**, and deciding on **constraints**. These are all important parts of the model-building process that come up repeatably when designing OpenSim models.
 
-As you experienced in this tutorial, a time-consuming step of building an OpenSim model can be initially adding and placing the bodies/joints. The next tutorial, :doc:`use-the-mesh-importer`, introduces an alternative approach for performing these first steps.
+As you experienced in this tutorial, a time-consuming step of building an OpenSim model can be initially adding and placing the bodies/joints. The next tutorial, :doc:`the-mesh-importer`, introduces an alternative approach for performing these first steps.
 
 .. _OpenSim GUI: https://github.com/opensim-org/opensim-gui

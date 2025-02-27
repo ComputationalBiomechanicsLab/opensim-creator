@@ -267,7 +267,7 @@ Once you've done that, you should end up with a more convincing-looking pendulum
 (Optional) Extra Exercises
 --------------------------
 
-* **Make a double pendulum**. Using similar steps to the ones above, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :doc:`use-the-mesh-importer`.
+* **Make a double pendulum**. Using similar steps to the ones above, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :doc:`the-mesh-importer`.
 
 * **Open the pendulum in the official OpenSim GUI**. Save your pendulum to an ``.osim`` file and open it in the official `OpenSim GUI`_. This will give you the chance to view your model in other software, which might give you extra modelling options (e.g. different plotting tools, more functionality).
 

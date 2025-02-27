@@ -1,12 +1,12 @@
-Use the Mesh Importer
-=====================
+The Mesh Importer
+=================
 
 In this tutorial, we will be using the mesh importer feature of OpenSim Creator to create a double pendulum:
 
-.. figure:: _static/use-the-mesh-importer/result.jpg
+.. figure:: _static/the-mesh-importer/result.jpg
     :width: 60%
 
-    The final model made in this tutorial, as-seen in the mesh importer. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`download model <_static/use-the-mesh-importer/final-model.osim>`)
+    The final model made in this tutorial, as-seen in the mesh importer. It is a double pendulum made from two bodies and two pin joints, with decorative meshes used for the heads + struts. (:download:`download model <_static/the-mesh-importer/final-model.osim>`)
 
 The mesh importer is "looser" than the main ``osim`` editor. This can make placing and orienting bodies/joints easier. However, its disadvantage is that it doesn't directly edit an ``osim`` file. Rather, it edits a simplified "model" that can be exported to the (more complex) ``osim`` format. For this reason, the mesh importer is recommended as a *first-step* utility that helps set up the top-level ``osim`` model in preparation for the ``osim`` editor to tackle the things like adding/editing forces, contact surfaces, etc.
 
@@ -31,7 +31,7 @@ Open the Mesh Importer
 
 The mesh importer is a separate UI from the main ``osim`` editor. It creates/manipulates a free-form 3D scene that can be exported to an ``osim`` model. You can open the mesh importer from the home tab through either the main menu, the ``+`` button on the tab bar, or the green button in the center of the home tab:s
 
-.. figure:: _static/use-the-mesh-importer/open-meshimporter.jpg
+.. figure:: _static/the-mesh-importer/open-meshimporter.jpg
     :width: 60%
 
     The mesh importer can be opened from the center of the home tab, the plus button, or the main menu.
@@ -39,7 +39,7 @@ The mesh importer is a separate UI from the main ``osim`` editor. It creates/man
 
 Once opened, you will be greeted with a new mesh importer scene, which will be used for the next few steps of this tutorial:
 
-.. figure:: _static/use-the-mesh-importer/opened-meshimporter.jpg
+.. figure:: _static/the-mesh-importer/opened-meshimporter.jpg
     :width: 60%
 
     The mesh importer, which initially loads with a blank scene that's ready for your masterpiece 🎨. The majority of this tutorial is carried out through the mesh importer.
@@ -90,10 +90,10 @@ Join the top pendulum to ground with a PinJoint
 
 The above steps set up all the bodies + joints in the model. You should have something that looks like this:
 
-.. figure:: _static/use-the-mesh-importer/afteraddingbodies.jpg
+.. figure:: _static/the-mesh-importer/afteraddingbodies.jpg
     :width: 60%
 
-    The pendulum model after its two bodies and two pin joints. (:download:`download model <_static/use-the-mesh-importer/after-adding-bodies-and-joints.osim>`)
+    The pendulum model after its two bodies and two pin joints. (:download:`download model <_static/the-mesh-importer/after-adding-bodies-and-joints.osim>`)
 
 
 Convert the scene to an osim (for testing)
@@ -108,10 +108,10 @@ To convert the mesh importer scene into an ``osim`` (for testing), you will need
 * **Save the model as an .osim**. After conversion, you can then save your model to disk and use external tooling (e.g. XML editors, OpenSim GUI) to further modify it.
 
 
-.. figure:: _static/use-the-mesh-importer/simulating-meshless-model.jpg
+.. figure:: _static/the-mesh-importer/simulating-meshless-model.jpg
     :width: 60%
 
-    Although the model hasn't been decorated yet, it can still be simulated and measured. The pendulum body frames should swing around like a pendulum (:download:`download model <_static/use-the-mesh-importer/after-adding-bodies-and-joints.osim>`)
+    Although the model hasn't been decorated yet, it can still be simulated and measured. The pendulum body frames should swing around like a pendulum (:download:`download model <_static/the-mesh-importer/after-adding-bodies-and-joints.osim>`)
 
 
 Add Decorative Geometry
@@ -138,10 +138,10 @@ Attach a cube mesh to ground (the ceiling)
 * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``). The easiest way to do this is to right-click the mesh and use ``Translate > To (select something)``.
 * Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
 
-.. figure:: _static/use-the-mesh-importer/after-adding-ceiling-mesh.jpg
+.. figure:: _static/the-mesh-importer/after-adding-ceiling-mesh.jpg
     :width: 60%
 
-    Mesh importer scene after adding ``ceiling_decoration``. It is red-tinted because it is attached to ground, rather than to a body (:download:`download model <_static/use-the-mesh-importer/after-adding-ceiling-mesh.osim>`).
+    Mesh importer scene after adding ``ceiling_decoration``. It is red-tinted because it is attached to ground, rather than to a body (:download:`download model <_static/the-mesh-importer/after-adding-ceiling-mesh.osim>`).
 
 
 Attach a cube mesh to the top pendulum
@@ -152,10 +152,10 @@ Attach a cube mesh to the top pendulum
 * Rename it to ``pendulum_head_decoration``
 * Move (``G``), Rotate (``R``), or Scale (``S``) the mesh however you like (recommended: leave it as-is) by either using the in-UI draggable gizmos or typing values into the context menu.
 
-.. figure:: _static/use-the-mesh-importer/after-adding-top-pendulum-mesh.jpg
+.. figure:: _static/the-mesh-importer/after-adding-top-pendulum-mesh.jpg
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_decoration`` to ``pendulum_head`` (:download:`download model <_static/use-the-mesh-importer/after-adding-top-pendulum-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_decoration`` to ``pendulum_head`` (:download:`download model <_static/the-mesh-importer/after-adding-top-pendulum-mesh.osim>`).
 
 
 Attach a cube mesh to the bottom pendulum
@@ -163,10 +163,10 @@ Attach a cube mesh to the bottom pendulum
 
 * As above, but right-click the bottom pendulum body (``pendulum_head_2``) and name it ``pendulum_head_2_decoration``.
 
-.. figure:: _static/use-the-mesh-importer/after-adding-bottom-pendulum-mesh.jpg
+.. figure:: _static/the-mesh-importer/after-adding-bottom-pendulum-mesh.jpg
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_2_decoration`` to ``pendulum_head_2`` (:download:`download model <_static/use-the-mesh-importer/after-adding-bottom-pendulum-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_2_decoration`` to ``pendulum_head_2`` (:download:`download model <_static/the-mesh-importer/after-adding-bottom-pendulum-mesh.osim>`).
 
 
 Attach a cube mesh between the top pendulum and the ceiling (a strut)
@@ -188,10 +188,10 @@ Attach a cube mesh between the top pendulum and the ceiling (a strut)
 * Rename it to ``pendulum_head_strut_decoration``
 * Rescale (``S``) it to make a long, thin, pendulum strut (recommended: ``(0.2, 2.5, 0.2``)).
 
-.. figure:: _static/use-the-mesh-importer/after-adding-top-strut-mesh.jpg
+.. figure:: _static/the-mesh-importer/after-adding-top-strut-mesh.jpg
     :width: 60%
 
-    Mesh importer scene after adding ``pendulum_head_strut_decoration`` between ``pendulum_head`` and ``pendulum_head_to_ground`` (:download:`download model <_static/use-the-mesh-importer/after-adding-top-strut-mesh.osim>`).
+    Mesh importer scene after adding ``pendulum_head_strut_decoration`` between ``pendulum_head`` and ``pendulum_head_to_ground`` (:download:`download model <_static/the-mesh-importer/after-adding-top-strut-mesh.osim>`).
 
 
 Attach a cube mesh between the bottom and top pendulums
@@ -204,10 +204,10 @@ Attach a cube mesh between the bottom and top pendulums
 This should result in a fully-decorated pendulum model:
 
 
-.. figure:: _static/use-the-mesh-importer/result.jpg
+.. figure:: _static/the-mesh-importer/result.jpg
     :width: 60%
 
-    The model after decorating it with some cube meshes. Functionally, this model is the same as the undecorated one; however, it now looks *a lot* more like a pendulum 😎. (:download:`download model <_static/use-the-mesh-importer/final-model.osim>`)
+    The model after decorating it with some cube meshes. Functionally, this model is the same as the undecorated one; however, it now looks *a lot* more like a pendulum 😎. (:download:`download model <_static/the-mesh-importer/final-model.osim>`)
 
 
 Export and Simulate
@@ -221,10 +221,10 @@ Now that we have created a fully modelled and decorated pendulum, we can export 
 * **Simulate the model**. Press ``Ctrl+R`` (run simulation) to start running a forward-dynamic simulation. This should show the pendulum swinging.
 * **View outputs**. Ensure the ``Outputs`` panel is showing (``Window > Outputs`` should be enabled). The requested output (magnitude of ``linear velocity``) should show a basic data plot of a pendulum head's linear velocity.
 
-.. figure:: _static/use-the-mesh-importer/final-simulation.jpg
+.. figure:: _static/the-mesh-importer/final-simulation.jpg
     :width: 60%
 
-    A basic forward-dynamic simulation of the model can be ran through the UI by tilting the pendulum slightly and running a simulation. Output plots can be used to get basic information out of the model. (:download:`download model <_static/use-the-mesh-importer/final-model.osim>`)
+    A basic forward-dynamic simulation of the model can be ran through the UI by tilting the pendulum slightly and running a simulation. Output plots can be used to get basic information out of the model. (:download:`download model <_static/the-mesh-importer/final-model.osim>`)
 
 *Et voilà*, you have created a functioning OpenSim model by mostly using the free-form mesh importer and got some useful data out of it 🎉. You're getting good at this.
 
@@ -244,4 +244,4 @@ Next Steps
 
 This tutorial mostly focused on using the mesh importer to accelerate the earliest parts of the model building process. The benefit of knowing this approach in addition to the approaches covered in :doc:`make-a-pendulum` and :doc:`make-a-bouncing-block` is that it's easier to place/rotate bodies/joints in the mesh importer.
 
-Now that we've introduced OpenSim Creator's general toolset (specifically, the mesh importer, ``osim`` editor, and simulator), we are going to start increasing the complexity of the models we work on. :doc:`make-an-arm` focuses on using the techniques we've covered to build something more complex.
+Now that we've introduced OpenSim Creator's general toolset (specifically, the mesh importer, ``osim`` editor, and simulator), we are going to start increasing the complexity of the models we work on. :doc:`the-mesh-importer-advanced` focuses on using the techniques we've covered to build something more complex.

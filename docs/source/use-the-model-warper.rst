@@ -32,7 +32,7 @@ scaling possible.
     a source/reference/template OpenSim model (left) into a new model (right).
     In this case, the warping relationship is possible because there are
     corresponding landmarks available for all meshes in both the source and
-    target (which were placed as described in :doc:`use-the-mesh-warper`). Those landmarks
+    target (which were placed as described in :doc:`the-mesh-warper`). Those landmarks
     enable the non-uniform scaling shown above (e.g. the scapula has a
     different size *and* shape).
 
@@ -47,7 +47,7 @@ Prerequisites
 
 * **A basic understanding of the Thin-Plate Spline (TPS) technique**. The model
   warper applies the TPS technique to multiple components in the source model.
-  Therefore, it's recommended that you have already gone through :doc:`use-the-mesh-warper`, which
+  Therefore, it's recommended that you have already gone through :doc:`the-mesh-warper`, which
   outlines pairing landmarks between two corresponding meshes as inputs for the
   TPS technique.
 
@@ -96,7 +96,7 @@ components might suit uniform scaling, while other components might suit
 non-uniform warping. The flexibility of model warping, combined with OpenSim's
 inherent flexibility (many different components, wrapping, custom joints, etc.),
 makes model warping more complicated than mesh warping (as described
-in :doc:`use-the-mesh-warper`).
+in :doc:`the-mesh-warper`).
 
 .. figure:: _static/use-the-model-warper/model-warping-dependencies-example.svg
   :width: 80%
@@ -208,7 +208,7 @@ Walkthrough: Warping a One-Mesh Model
 
 The next step up in complexity from the trivial case (an empty model) is a model
 containing a mesh that's directly connected to ground (origin). This roughly
-mirrors what's seen when using the mesh warper (see :doc:`use-the-mesh-warper`).
+mirrors what's seen when using the mesh warper (see :doc:`the-mesh-warper`).
 
 To do this, we're going to first create the model and try to load it into the
 model warping UI. We'll then deal with any issues that the model warping UI

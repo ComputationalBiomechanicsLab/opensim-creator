@@ -51,9 +51,9 @@ Table of Contents
 
    make-a-pendulum
    make-a-bouncing-block
-   use-the-mesh-importer
-   make-an-arm
-   use-the-mesh-warper
+   the-mesh-importer
+   the-mesh-importer-advanced
+   the-mesh-warper
    preview-experimental-data
 
 .. toctree::
