@@ -31,7 +31,7 @@ Getting Started
 
 * **Explore the UI**. You'll probably want to initially explore and experiment with the UI by loading some of the example files, which are shown on OpenSim Creator's splash screen. We recommend ``double_pendulum.osim`` if you want something basic, or ``ToyDropLanding.osim`` if you want something "meatier".
 
-* **Work through the tutorials**. Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start 📖 :ref:`tut1`.
+* **Work through the tutorials**. Once you feel comfortable with the basics (opening/creating files, moving around the UI), then you are ready to start 📖 :doc:`make-a-pendulum`.
 
 
 Table of Contents
@@ -49,17 +49,17 @@ Table of Contents
    :caption: Tutorials
    :numbered:
 
-   tut1
-   tut2
-   tut3
-   tut4
-   tut5
-   tut6
-   tut7
+   make-a-pendulum
+   make-a-bouncing-block
+   use-the-mesh-importer
+   make-an-arm
+   use-the-mesh-warper
+   use-the-model-warper
+   preview-experimental-data
 
 .. toctree::
    :maxdepth: 2
-   :caption: Development
+   :caption: C++ Development
    :numbered:
 
    building-from-source

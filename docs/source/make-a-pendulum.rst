@@ -1,14 +1,12 @@
-.. _tut1:
-
 Make a Pendulum
 ===============
 
 In this first tutorial, we will be making a conventional pendulum using OpenSim Creator:
 
-.. figure:: _static/tut1_appearanceformatted.jpg
+.. figure:: _static/make-a-pendulum/appearanceformatted.jpg
     :width: 60%
 
-    The pendulum created by this tutorial. Although OpenSim is commonly associated with biomechanical simulations, it can also be used to simulate "conventional" rigid-body models (:download:`download model <_static/tut1_final-model.osim>`).
+    The pendulum created by this tutorial. Although OpenSim is commonly associated with biomechanical simulations, it can also be used to simulate "conventional" rigid-body models (:download:`download model <_static/make-a-pendulum/final-model.osim>`).
 
 OpenSim is based on `Simbody`_, a physics library for science- and engineering-quality simulations of articulated mechanisms. This means that OpenSim Creator can be used to simulate things like pendulums, robots, and biomechanical systems. This tutorial focuses on creating a pendulum--one of the simplest physical systems--because it introduces core concepts that are common to all kinds of models.
 
@@ -31,7 +29,7 @@ Create a New Model
 
 In OpenSim Creator, create a new model. You can create a new model by clicking "New Model" in the home screen, or pressing ``Ctrl+N``. It should create a blank model that looks like this:
 
-.. figure:: _static/tut1_blankscene.jpg
+.. figure:: _static/make-a-pendulum/blankscene.jpg
     :width: 60%
 
     A blank OpenSim model, with the ground frame shown in the middle. When shown, frames within a model are color-coded with red, green, and blue, which indicate :red:`X`, :green:`Y`, and :blue:`Z` respectively.
@@ -58,16 +56,16 @@ A dialog should pop up that prompts you to fill in the body's details. Create a 
     To use the ``Brick`` analytic geometry, use the ``Generated Geometry`` dropdown when selecting the geometry. This is better than
     using a mesh file (e.g. ``brick.vtp``) because the resulting model will not be dependent on the existence of the mesh file.
 
-.. figure:: _static/tut1_addbodymodal.jpg
+.. figure:: _static/make-a-pendulum/addbodymodal.jpg
 
     Body properties for ``pendulum_base``. **Note**: Make sure to use the same parameters, and to also attach a ``Brick`` generated geometry (highlighted).
 
 After adding ``pendulum_base``, you should now see a cube in the 3D viewer. The cube is a decorative ``Brick`` geometry that you attached in the popup:
 
-.. figure:: _static/tut1_firstbodyadded.jpg
+.. figure:: _static/make-a-pendulum/firstbodyadded.jpg
     :width: 60%
 
-    The scene after adding ``pendulum_base`` into the scene with a ``Brick`` as its attached geometry. Although OpenSim models bodies as points, many OpenSim models also attach 3D geometry to the bodies to make the model to make it easier to visualize (:download:`download model <_static/tut1_firstbodyadded.osim>`).
+    The scene after adding ``pendulum_base`` into the scene with a ``Brick`` as its attached geometry. Although OpenSim models bodies as points, many OpenSim models also attach 3D geometry to the bodies to make the model to make it easier to visualize (:download:`download model <_static/make-a-pendulum/firstbodyadded.osim>`).
 
 When we made ``pendulum_base``, we ticked the ``add offset frames`` checkbox. Adding a body like this added **four** components into the model:
 
@@ -80,7 +78,7 @@ The body was added because we asked for it. The offset frames were added because
 
 The reason we add joints is because bodies must be connected in a **model topology** to each other. That topology must ultimately connect to **ground**. This is because building an OpenSim model ultimately involves building a `Kinematic Chain`_ that the simulator (`Simbody`_) understands.
 
-.. figure:: _static/tut1_firstbody_topology.svg
+.. figure:: _static/make-a-pendulum/firstbody_topology.svg
     :width: 25%
 
     The logical topology of the model after adding ``pendulum_base`` into the scene. This topology dictates the relative coordinates and physical dynamics of those elements in the model. Here, ``pendulum_base`` is attached to ``ground`` via a ``WeldJoint``. A ``WeldJoint`` has no degrees of freedom, so ``pendulum_base`` is effectively "anchored" in the scene.
@@ -117,10 +115,10 @@ To move ``pendulum_base`` away from the ground, take the following steps:
 
 This will move the ``ground_offset`` frame +1 in Y (in ``ground``'s reference frame). Because ``ground``'s reference frame is the same as the world's Y, it will move ``ground_offset`` vertically upwards. This has the effect of *also* moving ``pendulum_base`` upwards because it's attached to ``ground_offset`` via the joint:
 
-.. figure:: _static/tut1_firstbodymoved.jpg
+.. figure:: _static/make-a-pendulum/firstbodymoved.jpg
     :width: 60%
 
-    Edit ``ground_offset``'s ``translation`` Y value to move the ``pendulum_base`` away from ground in the scene. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`download model <_static/tut1_firstbodymoved.osim>`).
+    Edit ``ground_offset``'s ``translation`` Y value to move the ``pendulum_base`` away from ground in the scene. Changing it also changed where ``pendulum_base`` is in the scene because of the topographical relationship between ``pendulum_base`` and ``ground_offset`` (:download:`download model <_static/make-a-pendulum/firstbodymoved.osim>`).
 
 .. note::
 
@@ -136,7 +134,7 @@ In the previous step, we created ``pendulum_base``, which is a body that is "wel
 
 In the UI, add another body. Create it with the following details:
 
-.. figure:: _static/tut1_addpendulumhead.jpg
+.. figure:: _static/make-a-pendulum/addpendulumhead.jpg
 
     ``pendulum_head``'s' body properties. **Note**: Make sure ``join to`` is set to ``pendulum_base`` and to also attach a ``Sphere`` generated geometry so the body so that you can see it in the visualizer.
 
@@ -146,7 +144,7 @@ In the UI, add another body. Create it with the following details:
 Next, we need to move ``pendulum_head`` such that it is below ``pendulum_base`` in the scene. It's best to keep the model's topology in mind when doing this. After adding ``pendulum_head``, the new model graph looks something like this:
 
 
-.. figure:: _static/tut1_secondbody_topology.svg
+.. figure:: _static/make-a-pendulum/secondbody_topology.svg
     :width: 25%
 
     Topology of the model after adding the ``pendulum_head`` body (and associated joint and offset frames).
@@ -162,10 +160,10 @@ To change the offset between the pendulum head and the ``PinJoint`` it swings on
 
 After setting ``pendulum_head_offset``'s ``translation`` to ``(0.0, 0.5, 0.0)``, you should be able to see the pendulum head floating below the ``pendulum_base``:
 
-.. figure:: _static/tut1_secondbodymoved.jpg
+.. figure:: _static/make-a-pendulum/secondbodymoved.jpg
     :width: 60%
 
-    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`download model <_static/tut1_secondbodymoved.osim>`).
+    How the scene should look after adding ``pendulum_head`` (a ``Body``) and setting ``pendulum_head_offset``'s ``translation`` property to ``(0.0, 0.5, 0.0)``. The sphere is the decoration for ``pendulum_head`` and the cube is the decoration for ``pendulum_base`` (:download:`download model <_static/make-a-pendulum/secondbodymoved.osim>`).
 
 .. note::
 
@@ -194,16 +192,16 @@ To change the ``rx`` coordinate of ``pendulum_head_to_pendulum_base``:
 
 After changing ``rz``, the pendulum head should be rotated slightly:
 
-.. figure:: _static/tut1_pendulumheadjointrxchanged.jpg
+.. figure:: _static/make-a-pendulum/pendulumheadjointrxchanged.jpg
     :width: 60%
 
-    The pendulum after modifying the ``PinJoint``'s ``rz`` ``default_value``. By modifying the coordinate value, we are changing the angle between ``pendulum_base_offset`` and ``pendulum_head_offset`` (the parent + child of the ``PinJoint``). Because ``pendulum_head`` is attached to ``pendulum_head_offset``, this has the overall effect of moving the ``pendulum_head`` (:download:`download model <_static/tut1_pendulumheadjointrxchanged.osim>`).
+    The pendulum after modifying the ``PinJoint``'s ``rz`` ``default_value``. By modifying the coordinate value, we are changing the angle between ``pendulum_base_offset`` and ``pendulum_head_offset`` (the parent + child of the ``PinJoint``). Because ``pendulum_head`` is attached to ``pendulum_head_offset``, this has the overall effect of moving the ``pendulum_head`` (:download:`download model <_static/make-a-pendulum/pendulumheadjointrxchanged.osim>`).
 
 
 Simulate the Model
 ------------------
 
-.. figure:: _static/tut1_startsimulating.jpg
+.. figure:: _static/make-a-pendulum/startsimulating.jpg
     :width: 60%
 
     Pressing the green ``Simulate`` button (or ``Ctrl+R``) will start a forward-dynamic simulation of your model.
@@ -260,16 +258,16 @@ Finally--and this is the hardest part--we need to add a ``Cylinder`` between the
 
 Once you've done that, you should end up with a more convincing-looking pendulum:
 
-.. figure:: _static/tut1_appearanceformatted.jpg
+.. figure:: _static/make-a-pendulum/appearanceformatted.jpg
     :width: 60%
 
-    Final pendulum model after updating the appearance (:download:`download model <_static/tut1_final-model.osim>`).
+    Final pendulum model after updating the appearance (:download:`download model <_static/make-a-pendulum/final-model.osim>`).
 
 
 (Optional) Extra Exercises
 --------------------------
 
-* **Make a double pendulum**. Using similar steps to the ones above, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :ref:`tut3`.
+* **Make a double pendulum**. Using similar steps to the ones above, create a second pendulum head that attaches to ``pendulum_head`` rather than ``pendulum_base``. This will create a double pendulum. An alternative solution to this exercise is covered in :doc:`use-the-mesh-importer`.
 
 * **Open the pendulum in the official OpenSim GUI**. Save your pendulum to an ``.osim`` file and open it in the official `OpenSim GUI`_. This will give you the chance to view your model in other software, which might give you extra modelling options (e.g. different plotting tools, more functionality).
 

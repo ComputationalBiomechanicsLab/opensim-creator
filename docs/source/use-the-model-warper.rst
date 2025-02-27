@@ -1,6 +1,3 @@
-.. _tut6:
-
-
 🪄 Use the Model Warper
 =======================
 
@@ -28,14 +25,14 @@ compared to standard scaling, is that it makes non-uniform, subject-specific
 scaling possible.
 
 .. _model-warper-ui:
-.. figure:: _static/tut6_model-warper.jpg
+.. figure:: _static/use-the-model-warper/model-warper.jpg
     :width: 60%
 
     A screenshot of the model warping UI, showing how it can be used to warp
     a source/reference/template OpenSim model (left) into a new model (right).
     In this case, the warping relationship is possible because there are
     corresponding landmarks available for all meshes in both the source and
-    target (which were placed as described in :doc:`tut5`). Those landmarks
+    target (which were placed as described in :doc:`use-the-mesh-warper`). Those landmarks
     enable the non-uniform scaling shown above (e.g. the scapula has a
     different size *and* shape).
 
@@ -46,11 +43,11 @@ Prerequisites
 * **You can diagnose and work with OpenSim models**. This tutorial assumes that
   you're able to diagnose the models that go into, and come out of, the model
   warping UI. If you don't feel comfortable with working on OpenSim models, then
-  we recommend going through earlier tutorials (e.g. :doc:`tut1`, :doc:`tut2`).
+  we recommend going through earlier tutorials (e.g. :doc:`make-a-pendulum`, :doc:`make-a-bouncing-block`).
 
 * **A basic understanding of the Thin-Plate Spline (TPS) technique**. The model
   warper applies the TPS technique to multiple components in the source model.
-  Therefore, it's recommended that you have already gone through :doc:`tut5`, which
+  Therefore, it's recommended that you have already gone through :doc:`use-the-mesh-warper`, which
   outlines pairing landmarks between two corresponding meshes as inputs for the
   TPS technique.
 
@@ -99,9 +96,9 @@ components might suit uniform scaling, while other components might suit
 non-uniform warping. The flexibility of model warping, combined with OpenSim's
 inherent flexibility (many different components, wrapping, custom joints, etc.),
 makes model warping more complicated than mesh warping (as described
-in :doc:`tut5`).
+in :doc:`use-the-mesh-warper`).
 
-.. figure:: _static/tut6_model-warping-dependencies-example.svg
+.. figure:: _static/use-the-model-warper/model-warping-dependencies-example.svg
   :width: 80%
 
   An example directed graph that shows the dependencies used to create a warped model
@@ -155,7 +152,7 @@ Opening the Model Warping UI
 The model warping warping UI is an independent "workflow" UI that can be
 accessed from OpenSim Creator's splash screen:
 
-.. figure:: _static/tut6_open-model-warper-from-splash-screen.jpg
+.. figure:: _static/use-the-model-warper/open-model-warper-from-splash-screen.jpg
   :width: 80%
 
   A screenshot of OpenSim Creator's main splash screen. The model warping UI
@@ -170,7 +167,7 @@ After opening the model warping UI, you will be presented with a UI containing
 three panels (``Checklist``, ``Source Model``, and ``Result Model``) and a
 toolbar:
 
-.. figure:: _static/tut6_model-warper-ui-blank-model.jpg
+.. figure:: _static/use-the-model-warper/model-warper-ui-blank-model.jpg
   :width: 80%
 
   A screenshot of the model warping UI after opening it. It initially shows a
@@ -211,7 +208,7 @@ Walkthrough: Warping a One-Mesh Model
 
 The next step up in complexity from the trivial case (an empty model) is a model
 containing a mesh that's directly connected to ground (origin). This roughly
-mirrors what's seen when using the mesh warper (see :ref:`tut5`).
+mirrors what's seen when using the mesh warper (see :doc:`use-the-mesh-warper`).
 
 To do this, we're going to first create the model and try to load it into the
 model warping UI. We'll then deal with any issues that the model warping UI

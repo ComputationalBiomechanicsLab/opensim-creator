@@ -1,12 +1,9 @@
-.. _tut7:
-
-
 Preview Experimental Data
 =========================
 
 .. note::
 
-    **Previewing Experimental Data is a ⭐new⭐ feature.**
+    **Previewing Experimental Data is a new feature.**
 
     It should be safer to use than an 🪄experimental🪄 feature, but it still
     has some rough edges 🪨. If you think you've found a major bug, you should
@@ -19,7 +16,7 @@ visualize, validate, and connect experimental data to an OpenSim model. This
 is typically required when you have external experimental data that you want
 to use with an OpenSim solver.
 
-.. figure:: _static/tut7_preview-experimental-data-ui.jpeg
+.. figure:: _static/preview-experimental-data/preview-experimental-data-ui.jpeg
     :width: 60%
 
     A screenshot of the preview experimental data UI. Here, the ``subject01.osim``
@@ -65,7 +62,7 @@ Opening the Preview Experimental Data UI
 The preview experimental data UI is an independent "workflow" UI that can be
 accessed from OpenSim Creator's splash screen, in the ``Workflows`` section:
 
-.. figure:: _static/tut7_preview-experimental-data-from-splash.jpeg
+.. figure:: _static/preview-experimental-data/preview-experimental-data-from-splash.jpeg
     :width: 60%
 
     How to open the preview experimental data UI from the splash screen. It's
@@ -75,7 +72,7 @@ accessed from OpenSim Creator's splash screen, in the ``Workflows`` section:
 Preview Experimental Data UI Overview
 -------------------------------------
 
-.. figure:: _static/tut7_preview-experimental-data-ui.jpeg
+.. figure:: _static/preview-experimental-data/preview-experimental-data-ui.jpeg
     :width: 60%
 
     The preview experimental data UI. In its current (🪄 experimental) iteration,
@@ -127,7 +124,7 @@ Walkthrough: Markers to Motion
 In this section, we will go through a typical workflow that uses the preview
 experimental data UI.
 
-This walkthrough makes more sense if we use a little bit of 🧙‍♂️ **roleplay** to
+This walkthrough makes more sense if we use a little bit of 🧙 **roleplay** to
 explain each step's context. Imagine that you've already recorded some experimental
 data and have made/acquired ``subject01.osim``. You are now at the stage in your
 project where problems like loading/validating raw data and linking it to the
@@ -139,7 +136,7 @@ Download Raw Data and Models
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: you painstakingly collected this data from the lab, probably.
+  🧙 **Roleplay**: you painstakingly collected this data from the lab, probably.
 
 In this section, we will be using experimental data from the `OpenSim Models Repository`_.
 Specifically, the ``Gait10dof18musc``'s ``OutputReference`` data (`Gait10dof18musc Model Direct Link`_).
@@ -157,7 +154,7 @@ Load Raw Marker Data
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: you want to check the marker data before using it with
+  🧙 **Roleplay**: you want to check the marker data before using it with
   OpenSim's IK solver. Does it have reasonable locations, reasonable motion,
   and correct labels?
 
@@ -169,7 +166,7 @@ that, you will need to:
 
 Once loaded, it should look something like this:
 
-.. figure:: _static/tut7_walkthrough-after-marker-data-loaded.jpg
+.. figure:: _static/preview-experimental-data/walkthrough-after-marker-data-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading ``subject01_walk.trc``. The
@@ -197,7 +194,7 @@ Load IK Result
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: you were satisfied with the marker data and used it with OpenSim's
+  🧙 **Roleplay**: you were satisfied with the marker data and used it with OpenSim's
   IK solver in a process described `here <https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089741/Tutorial+3+-+Scaling+Inverse+Kinematics+and+Inverse+Dynamics>`_.
   You now want to inspect the IK result.
 
@@ -214,7 +211,7 @@ model + trajectory in the preview experimental data UI with the following steps:
 Once loaded, you should be able to see the raw marker data, your model, and its
 motion all overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-IK.jpg
+.. figure:: _static/preview-experimental-data/walkthrough-after-IK.jpg
     :width: 60%
 
     The preview experimental data UI after loading the raw marker data, the model,
@@ -227,7 +224,7 @@ Load Raw Ground Reaction Forces
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: your experiment also recorded ground reaction forces (GRFs) on
+  🧙 **Roleplay**: your experiment also recorded ground reaction forces (GRFs) on
   a force plate. You want to make sure that the GRFs are synchronized with the rest
   of the data and point in the right direction.
 
@@ -240,7 +237,7 @@ This step is identical to `Load Raw Marker Data`_ :
 Once loaded, you should be able to see the marker data, your model, the model's motion,
 and your GRF vectors overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-grfs-loaded.jpg
+.. figure:: _static/preview-experimental-data/walkthrough-after-grfs-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading the marker data, model, IK
@@ -256,7 +253,7 @@ Learn about ``ExternalLoads`` (optional)
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: you want to use the GRFs with OpenSim's Inverse Dynamics
+  🧙 **Roleplay**: you want to use the GRFs with OpenSim's Inverse Dynamics
   (ID) solver. However, OpenSim requires either an ``ExternalLoads`` XML file
   to link the GRFs to the model. You want to know what that means.
 
@@ -346,7 +343,7 @@ Associate an ``ExternalLoads`` to the Model
 
 .. note::
 
-  🧙‍♂️ **Roleplay**: you've written an ``ExternalLoads`` file for your GRFs and
+  🧙 **Roleplay**: you've written an ``ExternalLoads`` file for your GRFs and
   now you want to verify that it's correct before (e.g.) using it with OpenSim's
   Inverse Dynamics (ID) solver.
 
@@ -365,7 +362,7 @@ Once loaded, you should be able to see the marker data, your model, the model's
 motion, your raw GRF vectors, and the ``ExternalForces`` from the ``ExternalLoads``
 file overlaid:
 
-.. figure:: _static/tut7_walkthrough-after-externalloads-loaded.jpg
+.. figure:: _static/preview-experimental-data/walkthrough-after-externalloads-loaded.jpg
     :width: 60%
 
     The preview experimental data UI after loading the marker data, model, IK
@@ -412,7 +409,7 @@ we are trying to encourage are:
 - **Be Deliberate**: Don't just (e.g.) copy and paste an ``ExternalLoads`` file
   from the internet, or use a wizard, because it's required by a solver in the
   OpenSim GUI. Figure out *why* it's necessary and *what* it's doing. Read
-  through the file - they don't bite, much 🧛‍♀️.
+  through the file - they don't bite, much 🧛.
 
 If you follow those steps, we believe you'll find it easier to integrate
 experimental data with OpenSim models. 

@@ -1,12 +1,9 @@
-.. _tut5:
-
-
 Use the Mesh Warper
 ===================
 
 .. note::
 
-  **This documentation is ⭐new⭐.**
+  **This documentation is new.**
 
   If you find an error in this tutorial, or you feel that something is
   fundamentally missing, then post an issue at `OpenSimCreator Issues`_
@@ -17,14 +14,14 @@ landmark-driven mesh warping using the Thin-Plate Spline algorithm
 provides tooling for loading two meshes and creating landmark pairs between them:
 
 .. _cylinder-warp-example:
-.. figure:: _static/tut5_mesh-warper-screenshot.jpg
+.. figure:: _static/use-the-mesh-warper/mesh-warper-screenshot.jpg
     :width: 60%
 
     A screenshot of the mesh warping UI, which shows the source ("reference", left)
     destination ("target", middle) and result ("warped", right) meshes. Here, the
     warping quality is low. This is because of the low triangle and landmark count.
 
-.. figure:: _static/tut5_mesh-warper-organic-screenshot.jpg
+.. figure:: _static/use-the-mesh-warper/mesh-warper-organic-screenshot.jpg
     :width: 60%
 
     Same as :numref:`cylinder-warp-example`, but showing an example of warping a clavicle bone. This example has many paired (left-to-middle) landmarks in a
@@ -125,7 +122,7 @@ Opening the Mesh Warping UI
 The mesh warping UI is an independent "workflow" UI that can be accessed from
 OpenSim Creator's splash screen:
 
-.. figure:: _static/tut5_open-mesh-warper-from-splash-screen.jpg
+.. figure:: _static/use-the-mesh-warper/open-mesh-warper-from-splash-screen.jpg
     :width: 60%
 
     A screenshot of OpenSim Creator's main splash screen. The mesh warping UI
@@ -135,7 +132,7 @@ OpenSim Creator's splash screen:
 Mesh Warping UI Overview
 ------------------------
 
-.. figure:: _static/tut5_mesh-warper-organic-screenshot.jpg
+.. figure:: _static/use-the-mesh-warper/mesh-warper-organic-screenshot.jpg
     :width: 60%
 
     A screenshot of the mesh warping UI with two clavicle meshes (+landmarks) opened
@@ -199,7 +196,7 @@ warper.  **Due to privacy reasons, we cannot provide the raw  MRI scans. You
 should use your own mesh data for this section - the fact we're using a pelvis
 isn't significant for this tutorial.**
 
-.. figure:: _static/tut5_walkthrough-overview.jpg
+.. figure:: _static/use-the-mesh-warper/walkthrough-overview.jpg
     :width: 60%
 
     A screenshot of the mesh warping UI with the two pelvis meshes opened, followed
@@ -222,7 +219,7 @@ data for the source/destination into the mesh warping UI. To do that, we:
 3. Opened the destination mesh via the ``Import`` dropdown in the top-left of the
    ``Destination Mesh`` panel, which shown the destination mesh.
 
-.. figure:: _static/tut5_walkthrough-after-loading-meshes.jpg
+.. figure:: _static/use-the-mesh-warper/walkthrough-after-loading-meshes.jpg
     :width: 60%
 
     A screenshot of the mesh warping UI after the source and destination meshes
@@ -258,7 +255,7 @@ be incrementally applied to the source data, and  there's also an
 ``overlay destination mesh`` option, which helps with visually evaluating the
 fitting quality.
 
-.. figure:: _static/tut5_walkthrough-after-manually-placing-a-few-landmarks.jpg
+.. figure:: _static/use-the-mesh-warper/walkthrough-after-manually-placing-a-few-landmarks.jpg
     :width: 60%
 
     A screenshot of the mesh warping UI after the source and destination meshes
@@ -302,7 +299,7 @@ After doing so, the mesh warper UI should show the landmarks (below), if it
 doesn't, then try opening the ``Log`` panel through the ``Window`` menu and
 see if there's any useful error messages.
 
-.. figure:: _static/tut5_walkthrough-overview.jpg
+.. figure:: _static/use-the-mesh-warper/walkthrough-overview.jpg
     :width: 60%
 
     The mesh warping UI after loading two meshes and importing their associated
@@ -321,7 +318,7 @@ recommend are:
 * **Import/export** some data files/meshes to/from the UI. This will give you an
   idea of what the mesh warping UI can work with. For example, knowing the format
   of the landmark CSV files is useful for integrating the UI with scripts.
-* **Go to the next section**. :doc:`tut6`, covers using this techniques as part
+* **Go to the next section**. :doc:`use-the-model-warper`, covers using this techniques as part
   of warping an entire OpenSim model.
 
 
