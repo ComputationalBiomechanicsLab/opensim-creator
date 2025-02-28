@@ -5,6 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+(nothing yet)
+
+
+## [0.5.21] - 2025/02/28
+
 - Modal popups (e.g. add body, add component) now immediately pop up with no
   background fade-in, because the fade-in can be uneven when the UI is running
   in an event-driven mode.
