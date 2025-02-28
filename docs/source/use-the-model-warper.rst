@@ -1,5 +1,5 @@
-🪄 Use the Model Warper
-=======================
+Use the Model Warper
+====================
 
 .. warning::
 
