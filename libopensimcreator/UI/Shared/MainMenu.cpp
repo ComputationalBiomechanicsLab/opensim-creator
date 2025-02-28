@@ -171,7 +171,7 @@ void osc::MainMenuFileTab::onDraw(IModelStatePair* maybeModel)
     {
         Tab* parentTab = first_ancestor_of_type<Tab>();
         // HACK: `SplashTab` is the only not-closeable tab
-        const bool enabled = undoableModel and parentTab and not dynamic_cast<const SplashTab*>(parentTab);
+        const bool enabled = (undoableModel != nullptr) and (dynamic_cast<const SplashTab*>(parentTab) != nullptr);
         if (ui::draw_menu_item(OSC_ICON_TIMES " Close", KeyModifier::Ctrl | Key::W, false, enabled)) {
             App::post_event<CloseTabEvent>(*parentTab, parentTab->id());
         }

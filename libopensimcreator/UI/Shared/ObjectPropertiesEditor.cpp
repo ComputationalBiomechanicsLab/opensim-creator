@@ -1785,11 +1785,12 @@ private:
         if (inserted or (it->second and not it->second->isCompatibleWith(prop))) {
             // need to create a new editor because either it hasn't been made yet or the existing
             // editor is for a different type
+            auto accessor = MakePropertyAccessor(m_ObjectGetter, prop.getName());
             it->second = c_Registry.tryCreateEditor({
                 .parent = parent(),
                 .component = m_TargetComponent,
                 .objectAccessor = m_ObjectGetter,
-                .propertyAccessor = MakePropertyAccessor(m_ObjectGetter, prop.getName()),
+                .propertyAccessor = std::move(accessor),
             });
         }
 

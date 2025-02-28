@@ -484,7 +484,7 @@ namespace osc
         ResourceStream go_load_resource(const ResourcePath&);
 
     private:
-        static int main_internal(const AppMetadata& metadata, std::function<std::unique_ptr<Screen>()> screen_ctor);
+        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor);
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path get_resource_filepath(const ResourcePath&) const;

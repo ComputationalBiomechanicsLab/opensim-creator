@@ -511,8 +511,8 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesAttachedGeometry)
     );
 
     // Attach geometry to the SDF
-    sdf.attachGeometry(new OpenSim::Sphere{2.5});
-    sdf.attachGeometry(new OpenSim::Ellipsoid{1.0, 2.0, 3.0});
+    sdf.attachGeometry(std::make_unique<OpenSim::Sphere>(2.5).release());
+    sdf.attachGeometry(std::make_unique<OpenSim::Ellipsoid>(1.0, 2.0, 3.0).release());
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
@@ -564,8 +564,8 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesCopiesWrapObjects)
     );
 
     // Add `OpenSim::WrapObject`s to the SDF
-    sdf.addWrapObject(new OpenSim::WrapSphere{});
-    sdf.addWrapObject(new OpenSim::WrapCylinder{});
+    sdf.addWrapObject(std::make_unique<OpenSim::WrapSphere>().release());
+    sdf.addWrapObject(std::make_unique<OpenSim::WrapCylinder>().release());
 
     // Finalize/initialize the model
     model.updModel().buildSystem();
@@ -614,8 +614,8 @@ TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
 
     // Add subcomponents to the SDF's component list (in this case, make it extra
     // hard by making them dependent on the SDF ;)).
-    sdf.addComponent(new OpenSim::Marker{"marker1", sdf, SimTK::Vec3(1.0, 0.0, 0.0)});
-    sdf.addComponent(new OpenSim::Marker{"marker2", sdf, SimTK::Vec3(0.0, 1.0, 0.0)});
+    sdf.addComponent(std::make_unique<OpenSim::Marker>("marker1", sdf, SimTK::Vec3(1.0, 0.0, 0.0)).release());
+    sdf.addComponent(std::make_unique<OpenSim::Marker>("marker2", sdf, SimTK::Vec3(0.0, 1.0, 0.0)).release());
 
     // Finalize/initialize the model
     model.updModel().buildSystem();

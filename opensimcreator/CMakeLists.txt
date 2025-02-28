@@ -5,8 +5,12 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Python 3.8 COMPONENTS Interpreter Development.Module Development.SABIModule REQUIRED)
 
 # use `nanobind` to map C++ types to the underlying python library
+set(OSC_OLD_CLANG_TIDY_VAL ${CMAKE_CXX_CLANG_TIDY})
+set(CMAKE_CXX_CLANG_TIDY ${OSC_OLD_CLANG_TIDY_VAL})
 set(NB_USE_SUBMODULE_DEPS OFF)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opensimcreator/nanobind)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opensimcreator/nanobind SYSTEM)
+set(CMAKE_CXX_CLANG_TIDY ${OSC_OLD_CLANG_TIDY_VAL})
+unset(OSC_OLD_CLANG_TIDY_VAL)
 
 # compile the C++ to a native module that the python (wrapping) code
 # can call into
@@ -17,7 +21,10 @@ nanobind_add_module(
     # sources
     opensimcreator/src/_opensimcreator_native.cpp
 )
-target_link_libraries(_opensimcreator_native PRIVATE OpenSimCreator)
+target_link_libraries(_opensimcreator_native
+PRIVATE
+    OpenSimCreator
+)
 
 # make the output module directly build into the source python package code,
 # so that test suites, developers, etc. can directly start using it (e.g. via

@@ -53,6 +53,7 @@ CCFLAGS="-fsanitize=address -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=addr
     -B osc-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DOSC_FORCE_ASSERTS_ENABLED=ON \
+    -DOSC_BUILD_PYTHON_BINDINGS=OFF \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install \
     -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install \
     -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY} \

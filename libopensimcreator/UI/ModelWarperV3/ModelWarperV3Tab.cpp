@@ -206,7 +206,7 @@ namespace
             Mesh mesh = ToOscMesh(model, state, inputMesh);
 
             // Figure out the transform between the input mesh and the landmarks frame
-            const Transform mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
+            const auto mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
 
             // Warp the verticies in-place.
             auto vertices = mesh.vertices();
@@ -256,7 +256,7 @@ namespace
                 x[2], y[2], z[2],
             };
             const SimTK::Rotation rotation{rotationMatrix};
-            const SimTK::Vec3 translation = to<SimTK::Vec3>(coefficients.a1);
+            const auto translation = to<SimTK::Vec3>(coefficients.a1);
             return SimTK::Transform{rotation, translation};
         }
     private:
@@ -977,12 +977,12 @@ namespace
             newFrame->updSocket("parent").setConnecteePath(oldParentFrame->getAbsolutePathString());
             resultModel.addComponent(newFrame);
 
-            auto* newMesh = new OpenSim::Mesh{};
+            auto newMesh = std::make_unique<OpenSim::Mesh>();
             newMesh->setName(existingMeshName);
             newMesh->set_scale_factors(newScaleFactors);
             newMesh->set_mesh_file(destinationMeshPath.string());
             newMesh->updSocket("frame").setConnecteePath(newFrame->getAbsolutePathString());
-            resultModel.addComponent(newMesh);
+            resultModel.addComponent(newMesh.release());
         }
     };
 
@@ -1555,7 +1555,7 @@ namespace
                 // Export `InMemoryMesh`es to disk (#1003)
                 for (const InMemoryMesh& mesh : scaled->getModel().getComponentList<InMemoryMesh>()) {
                     // Figure out output file name.
-                    const OpenSim::Mesh& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
+                    const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
                     const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
 
                     // Write warped mesh data to disk in an OBJ format.
@@ -1566,7 +1566,7 @@ namespace
                     }
 
                     // Overwrite the `InMemoryMesh` in `copy`
-                    InMemoryMesh& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
+                    auto& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
                     auto newMesh = std::make_unique<OpenSim::Mesh>();
                     newMesh->set_mesh_file(warpedMeshAbsPath.string());
                     OverwriteGeometry(*copy, copyMesh, std::move(newMesh));

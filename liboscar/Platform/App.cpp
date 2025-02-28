@@ -2045,7 +2045,7 @@ ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
     return impl_->load_resource(rp);
 }
 
-int osc::App::main_internal(const AppMetadata& metadata, std::function<std::unique_ptr<Screen>()> screen_ctor)
+int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor)
 {
     // If running via EMSCRIPTEN, then the engine (usually, browser) is
     // responsible for calling into each step of the render loop.

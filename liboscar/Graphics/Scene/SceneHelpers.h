@@ -136,7 +136,7 @@ namespace osc
     SceneRendererParams calc_standard_dark_scene_render_params(
         const PolarPerspectiveCamera&,
         AntiAliasingLevel,
-        Vec2 render_dims,
+        Vec2 render_virtual_pixel_dimensions,
         float render_device_pixel_ratio
     );
 

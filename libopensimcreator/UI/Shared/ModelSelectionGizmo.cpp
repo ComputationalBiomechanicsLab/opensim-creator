@@ -82,7 +82,7 @@ namespace
             const Mat4& projectionMatrix,
             const Rect& screenRect) const
         {
-            implDrawExtraOnUsingOverlays(drawList, viewMatrix, projectionMatrix, screenRect);
+            implDrawExtraOnUsingOverlays(std::move(drawList), viewMatrix, projectionMatrix, screenRect);
         }
     private:
         virtual ui::GizmoOperations implGetSupportedManipulationOps() const = 0;
@@ -90,7 +90,7 @@ namespace
         virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
         virtual void implOnSave() = 0;
         virtual void implDrawExtraOnUsingOverlays(
-            ui::DrawListView,
+            ui::DrawListView,  // NOLINT(performance-unnecessary-value-param)
             const Mat4&,
             const Mat4&,
             const Rect&) const

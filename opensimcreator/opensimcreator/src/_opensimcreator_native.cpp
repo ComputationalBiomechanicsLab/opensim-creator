@@ -7,6 +7,7 @@
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/unique_ptr.h>
 
 #include <concepts>
 #include <cstddef>
@@ -25,10 +26,14 @@ namespace
     requires std::is_trivially_constructible_v<T>
     nb::ndarray<T, nb::shape<static_cast<nb::ssize_t>(N)>, nb::device::cpu, nb::numpy> to_owned_numpy_array(const Vec<N, T>& vec)
     {
-        auto* dptr = new T[N];
-        std::uninitialized_copy_n(vec.data(), N, dptr);
-        nb::capsule owner{dptr, [](void* p) noexcept { delete[] static_cast<T*>(p); }};
-        return {dptr, {}, owner};
+        auto data = std::make_unique<T[]>(N);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+        std::uninitialized_copy_n(vec.data(), N, data.get());
+        auto* handle = data.get();
+        nb::capsule owner{data.release(), [](void* p) noexcept
+        {
+            delete[] static_cast<T*>(p);  // NOLINT(cppcoreguidelines-owning-memory)
+        }};
+        return {handle, {}, owner};
     }
 
     // Internal implementation details for `to_vec`.
@@ -88,7 +93,7 @@ namespace
         template<typename T, nb::ssize_t... NbExtents>
         std::array<size_t, sizeof...(NbExtents)> to_stdlib_strides(const nb::ndarray<T, nb::shape<NbExtents...>, nb::device::cpu>& ndary)
         {
-            std::array<size_t, sizeof...(NbExtents)> rv;
+            std::array<size_t, sizeof...(NbExtents)> rv{};
             for (size_t i = 0; i < sizeof...(NbExtents); ++i) {
                 rv[i] = static_cast<size_t>(ndary.stride(i));
             }
@@ -110,9 +115,9 @@ namespace
 
 namespace
 {
-    const TPSCoefficients3D<double>* calc_tps_coefficients(
-        nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu> source_landmarks,
-        nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu> destination_landmarks)
+    std::unique_ptr<TPSCoefficients3D<double>> calc_tps_coefficients(
+        const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& source_landmarks,
+        const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks)
     {
         OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
         OSC_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
@@ -121,12 +126,12 @@ namespace
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);
 
         // Solve the coefficients
-        return new TPSCoefficients3D<double>{TPSCalcCoefficients(source_landmarks_mdspan, destination_landmarks_mdspan)};
+        return std::make_unique<TPSCoefficients3D<double>>(TPSCalcCoefficients(source_landmarks_mdspan, destination_landmarks_mdspan));
     }
 
     nb::ndarray<double, nb::shape<3>, nb::device::cpu, nb::numpy> warp_point(
         const TPSCoefficients3D<double>& coefficients,
-        nb::ndarray<const double, nb::shape<3>, nb::device::cpu> python_vec3d)
+        const nb::ndarray<const double, nb::shape<3>, nb::device::cpu>& python_vec3d)
     {
         const Vec3d input = to_vec(python_vec3d);
         const Vec3d output = TPSWarpPoint(coefficients, input);
@@ -146,7 +151,7 @@ namespace
     }
 }
 
-NB_MODULE(_opensimcreator_native, m) {
+NB_MODULE(_opensimcreator_native, m) {  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables,misc-use-anonymous-namespace)
     // class: TPSCoefficients3D
     nb::class_<TPSCoefficients3D<double>>(m, "TPSCoefficients3D")
         .def("__repr__",
@@ -182,3 +187,4 @@ NB_MODULE(_opensimcreator_native, m) {
         "Pairs `source_landmarks` with `destination_landmarks` and uses the pairing to compute the Thin-Plate Spline (coefficients) of the pairing"
     );
 }
+
