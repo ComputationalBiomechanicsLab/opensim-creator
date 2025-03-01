@@ -7,10 +7,9 @@
 
 namespace osc
 {
-    // a pre-parsed tree path
+    // Represents a pre-parsed path to a node in a tree.
     //
-    // inspired by:
-    //
+    // See also:
     // - godot's `NodePath`
     // - OpenSim's `ComponentPath`
     class NodePath final {
