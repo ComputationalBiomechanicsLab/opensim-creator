@@ -1,7 +1,7 @@
 #version 330 core
 
 struct BaseLight {
-    vec3 Color;
+    vec4 Color;
     float AmbientIntensity;
     float DiffuseIntensity;
 };
@@ -47,7 +47,6 @@ uniform float gCascadeEndClipSpace[NUM_CASCADES];
 
 in vec4 LightSpacePos[NUM_CASCADES];
 in float ClipSpacePosZ;
-in vec2 TexCoord0;
 in vec3 Normal0;
 in vec3 WorldPos0;
 
@@ -83,21 +82,21 @@ vec4 CalcLightInternal(
     vec3 Normal,
     float ShadowFactor)
 {
-    vec4 AmbientColor = vec4(Light.Color * Light.AmbientIntensity, 1.0f);
+    vec4 AmbientColor = Light.Color * Light.AmbientIntensity;
     float DiffuseFactor = dot(Normal, -LightDirection);
 
     vec4 DiffuseColor  = vec4(0, 0, 0, 0);
     vec4 SpecularColor = vec4(0, 0, 0, 0);
 
     if (DiffuseFactor > 0) {
-        DiffuseColor = vec4(Light.Color * Light.DiffuseIntensity * DiffuseFactor, 1.0f);
+        DiffuseColor = Light.Color * Light.DiffuseIntensity * DiffuseFactor;
 
         vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);
         vec3 LightReflect = normalize(reflect(LightDirection, Normal));
         float SpecularFactor = dot(VertexToEye, LightReflect);
         if (SpecularFactor > 0) {
             SpecularFactor = pow(SpecularFactor, gSpecularPower);
-            SpecularColor = vec4(Light.Color, 1.0f) * gMatSpecularIntensity * SpecularFactor;
+            SpecularColor = Light.Color * gMatSpecularIntensity * SpecularFactor;
         }
     }
 
@@ -170,5 +169,5 @@ void main()
     }
 
     vec4 SampledColor = gObjectColor;
-    FragColor = SampledColor * TotalLight + CascadeIndicator;
+    FragColor = SampledColor * TotalLight;// + CascadeIndicator;
 }

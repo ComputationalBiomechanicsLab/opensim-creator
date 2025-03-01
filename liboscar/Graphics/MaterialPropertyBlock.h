@@ -125,6 +125,10 @@ namespace osc
         template<std::same_as<RenderTexture>> std::optional<RenderTexture> get(const StringName& property_name) const;
         template<std::same_as<RenderTexture>> void set(std::string_view property_name, const RenderTexture&);
         template<std::same_as<RenderTexture>> void set(const StringName& property_name, const RenderTexture&);
+        template<std::same_as<RenderTexture>> std::optional<std::span<const RenderTexture>> get_array(std::string_view property_name) const;
+        template<std::same_as<RenderTexture>> std::optional<std::span<const RenderTexture>> get_array(const StringName& property_name) const;
+        template<std::same_as<RenderTexture>> void set_array(std::string_view property_name, std::span<const RenderTexture>);
+        template<std::same_as<RenderTexture>> void set_array(const StringName& property_name, std::span<const RenderTexture>);
 
         template<std::same_as<Cubemap>> std::optional<Cubemap> get(std::string_view property_name) const;
         template<std::same_as<Cubemap>> std::optional<Cubemap> get(const StringName& property_name) const;

@@ -11,11 +11,13 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+namespace rgs = std::ranges;
 using namespace osc;
 using namespace osc::testing;
 
@@ -26,6 +28,11 @@ namespace
         Texture2D rv{Vec2i{2, 2}};
         rv.set_pixels(std::vector<Color>(4, Color::red()));
         return rv;
+    }
+
+    RenderTexture generate_render_texture()
+    {
+        return RenderTexture{};
     }
 }
 
@@ -242,6 +249,32 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockSetTextureOnMaterialCausesGetTe
     mpb.set<Texture2D>(key, texture);
 
     ASSERT_TRUE(mpb.get<Texture2D>(key));
+}
+
+TEST(MaterialPropertyBlock, set_RenderTexture_causes_get_RenderTexture_to_return_the_RenderTexture)
+{
+    MaterialPropertyBlock mpb;
+
+    const std::string key = "someKey";
+    const RenderTexture render_texture = generate_render_texture();
+
+    ASSERT_FALSE(mpb.get<RenderTexture>(key));
+    mpb.set(key, render_texture);
+    ASSERT_TRUE(mpb.get<RenderTexture>(key));
+}
+
+TEST(MaterialPropertyBlock, set_array_RenderTexture_causes_get_array_RenderTexture_to_return_same_sequence_of_RenderTextures)
+{
+    MaterialPropertyBlock mpb;
+
+    const std::string key = "someKey";
+    const std::vector<RenderTexture> render_textures = {generate_render_texture(), generate_render_texture()};
+
+    ASSERT_FALSE(mpb.get_array<RenderTexture>(key));
+    mpb.set_array(key, render_textures);
+    const auto rv = mpb.get_array<RenderTexture>(key);
+    ASSERT_TRUE(rv);
+    ASSERT_TRUE(rgs::equal(render_textures, *rv));
 }
 
 TEST(MaterialPropertyBlock, MaterialPropertyBlockSetSharedColorRenderBufferOnMaterialCausesGetRenderBufferToReturnTheRenderBuffer)

@@ -500,6 +500,7 @@ namespace
         bool,
         Texture2D,
         RenderTexture,
+        std::vector<RenderTexture>,
         Cubemap,
         SharedColorRenderBuffer,
         SharedDepthStencilRenderBuffer
@@ -507,7 +508,7 @@ namespace
 
     ShaderPropertyType get_shader_type(const MaterialValue& material_val)
     {
-        static_assert(std::variant_size_v<MaterialValue> == 18);
+        static_assert(std::variant_size_v<MaterialValue> == 19);
 
         switch (material_val.index()) {
         case variant_index<MaterialValue, Color>():
@@ -538,6 +539,14 @@ namespace
 
             static_assert(num_options<TextureDimensionality>() == 2);
             return std::get<RenderTexture>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
+                ShaderPropertyType::Sampler2D :
+                ShaderPropertyType::SamplerCube;
+        }
+        case variant_index<MaterialValue, std::vector<RenderTexture>>(): {
+
+            static_assert(num_options<TextureDimensionality>() == 2);
+            const auto& render_textures = std::get<std::vector<RenderTexture>>(material_val);
+            return render_textures.at(0).dimensionality() == TextureDimensionality::Tex2D ?
                 ShaderPropertyType::Sampler2D :
                 ShaderPropertyType::SamplerCube;
         }
@@ -3796,6 +3805,33 @@ void osc::MaterialPropertyBlock::set<RenderTexture>(const StringName& property_n
 }
 
 template<>
+std::optional<std::span<const RenderTexture>> osc::MaterialPropertyBlock::get_array<RenderTexture>(std::string_view property_name) const
+{
+    return impl_->get_array<RenderTexture>(property_name);
+}
+
+template<>
+std::optional<std::span<const RenderTexture>> osc::MaterialPropertyBlock::get_array<RenderTexture>(const StringName& property_name) const
+{
+    return impl_->get_array<RenderTexture>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<RenderTexture>(std::string_view property_name, std::span<const RenderTexture> values)
+{
+    OSC_ASSERT_ALWAYS(not values.empty() && "A RenderTexture array cannot be empty");
+    const TextureDimensionality dimensionality = values.front().dimensionality();
+    OSC_ASSERT_ALWAYS(rgs::all_of(values, [dimensionality](const TextureDimensionality d) { return d == dimensionality; }, &RenderTexture::dimensionality));
+    impl_.upd()->set_array(property_name, values);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<RenderTexture>(const StringName& property_name, std::span<const RenderTexture> values)
+{
+    impl_.upd()->set_array(property_name, values);
+}
+
+template<>
 std::optional<Cubemap> osc::MaterialPropertyBlock::get<Cubemap>(std::string_view property_name) const
 {
     return impl_->get<Cubemap>(property_name);
@@ -6711,7 +6747,7 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
         return;  // mismatched types
     }
 
-    static_assert(std::variant_size_v<MaterialValue> == 18);
+    static_assert(std::variant_size_v<MaterialValue> == 19);
 
     switch (material_value.index()) {
     case variant_index<MaterialValue, Color>():
@@ -6907,6 +6943,43 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
             },
         }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).impl_).get_color_render_buffer_data());
 
+        break;
+    }
+    case variant_index<MaterialValue, std::vector<RenderTexture>>():
+    {
+        static_assert(num_options<TextureDimensionality>() == 2);
+
+        const auto& vals = std::get<std::vector<RenderTexture>>(material_value);
+        const int32_t num_to_assign = min(shader_element.size, static_cast<int32_t>(vals.size()));
+
+        for (int32_t i = 0; i < num_to_assign; ++i) {
+            std::visit(Overload{
+                [&texture_slot, &shader_element, i](SingleSampledTexture& sst)
+                {
+                    gl::active_texture(GL_TEXTURE0 + texture_slot);
+                    gl::bind_texture(sst.texture2D);
+                    gl::UniformSampler2D u{shader_element.location + i};
+                    gl::set_uniform(u, texture_slot);
+                    ++texture_slot;
+                },
+                [&texture_slot, &shader_element, i](MultisampledRBOAndResolvedTexture& mst)
+                {
+                    gl::active_texture(GL_TEXTURE0 + texture_slot);
+                    gl::bind_texture(mst.single_sampled_texture2D);
+                    gl::UniformSampler2D u{shader_element.location + i};
+                    gl::set_uniform(u, texture_slot);
+                    ++texture_slot;
+                },
+                [&texture_slot, &shader_element, i](SingleSampledCubemap& cubemap)
+                {
+                    gl::active_texture(GL_TEXTURE0 + texture_slot);
+                    gl::bind_texture(cubemap.cubemap);
+                    gl::UniformSamplerCube u{shader_element.location + i};
+                    gl::set_uniform(u, texture_slot);
+                    ++texture_slot;
+                },
+            }, const_cast<RenderTexture::Impl&>(*vals[i].impl_).get_color_render_buffer_data());
+        }
         break;
     }
     case variant_index<MaterialValue, SharedColorRenderBuffer>():

@@ -84,6 +84,11 @@ namespace
         float n = quiet_nan_v<float>;
     };
 
+    // normalized means that 0.0 == near and 1.0 == far
+    //
+    // these planes are paired to figure out the near/far planes of each CSM's frustum
+    constexpr auto c_normalized_cascade_planes = std::to_array({0.0f, 10.0f/100.0f, 50.0f/100.0f, 100.0f/100.0f});
+
     // returns orthogonal projection information for each cascade
     std::vector<OrthogonalProjectionParameters> calculate_light_source_orthographic_projections(
         const Camera& camera,
@@ -93,11 +98,6 @@ namespace
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
         // - https://ogldev.org/www/tutorial49/tutorial49.html
-
-        // normalized means that 0.0 == near and 1.0 == far
-        //
-        // these planes are paired to figure out the near/far planes of each CSM's frustum
-        constexpr auto normalized_cascade_planes = std::to_array({ 0.0f, 1.0f/3.0f, 2.0f/3.0f, 3.0f/3.0f });
 
         // precompute transforms
         const Mat4 model_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction}, {0.0f, 1.0f, 0.0f});
@@ -113,10 +113,10 @@ namespace
 
         // calculate `OrthogonalProjectionParameters` for each cascade
         std::vector<OrthogonalProjectionParameters> rv;
-        rv.reserve(normalized_cascade_planes.size() - 1);
-        for (size_t i = 0; i < normalized_cascade_planes.size()-1; ++i) {
-            const float view_cascade_znear = lerp(view_znear, view_zfar, normalized_cascade_planes[i]);
-            const float view_cascade_zfar = lerp(view_znear, view_zfar, normalized_cascade_planes[i+1]);
+        rv.reserve(c_normalized_cascade_planes.size() - 1);
+        for (size_t i = 0; i < c_normalized_cascade_planes.size()-1; ++i) {
+            const float view_cascade_znear = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i]);
+            const float view_cascade_zfar = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i+1]);
 
             // imagine a triangle with a point where the viewer is (0,0,0 in view-space) and another
             // point thats (e.g.) znear away from the viewer: the FOV dictates the angle of the corner
@@ -272,13 +272,25 @@ private:
         csm_material_.set("gDirectionalLight.Base.Color", Color::white());
         csm_material_.set("gDirectionalLight.Base.AmbientIntensity", 0.5f);
         csm_material_.set("gDirectionalLight.Base.DiffuseIntensity", 0.9f);
-        csm_material_.set("gDirectionalLight.Base.Direction", Vec3{1.0f, -1.0f, 0.0f});
-        csm_material_.set("gObjectColor", Color::orange());
-        // csm_material_.set_array<RenderTexture>("gShadowMap", cascade_rasters_);  // TODO
+        csm_material_.set("gDirectionalLight.Base.Direction", normalize(Vec3{1.0f, -1.0f, 0.0f}));
+        csm_material_.set("gDirectionalLight.Direction", normalize(Vec3{1.0f, -1.0f, 0.0f}));
+        csm_material_.set("gObjectColor", Color::dark_grey());
+        csm_material_.set_array("gShadowMap", cascade_rasters_);
         csm_material_.set("gEyeWorldPos", user_camera_.position());
         csm_material_.set("gMatSpecularIntensity", 0.0f);
         csm_material_.set("gSpecularPower", 0.0f);
-        csm_material_.set_array<float>("gCascadeEndClipSpace", {{-0.333f, +0.333f, 1.0f}});  // TODO
+
+        // TODO: the clip-space maths feels a bit wrong compared to just doing it in NDC?
+        std::vector<float> ends;
+        ends.reserve(c_normalized_cascade_planes.size()-1);
+        for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
+            const auto [near, far] = user_camera_.clipping_planes();
+            const Vec4 pos = {0.0f, 0.0f, lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
+            const Mat4 proj = user_camera_.projection_matrix(aspect_ratio_of(ui::get_main_viewport_workspace_screenspace_rect()));
+            const float v = (proj * pos).z;
+            ends.push_back(-v);
+        }
+        csm_material_.set_array<float>("gCascadeEndClipSpace", ends);
 
         for (const auto& decoration : decorations_) {
             graphics::draw(decoration.mesh, decoration.transform, csm_material_, user_camera_);
