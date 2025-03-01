@@ -36,7 +36,10 @@ These are required for some parts of the release procedure:
 - [ ] Commit any fixes to CI and ensure CI passes
 - [ ] Tag+push the commit as a release
 - [ ] Rebase any currently-active feature branches to this commit (don't allow stale branches)
+- [ ] Bump OSC's version number in `CMakeLists.txt` (`project`) to `$VERSION+1-dev`
 - [ ] Download artifacts from the tagged commit CI build
+  - [ ] Also, create a source tarball with `./scripts/bundle_sources.sh $VERSION`
+  - [ ] Also, build a MacOS ARM64 build locally from the release and upload it
 - [ ] Clean-install artifacts on development machines, ensure they install as-expected
 - [ ] Unzip/rename any artifacts (see prev. releases)
 - [ ] Create new release on github from the tagged commit
