@@ -84,9 +84,8 @@ namespace
         float n = quiet_nan_v<float>;
     };
 
-    // normalized means that 0.0 == near and 1.0 == far
-    //
-    // these planes are paired to figure out the near/far planes of each CSM's frustum
+    // the distance of each plane (incl. the near place) as a normalized range [0.0f, 1.0f], where
+    // 0.0f means `znear` and 1.0f means `zfar`.
     constexpr auto c_normalized_cascade_planes = std::to_array({0.0f, 10.0f/100.0f, 50.0f/100.0f, 100.0f/100.0f});
 
     // returns orthogonal projection information for each cascade
@@ -141,23 +140,20 @@ namespace
             };
 
             // compute the bounds in light-space by projecting each corner into light-space and min-maxing
-            Vec3 light_bounds_min = transform_point(view_to_light, view_frustum_corners.front());
-            Vec3 light_bounds_max = light_bounds_min;
-            for (size_t corner = 1; corner < view_frustum_corners.size(); ++corner) {
-                const Vec3 lightCorner = transform_point(view_to_light, view_frustum_corners[corner]);
-                light_bounds_min = elementwise_min(light_bounds_min, lightCorner);
-                light_bounds_max = elementwise_max(light_bounds_max, lightCorner);
-            }
+            const AABB light_bounds = bounding_aabb_of(view_frustum_corners, [&view_to_light](const Vec3& frustum_corner)
+            {
+                return transform_point(view_to_light, frustum_corner);
+            });
 
             // then use those bounds to compute the orthogonal projection parameters of
             // the directional light
             rv.push_back(OrthogonalProjectionParameters{
-                .r = light_bounds_max.x,
-                .l = light_bounds_min.x,
-                .b = light_bounds_min.y,
-                .t = light_bounds_max.y,
-                .f = light_bounds_max.z,
-                .n = light_bounds_min.z,
+                .r = light_bounds.max.x,
+                .l = light_bounds.min.x,
+                .b = light_bounds.min.y,
+                .t = light_bounds.max.y,
+                .f = light_bounds.max.z,
+                .n = light_bounds.min.z,
             });
         }
         return rv;
