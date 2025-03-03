@@ -70,4 +70,5 @@ These are required for some parts of the release procedure:
   - [ ] Bluesky
   - [ ] SimTK
   - [ ] Reddit (occasionally)
-  - [ ] https://research-software-directory.org/
+  - [ ] https://research-software-directory.org/ (usually this is automatic)
+  - [ ] Threads
