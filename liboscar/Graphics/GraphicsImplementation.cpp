@@ -14,6 +14,9 @@
 #include <liboscar/Graphics/Detail/CPUDataType.h>
 #include <liboscar/Graphics/Detail/CPUImageFormat.h>
 #include <liboscar/Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h>
+#include <liboscar/Graphics/Detail/MaterialValueBaseTypes.h>
+#include <liboscar/Graphics/Detail/MaterialValueTraits.h>
+#include <liboscar/Graphics/Detail/MaterialValueTraitsLike.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeList.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
 #include <liboscar/Graphics/Detail/TextureFormatList.h>
@@ -77,6 +80,7 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/BoolLike.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/DefaultConstructOnCopy.h>
@@ -85,6 +89,7 @@
 #include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 #include <liboscar/Utils/TransparentStringHasher.h>
+#include <liboscar/Utils/Typelist.h>
 #include <liboscar/Utils/UID.h>
 
 #include <ankerl/unordered_dense.h>
@@ -114,9 +119,9 @@
 #include <variant>
 #include <vector>
 
+using namespace osc;
 using namespace osc::detail;
 using namespace osc::literals;
-using namespace osc;
 namespace rgs = std::ranges;
 
 namespace osc::sdl
@@ -478,98 +483,6 @@ namespace
     }
 }
 
-// material value storage
-//
-// materials can store a variety of stuff (colors, positions, offsets, textures, etc.). This
-// code defines how it's actually stored at runtime
-namespace
-{
-    using MaterialValue = std::variant<
-        Color,
-        std::vector<Color>,
-        float,
-        std::vector<float>,
-        Vec2,
-        Vec3,
-        std::vector<Vec3>,
-        Vec4,
-        Mat3,
-        Mat4,
-        std::vector<Mat4>,
-        int,
-        bool,
-        Texture2D,
-        RenderTexture,
-        std::vector<RenderTexture>,
-        Cubemap,
-        SharedColorRenderBuffer,
-        SharedDepthStencilRenderBuffer
-    >;
-
-    ShaderPropertyType get_shader_type(const MaterialValue& material_val)
-    {
-        static_assert(std::variant_size_v<MaterialValue> == 19);
-
-        switch (material_val.index()) {
-        case variant_index<MaterialValue, Color>():
-        case variant_index<MaterialValue, std::vector<Color>>():
-            return ShaderPropertyType::Vec4;
-        case variant_index<MaterialValue, Vec2>():
-            return ShaderPropertyType::Vec2;
-        case variant_index<MaterialValue, float>():
-        case variant_index<MaterialValue, std::vector<float>>():
-            return ShaderPropertyType::Float;
-        case variant_index<MaterialValue, Vec3>():
-        case variant_index<MaterialValue, std::vector<Vec3>>():
-            return ShaderPropertyType::Vec3;
-        case variant_index<MaterialValue, Vec4>():
-            return ShaderPropertyType::Vec4;
-        case variant_index<MaterialValue, Mat3>():
-            return ShaderPropertyType::Mat3;
-        case variant_index<MaterialValue, Mat4>():
-        case variant_index<MaterialValue, std::vector<Mat4>>():
-            return ShaderPropertyType::Mat4;
-        case variant_index<MaterialValue, int>():
-            return ShaderPropertyType::Int;
-        case variant_index<MaterialValue, bool>():
-            return ShaderPropertyType::Bool;
-        case variant_index<MaterialValue, Texture2D>():
-            return ShaderPropertyType::Sampler2D;
-        case variant_index<MaterialValue, RenderTexture>(): {
-
-            static_assert(num_options<TextureDimensionality>() == 2);
-            return std::get<RenderTexture>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
-                ShaderPropertyType::Sampler2D :
-                ShaderPropertyType::SamplerCube;
-        }
-        case variant_index<MaterialValue, std::vector<RenderTexture>>(): {
-
-            static_assert(num_options<TextureDimensionality>() == 2);
-            const auto& render_textures = std::get<std::vector<RenderTexture>>(material_val);
-            return render_textures.at(0).dimensionality() == TextureDimensionality::Tex2D ?
-                ShaderPropertyType::Sampler2D :
-                ShaderPropertyType::SamplerCube;
-        }
-        case variant_index<MaterialValue, Cubemap>():
-            return ShaderPropertyType::SamplerCube;
-        case variant_index<MaterialValue, SharedColorRenderBuffer>(): {
-            static_assert(num_options<TextureDimensionality>() == 2);
-            return std::get<SharedColorRenderBuffer>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
-                ShaderPropertyType::Sampler2D :
-                ShaderPropertyType::SamplerCube;
-        }
-        case variant_index<MaterialValue, SharedDepthStencilRenderBuffer>(): {
-            static_assert(num_options<TextureDimensionality>() == 2);
-            return std::get<SharedDepthStencilRenderBuffer>(material_val).dimensionality() == TextureDimensionality::Tex2D ?
-                ShaderPropertyType::Sampler2D :
-                ShaderPropertyType::SamplerCube;
-        }
-        default:
-            return ShaderPropertyType::Unknown;
-        }
-    }
-}
-
 // shader (backend stuff)
 namespace
 {
@@ -657,6 +570,12 @@ namespace
         TransparentStringHasher,
         std::equal_to<>
     >;
+
+    // Represents the state of the current render pass, which might need to be mutated
+    // during some steps of the pass.
+    struct OpenGLDrawBatchState {
+        int32_t texture_slot = 0;
+    };
 }
 
 namespace
@@ -982,167 +901,6 @@ namespace
         gl::ArrayBuffer<float, GL_STREAM_DRAW>& buffer;
         size_t stride = 0;
         size_t base_offset = 0;
-    };
-}
-
-namespace osc
-{
-    class GraphicsBackend final {
-    public:
-        // internal methods
-
-        static void bind_to_instanced_attributes(
-            const Shader::Impl&,
-            InstancingState&
-        );
-
-        static void unbind_from_instanced_attributes(
-            const Shader::Impl&,
-            InstancingState&
-        );
-
-        static std::optional<InstancingState> upload_instance_data(
-            std::span<const RenderObject>,
-            const Shader::Impl&
-        );
-
-        static void try_bind_material_value_to_shader_element(
-            const ShaderElement&,
-            const MaterialValue&,
-            int32_t& texture_slot
-        );
-
-        static void handle_batch_with_same_submesh(
-            std::span<const RenderObject>,
-            std::optional<InstancingState>& instancing_state
-        );
-
-        static void handle_batch_with_same_mesh(
-            std::span<const RenderObject>,
-            std::optional<InstancingState>& instancing_state
-        );
-
-        static void handle_batch_with_same_material_property_block(
-            std::span<const RenderObject>,
-            int32_t& texture_slot,
-            std::optional<InstancingState>& instancing_state
-        );
-
-        static void handle_batch_with_same_material(
-            const RenderPassState&,
-            std::span<const RenderObject>
-        );
-
-        static void draw_render_objects(
-            const RenderPassState&,
-            std::span<const RenderObject>
-        );
-
-        static void draw_batched_by_opaqueness(
-            const RenderPassState&,
-            std::span<const RenderObject>
-        );
-
-        struct ViewportGeometry final {
-            struct Viewport {
-                Vec2 bottom_left;
-                Vec2 dimensions;
-            } viewport;
-
-            struct Scissor {
-                Vec2 bottom_left;
-                Vec2 dimensions;
-            };
-            std::optional<Scissor> scissor;
-        };
-        static ViewportGeometry calc_viewport_geometry(
-            Camera::Impl&,
-            const RenderTarget* maybe_custom_render_target
-        );
-        static float setup_top_level_pipeline_state(
-            Camera::Impl&,
-            const RenderTarget* maybe_custom_render_target
-        );
-        static std::optional<gl::FrameBuffer> bind_and_clear_render_buffers(
-            Camera::Impl&,
-            const RenderTarget* maybe_custom_render_target
-        );
-        static void resolve_render_buffers(
-            const RenderTarget& maybe_custom_render_target
-        );
-        static void flush_render_queue(
-            Camera::Impl& camera,
-            float aspect_ratio
-        );
-        static void teardown_top_level_pipeline_state(
-            Camera::Impl&,
-            const RenderTarget* maybe_custom_render_target
-        );
-        static void render_camera_queue(
-            Camera::Impl& camera,
-            const RenderTarget* maybe_custom_render_target = nullptr
-        );
-
-
-        // public (forwarded) API
-
-        static void draw(
-            const Mesh&,
-            const Transform&,
-            const Material&,
-            Camera&,
-            const std::optional<MaterialPropertyBlock>&,
-            std::optional<size_t>
-        );
-
-        static void draw(
-            const Mesh&,
-            const Mat4&,
-            const Material&,
-            Camera&,
-            const std::optional<MaterialPropertyBlock>&,
-            std::optional<size_t>
-        );
-
-        static void blit(
-            const Texture2D&,
-            RenderTexture&
-        );
-
-        static void blit_to_screen(
-            const RenderTexture&,
-            const Rect&,
-            BlitFlags
-        );
-
-        static void blit_to_screen(
-            const RenderTexture&,
-            const Rect&,
-            const Material&,
-            BlitFlags
-        );
-
-        static void blit_to_screen(
-            const Texture2D&,
-            const Rect&
-        );
-
-        static void copy_texture(
-            const RenderTexture&,
-            Texture2D&
-        );
-
-        static void copy_texture(
-            const RenderTexture&,
-            Texture2D&,
-            CubemapFace
-        );
-
-        static void copy_texture(
-            const RenderTexture&,
-            Cubemap&,
-            size_t
-        );
     };
 }
 
@@ -2184,7 +1942,7 @@ namespace
 
     constexpr GLenum to_opengl_internal_color_format_enum(const DepthStencilRenderBufferParams& params)
     {
-        return detail::to_opengl_internal_color_format_enum(params.format);
+        return osc::detail::to_opengl_internal_color_format_enum(params.format);
     }
 
     constexpr CPUImageFormat equivalent_cpu_image_format_of(const ColorRenderBufferFormat& format)
@@ -3175,6 +2933,450 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
     return o;
 }
 
+// material value storage
+//
+// materials can store a variety of stuff (colors, positions, offsets, textures, etc.). This
+// code defines how it's actually stored at runtime
+namespace
+{
+    // Returns `true` if `MaterialValueTraits<T>` is defined for all material base types.
+    template<typename... MaterialValueBaseType>
+    constexpr bool material_value_traits_defined_for_all_base_material_types(Typelist<MaterialValueBaseType...>)
+    {
+        return (MaterialValueTraitsLike<MaterialValueTraits<MaterialValueBaseType>, MaterialValueBaseType> && ...);
+    }
+
+    static_assert(material_value_traits_defined_for_all_base_material_types(MaterialValueBaseTypes{}));
+
+    template<rgs::sized_range R>
+    GLsizei glsizei(const R& r)
+    {
+        return static_cast<GLsizei>(rgs::size(r));
+    }
+
+    // Forward declaration of a template that must be specialized for each material value
+    // base type that's supported by the OpenGL backend.
+    template<typename>
+    struct MaterialValueOpenGLTraits;
+
+    template<>
+    struct MaterialValueOpenGLTraits<Color> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Color> colors,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Vec4) == 4*sizeof(GLfloat) and alignof(Vec4) >= alignof(GLfloat));
+
+            if (colors.size() == 1) {
+                const Vec4 linear_color = to_linear_colorspace(colors.front());
+                gl::UniformVec4 u{shader_element.location};
+                gl::set_uniform(u, linear_color);
+            }
+            else {  // Array of `Color`s.
+                // CARE: assigning to uniform arrays should be done in one `glUniform` call
+                //
+                // although many guides on the internet say it's valid to assign each array
+                // element one-at-a-time by just calling the one-element version with `location + i`
+                // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
+                // unusually if assigning this way
+                //
+                // so, for safety's sake, always upload arrays in one `glUniform*` call
+
+                // CARE #2: colors should always be converted from sRGB-to-linear when passed to
+                // a shader. OSC's rendering pipeline assumes that all color values in a shader
+                // are linearized
+
+                std::vector<Vec4> linear_colors;
+                linear_colors.reserve(colors.size());
+                for (const auto& color : colors) {
+                    linear_colors.emplace_back(to_linear_colorspace(color));
+                }
+                glUniform4fv(shader_element.location, glsizei(colors), value_ptr(linear_colors.front()));
+            }
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<float> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const float> vals,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(float) == sizeof(GLfloat) and alignof(float) >= alignof(GLfloat));
+            glUniform1fv(shader_element.location, glsizei(vals), vals.data());
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Vec2> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Vec2> vecs,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Vec2) == 2*sizeof(GLfloat) and alignof(Vec2) >= alignof(GLfloat));
+            glUniform2fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Vec3> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Vec3> vecs,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Vec3) == 3*sizeof(GLfloat) and alignof(Vec3) >= alignof(GLfloat));
+            glUniform3fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Vec4> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Vec4> vecs,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Vec4) == 4*sizeof(GLfloat) and alignof(Vec4) >= alignof(GLfloat));
+            glUniform4fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Mat3> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Mat3> mats,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Mat3) == 9*sizeof(GLfloat) and alignof(Mat3) >= alignof(GLfloat));
+            glUniformMatrix3fv(shader_element.location, glsizei(mats), GL_FALSE, value_ptr(at(mats, 0)));
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Mat4> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Mat4> mats,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Mat4) == 16*sizeof(GLfloat) and alignof(Mat4) >= alignof(GLfloat));
+            glUniformMatrix4fv(shader_element.location, glsizei(mats), GL_FALSE, value_ptr(at(mats, 0)));
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<int> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const int> ints,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(int) == sizeof(GLint) and alignof(int) >= alignof(GLint));
+            glUniform1iv(shader_element.location, glsizei(ints), ints.data());
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<bool> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const bool> bools,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            if (bools.size() == 1) {
+                gl::UniformBool u{shader_element.location};
+                gl::set_uniform(u, bools.front());
+            }
+            else {
+                // `bool`s have to be converted into `int`s, which is all the shader supports
+                std::vector<GLint> ints;
+                ints.reserve(bools.size());
+                rgs::copy(bools, std::back_inserter(ints));
+                glUniform1iv(shader_element.location, glsizei(ints), ints.data());
+            }
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Texture2D> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Texture2D> textures,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState& batch_state)
+        {
+            // TODO: should upload texture ints as a single array call
+            for (const Texture2D& texture : textures) {
+                auto& texture_impl = const_cast<Texture2D::Impl&>(texture.impl());
+                const gl::Texture2D& opengl_texture = texture_impl.updTexture();
+
+                gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
+                gl::bind_texture(opengl_texture);
+                gl::UniformSampler2D u{shader_element.location};  // TODO has to set it as an array
+                gl::set_uniform(u, batch_state.texture_slot);
+
+                ++batch_state.texture_slot;
+            }
+        }
+    };
+
+    void bind_to_render_buffer_ogl_data(
+        const ShaderElement& shader_element,
+        OpenGLDrawBatchState& batch_state,
+        RenderBufferOpenGLData& rbodata)
+    {
+        static_assert(num_options<TextureDimensionality>() == 2);
+
+        std::visit(Overload{
+            [&batch_state, &shader_element](SingleSampledTexture& sst)
+            {
+                gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
+                gl::bind_texture(sst.texture2D);
+                gl::UniformSampler2D u{shader_element.location};  // TODO has to set it as an array
+                gl::set_uniform(u, batch_state.texture_slot);
+                ++batch_state.texture_slot;
+            },
+            [&batch_state, &shader_element](MultisampledRBOAndResolvedTexture& mst)
+            {
+                gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
+                gl::bind_texture(mst.single_sampled_texture2D);
+                gl::UniformSampler2D u{shader_element.location};  // TODO has to set it as an array
+                gl::set_uniform(u, batch_state.texture_slot);
+                ++batch_state.texture_slot;
+            },
+            [&batch_state, &shader_element](SingleSampledCubemap& cubemap)
+            {
+                gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
+                gl::bind_texture(cubemap.cubemap);
+                gl::UniformSamplerCube u{shader_element.location};  // TODO has to set it as an array
+                gl::set_uniform(u, batch_state.texture_slot);
+                ++batch_state.texture_slot;
+            },
+        }, rbodata);
+    }
+
+    template<>
+    struct MaterialValueOpenGLTraits<RenderTexture> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const RenderTexture> render_textures,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState& batch_state)
+        {
+            // TODO: should upload texture ints as a single array call
+            for (const RenderTexture& render_texture : render_textures) {
+                bind_to_render_buffer_ogl_data(
+                    shader_element,
+                    batch_state,
+                    const_cast<RenderTexture::Impl&>(render_texture.impl()).get_color_render_buffer_data()
+                );
+            }
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<Cubemap> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Cubemap> cubemaps,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState& batch_state)
+        {
+            // TODO: should upload texture ints as a single array call
+            for (const Cubemap& cubemap : cubemaps) {
+                auto& cubemap_impl = const_cast<Cubemap::Impl&>(cubemap.impl());
+                const gl::TextureCubemap& texture = cubemap_impl.upd_cubemap();
+
+                gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
+                gl::bind_texture(texture);
+                gl::UniformSamplerCube u{shader_element.location};  // TODO has to set it as an array
+                gl::set_uniform(u, batch_state.texture_slot);
+
+                ++batch_state.texture_slot;
+            }
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<SharedColorRenderBuffer> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const SharedColorRenderBuffer> shared_color_render_buffers,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState& batch_state)
+        {
+            // TODO: should upload texture ints as a single array call
+            for (const SharedColorRenderBuffer& shared_buffer : shared_color_render_buffers) {
+                bind_to_render_buffer_ogl_data(
+                    shader_element,
+                    batch_state,
+                    const_cast<SharedColorRenderBuffer::ColorRenderBuffer&>(shared_buffer.impl()).upd_opengl_data()
+                );
+            }
+        }
+    };
+
+    template<>
+    struct MaterialValueOpenGLTraits<SharedDepthStencilRenderBuffer> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const SharedDepthStencilRenderBuffer> shared_depth_stencil_render_buffers,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState& batch_state)
+        {
+            // TODO: should upload texture ints as a single array call
+            for (const SharedDepthStencilRenderBuffer& shared_buffer : shared_depth_stencil_render_buffers) {
+                bind_to_render_buffer_ogl_data(
+                    shader_element,
+                    batch_state,
+                    const_cast<SharedDepthStencilRenderBuffer::DepthStencilRenderBuffer&>(shared_buffer.impl()).upd_opengl_data()
+                );
+            }
+        }
+    };
+
+    // Represents how array material values are stored.
+    template<typename T>
+    struct MaterialValueArray final {
+        explicit MaterialValueArray(std::span<const T> values) :
+            data_{values.begin(), values.end()}
+        {}
+
+        friend bool operator==(const MaterialValueArray&, const MaterialValueArray&) = default;
+
+        const T* data() const
+        {
+            if constexpr (std::is_same_v<T, bool>) {
+                return cast_to_bool_ptr(data_.data());
+            }
+            else {
+                return data_.data();
+            }
+        }
+
+        size_t size() const { return data_.size(); }
+
+    private:
+        using stored_type = std::conditional_t<std::is_same_v<T, bool>, BoolLike, T>;
+        std::vector<stored_type> data_;
+    };
+
+    // Concrete storage for a `MaterialValueBaseType` that uses `MaterialValueTraits`
+    // to specialize parts of its implementation.
+    template<typename MaterialValueDataType>
+    class MaterialValueStorage {
+    public:
+        template<typename Value>
+        requires std::is_constructible_v<MaterialValueDataType, Value&&>
+        static MaterialValueStorage single(Value&& single_value)
+        {
+            return MaterialValueStorage{MaterialValueDataType{std::forward<Value>(single_value)}};
+        }
+
+        static MaterialValueStorage array(std::span<const MaterialValueDataType> array_values)
+        {
+            OSC_ASSERT_ALWAYS(not array_values.empty() && "an array of material values cannot be empty - you should `unset` the material property instead");
+            return MaterialValueStorage{MaterialValueArray<MaterialValueDataType>(array_values)};
+        }
+
+        friend bool operator==(const MaterialValueStorage&, const MaterialValueStorage&) = default;
+
+        ShaderPropertyType shader_property_type() const
+        {
+            return MaterialValueTraits<MaterialValueDataType>::shader_property_type(view_values());
+        }
+
+        std::span<const MaterialValueDataType> view_values(size_t max_els = std::numeric_limits<size_t>::max()) const
+        {
+            const auto all = std::visit(Overload{
+                [](const MaterialValueDataType& value) { return std::span{&value, 1}; },
+                [](const MaterialValueArray<MaterialValueDataType>& values) { return std::span{values.data(), values.size()}; }
+            }, data_);
+            const size_t num_to_assign = min(max_els, all.size());
+            return all.subspan(0, num_to_assign);
+        }
+
+    private:
+        explicit MaterialValueStorage(MaterialValueDataType&& value) :
+            data_{std::move(value)}
+        {}
+        explicit MaterialValueStorage(MaterialValueArray<MaterialValueDataType>&& values) :
+            data_{std::move(values)}
+        {}
+
+        std::variant<MaterialValueDataType, MaterialValueArray<MaterialValueDataType>> data_;
+    };
+
+    namespace detail
+    {
+        template<typename... BaseType>
+        static constexpr auto to_variant_of_material_value_storage(Typelist<BaseType...>) -> std::variant<MaterialValueStorage<BaseType>...>;
+    }
+
+    class MaterialValue {
+    public:
+        template<typename Value>
+        MaterialValue(Value&& value) :
+            data_{MaterialValueStorage<std::remove_cvref_t<Value>>::single(std::forward<Value>(value))}
+        {}
+
+        template<typename Value>
+        MaterialValue(std::span<const Value> array_values) :
+            data_{MaterialValueStorage<Value>::array(array_values)}
+        {}
+
+        friend bool operator==(const MaterialValue&, const MaterialValue&) = default;
+
+        ShaderPropertyType shader_property_type() const
+        {
+            return std::visit(Overload{
+                [](const auto& storage) { return storage.shader_property_type(); }
+            }, data_);
+        }
+
+        void bind_value_to_shader_element(const ShaderElement& shader_element, OpenGLDrawBatchState& batch_state) const
+        {
+            if (shader_property_type() != shader_element.shader_type) {
+                return;  // mismatched types
+            }
+
+            std::visit(Overload{
+                [&shader_element, &batch_state]<typename T>(const MaterialValueStorage<T>& storage)
+                {
+                    MaterialValueOpenGLTraits<T>::try_bind_material_value_to_shader_element(
+                        storage.view_values(static_cast<size_t>(shader_element.size)),
+                        shader_element,
+                        batch_state
+                    );
+                }
+            }, data_);
+        }
+
+        template<typename T>
+        std::optional<T> get_single_value_or_nullopt() const
+        {
+            const auto values = get_array_value_or_nullopt<T>();
+            if (not values or values->size() != 1) {
+                return std::nullopt;
+            }
+            return values->front();
+        }
+
+        template<typename T>
+        std::optional<std::span<const T>> get_array_value_or_nullopt() const
+        {
+            const auto* v = std::get_if<MaterialValueStorage<T>>(&data_);
+            if (not v) {
+                return std::nullopt;
+            }
+            return v->view_values();
+        }
+    private:
+        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
+        MaterialValueVariant data_;
+    };
+}
+
 namespace
 {
     GLenum to_opengl_depth_function_enum(DepthFunction depth_function)
@@ -3370,13 +3572,21 @@ public:
     template<typename T, std::convertible_to<std::string_view> StringLike>
     std::optional<T> get(StringLike&& property_name) const
     {
-        return get_value<T>(std::forward<StringLike>(property_name));
+        const auto it = values_.find(std::forward<StringLike>(property_name));
+        if (it == values_.end()) {
+            return std::nullopt;  // property doesn't exist in lookup
+        }
+        return it->second.template get_single_value_or_nullopt<T>();
     }
 
     template<typename T, std::convertible_to<std::string_view> StringLike>
     std::optional<std::span<const T>> get_array(StringLike&& property_name) const
     {
-        return get_value<std::vector<T>, std::span<const T>>(std::forward<StringLike>(property_name));
+        const auto it = values_.find(std::forward<StringLike>(property_name));
+        if (it == values_.end()) {
+            return std::nullopt;  // property doesn't exist in lookup
+        }
+        return it->second.template get_array_value_or_nullopt<T>();
     }
 
     template<typename T, std::convertible_to<std::string_view> StringLike>
@@ -3388,7 +3598,7 @@ public:
     template<typename T, std::convertible_to<std::string_view> StringLike>
     void set_array(StringLike&& property_name, std::span<const T> values)
     {
-        values_.insert_or_assign(std::forward<StringLike>(property_name), std::vector<T>(values.begin(), values.end()));
+        values_.insert_or_assign(std::forward<StringLike>(property_name), values);
     }
 
     template<std::convertible_to<std::string_view> StringLike>
@@ -3398,29 +3608,6 @@ public:
     }
 
 private:
-    template<typename T, typename TConverted = T, std::convertible_to<std::string_view> StringLike>
-    requires std::convertible_to<T, TConverted>
-    std::optional<TConverted> get_value(StringLike&& property_name) const
-    {
-        const auto it = values_.find(std::forward<StringLike>(property_name));
-
-        if (it == values_.end()) {
-            return std::nullopt;  // property doesn't exist in lookup
-        }
-
-        const T* v = std::get_if<T>(&it->second);
-        if (not v) {
-            return std::nullopt;  // property has a different type than requested
-        }
-
-        if constexpr (std::same_as<T, TConverted>) {
-            return *v;  // return with no conversion
-        }
-        else {
-            return TConverted{*v}; // convert and return
-        }
-    }
-
     friend class GraphicsBackend;
 
     FastStringHashtable<MaterialValue> values_;
@@ -5700,10 +5887,7 @@ public:
         return inverse(view_projection_matrix(aspect_ratio));
     }
 
-    void render_to_screen()
-    {
-        GraphicsBackend::render_camera_queue(*this);
-    }
+    void render_to_screen();
 
     void render_to(RenderTexture& render_texture)
     {
@@ -5757,10 +5941,7 @@ public:
         render_to(render_target);
     }
 
-    void render_to(const RenderTarget& render_target)
-    {
-        GraphicsBackend::render_camera_queue(*this, &render_target);
-    }
+    void render_to(const RenderTarget&);
 
     friend bool operator==(const Impl&, const Impl&) = default;
 
@@ -6451,6 +6632,177 @@ namespace
     std::unique_ptr<osc::GraphicsContext::Impl> g_graphics_context_impl = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 }
 
+namespace osc
+{
+    class GraphicsBackend final {
+    public:
+        // internal methods
+
+        static void bind_to_instanced_attributes(
+            const Shader::Impl&,
+            InstancingState&
+        );
+
+        static void unbind_from_instanced_attributes(
+            const Shader::Impl&,
+            InstancingState&
+        );
+
+        static std::optional<InstancingState> upload_instance_data(
+            std::span<const RenderObject>,
+            const Shader::Impl&
+        );
+
+        static void try_bind_material_value_to_shader_element(
+            const ShaderElement&,
+            const MaterialValue&,
+            OpenGLDrawBatchState&
+        );
+
+        static void handle_batch_with_same_submesh(
+            std::span<const RenderObject>,
+            std::optional<InstancingState>& instancing_state
+        );
+
+        static void handle_batch_with_same_mesh(
+            std::span<const RenderObject>,
+            std::optional<InstancingState>& instancing_state
+        );
+
+        static void handle_batch_with_same_material_property_block(
+            std::span<const RenderObject>,
+            OpenGLDrawBatchState&,
+            std::optional<InstancingState>& instancing_state
+        );
+
+        static void handle_batch_with_same_material(
+            const RenderPassState&,
+            std::span<const RenderObject>
+        );
+
+        static void draw_render_objects(
+            const RenderPassState&,
+            std::span<const RenderObject>
+        );
+
+        static void draw_batched_by_opaqueness(
+            const RenderPassState&,
+            std::span<const RenderObject>
+        );
+
+        struct ViewportGeometry final {
+            struct Viewport {
+                Vec2 bottom_left;
+                Vec2 dimensions;
+            } viewport;
+
+            struct Scissor {
+                Vec2 bottom_left;
+                Vec2 dimensions;
+            };
+            std::optional<Scissor> scissor;
+        };
+        static ViewportGeometry calc_viewport_geometry(
+            Camera::Impl&,
+            const RenderTarget* maybe_custom_render_target
+        );
+        static float setup_top_level_pipeline_state(
+            Camera::Impl&,
+            const RenderTarget* maybe_custom_render_target
+        );
+        static std::optional<gl::FrameBuffer> bind_and_clear_render_buffers(
+            Camera::Impl&,
+            const RenderTarget* maybe_custom_render_target
+        );
+        static void resolve_render_buffers(
+            const RenderTarget& maybe_custom_render_target
+        );
+        static void flush_render_queue(
+            Camera::Impl& camera,
+            float aspect_ratio
+        );
+        static void teardown_top_level_pipeline_state(
+            Camera::Impl&,
+            const RenderTarget* maybe_custom_render_target
+        );
+        static void render_camera_queue(
+            Camera::Impl& camera,
+            const RenderTarget* maybe_custom_render_target = nullptr
+        );
+
+
+        // public (forwarded) API
+
+        static void draw(
+            const Mesh&,
+            const Transform&,
+            const Material&,
+            Camera&,
+            const std::optional<MaterialPropertyBlock>&,
+            std::optional<size_t>
+        );
+
+        static void draw(
+            const Mesh&,
+            const Mat4&,
+            const Material&,
+            Camera&,
+            const std::optional<MaterialPropertyBlock>&,
+            std::optional<size_t>
+        );
+
+        static void blit(
+            const Texture2D&,
+            RenderTexture&
+        );
+
+        static void blit_to_screen(
+            const RenderTexture&,
+            const Rect&,
+            BlitFlags
+        );
+
+        static void blit_to_screen(
+            const RenderTexture&,
+            const Rect&,
+            const Material&,
+            BlitFlags
+        );
+
+        static void blit_to_screen(
+            const Texture2D&,
+            const Rect&
+        );
+
+        static void copy_texture(
+            const RenderTexture&,
+            Texture2D&
+        );
+
+        static void copy_texture(
+            const RenderTexture&,
+            Texture2D&,
+            CubemapFace
+        );
+
+        static void copy_texture(
+            const RenderTexture&,
+            Cubemap&,
+            size_t
+        );
+    };
+}
+
+void osc::Camera::Impl::render_to_screen()
+{
+    GraphicsBackend::render_camera_queue(*this);
+}
+
+void osc::Camera::Impl::render_to(const RenderTarget& render_target)
+{
+    GraphicsBackend::render_camera_queue(*this, &render_target);
+}
+
 osc::GraphicsContext::GraphicsContext(SDL_Window& window)
 {
     if (g_graphics_context_impl) {
@@ -6524,7 +6876,6 @@ std::string osc::GraphicsContext::backend_shading_language_version_string() cons
 {
     return g_graphics_context_impl->backend_shading_language_version_string();
 }
-
 
 void osc::graphics::draw(
     const Mesh& mesh,
@@ -6741,329 +7092,9 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
 void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
     const ShaderElement& shader_element,
     const MaterialValue& material_value,
-    int32_t& texture_slot)
+    OpenGLDrawBatchState& batch_state)
 {
-    if (get_shader_type(material_value) != shader_element.shader_type) {
-        return;  // mismatched types
-    }
-
-    static_assert(std::variant_size_v<MaterialValue> == 19);
-
-    switch (material_value.index()) {
-    case variant_index<MaterialValue, Color>():
-    {
-        // colors are converted from sRGB to linear when passed to
-        // the shader
-
-        const Vec4 linear_color = to_linear_colorspace(std::get<Color>(material_value));
-        gl::UniformVec4 u{shader_element.location};
-        gl::set_uniform(u, linear_color);
-        break;
-    }
-    case variant_index<MaterialValue, std::vector<Color>>():
-    {
-        const auto& colors = std::get<std::vector<Color>>(material_value);
-        const int32_t num_colors_to_assign = min(shader_element.size, static_cast<int32_t>(colors.size()));
-
-        if (num_colors_to_assign > 0)
-        {
-            // CARE: assigning to uniform arrays should be done in one `glUniform` call
-            //
-            // although many guides on the internet say it's valid to assign each array
-            // element one-at-a-time by just calling the one-element version with `location + i`
-            // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
-            // unusually if assigning this way
-            //
-            // so, for safety's sake, always upload arrays in one `glUniform*` call
-
-            // CARE #2: colors should always be converted from sRGB-to-linear when passed to
-            // a shader. OSC's rendering pipeline assumes that all color values in a shader
-            // are linearized
-
-            std::vector<Vec4> linear_colors;
-            linear_colors.reserve(num_colors_to_assign);
-            for (const auto& color : colors) {
-                linear_colors.emplace_back(to_linear_colorspace(color));
-            }
-            static_assert(sizeof(Vec4) == 4*sizeof(float));
-            static_assert(alignof(Vec4) <= alignof(float));
-            glUniform4fv(shader_element.location, num_colors_to_assign, value_ptr(linear_colors.front()));
-        }
-        break;
-    }
-    case variant_index<MaterialValue, float>():
-    {
-        gl::UniformFloat u{shader_element.location};
-        gl::set_uniform(u, std::get<float>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, std::vector<float>>():
-    {
-        const auto& vals = std::get<std::vector<float>>(material_value);
-        const int32_t num_to_assign = min(shader_element.size, static_cast<int32_t>(vals.size()));
-
-        if (num_to_assign > 0) {
-            // CARE: assigning to uniform arrays should be done in one `glUniform` call
-            //
-            // although many guides on the internet say it's valid to assign each array
-            // element one-at-a-time by just calling the one-element version with `location + i`
-            // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
-            // unusually if assigning this way
-            //
-            // so, for safety's sake, always upload arrays in one `glUniform*` call
-
-            glUniform1fv(shader_element.location, num_to_assign, vals.data());
-        }
-        break;
-    }
-    case variant_index<MaterialValue, Vec2>():
-    {
-        gl::UniformVec2 u{shader_element.location};
-        gl::set_uniform(u, std::get<Vec2>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, Vec3>():
-    {
-        gl::UniformVec3 u{shader_element.location};
-        gl::set_uniform(u, std::get<Vec3>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, std::vector<Vec3>>():
-    {
-        const auto& vals = std::get<std::vector<Vec3>>(material_value);
-        const int32_t num_to_assign = min(shader_element.size, static_cast<int32_t>(vals.size()));
-
-        if (num_to_assign > 0) {
-            // CARE: assigning to uniform arrays should be done in one `glUniform` call
-            //
-            // although many guides on the internet say it's valid to assign each array
-            // element one-at-a-time by just calling the one-element version with `location + i`
-            // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
-            // unusually if assigning this way
-            //
-            // so, for safety's sake, always upload arrays in one `glUniform*` call
-
-            static_assert(sizeof(Vec3) == 3*sizeof(float));
-            static_assert(alignof(Vec3) <= alignof(float));
-
-            glUniform3fv(shader_element.location, num_to_assign, value_ptr(vals.front()));
-        }
-        break;
-    }
-    case variant_index<MaterialValue, Vec4>():
-    {
-        gl::UniformVec4 u{shader_element.location};
-        gl::set_uniform(u, std::get<Vec4>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, Mat3>():
-    {
-        gl::UniformMat3 u{shader_element.location};
-        gl::set_uniform(u, std::get<Mat3>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, Mat4>():
-    {
-        gl::UniformMat4 u{shader_element.location};
-        gl::set_uniform(u, std::get<Mat4>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, std::vector<Mat4>>():
-    {
-        const auto& vals = std::get<std::vector<Mat4>>(material_value);
-        const int32_t num_to_assign = min(shader_element.size, static_cast<int32_t>(vals.size()));
-        if (num_to_assign > 0) {
-            // CARE: assigning to uniform arrays should be done in one `glUniform` call
-            //
-            // although many guides on the internet say it's valid to assign each array
-            // element one-at-a-time by just calling the one-element version with `location + i`
-            // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
-            // unusually if assigning this way
-            //
-            // so, for safety's sake, always upload arrays in one `glUniform*` call
-
-            static_assert(sizeof(Mat4) == 16*sizeof(float));
-            static_assert(alignof(Mat4) <= alignof(float));
-            glUniformMatrix4fv(shader_element.location, num_to_assign, GL_FALSE, value_ptr(vals.front()));
-        }
-        break;
-    }
-    case variant_index<MaterialValue, int>():
-    {
-        gl::UniformInt u{shader_element.location};
-        gl::set_uniform(u, std::get<int>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, bool>():
-    {
-        gl::UniformBool u{shader_element.location};
-        gl::set_uniform(u, std::get<bool>(material_value));
-        break;
-    }
-    case variant_index<MaterialValue, Texture2D>():
-    {
-        auto& texture_impl = const_cast<Texture2D::Impl&>(*std::get<Texture2D>(material_value).impl_);
-        const gl::Texture2D& texture = texture_impl.updTexture();
-
-        gl::active_texture(GL_TEXTURE0 + texture_slot);
-        gl::bind_texture(texture);
-        gl::UniformSampler2D u{shader_element.location};
-        gl::set_uniform(u, texture_slot);
-
-        ++texture_slot;
-        break;
-    }
-    case variant_index<MaterialValue, RenderTexture>():
-    {
-        static_assert(num_options<TextureDimensionality>() == 2);
-        std::visit(Overload{
-            [&texture_slot, &shader_element](SingleSampledTexture& sst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(sst.texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](MultisampledRBOAndResolvedTexture& mst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(mst.single_sampled_texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](SingleSampledCubemap& cubemap)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(cubemap.cubemap);
-                gl::UniformSamplerCube u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-        }, const_cast<RenderTexture::Impl&>(*std::get<RenderTexture>(material_value).impl_).get_color_render_buffer_data());
-
-        break;
-    }
-    case variant_index<MaterialValue, std::vector<RenderTexture>>():
-    {
-        static_assert(num_options<TextureDimensionality>() == 2);
-
-        const auto& vals = std::get<std::vector<RenderTexture>>(material_value);
-        const int32_t num_to_assign = min(shader_element.size, static_cast<int32_t>(vals.size()));
-
-        for (int32_t i = 0; i < num_to_assign; ++i) {
-            std::visit(Overload{
-                [&texture_slot, &shader_element, i](SingleSampledTexture& sst)
-                {
-                    gl::active_texture(GL_TEXTURE0 + texture_slot);
-                    gl::bind_texture(sst.texture2D);
-                    gl::UniformSampler2D u{shader_element.location + i};
-                    gl::set_uniform(u, texture_slot);
-                    ++texture_slot;
-                },
-                [&texture_slot, &shader_element, i](MultisampledRBOAndResolvedTexture& mst)
-                {
-                    gl::active_texture(GL_TEXTURE0 + texture_slot);
-                    gl::bind_texture(mst.single_sampled_texture2D);
-                    gl::UniformSampler2D u{shader_element.location + i};
-                    gl::set_uniform(u, texture_slot);
-                    ++texture_slot;
-                },
-                [&texture_slot, &shader_element, i](SingleSampledCubemap& cubemap)
-                {
-                    gl::active_texture(GL_TEXTURE0 + texture_slot);
-                    gl::bind_texture(cubemap.cubemap);
-                    gl::UniformSamplerCube u{shader_element.location + i};
-                    gl::set_uniform(u, texture_slot);
-                    ++texture_slot;
-                },
-            }, const_cast<RenderTexture::Impl&>(*vals[i].impl_).get_color_render_buffer_data());
-        }
-        break;
-    }
-    case variant_index<MaterialValue, SharedColorRenderBuffer>():
-    {
-        static_assert(num_options<TextureDimensionality>() == 2);
-        std::visit(Overload{
-            [&texture_slot, &shader_element](SingleSampledTexture& sst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(sst.texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](MultisampledRBOAndResolvedTexture& mst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(mst.single_sampled_texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](SingleSampledCubemap& cubemap)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(cubemap.cubemap);
-                gl::UniformSamplerCube u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            }, const_cast<SharedColorRenderBuffer::ColorRenderBuffer&>(*std::get<SharedColorRenderBuffer>(material_value).impl_).upd_opengl_data());
-
-        break;
-    }
-    case variant_index<MaterialValue, SharedDepthStencilRenderBuffer>():
-    {
-        static_assert(num_options<TextureDimensionality>() == 2);
-        std::visit(Overload{
-            [&texture_slot, &shader_element](SingleSampledTexture& sst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(sst.texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](MultisampledRBOAndResolvedTexture& mst)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(mst.single_sampled_texture2D);
-                gl::UniformSampler2D u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            [&texture_slot, &shader_element](SingleSampledCubemap& cubemap)
-            {
-                gl::active_texture(GL_TEXTURE0 + texture_slot);
-                gl::bind_texture(cubemap.cubemap);
-                gl::UniformSamplerCube u{shader_element.location};
-                gl::set_uniform(u, texture_slot);
-                ++texture_slot;
-            },
-            }, const_cast<SharedDepthStencilRenderBuffer::DepthStencilRenderBuffer&>(*std::get<SharedDepthStencilRenderBuffer>(material_value).impl_).upd_opengl_data());
-
-        break;
-    }
-    case variant_index<MaterialValue, Cubemap>():
-    {
-        auto& cubemap_impl = const_cast<Cubemap::Impl&>(*std::get<Cubemap>(material_value).impl_);
-        const gl::TextureCubemap& texture = cubemap_impl.upd_cubemap();
-
-        gl::active_texture(GL_TEXTURE0 + texture_slot);
-        gl::bind_texture(texture);
-        gl::UniformSamplerCube u{shader_element.location};
-        gl::set_uniform(u, texture_slot);
-
-        ++texture_slot;
-        break;
-    }
-    default:
-    {
-        break;
-    }
-    }
+    material_value.bind_value_to_shader_element(shader_element, batch_state);
 }
 
 // helper: draw a batch of `RenderObject`s that have the same:
@@ -7159,7 +7190,7 @@ void osc::GraphicsBackend::handle_batch_with_same_mesh(
 //   - MaterialPropertyBlock
 void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     std::span<const RenderObject> batch,
-    int32_t& texture_slot,
+    OpenGLDrawBatchState& batch_state,
     std::optional<InstancingState>& instancing_state)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
@@ -7172,7 +7203,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     // bind property block variables (if applicable)
     for (const auto& [name, value] : batch.front().property_block.impl_->values_) {
         if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
-            try_bind_material_value_to_shader_element(*uniform, value, texture_slot);
+            try_bind_material_value_to_shader_element(*uniform, value, batch_state);
         }
     }
 
@@ -7203,7 +7234,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     std::optional<InstancingState> maybe_instances = upload_instance_data(batch, shader_impl);
 
     // updated by various batches (which may bind to textures etc.)
-    int32_t texture_slot = 0;
+    OpenGLDrawBatchState batch_state;
 
     gl::use_program(shader_impl.program());
 
@@ -7268,7 +7299,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
         // bind material values
         for (const auto& [name, value] : material_impl.properties_.impl_->values_) {
             if (const ShaderElement* e = lookup_or_nullptr(uniforms, name)) {
-                try_bind_material_value_to_shader_element(*e, value, texture_slot);
+                try_bind_material_value_to_shader_element(*e, value, batch_state);
             }
         }
     }
@@ -7278,7 +7309,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     while (subbatch_begin != batch.end())
     {
         const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMaterialPropertyBlock{subbatch_begin->property_block});
-        handle_batch_with_same_material_property_block({subbatch_begin, subbatch_end}, texture_slot, maybe_instances);
+        handle_batch_with_same_material_property_block({subbatch_begin, subbatch_end}, batch_state, maybe_instances);
         subbatch_begin = subbatch_end;
     }
 

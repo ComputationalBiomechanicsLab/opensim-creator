@@ -34,10 +34,12 @@ namespace osc
         void set_pixel_data(CubemapFace, std::span<const uint8_t>);
 
         friend bool operator==(const Cubemap&, const Cubemap&) = default;
+
+        class Impl;
+        const Impl& impl() const { return *impl_; }
     private:
         friend class GraphicsBackend;
 
-        class Impl;
         CopyOnUpdPtr<Impl> impl_;
     };
 }

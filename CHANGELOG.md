@@ -5,7 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-(nothing yet)
+- The graphics implementation was updated to support a wider range
+  of material property types (e.g. arrays of color buffers).
 
 
 ## [0.5.21] - 2025/02/28

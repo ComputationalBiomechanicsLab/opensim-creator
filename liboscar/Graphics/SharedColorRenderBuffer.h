@@ -60,11 +60,12 @@ namespace osc
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
 
+        class ColorRenderBuffer;
+        const ColorRenderBuffer& impl() const { return *impl_; }
     private:
         friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
-        class ColorRenderBuffer;
 
         explicit SharedColorRenderBuffer(const ColorRenderBuffer&);
 

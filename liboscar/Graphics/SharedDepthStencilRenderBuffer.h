@@ -61,11 +61,12 @@ namespace osc
         AntiAliasingLevel anti_aliasing_level() const;
         DepthStencilRenderBufferFormat format() const;
 
+        class DepthStencilRenderBuffer;
+        const DepthStencilRenderBuffer& impl() const { return *impl_; }
     private:
         friend class Camera;
         friend class GraphicsBackend;
         friend class RenderTexture;
-        class DepthStencilRenderBuffer;
 
         explicit SharedDepthStencilRenderBuffer(const DepthStencilRenderBuffer&);
 

@@ -94,11 +94,14 @@ namespace osc
 
         friend bool operator==(const Texture2D&, const Texture2D&) = default;
 
+        class Impl;
+
+        // returns a reference to the `Texture2D`'s private implementation (for internal use).
+        const Impl& impl() const { return *impl_; }
     private:
         friend std::ostream& operator<<(std::ostream&, const Texture2D&);
         friend class GraphicsBackend;
 
-        class Impl;
         CopyOnUpdPtr<Impl> impl_;
     };
 

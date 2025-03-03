@@ -62,10 +62,12 @@ namespace osc
         friend bool operator==(const RenderTexture&, const RenderTexture&) = default;
 
         friend std::ostream& operator<<(std::ostream&, const RenderTexture&);
+
+        class Impl;
+        const Impl& impl() const { return *impl_; }
     private:
         friend class GraphicsBackend;
 
-        class Impl;
         CopyOnUpdPtr<Impl> impl_;
     };
 

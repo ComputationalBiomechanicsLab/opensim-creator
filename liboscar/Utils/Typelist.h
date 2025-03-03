@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <utility>
+#include <variant>
 
 namespace osc
 {
@@ -53,4 +55,14 @@ namespace osc
 
     template<typename TList, size_t Index>
     using TypeAtT = typename TypeAt<TList, Index>::type;
+
+    // Typelist-to-std::variant conversion
+    namespace detail
+    {
+        template<typename... Types>
+        auto to_variant(Typelist<Types...>) -> std::variant<Types...>;
+    }
+
+    template<typename TTypelist>
+    using VariantOfTypelistElements = decltype(detail::to_variant(std::declval<TTypelist>()));
 }
