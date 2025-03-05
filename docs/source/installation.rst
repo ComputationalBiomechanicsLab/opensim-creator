@@ -35,22 +35,23 @@ Installing on MacOS (Sonoma or newer)
   OpenSim Creator's build process does not sign (notarize) its binaries, because
   we'd have to organize and pay a subscription for that service.
 
-  For you, what this means is that OSC will appear as from **"untrusted developer"**
-  when booting for the first time. MacOS's gatekeeper technology will then stop
-  OSC from booting. As a user, you can skip past this security warning, but Apple
-  has a habit of changing the skipping process every once in a while. Here is a
-  list of workarounds:
+  For you, this means that OpenSim Creator requires extra steps that depend on
+  your version of MacOS (Apple changes the procedure regularly - $$$).
 
-  - **Check the official documentation**: Apple usually documents the process of
-    running unsigned executables in its `Apple Gatekeeper Documentation`_
-  - **On MacOS Sequoia (ish)**: Try to run OSC once. It will fail. Then open your
-    computer's system settings, click ``Privacy & Security``, scroll down. You
-    should see something like ``OSC was blocked to protect your mac``, click
-    ``Open Anyway``
-  - **On older MacOSes**: Open finder, go to ``Applications``, right-click the
-    OSC/OpenSimCreator application, click open. It should ask you whether you
-    want to open it anyway. Some newer(ish) MacOSes won't ask you until you
-    right-click the application a second time.
+  **On Sequoia**: open a terminal and run ``xattr -cr /path/to/opensimcreator.dmg`` to
+  clear any quarantine flags that MacOS added when the dmg was downloaded. Mount the
+  dmg (e.g. by double-clicking it), drag and drop ``osc`` into the ``Applications``
+  directory. Try to run the application. MacOS will fail to open it this first
+  time. Open the computer's system settings, go to ``Privacy & Security``, scroll
+  down, there should be something like ``osc was blocked to protect your
+  mac``, click ``Open Anyway``. After doing this the first time, subsequent runs
+  shouldn't require these steps.
+
+  **On MacOSes older than Sequoia**: Mount the dmg (e.g. by double-clicking it), drag
+  and drop ``osc`` to the ``Applications`` directory. Open the ``Applications`` directory
+  and right-click ``osc``, click ``open``. MacOS will ask you whether you're sure
+  you want to open it (you are). After doing this the first time, subsequent runs
+  shouldn't require these steps.
 
 
 Installing on Ubuntu (20 or newer)
