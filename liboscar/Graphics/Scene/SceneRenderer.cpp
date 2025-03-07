@@ -869,7 +869,7 @@ private:
     Mesh quad_mesh_;
     Camera camera_;
     RenderTexture rims_rendertexture_;
-    SharedDepthStencilRenderBuffer shadowmap_render_buffer_{{
+    SharedDepthStencilRenderBuffer shadowmap_render_buffer_{DepthStencilRenderBufferParams{
         .dimensions = {1024, 1024},
     }};
     RenderTexture output_rendertexture_;

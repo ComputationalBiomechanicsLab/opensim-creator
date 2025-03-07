@@ -45,18 +45,22 @@ TEST(SharedDepthStencilRenderBuffer, dimensionality_is_based_on_parameters)
 
 TEST(SharedDepthStencilRenderBuffer, dimensions_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{{.dimensions = Vec2i(3, 5)}};
+    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{.dimensions = Vec2i(3, 5)}};
     ASSERT_EQ(buffer.dimensions(), Vec2i(3,5));
 }
 
 TEST(SharedDepthStencilRenderBuffer, anti_aliasing_level_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{{.anti_aliasing_level = AntiAliasingLevel{4}}};
+    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{
+        .anti_aliasing_level = AntiAliasingLevel{4}
+    }};
     ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
 }
 
 TEST(SharedDepthStencilRenderBuffer, format_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{{.format = DepthStencilRenderBufferFormat::D32_SFloat}};
+    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{
+        .format = DepthStencilRenderBufferFormat::D32_SFloat
+    }};
     ASSERT_EQ(buffer.format(), DepthStencilRenderBufferFormat::D32_SFloat);
 }

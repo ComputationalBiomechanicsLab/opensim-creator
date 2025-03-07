@@ -38,12 +38,12 @@ TEST(SharedColorRenderBuffer, dimensionality_is_based_on_parameters)
 
 TEST(SharedColorRenderBuffer, dimensions_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{{.dimensions = Vec2i(3, 5)}};
+    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.dimensions = Vec2i(3, 5)}};
     ASSERT_EQ(buffer.dimensions(), Vec2i(3,5));
 }
 
 TEST(SharedColorRenderBuffer, anti_aliasing_level_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{{.anti_aliasing_level = AntiAliasingLevel{4}}};
+    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.anti_aliasing_level = AntiAliasingLevel{4}}};
     ASSERT_EQ(buffer.anti_aliasing_level(), AntiAliasingLevel{4});
 }
