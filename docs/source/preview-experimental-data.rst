@@ -1,16 +1,6 @@
 Preview Experimental Data
 =========================
 
-.. note::
-
-    **Previewing Experimental Data is a new feature.**
-
-    It should be safer to use than an 🪄experimental🪄 feature, but it still
-    has some rough edges 🪨. If you think you've found a major bug, you should
-    report it to the `OpenSim Creator Issues Page`_. Minor bug reports are also
-    appreciated, but our current priority is to fix any big problems so that it
-    can evolve into an established feature.
-
 In this tutorial, we will be using the preview experimental data workflow to
 visualize, validate, and connect experimental data to an OpenSim model. This
 is typically required when you have external experimental data that you want

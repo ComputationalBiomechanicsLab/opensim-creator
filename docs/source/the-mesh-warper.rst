@@ -1,13 +1,6 @@
 The Mesh Warper
 ===============
 
-.. note::
-
-  **This documentation is new.**
-
-  If you find an error in this tutorial, or you feel that something is
-  fundamentally missing, then post an issue at `OpenSimCreator Issues`_
-
 In this tutorial, we will be using the Mesh Warping UI to perform
 landmark-driven mesh warping using the Thin-Plate Spline algorithm
 (`explanation <TPS General Info_>`_, `literature source <TPS Primary Literature Source_>`_). The UI

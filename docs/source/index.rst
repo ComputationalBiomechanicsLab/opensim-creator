@@ -75,6 +75,7 @@ Table of Contents
 
 .. toctree::
     :caption: Drafts
+    :numbered:
    
     use-the-model-warper
     station-defined-frames
