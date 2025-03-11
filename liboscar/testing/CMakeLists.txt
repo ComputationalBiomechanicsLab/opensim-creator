@@ -1,3 +1,8 @@
+set(OSC_DISCOVER_TESTS ON
+    CACHE BOOL
+    "enable/disable automatically running test discovery (IDE integration)"
+)
+
 include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 

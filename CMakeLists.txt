@@ -11,15 +11,10 @@ set(OSC_BUILD_DOCS OFF
     CACHE BOOL
     "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
 )
-set(OSC_DISCOVER_TESTS ON
-    CACHE BOOL
-    "enable/disable automatically running test discovery (IDE integration)"
-)
 set(OSC_BUILD_PYTHON_BINDINGS ON
     CACHE BOOL
     "enable/disable building python bindings"
 )
-
 
 # note: this has to be done at the top-level, so that `ctest --show-only` works for
 #       all test suites, which is how IDEs typically detect tests
