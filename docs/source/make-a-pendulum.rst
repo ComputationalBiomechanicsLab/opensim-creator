@@ -44,6 +44,7 @@ You should see a 3D viewer with a chequered floor and a set of axes in the middl
 
     The only component that doesn't use relative coordinates is the **ground**. The ground is always the "root" of the model's connectivity graph and is always defined to be at, and aligned with, the origin of the world - ``(0, 0, 0)``. All other components within the model attach to ground directly or indirectly (i.e. via other components, such as joints).
 
+.. _add-body-with-weldjoint:
 
 Add a Body with a WeldJoint
 ---------------------------

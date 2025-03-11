@@ -49,9 +49,9 @@ closely mirrors how anatomical joint/body frames are formally defined
 (e.g. `Grood et. al.`_, `Wu et. al.`_). It's also compatible with algorithms
 that operate on points (e.g. TPS warping, see :doc:`the-mesh-warper`). The
 mathematical relationship between stations in the model and the ``StationDefinedFrame``
-are shown in :numref:`label`.
+are shown in :numref:`sdf-maths-figure`.
 
-.. _label:
+.. _sdf-maths-figure:
 .. figure:: _static/station-defined-frames/sdf-maths.svg
     :width: 60%
 
@@ -82,14 +82,53 @@ OpenSim Creator includes example models that use ``StationDefinedFrame``:
   ``PhysicalOffsetFrame`` s.
 
 This example walks through how something like ``StationDefinedFrame.osim`` can be built from
-scratch, so that you can get an idea of how the mathematics (:numref:`label`) is exposed via
+scratch, so that you can get an idea of how the mathematics (:numref:`sdf-maths-figure`) is exposed via
 OpenSim's component system. The next section, `A Practical Example`_, then shows how ``StationDefinedFrame`` s
 can be added to an existing model.
 
-- ``TODO``: make blank model
-- ``TODO``: add body to model, attach geometry
-- ``TODO``: add stations/markers to the body
-- ``TODO``: define ``StationDefinedFrame`` that uses the stations/markers
+
+Make a One-Body Model
+~~~~~~~~~~~~~~~~~~~~~
+
+1. Create a blank OpenSim model (e.g. from the splash screen or main menu).
+2. Add a body to the model (as described in :ref:`add-body-with-weldjoint`), attach a brick
+   geometry to the body, so it's easier to visualize.
+3. You should end up with something like :numref:`blank-model-single-body-with-brick-figure`.
+
+.. _blank-model-single-body-with-brick-figure:
+.. figure:: _static/station-defined-frames/model-with-one-body.jpg
+    :width: 60%
+
+    ``TODO`` model containing one body with a brick attached.
+
+
+Add Stations to the Body
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+``TODO``
+
+.. figure:: _static/station-defined-frames/add-station.jpg
+    :width: 60%
+
+    ``TODO``
+
+.. figure:: _static/station-defined-frames/stations-added.jpg
+    :width: 60%
+
+    ``TODO``
+
+Add a ``StationDefinedFrame``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. figure:: _static/station-defined-frames/add-sdf.jpg
+    :width: 60%
+
+    ``TODO``
+
+.. figure:: _static/station-defined-frames/sdf-added.jpg
+    :width: 60%
+
+    ``TODO``
 
 
 A Practical Example
@@ -103,7 +142,7 @@ Creator. It will focus on handling these common questions that arise when adding
 - How should ``Joint`` s be created between ``StationDefinedFrame`` s (and other ``Frame`` s)?
 - How can existing ``Joint`` s be updated to use ``StationDefinedFrame`` s?
 
-``TODO``: actually answer those questions!
+``TODO``: write up the answers to these questions!
 
 
 .. _opensim-core/pull/3694: https://github.com/opensim-org/opensim-core/pull/3694
