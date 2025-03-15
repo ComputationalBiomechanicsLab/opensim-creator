@@ -3126,33 +3126,34 @@ namespace
 
     void bind_to_render_buffer_ogl_data(
         const ShaderElement& shader_element,
+        size_t index,
         OpenGLDrawBatchState& batch_state,
         RenderBufferOpenGLData& rbodata)
     {
         static_assert(num_options<TextureDimensionality>() == 2);
 
         std::visit(Overload{
-            [&batch_state, &shader_element](SingleSampledTexture& sst)
+            [&batch_state, &shader_element, index](SingleSampledTexture& sst)
             {
                 gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
                 gl::bind_texture(sst.texture2D);
-                gl::UniformSampler2D u{shader_element.location};  // TODO has to set it as an array
+                gl::UniformSampler2D u{shader_element.location + static_cast<GLint>(index)};
                 gl::set_uniform(u, batch_state.texture_slot);
                 ++batch_state.texture_slot;
             },
-            [&batch_state, &shader_element](MultisampledRBOAndResolvedTexture& mst)
+            [&batch_state, &shader_element, index](MultisampledRBOAndResolvedTexture& mst)
             {
                 gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
                 gl::bind_texture(mst.single_sampled_texture2D);
-                gl::UniformSampler2D u{shader_element.location};  // TODO has to set it as an array
+                gl::UniformSampler2D u{shader_element.location + static_cast<GLint>(index)};
                 gl::set_uniform(u, batch_state.texture_slot);
                 ++batch_state.texture_slot;
             },
-            [&batch_state, &shader_element](SingleSampledCubemap& cubemap)
+            [&batch_state, &shader_element, index](SingleSampledCubemap& cubemap)
             {
                 gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
                 gl::bind_texture(cubemap.cubemap);
-                gl::UniformSamplerCube u{shader_element.location};  // TODO has to set it as an array
+                gl::UniformSamplerCube u{shader_element.location + static_cast<GLint>(index)};
                 gl::set_uniform(u, batch_state.texture_slot);
                 ++batch_state.texture_slot;
             },
@@ -3167,9 +3168,11 @@ namespace
             OpenGLDrawBatchState& batch_state)
         {
             // TODO: should upload texture ints as a single array call
-            for (const RenderTexture& render_texture : render_textures) {
+            for (size_t i = 0; i < render_textures.size(); ++i) {
+                const RenderTexture& render_texture = render_textures[i];
                 bind_to_render_buffer_ogl_data(
                     shader_element,
+                    i,
                     batch_state,
                     const_cast<RenderTexture::Impl&>(render_texture.impl()).get_color_render_buffer_data()
                 );
@@ -3185,13 +3188,13 @@ namespace
             OpenGLDrawBatchState& batch_state)
         {
             // TODO: should upload texture ints as a single array call
-            for (const Cubemap& cubemap : cubemaps) {
-                auto& cubemap_impl = const_cast<Cubemap::Impl&>(cubemap.impl());
+            for (size_t i = 0; i < cubemaps.size(); ++i) {
+                auto& cubemap_impl = const_cast<Cubemap::Impl&>(cubemaps[i].impl());
                 const gl::TextureCubemap& texture = cubemap_impl.upd_cubemap();
 
                 gl::active_texture(GL_TEXTURE0 + batch_state.texture_slot);
                 gl::bind_texture(texture);
-                gl::UniformSamplerCube u{shader_element.location};  // TODO has to set it as an array
+                gl::UniformSamplerCube u{shader_element.location + static_cast<GLint>(i)};
                 gl::set_uniform(u, batch_state.texture_slot);
 
                 ++batch_state.texture_slot;
@@ -3207,9 +3210,11 @@ namespace
             OpenGLDrawBatchState& batch_state)
         {
             // TODO: should upload texture ints as a single array call
-            for (const SharedColorRenderBuffer& shared_buffer : shared_color_render_buffers) {
+            for (size_t i = 0; i < shared_color_render_buffers.size(); ++i) {
+                const SharedColorRenderBuffer& shared_buffer = shared_color_render_buffers[i];
                 bind_to_render_buffer_ogl_data(
                     shader_element,
+                    i,
                     batch_state,
                     const_cast<SharedColorRenderBuffer::ColorRenderBuffer&>(shared_buffer.impl()).upd_opengl_data()
                 );
@@ -3224,10 +3229,11 @@ namespace
             const ShaderElement& shader_element,
             OpenGLDrawBatchState& batch_state)
         {
-            // TODO: should upload texture ints as a single array call
-            for (const SharedDepthStencilRenderBuffer& shared_buffer : shared_depth_stencil_render_buffers) {
+            for (size_t i = 0; i < shared_depth_stencil_render_buffers.size(); ++i) {
+                const SharedDepthStencilRenderBuffer& shared_buffer = shared_depth_stencil_render_buffers[i];
                 bind_to_render_buffer_ogl_data(
                     shader_element,
+                    i,
                     batch_state,
                     const_cast<SharedDepthStencilRenderBuffer::DepthStencilRenderBuffer&>(shared_buffer.impl()).upd_opengl_data()
                 );
@@ -4088,6 +4094,29 @@ template<>
 void osc::MaterialPropertyBlock::set<SharedDepthStencilRenderBuffer>(const StringName& property_name, const SharedDepthStencilRenderBuffer& value)
 {
     impl_.upd()->set(property_name, value);
+}
+
+template<>
+std::optional<std::span<const SharedDepthStencilRenderBuffer>> osc::MaterialPropertyBlock::get_array<SharedDepthStencilRenderBuffer>(std::string_view property_name) const
+{
+    return impl_->get_array<SharedDepthStencilRenderBuffer>(property_name);
+}
+template<>
+std::optional<std::span<const SharedDepthStencilRenderBuffer>> osc::MaterialPropertyBlock::get_array<SharedDepthStencilRenderBuffer>(const StringName& property_name) const
+{
+    return impl_->get_array<SharedDepthStencilRenderBuffer>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<SharedDepthStencilRenderBuffer>(std::string_view property_name, std::span<const SharedDepthStencilRenderBuffer> values)
+{
+    impl_.upd()->set_array(property_name, values);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<SharedDepthStencilRenderBuffer>(const StringName& property_name, std::span<const SharedDepthStencilRenderBuffer> values)
+{
+    impl_.upd()->set_array(property_name, values);
 }
 
 void osc::MaterialPropertyBlock::unset(std::string_view property_name)
@@ -5725,6 +5754,11 @@ public:
         perspective_fov_ = size;
     }
 
+    Radians horizontal_fov(float aspect_ratio) const
+    {
+        return vertical_to_horizontal_fov(vertical_fov(), aspect_ratio);
+    }
+
     CameraClippingPlanes clipping_planes() const
     {
         return clipping_planes_;
@@ -5828,6 +5862,11 @@ public:
         else {
             return look_at(position_, position_ + direction(), upwards_direction());
         }
+    }
+
+    Mat4 inverse_view_matrix() const
+    {
+        return inverse(view_matrix());
     }
 
     std::optional<Mat4> view_matrix_override() const
@@ -6019,6 +6058,11 @@ void osc::Camera::set_vertical_fov(Radians vertical_fov)
     impl_.upd()->set_vertical_fov(vertical_fov);
 }
 
+Radians osc::Camera::horizontal_fov(float aspect_ratio) const
+{
+    return impl_->horizontal_fov(aspect_ratio);
+}
+
 CameraClippingPlanes osc::Camera::clipping_planes() const
 {
     return impl_->clipping_planes();
@@ -6117,6 +6161,11 @@ Vec3 osc::Camera::upwards_direction() const
 Mat4 osc::Camera::view_matrix() const
 {
     return impl_->view_matrix();
+}
+
+Mat4 osc::Camera::inverse_view_matrix() const
+{
+    return impl_->inverse_view_matrix();
 }
 
 std::optional<Mat4> osc::Camera::view_matrix_override() const

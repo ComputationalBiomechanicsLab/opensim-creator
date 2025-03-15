@@ -22,7 +22,7 @@ void main()
     gl_Position = uViewProjMat * aModelMat * Pos;
     
     for (int i = 0 ; i < NUM_CASCADES ; i++) {
-        LightSpacePos[i] = uLightWVP[i] * Pos;
+        LightSpacePos[i] = uLightWVP[i] * aModelMat * Pos;
     }
     ClipSpacePosZ = gl_Position.z;
     Normal0       = aNormalMat * aNormal;

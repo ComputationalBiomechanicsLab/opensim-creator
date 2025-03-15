@@ -350,3 +350,13 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockPrintingToOutputStreamMentionsM
 
     ASSERT_TRUE(contains(ss.str(), "MaterialPropertyBlock"));
 }
+
+TEST(MaterialPropertyBlock, set_SharedDepthStencilBuffer_works)
+{
+    std::vector<SharedDepthStencilRenderBuffer> buffers(2);
+
+    MaterialPropertyBlock block;
+    ASSERT_FALSE(block.get_array<SharedDepthStencilRenderBuffer>("someKey"));
+    block.set_array("someKey", buffers);
+    ASSERT_TRUE(block.get_array<SharedDepthStencilRenderBuffer>("someKey"));
+}

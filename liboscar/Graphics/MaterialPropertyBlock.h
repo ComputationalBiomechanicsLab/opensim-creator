@@ -144,6 +144,10 @@ namespace osc
         template<std::same_as<SharedDepthStencilRenderBuffer>> std::optional<SharedDepthStencilRenderBuffer> get(const StringName& property_name) const;
         template<std::same_as<SharedDepthStencilRenderBuffer>> void set(std::string_view property_name, const SharedDepthStencilRenderBuffer&);
         template<std::same_as<SharedDepthStencilRenderBuffer>> void set(const StringName& property_name, const SharedDepthStencilRenderBuffer&);
+        template<std::same_as<SharedDepthStencilRenderBuffer>> std::optional<std::span<const SharedDepthStencilRenderBuffer>> get_array(std::string_view property_name) const;
+        template<std::same_as<SharedDepthStencilRenderBuffer>> std::optional<std::span<const SharedDepthStencilRenderBuffer>> get_array(const StringName& property_name) const;
+        template<std::same_as<SharedDepthStencilRenderBuffer>> void set_array(std::string_view property_name, std::span<const SharedDepthStencilRenderBuffer>);
+        template<std::same_as<SharedDepthStencilRenderBuffer>> void set_array(const StringName& property_name, std::span<const SharedDepthStencilRenderBuffer>);
 
         void unset(std::string_view property_name);
         void unset(const StringName& property_name);

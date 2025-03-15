@@ -177,6 +177,27 @@ TEST(Camera, set_projection_makes_getter_return_the_projection)
     ASSERT_EQ(camera.projection(), new_projection);
 }
 
+TEST(Camera, vertical_fov_defaults_to_90_deg)
+{
+    const Camera camera;
+    ASSERT_EQ(camera.vertical_fov(), 90_deg);
+}
+
+TEST(Camera, set_vertical_fov_sets_the_vertical_fov)
+{
+    Camera camera;
+
+    ASSERT_EQ(camera.vertical_fov(), 90_deg);
+    camera.set_vertical_fov(120_deg);
+    ASSERT_EQ(camera.vertical_fov(), 120_deg);
+}
+
+TEST(Camera, horizontal_fov_equals_vertical_fov_when_aspect_ratio_is_1)
+{
+    const Camera camera;
+    ASSERT_FLOAT_EQ(camera.vertical_fov().count(), camera.horizontal_fov(1.0f).count());
+}
+
 TEST(Camera, set_projection_on_copy_makes_it_compare_nonequal_to_original)
 {
     const Camera camera;
@@ -241,12 +262,29 @@ TEST(Camera, view_matrix_returns_view_matrix_based_on_position_direction_and_up)
 {
     Camera camera;
     camera.set_projection(CameraProjection::Orthographic);
-    camera.set_position({0.0f, 0.0f, 0.0f});
+    camera.set_position({1.0f, 2.0f, 3.0f});
+
+    Mat4 expected_matrix = identity<Mat4>();
+    expected_matrix[3][0] = -1.0f;
+    expected_matrix[3][1] = -2.0f;
+    expected_matrix[3][2] = -3.0f;
+
+    ASSERT_EQ(camera.view_matrix(), expected_matrix);
+}
+
+TEST(Camera, inverse_view_matrix_returns_inverse_of_view_matrix_based_on_position_direction_and_up)
+{
+    Camera camera;
+    camera.set_projection(CameraProjection::Orthographic);
+    camera.set_position({1.0f, 2.0f, 3.0f});
 
     const Mat4 view_matrix = camera.view_matrix();
-    const Mat4 expected_matrix = identity<Mat4>();
+    Mat4 expected_view_matrix = identity<Mat4>();
+    expected_view_matrix[3][0] = -1.0f;
+    expected_view_matrix[3][1] = -2.0f;
+    expected_view_matrix[3][2] = -3.0f;
 
-    ASSERT_EQ(view_matrix, expected_matrix);
+    ASSERT_EQ(camera.inverse_view_matrix(), inverse(expected_view_matrix));
 }
 
 TEST(Camera, set_view_matrix_override_makes_view_matrix_return_the_override)

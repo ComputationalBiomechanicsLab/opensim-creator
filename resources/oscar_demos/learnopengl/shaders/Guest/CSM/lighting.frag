@@ -55,25 +55,16 @@ out vec4 FragColor;
 float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
-    vec2 UVCoords;
-    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
+    vec2 UVCoords = 0.5*ProjCoords.xy + 0.5;
     float z = 0.5 * ProjCoords.z + 0.5;
-    float Depth;
+    float Depth = texture(gShadowMap[CascadeIndex], UVCoords).x;
 
-    switch(CascadeIndex) {
-        case 0:  Depth = texture(gShadowMap[0], UVCoords).x; break;
-        case 1:  Depth = texture(gShadowMap[1], UVCoords).x; break;
-        case 2:  Depth = texture(gShadowMap[2], UVCoords).x; break;
-        default: Depth = 1.0;
-    }
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = Normal0;
+    vec3 lightDir = gDirectionalLight.Direction;
+    float bias = max(0.000005 * (1.0 - dot(normal, lightDir)), 0.0000001);
 
-    if (Depth < z + 0.00001) {
-        return 0.5;
-    }
-    else {
-        return 1.0;
-    }
+    return z - bias > Depth ? 0.0 : 1.0;
 }
 
 vec4 CalcLightInternal(
@@ -169,5 +160,5 @@ void main()
     }
 
     vec4 SampledColor = gObjectColor;
-    FragColor = SampledColor * TotalLight;// + CascadeIndicator;
+    FragColor = SampledColor * TotalLight + 0.1*CascadeIndicator;
 }

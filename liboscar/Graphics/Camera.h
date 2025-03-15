@@ -42,7 +42,8 @@ namespace osc
 
         // get/set the height of the orthographic projection plane that the camera will use
         //
-        // ignored if `projection() != CameraProjection::Orthographic`, the width of the
+        // invalid if `projection() != CameraProjection::Orthographic` or the projection
+        // matrix has been overriden with `set_projection_matrix_override`, the width of the
         // orthographic plane is calculated from the aspect ratio of the render target at
         // runtime.
         float orthographic_size() const;
@@ -50,10 +51,17 @@ namespace osc
 
         // get/set the vertical field-of-view angle of the viewer's projection camera
         //
-        // ignored if `projection() != CameraProjection::Perspective`. The horizontal FoV is
-        // calculated from the aspect ratio of the render target at runtime.
+        // invalid if `projection() != CameraProjection::Perspective` or the projection matrix
+        // has been overriden with `set_projection_matrix_override`.
         Radians vertical_fov() const;
         void set_vertical_fov(Radians);
+
+        // returns the horizontal field-of-view angle of the viewer's projection camera, assuming
+        // it's rendering to a render target with the given `aspect_ratio`.
+        //
+        // invalid if `projection() != CameraProjection::Perspective` or the projection matrix
+        // has been overriden with `set_projection_matrix_override`.
+        Radians horizontal_fov(float aspect_ratio) const;
 
         // get/set the distance, in worldspace units, between both the camera and the nearest
         // clipping plane, and the camera and the farthest clipping plane
@@ -144,6 +152,10 @@ namespace osc
         // but view-space places the camera at `(0, 0, 0)`
         Mat4 view_matrix() const;
 
+        // returns the equivalent of `inverse(view_matrix())`, i.e. a matrix that transforms
+        // view-space locations into world-space locations.
+        Mat4 inverse_view_matrix() const;
+
         // get/set matrices that override the default view matrix that this `Camera` uses
         //
         // by default, `Camera` computes its view matrix from its position and rotation, but
@@ -177,13 +189,15 @@ namespace osc
         // returns the equivalent of `inverse(view_projection_matrix(aspect_ratio))`
         Mat4 inverse_view_projection_matrix(float aspect_ratio) const;
 
-        // flushes any rendering commands that were queued against this camera
-        //
-        // after this call completes, the output texture, or screen, should contain
-        // the rendered geometry
+        // flushes and renders any queued drawcalls from `graphics::draw(...)` to the
+        // main application window.
         void render_to_screen();
-        void render_to(RenderTexture&);
-        void render_to(const RenderTarget&);
+
+        // flushes and renders any queued drawcalls from `graphics::draw(...)` to `render_texture`.
+        void render_to(RenderTexture& render_texture);
+
+        // flushes and renders any queued drawcalls from `graphics::draw(...)` to `render_target`.
+        void render_to(const RenderTarget& render_target);
 
     private:
         friend bool operator==(const Camera&, const Camera&);
