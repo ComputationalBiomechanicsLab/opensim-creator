@@ -16,6 +16,7 @@
 
 namespace osc { class RenderTexture; }
 namespace osc { class RenderTarget; }
+namespace osc { class SharedDepthStencilRenderBuffer; }
 
 namespace osc
 {
@@ -198,6 +199,11 @@ namespace osc
 
         // flushes and renders any queued drawcalls from `graphics::draw(...)` to `render_target`.
         void render_to(const RenderTarget& render_target);
+
+        // flushes and renders any queued drawcalls from `graphics::draw(...)` to `shared_depth_stencil_buffer`.
+        //
+        // the resulting render pass is a depth-only render
+        void render_to(SharedDepthStencilRenderBuffer& shared_depth_stencil_buffer);
 
     private:
         friend bool operator==(const Camera&, const Camera&);

@@ -179,12 +179,6 @@ namespace
     // returns a projection matrix for the given projection parameters
     Mat4 to_mat4(const OrthogonalProjectionParameters& p)
     {
-        // from: https://github.com/emeiri/ogldev/blob/master/Common/math_3d.cpp#L290
-        //
-        // note: ogldev uses row-major matrices
-
-        Mat4 m;
-
         const float l = p.left;
         const float r = p.right;
         const float b = p.bottom;
@@ -192,14 +186,11 @@ namespace
         const float n = p.near;
         const float f = p.far;
 
-        m[0][0] = 2.0f/(r - l); m[0][1] = 0.0f;         m[0][2] = 0.0f;         m[0][3] = -(r + l)/(r - l);
-        m[1][0] = 0.0f;         m[1][1] = 2.0f/(t - b); m[1][2] = 0.0f;         m[1][3] = -(t + b)/(t - b);
-        m[2][0] = 0.0f;         m[2][1] = 0.0f;         m[2][2] = 2.0f/(f - n); m[2][3] = -(f + n)/(f - n);
-        m[3][0] = 0.0f;         m[3][1] = 0.0f;         m[3][2] = 0.0f;         m[3][3] = 1.0;
-
-        m = transpose(m);  // the above is row-major
-
-        return m;
+        // Create a transform that maps the edges of the orthogonal proection to NDC (i.e. [-1.0, +1.0])
+        return mat4_cast(Transform{
+            .scale    = {   2.0f/(r - l),    2.0f/(t - b),     2.0f/(f - n)  },
+            .position = {-(r + l)/(r - l), -(t + b)/(t - b), -(f + n)/(f - n)},
+        });
     }
 }
 
@@ -259,23 +250,17 @@ private:
         std::vector<Mat4> rv;
         rv.reserve(cascade_projections.size());
         for (size_t i = 0; i < cascade_projections.size(); ++i) {
-            const auto& cascade_projection = cascade_projections[i];
-            const Mat4 cascade_projection_mat4 = to_mat4(cascade_projection) * world_to_light;
+            const Mat4 cascade_projection_mat4 = to_mat4(cascade_projections[i]) * world_to_light;
 
-            Camera light_camera;
-            light_camera.set_view_matrix_override(identity<Mat4>());
-            light_camera.set_projection_matrix_override(cascade_projection_mat4);
+            Camera camera;
+            camera.set_view_matrix_override(identity<Mat4>());
+            camera.set_projection_matrix_override(cascade_projection_mat4);
 
             for (const auto& decoration : decorations_) {
-                graphics::draw(decoration.mesh, decoration.transform, shadow_mapping_material_, light_camera);
+                graphics::draw(decoration.mesh, decoration.transform, shadow_mapping_material_, camera);
             }
 
-            light_camera.render_to(RenderTarget{
-                RenderTargetDepthStencilAttachment{
-                    .buffer = cascade_rasters_[i],
-                }
-            });
-
+            camera.render_to(cascade_rasters_[i]);
             rv.push_back(cascade_projection_mat4);
         }
         return rv;
@@ -290,8 +275,8 @@ private:
         csm_material_.set("gDirectionalLight.Base.Color", Color::white());
         csm_material_.set("gDirectionalLight.Base.AmbientIntensity", 0.5f);
         csm_material_.set("gDirectionalLight.Base.DiffuseIntensity", 0.9f);
-        csm_material_.set("gDirectionalLight.Base.Direction", Vec3{light_direction_});
-        csm_material_.set("gDirectionalLight.Direction", Vec3{light_direction_});
+        csm_material_.set<Vec3>("gDirectionalLight.Base.Direction", light_direction_);
+        csm_material_.set<Vec3>("gDirectionalLight.Direction", light_direction_);
         csm_material_.set("gObjectColor", Color::dark_grey());
         csm_material_.set_array("gShadowMap", cascade_rasters_);
         csm_material_.set("gEyeWorldPos", user_camera_.position());
