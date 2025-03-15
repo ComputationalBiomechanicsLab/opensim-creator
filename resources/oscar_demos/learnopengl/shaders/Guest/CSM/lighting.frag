@@ -62,7 +62,7 @@ float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = Normal0;
     vec3 lightDir = gDirectionalLight.Direction;
-    float bias = max(0.000005 * (1.0 - dot(normal, lightDir)), 0.0000001);
+    float bias = max(0.0005 * (1.0 - dot(normal, lightDir)), 0.00001);
 
     return z - bias > Depth ? 0.0 : 1.0;
 }
