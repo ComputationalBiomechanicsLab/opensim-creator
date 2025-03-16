@@ -278,7 +278,6 @@ TEST(Camera, inverse_view_matrix_returns_inverse_of_view_matrix_based_on_positio
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({1.0f, 2.0f, 3.0f});
 
-    const Mat4 view_matrix = camera.view_matrix();
     Mat4 expected_view_matrix = identity<Mat4>();
     expected_view_matrix[3][0] = -1.0f;
     expected_view_matrix[3][1] = -2.0f;
