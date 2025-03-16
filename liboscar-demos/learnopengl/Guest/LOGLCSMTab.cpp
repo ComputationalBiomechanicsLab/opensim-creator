@@ -118,8 +118,8 @@ namespace
 
         // precompute necessary values to figure out the corners of the view frustum
         const auto [view_znear, view_zfar] = camera.clipping_planes();
-        const Radians view_vfov = camera.vertical_fov();
-        const Radians view_hfov = camera.horizontal_fov(aspect_ratio);
+        const Radians view_vfov = camera.vertical_field_of_view();
+        const Radians view_hfov = camera.horizontal_field_of_view(aspect_ratio);
         const float view_tan_half_vfov = tan(0.5f * view_vfov);
         const float view_tan_half_hfov = tan(0.5f * view_hfov);
 
@@ -293,7 +293,7 @@ private:
             const Vec4 proj_pos = (proj * view_pos);
             ends.push_back(proj_pos.z);
         }
-        csm_material_.set_array<float>("gCascadeEndClipSpace", ends);
+        csm_material_.set_array("gCascadeEndClipSpace", ends);
 
         for (const auto& decoration : decorations_) {
             graphics::draw(decoration.mesh, decoration.transform, csm_material_, user_camera_);

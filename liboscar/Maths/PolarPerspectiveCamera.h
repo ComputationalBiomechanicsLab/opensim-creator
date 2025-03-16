@@ -57,7 +57,7 @@ namespace osc
         Radians theta;
         Radians phi;
         Vec3 focus_point;
-        Radians vertical_fov;
+        Radians vertical_field_of_view;
         float znear;
         float zfar;
     };

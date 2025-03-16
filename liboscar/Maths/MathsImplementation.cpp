@@ -536,7 +536,7 @@ Mat4 osc::EulerPerspectiveCamera::view_matrix() const
 
 Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
-    return perspective(vertical_fov, aspect_ratio, znear, zfar);
+    return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
 }
 
 
@@ -569,7 +569,7 @@ osc::PolarPerspectiveCamera::PolarPerspectiveCamera() :
     theta{45_deg},
     phi{45_deg},
     focus_point{0.0f, 0.0f, 0.0f},
-    vertical_fov{35_deg},
+    vertical_field_of_view{35_deg},
     znear{0.1f},
     zfar{100.0f}
 {}
@@ -581,12 +581,12 @@ void osc::PolarPerspectiveCamera::reset()
 
 void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
 {
-    const auto horizontal_fov = vertical_to_horizontal_fov(vertical_fov, aspect_ratio);
+    const auto horizontal_field_of_view = vertical_to_horizontal_field_of_view(vertical_field_of_view, aspect_ratio);
 
     // how much panning is done depends on how far the camera is from the
     // origin (easy, with polar coordinates) *and* the FoV of the camera.
-    const float x_amount =  delta.x * (2.0f * tan(horizontal_fov / 2.0f) * radius);
-    const float y_amount = -delta.y * (2.0f * tan(vertical_fov / 2.0f) * radius);
+    const float x_amount =  delta.x * (2.0f * tan(horizontal_field_of_view / 2.0f) * radius);
+    const float y_amount = -delta.y * (2.0f * tan(vertical_field_of_view / 2.0f) * radius);
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
@@ -638,7 +638,7 @@ Mat4 osc::PolarPerspectiveCamera::view_matrix() const
 
 Mat4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
-    return perspective(vertical_fov, aspect_ratio, znear, zfar);
+    return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
 }
 
 Vec3 osc::PolarPerspectiveCamera::position() const
@@ -784,7 +784,9 @@ void osc::auto_focus(
     float aspect_ratio)
 {
     const Sphere bounding_sphere = bounding_sphere_of(element_aabb);
-    const Radians smallest_fov = aspect_ratio > 1.0f ? camera.vertical_fov : vertical_to_horizontal_fov(camera.vertical_fov, aspect_ratio);
+    const Radians smallest_fov = aspect_ratio >= 1.0f ?
+        camera.vertical_field_of_view :
+        vertical_to_horizontal_field_of_view(camera.vertical_field_of_view, aspect_ratio);
 
     // auto-focus the camera with a minimum radius of 1m
     //
@@ -958,11 +960,11 @@ namespace
 }
 
 
-Radians osc::vertical_to_horizontal_fov(Radians vertical_fov, float aspect_ratio)
+Radians osc::vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio)
 {
     // https://en.wikipedia.org/wiki/Field_of_view_in_video_games#Field_of_view_calculations
 
-    return 2.0f * atan(tan(0.5f * vertical_fov) * aspect_ratio);
+    return 2.0f * atan(tan(0.5f * vertical_field_of_view) * aspect_ratio);
 }
 
 

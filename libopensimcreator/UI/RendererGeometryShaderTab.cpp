@@ -35,7 +35,7 @@ public:
         TabPrivate{owner, parent, "GeometryShader"}
     {
         m_SceneCamera.set_position({0.0f, 0.0f, 3.0f});
-        m_SceneCamera.set_vertical_fov(45_deg);
+        m_SceneCamera.set_vertical_field_of_view(45_deg);
         m_SceneCamera.set_clipping_planes({0.1f, 100.0f});
     }
 

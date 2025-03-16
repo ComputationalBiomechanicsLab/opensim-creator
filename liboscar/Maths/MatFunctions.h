@@ -42,7 +42,7 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> perspective(Angle<T, Units> vertical_fov, T aspect, T z_near, T z_far)
+    Mat<4, 4, T> perspective(Angle<T, Units> vertical_field_of_view, T aspect, T z_near, T z_far)
     {
         if (fabs(aspect - epsilon_v<T>) <= T{}) {
             // edge-case: some UIs ask for a perspective matrix on first frame before
@@ -51,7 +51,7 @@ namespace osc
             return Mat<4, 4, T>{T(1)};
         }
 
-        const T tan_half_fovy = tan(vertical_fov / static_cast<T>(2));
+        const T tan_half_fovy = tan(vertical_field_of_view / static_cast<T>(2));
 
         Mat<4, 4, T> rv(static_cast<T>(0));
         rv[0][0] = static_cast<T>(1) / (aspect * tan_half_fovy);

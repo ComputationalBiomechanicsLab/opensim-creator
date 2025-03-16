@@ -17,7 +17,7 @@ namespace
     {
         MouseCapturingCamera rv;
         rv.set_position({0.0f, 0.0f, 5.0f});
-        rv.set_vertical_fov(45_deg);
+        rv.set_vertical_field_of_view(45_deg);
         rv.set_clipping_planes({0.1f, 50.0f});
         rv.set_background_color(Color::black());
         return rv;

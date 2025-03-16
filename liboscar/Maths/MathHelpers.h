@@ -30,7 +30,7 @@ namespace osc { struct Tetrahedron; }
 namespace osc
 {
     // computes horizontal FoV for a given vertical FoV + aspect ratio
-    Radians vertical_to_horizontal_fov(Radians vertical_fov, float aspect_ratio);
+    Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
 
     // returns an XY NDC point converted from a screen/viewport point
     //

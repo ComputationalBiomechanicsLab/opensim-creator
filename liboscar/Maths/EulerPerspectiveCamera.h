@@ -21,7 +21,7 @@ namespace osc
         Vec3 origin = {};
         Radians pitch = Degrees{0};
         Radians yaw = Degrees{180};
-        Radians vertical_fov = Degrees{35};
+        Radians vertical_field_of_view = Degrees{35};
         float znear = 0.1f;
         float zfar = 1000.0f;
     };

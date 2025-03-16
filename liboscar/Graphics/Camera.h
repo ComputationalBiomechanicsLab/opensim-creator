@@ -43,26 +43,26 @@ namespace osc
 
         // get/set the height of the orthographic projection plane that the camera will use
         //
-        // invalid if `projection() != CameraProjection::Orthographic` or the projection
-        // matrix has been overriden with `set_projection_matrix_override`, the width of the
-        // orthographic plane is calculated from the aspect ratio of the render target at
-        // runtime.
+        // undefined behavior if `projection() != CameraProjection::Orthographic`, or the
+        // projection matrix has been overriden with `set_projection_matrix_override`, the
+        // width of the orthographic plane is calculated from the aspect ratio of the render
+        // target at runtime.
         float orthographic_size() const;
         void set_orthographic_size(float);
 
         // get/set the vertical field-of-view angle of the viewer's projection camera
         //
-        // invalid if `projection() != CameraProjection::Perspective` or the projection matrix
+        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
         // has been overriden with `set_projection_matrix_override`.
-        Radians vertical_fov() const;
-        void set_vertical_fov(Radians);
+        Radians vertical_field_of_view() const;
+        void set_vertical_field_of_view(Radians);
 
         // returns the horizontal field-of-view angle of the viewer's projection camera, assuming
         // it's rendering to a render target with the given `aspect_ratio`.
         //
-        // invalid if `projection() != CameraProjection::Perspective` or the projection matrix
+        // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
         // has been overriden with `set_projection_matrix_override`.
-        Radians horizontal_fov(float aspect_ratio) const;
+        Radians horizontal_field_of_view(float aspect_ratio) const;
 
         // get/set the distance, in worldspace units, between both the camera and the nearest
         // clipping plane, and the camera and the farthest clipping plane

@@ -78,11 +78,11 @@ TEST(Camera, uses_value_comparision)
 
     ASSERT_EQ(c1, c2);
 
-    c1.set_vertical_fov(1337_deg);
+    c1.set_vertical_field_of_view(1337_deg);
 
     ASSERT_NE(c1, c2);
 
-    c2.set_vertical_fov(1337_deg);
+    c2.set_vertical_field_of_view(1337_deg);
 
     ASSERT_EQ(c1, c2);
 }
@@ -177,25 +177,25 @@ TEST(Camera, set_projection_makes_getter_return_the_projection)
     ASSERT_EQ(camera.projection(), new_projection);
 }
 
-TEST(Camera, vertical_fov_defaults_to_90_deg)
+TEST(Camera, vertical_field_of_view_defaults_to_90_deg)
 {
     const Camera camera;
-    ASSERT_EQ(camera.vertical_fov(), 90_deg);
+    ASSERT_EQ(camera.vertical_field_of_view(), 90_deg);
 }
 
-TEST(Camera, set_vertical_fov_sets_the_vertical_fov)
+TEST(Camera, set_vertical_field_of_view_sets_the_vertical_field_of_view)
 {
     Camera camera;
 
-    ASSERT_EQ(camera.vertical_fov(), 90_deg);
-    camera.set_vertical_fov(120_deg);
-    ASSERT_EQ(camera.vertical_fov(), 120_deg);
+    ASSERT_EQ(camera.vertical_field_of_view(), 90_deg);
+    camera.set_vertical_field_of_view(120_deg);
+    ASSERT_EQ(camera.vertical_field_of_view(), 120_deg);
 }
 
-TEST(Camera, horizontal_fov_equals_vertical_fov_when_aspect_ratio_is_1)
+TEST(Camera, horizontal_field_of_view_equals_vertical_field_of_view_when_aspect_ratio_is_1)
 {
     const Camera camera;
-    ASSERT_FLOAT_EQ(camera.vertical_fov().count(), camera.horizontal_fov(1.0f).count());
+    ASSERT_FLOAT_EQ(camera.vertical_field_of_view().count(), camera.horizontal_field_of_view(1.0f).count());
 }
 
 TEST(Camera, set_projection_on_copy_makes_it_compare_nonequal_to_original)
@@ -351,7 +351,7 @@ TEST(Camera, set_projection_matrix_override_makes_projection_matrix_return_the_o
     ASSERT_EQ(camera.projection_matrix(1.0f), projection_matrix);
 }
 
-TEST(Camera, set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_fov_etc)
+TEST(Camera, set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_field_of_view_etc)
 {
     Camera camera;
     const Mat4 initial_projection_matrix = camera.projection_matrix(1.0f);

@@ -1112,7 +1112,7 @@ bool osc::DrawAdvancedParamsEditor(
     edited = ui::draw_float_meters_slider("radius", params.camera.radius, 0.0f, 10.0f) || edited;
     edited = ui::draw_angle_slider("theta", params.camera.theta, 0_deg, 360_deg) || edited;
     edited = ui::draw_angle_slider("phi", params.camera.phi, 0_deg, 360_deg) || edited;
-    edited = ui::draw_angle_slider("fov", params.camera.vertical_fov, 0_deg, 360_deg) || edited;
+    edited = ui::draw_angle_slider("vertial FoV", params.camera.vertical_field_of_view, 0_deg, 360_deg) || edited;
     edited = ui::draw_float_meters_input("znear", params.camera.znear) || edited;
     edited = ui::draw_float_meters_input("zfar", params.camera.zfar) || edited;
     ui::start_new_line();

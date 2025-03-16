@@ -5744,19 +5744,19 @@ public:
         orthographic_size_ = size;
     }
 
-    Radians vertical_fov() const
+    Radians vertical_field_of_view() const
     {
-        return perspective_fov_;
+        return perspective_vertical_field_of_view;
     }
 
-    void set_vertical_fov(Radians size)
+    void set_vertical_field_of_view(Radians size)
     {
-        perspective_fov_ = size;
+        perspective_vertical_field_of_view = size;
     }
 
-    Radians horizontal_fov(float aspect_ratio) const
+    Radians horizontal_field_of_view(float aspect_ratio) const
     {
-        return vertical_to_horizontal_fov(vertical_fov(), aspect_ratio);
+        return vertical_to_horizontal_field_of_view(vertical_field_of_view(), aspect_ratio);
     }
 
     CameraClippingPlanes clipping_planes() const
@@ -5886,7 +5886,7 @@ public:
         }
         else if (camera_projection_ == CameraProjection::Perspective) {
             return perspective(
-                perspective_fov_,
+                perspective_vertical_field_of_view,
                 aspect_ratio,
                 clipping_planes_.znear,
                 clipping_planes_.zfar
@@ -6017,7 +6017,7 @@ private:
     Color background_color_ = Color::clear();
     CameraProjection camera_projection_ = CameraProjection::Default;
     float orthographic_size_ = 2.0f;
-    Radians perspective_fov_ = 90_deg;
+    Radians perspective_vertical_field_of_view = 90_deg;
     CameraClippingPlanes clipping_planes_{1.0f, -1.0f};
     CameraClearFlags clear_flags_ = CameraClearFlag::Default;
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
@@ -6075,19 +6075,19 @@ void osc::Camera::set_orthographic_size(float size)
     impl_.upd()->set_orthographic_size(size);
 }
 
-Radians osc::Camera::vertical_fov() const
+Radians osc::Camera::vertical_field_of_view() const
 {
-    return impl_->vertical_fov();
+    return impl_->vertical_field_of_view();
 }
 
-void osc::Camera::set_vertical_fov(Radians vertical_fov)
+void osc::Camera::set_vertical_field_of_view(Radians vertical_field_of_view)
 {
-    impl_.upd()->set_vertical_fov(vertical_fov);
+    impl_.upd()->set_vertical_field_of_view(vertical_field_of_view);
 }
 
-Radians osc::Camera::horizontal_fov(float aspect_ratio) const
+Radians osc::Camera::horizontal_field_of_view(float aspect_ratio) const
 {
-    return impl_->horizontal_fov(aspect_ratio);
+    return impl_->horizontal_field_of_view(aspect_ratio);
 }
 
 CameraClippingPlanes osc::Camera::clipping_planes() const
