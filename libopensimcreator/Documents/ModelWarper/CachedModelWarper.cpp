@@ -67,24 +67,6 @@ namespace
             return std::make_unique<InMemoryMesh>(mesh);
         }
     }
-
-    void OverwriteGeometry(
-        OpenSim::Model& model,
-        OpenSim::Geometry& oldGeometry,
-        std::unique_ptr<OpenSim::Geometry> newGeometry)
-    {
-        newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
-        newGeometry->set_Appearance(oldGeometry.get_Appearance());
-        newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
-        newGeometry->setName(oldGeometry.getName());
-        OpenSim::Component* owner = UpdOwner(model, oldGeometry);
-        OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
-        OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
-        InitializeModel(model);
-        InitializeState(model);
-        owner->addComponent(newGeometry.release());
-        FinalizeConnections(model);
-    }
 }
 
 class osc::mow::CachedModelWarper::Impl final {
