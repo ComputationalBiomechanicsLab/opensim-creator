@@ -483,7 +483,7 @@ namespace
             const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
             if (not landmarksFrame) {
                 std::stringstream msg;
-                msg << get_landmarks_frame() << ": Cannot find this frame in the source model";
+                msg << get_landmarks_frame() << ": Cannot find this frame in the source model (or it isn't a Frame).";
                 messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
             }
 
@@ -593,7 +593,7 @@ namespace
                 const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
                 if (not mesh) {
                     std::stringstream msg;
-                    msg << get_meshes(i) << ": Cannot find this mesh in the source model";
+                    msg << get_meshes(i) << ": Cannot find entry in 'meshes' in the source model (or it isn't a Mesh).";
                     messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
                 }
             }
@@ -662,7 +662,7 @@ namespace
                 const auto* station = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
                 if (not station) {
                     std::stringstream msg;
-                    msg << get_stations(i) << ": Cannot find this station in the source model";
+                    msg << get_stations(i) << ": Cannot a Station in 'stations' in the source model (or it isn't a Station).";
                     messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
                 }
             }
@@ -730,7 +730,7 @@ namespace
                 const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
                 if (not pathPoint) {
                     std::stringstream msg;
-                    msg << get_path_points(i) << ": Cannot find this path point in the source model";
+                    msg << get_path_points(i) << ": Cannot find a PathPoint in 'path_points' in the source model (or it isn't a PathPoint)";
                     messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
                 }
             }
@@ -800,7 +800,7 @@ namespace
                 const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
                 if (not offsetFrame) {
                     std::stringstream msg;
-                    msg << get_offset_frames(i) << ": Cannot find this `PhysicalOffsetFrame` in the source model";
+                    msg << get_offset_frames(i) << ": Cannot find a `PhysicalOffsetFrame` in 'offset_frames' in the source model (or it isn't a `PhysicalOffsetFrame`).";
                     messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
                 }
             }
@@ -847,11 +847,11 @@ namespace
     class ThinPlateSplineMeshSubstitutionScalingStep final : public ThinPlateSplineScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineMeshSubstitutionScalingStep, ThinPlateSplineScalingStep)
     public:
-        OpenSim_DECLARE_PROPERTY(source_mesh_component_path, std::string, "TODO");
-        OpenSim_DECLARE_PROPERTY(destination_mesh_file, std::string, "TODO");
+        OpenSim_DECLARE_PROPERTY(source_mesh_component_path, std::string, "Absolute path (e.g. `/bodyset/body/geom_1`) to a mesh component in the model that should be substituted.");
+        OpenSim_DECLARE_PROPERTY(destination_mesh_file, std::string, "Filesystem path, potentially relative to the model file, to a mesh file that should be warped + substitute 'source_mesh_component_path'");
 
         explicit ThinPlateSplineMeshSubstitutionScalingStep() :
-            ThinPlateSplineScalingStep{"TODO: Substitute Mesh via Inverse Thin-Plate Spline (TPS) Affine Transform"}
+            ThinPlateSplineScalingStep{"Substitute Mesh via Inverse Thin-Plate Spline (TPS) Affine Transform"}
         {
             setDescription("Substitutes the source mesh in the model with a new mesh file. The mesh's affine rotation and translation (i.e. frame) will be computed from the inverse of the Thin-Plate Spline (TPS) between the source and destination landmarks (i.e. it'll use them to figure out how to go _from_ the destination mesh coordinate system _to_ the source mesh coordinate system in a way that doesn't rescale or warp the destination mesh).");
             constructProperty_source_mesh_component_path("");
@@ -888,7 +888,7 @@ namespace
             const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
             if (not sourceMesh) {
                 std::stringstream msg;
-                msg << get_landmarks_frame() << ": Cannot find `source_mesh_component_path` in the source model";
+                msg << get_landmarks_frame() << ": Cannot find Mesh 'source_mesh_component_path' in the source model (or it isn't a Mesh).";
                 messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
             }
 
@@ -972,6 +972,74 @@ namespace
         }
     };
 
+    class RecalculateWrapCylinderRadiusFromStationScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderRadiusFromStationScalingStep, ThinPlateSplineScalingStep)
+    public:
+        OpenSim_DECLARE_PROPERTY(station_path, std::string, "Absolute path (e.g. `/componentset/some_station`) to a `Station` component in the model");
+        OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
+
+        explicit RecalculateWrapCylinderRadiusFromStationScalingStep() :
+            ScalingStep{"Recalculate WrapCylinder Radius from Station Projection onto its Midline"}
+        {
+            setDescription("Recalculates the 'radius' of a `WrapCylinder` component, located at `wrap_cylinder_path`, as the distance between the `Station`, located at `station_path`, and the cylinder's (infinitely long) midline.");
+            constructProperty_station_path("");
+            constructProperty_wrap_cylinder_path("");
+        }
+    private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model& model) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+
+            // Ensure `station_path` exists in the model (and is a `Station`)
+            const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
+            if (not station) {
+                std::stringstream msg;
+                msg << get_station_path() << ": Cannot find `station_path` in the source model (or it isn't a Station).";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure `wrap_cylinder_path` exists in the model (and is a `WrapCylinder`)
+            const auto* wrapCylinder = FindComponent<OpenSim::WrapCylinder>(model, get_wrap_cylinder_path());
+            if (not wrapCylinder) {
+                std::stringstream msg;
+                msg << get_wrap_cylinder_path() << ": Cannot find 'wrap_cylinder_path' in the source model (or it isn't a `WrapCylinder`).";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model&,
+            OpenSim::Model& resultModel) const final
+        {
+            const auto* station = FindComponent<OpenSim::Station>(resultModel, get_station_path());
+            OSC_ASSERT_ALWAYS(station && "could not find a station in the model");
+            auto* wrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinder_path());
+            OSC_ASSERT_ALWAYS(wrapCylinder && "could not find a wrap cylinder in the model");
+
+            // Put the station into the cylinder's reference frame
+            const SimTK::Transform cylinder2cylinderFrame = wrapCylinder->getTransform();
+            const SimTK::Transform cylinderFrame2ground = wrapCylinder->getFrame().getTransformInGround(resultModel.getWorkingState());
+            const SimTK::Transform ground2cylinder = (cylinderFrame2ground * cylinder2cylinderFrame).invert();
+            const SimTK::Vec3 pCylinder = ground2cylinder * station->getLocationInGround(resultModel.getWorkingState());
+
+            // In the cylinder's frame, Z (from origin) is the centerline of the cylinder, so the easiest way to
+            // figure out the new radius is just to compute the XY norm from the origin and ignore Z.
+            const auto newRadius = SimTK::Vec2{pCylinder[0], pCylinder[1]}.norm();
+
+            // Update accordingly
+            wrapCylinder->set_radius(newRadius);
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
+        }
+    };
+
     // Compile-time `Typelist` containing all `ScalingStep`s that this UI handles.
     using AllScalingStepTypes = Typelist<
         ThinPlateSplineMeshesScalingStep,
@@ -979,7 +1047,8 @@ namespace
         ThinPlateSplinePathPointsScalingStep,
         ThinPlateSplineOffsetFrameTranslationScalingStep,
         ThinPlateSplineMeshSubstitutionScalingStep,
-        BodyMassesScalingStep
+        BodyMassesScalingStep,
+        RecalculateWrapCylinderRadiusFromStationScalingStep
     >;
 
     // Returns a list of `ScalingStep` prototypes, so that downstream code is able to present
