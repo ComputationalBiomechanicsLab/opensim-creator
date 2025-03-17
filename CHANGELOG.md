@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Moment arms in the muscle plotter now have units of meters (previously, moment arms
+  were listed as 'Unitless', #1014).
 - The graphics implementation was updated to support a wider range
   of material property types (e.g. arrays of color buffers).
 

@@ -218,7 +218,7 @@ namespace
 
     PlottableOutput GetDefaultMuscleOutput()
     {
-        return PlottableOutput{"Moment Arm", "Unitless", GetMomentArm};
+        return PlottableOutput{"Moment Arm", "m", GetMomentArm};
     }
 
     std::vector<PlottableOutput> GenerateMuscleOutputs()
