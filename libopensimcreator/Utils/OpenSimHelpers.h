@@ -887,6 +887,16 @@ namespace osc
         return static_cast<T&>(AttachGeometry(frame, std::move(p)));
     }
 
+    // Tries to overwride `oldGeometry` in the given `model` with `newGeometry`.
+    //
+    // This is useful when transforming geometry (e.g. TPS warping) and overwriting it
+    // in a model.
+    void OverwriteGeometry(
+        OpenSim::Model&,
+        OpenSim::Geometry& oldGeometry,
+        std::unique_ptr<OpenSim::Geometry> newGeometry
+    );
+
     OpenSim::PhysicalOffsetFrame& AddFrame(OpenSim::Joint&, std::unique_ptr<OpenSim::PhysicalOffsetFrame>);
 
     OpenSim::WrapObject& AddWrapObject(OpenSim::PhysicalFrame&, std::unique_ptr<OpenSim::WrapObject>);
@@ -972,6 +982,24 @@ namespace osc
     U& Assign(OpenSim::Set<T, C>& set, size_t index, const U& el)
     {
         return Assign(set, index, Clone(el));
+    }
+
+    // Tries to delete an item from an `OpenSim::Set`.
+    //
+    // Returns `true` if the item was found and deleted; otherwise, returns `false`.
+    template<
+        std::derived_from<OpenSim::Object> T,
+        std::derived_from<T> U,
+        std::derived_from<OpenSim::Object> C
+    >
+    bool TryDeleteItemFromSet(OpenSim::Set<T, C>& set, const U* item)
+    {
+        for (size_t i = 0; i < size(set); ++i) {
+            if (&At(set, i) == item) {
+                return EraseAt(set, i);
+            }
+        }
+        return false;
     }
 
     // tries to get the "parent" frame of the given component (if available)

@@ -36,51 +36,6 @@ using namespace osc::mow;
 // Scaling document related functions/datastructures.
 namespace
 {
-    // Tries to delete an item from an `OpenSim::Set`.
-    //
-    // Returns `true` if the item was found and deleted; otherwise, returns `false`.
-    template<typename T, typename TSetBase = OpenSim::Object>
-    bool TryDeleteItemFromSet(OpenSim::Set<T, TSetBase>& set, const T* item)
-    {
-        for (size_t i = 0; i < size(set); ++i) {
-            if (&At(set, i) == item) {
-                return EraseAt(set, i);
-            }
-        }
-        return false;
-    }
-
-    // Tries to overwride `oldGeometry` in the given `model` with `newGeometry`.
-    //
-    // This is useful when transforming geometry (e.g. TPS warping) and overwriting it
-    // in a model.
-    void OverwriteGeometry(
-        OpenSim::Model& model,
-        OpenSim::Geometry& oldGeometry,
-        std::unique_ptr<OpenSim::Geometry> newGeometry)
-    {
-        newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
-        newGeometry->set_Appearance(oldGeometry.get_Appearance());
-        newGeometry->connectSocket_frame(oldGeometry.getConnectee("frame"));
-        newGeometry->setName(oldGeometry.getName());
-        OpenSim::Component* owner = UpdOwner(model, oldGeometry);
-        OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
-        OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
-        InitializeModel(model);
-        InitializeState(model);
-        // TODO/HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
-        // in frames, because we don't have a way to delete things from the generic
-        // component list (yet) #1003
-        if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
-            fr->attachGeometry(newGeometry.release());
-        }
-        else {
-            owner->addComponent(newGeometry.release());
-        }
-
-        FinalizeConnections(model);
-    }
-
     // A single, potentially user-provided, scaling parameter.
     //
     // It is the responsibility of the engine/UI to gather/provide this to the
@@ -189,7 +144,7 @@ namespace
     };
 
     // A cache that is (presumed to be) persisted between multiple executions of the
-    // model warping pipeline, in order to improve performance.
+    // model warping pipeline, in order to improve runtime performance.
     class ScalingCache final {
     public:
         std::unique_ptr<InMemoryMesh> lookupTPSMeshWarp(
@@ -391,6 +346,17 @@ namespace
             implForEachScalingParameterDeclaration(callback);
         }
 
+        // Returns a sequence of `ScalingStepValidationMessage`, which should be empty,
+        // or non-errors, before higher-level engines call `applyScalingStep` (otherwise,
+        // an exception may be thrown by `applyScalingStep`).
+        std::vector<ScalingStepValidationMessage> validate(
+            ScalingCache& scalingCache,
+            const ScalingParameters& scalingParameters,
+            const OpenSim::Model& sourceModel) const
+        {
+            return implValidate(scalingCache, scalingParameters, sourceModel);
+        }
+
         // Applies this `ScalingStep`'s scaling function in-place to the `resultModel`. The
         // original `sourceModel` is also provided, if relevant.
         //
@@ -406,18 +372,6 @@ namespace
                 implApplyScalingStep(scalingCache, scalingParameters, sourceModel, resultModel);
             }
         }
-
-        // Returns a sequence of `ScalingStepValidationMessage`, which should be empty,
-        // or non-errors, before higher-level engines call `applyScalingStep` (otherwise,
-        // an exception may be thrown by `applyScalingStep`).
-        std::vector<ScalingStepValidationMessage> validate(
-            ScalingCache& scalingCache,
-            const ScalingParameters& scalingParameters,
-            const OpenSim::Model& sourceModel) const
-        {
-            return implValidate(scalingCache, scalingParameters, sourceModel);
-        }
-
     private:
         // Implementors should provide the callback with any `ScalingParameterDeclaration`s in order
         // to ensure that the runtime can later provide the `ScalingParameterValue` during model
@@ -540,10 +494,10 @@ namespace
         // algorithm.
         ThinPlateSplineScalingStepCommonParams calcTPSScalingStepCommonParams(
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel) const
+            OpenSim::Model& resultModel) const
         {
             // Lookup/validate warping inputs.
-            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_source_landmarks_file().empty());
@@ -553,7 +507,7 @@ namespace
             const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
 
             OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
-            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(resultModel, get_landmarks_frame());
             OSC_ASSERT_ALWAYS(landmarksFrame && "could not find the landmarks frame in the model");
 
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
@@ -594,9 +548,9 @@ namespace
 
         ThinPlateSplineScalingStepCommonParams calcTPSScalingStepCommonParams(
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel) const
+            OpenSim::Model& resultModel) const
         {
-            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, sourceModel);
+            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, resultModel);
             rv.tpsInputs.applyAffineTranslation = get_apply_affine_translation();
             rv.tpsInputs.applyAffineScale = get_apply_affine_scale();
             rv.tpsInputs.applyAffineRotation = get_apply_affine_rotation();
@@ -650,19 +604,19 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
+            const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
 
             // Warp each mesh specified by the `meshes` property.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
-                // Find the mesh in the source model and use it produce the warped mesh.
-                const auto* mesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                // Find the input mesh and use it produce the warped mesh.
+                const auto* mesh = FindComponent<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(mesh && "could not find a mesh in the source model");
                 std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
-                    sourceModel,
-                    sourceModel.getWorkingState(),
+                    resultModel,
+                    resultModel.getWorkingState(),
                     *mesh,
                     *commonParams.landmarksFrame,
                     commonParams.tpsInputs
@@ -673,7 +627,10 @@ namespace
                 auto* resultMesh = FindComponentMut<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(resultMesh && "could not find a corresponding mesh in the result model");
                 OverwriteGeometry(resultModel, *resultMesh, std::move(warpedMesh));
+                OSC_ASSERT_ALWAYS(FindComponent<InMemoryMesh>(resultModel, get_meshes(i)) != nullptr);
             }
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -716,20 +673,20 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
+            const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
 
             // Warp each station specified by the `stations` property.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
-                // Find the station in the source model and use it produce the warped station.
-                const auto* station = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
+                // Find the input station and use it produce the warped station.
+                const auto* station = FindComponent<OpenSim::Station>(resultModel, get_stations(i));
                 OSC_ASSERT_ALWAYS(station && "could not find a station in the source model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
-                    sourceModel,
-                    sourceModel.getWorkingState(),
+                    resultModel,
+                    resultModel.getWorkingState(),
                     station->get_location(),
                     station->getParentFrame(),
                     *commonParams.landmarksFrame,
@@ -740,6 +697,8 @@ namespace
                 OSC_ASSERT_ALWAYS(resultStation && "could not find a corresponding station in the result model");
                 resultStation->set_location(warpedLocation);
             }
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -782,20 +741,20 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
+            const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
 
             // Warp each path point specified by the `path_points` property.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(resultModel, get_path_points(i));
                 OSC_ASSERT_ALWAYS(pathPoint && "could not find a path point in the source model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
-                    sourceModel,
-                    sourceModel.getWorkingState(),
+                    resultModel,
+                    resultModel.getWorkingState(),
                     pathPoint->get_location(),
                     pathPoint->getParentFrame(),
                     *commonParams.landmarksFrame,
@@ -806,6 +765,8 @@ namespace
                 OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a corresponding path point in the result model");
                 resultPathPoint->set_location(warpedLocation);
             }
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -850,21 +811,21 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
+            const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
 
             // Warp each offset frame `translation` specified by the `offset_frames` property.
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
                 OSC_ASSERT_ALWAYS(offsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
-                    sourceModel,
-                    sourceModel.getWorkingState(),
+                    resultModel,
+                    resultModel.getWorkingState(),
                     offsetFrame->get_translation(),
                     offsetFrame->getParentFrame(),
                     *commonParams.landmarksFrame,
@@ -875,6 +836,8 @@ namespace
                 OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
                 resultOffsetFrame->set_translation(warpedLocation);
             }
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -935,21 +898,22 @@ namespace
         void implApplyScalingStep(
             ScalingCache& cache,
             const ScalingParameters& parameters,
-            const OpenSim::Model& sourceModel,
+            const OpenSim::Model&,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
 
             // Lookup/validate warping inputs.
-            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(sourceModel);
+            const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
             OSC_ASSERT_ALWAYS(modelFilesystemLocation && "The source model has no filesystem location");
 
             OSC_ASSERT_ALWAYS(not get_destination_mesh_file().empty());
             const std::filesystem::path destinationMeshPath = modelFilesystemLocation->parent_path() / get_destination_mesh_file();
 
             OSC_ASSERT_ALWAYS(not get_source_mesh_component_path().empty());
-            const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_source_mesh_component_path());
+            const auto* sourceMesh = FindComponent<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
+            OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(sourceMesh) or dynamic_cast<const InMemoryMesh*>(sourceMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             OSC_ASSERT_ALWAYS(sourceMesh && "could not find `source_mesh_component_path` in the model");
 
             // TODO: everything below is a hack because manipulating models
@@ -961,8 +925,9 @@ namespace
                 (commonParams.tpsInputs.destinationLandmarksPrescale/commonParams.tpsInputs.sourceLandmarksPrescale) * sourceMesh->get_scale_factors();
 
             // Find existing mesh
-            auto* destinationMesh = FindComponentMut<OpenSim::Mesh>(resultModel, get_source_mesh_component_path());
+            auto* destinationMesh = FindComponentMut<OpenSim::Geometry>(resultModel, get_source_mesh_component_path());
             OSC_ASSERT_ALWAYS(destinationMesh && "could not find `source_mesh_component_path` in the result model");
+            OSC_ASSERT_ALWAYS((dynamic_cast<const OpenSim::Mesh*>(destinationMesh) or dynamic_cast<const InMemoryMesh*>(destinationMesh)) && "'source_mesh_component_path' exists in the model but isn't mesh-like");
             const std::string existingMeshName = destinationMesh->getName();
             // Figure out existing mesh's frame
             auto* oldParentFrame = FindComponentMut<OpenSim::PhysicalFrame>(resultModel, destinationMesh->getFrame().getAbsolutePath());
@@ -983,6 +948,9 @@ namespace
             newMesh->set_mesh_file(destinationMeshPath.string());
             newMesh->updSocket("frame").setConnecteePath(newFrame->getAbsolutePathString());
             resultModel.addComponent(newMesh.release());
+
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -1369,8 +1337,8 @@ namespace
             // Create an independent copy of the source model, which will be scaled in-place.
             OpenSim::Model resultModel = sourceModel->getModel();
             resultModel.clearConnections();
-            resultModel.finalizeConnections(resultModel);
-            resultModel.finalizeFromProperties();
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
 
             if (not hasScalingSteps()) {
                 // There are no scaling steps, so a copy of the source model is a scaled model (trivially).

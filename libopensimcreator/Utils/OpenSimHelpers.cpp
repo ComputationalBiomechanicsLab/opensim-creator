@@ -1026,6 +1026,10 @@ std::vector<const OpenSim::WrapObject*> osc::GetAllWrapObjectsReferencedBy(const
         rv.push_back(wrapSet.get(i).getWrapObject());
     }
     return rv;
+
+    // /bodyset/pelvis/pelvis_physicalbodyoffset/pelvis_geom
+    // /bodyset/pelvis/pelvis_physicalbodyoffset/pelvis_geom
+    // /bodyset/pelvis/pelvis_physicalbodyoffset/pelvis_geom
 }
 
 bool osc::HasModelFileExtension(const std::filesystem::path& path)
@@ -1668,6 +1672,33 @@ OpenSim::Geometry& osc::AttachGeometry(OpenSim::Frame& frame, std::unique_ptr<Op
     OpenSim::Geometry& rv = *p;
     frame.attachGeometry(p.release());
     return rv;
+}
+
+void osc::OverwriteGeometry(
+    OpenSim::Model& model,
+    OpenSim::Geometry& oldGeometry,
+    std::unique_ptr<OpenSim::Geometry> newGeometry)
+{
+    newGeometry->set_scale_factors(oldGeometry.get_scale_factors());
+    newGeometry->set_Appearance(oldGeometry.get_Appearance());
+    newGeometry->updSocket("frame").setConnecteePath(oldGeometry.getSocket("frame").getConnecteePath());
+    newGeometry->setName(oldGeometry.getName());
+    OpenSim::Component* owner = UpdOwner(model, oldGeometry);
+    OSC_ASSERT_ALWAYS(owner && "the mesh being replaced has no owner? cannot overwrite a root component");
+    OSC_ASSERT_ALWAYS(TryDeleteComponentFromModel(model, oldGeometry) && "cannot delete old mesh from model during warping");
+    InitializeModel(model);
+    InitializeState(model);
+    // TODO/HACK: prefer `<attachedGeometry>` block when overwriting meshes defined
+    // in frames, because we don't have a way to delete things from the generic
+    // component list (yet) #1003
+    if (auto* fr = dynamic_cast<OpenSim::Frame*>(owner)) {
+        fr->attachGeometry(newGeometry.release());
+    }
+    else {
+        owner->addComponent(newGeometry.release());
+    }
+
+    FinalizeConnections(model);
 }
 
 const OpenSim::PhysicalFrame* osc::TryGetParentToGroundFrame(const OpenSim::Component& component)
