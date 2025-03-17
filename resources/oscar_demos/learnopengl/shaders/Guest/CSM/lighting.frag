@@ -52,12 +52,22 @@ in vec3 WorldPos0;
 
 out vec4 FragColor;
 
+float ReadDepthFromShadowMap(int CascadeIndex, vec2 coords)
+{
+    switch (CascadeIndex) {
+    case 0:  return texture(gShadowMap[0], coords).x;
+    case 1:  return texture(gShadowMap[1], coords).x;
+    case 2:  return texture(gShadowMap[2], coords).x;
+    default: return 0.0;
+    }
+}
+
 float CalcShadowFactor(int CascadeIndex, vec4 LightSpacePos)
 {
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
     vec2 UVCoords = 0.5*ProjCoords.xy + 0.5;
     float z = 0.5 * ProjCoords.z + 0.5;
-    float Depth = texture(gShadowMap[CascadeIndex], UVCoords).x;
+    float Depth = ReadDepthFromShadowMap(CascadeIndex, UVCoords);
 
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = Normal0;
