@@ -173,6 +173,8 @@ void createStateStorageFile() {
 
 void testFromStatesStorageGivesCorrectStates() {
 
+    createStateStorageFile();
+
     // Read in trajectory.
     // -------------------
     Model model("gait2354_simbody.osim");
@@ -396,6 +398,7 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 }
 
 void testFromStatesStorageUniqueColumnLabels() {
+    createStateStorageFile();
 
     Model model("gait2354_simbody.osim");
     Storage sto(statesStoFname);
