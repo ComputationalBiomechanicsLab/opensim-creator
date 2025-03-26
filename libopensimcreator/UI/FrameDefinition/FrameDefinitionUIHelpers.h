@@ -10,7 +10,7 @@ namespace osc { class Widget; }
 namespace osc::fd
 {
     void ActionPromptUserToAddMeshFiles(
-        IModelStatePair&
+        std::shared_ptr<IModelStatePair>
     );
 
     std::unique_ptr<UndoableModelStatePair> MakeUndoableModelFromSceneModel(

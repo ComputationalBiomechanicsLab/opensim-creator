@@ -29,6 +29,7 @@ namespace osc
 
         bool has_error() const { return not error_.empty(); }
         CStringView error() const { return error_; }
+        [[nodiscard]] bool empty() const { return filelist_.empty(); }
         size_t size() const { return filelist_.size(); }
         auto begin() const { return filelist_.begin(); }
         auto end() const { return filelist_.end(); }

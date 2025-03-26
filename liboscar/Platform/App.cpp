@@ -1052,6 +1052,10 @@ public:
             default_location.empty() ? nullptr : default_location.c_str(),
             allow_many
         );
+
+        // Ensure the UI immediately pumps the event queue etc. so that there isn't
+        // a delay between the request and when the user sees the dialog.
+        request_redraw();
     }
 
     std::vector<Monitor> monitors() const

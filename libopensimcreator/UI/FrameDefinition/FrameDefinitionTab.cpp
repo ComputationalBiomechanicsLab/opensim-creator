@@ -733,13 +733,13 @@ namespace
     }
 
     void DrawRightClickedNothingContextMenu(
-        IModelStatePair& model)
+        std::shared_ptr<IModelStatePair> model)
     {
         DrawNothingRightClickedContextMenuHeader();
         DrawContextMenuSeparator();
 
         if (ui::begin_menu(OSC_ICON_PLUS " Add")) {
-            if (ui::draw_menu_item(OSC_ICON_CUBES " Meshes", {}, nullptr, model.canUpdModel())) {
+            if (ui::draw_menu_item(OSC_ICON_CUBES " Meshes", {}, nullptr, model->canUpdModel())) {
                 ActionPromptUserToAddMeshFiles(model);
             }
             ui::end_menu();
@@ -879,7 +879,7 @@ namespace
         {
             const OpenSim::Component* const maybeComponent = FindComponent(m_Model->getModel(), m_ComponentPath);
             if (not maybeComponent) {
-                DrawRightClickedNothingContextMenu(*m_Model);
+                DrawRightClickedNothingContextMenu(m_Model);
             }
             else if (const auto* maybeMesh = dynamic_cast<const OpenSim::Mesh*>(maybeComponent)) {
                 DrawRightClickedMeshContextMenu(*m_PanelManager, m_Model, m_MaybeSourceVisualizerEvent, *maybeMesh);
