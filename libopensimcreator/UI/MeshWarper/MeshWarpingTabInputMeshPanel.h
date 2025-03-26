@@ -489,7 +489,7 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Landmarks from CSV"))
                 {
-                    ActionLoadLandmarksFromCSV(m_State->updUndoable(), m_DocumentIdentifier);
+                    ActionLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                     ui::draw_menu_item("Non-Participating Landmarks from CSV"))

@@ -67,7 +67,7 @@ namespace osc
     void ActionLoadMeshFile(std::shared_ptr<UndoableTPSDocument>, TPSDocumentInputIdentifier);
 
     // loads landmarks from a CSV file into source/destination slot of the document
-    void ActionLoadLandmarksFromCSV(UndoableTPSDocument&, TPSDocumentInputIdentifier);
+    void ActionLoadLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument>, TPSDocumentInputIdentifier);
 
     // loads non-participating landmarks from a CSV file into the source input
     void ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument&);

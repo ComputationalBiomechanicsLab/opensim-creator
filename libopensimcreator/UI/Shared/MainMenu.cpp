@@ -47,9 +47,10 @@ namespace
     const std::span<const FileDialogFilter> GetMotionFileFilters()
     {
         static const auto s_MotionFileFilters = std::to_array<FileDialogFilter>({
-            FileDialogFilter{"OpenSim Storage File (.sto)", "sto"},
-            FileDialogFilter{"OpenSim/SIMM Motion File (.mot)", "mot"},
             FileDialogFilter::all_files(),
+            FileDialogFilter{"Motion Data (*.sto, *.mot)", "sto;mot"},
+            FileDialogFilter{"OpenSim Storage File (*.sto)", "sto"},
+            FileDialogFilter{"OpenSim/SIMM Motion File (*.mot)", "mot"},
         });
 
         return s_MotionFileFilters;

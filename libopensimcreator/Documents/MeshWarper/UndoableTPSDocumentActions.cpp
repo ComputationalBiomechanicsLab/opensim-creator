@@ -211,27 +211,33 @@ void osc::ActionLoadMeshFile(
 }
 
 void osc::ActionLoadLandmarksFromCSV(
-    UndoableTPSDocument& doc,
+    std::shared_ptr<UndoableTPSDocument> doc,
     TPSDocumentInputIdentifier which)
 {
-    const auto maybeCSVPath = prompt_user_to_select_file({"csv"});
-    if (!maybeCSVPath)
-    {
-        return;  // user didn't select anything
-    }
+    App::upd().prompt_user_to_select_file_async(
+        [doc, which](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error or user somehow selected multiple files.
+            }
 
-    std::ifstream fin{*maybeCSVPath};
-    if (!fin)
-    {
-        return;  // some kind of error opening the file
-    }
+            std::ifstream fin{response.front()};
+            if (not fin) {
+                return;  // some kind of error opening the file
+            }
 
-    lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
-    {
-        AddLandmarkToInput(doc.upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
-    });
+            lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
+            {
+                AddLandmarkToInput(doc->upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
+            });
 
-    doc.commit_scratch("loaded landmarks");
+            doc->commit_scratch("loaded landmarks");
+        },
+        {
+            FileDialogFilter::all_files(),
+            FileDialogFilter{"Text CSV (*.csv)", "csv"},
+        }
+    );
 }
 
 void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
