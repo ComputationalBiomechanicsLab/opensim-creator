@@ -123,24 +123,15 @@ namespace osc
         std::span<const std::string_view> file_extensions = {},
         std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
     );
-    inline std::vector<std::filesystem::path> prompt_user_to_select_files(
-        std::initializer_list<std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
-    {
-        return prompt_user_to_select_files(
-            std::span<const std::string_view>{file_extensions},
-            std::move(initial_directory_to_show)
-        );
-    }
 
     // synchronously prompt a user to select a file location for where to save a file
     //
-    // - `maybeOneExtension` can be:
+    // - `maybe_extension` can be:
     //   - std::nullopt, meaning "don't filter by extension"
     //   - or a single extension (e.g. "blend")
     //   - (you can't use multiple extensions with this method)
     //
-    // - `maybeInitialDirectoryToOpen` can be:
+    // - `maybe_initial_directory_to_open` can be:
     //   - std::nullopt, meaning "use a system-defined default"
     //   - a directory to initially show to the user when the prompt opens
     //

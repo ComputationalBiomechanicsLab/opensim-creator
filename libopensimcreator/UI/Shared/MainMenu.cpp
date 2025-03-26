@@ -1,5 +1,6 @@
 #include "MainMenu.h"
 
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
@@ -43,19 +44,6 @@ using namespace osc;
 
 namespace
 {
-
-    const std::span<const FileDialogFilter> GetMotionFileFilters()
-    {
-        static const auto s_MotionFileFilters = std::to_array<FileDialogFilter>({
-            FileDialogFilter::all_files(),
-            FileDialogFilter{"Motion Data (*.sto, *.mot)", "sto;mot"},
-            FileDialogFilter{"OpenSim Storage File (*.sto)", "sto"},
-            FileDialogFilter{"OpenSim/SIMM Motion File (*.mot)", "mot"},
-        });
-
-        return s_MotionFileFilters;
-    }
-
     void LoadMotionAgainstModel(std::shared_ptr<IModelStatePair> model, Widget* parent)
     {
         if (not model) {
