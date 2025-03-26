@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace osc { class FileDialogFilter; }
+
 namespace osc
 {
     // returns a vector of column data if a row could be read; otherwise, returns `std::nullopt`
@@ -24,4 +26,8 @@ namespace osc
         std::ostream&,
         std::span<const std::string> columns
     );
+
+    // Returns a `FileDialogFilter` that filters for CSV file extensions that are supported by
+    // this CSV implementation.
+    const FileDialogFilter& csv_file_dialog_filter();
 }

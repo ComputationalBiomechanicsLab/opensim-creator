@@ -70,7 +70,7 @@ namespace osc
     void ActionLoadLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument>, TPSDocumentInputIdentifier);
 
     // loads non-participating landmarks from a CSV file into the source input
-    void ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument&);
+    void ActionLoadNonParticipatingLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument>);
 
     // saves all source/destination landmarks to a CSV file (matches loading)
     void ActionSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);

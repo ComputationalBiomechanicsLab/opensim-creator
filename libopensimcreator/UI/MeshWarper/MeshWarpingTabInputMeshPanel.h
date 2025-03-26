@@ -494,7 +494,7 @@ namespace osc
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                     ui::draw_menu_item("Non-Participating Landmarks from CSV"))
                 {
-                    ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
+                    ActionLoadNonParticipatingLandmarksFromCSV(m_State->getUndoableSharedPtr());
                 }
                 ui::end_popup();
             }
