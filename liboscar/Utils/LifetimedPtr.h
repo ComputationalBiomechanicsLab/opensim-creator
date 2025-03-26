@@ -86,6 +86,11 @@ namespace osc
             return ptr_;
         }
 
+        T* get_if_not_expired() const
+        {
+            return not expired() ? ptr_ : nullptr;
+        }
+
         T& operator*() const
         {
             assert_within_lifetime();

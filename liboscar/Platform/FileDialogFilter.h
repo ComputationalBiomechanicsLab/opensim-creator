@@ -10,7 +10,7 @@ namespace osc
     // An entry for a list of filters in a file dialog
     class FileDialogFilter final {
     public:
-        // Construct an instance of a `FileDialogFilter`:
+        // Constructs an instance of a `FileDialogFilter`:
         //
         // - `name`    a humnan-readable representation of the filter, e.g. "Images"
         // - `pattern` a semicolon-delimited list of file extensions, e.g. "jpg;png;gif"

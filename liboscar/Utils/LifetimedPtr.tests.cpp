@@ -37,6 +37,12 @@ TEST(LifetimedPtr, default_constructed_get_returns_nullptr)
     ASSERT_EQ(ptr.get(), nullptr);
 }
 
+TEST(LifetimedPtr, default_constructed_get_if_not_expired_returns_nullptr)
+{
+    const LifetimedPtr<const SomeDerivingObject> ptr;
+    ASSERT_EQ(ptr.get_if_not_expired(), nullptr);
+}
+
 TEST(LifetimedPtr, can_be_constructed_from_nullptr)
 {
     [[maybe_unused]] const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
@@ -52,6 +58,12 @@ TEST(LifetimedPtr, nullptr_constructed_get_returns_nullptr)
 {
     const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
     ASSERT_EQ(ptr.get(), nullptr);
+}
+
+TEST(LifetimedPtr, nullptr_constructed_get_if_not_expired_returns_nullptr)
+{
+    const LifetimedPtr<const SomeDerivingObject> ptr{nullptr};
+    ASSERT_EQ(ptr.get_if_not_expired(), nullptr);
 }
 
 TEST(LifetimedPtr, when_constructed_with_expired_lifetime_produced_expired_ptr)
@@ -110,7 +122,7 @@ TEST(LifetimedPtr, upcasted_ptr_is_attached_to_same_lifetime_as_derived_ptr)
     ASSERT_TRUE(base_ptr.expired());
 }
 
-TEST(LifetimePtr, reset_resets_the_ptr)
+TEST(LifetimedPtr, reset_resets_the_ptr)
 {
     const SharedLifetimeBlock lifetime;
     const SomeDerivingObject obj;
@@ -122,13 +134,13 @@ TEST(LifetimePtr, reset_resets_the_ptr)
     ASSERT_FALSE(ptr);
 }
 
-TEST(LifetimePtr, get_returns_nullptr_for_nullptr)
+TEST(LifetimedPtr, get_returns_nullptr_for_nullptr)
 {
     const LifetimedPtr<const SomeDerivingObject> ptr;
-    ASSERT_EQ(ptr, nullptr);
+    ASSERT_EQ(ptr.get(), nullptr);
 }
 
-TEST(LifetimePtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
+TEST(LifetimedPtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
 {
     LifetimedPtr<const SomeDerivingObject> ptr;
     const SomeDerivingObject obj; // doesn't matter if this is in-lifetime
@@ -138,6 +150,33 @@ TEST(LifetimePtr, get_throws_if_non_nullptr_but_with_expired_lifetime)
     }
     ASSERT_TRUE(ptr.expired());
     ASSERT_ANY_THROW({ ptr.get(); });
+}
+
+TEST(LifetimedPtr, get_if_not_expired_returns_nullptr_for_nullptr)
+{
+    const LifetimedPtr<const SomeDerivingObject> ptr;
+    ASSERT_EQ(ptr.get_if_not_expired(), nullptr);
+}
+
+TEST(LifetimedPtr, get_if_not_expired_returns_nullptr_for_non_nullptr_of_expired_lifetime)
+{
+    LifetimedPtr<const SomeDerivingObject> ptr;
+    const SomeDerivingObject obj; // doesn't matter if this is in-lifetime
+    {
+        const SharedLifetimeBlock lifetime;
+        ptr = LifetimedPtr<const SomeDerivingObject>{lifetime, &obj};
+    }
+    ASSERT_EQ(ptr.get_if_not_expired(), nullptr);
+}
+
+TEST(LifetimedPtr, get_if_not_expired_returns_not_nullptr_if_within_lifetime)
+{
+    const SomeDerivingObject obj;
+    const SharedLifetimeBlock lifetime;
+
+    LifetimedPtr<const SomeDerivingObject> ptr{lifetime, &obj};
+
+    ASSERT_EQ(ptr.get_if_not_expired(), &obj);
 }
 
 TEST(LifetimedPtr, throws_if_called_on_non_expired_ptr)
