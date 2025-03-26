@@ -1,6 +1,7 @@
 #include "ModelWarperV3Tab.h"
 
 #include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
@@ -1527,7 +1528,7 @@ namespace
 namespace
 {
     // Top-level UI state that's shared between panels/widget that the UI manipulates.
-    class ModelWarperV3UIState final {
+    class ModelWarperV3UIState final : public std::enable_shared_from_this<ModelWarperV3UIState> {
     public:
 
         explicit ModelWarperV3UIState(Widget* parent) :
@@ -1725,16 +1726,37 @@ namespace
 
         void actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
         {
-            if (not path) {
-                path = prompt_user_to_select_file({"osim"});
-            }
-
             if (path) {
-                App::singleton<RecentFiles>()->push_back(*path);
-                m_ScalingState->upd_scratch().loadSourceModelFromOsim(*path);
-                updateScaledModel();
-                m_ScalingState->commit_scratch("Loaded osim file");
+                actionOpenOsim(*path);
             }
+            else {
+                if (not shared_from_this()) {
+                    log_critical("can't open osim file selection dialog because the UI state isn't shared");
+                    return;
+                }
+
+                App::upd().prompt_user_to_select_file_async(
+                    [state = shared_from_this()](FileDialogResponse response)
+                    {
+                        if (not state) {
+                            return;  // Something bad has happened.
+                        }
+                        if (response.size() != 1) {
+                            return;  // Error, cancellation, or the user somehow selected >1 file.
+                        }
+                        state->actionOpenOsim(response.front());
+                    },
+                    GetModelFileFilters()
+                );
+            }
+        }
+
+        void actionOpenOsim(const std::filesystem::path& path)
+        {
+            App::singleton<RecentFiles>()->push_back(path);
+            m_ScalingState->upd_scratch().loadSourceModelFromOsim(path);
+            updateScaledModel();
+            m_ScalingState->commit_scratch("Loaded osim file");
         }
 
         void actionCreateNewScalingDocument()
@@ -1746,11 +1768,27 @@ namespace
 
         void actionOpenScalingDocument()
         {
-            if (const auto path = prompt_user_to_select_file({"xml"})) {
-                m_ScalingState->upd_scratch().loadScalingDocument(*path);
-                updateScaledModel();
-                m_ScalingState->commit_scratch("Loaded scaling document");
+            if (not shared_from_this()) {
+                log_critical("cannot open a file selection dialog because the UI state isn't reference-counted");
+                return;
             }
+
+            App::upd().prompt_user_to_select_file_async(
+                [state = shared_from_this()](FileDialogResponse response)
+                {
+                    if (not state) {
+                        return;  // Can't continue.
+                    }
+                    if (response.size() != 1) {
+                        return;  // Error, cancellation, or the user somehow selected >1 file.
+                    }
+
+                    state->m_ScalingState->upd_scratch().loadScalingDocument(response.front());
+                    state->updateScaledModel();
+                    state->m_ScalingState->commit_scratch("Loaded scaling document");
+                },
+                GetOpenSimXMLFileFilters()
+            );
         }
 
         void actionSaveScalingDocument()

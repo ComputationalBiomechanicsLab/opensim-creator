@@ -82,48 +82,6 @@ namespace osc
     void set_initial_directory_to_show_fallback(const std::filesystem::path&);
     void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
-    // synchronously prompt a user to select a single file using the OS's native file
-    // browser
-    //
-    // - `file_extensions` can be:
-    //   - empty, meaning "don't filter by extension"
-    //   - nonempty, meaning "filter by these extensions"
-    //
-    // - `initial_directory_to_show` can be:
-    //   - `std::nullopt`, meaning "use a system-defined default"
-    //   - a path to a directory to initially show to the user when the prompt opens
-    //
-    // returns `std::nullopt` if the user doesn't select a file
-    std::optional<std::filesystem::path> prompt_user_to_select_file(
-        std::span<const std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
-    );
-    inline std::optional<std::filesystem::path> prompt_user_to_select_file(
-        std::initializer_list<std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
-    {
-        return prompt_user_to_select_file(
-            std::span<const std::string_view>{file_extensions},
-            std::move(initial_directory_to_show)
-        );
-    }
-
-    // synchronously prompt a user to select files ending with the supplied extensions (e.g. "txt, csv, tsv")
-    //
-    // - `file_extensions` can be:
-    //   - empty, meaning "don't filter by extension"
-    //   - nonempty, meaning "filter by these extensions"
-    //
-    // - `initial_directory_to_show` can be:
-    //   - `std::nullopt`, meaning "use a system-defined default"
-    //   - a path to a directory to initially show to the user when the prompt opens
-    //
-    // returns an empty vector if the user doesn't select any files
-    std::vector<std::filesystem::path> prompt_user_to_select_files(
-        std::span<const std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
-    );
-
     // synchronously prompt a user to select a file location for where to save a file
     //
     // - `maybe_extension` can be:
