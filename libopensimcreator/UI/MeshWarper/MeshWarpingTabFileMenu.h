@@ -67,11 +67,11 @@ namespace osc
         {
             if (ui::draw_menu_item("Source Mesh"))
             {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Mesh"))
             {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Source Landmarks from CSV"))
             {

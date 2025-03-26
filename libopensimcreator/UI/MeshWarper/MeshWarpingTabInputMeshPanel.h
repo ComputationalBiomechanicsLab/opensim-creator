@@ -481,7 +481,7 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh File"))
                 {
-                    ActionLoadMeshFile(m_State->updUndoable(), m_DocumentIdentifier);
+                    ActionLoadMeshFile(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
                 }
                 if (ui::begin_menu("Generated Mesh")) {
                     drawGeneratedMeshOptions(SolidGeometries{});

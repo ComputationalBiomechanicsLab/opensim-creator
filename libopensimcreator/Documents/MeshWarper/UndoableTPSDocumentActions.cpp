@@ -195,16 +195,19 @@ void osc::ActionLoadMesh(
 }
 
 void osc::ActionLoadMeshFile(
-    UndoableTPSDocument& doc,
+    std::shared_ptr<UndoableTPSDocument> doc,
     TPSDocumentInputIdentifier which)
 {
-    const std::optional<std::filesystem::path> maybeMeshPath =
-        prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
-    if (not maybeMeshPath) {
-        return;  // user didn't select anything
-    }
-
-    ActionLoadMesh(doc, LoadMeshViaSimTK(*maybeMeshPath), which);
+    App::upd().prompt_user_to_select_file_async(
+        [doc, which](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error or user somehow selected multiple options
+            }
+            ActionLoadMesh(*doc, LoadMeshViaSimTK(response.front()), which);
+        },
+        GetSupportedSimTKMeshFormatsAsFilters()
+    );
 }
 
 void osc::ActionLoadLandmarksFromCSV(

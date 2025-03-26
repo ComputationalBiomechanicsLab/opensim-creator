@@ -89,10 +89,10 @@ private:
         ui::draw_button(OSC_ICON_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Load Destination Mesh")) {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             ui::end_popup();
         }

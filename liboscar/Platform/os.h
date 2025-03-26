@@ -155,7 +155,6 @@ namespace osc
         std::optional<std::filesystem::path> maybe_initial_directory_to_open = std::nullopt
     );
 
-
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`
     // flag
