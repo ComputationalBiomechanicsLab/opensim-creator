@@ -2,6 +2,7 @@
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshIndicesView.h>
+#include <liboscar/Platform/FileDialogFilter.h>
 
 #include <cstdint>
 #include <filesystem>
@@ -18,6 +19,7 @@ namespace osc
 
     // returns a list of SimTK mesh format file suffixes (e.g. `{"vtp", "stl"}`)
     std::span<const std::string_view> GetSupportedSimTKMeshFormats();
+    std::span<const FileDialogFilter> GetSupportedSimTKMeshFormatsAsFilters();
 
     // returns an `Mesh` loaded from disk via SimTK's APIs
     Mesh LoadMeshViaSimTK(const std::filesystem::path&);
