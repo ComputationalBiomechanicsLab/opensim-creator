@@ -103,8 +103,8 @@ namespace
                 }
             },
             {
-                FileDialogFilter{"OpenSim Model (osim)", "osim"},
-                FileDialogFilter{"All Files", "*"},
+                FileDialogFilter{"OpenSim Model (.osim)", "osim"},
+                FileDialogFilter::all_files(),
             },
             std::nullopt,  // initial directory
             true  // allow many

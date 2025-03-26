@@ -4,8 +4,9 @@
 #include <liboscar/UI/Popups/SaveChangesPopup.h>
 
 #include <filesystem>
-#include <vector>
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
@@ -16,7 +17,7 @@ namespace osc
     public:
         explicit MainMenuFileTab(Widget* parent);
 
-        void onDraw(IModelStatePair* = nullptr);
+        void onDraw(std::shared_ptr<IModelStatePair> = nullptr);
 
         std::vector<std::filesystem::path> exampleOsimFiles;
 

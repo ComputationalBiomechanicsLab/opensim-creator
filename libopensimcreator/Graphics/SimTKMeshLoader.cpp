@@ -37,7 +37,7 @@ namespace
             FileDialogFilter{"VTK PolyData (.vtp)", "vtp"},
             FileDialogFilter{"STL (.stl)", "stl"},
             FileDialogFilter{"ASCII STL (.stla)", "stla"},
-            FileDialogFilter{"All Files", "*"},
+            FileDialogFilter::all_files(),
         });
         return s_filters;
     }

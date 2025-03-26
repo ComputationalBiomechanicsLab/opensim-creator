@@ -10,6 +10,12 @@ namespace osc
     // An entry for a list of filters in a file dialog
     class FileDialogFilter final {
     public:
+        // Returns a `FileDialogFilter` that allows any file to be selected.
+        static FileDialogFilter all_files()
+        {
+            return FileDialogFilter{"All Files", "*"};
+        }
+
         // Constructs an instance of a `FileDialogFilter`:
         //
         // - `name`    a humnan-readable representation of the filter, e.g. "Images"
