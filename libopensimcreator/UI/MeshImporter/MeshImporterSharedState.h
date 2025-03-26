@@ -282,19 +282,30 @@ namespace osc::mi
         // MESH LOADING STUFF
         //
 
-        std::vector<std::filesystem::path> promptUserForMeshFiles() const
-        {
-            return prompt_user_to_select_files(GetSupportedSimTKMeshFormats());
-        }
-
-        void pushMeshLoadRequests(UID attachmentPoint, std::vector<std::filesystem::path> paths)
+        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths, UID attachmentPoint = MIIDs::Ground())
         {
             m_MeshLoader.send(MeshLoadRequest{attachmentPoint, std::move(paths)});
         }
 
-        void promptUserForMeshFilesAndPushThemOntoMeshLoader()
+        void promptUserForMeshFilesAndPushThemOntoMeshLoader(UID attachmentPoint = MIIDs::Ground())
         {
-            pushMeshLoadRequests(promptUserForMeshFiles());
+            if (not shared_from_this()) {
+                log_critical("cannot open mesh import dialog because the mesh importer's state isn't reference-counted");
+                return;
+            }
+            App::upd().prompt_user_to_select_file_async(
+                [state = shared_from_this(), attachmentPoint](FileDialogResponse response)
+                {
+                    if (not state) {
+                        return;  // Something went wrong
+                    }
+                    std::vector<std::filesystem::path> paths(response.begin(), response.end());
+                    state->pushMeshLoadRequests(paths, attachmentPoint);
+                },
+                GetSupportedSimTKMeshFormatsAsFilters(),
+                std::nullopt,
+                true
+            );
         }
 
         void reloadMeshes()
@@ -859,21 +870,6 @@ namespace osc::mi
             {
                 return m_MaybeModelGraphExportLocation.filename().string();
             }
-        }
-
-        void pushMeshLoadRequests(std::vector<std::filesystem::path> paths)
-        {
-            pushMeshLoadRequests(MIIDs::Ground(), std::move(paths));
-        }
-
-        void pushMeshLoadRequest(UID attachmentPoint, const std::filesystem::path& path)
-        {
-            pushMeshLoadRequests(attachmentPoint, std::vector<std::filesystem::path>{path});
-        }
-
-        void pushMeshLoadRequest(const std::filesystem::path& meshFilePath)
-        {
-            pushMeshLoadRequest(MIIDs::Ground(), meshFilePath);
         }
 
         // called when the mesh loader responds with a fully-loaded mesh
