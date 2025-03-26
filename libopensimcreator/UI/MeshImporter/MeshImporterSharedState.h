@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/MeshImporter/Body.h>
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
@@ -46,6 +47,7 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
 #include <liboscar/UI/Widgets/LogViewer.h>
+#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
@@ -77,7 +79,7 @@ namespace osc::mi
     // shared data support
     //
     // data that's shared between multiple UI states.
-    class MeshImporterSharedState final {
+    class MeshImporterSharedState final : public std::enable_shared_from_this<MeshImporterSharedState> {
     public:
         MeshImporterSharedState(Widget* parent) :
             MeshImporterSharedState{parent, std::vector<std::filesystem::path>{}}
@@ -121,21 +123,29 @@ namespace osc::mi
         // MODEL GRAPH STUFF
         //
 
-        bool openOsimFileAsModelGraph()
+        void openOsimFileAsModelGraph()
         {
-            const std::optional<std::filesystem::path> maybeOsimPath = prompt_user_to_select_file({"osim"});
+            if (not shared_from_this()) {
+                log_critical("cannot open import dialog because the mesh importer's state isn't reference-counted");
+                return;
+            }
 
-            if (maybeOsimPath)
-            {
-                m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(*maybeOsimPath)};
-                m_MaybeModelGraphExportLocation = *maybeOsimPath;
-                m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.head_id();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            App::upd().prompt_user_to_select_file_async(
+                [state = shared_from_this()](FileDialogResponse response)
+                {
+                    if (not state) {
+                        return;  // Something went horribly wrong (should've been checked earlier).
+                    }
+                    if (response.size() != 1) {
+                        return;  // Error, cancellation, or the user somehow selected >1 file.
+                    }
+
+                    state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
+                    state->m_MaybeModelGraphExportLocation = response.front();
+                    state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
+                },
+                GetModelFileFilters()
+            );
         }
 
         bool exportAsModelGraphAsOsimFile()
