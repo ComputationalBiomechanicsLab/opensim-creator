@@ -298,6 +298,28 @@ namespace osc
             );
         }
 
+        // Prompts a user to select a new or existing filesystem path where they would like
+        // to save the file, with the option to file to have a specific extension - even if the
+        // user types a filename without the extension into the dialog.
+        //
+        // - `callback` is only called from the ui thread by the implementation when the user
+        //   chooses a file. The given path will always end with the specified extension. `callback`
+        //   is not called if the user cancels or there is an error.
+        //
+        // - `maybe_extension` can be `std::nullopt`, meaning "don't filter by extension", or a single
+        //   extension (e.g. "blend").
+        //
+        // - `maybe_initial_directory_to_open` can be `std::nullopt`, meaning "use a system-defined default"
+        //   or a directory to initially show to the user when the prompt opens.
+        //
+        // WORK IN PROGRESS (WIP): SDL3 doesn't currently prompt the user if they want to overwrite
+        // the file or not.
+        void prompt_user_to_save_file_with_specific_extension(
+            std::function<void(std::filesystem::path)> callback,
+            std::optional<std::string_view> maybe_extension = std::nullopt,
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
+        );
+
         // returns a sequence of all physical monitors associated with the windowing system that
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;

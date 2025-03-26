@@ -1091,6 +1091,52 @@ public:
         request_redraw();
     }
 
+    void prompt_user_to_save_file_with_specific_extension(
+        std::function<void(std::filesystem::path)> callback,
+        std::optional<std::string_view> maybe_extension,
+        std::optional<std::filesystem::path> initial_directory_to_show)
+    {
+        auto inner_callback = [caller_callback = std::move(callback), maybe_extension](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error, cancellation, or the user somehow selected >1 file.
+            }
+
+            std::filesystem::path path = response.front();
+            if (maybe_extension) {
+                // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
+                //
+                // the caller only provides the extension without the dot but the user may have
+                // manually written a string that is suffixed with the dot-less version of the
+                // extension (e.g. "somecsv")
+                std::stringstream full_extension;
+                full_extension << "." << *maybe_extension;
+                if (not path.string().ends_with(full_extension.str())) {
+                    path += full_extension.str();
+                }
+            }
+
+            caller_callback(std::move(path));
+        };
+        std::vector<FileDialogFilter> filters;
+        filters.reserve(2);  // Upper bound
+        if (maybe_extension) {
+            std::stringstream filter;
+            filter << "*." << *maybe_extension;
+            std::string filter_string{std::move(filter).str()};
+            std::stringstream name;
+            name << "Permitted File (" << filter_string << ')';
+            filters.emplace_back(std::move(name).str(), *maybe_extension);
+        }
+        filters.push_back(FileDialogFilter::all_files());
+
+        prompt_user_to_save_file_async(
+            std::move(inner_callback),
+            std::move(filters),
+            std::move(initial_directory_to_show)
+        );
+    }
+
     std::vector<Monitor> monitors() const
     {
         std::vector<Monitor> rv;
@@ -1798,6 +1844,18 @@ void osc::App::prompt_user_to_save_file_async(
     std::optional<std::filesystem::path> initial_directory_to_show)
 {
     impl_->prompt_user_to_save_file_async(std::move(callback), filters, std::move(initial_directory_to_show));
+}
+
+void osc::App::prompt_user_to_save_file_with_specific_extension(
+    std::function<void(std::filesystem::path)> callback,
+    std::optional<std::string_view> maybe_extension,
+    std::optional<std::filesystem::path> initial_directory_to_show)
+{
+    impl_->prompt_user_to_save_file_with_specific_extension(
+        std::move(callback),
+        std::move(maybe_extension),
+        std::move(initial_directory_to_show)
+    );
 }
 
 std::vector<Monitor> osc::App::monitors() const
