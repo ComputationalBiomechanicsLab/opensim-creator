@@ -1091,6 +1091,14 @@ public:
         request_redraw();
     }
 
+    void prompt_user_to_save_file_with_specific_extension(
+        [[maybe_unused]] std::function<void(std::filesystem::path)> callback,
+        [[maybe_unused]] std::optional<std::string_view> maybe_extension,
+        [[maybe_unused]] std::optional<std::filesystem::path> initial_directory_to_show)
+    {
+        // TODO
+    }
+
     std::vector<Monitor> monitors() const
     {
         std::vector<Monitor> rv;
@@ -1798,6 +1806,18 @@ void osc::App::prompt_user_to_save_file_async(
     std::optional<std::filesystem::path> initial_directory_to_show)
 {
     impl_->prompt_user_to_save_file_async(std::move(callback), filters, std::move(initial_directory_to_show));
+}
+
+void osc::App::prompt_user_to_save_file_with_specific_extension(
+    std::function<void(std::filesystem::path)> callback,
+    std::optional<std::string_view> maybe_extension,
+    std::optional<std::filesystem::path> initial_directory_to_show)
+{
+    impl_->prompt_user_to_save_file_with_specific_extension(
+        std::move(callback),
+        std::move(maybe_extension),
+        std::move(initial_directory_to_show)
+    );
 }
 
 std::vector<Monitor> osc::App::monitors() const
