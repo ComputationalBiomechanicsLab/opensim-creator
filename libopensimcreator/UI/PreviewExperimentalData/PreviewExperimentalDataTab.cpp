@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/ExperimentalData/AnnotatedMotion.h>
 #include <libopensimcreator/Documents/ExperimentalData/FileBackedStorage.h>
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
@@ -228,9 +229,17 @@ namespace
                 // load/reload etc.
                 {
                     if (ui::draw_button("load model")) {
-                        if (const auto path = prompt_user_to_select_file({"osim"})) {
-                            m_UiState->loadModelFile(*path);
-                        }
+                        App::upd().prompt_user_to_select_file_async(
+                            [state = m_UiState](FileDialogResponse response)
+                            {
+                                if (response.size() != 1) {
+                                    return;  // Error, cancellation, or more than one file somehow selected.
+                                }
+
+                                state->loadModelFile(response.front());
+                            },
+                            GetModelFileFilters()
+                        );
                     }
 
                     ui::same_line();
@@ -238,9 +247,16 @@ namespace
                         ui::begin_disabled();
                     }
                     if (ui::draw_button("load model trajectory/states")) {
-                        if (const auto path = prompt_user_to_select_file({"sto", "mot"})) {
-                            m_UiState->loadModelTrajectoryFile(*path);
-                        }
+                        App::upd().prompt_user_to_select_file_async(
+                            [state = m_UiState](FileDialogResponse response)
+                            {
+                                if (response.size() != 1) {
+                                    return;  // Error, cancellation, or more than one file somehow selected.
+                                }
+                                state->loadModelTrajectoryFile(response.front());
+                            },
+                            GetMotionFileFilters()
+                        );
                     }
                     if (not m_UiState->isModelLoaded()) {
                         ui::end_disabled();
@@ -248,7 +264,15 @@ namespace
 
                     ui::same_line();
                     if (ui::draw_button("load raw data file")) {
-                        m_UiState->loadMotionFiles(prompt_user_to_select_files({"sto", "mot", "trc"}));
+                        App::upd().prompt_user_to_select_file_async(
+                            [state = m_UiState](FileDialogResponse response)
+                            {
+                                state->loadMotionFiles(response);
+                            },
+                            GetMotionFileFiltersIncludingTRC(),
+                            std::nullopt,
+                            true
+                        );
                     }
 
                     if (not m_UiState->isModelLoaded()) {
@@ -256,7 +280,13 @@ namespace
                     }
                     ui::same_line();
                     if (ui::draw_button("load OpenSim XML")) {
-                        m_UiState->loadXMLAsOpenSimDocument(prompt_user_to_select_files({"xml"}));
+                        App::upd().prompt_user_to_select_file_async(
+                            [state = m_UiState](FileDialogResponse response)
+                            {
+                                state->loadXMLAsOpenSimDocument(response);
+                            },
+                            GetOpenSimXMLFileFilters()
+                        );
                     }
                     if (not m_UiState->isModelLoaded()) {
                         ui::end_disabled();

@@ -20,7 +20,7 @@ namespace osc
         {}
         virtual ~WidgetPrivate() noexcept = default;
 
-        SharedLifetimeBlock& lifetime() { return lifetime_; }
+        LifetimeWatcher lifetime_watcher() const { return lifetime_.watch(); }
 
         Widget* parent() { return parent_; }
         const Widget* parent() const { return parent_; }

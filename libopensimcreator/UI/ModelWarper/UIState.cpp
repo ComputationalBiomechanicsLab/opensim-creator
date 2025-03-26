@@ -1,8 +1,9 @@
 #include "UIState.h"
 
-#include <libopensimcreator/Platform/RecentFiles.h>
-#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
+#include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
+#include <libopensimcreator/Platform/RecentFiles.h>
+#include <libopensimcreator/Documents/FileFilters.h>
 
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
@@ -17,10 +18,20 @@
 void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
 {
     if (not path) {
-        path = prompt_user_to_select_file({"osim"});
+        App::upd().prompt_user_to_select_file_async(
+            [document = m_Document](FileDialogResponse response)
+            {
+                if (response.size() != 1) {
+                    return;  // Error, cancellation, or the user somehow selected >1 file.
+                }
+                App::singleton<RecentFiles>()->push_back(response.front());
+                WarpableModel loadedModel{response.front()};
+                *document = std::move(loadedModel);
+            },
+            GetModelFileFilters()
+        );
     }
-
-    if (path) {
+    else {
         App::singleton<RecentFiles>()->push_back(*path);
         m_Document = std::make_shared<WarpableModel>(std::move(path).value());
     }

@@ -30,6 +30,19 @@ namespace
 {
     constexpr auto c_supported_mesh_extensions = std::to_array({"obj"sv, "vtp"sv, "stl"sv, "stla"sv});
 
+    std::span<const FileDialogFilter> get_file_dialog_filters()
+    {
+        static const auto s_filters = std::to_array<FileDialogFilter>({
+            FileDialogFilter::all_files(),
+            FileDialogFilter{"Mesh Data (*.obj, *.vtp, *.stl, *.stla)", "obj;vtp;stl;stla"},
+            FileDialogFilter{"Wavefront (*.obj)", "obj"},
+            FileDialogFilter{"VTK PolyData (*.vtp)", "vtp"},
+            FileDialogFilter{"STL (*.stl)", "stl"},
+            FileDialogFilter{"ASCII STL (*.stla)", "stla"},
+        });
+        return s_filters;
+    }
+
     struct OutputMeshMetrics {
         size_t numVertices = 0;
         size_t numIndices = 0;
@@ -157,6 +170,11 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 std::span<const std::string_view> osc::GetSupportedSimTKMeshFormats()
 {
     return c_supported_mesh_extensions;
+}
+
+std::span<const FileDialogFilter> osc::GetSupportedSimTKMeshFormatsAsFilters()
+{
+    return get_file_dialog_filters();
 }
 
 Mesh osc::LoadMeshViaSimTK(const std::filesystem::path& p)

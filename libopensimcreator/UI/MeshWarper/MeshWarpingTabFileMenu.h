@@ -67,23 +67,23 @@ namespace osc
         {
             if (ui::draw_menu_item("Source Mesh"))
             {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Mesh"))
             {
-                ActionLoadMeshFile(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
+                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Source Landmarks from CSV"))
             {
-                ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Source);
+                ActionLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Destination Landmarks from CSV"))
             {
-                ActionLoadLandmarksFromCSV(m_State->updUndoable(), TPSDocumentInputIdentifier::Destination);
+                ActionLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             if (ui::draw_menu_item("Non-Participating Landmarks from CSV"))
             {
-                ActionLoadNonParticipatingLandmarksFromCSV(m_State->updUndoable());
+                ActionLoadNonParticipatingLandmarksFromCSV(m_State->getUndoableSharedPtr());
             }
         }
 

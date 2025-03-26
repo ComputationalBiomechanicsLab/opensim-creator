@@ -195,62 +195,77 @@ void osc::ActionLoadMesh(
 }
 
 void osc::ActionLoadMeshFile(
-    UndoableTPSDocument& doc,
+    std::shared_ptr<UndoableTPSDocument> doc,
     TPSDocumentInputIdentifier which)
 {
-    const std::optional<std::filesystem::path> maybeMeshPath =
-        prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
-    if (not maybeMeshPath) {
-        return;  // user didn't select anything
-    }
-
-    ActionLoadMesh(doc, LoadMeshViaSimTK(*maybeMeshPath), which);
+    App::upd().prompt_user_to_select_file_async(
+        [doc, which](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error or user somehow selected multiple options
+            }
+            ActionLoadMesh(*doc, LoadMeshViaSimTK(response.front()), which);
+        },
+        GetSupportedSimTKMeshFormatsAsFilters()
+    );
 }
 
 void osc::ActionLoadLandmarksFromCSV(
-    UndoableTPSDocument& doc,
+    std::shared_ptr<UndoableTPSDocument> doc,
     TPSDocumentInputIdentifier which)
 {
-    const auto maybeCSVPath = prompt_user_to_select_file({"csv"});
-    if (!maybeCSVPath)
-    {
-        return;  // user didn't select anything
-    }
+    App::upd().prompt_user_to_select_file_async(
+        [doc, which](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error or user somehow selected multiple files.
+            }
 
-    std::ifstream fin{*maybeCSVPath};
-    if (!fin)
-    {
-        return;  // some kind of error opening the file
-    }
+            std::ifstream fin{response.front()};
+            if (not fin) {
+                return;  // some kind of error opening the file
+            }
 
-    lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
-    {
-        AddLandmarkToInput(doc.upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
-    });
+            lm::ReadLandmarksFromCSV(fin, [&doc, which](auto&& landmark)
+            {
+                AddLandmarkToInput(doc->upd_scratch(), which, landmark.position, std::move(landmark.maybeName));
+            });
 
-    doc.commit_scratch("loaded landmarks");
+            doc->commit_scratch("loaded landmarks");
+        },
+        {
+            FileDialogFilter::all_files(),
+            csv_file_dialog_filter(),
+        }
+    );
 }
 
-void osc::ActionLoadNonParticipatingLandmarksFromCSV(UndoableTPSDocument& doc)
+void osc::ActionLoadNonParticipatingLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument> doc)
 {
-    const auto maybeCSVPath = prompt_user_to_select_file({"csv"});
-    if (!maybeCSVPath)
-    {
-        return;  // user didn't select anything
-    }
+    App::upd().prompt_user_to_select_file_async(
+        [doc](FileDialogResponse response)
+        {
+            if (response.size() != 1) {
+                return;  // Error or the user somehow selected more than one file.
+            }
 
-    std::ifstream fin{*maybeCSVPath};
-    if (!fin)
-    {
-        return;  // some kind of error opening the file
-    }
+            std::ifstream fin{response.front()};
+            if (not fin) {
+                return;  // some kind of error opening the file
+            }
 
-    lm::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
-    {
-        AddNonParticipatingLandmark(doc.upd_scratch(), landmark.position, std::move(landmark.maybeName));
-    });
+            lm::ReadLandmarksFromCSV(fin, [&doc](auto&& landmark)
+            {
+                AddNonParticipatingLandmark(doc->upd_scratch(), landmark.position, std::move(landmark.maybeName));
+            });
 
-    doc.commit_scratch("added non-participating landmarks");
+            doc->commit_scratch("added non-participating landmarks");
+        },
+        {
+            FileDialogFilter::all_files(),
+            csv_file_dialog_filter(),
+        }
+    );
 }
 
 void osc::ActionSaveLandmarksToCSV(

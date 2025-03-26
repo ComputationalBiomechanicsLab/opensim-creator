@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
 
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
@@ -78,11 +79,6 @@ namespace
         "Cone",
     });
     static_assert(c_GeomCtors.size() == c_GeomNames.size());
-
-    std::optional<std::filesystem::path> PromptUserForGeometryFile()
-    {
-        return prompt_user_to_select_file(GetSupportedSimTKMeshFormats());
-    }
 
     std::unique_ptr<OpenSim::Mesh> LoadGeometryFile(const std::filesystem::path& p)
     {
@@ -174,12 +170,8 @@ public:
 
         ui::end_child_panel();
 
-        if (ui::draw_button("Open Mesh File"))
-        {
-            if (auto maybeMeshFile = PromptUserForGeometryFile())
-            {
-                m_Result = onMeshFileChosen(std::move(maybeMeshFile).value());
-            }
+        if (ui::draw_button("Open Mesh File")) {
+            promptUserForGeometryFile();
         }
         ui::draw_tooltip_if_item_hovered("Open Mesh File", "Open a mesh file on the filesystem");
 
@@ -200,6 +192,25 @@ public:
     }
 
 private:
+    void promptUserForGeometryFile()
+    {
+        App::upd().prompt_user_to_select_file_async(
+            [this, this_lifetime = this->lifetime_watcher()](FileDialogResponse response)
+            {
+                if (this_lifetime.expired()) {
+                    return;  // `this` has expired
+                }
+
+                if (response.size() != 1) {
+                    return;  // user cancelled, or somehow selected multiple files?
+                }
+
+                m_OnSelection(onMeshFileChosen(response.front()));
+            },
+            GetSupportedSimTKMeshFormatsAsFilters()
+        );
+    }
+
     std::unique_ptr<OpenSim::Mesh> onMeshFileChosen(std::filesystem::path path)
     {
         auto rv = LoadGeometryFile(path);

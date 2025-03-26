@@ -1,5 +1,7 @@
 #include "CSV.h"
 
+#include <liboscar/Platform/FileDialogFilter.h>
+
 #include <algorithm>
 #include <array>
 #include <iostream>
@@ -136,4 +138,10 @@ void osc::write_csv_row(
         delimiter = ",";
     }
     out << '\n';
+}
+
+const FileDialogFilter& osc::csv_file_dialog_filter()
+{
+    static const FileDialogFilter s_csv_file_dialog_filter{"Text CSV (*.csv)", "csv"};
+    return s_csv_file_dialog_filter;
 }

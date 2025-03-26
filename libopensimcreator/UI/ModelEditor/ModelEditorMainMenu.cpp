@@ -58,7 +58,7 @@ public:
 
     void onDraw()
     {
-        m_MainMenuFileTab.onDraw(m_Model.get());
+        m_MainMenuFileTab.onDraw(m_Model);
         drawMainMenuEditTab();
         drawMainMenuAddTab();
         drawMainMenuToolsTab();

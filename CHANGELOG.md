@@ -12,7 +12,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The model warper (V3) now supports chaining/mixing TPS warps/substitutions of meshes
   (previously, it was one or the other).
 - The model warper (V3) now supports `RecalculateWrapCylinderRadiusFromStationScalingStep`
-  for rescaling a `WarpCylinder`'s radius (#1013).
+  for rescaling a `WarpCylinder`'s radius based on stations in the model (#1013).
+- The model warper (V3) now supports `RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep`
+  for recalculating a `WrapCylinder`'s orientation based on stations in the model (#1016).
 
 
 ## [0.5.21] - 2025/02/28

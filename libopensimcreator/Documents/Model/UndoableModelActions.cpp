@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
@@ -102,10 +103,7 @@ namespace
                     OpenOsimInLoadingTab(*widget_ptr, path);
                 }
             },
-            {
-                FileDialogFilter{"OpenSim Model (osim)", "osim"},
-                FileDialogFilter{"All Files", "*"},
-            },
+            GetModelFileFilters(),
             std::nullopt,  // initial directory
             true  // allow many
         );

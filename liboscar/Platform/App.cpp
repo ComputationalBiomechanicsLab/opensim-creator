@@ -714,6 +714,67 @@ namespace
     private:
         std::function<void()> callback_;
     };
+
+    // State that's stored in the sdl3 callback.
+    struct SDL3CallbackState final {
+
+        // This free function is what SDL calls with `SDL3CallbackState` when the user is
+        // finished with the dialog.
+        static void sdl3_compatible_callback(void* userdata, const char* const* filelist, int)
+        {
+            // Unpack callback state.
+            const std::unique_ptr<SDL3CallbackState> state{static_cast<SDL3CallbackState*>(userdata)};
+
+            // If there's an error, emit a `FileDialogResponse` that contains the error.
+            if (not filelist) {
+                App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]()
+                {
+                    caller_callback(response);
+                });
+                return;
+            }
+
+            // Convert SDL's file list to an oscar `FileDialogResponse`
+            std::vector<std::filesystem::path> files;
+            while (*filelist) {
+                files.emplace_back(*filelist);
+                ++filelist;
+            }
+
+            // Marshal the call to the user's callback onto the main thread by packing it
+            // into an `AppMarshalledCallbackEvent`.
+            App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]()
+            {
+                // Call the user's callback (the event's callback happens on the main thread).
+                caller_callback(response);
+            });
+        }
+
+        // Constructs the callback state that's stored in SDL3's dialog system.
+        explicit SDL3CallbackState(
+            std::function<void(FileDialogResponse)>&& callback_,
+            std::span<const FileDialogFilter> filters_) :
+            caller_callback{std::move(callback_)},
+            caller_filters(filters_.begin(), filters_.end())
+        {
+            // The caller's filters are lifetime-controlled (`std::string`s), the SDL
+            // filters are not-lifetime-controlled views (`const char*`s). The SDL3
+            // API for `SDL_ShowOpenFileDialog` mandates that "the filters' data
+            // must be valid at least until `sdl3_callback` is called", so we keep
+            // both alive.
+            sdl3_filters.reserve(caller_filters.size());
+            for (const FileDialogFilter& filter : caller_filters) {
+                sdl3_filters.push_back(SDL_DialogFileFilter{
+                    .name = filter.name().c_str(),
+                    .pattern = filter.pattern().c_str(),
+                });
+            }
+        }
+
+        std::function<void(FileDialogResponse)> caller_callback;
+        std::vector<FileDialogFilter> caller_filters;
+        std::vector<SDL_DialogFileFilter> sdl3_filters;
+    };
 }
 
 // main application state
@@ -970,66 +1031,6 @@ public:
         std::optional<std::filesystem::path> initial_directory_to_show,
         bool allow_many)
     {
-        // State that's stored in the sdl3 callback.
-        struct SDL3CallbackState final {
-            // Constructs the callback state that's stored in SDL3's dialog system.
-            explicit SDL3CallbackState(
-                std::function<void(FileDialogResponse)>&& callback_,
-                std::span<const FileDialogFilter> filters_) :
-                caller_callback{std::move(callback_)},
-                caller_filters(filters_.begin(), filters_.end())
-            {
-                // The caller's filters are lifetime-controlled (`std::string`s), the SDL
-                // filters are not-lifetime-controlled views (`const char*`s). The SDL3
-                // API for `SDL_ShowOpenFileDialog` mandates that "the filters' data
-                // must be valid at least until `sdl3_callback` is called", so we keep
-                // both alive.
-                sdl3_filters.reserve(caller_filters.size());
-                for (const FileDialogFilter& filter : caller_filters) {
-                    sdl3_filters.push_back(SDL_DialogFileFilter{
-                        .name = filter.name().c_str(),
-                        .pattern = filter.pattern().c_str(),
-                    });
-                }
-            }
-
-            std::function<void(FileDialogResponse)> caller_callback;
-            std::vector<FileDialogFilter> caller_filters;
-            std::vector<SDL_DialogFileFilter> sdl3_filters;
-        };
-
-        // This free function is what SDL calls with `SDL3CallbackState` when the user is
-        // finished with the dialog.
-        const auto sdl3_callback = [](void* userdata, const char* const* filelist, int) -> void
-        {
-            // Unpack callback state.
-            const std::unique_ptr<SDL3CallbackState> state{static_cast<SDL3CallbackState*>(userdata)};
-
-            // If there's an error, emit a `FileDialogResponse` that contains the error.
-            if (not filelist) {
-                App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]()
-                {
-                    caller_callback(response);
-                });
-                return;
-            }
-
-            // Convert SDL's file list to an oscar `FileDialogResponse`
-            std::vector<std::filesystem::path> files;
-            while (*filelist) {
-                files.emplace_back(*filelist);
-                ++filelist;
-            }
-
-            // Marshal the call to the user's callback onto the main thread by packing it
-            // into an `AppMarshalledCallbackEvent`.
-            App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]()
-            {
-                // Call the user's callback (the event's callback happens on the main thread).
-                caller_callback(response);
-            });
-        };
-
         // Setup `SDL_ShowOpenFileDialog` arguments.
         auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
         const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
@@ -1044,7 +1045,7 @@ public:
 
         // Call into SDL3's dialog implementation.
         SDL_ShowOpenFileDialog(
-            sdl3_callback,
+            SDL3CallbackState::sdl3_compatible_callback,
             sdl3_callback_state.release(),
             main_window_.get(),  // make it modal in the main window
             sdl3_filters_ptr,
@@ -1052,6 +1053,42 @@ public:
             default_location.empty() ? nullptr : default_location.c_str(),
             allow_many
         );
+
+        // Ensure the UI immediately pumps the event queue etc. so that there isn't
+        // a delay between the request and when the user sees the dialog.
+        request_redraw();
+    }
+
+    void prompt_user_to_save_file_async(
+        std::function<void(FileDialogResponse)> callback,
+        std::span<const FileDialogFilter> filters,
+        std::optional<std::filesystem::path> initial_directory_to_show)
+    {
+        // Setup `SDL_ShowSaveFileDialog` arguments.
+        auto sdl3_callback_state = std::make_unique<SDL3CallbackState>(std::move(callback), filters);
+        const SDL_DialogFileFilter* sdl3_filters_ptr = sdl3_callback_state->sdl3_filters.data();
+        const auto sdl3_num_filters = static_cast<int>(sdl3_callback_state->sdl3_filters.size());
+        std::string default_location;
+        if (initial_directory_to_show) {
+            default_location = initial_directory_to_show->string();
+        }
+        else if (const auto fallback = get_initial_directory_to_show_fallback()) {
+            default_location = fallback->string();
+        }
+
+        // Call into SDL3's dialog implementation.
+        SDL_ShowSaveFileDialog(
+            SDL3CallbackState::sdl3_compatible_callback,
+            sdl3_callback_state.release(),
+            main_window_.get(),  // make it modal in the main window
+            sdl3_filters_ptr,
+            sdl3_num_filters,
+            default_location.empty() ? nullptr : default_location.c_str()
+        );
+
+        // Ensure the UI immediately pumps the event queue etc. so that there isn't
+        // a delay between the request and when the user sees the dialog.
+        request_redraw();
     }
 
     std::vector<Monitor> monitors() const
@@ -1753,6 +1790,14 @@ void osc::App::prompt_user_to_select_file_async(
         std::move(initial_directory_to_show),
         allow_many
     );
+}
+
+void osc::App::prompt_user_to_save_file_async(
+    std::function<void(FileDialogResponse)> callback,
+    std::span<const FileDialogFilter> filters,
+    std::optional<std::filesystem::path> initial_directory_to_show)
+{
+    impl_->prompt_user_to_save_file_async(std::move(callback), filters, std::move(initial_directory_to_show));
 }
 
 std::vector<Monitor> osc::App::monitors() const

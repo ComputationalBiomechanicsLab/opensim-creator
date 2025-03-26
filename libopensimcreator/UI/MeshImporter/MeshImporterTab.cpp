@@ -953,7 +953,7 @@ private:
         {
             if (ui::draw_menu_item(OSC_ICON_CUBE " Meshes"))
             {
-                m_Shared->pushMeshLoadRequests(el.getID(), m_Shared->promptUserForMeshFiles());
+                m_Shared->promptUserForMeshFilesAndPushThemOntoMeshLoader(el.getID());
             }
             ui::draw_tooltip_if_item_hovered("Add Meshes", MIStrings::c_MeshDescription);
         }

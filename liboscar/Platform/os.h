@@ -82,65 +82,14 @@ namespace osc
     void set_initial_directory_to_show_fallback(const std::filesystem::path&);
     void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
-    // synchronously prompt a user to select a single file using the OS's native file
-    // browser
-    //
-    // - `file_extensions` can be:
-    //   - empty, meaning "don't filter by extension"
-    //   - nonempty, meaning "filter by these extensions"
-    //
-    // - `initial_directory_to_show` can be:
-    //   - `std::nullopt`, meaning "use a system-defined default"
-    //   - a path to a directory to initially show to the user when the prompt opens
-    //
-    // returns `std::nullopt` if the user doesn't select a file
-    std::optional<std::filesystem::path> prompt_user_to_select_file(
-        std::span<const std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
-    );
-    inline std::optional<std::filesystem::path> prompt_user_to_select_file(
-        std::initializer_list<std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
-    {
-        return prompt_user_to_select_file(
-            std::span<const std::string_view>{file_extensions},
-            std::move(initial_directory_to_show)
-        );
-    }
-
-    // synchronously prompt a user to select files ending with the supplied extensions (e.g. "txt, csv, tsv")
-    //
-    // - `file_extensions` can be:
-    //   - empty, meaning "don't filter by extension"
-    //   - nonempty, meaning "filter by these extensions"
-    //
-    // - `initial_directory_to_show` can be:
-    //   - `std::nullopt`, meaning "use a system-defined default"
-    //   - a path to a directory to initially show to the user when the prompt opens
-    //
-    // returns an empty vector if the user doesn't select any files
-    std::vector<std::filesystem::path> prompt_user_to_select_files(
-        std::span<const std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
-    );
-    inline std::vector<std::filesystem::path> prompt_user_to_select_files(
-        std::initializer_list<std::string_view> file_extensions = {},
-        std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
-    {
-        return prompt_user_to_select_files(
-            std::span<const std::string_view>{file_extensions},
-            std::move(initial_directory_to_show)
-        );
-    }
-
     // synchronously prompt a user to select a file location for where to save a file
     //
-    // - `maybeOneExtension` can be:
+    // - `maybe_extension` can be:
     //   - std::nullopt, meaning "don't filter by extension"
     //   - or a single extension (e.g. "blend")
     //   - (you can't use multiple extensions with this method)
     //
-    // - `maybeInitialDirectoryToOpen` can be:
+    // - `maybe_initial_directory_to_open` can be:
     //   - std::nullopt, meaning "use a system-defined default"
     //   - a directory to initially show to the user when the prompt opens
     //
@@ -154,7 +103,6 @@ namespace osc
         std::optional<std::string_view> maybe_extension = std::nullopt,
         std::optional<std::filesystem::path> maybe_initial_directory_to_open = std::nullopt
     );
-
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

@@ -1,6 +1,7 @@
 #include "ModelWarperV3Tab.h"
 
 #include <libopensimcreator/Documents/CustomComponents/InMemoryMesh.h>
+#include <libopensimcreator/Documents/FileFilters.h>
 #include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
@@ -973,7 +974,7 @@ namespace
     };
 
     class RecalculateWrapCylinderRadiusFromStationScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderRadiusFromStationScalingStep, ThinPlateSplineScalingStep)
+        OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderRadiusFromStationScalingStep, ScalingStep)
     public:
         OpenSim_DECLARE_PROPERTY(station_path, std::string, "Absolute path (e.g. `/componentset/some_station`) to a `Station` component in the model");
         OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
@@ -1040,6 +1041,93 @@ namespace
         }
     };
 
+
+    class RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep, ScalingStep)
+    public:
+        OpenSim_DECLARE_PROPERTY(station_path, std::string, "Absolute path (e.g. `/componentset/some_station`) to a `Station` component in the model");
+        OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
+
+        explicit RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep() :
+            ScalingStep{"Recalculate WrapCylinder 'xyz_body_rotation' from Station Placed Along Its Midline"}
+        {
+            setDescription("Recalculates the 'xyz_body_rotation' of a `WrapCylinder` component, located at `wrap_cylinder_path` such that the cylinder's +Z direction (midline) points toward the Station component located at `station_path`");
+            constructProperty_station_path("");
+            constructProperty_wrap_cylinder_path("");
+        }
+    private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model& model) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+
+            // Ensure `station_path` exists in the model (and is a `Station`)
+            const auto* station = FindComponent<OpenSim::Station>(model, get_station_path());
+            if (not station) {
+                std::stringstream msg;
+                msg << get_station_path() << ": Cannot find `station_path` in the source model (or it isn't a Station).";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            // Ensure `wrap_cylinder_path` exists in the model (and is a `WrapCylinder`)
+            const auto* wrapCylinder = FindComponent<OpenSim::WrapCylinder>(model, get_wrap_cylinder_path());
+            if (not wrapCylinder) {
+                std::stringstream msg;
+                msg << get_wrap_cylinder_path() << ": Cannot find 'wrap_cylinder_path' in the source model (or it isn't a `WrapCylinder`).";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache&,
+            const ScalingParameters&,
+            const OpenSim::Model&,
+            OpenSim::Model& resultModel) const final
+        {
+            using std::acos;
+            using std::abs;
+
+            const auto* station = FindComponent<OpenSim::Station>(resultModel, get_station_path());
+            OSC_ASSERT_ALWAYS(station && "could not find a station in the model");
+            auto* wrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinder_path());
+            OSC_ASSERT_ALWAYS(wrapCylinder && "could not find a wrap cylinder in the model");
+
+            // Re-express the station in the cylinder's reference frame
+            const SimTK::Transform cylinder2cylinderFrame = wrapCylinder->getTransform();
+            const SimTK::Transform cylinderFrame2ground = wrapCylinder->getFrame().getTransformInGround(resultModel.getWorkingState());
+            const SimTK::Transform ground2cylinder = (cylinderFrame2ground * cylinder2cylinderFrame).invert();
+            const SimTK::Vec3 stationPosInCylinder = ground2cylinder * station->getLocationInGround(resultModel.getWorkingState());
+
+            // Calculate the source/target cylinder midline directions.
+            const SimTK::UnitVec3 cylinderDirectionInCylinder{SimTK::CoordinateAxis::ZCoordinateAxis{}};
+            const SimTK::UnitVec3 stationDirectionInCylinder{stationPosInCylinder};
+
+            // Edge-case: If the station is pointing along the Z axis, no reorientation is necessary
+            const auto cosRotationAngle = SimTK::dot(cylinderDirectionInCylinder, stationDirectionInCylinder);
+            if (abs(cosRotationAngle) >= 1.0 - SimTK::Eps) {
+                return;  // Nothing to do
+            }
+
+            // Else: If the station isn't pointing along the Z axis (usual case), calculate a rotation that
+            //       rotates the cylinder's coordinate space so that +Z points toward toward the station.
+            const auto rotationAngle = acos(cosRotationAngle);
+            const SimTK::UnitVec3 rotationAxis{SimTK::cross(cylinderDirectionInCylinder, stationDirectionInCylinder)};
+            const SimTK::Rotation rotation{rotationAngle, rotationAxis};
+
+            // Compose the additional rotation with the original one to calculate the necessary overall rotation
+            const SimTK::Rotation newRotation = cylinder2cylinderFrame.R() * rotation;
+
+            // Write the new rotation to the `WrapCylinder`'s `xyz_body_rotation` property as Euler angles
+            wrapCylinder->set_xyz_body_rotation(newRotation.convertRotationToBodyFixedXYZ());
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
+        }
+    };
+
     // Compile-time `Typelist` containing all `ScalingStep`s that this UI handles.
     using AllScalingStepTypes = Typelist<
         ThinPlateSplineMeshesScalingStep,
@@ -1048,7 +1136,8 @@ namespace
         ThinPlateSplineOffsetFrameTranslationScalingStep,
         ThinPlateSplineMeshSubstitutionScalingStep,
         BodyMassesScalingStep,
-        RecalculateWrapCylinderRadiusFromStationScalingStep
+        RecalculateWrapCylinderRadiusFromStationScalingStep,
+        RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep
     >;
 
     // Returns a list of `ScalingStep` prototypes, so that downstream code is able to present
@@ -1439,7 +1528,7 @@ namespace
 namespace
 {
     // Top-level UI state that's shared between panels/widget that the UI manipulates.
-    class ModelWarperV3UIState final {
+    class ModelWarperV3UIState final : public std::enable_shared_from_this<ModelWarperV3UIState> {
     public:
 
         explicit ModelWarperV3UIState(Widget* parent) :
@@ -1637,16 +1726,37 @@ namespace
 
         void actionOpenOsimOrPromptUser(std::optional<std::filesystem::path> path)
         {
-            if (not path) {
-                path = prompt_user_to_select_file({"osim"});
-            }
-
             if (path) {
-                App::singleton<RecentFiles>()->push_back(*path);
-                m_ScalingState->upd_scratch().loadSourceModelFromOsim(*path);
-                updateScaledModel();
-                m_ScalingState->commit_scratch("Loaded osim file");
+                actionOpenOsim(*path);
             }
+            else {
+                if (not shared_from_this()) {
+                    log_critical("can't open osim file selection dialog because the UI state isn't shared");
+                    return;
+                }
+
+                App::upd().prompt_user_to_select_file_async(
+                    [state = shared_from_this()](FileDialogResponse response)
+                    {
+                        if (not state) {
+                            return;  // Something bad has happened.
+                        }
+                        if (response.size() != 1) {
+                            return;  // Error, cancellation, or the user somehow selected >1 file.
+                        }
+                        state->actionOpenOsim(response.front());
+                    },
+                    GetModelFileFilters()
+                );
+            }
+        }
+
+        void actionOpenOsim(const std::filesystem::path& path)
+        {
+            App::singleton<RecentFiles>()->push_back(path);
+            m_ScalingState->upd_scratch().loadSourceModelFromOsim(path);
+            updateScaledModel();
+            m_ScalingState->commit_scratch("Loaded osim file");
         }
 
         void actionCreateNewScalingDocument()
@@ -1658,11 +1768,27 @@ namespace
 
         void actionOpenScalingDocument()
         {
-            if (const auto path = prompt_user_to_select_file({"xml"})) {
-                m_ScalingState->upd_scratch().loadScalingDocument(*path);
-                updateScaledModel();
-                m_ScalingState->commit_scratch("Loaded scaling document");
+            if (not shared_from_this()) {
+                log_critical("cannot open a file selection dialog because the UI state isn't reference-counted");
+                return;
             }
+
+            App::upd().prompt_user_to_select_file_async(
+                [state = shared_from_this()](FileDialogResponse response)
+                {
+                    if (not state) {
+                        return;  // Can't continue.
+                    }
+                    if (response.size() != 1) {
+                        return;  // Error, cancellation, or the user somehow selected >1 file.
+                    }
+
+                    state->m_ScalingState->upd_scratch().loadScalingDocument(response.front());
+                    state->updateScaledModel();
+                    state->m_ScalingState->commit_scratch("Loaded scaling document");
+                },
+                GetOpenSimXMLFileFilters()
+            );
         }
 
         void actionSaveScalingDocument()
