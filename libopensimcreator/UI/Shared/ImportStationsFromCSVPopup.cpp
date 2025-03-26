@@ -6,6 +6,8 @@
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 
 #include <liboscar/Graphics/Color.h>
+#include <liboscar/Formats/CSV.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Popups/Popup.h>
@@ -200,10 +202,24 @@ private:
 
     void actionTryPromptingUserForCSVFile()
     {
-        if (const auto path = prompt_user_to_select_file({"csv"}))
-        {
-            actionLoadCSVFile(*path);
-        }
+        App::upd().prompt_user_to_select_file_async(
+            [this, this_lifetime = lifetime_watcher()](FileDialogResponse response)
+            {
+                if (this_lifetime.expired()) {
+                    return;  // This UI widget has expired, so nothing to load it into.
+                }
+
+                if (response.size() != 1) {
+                    return;  // Error, cancellation, or user somehow selected >1 file.
+                }
+
+                actionLoadCSVFile(response.front());
+            },
+            {
+                FileDialogFilter::all_files(),
+                csv_file_dialog_filter(),
+            }
+        );
     }
 
     void actionLoadCSVFile(const std::filesystem::path& path)

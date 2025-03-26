@@ -16,7 +16,7 @@ void osc::Widget::set_parent(Widget* new_parent) { data_->set_parent(new_parent)
 
 LifetimedPtr<Widget> osc::Widget::weak_ref()
 {
-    return {private_data().lifetime(), this};
+    return {private_data().lifetime_watcher(), this};
 }
 
 CStringView osc::Widget::name() const
