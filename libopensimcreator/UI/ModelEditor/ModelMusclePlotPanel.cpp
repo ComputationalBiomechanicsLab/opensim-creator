@@ -1388,19 +1388,25 @@ namespace
 
     // a UI action in which the user in prompted for a CSV file that they would like to overlay
     // over the current plot
-    void ActionPromptUserForCSVOverlayFile(PlotLines& lines)
+    void ActionPromptUserForCSVOverlayFile(std::shared_ptr<PlotLines> lines)
     {
-        const std::optional<std::filesystem::path> maybeCSVPath =
-            prompt_user_to_select_file({"csv"});
-
-        if (maybeCSVPath)
-        {
-            for (Plot& plot : TryLoadSVCFileAsPlots(*maybeCSVPath))
+        App::upd().prompt_user_to_select_file_async(
+            [lines](FileDialogResponse response)
             {
-                plot.setIsLocked(true);
-                lines.pushPlotAsPrevious(std::move(plot));
+                if (response.size() != 1) {
+                    return;  // Error, cancellation, or the user somehow selected more than one file.
+                }
+
+                for (Plot& plot : TryLoadSVCFileAsPlots(response.front())) {
+                    plot.setIsLocked(true);
+                    lines->pushPlotAsPrevious(std::move(plot));
+                }
+            },
+            {
+                FileDialogFilter::all_files(),
+                csv_file_dialog_filter(),
             }
-        }
+        );
     }
 
     // a UI action in which the user is prompted to save a CSV file to the filesystem and then, if
@@ -1516,7 +1522,7 @@ namespace
     public:
         explicit ShowingPlotState(SharedStateData& shared_) :
             MusclePlotState{shared_},
-            m_Lines{shared_.getPlotParams()}
+            m_Lines{std::make_shared<PlotLines>(shared_.getPlotParams())}
         {}
 
     private:
@@ -1524,8 +1530,8 @@ namespace
         {
             onBeforeDrawing();  // perform pre-draw cleanups/updates etc.
 
-            if (m_Lines.getPlottingTaskStatus() == PlottingTaskStatus::Error) {
-                if (auto maybeErrorString = m_Lines.tryGetPlottingTaskErrorMessage()) {
+            if (m_Lines->getPlottingTaskStatus() == PlottingTaskStatus::Error) {
+                if (auto maybeErrorString = m_Lines->tryGetPlottingTaskErrorMessage()) {
                     ui::draw_text("error: cannot show plot: %s", maybeErrorString->c_str());
                 }
                 return nullptr;
@@ -1568,7 +1574,7 @@ namespace
                 );
                 plot::setup_finish();
 
-                const std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(m_Lines, m_SnapCursor);
+                const std::optional<float> maybeMouseX = TryGetMouseXPositionInPlot(*m_Lines, m_SnapCursor);
                 drawPlotLines(coord);
                 drawOverlays(coord, maybeMouseX);
                 handleMouseEvents(coord, maybeMouseX);
@@ -1595,7 +1601,7 @@ namespace
             updShared().updPlotParams().setCommit(getShared().getModel().getLatestCommit());
 
             // ensure plot lines are valid, given the current model + desired params
-            m_Lines.onBeforeDrawing(getShared().getModel(), getShared().getPlotParams());
+            m_Lines->onBeforeDrawing(getShared().getModel(), getShared().getPlotParams());
         }
 
         void drawPlotTitle(
@@ -1693,12 +1699,12 @@ namespace
         void drawPlotLines(const OpenSim::Coordinate& coord)
         {
             // plot not-active plots
-            const PlotLineCounts counts = CountOtherPlotTypes(m_Lines);
+            const PlotLineCounts counts = CountOtherPlotTypes(*m_Lines);
             size_t externalCounter = 0;
             size_t lockedCounter = 0;
-            for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i)
+            for (size_t i = 0; i < m_Lines->getNumOtherPlots(); ++i)
             {
-                const Plot& plot = m_Lines.getOtherPlot(i);
+                const Plot& plot = m_Lines->getOtherPlot(i);
 
                 Color color = m_ComputedPlotLineBaseColor;
 
@@ -1737,19 +1743,19 @@ namespace
 
                     if (ui::draw_menu_item(OSC_ICON_TRASH " delete"))
                     {
-                        m_Lines.tagOtherPlotForDeletion(i);
+                        m_Lines->tagOtherPlotForDeletion(i);
                     }
                     if (!plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_LOCK " lock"))
                     {
-                        m_Lines.setOtherPlotLocked(i, true);
+                        m_Lines->setOtherPlotLocked(i, true);
                     }
                     if (plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_UNLOCK " unlock"))
                     {
-                        m_Lines.setOtherPlotLocked(i, false);
+                        m_Lines->setOtherPlotLocked(i, false);
                     }
                     if (plot.tryGetParameters() && ui::draw_menu_item(OSC_ICON_UNDO " revert to this"))
                     {
-                        m_Lines.revertToPreviousPlot(updShared().updModel(), i);
+                        m_Lines->revertToPreviousPlot(updShared().updModel(), i);
                     }
                     if (ui::draw_menu_item(OSC_ICON_FILE_EXPORT " export to CSV"))
                     {
@@ -1761,8 +1767,8 @@ namespace
 
             // then plot the active plot
             {
-                const Plot& plot = m_Lines.getActivePlot();
-                const std::string lineName = IthPlotLineName(plot, m_Lines.getNumOtherPlots() + 1);
+                const Plot& plot = m_Lines->getActivePlot();
+                const std::string lineName = IthPlotLineName(plot, m_Lines->getNumOtherPlots() + 1);
 
                 // locked curves should have a blue tint
                 Color color = m_ComputedPlotLineBaseColor;
@@ -1793,11 +1799,11 @@ namespace
 
                     if (!plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_LOCK " lock"))
                     {
-                        m_Lines.setActivePlotLocked(true);
+                        m_Lines->setActivePlotLocked(true);
                     }
                     if (plot.getIsLocked() && ui::draw_menu_item(OSC_ICON_UNLOCK " unlock"))
                     {
-                        m_Lines.setActivePlotLocked(false);
+                        m_Lines->setActivePlotLocked(false);
                     }
                     if (ui::draw_menu_item(OSC_ICON_FILE_EXPORT " export to CSV"))
                     {
@@ -1852,7 +1858,7 @@ namespace
             {
                 // draw current coordinate value as a solid dropline
                 {
-                    std::optional<float> maybeCoordinateY = ComputeLERPedY(m_Lines.getActivePlot(), static_cast<float>(coordinateXInDegrees));
+                    std::optional<float> maybeCoordinateY = ComputeLERPedY(m_Lines->getActivePlot(), static_cast<float>(coordinateXInDegrees));
 
                     if (maybeCoordinateY) {
                         double v = *maybeCoordinateY;
@@ -1867,7 +1873,7 @@ namespace
 
                 // (try to) draw the hovered coordinate value as a faded dropline
                 if (maybeMouseX) {
-                    const std::optional<float> maybeHoverY = ComputeLERPedY(m_Lines.getActivePlot(), *maybeMouseX);
+                    const std::optional<float> maybeHoverY = ComputeLERPedY(m_Lines->getActivePlot(), *maybeMouseX);
                     if (maybeHoverY) {
                         double v = *maybeHoverY;
 
@@ -1918,7 +1924,7 @@ namespace
                     // trick: we "know" that the last edit to the model was a coordinate edit in this plot's
                     //        independent variable, so we can skip recomputing it
                     const ModelStateCommit commitAfter = getShared().getModel().getLatestCommit();
-                    m_Lines.setActivePlotCommit(commitAfter);
+                    m_Lines->setActivePlotCommit(commitAfter);
                 }
             }
         }
@@ -1943,7 +1949,7 @@ namespace
             drawMaxHistoryEntriesIntInput();
 
             if (ui::draw_menu_item("clear unlocked plots")) {
-                m_Lines.clearUnlockedPlots();
+                m_Lines->clearUnlockedPlots();
             }
 
             if (ui::begin_menu("legend")) {
@@ -1984,10 +1990,10 @@ namespace
         // draws an input for manipulating the number of history entries this plot panel holds
         void drawMaxHistoryEntriesIntInput()
         {
-            int maxHistoryEntries = m_Lines.getMaxHistoryEntries();
+            int maxHistoryEntries = m_Lines->getMaxHistoryEntries();
             if (ui::draw_int_input("max history size", &maxHistoryEntries, 1, 100, ui::TextInputFlag::EnterReturnsTrue)) {
                 if (maxHistoryEntries >= 0) {
-                    m_Lines.setMaxHistoryEntries(maxHistoryEntries);
+                    m_Lines->setMaxHistoryEntries(maxHistoryEntries);
                 }
             }
         }
@@ -2057,17 +2063,17 @@ namespace
         {
             int id = 0;
 
-            for (size_t i = 0; i < m_Lines.getNumOtherPlots(); ++i) {
+            for (size_t i = 0; i < m_Lines->getNumOtherPlots(); ++i) {
                 ui::push_id(id++);
-                if (ui::draw_menu_item(m_Lines.getOtherPlot(i).getName())) {
-                    ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getOtherPlot(i));
+                if (ui::draw_menu_item(m_Lines->getOtherPlot(i).getName())) {
+                    ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines->getOtherPlot(i));
                 }
                 ui::pop_id();
             }
 
             ui::push_id(id++);
-            if (ui::draw_menu_item(m_Lines.getActivePlot().getName())) {
-                ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines.getActivePlot());
+            if (ui::draw_menu_item(m_Lines->getActivePlot().getName())) {
+                ActionPromptUserToSavePlotToCSV(coord, getShared().getPlotParams(), m_Lines->getActivePlot());
             }
             ui::pop_id();
 
@@ -2075,7 +2081,7 @@ namespace
 
             ui::push_id(id++);
             if (ui::draw_menu_item("Export All Curves")) {
-                ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), m_Lines);
+                ActionPromptUserToSavePlotLinesToCSV(coord, getShared().getPlotParams(), *m_Lines);
             }
             ui::draw_tooltip_if_item_hovered("Export All Curves to CSV", "Exports all curves in the plot to a CSV file.\n\nThe implementation will try to group things together by X value, but the CSV file *may* contain sparse rows if (e.g.) some curves have a different number of plot points, or some curves were loaded from another CSV, etc.");
             ui::pop_id();
@@ -2091,7 +2097,7 @@ namespace
         }
 
         // plot data state
-        PlotLines m_Lines;
+        std::shared_ptr<PlotLines> m_Lines = std::make_shared<PlotLines>();
 
         // UI/drawing/widget state
         Color m_ComputedPlotLineBaseColor = Color::white();
