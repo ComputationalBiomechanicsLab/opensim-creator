@@ -5,7 +5,13 @@ set(
      than acquiring it externally (via `find_package`). This is useful for developing/testing\
      Simbody/OpenSim as part of OpenSim Creator's integration"
 )
-
+mark_as_advanced(OSC_BUILD_OSIM_INLINED)
+set(
+    OSC_FIND_OSIM_PACKAGE_IF_NOT_INLINED ON
+    CACHE BOOL
+    "Enable/disable calling `find_package(osim)` if osim is not being built inline"
+)
+mark_as_advanced(OSC_FIND_OSIM_PACKAGE_IF_NOT_INLINED)
 
 if(${OSC_BUILD_OSIM_INLINED})
     add_subdirectory(
@@ -17,7 +23,7 @@ if(${OSC_BUILD_OSIM_INLINED})
     # ensure linting doesn't happen for OpenSim/Simbody sources
     set_property(TARGET osim PROPERTY CXX_CLANG_TIDY)
     set_property(TARGET osim PROPERTY C_CLANG_TIDY)
-else()
+elseif(${OSC_FIND_OSIM_PACKAGE_IF_NOT_INLINED})
     find_package(osim REQUIRED)
 endif()
 
