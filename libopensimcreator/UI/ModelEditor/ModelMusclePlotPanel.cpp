@@ -2097,7 +2097,7 @@ namespace
         }
 
         // plot data state
-        std::shared_ptr<PlotLines> m_Lines = std::make_shared<PlotLines>();
+        std::shared_ptr<PlotLines> m_Lines;  // Initialized in ctor.
 
         // UI/drawing/widget state
         Color m_ComputedPlotLineBaseColor = Color::white();
