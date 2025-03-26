@@ -234,14 +234,14 @@ namespace osc
         // able to process all events.
         void request_invoke_on_main_thread(std::function<void()>);
 
-        // Prompts a user to select file(s), followed by calling `callback` from the ui thread
-        // with the user's selection.
+        // Prompts the user to select file(s) that they would like to open.
         //
-        // - `callback` is called by the implementation when the user chooses a file, cancels,
-        //   or there's an error. It is not called if the application quits/destructs before
-        //   those happen (related: `request_invoke_on_ui_thread`).
+        // - `callback` is called from the ui thread by the implementation when the user chooses
+        //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
+        //   is called immeditately or as part of pumping the application event loop. `callback`
+        //   may not be called if the application quits/destructs prematurely.
         //
-        // - `filters` should be a sequence of permitted `FileDialogFilter`s, and will constrain
+        // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
         //   which files the user can select in the dialog in an implementation-defined way.
         //
         // - `initial_directory_to_show` should be a filesystem path to a directory that should
@@ -264,6 +264,37 @@ namespace osc
                 std::span<const FileDialogFilter>{filters},
                 std::move(initial_directory_to_show),
                 allow_many
+            );
+        }
+
+        // Prompts the user to select a new or existing filesystem path where they would like
+        // to save a file.
+        //
+        // - `callback` is called from the ui thread by the implementation when the user chooses
+        //   a file, cancels or there's an error. It is implementation-defined whether `callback` is
+        //   called  immediately, or as part of pumping the application event loop. `callback` may
+        //   not be called if the application quits/destructs prematurely.
+        //
+        // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
+        //   which file extensions the user can use in the dialog in an implementation-defined way.
+        //
+        // - `initial_directory_to_show` should be a filesystem path to a directory that should
+        //   initially be shown to the user. If it isn't provided, then an implementation-defined
+        //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
+        void prompt_user_to_save_file_async(
+            std::function<void(FileDialogResponse)> callback,
+            std::span<const FileDialogFilter> filters = {},
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
+        );
+        inline void prompt_user_to_save_file_async(
+            std::function<void(FileDialogResponse)> callback,
+            std::initializer_list<const FileDialogFilter> filters = {},
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
+        {
+            return prompt_user_to_save_file_async(
+                std::move(callback),
+                std::span{filters},
+                std::move(initial_directory_to_show)
             );
         }
 
