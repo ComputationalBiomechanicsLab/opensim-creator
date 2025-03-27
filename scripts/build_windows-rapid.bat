@@ -10,7 +10,6 @@ cmake ^
     -G Ninja ^
     -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% ^
     -DCMAKE_INSTALL_PREFIX=%cd%/osc-dependencies-install ^
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON ^
     -DOSCDEPS_BUILD_OPENBLAS=ON
 cmake --build osc-dependencies-build --config %OSC_BUILD_TYPE% -v
 
@@ -19,8 +18,7 @@ cmake ^
     -B osc-build ^
     -G Ninja ^
     -DCMAKE_BUILD_TYPE=%OSC_BUILD_TYPE% ^
-    -DCMAKE_PREFIX_PATH=%cd%/osc-dependencies-install ^
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_PREFIX_PATH=%cd%/osc-dependencies-install
 cmake --build osc-build --config %OSC_BUILD_TYPE% -v
 
 ctest --test-dir osc-build -j%NUMBER_OF_PROCESSORS%

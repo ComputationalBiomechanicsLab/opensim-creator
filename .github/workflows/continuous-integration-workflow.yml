@@ -14,19 +14,9 @@ jobs:
         path: osc
         submodules: 'recursive'
 
-    - name: setup system
-      run: |
-        # setup python virtual environment
-        cd $env:GITHUB_WORKSPACE/osc
-        python -m venv venv/
-        ./venv/Scripts/activate
-        pip install -r opensimcreator/requirements/build_requirements.txt -r opensimcreator/requirements/test_requirements.txt
-
     - name: build
       run: |
-        # activate python virtual environment
         cd $env:GITHUB_WORKSPACE\osc
-        ./venv/Scripts/activate
 
         # run build script
         python scripts\\build_windows.py -j2 || exit /b
@@ -51,14 +41,8 @@ jobs:
       run: |
         # install system dependencies
         sudo apt update
-        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev python3-dev
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
         sudo apt-get install -y xvfb  # virtual desktop, for UI tests
-
-        # setup python virtual environment
-        cd $GITHUB_WORKSPACE/osc
-        python3 -m venv venv/
-        source venv/bin/activate
-        pip install -r opensimcreator/requirements/build_requirements.txt -r opensimcreator/requirements/test_requirements.txt
 
     - name: run build script
       run: |
@@ -67,9 +51,7 @@ jobs:
         export CC=clang
         export CXX=clang++
 
-        # activate python environment
         cd $GITHUB_WORKSPACE/osc
-        source venv/bin/activate
 
         # run buildscript under virtual desktop (for UI tests)
         xvfb-run ./scripts/build_ubuntu-20.04.sh
@@ -89,19 +71,9 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: setup system
-      run: |
-        # setup python virtual environment
-        cd $GITHUB_WORKSPACE
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install -r opensimcreator/requirements/build_requirements.txt -r opensimcreator/requirements/test_requirements.txt
-
     - name: run build script
       run: |
-        # activate python environment
         cd $GITHUB_WORKSPACE
-        source venv/bin/activate
 
         # run buildscript
         ./scripts/build_mac-amd64.sh
@@ -130,14 +102,8 @@ jobs:
       run: |
         # install system dependencies
         sudo apt update
-        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev python3-dev
+        sudo apt-get install -y build-essential cmake libgtk-3-dev liblapack-dev
         sudo apt-get install -y xvfb  # virtual desktop, for tests
-
-        # setup python environment
-        cd $GITHUB_WORKSPACE/osc
-        python3 -m venv venv
-        source venv/bin/activate
-        pip install -r opensimcreator/requirements/build_requirements.txt -r opensimcreator/requirements/test_requirements.txt
 
     - name: run build script
       run: |
@@ -146,9 +112,7 @@ jobs:
         export CC=gcc-12
         export CXX=g++-12
 
-        # activate python environment
         cd $GITHUB_WORKSPACE/osc
-        source venv/bin/activate
 
         # run buildscript under virtual desktop (for UI tests)
         xvfb-run ./scripts/build_ubuntu-20.04.sh

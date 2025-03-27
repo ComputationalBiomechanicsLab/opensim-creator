@@ -21,15 +21,13 @@ cmake \
     -S third_party/ \
     -B osc-deps-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
 cmake --build osc-deps-build -j$(nproc)
 cmake \
     -S . \
     -B osc-build \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
 cmake --build osc-build/ -j$(nproc)
 
 valgrind_cmd="valgrind --leak-check=full --suppressions=scripts/valgrind_suppressions.supp"

@@ -80,7 +80,7 @@ def log_build_params(conf: BuildConfiguration):
 def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
         _run(
-            f'cmake -S third_party/ -B "{conf.get_dependencies_build_dir()}" {conf.generator_flags} -DCMAKE_BUILD_TYPE={conf.get_osc_deps_build_type()} -DCMAKE_INSTALL_PREFIX="{conf.get_dependencies_install_dir()}" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DOSCDEPS_BUILD_OPENBLAS=ON',
+            f'cmake -S third_party/ -B "{conf.get_dependencies_build_dir()}" {conf.generator_flags} -DCMAKE_BUILD_TYPE={conf.get_osc_deps_build_type()} -DCMAKE_INSTALL_PREFIX="{conf.get_dependencies_install_dir()}" -DOSCDEPS_BUILD_OPENBLAS=ON',
             # note: this is necessary because OpenSim transitively uses `spdlog`, which has deprecated this
             extra_env_vars={'CXXFLAGS': '/D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING'},
         )
@@ -99,7 +99,7 @@ def build_osc(conf: BuildConfiguration):
         other_build_args = f'--config {conf.get_osc_build_type()} -j{conf.concurrency}'
 
         # configure
-        _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"} -DCMAKE_POSITION_INDEPENDENT_CODE=ON')
+        _run(f'cmake -S . -B {conf.get_osc_build_dir()} {conf.generator_flags} -DCMAKE_PREFIX_PATH={os.path.abspath(conf.get_dependencies_install_dir())} -DOSC_BUILD_DOCS={"ON" if conf.build_docs else "OFF"}')
 
         # build+run oscar test suite
         test_oscar_path = os.path.join(conf.get_osc_build_dir(), 'liboscar', 'testing', conf.get_osc_build_type(), 'testoscar')
