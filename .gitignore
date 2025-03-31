@@ -51,11 +51,3 @@ osc-deps-install/
 
 # CLion
 .idea/
-
-# python binaries
-__pycache__/
-*.pyd
-*.ilk
-*.pdb
-
-.pytest_cache

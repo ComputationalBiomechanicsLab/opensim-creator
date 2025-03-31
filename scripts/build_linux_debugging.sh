@@ -40,8 +40,7 @@ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake \
     -S third_party/ \
     -B osc-deps-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
 cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 
 # configure+build OpenSimCreator
@@ -53,11 +52,9 @@ CCFLAGS="-fsanitize=address -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=addr
     -B osc-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DOSC_FORCE_ASSERTS_ENABLED=ON \
-    -DOSC_BUILD_PYTHON_BINDINGS=OFF \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install \
     -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install \
-    -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY} \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar
 cmake --build osc-build -j${OSC_BUILD_CONCURRENCY} --target testoscar_demos

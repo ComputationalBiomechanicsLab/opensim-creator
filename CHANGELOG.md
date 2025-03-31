@@ -15,6 +15,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   for rescaling a `WarpCylinder`'s radius based on stations in the model (#1013).
 - The model warper (V3) now supports `RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep`
   for recalculating a `WrapCylinder`'s orientation based on stations in the model (#1016).
+- Internal: the screenshot tab is now working again!
 
 
 ## [0.5.21] - 2025/02/28

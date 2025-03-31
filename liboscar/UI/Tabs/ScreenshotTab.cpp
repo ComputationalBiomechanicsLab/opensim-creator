@@ -194,21 +194,22 @@ private:
         RenderTexture render_texture{{.dimensions = image_texture_.dimensions()}};
 
         // blit the screenshot into the output
-        //graphics::blit(image_texture_, render_texture);
+        graphics::blit(image_texture_, render_texture);
 
         // draw overlays to a local ImGui draw list
         ui::DrawList draw_list;
-        Color outline_color = c_selected_color;
-        outline_color.a = 1.0f;
+        draw_list.push_clip_rect({{}, image_texture_.dimensions()});
+
         draw_image_overlays(
             draw_list,
             Rect{{0.0f, 0.0f}, image_texture_.dimensions()},
             {0.0f, 0.0f, 0.0f, 0.0f},
-            outline_color
+            c_selected_color.with_alpha(1.0f)
         );
 
         // render draw list to output
         draw_list.render_to(render_texture);
+        draw_list.pop_clip_rect();
 
         Texture2D rv{render_texture.dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
         graphics::copy_texture(render_texture, rv);

@@ -74,7 +74,6 @@ cmake \
     -B "osc-deps-build" \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_INSTALL_PREFIX="osc-deps-install" \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build "osc-deps-build" -j${OSC_BUILD_CONCURRENCY}
 
@@ -84,7 +83,6 @@ cmake \
     -B "osc-build" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build "osc-build" -j${OSC_BUILD_CONCURRENCY}
 

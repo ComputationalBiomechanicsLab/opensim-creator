@@ -456,7 +456,8 @@ namespace
         const ImDrawData& draw_data,
         const ImDrawList&,
         Mesh& mesh,
-        const ImDrawCmd& draw_command)
+        const ImDrawCmd& draw_command,
+        RenderTexture* maybe_target)
     {
         OSC_ASSERT(draw_command.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
@@ -485,11 +486,26 @@ namespace
             draw_command.VtxOffset
         });
 
+        // setup texture binding (it's almost always the font texture)
         if (const auto* texture = lookup_or_nullptr(bd.textures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
             std::visit(Overload{
                 [&bd](const auto& texture) { bd.ui_material.set("uTexture", texture); },
             }, *texture);
-            graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, sub_mesh_index);
+        }
+        else if (bd.font_texture) {
+            // this is a sane fallback for custom drawlists, which might not have set
+            // a texture ID (imgui always sets it).
+            bd.ui_material.set("uTexture", *bd.font_texture);
+        }
+
+        // draw
+        graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, sub_mesh_index);
+
+        // flush draw queue to output
+        if (maybe_target) {
+            bd.camera.render_to(*maybe_target);
+        }
+        else {
             bd.camera.render_to_screen();
         }
     }
@@ -497,7 +513,8 @@ namespace
     void render_drawlist(
         OscarImguiBackendData& bd,
         const ImDrawData& draw_data,
-        ImDrawList& draw_list)
+        ImDrawList& draw_list,
+        RenderTexture* maybe_target)
     {
         // HACK: convert all ImGui-provided colors from sRGB to linear
         //
@@ -530,7 +547,7 @@ namespace
 
         // iterate through command buffer
         for (const ImDrawCmd& draw_command : draw_list.CmdBuffer) {
-            render_draw_command(bd, draw_data, draw_list, mesh, draw_command);
+            render_draw_command(bd, draw_data, draw_list, mesh, draw_command, maybe_target);
         }
         mesh.clear();
     }
@@ -606,14 +623,14 @@ namespace osc::ui::graphics_backend
         }
     }
 
-    void render(ImDrawData* draw_data)
+    void render(ImDrawData* draw_data, RenderTexture* maybe_target = nullptr)
     {
         OscarImguiBackendData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
         setup_camera_view_matrix(*draw_data, bd->camera);
         for (int n = 0; n < draw_data->CmdListsCount; ++n) {
-            render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n]);
+            render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n], maybe_target);
         }
     }
 
@@ -2580,76 +2597,32 @@ void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 p0, const Vec2& p1, co
     impl_get_drawlist().AddTriangleFilled(p0, p1, p2, to_ImU32(color));
 }
 
+void osc::ui::DrawListAPI::push_clip_rect(const Rect& rect, bool intersect_with_currect_clip_rect)
+{
+    impl_get_drawlist().PushClipRect(rect.p1, rect.p2, intersect_with_currect_clip_rect);
+}
+
+void osc::ui::DrawListAPI::pop_clip_rect()
+{
+    impl_get_drawlist().PopClipRect();
+}
+
 void osc::ui::DrawListAPI::render_to(RenderTexture& target)
 {
-    // TODO: this should be merged with `ui_graphics_backend`
-
     ImDrawList& drawlist = impl_get_drawlist();
 
-    // upload vertex positions/colors
-    Mesh mesh;
-    {
-        // vertices
-        {
-            std::vector<Vec3> vertices;
-            vertices.reserve(drawlist.VtxBuffer.size());
-            for (const ImDrawVert& vert : drawlist.VtxBuffer) {
-                vertices.emplace_back(vert.pos.x, vert.pos.y, 0.0f);
-            }
-            mesh.set_vertices(vertices);
-        }
+    ImDrawData data;
+    data.Valid = true;
+    data.CmdListsCount = 1;
+    data.TotalIdxCount = drawlist.VtxBuffer.Size;
+    data.TotalIdxCount = drawlist.IdxBuffer.Size;
+    data.CmdLists.push_back(&drawlist);
+    data.DisplayPos = {0.0f, 0.0f};
+    data.DisplaySize = ImVec2{target.dimensions()};
+    data.FramebufferScale = ImGui::GetIO().DisplayFramebufferScale;
+    data.OwnerViewport = nullptr;
 
-        // colors
-        {
-            std::vector<Color> colors;
-            colors.reserve(drawlist.VtxBuffer.size());
-            for (const ImDrawVert& vert : drawlist.VtxBuffer) {
-                const Color linear_color = to_color(vert.col);
-                colors.push_back(linear_color);
-            }
-            mesh.set_colors(colors);
-        }
-    }
-
-    // solid color material
-    const Material material{Shader{
-        c_custom_ui_renderer_vertex_shader_src,
-        c_custom_ui_renderer_fragment_shader_src,
-    }};
-
-    Camera c;
-    c.set_view_matrix_override(identity<Mat4>());
-
-    {
-        // project screen-space overlays into NDC
-        const float L = 0.0f;
-        const float R = static_cast<float>(target.dimensions().x);
-        const float T = 0.0f;
-        const float B = static_cast<float>(target.dimensions().y);
-        const Mat4 proj = {
-            { 2.0f/(R-L),   0.0f,         0.0f,   0.0f },
-            { 0.0f,         2.0f/(T-B),   0.0f,   0.0f },
-            { 0.0f,         0.0f,        -1.0f,   0.0f },
-            { (R+L)/(L-R),  (T+B)/(B-T),  0.0f,   1.0f },
-        };
-        c.set_projection_matrix_override(proj);
-    }
-    c.set_clear_flags(CameraClearFlag::None);
-
-    for (const ImDrawCmd& cmd : drawlist.CmdBuffer) {
-        // upload indices
-        std::vector<ImDrawIdx> indices;
-        indices.reserve(cmd.ElemCount);
-        for (auto offset = cmd.IdxOffset; offset < cmd.IdxOffset + cmd.ElemCount; ++offset) {
-            indices.push_back(drawlist.IdxBuffer[static_cast<int>(offset)]);
-        }
-        mesh.set_indices(indices);
-
-        // draw mesh
-        graphics::draw(mesh, Transform{}, material, c);
-    }
-
-    c.render_to(target);
+    graphics_backend::render(&data, &target);
 }
 
 ui::DrawListView osc::ui::get_panel_draw_list()
