@@ -955,6 +955,24 @@ namespace
         }
     };
 
+    // A `ThinPlateSpline` scaling step that tries to scale the origin, orientation, radius,
+    // length, and quadrant of a `WrapCylinder`.
+    class ThinPlateSplineWrapCylinderScalingStep final : public ThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineWrapCylinderScalingStep, ThinPlateSplineScalingStep);
+
+        OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
+        OpenSim_DECLARE_PROPERTY(midline_projection_distance, double, "The distance, in meters, that the `WrapCylinder`'s midline should be projected from its origin point before putting it through the TPS algorithm. This is used to figure out the new orientation of the `WrapCylinder`.");
+        OpenSim_DECLARE_PROPERTY(radius_projection_theta, double, "An angle, in radians, of a direction vector that spins around the `WrapCylinder`'s Z axis. At 0 radians, it points along the `WrapCylinder`'s X axis. At 0.5*pi radians, it points along the `WrapCylinder`'s Y axis. This dictates where a point should be generated on the `WrapCylinder`'s surface before putting the point through the TPS algorithm and using its warped location to recalculate the `WrapCylinder`'s `radius`.");
+    public:
+        explicit ThinPlateSplineWrapCylinderScalingStep() :
+            ThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to WrapCylinder"}
+        {
+            constructProperty_wrap_cylinder_path("");
+            constructProperty_midline_projection_distance(0.001);
+            constructProperty_radius_projection_theta(0.0);
+        }
+    };
+
     // A `ScalingStep` that scales the masses of bodies in the model.
     class BodyMassesScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
@@ -980,7 +998,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
 
         explicit RecalculateWrapCylinderRadiusFromStationScalingStep() :
-            ScalingStep{"Recalculate WrapCylinder Radius from Station Projection onto its Midline"}
+            ScalingStep{"Recalculate WrapCylinder `radius` from Station Projection onto its Midline"}
         {
             setDescription("Recalculates the 'radius' of a `WrapCylinder` component, located at `wrap_cylinder_path`, as the distance between the `Station`, located at `station_path`, and the cylinder's (infinitely long) midline.");
             constructProperty_station_path("");
@@ -1040,7 +1058,6 @@ namespace
             InitializeState(resultModel);
         }
     };
-
 
     class RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep, ScalingStep)
