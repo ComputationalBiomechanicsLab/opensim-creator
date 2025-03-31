@@ -584,6 +584,8 @@ namespace osc::ui
         void add_text(const Vec2& position, const Color& color, CStringView text);
         void add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness = 1.0f);
         void add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color);
+        void push_clip_rect(const Rect&, bool intersect_with_currect_clip_rect = false);
+        void pop_clip_rect();
 
         void render_to(RenderTexture&);
     private:
