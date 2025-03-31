@@ -2,8 +2,10 @@
 
 #include <liboscar/Utils/CStringView.h>
 
+#include <concepts>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace osc
 {
@@ -20,9 +22,13 @@ namespace osc
         //
         // - `name`    a humnan-readable representation of the filter, e.g. "Images"
         // - `pattern` a semicolon-delimited list of file extensions, e.g. "jpg;png;gif"
-        explicit FileDialogFilter(std::string_view name, std::string_view pattern) :
-            name_{name},
-            pattern_{pattern}
+        template<typename StringLike1, typename StringLike2>
+        requires
+            std::constructible_from<std::string, StringLike1&&> and
+            std::constructible_from<std::string, StringLike2&&>
+        explicit FileDialogFilter(StringLike1&& name, StringLike2&& pattern) :
+            name_{std::forward<StringLike1>(name)},
+            pattern_{std::forward<StringLike2>(pattern)}
         {}
 
         CStringView name() const { return name_; }
