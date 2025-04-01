@@ -95,7 +95,6 @@
 #include <variant>
 #include <vector>
 
-namespace graphics = osc::graphics;
 namespace plot = osc::ui::plot;
 namespace rgs = std::ranges;
 using namespace osc::literals;
@@ -538,9 +537,9 @@ namespace
     }
 }
 
-namespace osc::ui::graphics_backend
+namespace
 {
-    bool init()
+    void graphics_backend_init()
     {
         ImGuiIO& io = ImGui::GetIO();
         OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
@@ -549,11 +548,9 @@ namespace osc::ui::graphics_backend
         io.BackendRendererUserData = static_cast<void*>(new OscarImguiBackendData{});
         io.BackendRendererName = "imgui_impl_osc";
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
-
-        return true;
     }
 
-    void shutdown()
+    void graphics_backend_shutdown()
     {
         OscarImguiBackendData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
@@ -568,7 +565,7 @@ namespace osc::ui::graphics_backend
         delete bd;  // NOLINT(cppcoreguidelines-owning-memory)
     }
 
-    void on_start_new_frame()
+    void graphics_backend_on_start_new_frame()
     {
         // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
@@ -581,14 +578,14 @@ namespace osc::ui::graphics_backend
         bd->textures_allocated_this_frame.try_emplace(bd->font_texture_id, *bd->font_texture);  // (so that all lookups can hit the same LUT)
     }
 
-    void mark_fonts_for_reupload()
+    void graphics_backend_mark_fonts_for_reupload()
     {
         if (OscarImguiBackendData* bd = get_graphics_backend_data()) {
             bd->font_texture.reset();
         }
     }
 
-    void render(ImDrawData* draw_data, RenderTexture* maybe_target = nullptr)
+    void graphics_backend_render(ImDrawData* draw_data, RenderTexture* maybe_target = nullptr)
     {
         OscarImguiBackendData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
@@ -599,12 +596,12 @@ namespace osc::ui::graphics_backend
         }
     }
 
-    ImTextureID allocate_texture_for_current_frame(const Texture2D& texture)
+    ImTextureID graphics_backend_allocate_texture_for_current_frame(const Texture2D& texture)
     {
         return ::allocate_texture_for_current_frame(texture);
     }
 
-    ImTextureID allocate_texture_for_current_frame(const RenderTexture& texture)
+    ImTextureID graphics_backend_allocate_texture_for_current_frame(const RenderTexture& texture)
     {
         return ::allocate_texture_for_current_frame(texture);
     }
@@ -866,7 +863,7 @@ namespace
             }
 
             io.Fonts->Build();
-            ui::graphics_backend::mark_fonts_for_reupload();
+            graphics_backend_mark_fonts_for_reupload();
         }
 
         // ensure style is scaled correctly
@@ -1720,7 +1717,7 @@ void osc::ui::context::init(App& app)
     ImGui_ImplOscar_Init(app.main_window_id());
 
     // init ImGui for oscar's graphics backend (OpenGL)
-    graphics_backend::init();
+    graphics_backend_init();
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();
@@ -1732,7 +1729,7 @@ void osc::ui::context::shutdown(App& app)
     ImGuizmo::DestroyContext();
     ImPlot::DestroyContext();
 
-    graphics_backend::shutdown();
+    graphics_backend_shutdown();
     ImGui_ImplOscar_Shutdown(app);
     ImGui::DestroyContext();
 }
@@ -1754,7 +1751,7 @@ bool osc::ui::context::on_event(Event& ev)
 
 void osc::ui::context::on_start_new_frame(App& app)
 {
-    graphics_backend::on_start_new_frame();
+    graphics_backend_on_start_new_frame();
     ImGui_ImplOscar_NewFrame(app);
     ImGui::NewFrame();
 
@@ -1771,7 +1768,7 @@ void osc::ui::context::render()
 
     {
         OSC_PERF("graphics_backend::render(ImGui::GetDrawData())");
-        graphics_backend::render(ImGui::GetDrawData());
+        graphics_backend_render(ImGui::GetDrawData());
     }
 }
 
@@ -2587,7 +2584,7 @@ void osc::ui::DrawListAPI::render_to(RenderTexture& target)
     data.FramebufferScale = ImGui::GetIO().DisplayFramebufferScale;
     data.OwnerViewport = nullptr;
 
-    graphics_backend::render(&data, &target);
+    graphics_backend_render(&data, &target);
 }
 
 ui::DrawListView osc::ui::get_panel_draw_list()
@@ -2954,7 +2951,7 @@ void osc::ui::draw_image(
     Vec2 top_left_texture_coordinate,
     Vec2 bottom_right_texture_coordinate)
 {
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
+    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, top_left_texture_coordinate, bottom_right_texture_coordinate);
 }
 
@@ -2967,7 +2964,7 @@ void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)
 {
     const Vec2 uv0 = {0.0f, 1.0f};
     const Vec2 uv1 = {1.0f, 0.0f};
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
+    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, uv0, uv1);
 }
 
@@ -2997,7 +2994,7 @@ bool osc::ui::draw_image_button(
     Vec2 dimensions,
     const Rect& texture_coordinates)
 {
-    const auto handle = ui::graphics_backend::allocate_texture_for_current_frame(texture);
+    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
     return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.p1, texture_coordinates.p2);
 }
 
