@@ -1102,10 +1102,8 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 // With two vectors pointing along known axes, we can compute a new cylinder rotation
                 const SimTK::Rotation newCylinderRotation{newZAxisDirectionInParent, SimTK::ZAxis, newXAxisDirectionInParent, SimTK::XAxis};
 
-                // The length of the surface point rejection vector is equivalent to the radius of
-                // the cylinder (it's an orthogonal axis from the cylinder's origin to a point that
-                // was initially on its surface)
-                const double newRadius = newSurfacePointRejectionVector.norm();
+                // The new radius is the projection of the surface point onto the X axis
+                const double newRadius = SimTK::dot(SimTK::Vec3{newSurfacePointInParent - newOriginPointInParent}, newXAxisDirectionInParent);
 
                 // (finally) Update the cylinder
                 wrapCylinder->set_translation(newOriginPointInParent);
