@@ -294,41 +294,6 @@ namespace
         }
     )";
 
-    // HACK: this shouldn't be necessary, but is, because the legacy draw list
-    // rendering code was dependent on it.
-    constexpr std::string_view c_custom_ui_renderer_vertex_shader_src = R"(
-        #version 330 core
-
-        uniform mat4 uProjMat;
-        uniform mat4 uViewMat;
-        uniform mat4 uModelMat;
-
-        layout (location = 0) in vec3 aPos;
-        layout (location = 3) in vec4 aColor;
-
-        out vec4 aVertColor;
-
-        void main()
-        {
-            gl_Position = uProjMat * uViewMat * uModelMat * vec4(aPos, 1.0);
-            aVertColor = aColor;
-        }
-    )";
-
-    // HACK: this shouldn't be necessary, but is, because the legacy draw list
-    // rendering code was dependent on it.
-    constexpr std::string_view c_custom_ui_renderer_fragment_shader_src = R"(
-        #version 330 core
-
-        in vec4 aVertColor;
-        out vec4 FragColor;
-
-        void main()
-        {
-            FragColor = aVertColor;
-        }
-    )";
-
     ImTextureID to_imgui_texture_id(UID id)
     {
         static_assert(sizeof(decltype(id.get())) <= sizeof(ImTextureID));
