@@ -958,7 +958,7 @@ namespace
     // A `ThinPlateSpline` scaling step that tries to scale the origin, orientation, radius,
     // length, and quadrant of the given `WrapCylinder`s.
     class ThinPlateSplineWrapCylinderScalingStep final : public ToggleableThinPlateSplineScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineWrapCylinderScalingStep, ThinPlateSplineScalingStep);
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineWrapCylinderScalingStep, ThinPlateSplineScalingStep)
 
         OpenSim_DECLARE_LIST_PROPERTY(wrap_cylinders, std::string, "Absolute paths (e.g. `/bodyset/body/wrap_cylinder_2`) to `WrapCylinder` components in the model");
         OpenSim_DECLARE_PROPERTY(midline_projection_distance, double, "The distance, in meters, that the `WrapCylinder`s' midlines should be projected from each of their origin points before putting them through the TPS algorithm. This is used to figure out the new orientation of the `WrapCylinder`s.");
