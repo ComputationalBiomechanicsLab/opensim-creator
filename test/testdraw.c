@@ -167,8 +167,8 @@ static void DrawRects(SDL_Renderer *renderer)
 
         rect.w = (float)SDL_rand(viewport.h / 2);
         rect.h = (float)SDL_rand(viewport.h / 2);
-        rect.x = (float)((SDL_rand(viewport.w * 2) - viewport.w) - (rect.w / 2));
-        rect.y = (float)((SDL_rand(viewport.h * 2) - viewport.h) - (rect.h / 2));
+        rect.x = (SDL_rand(viewport.w * 2) - viewport.w) - (rect.w / 2);
+        rect.y = (SDL_rand(viewport.h * 2) - viewport.h) - (rect.h / 2);
         SDL_RenderFillRect(renderer, &rect);
     }
 }
@@ -208,7 +208,7 @@ static void loop(void)
         /* Print out some timing information */
         const Uint64 then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }

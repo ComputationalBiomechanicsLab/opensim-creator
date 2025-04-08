@@ -115,7 +115,10 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_TRAYICON:
             if (LOWORD(lParam) == WM_CONTEXTMENU || LOWORD(lParam) == WM_LBUTTONUP) {
                 SetForegroundWindow(hwnd);
-                TrackPopupMenu(tray->menu->hMenu, TPM_BOTTOMALIGN | TPM_RIGHTALIGN, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, hwnd, NULL);
+                
+                if (tray->menu) {
+                    TrackPopupMenu(tray->menu->hMenu, TPM_BOTTOMALIGN | TPM_RIGHTALIGN, GET_X_LPARAM(wParam), GET_Y_LPARAM(wParam), 0, hwnd, NULL);
+                }
             }
             break;
 
@@ -364,15 +367,15 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
     return entry->submenu;
 }
 
-const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size)
+const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
 {
     if (!menu) {
         SDL_InvalidParamError("menu");
         return NULL;
     }
 
-    if (size) {
-        *size = menu->nEntries;
+    if (count) {
+        *count = menu->nEntries;
     }
     return (const SDL_TrayEntry **)menu->entries;
 }

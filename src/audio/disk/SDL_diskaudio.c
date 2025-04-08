@@ -136,7 +136,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", recording ? "Reading from" : "Writing to", fname);
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].", recording ? "Reading from" : "Writing to", fname);
 
     return true;  // We're ready to rock and roll. :-)
 }
@@ -165,7 +165,7 @@ static bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DISKAUDIO_bootstrap = {
-    "disk", "direct-to-disk audio", DISKAUDIO_Init, true
+    "disk", "direct-to-disk audio", DISKAUDIO_Init, true, false
 };
 
 #endif // SDL_AUDIO_DRIVER_DISK
