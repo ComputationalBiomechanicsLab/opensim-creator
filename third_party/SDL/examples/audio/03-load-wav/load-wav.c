@@ -1,5 +1,5 @@
 /*
- * This example code creates an simple audio stream for playing sound, and
+ * This example code creates a simple audio stream for playing sound, and
  * loads a .wav file that is pushed through the stream in a loop.
  *
  * This code is public domain. Feel free to use it for any purpose!
@@ -82,7 +82,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
        We're being lazy here, but if there's less than the entire wav file left to play,
        just shove a whole copy of it into the queue, so we always have _tons_ of
        data queued for playback. */
-    if (SDL_GetAudioStreamAvailable(stream) < (int)wav_data_len) {
+    if (SDL_GetAudioStreamQueued(stream) < (int)wav_data_len) {
         /* feed more data to the stream. It will queue at the end, and trickle out as the hardware needs more data. */
         SDL_PutAudioStreamData(stream, wav_data, wav_data_len);
     }

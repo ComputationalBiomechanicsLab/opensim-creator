@@ -158,6 +158,9 @@
 
 #ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap *backends[] = {
+#ifdef SDL_GPU_PRIVATE
+    &PrivateGPUDriver,
+#endif
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
@@ -605,6 +608,7 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     case SDL_GPU_TEXTUREFORMAT_R8_SNORM:
     case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8_INT:
         return 1;
     case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
     case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
@@ -613,9 +617,11 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_INT:
     case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16_SNORM:
     case SDL_GPU_TEXTUREFORMAT_R16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16_INT:
     case SDL_GPU_TEXTUREFORMAT_D16_UNORM:
         return 2;
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
@@ -628,11 +634,15 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
     case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
     case SDL_GPU_TEXTUREFORMAT_R16G16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_INT:
     case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16G16_SNORM:
     case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32_INT:
     case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
         return 4;
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
@@ -640,10 +650,15 @@ Uint32 SDL_GPUTextureFormatTexelBlockSize(
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
-    case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_INT:
         return 8;
     case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
         return 16;
     case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
     case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
@@ -842,6 +857,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
             return NULL;
         }
+        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers; i += 1) {
+            if (graphicsPipelineCreateInfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate != 0) {
+                SDL_assert_release(!"For all vertex buffer descriptions, instance_step_rate must be 0!");
+                return NULL;
+            }
+        }
         Uint32 locations[MAX_VERTEX_ATTRIBUTES];
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
@@ -850,8 +871,17 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             for (Uint32 j = 0; j < i; j += 1) {
                 if (locations[j] == locations[i]) {
                     SDL_assert_release(!"Each vertex attribute location in a vertex input state must be unique!");
+                    return NULL;
                 }
             }
+        }
+        if (graphicsPipelineCreateInfo->multisample_state.enable_mask) {
+            SDL_assert_release(!"For multisample states, enable_mask must be false!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->multisample_state.sample_mask != 0) {
+            SDL_assert_release(!"For multisample states, sample_mask must be 0!");
+            return NULL;
         }
         if (graphicsPipelineCreateInfo->depth_stencil_state.enable_depth_test) {
             CHECK_COMPAREOP_ENUM_INVALID(graphicsPipelineCreateInfo->depth_stencil_state.compare_op, NULL)
@@ -2616,8 +2646,11 @@ bool SDL_ClaimWindowForGPUDevice(
 {
     CHECK_DEVICE_MAGIC(device, false);
     if (window == NULL) {
-        SDL_InvalidParamError("window");
-        return false;
+        return SDL_InvalidParamError("window");
+    }
+
+    if ((window->flags & SDL_WINDOW_TRANSPARENT) != 0) {
+        return SDL_SetError("The GPU API doesn't support transparent windows");
     }
 
     return device->ClaimWindow(

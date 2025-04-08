@@ -1,5 +1,5 @@
 /*
- * This example code creates an simple audio stream for playing sound, and
+ * This example code creates a simple audio stream for playing sound, and
  * generates a sine wave sound effect for it to play as time goes on. This
  * is the simplest way to get up and running with procedural sound.
  *
@@ -69,7 +69,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
        A sine wave is unchanging audio--easy to stream--but for video games, you'll want
        to generate significantly _less_ audio ahead of time! */
     const int minimum_audio = (8000 * sizeof (float)) / 2;  /* 8000 float samples per second. Half of that. */
-    if (SDL_GetAudioStreamAvailable(stream) < minimum_audio) {
+    if (SDL_GetAudioStreamQueued(stream) < minimum_audio) {
         static float samples[512];  /* this will feed 512 samples each frame until we get to our maximum. */
         int i;
 

@@ -129,6 +129,11 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     unsigned char mask[4] = { 0, 0, 0, 0 };
     int event, err;
 
+    /* XInput2 is required for relative mouse mode, so you probably want to leave this enabled */
+    if (!SDL_GetHintBoolean("SDL_VIDEO_X11_XINPUT2", true)) {
+        return false;
+    }
+
     /*
      * Initialize XInput 2
      * According to http://who-t.blogspot.com/2009/05/xi2-recipes-part-1.html its better
@@ -279,7 +284,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *videodata = _this->internal;
 
     if (cookie->extension != xinput2_opcode) {
         return;
@@ -550,10 +555,10 @@ bool X11_Xinput2IsInitialized(void)
 
 bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = (SDL_WindowData *)window->internal;
+    SDL_WindowData *windowdata = window->internal;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-    const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *data = _this->internal;
 
     if (X11_Xinput2IsInitialized()) {
         XIEventMask eventmask;
@@ -584,7 +589,7 @@ bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *windo
         XISetMask(mask, XI_PropertyEvent); // E.g., when swapping tablet pens
 
         if (X11_XISelectEvents(data->display, windowdata->xwindow, &eventmask, 1) != Success) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Could not enable XInput2 event handling\n");
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Could not enable XInput2 event handling");
             windowdata->xinput2_keyboard_enabled = false;
             windowdata->xinput2_mouse_enabled = false;
         }

@@ -100,6 +100,14 @@ static bool X11_IsWindowMapped(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
+static bool X11_IsDisplayOk(Display *display)
+{
+    if (display->flags & XlibDisplayIOError) {
+        return false;
+    }
+    return true;
+}
+
 #if 0
 static bool X11_IsActionAllowed(SDL_Window *window, Atom action)
 {
@@ -387,11 +395,11 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
         X11_XGetWindowAttributes(data->videodata->display, w, &attrib);
         if (!SDL_WINDOW_IS_POPUP(window)) {
-            window->x = data->expected.x = attrib.x;
-            window->y = data->expected.y = attrib.y - data->border_top;
+            window->x = window->windowed.x = window->floating.x = attrib.x;
+            window->y = window->windowed.y = window->floating.y = attrib.y - data->border_top;
         }
-        window->w = data->expected.w = attrib.width;
-        window->h = data->expected.h = attrib.height;
+        window->w = window->windowed.w = window->floating.w = attrib.width;
+        window->h = window->windowed.h = window->floating.h = attrib.height;
         if (attrib.map_state != IsUnmapped) {
             window->flags &= ~SDL_WINDOW_HIDDEN;
         } else {
@@ -513,7 +521,9 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return false;
         }
 
-        SetupWindowInput(_this, window);
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT, true)) {
+            SetupWindowInput(_this, window);
+        }
         return true;
     }
 
@@ -524,7 +534,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     const bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, false);
-    const bool use_resize_sync = (window->flags & SDL_WINDOW_VULKAN); /* doesn't work well with Vulkan */
+    const bool use_resize_sync = !(window->flags & SDL_WINDOW_VULKAN); /* doesn't work well with Vulkan */
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -1065,8 +1075,12 @@ void X11_UpdateWindowPosition(SDL_Window *window, bool use_current_position)
                                   &data->expected.x, &data->expected.y);
 
     // Attempt to move the window
-    data->pending_operation |= X11_PENDING_OP_MOVE;
-    X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->internal->pending_position = true;
+    } else {
+        data->pending_operation |= X11_PENDING_OP_MOVE;
+        X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
+    }
 }
 
 bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1093,41 +1107,6 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, true);
     }
     return true;
-}
-
-static void X11_SetWMNormalHints(SDL_VideoDevice *_this, SDL_Window *window, XSizeHints *sizehints)
-{
-    SDL_WindowData *data = window->internal;
-    Display *display = data->videodata->display;
-    int dest_x, dest_y;
-
-    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
-
-    /* From Pierre-Loup:
-       WMs each have their little quirks with that.  When you change the
-       size hints, they get a ConfigureNotify event with the
-       WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
-       don't all resize the window right away to enforce the new hints.
-
-       Some of them resize only after:
-        - A user-initiated move or resize
-        - A code-initiated move or resize
-        - Hiding & showing window (Unmap & map)
-
-       The following move & resize seems to help a lot of WMs that didn't
-       properly update after the hints were changed. We don't do a
-       hide/show, because there are supposedly subtle problems with doing so
-       and transitioning from windowed to fullscreen in Unity.
-     */
-    X11_XResizeWindow(display, data->xwindow, window->pending.w, window->pending.h);
-    const int x = window->last_position_pending ? window->pending.x : window->floating.x;
-    const int y = window->last_position_pending ? window->pending.y : window->floating.y;
-    SDL_RelativeToGlobalForWindow(window,
-                                  x - data->border_left,
-                                  y - data->border_top,
-                                  &dest_x, &dest_y);
-    X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
-    X11_XRaiseWindow(display, data->xwindow);
 }
 
 void X11_SetWindowMinMax(SDL_Window *window, bool use_current)
@@ -1231,6 +1210,7 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
              */
             XSizeHints *sizehints = X11_XAllocSizeHints();
             long userhints;
+            int dest_x, dest_y;
 
             X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
 
@@ -1238,7 +1218,33 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             sizehints->min_height = sizehints->max_height = window->pending.h;
             sizehints->flags |= PMinSize | PMaxSize;
 
-            X11_SetWMNormalHints(_this, window, sizehints);
+            X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+
+            /* From Pierre-Loup:
+               WMs each have their little quirks with that.  When you change the
+               size hints, they get a ConfigureNotify event with the
+               WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
+               don't all resize the window right away to enforce the new hints.
+
+               Some of them resize only after:
+                - A user-initiated move or resize
+                - A code-initiated move or resize
+                - Hiding & showing window (Unmap & map)
+
+               The following move & resize seems to help a lot of WMs that didn't
+               properly update after the hints were changed. We don't do a
+               hide/show, because there are supposedly subtle problems with doing so
+               and transitioning from windowed to fullscreen in Unity.
+             */
+            X11_XResizeWindow(display, data->xwindow, window->pending.w, window->pending.h);
+            const int x = window->last_position_pending ? window->pending.x : window->x;
+            const int y = window->last_position_pending ? window->pending.y : window->y;
+            SDL_RelativeToGlobalForWindow(window,
+                                          x - data->border_left,
+                                          y - data->border_top,
+                                          &dest_x, &dest_y);
+            X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+            X11_XRaiseWindow(display, data->xwindow);
 
             X11_XFree(sizehints);
         }
@@ -1432,16 +1438,15 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
+    bool set_position = false;
     XEvent event;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         // Update the position in case the parent moved while we were hidden
         X11_ConstrainPopup(window, true);
-        X11_UpdateWindowPosition(window, false);
+        data->pending_position = true;
+        set_position = true;
     }
-
-    const int target_x = window->last_position_pending ? window->pending.x : window->x;
-    const int target_y = window->last_position_pending ? window->pending.y : window->y;
 
     /* Whether XMapRaised focuses the window is based on the window type and it is
      * wm specific. There isn't much we can do here */
@@ -1452,10 +1457,12 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
-        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
             X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
+        set_position = data->pending_position ||
+                       (!(window->flags & SDL_WINDOW_BORDERLESS) && !window->undefined_x && !window->undefined_y);
     }
 
     if (!data->videodata->net_wm) {
@@ -1475,33 +1482,35 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_GetBorderValues(data);
     }
 
-    /* Some window managers can send garbage coordinates while mapping the window, and need the position sent again
-     * after mapping or the window may not be positioned properly.
-     *
-     * Don't emit size and position events during the initial configure events, they will be sent afterwards, when the
-     * final coordinates are available to avoid sending garbage values.
+    if (set_position) {
+        // Apply the window position, accounting for offsets due to the borders appearing.
+        const int tx = data->pending_position ? window->pending.x : window->x;
+        const int ty = data->pending_position ? window->pending.y : window->y;
+        int x, y;
+
+        SDL_RelativeToGlobalForWindow(window,
+                                      tx - data->border_left, ty - data->border_top,
+                                      &x, &y);
+
+        data->pending_position = false;
+        X11_XMoveWindow(display, data->xwindow, x, y);
+    }
+
+    /* Some window managers can send garbage coordinates while mapping the window, so don't emit size and position
+     * events during the initial configure events.
      */
-    data->disable_size_position_events = true;
+    data->size_move_event_flags = X11_SIZE_MOVE_EVENTS_DISABLE;
     X11_XSync(display, False);
     X11_PumpEvents(_this);
+    data->size_move_event_flags = 0;
 
     // If a configure event was received (type is non-zero), send the final window size and coordinates.
     if (data->last_xconfigure.type) {
-        int x = data->last_xconfigure.x;
-        int y = data->last_xconfigure.y;
-        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-
-        // If the borders appeared, this happened automatically in the event system, otherwise, set the position now.
-        if (data->disable_size_position_events && (target_x != x || target_y != y)) {
-            data->pending_operation = X11_PENDING_OP_MOVE;
-            X11_XMoveWindow(display, data->xwindow, target_x, target_y);
-        }
-
+        int x, y;
+        SDL_GlobalToRelativeForWindow(data->window, data->last_xconfigure.x, data->last_xconfigure.y, &x, &y);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
-
-    data->disable_size_position_events = false;
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1515,7 +1524,7 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (X11_IsWindowMapped(_this, window)) {
         X11_XWithdrawWindow(display, data->xwindow, screen);
         // Blocking wait for "UnmapNotify" event
-        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+        if (!(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
             X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
@@ -1890,7 +1899,7 @@ void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
 
     icc_profile_atom = X11_XInternAtom(display, icc_atom_string, True);
     if (icc_profile_atom == None) {
-        SDL_SetError("Screen is not calibrated.\n");
+        SDL_SetError("Screen is not calibrated.");
         return NULL;
     }
 
@@ -1899,7 +1908,7 @@ void *X11_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
     real_nitems = atomProp.count;
     icc_profile_data = atomProp.data;
     if (real_format == None) {
-        SDL_SetError("Screen is not calibrated.\n");
+        SDL_SetError("Screen is not calibrated.");
         return NULL;
     }
 
@@ -2001,6 +2010,33 @@ bool X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool 
            appropriate. */
         if (window->flags & SDL_WINDOW_HIDDEN) {
             return true;
+        }
+
+        /* GNOME needs the _XWAYLAND_MAY_GRAB_KEYBOARD message on XWayland:
+         *
+         * - message_type set to "_XWAYLAND_MAY_GRAB_KEYBOARD"
+         * - window set to the xid of the window on which the grab is to be issued
+         * - data.l[0] to a non-zero value
+         *
+         * The dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled as well.
+         *
+         * https://gitlab.gnome.org/GNOME/mutter/-/commit/5f132f39750f684c3732b4346dec810cd218d609
+         */
+        if (_this->internal->is_xwayland) {
+            Atom _XWAYLAND_MAY_GRAB_ATOM = X11_XInternAtom(display, "_XWAYLAND_MAY_GRAB_KEYBOARD", False);
+
+            if (_XWAYLAND_MAY_GRAB_ATOM != None) {
+                XClientMessageEvent client_message;
+                client_message.type = ClientMessage;
+                client_message.window = data->xwindow;
+                client_message.format = 32;
+                client_message.message_type = _XWAYLAND_MAY_GRAB_ATOM;
+                client_message.data.l[0] = 1;
+                client_message.data.l[1] = CurrentTime;
+
+                X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, (XEvent *)&client_message);
+                X11_XFlush(display);
+            }
         }
 
         X11_XGrabKeyboard(display, data->xwindow, True, GrabModeAsync,

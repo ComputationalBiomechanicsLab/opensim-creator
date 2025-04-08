@@ -30,8 +30,11 @@
 
 #include <Carbon/Carbon.h>
 
-// #define DEBUG_IME NSLog
+#if 0
+#define DEBUG_IME NSLog
+#else
 #define DEBUG_IME(...)
+#endif
 
 @interface SDL3TranslatorResponder : NSView <NSTextInputClient>
 {
@@ -133,8 +136,12 @@
     // This key event was consumed by the IME
     [self clearPendingKey];
 
+    NSUInteger utf32SelectedRangeLocation = [[aString substringToIndex:selectedRange.location] lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4;
+    NSUInteger utf32SelectionRangeEnd = [[aString substringToIndex:(selectedRange.location + selectedRange.length)] lengthOfBytesUsingEncoding:NSUTF32StringEncoding] / 4;
+    NSUInteger utf32SelectionRangeLength = utf32SelectionRangeEnd - utf32SelectedRangeLocation;
+
     SDL_SendEditingText([aString UTF8String],
-                        (int)selectedRange.location, (int)selectedRange.length);
+                        (int)utf32SelectedRangeLocation, (int)utf32SelectionRangeLength);
 
     DEBUG_IME(@"setMarkedText: %@, (%d, %d) replacement range (%d, %d)", _markedText,
               (int)selectedRange.location, (int)selectedRange.length,
@@ -540,7 +547,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
-            SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
+            SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.", scancode);
         }
 #endif
         if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {
