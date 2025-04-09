@@ -701,6 +701,12 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
 
+    if (SDL_IsJoystickWheel(vendor, product)) {
+        // We don't want to pick up Logitech FFB wheels here
+        // Some versions of WINE will also not treat devices that show up as gamepads as wheels
+        return NULL;
+    }
+
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_DRAGONRISE &&
          (product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
@@ -775,13 +781,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         // All other gamepads have the standard set of 19 buttons and 6 axes
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,", sizeof(mapping_string));
 
-        if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
-            // XBox Series X Controllers have a share button under the guide button
-            SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
-        } else if (SDL_IsJoystickXboxOneElite(vendor, product)) {
-            // XBox One Elite Controllers have 4 back paddle buttons
-            SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b13,paddle3:b12,paddle4:b14,", sizeof(mapping_string));
-        } else if (SDL_IsJoystickSteamController(vendor, product)) {
+        if (SDL_IsJoystickSteamController(vendor, product)) {
             // Steam controllers have 2 back paddle buttons
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchPro(vendor, product) ||
@@ -808,6 +808,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         } else if (SDL_IsJoystickHoriSteamController(vendor, product)) {
             /* The Wireless HORIPad for Steam has QAM, Steam, Capsense L/R Sticks, 2 rear buttons, and 2 misc buttons */
             SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,misc2:b11,misc3:b16,misc4:b17", sizeof(mapping_string));
+        } else if (SDL_IsJoystick8BitDoController(vendor, product)) {
+            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13", sizeof(mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
@@ -820,6 +822,15 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 // DualSense Edge controllers have paddles
                 if (SDL_IsJoystickDualSenseEdge(vendor, product)) {
                     SDL_strlcat(mapping_string, "paddle1:b16,paddle2:b15,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
+                }
+                break;
+            case SDL_GAMEPAD_TYPE_XBOXONE:
+                if (SDL_IsJoystickXboxOneElite(vendor, product)) {
+                    // XBox One Elite Controllers have 4 back paddle buttons
+                    SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b13,paddle3:b12,paddle4:b14,", sizeof(mapping_string));
+                } else if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
+                    // XBox Series X Controllers have a share button under the guide button
+                    SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
                 }
                 break;
             default:

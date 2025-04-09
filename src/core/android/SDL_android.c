@@ -257,17 +257,17 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(
     JNIEnv *env, jclass jcls);
 
 JNIEXPORT void JNICALL
-    SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name,
+    SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name,
                                              jint device_id);
 
 JNIEXPORT void JNICALL
-    SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
+    SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                                 jint device_id);
 
 static JNINativeMethod SDLAudioManager_tab[] = {
     { "nativeSetupJNI", "()I", SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI) },
-    { "addAudioDevice", "(ZLjava/lang/String;I)V", SDL_JAVA_AUDIO_INTERFACE(addAudioDevice) },
-    { "removeAudioDevice", "(ZI)V", SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice) }
+    { "nativeAddAudioDevice", "(ZLjava/lang/String;I)V", SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice) },
+    { "nativeRemoveAudioDevice", "(ZI)V", SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice) }
 };
 
 // Java class SDLControllerManager
@@ -751,6 +751,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 typedef int (*SDL_main_func)(int argc, char *argv[]);
 
 static int run_count = 0;
+static bool allow_recreate_activity;
+static bool allow_recreate_activity_set;
 
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
     JNIEnv *env, jclass jcls)
@@ -760,10 +762,16 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
     return tmp;
 }
 
+void Android_SetAllowRecreateActivity(bool enabled)
+{
+    allow_recreate_activity = enabled;
+    allow_recreate_activity_set = true;
+}
+
 JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     JNIEnv *env, jclass jcls)
 {
-    return SDL_GetHintBoolean(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, false);
+    return allow_recreate_activity;
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
@@ -1075,7 +1083,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 }
 
 JNIEXPORT void JNICALL
-SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
+SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                          jstring name, jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
@@ -1091,7 +1099,7 @@ SDL_JAVA_AUDIO_INTERFACE(addAudioDevice)(JNIEnv *env, jclass jcls, jboolean reco
 }
 
 JNIEXPORT void JNICALL
-SDL_JAVA_AUDIO_INTERFACE(removeAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
+SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording,
                                             jint device_id)
 {
 #if ALLOW_MULTIPLE_ANDROID_AUDIO_DEVICES
@@ -1525,6 +1533,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     // This is only called at startup, to initialize the environment
     // Note that we call setenv() directly to avoid affecting SDL environments
     setenv(utfname, utfvalue, 1); // This should NOT be SDL_setenv()
+
+    if (SDL_strcmp(utfname, SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY) == 0) {
+        // Special handling for this hint, which needs to persist outside the normal application flow
+        // Only set this the first time we run, in case it's been set by the application via SDL_SetHint()
+        if (!allow_recreate_activity_set) {
+            Android_SetAllowRecreateActivity(SDL_GetStringBoolean(utfvalue, false));
+        }
+    }
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);

@@ -425,7 +425,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, center,
                                        &rect_dest, &cangle, &sangle);
         src_rotated = SDLgfx_rotateSurface(src_clone, angle,
-                                           (scaleMode == SDL_SCALEMODE_NEAREST) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
+                                           (scaleMode == SDL_SCALEMODE_NEAREST || scaleMode == SDL_SCALEMODE_PIXELART) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL,
                                            &rect_dest, cangle, sangle, center);
         if (!src_rotated) {
             result = false;
@@ -925,7 +925,8 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                         surface,
                         &(ptr[0].dst), &(ptr[1].dst), &(ptr[2].dst),
                         ptr[0].color, ptr[1].color, ptr[2].color,
-                        cmd->data.draw.texture_address_mode);
+                        cmd->data.draw.texture_address_mode_u,
+                        cmd->data.draw.texture_address_mode_v);
                 }
             } else {
                 GeometryFillData *ptr = (GeometryFillData *)verts;

@@ -617,6 +617,189 @@ static int SDLCALL render_testBlit9Grid(void *arg)
 }
 
 /**
+ *  Tests tiled 9-grid blitting.
+ */
+static int SDLCALL render_testBlit9GridTiled(void *arg)
+{
+    SDL_Surface *referenceSurface = NULL;
+    SDL_Surface *source = NULL;
+    SDL_Texture *texture;
+    int x, y;
+    SDL_FRect rect;
+    int ret = 0;
+
+    /* Create source surface */
+    source = SDL_CreateSurface(3, 3, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
+    for (y = 0; y < 3; ++y) {
+        for (x = 0; x < 3; ++x) {
+            SDL_WriteSurfacePixel(source, x, y, (Uint8)((1 + x) * COLOR_SEPARATION), (Uint8)((1 + y) * COLOR_SEPARATION), 0, 255);
+        }
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, source);
+    SDLTest_AssertCheck(texture != NULL, "Verify source texture is not NULL");
+    ret = SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_SetTextureScaleMode, expected: true, got: %i", ret);
+
+    /* Tiled 9-grid blit - 1.0 scale */
+    {
+        SDLTest_Log("tiled 9-grid blit - 1.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 1, 1, 1, 1);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9GridTiled(renderer, texture, NULL, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, &rect, 1.0f);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_RenderTexture9GridTiled, expected: true, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Tiled 9-grid blit - 2.0 scale */
+    {
+        SDLTest_Log("tiled 9-grid blit - 2.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 2, 2, 2, 2);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9GridTiled(renderer, texture, NULL, 1.0f, 1.0f, 1.0f, 1.0f, 2.0f, &rect, 2.0f);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_RenderTexture9GridTiled, expected: true, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Clean up. */
+    SDL_DestroySurface(source);
+    SDL_DestroyTexture(texture);
+
+    /* Create complex source surface */
+    source = SDL_CreateSurface(5, 5, SDL_PIXELFORMAT_RGBA32);
+    SDLTest_AssertCheck(source != NULL, "Verify source surface is not NULL");
+    SDL_WriteSurfacePixel(source, 0, 0, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 0, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 0, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((1) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 1, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 1, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 1, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 2, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 2, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 2, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((2) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 3, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 3, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 3, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+
+    SDL_WriteSurfacePixel(source, 0, 4, (Uint8)((1) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 1, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 2, 4, (Uint8)((2) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 3, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+    SDL_WriteSurfacePixel(source, 4, 4, (Uint8)((3) * COLOR_SEPARATION), (Uint8)((3) * COLOR_SEPARATION), 0, 255);
+
+    texture = SDL_CreateTextureFromSurface(renderer, source);
+    SDLTest_AssertCheck(texture != NULL, "Verify source texture is not NULL");
+    ret = SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_SetTextureScaleMode, expected: true, got: %i", ret);
+
+    /* complex tiled 9-grid blit - 1.0 scale */
+    {
+        SDLTest_Log("complex tiled 9-grid blit - 1.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 1, 2, 1, 2);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9GridTiled(renderer, texture, NULL, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, &rect, 1.0f);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_RenderTexture9GridTiled, expected: true, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* complex tiled 9-grid blit - 2.0 scale */
+    {
+        SDLTest_Log("complex tiled 9-grid blit - 2.0 scale");
+        /* Create reference surface */
+        SDL_DestroySurface(referenceSurface);
+        referenceSurface = SDL_CreateSurface(TESTRENDER_SCREEN_W, TESTRENDER_SCREEN_H, SDL_PIXELFORMAT_RGBA32);
+        SDLTest_AssertCheck(referenceSurface != NULL, "Verify reference surface is not NULL");
+        Fill9GridReferenceSurface(referenceSurface, 2, 4, 2, 4);
+
+        /* Clear surface. */
+        clearScreen();
+
+        /* Tiled blit. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = (float)TESTRENDER_SCREEN_W;
+        rect.h = (float)TESTRENDER_SCREEN_H;
+        ret = SDL_RenderTexture9GridTiled(renderer, texture, NULL, 1.0f, 2.0f, 1.0f, 2.0f, 2.0f, &rect, 2.0f);
+        SDLTest_AssertCheck(ret == true, "Validate results from call to SDL_RenderTexture9GridTiled, expected: true, got: %i", ret);
+
+        /* See if it's the same */
+        compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+        /* Make current */
+        SDL_RenderPresent(renderer);
+    }
+
+    /* Clean up. */
+    SDL_DestroySurface(referenceSurface);
+    SDL_DestroySurface(source);
+    SDL_DestroyTexture(texture);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Blits doing color tests.
  *
  * \sa SDL_SetTextureColorMod
@@ -1017,6 +1200,129 @@ static int SDLCALL render_testViewport(void *arg)
     return TEST_COMPLETED;
 }
 
+static int SDLCALL render_testRGBSurfaceNoAlpha(void* arg)
+{
+    SDL_Surface *surface;
+    SDL_Renderer *software_renderer;
+    SDL_Surface *surface2;
+    SDL_Texture *texture2;
+    bool result;
+    SDL_FRect dest_rect;
+    SDL_FPoint point;
+    const SDL_PixelFormatDetails *format_details;
+    Uint8 r, g, b, a;
+
+    SDLTest_AssertPass("About to call SDL_CreateSurface(128, 128, SDL_PIXELFORMAT_RGBX32)");
+    surface = SDL_CreateSurface(128, 128, SDL_PIXELFORMAT_RGBX32);
+    SDLTest_AssertCheck(surface != NULL, "Returned surface must be not NULL");
+    if (surface == NULL) {
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertPass("About to call SDL_GetPixelFormatDetails(surface->format)");
+    format_details = SDL_GetPixelFormatDetails(surface->format);
+    SDLTest_AssertCheck(format_details != NULL, "Result must be non-NULL, is %p", format_details);
+    if (format_details == NULL) {
+        SDL_DestroySurface(surface);
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertCheck(format_details->bits_per_pixel == 32, "format_details->bits_per_pixel is %d, should be %d", format_details->bits_per_pixel, 32);
+    SDLTest_AssertCheck(format_details->bytes_per_pixel == 4, "format_details->bytes_per_pixel is %d, should be %d", format_details->bytes_per_pixel, 4);
+
+    SDLTest_AssertPass("About to call SDL_CreateSoftwareRenderer(surface)");
+    software_renderer = SDL_CreateSoftwareRenderer(surface);
+    SDLTest_AssertCheck(software_renderer != NULL, "Returned renderer must be not NULL");
+    if (software_renderer == NULL) {
+        SDL_DestroySurface(surface);
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertPass("About to call SDL_CreateSurface(16, 16, SDL_PIXELFORMAT_RGBX32)");
+    surface2 = SDL_CreateSurface(16, 16, SDL_PIXELFORMAT_RGBX32);
+    SDLTest_AssertCheck(surface2 != NULL, "Returned surface must be not NULL");
+    if (surface2 == NULL) {
+        SDL_DestroySurface(surface);
+        SDL_DestroyRenderer(software_renderer);
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertPass("About to call SDL_FillRect(surface2, NULL, 0)");
+    result = SDL_FillSurfaceRect(surface2, NULL, SDL_MapRGB(SDL_GetPixelFormatDetails(surface2->format), NULL, 0, 0, 0));
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+
+    SDLTest_AssertPass("About to call SDL_CreateTextureFromSurface(software_renderer, surface2)");
+    texture2 = SDL_CreateTextureFromSurface(software_renderer, surface2);
+    SDLTest_AssertCheck(texture2 != NULL, "Returned texture is not NULL");
+
+    SDLTest_AssertPass("About to call SDL_SetRenderDrawColor(renderer, 0xaa, 0xbb, 0xcc, 0x0)");
+    result = SDL_SetRenderDrawColor(software_renderer, 0xaa, 0xbb, 0xcc, 0x0);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+
+    SDLTest_AssertPass("About to call SDL_RenderClear(renderer)");
+    result = SDL_RenderClear(software_renderer);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+
+    SDLTest_AssertPass("About to call SDL_SetRenderDrawColor(renderer, 0x0, 0x0, 0x0, 0x0)");
+    result = SDL_SetRenderDrawColor(software_renderer, 0x0, 0x0, 0x0, 0x0);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+
+    dest_rect.x = 32;
+    dest_rect.y = 32;
+    dest_rect.w = (float)surface2->w;
+    dest_rect.h = (float)surface2->h;
+    point.x = 0;
+    point.y = 0;
+    SDLTest_AssertPass("About to call SDL_RenderCopy(software_renderer, texture, NULL, &{%g, %g, %g, %g})",
+        dest_rect.x, dest_rect.h, dest_rect.w, dest_rect.h);
+    result = SDL_RenderTextureRotated(software_renderer, texture2, NULL, &dest_rect, 180, &point, SDL_FLIP_NONE);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+
+    SDLTest_AssertPass("About to call SDL_RenderPresent(software_renderer)");
+    SDL_RenderPresent(software_renderer);
+
+    SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(0, 0)");
+    result = SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+    SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
+        "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
+        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+
+    SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(15, 15)");
+    result = SDL_ReadSurfacePixel(surface, 15, 15, &r, &g, &b, &a);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+    SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
+        "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
+        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+
+    SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(16, 16)");
+    result = SDL_ReadSurfacePixel(surface, 16, 16, &r, &g, &b, &a);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+    SDLTest_AssertCheck(r == 0x00 && g == 0x00 && b == 0x00 && a == SDL_ALPHA_OPAQUE,
+        "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
+        r, g, b, a, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+
+    SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(31, 31)");
+    result = SDL_ReadSurfacePixel(surface, 31, 31, &r, &g, &b, &a);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+    SDLTest_AssertCheck(r == 0x00 && g == 0x00 && b == 0x00 && a == SDL_ALPHA_OPAQUE,
+        "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
+        r, g, b, a, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+
+    SDLTest_AssertPass("About to call SDL_ReadSurfacePixel(32, 32)");
+    result = SDL_ReadSurfacePixel(surface, 32, 32, &r, &g, &b, &a);
+    SDLTest_AssertCheck(result == true, "Result is %d, should be %d", result, true);
+    SDLTest_AssertCheck(r == 0xaa && g == 0xbb && b == 0xcc && a == SDL_ALPHA_OPAQUE,
+        "Pixel at (0, 0) is {0x%02x,0x%02x,0x%02x,0x%02x}, should be {0x%02x,0x%02x,0x%02x,0x%02x}",
+        r, g, b, a, 0xaa, 0xbb, 0xcc, SDL_ALPHA_OPAQUE);
+
+    SDL_DestroyTexture(texture2);
+    SDL_DestroySurface(surface2);
+    SDL_DestroyRenderer(software_renderer);
+    SDL_DestroySurface(surface);
+    return TEST_COMPLETED;
+}
+
 /**
  * Test clip rect
  */
@@ -1223,6 +1529,46 @@ static int SDLCALL render_testLogicalSize(void *arg)
 
     SDL_DestroySurface(referenceSurface);
 
+    return TEST_COMPLETED;
+}
+
+/**
+ * @brief Tests setting and getting texture scale mode.
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_SetTextureScaleMode
+ * http://wiki.libsdl.org/SDL2/SDL_GetTextureScaleMode
+ */
+static int SDLCALL render_testGetSetTextureScaleMode(void *arg)
+{
+    const struct {
+        const char *name;
+        SDL_ScaleMode mode;
+    } modes[] = {
+        { "SDL_SCALEMODE_NEAREST", SDL_SCALEMODE_NEAREST },
+        { "SDL_SCALEMODE_LINEAR",  SDL_SCALEMODE_LINEAR },
+        { "SDL_SCALEMODE_PIXELART",  SDL_SCALEMODE_PIXELART },
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(modes); i++) {
+        SDL_Texture *texture;
+        bool result;
+        SDL_ScaleMode actual_mode = SDL_SCALEMODE_NEAREST;
+
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16)");
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16);
+        SDLTest_AssertCheck(texture != NULL, "SDL_CreateTexture must return a non-NULL texture");
+        SDLTest_AssertPass("About to call SDL_SetTextureScaleMode(texture, %s)", modes[i].name);
+        result = SDL_SetTextureScaleMode(texture, modes[i].mode);
+        SDLTest_AssertCheck(result == true, "SDL_SetTextureScaleMode returns %d, expected %d", result, true);
+        SDLTest_AssertPass("About to call SDL_GetTextureScaleMode(texture)");
+        result = SDL_GetTextureScaleMode(texture, &actual_mode);
+        SDLTest_AssertCheck(result == true, "SDL_SetTextureScaleMode returns %d, expected %d", result, true);
+        SDLTest_AssertCheck(actual_mode == modes[i].mode, "SDL_GetTextureScaleMode must return %s (%d), actual=%d",
+                            modes[i].name, modes[i].mode, actual_mode);
+    }
     return TEST_COMPLETED;
 }
 
@@ -1665,6 +2011,10 @@ static const SDLTest_TestCaseReference renderTestBlit9Grid = {
     render_testBlit9Grid, "render_testBlit9Grid", "Tests 9-grid blitting", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestBlit9GridTiled = {
+    render_testBlit9GridTiled, "render_testBlit9GridTiled", "Tests tiled 9-grid blitting", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestBlitColor = {
     render_testBlitColor, "render_testBlitColor", "Tests blitting with color", TEST_ENABLED
 };
@@ -1693,6 +2043,14 @@ static const SDLTest_TestCaseReference renderTestTextureState = {
     render_testTextureState, "render_testTextureState", "Tests texture state changes", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestGetSetTextureScaleMode = {
+    render_testGetSetTextureScaleMode, "render_testGetSetTextureScaleMode", "Tests setting/getting texture scale mode", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference renderTestRGBSurfaceNoAlpha = {
+    render_testRGBSurfaceNoAlpha, "render_testRGBSurfaceNoAlpha", "Tests RGB surface with no alpha using software renderer", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestGetNumRenderDrivers,
@@ -1701,6 +2059,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestBlit,
     &renderTestBlitTiled,
     &renderTestBlit9Grid,
+    &renderTestBlit9GridTiled,
     &renderTestBlitColor,
     &renderTestBlendModes,
     &renderTestViewport,
@@ -1708,6 +2067,8 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestLogicalSize,
     &renderTestUVWrapping,
     &renderTestTextureState,
+    &renderTestGetSetTextureScaleMode,
+    &renderTestRGBSurfaceNoAlpha,
     NULL
 };
 

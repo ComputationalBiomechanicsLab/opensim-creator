@@ -371,11 +371,9 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
         SDL_SetError("Could not read pipe");
     } else {
         wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
-
-        // TODO: Needs pump and flush?
-        WAYLAND_wl_display_flush(data_device->video_data->display);
-
         close(pipefd[1]);
+
+        WAYLAND_wl_display_flush(data_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
@@ -407,11 +405,9 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
         SDL_SetError("Could not read pipe");
     } else {
         zwp_primary_selection_offer_v1_receive(offer->offer, mime_type, pipefd[1]);
-
-        // TODO: Needs pump and flush?
-        WAYLAND_wl_display_flush(primary_selection_device->video_data->display);
-
         close(pipefd[1]);
+
+        WAYLAND_wl_display_flush(primary_selection_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
