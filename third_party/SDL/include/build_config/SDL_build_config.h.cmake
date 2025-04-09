@@ -31,6 +31,8 @@
 /* General platform specific identifiers */
 #include <SDL3/SDL_platform_defines.h>
 
+#cmakedefine SDL_PLATFORM_PRIVATE 1
+
 #cmakedefine HAVE_GCC_ATOMICS 1
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 
@@ -223,8 +225,11 @@
 #cmakedefine HAVE_TPCSHRD_H 1
 #cmakedefine HAVE_ROAPI_H 1
 #cmakedefine HAVE_SHELLSCALINGAPI_H 1
+#cmakedefine HAVE_SHOBJIDL_CORE_H 1
 
 #cmakedefine USE_POSIX_SPAWN 1
+#cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR 1
+#cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP 1
 
 /* SDL internal assertion support */
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1
@@ -274,6 +279,8 @@
 #cmakedefine SDL_AUDIO_DRIVER_N3DS 1
 #cmakedefine SDL_AUDIO_DRIVER_QNX 1
 
+#cmakedefine SDL_AUDIO_DRIVER_PRIVATE 1
+
 /* Enable various input drivers */
 #cmakedefine SDL_INPUT_LINUXEV 1
 #cmakedefine SDL_INPUT_LINUXKD 1
@@ -299,11 +306,17 @@
 #cmakedefine SDL_JOYSTICK_VITA 1
 #cmakedefine SDL_JOYSTICK_WGI 1
 #cmakedefine SDL_JOYSTICK_XINPUT 1
+
+#cmakedefine SDL_JOYSTICK_PRIVATE 1
+
 #cmakedefine SDL_HAPTIC_DUMMY 1
 #cmakedefine SDL_HAPTIC_LINUX 1
 #cmakedefine SDL_HAPTIC_IOKIT 1
 #cmakedefine SDL_HAPTIC_DINPUT 1
 #cmakedefine SDL_HAPTIC_ANDROID 1
+
+#cmakedefine SDL_HAPTIC_PRIVATE 1
+
 #cmakedefine SDL_LIBUSB_DYNAMIC @SDL_LIBUSB_DYNAMIC@
 #cmakedefine SDL_UDEV_DYNAMIC @SDL_UDEV_DYNAMIC@
 
@@ -311,6 +324,8 @@
 #cmakedefine SDL_PROCESS_DUMMY 1
 #cmakedefine SDL_PROCESS_POSIX 1
 #cmakedefine SDL_PROCESS_WINDOWS 1
+
+#cmakedefine SDL_PROCESS_PRIVATE 1
 
 /* Enable various sensor drivers */
 #cmakedefine SDL_SENSOR_ANDROID 1
@@ -320,10 +335,14 @@
 #cmakedefine SDL_SENSOR_VITA 1
 #cmakedefine SDL_SENSOR_N3DS 1
 
+#cmakedefine SDL_SENSOR_PRIVATE 1
+
 /* Enable various shared object loading systems */
 #cmakedefine SDL_LOADSO_DLOPEN 1
 #cmakedefine SDL_LOADSO_DUMMY 1
 #cmakedefine SDL_LOADSO_WINDOWS 1
+
+#cmakedefine SDL_LOADSO_PRIVATE 1
 
 /* Enable various threading systems */
 #cmakedefine SDL_THREAD_GENERIC_COND_SUFFIX 1
@@ -336,6 +355,8 @@
 #cmakedefine SDL_THREAD_PSP 1
 #cmakedefine SDL_THREAD_PS2 1
 #cmakedefine SDL_THREAD_N3DS 1
+
+#cmakedefine SDL_THREAD_PRIVATE 1
 
 /* Enable various RTC systems */
 #cmakedefine SDL_TIME_UNIX 1
@@ -353,6 +374,8 @@
 #cmakedefine SDL_TIMER_PSP 1
 #cmakedefine SDL_TIMER_PS2 1
 #cmakedefine SDL_TIMER_N3DS 1
+
+#cmakedefine SDL_TIMER_PRIVATE 1
 
 /* Enable various video drivers */
 #cmakedefine SDL_VIDEO_DRIVER_ANDROID 1
@@ -390,6 +413,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 @SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR @SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS @SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS@
+#cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST @SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST@
 #cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XCURSOR 1
@@ -401,7 +425,10 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSHAPE 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSYNC 1
+#cmakedefine SDL_VIDEO_DRIVER_X11_XTEST 1
 #cmakedefine SDL_VIDEO_DRIVER_QNX 1
+
+#cmakedefine SDL_VIDEO_DRIVER_PRIVATE 1
 
 #cmakedefine SDL_VIDEO_RENDER_D3D 1
 #cmakedefine SDL_VIDEO_RENDER_D3D11 1
@@ -415,6 +442,8 @@
 #cmakedefine SDL_VIDEO_RENDER_PSP 1
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM 1
 
+#cmakedefine SDL_VIDEO_RENDER_PRIVATE 1
+
 /* Enable OpenGL support */
 #cmakedefine SDL_VIDEO_OPENGL 1
 #cmakedefine SDL_VIDEO_OPENGL_ES 1
@@ -423,6 +452,8 @@
 #cmakedefine SDL_VIDEO_OPENGL_GLX 1
 #cmakedefine SDL_VIDEO_OPENGL_WGL 1
 #cmakedefine SDL_VIDEO_OPENGL_EGL 1
+
+#cmakedefine SDL_VIDEO_STATIC_ANGLE 1
 
 /* Enable Vulkan support */
 #cmakedefine SDL_VIDEO_VULKAN 1
@@ -449,6 +480,8 @@
 #cmakedefine SDL_POWER_PSP 1
 #cmakedefine SDL_POWER_N3DS 1
 
+#cmakedefine SDL_POWER_PRIVATE 1
+
 /* Enable system filesystem support */
 #cmakedefine SDL_FILESYSTEM_ANDROID 1
 #cmakedefine SDL_FILESYSTEM_HAIKU 1
@@ -463,6 +496,8 @@
 #cmakedefine SDL_FILESYSTEM_PS2 1
 #cmakedefine SDL_FILESYSTEM_N3DS 1
 
+#cmakedefine SDL_FILESYSTEM_PRIVATE 1
+
 /* Enable system storage support */
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
 
@@ -470,6 +505,8 @@
 #cmakedefine SDL_FSOPS_POSIX 1
 #cmakedefine SDL_FSOPS_WINDOWS 1
 #cmakedefine SDL_FSOPS_DUMMY 1
+
+#cmakedefine SDL_FSOPS_PRIVATE 1
 
 /* Enable camera subsystem */
 #cmakedefine SDL_CAMERA_DRIVER_DUMMY 1
@@ -482,6 +519,8 @@
 #cmakedefine SDL_CAMERA_DRIVER_PIPEWIRE 1
 #cmakedefine SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC @SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC@
 #cmakedefine SDL_CAMERA_DRIVER_VITA 1
+
+#cmakedefine SDL_CAMERA_DRIVER_PRIVATE 1
 
 /* Enable dialog subsystem */
 #cmakedefine SDL_DIALOG_DUMMY 1
@@ -544,5 +583,9 @@ typedef unsigned int uintptr_t;
 #cmakedefine SDL_DISABLE_LSX 1
 #cmakedefine SDL_DISABLE_LASX 1
 #cmakedefine SDL_DISABLE_NEON 1
+
+#ifdef SDL_PLATFORM_PRIVATE
+#include "SDL_end_config_private.h"
+#endif
 
 #endif /* SDL_build_config_h_ */

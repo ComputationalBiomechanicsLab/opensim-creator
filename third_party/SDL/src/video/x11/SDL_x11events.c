@@ -506,17 +506,32 @@ static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
 static void X11_DispatchMapNotify(SDL_WindowData *data)
 {
     SDL_Window *window = data->window;
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
-    if (!(window->flags & SDL_WINDOW_HIDDEN) && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+    data->was_shown = true;
+
+    // This may be sent when restoring a minimized window.
+    if (window->flags & SDL_WINDOW_MINIMIZED) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    }
+
+    if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
         SDL_UpdateWindowGrab(window);
     }
 }
 
 static void X11_DispatchUnmapNotify(SDL_WindowData *data)
 {
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
-    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+    SDL_Window *window = data->window;
+
+    // This may be sent when minimizing a window.
+    if (!window->is_hiding) {
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
+        SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+    } else {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
+    }
 }
 
 static void DispatchWindowMove(SDL_VideoDevice *_this, const SDL_WindowData *data, const SDL_Point *point)
@@ -1320,7 +1335,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             xevent->xcrossing.detail != NotifyInferior) {
 
             /* In order for interaction with the window decorations and menu to work properly
-               on Mutter, we need to ungrab the keyboard when the the mouse leaves. */
+               on Mutter, we need to ungrab the keyboard when the mouse leaves. */
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
                 X11_SetWindowKeyboardGrab(_this, data->window, false);
             }
@@ -1782,19 +1797,15 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xproperty.atom == data->videodata->atoms._NET_WM_STATE) {
             /* Get the new state from the window manager.
-               Compositing window managers can alter visibility of windows
-               without ever mapping / unmapping them, so we handle that here,
-               because they use the NETWM protocol to notify us of changes.
+             * Compositing window managers can alter visibility of windows
+             * without ever mapping / unmapping them, so we handle that here,
+             * because they use the NETWM protocol to notify us of changes.
              */
             const SDL_WindowFlags flags = X11_GetNetWMState(_this, data->window, xevent->xproperty.window);
             const SDL_WindowFlags changed = flags ^ data->window->flags;
 
-            if ((changed & (SDL_WINDOW_HIDDEN | SDL_WINDOW_FULLSCREEN)) != 0) {
-                if (flags & SDL_WINDOW_HIDDEN) {
-                    X11_DispatchUnmapNotify(data);
-                } else {
-                    X11_DispatchMapNotify(data);
-                }
+            if ((changed & SDL_WINDOW_HIDDEN) && !(flags & SDL_WINDOW_HIDDEN)) {
+                X11_DispatchMapNotify(data);
             }
 
             if (!SDL_WINDOW_IS_POPUP(data->window)) {
@@ -1805,6 +1816,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         if (!(flags & SDL_WINDOW_MINIMIZED)) {
                             const bool commit = SDL_memcmp(&data->window->current_fullscreen_mode, &data->requested_fullscreen_mode, sizeof(SDL_DisplayMode)) != 0;
 
+                            // Ensure the maximized flag is cleared before entering fullscreen.
+                            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
                             if (commit) {
                                 /* This was initiated by the compositor, or the mode was changed between the request and the window

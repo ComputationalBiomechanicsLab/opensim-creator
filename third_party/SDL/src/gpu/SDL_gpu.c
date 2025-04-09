@@ -586,6 +586,13 @@ SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice *device)
     return device->shader_formats;
 }
 
+SDL_PropertiesID SDL_GetGPUDeviceProperties(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    return device->GetDeviceProperties(device);
+}
+
 Uint32 SDL_GPUTextureFormatTexelBlockSize(
     SDL_GPUTextureFormat format)
 {
@@ -818,6 +825,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             }
             if (!SDL_GPUTextureSupportsFormat(device, graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
                 SDL_assert_release(!"Format is not supported for color targets on this device!");
+                return NULL;
+            }
+            if (graphicsPipelineCreateInfo->multisample_state.enable_alpha_to_coverage &&
+                (IsIntegerFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format)
+                    || IsCompressedFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format))) {
+                SDL_assert_release(!"Format is not compatible with alpha-to-coverage!");
                 return NULL;
             }
             if (graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state.enable_blend) {
@@ -2357,6 +2370,13 @@ void SDL_CopyGPUTextureToTexture(
         }
         if (destination->texture == NULL) {
             SDL_assert_release(!"Destination texture cannot be NULL!");
+            return;
+        }
+
+        TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
+        TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
+        if (srcHeader->info.format != dstHeader->info.format) {
+            SDL_assert_release(!"Source and destination textures must have the same format!");
             return;
         }
     }

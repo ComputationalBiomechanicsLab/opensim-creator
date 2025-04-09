@@ -344,6 +344,16 @@ static bool FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
     return true;
 }
 
+static bool FlushRenderCommandsIfGPURenderStateNeeded(SDL_GPURenderState *state)
+{
+    SDL_Renderer *renderer = state->renderer;
+    if (state->last_command_generation == renderer->render_command_generation) {
+        // the current command queue depends on this state, flush the queue now before it changes
+        return FlushRenderCommands(renderer);
+    }
+    return true;
+}
+
 bool SDL_FlushRenderer(SDL_Renderer *renderer)
 {
     if (!FlushRenderCommands(renderer)) {
@@ -574,7 +584,12 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
             if (texture) {
                 cmd->data.draw.texture_scale_mode = texture->scaleMode;
             }
-            cmd->data.draw.texture_address_mode = SDL_TEXTURE_ADDRESS_CLAMP;
+            cmd->data.draw.texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+            cmd->data.draw.texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
+            cmd->data.draw.gpu_render_state = renderer->gpu_render_state;
+            if (renderer->gpu_render_state) {
+                renderer->gpu_render_state->last_command_generation = renderer->render_command_generation;
+            }
         }
     }
     return cmd;
@@ -713,13 +728,15 @@ static bool QueueCmdGeometry(SDL_Renderer *renderer, SDL_Texture *texture,
                             const float *uv, int uv_stride,
                             int num_vertices,
                             const void *indices, int num_indices, int size_indices,
-                            float scale_x, float scale_y, SDL_TextureAddressMode texture_address_mode)
+                            float scale_x, float scale_y,
+                            SDL_TextureAddressMode texture_address_mode_u, SDL_TextureAddressMode texture_address_mode_v)
 {
     SDL_RenderCommand *cmd;
     bool result = false;
     cmd = PrepQueueCmdDraw(renderer, SDL_RENDERCMD_GEOMETRY, texture);
     if (cmd) {
-        cmd->data.draw.texture_address_mode = texture_address_mode;
+        cmd->data.draw.texture_address_mode_u = texture_address_mode_u;
+        cmd->data.draw.texture_address_mode_v = texture_address_mode_v;
         result = renderer->QueueGeometry(renderer, cmd, texture,
                                          xy, xy_stride,
                                          color, color_stride, uv, uv_stride,
@@ -1086,6 +1103,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         renderer->line_method = SDL_GetRenderLineMethod();
     }
 
+    renderer->scale_mode = SDL_SCALEMODE_LINEAR;
+
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
     renderer->desired_color_scale = 1.0f;
@@ -1164,6 +1183,37 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
     SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, name);
     renderer = SDL_CreateRendererWithProperties(props);
+    SDL_DestroyProperties(props);
+    return renderer;
+}
+
+SDL_Renderer *SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device)
+{
+    if (!device) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    }
+
+    *device = NULL;
+    SDL_Renderer *renderer;
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, true);
+    }
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "gpu");
+
+    renderer = SDL_CreateRendererWithProperties(props);
+    if (renderer) {
+        *device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    }
     SDL_DestroyProperties(props);
     return renderer;
 }
@@ -1392,7 +1442,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
     texture->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
-    texture->scaleMode = SDL_SCALEMODE_LINEAR;
+    texture->scaleMode = renderer->scale_mode;
     texture->view.pixel_w = w;
     texture->view.pixel_h = h;
     texture->view.viewport.w = -1;
@@ -1658,8 +1708,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    surface_colorspace = SDL_GetSurfaceColorspace(surface);
-
     // Try to have the best pixel format for the texture
     // No alpha, but a colorkey => promote to alpha
     if (!SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
@@ -1720,6 +1768,9 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             }
         }
     }
+
+    surface_colorspace = SDL_GetSurfaceColorspace(surface);
+    texture_colorspace = surface_colorspace;
 
     if (surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
@@ -1964,8 +2015,12 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (scaleMode != SDL_SCALEMODE_NEAREST &&
-        scaleMode != SDL_SCALEMODE_LINEAR) {
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+    case SDL_SCALEMODE_LINEAR:
+    case SDL_SCALEMODE_PIXELART:
+        break;
+    default:
         return SDL_InvalidParamError("scaleMode");
     }
 
@@ -3719,7 +3774,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
             result = QueueCmdGeometry(renderer, NULL,
                                       xy, xy_stride, &renderer->color, 0 /* color_stride */, NULL, 0,
                                       num_vertices, indices, num_indices, size_indices,
-                                      1.0f, 1.0f, SDL_TEXTURE_ADDRESS_CLAMP);
+                                      1.0f, 1.0f, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         }
 
         SDL_small_free(xy, isstack1);
@@ -3900,7 +3955,7 @@ static bool SDL_RenderTextureInternal(SDL_Renderer *renderer, SDL_Texture *textu
         result = QueueCmdGeometry(renderer, texture,
                                   xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
-                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
+                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
         const SDL_FRect rect = { dstrect->x * scale_x, dstrect->y * scale_y, dstrect->w * scale_x, dstrect->h * scale_y };
         result = QueueCmdCopy(renderer, texture, srcrect, &rect);
@@ -4063,7 +4118,7 @@ bool SDL_RenderTextureAffine(SDL_Renderer *renderer, SDL_Texture *texture,
             &texture->color, 0 /* color_stride */,
             uv, uv_stride,
             num_vertices, indices, num_indices, size_indices,
-            scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP
+            scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP
         );
     }
     return result;
@@ -4213,7 +4268,7 @@ bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
         result = QueueCmdGeometry(renderer, texture,
                                   xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
                                   num_vertices, indices, num_indices, size_indices,
-                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
+                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
     } else {
         result = QueueCmdCopyEx(renderer, texture, &real_srcrect, dstrect, angle, &real_center, flip, scale_x, scale_y);
     }
@@ -4265,7 +4320,8 @@ static bool SDL_RenderTextureTiled_Wrap(SDL_Renderer *renderer, SDL_Texture *tex
     return QueueCmdGeometry(renderer, texture,
                             xy, xy_stride, &texture->color, 0 /* color_stride */, uv, uv_stride,
                             num_vertices, indices, num_indices, size_indices,
-                            view->current_scale.x, view->current_scale.y, SDL_TEXTURE_ADDRESS_WRAP);
+                            view->current_scale.x, view->current_scale.y,
+                            SDL_TEXTURE_ADDRESS_WRAP, SDL_TEXTURE_ADDRESS_WRAP);
 }
 
 static bool SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
@@ -4513,6 +4569,143 @@ bool SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const 
     curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
     curr_dst.h = dst_bottom_height;
     if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect, float tileScale)
+{
+    SDL_FRect full_src, full_dst;
+    SDL_FRect curr_src, curr_dst;
+    float dst_left_width;
+    float dst_right_width;
+    float dst_top_height;
+    float dst_bottom_height;
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+    CHECK_TEXTURE_MAGIC(texture, false);
+
+    if (renderer != texture->renderer) {
+        return SDL_SetError("Texture was not created with this renderer");
+    }
+
+    if (!srcrect) {
+        full_src.x = 0;
+        full_src.y = 0;
+        full_src.w = (float)texture->w;
+        full_src.h = (float)texture->h;
+        srcrect = &full_src;
+    }
+
+    if (!dstrect) {
+        GetRenderViewportSize(renderer, &full_dst);
+        dstrect = &full_dst;
+    }
+
+    if (scale <= 0.0f || scale == 1.0f) {
+        dst_left_width = SDL_ceilf(left_width);
+        dst_right_width = SDL_ceilf(right_width);
+        dst_top_height = SDL_ceilf(top_height);
+        dst_bottom_height = SDL_ceilf(bottom_height);
+    } else {
+        dst_left_width = SDL_ceilf(left_width * scale);
+        dst_right_width = SDL_ceilf(right_width * scale);
+        dst_top_height = SDL_ceilf(top_height * scale);
+        dst_bottom_height = SDL_ceilf(bottom_height * scale);
+    }
+
+    // Center
+    curr_src.x = srcrect->x + left_width;
+    curr_src.y = srcrect->y + top_height;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.x = dstrect->x + dst_left_width;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
+    if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
+        return false;
+    }
+
+    // Upper-left corner
+    curr_src.x = srcrect->x;
+    curr_src.y = srcrect->y;
+    curr_src.w = left_width;
+    curr_src.h = top_height;
+    curr_dst.x = dstrect->x;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dst_left_width;
+    curr_dst.h = dst_top_height;
+    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
+    }
+
+    // Upper-right corner
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
+    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
+    }
+
+    // Lower-right corner
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_src.h = bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
+    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
+    }
+
+    // Lower-left corner
+    curr_src.x = srcrect->x;
+    curr_src.w = left_width;
+    curr_dst.x = dstrect->x;
+    curr_dst.w = dst_left_width;
+    if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
+        return false;
+    }
+
+    // Left
+    curr_src.y = srcrect->y + top_height;
+    curr_src.h = srcrect->h - top_height - bottom_height;
+    curr_dst.y = dstrect->y + dst_top_height;
+    curr_dst.h = dstrect->h - dst_top_height - dst_bottom_height;
+    if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
+        return false;
+    }
+
+    // Right
+    curr_src.x = srcrect->x + srcrect->w - right_width;
+    curr_src.w = right_width;
+    curr_dst.x = dstrect->x + dstrect->w - dst_right_width;
+    curr_dst.w = dst_right_width;
+    if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
+        return false;
+    }
+
+    // Top
+    curr_src.x = srcrect->x + left_width;
+    curr_src.y = srcrect->y;
+    curr_src.w = srcrect->w - left_width - right_width;
+    curr_src.h = top_height;
+    curr_dst.x = dstrect->x + dst_left_width;
+    curr_dst.y = dstrect->y;
+    curr_dst.w = dstrect->w - dst_left_width - dst_right_width;
+    curr_dst.h = dst_top_height;
+    if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
+        return false;
+    }
+
+    // Bottom
+    curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_src.h = bottom_height;
+    curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
+    curr_dst.h = dst_bottom_height;
+    if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
         return false;
     }
 
@@ -4875,7 +5068,7 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
                 result = QueueCmdGeometry(renderer, texture,
                                           xy, xy_stride, color, color_stride, uv, uv_stride,
                                           num_vertices, prev, 3, 4,
-                                          scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
+                                          scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
                 if (!result) {
                     goto end;
                 }
@@ -4895,7 +5088,7 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
         result = QueueCmdGeometry(renderer, texture,
                                   xy, xy_stride, color, color_stride, uv, uv_stride,
                                   num_vertices, prev, 3, 4,
-                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP);
+                                  scale_x, scale_y, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (!result) {
             goto end;
         }
@@ -4920,7 +5113,8 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    SDL_TextureAddressMode texture_address_mode;
+    SDL_TextureAddressMode texture_address_mode_u;
+    SDL_TextureAddressMode texture_address_mode_v;
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
@@ -4975,17 +5169,37 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         texture = texture->native;
     }
 
-    texture_address_mode = renderer->texture_address_mode;
-    if (texture_address_mode == SDL_TEXTURE_ADDRESS_AUTO && texture) {
-        texture_address_mode = SDL_TEXTURE_ADDRESS_CLAMP;
+    texture_address_mode_u = renderer->texture_address_mode_u;
+    texture_address_mode_v = renderer->texture_address_mode_v;
+    if (texture &&
+        (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO ||
+         texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO)) {
         for (i = 0; i < num_vertices; ++i) {
             const float *uv_ = (const float *)((const char *)uv + i * uv_stride);
             float u = uv_[0];
             float v = uv_[1];
-            if (u < 0.0f || v < 0.0f || u > 1.0f || v > 1.0f) {
-                texture_address_mode = SDL_TEXTURE_ADDRESS_WRAP;
-                break;
+            if (u < 0.0f || u > 1.0f) {
+                if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
+                    texture_address_mode_u = SDL_TEXTURE_ADDRESS_WRAP;
+                    if (texture_address_mode_v != SDL_TEXTURE_ADDRESS_AUTO) {
+                        break;
+                    }
+                }
             }
+            if (v < 0.0f || v > 1.0f) {
+                if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+                    texture_address_mode_v = SDL_TEXTURE_ADDRESS_WRAP;
+                    if (texture_address_mode_u != SDL_TEXTURE_ADDRESS_AUTO) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
+            texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+        }
+        if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+            texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
         }
     }
 
@@ -5011,7 +5225,9 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 
     // For the software renderer, try to reinterpret triangles as SDL_Rect
 #ifdef SDL_VIDEO_RENDER_SW
-    if (renderer->software && texture_address_mode == SDL_TEXTURE_ADDRESS_CLAMP) {
+    if (renderer->software &&
+        texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP &&
+        texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {
         return SDL_SW_RenderGeometryRaw(renderer, texture,
                                         xy, xy_stride, color, color_stride, uv, uv_stride, num_vertices,
                                         indices, num_indices, size_indices);
@@ -5023,7 +5239,36 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                             xy, xy_stride, color, color_stride, uv, uv_stride,
                             num_vertices, indices, num_indices, size_indices,
                             view->current_scale.x, view->current_scale.y,
-                            texture_address_mode);
+                            texture_address_mode_u, texture_address_mode_v);
+}
+
+bool SDL_SetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode u_mode, SDL_TextureAddressMode v_mode)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    renderer->texture_address_mode_u = u_mode;
+    renderer->texture_address_mode_v = v_mode;
+    return true;
+}
+
+bool SDL_GetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode *u_mode, SDL_TextureAddressMode *v_mode)
+{
+    if (u_mode) {
+        *u_mode = SDL_TEXTURE_ADDRESS_INVALID;
+    }
+    if (v_mode) {
+        *v_mode = SDL_TEXTURE_ADDRESS_INVALID;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (u_mode) {
+        *u_mode = renderer->texture_address_mode_u;
+    }
+    if (v_mode) {
+        *v_mode = renderer->texture_address_mode_v;
+    }
+    return true;
 }
 
 SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
@@ -5133,9 +5378,8 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    SDL_Texture *target = renderer->target;
-    if (target) {
-        SDL_SetRenderTarget(renderer, NULL);
+    if (renderer->target) {
+        return SDL_SetError("You can't present on a render target");
     }
 
     SDL_RenderLogicalPresentation(renderer);
@@ -5154,10 +5398,6 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 #endif
     if (!renderer->RenderPresent(renderer)) {
         presented = false;
-    }
-
-    if (target) {
-        SDL_SetRenderTarget(renderer, target);
     }
 
     if (renderer->simulate_vsync ||
@@ -5575,7 +5815,7 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
     // Convert temp surface into texture
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, atlas);
     if (texture) {
-        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
         renderer->debug_char_texture_atlas = texture;
     }
     SDL_DestroySurface(atlas);
@@ -5664,4 +5904,166 @@ bool SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRI
     const bool retval = SDL_RenderDebugText(renderer, x, y, str);
     SDL_free(str);
     return retval;
+}
+
+bool SDL_SetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode scale_mode)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    renderer->scale_mode = scale_mode;
+
+    return true;
+}
+
+bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode)
+{
+    if (scale_mode) {
+        *scale_mode = SDL_SCALEMODE_LINEAR;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (scale_mode) {
+        *scale_mode = renderer->scale_mode;
+    }
+    return true;
+}
+
+SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    if (!desc) {
+        SDL_InvalidParamError("desc");
+        return NULL;
+    }
+
+    if (desc->version < sizeof(*desc)) {
+        // Update this to handle older versions of this interface
+        SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
+        return NULL;
+    }
+
+    if (!desc->fragment_shader) {
+        SDL_SetError("desc->fragment_shader is required");
+        return NULL;
+    }
+
+    SDL_GPUDevice *device = (SDL_GPUDevice *)SDL_GetPointerProperty(renderer->props, SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    if (!device) {
+        SDL_SetError("Renderer isn't associated with a GPU device");
+        return NULL;
+    }
+
+    SDL_GPURenderState *state = (SDL_GPURenderState *)SDL_calloc(1, sizeof(*state));
+    if (!state) {
+        return NULL;
+    }
+
+    state->renderer = renderer;
+    state->fragment_shader = desc->fragment_shader;
+
+    if (desc->num_sampler_bindings > 0) {
+        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(desc->num_sampler_bindings, sizeof(*state->sampler_bindings));
+        if (!state->sampler_bindings) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->sampler_bindings, desc->sampler_bindings, desc->num_sampler_bindings * sizeof(*state->sampler_bindings));
+        state->num_sampler_bindings = desc->num_sampler_bindings;
+    }
+
+    if (desc->num_storage_textures > 0) {
+        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(desc->num_storage_textures, sizeof(*state->storage_textures));
+        if (!state->storage_textures) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->storage_textures, desc->storage_textures, desc->num_storage_textures * sizeof(*state->storage_textures));
+        state->num_storage_textures = desc->num_storage_textures;
+    }
+
+    if (desc->num_storage_buffers > 0) {
+        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(desc->num_storage_buffers, sizeof(*state->storage_buffers));
+        if (!state->storage_buffers) {
+            SDL_DestroyGPURenderState(state);
+            return NULL;
+        }
+        SDL_memcpy(state->storage_buffers, desc->storage_buffers, desc->num_storage_buffers * sizeof(*state->storage_buffers));
+        state->num_storage_buffers = desc->num_storage_buffers;
+    }
+
+    return state;
+}
+
+bool SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length)
+{
+    if (!state) {
+        return SDL_InvalidParamError("state");
+    }
+
+    if (!FlushRenderCommandsIfGPURenderStateNeeded(state)) {
+        return false;
+    }
+
+    for (int i = 0; i < state->num_uniform_buffers; i++) {
+        SDL_GPURenderStateUniformBuffer *buffer = &state->uniform_buffers[i];
+        if (buffer->slot_index == slot_index) {
+            void *new_data = SDL_realloc(buffer->data, length);
+            if (!new_data) {
+                return false;
+            }
+            SDL_memcpy(new_data, data, length);
+            buffer->data = new_data;
+            buffer->length = length;
+            return true;
+        }
+    }
+
+    SDL_GPURenderStateUniformBuffer *buffers = (SDL_GPURenderStateUniformBuffer *)SDL_realloc(state->uniform_buffers, (state->num_uniform_buffers + 1) * sizeof(*state->uniform_buffers));
+    if (!buffers) {
+        return false;
+    }
+
+    SDL_GPURenderStateUniformBuffer *buffer = &buffers[state->num_uniform_buffers];
+    buffer->slot_index = slot_index;
+    buffer->length = length;
+    buffer->data = SDL_malloc(length);
+    if (!buffer->data) {
+        SDL_free(buffers);
+        return false;
+    }
+    SDL_memcpy(buffer->data, data, length);
+
+    state->uniform_buffers = buffers;
+    ++state->num_uniform_buffers;
+    return true;
+}
+
+bool SDL_SetRenderGPUState(SDL_Renderer *renderer, SDL_GPURenderState *state)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    renderer->gpu_render_state = state;
+    return true;
+}
+
+void SDL_DestroyGPURenderState(SDL_GPURenderState *state)
+{
+    if (!state) {
+        return;
+    }
+
+    FlushRenderCommandsIfGPURenderStateNeeded(state);
+
+    if (state->num_uniform_buffers > 0) {
+        for (int i = 0; i < state->num_uniform_buffers; i++) {
+            SDL_free(state->uniform_buffers[i].data);
+        }
+        SDL_free(state->uniform_buffers);
+    }
+    SDL_free(state->sampler_bindings);
+    SDL_free(state->storage_textures);
+    SDL_free(state->storage_buffers);
+    SDL_free(state);
 }
