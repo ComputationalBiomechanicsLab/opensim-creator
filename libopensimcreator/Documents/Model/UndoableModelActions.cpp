@@ -109,11 +109,6 @@ namespace
         );
     }
 
-    std::optional<std::filesystem::path> PromptSaveOneFile()
-    {
-        return prompt_user_for_file_save_location_add_extension_if_necessary("osim");
-    }
-
     bool IsAnExampleFile(const std::filesystem::path& path)
     {
         return is_subpath(App::resource_filepath("OpenSimCreator/models"), path);
@@ -129,7 +124,7 @@ namespace
             // we can save over this document - *IF* it's not an example file
             if (IsAnExampleFile(backing_path))
             {
-                const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
+                const std::optional<std::filesystem::path> maybePath = prompt_user_for_file_save_location_add_extension_if_necessary("osim");
                 return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
             }
             else
@@ -141,7 +136,7 @@ namespace
         {
             // the model has no associated file, so prompt the user for a save
             // location
-            const std::optional<std::filesystem::path> maybePath = PromptSaveOneFile();
+            const std::optional<std::filesystem::path> maybePath = prompt_user_for_file_save_location_add_extension_if_necessary("osim");
             return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
         }
     }
@@ -262,28 +257,25 @@ namespace
     }
 }
 
-void osc::ActionSaveCurrentModelAs(IModelStatePair& uim)
+void osc::ActionSaveCurrentModelAs(std::shared_ptr<IModelStatePair> uim)
 {
-    const auto maybePath = PromptSaveOneFile();
+    App::upd().prompt_user_to_save_file_with_specific_extension([uim](std::filesystem::path p)
+    {
+        if (not TrySaveModel(uim->getModel(), p.string())) {
+            return;  // error saving the model file
+        }
 
-    if (not maybePath) {
-        return;  // user cancelled out of the prompt
-    }
+        const std::string oldPath = uim->getModel().getInputFileName();
 
-    if (not TrySaveModel(uim.getModel(), maybePath->string())) {
-        return;  // error saving the model file
-    }
+        uim->updModel().setInputFileName(p.string());
 
-    const std::string oldPath = uim.getModel().getInputFileName();
+        if (p != oldPath) {
+            uim->commit("changed osim path");
+        }
+        uim->setUpToDateWithFilesystem(std::filesystem::last_write_time(p));
 
-    uim.updModel().setInputFileName(maybePath->string());
-
-    if (*maybePath != oldPath) {
-        uim.commit("changed osim path");
-    }
-    uim.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybePath));
-
-    App::singleton<RecentFiles>()->push_back(*maybePath);
+        App::singleton<RecentFiles>()->push_back(p);
+    }, "osim");
 }
 
 void osc::ActionNewModel(Widget& parent)
@@ -2300,19 +2292,17 @@ bool osc::ActionImportLandmarks(
     }
 }
 
-bool osc::ActionExportModelGraphToDotviz(const OpenSim::Model& model)
+void osc::ActionExportModelGraphToDotviz(std::shared_ptr<IModelStatePair> model)
 {
-    if (auto p = prompt_user_for_file_save_location_add_extension_if_necessary("dot")) {
-        if (std::ofstream of{*p}) {
-            WriteComponentTopologyGraphAsDotViz(model.getModel(), of);
-            return true;
+    App::upd().prompt_user_to_save_file_with_specific_extension([model](std::filesystem::path p)
+    {
+        if (std::ofstream of{p}) {
+            WriteComponentTopologyGraphAsDotViz(model->getModel(), of);
         }
         else {
-            log_error("error opening %s for writing", p->string().c_str());
-            return false;
+            log_error("error opening %s for writing", p.string().c_str());
         }
-    }
-    return false;  // user cancelled out
+    });
 }
 
 bool osc::ActionExportModelGraphToDotvizClipboard(const OpenSim::Model& model)

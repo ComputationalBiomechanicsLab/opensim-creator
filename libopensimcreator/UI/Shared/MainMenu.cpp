@@ -123,7 +123,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
             }
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
-            ActionSaveCurrentModelAs(*undoableModel);
+            ActionSaveCurrentModelAs(undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
             ActionSaveModel(*undoableModel);
@@ -197,7 +197,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveCurrentModelAs(*undoableModel);
+            ActionSaveCurrentModelAs(undoableModel);
         }
     }
 
