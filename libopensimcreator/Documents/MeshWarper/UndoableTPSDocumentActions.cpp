@@ -280,7 +280,7 @@ void osc::ActionSaveLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        lm::WriteLandmarksToCSV(fout, [which, pairs = std::move(pairs), flags]() mutable
+        lm::WriteLandmarksToCSV(fout, [which, pairs = std::move(pairs)]() mutable
         {
             std::optional<lm::Landmark> rv;
             for (const TPSDocumentLandmarkPair& pair : pairs) {
