@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# `build_linux_valgrind-compat`: performs an end-to-end build of OpenSim Creator
+# `build_linux_valgrind.sh`: performs an end-to-end build of OpenSim Creator
 # with build flags that make it valgrind-compatible. This is handy for debugging
 # things like memory accesses, segfaults, etc.
 #
-#     usage (must be ran in repository root): `bash build_linux_valgrind-compat.sh`
+#     usage (must be ran in repository root): `bash build_linux_valgrind.sh`
 
 set -xeuo pipefail
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # `build_ubuntu-20.04.sh`: performs an end-to-end build of OpenSim Creator
-# on Debian platforms
+# on Ubuntu 20.04
 #
 #     usage (must be ran in repository root): `bash build_ubuntu-20.04.sh`
 

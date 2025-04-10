@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# `build_mac`: performs an end-to-end build of OpenSim Creator on the
-# mac platform
+# `build_mac.sh`: performs an end-to-end build of OpenSim Creator MacOS.
 #
 #     usage (must be ran in repository root): `bash build_mac.sh`
 #
