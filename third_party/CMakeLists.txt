@@ -95,6 +95,7 @@ if(${OSCDEPS_BUILD_SDL})
             -DSDL_SHARED:BOOL=OFF
             -DSDL_STATIC:BOOL=ON
             -DSDL_TEST_LIBRARY:BOOL=OFF
+            -DSDL_PRESEED:BOOL=OFF  # https://github.com/libsdl-org/SDL/issues/11487#issuecomment-2487405649
     )
 endif()
 
