@@ -71,30 +71,22 @@ namespace
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
     void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
-        std::optional<std::filesystem::path> maybeDAEPath =
-            prompt_user_for_file_save_location_add_extension_if_necessary("dae");
-
-        if (!maybeDAEPath)
+        App::upd().prompt_user_to_save_file_with_specific_extension([scene = std::vector(scene.begin(), scene.end())](std::filesystem::path p)
         {
-            return;  // user cancelled out
-        }
-        const std::filesystem::path& daePath = *maybeDAEPath;
+            std::ofstream outfile{p};
+            if (not outfile) {
+                log_error("cannot save to %s: IO error", p.string().c_str());
+                return;
+            }
 
-        std::ofstream outfile{daePath};
+            DAEMetadata daeMetadata{
+                App::get().human_readable_name(),
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        if (!outfile)
-        {
-            log_error("cannot save to %s: IO error", daePath.string().c_str());
-            return;
-        }
-
-        DAEMetadata daeMetadata{
-            App::get().human_readable_name(),
-            App::get().application_name_with_version_and_buildid(),
-        };
-
-        write_as_dae(outfile, scene, daeMetadata);
-        log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
+            write_as_dae(outfile, scene, daeMetadata);
+            log_info("wrote scene as a DAE file to %s", p.string().c_str());
+        }, "dae");
     }
 
     void DrawOutputTooltip(const OpenSim::AbstractOutput& o)

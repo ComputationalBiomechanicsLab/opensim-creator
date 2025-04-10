@@ -2302,7 +2302,7 @@ void osc::ActionExportModelGraphToDotviz(std::shared_ptr<IModelStatePair> model)
         else {
             log_error("error opening %s for writing", p.string().c_str());
         }
-    });
+    }, "dot");
 }
 
 bool osc::ActionExportModelGraphToDotvizClipboard(const OpenSim::Model& model)

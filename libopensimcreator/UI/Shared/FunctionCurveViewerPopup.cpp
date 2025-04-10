@@ -5,7 +5,7 @@
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Platform/os.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
 #include <liboscar/Utils/Algorithms.h>
@@ -187,23 +187,21 @@ private:
 
     void onUserRequestedCSVExport()
     {
-        const auto csvPath = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-        if (not csvPath) {
-            return;  // user probably cancelled out
-        }
+        App::upd().prompt_user_to_save_file_with_specific_extension([points = m_PlotPoints](std::filesystem::path p)
+        {
+            std::ofstream ostream{p};
+            if (not ostream) {
+                return;  // error opening the output file for writing
+            }
 
-        std::ofstream ostream{*csvPath};
-        if (not ostream) {
-            return;  // error opening the output file for writing
-        }
+            // write header
+            write_csv_row(ostream, std::to_array<std::string>({ "x", "y" }));
 
-        // write header
-        write_csv_row(ostream, std::to_array<std::string>({ "x", "y" }));
-
-        // write data rows
-        for (const auto& [x, y] : m_PlotPoints) {
-            write_csv_row(ostream, std::to_array({ std::to_string(x), std::to_string(y) }));
-        }
+            // write data rows
+            for (const auto& [x, y] : points) {
+                write_csv_row(ostream, std::to_array({ std::to_string(x), std::to_string(y) }));
+            }
+        }, "csv");
     }
 
     std::shared_ptr<const IVersionedComponentAccessor> m_Component;

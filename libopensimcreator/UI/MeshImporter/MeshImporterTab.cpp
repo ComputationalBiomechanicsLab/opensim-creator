@@ -1551,10 +1551,10 @@ private:
     {
         std::visit(Overload
         {
-            [this, &clickPos](Ground& el)  { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Mesh& el)    { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Body& el)    { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Joint& el)   { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Ground& el)    { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Mesh& el)      { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Body& el)      { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Joint& el)     { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](StationEl& el) { this->drawContextMenuContent(el, clickPos); },
         }, el.toVariant());
     }
