@@ -4,6 +4,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/ForceRecordOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
@@ -98,7 +99,7 @@ namespace
 
     bool DrawOutputWithSubfieldsMenu(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+        const std::function<void(OutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
@@ -112,7 +113,7 @@ namespace
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
                     {
-                        onUserSelection(o, f);
+                        onUserSelection(OutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -130,7 +131,7 @@ namespace
 
     bool DrawOutputWithNoSubfieldsMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+        const std::function<void(OutputExtractor)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -138,7 +139,7 @@ namespace
 
         if (ui::draw_menu_item(("  " + o.getName())))
         {
-            onUserSelection(o, std::nullopt);
+            onUserSelection(OutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -392,7 +393,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
-    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+    const std::function<void(OutputExtractor)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -406,23 +407,35 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 
 bool osc::DrawWatchOutputMenu(
     const OpenSim::Component& c,
-    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+    const std::function<void(OutputExtractor)>& onUserSelection)
 {
     bool outputAdded = false;
 
     if (ui::begin_menu("Watch Output")) {
-        if (c.getNumOutputs() == 0) {
-            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
+        int entriesDrawn = 0;
+        for (const auto& [name, output] : c.getOutputs()) {
+            ui::push_id(entriesDrawn++);
+            if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+                outputAdded = true;
+            }
+            ui::pop_id();
         }
-        else {
-            int id = 0;
-            for (const auto& [name, output] : c.getOutputs()) {
-                ui::push_id(id++);
-                if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+
+        // Edge-case: `Force`s have record-based outputs, which should also be exposed
+        if (const OpenSim::Force* f = dynamic_cast<const OpenSim::Force*>(&c)) {
+            const OpenSim::Array<std::string> labels = f->getRecordLabels();
+            for (int i = 1; i < labels.size(); ++i) {  // Skip first: it's the force's name
+                ui::push_id(entriesDrawn++);
+                if (ui::draw_menu_item("  " + labels[i])) {
+                    onUserSelection(OutputExtractor{ForceRecordOutputExtractor{*f, i}});
                     outputAdded = true;
                 }
                 ui::pop_id();
             }
+        }
+
+        if (entriesDrawn == 0) {
+            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
         }
         ui::end_menu();
     }

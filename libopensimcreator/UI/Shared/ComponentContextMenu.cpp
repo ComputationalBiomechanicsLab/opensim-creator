@@ -407,15 +407,9 @@ public:
         DrawRightClickedComponentContextMenuHeader(*c);
         DrawContextMenuSeparator();
 
-        DrawWatchOutputMenu(*c, [this](const OpenSim::AbstractOutput& output, std::optional<ComponentOutputSubfield> subfield)
+        DrawWatchOutputMenu(*c, [this](OutputExtractor outputExtractor)
         {
-            std::shared_ptr<Environment> environment = m_Model->tryUpdEnvironment();
-            if (subfield) {
-                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output, *subfield}});
-            }
-            else {
-                environment->addUserOutputExtractor(OutputExtractor{ComponentOutputExtractor{output}});
-            }
+            m_Model->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
 
             // when the user asks to watch an output, make sure the "Output Watches" panel is
             // open, so that they can immediately see the side-effect of watching an output (#567)

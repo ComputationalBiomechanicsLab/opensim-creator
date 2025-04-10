@@ -17,6 +17,11 @@ namespace osc
     // lifetime management (e.g. refcounted pointers or similar)
     class OutputValueExtractor final {
     public:
+        static OutputValueExtractor constant(Variant value)
+        {
+            return OutputValueExtractor{[value](const SimulationReport&) { return value; }};
+        }
+
         explicit OutputValueExtractor(std::function<Variant(const SimulationReport&)> callback_) :
             m_Callback{std::move(callback_)}
         {}

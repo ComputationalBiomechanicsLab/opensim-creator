@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The `Watch Output` menu now also shows all record outputs from `OpenSim::Force`s,
+  which makes it possible to (e.g.) watch `OpenSim::BushingForce`forces/torques while
+  editing a model.
 - Moment arms in the muscle plotter now have units of meters (previously, moment arms
   were listed as 'Unitless', #1014).
 - The graphics implementation was updated to support a wider range

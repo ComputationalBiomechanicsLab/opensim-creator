@@ -44,18 +44,6 @@ namespace
         ss << ']';
         return std::move(ss).str();
     }
-
-    Variant NaNFloatingPointCallback(const SimulationReport&)
-    {
-        return Variant{quiet_nan_v<float>};
-    }
-
-    Variant BlankStringCallback(const SimulationReport&)
-    {
-        return Variant{std::string{}};
-    }
-
-    using NullCallbackFnPointer = Variant(*)(const SimulationReport&);
 }
 
 class osc::ComponentOutputExtractor::Impl final {
@@ -69,6 +57,8 @@ public:
         m_OutputTypeid{&typeid(ao)},
         m_ExtractorFunc{GetExtractorFuncOrNull(ao, subfield)}
     {}
+
+    friend bool operator==(const Impl&, const Impl&) = default;
 
     std::unique_ptr<Impl> clone() const { return std::make_unique<Impl>(*this); }
 
@@ -85,15 +75,17 @@ public:
     OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
     {
         const OutputExtractorDataType datatype = getOutputType();
-        const NullCallbackFnPointer nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
+        const OutputValueExtractor nullExtractor = datatype == OutputExtractorDataType::Float ?
+            OutputValueExtractor::constant(quiet_nan_v<float>) :
+            OutputValueExtractor::constant(std::string{});
 
         const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 
         if (not ao) {
-            return OutputValueExtractor{nullCallback};  // cannot find output
+            return nullExtractor;  // cannot find output
         }
         if (typeid(*ao) != *m_OutputTypeid) {
-            return OutputValueExtractor{nullCallback};  // output has changed
+            return nullExtractor;  // output has changed
         }
 
         if (datatype == OutputExtractorDataType::Float) {
@@ -127,12 +119,7 @@ public:
             return true;
         }
 
-        return
-            m_ComponentAbsPath == otherImpl->m_ComponentAbsPath &&
-            m_OutputName == otherImpl->m_OutputName &&
-            m_Label == otherImpl->m_Label &&
-            m_OutputTypeid == otherImpl->m_OutputTypeid &&
-            m_ExtractorFunc == otherImpl->m_ExtractorFunc;
+        return *otherImpl == *this;
     }
 
 private:

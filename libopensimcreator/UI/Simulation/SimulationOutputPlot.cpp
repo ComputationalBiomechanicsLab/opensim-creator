@@ -114,9 +114,8 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](OutputExtractor rhs)
                         {
-                            OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });
