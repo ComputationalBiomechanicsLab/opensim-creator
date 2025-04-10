@@ -162,7 +162,8 @@ def build_osc(conf: BuildConfiguration):
             'AddComponentPopup',
             'LoadingTab',
         ]
-        _run(f'ctest --test-dir {conf.get_osc_build_dir()} -j {conf.concurrency} -E "{'|'.join(excluded_tests)}"')
+        excluded_tests_str = '|'.join(excluded_tests)
+        _run(f'ctest --test-dir {conf.get_osc_build_dir()} -j {conf.concurrency} -E {excluded_tests_str}')
 
         # ensure final target is built - even if it isn't in ALL (e.g. `package`)
         _run_cmake_build(
