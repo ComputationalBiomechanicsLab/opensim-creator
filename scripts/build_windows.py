@@ -23,7 +23,7 @@ def _run(s: str, extra_env_vars={}):
 def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
     all_cache_variables = ' '.join([f'-D{k}={v}' for k, v in cache_variables.items()])
     maybe_arch_flag = f'-A {architecture}' if 'Visual Studio' in generator else ''
-    _run(f'cmake -S {source_dir} -B {binary_dir} -G {generator} {maybe_arch_flag} {all_cache_variables}', extra_env_vars)
+    _run(f'cmake -S {source_dir} -B {binary_dir} -G "{generator}" {maybe_arch_flag} {all_cache_variables}', extra_env_vars)
 
 def _run_cmake_build(binary_dir, config, concurrency, target=None):
     maybe_target_flag = f'--target {target}' if target else ''
