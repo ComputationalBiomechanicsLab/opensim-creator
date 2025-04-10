@@ -5,8 +5,8 @@ env:
 
 jobs:
   windows2022msvc:
-    name: Windows 2022 (amd64, MSVC)
-    runs-on: windows-2022
+    name: Windows 2025 (amd64, MSVC)
+    runs-on: windows-2025
     steps:
 
     - uses: actions/checkout@v4
