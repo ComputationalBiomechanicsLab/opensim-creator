@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# `format_sources`: applies basic text formatting to any files found in the
+# `format_sources.py`: applies basic text formatting to any files found in the
 # given (command-line argument) directories
 #
 # formatting steps:

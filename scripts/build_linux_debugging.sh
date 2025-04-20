@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#
+
 # `build_linux_debugging.sh`: performs an end-to-end build of OpenSim Creator with
 # as many debugging options enabled as possible. This is usaully used to verify a
 # release, or lint the source code

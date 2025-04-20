@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# `generate_icon_files`: generates icon files from images that are compatible with
+# `generate_icon_files.py`: generates icon files from images that are compatible with
 # Mac's (icns) and Windows' (ico) icon systems
 #
 # usage:
