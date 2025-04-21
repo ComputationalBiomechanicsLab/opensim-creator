@@ -6,6 +6,7 @@
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Maths/Vec3.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
@@ -375,13 +376,6 @@ namespace
         ui::draw_tooltip_body_only_if_item_hovered("If selected, the exported point name will be the full path to the point (e.g. `/forceset/somemuscle/geometrypath/pointname`), rather than just the name of the point (e.g. `pointname`)");
     }
 
-    enum class ExportStepReturn {
-        UserCancelled,
-        IoError,
-        Done,
-        NUM_OPTIONS,
-    };
-
     std::optional<SimTK::Transform> TryGetTransformToReexpressPointsIn(
         const OpenSim::Model& model,
         const SimTK::State& state,
@@ -509,38 +503,35 @@ namespace
         }
     }
 
-    ExportStepReturn ActionPromptUserForSaveLocationAndExportPoints(
+    void ActionPromptUserForSaveLocationAndExportPoints(
         const OpenSim::Model& model,
         const SimTK::State& state,
         const std::unordered_set<std::string>& pointAbsPaths,
         const std::optional<std::string>& maybeAbsPathOfFrameToReexpressPointsIn,
         bool shouldExportPointsWithAbsPathNames)
     {
-        // prompt user to select a save location
-        const std::optional<std::filesystem::path> saveLoc = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-        if (!saveLoc) {
-            return ExportStepReturn::UserCancelled;
-        }
-
-        // open the save location for writing
-        std::ofstream fOut;
-        fOut.exceptions(std::ios_base::badbit | std::ios_base::failbit);
-        fOut.open(*saveLoc);
-        if (!fOut)
-        {
-            return ExportStepReturn::IoError;
-        }
-
+        // Pre-write the CSV in memory so that the asynchronous user prompt doesn't depend
+        // on a bunch of UI state.
+        std::stringstream ss;
         WritePointsAsCSVTo(
             model,
             state,
             pointAbsPaths,
             maybeAbsPathOfFrameToReexpressPointsIn,
             shouldExportPointsWithAbsPathNames,
-            fOut
+            ss
         );
 
-        return ExportStepReturn::Done;
+        // Asynchronously prompt the user for a save location and write the CSV to it.
+        App::upd().prompt_user_to_save_file_with_specific_extension([csv = std::move(ss).str()](std::filesystem::path p)
+        {
+            std::ofstream ofs;
+            if (not ofs) {
+                log_error("%s: error opening file for writing", p.string().c_str());
+                return;
+            }
+            ofs << csv;
+        }, "csv");
     }
 }
 
@@ -590,18 +581,13 @@ private:
 
         if (ui::draw_button(OSC_ICON_UPLOAD " Export to CSV"))
         {
-            static_assert(num_options<ExportStepReturn>() == 3, "review error handling");
-            const ExportStepReturn rv = ActionPromptUserForSaveLocationAndExportPoints(
+            ActionPromptUserForSaveLocationAndExportPoints(
                 m_Model->getModel(),
                 m_Model->getState(),
                 m_PointSelectorState.selectedPointAbsPaths,
                 m_FrameSelectorState.maybeSelectedFrameAbsPath,
                 m_OutputFormatState.exportPointNamesAsAbsPaths
             );
-            if (rv == ExportStepReturn::Done)
-            {
-                request_close();
-            }
         }
     }
 

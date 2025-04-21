@@ -1376,32 +1376,22 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("stl");
-        if (!maybeUserSaveLocation)
+        App::upd().prompt_user_to_save_file_with_specific_extension([mesh](std::filesystem::path p)
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            // write transformed mesh to output
+            std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                return;
+            }
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
-        }
+            const StlMetadata stlMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        const StlMetadata stlMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
-
-        write_as_stl(outputFileStream, mesh, stlMetadata);
+            write_as_stl(ofs, mesh, stlMetadata);
+        }, "stl");
     }
 
     void drawSaveMeshMenu(const Mesh& el)
