@@ -11,6 +11,7 @@
 #include <libopensimcreator/Utils/ParamBlock.h>
 #include <libopensimcreator/Utils/ParamValue.h>
 
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
@@ -116,7 +117,7 @@ public:
             ui::end_table();
 
             if (ui::draw_button(OSC_ICON_SAVE " Export to CSV")) {
-                tryExportOutputs();
+                promptUserToExportOutputs();
             }
         }
 
@@ -130,24 +131,9 @@ public:
 
 
 private:
-    void tryExportOutputs()
+    void writeOutputsAsCSV(std::ostream& out)
     {
-        // try prompt user for save location
-        const std::optional<std::filesystem::path> maybeCSVPath =
-            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-
-        if (!maybeCSVPath) {
-            return;  // user probably cancelled out
-        }
-
-        std::ofstream fout{*maybeCSVPath};
-
-        if (not fout) {
-            return;  // IO error (can't write to that location?)
-        }
-
-        fout << "Integrator,Wall Time (sec),NumStepsTaken\n";
-
+        out << "Integrator,Wall Time (sec),NumStepsTaken\n";
         for (const ForwardDynamicSimulation& simulation : m_Simulations) {
 
             const auto reports = simulation.getAllSimulationReports();
@@ -159,8 +145,25 @@ private:
             const float t = m_WalltimeExtractor.getValueFloat(*simulation.getModel(), reports.back());
             const float steps = m_StepsTakenExtractor.getValueFloat(*simulation.getModel(), reports.back());
 
-            fout << m.label() << ',' << t << ',' << steps << '\n';
+            out << m.label() << ',' << t << ',' << steps << '\n';
         }
+    }
+
+    void promptUserToExportOutputs()
+    {
+        // Pre-write the CSV content in-memory so that the asynchronous user prompt isn't
+        // dependent on a bunch of state.
+        std::stringstream ss;
+        writeOutputsAsCSV(ss);
+
+        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        {
+            std::ofstream ofs{p};
+            if (not ofs) {
+                return;  // IO error (can't write to that location?)
+            }
+            ofs << content;
+        }, "csv");
     }
 
     // populate the list of input parameters

@@ -1421,6 +1421,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             return true;
         }
 
+        void saveTo(const std::filesystem::path& p) const
+        {
+            print(p.string());
+        }
+
     private:
         void mutateScalingParammeterOverridesWithNewOverride(const std::string& scalingParamName, ScalingParameterValue newValue)
         {
@@ -1626,12 +1631,6 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             }
             else {
                 return std::nullopt;
-            }
-        }
-        void saveScalingDocumentTo(const std::filesystem::path& p)
-        {
-            if (scalingDocument->print(p.string())) {
-                //scalingDocument->setInlined(false, p.string());
             }
         }
 
@@ -1954,12 +1953,15 @@ namespace
         void actionSaveScalingDocument()
         {
             if (const auto existingPath = m_ScalingState->scratch().scalingDocumentFilesystemLocation()) {
-                m_ScalingState->upd_scratch().saveScalingDocumentTo(*existingPath);
+                m_ScalingState->upd_scratch().getScalingDocumentPtr()->saveTo(*existingPath);
+                return;  // Document saved to existing filesystem location.
             }
-            else if (const auto userSelectedPath = prompt_user_for_file_save_location_add_extension_if_necessary("xml")) {
-                m_ScalingState->upd_scratch().saveScalingDocumentTo(*userSelectedPath);
-            }
-            // else: doesn't have an existing filesystem location and the user cancelled the dialog: do nothing
+
+            // Else: prompt the user to save it
+            App::upd().prompt_user_to_save_file_with_specific_extension([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::filesystem::path p)
+            {
+                doc->saveTo(p);
+            }, "xml");
         }
 
         void actionApplyObjectEditToScalingDocument(const ObjectPropertyEdit& edit)
