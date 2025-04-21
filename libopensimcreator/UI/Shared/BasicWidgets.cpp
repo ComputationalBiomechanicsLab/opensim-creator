@@ -187,44 +187,36 @@ namespace
         const OpenSim::Mesh& openSimMesh,
         const OpenSim::Frame& frame)
     {
-        // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("obj");
-        if (!maybeUserSaveLocation)
+        // Pre-write mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
-        // load raw mesh data into an osc mesh for processing
-        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-        // bake transform into mesh data
-        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+            const ObjMetadata objMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
+            write_as_obj(ss, oscMesh, objMetadata, ObjWriterFlag::NoWriteNormals);
         }
 
-        const ObjMetadata objMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+        // Asynchronously prompt the user and write the data
+        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        {
+            // write transformed mesh to output
+            std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                return;
+            }
 
-        write_as_obj(
-            outputFileStream,
-            oscMesh,
-            objMetadata,
-            ObjWriterFlag::NoWriteNormals
-        );
+            ofs << content;
+        }, "obj");
     }
 
     void ActionReexportMeshSTLWithRespectTo(
@@ -233,39 +225,36 @@ namespace
         const OpenSim::Mesh& openSimMesh,
         const OpenSim::Frame& frame)
     {
-        // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("stl");
-        if (!maybeUserSaveLocation)
+        // Pre-write the mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
-        // load raw mesh data into an osc mesh for processing
-        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-        // bake transform into mesh data
-        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+            const StlMetadata stlMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
+            write_as_stl(ss, oscMesh, stlMetadata);
         }
 
-        const StlMetadata stlMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+        // Asynchronously prompt the user for a save location and write the content to it.
+        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        {
+                // write transformed mesh to output
+                std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+                if (not ofs) {
+                    const std::string error = errno_to_string_threadsafe();
+                    log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                    return;
+                }
 
-        write_as_stl(outputFileStream, oscMesh, stlMetadata);
+                ofs << content;
+        }, "stl");
     }
 
     void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)

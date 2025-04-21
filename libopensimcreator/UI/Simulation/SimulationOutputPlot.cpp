@@ -70,13 +70,11 @@ namespace
         const OutputExtractor& output)
     {
         if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV")) {
-            api.tryPromptToSaveOutputsAsCSV({output});
+            api.tryPromptToSaveOutputsAsCSV({output}, false);
         }
 
         if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV (and open)")) {
-            if (const auto path = api.tryPromptToSaveOutputsAsCSV({output})) {
-                open_file_in_os_default_application(*path);
-            }
+            api.tryPromptToSaveOutputsAsCSV({output}, true);
         }
     }
 

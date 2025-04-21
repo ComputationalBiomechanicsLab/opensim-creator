@@ -62,9 +62,7 @@ public:
                 }
 
                 if (ui::draw_menu_item("as CSV (and open)")) {
-                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors())) {
-                        open_file_in_os_default_application(*path);
-                    }
+                    m_SimulatorUIAPI->tryPromptToSaveAllOutputsAsCSV(m_Environment->getAllUserOutputExtractors(), true);
                 }
 
                 ui::end_popup();

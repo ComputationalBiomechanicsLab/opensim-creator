@@ -88,13 +88,11 @@ private:
             ui::draw_button(OSC_ICON_SAVE " Save All " OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportoptions", ui::PopupFlag::MouseButtonLeft)) {
                 if (ui::draw_menu_item("as CSV")) {
-                    m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs);
+                    m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs, false);
                 }
 
                 if (ui::draw_menu_item("as CSV (and open)")) {
-                    if (const auto path = m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs)) {
-                        open_file_in_os_default_application(*path);
-                    }
+                    m_SimulatorUIAPI->tryPromptToSaveOutputsAsCSV(outputs, true);
                 }
 
                 ui::end_popup();
