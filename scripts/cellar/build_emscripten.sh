@@ -26,7 +26,6 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 
 CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B osc-deps-build \
     -DOSCDEPS_BUILD_SDL=OFF \
-    -DOSCDEPS_BUILD_NATIVEFILEDIALOG=OFF \
     -DOSCDEPS_BUILD_OPENSIM=OFF \
     -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install \
     -DCMAKE_INSTALL_LIBDIR=${PWD}/osc-deps-install/lib

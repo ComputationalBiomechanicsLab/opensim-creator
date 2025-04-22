@@ -4,7 +4,7 @@
 # with the necessary dependencies to build OpenSim Creator.
 
 # setup system dependencies
-sudo apt install -y cmake pkg-config libgtk-3-dev libblas-dev liblapack-dev clang-11 clang-tidy-11 libstdc++-10-dev xdg-desktop-portal-gtk
+sudo apt install -y cmake pkg-config libblas-dev liblapack-dev clang-11 clang-tidy-11 libstdc++-10-dev xdg-desktop-portal-gtk
 
 # install a newer cmake than the one supplied by apt
 sudo apt install -y libssl-dev  # OpenSSL headers, for cmake

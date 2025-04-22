@@ -9,7 +9,6 @@ set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
 set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
 set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
-set(OSCDEPS_BUILD_NATIVEFILEDIALOG ON CACHE BOOL "enable building nativefiledialog from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
 set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
 set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
@@ -121,15 +120,6 @@ endif()
 if(${OSCDEPS_BUILD_GLAD})
     ExternalProject_Add(glad
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_NATIVEFILEDIALOG})
-    ExternalProject_Add(nativefiledialog
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}

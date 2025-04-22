@@ -9,9 +9,6 @@
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/SynchronizedValue.h>
 
-#ifndef EMSCRIPTEN
-    #include <nfd.h>
-#endif
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
@@ -143,63 +140,6 @@ void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
 void osc::set_initial_directory_to_show_fallback(std::nullopt_t)
 {
     g_initial_directory_to_show_fallback.lock()->reset();
-}
-
-std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add_extension_if_necessary(
-    std::optional<std::string_view> maybe_extension,
-    std::optional<std::filesystem::path> maybe_initial_directory_to_open)
-{
-#ifdef EMSCRIPTEN
-    static_cast<void>(maybe_extension);
-    static_cast<void>(maybe_initial_directory_to_open);
-    return std::nullopt;
-#else
-    if (maybe_extension) {
-        OSC_ASSERT(not contains(*maybe_extension, ',') && "can only provide one extension to this implementation!");
-    }
-    if (not maybe_initial_directory_to_open) {
-        // defer to the application-wide fallback, if set
-        maybe_initial_directory_to_open = get_initial_directory_to_show_fallback();
-    }
-
-    auto [path, result] = [&]()
-    {
-        nfdchar_t* ptr = nullptr;
-        const nfdresult_t res = NFD_SaveDialog(
-            maybe_extension ? std::string{*maybe_extension}.c_str() : nullptr,
-            maybe_initial_directory_to_open ? maybe_initial_directory_to_open->string().c_str() : nullptr,
-            &ptr
-        );
-        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>{
-            std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
-            res,
-        };
-    }();
-
-    if (result != NFD_OKAY) {
-        return std::nullopt;
-    }
-
-    static_assert(std::is_same_v<nfdchar_t, char>);
-    auto p = std::filesystem::weakly_canonical(path.get());
-
-    if (maybe_extension) {
-        // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
-        //
-        // the caller only provides the extension without the dot (this is what
-        // NFD requires) but the user may have manually written a string that is
-        // suffixed with the dot-less version of the extension (e.g. "somecsv")
-
-        std::stringstream full_extension;
-        full_extension << "." << *maybe_extension;
-        if (!std::string_view{path.get()}.ends_with(full_extension.str())) {
-            p += full_extension.str();
-        }
-    }
-
-    set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
-    return p;
-#endif
 }
 
 std::string osc::errno_to_string_threadsafe()

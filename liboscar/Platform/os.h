@@ -82,28 +82,6 @@ namespace osc
     void set_initial_directory_to_show_fallback(const std::filesystem::path&);
     void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
-    // synchronously prompt a user to select a file location for where to save a file
-    //
-    // - `maybe_extension` can be:
-    //   - std::nullopt, meaning "don't filter by extension"
-    //   - or a single extension (e.g. "blend")
-    //   - (you can't use multiple extensions with this method)
-    //
-    // - `maybe_initial_directory_to_open` can be:
-    //   - std::nullopt, meaning "use a system-defined default"
-    //   - a directory to initially show to the user when the prompt opens
-    //
-    // - if the user manually types a filename without an extension (e.g. "model"), the implementation will add `extension`
-    //   (if not std::nullopt) to the end of the user's string. It detects a lack of extension by searching the end of the user
-    //   -supplied string for the given extension (if supplied)
-    //
-    // returns std::nullopt if the user doesn't select a file; otherwise, returns the user-selected save location--including the extension--if
-    // the user selects a location
-    std::optional<std::filesystem::path> prompt_user_for_file_save_location_add_extension_if_necessary(
-        std::optional<std::string_view> maybe_extension = std::nullopt,
-        std::optional<std::filesystem::path> maybe_initial_directory_to_open = std::nullopt
-    );
-
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`
     // flag
