@@ -1025,6 +1025,21 @@ public:
         SDL_PushEvent(&e);  // Push the event onto the main thread's event queue (i.e. marshal it).
     }
 
+    std::optional<std::filesystem::path> get_initial_directory_to_show_fallback()
+    {
+        return initial_directory_to_show_fallback_;
+    }
+
+    void set_initial_directory_to_show_fallback(const std::filesystem::path& p)
+    {
+        initial_directory_to_show_fallback_ = p;
+    }
+
+    void set_initial_directory_to_show_fallback(std::nullopt_t)
+    {
+        initial_directory_to_show_fallback_.reset();
+    }
+
     void prompt_user_to_select_file_async(
         std::function<void(FileDialogResponse)> callback,
         std::span<const FileDialogFilter> filters,
@@ -1623,6 +1638,11 @@ private:
         metadata_.application_name()
     );
 
+    // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
+    // file dialog system with a hint of where the user probably expects the next dialog to
+    // open
+    std::optional<std::filesystem::path> initial_directory_to_show_fallback_;
+
     // ensures that the global application log is configured according to the
     // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
@@ -1826,6 +1846,21 @@ Vec2 osc::App::window_position(WindowID window_id) const
 void osc::App::request_invoke_on_main_thread(std::function<void()> callback)
 {
     impl_->request_invoke_on_main_thread(std::move(callback));
+}
+
+std::optional<std::filesystem::path> osc::App::get_initial_directory_to_show_fallback()
+{
+    return impl_->get_initial_directory_to_show_fallback();
+}
+
+void osc::App::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
+{
+    impl_->set_initial_directory_to_show_fallback(p);
+}
+
+void osc::App::set_initial_directory_to_show_fallback(std::nullopt_t)
+{
+    impl_->set_initial_directory_to_show_fallback(std::nullopt);
 }
 
 void osc::App::prompt_user_to_select_file_async(

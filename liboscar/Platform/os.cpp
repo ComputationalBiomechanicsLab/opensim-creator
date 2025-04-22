@@ -39,11 +39,6 @@ namespace
     // be able to have data passed to them
     constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-    // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
-    // file dialog system with a hint of where the user probably expects the next dialog to
-    // open
-    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, const char* p)
     {
         // nullptr disallowed
@@ -124,22 +119,6 @@ bool osc::set_clipboard_text(std::string_view content)
 void osc::set_environment_variable(std::string_view name, std::string_view value, bool overwrite)
 {
     SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
-}
-
-std::optional<std::filesystem::path> osc::get_initial_directory_to_show_fallback()
-{
-    return *g_initial_directory_to_show_fallback.lock();
-}
-
-void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
-{
-    auto guard = g_initial_directory_to_show_fallback.lock();
-    *guard = p;
-}
-
-void osc::set_initial_directory_to_show_fallback(std::nullopt_t)
-{
-    g_initial_directory_to_show_fallback.lock()->reset();
 }
 
 std::string osc::errno_to_string_threadsafe()

@@ -234,6 +234,18 @@ namespace osc
         // able to process all events.
         void request_invoke_on_main_thread(std::function<void()>);
 
+        // Gets/sets the directory that should be shown to the user if a call to one of the
+        // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
+        // fallback isn't provided, the implementation will fallback to whatever the
+        // OS's default behavior is (typically, it remembers the user's last usage).
+        //
+        // This fallback is activated until a call to `prompt_user*` is made without the
+        // user cancelling out of the dialog (i.e. if the user cancels then this fallback
+        // will remain in-place).
+        std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
+        void set_initial_directory_to_show_fallback(const std::filesystem::path&);
+        void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
+
         // Prompts the user to select file(s) that they would like to open.
         //
         // - `callback` is called from the ui thread by the implementation when the user chooses

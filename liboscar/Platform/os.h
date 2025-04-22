@@ -4,13 +4,9 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
-#include <initializer_list>
-#include <optional>
-#include <span>
 #include <string_view>
 #include <string>
 #include <utility>
-#include <vector>
 
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc
@@ -68,19 +64,6 @@ namespace osc
     // it will only set the environment variable if no environment variable with
     // `name` exists
     void set_environment_variable(std::string_view name, std::string_view value, bool overwrite);
-
-    std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
-
-    // Sets the directory that should be shown to the user if a call to one of the
-    // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
-    // global fallback isn't provided, the implementation will fallback to whatever the
-    // OS's default behavior is (typically, it remembers the user's last usage).
-    //
-    // This global fallback is activated until a call to `prompt_user*` is made without
-    // the user cancelling out of the dialog (i.e. if the user cancels then this fallback
-    // will remain in-place).
-    void set_initial_directory_to_show_fallback(const std::filesystem::path&);
-    void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

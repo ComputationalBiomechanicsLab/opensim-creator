@@ -330,7 +330,7 @@ public:
                 if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
-                        set_initial_directory_to_show_fallback(parentDirectory);
+                        App::upd().set_initial_directory_to_show_fallback(parentDirectory);
                     }
                 }
 
