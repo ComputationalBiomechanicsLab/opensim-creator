@@ -38,13 +38,17 @@ namespace
 
         // Asynchronously prompt the user to select a save location and write the CSV
         // to it. If requested, open it in the user's default application.
-        App::upd().prompt_user_to_save_file_with_specific_extension([openInDefaultApp, csv = std::move(ss).str()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([openInDefaultApp, csv = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
             // Open+write output file
             {
-                std::ofstream ofs{p};
+                std::ofstream ofs{*p};
                 if (not ofs) {
-                    log_error("%s: error opening file for writing", p.string().c_str());
+                    log_error("%s: error opening file for writing", p->string().c_str());
                     return;  // error opening output file for writing
                 }
 
@@ -52,7 +56,7 @@ namespace
             }
 
             if (openInDefaultApp) {
-                open_file_in_os_default_application(p);
+                open_file_in_os_default_application(*p);
             }
         }, "csv");
     }

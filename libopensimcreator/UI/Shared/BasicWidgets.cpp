@@ -72,11 +72,15 @@ namespace
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
     void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
-        App::upd().prompt_user_to_save_file_with_specific_extension([scene = std::vector(scene.begin(), scene.end())](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([scene = std::vector(scene.begin(), scene.end())](std::optional<std::filesystem::path> p)
         {
-            std::ofstream outfile{p};
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            std::ofstream outfile{*p};
             if (not outfile) {
-                log_error("cannot save to %s: IO error", p.string().c_str());
+                log_error("cannot save to %s: IO error", p->string().c_str());
                 return;
             }
 
@@ -86,7 +90,7 @@ namespace
             };
 
             write_as_dae(outfile, scene, daeMetadata);
-            log_info("wrote scene as a DAE file to %s", p.string().c_str());
+            log_info("wrote scene as a DAE file to %s", p->string().c_str());
         }, "dae");
     }
 
@@ -205,13 +209,17 @@ namespace
         }
 
         // Asynchronously prompt the user and write the data
-        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
             // write transformed mesh to output
-            std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
             if (not ofs) {
                 const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
                 return;
             }
 
@@ -243,17 +251,21 @@ namespace
         }
 
         // Asynchronously prompt the user for a save location and write the content to it.
-        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
-                // write transformed mesh to output
-                std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-                if (not ofs) {
-                    const std::string error = errno_to_string_threadsafe();
-                    log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
-                    return;
-                }
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-                ofs << content;
+            // write transformed mesh to output
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
+                return;
+            }
+
+            ofs << content;
         }, "stl");
     }
 

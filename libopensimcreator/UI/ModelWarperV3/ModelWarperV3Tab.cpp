@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string_view>
@@ -1958,9 +1959,12 @@ namespace
             }
 
             // Else: prompt the user to save it
-            App::upd().prompt_user_to_save_file_with_specific_extension([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::filesystem::path p)
+            App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::optional<std::filesystem::path> p)
             {
-                doc->saveTo(p);
+                if (not p) {
+                    return;  // user cancalled out of the prompt
+                }
+                doc->saveTo(*p);
             }, "xml");
         }
 

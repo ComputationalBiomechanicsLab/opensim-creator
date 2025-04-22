@@ -1355,13 +1355,17 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        App::upd().prompt_user_to_save_file_with_specific_extension([mesh](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
         {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
             // write transformed mesh to output
-            std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
             if (not ofs) {
                 const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
                 return;
             }
 
@@ -1377,13 +1381,17 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        App::upd().prompt_user_to_save_file_with_specific_extension([mesh](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
         {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
             // write transformed mesh to output
-            std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
             if (not ofs) {
                 const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p.string().c_str(), error.c_str());
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
                 return;
             }
 

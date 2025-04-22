@@ -273,9 +273,13 @@ void osc::ActionSaveLandmarksToCSV(
     TPSDocumentInputIdentifier which,
     lm::LandmarkCSVFlags flags)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([pairs = doc.landmarkPairs, which, flags](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([pairs = doc.landmarkPairs, which, flags](std::optional<std::filesystem::path> p)
     {
-        std::ofstream fout{p};
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        std::ofstream fout{*p};
         if (not fout) {
             return;  // couldn't open file for writing
         }
@@ -297,9 +301,13 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
     const TPSDocument& doc,
     lm::LandmarkCSVFlags flags)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([nplms = doc.nonParticipatingLandmarks, flags](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([nplms = doc.nonParticipatingLandmarks, flags](std::optional<std::filesystem::path> p)
     {
-        std::ofstream fout{p};
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        std::ofstream fout{*p};
         if (not fout) {
             return;  // couldn't open file for writing
         }
@@ -318,9 +326,12 @@ void osc::ActionSaveNonParticipatingLandmarksToCSV(
 
 void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([pairs = GetNamedLandmarkPairs(doc), flags](std::filesystem::path path)
+    App::upd().prompt_user_to_save_file_with_extension_async([pairs = GetNamedLandmarkPairs(doc), flags](std::optional<std::filesystem::path> maybePath)
     {
-        std::ofstream fout{path};
+        if (not maybePath) {
+            return;  // user cancelled out of the prompt
+        }
+        std::ofstream fout{*maybePath};
         if (not fout) {
             return;  // couldn't open file for writing
         }
@@ -361,9 +372,12 @@ void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSV
 
 void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([mesh, flags](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([mesh, flags](std::optional<std::filesystem::path> p)
     {
-        std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+        std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
         if (not ofs) {
             return;  // couldn't open for writing
         }
@@ -378,9 +392,13 @@ void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 
 void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([mesh](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
     {
-        std::ofstream ofs{p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
         if (not ofs) {
             return;  // couldn't open for writing
         }
@@ -400,12 +418,16 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
 {
     const auto span = cache.getWarpedNonParticipatingLandmarkLocations(doc);
 
-    App::upd().prompt_user_to_save_file_with_specific_extension([
+    App::upd().prompt_user_to_save_file_with_extension_async([
         warpedNplms = std::vector<Vec3>(span.begin(), span.end()),
         nplms = doc.nonParticipatingLandmarks,
-        flags](std::filesystem::path p)
+        flags](std::optional<std::filesystem::path> p)
     {
-        std::ofstream fout{p};
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        std::ofstream fout{*p};
         if (not fout) {
             return;  // couldn't open file for writing
         }

@@ -153,10 +153,14 @@ namespace osc::mi
         std::future<TabSaveResult> exportAsModelGraphAsOsimFile()
         {
             auto promise = std::make_shared<std::promise<TabSaveResult>>();
-            App::upd().prompt_user_to_save_file_with_specific_extension([promise, ptr = shared_from_this()](std::filesystem::path p)
+            App::upd().prompt_user_to_save_file_with_extension_async([promise, ptr = shared_from_this()](std::optional<std::filesystem::path> p)
             {
+                if (not p) {
+                    promise->set_value(TabSaveResult::Cancelled);
+                    return;  // user cancelled out of the prompt
+                }
                 try {
-                    ptr->exportModelGraphTo(p);
+                    ptr->exportModelGraphTo(*p);
                     promise->set_value(TabSaveResult::Done);
                 }
                 catch (const std::exception&) {

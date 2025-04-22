@@ -156,9 +156,13 @@ private:
         std::stringstream ss;
         writeOutputsAsCSV(ss);
 
-        App::upd().prompt_user_to_save_file_with_specific_extension([content = std::move(ss).str()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
-            std::ofstream ofs{p};
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            std::ofstream ofs{*p};
             if (not ofs) {
                 return;  // IO error (can't write to that location?)
             }

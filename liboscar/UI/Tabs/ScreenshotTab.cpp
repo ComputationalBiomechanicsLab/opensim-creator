@@ -176,14 +176,18 @@ private:
 
     void action_try_save_annotated_screenshot()
     {
-        App::upd().prompt_user_to_save_file_with_specific_extension([screenshot = render_annotated_screenshot()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([screenshot = render_annotated_screenshot()](std::optional<std::filesystem::path> p)
         {
-            std::ofstream fout{p, std::ios_base::binary};
+            if (not p) {
+                return;  // User cancelled out.
+            }
+
+            std::ofstream fout{*p, std::ios_base::binary};
             if (not fout) {
-                throw std::runtime_error{p.string() + ": cannot open for writing"};
+                throw std::runtime_error{p->string() + ": cannot open for writing"};
             }
             write_to_png(screenshot, fout);
-            open_file_in_os_default_application(p);
+            open_file_in_os_default_application(*p);
         }, "png");
     }
 

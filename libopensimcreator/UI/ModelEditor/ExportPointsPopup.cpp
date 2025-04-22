@@ -523,11 +523,15 @@ namespace
         );
 
         // Asynchronously prompt the user for a save location and write the CSV to it.
-        App::upd().prompt_user_to_save_file_with_specific_extension([csv = std::move(ss).str()](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([csv = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
             std::ofstream ofs;
             if (not ofs) {
-                log_error("%s: error opening file for writing", p.string().c_str());
+                log_error("%s: error opening file for writing", p->string().c_str());
                 return;
             }
             ofs << csv;

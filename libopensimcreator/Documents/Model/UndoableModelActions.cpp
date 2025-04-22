@@ -237,22 +237,26 @@ namespace
 
 void osc::ActionSaveCurrentModelAs(std::shared_ptr<IModelStatePair> uim)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([uim](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([uim](std::optional<std::filesystem::path> p)
     {
-        if (not TrySaveModel(uim->getModel(), p.string())) {
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        if (not TrySaveModel(uim->getModel(), p->string())) {
             return;  // error saving the model file
         }
 
         const std::string oldPath = uim->getModel().getInputFileName();
 
-        uim->updModel().setInputFileName(p.string());
+        uim->updModel().setInputFileName(p->string());
 
         if (p != oldPath) {
             uim->commit("changed osim path");
         }
-        uim->setUpToDateWithFilesystem(std::filesystem::last_write_time(p));
+        uim->setUpToDateWithFilesystem(std::filesystem::last_write_time(*p));
 
-        App::singleton<RecentFiles>()->push_back(p);
+        App::singleton<RecentFiles>()->push_back(*p);
     }, "osim");
 }
 
@@ -309,7 +313,7 @@ void osc::ActionSaveModelAsync(
         //
         // we can save over this document - *IF* it's not an example file
         if (IsAnExampleFile(backing_path)) {
-            App::upd().try_prompt_user_to_save_file_with_specific_extension(std::move(handle_file), "osim");
+            App::upd().prompt_user_to_save_file_with_extension_async(std::move(handle_file), "osim");
         }
         else {
             handle_file(backing_path);
@@ -318,7 +322,7 @@ void osc::ActionSaveModelAsync(
     else {
         // the model has no associated file, so prompt the user for a save
         // location
-        App::upd().try_prompt_user_to_save_file_with_specific_extension(std::move(handle_file), "osim");
+        App::upd().prompt_user_to_save_file_with_extension_async(std::move(handle_file), "osim");
     }
 }
 
@@ -2298,13 +2302,17 @@ bool osc::ActionImportLandmarks(
 
 void osc::ActionExportModelGraphToDotviz(std::shared_ptr<IModelStatePair> model)
 {
-    App::upd().prompt_user_to_save_file_with_specific_extension([model](std::filesystem::path p)
+    App::upd().prompt_user_to_save_file_with_extension_async([model](std::optional<std::filesystem::path> p)
     {
-        if (std::ofstream of{p}) {
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+
+        if (std::ofstream of{*p}) {
             WriteComponentTopologyGraphAsDotViz(model->getModel(), of);
         }
         else {
-            log_error("error opening %s for writing", p.string().c_str());
+            log_error("error opening %s for writing", p->string().c_str());
         }
     }, "dot");
 }

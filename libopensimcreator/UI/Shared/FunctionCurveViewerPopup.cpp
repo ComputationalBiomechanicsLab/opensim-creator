@@ -187,9 +187,13 @@ private:
 
     void onUserRequestedCSVExport()
     {
-        App::upd().prompt_user_to_save_file_with_specific_extension([points = m_PlotPoints](std::filesystem::path p)
+        App::upd().prompt_user_to_save_file_with_extension_async([points = m_PlotPoints](std::optional<std::filesystem::path> p)
         {
-            std::ofstream ostream{p};
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+
+            std::ofstream ostream{*p};
             if (not ostream) {
                 return;  // error opening the output file for writing
             }
