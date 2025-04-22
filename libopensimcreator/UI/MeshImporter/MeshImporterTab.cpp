@@ -66,15 +66,18 @@
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <memory>
 #include <optional>
 #include <span>
 #include <sstream>
-#include <string>
 #include <string_view>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+using namespace osc;
 
 // mesh importer tab implementation
 class osc::mi::MeshImporterTab::Impl final :
@@ -103,17 +106,15 @@ public:
         return !m_Shared->isModelGraphUpToDateWithDisk();
     }
 
-    bool trySave()
+    std::future<TabSaveResult> trySave()
     {
-        if (m_Shared->isModelGraphUpToDateWithDisk())
-        {
-            // nothing to save
-            return true;
+        if (m_Shared->isModelGraphUpToDateWithDisk()) {
+            std::promise<TabSaveResult> promise;
+            promise.set_value(TabSaveResult::Done);
+            return promise.get_future();
         }
-        else
-        {
-            // try to save the changes
-            return m_Shared->exportAsModelGraphAsOsimFile();
+        else {
+            return m_Shared->exportModelGraphAsOsimFile();
         }
     }
 
@@ -2417,7 +2418,7 @@ osc::mi::MeshImporterTab::MeshImporterTab(
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}
 {}
 bool osc::mi::MeshImporterTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
-bool osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }
+std::future<TabSaveResult> osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }
 void osc::mi::MeshImporterTab::impl_on_mount() { private_data().on_mount(); }
 void osc::mi::MeshImporterTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::mi::MeshImporterTab::impl_on_event(Event& e) { return private_data().onEvent(e); }

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <liboscar/Platform/Widget.h>
+#include <liboscar/UI/Tabs/TabSaveResult.h>
 #include <liboscar/Utils/UID.h>
 
 #include <memory>
+#include <future>
 
 namespace osc { class TabPrivate; }
 
@@ -13,7 +15,7 @@ namespace osc
     public:
         UID id() const;
         bool is_unsaved() const { return impl_is_unsaved(); }
-        bool try_save() { return impl_try_save(); }
+        std::future<TabSaveResult> try_save() { return impl_try_save(); }
         void on_draw_main_menu() { impl_on_draw_main_menu(); }
 
     protected:
@@ -21,8 +23,22 @@ namespace osc
 
         OSC_WIDGET_DATA_GETTERS(TabPrivate);
     private:
+        // Implementors should return `true` if the contents of the `Tab`
+        // are "unsaved". The `Tab`-managing implementation may then use
+        // this to figure out whether it needs to schedule a call `try_save`
+        // or not.
         virtual bool impl_is_unsaved() const { return false; }
-        virtual bool impl_try_save() { return true; }
+
+        // Implementors should return a `std::future<bool>` that yields
+        // its result once the save operation, which may be asynchronous,
+        // yields a result. The result yielded via the future should be
+        // `true` if the save operation was sucessful; otherwise, it
+        // should be `false`.
+        //
+        // By default, returns a `std::future<bool>` that immediately yields
+        // `TabSaveResult::Done`.
+        virtual std::future<TabSaveResult> impl_try_save();
+
         virtual void impl_on_draw_main_menu() {}
     };
 }

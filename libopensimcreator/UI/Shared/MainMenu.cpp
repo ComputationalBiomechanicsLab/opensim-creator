@@ -126,7 +126,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
             ActionSaveCurrentModelAs(undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
-            ActionSaveModel(*undoableModel);
+            ActionSaveModelAsync(undoableModel);
         }
         else if (undoableModel and ui::is_key_pressed(Key::F5)) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
@@ -191,7 +191,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save", KeyModifier::Ctrl | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveModel(*undoableModel);
+            ActionSaveModelAsync(undoableModel);
         }
     }
 

@@ -53,7 +53,7 @@ private:
         ui::same_line();
         DrawOpenModelButtonWithRecentFilesDropdown(owner());
         ui::same_line();
-        DrawSaveModelButton(*m_Model);
+        DrawSaveModelButton(m_Model);
         ui::same_line();
         DrawReloadModelButton(*m_Model);
     }

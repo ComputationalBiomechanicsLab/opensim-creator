@@ -114,33 +114,6 @@ namespace
         return is_subpath(App::resource_filepath("OpenSimCreator/models"), path);
     }
 
-    std::optional<std::string> TryGetModelSaveLocation(const OpenSim::Model& m)
-    {
-        if (const std::string& backing_path = m.getInputFileName();
-            !backing_path.empty() && backing_path != "Unassigned")
-        {
-            // the model has an associated file
-            //
-            // we can save over this document - *IF* it's not an example file
-            if (IsAnExampleFile(backing_path))
-            {
-                const std::optional<std::filesystem::path> maybePath = prompt_user_for_file_save_location_add_extension_if_necessary("osim");
-                return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
-            }
-            else
-            {
-                return backing_path;
-            }
-        }
-        else
-        {
-            // the model has no associated file, so prompt the user for a save
-            // location
-            const std::optional<std::filesystem::path> maybePath = prompt_user_for_file_save_location_add_extension_if_necessary("osim");
-            return maybePath ? std::optional<std::string>{maybePath->string()} : std::nullopt;
-        }
-    }
-
     bool TrySaveModel(const OpenSim::Model& model, const std::string& save_loc)
     {
         try
@@ -154,6 +127,11 @@ namespace
             log_error("error saving model: %s", ex.what());
             return false;
         }
+    }
+
+    bool TrySaveModel(const OpenSim::Model& model, const std::filesystem::path& save_loc)
+    {
+        return TrySaveModel(model, save_loc.string());
     }
 
     // create a "standard" OpenSim::Joint
@@ -294,28 +272,54 @@ void osc::ActionOpenModel(Widget& api, const std::filesystem::path& path)
     OpenOsimInLoadingTab(api, path);
 }
 
-bool osc::ActionSaveModel(IModelStatePair& model)
+void osc::ActionSaveModelAsync(
+    const std::shared_ptr<IModelStatePair>& model,
+    std::function<void(bool)> callback)
 {
-    const auto maybeUserSaveLoc = TryGetModelSaveLocation(model.getModel());
+    // Handling function that's passed to the dialog backend (if necessary)
+    std::function<void(std::optional<std::filesystem::path>)> handle_file = [callback = std::move(callback), model](std::optional<std::filesystem::path> p)
+    {
+        if (not p) {
+            callback(false);
+            return;  // user probably cancelled out
+        }
 
-    if (not maybeUserSaveLoc) {
-        return false;  // the user cancelled out of the prompt
+        if (not TrySaveModel(model->getModel(), *p)) {
+            callback(false);  // there was an error saving the model
+            return;
+        }
+
+        const std::string oldPath = model->getModel().getInputFileName();
+        model->updModel().setInputFileName(p->string());
+
+        if (p->string() != oldPath) {
+            model->commit("changed osim path");
+        }
+        model->setUpToDateWithFilesystem(std::filesystem::last_write_time(*p));
+
+        App::singleton<RecentFiles>()->push_back(*p);
+        callback(true);
+    };
+
+    // Now figure out how to actually get/handle the path...
+    if (const std::string& backing_path = model->getModel().getInputFileName();
+        not backing_path.empty() and backing_path != "Unassigned") {
+
+        // the model has an associated file
+        //
+        // we can save over this document - *IF* it's not an example file
+        if (IsAnExampleFile(backing_path)) {
+            App::upd().try_prompt_user_to_save_file_with_specific_extension(std::move(handle_file), "osim");
+        }
+        else {
+            handle_file(backing_path);
+        }
     }
-
-    if (not TrySaveModel(model.getModel(), *maybeUserSaveLoc)) {
-        return false;  // there was an error saving the model
+    else {
+        // the model has no associated file, so prompt the user for a save
+        // location
+        App::upd().try_prompt_user_to_save_file_with_specific_extension(std::move(handle_file), "osim");
     }
-
-    const std::string oldPath = model.getModel().getInputFileName();
-    model.updModel().setInputFileName(*maybeUserSaveLoc);
-
-    if (*maybeUserSaveLoc != oldPath) {
-        model.commit("changed osim path");
-    }
-    model.setUpToDateWithFilesystem(std::filesystem::last_write_time(*maybeUserSaveLoc));
-
-    App::singleton<RecentFiles>()->push_back(*maybeUserSaveLoc);
-    return true;
 }
 
 void osc::ActionTryDeleteSelectionFromEditedModel(IModelStatePair& uim)

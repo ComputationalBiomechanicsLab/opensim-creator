@@ -46,6 +46,7 @@
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
+#include <liboscar/UI/Tabs/TabSaveResult.h>
 #include <liboscar/UI/Widgets/LogViewer.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
@@ -58,12 +59,13 @@
 #include <cstddef>
 #include <exception>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <optional>
 #include <span>
 #include <sstream>
-#include <string>
 #include <string_view>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <variant>
@@ -148,27 +150,32 @@ namespace osc::mi
             );
         }
 
-        bool exportAsModelGraphAsOsimFile()
+        std::future<TabSaveResult> exportAsModelGraphAsOsimFile()
         {
-            const std::optional<std::filesystem::path> maybeExportPath =
-                prompt_user_for_file_save_location_add_extension_if_necessary("osim");
-
-            if (!maybeExportPath)
+            auto promise = std::make_shared<std::promise<TabSaveResult>>();
+            App::upd().prompt_user_to_save_file_with_specific_extension([promise, ptr = shared_from_this()](std::filesystem::path p)
             {
-                return false;  // user probably cancelled out
-            }
-
-            return exportModelGraphTo(*maybeExportPath);
+                try {
+                    ptr->exportModelGraphTo(p);
+                    promise->set_value(TabSaveResult::Done);
+                }
+                catch (const std::exception&) {
+                    promise->set_value(TabSaveResult::Cancelled);
+                }
+            }, "osim");
+            return promise->get_future();
         }
 
-        bool exportModelGraphAsOsimFile()
+        std::future<TabSaveResult> exportModelGraphAsOsimFile()
         {
-            if (m_MaybeModelGraphExportLocation.empty())
-            {
+            if (m_MaybeModelGraphExportLocation.empty()) {
                 return exportAsModelGraphAsOsimFile();
             }
-
-            return exportModelGraphTo(m_MaybeModelGraphExportLocation);
+            else {
+                std::promise<TabSaveResult> promise;
+                promise.set_value(exportModelGraphTo(m_MaybeModelGraphExportLocation) ? TabSaveResult::Done : TabSaveResult::Cancelled);
+                return promise.get_future();
+            }
         }
 
         bool isModelGraphUpToDateWithDisk() const
@@ -834,26 +841,21 @@ namespace osc::mi
             std::vector<std::string> issues;
             std::unique_ptr<OpenSim::Model> m;
 
-            try
-            {
+            try {
                 m = CreateOpenSimModelFromMeshImporterDocument(getModelGraph(), m_ModelCreationFlags, issues);
             }
-            catch (const std::exception& ex)
-            {
+            catch (const std::exception& ex) {
                 log_error("error occurred while trying to create an OpenSim model from the mesh editor scene: %s", ex.what());
             }
 
-            if (m)
-            {
+            if (m) {
                 m->print(exportPath.string());
                 m_MaybeModelGraphExportLocation = exportPath;
                 m_MaybeModelGraphExportedUID = m_ModelGraphSnapshots.head_id();
                 return true;
             }
-            else
-            {
-                for (const std::string& issue : issues)
-                {
+            else {
+                for (const std::string& issue : issues) {
                     log_error("%s", issue.c_str());
                 }
                 return false;

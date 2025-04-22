@@ -184,9 +184,15 @@ public:
         return !m_Model->isUpToDateWithFilesystem();
     }
 
-    bool trySave()
+    std::future<TabSaveResult> trySave()
     {
-        return ActionSaveModel(*m_Model);
+        auto promise = std::make_shared<std::promise<TabSaveResult>>();
+        std::future<TabSaveResult> future = promise->get_future();
+        ActionSaveModelAsync(m_Model, [promise](bool ok) mutable
+        {
+            promise->set_value(ok ? TabSaveResult::Done : TabSaveResult::Cancelled);
+        });
+        return future;
     }
 
     void on_mount()
@@ -479,7 +485,7 @@ osc::ModelEditorTab::ModelEditorTab(
     Tab{std::make_unique<Impl>(*this, parent_, std::move(model_))}
 {}
 bool osc::ModelEditorTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
-bool osc::ModelEditorTab::impl_try_save() { return private_data().trySave(); }
+std::future<TabSaveResult> osc::ModelEditorTab::impl_try_save() { return private_data().trySave(); }
 void osc::ModelEditorTab::impl_on_mount() { private_data().on_mount(); }
 void osc::ModelEditorTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::ModelEditorTab::impl_on_event(Event& e) { return private_data().on_event(e); }

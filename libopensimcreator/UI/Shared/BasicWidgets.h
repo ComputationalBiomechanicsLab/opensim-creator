@@ -264,7 +264,7 @@ namespace osc
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
     void DrawOpenModelButtonWithRecentFilesDropdown(Widget&);
-    void DrawSaveModelButton(IModelStatePair&);
+    void DrawSaveModelButton(const std::shared_ptr<IModelStatePair>&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(IModelStatePair&);
     void DrawRedoButton(IModelStatePair&);

@@ -319,6 +319,11 @@ namespace osc
             std::optional<std::string_view> maybe_extension = std::nullopt,
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
+        void try_prompt_user_to_save_file_with_specific_extension(
+            std::function<void(std::optional<std::filesystem::path>)> callback,
+            std::optional<std::string_view> maybe_extension = std::nullopt,
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
+        );
 
         // returns a sequence of all physical monitors associated with the windowing system that
         // this `App` is connected to.

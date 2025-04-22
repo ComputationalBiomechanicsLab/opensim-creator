@@ -1368,11 +1368,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
     });
 }
 
-void osc::DrawSaveModelButton(
-    IModelStatePair& model)
+void osc::DrawSaveModelButton(const std::shared_ptr<IModelStatePair>& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {
-        ActionSaveModel(model);
+        ActionSaveModelAsync(model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
 }

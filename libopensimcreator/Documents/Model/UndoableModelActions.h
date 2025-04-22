@@ -8,6 +8,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <span>
@@ -58,9 +59,12 @@ namespace osc
         const std::filesystem::path&
     );
 
-    // try to save the given model file to disk
-    bool ActionSaveModel(
-        IModelStatePair&
+    // Tries to to save the given model, potentially asynchronously, as an on-disk file
+    // then calls `callback` with `true` if the save was successful; otherwise, calls it
+    // with `false`.
+    void ActionSaveModelAsync(
+        const std::shared_ptr<IModelStatePair>&,
+        std::function<void(bool)> callback = [](bool){}
     );
 
     // try to delete an undoable-model's current selection
