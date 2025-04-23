@@ -1896,7 +1896,7 @@ namespace
                 }
 
                 App::upd().prompt_user_to_select_file_async(
-                    [state = shared_from_this()](FileDialogResponse response)
+                    [state = shared_from_this()](const FileDialogResponse& response)
                     {
                         if (not state) {
                             return;  // Something bad has happened.
@@ -1934,7 +1934,7 @@ namespace
             }
 
             App::upd().prompt_user_to_select_file_async(
-                [state = shared_from_this()](FileDialogResponse response)
+                [state = shared_from_this()](const FileDialogResponse& response)
                 {
                     if (not state) {
                         return;  // Can't continue.

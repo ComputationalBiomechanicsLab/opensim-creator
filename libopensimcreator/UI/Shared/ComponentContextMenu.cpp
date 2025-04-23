@@ -407,7 +407,7 @@ public:
         DrawRightClickedComponentContextMenuHeader(*c);
         DrawContextMenuSeparator();
 
-        DrawWatchOutputMenu(*c, [this](OutputExtractor outputExtractor)
+        DrawWatchOutputMenu(*c, [this](const OutputExtractor& outputExtractor)
         {
             m_Model->tryUpdEnvironment()->addUserOutputExtractor(outputExtractor);
 

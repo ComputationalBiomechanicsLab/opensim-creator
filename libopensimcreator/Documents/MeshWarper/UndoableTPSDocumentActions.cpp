@@ -195,11 +195,11 @@ void osc::ActionLoadMesh(
 }
 
 void osc::ActionLoadMeshFile(
-    std::shared_ptr<UndoableTPSDocument> doc,
+    const std::shared_ptr<UndoableTPSDocument>& doc,
     TPSDocumentInputIdentifier which)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc, which](FileDialogResponse response)
+        [doc, which](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or user somehow selected multiple options
@@ -211,11 +211,11 @@ void osc::ActionLoadMeshFile(
 }
 
 void osc::ActionLoadLandmarksFromCSV(
-    std::shared_ptr<UndoableTPSDocument> doc,
+    const std::shared_ptr<UndoableTPSDocument>& doc,
     TPSDocumentInputIdentifier which)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc, which](FileDialogResponse response)
+        [doc, which](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or user somehow selected multiple files.
@@ -240,10 +240,10 @@ void osc::ActionLoadLandmarksFromCSV(
     );
 }
 
-void osc::ActionLoadNonParticipatingLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument> doc)
+void osc::ActionLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>& doc)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc](FileDialogResponse response)
+        [doc](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or the user somehow selected more than one file.
@@ -273,7 +273,7 @@ void osc::ActionSaveLandmarksToCSV(
     TPSDocumentInputIdentifier which,
     lm::LandmarkCSVFlags flags)
 {
-    App::upd().prompt_user_to_save_file_with_extension_async([pairs = doc.landmarkPairs, which, flags](std::optional<std::filesystem::path> p)
+    App::upd().prompt_user_to_save_file_with_extension_async([pairs = doc.landmarkPairs, which, flags](std::optional<std::filesystem::path> p) mutable
     {
         if (not p) {
             return;  // user cancelled out of the prompt

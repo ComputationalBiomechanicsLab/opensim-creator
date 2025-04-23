@@ -195,7 +195,7 @@ private:
     void promptUserForGeometryFile()
     {
         App::upd().prompt_user_to_select_file_async(
-            [this, this_lifetime = this->lifetime_watcher()](FileDialogResponse response)
+            [this, this_lifetime = this->lifetime_watcher()](const FileDialogResponse& response)
             {
                 if (this_lifetime.expired()) {
                     return;  // `this` has expired

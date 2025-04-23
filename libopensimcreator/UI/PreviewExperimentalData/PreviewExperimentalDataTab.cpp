@@ -230,7 +230,7 @@ namespace
                 {
                     if (ui::draw_button("load model")) {
                         App::upd().prompt_user_to_select_file_async(
-                            [state = m_UiState](FileDialogResponse response)
+                            [state = m_UiState](const FileDialogResponse& response)
                             {
                                 if (response.size() != 1) {
                                     return;  // Error, cancellation, or more than one file somehow selected.
@@ -248,7 +248,7 @@ namespace
                     }
                     if (ui::draw_button("load model trajectory/states")) {
                         App::upd().prompt_user_to_select_file_async(
-                            [state = m_UiState](FileDialogResponse response)
+                            [state = m_UiState](const FileDialogResponse& response)
                             {
                                 if (response.size() != 1) {
                                     return;  // Error, cancellation, or more than one file somehow selected.
@@ -265,7 +265,7 @@ namespace
                     ui::same_line();
                     if (ui::draw_button("load raw data file")) {
                         App::upd().prompt_user_to_select_file_async(
-                            [state = m_UiState](FileDialogResponse response)
+                            [state = m_UiState](const FileDialogResponse& response)
                             {
                                 state->loadMotionFiles(response);
                             },
@@ -281,7 +281,7 @@ namespace
                     ui::same_line();
                     if (ui::draw_button("load OpenSim XML")) {
                         App::upd().prompt_user_to_select_file_async(
-                            [state = m_UiState](FileDialogResponse response)
+                            [state = m_UiState](const FileDialogResponse& response)
                             {
                                 state->loadXMLAsOpenSimDocument(response);
                             },

@@ -33,6 +33,7 @@ namespace osc { class AppMetadata; }
 namespace osc { class AppSettings; }
 namespace osc { class Cursor; }
 namespace osc { class Event; }
+namespace osc { class FileDialogResponse; }
 namespace osc { class Screen; }
 namespace osc { class Widget; }
 
@@ -260,13 +261,13 @@ namespace osc
         //   initially be shown to the user. If it isn't provided, then an implementation-defined
         //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
         void prompt_user_to_select_file_async(
-            std::function<void(FileDialogResponse)> callback,
+            std::function<void(FileDialogResponse&&)> callback,
             std::span<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
             bool allow_many = false
         );
         inline void prompt_user_to_select_file_async(
-            std::function<void(FileDialogResponse)> callback,
+            std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
             bool allow_many = false)
@@ -294,12 +295,12 @@ namespace osc
         //   initially be shown to the user. If it isn't provided, then an implementation-defined
         //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
         void prompt_user_to_save_file_async(
-            std::function<void(FileDialogResponse)> callback,
+            std::function<void(FileDialogResponse&&)> callback,
             std::span<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
         inline void prompt_user_to_save_file_async(
-            std::function<void(FileDialogResponse)> callback,
+            std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
         {

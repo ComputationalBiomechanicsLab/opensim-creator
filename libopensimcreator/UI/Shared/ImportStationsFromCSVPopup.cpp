@@ -203,7 +203,7 @@ private:
     void actionTryPromptingUserForCSVFile()
     {
         App::upd().prompt_user_to_select_file_async(
-            [this, this_lifetime = lifetime_watcher()](FileDialogResponse response)
+            [this, this_lifetime = lifetime_watcher()](const FileDialogResponse& response)
             {
                 if (this_lifetime.expired()) {
                     return;  // This UI widget has expired, so nothing to load it into.

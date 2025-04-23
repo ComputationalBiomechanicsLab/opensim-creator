@@ -64,13 +64,13 @@ namespace osc
     void ActionLoadMesh(UndoableTPSDocument&, const Mesh&, TPSDocumentInputIdentifier);
 
     // prompts the user to browse for an input mesh and assigns it to the document
-    void ActionLoadMeshFile(std::shared_ptr<UndoableTPSDocument>, TPSDocumentInputIdentifier);
+    void ActionLoadMeshFile(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
 
     // loads landmarks from a CSV file into source/destination slot of the document
-    void ActionLoadLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument>, TPSDocumentInputIdentifier);
+    void ActionLoadLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
 
     // loads non-participating landmarks from a CSV file into the source input
-    void ActionLoadNonParticipatingLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument>);
+    void ActionLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&);
 
     // saves all source/destination landmarks to a CSV file (matches loading)
     void ActionSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);

@@ -727,9 +727,9 @@ namespace
 
             // If there's an error, emit a `FileDialogResponse` that contains the error.
             if (not filelist) {
-                App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]()
+                App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{SDL_GetError()}]() mutable
                 {
-                    caller_callback(response);
+                    caller_callback(std::move(response));
                 });
                 return;
             }
@@ -743,16 +743,16 @@ namespace
 
             // Marshal the call to the user's callback onto the main thread by packing it
             // into an `AppMarshalledCallbackEvent`.
-            App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]()
+            App::upd().request_invoke_on_main_thread([caller_callback = std::move(state->caller_callback), response = FileDialogResponse{std::move(files)}]() mutable
             {
                 // Call the user's callback (the event's callback happens on the main thread).
-                caller_callback(response);
+                caller_callback(std::move(response));
             });
         }
 
         // Constructs the callback state that's stored in SDL3's dialog system.
         explicit SDL3CallbackState(
-            std::function<void(FileDialogResponse)>&& callback_,
+            std::function<void(FileDialogResponse&&)>&& callback_,
             std::span<const FileDialogFilter> filters_) :
             caller_callback{std::move(callback_)},
             caller_filters(filters_.begin(), filters_.end())
@@ -771,7 +771,7 @@ namespace
             }
         }
 
-        std::function<void(FileDialogResponse)> caller_callback;
+        std::function<void(FileDialogResponse&&)> caller_callback;
         std::vector<FileDialogFilter> caller_filters;
         std::vector<SDL_DialogFileFilter> sdl3_filters;
     };
@@ -1041,7 +1041,7 @@ public:
     }
 
     void prompt_user_to_select_file_async(
-        std::function<void(FileDialogResponse)> callback,
+        std::function<void(FileDialogResponse&&)> callback,
         std::span<const FileDialogFilter> filters,
         std::optional<std::filesystem::path> initial_directory_to_show,
         bool allow_many)
@@ -1075,7 +1075,7 @@ public:
     }
 
     void prompt_user_to_save_file_async(
-        std::function<void(FileDialogResponse)> callback,
+        std::function<void(FileDialogResponse&&)> callback,
         std::span<const FileDialogFilter> filters,
         std::optional<std::filesystem::path> initial_directory_to_show)
     {
@@ -1111,7 +1111,7 @@ public:
         std::optional<std::string_view> maybe_extension,
         std::optional<std::filesystem::path> initial_directory_to_show)
     {
-        auto inner_callback = [caller_callback = std::move(callback), maybe_extension](FileDialogResponse response)  // NOLINT(performance-unnecessary-value-param]
+        auto inner_callback = [caller_callback = std::move(callback), maybe_extension](FileDialogResponse&& response)  // NOLINT(cppcoreguidelines-rvalue-reference-param-not-moved)
         {
             if (response.has_error() or response.size() > 1) {
                 return;  // Error, or the user somehow selected >1 file.
@@ -1864,7 +1864,7 @@ void osc::App::set_initial_directory_to_show_fallback(std::nullopt_t)
 }
 
 void osc::App::prompt_user_to_select_file_async(
-    std::function<void(FileDialogResponse)> callback,
+    std::function<void(FileDialogResponse&&)> callback,
     std::span<const FileDialogFilter> filters,
     std::optional<std::filesystem::path> initial_directory_to_show,
     bool allow_many)
@@ -1878,7 +1878,7 @@ void osc::App::prompt_user_to_select_file_async(
 }
 
 void osc::App::prompt_user_to_save_file_async(
-    std::function<void(FileDialogResponse)> callback,
+    std::function<void(FileDialogResponse&&)> callback,
     std::span<const FileDialogFilter> filters,
     std::optional<std::filesystem::path> initial_directory_to_show)
 {

@@ -57,7 +57,7 @@ namespace
         // Asynchronously ask the user to select a motion file and then load the motion
         // file against the model and show the result in a new tab.
         App::upd().prompt_user_to_select_file_async(
-            [model, parent_ref = parent->weak_ref()](FileDialogResponse response)
+            [model, parent_ref = parent->weak_ref()](const FileDialogResponse& response)
             {
                 if (response.size() != 1) {
                     return;  // Error or user somehow selected too many files.

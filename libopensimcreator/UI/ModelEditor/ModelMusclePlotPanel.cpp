@@ -1388,7 +1388,7 @@ namespace
     void ActionPromptUserForCSVOverlayFile(const std::shared_ptr<PlotLines>& lines)
     {
         App::upd().prompt_user_to_select_file_async(
-            [lines](FileDialogResponse response)
+            [lines](const FileDialogResponse& response)
             {
                 if (response.size() != 1) {
                     return;  // Error, cancellation, or the user somehow selected more than one file.
