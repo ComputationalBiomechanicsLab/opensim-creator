@@ -6,8 +6,10 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Constants.h>
+#include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/HashHelpers.h>
 #include <liboscar/Utils/Perf.h>
 #include <OpenSim/Common/Component.h>
@@ -44,6 +46,16 @@ namespace
         ss << ']';
         return std::move(ss).str();
     }
+
+    OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)
+    {
+        static_assert(num_options<OutputExtractorDataType>() == 3);
+        switch (type) {
+        case OutputExtractorDataType::Float: return OutputValueExtractor::constant(quiet_nan_v<float>);
+        case OutputExtractorDataType::Vec2:  return OutputValueExtractor::constant(Vec2{quiet_nan_v<float>});
+        default:                             return OutputValueExtractor::constant(std::string{});
+        }
+    }
 }
 
 class osc::ComponentOutputExtractor::Impl final {
@@ -75,17 +87,13 @@ public:
     OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
     {
         const OutputExtractorDataType datatype = getOutputType();
-        const OutputValueExtractor nullExtractor = datatype == OutputExtractorDataType::Float ?
-            OutputValueExtractor::constant(quiet_nan_v<float>) :
-            OutputValueExtractor::constant(std::string{});
-
         const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 
         if (not ao) {
-            return nullExtractor;  // cannot find output
+            return MakeNullExtractor(datatype);  // cannot find output
         }
         if (typeid(*ao) != *m_OutputTypeid) {
-            return nullExtractor;  // output has changed
+            return MakeNullExtractor(datatype);  // output has changed
         }
 
         if (datatype == OutputExtractorDataType::Float) {

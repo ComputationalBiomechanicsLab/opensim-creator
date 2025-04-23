@@ -3274,15 +3274,14 @@ namespace
     public:
         template<typename Value>
         requires std::is_constructible_v<MaterialValueDataType, Value&&>
-        static MaterialValueStorage single(Value&& single_value)
-        {
-            return MaterialValueStorage{MaterialValueDataType{std::forward<Value>(single_value)}};
-        }
+        explicit MaterialValueStorage(Value&& single_value) :
+            data_{MaterialValueDataType{std::forward<Value>(single_value)}}
+        {}
 
-        static MaterialValueStorage array(std::span<const MaterialValueDataType> array_values)
+        explicit MaterialValueStorage(std::span<const MaterialValueDataType> array_values) :
+            data_{MaterialValueArray<MaterialValueDataType>(array_values)}
         {
             OSC_ASSERT_ALWAYS(not array_values.empty() && "an array of material values cannot be empty - you should `unset` the material property instead");
-            return MaterialValueStorage{MaterialValueArray<MaterialValueDataType>(array_values)};
         }
 
         friend bool operator==(const MaterialValueStorage&, const MaterialValueStorage&) = default;
@@ -3301,15 +3300,7 @@ namespace
             const size_t num_to_assign = min(max_els, all.size());
             return all.subspan(0, num_to_assign);
         }
-
     private:
-        explicit MaterialValueStorage(MaterialValueDataType&& value) :
-            data_{std::move(value)}
-        {}
-        explicit MaterialValueStorage(MaterialValueArray<MaterialValueDataType>&& values) :
-            data_{std::move(values)}
-        {}
-
         std::variant<MaterialValueDataType, MaterialValueArray<MaterialValueDataType>> data_;
     };
 
@@ -3320,15 +3311,19 @@ namespace
     }
 
     class MaterialValue {
+    private:
+        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
     public:
         template<typename Value>
-        MaterialValue(Value&& value) :
-            data_{MaterialValueStorage<std::remove_cvref_t<Value>>::single(std::forward<Value>(value))}
+        requires (not std::same_as<MaterialValue, std::remove_cvref_t<Value>> and std::constructible_from<MaterialValueStorage<std::remove_cvref_t<Value>>, Value&&>)
+        explicit MaterialValue(Value&& single_value) :
+            data_{MaterialValueStorage<std::remove_cvref_t<Value>>{std::forward<Value>(single_value)}}
         {}
 
         template<typename Value>
-        MaterialValue(std::span<const Value> array_values) :
-            data_{MaterialValueStorage<Value>::array(array_values)}
+        requires std::constructible_from<MaterialValueStorage<Value>, std::span<const Value>>
+        explicit MaterialValue(std::span<const Value> array_values) :
+            data_{MaterialValueStorage<Value>{array_values}}
         {}
 
         friend bool operator==(const MaterialValue&, const MaterialValue&) = default;
@@ -3378,7 +3373,6 @@ namespace
             return v->view_values();
         }
     private:
-        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
         MaterialValueVariant data_;
     };
 }
@@ -3598,13 +3592,13 @@ public:
     template<typename T, std::convertible_to<std::string_view> StringLike>
     void set(StringLike&& property_name, T&& value)
     {
-        values_.insert_or_assign(std::forward<StringLike>(property_name), std::forward<T>(value));
+        values_.insert_or_assign(std::forward<StringLike>(property_name), MaterialValue{std::forward<T>(value)});
     }
 
     template<typename T, std::convertible_to<std::string_view> StringLike>
     void set_array(StringLike&& property_name, std::span<const T> values)
     {
-        values_.insert_or_assign(std::forward<StringLike>(property_name), values);
+        values_.insert_or_assign(std::forward<StringLike>(property_name), MaterialValue{values});
     }
 
     template<std::convertible_to<std::string_view> StringLike>

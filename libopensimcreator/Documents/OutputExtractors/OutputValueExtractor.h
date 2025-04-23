@@ -19,7 +19,7 @@ namespace osc
     public:
         static OutputValueExtractor constant(Variant value)
         {
-            return OutputValueExtractor{[value](const SimulationReport&) { return value; }};
+            return OutputValueExtractor{std::move(value)};
         }
 
         explicit OutputValueExtractor(std::function<Variant(const SimulationReport&)> callback_) :
@@ -28,6 +28,10 @@ namespace osc
 
         Variant operator()(const SimulationReport& report) const { return m_Callback(report); }
     private:
+        explicit OutputValueExtractor(Variant value) :
+            m_Callback{[v = std::move(value)](const SimulationReport&) { return v; }}
+        {}
+
         std::function<Variant(const SimulationReport&)> m_Callback;
     };
 }

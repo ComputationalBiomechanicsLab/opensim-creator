@@ -1111,7 +1111,7 @@ public:
         std::optional<std::string_view> maybe_extension,
         std::optional<std::filesystem::path> initial_directory_to_show)
     {
-        auto inner_callback = [caller_callback = std::move(callback), maybe_extension](FileDialogResponse response)
+        auto inner_callback = [caller_callback = std::move(callback), maybe_extension](FileDialogResponse response)  // NOLINT(performance-unnecessary-value-param]
         {
             if (response.has_error() or response.size() > 1) {
                 return;  // Error, or the user somehow selected >1 file.
@@ -1892,7 +1892,7 @@ void osc::App::prompt_user_to_save_file_with_extension_async(
 {
     impl_->prompt_user_to_save_file_with_extension_async(
         std::move(callback),
-        std::move(maybe_extension),
+        maybe_extension,
         std::move(initial_directory_to_show)
     );
 }
