@@ -24,7 +24,9 @@ using namespace osc;
 
 namespace
 {
-    void handleDialogResponse(std::shared_ptr<IModelStatePair> model, FileDialogResponse response)
+    void handleDialogResponse(
+        const std::shared_ptr<IModelStatePair>& model,
+        FileDialogResponse response)
     {
         if (model->isReadonly()) {
             return;
@@ -77,7 +79,8 @@ namespace
     }
 }
 
-void osc::fd::ActionPromptUserToAddMeshFiles(std::shared_ptr<IModelStatePair> model)
+void osc::fd::ActionPromptUserToAddMeshFiles(
+    const std::shared_ptr<IModelStatePair>& model)
 {
     if (model->isReadonly()) {
         return;

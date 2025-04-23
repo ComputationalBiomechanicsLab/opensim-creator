@@ -1385,7 +1385,7 @@ namespace
 
     // a UI action in which the user in prompted for a CSV file that they would like to overlay
     // over the current plot
-    void ActionPromptUserForCSVOverlayFile(std::shared_ptr<PlotLines> lines)
+    void ActionPromptUserForCSVOverlayFile(const std::shared_ptr<PlotLines>& lines)
     {
         App::upd().prompt_user_to_select_file_async(
             [lines](FileDialogResponse response)

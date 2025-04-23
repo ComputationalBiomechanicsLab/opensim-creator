@@ -733,7 +733,7 @@ namespace
     }
 
     void DrawRightClickedNothingContextMenu(
-        std::shared_ptr<IModelStatePair> model)
+        const std::shared_ptr<IModelStatePair>& model)
     {
         DrawNothingRightClickedContextMenuHeader();
         DrawContextMenuSeparator();

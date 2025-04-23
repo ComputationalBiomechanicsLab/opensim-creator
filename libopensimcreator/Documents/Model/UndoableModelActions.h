@@ -40,7 +40,7 @@ namespace osc
 {
     // prompt the user for a save location and then save the model to the specified location
     void ActionSaveCurrentModelAs(
-        std::shared_ptr<IModelStatePair>
+        const std::shared_ptr<IModelStatePair>&
     );
 
     // create a new model and show it in a new tab
@@ -410,7 +410,7 @@ namespace osc
     bool ActionFitEllipsoidToMesh(IModelStatePair&, const OpenSim::Mesh&);
     bool ActionFitPlaneToMesh(IModelStatePair&, const OpenSim::Mesh&);
     bool ActionImportLandmarks(IModelStatePair&, std::span<const lm::NamedLandmark>, std::optional<std::string> maybeName);
-    void ActionExportModelGraphToDotviz(std::shared_ptr<IModelStatePair>);
+    void ActionExportModelGraphToDotviz(const std::shared_ptr<IModelStatePair>&);
     bool ActionExportModelGraphToDotvizClipboard(const OpenSim::Model&);
     bool ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model&);
     bool ActionBakeStationDefinedFrames(IModelStatePair&);

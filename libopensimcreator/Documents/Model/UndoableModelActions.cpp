@@ -235,7 +235,7 @@ namespace
     }
 }
 
-void osc::ActionSaveCurrentModelAs(std::shared_ptr<IModelStatePair> uim)
+void osc::ActionSaveCurrentModelAs(const std::shared_ptr<IModelStatePair>& uim)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([uim](std::optional<std::filesystem::path> p)
     {
@@ -2300,7 +2300,7 @@ bool osc::ActionImportLandmarks(
     }
 }
 
-void osc::ActionExportModelGraphToDotviz(std::shared_ptr<IModelStatePair> model)
+void osc::ActionExportModelGraphToDotviz(const std::shared_ptr<IModelStatePair>& model)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([model](std::optional<std::filesystem::path> p)
     {
