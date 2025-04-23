@@ -3815,7 +3815,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // important: necessary for multi-viewport gizmos
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const ScopeExit g{[]{ ImGuizmo::PopID(); }};
 
     // update last-frame cache
@@ -3828,7 +3828,6 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
         dimensions_of(screenspace_rect).y
     );
     ImGuizmo::SetDrawlist(draw_list);
-    ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station
     Mat4 delta_matrix;
@@ -3848,29 +3847,13 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     if (not gizmo_was_manipulated_by_user) {
         return std::nullopt;  // user is not interacting, so no changes to apply
     }
-    // else: figure out the local-space transform
 
-    // decompose the additional transformation into component parts
-    Vec3 world_translation{};
-    Vec3 world_rotation_in_degrees{};
-    Vec3 world_scale{};
-    ImGuizmo::DecomposeMatrixToComponents(
-        value_ptr(delta_matrix),
-        value_ptr(world_translation),
-        value_ptr(world_rotation_in_degrees),
-        value_ptr(world_scale)
-    );
-
-    return Transform{
-        .scale = world_scale,
-        .rotation = to_worldspace_rotation_quat(EulerAnglesIn<Degrees>{world_rotation_in_degrees}),
-        .position = world_translation,
-    };
+    return decompose_to_transform(delta_matrix);
 }
 
 bool osc::ui::Gizmo::is_using() const
 {
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const bool rv = ImGuizmo::IsUsing();
     ImGuizmo::PopID();
     return rv;
@@ -3878,7 +3861,7 @@ bool osc::ui::Gizmo::is_using() const
 
 bool osc::ui::Gizmo::is_over() const
 {
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const bool rv = ImGuizmo::IsOver();
     ImGuizmo::PopID();
     return rv;

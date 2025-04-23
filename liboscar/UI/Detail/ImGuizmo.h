@@ -46,13 +46,9 @@
 // that would be insanely impractical. The project's vcs (i.e. git) can be
 // used to track each change.
 
-struct ImGuiWindow;
+#include <liboscar/Utils/UID.h>
+
 struct ImDrawList;
-struct ImGuiContext;
-struct ImVec2;
-struct ImVec4;
-using ImGuiID = unsigned int;
-using ImU32 = unsigned int;
 
 namespace ImGuizmo
 {
@@ -90,7 +86,6 @@ namespace ImGuizmo
         WORLD
     };
 
-
     enum COLOR {
         DIRECTION_X,      // directionColor[0]
         DIRECTION_Y,      // directionColor[1]
@@ -122,12 +117,6 @@ namespace ImGuizmo
     // call BeginFrame right after ImGui_XXXX_NewFrame();
     void BeginFrame();
 
-    // this is necessary because when imguizmo is compiled into a dll, and imgui into another
-    // globals are not shared between them.
-    // More details at https://stackoverflow.com/questions/19373061/what-happens-to-global-and-static-variables-in-a-shared-library-when-it-is-dynam
-    // expose method to set imgui context
-    void SetImGuiContext(ImGuiContext* ctx);
-
     // return true if mouse cursor is over any gizmo control (axis, plan or screen component)
     bool IsOver();
 
@@ -147,22 +136,8 @@ namespace ImGuizmo
     // gizmo is rendered with gray half transparent color when disabled
     void Enable(bool enable);
 
-    // helper functions for manualy editing translation/rotation/scale with an input float
-    // translation, rotation and scale float points to 3 floats each
-    // Angles are in degrees (more suitable for human editing)
-    // example:
-    // float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    // ImGuizmo::DecomposeMatrixToComponents(gizmoMatrix.m16, matrixTranslation, matrixRotation, matrixScale);
-    // ImGui::InputFloat3("Tr", matrixTranslation, 3);
-    // ImGui::InputFloat3("Rt", matrixRotation, 3);
-    // ImGui::InputFloat3("Sc", matrixScale, 3);
-    // ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, gizmoMatrix.m16);
-    //
-    // These functions have some numerical stability issues for now. Use with caution.
-    void DecomposeMatrixToComponents(const float* matrix, float* translation, float* rotation, float* scale);
-    void RecomposeMatrixFromComponents(const float* translation, const float* rotation, const float* scale, float* matrix);
-
     void SetRect(float x, float y, float width, float height);
+
     // default is false
     void SetOrthographic(bool isOrthographic);
 
@@ -170,36 +145,23 @@ namespace ImGuizmo
     // Needs view and projection matrices.
     // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
     // translation is applied in world space
-    bool Manipulate(const float* view, const float* projection, OPERATION operation, MODE mode, float* matrix, float* deltaMatrix = NULL, const float* snap = NULL, const float* localBounds = NULL, const float* boundsSnap = NULL);
+    bool Manipulate(
+        const float* view,
+        const float* projection,
+        OPERATION operation,
+        MODE mode,
+        float* matrix,
+        float* deltaMatrix = NULL,
+        const float* snap = NULL,
+        const float* localBounds = NULL,
+        const float* boundsSnap = NULL
+    );
 
-    void SetAlternativeWindow(ImGuiWindow* window);
-
-    // ID stack/scopes
-    // Read the FAQ (docs/FAQ.md or http://dearimgui.org/faq) for more details about how ID are handled in dear imgui.
-    // - Those questions are answered and impacted by understanding of the ID stack system:
-    //   - "Q: Why is my widget not reacting when I click on it?"
-    //   - "Q: How can I have widgets with an empty label?"
-    //   - "Q: How can I have multiple widgets with the same label?"
-    // - Short version: ID are hashes of the entire ID stack. If you are creating widgets in a loop you most likely
-    //   want to push a unique identifier (e.g. object pointer, loop index) to uniquely differentiate them.
-    // - You can also use the "Label##foobar" syntax within widget label to distinguish them from each others.
-    // - In this header file we use the "label"/"name" terminology to denote a string that will be displayed + used as an ID,
-    //   whereas "str_id" denote a string that is only used as an ID and not normally displayed.
-    void          PushID(const char* str_id);                                     // push string into the ID stack (will hash string).
-    void          PushID(const char* str_id_begin, const char* str_id_end);       // push string into the ID stack (will hash string).
-    void          PushID(const void* ptr_id);                                     // push pointer into the ID stack (will hash pointer).
-    void          PushID(int int_id);                                             // push integer into the ID stack (will hash integer).
+    // Push/Pop IDs from ImGuizmo's local ID stack
+    void          PushID(osc::UID);
     void          PopID();                                                        // pop from the ID stack.
-    ImGuiID       GetID(const char* str_id);                                      // calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself
-    ImGuiID       GetID(const char* str_id_begin, const char* str_id_end);
-    ImGuiID       GetID(const void* ptr_id);
 
     void SetGizmoSizeClipSpace(float value);
-
-    // Allow axis to flip
-    // When true (default), the guizmo axis flip for better visibility
-    // When false, they always stay along the positive world/local axis
-    void AllowAxisFlip(bool value);
 
     // Configure the limit where axis are hidden
     void SetAxisLimit(float value);

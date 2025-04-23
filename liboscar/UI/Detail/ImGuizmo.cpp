@@ -53,6 +53,7 @@
 #include "imgui_internal.h"
 #include "ImGuizmo.h"
 
+#include <functional>
 #include <limits>
 #include <vector>
 
@@ -60,17 +61,55 @@ using namespace ImGuizmo;
 
 namespace
 {
+    struct Context;
+    constinit Context* gCurrentContext = nullptr;
+
+    constexpr float ZPI = 3.14159265358979323846f;
+    constexpr float RAD2DEG = (180.f / ZPI);
+    constexpr float DEG2RAD = (ZPI / 180.f);
+    constexpr float screenRotateSize = 0.06f;
+    // scale a bit so translate axis do not touch when in universal
+    constexpr float rotationDisplayFactor = 1.2f;
+    const char* translationInfoMask[] = {
+        "X : %5.3f",
+        "Y : %5.3f",
+        "Z : %5.3f",
+        "Y : %5.3f Z : %5.3f",
+        "X : %5.3f Z : %5.3f",
+        "X : %5.3f Y : %5.3f",
+        "X : %5.3f Y : %5.3f Z : %5.3f"
+    };
+    const char* const scaleInfoMask[] = {
+        "X : %5.2f",
+        "Y : %5.2f",
+        "Z : %5.2f",
+        "XYZ : %5.2f"
+    };
+    const char* const rotationInfoMask[] = {
+        "X : %5.2f deg %5.2f rad",
+        "Y : %5.2f deg %5.2f rad",
+        "Z : %5.2f deg %5.2f rad",
+        "Screen : %5.2f deg %5.2f rad"
+    };
+    constexpr int translationInfoIndex[] = {
+        0,0,0,
+        1,0,0,
+        2,0,0,
+        1,2,0,
+        0,2,0,
+        0,1,0,
+        0,1,2
+    };
+    constexpr float quadMin = 0.5f;
+    constexpr float quadMax = 0.8f;
+    constexpr float quadUV[8] = { quadMin, quadMin, quadMin, quadMax, quadMax, quadMax, quadMax, quadMin };
+    constexpr int halfCircleSegmentCount = 64;
+    constexpr float snapTension = 0.5f;
+
     constexpr ImGuiID blank_id()
     {
         return std::numeric_limits<ImGuiID>::max();
     }
-
-    const float ZPI = 3.14159265358979323846f;
-    const float RAD2DEG = (180.f / ZPI);
-    const float DEG2RAD = (ZPI / 180.f);
-    const float screenRotateSize = 0.06f;
-    // scale a bit so translate axis do not touch when in universal
-    const float rotationDisplayFactor = 1.2f;
 
     OPERATION operator&(OPERATION lhs, OPERATION rhs)
     {
@@ -295,6 +334,8 @@ namespace
    vec_t vec_t::operator + (const vec_t& v) const { return makeVect(x + v.x, y + v.y, z + v.z, w + v.w); }
    vec_t vec_t::operator * (const vec_t& v) const { return makeVect(x * v.x, y * v.y, z * v.z, w * v.w); }
    vec_t vec_t::Abs() const { return makeVect(fabsf(x), fabsf(y), fabsf(z)); }
+
+   const vec_t directionUnary[3] = { makeVect(1.f, 0.f, 0.f), makeVect(0.f, 1.f, 0.f), makeVect(0.f, 0.f, 1.f) };
 
    vec_t Normalized(const vec_t& v) { vec_t res; res = v; res.Normalize(); return res; }
    vec_t Cross(const vec_t& v1, const vec_t& v2)
@@ -796,55 +837,15 @@ namespace
       // check to not have multiple gizmo highlighted at the same time
       bool mbOverGizmoHotspot = false;
 
-      ImGuiWindow* mAlternativeWindow = nullptr;
       ImVector<ImGuiID> mIDStack;
       ImGuiID mEditingID = blank_id();
       OPERATION mOperation = OPERATION::NONE;
 
-      bool mAllowAxisFlip = true;
+      bool mAllowAxisFlip = false;
       float mGizmoSizeClipSpace = 0.1f;
 
       inline ImGuiID GetCurrentID() { return mIDStack.back();}
    };
-
-   constinit Context* gCurrentContext = nullptr;
-
-   const vec_t directionUnary[3] = { makeVect(1.f, 0.f, 0.f), makeVect(0.f, 1.f, 0.f), makeVect(0.f, 0.f, 1.f) };
-   const char* translationInfoMask[] = {
-       "X : %5.3f",
-       "Y : %5.3f",
-       "Z : %5.3f",
-       "Y : %5.3f Z : %5.3f",
-       "X : %5.3f Z : %5.3f",
-       "X : %5.3f Y : %5.3f",
-       "X : %5.3f Y : %5.3f Z : %5.3f"
-   };
-   const char* const scaleInfoMask[] = {
-       "X : %5.2f",
-       "Y : %5.2f",
-       "Z : %5.2f",
-       "XYZ : %5.2f"
-   };
-   const char* const rotationInfoMask[] = {
-       "X : %5.2f deg %5.2f rad",
-       "Y : %5.2f deg %5.2f rad",
-       "Z : %5.2f deg %5.2f rad",
-       "Screen : %5.2f deg %5.2f rad"
-   };
-   const int translationInfoIndex[] = {
-       0,0,0,
-       1,0,0,
-       2,0,0,
-       1,2,0,
-       0,2,0,
-       0,1,0,
-       0,1,2
-   };
-   const float quadMin = 0.5f;
-   const float quadMax = 0.8f;
-   const float quadUV[8] = { quadMin, quadMin, quadMin, quadMax, quadMax, quadMax, quadMax, quadMin };
-   const int halfCircleSegmentCount = 64;
-   const float snapTension = 0.5f;
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    //
@@ -1000,8 +1001,6 @@ namespace
       ImGuiWindow* window = ImGui::FindWindowByName(gCurrentContext->mDrawList->_OwnerName);
       if (g.HoveredWindow == window)   // Mouse hovering drawlist window
          return true;
-      if (gCurrentContext->mAlternativeWindow != nullptr && g.HoveredWindow == gCurrentContext->mAlternativeWindow)
-         return true;
       if (g.HoveredWindow != NULL)     // Any other window is hovered
          return false;
       if (ImGui::IsMouseHoveringRect(window->InnerRect.Min, window->InnerRect.Max, false))   // Hovering drawlist window rect, while no other window is hovered (for _NoInputs windows)
@@ -1146,7 +1145,7 @@ namespace
          float lenDirMinusPlaneY = GetSegmentLengthClipSpace(makeVect(0.f, 0.f, 0.f), -dirPlaneY, localCoordinates);
 
          // For readability
-         bool & allowFlip = gCurrentContext->mAllowAxisFlip;
+         bool allowFlip = gCurrentContext->mAllowAxisFlip;
          float mulAxis = (allowFlip && lenDir < lenDirMinus&& fabsf(lenDir - lenDirMinus) > FLT_EPSILON) ? -1.f : 1.f;
          float mulAxisX = (allowFlip && lenDirPlaneX < lenDirMinusPlaneX&& fabsf(lenDirPlaneX - lenDirMinusPlaneX) > FLT_EPSILON) ? -1.f : 1.f;
          float mulAxisY = (allowFlip && lenDirPlaneY < lenDirMinusPlaneY&& fabsf(lenDirPlaneY - lenDirMinusPlaneY) > FLT_EPSILON) ? -1.f : 1.f;
@@ -1416,7 +1415,6 @@ namespace
          drawList->AddText(ImVec2(destinationPosOnScreen.x + 14, destinationPosOnScreen.y + 14), GetColorU32(TEXT), tmps);
       }
    }
-
 
    void DrawScaleUniveralGizmo(OPERATION op, int type)
    {
@@ -2455,45 +2453,25 @@ namespace
        ImGuiID id = ImHashData(&n, sizeof(n), seed);
        return id;
    }
-
-   ///////////////////////////////////////////////////////////////////////////////////////////////////
-   void ComputeFrustumPlanes(vec_t* frustum, const float* clip)
+   ImGuiID GetID(const char* str, const char* str_end)
    {
-      frustum[0].x = clip[3] - clip[0];
-      frustum[0].y = clip[7] - clip[4];
-      frustum[0].z = clip[11] - clip[8];
-      frustum[0].w = clip[15] - clip[12];
-
-      frustum[1].x = clip[3] + clip[0];
-      frustum[1].y = clip[7] + clip[4];
-      frustum[1].z = clip[11] + clip[8];
-      frustum[1].w = clip[15] + clip[12];
-
-      frustum[2].x = clip[3] + clip[1];
-      frustum[2].y = clip[7] + clip[5];
-      frustum[2].z = clip[11] + clip[9];
-      frustum[2].w = clip[15] + clip[13];
-
-      frustum[3].x = clip[3] - clip[1];
-      frustum[3].y = clip[7] - clip[5];
-      frustum[3].z = clip[11] - clip[9];
-      frustum[3].w = clip[15] - clip[13];
-
-      frustum[4].x = clip[3] - clip[2];
-      frustum[4].y = clip[7] - clip[6];
-      frustum[4].z = clip[11] - clip[10];
-      frustum[4].w = clip[15] - clip[14];
-
-      frustum[5].x = clip[3] + clip[2];
-      frustum[5].y = clip[7] + clip[6];
-      frustum[5].z = clip[11] + clip[10];
-      frustum[5].w = clip[15] + clip[14];
-
-      for (int i = 0; i < 6; i++)
-      {
-         frustum[i].Normalize();
-      }
+       ImGuiID seed = gCurrentContext->mIDStack.back();
+       ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
+       return id;
    }
+
+   ImGuiID GetID(const char* str)
+   {
+       return GetID(str, nullptr);
+   }
+
+   ImGuiID GetID(const void* ptr)
+   {
+       ImGuiID seed = gCurrentContext->mIDStack.back();
+       ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
+       return id;
+   }
+
 }
 
 void ImGuizmo::CreateContext()
@@ -2534,11 +2512,6 @@ void ImGuizmo::BeginFrame()
     ImGui::End();
     ImGui::PopStyleVar();
     ImGui::PopStyleColor(2);
-}
-
-void ImGuizmo::SetImGuiContext(ImGuiContext* ctx)
-{
-    ImGui::SetCurrentContext(ctx);
 }
 
 bool ImGuizmo::IsOver()
@@ -2593,55 +2566,6 @@ void ImGuizmo::Enable(bool enable)
         gCurrentContext->mbUsing = false;
         gCurrentContext->mbUsingBounds = false;
     }
-}
-
-void ImGuizmo::DecomposeMatrixToComponents(const float* matrix, float* translation, float* rotation, float* scale)
-{
-    matrix_t mat = *(const matrix_t*)matrix;
-
-    scale[0] = mat.v.right.Length();
-    scale[1] = mat.v.up.Length();
-    scale[2] = mat.v.dir.Length();
-
-    mat.OrthoNormalize();
-
-    rotation[0] = RAD2DEG * atan2f(mat.m[1][2], mat.m[2][2]);
-    rotation[1] = RAD2DEG * atan2f(-mat.m[0][2], sqrtf(mat.m[1][2] * mat.m[1][2] + mat.m[2][2] * mat.m[2][2]));
-    rotation[2] = RAD2DEG * atan2f(mat.m[0][1], mat.m[0][0]);
-
-    translation[0] = mat.v.position.x;
-    translation[1] = mat.v.position.y;
-    translation[2] = mat.v.position.z;
-}
-
-void ImGuizmo::RecomposeMatrixFromComponents(const float* translation, const float* rotation, const float* scale, float* matrix)
-{
-    matrix_t& mat = *(matrix_t*)matrix;
-
-    matrix_t rot[3];
-    for (int i = 0; i < 3; i++)
-    {
-        rot[i].RotationAxis(directionUnary[i], rotation[i] * DEG2RAD);
-    }
-
-    mat = rot[0] * rot[1] * rot[2];
-
-    float validScale[3];
-    for (int i = 0; i < 3; i++)
-    {
-        if (fabsf(scale[i]) < FLT_EPSILON)
-        {
-            validScale[i] = 0.001f;
-        }
-        else
-        {
-            validScale[i] = scale[i];
-        }
-    }
-    mat.v.right *= validScale[0];
-    mat.v.up *= validScale[1];
-    mat.v.dir *= validScale[2];
-    mat.v.position.Set(translation[0], translation[1], translation[2], 1.f);
 }
 
 void ImGuizmo::SetRect(float x, float y, float width, float height)
@@ -2721,32 +2645,9 @@ bool ImGuizmo::Manipulate(
     return manipulated;
 }
 
-void ImGuizmo::SetAlternativeWindow(ImGuiWindow* window)
+void ImGuizmo::PushID(osc::UID uid)
 {
-    gCurrentContext->mAlternativeWindow = window;
-}
-
-void ImGuizmo::PushID(const char* str_id)
-{
-    ImGuiID id = GetID(str_id);
-    gCurrentContext->mIDStack.push_back(id);
-}
-
-void ImGuizmo::PushID(const char* str_id_begin, const char* str_id_end)
-{
-    ImGuiID id = GetID(str_id_begin, str_id_end);
-    gCurrentContext->mIDStack.push_back(id);
-}
-
-void ImGuizmo::PushID(const void* ptr_id)
-{
-    ImGuiID id = GetID(ptr_id);
-    gCurrentContext->mIDStack.push_back(id);
-}
-
-void ImGuizmo::PushID(int int_id)
-{
-    ImGuiID id = ::GetID(int_id);
+    ImGuiID id = ::GetID(static_cast<int>(std::hash<osc::UID>{}(uid)));
     gCurrentContext->mIDStack.push_back(id);
 }
 
@@ -2756,33 +2657,9 @@ void ImGuizmo::PopID()
     gCurrentContext->mIDStack.pop_back();
 }
 
-ImGuiID ImGuizmo::GetID(const char* str, const char* str_end)
-{
-    ImGuiID seed = gCurrentContext->mIDStack.back();
-    ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
-    return id;
-}
-
-ImGuiID ImGuizmo::GetID(const char* str)
-{
-    return GetID(str, nullptr);
-}
-
-ImGuiID ImGuizmo::GetID(const void* ptr)
-{
-    ImGuiID seed = gCurrentContext->mIDStack.back();
-    ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
-    return id;
-}
-
 void ImGuizmo::SetGizmoSizeClipSpace(float value)
 {
     gCurrentContext->mGizmoSizeClipSpace = value;
-}
-
-void ImGuizmo::AllowAxisFlip(bool value)
-{
-    gCurrentContext->mAllowAxisFlip = value;
 }
 
 void ImGuizmo::SetAxisLimit(float value)
