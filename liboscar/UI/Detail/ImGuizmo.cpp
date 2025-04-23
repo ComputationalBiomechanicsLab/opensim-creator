@@ -2453,25 +2453,6 @@ namespace
        ImGuiID id = ImHashData(&n, sizeof(n), seed);
        return id;
    }
-   ImGuiID GetID(const char* str, const char* str_end)
-   {
-       ImGuiID seed = gCurrentContext->mIDStack.back();
-       ImGuiID id = ImHashStr(str, str_end ? (str_end - str) : 0, seed);
-       return id;
-   }
-
-   ImGuiID GetID(const char* str)
-   {
-       return GetID(str, nullptr);
-   }
-
-   ImGuiID GetID(const void* ptr)
-   {
-       ImGuiID seed = gCurrentContext->mIDStack.back();
-       ImGuiID id = ImHashData(&ptr, sizeof(void*), seed);
-       return id;
-   }
-
 }
 
 void ImGuizmo::CreateContext()
@@ -2491,7 +2472,14 @@ void ImGuizmo::SetDrawlist(ImDrawList* drawlist)
 
 void ImGuizmo::BeginFrame()
 {
-    const ImU32 flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    const ImU32 flags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoInputs |
+        ImGuiWindowFlags_NoSavedSettings |
+        ImGuiWindowFlags_NoFocusOnAppearing |
+        ImGuiWindowFlags_NoBringToFrontOnFocus;
 
 #ifdef IMGUI_HAS_VIEWPORT
     ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size);
@@ -2517,52 +2505,43 @@ void ImGuizmo::BeginFrame()
 bool ImGuizmo::IsOver()
 {
     return
-        (Intersects(gCurrentContext->mOperation, TRANSLATE) && GetMoveType(gCurrentContext->mOperation, NULL) != MT_NONE) ||
-        (Intersects(gCurrentContext->mOperation, ROTATE)    && GetRotateType(gCurrentContext->mOperation) != MT_NONE) ||
-        (Intersects(gCurrentContext->mOperation, SCALE)     && GetScaleType(gCurrentContext->mOperation) != MT_NONE) ||
+        (Intersects(gCurrentContext->mOperation, TRANSLATE) and GetMoveType(gCurrentContext->mOperation, NULL) != MT_NONE) or
+        (Intersects(gCurrentContext->mOperation, ROTATE)    and GetRotateType(gCurrentContext->mOperation) != MT_NONE)     or
+        (Intersects(gCurrentContext->mOperation, SCALE)     and GetScaleType(gCurrentContext->mOperation) != MT_NONE)      or
         IsUsing();
 }
 
 bool ImGuizmo::IsOver(OPERATION op)
 {
-    if(IsUsing()) {
+    if (IsUsing()) {
         return true;
     }
-    if(Intersects(op, SCALE) && GetScaleType(op) != MT_NONE) {
+    if (Intersects(op, SCALE) and GetScaleType(op) != MT_NONE) {
         return true;
     }
-    if(Intersects(op, ROTATE) && GetRotateType(op) != MT_NONE) {
+    if (Intersects(op, ROTATE) and GetRotateType(op) != MT_NONE) {
         return true;
     }
-    if(Intersects(op, TRANSLATE) && GetMoveType(op, NULL) != MT_NONE) {
+    if (Intersects(op, TRANSLATE) and GetMoveType(op, NULL) != MT_NONE) {
         return true;
     }
     return false;
 }
 
-bool ImGuizmo::IsOver(float* position, float pixelRadius)
-{
-    const ImGuiIO& io = ImGui::GetIO();
-
-    float radius = sqrtf((ImLengthSqr(worldToPos({ position[0], position[1], position[2] }, gCurrentContext->mViewProjection) - io.MousePos)));
-    return radius < pixelRadius;
-}
-
 bool ImGuizmo::IsUsing()
 {
-    return (gCurrentContext->mbUsing && (gCurrentContext->GetCurrentID() == gCurrentContext->mEditingID)) || gCurrentContext->mbUsingBounds;
+    return (gCurrentContext->mbUsing and (gCurrentContext->GetCurrentID() == gCurrentContext->mEditingID)) or gCurrentContext->mbUsingBounds;
 }
 
 bool ImGuizmo::IsUsingAny()
 {
-    return gCurrentContext->mbUsing || gCurrentContext->mbUsingBounds;
+    return gCurrentContext->mbUsing or gCurrentContext->mbUsingBounds;
 }
 
 void ImGuizmo::Enable(bool enable)
 {
     gCurrentContext->mbEnable = enable;
-    if (!enable)
-    {
+    if (not enable) {
         gCurrentContext->mbUsing = false;
         gCurrentContext->mbUsingBounds = false;
     }
@@ -2595,46 +2574,44 @@ bool ImGuizmo::Manipulate(
     const float* localBounds,
     const float* boundsSnap)
 {
-    gCurrentContext->mDrawList->PushClipRect (ImVec2 (gCurrentContext->mX, gCurrentContext->mY), ImVec2 (gCurrentContext->mX + gCurrentContext->mWidth, gCurrentContext->mY + gCurrentContext->mHeight), false);
+    gCurrentContext->mDrawList->PushClipRect(
+        ImVec2(gCurrentContext->mX, gCurrentContext->mY),
+        ImVec2(gCurrentContext->mX + gCurrentContext->mWidth, gCurrentContext->mY + gCurrentContext->mHeight),
+        false
+    );
 
     // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
     ComputeContext(view, projection, matrix, (operation & SCALE) ? LOCAL : mode);
 
     // set delta to identity
-    if (deltaMatrix)
-    {
+    if (deltaMatrix) {
         ((matrix_t*)deltaMatrix)->SetToIdentity();
     }
 
     // behind camera
     vec_t camSpacePosition;
     camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gCurrentContext->mMVP);
-    if (!gCurrentContext->mIsOrthographic && camSpacePosition.z < 0.0001f && !gCurrentContext->mbUsing)
-    {
+    if (not gCurrentContext->mIsOrthographic and camSpacePosition.z < 0.0001f and not gCurrentContext->mbUsing) {
         return false;
     }
 
     // --
     int type = MT_NONE;
     bool manipulated = false;
-    if (gCurrentContext->mbEnable)
-    {
-        if (!gCurrentContext->mbUsingBounds)
-        {
+    if (gCurrentContext->mbEnable) {
+        if (not gCurrentContext->mbUsingBounds) {
             manipulated = HandleTranslation(matrix, deltaMatrix, operation, type, snap) ||
                 HandleScale(matrix, deltaMatrix, operation, type, snap) ||
                 HandleRotation(matrix, deltaMatrix, operation, type, snap);
         }
     }
 
-    if (localBounds && !gCurrentContext->mbUsing)
-    {
+    if (localBounds and not gCurrentContext->mbUsing) {
         HandleAndDrawLocalBounds(localBounds, (matrix_t*)matrix, boundsSnap, operation);
     }
 
     gCurrentContext->mOperation = operation;
-    if (!gCurrentContext->mbUsingBounds)
-    {
+    if (not gCurrentContext->mbUsingBounds) {
         DrawRotationGizmo(operation, type);
         DrawTranslationGizmo(operation, type);
         DrawScaleGizmo(operation, type);

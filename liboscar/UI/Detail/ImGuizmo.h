@@ -123,9 +123,6 @@ namespace ImGuizmo
     // return true if the cursor is over the operation's gizmo
     bool IsOver(OPERATION op);
 
-    // from a x,y,z point in space and using Manipulation view/projection matrix, check if mouse is in pixel radius distance of that projected point
-    bool IsOver(float* position, float pixelRadius);
-
     // return true if mouse IsOver or if the gizmo is in moving state
     bool IsUsing();
 
