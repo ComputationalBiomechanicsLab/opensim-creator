@@ -12,7 +12,6 @@ using namespace osc;
 
 osc::GridGeometry::GridGeometry(const Params& p)
 {
-    constexpr float z = 0.0f;
     const float min = -0.5f*p.size;
     const float max =  0.5f*p.size;
 
@@ -39,16 +38,16 @@ osc::GridGeometry::GridGeometry(const Params& p)
     for (size_t i = 0; i < num_lines; ++i) {
         const float y = min + static_cast<float>(i) * step_size;
 
-        push({-1.0f, y, z});
-        push({+1.0f, y, z});
+        push({min, y, 0.0f});
+        push({max, y, 0.0f});
     }
 
     // lines parallel to Y axis
     for (size_t i = 0; i < num_lines; ++i) {
         const float x = min + static_cast<float>(i) * step_size;
 
-        push({x, -1.0f, z});
-        push({x, +1.0f, z});
+        push({x, min, 0.0f});
+        push({x, max, 0.0f});
     }
 
     set_topology(MeshTopology::Lines);

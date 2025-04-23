@@ -3662,37 +3662,6 @@ bool osc::ui::draw_float_circular_slider(
 
 // gizmo stuff
 
-void osc::ui::gizmo_demo_draw_grid(
-    const Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
-    float grid_size,
-    const Rect& screenspace_rect)
-{
-    ImGuizmo::SetRect(
-        screenspace_rect.p1.x,
-        screenspace_rect.p1.y,
-        dimensions_of(screenspace_rect).x,
-        dimensions_of(screenspace_rect).y
-    );
-    ImGuizmo::DrawGrid(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), grid_size);
-}
-
-void osc::ui::gizmo_demo_draw_cube(
-    Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
-    const Rect& screenspace_rect)
-{
-    ImGuizmo::SetRect(
-        screenspace_rect.p1.x,
-        screenspace_rect.p1.y,
-        dimensions_of(screenspace_rect).x,
-        dimensions_of(screenspace_rect).y
-    );
-    ImGuizmo::DrawCubes(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), 1);
-}
-
 bool osc::ui::draw_gizmo_mode_selector(Gizmo& gizmo)
 {
     GizmoMode mode = gizmo.mode();

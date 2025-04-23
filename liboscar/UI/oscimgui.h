@@ -1027,21 +1027,6 @@ namespace osc::ui
         return 15.0f;
     }
 
-    void gizmo_demo_draw_grid(
-        const Mat4& model_matrix,
-        const Mat4& view_matrix,
-        const Mat4& projection_matrix,
-        float grid_size,
-        const Rect& screenspace_rect
-    );
-
-    void gizmo_demo_draw_cube(
-        Mat4& model_matrix,
-        const Mat4& view_matrix,
-        const Mat4& projection_matrix,
-        const Rect& screenspace_rect
-    );
-
     bool draw_gizmo_mode_selector(
         Gizmo&
     );
