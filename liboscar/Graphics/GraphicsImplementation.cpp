@@ -1361,7 +1361,7 @@ namespace
                     const size_t component_begin = pixel_begin + component*num_bytes_per_component;
 
                     const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
 
                     color[component] = std::bit_cast<float>(tmp_array);
@@ -1418,7 +1418,7 @@ namespace
                     const size_t component_begin = pixel_begin + component*sizeof(float);
 
                     const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
                     const auto component_float = std::bit_cast<float>(tmp_array);
 
