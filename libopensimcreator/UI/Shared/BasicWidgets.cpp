@@ -425,7 +425,7 @@ bool osc::DrawWatchOutputMenu(
         // Edge-case: `Force`s have record-based outputs, which should also be exposed
         if (const auto* f = dynamic_cast<const OpenSim::Force*>(&c)) {
             const OpenSim::Array<std::string> labels = f->getRecordLabels();
-            for (int i = 1; i < labels.size(); ++i) {  // Skip first: it's the force's name
+            for (int i = 0; i < labels.size(); ++i) {
                 ui::push_id(entriesDrawn++);
                 if (ui::draw_menu_item("  " + labels[i])) {
                     onUserSelection(OutputExtractor{ForceRecordOutputExtractor{*f, i}});

@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The (experimental) "Plane Contact Forces" visualization now also works when the
+  `ContactHalfSpace` is not the first element of the `HuntCrossleyForce` (previously,
+  it would produce incorrect visualizations because it assumed the plane was the first
+  member of the contact set, #1026).
 - Fixed the 'is visible' toggle on `Appearance` properties was not updating the model (#1028).
 - Fixed a bug where plotting a 1D output against another 1D output (e.g. for a phase
   diagram) would plot the first against itself, which would always create a diagonal
