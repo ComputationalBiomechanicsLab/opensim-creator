@@ -84,3 +84,9 @@ jobs:
 
         # run buildscript under virtual desktop (for UI tests)
         xvfb-run ./scripts/build_ubuntu-20.04.sh
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: OpenSimCreator_Deb.zip
+        path: osc/osc-build/*.deb
+        if-no-files-found: error
