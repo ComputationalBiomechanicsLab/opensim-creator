@@ -9,10 +9,10 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Maths/VecFunctions.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 
 #include <glad/glad.h>
 
+#include <bit>
 #include <concepts>
 #include <cstddef>
 #include <exception>
@@ -532,7 +532,7 @@ namespace osc::gl
                 SourceType,
                 normgl,
                 stridegl,
-                cpp20::bit_cast<void*>(offset)
+                std::bit_cast<void*>(offset)
             );
         }
         else if constexpr (SourceType == GL_FLOAT) {
@@ -543,7 +543,7 @@ namespace osc::gl
                     SourceType,
                     normgl,
                     stridegl,
-                    cpp20::bit_cast<void*>(offset + (i * TGlsl::elements_per_location * sizeof(float)))
+                    std::bit_cast<void*>(offset + (i * TGlsl::elements_per_location * sizeof(float)))
                 );
             }
         }

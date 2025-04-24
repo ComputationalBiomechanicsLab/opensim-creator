@@ -21,7 +21,6 @@
 #include <liboscar/Platform/ResourceStream.h>
 #include <liboscar/Platform/Screen.h>
 #include <liboscar/Platform/Screenshot.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/BitwiseHelpers.h>
@@ -49,6 +48,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -1014,7 +1014,7 @@ public:
         }
         int window_x = 0;
         int window_y = 0;
-        SDL_GetWindowPosition(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), &window_x, &window_y);
+        SDL_GetWindowPosition(std::bit_cast<SDL_Window*>(to<void*>(window_id)), &window_x, &window_y);
         return {static_cast<float>(window_x), static_cast<float>(window_y)};
     }
 
@@ -1294,12 +1294,12 @@ public:
     void warp_mouse_in_window(WindowID window_id, Vec2 pos)
     {
         pos *= main_window_device_independent_to_os_ratio();  // HACK: assume the window is always the main window...
-        SDL_WarpMouseInWindow(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
+        SDL_WarpMouseInWindow(std::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
     }
 
     bool has_input_focus(WindowID window_id) const
     {
-        return (SDL_GetWindowFlags(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
+        return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
     void set_unicode_input_rect(const Rect& rect)
@@ -1317,12 +1317,12 @@ public:
 
     void start_text_input(WindowID window_id)
     {
-        SDL_StartTextInput(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)));
+        SDL_StartTextInput(std::bit_cast<SDL_Window*>(to<void*>(window_id)));
     }
 
     void stop_text_input(WindowID window_id)
     {
-        SDL_StopTextInput(cpp20::bit_cast<SDL_Window*>(to<void*>(window_id)));
+        SDL_StopTextInput(std::bit_cast<SDL_Window*>(to<void*>(window_id)));
     }
 
     void set_show_cursor(bool v)

@@ -100,6 +100,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -243,7 +244,7 @@ namespace
 
     bool is_aligned_at_least(const void* ptr, GLint required_alignment)
     {
-        return cpp20::bit_cast<intptr_t>(ptr) % required_alignment == 0;
+        return std::bit_cast<intptr_t>(ptr) % required_alignment == 0;
     }
 
     // returns the name strings of all extensions that the OpenGL backend may use
@@ -1363,7 +1364,7 @@ namespace
                     std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
 
-                    color[component] = cpp20::bit_cast<float>(tmp_array);
+                    color[component] = std::bit_cast<float>(tmp_array);
                 }
                 rv.push_back(color);
             }
@@ -1419,7 +1420,7 @@ namespace
                     const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
                     std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
-                    const auto component_float = cpp20::bit_cast<float>(tmp_array);
+                    const auto component_float = std::bit_cast<float>(tmp_array);
 
                     color[component] = Unorm8{component_float};
                 }
@@ -5267,7 +5268,7 @@ public:
             mode,
             num_indices,
             type,
-            cpp20::bit_cast<void*>(first_index_byte_offset),
+            std::bit_cast<void*>(first_index_byte_offset),
             num_instances
         );
 #else
@@ -5276,7 +5277,7 @@ public:
             mode,
             num_indices,
             type,
-            cpp20::bit_cast<void*>(first_index_byte_offset),
+            std::bit_cast<void*>(first_index_byte_offset),
             num_instances,
             base_vertex
         );
@@ -5405,7 +5406,7 @@ private:
             to_opengl_attribute_type_enum(layout.format()),
             is_normalized_attribute_type(layout.format()),
             static_cast<GLsizei>(format.stride()),
-            cpp20::bit_cast<void*>(layout.offset())
+            std::bit_cast<void*>(layout.offset())
         );
         glEnableVertexAttribArray(shader_location_of(layout.attribute()));
     }
@@ -5419,7 +5420,7 @@ private:
         MeshOpenGLData& buffers = **maybe_gpu_data_;
 
         // upload CPU-side vector data into the GPU-side buffer
-        OSC_ASSERT(cpp20::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
+        OSC_ASSERT(std::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
         gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::buffer_data(
             GL_ARRAY_BUFFER,

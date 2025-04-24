@@ -1,8 +1,8 @@
 #include "WindowID.h"
 
-#include <liboscar/Shims/Cpp20/bit.h>
-
 #include <gtest/gtest.h>
+
+#include <bit>
 
 using namespace osc;
 
@@ -26,7 +26,7 @@ TEST(WindowID, is_falsey_when_constructed_from_a_null_void_ptr)
 
 TEST(WindowID, is_truthy_when_constructed_from_a_non_null_void_ptr)
 {
-    ASSERT_TRUE(WindowID{cpp20::bit_cast<void*>(uintptr_t{0x1})});
+    ASSERT_TRUE(WindowID{std::bit_cast<void*>(uintptr_t{0x1})});
 }
 
 TEST(WindowID, can_be_converted_to_a_void_ptr)
@@ -38,7 +38,7 @@ TEST(WindowID, can_be_converted_to_a_void_ptr)
 
 TEST(WindowID, converting_to_and_from_a_void_ptr_compares_equal_to_original_ID)
 {
-    const WindowID original_id{cpp20::bit_cast<void*>(uintptr_t{0x1})};
+    const WindowID original_id{std::bit_cast<void*>(uintptr_t{0x1})};
     auto* const ptr_casted = static_cast<void*>(original_id);
     const WindowID reconstructed_id{ptr_casted};
 
@@ -47,7 +47,7 @@ TEST(WindowID, converting_to_and_from_a_void_ptr_compares_equal_to_original_ID)
 
 TEST(WindowID, reset_resets_the_internal_state_to_be_falsey)
 {
-    WindowID id{cpp20::bit_cast<void*>(uintptr_t{0x1})};
+    WindowID id{std::bit_cast<void*>(uintptr_t{0x1})};
     ASSERT_TRUE(id);
     id.reset();
     ASSERT_FALSE(id);

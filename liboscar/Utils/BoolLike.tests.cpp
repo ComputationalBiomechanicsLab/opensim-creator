@@ -1,9 +1,8 @@
 #include "BoolLike.h"
 
-#include <liboscar/Shims/Cpp20/bit.h>
-
 #include <gtest/gtest.h>
 
+#include <bit>
 #include <concepts>
 
 using namespace osc;
@@ -21,11 +20,11 @@ TEST(BoolLike, implicitly_converts_to_bool)
 TEST(BoolLike, cast_to_bool_ptr_works)
 {
     const BoolLike v{};
-    ASSERT_EQ(cast_to_bool_ptr(&v), cpp20::bit_cast<const bool*>(&v));
+    ASSERT_EQ(cast_to_bool_ptr(&v), std::bit_cast<const bool*>(&v));
 }
 
 TEST(BoolLike, cast_to_bool_ptr_non_const_works)
 {
     BoolLike v{};
-    ASSERT_EQ(cast_to_bool_ptr(&v), cpp20::bit_cast<bool*>(&v));
+    ASSERT_EQ(cast_to_bool_ptr(&v), std::bit_cast<bool*>(&v));
 }

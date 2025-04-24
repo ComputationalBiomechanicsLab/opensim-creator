@@ -3,7 +3,6 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/LogLevel.h>
 #include <liboscar/Platform/LogSink.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
@@ -16,6 +15,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cerrno>
 #include <cstddef>
 #include <ctime>
@@ -269,9 +269,9 @@ namespace
 
         /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
-        void* caller_address = cpp20::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
+        void* caller_address = std::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-        void* callerAddress = cpp20::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+        void* callerAddress = std::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
@@ -470,8 +470,6 @@ void osc::open_url_in_os_default_web_browser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-#include <liboscar/Shims/Cpp20/bit.h>
-
 using osc::global_default_logger;
 using osc::global_get_traceback_log;
 using osc::LogMessage;
@@ -513,12 +511,12 @@ void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std:
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
         VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
-        DWORD64 base_addr = cpp20::bit_cast<DWORD64>(bmi.AllocationBase);
+        DWORD64 base_addr = std::bit_cast<DWORD64>(bmi.AllocationBase);
         static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
 
         // use the base address to figure out the file name
         TCHAR module_namebuf[1024];
-        GetModuleFileName(cpp20::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
+        GetModuleFileName(std::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
 
         // find the final element in the filename
         TCHAR* cursor = module_namebuf;
@@ -532,7 +530,7 @@ void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std:
             ++cursor;
         }
 
-        PVOID relative_addr = cpp20::bit_cast<PVOID>(cpp20::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
+        PVOID relative_addr = std::bit_cast<PVOID>(std::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
 
         std::array<char, 1024> formatted_buffer{};
         if (const auto size = std::snprintf(formatted_buffer.data(), formatted_buffer.size(), "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]); size > 0) {

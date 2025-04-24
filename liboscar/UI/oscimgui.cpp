@@ -47,7 +47,6 @@
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/WindowID.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/UI/Detail/ImGuizmo.h>
@@ -79,6 +78,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <chrono>
 #include <concepts>
 #include <cstddef>
@@ -704,7 +704,7 @@ namespace
     // freeing the memory with `ImGui::MemFree`
     char* to_imgui_allocated_copy(std::span<const char> span)
     {
-        auto* ptr = cpp20::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
+        auto* ptr = std::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
         rgs::copy(span, ptr);
         return ptr;
     }
@@ -778,7 +778,7 @@ namespace
         rv.WorkPos = os_monitor.usable_bounds().p1;
         rv.WorkSize = dimensions_of(os_monitor.usable_bounds());
         rv.DpiScale = os_monitor.physical_dpi() / 96.0f;
-        rv.PlatformHandle = cpp20::bit_cast<void*>(i);
+        rv.PlatformHandle = std::bit_cast<void*>(i);
         return rv;
     }
 
@@ -1134,7 +1134,7 @@ namespace
         if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
             ImGuiID mouse_viewport_id = 0;
             if (app.is_alive(bd->MouseWindowID)) {
-                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(bd->MouseWindowID))) {
+                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(std::bit_cast<void*>(bd->MouseWindowID))) {
                     mouse_viewport_id = mouse_viewport->ID;
                 }
             }
