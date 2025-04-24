@@ -70,7 +70,7 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
             const auto lv = to<float>(lhs(report));
-            const auto rv = to<float>(lhs(report));
+            const auto rv = to<float>(rhs(report));
 
             return Variant{Vec2{lv, rv}};
         };

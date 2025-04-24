@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed a bug where plotting a 1D output against another 1D output (e.g. for a phase
+  diagram) would plot the first against itself, which would always create a diagonal
+  line (#1025).
 - The `Watch Output` menu now also shows all record outputs from `OpenSim::Force`s,
   which makes it possible to (e.g.) watch `OpenSim::BushingForce`forces/torques while
   editing a model.
