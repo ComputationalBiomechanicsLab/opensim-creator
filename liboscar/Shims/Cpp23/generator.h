@@ -75,7 +75,7 @@ namespace osc::cpp23
 
 			void unhandled_exception()
 			{
-				// TODO
+				except_ = std::current_exception();
 			}
 		private:
 		};
@@ -86,21 +86,29 @@ namespace osc::cpp23
 			using value_type = value;
 			using difference_type = std::ptrdiff_t;
 
+			explicit iterator(std::coroutine_handle<promise_type> coroutine) :
+				coroutine_{coroutine}
+			{}
+
 			iterator(iterator&& other) noexcept : coroutine_{std::exchange(other.coroutine_), {}} {}
 			iterator& operator=(iterator&& other) noexcept { coroutine_ = std::exchange(other.coroutine_, {}); return *this; }
 
 			reference operator*() const noexcept(std::is_nothrow_copy_constructible_v<reference>)
 			{
+				if (coroutine_.promise().except_) {
+					std::rethrow_exception(coroutine_.promise().except_);
+				}
 				// - Let `reference` be the `std::generator`'s underlying type.
 				// - Let for some `generator` object `x` its coroutine_ be in the stack `*x.active_`.
 				// - Let `x.active_->top()` refer to a suspended coroutine with promise object `p`
 				//
 				// Equivalent to `return static_cast<reference>(*p.value_);`.
-				return static_cast<reference>(coroutine_.promise().value_);
+				return static_cast<reference>(*coroutine_.promise().value_);
 			}
 
 			constexpr iterator& operator++()
 			{
+				coroutine_.promise().except_ = nullptr;
 				coroutine_.resume();
 				return *this;
 			}
@@ -117,6 +125,35 @@ namespace osc::cpp23
 		private:
 			std::coroutine_handle<promise_type> coroutine_;
 		};
+
+		generator(const generator&) = delete;
+		generator(generator&& tmp) noexcept :
+			active_{std::move(tmp.active_)},
+			coroutine_{std::exchange(tmp.coroutine_, {})}
+		{}
+		~generator() noexcept
+		{
+			coroutine_.destroy();
+		}
+
+		generator& operator=(generator other) noexcept
+		{
+			std::swap(active_, other.active_);
+			std::swap(coroutine_, other.coroutine_);
+		}
+
+		iterator begin()
+		{
+			OSC_ASSERT(coroutine_ and not coroutine_.done());
+			active_->push(coroutine_);
+			coroutine_.resume();
+			return iterator{coroutine_};
+		}
+
+		std::default_sentinel_t end() const noexcept
+		{
+			return std::default_sentinel;
+		}
 	private:
 		explicit generator(
 			std::coroutine_handle<promise_type> coroutine) :
