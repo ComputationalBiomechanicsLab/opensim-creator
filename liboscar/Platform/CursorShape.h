@@ -11,6 +11,8 @@ namespace osc
         ResizeDiagonalNESW,
         ResizeDiagonalNWSE,
         PointingHand,
+        Wait,
+        Progress,
         Forbidden,
         Hidden,
         NUM_OPTIONS

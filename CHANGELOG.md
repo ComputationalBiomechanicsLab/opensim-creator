@@ -5,6 +5,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed the 'is visible' toggle on `Appearance` properties was not updating the model (#1028).
 - Fixed a bug where plotting a 1D output against another 1D output (e.g. for a phase
   diagram) would plot the first against itself, which would always create a diagonal
   line (#1025).

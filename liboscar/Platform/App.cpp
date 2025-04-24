@@ -634,16 +634,18 @@ namespace
         SystemCursor& operator[](CursorShape shape) { return cursors_.at(to_index(shape)); }
     private:
         std::array<SystemCursor, num_options<CursorShape>()> cursors_ = std::to_array({
-            SystemCursor(SDL_SYSTEM_CURSOR_DEFAULT),     // CursorShape::Arrow
-            SystemCursor(SDL_SYSTEM_CURSOR_TEXT),     // CursorShape::IBeam
-            SystemCursor(SDL_SYSTEM_CURSOR_MOVE),   // CursorShape::ResizeAll
+            SystemCursor(SDL_SYSTEM_CURSOR_DEFAULT),      // CursorShape::Arrow
+            SystemCursor(SDL_SYSTEM_CURSOR_TEXT),         // CursorShape::IBeam
+            SystemCursor(SDL_SYSTEM_CURSOR_MOVE),         // CursorShape::ResizeAll
             SystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE),    // CursorShape::ResizeVertical
             SystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE),    // CursorShape::ResizeHorizontal
             SystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE),  // CursorShape::ResizeDiagonalNESW
             SystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE),  // CursorShape::ResizeDiagonalNWSE
             SystemCursor(SDL_SYSTEM_CURSOR_POINTER),      // CursorShape::PointingHand
-            SystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED),        // CursorShape::Forbidden
-            SystemCursor{},                            // CursorShape::Hidden
+            SystemCursor(SDL_SYSTEM_CURSOR_WAIT),         // CursorShape::Wait
+            SystemCursor(SDL_SYSTEM_CURSOR_PROGRESS),     // CursorShape::Progress
+            SystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED),  // CursorShape::Forbidden
+            SystemCursor{},                               // CursorShape::Hidden
         });
     };
 

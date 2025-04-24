@@ -104,7 +104,7 @@ template<>
 struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
     CursorShape operator()(ImGuiMouseCursor cursor) const
     {
-        static_assert(ImGuiMouseCursor_COUNT == 9);
+        static_assert(ImGuiMouseCursor_COUNT == 11);
 
         switch (cursor) {
         case ImGuiMouseCursor_None:       return CursorShape::Hidden;
@@ -116,6 +116,8 @@ struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
         case ImGuiMouseCursor_ResizeNESW: return CursorShape::ResizeDiagonalNESW;
         case ImGuiMouseCursor_ResizeNWSE: return CursorShape::ResizeDiagonalNWSE;
         case ImGuiMouseCursor_Hand:       return CursorShape::PointingHand;
+        case ImGuiMouseCursor_Wait:       return CursorShape::Wait;
+        case ImGuiMouseCursor_Progress:   return CursorShape::Progress;
         case ImGuiMouseCursor_NotAllowed: return CursorShape::Forbidden;
         default:                          return CursorShape::Arrow;
         }
