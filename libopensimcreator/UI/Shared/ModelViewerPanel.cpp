@@ -135,7 +135,7 @@ namespace
             const bool edited = DrawViewerImGuiOverlays(
                 params.updRenderParams(),
                 state.getDrawlist(),
-                state.maybeSceneAABB,
+                state.maybeSceneVisibleAABB,
                 state.viewportRect,
                 *m_IconCache,
                 [this, &state]() { return drawExtraTopButtons(state); }
@@ -228,7 +228,7 @@ namespace
             return ui::update_polar_camera_from_keyboard_inputs(
                 params.updRenderParams().camera,
                 state.viewportRect,
-                state.maybeSceneAABB
+                state.maybeSceneVisibleAABB
             );
         }
 
@@ -457,7 +457,7 @@ public:
         }
 
         // update state scene AABB
-        m_State.maybeSceneAABB = m_State.getRenderer().bounds();
+        m_State.maybeSceneVisibleAABB = m_State.getRenderer().visibleBounds();
 
         // if hovering in 2D, 3D-hittest the scene
         if (m_RenderIsHovered and not (m_State.flags() & ModelViewerPanelFlag::NoHittest))

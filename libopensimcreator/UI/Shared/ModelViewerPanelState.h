@@ -42,7 +42,7 @@ namespace osc
         Rect viewportRect{};
         bool isLeftClickReleasedWithoutDragging = false;
         bool isRightClickReleasedWithoutDragging = false;
-        std::optional<AABB> maybeSceneAABB;
+        std::optional<AABB> maybeSceneVisibleAABB;
         std::optional<SceneCollision> maybeBaseLayerHittest;
         OpenSim::ComponentPath maybeHoveredComponentAbsPath;
 

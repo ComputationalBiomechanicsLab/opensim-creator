@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The camera's auto-focus functionality now filters out any geometry that's in the
+  scene, but hidden (e.g. geometry that can be clicked, rim-highlighted, etc. but
+  isn't actually drawn, #1029).
 - The (experimental) "Plane Contact Forces" visualization now also works when the
   `ContactHalfSpace` is not the first element of the `HuntCrossleyForce` (previously,
   it would produce incorrect visualizations because it assumed the plane was the first
