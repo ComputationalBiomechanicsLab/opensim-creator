@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.5.22] - 2025/04/25
+
 - The camera's auto-focus functionality now filters out any geometry that's in the
   scene, but hidden (e.g. geometry that can be clicked, rim-highlighted, etc. but
   isn't actually drawn, #1029).
