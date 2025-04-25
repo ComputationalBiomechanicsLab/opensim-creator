@@ -36,7 +36,7 @@ These are required for some parts of the release procedure:
 - [ ] Commit any fixes to CI and ensure CI passes
 - [ ] Tag+push the commit as a release
 - [ ] Rebase any currently-active feature branches to this commit (don't allow stale branches)
-- [ ] Bump OSC's version number in `CMakeLists.txt` (`project`) to `$VERSION+1-dev`
+- [ ] Bump OSC's version number in `CMakeLists.txt` (`project`) to `$VERSION+1`
 - [ ] Download artifacts from the tagged commit CI build
   - [ ] Also, create a source tarball with `./scripts/bundle_sources.sh $VERSION`
   - [ ] Also, build a MacOS ARM64 build locally from the release and upload it
@@ -55,15 +55,17 @@ These are required for some parts of the release procedure:
   - [ ] Ensure `codemeta.json` is up-to-date
   - [ ] Ensure `CITATION.cff` is up-to-date
   - [ ] Ensure `README.md` is up-to-date
+- [ ] **NEW**: Update TU Delft mirror of the repository
 - [ ] Update `docs.opensimcreator.com` to host the documentation
   - [ ] **Note**: this requires appropriate credentials for `docs.opensimcreator.com`
   - [ ] Build the docs yourself, or get the CI build of them
-  - [ ] Upload with (e.g.) `rsync -avz build/html/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest`
-- [ ] (optional) Update `www.opensimcreator.com` with a basic announcement news post
+  - [ ] Upload with (e.g.) `rsync -avz --delete build/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest/`
+- [ ] Update `www.opensimcreator.com` with a basic announcement news post
   - [ ] **Note**: this requires appropriate SSH credentials for `www.opensimcreator.com`
   - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately
-  - [ ] Upload with (e.g.): `rsync -avz public/* www.opensimcreator.com:/var/www/opensimcreator.com/`
-- [ ] (optional) Update `files.creator.com/releases` with appropriate release artifacts
+  - [ ] Upload with (e.g.): `rsync -avz public/ www.opensimcreator.com:/var/www/opensimcreator.com/`
+- [ ] Update `files.creator.com/releases` with appropriate release artifacts
+  - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
 - [ ] (optional) Update social media:
   - [ ] LinkedIn
   - [ ] Twitter
