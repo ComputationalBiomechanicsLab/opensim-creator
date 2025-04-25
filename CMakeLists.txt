@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(osc VERSION 0.5.23-dev LANGUAGES CXX C)
+project(osc VERSION 0.5.23 LANGUAGES CXX C)
 
 
 set(OSC_BUILD_OPENSIMCREATOR ON
