@@ -1,11 +1,10 @@
-# `env_wsl2.sh`: sets up a WSL2 environment to use WSL2 optimally
+# Sets up a WSL2 environment to use WSL2 optimally.
 #
 #     usage (WSL2 unix terminal only): `source env_wsl2.sh`
 
-# force OSC to render via Mesa (see env_mesa_debugging.sh)
-# LIBGL_ALWAYS_SOFTWARE=1
+# LIBGL_ALWAYS_SOFTWARE=1  # Force OSC to render via Mesa (software)
 
-# force mesa to use Microsoft's D3D12 Mesa extension that effectively
+# Force mesa to use Microsoft's D3D12 Mesa extension that effectively
 # forwards Mesa (OpenGL) draw commands via the host machine's NVIDIA/intel
 # hardware graphics card
 #

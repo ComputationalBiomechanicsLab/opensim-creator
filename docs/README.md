@@ -27,8 +27,7 @@ E.g. here's how you'd set up a suitable development environment on Ubuntu:
 apt install python
 python -m venv venv/
 source venv/bin/activate
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
+pip install -r requirements.txt -r requirements-dev.txt
 ```
 
 

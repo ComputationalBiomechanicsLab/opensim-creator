@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-# `format_sources.py`: applies basic text formatting to any files found in the
-# given (command-line argument) directories
+# Applies basic text formatting to any files found in the given
+# (command-line argument) directories.
 #
-# formatting steps:
+# Formatting steps:
 #
-# - ensures files have a trailing newline
-# - ensures files have stripped whitespace (i.e. no trailing whitespace)
-# - ensures files don't use tabs (it's a race war, or something)
+# - Ensures files have a trailing newline.
+# - Ensures files have stripped whitespace (i.e. no trailing whitespace).
+# - Ensures files don't use tabs (it's a race war, or something).
 
 import argparse
 import os

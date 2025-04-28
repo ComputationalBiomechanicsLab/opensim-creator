@@ -1,21 +1,10 @@
 #!/usr/bin/env bash
-
-# `build_linux_valgrind.sh`: performs an end-to-end build of OpenSim Creator
-# with build flags that make it valgrind-compatible. This is handy for debugging
-# things like memory accesses, segfaults, etc.
 #
-#     usage (must be ran in repository root): `bash build_linux_valgrind.sh`
+# Performs an end-to-end build of OpenSim Creator with build flags
+# that make it valgrind-compatible. This is handy for debugging things
+# like memory accesses, segfaults, etc.
 
 set -xeuo pipefail
-
-# the reason why 'gdwarf-4' is necessary is because the clang compiler
-# in Ubuntu20 emits gdwarf-5 symbols, but the valgrind in Ubuntu20 isn't
-# new enough to support them
-export CFLAGS=-gdwarf-4
-export CXXFLAGS=-gdwarf-4
-export CC=clang
-export CXX=clang++
-export LIBGL_ALWAYS_SOFTWARE=1
 
 cmake \
     -S third_party/ \
@@ -30,6 +19,6 @@ cmake \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
 cmake --build osc-build/ -j$(nproc)
 
-valgrind_cmd="valgrind --leak-check=full --suppressions=scripts/valgrind_suppressions.supp"
-
+export LIBGL_ALWAYS_SOFTWARE=1
+valgrind_cmd="valgrind --leak-check=full --trace-children=yes --suppressions=${PWD}/scripts/valgrind_suppressions.supp"
 ${valgrind_cmd} ctest --test-dir osc-build --output-on-failure

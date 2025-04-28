@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 #
-# `setup_emscripten.sh`: installs any necessary dependencies for
-# building OpenSim Creator via emscripten.
+# Sets up a Linux machine with the necessary dependencies to build OpenSim
+# Creator for Emscripten (wasm) architectures.
 
+# propagate any failures to this script
 set -xeuo pipefail
+
 # install emsdk
 if [ ! -d emsdk ]; then
      git clone https://github.com/emscripten-core/emsdk.git

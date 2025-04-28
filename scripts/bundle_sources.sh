@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-
-# `bundle_sources.sh`: bundles OpenSim Creator's sources into a single
-# tarball, suitable for archiving.
+#
+# Bundles OpenSim Creator's sources into a single tarball, suitable for
+# archiving.
 
 set -xeuo pipefail
 

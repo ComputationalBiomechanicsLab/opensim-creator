@@ -4,30 +4,26 @@ env:
   OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
 
 jobs:
+
   windows2022msvc:
     name: Windows 2022 (amd64, MSVC)
     runs-on: windows-2022
     steps:
 
     - uses: actions/checkout@v4
-      with:
-        path: osc
-        submodules: 'recursive'
 
     - name: build
       run: |
-        cd $env:GITHUB_WORKSPACE\osc
+        cd $env:GITHUB_WORKSPACE
 
-        # run build script
-        #
-        # --system-version is necessary with `windows-2022` runner because the
+        # --system-version is necessary with GitHub's `windows-2022` runner because the
         # default SDK doesn't include `gameinput.h` correctly (see: https://github.com/actions/runner-images/issues/10980)
         python scripts\\build_windows.py --system-version=10.0.26100.0 -j2 || exit /b
 
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-windows-amd64.zip
-        path: osc/osc-build/*windows-amd64.exe
+        path: osc-build/*windows-amd64.exe
         if-no-files-found: error
 
   macos11clang:
@@ -36,8 +32,6 @@ jobs:
     steps:
 
     - uses: actions/checkout@v4
-      with:
-        submodules: 'recursive'
 
     - name: run build script
       run: |
@@ -62,31 +56,23 @@ jobs:
     steps:
 
     - uses: actions/checkout@v4
-      with:
-        path: osc
-        submodules: 'recursive'
 
     - name: setup system
       run: |
-        # install system dependencies
+        cd $GITHUB_WORKSPACE
         sudo apt update
-        sudo apt-get install -y build-essential cmake liblapack-dev libopengl-dev libgl1-mesa-dev libx11-dev libxext-dev
-        sudo apt-get install -y xvfb  # virtual desktop, for tests
+        sudo ./scripts/setup_ubuntu.sh
+        sudo apt-get install -y gcc-12 g++-12 xvfb
 
     - name: run build script
       run: |
-        # set compiler, concurrency, etc.
-        export OSC_BUILD_CONCURRENCY=$(nproc)
-        export CC=gcc-12
-        export CXX=g++-12
-
-        cd $GITHUB_WORKSPACE/osc
-
         # run buildscript under virtual desktop (for UI tests)
-        xvfb-run ./scripts/build_ubuntu-20.04.sh
+        cd $GITHUB_WORKSPACE
+        CC=gcc-12 CXX=g++-12 OSC_BUILD_CONCURRENCY=$(nproc) xvfb-run ./scripts/build_ubuntu.sh
 
     - uses: actions/upload-artifact@v4
       with:
         name: OpenSimCreator_Deb.zip
-        path: osc/osc-build/*.deb
+        path: osc-build/*.deb
         if-no-files-found: error
+

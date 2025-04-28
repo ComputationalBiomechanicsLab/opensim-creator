@@ -48,12 +48,6 @@ namespace osc
     //   on C locale - careful)
     //
     // returns the resulting float if successful, or `std::nullopt` if it fails
-    //
-    // the reason this function exists is because, at time of writing, C++'s
-    // <charconv> `std::from_chars` function isn't implemented in Mac OSX
-    // or Ubuntu20. When they are, feel free to nuke this from orbit.
-    //
-    // see the unittest suite for some of the more unusual things to consider
     std::optional<float> from_chars_strip_whitespace(std::string_view sv);
 
     // returns a string that *may* be truncated with ellipsis (...) if the length

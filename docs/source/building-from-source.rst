@@ -33,7 +33,7 @@ is a step-by-step guide for setting up a typical development environment:
        "Modify windows PATH", add your ``git`` install, which defaults to ``C:\Program Files\Git\bin``).
     3. Verify it's installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``) and run ``git``
 
-2. Get a C++20-compatible compiler (``Visual Studio 17 2022``):
+2. Get Visual Studio >=2022 (C++ compiler - note: **Visual Studio is not the same as Visual Studio Code**):
     1. Download and install it from https://visualstudio.microsoft.com/downloads/
     2. Make sure to select C/C++ development in the installer wizard when it asks
        you which parts you would like to install
@@ -46,7 +46,7 @@ is a step-by-step guide for setting up a typical development environment:
     3. Verify it's installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
        and run ``cmake``.
 
-4. Get ``NSIS`` (if packaging an installer):
+4. Get ``NSIS`` (if you plan on packaging an installer ``.exe``):
     1. Download and install it from https://nsis.sourceforge.io/Download
 
 5. Get ``python`` and ``pip``:
@@ -67,8 +67,7 @@ is a step-by-step guide for setting up a typical development environment:
 
 .. code-block:: bash
 
-    pip install -r docs/requirements.txt
-    pip install -r docs/requirements-dev.txt
+    pip install -r docs/requirements.txt -r docs/requirements-dev.txt
 
 
 Windows Build
@@ -110,37 +109,28 @@ Building on MacOS (Sonoma or newer)
     1. The ``osc-build`` directory should contain the built installer
 
 
-Building on Ubuntu (20.04 or newer)
+Building on Ubuntu (22.04 or newer)
 -----------------------------------
 
 1. Get ``git``:
     1. Install ``git`` via your package manager (e.g. ``apt-get install git``)
 2. Get a C++20-compatible compiler:
-    1. Install ``g++`` / ``clang++``` via your package manager (e.g. ``apt-get install g++``)
-    2. They must be new enough to compile C++20 (e.g. clang >= clang-11)
-    3. If they aren't new enough, most OSes provide a way to install a newer compiler
-       toolchain (e.g. ``apt-get install clang-11``). You can configure which compiler is used
-       to build OpenSim Creator by setting the ``CC`` and ``CXX`` environment variables. E.g.
-       ``CC=clang-11 CXX=clang++-11 ./scripts/build_ubuntu-20.04.sh``
-3. Get C++20-compatible standard library headers (usually required on Ubuntu 20):
-    1. ``sudo apt-get install libstdc++-10-dev``
-4. Get ``cmake``:
+    1. E.g. on Ubuntu 22.04, install ``g++-12`` or ``clang++``` via your package manager (e.g. ``apt-get install g++-12``)
+3. Get ``cmake``:
     1. Install ``cmake`` via your package manager (e.g. ``apt-get install cmake``)
-    2. If your cmake is too old, build one from source, see: https://askubuntu.com/a/865294
-5. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
+4. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
     1. Install ``python3`` and ``pip3`` via your package manager (e.g. ``apt-get install python3 pip3``)
-6. Use ``git`` to get OpenSim Creator's (+ dependencies') source code:
+5. Use ``git`` to get OpenSim Creator's (+ dependencies') source code:
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
 7. Get python libraries (*optional*: you only need this if you want to build documentation):
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
-    2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt && pip install -r docs/requirements-dev.txt```
+    2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt -r docs/requirements-dev.txt```
 8. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
-    1. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables point to compilers that are compatible with C++20. E.g. ``export CC=clang-12``, ``export CXX=clang++-12``
-    3. Run the build script: ``scripts/build_ubuntu-20.04.sh``
-    4. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu-20.04.sh``
+    2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
+       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 scripts/build_ubuntu.sh``
+    3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
 9. Done:
     1. After the build is complete, the ``osc-build`` directory should contain the built installer
-

@@ -54,8 +54,8 @@ Installing on MacOS (Sonoma or newer)
   shouldn't require these steps.
 
 
-Installing on Ubuntu (20 or newer)
-----------------------------------
+Installing on Ubuntu (22.04 or newer)
+-------------------------------------
 
 - Download a ``deb``-based installer from the `GitHub Releases Page`_
 - Double-click the ``.deb`` package and install it through your package manager UI.

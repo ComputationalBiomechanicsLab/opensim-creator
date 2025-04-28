@@ -69,7 +69,7 @@ osc::ColorHSLA::ColorHSLA(const Color& color)
     // - https://stackoverflow.com/questions/39118528/rgb-to-hsl-conversion
 
     const auto [r, g, b, a] = saturate(color);
-    const auto [min, max] = rgs::minmax(std::to_array({r, g, b}));  // CARE: `std::initializer_list<float>` broken in Ubuntu20?
+    const auto [min, max] = rgs::minmax({r, g, b});
     const float delta = max - min;
 
     this->hue = calc_normalized_hsla_hue(r, g, b, min, max, delta);

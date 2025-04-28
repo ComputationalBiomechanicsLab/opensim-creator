@@ -1,7 +1,5 @@
 @echo off
 
-REM `run_via_fontforge_python.bat`
-REM
 REM A hack to run python scripts that use the FontForge python API to work
 REM on a Windows install.
 

@@ -43,8 +43,8 @@ namespace
     float parse_as_float_or_zero(std::string_view str)
     {
         // HACK: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
-        // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
-        // for floating-point values
+        // because MacOS with 14.2 SDK doesn't support the latter (as of May 2025) for
+        // floating-point values.
 
         const std::string s{str};
         size_t pos = 0;

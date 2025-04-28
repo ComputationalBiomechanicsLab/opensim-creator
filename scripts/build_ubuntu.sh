@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 #
-# `build_ubuntu-20.04.sh`: performs an end-to-end build of OpenSim Creator
-# on Ubuntu 20.04
-#
-#     usage (must be ran in repository root): `bash build_ubuntu-20.04.sh`
+# Performs an end-to-end build of OpenSim Creator on Ubuntu >=22.04.
+
 
 # error out of this script if it fails for any reason
 set -xeuo pipefail

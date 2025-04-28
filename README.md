@@ -22,7 +22,7 @@
 OpenSim Creator (`osc`) is a standalone UI for building and editing
 [OpenSim](https://github.com/opensim-org/opensim-core) models. It's available
 as a freestanding all-in-one [installer](../../releases/latest) for Windows 10,
-MacOS (>= v14, Sonoma), and Ubuntu (>= v20, Focal Fossa).
+MacOS (>= v14, Sonoma), and Ubuntu (>= 22.04, Jammy Jellyfish).
 
 `osc` started development in 2021 in the [Biomechanical Engineering](https://www.tudelft.nl/3me/over/afdelingen/biomechanical-engineering)
 department at [TU Delft](https://www.tudelft.nl/). Architecturally, `osc` is a C++ codebase

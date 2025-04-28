@@ -4,7 +4,6 @@
 #include <liboscar/Utils/SharedPreHashedString.h>
 #include <liboscar/Utils/StringName.h>
 
-#include <ankerl/unordered_dense.h>
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -13,14 +12,14 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 using namespace osc;
 namespace rgs = std::ranges;
 
 namespace
 {
-    // TODO: change to `std::unordered_map` after upgrading from Ubuntu20 (doesn't support C++20's transparent hashing)
-    using TransparentMap = ankerl::unordered_dense::map<std::string, int, TransparentStringHasher, std::equal_to<>>;
+    using TransparentMap = std::unordered_map<std::string, int, TransparentStringHasher, std::equal_to<>>;
 }
 
 TEST(TransparentStringHasher, can_construct_unordered_map_that_uses_transparent_string_hasher)
