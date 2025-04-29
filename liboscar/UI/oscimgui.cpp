@@ -47,7 +47,6 @@
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/WindowID.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/UI/Detail/ImGuizmo.h>
@@ -79,6 +78,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <chrono>
 #include <concepts>
 #include <cstddef>
@@ -104,7 +104,7 @@ template<>
 struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
     CursorShape operator()(ImGuiMouseCursor cursor) const
     {
-        static_assert(ImGuiMouseCursor_COUNT == 9);
+        static_assert(ImGuiMouseCursor_COUNT == 11);
 
         switch (cursor) {
         case ImGuiMouseCursor_None:       return CursorShape::Hidden;
@@ -116,6 +116,8 @@ struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
         case ImGuiMouseCursor_ResizeNESW: return CursorShape::ResizeDiagonalNESW;
         case ImGuiMouseCursor_ResizeNWSE: return CursorShape::ResizeDiagonalNWSE;
         case ImGuiMouseCursor_Hand:       return CursorShape::PointingHand;
+        case ImGuiMouseCursor_Wait:       return CursorShape::Wait;
+        case ImGuiMouseCursor_Progress:   return CursorShape::Progress;
         case ImGuiMouseCursor_NotAllowed: return CursorShape::Forbidden;
         default:                          return CursorShape::Arrow;
         }
@@ -702,7 +704,7 @@ namespace
     // freeing the memory with `ImGui::MemFree`
     char* to_imgui_allocated_copy(std::span<const char> span)
     {
-        auto* ptr = cpp20::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
+        auto* ptr = std::bit_cast<char*>(ImGui::MemAlloc(span.size_bytes()));
         rgs::copy(span, ptr);
         return ptr;
     }
@@ -776,7 +778,7 @@ namespace
         rv.WorkPos = os_monitor.usable_bounds().p1;
         rv.WorkSize = dimensions_of(os_monitor.usable_bounds());
         rv.DpiScale = os_monitor.physical_dpi() / 96.0f;
-        rv.PlatformHandle = cpp20::bit_cast<void*>(i);
+        rv.PlatformHandle = std::bit_cast<void*>(i);
         return rv;
     }
 
@@ -1132,7 +1134,7 @@ namespace
         if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
             ImGuiID mouse_viewport_id = 0;
             if (app.is_alive(bd->MouseWindowID)) {
-                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(cpp20::bit_cast<void*>(bd->MouseWindowID))) {
+                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(std::bit_cast<void*>(bd->MouseWindowID))) {
                     mouse_viewport_id = mouse_viewport->ID;
                 }
             }
@@ -3662,37 +3664,6 @@ bool osc::ui::draw_float_circular_slider(
 
 // gizmo stuff
 
-void osc::ui::gizmo_demo_draw_grid(
-    const Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
-    float grid_size,
-    const Rect& screenspace_rect)
-{
-    ImGuizmo::SetRect(
-        screenspace_rect.p1.x,
-        screenspace_rect.p1.y,
-        dimensions_of(screenspace_rect).x,
-        dimensions_of(screenspace_rect).y
-    );
-    ImGuizmo::DrawGrid(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), grid_size);
-}
-
-void osc::ui::gizmo_demo_draw_cube(
-    Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
-    const Rect& screenspace_rect)
-{
-    ImGuizmo::SetRect(
-        screenspace_rect.p1.x,
-        screenspace_rect.p1.y,
-        dimensions_of(screenspace_rect).x,
-        dimensions_of(screenspace_rect).y
-    );
-    ImGuizmo::DrawCubes(value_ptr(view_matrix), value_ptr(projection_matrix), value_ptr(model_matrix), 1);
-}
-
 bool osc::ui::draw_gizmo_mode_selector(Gizmo& gizmo)
 {
     GizmoMode mode = gizmo.mode();
@@ -3846,7 +3817,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // important: necessary for multi-viewport gizmos
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const ScopeExit g{[]{ ImGuizmo::PopID(); }};
 
     // update last-frame cache
@@ -3859,7 +3830,6 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
         dimensions_of(screenspace_rect).y
     );
     ImGuizmo::SetDrawlist(draw_list);
-    ImGuizmo::AllowAxisFlip(false);  // user's didn't like this feature in UX sessions
 
     // use rotation from the parent, translation from station
     Mat4 delta_matrix;
@@ -3879,29 +3849,13 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     if (not gizmo_was_manipulated_by_user) {
         return std::nullopt;  // user is not interacting, so no changes to apply
     }
-    // else: figure out the local-space transform
 
-    // decompose the additional transformation into component parts
-    Vec3 world_translation{};
-    Vec3 world_rotation_in_degrees{};
-    Vec3 world_scale{};
-    ImGuizmo::DecomposeMatrixToComponents(
-        value_ptr(delta_matrix),
-        value_ptr(world_translation),
-        value_ptr(world_rotation_in_degrees),
-        value_ptr(world_scale)
-    );
-
-    return Transform{
-        .scale = world_scale,
-        .rotation = to_worldspace_rotation_quat(EulerAnglesIn<Degrees>{world_rotation_in_degrees}),
-        .position = world_translation,
-    };
+    return decompose_to_transform(delta_matrix);
 }
 
 bool osc::ui::Gizmo::is_using() const
 {
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const bool rv = ImGuizmo::IsUsing();
     ImGuizmo::PopID();
     return rv;
@@ -3909,7 +3863,7 @@ bool osc::ui::Gizmo::is_using() const
 
 bool osc::ui::Gizmo::is_over() const
 {
-    ImGuizmo::PushID(static_cast<int>(std::hash<UID>{}(id_)));
+    ImGuizmo::PushID(id_);
     const bool rv = ImGuizmo::IsOver();
     ImGuizmo::PopID();
     return rv;

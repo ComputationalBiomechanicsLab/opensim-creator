@@ -103,6 +103,7 @@ struct SDL_Window
     bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
     bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
     bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
+    bool update_fullscreen_on_display_changed;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 
@@ -122,7 +123,13 @@ struct SDL_Window
     SDL_HitTest hit_test;
     void *hit_test_data;
 
+    SDL_ProgressState progress_state;
+    float progress_value;
+
     SDL_PropertiesID props;
+
+    int num_renderers;
+    SDL_Renderer **renderers;
 
     SDL_WindowData *internal;
 
@@ -160,6 +167,8 @@ struct SDL_VideoDisplay
     float content_scale;
     SDL_HDROutputProperties HDR;
 
+    // This is true if we are fullscreen or fullscreen is pending
+    bool fullscreen_active;
     SDL_Window *fullscreen_window;
 
     SDL_VideoDevice *device;
@@ -297,6 +306,7 @@ struct SDL_VideoDevice
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*UpdateWindowShape)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+    bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
 
@@ -501,6 +511,7 @@ typedef struct VideoBootStrap
     const char *desc;
     SDL_VideoDevice *(*create)(void);
     bool (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID);  // can be done without initializing backend!
+    bool is_preferred;
 } VideoBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.

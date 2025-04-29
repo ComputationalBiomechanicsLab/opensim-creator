@@ -1,0 +1,28 @@
+#include "ConcatenatingOutputExtractor.h"
+
+#include <libopensimcreator/Documents/OutputExtractors/ConstantOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
+#include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Documents/CustomComponents/BlankComponent.h>
+
+#include <gtest/gtest.h>
+
+using namespace osc;
+
+// Basic functionality test: a `ConcatenatingOutputExtractor` should at least be able to
+// concatenate two floating point outputs (#1025).
+TEST(ConcatenatingOutputExtractor, hasExpectedOutputsWhenConcatenatingTwoFloatOutput)
+{
+    const OutputExtractor lhs = make_output_extractor<ConstantOutputExtractor>("lhslabel", 1.0f);
+    const OutputExtractor rhs = make_output_extractor<ConstantOutputExtractor>("rhslabel", 2.0f);
+    const ConcatenatingOutputExtractor concat{lhs, rhs};
+
+    ASSERT_EQ(concat.getOutputType(), OutputExtractorDataType::Vec2);
+
+    const BlankComponent unusedRoot;
+    const SimulationReport report;
+
+    const Vec2 output = concat.getValueVec2(unusedRoot, report);
+
+    ASSERT_EQ(output, Vec2(1.0f, 2.0f));
+}

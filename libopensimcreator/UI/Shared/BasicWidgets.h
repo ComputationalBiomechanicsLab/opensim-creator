@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libopensimcreator/Documents/OutputExtractors/ComponentOutputSubfield.h>
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Vec2.h>
@@ -62,11 +62,11 @@ namespace osc
     );
     bool DrawRequestOutputMenuOrMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
+        const std::function<void(OutputExtractor)>& onUserSelection
     );
     bool DrawWatchOutputMenu(
         const OpenSim::Component&,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection
+        const std::function<void(OutputExtractor)>& onUserSelection
     );
     void DrawSimulationParams(
         const ParamBlock&
@@ -264,7 +264,7 @@ namespace osc
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile
     );
     void DrawOpenModelButtonWithRecentFilesDropdown(Widget&);
-    void DrawSaveModelButton(IModelStatePair&);
+    void DrawSaveModelButton(const std::shared_ptr<IModelStatePair>&);
     void DrawReloadModelButton(UndoableModelStatePair&);
     void DrawUndoButton(IModelStatePair&);
     void DrawRedoButton(IModelStatePair&);

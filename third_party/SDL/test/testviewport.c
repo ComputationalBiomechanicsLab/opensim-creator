@@ -31,7 +31,6 @@ static bool use_target = false;
 static Uint32 wait_start;
 #endif
 static SDL_Texture *sprite;
-static int sprite_w, sprite_h;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -85,7 +84,7 @@ static void DrawOnViewport(SDL_Renderer *renderer)
     /* Add a box at the top */
     rect.w = 8.0f;
     rect.h = 8.0f;
-    rect.x = (float)((viewport.w - rect.w) / 2);
+    rect.x = (viewport.w - rect.w) / 2;
     rect.y = 0.0f;
     SDL_RenderFillRect(renderer, &rect);
 
@@ -184,8 +183,7 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    sprite = LoadTexture(state->renderers[0], "icon.bmp", true, &sprite_w, &sprite_h);
-
+    sprite = LoadTexture(state->renderers[0], "icon.bmp", true);
     if (!sprite) {
         quit(2);
     }
@@ -227,7 +225,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
     quit(0);
     return 0;

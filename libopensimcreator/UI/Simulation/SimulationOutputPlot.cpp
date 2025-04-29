@@ -70,13 +70,11 @@ namespace
         const OutputExtractor& output)
     {
         if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV")) {
-            api.tryPromptToSaveOutputsAsCSV({output});
+            api.tryPromptToSaveOutputsAsCSV({output}, false);
         }
 
         if (ui::draw_menu_item(OSC_ICON_SAVE "Save as CSV (and open)")) {
-            if (const auto path = api.tryPromptToSaveOutputsAsCSV({output})) {
-                open_file_in_os_default_application(*path);
-            }
+            api.tryPromptToSaveOutputsAsCSV({output}, true);
         }
     }
 
@@ -114,9 +112,8 @@ namespace
                 if (ui::begin_menu(component.getName())) {
                     for (const OpenSim::AbstractOutput& output : extractableOutputs) {
                         ui::push_id(id++);
-                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const OpenSim::AbstractOutput& ao, std::optional<ComponentOutputSubfield> subfield)
+                        DrawRequestOutputMenuOrMenuItem(output, [&oneDimensionalOutputExtractor, &environment](const OutputExtractor& rhs)
                         {
-                            OutputExtractor rhs = subfield ? OutputExtractor{ComponentOutputExtractor{ao, *subfield}} : OutputExtractor{ComponentOutputExtractor{ao}};
                             OutputExtractor concatenating = OutputExtractor{ConcatenatingOutputExtractor{oneDimensionalOutputExtractor, rhs}};
                             environment->overwriteOrAddNewUserOutputExtractor(oneDimensionalOutputExtractor, concatenating);
                         });

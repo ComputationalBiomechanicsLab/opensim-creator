@@ -676,6 +676,9 @@ typedef enum SDL_PixelFormat
     SDL_PIXELFORMAT_EXTERNAL_OES = 0x2053454fu,     /**< Android video texture format */
         /* SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ') */
 
+    SDL_PIXELFORMAT_MJPG = 0x47504a4du,     /**< Motion JPEG */
+        /* SDL_DEFINE_PIXELFOURCC('M', 'J', 'P', 'G') */
+
     /* Aliases for RGBA byte arrays of color data, for the current platform */
     #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888,
@@ -1376,7 +1379,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * (e.g., a completely white pixel in 16-bit RGB565 format would return [0xff,
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
- * \param pixel a pixel value.
+ * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
  *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
@@ -1394,7 +1397,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b);
 
 /**
  * Get RGBA values from a pixel in the specified format.
@@ -1407,7 +1410,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * If the surface has no alpha component, the alpha will be returned as 0xff
  * (100% opaque).
  *
- * \param pixel a pixel value.
+ * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
  *               format.
  * \param palette an optional palette for indexed formats, may be NULL.
@@ -1426,7 +1429,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * \sa SDL_MapRGB
  * \sa SDL_MapRGBA
  */
-extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
+extern SDL_DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixelvalue, const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 
 /* Ends C function definitions when using C++ */

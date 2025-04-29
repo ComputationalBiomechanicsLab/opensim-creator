@@ -68,8 +68,8 @@ static void Draw(DrawState *s)
             s->scale_direction = 1;
         }
     }
-    s->sprite_rect.x = (float)((viewport.w - s->sprite_rect.w) / 2);
-    s->sprite_rect.y = (float)((viewport.h - s->sprite_rect.h) / 2);
+    s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
+    s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
     SDL_RenderTexture(s->renderer, s->sprite, NULL, &s->sprite_rect);
 
@@ -126,12 +126,13 @@ int main(int argc, char *argv[])
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true, NULL, NULL);
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false, NULL, NULL);
+        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
         SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+        SDL_SetTextureScaleMode(drawstate->sprite, SDL_SCALEMODE_PIXELART);
         drawstate->scale_direction = 1;
     }
 
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
 
     SDL_stack_free(drawstates);

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 #
-# `bump_zenodo_details`: automatically updates relevant source files in
-# the repository (e.g. the README, CITATION.cff) to point at the latest
-# Zenodo release
+# Automatically updates relevant source files in the repository (e.g. the
+# README, CITATION.cff) to point at the latest Zenodo release.
 #
-#     usage: `python bump_zenodo_details.py` (follow the prompts)
-#            `git diff` (ensure it made sane changes)
+# USAGE
+#
+#     python scripts/bump_zenodo_details.py  # follow the prompts this gives
+#     git diff                               # ensure the script made sane changes
 
 import datetime
 import re

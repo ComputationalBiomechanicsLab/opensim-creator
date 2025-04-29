@@ -20,7 +20,6 @@ if (NOT ${OSC_EMSCRIPTEN})
     # source code).
     find_package(glad REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)
-    find_package(nativefiledialog REQUIRED CONFIG)
 endif()
 find_package(imgui REQUIRED CONFIG)
 find_package(implot REQUIRED CONFIG)
@@ -75,7 +74,6 @@ PRIVATE
     # supported by the emscripten build (they're #ifdef'd out)
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:glad>
     $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:SDL3::SDL3>
-    $<$<NOT:$<BOOL:${OSC_EMSCRIPTEN}>>:nativefiledialog>
 
     unordered_dense::unordered_dense
     tomlplusplus::tomlplusplus

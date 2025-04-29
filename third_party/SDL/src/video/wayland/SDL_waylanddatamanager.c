@@ -272,7 +272,7 @@ void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSo
     }
 }
 
-static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
+static void *Wayland_clone_data_buffer(const void *buffer, const size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer) {
@@ -371,18 +371,16 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
         SDL_SetError("Could not read pipe");
     } else {
         wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
-
-        // TODO: Needs pump and flush?
-        WAYLAND_wl_display_flush(data_device->video_data->display);
-
         close(pipefd[1]);
+
+        WAYLAND_wl_display_flush(data_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
         close(pipefd[0]);
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In Wayland_data_offer_receive for '%s', buffer (%ld) at %p\n",
+                 ". In Wayland_data_offer_receive for '%s', buffer (%zu) at %p",
                  mime_type, *length, buffer);
     return buffer;
 }
@@ -407,18 +405,16 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
         SDL_SetError("Could not read pipe");
     } else {
         zwp_primary_selection_offer_v1_receive(offer->offer, mime_type, pipefd[1]);
-
-        // TODO: Needs pump and flush?
-        WAYLAND_wl_display_flush(primary_selection_device->video_data->display);
-
         close(pipefd[1]);
+
+        WAYLAND_wl_display_flush(primary_selection_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
         close(pipefd[0]);
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In Wayland_primary_selection_offer_receive for '%s', buffer (%ld) at %p\n",
+                 ". In Wayland_primary_selection_offer_receive for '%s', buffer (%zu) at %p",
                  mime_type, *length, buffer);
     return buffer;
 }

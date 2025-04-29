@@ -14,6 +14,7 @@
 #include <liboscar/Graphics/Scene/SceneRenderer.h>
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/AABB.h>
+#include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Vec2.h>
@@ -30,6 +31,16 @@ using namespace osc;
 
 namespace
 {
+    bool IsPartOfVisibilitySet(const SceneDecoration& dec)
+    {
+        // If it's a decoration that's either fully drawn or a wireframe, it's part of the
+        // scene's visible bounds (invisible objects may cast shadows, but they shouldn't be
+        // considered part of the visible bounds, #1029).
+        return
+            (not (dec.flags & SceneDecorationFlag::NoDrawInScene)) or
+            (dec.flags & SceneDecorationFlag::DrawWireframeOverlay);
+    }
+
     // cache for decorations generated from a model+state+params
     class CachedDecorationState final {
     public:
@@ -51,10 +62,14 @@ namespace
             {
                 m_Drawlist.clear();
                 m_BVH.clear();
+                m_VisibleAABB.reset();
 
                 // regenerate
                 const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
+                    if (IsPartOfVisibilitySet(dec)) {
+                        m_VisibleAABB = bounding_aabb_of(m_VisibleAABB, worldspace_bounds_of(dec));
+                    }
                     m_Drawlist.push_back(std::move(dec));
                 };
                 GenerateDecorations(
@@ -90,7 +105,14 @@ namespace
 
         std::span<const SceneDecoration> getDrawlist() const { return m_Drawlist; }
         const BVH& getBVH() const { return m_BVH; }
-        std::optional<AABB> getAABB() const { return m_BVH.bounds(); }
+        std::optional<AABB> getAABB() const
+        {
+            return m_BVH.bounds();
+        }
+        std::optional<AABB> getVisibleAABB() const
+        {
+            return m_VisibleAABB;
+        }
         SceneCache& updSceneCache() const
         {
             // TODO: technically (imo) this breaks `const`
@@ -104,6 +126,7 @@ namespace
         OverlayDecorationOptions m_PrevOverlayOptions;
         std::vector<SceneDecoration> m_Drawlist;
         BVH m_BVH;
+        std::optional<AABB> m_VisibleAABB;
     };
 }
 
@@ -120,7 +143,7 @@ public:
         float aspectRatio)
     {
         m_DecorationCache.update(modelState, params);
-        if (const std::optional<AABB> aabb = m_DecorationCache.getAABB()) {
+        if (const std::optional<AABB> aabb = m_DecorationCache.getVisibleAABB()) {
             auto_focus(params.camera, *aabb, aspectRatio);
         }
     }
@@ -168,6 +191,11 @@ public:
     std::optional<AABB> bounds() const
     {
         return m_DecorationCache.getAABB();
+    }
+
+    std::optional<AABB> visibleBounds() const
+    {
+        return m_DecorationCache.getVisibleAABB();
     }
 
     std::optional<SceneCollision> getClosestCollision(
@@ -236,6 +264,11 @@ std::span<const SceneDecoration> osc::CachedModelRenderer::getDrawlist() const
 std::optional<AABB> osc::CachedModelRenderer::bounds() const
 {
     return m_Impl->bounds();
+}
+
+std::optional<AABB> osc::CachedModelRenderer::visibleBounds() const
+{
+    return m_Impl->visibleBounds();
 }
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(

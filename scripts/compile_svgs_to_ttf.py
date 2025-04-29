@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-
-# `compile_svgs_to_ttf.py`
 #
 # Uses `build_resources/font-mappings.json` and FontForge to compile OpenSim
 # Creator's raw SVG icons into an icon font.

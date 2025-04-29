@@ -300,6 +300,7 @@ static void DestroyThing(Thing *thing)
     }
 
     if (thing->prev) {
+        SDL_assert(thing != things);
         thing->prev->next = thing->next;
     } else {
         SDL_assert(thing == things);
@@ -717,16 +718,15 @@ static Texture *CreateTexture(const char *fname)
     if (!tex) {
         SDL_Log("Out of memory!");
     } else {
-        int texw, texh;
-        tex->texture = LoadTexture(state->renderers[0], fname, true, &texw, &texh);
+        tex->texture = LoadTexture(state->renderers[0], fname, true);
         if (!tex->texture) {
             SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
             SDL_free(tex);
             return NULL;
         }
         SDL_SetTextureBlendMode(tex->texture, SDL_BLENDMODE_BLEND);
-        tex->w = (float) texw;
-        tex->h = (float) texh;
+        tex->w = (float)tex->texture->w;
+        tex->h = (float)tex->texture->h;
     }
     return tex;
 }

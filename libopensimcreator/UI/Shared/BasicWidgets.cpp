@@ -4,6 +4,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
+#include <libopensimcreator/Documents/OutputExtractors/ForceRecordOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
@@ -71,30 +72,26 @@ namespace
     // prompts the user for a save location and then exports a DAE file containing the 3D scene
     void TryPromptUserToSaveAsDAE(std::span<const SceneDecoration> scene)
     {
-        std::optional<std::filesystem::path> maybeDAEPath =
-            prompt_user_for_file_save_location_add_extension_if_necessary("dae");
-
-        if (!maybeDAEPath)
+        App::upd().prompt_user_to_save_file_with_extension_async([scene = std::vector(scene.begin(), scene.end())](std::optional<std::filesystem::path> p)
         {
-            return;  // user cancelled out
-        }
-        const std::filesystem::path& daePath = *maybeDAEPath;
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-        std::ofstream outfile{daePath};
+            std::ofstream outfile{*p};
+            if (not outfile) {
+                log_error("cannot save to %s: IO error", p->string().c_str());
+                return;
+            }
 
-        if (!outfile)
-        {
-            log_error("cannot save to %s: IO error", daePath.string().c_str());
-            return;
-        }
+            DAEMetadata daeMetadata{
+                App::get().human_readable_name(),
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        DAEMetadata daeMetadata{
-            App::get().human_readable_name(),
-            App::get().application_name_with_version_and_buildid(),
-        };
-
-        write_as_dae(outfile, scene, daeMetadata);
-        log_info("wrote scene as a DAE file to %s", daePath.string().c_str());
+            write_as_dae(outfile, scene, daeMetadata);
+            log_info("wrote scene as a DAE file to %s", p->string().c_str());
+        }, "dae");
     }
 
     void DrawOutputTooltip(const OpenSim::AbstractOutput& o)
@@ -106,7 +103,7 @@ namespace
 
     bool DrawOutputWithSubfieldsMenu(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+        const std::function<void(OutputExtractor)>& onUserSelection)
     {
         bool outputAdded = false;
         ComponentOutputSubfields supportedSubfields = GetSupportedSubfields(o);
@@ -120,7 +117,7 @@ namespace
                 {
                     if (auto label = GetOutputSubfieldLabel(f); label && ui::draw_menu_item(*label))
                     {
-                        onUserSelection(o, f);
+                        onUserSelection(OutputExtractor{ComponentOutputExtractor{o, f}});
                         outputAdded = true;
                     }
                 }
@@ -138,7 +135,7 @@ namespace
 
     bool DrawOutputWithNoSubfieldsMenuItem(
         const OpenSim::AbstractOutput& o,
-        const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+        const std::function<void(OutputExtractor)>& onUserSelection)
     {
         // can only plot top-level of output
 
@@ -146,7 +143,7 @@ namespace
 
         if (ui::draw_menu_item(("  " + o.getName())))
         {
-            onUserSelection(o, std::nullopt);
+            onUserSelection(OutputExtractor{ComponentOutputExtractor{o}});
             outputAdded = true;
         }
 
@@ -194,44 +191,40 @@ namespace
         const OpenSim::Mesh& openSimMesh,
         const OpenSim::Frame& frame)
     {
-        // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("obj");
-        if (!maybeUserSaveLocation)
+        // Pre-write mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
-        // load raw mesh data into an osc mesh for processing
-        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-        // bake transform into mesh data
-        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+            const ObjMetadata objMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
+            write_as_obj(ss, oscMesh, objMetadata, ObjWriterFlag::NoWriteNormals);
         }
 
-        const ObjMetadata objMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+        // Asynchronously prompt the user and write the data
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-        write_as_obj(
-            outputFileStream,
-            oscMesh,
-            objMetadata,
-            ObjWriterFlag::NoWriteNormals
-        );
+            // write transformed mesh to output
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
+                return;
+            }
+
+            ofs << content;
+        }, "obj");
     }
 
     void ActionReexportMeshSTLWithRespectTo(
@@ -240,39 +233,40 @@ namespace
         const OpenSim::Mesh& openSimMesh,
         const OpenSim::Frame& frame)
     {
-        // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("stl");
-        if (!maybeUserSaveLocation)
+        // Pre-write the mesh data in-memory so that the asynchronous callback isn't dependent
+        // on a bunch of state.
+        std::stringstream ss;
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            // load raw mesh data into an osc mesh for processing
+            Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
 
-        // load raw mesh data into an osc mesh for processing
-        Mesh oscMesh = ToOscMesh(model, state, openSimMesh);
+            // bake transform into mesh data
+            oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-        // bake transform into mesh data
-        oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
+            const StlMetadata stlMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
+            write_as_stl(ss, oscMesh, stlMetadata);
         }
 
-        const StlMetadata stlMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+        // Asynchronously prompt the user for a save location and write the content to it.
+        App::upd().prompt_user_to_save_file_with_extension_async([content = std::move(ss).str()](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-        write_as_stl(outputFileStream, oscMesh, stlMetadata);
+            // write transformed mesh to output
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
+                return;
+            }
+
+            ofs << content;
+        }, "stl");
     }
 
     void drawTooltipOrContextMenuContentText(const OpenSim::Component& c)
@@ -400,7 +394,7 @@ void osc::DrawSelectOwnerMenu(IModelStatePair& model, const OpenSim::Component& 
 
 bool osc::DrawRequestOutputMenuOrMenuItem(
     const OpenSim::AbstractOutput& o,
-    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+    const std::function<void(OutputExtractor)>& onUserSelection)
 {
     if (GetSupportedSubfields(o) == ComponentOutputSubfield::None)
     {
@@ -414,23 +408,35 @@ bool osc::DrawRequestOutputMenuOrMenuItem(
 
 bool osc::DrawWatchOutputMenu(
     const OpenSim::Component& c,
-    const std::function<void(const OpenSim::AbstractOutput&, std::optional<ComponentOutputSubfield>)>& onUserSelection)
+    const std::function<void(OutputExtractor)>& onUserSelection)
 {
     bool outputAdded = false;
 
     if (ui::begin_menu("Watch Output")) {
-        if (c.getNumOutputs() == 0) {
-            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
+        int entriesDrawn = 0;
+        for (const auto& [name, output] : c.getOutputs()) {
+            ui::push_id(entriesDrawn++);
+            if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+                outputAdded = true;
+            }
+            ui::pop_id();
         }
-        else {
-            int id = 0;
-            for (const auto& [name, output] : c.getOutputs()) {
-                ui::push_id(id++);
-                if (DrawRequestOutputMenuOrMenuItem(*output, onUserSelection)) {
+
+        // Edge-case: `Force`s have record-based outputs, which should also be exposed
+        if (const auto* f = dynamic_cast<const OpenSim::Force*>(&c)) {
+            const OpenSim::Array<std::string> labels = f->getRecordLabels();
+            for (int i = 0; i < labels.size(); ++i) {
+                ui::push_id(entriesDrawn++);
+                if (ui::draw_menu_item("  " + labels[i])) {
+                    onUserSelection(OutputExtractor{ForceRecordOutputExtractor{*f, i}});
                     outputAdded = true;
                 }
                 ui::pop_id();
             }
+        }
+
+        if (entriesDrawn == 0) {
+            ui::draw_text_disabled("%s has no outputs", c.getName().c_str());
         }
         ui::end_menu();
     }
@@ -1374,11 +1380,10 @@ void osc::DrawOpenModelButtonWithRecentFilesDropdown(Widget& api)
     });
 }
 
-void osc::DrawSaveModelButton(
-    IModelStatePair& model)
+void osc::DrawSaveModelButton(const std::shared_ptr<IModelStatePair>& model)
 {
     if (ui::draw_button(OSC_ICON_SAVE)) {
-        ActionSaveModel(model);
+        ActionSaveModelAsync(model);
     }
     ui::draw_tooltip_if_item_hovered("Save Model", "Saves the model to an osim file");
 }

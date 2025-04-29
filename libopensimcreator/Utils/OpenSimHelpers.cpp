@@ -1369,16 +1369,21 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
 
 namespace
 {
+    struct FirstContactHalfSpaceInHCF final {
+        const OpenSim::ContactHalfSpace* ptr = nullptr;
+        size_t index = 0;
+    };
+
     // returns the first ContactHalfSpace found within the given HuntCrossleyForce's parameters, or
     // nullptr, if no ContactHalfSpace could be found
-    const OpenSim::ContactHalfSpace* TryFindFirstContactHalfSpace(
+    std::optional<FirstContactHalfSpaceInHCF> FindFirstContactHalfSpaceInHCF(
         const OpenSim::Model& model,
         const OpenSim::HuntCrossleyForce& hcf)
     {
         // get contact parameters (i.e. where the contact geometry is stored)
         const OpenSim::HuntCrossleyForce::ContactParametersSet& paramSet = hcf.get_contact_parameters();
         if (empty(paramSet)) {
-            return nullptr;  // edge-case: the force has no parameters
+            return std::nullopt;  // edge-case: the force has no parameters
         }
 
         // linearly search for a ContactHalfSpace
@@ -1390,15 +1395,15 @@ namespace
                 const std::string& geomNameOrPath = At(geomProperty, j);
                 if (const auto* foundViaAbsPath = FindComponent<OpenSim::ContactHalfSpace>(model, geomNameOrPath)) {
                     // found it as an abspath within the model
-                    return foundViaAbsPath;
+                    return FirstContactHalfSpaceInHCF{.ptr = foundViaAbsPath, .index = j};
                 }
                 else if (const auto* foundViaRelativePath = FindComponent<OpenSim::ContactHalfSpace>(model.getContactGeometrySet(), geomNameOrPath)) {
                     // found it as a relative path/name within the contactgeometryset
-                    return foundViaRelativePath;
+                    return FirstContactHalfSpaceInHCF{.ptr = foundViaRelativePath, .index = j};
                 }
             }
         }
-        return nullptr;
+        return std::nullopt;
     }
 
     // helper: try to extract the current (state-dependent) force+torque from a HuntCrossleyForce
@@ -1406,30 +1411,24 @@ namespace
         Vec3 force;
         Vec3 torque;
     };
-    std::optional<ForceTorque> TryComputeCurrentForceTorque(
+    std::optional<ForceTorque> CalcHCFForceOnContactHalfSpace(
         const OpenSim::HuntCrossleyForce& hcf,
+        size_t firstContactHalfSpaceIndex,
         const SimTK::State& state)
     {
+        const int offset = static_cast<int>(6*firstContactHalfSpaceIndex);
+
         const OpenSim::Array<double> forces = hcf.getRecordValues(state);
-        if (forces.size() < 6) {
+        if (forces.size() < offset + 6) {
             return std::nullopt;  // edge-case: OpenSim didn't report the expected forces
         }
 
-        const Vec3 force{
-            static_cast<float>(-forces[0]),
-            static_cast<float>(-forces[1]),
-            static_cast<float>(-forces[2]),
-        };
-
+        const Vec3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
         if (length2(force) < epsilon_v<float>) {
             return std::nullopt;  // edge-case: no force is actually being exerted
         }
 
-        const Vec3 torque{
-            static_cast<float>(-forces[3]),
-            static_cast<float>(-forces[4]),
-            static_cast<float>(-forces[5]),
-        };
+        const Vec3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
 
         return ForceTorque{force, torque};
     }
@@ -1437,7 +1436,7 @@ namespace
     // helper: convert an OpenSim::ContactHalfSpace, which is defined in a frame with an offset,
     //         etc. into a simpler "plane in ground-space" representation that's more useful
     //         for rendering
-    Plane ToAnalyticPlaneInGround(
+    Plane ToPointNormalPlaneInGround(
         const OpenSim::ContactHalfSpace& halfSpace,
         const SimTK::State& state)
     {
@@ -1445,43 +1444,34 @@ namespace
         //
         // - if there's a plane, then the plane's location+normal are needed in order
         //   to figure out where the force is exerted
-        const auto body2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
-        const auto geom2body = to<Transform>(halfSpace.getTransform());
+        const auto parent2ground = to<Transform>(halfSpace.getFrame().getTransformInGround(state));
+        const auto halfspace2parent = to<Transform>(halfSpace.getTransform());
 
-        const Vec3 originInGround = body2ground * to<Vec3>(halfSpace.get_location());
-        const Vec3 normalInGround = normalize(body2ground.rotation * geom2body.rotation) * c_ContactHalfSpaceUpwardsNormal;
-
-        return Plane{originInGround, normalInGround};
+        return Plane{
+            .origin = parent2ground * halfspace2parent.position,
+            .normal = parent2ground.rotation * halfspace2parent.rotation * c_ContactHalfSpaceUpwardsNormal,
+        };
     }
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
-    std::optional<Vec3> ComputeCenterOfPressure(
+    std::optional<Vec3> CalcCenterOfPressure(
         const Plane& plane,
-        const ForceTorque& forceTorque,
-        float minimumForce = epsilon_v<float>)
+        const ForceTorque& forceTorqueInG)
     {
-        const float forceScaler = dot(plane.normal, forceTorque.force);
-
-        if (abs(forceScaler) < minimumForce) {
-            // edge-case: the resulting force vector is too small
-            return std::nullopt;
+        const auto& [force, torque] = forceTorqueInG;
+        if (abs(dot(plane.normal, force)) < epsilon_v<float>) {
+            return std::nullopt;  // the force vector is orthogonal to the plane's surface
         }
 
-        if (abs(dot(plane.normal, normalize(forceTorque.torque))) >= 1.0f - epsilon_v<float>) {
-            // pedantic: the resulting torque is aligned with the plane normal, making
-            // the cross product undefined later
-            return std::nullopt;
-        }
-
-        // this maths seems sketchy, it's inspired by SCONE/model_tools.cpp:GetPlaneCop but
-        // it feels a bit like `p1` is always going to be zero
-        const Vec3 pos = cross(plane.normal, forceTorque.torque) / forceScaler;
-        const Vec3 posRelativeToPlaneOrigin = pos - plane.origin;
-        const float p1 = dot(posRelativeToPlaneOrigin, plane.normal);
-        const float p2 = forceScaler;
-
-        return pos - (p1/p2)*forceTorque.force;
+        // see also: SCONE/model_tools.cpp:GetPlaneCop
+        auto normal_force_scalar = dot(force, plane.normal);
+        auto pos0 = cross(plane.normal, torque) / normal_force_scalar;
+        Vec3 delta_pos = pos0 - plane.origin;
+        double p1 = dot(delta_pos, plane.normal);
+        double p2 = dot(force, plane.normal);
+        auto pos = pos0 - (p1/p2) * force;
+        return pos;
     }
 }
 
@@ -1490,26 +1480,28 @@ std::optional<ForcePoint> osc::TryGetContactForceInGround(
     const SimTK::State& state,
     const OpenSim::HuntCrossleyForce& hcf)
 {
-    // try and find a contact half space to attach the force vectors to
-    const OpenSim::ContactHalfSpace* const maybeContactHalfSpace = TryFindFirstContactHalfSpace(model, hcf);
-    if (!maybeContactHalfSpace) {
+    // Find the first `OpenSim::ContactHalfSpace` in the HCF's contact set.
+    auto const contactHalfSpace = FindFirstContactHalfSpaceInHCF(model, hcf);
+    if (not contactHalfSpace) {
         return std::nullopt;  // couldn't find a ContactHalfSpace
     }
-    const Plane contactPlaneInGround = ToAnalyticPlaneInGround(*maybeContactHalfSpace, state);
 
-    // try and compute the force vectors
-    const std::optional<ForceTorque> maybeForceTorque = TryComputeCurrentForceTorque(hcf, state);
-    if (!maybeForceTorque) {
+    // Calculate the equivalent point-normal `Plane` for the `OpenSim::ContactHalfSpace`.
+    const Plane contactPlaneInG = ToPointNormalPlaneInGround(*contactHalfSpace->ptr, state);
+
+    // Extract the force+torque that the HCF is applying to the `OpenSim::ContactHalfSpace`.
+    const auto forceTorqueAppliedToPlane = CalcHCFForceOnContactHalfSpace(hcf, contactHalfSpace->index, state);
+    if (not forceTorqueAppliedToPlane) {
         return std::nullopt;  // couldn't extract force+torque from the HCF
     }
-    const ForceTorque& forceTorque = *maybeForceTorque;
 
-    const std::optional<Vec3> maybePosition = ComputeCenterOfPressure(contactPlaneInGround, forceTorque);
-    if (!maybePosition) {
+    // Use the force+torque applied to the `Plane`'s origin to calculate the center of pressure.
+    const auto contactPlaneCOP = CalcCenterOfPressure(contactPlaneInG, *forceTorqueAppliedToPlane);
+    if (not contactPlaneCOP) {
         return std::nullopt;  // the resulting force is too small
     }
 
-    return ForcePoint{forceTorque.force, *maybePosition};
+    return ForcePoint{forceTorqueAppliedToPlane->force, *contactPlaneCOP};
 }
 
 const OpenSim::PhysicalFrame& osc::GetFrameUsingExternalForceLookupHeuristic(

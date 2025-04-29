@@ -72,7 +72,7 @@ char *GetResourceFilename(const char *user_specified, const char *def)
  *
  * If height_out is non-NULL, set it to the texture height.
  */
-SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent, int *width_out, int *height_out)
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent)
 {
     SDL_Surface *temp = NULL;
     SDL_Texture *texture = NULL;
@@ -117,17 +117,9 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transpar
             }
         }
 
-        if (width_out) {
-            *width_out = temp->w;
-        }
-
-        if (height_out) {
-            *height_out = temp->h;
-        }
-
         texture = SDL_CreateTextureFromSurface(renderer, temp);
         if (!texture) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s", SDL_GetError());
         }
     }
     SDL_DestroySurface(temp);

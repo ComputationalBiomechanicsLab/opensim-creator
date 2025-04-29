@@ -23,8 +23,7 @@
 #endif
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+static void quit(int rc)
 {
     SDL_Quit();
     /* Let 'main()' return normally */
@@ -33,9 +32,9 @@ quit(int rc)
     }
 }
 
-static int SDLCALL
-button_messagebox(void *eventNumber)
+static int SDLCALL button_messagebox(void *eventNumber)
 {
+    int i;
     const SDL_MessageBoxButtonData buttons[] = {
         { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
           0,
@@ -43,52 +42,78 @@ button_messagebox(void *eventNumber)
         { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
           1,
           "Cancel" },
+        { 0,
+          2,
+          "Retry" }
     };
-
     SDL_MessageBoxData data = {
         SDL_MESSAGEBOX_INFORMATION,
         NULL, /* no parent window */
         "Custom MessageBox",
         "This is a custom messagebox",
-        2,
+        SDL_arraysize(buttons),
         NULL, /* buttons */
         NULL  /* Default color scheme */
     };
 
-    int button = -1;
-    int success = 0;
-    data.buttons = buttons;
-    if (eventNumber) {
-        data.message = "This is a custom messagebox from a background thread.";
-    }
+    for (i = 0; ; ++i) {
+        SDL_MessageBoxColorScheme colorScheme;
+        if (i != 0) {
+            int j;
+            for (j = 0; j < SDL_MESSAGEBOX_COLOR_COUNT; ++j) {
+                colorScheme.colors[j].r = SDL_rand(256);
+                colorScheme.colors[j].g = SDL_rand(256);
+                colorScheme.colors[j].b = SDL_rand(256);
+            }
+            data.colorScheme = &colorScheme;
+        } else {
+            data.colorScheme = NULL;
+        }
 
-    success = SDL_ShowMessageBox(&data, &button);
-    if (success == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        int button = -1;
+        data.buttons = buttons;
+        if (eventNumber) {
+            data.message = "This is a custom messagebox from a background thread.";
+        }
+
+        if (!SDL_ShowMessageBox(&data, &button)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
+            if (eventNumber) {
+                SDL_Event event;
+                event.type = (Uint32)(intptr_t)eventNumber;
+                SDL_PushEvent(&event);
+                return 1;
+            } else {
+                quit(2);
+            }
+        }
+
+        const char* text;
+        if (button == 1) {
+            text = "Cancel";
+        } else if (button == 2) {
+            text = "Retry";
+        } else {
+            text = "OK";
+        }
+        SDL_Log("Pressed button: %d, %s", button, button == -1 ? "[closed]" : text);
+
         if (eventNumber) {
             SDL_Event event;
             event.type = (Uint32)(intptr_t)eventNumber;
             SDL_PushEvent(&event);
-            return 1;
-        } else {
-            quit(2);
         }
-    }
-    SDL_Log("Pressed button: %d, %s\n", button, button == -1 ? "[closed]" : button == 1 ? "Cancel"
-                                                                                        : "OK");
 
-    if (eventNumber) {
-        SDL_Event event;
-        event.type = (Uint32)(intptr_t)eventNumber;
-        SDL_PushEvent(&event);
+        if (button == 2) {
+            continue;
+        }
+        return 0;
     }
-
-    return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    int success;
+    bool success;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
@@ -107,7 +132,7 @@ int main(int argc, char *argv[])
                                        "This is a simple error MessageBox",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -116,7 +141,7 @@ int main(int argc, char *argv[])
                                        "This is a simple MessageBox with a newline:\r\nHello world!",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -125,7 +150,7 @@ int main(int argc, char *argv[])
                                        "NULL Title",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -134,7 +159,7 @@ int main(int argc, char *argv[])
                                        NULL,
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -144,7 +169,7 @@ int main(int argc, char *argv[])
                                        "Unicode text: '牛肉西蘭花' ...",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -154,7 +179,7 @@ int main(int argc, char *argv[])
                                        "Unicode text and newline:\r\n'牛肉西蘭花'\n'牛肉西蘭花'",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -164,7 +189,7 @@ int main(int argc, char *argv[])
                                        "Unicode text in the title.",
                                        NULL);
     if (!success) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
         quit(1);
     }
 
@@ -177,7 +202,7 @@ int main(int argc, char *argv[])
        subsystem on the main thread.
      */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s", SDL_GetError());
         return 1;
     }
     {
@@ -194,7 +219,7 @@ int main(int argc, char *argv[])
 
         SDL_WaitThread(thread, &status);
 
-        SDL_Log("Message box thread return %i\n", status);
+        SDL_Log("Message box thread return %i", status);
     }
 
     /* Test showing a message box with a parent window */
@@ -213,7 +238,7 @@ int main(int argc, char *argv[])
                                            "This is a simple error MessageBox with a parent window. Press a key or close the window after dismissing this messagebox.",
                                            window);
         if (!success) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting MessageBox: %s", SDL_GetError());
             quit(1);
         }
 

@@ -44,7 +44,7 @@ using namespace osc;
 
 namespace
 {
-    void LoadMotionAgainstModel(std::shared_ptr<IModelStatePair> model, Widget* parent)
+    void LoadMotionAgainstModel(const std::shared_ptr<IModelStatePair>& model, Widget* parent)
     {
         if (not model) {
             return;  // Nothing to load the motion against.
@@ -57,7 +57,7 @@ namespace
         // Asynchronously ask the user to select a motion file and then load the motion
         // file against the model and show the result in a new tab.
         App::upd().prompt_user_to_select_file_async(
-            [model, parent_ref = parent->weak_ref()](FileDialogResponse response)
+            [model, parent_ref = parent->weak_ref()](const FileDialogResponse& response)
             {
                 if (response.size() != 1) {
                     return;  // Error or user somehow selected too many files.
@@ -104,7 +104,7 @@ osc::MainMenuFileTab::MainMenuFileTab(Widget* parent) :
     rgs::sort(exampleOsimFiles, is_filename_lexicographically_greater_than);
 }
 
-void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
+void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)  // NOLINT(performance-unnecessary-value-param)
 {
     auto undoableModel = std::dynamic_pointer_cast<UndoableModelStatePair>(maybeModel);
 
@@ -123,10 +123,10 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
             }
         }
         else if (undoableModel and mod and ui::is_shift_down() and ui::is_key_pressed(Key::S)) {
-            ActionSaveCurrentModelAs(*undoableModel);
+            ActionSaveCurrentModelAs(undoableModel);
         }
         else if (undoableModel and mod and ui::is_key_pressed(Key::S)) {
-            ActionSaveModel(*undoableModel);
+            ActionSaveModelAsync(undoableModel);
         }
         else if (undoableModel and ui::is_key_pressed(Key::F5)) {
             ActionReloadOsimFromDisk(*undoableModel, *App::singleton<SceneCache>());
@@ -191,13 +191,13 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save", KeyModifier::Ctrl | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveModel(*undoableModel);
+            ActionSaveModelAsync(undoableModel);
         }
     }
 
     if (ui::draw_menu_item(OSC_ICON_SAVE " Save As", KeyModifier::Ctrl | KeyModifier::Shift | Key::S, false, undoableModel != nullptr)) {
         if (undoableModel) {
-            ActionSaveCurrentModelAs(*undoableModel);
+            ActionSaveCurrentModelAs(undoableModel);
         }
     }
 

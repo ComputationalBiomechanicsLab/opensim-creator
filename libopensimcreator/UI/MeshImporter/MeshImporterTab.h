@@ -1,8 +1,10 @@
 #pragma once
 
 #include <liboscar/UI/Tabs/Tab.h>
+#include <liboscar/UI/Tabs/TabSaveResult.h>
 
 #include <filesystem>
+#include <future>
 #include <vector>
 
 namespace osc { class Widget; }
@@ -18,7 +20,7 @@ namespace osc::mi
 
     private:
         bool impl_is_unsaved() const final;
-        bool impl_try_save() final;
+        std::future<TabSaveResult> impl_try_save() final;
         void impl_on_mount() final;
         void impl_on_unmount() final;
         bool impl_on_event(Event&) final;

@@ -935,26 +935,23 @@ namespace
         }
     }
 
-    void TrySavePlotToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const Plot& plot, const std::filesystem::path& outPath)
+    void WritePlotAsCSV(
+        const OpenSim::Coordinate& coord,
+        const PlotParameters& params,
+        const Plot& plot,
+        std::ostream& out)
     {
-        std::ofstream fileOutputStream{outPath};
-        if (!fileOutputStream)
-        {
-            return;  // error opening outfile
-        }
-
         // write header
         write_csv_row(
-            fileOutputStream,
+            out,
             std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
 
         // write data rows
         auto lock = plot.lockDataPoints();
-        for (const PlotDataPoint& p : *lock)
-        {
+        for (const PlotDataPoint& p : *lock) {
             write_csv_row(
-                fileOutputStream,
+                out,
                 std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
         }
@@ -962,13 +959,24 @@ namespace
 
     void ActionPromptUserToSavePlotToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const Plot& plot)
     {
-        const std::optional<std::filesystem::path> maybeCSVPath =
-            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
+        // Pre-write the CSV in memory so that the asynchronous user request isn't dependent on
+        // any UI state.
+        std::stringstream ss;
+        WritePlotAsCSV(coord, params, plot, ss);
 
-        if (maybeCSVPath)
+        // Asynchronously request the save location from the user and write it
+        App::upd().prompt_user_to_save_file_with_extension_async([csv = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
-            TrySavePlotToCSV(coord, params, plot, *maybeCSVPath);
-        }
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+            std::ofstream ofs{*p};
+            if (not ofs) {
+                log_error("%s: cannot open path for writing", p->string().c_str());
+                return;
+            }
+            ofs << csv;
+        }, "csv");
     }
 
     // holds a collection of plotlines that are to-be-drawn on the plot
@@ -1320,24 +1328,18 @@ namespace
         return it != cursors.end() ? it->peekX() : std::optional<float>{};
     }
 
-    // try to save the given collection of plotlines to an on-disk CSV file
+    // tries to write the given collection of plotlines in a CSV format to the output stream.
     //
     // the resulting CSV may be sparsely populated, because each line may have a different
-    // number of, and location of, values
-    void TrySavePlotLinesToCSV(
+    // number of, and location of, values.
+    void TryWritePlotLinesAsCSV(
         const OpenSim::Coordinate& coord,
         const PlotParameters& params,
         const PlotLines& lines,
-        const std::filesystem::path& outPath)
+        std::ostream& out)
     {
-        std::ofstream outputFileStream{outPath};
-        if (!outputFileStream)
-        {
-            return;  // error opening outfile
-        }
-
         // write header
-        write_csv_row(outputFileStream, GetAllCSVHeaders(coord, params, lines));
+        write_csv_row(out, GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1348,8 +1350,7 @@ namespace
         // keep an eye out for the *next* lowest X value as we iterate
         std::optional<float> maybeNextX;
 
-        while (maybeX)
-        {
+        while (maybeX) {
             std::vector<std::string> cols;
             cols.reserve(1 + cursors.size());
 
@@ -1357,29 +1358,25 @@ namespace
             cols.push_back(std::to_string(*maybeX));
 
             // emit all columns that match up with X
-            for (LineCursor& cursor : cursors)
-            {
+            for (LineCursor& cursor : cursors) {
                 std::optional<PlotDataPoint> data = cursor.peek();
 
-                if (data && (data->x <= *maybeX || equal_within_epsilon(data->x, *maybeX)))
-                {
+                if (data && (data->x <= *maybeX || equal_within_epsilon(data->x, *maybeX))) {
                     cols.push_back(std::to_string(data->y));
                     ++cursor;
                     data = cursor.peek();  // to test the next X
                 }
-                else
-                {
+                else {
                     cols.emplace_back();  // blank cell
                 }
 
                 const std::optional<float> maybeDataX = data ? std::optional<float>{data->x} : std::optional<float>{};
-                if (LessThanAssumingEmptyHighest(maybeDataX, maybeNextX))
-                {
+                if (LessThanAssumingEmptyHighest(maybeDataX, maybeNextX)) {
                     maybeNextX = maybeDataX;
                 }
             }
 
-            write_csv_row(outputFileStream, cols);
+            write_csv_row(out, cols);
 
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
@@ -1388,10 +1385,10 @@ namespace
 
     // a UI action in which the user in prompted for a CSV file that they would like to overlay
     // over the current plot
-    void ActionPromptUserForCSVOverlayFile(std::shared_ptr<PlotLines> lines)
+    void ActionPromptUserForCSVOverlayFile(const std::shared_ptr<PlotLines>& lines)
     {
         App::upd().prompt_user_to_select_file_async(
-            [lines](FileDialogResponse response)
+            [lines](const FileDialogResponse& response)
             {
                 if (response.size() != 1) {
                     return;  // Error, cancellation, or the user somehow selected more than one file.
@@ -1414,13 +1411,23 @@ namespace
     // that location
     void ActionPromptUserToSavePlotLinesToCSV(const OpenSim::Coordinate& coord, const PlotParameters& params, const PlotLines& lines)
     {
-        const std::optional<std::filesystem::path> maybeCSVPath =
-            prompt_user_for_file_save_location_add_extension_if_necessary("csv");
+        // Pre-write the plotlines in memory so that the asynchronous prompt doesn't depend on a
+        // bunch of state.
+        std::stringstream ss;
+        TryWritePlotLinesAsCSV(coord, params, lines, ss);
 
-        if (maybeCSVPath)
+        App::upd().prompt_user_to_save_file_with_extension_async([csv = std::move(ss).str()](std::optional<std::filesystem::path> p)
         {
-            TrySavePlotLinesToCSV(coord, params, lines, *maybeCSVPath);
-        }
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
+            std::ofstream ofs{*p};
+            if (not ofs) {
+                log_error("%s: could not open file for writing", p->string().c_str());
+                return;
+            }
+            ofs << csv;
+        });
     }
 }
 

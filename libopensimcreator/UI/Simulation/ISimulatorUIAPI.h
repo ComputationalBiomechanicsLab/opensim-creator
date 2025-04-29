@@ -52,12 +52,12 @@ namespace osc
 
         std::optional<SimulationReport> trySelectReportBasedOnScrubbing() { return implTrySelectReportBasedOnScrubbing(); }
 
-        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>) const;
-        std::optional<std::filesystem::path> tryPromptToSaveOutputsAsCSV(std::initializer_list<OutputExtractor> il) const
+        void tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>, bool openInDefaultApp) const;
+        void tryPromptToSaveOutputsAsCSV(std::initializer_list<OutputExtractor> il, bool openInDefaultApp) const
         {
-            return tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>{il});
+            tryPromptToSaveOutputsAsCSV(std::span<const OutputExtractor>{il}, openInDefaultApp);
         }
-        std::optional<std::filesystem::path> tryPromptToSaveAllOutputsAsCSV(std::span<const OutputExtractor>) const;
+        void tryPromptToSaveAllOutputsAsCSV(std::span<const OutputExtractor>, bool andOpenInDefaultApp = false) const;
 
         SimulationModelStatePair* tryGetCurrentSimulationState() { return implTryGetCurrentSimulationState(); }
 

@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string_view>
@@ -955,6 +956,166 @@ namespace
         }
     };
 
+    // A `ThinPlateSpline` scaling step that tries to scale the origin, orientation, radius,
+    // length, and quadrant of the given `WrapCylinder`s.
+    class ThinPlateSplineWrapCylinderScalingStep final : public ToggleableThinPlateSplineScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ThinPlateSplineWrapCylinderScalingStep, ThinPlateSplineScalingStep)
+
+        OpenSim_DECLARE_LIST_PROPERTY(wrap_cylinders, std::string, "Absolute paths (e.g. `/bodyset/body/wrap_cylinder_2`) to `WrapCylinder` components in the model");
+        OpenSim_DECLARE_PROPERTY(midline_projection_distance, double, "The distance, in meters, that the `WrapCylinder`s' midlines should be projected from each of their origin points before putting them through the TPS algorithm. This is used to figure out the new orientation of the `WrapCylinder`s.");
+        OpenSim_DECLARE_PROPERTY(surface_projection_theta, double, "An angle, in radians, of a vector that originates in each `WrapCylinder`'s origin, spins around their Z axis with an angle of theta from the X axis, and has a length of each `WrapCylinder`'s `radius`, producing a surface point. Each surface point is fed through the TPS algorithm and used to recalculate each `WrapCylinder`'s `radius` and `quadrant`");
+    public:
+        explicit ThinPlateSplineWrapCylinderScalingStep() :
+            ToggleableThinPlateSplineScalingStep{"Apply Thin-Plate Spline (TPS) to WrapCylinder"}
+        {
+            setDescription(R"(
+Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in the model:
+
+  - Warps the `translation` of each `WrapCylinder` by warping the source `translation` with
+    the TPS algorithm to produce a new `translation`.
+  - Warps the `xyz_body_rotation` of each `WrapCylinder` by projecting a point from its
+    source origin (`translation`) `midline_projection_distance` along the cylinder's
+    midline (+Z), warping it with the TPS algorithm, and then calculating a new
+    `xyz_body_orientation` that orients the `WrapCylinder` such that the vector between the
+    new origin (the new `translation`) and the projected point becomes the new
+    `WrapCylinder` midline. To prevent the cylinder from spinning along this vector, the
+    along-axis rotation is constrained by the location of a point produced by
+    `surface_projection_theta`.
+  - Warps the `radius` of each `WrapCylinder` by calculating a point on each of their surfaces
+    specified `surface_projection_theta`. The points are then warped with the TPS algorithm to
+    produce (presumed to be) new surface points. The `radius` of each `WrapCylinder` is equal
+    to the distance between their respective midlines and projected surface points.
+  - Does not warp `quadrant`. It is assumed that constraining the calculation of `xyz_body_rotation`
+    will cause the warped cylinder to have a like-for-like orientation with respect to whatever's
+    being wrapped.
+  - Does not warp `length`. There is (currently) no easy way to do this, because the ends of
+    `WrapCylinder`s tend to be far away from where the TPS warp is defined, which makes it hard
+    to warp+project the endcaps. It is recommended that `WrapCylinder`s are long enough to ensure
+    they are not sensitive to model scaling (very few models require muscles to fall of the end
+    of the cylinder).
+)");
+            constructProperty_wrap_cylinders();
+            constructProperty_midline_projection_distance(0.001);  // 1 mm
+            constructProperty_surface_projection_theta(0.0);
+        }
+    private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache& cache,
+            const ScalingParameters& params,
+            const OpenSim::Model& sourceModel) const final
+        {
+            // Get base class validation messages.
+            auto messages = ToggleableThinPlateSplineScalingStep::implValidate(cache, params, sourceModel);
+
+            // Ensure every entry in `wrap_cylinders` can be found in the source model.
+            for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
+                const auto* offsetFrame = FindComponent<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
+                if (not offsetFrame) {
+                    std::stringstream msg;
+                    msg << get_wrap_cylinders(i) << ": Cannot find a `WrapCylinder` in 'wrap_cylinders' in the source model (or it isn't a `WrapCylinder`).";
+                    messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+                }
+            }
+
+            return messages;
+        }
+
+        void implApplyScalingStep(
+            ScalingCache& cache,
+            const ScalingParameters& parameters,
+            const OpenSim::Model&,
+            OpenSim::Model& resultModel) const final
+        {
+            // Lookup/validate warping inputs.
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+
+            // Precalculate the surface point direction vector as "rotate a unit vector pointing
+            // along X around the Z axis by theta amount" (see property documentation).
+            const SimTK::Rotation rotateCylinderXToSurfacePointDirection{get_surface_projection_theta(), SimTK::ZAxis};
+            const SimTK::UnitVec3 surfacePointDirectionInCylinderSpace{rotateCylinderXToSurfacePointDirection * SimTK::Vec3{1.0, 0.0, 0.0}};
+
+            // Precalculate the midline projection point in the cylinder's local (not parent) space.
+            const SimTK::Vec3 sourceMidlinePointInCylinderSpace{0.0, 0.0, get_midline_projection_distance()};
+
+            // Warp each `WrapCylinder` specified by the `wrap_cylinders` property.
+            for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
+                // Find the `i`th `WrapCylinder` in the model.
+                auto* wrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinders(i));
+                OSC_ASSERT_ALWAYS(wrapCylinder && "could not find a `WrapCylinder` in the source model");
+
+                // Calculate the `WrapCylinder`'s new `translation` by warping the origin.
+                const SimTK::Vec3 newOriginPointInParent = cache.lookupTPSWarpedRigidPoint(
+                    resultModel,
+                    resultModel.getWorkingState(),
+                    wrapCylinder->get_translation(),
+                    wrapCylinder->getFrame(),
+                    *commonParams.landmarksFrame,
+                    commonParams.tpsInputs
+                );
+
+                // Calculate the `WrapCylinder`'s new projected midline point by warping it.
+                const SimTK::Vec3 sourceMidlinePointInParent = wrapCylinder->getTransform() * sourceMidlinePointInCylinderSpace;
+                const SimTK::Vec3 newMidlinePointInParent = cache.lookupTPSWarpedRigidPoint(
+                    resultModel,
+                    resultModel.getWorkingState(),
+                    sourceMidlinePointInParent,
+                    wrapCylinder->getFrame(),
+                    *commonParams.landmarksFrame,
+                    commonParams.tpsInputs
+                );
+
+                // Calculate the source surface point by projecting the direction onto the `WrapCylinder`'s surface.
+                const SimTK::Vec3 sourceSurfacePointInCylinderSpace = wrapCylinder->get_radius() * surfacePointDirectionInCylinderSpace;
+                const SimTK::Vec3 sourceSurfacePointInParent = wrapCylinder->getTransform() * sourceSurfacePointInCylinderSpace;
+                const SimTK::Vec3 newSurfacePointInParent = cache.lookupTPSWarpedRigidPoint(
+                    resultModel,
+                    resultModel.getWorkingState(),
+                    sourceSurfacePointInParent,
+                    wrapCylinder->getFrame(),
+                    *commonParams.landmarksFrame,
+                    commonParams.tpsInputs
+                );
+
+                // The `WrapCylinder`'s new Z axis within the parent frame is a unit vector that
+                // points from its new origin to the projected midline point.
+                const SimTK::UnitVec3 newZAxisDirectionInParent{newMidlinePointInParent - newOriginPointInParent};
+
+                // We can now use the warped surface point to figure out what the orientation _around_
+                // Z should be (i.e. to constrain it, rather than letting the orientation spin along
+                // the Z axis).
+                //
+                // Due to the non-linearity of TPS, the warped surface point may require
+                // reorthogonalization with respect to the `WrapCylinder`'s new midline. Here, we use
+                // vector rejection (the opposite of vector projection) to compute an orthogonal vector
+                // that we can un-spin by `surface_projection_theta` in order to figure out exactly where
+                // the X axis should point.
+                const SimTK::UnitVec3 newSurfacePointDirectionInParent{newSurfacePointInParent - newOriginPointInParent};
+                OSC_ASSERT((SimTK::dot(newZAxisDirectionInParent, newSurfacePointDirectionInParent) < 1.0 - SimTK::Eps) && "cylinder surface point somehow points along Z axis - warping is too strong?");
+                const SimTK::Vec3 newSurfacePointProjectionAlongZVector = newZAxisDirectionInParent * SimTK::dot(newZAxisDirectionInParent, newSurfacePointDirectionInParent);
+                const SimTK::Vec3 newSurfacePointRejectionVector = newSurfacePointDirectionInParent - newSurfacePointProjectionAlongZVector;
+                const SimTK::UnitVec3 newSurfacePointRejectionDirection{newSurfacePointRejectionVector};
+
+                // The new surface point direction is assumed to be `surface_projection_theta` rotated along
+                // the new Z axis from where the X axis should be (that's how it was initially generated), so
+                // un-rotate it to figure out where the new X axis should be.
+                const SimTK::UnitVec3 newXAxisDirectionInParent{rotateCylinderXToSurfacePointDirection.invert() * newSurfacePointRejectionDirection};
+
+                // With two vectors pointing along known axes, we can compute a new cylinder rotation
+                const SimTK::Rotation newCylinderRotation{newZAxisDirectionInParent, SimTK::ZAxis, newXAxisDirectionInParent, SimTK::XAxis};
+
+                // The new radius is the projection of the surface point onto the X axis
+                const double newRadius = SimTK::dot(SimTK::Vec3{newSurfacePointInParent - newOriginPointInParent}, newXAxisDirectionInParent);
+
+                // (finally) Update the cylinder
+                wrapCylinder->set_translation(newOriginPointInParent);
+                wrapCylinder->set_xyz_body_rotation(newCylinderRotation.convertRotationToBodyFixedXYZ());
+                wrapCylinder->set_radius(newRadius);
+            }
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
+        }
+    };
+
     // A `ScalingStep` that scales the masses of bodies in the model.
     class BodyMassesScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
@@ -980,7 +1141,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(wrap_cylinder_path, std::string, "Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model");
 
         explicit RecalculateWrapCylinderRadiusFromStationScalingStep() :
-            ScalingStep{"Recalculate WrapCylinder Radius from Station Projection onto its Midline"}
+            ScalingStep{"Recalculate WrapCylinder `radius` from Station Projection onto its Midline"}
         {
             setDescription("Recalculates the 'radius' of a `WrapCylinder` component, located at `wrap_cylinder_path`, as the distance between the `Station`, located at `station_path`, and the cylinder's (infinitely long) midline.");
             constructProperty_station_path("");
@@ -1040,7 +1201,6 @@ namespace
             InitializeState(resultModel);
         }
     };
-
 
     class RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep, ScalingStep)
@@ -1135,6 +1295,7 @@ namespace
         ThinPlateSplinePathPointsScalingStep,
         ThinPlateSplineOffsetFrameTranslationScalingStep,
         ThinPlateSplineMeshSubstitutionScalingStep,
+        ThinPlateSplineWrapCylinderScalingStep,
         BodyMassesScalingStep,
         RecalculateWrapCylinderRadiusFromStationScalingStep,
         RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep
@@ -1259,6 +1420,11 @@ namespace
             mutateScalingParammeterOverridesWithNewOverride(scalingParamName, newValue);
             finalizeFromProperties();
             return true;
+        }
+
+        void saveTo(const std::filesystem::path& p) const
+        {
+            print(p.string());
         }
 
     private:
@@ -1466,12 +1632,6 @@ namespace
             }
             else {
                 return std::nullopt;
-            }
-        }
-        void saveScalingDocumentTo(const std::filesystem::path& p)
-        {
-            if (scalingDocument->print(p.string())) {
-                //scalingDocument->setInlined(false, p.string());
             }
         }
 
@@ -1736,7 +1896,7 @@ namespace
                 }
 
                 App::upd().prompt_user_to_select_file_async(
-                    [state = shared_from_this()](FileDialogResponse response)
+                    [state = shared_from_this()](const FileDialogResponse& response)
                     {
                         if (not state) {
                             return;  // Something bad has happened.
@@ -1774,7 +1934,7 @@ namespace
             }
 
             App::upd().prompt_user_to_select_file_async(
-                [state = shared_from_this()](FileDialogResponse response)
+                [state = shared_from_this()](const FileDialogResponse& response)
                 {
                     if (not state) {
                         return;  // Can't continue.
@@ -1794,12 +1954,18 @@ namespace
         void actionSaveScalingDocument()
         {
             if (const auto existingPath = m_ScalingState->scratch().scalingDocumentFilesystemLocation()) {
-                m_ScalingState->upd_scratch().saveScalingDocumentTo(*existingPath);
+                m_ScalingState->upd_scratch().getScalingDocumentPtr()->saveTo(*existingPath);
+                return;  // Document saved to existing filesystem location.
             }
-            else if (const auto userSelectedPath = prompt_user_for_file_save_location_add_extension_if_necessary("xml")) {
-                m_ScalingState->upd_scratch().saveScalingDocumentTo(*userSelectedPath);
-            }
-            // else: doesn't have an existing filesystem location and the user cancelled the dialog: do nothing
+
+            // Else: prompt the user to save it
+            App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::optional<std::filesystem::path> p)
+            {
+                if (not p) {
+                    return;  // user cancalled out of the prompt
+                }
+                doc->saveTo(*p);
+            }, "xml");
         }
 
         void actionApplyObjectEditToScalingDocument(const ObjectPropertyEdit& edit)

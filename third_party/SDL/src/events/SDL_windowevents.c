@@ -23,8 +23,38 @@
 // Window event handling code for SDL
 
 #include "SDL_events_c.h"
+#include "SDL_eventwatch_c.h"
 #include "SDL_mouse_c.h"
 #include "../tray/SDL_tray_utils.h"
+
+
+#define NUM_WINDOW_EVENT_WATCH_PRIORITIES (SDL_WINDOW_EVENT_WATCH_NORMAL + 1)
+
+static SDL_EventWatchList SDL_window_event_watchers[NUM_WINDOW_EVENT_WATCH_PRIORITIES];
+
+void SDL_InitWindowEventWatch(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_window_event_watchers); ++i) {
+        SDL_InitEventWatchList(&SDL_window_event_watchers[i]);
+    }
+}
+
+void SDL_QuitWindowEventWatch(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_window_event_watchers); ++i) {
+        SDL_QuitEventWatchList(&SDL_window_event_watchers[i]);
+    }
+}
+
+void SDL_AddWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata)
+{
+    SDL_AddEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
+}
+
+void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata)
+{
+    SDL_RemoveEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
+}
 
 static bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
 {
@@ -158,6 +188,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
             return false;
         }
+        window->update_fullscreen_on_display_changed = true;
         window->last_displayID = (SDL_DisplayID)data1;
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
@@ -183,14 +214,17 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     }
 
     // Post the event, if desired
-    if (SDL_EventEnabled(windowevent)) {
-        SDL_Event event;
-        event.type = windowevent;
-        event.common.timestamp = 0;
-        event.window.data1 = data1;
-        event.window.data2 = data2;
-        event.window.windowID = window->id;
+    SDL_Event event;
+    event.type = windowevent;
+    event.common.timestamp = 0;
+    event.window.data1 = data1;
+    event.window.data2 = data2;
+    event.window.windowID = window->id;
 
+    SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_EARLY], &event);
+    SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_NORMAL], &event);
+
+    if (SDL_EventEnabled(windowevent)) {
         // Fixes queue overflow with move/resize events that aren't processed
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||

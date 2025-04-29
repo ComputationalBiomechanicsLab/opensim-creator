@@ -19,7 +19,7 @@ void osc::mow::UIState::actionOpenOsimOrPromptUser(std::optional<std::filesystem
 {
     if (not path) {
         App::upd().prompt_user_to_select_file_async(
-            [document = m_Document](FileDialogResponse response)
+            [document = m_Document](const FileDialogResponse& response)
             {
                 if (response.size() != 1) {
                     return;  // Error, cancellation, or the user somehow selected >1 file.

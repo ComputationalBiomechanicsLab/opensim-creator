@@ -163,7 +163,7 @@ static int get_driindex(void)
                 close(drm_fd);
             } else {
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                             "Failed to open KMSDRM device %s, errno: %d\n", device, errno);
+                             "Failed to open KMSDRM device %s, errno: %d", device, errno);
             }
         }
     }
@@ -332,7 +332,8 @@ VideoBootStrap KMSDRM_bootstrap = {
     "kmsdrm",
     "KMS/DRM Video Driver",
     KMSDRM_CreateDevice,
-    NULL // no ShowMessageBox implementation
+    NULL, // no ShowMessageBox implementation
+    false
 };
 
 static void KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)

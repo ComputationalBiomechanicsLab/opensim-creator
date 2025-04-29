@@ -31,7 +31,7 @@
 #if DEBUG_COREAUDIO
     #define CHECK_RESULT(msg) \
         if (result != noErr) { \
-            SDL_Log("COREAUDIO: Got error %d from '%s'!\n", (int)result, msg); \
+            SDL_Log("COREAUDIO: Got error %d from '%s'!", (int)result, msg); \
             return SDL_SetError("CoreAudio error (%s): %d", msg, (int)result); \
         }
 #else
@@ -224,7 +224,7 @@ static void RefreshPhysicalDevices(void)
                 name[len] = '\0';
 
                 #if DEBUG_COREAUDIO
-                SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d)\n", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev);
+                SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d)", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev);
                 #endif
                 SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
                 if (newhandle) {
@@ -341,7 +341,7 @@ static void ResumeAudioDevices(void)
 
 static void InterruptionBegin(SDL_AudioDevice *device)
 {
-    if (device != NULL && device->hidden->audioQueue != NULL) {
+    if (device != NULL && device->hidden != NULL && device->hidden->audioQueue != NULL) {
         device->hidden->interrupted = true;
         AudioQueuePause(device->hidden->audioQueue);
     }
@@ -366,7 +366,7 @@ static void InterruptionEnd(SDL_AudioDevice *device)
 {
     @synchronized(self) {
         NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
-        if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
+        if (type && (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan)) {
             InterruptionBegin(self.device);
         } else {
             InterruptionEnd(self.device);
@@ -834,7 +834,7 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
     }
 
     #if DEBUG_COREAUDIO
-    SDL_Log("COREAUDIO: numAudioBuffers == %d\n", numAudioBuffers);
+    SDL_Log("COREAUDIO: numAudioBuffers == %d", numAudioBuffers);
     #endif
 
     for (int i = 0; i < numAudioBuffers; i++) {
@@ -1034,7 +1034,7 @@ static bool COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap COREAUDIO_bootstrap = {
-    "coreaudio", "CoreAudio", COREAUDIO_Init, false
+    "coreaudio", "CoreAudio", COREAUDIO_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_COREAUDIO

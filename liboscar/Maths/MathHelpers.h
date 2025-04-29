@@ -141,6 +141,11 @@ namespace osc
         return Vec3{mat * Vec4{point, 1.0f}};
     }
 
+    inline Vec3 transform_direction(const Mat4& mat, const Vec3& direction)
+    {
+        return Vec3{mat * Vec4{direction, 0.0f}};
+    }
+
     // returns a `Quat` equivalent to the given euler angles
     Quat to_worldspace_rotation_quat(const EulerAngles&);
 

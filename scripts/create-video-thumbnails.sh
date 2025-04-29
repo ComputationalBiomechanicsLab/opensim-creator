@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-
-# This script is used in `files.opensimcreator.com` to create
-# thumbnail images for each video file, so that the website
-# doesn't have to load the video file in the gallery page
+#
+# Creates thumbnail images for each video file in www.opensimcreator.com's gallery
+# page. This is used in `files.opensimcreator.com` so that the  website doesn't have
+# to load the video file (instead, it loads a smaller gallery screenshot).
 #
 # On Windows, you can use MSYS2 with `ffmpeg` installed to
 # do this.
@@ -17,4 +17,3 @@ for video_file in $(ls videos/*.{webm,mp4}); do
     	ffmpeg -i "${video_file}" -s 480x270 -q:v 2 -frames:v 1 -y "${thumbnail_filename}"
     fi
 done
-

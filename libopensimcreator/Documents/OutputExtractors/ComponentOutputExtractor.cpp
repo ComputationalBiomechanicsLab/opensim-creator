@@ -6,8 +6,10 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Constants.h>
+#include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/HashHelpers.h>
 #include <liboscar/Utils/Perf.h>
 #include <OpenSim/Common/Component.h>
@@ -45,17 +47,15 @@ namespace
         return std::move(ss).str();
     }
 
-    Variant NaNFloatingPointCallback(const SimulationReport&)
+    OutputValueExtractor MakeNullExtractor(OutputExtractorDataType type)
     {
-        return Variant{quiet_nan_v<float>};
+        static_assert(num_options<OutputExtractorDataType>() == 3);
+        switch (type) {
+        case OutputExtractorDataType::Float: return OutputValueExtractor::constant(quiet_nan_v<float>);
+        case OutputExtractorDataType::Vec2:  return OutputValueExtractor::constant(Vec2{quiet_nan_v<float>});
+        default:                             return OutputValueExtractor::constant(std::string{});
+        }
     }
-
-    Variant BlankStringCallback(const SimulationReport&)
-    {
-        return Variant{std::string{}};
-    }
-
-    using NullCallbackFnPointer = Variant(*)(const SimulationReport&);
 }
 
 class osc::ComponentOutputExtractor::Impl final {
@@ -69,6 +69,8 @@ public:
         m_OutputTypeid{&typeid(ao)},
         m_ExtractorFunc{GetExtractorFuncOrNull(ao, subfield)}
     {}
+
+    friend bool operator==(const Impl&, const Impl&) = default;
 
     std::unique_ptr<Impl> clone() const { return std::make_unique<Impl>(*this); }
 
@@ -85,15 +87,13 @@ public:
     OutputValueExtractor getOutputValueExtractor(const OpenSim::Component& component) const
     {
         const OutputExtractorDataType datatype = getOutputType();
-        const NullCallbackFnPointer nullCallback = datatype == OutputExtractorDataType::Float ? NaNFloatingPointCallback : BlankStringCallback;
-
         const OpenSim::AbstractOutput* const ao = FindOutput(component, m_ComponentAbsPath, m_OutputName);
 
         if (not ao) {
-            return OutputValueExtractor{nullCallback};  // cannot find output
+            return MakeNullExtractor(datatype);  // cannot find output
         }
         if (typeid(*ao) != *m_OutputTypeid) {
-            return OutputValueExtractor{nullCallback};  // output has changed
+            return MakeNullExtractor(datatype);  // output has changed
         }
 
         if (datatype == OutputExtractorDataType::Float) {
@@ -127,12 +127,7 @@ public:
             return true;
         }
 
-        return
-            m_ComponentAbsPath == otherImpl->m_ComponentAbsPath &&
-            m_OutputName == otherImpl->m_OutputName &&
-            m_Label == otherImpl->m_Label &&
-            m_OutputTypeid == otherImpl->m_OutputTypeid &&
-            m_ExtractorFunc == otherImpl->m_ExtractorFunc;
+        return *otherImpl == *this;
     }
 
 private:

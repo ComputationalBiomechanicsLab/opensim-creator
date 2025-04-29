@@ -44,7 +44,21 @@ namespace osc
         RenderTexture& updRenderTexture();
 
         std::span<const SceneDecoration> getDrawlist() const;
+
+        // Returns an `AABB` that tightly bounds all geometry in the scene, or `std::nullopt`
+        // if the scene contains no geometry.
+        //
+        // This includes hidden/invisible elements that exist for hittesting/rim-highlighting
+        // purposes.
         std::optional<AABB> bounds() const;
+
+        // Returns an `AABB` that tightly bounds all visible geometry in the scene, or `std::nullopt`
+        // if the scene contains no visible geometry.
+        //
+        // This is useful if (e.g.) you want to ensure a scene camera only tries to scope the visible
+        // parts of a scene (#1029).
+        std::optional<AABB> visibleBounds() const;
+
         std::optional<SceneCollision> getClosestCollision(
             const ModelRendererParams&,
             Vec2 mouseScreenPos,

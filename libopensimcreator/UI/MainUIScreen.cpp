@@ -36,19 +36,22 @@
 #include <liboscar/Utils/UID.h>
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <iterator>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <ranges>
+#include <set>
+#include <span>
 #include <sstream>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
 using namespace osc;
+using namespace std::literals::chrono_literals;
 namespace rgs = std::ranges;
 
 namespace
@@ -64,13 +67,41 @@ namespace
             }
 
             log_warn("%s: cannot find a tab with this name in the tab registry: ignoring", to<std::string>(*maybeRequestedTab).c_str());
-            log_warn("available tabs are:");
+            log_warn("available tabsWithUnsavedChanges are:");
             for (auto&& tabRegistryEntry : tabRegistry) {
                 log_warn("    %s", tabRegistryEntry.name().c_str());
             }
         }
 
         return nullptr;
+    }
+
+    std::string MakeSavePromptString(std::span<Tab*> tabsWithUnsavedChanges)
+    {
+        std::stringstream ss;
+        if (tabsWithUnsavedChanges.size() > 1) {
+            ss << tabsWithUnsavedChanges.size() << " tabsWithUnsavedChanges have unsaved changes:\n";
+        }
+        else {
+            ss << "A tab has unsaved changes:\n";
+        }
+
+        for (Tab* t : tabsWithUnsavedChanges) {
+            ss << "\n  - " << t->name();
+        }
+        ss << "\n\n";
+
+        return std::move(ss).str();
+    }
+
+    std::vector<UID> ExtractToReversedVectorOfUIDs(std::span<Tab*> tabs)
+    {
+        std::vector<UID> rv;
+        rv.reserve(tabs.size());  // upper limit
+        for (auto it = tabs.rbegin(); it != tabs.rend(); ++it) {
+            rv.push_back((*it)->id());
+        }
+        return rv;
     }
 }
 
@@ -140,9 +171,9 @@ public:
 
     void on_mount()
     {
-        if (!std::exchange(m_HasBeenMountedBefore, true)) {
+        if (not std::exchange(m_HasBeenMountedBefore, true)) {
             // on first mount, place the splash tab at the front of the tabs collection
-            m_Tabs.insert(m_Tabs.begin(), std::make_unique<SplashTab>(&owner()));
+            addTab(std::make_unique<SplashTab>(&owner()));
 
             // if the application configuration has requested that a specific tab should be opened,
             // then try looking it up and open it
@@ -192,7 +223,7 @@ public:
             // interaction then the screen should be aggressively redrawn to reduce
             // and input delays
 
-            m_ShouldRequestRedraw = true;
+            App::upd().request_redraw();
         }
 
         bool handled = false;
@@ -201,7 +232,7 @@ public:
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `Tab::onDraw` (immediate-mode UI)
 
-            m_ShouldRequestRedraw = true;
+            App::upd().request_redraw();
             handled = true;
         }
         else if (e.type() == EventType::Quit) {
@@ -239,11 +270,10 @@ public:
             // handle any deletion-related side-effects (e.g. showing save prompt)
             handleDeletedTabs();
 
-            if (not atLeastOneTabHandledQuit and (not m_MaybeSaveChangesPopup or !m_MaybeSaveChangesPopup->is_open())) {
+            if (not atLeastOneTabHandledQuit and not m_MaybeInProgressSaveDialog) {
                 // - if no tab handled a quit event
                 // - and the UI isn't currently showing a save prompt
                 // - then it's safe to outright quit the application from this screen
-
                 App::upd().request_quit();
             }
 
@@ -300,11 +330,11 @@ public:
                 if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
-                        set_initial_directory_to_show_fallback(parentDirectory);
+                        App::upd().set_initial_directory_to_show_fallback(parentDirectory);
                     }
                 }
 
-                m_ShouldRequestRedraw = true;
+                App::upd().request_redraw();
                 handled = true;
             }
             else {
@@ -376,10 +406,6 @@ public:
         {
             OSC_PERF("MainUIScreen/ui::context::render()");
             ui::context::render();
-        }
-
-        if (std::exchange(m_ShouldRequestRedraw, false)) {
-            App::upd().request_redraw();
         }
     }
 
@@ -537,9 +563,11 @@ public:
             return;
         }
 
-        if (m_MaybeSaveChangesPopup and m_MaybeSaveChangesPopup->begin_popup()) {
-            m_MaybeSaveChangesPopup->on_draw();
-            m_MaybeSaveChangesPopup->end_popup();
+        if (m_MaybeInProgressSaveDialog) {
+            m_MaybeInProgressSaveDialog->on_draw();
+            if (m_MaybeInProgressSaveDialog->is_closed()) {
+                m_MaybeInProgressSaveDialog.reset();
+            }
         }
     }
 
@@ -603,46 +631,6 @@ public:
         m_DeletedTabs.insert(id);
     }
 
-    // called by the "save changes?" popup when user opts to save changes
-    bool onUserSelectedSaveChangesInSavePrompt()
-    {
-        bool savingFailedSomewhere = false;
-        for (UID id : m_DeletedTabs) {
-            if (Tab* tab = getTabByID(id); tab && tab->is_unsaved()) {
-                savingFailedSomewhere = not tab->try_save() or savingFailedSomewhere;
-            }
-        }
-
-        if (not savingFailedSomewhere) {
-            nukeDeletedTabs();
-            if (m_QuitRequested) {
-                App::upd().request_quit();
-            }
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    // called by the "save changes?" popup when user opts to not save changes
-    bool onUserSelectedDoNotSaveChangesInSavePrompt()
-    {
-        nukeDeletedTabs();
-        if (m_QuitRequested) {
-            App::upd().request_quit();
-        }
-        return true;
-    }
-
-    // called by the "save changes?" popup when user clicks "cancel"
-    bool onUserCancelledOutOfSavePrompt()
-    {
-        m_DeletedTabs.clear();
-        m_QuitRequested = false;
-        return true;
-    }
-
     void nukeDeletedTabs()
     {
         int lowestDeletedTab = std::numeric_limits<int>::max();
@@ -671,6 +659,21 @@ public:
         }
     }
 
+    std::vector<Tab*> collectDeletedTabsWithUnsavedChanges()
+    {
+        std::vector<Tab*> rv;
+        rv.reserve(m_DeletedTabs.size());  // upper limit
+
+        for (UID id : m_DeletedTabs) {
+            if (Tab* t = getTabByID(id)) {
+                if (t->is_unsaved()) {
+                    rv.push_back(t);
+                }
+            }
+        }
+        return rv;
+    }
+
     void handleDeletedTabs()
     {
         // tabs aren't immediately deleted, because they may hold onto unsaved changes
@@ -679,49 +682,15 @@ public:
         // annoying, from a UX PoV, to have each tab individually prompt the user. It is preferable
         // to have all the "do you want to save changes?" things in one prompt
 
-
-        // if any of the to-be-deleted tabs have unsaved changes, then open a save changes dialog
-        // that prompts the user to decide on how to handle it
-        //
-        // don't delete the tabs yet, because the user can always cancel out of the operation
-
-        std::vector<Tab*> tabsWithUnsavedChanges;
-
-        for (UID id : m_DeletedTabs) {
-            if (Tab* t = getTabByID(id)) {
-                if (t->is_unsaved()) {
-                    tabsWithUnsavedChanges.push_back(t);
-                }
-            }
+        if (m_MaybeInProgressSaveDialog) {
+            return;  // nothing to process right now: waiting on user decision
         }
-
-        if (!tabsWithUnsavedChanges.empty()) {
-            std::stringstream ss;
-            if (tabsWithUnsavedChanges.size() > 1) {
-                ss << tabsWithUnsavedChanges.size() << " tabs have unsaved changes:\n";
-            }
-            else {
-                ss << "A tab has unsaved changes:\n";
-            }
-
-            for (Tab* t : tabsWithUnsavedChanges) {
-                ss << "\n  - " << t->name();
-            }
-            ss << "\n\n";
-
-            // open the popup
-            SaveChangesPopupConfig cfg{
-                "Save Changes?",
-                [this]() { return onUserSelectedSaveChangesInSavePrompt(); },
-                [this]() { return onUserSelectedDoNotSaveChangesInSavePrompt(); },
-                [this]() { return onUserCancelledOutOfSavePrompt(); },
-                ss.str(),
-            };
-            m_MaybeSaveChangesPopup.emplace(&owner(), cfg);
-            m_MaybeSaveChangesPopup->open();
+        else if (auto tabs = collectDeletedTabsWithUnsavedChanges(); not tabs.empty()) {
+            m_MaybeInProgressSaveDialog.emplace(*this, tabs);
+            return;  // wait for the user to handle unsaved changes
         }
         else {
-            // just nuke all the tabs
+            // all changes saved etc. - nuke all the tabs
             nukeDeletedTabs();
         }
     }
@@ -737,7 +706,7 @@ public:
             return;  // probably empty/errored
         }
 
-        if (m_MaybeScreenshotRequest.valid() and m_MaybeScreenshotRequest.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
+        if (m_MaybeScreenshotRequest.valid() and m_MaybeScreenshotRequest.wait_for(0s) == std::future_status::ready) {
             const UID tabID = addTab(std::make_unique<ScreenshotTab>(&owner(), m_MaybeScreenshotRequest.get()));
             impl_select_tab(tabID);
         }
@@ -746,17 +715,142 @@ public:
 private:
     OSC_OWNER_GETTERS(MainUIScreen);
 
-    // lifetime of this object
-    SharedLifetimeBlock m_Lifetime;
-
-    // set the first time `onMount` is called
-    bool m_HasBeenMountedBefore = false;
-
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;
 
     // set of tabs that should be deleted once control returns to this screen
-    std::unordered_set<UID> m_DeletedTabs;
+    std::set<UID> m_DeletedTabs;
+
+    // represents the current state of the save dialog (incl. any user-async prompts)
+    class InProgressSaveDialog final {
+    public:
+        explicit InProgressSaveDialog(Impl& impl, std::span<Tab*> tabsWithUnsavedChanges) :
+            m_Parent{&impl},
+            m_Popup{
+                &impl.owner(),
+                SaveChangesPopupConfig{
+                    "Save Changes?",
+                    [this]{ return onUserSelectedSaveChanges(); },
+                    [this]{ return onUserSelectedDoNotSaveChanges(); },
+                    [this]{ return onUserCancelledOutOfSavePrompt(); },
+                    MakeSavePromptString(tabsWithUnsavedChanges)
+                }
+            },
+            m_AsyncPromptQueue{ExtractToReversedVectorOfUIDs(tabsWithUnsavedChanges)}
+        {
+            m_Popup.open();
+        }
+
+        void on_draw()
+        {
+            if (m_Popup.begin_popup()) {
+                m_Popup.on_draw();
+                m_Popup.end_popup();
+            }
+
+            // Handle async requests
+            if (m_Popup.is_open() and m_UserWantsToStartSavingFiles) {
+                // 1) Poll+handle any in-progress requests
+                if (m_MaybeActiveAsyncSave) {
+                    if (const auto result = m_MaybeActiveAsyncSave->try_pop_result()) {
+                        switch (*result) {
+                        case TabSaveResult::Done:
+                            m_AsyncPromptQueue.pop_back();
+                            break;
+                        case TabSaveResult::Cancelled:
+                            m_UserWantsToStartSavingFiles = false;
+                            break;
+                        }
+                        m_MaybeActiveAsyncSave.reset();
+                    }
+                }
+
+                // 2) launch next request, if we're not currently handling one and there's one waiting
+                if (m_UserWantsToStartSavingFiles and not m_MaybeActiveAsyncSave and not m_AsyncPromptQueue.empty()) {
+                    if (Tab* nextTab = m_Parent->getTabByID(m_AsyncPromptQueue.back())) {
+                        m_MaybeActiveAsyncSave.emplace(*nextTab);
+                    }
+                    else {
+                        m_AsyncPromptQueue.pop_back();  // Can't find tab?
+                    }
+                }
+
+                // 3) If the queue is empty, transition to the next state (i.e. close the popup)
+                if (m_AsyncPromptQueue.empty()) {
+                    m_Parent->nukeDeletedTabs();
+                    if (m_Parent->m_QuitRequested) {
+                        App::upd().request_quit();
+                    }
+                    m_Popup.close();
+                }
+            }
+        }
+
+        bool is_closed()
+        {
+            return not m_Popup.is_open();
+        }
+    private:
+        // called by the "save changes?" popup when user opts to save changes
+        bool onUserSelectedSaveChanges()
+        {
+            m_UserWantsToStartSavingFiles = true;
+            return false;  // The state transition happens during draw
+        }
+
+        // called by the "save changes?" popup when user opts to not save changes
+        bool onUserSelectedDoNotSaveChanges()
+        {
+            m_AsyncPromptQueue.clear();
+            m_MaybeActiveAsyncSave.reset();
+            m_Parent->nukeDeletedTabs();
+            if (m_Parent->m_QuitRequested) {
+                App::upd().request_quit();
+            }
+            return true;
+        }
+
+        // called by the "save changes?" popup when user clicks "cancel"
+        bool onUserCancelledOutOfSavePrompt()
+        {
+            m_AsyncPromptQueue.clear();
+            m_MaybeActiveAsyncSave.reset();
+            m_Parent->m_DeletedTabs.clear();
+            m_Parent->m_QuitRequested = false;
+            return true;
+        }
+
+        Impl* m_Parent = nullptr;
+        SaveChangesPopup m_Popup;
+        bool m_UserWantsToStartSavingFiles = false;
+        std::vector<UID> m_AsyncPromptQueue;
+        class ActiveAsyncSaveRequest final {
+        public:
+            explicit ActiveAsyncSaveRequest(Tab& tab) :
+                response{tab.try_save()}
+            {}
+
+            std::optional<TabSaveResult> try_pop_result()
+            {
+                if (not response.valid()) {
+                    return TabSaveResult::Cancelled;
+                }
+                if (response.wait_for(0s) != std::future_status::ready) {
+                    return std::nullopt;
+                }
+                try {
+                    return response.get();
+                }
+                catch (const std::future_error&) {
+                    return TabSaveResult::Cancelled;
+                }
+            }
+        private:
+            std::future<TabSaveResult> response;
+        };
+        std::optional<ActiveAsyncSaveRequest> m_MaybeActiveAsyncSave;
+    };
+    std::optional<InProgressSaveDialog> m_MaybeInProgressSaveDialog;
 
     // currently-active UI tab
     UID m_ActiveTabID = UID::empty();
@@ -767,16 +861,11 @@ private:
     // a tab that should become active next frame
     UID m_RequestedTab = UID::empty();
 
-    // a popup that is shown when a tab, or the whole screen, is requested to close
-    //
-    // effectively, shows the "do you want to save changes?" popup
-    std::optional<SaveChangesPopup> m_MaybeSaveChangesPopup;
+    // `true` if `on_mount` has been called on this.
+    bool m_HasBeenMountedBefore = false;
 
-    // true if the screen is midway through trying to quit
+    // `true` if the this is midway through trying to quit
     bool m_QuitRequested = false;
-
-    // true if the screen should request a redraw from the application
-    bool m_ShouldRequestRedraw = false;
 
     // true if the UI context was aggressively reset by a tab (and, therefore, this screen should reset the UI)
     bool m_ImguiWasAggressivelyReset = false;
@@ -784,7 +873,6 @@ private:
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)
     std::future<Screenshot> m_MaybeScreenshotRequest;
 };
-
 
 osc::MainUIScreen::MainUIScreen() :
     Screen{std::make_unique<Impl>(*this)}

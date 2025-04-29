@@ -1,5 +1,5 @@
-# `env_libasan.sh`: sets up an environment for running libASAN-enabled
-# binaries with aggressive flags
+# Sets up an environment for running libASAN-enabled binaries with
+# aggressive flags.
 #
 #     usage (unix only): `source env_libasan.sh`
 

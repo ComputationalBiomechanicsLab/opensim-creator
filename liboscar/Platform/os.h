@@ -4,13 +4,9 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
-#include <initializer_list>
-#include <optional>
-#include <span>
 #include <string_view>
 #include <string>
 #include <utility>
-#include <vector>
 
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc
@@ -68,41 +64,6 @@ namespace osc
     // it will only set the environment variable if no environment variable with
     // `name` exists
     void set_environment_variable(std::string_view name, std::string_view value, bool overwrite);
-
-    std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
-
-    // Sets the directory that should be shown to the user if a call to one of the
-    // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
-    // global fallback isn't provided, the implementation will fallback to whatever the
-    // OS's default behavior is (typically, it remembers the user's last usage).
-    //
-    // This global fallback is activated until a call to `prompt_user*` is made without
-    // the user cancelling out of the dialog (i.e. if the user cancels then this fallback
-    // will remain in-place).
-    void set_initial_directory_to_show_fallback(const std::filesystem::path&);
-    void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
-
-    // synchronously prompt a user to select a file location for where to save a file
-    //
-    // - `maybe_extension` can be:
-    //   - std::nullopt, meaning "don't filter by extension"
-    //   - or a single extension (e.g. "blend")
-    //   - (you can't use multiple extensions with this method)
-    //
-    // - `maybe_initial_directory_to_open` can be:
-    //   - std::nullopt, meaning "use a system-defined default"
-    //   - a directory to initially show to the user when the prompt opens
-    //
-    // - if the user manually types a filename without an extension (e.g. "model"), the implementation will add `extension`
-    //   (if not std::nullopt) to the end of the user's string. It detects a lack of extension by searching the end of the user
-    //   -supplied string for the given extension (if supplied)
-    //
-    // returns std::nullopt if the user doesn't select a file; otherwise, returns the user-selected save location--including the extension--if
-    // the user selects a location
-    std::optional<std::filesystem::path> prompt_user_for_file_save_location_add_extension_if_necessary(
-        std::optional<std::string_view> maybe_extension = std::nullopt,
-        std::optional<std::filesystem::path> maybe_initial_directory_to_open = std::nullopt
-    );
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

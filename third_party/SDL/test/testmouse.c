@@ -117,6 +117,8 @@ static void loop(void *arg)
     struct mouse_loop_data *loop_data = (struct mouse_loop_data *)arg;
     SDL_Event event;
     SDL_Renderer *renderer = loop_data->renderer;
+    float fx, fy;
+    SDL_MouseButtonFlags flags;
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
@@ -265,6 +267,10 @@ static void loop(void *arg)
         DrawObject(renderer, active);
     }
 
+    flags = SDL_GetGlobalMouseState(&fx, &fy);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderDebugTextFormat(renderer, 0, 0, "Global Mouse State: x=%f y=%f flags=%" SDL_PRIu32, fx, fy, flags);
+
     SDL_RenderPresent(renderer);
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -295,7 +301,7 @@ int main(int argc, char *argv[])
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         exit(1);
     }
 
@@ -313,7 +319,7 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Mouse Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 #endif
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
         return 0;
     }
 
@@ -321,7 +327,7 @@ int main(int argc, char *argv[])
 
     loop_data.renderer = SDL_CreateRenderer(window, NULL);
     if (!loop_data.renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return 0;
     }

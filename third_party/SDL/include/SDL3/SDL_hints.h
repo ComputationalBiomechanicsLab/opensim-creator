@@ -711,8 +711,6 @@ extern "C" {
  *
  * This hint only applies to the emscripten platform.
  *
- * The default value is "#canvas"
- *
  * This hint should be set before creating a window.
  *
  * \since This hint is available since SDL 3.2.0.
@@ -726,7 +724,7 @@ extern "C" {
  *
  * The variable can be one of:
  *
- * - "#window": the javascript window object (default)
+ * - "#window": the javascript window object
  * - "#document": the javascript document object
  * - "#screen": the javascript window.screen object
  * - "#canvas": the WebGL canvas element
@@ -1724,6 +1722,31 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAM_HORI "SDL_JOYSTICK_HIDAPI_STEAM_HORI"
 
 /**
+ * A variable controlling whether the HIDAPI driver for some Logitech wheels
+ * should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used
+ * - "1": HIDAPI driver is used
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_LG4FF "SDL_JOYSTICK_HIDAPI_LG4FF"
+
+/**
+ * A variable controlling whether the HIDAPI driver for 8BitDo controllers
+ * should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * "0" - HIDAPI driver is not used. "1" - HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_8BITDO "SDL_JOYSTICK_HIDAPI_8BITDO"
+
+/**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch
  * controllers should be used.
  *
@@ -2192,6 +2215,28 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
 
 /**
+ * A variable containing a list of devices and their desired number of haptic
+ * (force feedback) enabled axis.
+ *
+ * The format of the string is a comma separated list of USB VID/PID pairs in
+ * hexadecimal form plus the number of desired axes, e.g.
+ *
+ * `0xAAAA/0xBBBB/1,0xCCCC/0xDDDD/3`
+ *
+ * This hint supports a "wildcard" device that will set the number of haptic
+ * axes on all initialized haptic devices which were not defined explicitly in
+ * this hint.
+ *
+ * `0xFFFF/0xFFFF/1`
+ *
+ * This hint should be set before a controller is opened. The number of haptic
+ * axes won't exceed the number of real axes found on the device.
+ *
+ * \since This hint is available since SDL 3.2.5.
+ */
+#define SDL_HINT_JOYSTICK_HAPTIC_AXES "SDL_JOYSTICK_HAPTIC_AXES"
+
+/**
  * A variable that controls keycode representation in keyboard events.
  *
  * This variable is a comma separated set of options for translating keycodes
@@ -2349,8 +2394,8 @@ extern "C" {
 #define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
- * A variable controlling whether the Option (⌥) key on macOS should be
- * remapped to act as the Alt key.
+ * A variable controlling whether the Option key on macOS should be remapped
+ * to act as the Alt key.
  *
  * The variable can be set to the following values:
  *
@@ -3386,6 +3431,26 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
 
 /**
+ * A variable controlling whether SDL will attempt to automatically set the
+ * destination display to a mode most closely matching that of the previous
+ * display if an exclusive fullscreen window is moved onto it.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": SDL will not attempt to automatically set a matching mode on the
+ *   destination display. If an exclusive fullscreen window is moved to a new
+ *   display, the window will become fullscreen desktop.
+ * - "1": SDL will attempt to automatically set a mode on the destination
+ *   display that most closely matches the mode of the display that the
+ *   exclusive fullscreen window was previously on. (default)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE "SDL_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE"
+
+/**
  * A variable controlling whether fullscreen windows are minimized when they
  * lose focus.
  *
@@ -3584,6 +3649,22 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER "SDL_VIDEO_WIN_D3DCOMPILER"
+
+/**
+ * A variable controlling whether SDL should call XSelectInput() to enable
+ * input events on X11 windows wrapped by SDL windows.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Don't call XSelectInput(), assuming the native window code has done
+ *   it already.
+ * - "1": Call XSelectInput() to enable input events. (default)
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.2.10.
+ */
+#define SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT "SDL_VIDEO_X11_EXTERNAL_WINDOW_INPUT"
 
 /**
  * A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint
@@ -4360,7 +4441,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.

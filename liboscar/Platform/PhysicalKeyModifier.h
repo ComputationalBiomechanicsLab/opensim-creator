@@ -25,7 +25,7 @@ namespace osc
         // A ctrl key on the keyboard is pressed.
         Ctrl         = 1<<1,
 
-        // A meta (Windows/Ubuntu/Command) key on the keyboard is pressed.
+        // A meta (Windows/Command) key on the keyboard is pressed.
         Meta         = 1<<2,
 
         // An alt key on the keyboard is pressed.

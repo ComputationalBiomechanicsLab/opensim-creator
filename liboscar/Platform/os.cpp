@@ -3,15 +3,11 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/LogLevel.h>
 #include <liboscar/Platform/LogSink.h>
-#include <liboscar/Shims/Cpp20/bit.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/SynchronizedValue.h>
 
-#ifndef EMSCRIPTEN
-    #include <nfd.h>
-#endif
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
@@ -19,6 +15,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cerrno>
 #include <cstddef>
 #include <ctime>
@@ -41,11 +38,6 @@ namespace
     // care: this is necessary because segfault crash handlers don't appear to
     // be able to have data passed to them
     constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-    // this is set by `set_initial_directory_to_show_fallback`, which is used to provide the
-    // file dialog system with a hint of where the user probably expects the next dialog to
-    // open
-    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_initial_directory_to_show_fallback; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, const char* p)
     {
@@ -127,79 +119,6 @@ bool osc::set_clipboard_text(std::string_view content)
 void osc::set_environment_variable(std::string_view name, std::string_view value, bool overwrite)
 {
     SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
-}
-
-std::optional<std::filesystem::path> osc::get_initial_directory_to_show_fallback()
-{
-    return *g_initial_directory_to_show_fallback.lock();
-}
-
-void osc::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
-{
-    auto guard = g_initial_directory_to_show_fallback.lock();
-    *guard = p;
-}
-
-void osc::set_initial_directory_to_show_fallback(std::nullopt_t)
-{
-    g_initial_directory_to_show_fallback.lock()->reset();
-}
-
-std::optional<std::filesystem::path> osc::prompt_user_for_file_save_location_add_extension_if_necessary(
-    std::optional<std::string_view> maybe_extension,
-    std::optional<std::filesystem::path> maybe_initial_directory_to_open)
-{
-#ifdef EMSCRIPTEN
-    static_cast<void>(maybe_extension);
-    static_cast<void>(maybe_initial_directory_to_open);
-    return std::nullopt;
-#else
-    if (maybe_extension) {
-        OSC_ASSERT(not contains(*maybe_extension, ',') && "can only provide one extension to this implementation!");
-    }
-    if (not maybe_initial_directory_to_open) {
-        // defer to the application-wide fallback, if set
-        maybe_initial_directory_to_open = get_initial_directory_to_show_fallback();
-    }
-
-    auto [path, result] = [&]()
-    {
-        nfdchar_t* ptr = nullptr;
-        const nfdresult_t res = NFD_SaveDialog(
-            maybe_extension ? std::string{*maybe_extension}.c_str() : nullptr,
-            maybe_initial_directory_to_open ? maybe_initial_directory_to_open->string().c_str() : nullptr,
-            &ptr
-        );
-        return std::pair<std::unique_ptr<nfdchar_t, decltype(::free)*>, nfdresult_t>{
-            std::unique_ptr<nfdchar_t, decltype(::free)*>{ptr, ::free},
-            res,
-        };
-    }();
-
-    if (result != NFD_OKAY) {
-        return std::nullopt;
-    }
-
-    static_assert(std::is_same_v<nfdchar_t, char>);
-    auto p = std::filesystem::weakly_canonical(path.get());
-
-    if (maybe_extension) {
-        // ensure that the user-selected path is tested against '.$EXTENSION' (#771)
-        //
-        // the caller only provides the extension without the dot (this is what
-        // NFD requires) but the user may have manually written a string that is
-        // suffixed with the dot-less version of the extension (e.g. "somecsv")
-
-        std::stringstream full_extension;
-        full_extension << "." << *maybe_extension;
-        if (!std::string_view{path.get()}.ends_with(full_extension.str())) {
-            p += full_extension.str();
-        }
-    }
-
-    set_initial_directory_to_show_fallback(std::nullopt);  // reset application-wide fallback
-    return p;
-#endif
 }
 
 std::string osc::errno_to_string_threadsafe()
@@ -350,9 +269,9 @@ namespace
 
         /* Get the address at the time the signal was raised */
 #if defined(__i386__)  // gcc specific
-        void* caller_address = cpp20::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
+        void* caller_address = std::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
 #elif defined(__x86_64__)  // gcc specific
-        void* callerAddress = cpp20::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
+        void* callerAddress = std::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
 #else
 #error Unsupported architecture.
 #endif
@@ -551,8 +470,6 @@ void osc::open_url_in_os_default_web_browser(std::string_view url)
 #include <cinttypes>  // PRIXPTR
 #include <signal.h>   // signal()
 
-#include <liboscar/Shims/Cpp20/bit.h>
-
 using osc::global_default_logger;
 using osc::global_get_traceback_log;
 using osc::LogMessage;
@@ -594,12 +511,12 @@ void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std:
         // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
         MEMORY_BASIC_INFORMATION bmi;
         VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
-        DWORD64 base_addr = cpp20::bit_cast<DWORD64>(bmi.AllocationBase);
+        DWORD64 base_addr = std::bit_cast<DWORD64>(bmi.AllocationBase);
         static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
 
         // use the base address to figure out the file name
         TCHAR module_namebuf[1024];
-        GetModuleFileName(cpp20::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
+        GetModuleFileName(std::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
 
         // find the final element in the filename
         TCHAR* cursor = module_namebuf;
@@ -613,7 +530,7 @@ void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std:
             ++cursor;
         }
 
-        PVOID relative_addr = cpp20::bit_cast<PVOID>(cpp20::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
+        PVOID relative_addr = std::bit_cast<PVOID>(std::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
 
         std::array<char, 1024> formatted_buffer{};
         if (const auto size = std::snprintf(formatted_buffer.data(), formatted_buffer.size(), "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]); size > 0) {

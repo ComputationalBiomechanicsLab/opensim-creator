@@ -59,6 +59,7 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_gpu.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
@@ -96,6 +97,21 @@ typedef enum SDL_TextureAccess
     SDL_TEXTUREACCESS_STREAMING, /**< Changes frequently, lockable */
     SDL_TEXTUREACCESS_TARGET     /**< Texture can be used as a render target */
 } SDL_TextureAccess;
+
+/**
+ * The addressing mode for a texture when used in SDL_RenderGeometry().
+ *
+ * This affects how texture coordinates are interpreted outside of [0, 1]
+ *
+ * \since This enum is available since SDL 3.4.0.
+ */
+typedef enum SDL_TextureAddressMode
+{
+    SDL_TEXTURE_ADDRESS_INVALID = -1,
+    SDL_TEXTURE_ADDRESS_AUTO,   /**< Wrapping is enabled if texture coordinates are outside [0, 1], this is the default */
+    SDL_TEXTURE_ADDRESS_CLAMP,  /**< Texture coordinates are clamped to the [0, 1] range */
+    SDL_TEXTURE_ADDRESS_WRAP,   /**< The texture is repeated (tiled) */
+} SDL_TextureAddressMode;
 
 /**
  * How the logical size is mapped to the output.
@@ -267,6 +283,15 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   present synchronized with the refresh rate. This property can take any
  *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
+ * With the SDL GPU renderer:
+ *
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
+ *   provide SPIR-V shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to
+ *   provide DXIL shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to
+ *   provide MSL shaders to SDL_GPURenderState, optional.
+ *
  * With the vulkan renderer:
  *
  * - `SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER`: the VkInstance to use
@@ -303,12 +328,46 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                            "SDL.renderer.create.surface"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER                   "SDL.renderer.create.output_colorspace"
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER                       "SDL.renderer.create.present_vsync"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN                  "SDL.renderer.create.gpu.shaders_spirv"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxil"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN                    "SDL.renderer.create.gpu.shaders_msl"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "SDL.renderer.create.vulkan.instance"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER                      "SDL.renderer.create.vulkan.surface"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER             "SDL.renderer.create.vulkan.physical_device"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER                      "SDL.renderer.create.vulkan.device"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER  "SDL.renderer.create.vulkan.graphics_queue_family_index"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER   "SDL.renderer.create.vulkan.present_queue_family_index"
+
+/**
+ * Create a 2D GPU rendering context for a window, with support for the
+ * specified shader format.
+ *
+ * This is a convenience function to create a SDL GPU backed renderer,
+ * intended to be used with SDL_GPURenderState. The resulting renderer will
+ * support shaders in one of the specified shader formats.
+ *
+ * If no available GPU driver supports any of the specified shader formats,
+ * this function will fail.
+ *
+ * \param window the window where rendering is displayed.
+ * \param format_flags a bitflag indicating which shader formats the app is
+ *                     able to provide.
+ * \param device a pointer filled with the associated GPU device, or NULL on
+ *               error.
+ * \returns a valid rendering context or NULL if there was an error; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreateRendererWithProperties
+ * \sa SDL_GetGPUShaderFormats
+ * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPURenderState
+ * \sa SDL_SetRenderGPUState
+ */
+extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device);
 
 /**
  * Create a 2D software rendering context for a surface.
@@ -490,6 +549,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Rende
  * This returns the true output size in pixels, ignoring any render targets or
  * logical size and presentation.
  *
+ * For the output size of the current rendering target, with logical size
+ * adjustments, use SDL_GetCurrentRenderOutputSize() instead.
+ *
  * \param renderer the rendering context.
  * \param w a pointer filled in with the width in pixels.
  * \param h a pointer filled in with the height in pixels.
@@ -508,9 +570,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer,
  * Get the current output size in pixels of a rendering context.
  *
  * If a rendering target is active, this will return the size of the rendering
- * target in pixels, otherwise if a logical size is set, it will return the
- * logical size, otherwise it will return the value of
- * SDL_GetRenderOutputSize().
+ * target in pixels, otherwise return the value of SDL_GetRenderOutputSize().
+ *
+ * Rendering target or not, the output will be adjusted by the current logical
+ * presentation state, dictated by SDL_SetRenderLogicalPresentation().
  *
  * \param renderer the rendering context.
  * \param w a pointer filled in with the current width.
@@ -1318,6 +1381,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_Texture *texture);
  * To stop rendering to a texture and render to the window again, call this
  * function with a NULL `texture`.
  *
+ * Viewport, cliprect, scale, and logical presentation are unique to each
+ * render target. Get and set functions for these states apply to the current
+ * render target set by this function, and those states persist on each target
+ * when the current render target changes.
+ *
  * \param renderer the rendering context.
  * \param texture the targeted texture, which must be created with the
  *                `SDL_TEXTUREACCESS_TARGET` flag, or NULL to render to the
@@ -1351,25 +1419,39 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderTarget(SDL_Renderer *renderer, SDL
 extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *renderer);
 
 /**
- * Set a device independent resolution and presentation mode for rendering.
+ * Set a device-independent resolution and presentation mode for rendering.
  *
  * This function sets the width and height of the logical rendering output.
- * The renderer will act as if the window is always the requested dimensions,
- * scaling to the actual window resolution as necessary.
+ * The renderer will act as if the current render target is always the
+ * requested dimensions, scaling to the actual resolution as necessary.
  *
  * This can be useful for games that expect a fixed size, but would like to
  * scale the output to whatever is available, regardless of how a user resizes
  * a window, or if the display is high DPI.
  *
+ * Logical presentation can be used with both render target textures and the
+ * renderer's window; the state is unique to each render target, and this
+ * function sets the state for the current render target. It might be useful
+ * to draw to a texture that matches the window dimensions with logical
+ * presentation enabled, and then draw that texture across the entire window
+ * with logical presentation disabled. Be careful not to render both with
+ * logical presentation enabled, however, as this could produce
+ * double-letterboxing, etc.
+ *
  * You can disable logical coordinates by setting the mode to
  * SDL_LOGICAL_PRESENTATION_DISABLED, and in that case you get the full pixel
- * resolution of the output window; it is safe to toggle logical presentation
+ * resolution of the render target; it is safe to toggle logical presentation
  * during the rendering of a frame: perhaps most of the rendering is done to
  * specific dimensions but to make fonts look sharp, the app turns off logical
- * presentation while drawing text.
+ * presentation while drawing text, for example.
  *
- * Letterboxing will only happen if logical presentation is enabled during
- * SDL_RenderPresent; be sure to reenable it first if you were using it.
+ * For the renderer's window, letterboxing is drawn into the framebuffer if
+ * logical presentation is enabled during SDL_RenderPresent; be sure to
+ * reenable it before presenting if you were toggling it, otherwise the
+ * letterbox areas might have artifacts from previous frames (or artifacts
+ * from external overlays, etc). Letterboxing is never drawn into texture
+ * render targets; be sure to call SDL_RenderClear() before drawing into the
+ * texture so the letterboxing areas are cleared, if appropriate.
  *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
@@ -1397,6 +1479,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * This function gets the width and height of the logical rendering output, or
  * the output size in pixels if a logical resolution is not enabled.
  *
+ * Each render target has its own logical presentation state. This function
+ * gets the state for the current render target.
+ *
  * \param renderer the rendering context.
  * \param w an int to be filled with the width.
  * \param h an int to be filled with the height.
@@ -1419,6 +1504,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *
  * presentation, based on the presentation mode and output size. If logical
  * presentation is disabled, it will fill the rectangle with the output size,
  * in pixels.
+ *
+ * Each render target has its own logical presentation state. This function
+ * gets the rectangle for the current render target.
  *
  * \param renderer the rendering context.
  * \param rect a pointer filled in with the final presentation rectangle, may
@@ -1536,6 +1624,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Rendere
  *
  * The area's width and height must be >= 0.
  *
+ * Each render target has its own viewport. This function sets the viewport
+ * for the current render target.
+ *
  * \param renderer the rendering context.
  * \param rect the SDL_Rect structure representing the drawing area, or NULL
  *             to set the viewport to the entire target.
@@ -1553,6 +1644,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, c
 
 /**
  * Get the drawing area for the current target.
+ *
+ * Each render target has its own viewport. This function gets the viewport
+ * for the current render target.
  *
  * \param renderer the rendering context.
  * \param rect an SDL_Rect structure filled in with the current drawing area.
@@ -1574,6 +1668,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, S
  * This is useful if you're saving and restoring the viewport and want to know
  * whether you should restore a specific rectangle or NULL. Note that the
  * viewport is always reset when changing rendering targets.
+ *
+ * Each render target has its own viewport. This function checks the viewport
+ * for the current render target.
  *
  * \param renderer the rendering context.
  * \returns true if the viewport was set to a specific rectangle, or false if
@@ -1613,6 +1710,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderSafeArea(SDL_Renderer *renderer, S
 /**
  * Set the clip rectangle for rendering on the specified target.
  *
+ * Each render target has its own clip rectangle. This function sets the
+ * cliprect for the current render target.
+ *
  * \param renderer the rendering context.
  * \param rect an SDL_Rect structure representing the clip area, relative to
  *             the viewport, or NULL to disable clipping.
@@ -1631,6 +1731,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, c
 /**
  * Get the clip rectangle for the current target.
  *
+ * Each render target has its own clip rectangle. This function gets the
+ * cliprect for the current render target.
+ *
  * \param renderer the rendering context.
  * \param rect an SDL_Rect structure filled in with the current clipping area
  *             or an empty rectangle if clipping is disabled.
@@ -1647,7 +1750,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, c
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
 
 /**
- * Get whether clipping is enabled on the given renderer.
+ * Get whether clipping is enabled on the given render target.
+ *
+ * Each render target has its own clip rectangle. This function checks the
+ * cliprect for the current render target.
  *
  * \param renderer the rendering context.
  * \returns true if clipping is enabled or false if not; call SDL_GetError()
@@ -1673,6 +1779,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
  * will be handled using the appropriate quality hints. For best results use
  * integer scaling factors.
  *
+ * Each render target has its own scale. This function sets the scale for the
+ * current render target.
+ *
  * \param renderer the rendering context.
  * \param scaleX the horizontal scaling factor.
  * \param scaleY the vertical scaling factor.
@@ -1689,6 +1798,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderScale(SDL_Renderer *renderer, floa
 
 /**
  * Get the drawing scale for the current target.
+ *
+ * Each render target has its own scale. This function gets the scale for the
+ * current render target.
  *
  * \param renderer the rendering context.
  * \param scaleX a pointer filled in with the horizontal scaling factor.
@@ -2183,6 +2295,43 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureTiled(SDL_Renderer *renderer, 
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect);
 
 /**
+ * Perform a scaled copy using the 9-grid algorithm to the current rendering
+ * target at subpixel precision.
+ *
+ * The pixels in the texture are split into a 3x3 grid, using the different
+ * corner sizes for each corner, and the sides and center making up the
+ * remaining pixels. The corners are then scaled using `scale` and fit into
+ * the corners of the destination rectangle. The sides and center are then
+ * tiled into place to cover the remaining destination rectangle.
+ *
+ * \param renderer the renderer which should copy parts of a texture.
+ * \param texture the source texture.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be used
+ *                for the 9-grid, or NULL to use the entire texture.
+ * \param left_width the width, in pixels, of the left corners in `srcrect`.
+ * \param right_width the width, in pixels, of the right corners in `srcrect`.
+ * \param top_height the height, in pixels, of the top corners in `srcrect`.
+ * \param bottom_height the height, in pixels, of the bottom corners in
+ *                      `srcrect`.
+ * \param scale the scale used to transform the corner of `srcrect` into the
+ *              corner of `dstrect`, or 0.0f for an unscaled copy.
+ * \param dstrect a pointer to the destination rectangle, or NULL for the
+ *                entire rendering target.
+ * \param tileScale the scale used to transform the borders and center of
+ *                  `srcrect` into the borders and middle of `dstrect`, or
+ *                  1.0f for an unscaled copy.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_RenderTexture
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect, float tileScale);
+
+/**
  * Render a list of triangles, optionally using a texture and indices into the
  * vertex array Color and alpha modulation is done per vertex
  * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
@@ -2203,6 +2352,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometryRaw
+ * \sa SDL_SetRenderTextureAddressMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2235,6 +2385,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometry
+ * \sa SDL_SetRenderTextureAddressMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2245,17 +2396,61 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                const void *indices, int num_indices, int size_indices);
 
 /**
+ * Set the texture addressing mode used in SDL_RenderGeometry().
+ *
+ * \param renderer the rendering context.
+ * \param u_mode the SDL_TextureAddressMode to use for horizontal texture
+ *               coordinates in SDL_RenderGeometry().
+ * \param v_mode the SDL_TextureAddressMode to use for vertical texture
+ *               coordinates in SDL_RenderGeometry().
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_RenderGeometry
+ * \sa SDL_RenderGeometryRaw
+ * \sa SDL_GetRenderTextureAddressMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode u_mode, SDL_TextureAddressMode v_mode);
+
+/**
+ * Get the texture addressing mode used in SDL_RenderGeometry().
+ *
+ * \param renderer the rendering context.
+ * \param u_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for horizontal texture coordinates in SDL_RenderGeometry(),
+ *               may be NULL.
+ * \param v_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for vertical texture coordinates in SDL_RenderGeometry(), may
+ *               be NULL.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetRenderTextureAddressMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode *u_mode, SDL_TextureAddressMode *v_mode);
+
+/**
  * Read pixels from the current rendering target.
  *
- * The returned surface should be freed with SDL_DestroySurface()
+ * The returned surface contains pixels inside the desired area clipped to the
+ * current viewport, and should be freed with SDL_DestroySurface().
+ *
+ * Note that this returns the actual pixels on the screen, so if you are using
+ * logical presentation you should use SDL_GetRenderLogicalPresentationRect()
+ * to get the area containing your content.
  *
  * **WARNING**: This is a very slow operation, and should not be used
  * frequently. If you're using this on the main rendering target, it should be
  * called after rendering and before SDL_RenderPresent().
  *
  * \param renderer the rendering context.
- * \param rect an SDL_Rect structure representing the area in pixels relative
- *             to the to current viewport, or NULL for the entire viewport.
+ * \param rect an SDL_Rect structure representing the area to read, which will
+ *             be clipped to the current viewport, or NULL for the entire
+ *             viewport.
  * \returns a new SDL_Surface on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2289,8 +2484,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *ren
  * should not be done; you are only required to change back the rendering
  * target to default via `SDL_SetRenderTarget(renderer, NULL)` afterwards, as
  * textures by themselves do not have a concept of backbuffers. Calling
- * SDL_RenderPresent while rendering to a texture will still update the screen
- * with any current drawing that has been done _to the window itself_.
+ * SDL_RenderPresent while rendering to a texture will fail.
  *
  * \param renderer the rendering context.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -2577,6 +2771,161 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * \sa SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(4);
+
+/**
+ * Set default scale mode for new textures for given renderer.
+ *
+ * When a renderer is created, scale_mode defaults to SDL_SCALEMODE_LINEAR.
+ *
+ * \param renderer the renderer to update.
+ * \param scale_mode the scale mode to change to for new textures.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetDefaultTextureScaleMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode scale_mode);
+
+/**
+ * Get default texture scale mode of the given renderer.
+ *
+ * \param renderer the renderer to get data from.
+ * \param scale_mode a SDL_ScaleMode filled with current default scale mode.
+ *                   See SDL_SetDefaultTextureScaleMode() for the meaning of
+ *                   the value.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetDefaultTextureScaleMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
+
+/**
+ * GPU render state description.
+ *
+ * This structure should be initialized using SDL_INIT_INTERFACE().
+ *
+ * \since This struct is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreateGPURenderState
+ */
+typedef struct SDL_GPURenderStateDesc
+{
+    Uint32 version;                 /**< the version of this interface */
+
+    SDL_GPUShader *fragment_shader; /**< The fragment shader to use when this render state is active */
+
+    Sint32 num_sampler_bindings;    /**< The number of additional fragment samplers to bind when this render state is active */
+    const SDL_GPUTextureSamplerBinding *sampler_bindings;   /**< Additional fragment samplers to bind when this render state is active */
+
+    Sint32 num_storage_textures;    /**< The number of storage textures to bind when this render state is active */
+    SDL_GPUTexture *const *storage_textures;    /**< Storage textures to bind when this render state is active */
+
+    Sint32 num_storage_buffers;    /**< The number of storage buffers to bind when this render state is active */
+    SDL_GPUBuffer *const *storage_buffers;      /**< Storage buffers to bind when this render state is active */
+} SDL_GPURenderStateDesc;
+
+/* Check the size of SDL_GPURenderStateDesc
+ *
+ * If this assert fails, either the compiler is padding to an unexpected size,
+ * or the interface has been updated and this should be updated to match and
+ * the code using this interface should be updated to handle the old version.
+ */
+SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
+    (sizeof(void *) == 4 && sizeof(SDL_GPURenderStateDesc) == 32) ||
+    (sizeof(void *) == 8 && sizeof(SDL_GPURenderStateDesc) == 64));
+
+/**
+ * A custom GPU render state.
+ *
+ * \since This struct is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreateGPURenderState
+ * \sa SDL_SetGPURenderStateFragmentUniforms
+ * \sa SDL_SetRenderGPUState
+ * \sa SDL_DestroyGPURenderState
+ */
+typedef struct SDL_GPURenderState SDL_GPURenderState;
+
+/**
+ * Create custom GPU render state.
+ *
+ * \param renderer the renderer to use.
+ * \param desc GPU render state description, initialized using
+ *             SDL_INIT_INTERFACE().
+ * \returns a custom GPU render state or NULL on failure; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetGPURenderStateFragmentUniforms
+ * \sa SDL_SetRenderGPUState
+ * \sa SDL_DestroyGPURenderState
+ */
+extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc);
+
+/**
+ * Set fragment shader uniform variables in a custom GPU render state.
+ *
+ * The data is copied and will be pushed using
+ * SDL_PushGPUFragmentUniformData() during draw call execution.
+ *
+ * \param state the state to modify.
+ * \param slot_index the fragment uniform slot to push data to.
+ * \param data client data to write.
+ * \param length the length of the data to write.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length);
+
+/**
+ * Set custom GPU render state.
+ *
+ * This function sets custom GPU render state for subsequent draw calls. This
+ * allows using custom shaders with the GPU renderer.
+ *
+ * \param renderer the renderer to use.
+ * \param state the state to to use, or NULL to clear custom GPU render state.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderGPUState(SDL_Renderer *renderer, SDL_GPURenderState *state);
+
+/**
+ * Destroy custom GPU render state.
+ *
+ * \param state the state to destroy.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreateGPURenderState
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_DestroyGPURenderState(SDL_GPURenderState *state);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

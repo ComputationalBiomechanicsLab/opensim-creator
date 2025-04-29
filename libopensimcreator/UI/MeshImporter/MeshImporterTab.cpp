@@ -66,15 +66,18 @@
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <memory>
 #include <optional>
 #include <span>
 #include <sstream>
-#include <string>
 #include <string_view>
+#include <string>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+
+using namespace osc;
 
 // mesh importer tab implementation
 class osc::mi::MeshImporterTab::Impl final :
@@ -103,17 +106,15 @@ public:
         return !m_Shared->isModelGraphUpToDateWithDisk();
     }
 
-    bool trySave()
+    std::future<TabSaveResult> trySave()
     {
-        if (m_Shared->isModelGraphUpToDateWithDisk())
-        {
-            // nothing to save
-            return true;
+        if (m_Shared->isModelGraphUpToDateWithDisk()) {
+            std::promise<TabSaveResult> promise;
+            promise.set_value(TabSaveResult::Done);
+            return promise.get_future();
         }
-        else
-        {
-            // try to save the changes
-            return m_Shared->exportAsModelGraphAsOsimFile();
+        else {
+            return m_Shared->exportModelGraphAsOsimFile();
         }
     }
 
@@ -1354,69 +1355,52 @@ private:
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("obj");
-        if (!maybeUserSaveLocation)
+        App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
-        }
+            // write transformed mesh to output
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
+                return;
+            }
 
-        const ObjMetadata objMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+            const ObjMetadata objMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        write_as_obj(
-            outputFileStream,
-            mesh,
-            objMetadata,
-            ObjWriterFlag::NoWriteNormals
-        );
+            write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+        }, "obj");
     }
 
     void actionPromptUserToSaveMeshAsSTL(
         const osc::Mesh& mesh)
     {
         // prompt user for a save location
-        const std::optional<std::filesystem::path> maybeUserSaveLocation =
-            prompt_user_for_file_save_location_add_extension_if_necessary("stl");
-        if (!maybeUserSaveLocation)
+        App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
         {
-            return;  // user didn't select a save location
-        }
-        const std::filesystem::path& userSaveLocation = *maybeUserSaveLocation;
+            if (not p) {
+                return;  // user cancelled out of the prompt
+            }
 
-        // write transformed mesh to output
-        std::ofstream outputFileStream
-        {
-            userSaveLocation,
-            std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-        };
-        if (!outputFileStream)
-        {
-            const std::string error = errno_to_string_threadsafe();
-            log_error("%s: could not save obj output: %s", userSaveLocation.string().c_str(), error.c_str());
-            return;
-        }
+            // write transformed mesh to output
+            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+            if (not ofs) {
+                const std::string error = errno_to_string_threadsafe();
+                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
+                return;
+            }
 
-        const StlMetadata stlMetadata{
-            App::get().application_name_with_version_and_buildid(),
-        };
+            const StlMetadata stlMetadata{
+                App::get().application_name_with_version_and_buildid(),
+            };
 
-        write_as_stl(outputFileStream, mesh, stlMetadata);
+            write_as_stl(ofs, mesh, stlMetadata);
+        }, "stl");
     }
 
     void drawSaveMeshMenu(const Mesh& el)
@@ -1566,10 +1550,10 @@ private:
     {
         std::visit(Overload
         {
-            [this, &clickPos](Ground& el)  { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Mesh& el)    { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Body& el)    { this->drawContextMenuContent(el, clickPos); },
-            [this, &clickPos](Joint& el)   { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Ground& el)    { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Mesh& el)      { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Body& el)      { this->drawContextMenuContent(el, clickPos); },
+            [this, &clickPos](Joint& el)     { this->drawContextMenuContent(el, clickPos); },
             [this, &clickPos](StationEl& el) { this->drawContextMenuContent(el, clickPos); },
         }, el.toVariant());
     }
@@ -2442,7 +2426,7 @@ osc::mi::MeshImporterTab::MeshImporterTab(
     Tab{std::make_unique<Impl>(*this, parent_, std::move(files_))}
 {}
 bool osc::mi::MeshImporterTab::impl_is_unsaved() const { return private_data().isUnsaved(); }
-bool osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }
+std::future<TabSaveResult> osc::mi::MeshImporterTab::impl_try_save() { return private_data().trySave(); }
 void osc::mi::MeshImporterTab::impl_on_mount() { private_data().on_mount(); }
 void osc::mi::MeshImporterTab::impl_on_unmount() { private_data().on_unmount(); }
 bool osc::mi::MeshImporterTab::impl_on_event(Event& e) { return private_data().onEvent(e); }

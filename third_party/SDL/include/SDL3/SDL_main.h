@@ -28,6 +28,9 @@
  * should look like this:
  *
  * ```c
+ * #include <SDL3/SDL.h>
+ * #include <SDL3/SDL_main.h>
+ *
  * int main(int argc, char *argv[])
  * {
  * }
@@ -38,9 +41,9 @@
  * This is also where an app can be configured to use the main callbacks, via
  * the SDL_MAIN_USE_CALLBACKS macro.
  *
- * This is a "single-header library," which is to say that including this
- * header inserts code into your program, and you should only include it once
- * in most cases. SDL.h does not include this header automatically.
+ * SDL_main.h is a "single-header library," which is to say that including
+ * this header inserts code into your program, and you should only include it
+ * once in most cases. SDL.h does not include this header automatically.
  *
  * For more information, see:
  *
@@ -344,10 +347,10 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int a
  * Apps implement this function when using SDL_MAIN_USE_CALLBACKS. If using a
  * standard "main" function, you should not supply this.
  *
- * This function is called repeatedly by SDL after SDL_AppInit returns 0. The
- * function should operate as a single iteration the program's primary loop;
- * it should update whatever state it needs and draw a new frame of video,
- * usually.
+ * This function is called repeatedly by SDL after SDL_AppInit returns
+ * SDL_APP_CONTINUE. The function should operate as a single iteration the
+ * program's primary loop; it should update whatever state it needs and draw a
+ * new frame of video, usually.
  *
  * On some platforms, this function will be called at the refresh rate of the
  * display (which might change during the life of your app!). There are no

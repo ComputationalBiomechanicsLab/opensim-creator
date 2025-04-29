@@ -103,7 +103,7 @@ typedef struct SDL_Process SDL_Process;
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
  */
-extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *args, bool pipe_stdio);
+extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcess(const char * const *args, bool pipe_stdio);
 
 /**
  * Description of where standard I/O should be directed when creating a
@@ -166,6 +166,9 @@ typedef enum SDL_ProcessIO
  * - `SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER`: an SDL_Environment
  *   pointer. If this property is set, it will be the entire environment for
  *   the process, otherwise the current environment is used.
+ * - `SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING`: a UTF-8 encoded
+ *   string representing the working directory for the process, defaults to
+ *   the current working directory.
  * - `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER`: an SDL_ProcessIO value describing
  *   where standard input for the process comes from, defaults to
  *   `SDL_PROCESS_STDIO_NULL`.
@@ -173,13 +176,13 @@ typedef enum SDL_ProcessIO
  *   standard input when `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` is set to
  *   `SDL_PROCESS_STDIO_REDIRECT`.
  * - `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER`: an SDL_ProcessIO value
- *   describing where standard output for the process goes go, defaults to
+ *   describing where standard output for the process goes to, defaults to
  *   `SDL_PROCESS_STDIO_INHERITED`.
  * - `SDL_PROP_PROCESS_CREATE_STDOUT_POINTER`: an SDL_IOStream pointer used
  *   for standard output when `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` is set
  *   to `SDL_PROCESS_STDIO_REDIRECT`.
  * - `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER`: an SDL_ProcessIO value
- *   describing where standard error for the process goes go, defaults to
+ *   describing where standard error for the process goes to, defaults to
  *   `SDL_PROCESS_STDIO_INHERITED`.
  * - `SDL_PROP_PROCESS_CREATE_STDERR_POINTER`: an SDL_IOStream pointer used
  *   for standard error when `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER` is set to
@@ -215,10 +218,11 @@ typedef enum SDL_ProcessIO
  * \sa SDL_WaitProcess
  * \sa SDL_DestroyProcess
  */
-extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcessWithProperties(SDL_PropertiesID props);
+extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_PROCESS_CREATE_ARGS_POINTER                "SDL.process.create.args"
 #define SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER         "SDL.process.create.environment"
+#define SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING    "SDL.process.create.working_directory"
 #define SDL_PROP_PROCESS_CREATE_STDIN_NUMBER                "SDL.process.create.stdin_option"
 #define SDL_PROP_PROCESS_CREATE_STDIN_POINTER               "SDL.process.create.stdin_source"
 #define SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER               "SDL.process.create.stdout_option"
@@ -320,7 +324,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessOutput
  */
-extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *process);
+extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_GetProcessInput(SDL_Process *process);
 
 /**
  * Get the SDL_IOStream associated with process standard output.
@@ -344,7 +348,7 @@ extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessInput(SDL_Process *proce
  * \sa SDL_CreateProcessWithProperties
  * \sa SDL_GetProcessInput
  */
-extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_GetProcessOutput(SDL_Process *process);
+extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_GetProcessOutput(SDL_Process *process);
 
 /**
  * Stop a process.

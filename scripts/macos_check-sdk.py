@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
-# `macos_check-sdk.py`: checks that the specified binary uses the
-# specified version of the MacOS SDK. This is handy for double-checking
-# that the build system is using the correct SDK, which can impact
-# which versions of MacOS can run the binary.
+#
+# Checks that the specified binary uses the specified version of the
+# MacOS SDK. This is handy for double-checking that the build system
+# is using the correct SDK, which can impact which versions of MacOS
+# can run the binary.
 
 import argparse
 import subprocess
@@ -15,4 +15,3 @@ args = parser.parse_args()
 
 sdk_version = subprocess.check_output(f'otool -l {args.binary} | grep sdk', shell=True).decode('utf-8').split(' ')[-1].strip()
 assert sdk_version == args.expected_sdk_version, f'{sdk_version} is not the expected SDK version ({args.expected_sdk_version})'
-

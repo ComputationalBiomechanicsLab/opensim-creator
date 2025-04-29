@@ -40,10 +40,10 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     protected float mWidth, mHeight;
 
     // Is SurfaceView ready for rendering
-    public boolean mIsSurfaceReady;
+    protected boolean mIsSurfaceReady;
 
     // Startup
-    public SDLSurface(Context context) {
+    protected SDLSurface(Context context) {
         super(context);
         getHolder().addCallback(this);
 
@@ -66,11 +66,11 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mIsSurfaceReady = false;
     }
 
-    public void handlePause() {
+    protected void handlePause() {
         enableSensor(Sensor.TYPE_ACCELEROMETER, false);
     }
 
-    public void handleResume() {
+    protected void handleResume() {
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
@@ -80,7 +80,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
     }
 
-    public Surface getNativeSurface() {
+    protected Surface getNativeSurface() {
         return getHolder().getSurface();
     }
 
@@ -276,7 +276,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
 
                 SDLActivity.onNativePen(pointerId, buttonState, action, x, y, p);
-            } else if (toolType == MotionEvent.TOOL_TYPE_FINGER) {
+            } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
                 pointerId = event.getPointerId(i);
                 x = getNormalizedX(event.getX(i));
                 y = getNormalizedY(event.getY(i));
@@ -299,7 +299,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     // Sensor events
-    public void enableSensor(int sensortype, boolean enabled) {
+    protected void enableSensor(int sensortype, boolean enabled) {
         // TODO: This uses getDefaultSensor - what if we have >1 accels?
         if (enabled) {
             mSensorManager.registerListener(this,
@@ -363,6 +363,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     // Captured pointer events for API 26.
+    @Override
     public boolean onCapturedPointerEvent(MotionEvent event)
     {
         int action = event.getActionMasked();
@@ -401,7 +402,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     SDLActivity.onNativeMouse(button, action, x, y, true);
                     return true;
             }
-        }      
+        }
 
         return false;
     }

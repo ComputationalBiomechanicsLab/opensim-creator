@@ -100,6 +100,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -243,7 +244,7 @@ namespace
 
     bool is_aligned_at_least(const void* ptr, GLint required_alignment)
     {
-        return cpp20::bit_cast<intptr_t>(ptr) % required_alignment == 0;
+        return std::bit_cast<intptr_t>(ptr) % required_alignment == 0;
     }
 
     // returns the name strings of all extensions that the OpenGL backend may use
@@ -1360,10 +1361,10 @@ namespace
                     const size_t component_begin = pixel_begin + component*num_bytes_per_component;
 
                     const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
 
-                    color[component] = cpp20::bit_cast<float>(tmp_array);
+                    color[component] = std::bit_cast<float>(tmp_array);
                 }
                 rv.push_back(color);
             }
@@ -1417,9 +1418,9 @@ namespace
                     const size_t component_begin = pixel_begin + component*sizeof(float);
 
                     const std::span<const uint8_t> component_span{pixel_bytes.data() + component_begin, sizeof(float)};
-                    std::array<uint8_t, sizeof(float)> tmp_array{};
+                    alignas(float) std::array<uint8_t, sizeof(float)> tmp_array{};
                     rgs::copy(component_span, tmp_array.begin());
-                    const auto component_float = cpp20::bit_cast<float>(tmp_array);
+                    const auto component_float = std::bit_cast<float>(tmp_array);
 
                     color[component] = Unorm8{component_float};
                 }
@@ -3274,15 +3275,14 @@ namespace
     public:
         template<typename Value>
         requires std::is_constructible_v<MaterialValueDataType, Value&&>
-        static MaterialValueStorage single(Value&& single_value)
-        {
-            return MaterialValueStorage{MaterialValueDataType{std::forward<Value>(single_value)}};
-        }
+        explicit MaterialValueStorage(Value&& single_value) :
+            data_{MaterialValueDataType{std::forward<Value>(single_value)}}
+        {}
 
-        static MaterialValueStorage array(std::span<const MaterialValueDataType> array_values)
+        explicit MaterialValueStorage(std::span<const MaterialValueDataType> array_values) :
+            data_{MaterialValueArray<MaterialValueDataType>(array_values)}
         {
             OSC_ASSERT_ALWAYS(not array_values.empty() && "an array of material values cannot be empty - you should `unset` the material property instead");
-            return MaterialValueStorage{MaterialValueArray<MaterialValueDataType>(array_values)};
         }
 
         friend bool operator==(const MaterialValueStorage&, const MaterialValueStorage&) = default;
@@ -3301,15 +3301,7 @@ namespace
             const size_t num_to_assign = min(max_els, all.size());
             return all.subspan(0, num_to_assign);
         }
-
     private:
-        explicit MaterialValueStorage(MaterialValueDataType&& value) :
-            data_{std::move(value)}
-        {}
-        explicit MaterialValueStorage(MaterialValueArray<MaterialValueDataType>&& values) :
-            data_{std::move(values)}
-        {}
-
         std::variant<MaterialValueDataType, MaterialValueArray<MaterialValueDataType>> data_;
     };
 
@@ -3320,15 +3312,19 @@ namespace
     }
 
     class MaterialValue {
+    private:
+        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
     public:
         template<typename Value>
-        MaterialValue(Value&& value) :
-            data_{MaterialValueStorage<std::remove_cvref_t<Value>>::single(std::forward<Value>(value))}
+        requires (not std::same_as<MaterialValue, std::remove_cvref_t<Value>> and std::constructible_from<MaterialValueStorage<std::remove_cvref_t<Value>>, Value&&>)
+        explicit MaterialValue(Value&& single_value) :
+            data_{MaterialValueStorage<std::remove_cvref_t<Value>>{std::forward<Value>(single_value)}}
         {}
 
         template<typename Value>
-        MaterialValue(std::span<const Value> array_values) :
-            data_{MaterialValueStorage<Value>::array(array_values)}
+        requires std::constructible_from<MaterialValueStorage<Value>, std::span<const Value>>
+        explicit MaterialValue(std::span<const Value> array_values) :
+            data_{MaterialValueStorage<Value>{array_values}}
         {}
 
         friend bool operator==(const MaterialValue&, const MaterialValue&) = default;
@@ -3378,7 +3374,6 @@ namespace
             return v->view_values();
         }
     private:
-        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
         MaterialValueVariant data_;
     };
 }
@@ -3598,13 +3593,13 @@ public:
     template<typename T, std::convertible_to<std::string_view> StringLike>
     void set(StringLike&& property_name, T&& value)
     {
-        values_.insert_or_assign(std::forward<StringLike>(property_name), std::forward<T>(value));
+        values_.insert_or_assign(std::forward<StringLike>(property_name), MaterialValue{std::forward<T>(value)});
     }
 
     template<typename T, std::convertible_to<std::string_view> StringLike>
     void set_array(StringLike&& property_name, std::span<const T> values)
     {
-        values_.insert_or_assign(std::forward<StringLike>(property_name), values);
+        values_.insert_or_assign(std::forward<StringLike>(property_name), MaterialValue{values});
     }
 
     template<std::convertible_to<std::string_view> StringLike>
@@ -5273,7 +5268,7 @@ public:
             mode,
             num_indices,
             type,
-            cpp20::bit_cast<void*>(first_index_byte_offset),
+            std::bit_cast<void*>(first_index_byte_offset),
             num_instances
         );
 #else
@@ -5282,7 +5277,7 @@ public:
             mode,
             num_indices,
             type,
-            cpp20::bit_cast<void*>(first_index_byte_offset),
+            std::bit_cast<void*>(first_index_byte_offset),
             num_instances,
             base_vertex
         );
@@ -5411,7 +5406,7 @@ private:
             to_opengl_attribute_type_enum(layout.format()),
             is_normalized_attribute_type(layout.format()),
             static_cast<GLsizei>(format.stride()),
-            cpp20::bit_cast<void*>(layout.offset())
+            std::bit_cast<void*>(layout.offset())
         );
         glEnableVertexAttribArray(shader_location_of(layout.attribute()));
     }
@@ -5425,7 +5420,7 @@ private:
         MeshOpenGLData& buffers = **maybe_gpu_data_;
 
         // upload CPU-side vector data into the GPU-side buffer
-        OSC_ASSERT(cpp20::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
+        OSC_ASSERT(std::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
         gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::buffer_data(
             GL_ARRAY_BUFFER,

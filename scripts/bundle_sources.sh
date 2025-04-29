@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Bundles OpenSim Creator's sources into a single tarball, suitable for
+# archiving.
 
 set -xeuo pipefail
 

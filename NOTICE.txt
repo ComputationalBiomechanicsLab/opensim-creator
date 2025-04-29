@@ -93,14 +93,6 @@ nanobind
 - Copyright (c) 2022 Wenzel Jakob <wenzel.jakob@epfl.ch>, All rights reserved.
 
 
-nativefiledialog
-----------------
-
-- https://github.com/mlabbe/nativefiledialog
-- Licensed under the zlib license
-- (assumed) Copyright Michael Labbe
-
-
 OpenBLAS
 --------
 

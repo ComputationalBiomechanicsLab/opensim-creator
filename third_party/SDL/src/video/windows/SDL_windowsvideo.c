@@ -36,6 +36,10 @@
 #include "SDL_windowsrawinput.h"
 #include "SDL_windowsvulkan.h"
 
+#ifdef HAVE_SHOBJIDL_CORE_H
+#include <shobjidl_core.h>
+#endif
+
 #ifdef SDL_GDK_TEXTINPUT
 #include "../gdk/SDL_gdktextinput.h"
 #endif
@@ -76,10 +80,15 @@ static void SDLCALL UpdateWindowFrameUsableWhileCursorHidden(void *userdata, con
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static bool WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
 {
+    DWORD result;
     if (_this->suspend_screensaver) {
-        SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
+        result = SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
     } else {
-        SetThreadExecutionState(ES_CONTINUOUS);
+        result = SetThreadExecutionState(ES_CONTINUOUS);
+    }
+    if (result == 0) {
+        SDL_SetError("SetThreadExecutionState() failed");
+        return false;
     }
     return true;
 }
@@ -102,6 +111,9 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
     }
     if (data->shcoreDLL) {
         SDL_UnloadObject(data->shcoreDLL);
+    }
+    if (data->dwmapiDLL) {
+        SDL_UnloadObject(data->dwmapiDLL);
     }
 #endif
 #ifdef HAVE_DXGI_H
@@ -179,6 +191,17 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     } else {
         SDL_ClearError();
     }
+
+    data->dwmapiDLL = SDL_LoadObject("DWMAPI.DLL");
+    if (data->dwmapiDLL) {
+        /* *INDENT-OFF* */ // clang-format off
+        data->DwmFlush = (HRESULT (WINAPI *)(void))SDL_LoadFunction(data->dwmapiDLL, "DwmFlush");
+        data->DwmEnableBlurBehindWindow = (HRESULT (WINAPI *)(HWND hwnd, const DWM_BLURBEHIND *pBlurBehind))SDL_LoadFunction(data->dwmapiDLL, "DwmEnableBlurBehindWindow");
+        data->DwmSetWindowAttribute = (HRESULT (WINAPI *)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute))SDL_LoadFunction(data->dwmapiDLL, "DwmSetWindowAttribute");
+        /* *INDENT-ON* */ // clang-format on
+    } else {
+        SDL_ClearError();
+    }
 #endif // #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #ifdef HAVE_DXGI_H
@@ -249,6 +272,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetWindowHitTest = WIN_SetWindowHitTest;
     device->AcceptDragAndDrop = WIN_AcceptDragAndDrop;
     device->FlashWindow = WIN_FlashWindow;
+    device->ApplyWindowProgress = WIN_ApplyWindowProgress;
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
     device->UpdateWindowShape = WIN_UpdateWindowShape;
@@ -330,10 +354,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_CreateDevice,
     #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    WIN_ShowMessageBox
+    WIN_ShowMessageBox,
     #else
-    NULL
+    NULL,
     #endif
+    false
 };
 
 static BOOL WIN_DeclareDPIAwareUnaware(SDL_VideoDevice *_this)
@@ -482,11 +507,11 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
         if (SUCCEEDED(hr)) {
             data->oleinitialized = true;
         } else {
-            SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "OleInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality\n", (unsigned int)hr);
+            SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "OleInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality", (unsigned int)hr);
         }
 #endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     } else {
-        SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "CoInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality\n", (unsigned int)hr);
+        SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "CoInitialize() failed: 0x%.8x, using fallback drag-n-drop functionality", (unsigned int)hr);
     }
 
     WIN_InitDPIAwareness(_this);
@@ -532,6 +557,9 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
 #endif
+#if defined(HAVE_SHOBJIDL_CORE_H)
+    data->WM_TASKBAR_BUTTON_CREATED = RegisterWindowMessageA("TaskbarButtonCreated");
+#endif
 
     return true;
 }
@@ -554,6 +582,13 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_QuitDeviceNotification();
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
+
+#if defined(HAVE_SHOBJIDL_CORE_H)
+    if (data->taskbar_list) {
+        IUnknown_Release(data->taskbar_list);
+        data->taskbar_list = NULL;
+    }
+#endif
 
     if (data->oleinitialized) {
         OleUninitialize();

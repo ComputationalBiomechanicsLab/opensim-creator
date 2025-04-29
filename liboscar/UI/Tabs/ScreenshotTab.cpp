@@ -18,6 +18,7 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Screenshot.h>
@@ -175,18 +176,19 @@ private:
 
     void action_try_save_annotated_screenshot()
     {
-        const std::optional<std::filesystem::path> maybe_image_path =
-            prompt_user_for_file_save_location_add_extension_if_necessary("png");
-
-        if (maybe_image_path) {
-            std::ofstream fout{*maybe_image_path, std::ios_base::binary};
-            if (not fout) {
-                throw std::runtime_error{maybe_image_path->string() + ": cannot open for writing"};
+        App::upd().prompt_user_to_save_file_with_extension_async([screenshot = render_annotated_screenshot()](std::optional<std::filesystem::path> p)
+        {
+            if (not p) {
+                return;  // User cancelled out.
             }
-            const Texture2D annotated_screenshot = render_annotated_screenshot();
-            write_to_png(annotated_screenshot, fout);
-            open_file_in_os_default_application(*maybe_image_path);
-        }
+
+            std::ofstream fout{*p, std::ios_base::binary};
+            if (not fout) {
+                throw std::runtime_error{p->string() + ": cannot open for writing"};
+            }
+            write_to_png(screenshot, fout);
+            open_file_in_os_default_application(*p);
+        }, "png");
     }
 
     Texture2D render_annotated_screenshot()

@@ -53,7 +53,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MINOR_VERSION   2
+#define SDL_MINOR_VERSION   3
 
 /**
  * The current micro (or patchlevel) version of the SDL headers.

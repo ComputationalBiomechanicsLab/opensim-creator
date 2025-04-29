@@ -53,21 +53,23 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 
 static int LoadSprite(const char *file)
 {
-    int i, w, h;
+    int i;
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
         if (sprites[i]) {
             SDL_DestroyTexture(sprites[i]);
         }
-        sprites[i] = LoadTexture(state->renderers[i], file, true, &w, &h);
-        sprite_w = (float)w;
-        sprite_h = (float)h;
+        sprites[i] = LoadTexture(state->renderers[i], file, true);
+        if (sprites[i]) {
+            sprite_w = (float)sprites[i]->w;
+            sprite_h = (float)sprites[i]->h;
+        }
         if (!sprites[i]) {
             return -1;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
         }
@@ -502,7 +504,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_APP_FAILURE;
     }
     for (i = 0; i < state->num_windows; ++i) {
@@ -518,7 +520,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
     if (!positions || !velocities) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_APP_FAILURE;
     }
 
@@ -588,7 +590,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* Print out some timing information */
         const Uint64 then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }

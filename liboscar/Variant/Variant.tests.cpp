@@ -24,10 +24,9 @@ namespace
 {
     float to_float_or_zero(std::string_view str)
     {
-        // TODO: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
-        // because MacOS (Catalina) and Ubuntu 20 don't support the latter (as of Oct 2023)
-        // for floating-point values
-
+        // HACK: temporarily using `std::strof` here, rather than `std::from_chars` (C++17),
+        // because MacOS with 14.2 SDK doesn't support the latter (as of May 2025) for
+        // floating-point values.
         std::string s{str};
         size_t pos = 0;
         try {

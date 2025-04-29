@@ -195,11 +195,11 @@ void osc::ActionLoadMesh(
 }
 
 void osc::ActionLoadMeshFile(
-    std::shared_ptr<UndoableTPSDocument> doc,
+    const std::shared_ptr<UndoableTPSDocument>& doc,
     TPSDocumentInputIdentifier which)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc, which](FileDialogResponse response)
+        [doc, which](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or user somehow selected multiple options
@@ -211,11 +211,11 @@ void osc::ActionLoadMeshFile(
 }
 
 void osc::ActionLoadLandmarksFromCSV(
-    std::shared_ptr<UndoableTPSDocument> doc,
+    const std::shared_ptr<UndoableTPSDocument>& doc,
     TPSDocumentInputIdentifier which)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc, which](FileDialogResponse response)
+        [doc, which](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or user somehow selected multiple files.
@@ -240,10 +240,10 @@ void osc::ActionLoadLandmarksFromCSV(
     );
 }
 
-void osc::ActionLoadNonParticipatingLandmarksFromCSV(std::shared_ptr<UndoableTPSDocument> doc)
+void osc::ActionLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>& doc)
 {
     App::upd().prompt_user_to_select_file_async(
-        [doc](FileDialogResponse response)
+        [doc](const FileDialogResponse& response)
         {
             if (response.size() != 1) {
                 return;  // Error or the user somehow selected more than one file.
@@ -273,170 +273,142 @@ void osc::ActionSaveLandmarksToCSV(
     TPSDocumentInputIdentifier which,
     lm::LandmarkCSVFlags flags)
 {
-    const std::optional<std::filesystem::path> maybeCSVPath =
-        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-    if (!maybeCSVPath)
+    App::upd().prompt_user_to_save_file_with_extension_async([pairs = doc.landmarkPairs, which, flags](std::optional<std::filesystem::path> p) mutable
     {
-        return;  // user didn't select a save location
-    }
-
-    std::ofstream fout{*maybeCSVPath};
-    if (!fout)
-    {
-        return;  // couldn't open file for writing
-    }
-
-    lm::WriteLandmarksToCSV(fout, [which, it = doc.landmarkPairs.begin(), end = doc.landmarkPairs.end()]() mutable
-    {
-        std::optional<lm::Landmark> rv;
-        for (; !rv && it != end; ++it)
-        {
-            if (auto location = GetLocation(*it, which))
-            {
-                rv = lm::Landmark{std::string{it->name}, *location};
-            }
+        if (not p) {
+            return;  // user cancelled out of the prompt
         }
-        return rv;
-    }, flags);
+
+        std::ofstream fout{*p};
+        if (not fout) {
+            return;  // couldn't open file for writing
+        }
+
+        lm::WriteLandmarksToCSV(fout, [which, pairs = std::move(pairs)]() mutable
+        {
+            std::optional<lm::Landmark> rv;
+            for (const TPSDocumentLandmarkPair& pair : pairs) {
+                if (const auto location = GetLocation(pair, which)) {
+                    rv = lm::Landmark{std::string{pair.name}, *location};
+                }
+            }
+            return rv;
+        }, flags);
+    }, "csv");
 }
 
 void osc::ActionSaveNonParticipatingLandmarksToCSV(
     const TPSDocument& doc,
     lm::LandmarkCSVFlags flags)
 {
-    const std::optional<std::filesystem::path> maybeCSVPath =
-        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-    if (!maybeCSVPath)
+    App::upd().prompt_user_to_save_file_with_extension_async([nplms = doc.nonParticipatingLandmarks, flags](std::optional<std::filesystem::path> p)
     {
-        return;  // user didn't select a save location
-    }
-
-    std::ofstream fout{*maybeCSVPath};
-    if (!fout)
-    {
-        return;  // couldn't open file for writing
-    }
-
-    lm::WriteLandmarksToCSV(fout, [it = doc.nonParticipatingLandmarks.begin(), end = doc.nonParticipatingLandmarks.end()]() mutable
-    {
-        std::optional<lm::Landmark> rv;
-        if (it != end) {
-            rv = lm::Landmark{std::string{it->name}, it->location};
+        if (not p) {
+            return;  // user cancelled out of the prompt
         }
-        ++it;
-        return rv;
-    }, flags);
+
+        std::ofstream fout{*p};
+        if (not fout) {
+            return;  // couldn't open file for writing
+        }
+
+        lm::WriteLandmarksToCSV(fout, [it = nplms.begin(), end = nplms.end()]() mutable
+        {
+            std::optional<lm::Landmark> rv;
+            if (it != end) {
+                rv = lm::Landmark{std::string{it->name}, it->location};
+            }
+            ++it;
+            return rv;
+        }, flags);
+    }, "csv");
 }
 
 void osc::ActionSavePairedLandmarksToCSV(const TPSDocument& doc, lm::LandmarkCSVFlags flags)
 {
-    const std::optional<std::filesystem::path> maybeCSVPath =
-        prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-    if (!maybeCSVPath)
+    App::upd().prompt_user_to_save_file_with_extension_async([pairs = GetNamedLandmarkPairs(doc), flags](std::optional<std::filesystem::path> maybePath)
     {
-        return;  // user didn't select a save location
-    }
-
-    std::ofstream fout{*maybeCSVPath};
-    if (!fout)
-    {
-        return;  // couldn't open file for writing
-    }
-
-    std::vector<NamedLandmarkPair3D> const pairs = GetNamedLandmarkPairs(doc);
-
-    // if applicable, write header row
-    if (!(flags & lm::LandmarkCSVFlags::NoHeader))
-    {
-        if (flags & lm::LandmarkCSVFlags::NoNames)
-        {
-            write_csv_row(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+        if (not maybePath) {
+            return;  // user cancelled out of the prompt
         }
-        else
-        {
-            write_csv_row(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+        std::ofstream fout{*maybePath};
+        if (not fout) {
+            return;  // couldn't open file for writing
         }
-    }
 
-    // write data rows
-    std::vector<std::string> cols;
-    cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
-    for (const auto& p : pairs)
-    {
-        using std::to_string;
-
-        if (!(flags & lm::LandmarkCSVFlags::NoNames))
-        {
-            cols.emplace_back(p.name);
+        // if applicable, write header row
+        if (not (flags & lm::LandmarkCSVFlags::NoHeader)) {
+            if (flags & lm::LandmarkCSVFlags::NoNames) {
+                write_csv_row(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+            }
+            else {
+                write_csv_row(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+            }
         }
-        cols.push_back(to_string(p.source.x));
-        cols.push_back(to_string(p.source.y));
-        cols.push_back(to_string(p.source.z));
-        cols.push_back(to_string(p.destination.x));
-        cols.push_back(to_string(p.destination.y));
-        cols.push_back(to_string(p.destination.z));
 
-        write_csv_row(fout, cols);
+        // write data rows
+        std::vector<std::string> cols;
+        cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
+        for (const auto& p : pairs)
+        {
+            using std::to_string;
 
-        cols.clear();
-    }
+            if (not (flags & lm::LandmarkCSVFlags::NoNames)) {
+                cols.emplace_back(p.name);
+            }
+            cols.push_back(to_string(p.source.x));
+            cols.push_back(to_string(p.source.y));
+            cols.push_back(to_string(p.source.z));
+            cols.push_back(to_string(p.destination.x));
+            cols.push_back(to_string(p.destination.y));
+            cols.push_back(to_string(p.destination.z));
+
+            write_csv_row(fout, cols);
+
+            cols.clear();
+        }
+    }, "csv");
 }
 
 void osc::ActionTrySaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
 {
-    const std::optional<std::filesystem::path> maybeSavePath =
-        prompt_user_for_file_save_location_add_extension_if_necessary("obj");
-    if (!maybeSavePath)
+    App::upd().prompt_user_to_save_file_with_extension_async([mesh, flags](std::optional<std::filesystem::path> p)
     {
-        return;  // user didn't select a save location
-    }
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
+        std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+        if (not ofs) {
+            return;  // couldn't open for writing
+        }
 
-    std::ofstream outputFileStream
-    {
-        *maybeSavePath,
-        std::ios_base::out | std::ios_base::trunc | std::ios_base::binary
-    };
-    if (!outputFileStream)
-    {
-        return;  // couldn't open for writing
-    }
+        const ObjMetadata objMetadata{
+            App::get().application_name_with_version_and_buildid(),
+        };
 
-    const ObjMetadata objMetadata{
-        App::get().application_name_with_version_and_buildid(),
-    };
-
-    write_as_obj(
-        outputFileStream,
-        mesh,
-        objMetadata,
-        flags
-    );
+        write_as_obj(ofs, mesh, objMetadata, flags);
+    }, "obj");
 }
 
 void osc::ActionTrySaveMeshToStlFile(const Mesh& mesh)
 {
-    const std::optional<std::filesystem::path> maybeSTLPath =
-        prompt_user_for_file_save_location_add_extension_if_necessary("stl");
-    if (!maybeSTLPath)
+    App::upd().prompt_user_to_save_file_with_extension_async([mesh](std::optional<std::filesystem::path> p)
     {
-        return;  // user didn't select a save location
-    }
+        if (not p) {
+            return;  // user cancelled out of the prompt
+        }
 
-    std::ofstream outputFileStream
-    {
-        *maybeSTLPath,
-        std::ios_base::out | std::ios_base::trunc | std::ios_base::binary,
-    };
-    if (!outputFileStream)
-    {
-        return;  // couldn't open for writing
-    }
+        std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
+        if (not ofs) {
+            return;  // couldn't open for writing
+        }
 
-    const StlMetadata stlMetadata{
-        App::get().application_name_with_version_and_buildid()
-    };
+        const StlMetadata stlMetadata{
+            App::get().application_name_with_version_and_buildid()
+        };
 
-    write_as_stl(outputFileStream, mesh, stlMetadata);
+        write_as_stl(ofs, mesh, stlMetadata);
+    }, "stl");
 }
 
 void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
@@ -444,29 +416,31 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
     TPSResultCache& cache,
     lm::LandmarkCSVFlags flags)
 {
-    const auto maybeCSVPath = prompt_user_for_file_save_location_add_extension_if_necessary("csv");
-    if (!maybeCSVPath)
-    {
-        return;  // user didn't select a save location
-    }
+    const auto span = cache.getWarpedNonParticipatingLandmarkLocations(doc);
 
-    std::ofstream fout{*maybeCSVPath};
-    if (!fout)
+    App::upd().prompt_user_to_save_file_with_extension_async([
+        warpedNplms = std::vector<Vec3>(span.begin(), span.end()),
+        nplms = doc.nonParticipatingLandmarks,
+        flags](std::optional<std::filesystem::path> p)
     {
-        return;  // couldn't open file for writing
-    }
-
-    lm::WriteLandmarksToCSV(fout, [
-        &doc,
-        locations = cache.getWarpedNonParticipatingLandmarkLocations(doc),
-        i = static_cast<size_t>(0)]() mutable
-    {
-        std::optional<lm::Landmark> rv;
-        for (; !rv && i < locations.size(); ++i)
-        {
-            std::string name = std::string{doc.nonParticipatingLandmarks.at(i).name};
-            rv = lm::Landmark{std::move(name), at(locations, i)};
+        if (not p) {
+            return;  // user cancelled out of the prompt
         }
-        return rv;
-    }, flags);
+
+        std::ofstream fout{*p};
+        if (not fout) {
+            return;  // couldn't open file for writing
+        }
+
+        lm::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = static_cast<size_t>(0)]() mutable
+        {
+            std::optional<lm::Landmark> rv;
+            for (; !rv && i < warpedNplms.size(); ++i)
+            {
+                std::string name = std::string{nplms.at(i).name};
+                rv = lm::Landmark{std::move(name), warpedNplms.at(i)};
+            }
+            return rv;
+        }, flags);
+    });
 }
