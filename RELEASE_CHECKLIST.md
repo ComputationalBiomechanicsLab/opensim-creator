@@ -39,7 +39,8 @@
   - [ ] Ensure `codemeta.json` is up-to-date
   - [ ] Ensure `CITATION.cff` is up-to-date
   - [ ] Ensure `README.md` is up-to-date
-- [ ] **NEW**: Update TU Delft mirror of the repository
+- [ ] Ensure the entire repository, incl. all tags, is pushed to the official
+      TU Delft mirror at https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
 - [ ] Update `docs.opensimcreator.com` to host the documentation
   - [ ] **Note**: this requires appropriate credentials for `docs.opensimcreator.com`
   - [ ] Build the docs yourself, or get the CI build of them
