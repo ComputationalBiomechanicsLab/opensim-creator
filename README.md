@@ -48,14 +48,14 @@ If you need a general citation for the simulation/modelling technique, you can d
 
 We have taken the following steps to ensure that you can always use OpenSim Creator:
 
-- The central repository is open-access and hosted at https://github.com/ComputationalBiomechanicsLab/opensim-creator
+- OSC's central repository is open-access and hosted at https://github.com/ComputationalBiomechanicsLab/opensim-creator
 - During a release, we:
   - Mirror the central repository to https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
   - Upload a snapshot of the release's source code to Zenodo (see citing, above)
   - Upload a snapshot of the release's source code, and binaries, to https://files.opensimcreator.com/releases/
-- OpenSim Creator's source code is permissively licensed and is verified to be compile-able via
+- OSC's source code is permissively licensed and is verified to be compile-able via
   `gcc`, `clang`, and MSVC.
-- OpenSim Creator includes all of its necessary dependencies in-tree. It doesn't use git submodules, internet
+- OSC includes all of its necessary dependencies in-tree. It doesn't use git submodules, internet
   downloads, or package managers. This means that all you should need is right here.
 
 
