@@ -44,7 +44,22 @@ If you need a general citation for the simulation/modelling technique, you can d
 > Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
 
-# ❤️ Acknowledgements
+## 🌲Sustainability, Archiving, and Mirrors
+
+We have taken the following steps to ensure that you can always use OpenSim Creator:
+
+- The central repository is open-access and hosted at https://github.com/ComputationalBiomechanicsLab/opensim-creator
+- During a release, we:
+  - Mirror the central repository to https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
+  - Upload a snapshot of the release's source code to Zenodo (see citing, above)
+  - Upload a snapshot of the release's source code, and binaries, to https://files.opensimcreator.com/releases/
+- OpenSim Creator's source code is permissively licensed and is verified to be compile-able via
+  `gcc`, `clang`, and MSVC.
+- OpenSim Creator includes all of its necessary dependencies in-tree. It doesn't use git submodules, internet
+  downloads, or package managers. This means that all you should need is right here.
+
+
+## ❤️ Acknowledgements
 
 We would like to thank the [Chan Zuckerberg Initiative](https://chanzuckerberg.com/) which
 currently funds OpenSim Creator's development through the "Essential Open Source Software
