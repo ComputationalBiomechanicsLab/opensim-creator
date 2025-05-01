@@ -76,15 +76,15 @@ echo "----- building OSC -----"
 cmake \
     -G "${OSC_BUILD_GENERATOR}" \
     -S . \
-    -B "osc-build" \
+    -B "build/" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install"
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON} \
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build "osc-build" -j${OSC_BUILD_CONCURRENCY}
+cmake --build "build/" -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
-ctest --test-dir osc-build -j ${OSC_BUILD_CONCURRENCY} --output-on-failure
+ctest --test-dir build/ -j ${OSC_BUILD_CONCURRENCY} --output-on-failure
 
 # build final package
-cmake --build "osc-build" --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}
+cmake --build "build/" --target ${OSC_BUILD_TARGET} -j${OSC_BUILD_CONCURRENCY}

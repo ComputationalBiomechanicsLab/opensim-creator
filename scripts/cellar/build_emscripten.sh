@@ -31,15 +31,15 @@ CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B osc-deps-build \
     -DCMAKE_INSTALL_LIBDIR=${PWD}/osc-deps-install/lib
 emmake cmake --build osc-deps-build -j$(nproc) -v
 
-LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B osc-build\
+LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B build/ \
     -DOSC_BUILD_OPENSIMCREATOR=OFF \
     -DOSC_DISCOVER_TESTS=OFF \
     -DOSC_EMSCRIPTEN=ON \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install \
     -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
     -DCMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
-emmake cmake --build osc-build --target testoscar -v -j$(nproc)
-emmake cmake --build osc-build --target hellotriangle -v -j$(nproc)
+emmake cmake --build build/ --target testoscar -v -j$(nproc)
+emmake cmake --build build/ --target hellotriangle -v -j$(nproc)
 
 # run test suite, excluding tests that depend on window/files (work-in-progress)
-node osc-build/liboscar/testing/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*
+node build/liboscar/testing/testoscar/testoscar.js  --gtest_filter=-Renderer*:ShaderTest*:MaterialTest*:Image*:ResourceStream*:load_texture2D_from_image*

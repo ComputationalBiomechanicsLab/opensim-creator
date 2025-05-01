@@ -23,7 +23,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-windows-amd64.zip
-        path: osc-build/*windows-amd64.exe
+        path: build/*windows-amd64.exe
         if-no-files-found: error
 
   macos11clang:
@@ -41,13 +41,13 @@ jobs:
         ./scripts/build_mac-amd64.sh
 
         # run after-build OS-specific test scripts
-        ./scripts/macos_check-dependencies.py osc-build/osc/osc
-        ./scripts/macos_check-sdk.py 14.2 osc-build/osc/osc
+        ./scripts/macos_check-dependencies.py build/osc/osc
+        ./scripts/macos_check-sdk.py 14.2 build/osc/osc
 
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-macos-amd64.zip
-        path: osc-build/*.dmg
+        path: build/*.dmg
         if-no-files-found: error
 
   ubuntu2204gcc:
@@ -73,6 +73,6 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: OpenSimCreator_Deb.zip
-        path: osc-build/*.deb
+        path: build/*.deb
         if-no-files-found: error
 

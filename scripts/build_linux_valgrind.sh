@@ -14,11 +14,11 @@ cmake \
 cmake --build osc-deps-build -j$(nproc)
 cmake \
     -S . \
-    -B osc-build \
+    -B build/ \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
-cmake --build osc-build/ -j$(nproc)
+cmake --build build/ -j$(nproc)
 
 export LIBGL_ALWAYS_SOFTWARE=1
 valgrind_cmd="valgrind --leak-check=full --trace-children=yes --suppressions=${PWD}/scripts/valgrind_suppressions.supp"
-${valgrind_cmd} ctest --test-dir osc-build --output-on-failure
+${valgrind_cmd} ctest --test-dir build/ --output-on-failure
