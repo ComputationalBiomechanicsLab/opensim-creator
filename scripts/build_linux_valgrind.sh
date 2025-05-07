@@ -20,5 +20,13 @@ cmake \
 cmake --build build/ -j$(nproc)
 
 export LIBGL_ALWAYS_SOFTWARE=1
-valgrind_cmd="valgrind --leak-check=full --trace-children=yes --suppressions=${PWD}/scripts/valgrind_suppressions.supp"
+tmp=$(mktemp /tmp/valgrind_suppressions.XXXX.supp)
+cat << 'EOF' > $tmp
+{
+    Memcheck:Leak
+    obj:/usr/lib/wsl/lib/*.so
+    obj:/usr/lib/x86_64-linux-gnu/libgobject-2.0.*
+}
+EOF
+valgrind_cmd="valgrind --leak-check=full --trace-children=yes --suppressions=${tmp}"
 ${valgrind_cmd} ctest --test-dir build/ --output-on-failure
