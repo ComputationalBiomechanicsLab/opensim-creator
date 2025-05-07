@@ -23,6 +23,9 @@ osc-deps-install/
 # os: MacOS filesystem
 .DS_Store
 
+# LSP: `clangd` may create this (it does with nvim)
+.cache/
+
 # editor: QtCreator
 *.autosave
 CMakeLists.txt.user
