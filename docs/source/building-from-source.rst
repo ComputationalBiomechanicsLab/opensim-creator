@@ -82,7 +82,7 @@ easiest way to build OpenSim Creator is with the python script located at
    the environment, above), or clone it with ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``.
 3. Run the build script: ``python scripts/build_windows.py``. **Note**: this can
    take a long time, grab a coffee ☕
-4. The ``osc-build`` directory should contain the built installer
+4. The ``build/`` directory should contain the built installer
 
 
 Building on MacOS (Sonoma or newer)
@@ -106,7 +106,7 @@ Building on MacOS (Sonoma or newer)
        point to compilers that are compatible with C++20. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
     4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
 7. Done:
-    1. The ``osc-build`` directory should contain the built installer
+    1. The ``build/`` directory should contain the built installer
 
 
 Building on Ubuntu (22.04 or newer)
@@ -133,4 +133,4 @@ Building on Ubuntu (22.04 or newer)
        your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 scripts/build_ubuntu.sh``
     3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
 9. Done:
-    1. After the build is complete, the ``osc-build`` directory should contain the built installer
+    1. After the build is complete, the ``build/`` directory should contain the built installer

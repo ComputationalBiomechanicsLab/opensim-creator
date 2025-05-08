@@ -1,14 +1,11 @@
-# mac OS file
-.DS_Store
-
-# opensim logs
-**/opensim.log
-
-# build artifacts from docs build
+# build: artifacts/side-effects
+build/
 docs/build
 docs/venv
+osc-deps-build/
+osc-deps-install/
 
-# C++ objects and libs
+# build: intermediate/output files
 *.slo
 *.lo
 *.o
@@ -20,34 +17,27 @@ docs/venv
 *.dll
 *.dylib
 
-# QtCreator
-*.autosave
+# runtime: opensim log files
+**/opensim.log
 
-# Visual Studio
+# os: MacOS filesystem
+.DS_Store
+
+# LSP: `clangd` may create this (it does with nvim)
+.cache/
+
+# editor: QtCreator
+*.autosave
+CMakeLists.txt.user
+
+# editor: Visual Studio
 .vs/
 CMakeSettings.json
 out/
 
-# Visual Studio Code user directory
+# editor: Visual Studio Code
 .vscode/
 
-# Visual Studio Code build directory (with cmake extension)
-build/
-
-# qtcreator side-effect
-CMakeLists.txt.user
-
-# artefacts/side-effects from the OSC build script
-dependencies-install/
-opensim-build/
-opensim-dependencies-build/
-opensim-dependencies-install/
-opensim-install/
-osc-build/
-osc-dependencies-build/
-osc-dependencies-install/
-osc-deps-build/
-osc-deps-install/
-
-# CLion
+# editor: CLion
 .idea/
+

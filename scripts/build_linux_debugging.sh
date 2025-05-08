@@ -11,19 +11,19 @@ export CC=${CC:-clang}
 export CXX=${CXX:-clang++}
 export CLANG_TIDY=${CLANG_TIDY:-clang-tidy}
 
-mkdir -p osc-build
+mkdir -p build/
 
 # Create stub that hides graphics driver memory leaks (out of our control)
-cat << EOF > osc-build/dlclose.c
+cat << EOF > build/dlclose.c
 #include <stdio.h>
 int dlclose(void *handle) {
     return 0;
 }
 EOF
-${CC} -shared -o osc-build/libdlclose.so -fPIC osc-build/dlclose.c
+${CC} -shared -o build/libdlclose.so -fPIC build/dlclose.c
 
 # Create suppressions file for OpenSim Creator, which contains a leak from OpenSim
-cat << EOF > osc-build/opensim_suppressions.supp
+cat << EOF > build/opensim_suppressions.supp
 leak:OpenSim::Coordinate
 EOF
 
@@ -41,19 +41,19 @@ cmake --build osc-deps-build/ -v -j${OSC_BUILD_CONCURRENCY}
 
 CCFLAGS="-fsanitize=address -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=address -fno-sanitize-recover=all" LDFLAGS="-rdynamic" cmake \
     -S . \
-    -B osc-build \
+    -B build/ \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DOSC_FORCE_ASSERTS_ENABLED=ON \
     -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install \
     -DCMAKE_INSTALL_PREFIX=${PWD}/osc-install \
     -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
-cmake --build osc-build -j${OSC_BUILD_CONCURRENCY}
+cmake --build build/ -j${OSC_BUILD_CONCURRENCY}
 
 # run tests
 # export UBSAN_OPTIONS="print_stacktrace=1"  # requires llvm symbolizer in PATH https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
-export LD_PRELOAD=osc-build/libdlclose.so  # minimize library unloading leaks (issue in graphics drivers, sometimes)
-./osc-build/liboscar/testing/testoscar
-./osc-build/liboscar-demos/testing/testoscar_demos
-LSAN_OPTIONS="suppressions=osc-build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./osc-build/libopensimcreator/testing/TestOpenSimCreator
+export LD_PRELOAD=build/libdlclose.so  # minimize library unloading leaks (issue in graphics drivers, sometimes)
+./build/liboscar/testing/testoscar
+./build/liboscar-demos/testing/testoscar_demos
+LSAN_OPTIONS="suppressions=build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./build/libopensimcreator/testing/TestOpenSimCreator
