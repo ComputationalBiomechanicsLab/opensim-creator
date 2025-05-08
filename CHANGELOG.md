@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
+  cause the models not to load (#1036).
+
 
 ## [0.5.22] - 2025/04/25
 
@@ -40,7 +43,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Modal popups (e.g. add body, add component) now immediately pop up with no
   background fade-in, because the fade-in can be uneven when the UI is running
   in an event-driven mode.
-- Replaced the keybind `Ctrl+A` with `Escape` for cleaing the selection in the model
+- Replaced the keybind `Ctrl+A` with `Escape` for clearing the selection in the model
   editor tab to make it consistent with other workflow keybinds.
 - The main menu now contains a `Close` button, which will close the currently-opened
   tab.
@@ -48,7 +51,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   convention (#975):
   - In most cases, it's `opensimcreator-$version-$os-$arch.$ext` (e.g. `opensimcreator-0.5.21-macos-arm64.dmg`)
   - In Debian/Ubuntu's case, it's `opensimcreator_$version_$arch.deb`
-  - This is to accomodate additional packages in the future (e.g. ARM64 on
+  - This is to accommodate additional packages in the future (e.g. ARM64 on
     Windows, portable installers)
   - Previous releases have been retrospectively renamed to follow this convention, to
     make it easier to automatically archive/search them.

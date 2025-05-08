@@ -69,6 +69,7 @@
 #include <cstdlib>
 #include <iterator>
 #include <memory>
+#include <mutex>
 #include <ostream>
 #include <set>
 #include <span>
@@ -1043,6 +1044,12 @@ bool osc::HasModelFileExtension(const std::filesystem::path& path)
 std::unique_ptr<OpenSim::Model> osc::LoadModel(const std::filesystem::path& path)
 {
     GloballyInitOpenSim();
+
+    // HACK: OpenSim relies on global state changes (e.g. screwing around with
+    // the process's current working directory) in order to load files, which
+    // can cause problems when multiple threads try to load a model (#1036).
+    static std::mutex s_loading_mutex;
+    std::lock_guard g{s_loading_mutex};
     return std::make_unique<OpenSim::Model>(path.string());
 }
 
