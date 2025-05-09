@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <optional>
 #include <string_view>
 #include <string>
 #include <utility>
@@ -64,6 +65,13 @@ namespace osc
     // it will only set the environment variable if no environment variable with
     // `name` exists
     void set_environment_variable(std::string_view name, std::string_view value, bool overwrite);
+
+    // returns `true` if an environment variable with the given `name` is set in
+    // the calling process.
+    bool is_environment_variable_set(std::string_view name);
+
+    // returns the content of an environment variable, if it's set. Otherwise, returns `std::nullopt`.
+    std::optional<std::string> find_environment_variable(std::string_view name);
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

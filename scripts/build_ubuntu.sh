@@ -66,11 +66,11 @@ echo "----- building OSC's dependencies -----"
 cmake \
     -G "${OSC_BUILD_GENERATOR}" \
     -S third_party \
-    -B "osc-deps-build" \
+    -B third_party-build \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
-    -DCMAKE_INSTALL_PREFIX="osc-deps-install"
+    -DCMAKE_INSTALL_PREFIX=third_party-install
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build "osc-deps-build" -j${OSC_BUILD_CONCURRENCY}
+cmake --build third_party-build -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
 cmake \
@@ -78,7 +78,7 @@ cmake \
     -S . \
     -B "build/" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
-    -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install"
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install"
     ${OSC_BUILD_DOCS:+-DOSC_BUILD_DOCS=ON} \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build "build/" -j${OSC_BUILD_CONCURRENCY}

@@ -4,8 +4,8 @@
 # build:   `apt install libdecor-0-dev libwayland-dev` (see above)
 
 cmake -S third_party/SDL -B sdl-build \
-    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install \
-    -DSDL_INSTALL_CMAKEDIR=osc-deps-install/cmake/SDL3 \
+    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install" \
+    -DSDL_INSTALL_CMAKEDIR=third_party-install/cmake/SDL3 \
     -DSDL_SHARED:BOOL=OFF \
     -DSDL_STATIC:BOOL=ON \
     -DSDL_TEST_LIBRARY:BOOL=OFF \

@@ -121,6 +121,21 @@ void osc::set_environment_variable(std::string_view name, std::string_view value
     SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
 }
 
+bool osc::is_environment_variable_set(std::string_view name)
+{
+    return SDL_getenv_unsafe(std::string{name}.c_str()) != nullptr;
+}
+
+std::optional<std::string> osc::find_environment_variable(std::string_view name)
+{
+    if (const char* v = SDL_getenv_unsafe(std::string{name}.c_str())) {
+        return std::string{v};
+    }
+    else {
+        return std::nullopt;
+    }
+}
+
 std::string osc::errno_to_string_threadsafe()
 {
     return strerror_threadsafe(errno);

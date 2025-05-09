@@ -20,7 +20,7 @@ Visual Studio 2022
   that automatically detects that the folder is a CMake project
 - Right-click the ``CMakeLists.txt`` file to edit settings or build the project
     - You may need to set your configure command arguments to point to the dependencies
-      install (e.g. ``-DCMAKE_PREFIX_PATH=$(projectDir)/osc-deps-install``)
+      install (e.g. ``-DCMAKE_PREFIX_PATH=$(projectDir)/third_party-install``)
 - Use the ``Switch between solutions and available views`` button in the
   ``Solution Explorer`` hierarchy tab to switch to the ``CMake Targets View``
 - Right-click the ``osc`` CMake target and ``Set As Startup Project``, so that
