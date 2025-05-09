@@ -32,9 +32,6 @@ OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
 OSC_CMAKE_CONFIG_EXTRA=${OSC_CMAKE_CONFIG_EXTRA:-""}
 
 # which OSC build target to build
-#
-#     osc      just build the osc binary
-#     package  package everything into a .dmg installer
 OSC_BUILD_TARGET=${OSC_BUILD_TARGET:-package}
 
 set +x
@@ -66,18 +63,18 @@ python3 --version
 echo "----- building OSC's dependencies -----"
 cmake \
     -S third_party \
-    -B "osc-deps-build" \
+    -B third_party-build \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
-    -DCMAKE_INSTALL_PREFIX="osc-deps-install" \
+    -DCMAKE_INSTALL_PREFIX=third_party-install \
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build "osc-deps-build" -j${OSC_BUILD_CONCURRENCY}
+cmake --build third_party-build -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
 cmake \
     -S . \
     -B "build/" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
-    -DCMAKE_PREFIX_PATH="${PWD}/osc-deps-install" \
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build "build/" -j${OSC_BUILD_CONCURRENCY}
 

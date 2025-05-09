@@ -60,10 +60,10 @@ class BuildConfiguration:
         return pprint.pformat(vars(self))
 
     def get_dependencies_build_dir(self):
-        return os.path.join(self.build_dir, "osc-deps-build")
+        return os.path.join(self.build_dir, "third_party-build")
 
     def get_dependencies_install_dir(self):
-        return os.path.join(self.build_dir, "osc-deps-install")
+        return os.path.join(self.build_dir, "third_party-install")
 
     def get_osc_build_dir(self):
         # note: clangd usually expects that the build directory is located at `build/`

@@ -8,15 +8,15 @@ set -xeuo pipefail
 
 cmake \
     -S third_party/ \
-    -B osc-deps-build \
+    -B third_party-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX=${PWD}/osc-deps-install
-cmake --build osc-deps-build -j$(nproc)
+    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install"
+cmake --build third_party-build -j$(nproc)
 cmake \
     -S . \
     -B build/ \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH=${PWD}/osc-deps-install
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install"
 cmake --build build/ -j$(nproc)
 
 export LIBGL_ALWAYS_SOFTWARE=1
