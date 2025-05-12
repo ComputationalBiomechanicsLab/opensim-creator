@@ -51,7 +51,11 @@ namespace
             throw std::runtime_error{path + ": The supplied path contains invalid characters."};
         }
 
-        // `path_end` is guaranteed to be a NUL terminator since C++11
+        // a blank string is already normalized
+        if (path.empty()) {
+            return {};
+        }
+
         const Iter path_begin = path.begin();
         Iter path_end = path.end();
 
@@ -72,18 +76,22 @@ namespace
         struct Lookahead { Value a, b, c; };
         const auto get_lookahead = [](ConstIter start, ConstIter end)
         {
-            return Lookahead{
-                start < end - 0 ? start[0] : c_nul,
-                start < end - 1 ? start[1] : c_nul,
-                start < end - 2 ? start[2] : c_nul,
-            };
+            switch (end - start) {
+            case 0:  return Lookahead{c_nul,    c_nul,    c_nul};
+            case 1:  return Lookahead{start[0], c_nul,    c_nul};
+            case 2:  return Lookahead{start[0], start[1], c_nul};
+            default: return Lookahead{start[0], start[1], start[2]};
+            }
         };
 
         // remove duplicate adjacent separators
-        for (Iter it = path_begin; it != path_end; ++it) {
+        for (Iter it = path_begin; it != path_end;) {
             const Lookahead l = get_lookahead(it, path_end);
             if (l.a == NodePath::separator and l.b == NodePath::separator) {
-                shift(it--, 1);
+                shift(it, 1);
+            }
+            else {
+                ++it;
             }
         }
 
@@ -179,8 +187,10 @@ namespace
 
             }
             else {
-                // non-relative element: skip past the next separator or end
-                cursor = find(cursor, path_end, NodePath::separator) + 1;
+                // non-relative element: find the next separator and then skip past it
+                // if it isn't the end of the string
+                cursor = find(cursor, path_end, NodePath::separator);
+                if (cursor != path_end) { ++cursor; }
             }
         }
 
