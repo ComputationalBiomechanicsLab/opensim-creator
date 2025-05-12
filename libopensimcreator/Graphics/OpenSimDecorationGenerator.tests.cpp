@@ -273,7 +273,9 @@ TEST(OpenSimDecorationGenerator, GenerateCollisionArrowsWorks)
 TEST(OpenSimDecorationGenerator, GenerateDecorationsForLigamentGeneratesLigamentTaggedGeometry)
 {
     OpenSim::Model model;
-    auto& ligament = AddModelComponent<OpenSim::Ligament>(model);
+    auto ligamentptr = std::make_unique<OpenSim::Ligament>();
+    ligamentptr->setRestingLength(1.0);  // required in debug mode :(
+    auto& ligament = AddModelComponent(model, std::move(ligamentptr));
     auto pp1 = std::make_unique<OpenSim::PathPoint>();
     pp1->setLocation({-1.0, 0.0, 0.0});
     pp1->setParentFrame(model.getGround());

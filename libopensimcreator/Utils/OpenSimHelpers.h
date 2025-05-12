@@ -117,28 +117,28 @@ namespace osc
     template<typename T>
     const T* begin(const OpenSim::Array<T>& ary)
     {
-        return std::addressof(ary[0]);
+        return size(ary) != 0 ? std::addressof(ary[0]) : nullptr;
     }
 
     // Returns an iterator to the beginning of `ary` (see: `std::begin`, `std::ranges::begin`).
     template<typename T>
     T* begin(OpenSim::Array<T>& ary)
     {
-        return std::addressof(ary[0]);
+        return size(ary) != 0 ? std::addressof(ary[0]) : nullptr;
     }
 
     // Returns an iterator to the end (i.e. the element after the last element) of `ary` (see: `std::end`, `std::ranges::end`)
     template<typename T>
     const T* end(const OpenSim::Array<T>& ary)
     {
-        return std::addressof(ary[ary.getSize()]);
+        return begin(ary) + size(ary);
     }
 
     // Returns an iterator to the end (i.e. the element after the last element) of `ary` (see: `std::end`, `std::ranges::end`)
     template<typename T>
     T* end(OpenSim::Array<T>& ary)
     {
-        return std::addressof(ary[ary.getSize()]);
+        return begin(ary) + ary.size();
     }
 
     // Returns whether `s` is empty (see: `std::empty`)
