@@ -124,13 +124,13 @@ Building on Ubuntu (22.04 or newer)
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
-7. Get python libraries (*optional*: you only need this if you want to build documentation):
+6. Get python libraries (*optional*: you only need this if you want to build documentation):
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt -r docs/requirements-dev.txt```
-8. Build OpenSim Creator from source:
+7. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
        your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 scripts/build_ubuntu.sh``
     3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
-9. Done:
+8. Done:
     1. After the build is complete, the ``build/`` directory should contain the built installer
