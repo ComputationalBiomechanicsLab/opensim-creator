@@ -12,13 +12,23 @@ namespace osc
     // This can be handy for creating arbitrary caches that use `typeid(T)`s as lookups.
     class TypeInfoReference final {
     public:
-        TypeInfoReference(const std::type_info& type_info) :
+        TypeInfoReference(const std::type_info& type_info) noexcept :
             type_info_{&type_info}
         {}
 
         const std::type_info& get() const { return *type_info_; }
 
-        friend bool operator==(const TypeInfoReference&, const TypeInfoReference&) = default;
+        const char* name() const noexcept { return type_info_->name(); }
+
+        friend bool operator==(const TypeInfoReference& lhs, const TypeInfoReference& rhs) noexcept
+        {
+            return *lhs.type_info_ == *rhs.type_info_;
+        }
+
+        friend bool operator<(const TypeInfoReference& lhs, const TypeInfoReference& rhs) noexcept
+        {
+            return lhs.type_info_->before(*rhs.type_info_);
+        }
     private:
         const std::type_info* type_info_;
     };
