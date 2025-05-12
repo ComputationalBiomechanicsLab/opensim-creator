@@ -14,7 +14,6 @@ file(GLOB_RECURSE OSC_OSCAR_TEST_SOURCES
     LIST_DIRECTORIES FALSE
     "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp"
 )
-list(FILTER OSC_OSCAR_TEST_SOURCES EXCLUDE REGEX "VariableLengthArray")  # hacked out: can't compile on MacOS yet
 
 add_executable(testoscar
     "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/testing/testoscarconfig.h"
