@@ -7,6 +7,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
   cause the models not to load (#1036).
+- The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
+  yet, due to upstream issues in OpenSim, #982).
 
 
 ## [0.5.22] - 2025/04/25

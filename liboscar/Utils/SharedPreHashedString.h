@@ -79,16 +79,18 @@ namespace osc
 
             ptr_ = ::operator new(num_bytes_allocated, std::align_val_t{alignof(Metadata)});
 
-            // initialize metadata
+            // initialize `Metadata` at bytes `[0, sizeof(Metadata))`
             static_assert(std::is_nothrow_constructible_v<Metadata, decltype(str)>);
             new (ptr_) Metadata{str};
 
-            // initialize character data and NUL terminator
+            // initialize character data at `[sizeof(Metadata), sizeof(Metadata) + str.size())`
             static_assert(alignof(Metadata) >= alignof(value_type));
             static_assert(std::is_nothrow_copy_constructible_v<value_type>);
-            std::span<value_type> character_data(std::launder(reinterpret_cast<value_type*>(static_cast<std::byte*>(ptr_) + sizeof(Metadata))), str.size());
-            std::ranges::uninitialized_copy(str, character_data);
-            character_data[str.size()] = value_type{};  // NUL terminator
+            auto* character_data_ptr = std::launder(reinterpret_cast<value_type*>(static_cast<std::byte*>(ptr_) + sizeof(Metadata)));
+            std::uninitialized_copy(str.data(), str.data() + str.size(), character_data_ptr);
+
+            // initialize NUL terminator at `sizeof(Metadata) + str.size()`
+            character_data_ptr[str.size()] = value_type{};
         }
         explicit SharedPreHashedString(const char* s) : SharedPreHashedString{std::string_view{s}} {}
         explicit SharedPreHashedString(std::nullptr_t) = delete;
