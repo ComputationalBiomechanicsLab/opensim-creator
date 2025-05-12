@@ -46,17 +46,22 @@ If you need a general citation for the simulation/modelling technique, you can d
 
 ## 🌲Sustainability, Archiving, and Mirrors
 
-We have taken the following steps to ensure that you can always use OpenSim Creator:
+We have taken the following steps to ensure that you can always access, build, and use
+every release of OpenSim Creator:
 
-- OSC's central repository is open-access and hosted at https://github.com/ComputationalBiomechanicsLab/opensim-creator
+- OSC's central repository is public access and hosted at https://github.com/ComputationalBiomechanicsLab/opensim-creator
 - During a release, we:
   - Mirror the central repository to https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
-  - Upload a snapshot of the release's source code to Zenodo (see citing, above)
-  - Upload a snapshot of the release's source code, and binaries, to https://files.opensimcreator.com/releases/
-- OSC's source code is permissively licensed and is verified to be compile-able via
-  `gcc`, `clang`, and MSVC.
-- OSC includes all of its necessary dependencies in-tree. It doesn't use git submodules, internet
-  downloads, or package managers. This means that all you should need is right here.
+  - Upload a snapshot of the release's source code to Zenodo (see citing section, above).
+  - Upload a snapshot of the release's source code and binaries to https://files.opensimcreator.com/releases/
+- Each release of OSC's source code is permissively licensed, verified to be compile-able via
+  `gcc`, `clang`, and MSVC with many warnings/lints enabled to ensure the source code has a
+  strong chance of being compile-able far in the future as architectures, operating systems, and
+  compilers evolve.
+- The project includes all of its library dependencies in-tree. It doesn't use git submodules, internet
+  downloads, or package managers. This means that everything that's needed to build OpenSimCreator
+  (apart from widely-available compiler toolchains) is available in this repository and not dependent
+  on external services that might change over time.
 
 
 ## ❤️ Acknowledgements
