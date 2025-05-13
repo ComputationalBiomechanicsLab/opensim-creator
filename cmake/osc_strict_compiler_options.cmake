@@ -74,10 +74,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # warn if a case in a switch statement implicitly falls through after a statement
         -Wimplicit-fallthrough
 
-        # disabled: requires newer gcc
-        # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
-        # -Wstring-compare
-
         # warn if insecure string formatting (e.g. for printf) is detected
         -Wformat-security
 
@@ -107,9 +103,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # disabled: requires newer gcc
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op
-
-        # disabled: doesn't work in some contexts where forward declarations are necessary
-        # -Wredundant-decls
     >
 
     # clang flags
