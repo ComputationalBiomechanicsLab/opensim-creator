@@ -27,7 +27,7 @@ jobs:
         if-no-files-found: error
 
   macos11clang:
-    name: MacOS 14 (amd64, XCode 15.2, targeting 14.2)
+    name: MacOS 15 (amd64, XCode 16.0, targeting 14.2)
     runs-on: macos-14
     steps:
 
