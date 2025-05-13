@@ -42,7 +42,7 @@ TEST(write_as_dae, set_author_writes_author_to_output)
     std::stringstream ss;
     write_as_dae(ss, {}, metadata);
 
-    ASSERT_TRUE(contains(ss.str(), metadata.author));
+    ASSERT_TRUE(ss.str().contains(metadata.author));
 }
 
 TEST(write_as_dae, set_authoring_tool_writes_authoring_tool_to_output)
@@ -53,5 +53,5 @@ TEST(write_as_dae, set_authoring_tool_writes_authoring_tool_to_output)
     std::stringstream ss;
     write_as_dae(ss, {}, metadata);
 
-    ASSERT_TRUE(contains(ss.str(), metadata.authoring_tool));
+    ASSERT_TRUE(ss.str().contains(metadata.authoring_tool));
 }

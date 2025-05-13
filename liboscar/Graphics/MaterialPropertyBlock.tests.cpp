@@ -348,7 +348,7 @@ TEST(MaterialPropertyBlock, MaterialPropertyBlockPrintingToOutputStreamMentionsM
 
     ss << m1;
 
-    ASSERT_TRUE(contains(ss.str(), "MaterialPropertyBlock"));
+    ASSERT_TRUE(ss.str().contains("MaterialPropertyBlock"));
 }
 
 TEST(MaterialPropertyBlock, set_SharedDepthStencilBuffer_works)

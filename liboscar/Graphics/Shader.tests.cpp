@@ -423,7 +423,7 @@ TEST_F(ShaderTest, writes_expected_content_to_a_std_ostream)
     const std::string str{std::move(ss).str()};
 
     for (const auto& property_name : c_expected_property_names) {
-        ASSERT_TRUE(contains(str, property_name));
+        ASSERT_TRUE(str.contains(property_name));
     }
 }
 

@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <exception>
 #include <filesystem>
 #include <ranges>
@@ -129,7 +130,7 @@ TEST(ExceptionThrowingComponentWarper, ThrowsWhenWarpInPlaceIsCalled)
         warper.warpInPlace(parameters, cache, sourceModel, sourceMarker, destinationModel, destinationMarker);
     }
     catch (const std::exception& ex) {
-        ASSERT_TRUE(contains(ex.what(), "some message content"));
+        ASSERT_TRUE(std::strstr(ex.what(), "some message content") != nullptr);
         warperThrownException = true;
     }
     ASSERT_TRUE(warperThrownException) << "should always throw an exception";
