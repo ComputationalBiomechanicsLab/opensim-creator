@@ -18,6 +18,8 @@ jobs:
 
         # --system-version is necessary with GitHub's `windows-2022` runner because the
         # default SDK doesn't include `gameinput.h` correctly (see: https://github.com/actions/runner-images/issues/10980)
+        #
+        # the specified SDK supports Windows 10, version 1507 or higher (developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
         python scripts\\build_windows.py --system-version=10.0.26100.0 -j2 || exit /b
 
     - uses: actions/upload-artifact@v4
@@ -27,7 +29,7 @@ jobs:
         if-no-files-found: error
 
   macos11clang:
-    name: MacOS 15 (amd64, XCode 16.0, targeting 14.2)
+    name: MacOS 14 (amd64, XCode 15.4, targeting 14.5)
     runs-on: macos-14
     steps:
 
@@ -42,7 +44,7 @@ jobs:
 
         # run after-build OS-specific test scripts
         ./scripts/macos_check-dependencies.py build/osc/osc
-        ./scripts/macos_check-sdk.py 14.2 build/osc/osc
+        ./scripts/macos_check-sdk.py 14.5 build/osc/osc
 
     - uses: actions/upload-artifact@v4
       with:
