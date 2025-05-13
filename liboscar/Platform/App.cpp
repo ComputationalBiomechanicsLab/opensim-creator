@@ -83,10 +83,10 @@ PhysicalKeyModifiers osc::Converter<KeyModifiers, PhysicalKeyModifiers>::operato
     // Ensure the remapping/casting tricks being done in this function are valid.
     static_assert(num_flags<KeyModifier>() == num_flags<PhysicalKeyModifier>());
     static_assert(num_flags<KeyModifier>() == 4);
-    static_assert(cpp23::to_underlying(KeyModifier::Shift) == cpp23::to_underlying(PhysicalKeyModifier::Shift));
-    static_assert(cpp23::to_underlying(KeyModifier::Ctrl)  == cpp23::to_underlying(PhysicalKeyModifier::Ctrl));
-    static_assert(cpp23::to_underlying(KeyModifier::Meta)  == cpp23::to_underlying(PhysicalKeyModifier::Meta));
-    static_assert(cpp23::to_underlying(KeyModifier::Alt)   == cpp23::to_underlying(PhysicalKeyModifier::Alt));
+    static_assert(std::to_underlying(KeyModifier::Shift) == std::to_underlying(PhysicalKeyModifier::Shift));
+    static_assert(std::to_underlying(KeyModifier::Ctrl)  == std::to_underlying(PhysicalKeyModifier::Ctrl));
+    static_assert(std::to_underlying(KeyModifier::Meta)  == std::to_underlying(PhysicalKeyModifier::Meta));
+    static_assert(std::to_underlying(KeyModifier::Alt)   == std::to_underlying(PhysicalKeyModifier::Alt));
     static_assert(std::is_same_v<KeyModifiers::underlying_type, PhysicalKeyModifiers::underlying_type>);
 
 #if defined(__APPLE__)
@@ -104,10 +104,10 @@ KeyModifiers osc::Converter<PhysicalKeyModifiers, KeyModifiers>::operator()(Phys
     // Ensure the remapping/casting tricks being done in this function are valid.
     static_assert(num_flags<KeyModifier>() == num_flags<PhysicalKeyModifier>());
     static_assert(num_flags<KeyModifier>() == 4);
-    static_assert(cpp23::to_underlying(KeyModifier::Shift) == cpp23::to_underlying(PhysicalKeyModifier::Shift));
-    static_assert(cpp23::to_underlying(KeyModifier::Ctrl)  == cpp23::to_underlying(PhysicalKeyModifier::Ctrl));
-    static_assert(cpp23::to_underlying(KeyModifier::Meta)  == cpp23::to_underlying(PhysicalKeyModifier::Meta));
-    static_assert(cpp23::to_underlying(KeyModifier::Alt)   == cpp23::to_underlying(PhysicalKeyModifier::Alt));
+    static_assert(std::to_underlying(KeyModifier::Shift) == std::to_underlying(PhysicalKeyModifier::Shift));
+    static_assert(std::to_underlying(KeyModifier::Ctrl)  == std::to_underlying(PhysicalKeyModifier::Ctrl));
+    static_assert(std::to_underlying(KeyModifier::Meta)  == std::to_underlying(PhysicalKeyModifier::Meta));
+    static_assert(std::to_underlying(KeyModifier::Alt)   == std::to_underlying(PhysicalKeyModifier::Alt));
     static_assert(std::is_same_v<KeyModifiers::underlying_type, PhysicalKeyModifiers::underlying_type>);
 
 #if defined(__APPLE__)

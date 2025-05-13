@@ -17,7 +17,7 @@ set_target_properties(testoscar_demos PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_compile_features(testoscar_demos PUBLIC
-    cxx_std_20
+    cxx_std_23
 )
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(testoscar_demos PRIVATE

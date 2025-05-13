@@ -1,9 +1,10 @@
 #pragma once
 
+#include <liboscar/Graphics/Scene/SceneDecoration.h>
+
 #include <memory>
 #include <span>
 
-namespace osc { struct SceneDecoration; }
 namespace osc { class SceneCache; }
 namespace osc { struct SceneRendererParams; }
 namespace osc { class RenderTexture; }

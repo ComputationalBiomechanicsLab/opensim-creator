@@ -44,7 +44,7 @@ set_target_properties(oscar PROPERTIES
     CXX_EXTENSIONS OFF
 )
 target_compile_features(oscar PUBLIC
-    cxx_std_20
+    cxx_std_23
 )
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(oscar PRIVATE

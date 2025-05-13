@@ -1,11 +1,11 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
 #include <cstdint>
 #include <span>
+#include <utility>
 
 namespace osc
 {
@@ -22,18 +22,18 @@ namespace osc
 
     constexpr bool operator&(CustomRenderingOptionFlags lhs, CustomRenderingOptionFlags rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(CustomRenderingOptionFlags& flags, CustomRenderingOptionFlags flag, bool v)
     {
         if (v)
         {
-            flags = static_cast<CustomRenderingOptionFlags>(cpp23::to_underlying(flags) | cpp23::to_underlying(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) | std::to_underlying(flag));
         }
         else
         {
-            flags = static_cast<CustomRenderingOptionFlags>(cpp23::to_underlying(flags) & ~cpp23::to_underlying(flag));
+            flags = static_cast<CustomRenderingOptionFlags>(std::to_underlying(flags) & ~std::to_underlying(flag));
         }
     }
 

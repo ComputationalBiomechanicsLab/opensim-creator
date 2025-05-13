@@ -1,5 +1,7 @@
 #pragma once
 
+#include <liboscar/DOM/PropertyInfo.h>
+
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -7,7 +9,6 @@
 #include <string_view>
 
 namespace osc { class StringName; }
-namespace osc { class PropertyInfo; }
 
 namespace osc
 {

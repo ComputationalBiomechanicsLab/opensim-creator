@@ -14,7 +14,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/Key.h>
 #include <liboscar/Platform/KeyCombination.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Flags.h>
@@ -1068,15 +1067,15 @@ namespace osc::ui
         };
         constexpr PlotFlags operator|(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+            return static_cast<PlotFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
         }
         constexpr PlotFlags operator^(PlotFlags lhs, PlotFlags rhs)
         {
-            return static_cast<PlotFlags>(cpp23::to_underlying(lhs) ^ cpp23::to_underlying(rhs));
+            return static_cast<PlotFlags>(std::to_underlying(lhs) ^ std::to_underlying(rhs));
         }
         constexpr bool operator&(PlotFlags lhs, PlotFlags rhs)
         {
-            return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+            return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
         }
 
         enum class PlotStyleVar {
@@ -1130,7 +1129,7 @@ namespace osc::ui
 
         constexpr AxisFlags operator|(AxisFlags lhs, AxisFlags rhs)
         {
-            return static_cast<AxisFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+            return static_cast<AxisFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
         }
 
         enum class Condition {
@@ -1179,12 +1178,12 @@ namespace osc::ui
 
         constexpr bool operator&(LegendFlags lhs, LegendFlags rhs)
         {
-            return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+            return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
         }
 
         constexpr LegendFlags operator^(LegendFlags lhs, LegendFlags rhs)
         {
-            return static_cast<LegendFlags>(cpp23::to_underlying(lhs) ^ cpp23::to_underlying(rhs));
+            return static_cast<LegendFlags>(std::to_underlying(lhs) ^ std::to_underlying(rhs));
         }
 
         // draws the plotting demo in its own panel

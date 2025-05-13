@@ -11,6 +11,7 @@
 #include <optional>
 #include <ranges>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 namespace osc

@@ -5,7 +5,6 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <filesystem>
@@ -13,6 +12,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <utility>
 
 namespace OpenSim { class AbstractOutput; }
 namespace OpenSim { class Component; }
@@ -123,7 +123,7 @@ namespace osc
     };
     constexpr bool operator&(CalculateMenuFlags lhs, CalculateMenuFlags rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
     bool BeginCalculateMenu(
         CalculateMenuFlags = CalculateMenuFlags::None

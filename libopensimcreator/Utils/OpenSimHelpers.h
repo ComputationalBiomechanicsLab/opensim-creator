@@ -808,7 +808,7 @@ namespace osc
     OpenSim::Component& AddComponentToAppropriateSet(OpenSim::Model&, std::unique_ptr<OpenSim::Component>);
 
     // adds a model component to the component set of a model and returns a reference to the component
-    OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>);
+    OpenSim::ModelComponent& AddModelComponent(OpenSim::Model&, std::unique_ptr<OpenSim::ModelComponent>&&);
 
     // adds a specific (T) model component to the component set of the model and returns a reference to the component
     template<std::derived_from<OpenSim::ModelComponent> T>
@@ -826,7 +826,7 @@ namespace osc
     }
 
     // adds a new component to the component set of the component and returns a reference to the new component
-    OpenSim::Component& AddComponent(OpenSim::Component&, std::unique_ptr<OpenSim::Component>);
+    OpenSim::Component& AddComponent(OpenSim::Component&, std::unique_ptr<OpenSim::Component>&&);
 
     template<std::derived_from<OpenSim::Component> T>
     T& AddComponent(OpenSim::Component& c, std::unique_ptr<T> p)

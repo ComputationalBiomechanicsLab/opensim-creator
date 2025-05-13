@@ -92,8 +92,8 @@ Building on MacOS (Sonoma or newer)
     1. Go to https://brew.sh/ and follow installation instructions
 2. Get ``git``: 
     1. Can be installed via ``brew``: ``brew install git``
-3. Get C++20-compatible compiler (e.g. ``clang`` via brew, or newer XCodes):
-    1. OpenSim Creator is a C++20 project, so you'll have to use a more recent XCode (>14), or
+3. Get C++23-compatible compiler (e.g. ``clang`` via brew, or newer XCodes):
+    1. OpenSim Creator is a C++23 project, so you'll have to use a more recent XCode (>=15), or
        install a newer ``clang`` from brew (e.g. ``brew install clang``)
 4. Get ``cmake``:
     1. Can be installed via ``brew``: ``brew install cmake``
@@ -103,7 +103,7 @@ Building on MacOS (Sonoma or newer)
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables
-       point to compilers that are compatible with C++20. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
+       point to compilers that are compatible with C++23. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
     4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
 7. Done:
     1. The ``build/`` directory should contain the built installer
@@ -114,7 +114,7 @@ Building on Ubuntu (22.04 or newer)
 
 1. Get ``git``:
     1. Install ``git`` via your package manager (e.g. ``apt-get install git``)
-2. Get a C++20-compatible compiler:
+2. Get a C++23-compatible compiler:
     1. E.g. on Ubuntu 22.04, install ``g++-12`` or ``clang++``` via your package manager (e.g. ``apt-get install g++-12``)
 3. Get ``cmake``:
     1. Install ``cmake`` via your package manager (e.g. ``apt-get install cmake``)

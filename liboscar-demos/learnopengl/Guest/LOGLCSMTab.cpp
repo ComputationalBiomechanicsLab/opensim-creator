@@ -46,7 +46,7 @@ namespace
         for (size_t x = 0; x < num_grid_cells.x; ++x) {
             for (size_t y = 0; y < num_grid_cells.y; ++y) {
 
-                const Vec3 cell_pos = grid_bounds.min + grid_dimensions * (Vec3{x, 0.0f, y} / Vec3{num_grid_cells.x - 1_uz, 1, num_grid_cells.y - 1_uz});
+                const Vec3 cell_pos = grid_bounds.min + grid_dimensions * (Vec3{x, 0.0f, y} / Vec3{num_grid_cells.x - 1uz, 1, num_grid_cells.y - 1uz});
                 Mesh mesh;
                 rgs::sample(possible_geometries, &mesh, 1, rng);
 

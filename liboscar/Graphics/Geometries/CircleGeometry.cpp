@@ -5,7 +5,6 @@
 #include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
-#include <liboscar/Shims/Cpp23/cstddef.h>
 #include <liboscar/Utils/Assertions.h>
 
 #include <cstddef>
@@ -14,7 +13,6 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::literals;
 
 osc::CircleGeometry::CircleGeometry(const Params& p)
 {
@@ -24,7 +22,7 @@ osc::CircleGeometry::CircleGeometry(const Params& p)
     //
     // https://threejs.org/docs/#api/en/geometries/CircleGeometry
 
-    const size_t num_segments = max(3_uz, p.num_segments);
+    const size_t num_segments = max(3uz, p.num_segments);
     const auto fnum_segments = static_cast<float>(num_segments);
 
     std::vector<uint32_t> indices;

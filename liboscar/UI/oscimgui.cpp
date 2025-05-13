@@ -48,7 +48,6 @@
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/WindowID.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/UI/Detail/ImGuizmo.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
@@ -676,7 +675,7 @@ namespace
             }
 
             for (const auto& [source_flag, destination_flag] : mappings) {
-                const auto source_index = std::countr_zero(std::bit_floor(cpp23::to_underlying(source_flag)));
+                const auto source_index = std::countr_zero(std::bit_floor(std::to_underlying(source_flag)));
                 lut_[source_index] = destination_flag;
             }
         }
@@ -3914,12 +3913,12 @@ namespace
 {
     constexpr ImPlotFlags to_ImPlotFlags(plot::PlotFlags flags)
     {
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoTitle) == ImPlotFlags_NoTitle);
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoLegend) == ImPlotFlags_NoLegend);
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoMenus) == ImPlotFlags_NoMenus);
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoBoxSelect) == ImPlotFlags_NoBoxSelect);
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoFrame) == ImPlotFlags_NoFrame);
-        static_assert(cpp23::to_underlying(plot::PlotFlags::NoInputs) == ImPlotFlags_NoInputs);
+        static_assert(std::to_underlying(plot::PlotFlags::NoTitle) == ImPlotFlags_NoTitle);
+        static_assert(std::to_underlying(plot::PlotFlags::NoLegend) == ImPlotFlags_NoLegend);
+        static_assert(std::to_underlying(plot::PlotFlags::NoMenus) == ImPlotFlags_NoMenus);
+        static_assert(std::to_underlying(plot::PlotFlags::NoBoxSelect) == ImPlotFlags_NoBoxSelect);
+        static_assert(std::to_underlying(plot::PlotFlags::NoFrame) == ImPlotFlags_NoFrame);
+        static_assert(std::to_underlying(plot::PlotFlags::NoInputs) == ImPlotFlags_NoInputs);
         return static_cast<ImPlotFlags>(flags);
     }
 
@@ -3960,17 +3959,17 @@ namespace
 
     constexpr ImPlotAxisFlags to_ImPlotAxisFlags(plot::AxisFlags flags)
     {
-        static_assert(cpp23::to_underlying(plot::AxisFlags::None) == ImPlotAxisFlags_None);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoLabel) == ImPlotAxisFlags_NoLabel);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoGridLines) == ImPlotAxisFlags_NoGridLines);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoTickMarks) == ImPlotAxisFlags_NoTickMarks);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoTickLabels) == ImPlotAxisFlags_NoTickLabels);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoMenus) == ImPlotAxisFlags_NoMenus);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::AutoFit) == ImPlotAxisFlags_AutoFit);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::LockMin) == ImPlotAxisFlags_LockMin);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::LockMax) == ImPlotAxisFlags_LockMax);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::Lock) == ImPlotAxisFlags_Lock);
-        static_assert(cpp23::to_underlying(plot::AxisFlags::NoDecorations) == ImPlotAxisFlags_NoDecorations);
+        static_assert(std::to_underlying(plot::AxisFlags::None) == ImPlotAxisFlags_None);
+        static_assert(std::to_underlying(plot::AxisFlags::NoLabel) == ImPlotAxisFlags_NoLabel);
+        static_assert(std::to_underlying(plot::AxisFlags::NoGridLines) == ImPlotAxisFlags_NoGridLines);
+        static_assert(std::to_underlying(plot::AxisFlags::NoTickMarks) == ImPlotAxisFlags_NoTickMarks);
+        static_assert(std::to_underlying(plot::AxisFlags::NoTickLabels) == ImPlotAxisFlags_NoTickLabels);
+        static_assert(std::to_underlying(plot::AxisFlags::NoMenus) == ImPlotAxisFlags_NoMenus);
+        static_assert(std::to_underlying(plot::AxisFlags::AutoFit) == ImPlotAxisFlags_AutoFit);
+        static_assert(std::to_underlying(plot::AxisFlags::LockMin) == ImPlotAxisFlags_LockMin);
+        static_assert(std::to_underlying(plot::AxisFlags::LockMax) == ImPlotAxisFlags_LockMax);
+        static_assert(std::to_underlying(plot::AxisFlags::Lock) == ImPlotAxisFlags_Lock);
+        static_assert(std::to_underlying(plot::AxisFlags::NoDecorations) == ImPlotAxisFlags_NoDecorations);
 
         return static_cast<ImPlotAxisFlags>(flags);
     }
@@ -3997,9 +3996,9 @@ namespace
 
     constexpr ImPlotDragToolFlags to_ImPlotDragToolFlags(plot::DragToolFlags flags)
     {
-        static_assert(cpp23::to_underlying(plot::DragToolFlag::None) == ImPlotDragToolFlags_None);
-        static_assert(cpp23::to_underlying(plot::DragToolFlag::NoFit) == ImPlotDragToolFlags_NoFit);
-        static_assert(cpp23::to_underlying(plot::DragToolFlag::NoInputs) == ImPlotDragToolFlags_NoInputs);
+        static_assert(std::to_underlying(plot::DragToolFlag::None) == ImPlotDragToolFlags_None);
+        static_assert(std::to_underlying(plot::DragToolFlag::NoFit) == ImPlotDragToolFlags_NoFit);
+        static_assert(std::to_underlying(plot::DragToolFlag::NoInputs) == ImPlotDragToolFlags_NoInputs);
         static_assert(num_flags<plot::DragToolFlag>() == 2);
         return static_cast<ImPlotDragToolFlags>(flags.underlying_value());
     }
@@ -4023,8 +4022,8 @@ namespace
 
     constexpr ImPlotLegendFlags to_ImPlotLegendFlags(plot::LegendFlags flags)
     {
-        static_assert(cpp23::to_underlying(plot::LegendFlags::None) == ImPlotLegendFlags_None);
-        static_assert(cpp23::to_underlying(plot::LegendFlags::Outside) == ImPlotLegendFlags_Outside);
+        static_assert(std::to_underlying(plot::LegendFlags::None) == ImPlotLegendFlags_None);
+        static_assert(std::to_underlying(plot::LegendFlags::Outside) == ImPlotLegendFlags_Outside);
         return static_cast<ImPlotLegendFlags>(flags);
     }
 }

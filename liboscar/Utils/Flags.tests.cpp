@@ -1,12 +1,11 @@
 #include "Flags.h"
 
-#include <liboscar/Shims/Cpp23/utility.h>
-
 #include <gtest/gtest.h>
 
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <utility>
 
 using namespace osc;
 
@@ -23,8 +22,8 @@ namespace
 
 TEST(Flags, from_underlying_works)
 {
-    const auto flags = Flags<ExampleDenseFlag>::from_underlying(cpp23::to_underlying(ExampleDenseFlag::Flag3));
-    ASSERT_EQ(flags.underlying_value(), cpp23::to_underlying(ExampleDenseFlag::Flag3));
+    const auto flags = Flags<ExampleDenseFlag>::from_underlying(std::to_underlying(ExampleDenseFlag::Flag3));
+    ASSERT_EQ(flags.underlying_value(), std::to_underlying(ExampleDenseFlag::Flag3));
 }
 
 TEST(Flags, can_default_construct)

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <utility>
 
 namespace osc
 {
@@ -25,18 +25,18 @@ namespace osc
 
     constexpr bool operator&(OverlayDecorationOptionFlags lhs, OverlayDecorationOptionFlags rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
     constexpr void SetOption(OverlayDecorationOptionFlags& flags, OverlayDecorationOptionFlags flag, bool v)
     {
         if (v)
         {
-            flags = static_cast<OverlayDecorationOptionFlags>(cpp23::to_underlying(flags) | cpp23::to_underlying(flag));
+            flags = static_cast<OverlayDecorationOptionFlags>(std::to_underlying(flags) | std::to_underlying(flag));
         }
         else
         {
-            flags = static_cast<OverlayDecorationOptionFlags>(cpp23::to_underlying(flags) & ~cpp23::to_underlying(flag));
+            flags = static_cast<OverlayDecorationOptionFlags>(std::to_underlying(flags) & ~std::to_underlying(flag));
         }
     }
 
