@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
+#include <utility>
 
 namespace osc::mi
 {
@@ -18,11 +18,11 @@ namespace osc::mi
 
     constexpr bool operator&(MIObjectFlags lhs, MIObjectFlags rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
     constexpr MIObjectFlags operator|(MIObjectFlags lhs, MIObjectFlags rhs)
     {
-        return static_cast<MIObjectFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        return static_cast<MIObjectFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 }

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
-
 #include <cstdint>
+#include <utility>
 
 namespace osc
 {
@@ -18,11 +17,11 @@ namespace osc
 
     constexpr ToggleablePanelFlags operator-(ToggleablePanelFlags lhs, ToggleablePanelFlags rhs)
     {
-        return static_cast<ToggleablePanelFlags>(cpp23::to_underlying(lhs) & ~cpp23::to_underlying(rhs));
+        return static_cast<ToggleablePanelFlags>(std::to_underlying(lhs) & ~std::to_underlying(rhs));
     }
 
     constexpr bool operator&(ToggleablePanelFlags lhs, ToggleablePanelFlags rhs)
     {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
+        return std::to_underlying(lhs) & std::to_underlying(rhs);
     }
 }

@@ -33,7 +33,7 @@ CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake \
     -B third_party-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install"
-cmake --build third_party-build/ -v -j${OSC_BUILD_CONCURRENCY}
+cmake --build third_party-build/ --verbose -j${OSC_BUILD_CONCURRENCY}
 
 # configure+build OpenSimCreator
 # also: `-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use;-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;"`
@@ -46,7 +46,7 @@ CCFLAGS="-fsanitize=address -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=addr
     -DOSC_FORCE_ASSERTS_ENABLED=ON \
     -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
     -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
-cmake --build build/ -j${OSC_BUILD_CONCURRENCY}
+cmake --build build/ --verbose -j${OSC_BUILD_CONCURRENCY}
 
 # run tests
 # export UBSAN_OPTIONS="print_stacktrace=1"  # requires llvm symbolizer in PATH https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html

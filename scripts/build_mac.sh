@@ -67,7 +67,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_INSTALL_PREFIX=third_party-install \
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build third_party-build -j${OSC_BUILD_CONCURRENCY}
+cmake --build third_party-build --verbose -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
 cmake \
@@ -76,7 +76,7 @@ cmake \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
     -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build "build/" -j${OSC_BUILD_CONCURRENCY}
+cmake --build "build/" --verbose -j${OSC_BUILD_CONCURRENCY}
 
 # ensure tests pass
 ctest --test-dir build/ --output-on-failure -j${OSC_BUILD_CONCURRENCY}
@@ -90,6 +90,7 @@ for i in {1..8}; do
     cmake \
         --build "build/" \
         --target ${OSC_BUILD_TARGET} \
+        --verbose \
         -j${OSC_BUILD_CONCURRENCY} && break ; sleep 2
     set -e
 done

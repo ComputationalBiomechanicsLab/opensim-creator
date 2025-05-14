@@ -45,5 +45,5 @@
 #include <liboscar/Utils/Typelist.h>
 #include <liboscar/Utils/UID.h>
 #include <liboscar/Utils/UndoRedo.h>
-// #include <liboscar/Utils/VariableLengthArray.h>  // TODO: reenable once MacOS gets pmr::memory_resource support
+#include <liboscar/Utils/VariableLengthArray.h>
 #include <liboscar/Utils/WatchableLifetime.h>

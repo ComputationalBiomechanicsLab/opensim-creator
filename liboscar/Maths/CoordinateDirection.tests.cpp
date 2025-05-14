@@ -1,7 +1,5 @@
 #include "CoordinateDirection.h"
 
-#include <liboscar/Shims/Cpp23/cstddef.h>
-
 #include <gtest/gtest.h>
 
 #include <algorithm>
@@ -11,7 +9,6 @@
 #include <sstream>
 
 using namespace osc;
-using namespace osc::literals;
 
 TEST(CoordinateDirection, is_regular)
 {
@@ -70,10 +67,10 @@ TEST(CoordinateDirection, direction_returns_expected_results)
 
     // templated (casted) versions
     static_assert(CoordinateDirection::x().direction<int>() == 1);
-    static_assert(CoordinateDirection::x().direction<ptrdiff_t>() == 1_z);
+    static_assert(CoordinateDirection::x().direction<ptrdiff_t>() == 1z);
     static_assert(CoordinateDirection::x().direction<double>() == 1.0);
     static_assert(CoordinateDirection::minus_x().direction<int>() == -1);
-    static_assert(CoordinateDirection::minus_x().direction<ptrdiff_t>() == -1_z);
+    static_assert(CoordinateDirection::minus_x().direction<ptrdiff_t>() == -1z);
     static_assert(CoordinateDirection::minus_x().direction<double>() == -1.0);
 }
 

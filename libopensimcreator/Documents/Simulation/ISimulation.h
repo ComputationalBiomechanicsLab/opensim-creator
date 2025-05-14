@@ -1,5 +1,6 @@
 #pragma once
 
+#include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
@@ -13,7 +14,6 @@
 #include <vector>
 
 namespace osc { class Environment; }
-namespace osc { class OutputExtractor; }
 namespace osc { class ParamBlock; }
 namespace OpenSim { class Model; }
 

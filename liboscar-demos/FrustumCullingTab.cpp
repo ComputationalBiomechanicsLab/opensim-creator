@@ -10,7 +10,6 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::literals;
 namespace rgs = std::ranges;
 
 namespace
@@ -42,7 +41,7 @@ namespace
             for (size_t y = 0; y < num_cells.y; ++y) {
                 for (size_t z = 0; z < num_cells.z; ++z) {
 
-                    const Vec3 pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{num_cells - 1_uz});
+                    const Vec3 pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{num_cells - 1uz});
 
                     Mesh mesh;
                     rgs::sample(geometries, &mesh, 1, rng);

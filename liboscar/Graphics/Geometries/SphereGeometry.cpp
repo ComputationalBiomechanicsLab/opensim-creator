@@ -1,7 +1,6 @@
 #include "SphereGeometry.h"
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Shims/Cpp23/cstddef.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
@@ -21,8 +20,8 @@ osc::SphereGeometry::SphereGeometry(const Params& p)
     //
     // https://threejs.org/docs/#api/en/geometries/SphereGeometry
 
-    const auto num_width_segments = max(3_uz, p.num_width_segments);
-    const auto num_height_segments = max(2_uz, p.num_height_segments);
+    const auto num_width_segments = max(3uz, p.num_width_segments);
+    const auto num_height_segments = max(2uz, p.num_height_segments);
     const auto fnum_width_segments = static_cast<float>(num_width_segments);
     const auto fnum_height_segments = static_cast<float>(num_height_segments);
     const auto theta_end = min(p.theta_start + p.theta_length, 180_deg);

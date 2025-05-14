@@ -4,7 +4,6 @@
 
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Vec3.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -14,6 +13,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace OpenSim { class Component; }
 namespace OpenSim { class ComponentPath; }
@@ -227,7 +227,7 @@ namespace osc
     };
     constexpr bool operator&(SocketReassignmentFlags lhs, SocketReassignmentFlags rhs)
     {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
+        return std::to_underlying(lhs) & std::to_underlying(rhs);
     }
 
     // attempts to reassign a component's socket connection (returns false and writes to `error` on failure)

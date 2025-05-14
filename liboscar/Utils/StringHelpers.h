@@ -11,12 +11,6 @@
 
 namespace osc
 {
-    // returns true if `sv` contains `substr`
-    bool contains(std::string_view sv, std::string_view substr);
-
-    // returns true if `sv` contains `c`
-    bool contains(std::string_view sv, std::string_view::value_type c);
-
     // returns true if `sv` contains `substr` (case-insensitive)
     bool contains_case_insensitive(std::string_view sv, std::string_view substr);
 

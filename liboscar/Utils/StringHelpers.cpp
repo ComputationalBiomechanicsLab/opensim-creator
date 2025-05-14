@@ -1,6 +1,5 @@
 #include "StringHelpers.h"
 
-#include <liboscar/Shims/Cpp23/cstddef.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Utils/Algorithms.h>
 
@@ -16,7 +15,6 @@
 #include <type_traits>
 
 using namespace osc;
-using namespace osc::literals;
 namespace rgs = std::ranges;
 
 namespace
@@ -25,42 +23,12 @@ namespace
     {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     });
-
-    std::string to_lowercase(std::string_view str)
-    {
-        std::string cpy{str};
-        rgs::transform(cpy, cpy.begin(), [](std::string::value_type c)
-        {
-            return static_cast<std::string::value_type>(std::tolower(c));
-        });
-        return cpy;
-    }
-}
-
-bool osc::contains(std::string_view sv, std::string_view substr)
-{
-    return std::search(sv.begin(), sv.end(), substr.begin(), substr.end()) != sv.end();
-}
-
-bool osc::contains(std::string_view sv, std::string_view::value_type c)
-{
-    return cpp23::contains(sv, c);
 }
 
 bool osc::contains_case_insensitive(std::string_view sv, std::string_view substr)
 {
-    if (substr.empty()) {
-        return true;
-    }
-
-    if (substr.size() > sv.size()) {
-        return false;
-    }
-
-    const std::string s = to_lowercase(sv);
-    const std::string ss = to_lowercase(substr);
-
-    return contains(s, ss);
+    const auto tolower = [](const auto c) { return std::tolower(c); };
+    return not std::ranges::search(sv, substr, std::ranges::equal_to{}, tolower, tolower).empty();
 }
 
 bool osc::is_string_case_insensitive_greater_than(std::string_view a, std::string_view b)
@@ -160,7 +128,7 @@ std::string osc::truncate_with_ellipsis(std::string_view v, size_t max_length)
         return std::string{v};
     }
 
-    const std::string_view substring = v.substr(0, max(0_z, static_cast<ptrdiff_t>(max_length)-3));
+    const std::string_view substring = v.substr(0, max(0z, static_cast<ptrdiff_t>(max_length)-3));
     std::string rv;
     rv.reserve(substring.length() + 3);
     rv = substring;

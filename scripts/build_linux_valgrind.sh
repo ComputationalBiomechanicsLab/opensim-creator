@@ -11,13 +11,13 @@ cmake \
     -B third_party-build \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install"
-cmake --build third_party-build -j$(nproc)
+cmake --build third_party-build --verbose -j$(nproc)
 cmake \
     -S . \
     -B build/ \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_PREFIX_PATH="${PWD}/third_party-install"
-cmake --build build/ -j$(nproc)
+cmake --build build/ --verbose -j$(nproc)
 
 export LIBGL_ALWAYS_SOFTWARE=1
 tmp=$(mktemp /tmp/valgrind_suppressions.XXXX.supp)

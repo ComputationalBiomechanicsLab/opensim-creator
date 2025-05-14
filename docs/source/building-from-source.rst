@@ -85,6 +85,18 @@ easiest way to build OpenSim Creator is with the python script located at
 4. The ``build/`` directory should contain the built installer
 
 
+Windows: OSC's Release Process (as of 2025/05/13)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We currently build releases of OpenSimCreator for Windows 10 >= v1507 using MSVC
+19.43.34808.0, Visual Studio 17.13.358, and Windows SDK 10.0.26100.0 via a
+GitHub action located in the ``.github/`` directory of the source code repository. Check
+`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
+language/library feature, because these toolchains do not have 100 % coverage of those
+specifications. The toolchains may be reviewed/updated late-2025, which is when Windows 10
+support is officially dropped by Microsoft.
+
+
 Building on MacOS (Sonoma or newer)
 ------------------------------------
 
@@ -92,8 +104,8 @@ Building on MacOS (Sonoma or newer)
     1. Go to https://brew.sh/ and follow installation instructions
 2. Get ``git``: 
     1. Can be installed via ``brew``: ``brew install git``
-3. Get C++20-compatible compiler (e.g. ``clang`` via brew, or newer XCodes):
-    1. OpenSim Creator is a C++20 project, so you'll have to use a more recent XCode (>14), or
+3. Get C++23-compatible compiler (e.g. ``clang`` via brew, or newer XCodes):
+    1. OpenSim Creator is a C++23 project, so you'll have to use a more recent XCode (>=15), or
        install a newer ``clang`` from brew (e.g. ``brew install clang``)
 4. Get ``cmake``:
     1. Can be installed via ``brew``: ``brew install cmake``
@@ -103,10 +115,21 @@ Building on MacOS (Sonoma or newer)
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables
-       point to compilers that are compatible with C++20. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
+       point to compilers that are compatible with C++23. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
     4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
 7. Done:
     1. The ``build/`` directory should contain the built installer
+
+
+MacOS: OSC's Release Process
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We currently build releases of OpenSimCreator for MacOS 14.5 using XCode 15.4 via a
+GitHub Action located in the ``.github/`` directory of the source code repository. Check
+`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
+language/library feature, because these toolchains do not have 100 % coverage of those
+specifications. This process will be reviewed/updated late 2026, which is roughly when
+MacOS 14.5 (Sonoma) is likely to reach its end-of-life.
 
 
 Building on Ubuntu (22.04 or newer)
@@ -114,7 +137,7 @@ Building on Ubuntu (22.04 or newer)
 
 1. Get ``git``:
     1. Install ``git`` via your package manager (e.g. ``apt-get install git``)
-2. Get a C++20-compatible compiler:
+2. Get a C++23-compatible compiler:
     1. E.g. on Ubuntu 22.04, install ``g++-12`` or ``clang++``` via your package manager (e.g. ``apt-get install g++-12``)
 3. Get ``cmake``:
     1. Install ``cmake`` via your package manager (e.g. ``apt-get install cmake``)
@@ -124,13 +147,25 @@ Building on Ubuntu (22.04 or newer)
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. The remaining build steps are performed in the source directory
-7. Get python libraries (*optional*: you only need this if you want to build documentation):
+6. Get python libraries (*optional*: you only need this if you want to build documentation):
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Install all necessary python libraries into your current python environment with ``pip install -r docs/requirements.txt -r docs/requirements-dev.txt```
-8. Build OpenSim Creator from source:
+7. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
        your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 scripts/build_ubuntu.sh``
     3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
-9. Done:
+8. Done:
     1. After the build is complete, the ``build/`` directory should contain the built installer
+
+.. _C++ Compiler Support: https://en.cppreference.com/w/cpp/compiler_support
+
+Ubuntu: OSC's Release Process
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We currently build releases of OpenSimCreator for Ubuntu 22.04 using gcc 12.3.0 via a
+GitHub Action located in the ``.github/`` directory of the source code repository. Check
+`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
+language/library feature, because these toolchains do not have 100 % coverage of those
+specifications. This process is likely to be updated around May 2026, which is when
+Ubuntu 22.04 will be EOL for free (non-ESM) editions.

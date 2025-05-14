@@ -24,7 +24,7 @@ def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_
 
 def _run_cmake_build(binary_dir, config, concurrency, target=None):
     maybe_target_flag = f'--target {target}' if target else ''
-    _run(f'cmake --build {binary_dir} --config {config} -j{concurrency} {maybe_target_flag}')
+    _run(f'cmake --build {binary_dir} --verbose --config {config} -j{concurrency} {maybe_target_flag}')
 
 def _log_dir_contents(path: str):
     logging.info(f"listing {path}")

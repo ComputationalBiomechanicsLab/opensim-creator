@@ -1,7 +1,5 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
-
 #include <functional>
 #include <iterator>
 #include <optional>
@@ -41,7 +39,7 @@ namespace osc
     template<DenselyPackedOptionsEnum TEnum>
     constexpr size_t to_index(TEnum v)
     {
-        return static_cast<size_t>(cpp23::to_underlying(v));
+        return static_cast<size_t>(std::to_underlying(v));
     }
 
     // if `pos` is within the range of densely-packed enum options, returns the enum member
@@ -88,7 +86,7 @@ namespace osc
 
             Iterator& operator++()
             {
-                current_ = static_cast<TEnum>(cpp23::to_underlying(current_) + 1);
+                current_ = static_cast<TEnum>(std::to_underlying(current_) + 1);
                 return *this;
             }
 
@@ -112,7 +110,7 @@ namespace osc
         {}
 
         auto front() const { return std::invoke(proj_, static_cast<TEnum>(0)); }
-        auto back() const { return std::invoke(proj_, static_cast<TEnum>(cpp23::to_underlying(TEnum::NUM_OPTIONS)-1)); }
+        auto back() const { return std::invoke(proj_, static_cast<TEnum>(std::to_underlying(TEnum::NUM_OPTIONS)-1)); }
         Iterator begin() const { return Iterator{proj_, static_cast<TEnum>(0)}; }
         Iterator end() const { return Iterator{proj_, TEnum::NUM_OPTIONS}; }
 

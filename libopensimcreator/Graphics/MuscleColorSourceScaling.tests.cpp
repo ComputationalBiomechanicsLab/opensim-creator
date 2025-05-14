@@ -1,10 +1,10 @@
 #include "MuscleColorSourceScaling.h"
 
 #include <gtest/gtest.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
 #include <type_traits>
+#include <utility>
 
 using namespace osc;
 
@@ -17,7 +17,7 @@ TEST(MuscleColorSourceScaling,  GetMuscleColorSourceScalingMetadataWorksForAllOp
 {
     using underlying = std::underlying_type_t<MuscleColorSourceScaling>;
 
-    for (underlying i = 0; i < cpp23::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
+    for (underlying i = 0; i < std::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
         ASSERT_NO_THROW({ GetMuscleColorSourceScalingMetadata(static_cast<MuscleColorSourceScaling>(i)); });
     }
 }
@@ -26,7 +26,7 @@ TEST(MuscleColorSourceScaling, GetIndexOfReturnsValidIndices)
 {
     using underlying = std::underlying_type_t<MuscleColorSourceScaling>;
 
-    for (underlying i = 0; i < cpp23::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
+    for (underlying i = 0; i < std::to_underlying(MuscleColorSourceScaling::NUM_OPTIONS); ++i) {
         ASSERT_EQ(GetIndexOf(static_cast<MuscleColorSourceScaling>(i)), i);
     }
 }

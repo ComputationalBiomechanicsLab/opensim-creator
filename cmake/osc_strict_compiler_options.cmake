@@ -13,9 +13,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # treat all warnings as errors
         /WX
 
-        # keep frame pointers around, so that runtime stack traces can be dumped to error logs
-        /Oy-
-
         # disable MSVC's permissive mode to ensure better ISO C++ conformance
         /permissive-
 
@@ -34,7 +31,7 @@ set(OSC_STRICT_COMPILER_OPTIONS
     >
 
     # gcc AND clang flags
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 
         # treat all warnings as errors
         -Werror
@@ -77,10 +74,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # warn if a case in a switch statement implicitly falls through after a statement
         -Wimplicit-fallthrough
 
-        # disabled: requires newer gcc
-        # warn if calls to `strcmp` and `strncmp` are determined to be invalid at compile-time
-        # -Wstring-compare
-
         # warn if insecure string formatting (e.g. for printf) is detected
         -Wformat-security
 
@@ -110,29 +103,10 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # disabled: requires newer gcc
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op
-
-        # disabled: doesn't work in some contexts where forward declarations are necessary
-        # -Wredundant-decls
-
-        # regardless of debug/release, pin the frame pointer register
-        # so that stack traces are sane when debugging (even in Release).
-        #
-        # This adds some overhead (pins one register and requires callers
-        # to setup their base pointers etc.) but makes debugging + profiling
-        # the application much easier, even in release mode
-        -fno-omit-frame-pointer
     >
 
     # clang flags
-    $<$<CXX_COMPILER_ID:Clang>:
-        # required in earlier clangs. Just setting
-        # -fno-omit-frame-pointer (above) is not enough
-        #
-        # see:
-        #   - https://stackoverflow.com/questions/43864881/fno-omit-frame-pointer-equivalent-compiler-option-for-clang
-        #   - fixed here: https://reviews.llvm.org/D64294
-        -mno-omit-leaf-frame-pointer
-
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
         # warn if using an uninitialized variable
         #
         # not done on gcc because it produces false-positives
@@ -149,5 +123,12 @@ set(OSC_STRICT_COMPILER_OPTIONS
 
 	# false-positives (e.g. https://github.com/fmtlib/fmt/issues/3415)
         -Wno-dangling-reference
+    >
+
+    $<$<CXX_COMPILER_ID:AppleClang>:
+        # ensure AppleClang produces an error when targeting earlier versions of MacOS
+        # with a newer SDK
+        -Werror=unguarded-availability
+        -Werror=unguarded-availability-new
     >
 )

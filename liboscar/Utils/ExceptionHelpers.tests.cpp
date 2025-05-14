@@ -46,7 +46,7 @@ TEST(potentially_nested_exception_to_string, works_as_intended)
         msg = potentially_nested_exception_to_string(ex);
     }
 
-    ASSERT_TRUE(contains(msg, "h()"));
-    ASSERT_TRUE(contains(msg, "g()"));
-    ASSERT_TRUE(contains(msg, "f()"));
+    ASSERT_TRUE(msg.contains("h()"));
+    ASSERT_TRUE(msg.contains("g()"));
+    ASSERT_TRUE(msg.contains("f()"));
 }

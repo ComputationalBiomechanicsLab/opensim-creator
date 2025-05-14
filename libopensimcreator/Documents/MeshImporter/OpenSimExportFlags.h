@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
+#include <utility>
 
 namespace osc::mi
 {
@@ -12,16 +12,16 @@ namespace osc::mi
 
     constexpr bool operator&(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
     constexpr ModelCreationFlags operator+(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
     {
-        return static_cast<ModelCreationFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        return static_cast<ModelCreationFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 
     constexpr ModelCreationFlags operator-(const ModelCreationFlags& lhs, const ModelCreationFlags& rhs)
     {
-        return static_cast<ModelCreationFlags>(cpp23::to_underlying(lhs) & ~cpp23::to_underlying(rhs));
+        return static_cast<ModelCreationFlags>(std::to_underlying(lhs) & ~std::to_underlying(rhs));
     }
 }

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
-
 #include <cstdint>
+#include <utility>
 
 namespace osc
 {
@@ -15,12 +14,12 @@ namespace osc
 
     constexpr bool operator&(ModelViewerPanelLayerFlags lhs, ModelViewerPanelLayerFlags rhs)
     {
-        return cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs);
+        return std::to_underlying(lhs) & std::to_underlying(rhs);
     }
 
     constexpr ModelViewerPanelLayerFlags operator|(ModelViewerPanelLayerFlags lhs, ModelViewerPanelLayerFlags rhs)
     {
-        return static_cast<ModelViewerPanelLayerFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        return static_cast<ModelViewerPanelLayerFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 
     constexpr ModelViewerPanelLayerFlags& operator|=(ModelViewerPanelLayerFlags& lhs, ModelViewerPanelLayerFlags rhs)

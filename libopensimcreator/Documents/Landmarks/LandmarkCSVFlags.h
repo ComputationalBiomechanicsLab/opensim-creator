@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Shims/Cpp23/utility.h>
+#include <utility>
 
 namespace osc::lm
 {
@@ -12,11 +12,11 @@ namespace osc::lm
 
     constexpr LandmarkCSVFlags operator|(LandmarkCSVFlags lhs, LandmarkCSVFlags rhs)
     {
-        return static_cast<LandmarkCSVFlags>(cpp23::to_underlying(lhs) | cpp23::to_underlying(rhs));
+        return static_cast<LandmarkCSVFlags>(std::to_underlying(lhs) | std::to_underlying(rhs));
     }
 
     constexpr bool operator&(LandmarkCSVFlags lhs, LandmarkCSVFlags rhs)
     {
-        return (cpp23::to_underlying(lhs) & cpp23::to_underlying(rhs)) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 }

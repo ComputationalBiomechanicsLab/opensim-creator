@@ -1,7 +1,6 @@
 #include "OpenSimDecorationOptionFlags.h"
 
 #include <liboscar/Platform/IconCodepoints.h>
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/EnumHelpers.h>
 

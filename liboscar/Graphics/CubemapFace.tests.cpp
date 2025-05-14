@@ -1,11 +1,11 @@
 #include "CubemapFace.h"
 
-#include <liboscar/Shims/Cpp23/utility.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
 #include <gtest/gtest.h>
 
-namespace cpp23 = osc::cpp23;
+#include <utility>
+
 using namespace osc;
 
 TEST(CubemapFace, contains_6_options)
@@ -20,10 +20,10 @@ TEST(CubemapFace, options_are_in_same_order_as_OpenGL_TEXTURE_CUBE_MAP)
     // that exactly follows this sequence, and code in the backend might rely on that
     //
     // (e.g. because there's code along the lines of `GL_TEXTURE_CUBE_MAP_POSITIVE_X+i`
-    static_assert(cpp23::to_underlying(CubemapFace::PositiveX) == 0);
-    static_assert(cpp23::to_underlying(CubemapFace::NegativeX) == 1);
-    static_assert(cpp23::to_underlying(CubemapFace::PositiveY) == 2);
-    static_assert(cpp23::to_underlying(CubemapFace::NegativeY) == 3);
-    static_assert(cpp23::to_underlying(CubemapFace::PositiveZ) == 4);
-    static_assert(cpp23::to_underlying(CubemapFace::NegativeZ) == 5);
+    static_assert(std::to_underlying(CubemapFace::PositiveX) == 0);
+    static_assert(std::to_underlying(CubemapFace::NegativeX) == 1);
+    static_assert(std::to_underlying(CubemapFace::PositiveY) == 2);
+    static_assert(std::to_underlying(CubemapFace::NegativeY) == 3);
+    static_assert(std::to_underlying(CubemapFace::PositiveZ) == 4);
+    static_assert(std::to_underlying(CubemapFace::NegativeZ) == 5);
 }

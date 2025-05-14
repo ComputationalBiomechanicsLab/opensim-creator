@@ -1,7 +1,6 @@
 #include "RingGeometry.h"
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Shims/Cpp23/cstddef.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
@@ -13,7 +12,6 @@
 #include <vector>
 
 using namespace osc;
-using namespace osc::literals;
 
 osc::RingGeometry::RingGeometry(const Params& p)
 {
@@ -23,8 +21,8 @@ osc::RingGeometry::RingGeometry(const Params& p)
     //
     // https://threejs.org/docs/#api/en/geometries/RingGeometry
 
-    const auto num_theta_segments = max(3_uz, p.num_theta_segments);
-    const auto num_phi_segments = max(1_uz, p.num_phi_segments);
+    const auto num_theta_segments = max(3uz, p.num_theta_segments);
+    const auto num_phi_segments = max(1uz, p.num_phi_segments);
     const auto fnum_theta_segments = static_cast<float>(num_theta_segments);
     const auto fnum_phi_segments = static_cast<float>(num_phi_segments);
 

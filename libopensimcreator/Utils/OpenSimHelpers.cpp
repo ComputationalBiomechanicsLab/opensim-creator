@@ -1617,14 +1617,14 @@ OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::un
     return rv;
 }
 
-OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent> p)
+OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
 {
     OpenSim::ModelComponent& rv = *p;
     model.addModelComponent(p.release());
     return rv;
 }
 
-OpenSim::Component& osc::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component> p)
+OpenSim::Component& osc::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
 {
     OpenSim::Component& rv = *p;
     c.addComponent(p.release());
