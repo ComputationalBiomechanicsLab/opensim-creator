@@ -25,7 +25,7 @@ OSC_BUILD_GENERATOR=${OSC_BUILD_GENERATOR-"Unix Makefiles"}
 #
 # defaulted to 1, rather than `nproc`, because OpenSim requires a large
 # amount of RAM--more than most machines have--to build concurrently, #659
-OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-1}
+OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(nproc)}
 
 # extra flags to pass into each configuration call to cmake
 #
