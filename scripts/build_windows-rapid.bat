@@ -1,4 +1,4 @@
-REM Performs an end-to-end build of OpenSim Creator REM on Windows systems using
+REM Performs an end-to-end build of OpenSim Creator on Windows systems using
 REM Ninja, which comes bundled with Visual Studio.
 REM
 REM This uses hard-coded paths etc. because this is mostly useful for rapidly getting
