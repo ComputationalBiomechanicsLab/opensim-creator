@@ -161,7 +161,7 @@ Building on Ubuntu (22.04 or newer)
 .. _C++ Compiler Support: https://en.cppreference.com/w/cpp/compiler_support
 
 Ubuntu: OSC's Release Process
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We currently build releases of OpenSimCreator for Ubuntu 22.04 using gcc 12.3.0 via a
 GitHub Action located in the ``.github/`` directory of the source code repository. Check
