@@ -1,7 +1,13 @@
 on: [push]
 
 env:
+  # Bake a build ID into the binary so that there's a way of looking up
+  # the build logs for a build.
   OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
+
+  # Hide window creation in CI, because CI runners typically do not have
+  # a desktop environment.
+  OSC_INTERNAL_HIDE_WINDOW: "1"
 
 jobs:
 
@@ -20,7 +26,7 @@ jobs:
         # default SDK doesn't include `gameinput.h` correctly (see: https://github.com/actions/runner-images/issues/10980)
         #
         # the specified SDK supports Windows 10, version 1507 or higher (developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
-        python scripts\\build_windows.py --system-version=10.0.26100.0 -j2 || exit /b
+        python scripts\\build_windows.py --system-version=10.0.26100.0 || exit /b
 
     - uses: actions/upload-artifact@v4
       with:
@@ -107,4 +113,3 @@ jobs:
         name: OpenSimCreator_Deb.zip
         path: build/*.deb
         if-no-files-found: error
-
