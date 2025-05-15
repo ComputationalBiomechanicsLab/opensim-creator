@@ -178,37 +178,46 @@ Join Something to the ``StationDefinedFrame``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The most common use for a ``StationDefinedFrame`` is to use it in a joint definition, because
-that's an important part of designing models. There's several ways to do this, outlined below.
+that's an important part of designing models. There's two ways to do this, outlined below.
 
-Using a ``StationDefinedFrame`` as a parent frame when adding a new body
+Using a ``StationDefinedFrame`` as a Parent Frame When Adding a New Body
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When adding a body (e.g. as described in
-:ref:`add-body-with-weldjoint`), you can now select the added ``StationDefinedFrame`` as
-the parent frame.
+When adding a body to a model (e.g. as described in :ref:`add-body-with-weldjoint`) a
+joint is also added (the body has to join to *something*, as far as OpenSim is
+concerned) and you can select the added ``StationDefinedFrame`` as what it joints to
+directly in the add body dialog (:numref:`add-body-show-joining-to-sdf`).
 
-Using a ``StationDefinedFrame`` as a child frame in an existing joint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _add-body-show-joining-to-sdf:
+.. figure:: _static/station-defined-frames/sdf-as-parent-new-body.jpg
+    :width: 60%
 
-TODO
+    When adding a new body, you can select a ``StationDefinedFrame`` that's already in
+    the model as the parent frame for the body's joint.
 
-Changing an existing joint to use ``StationDefinedFrame`` s
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Once you have added the new body this way, you might want to then define a
+``StationDefinedFrame`` on the new body. That's fine: the procedure is identical to this
+walkthrough. After you have a ``StationDefinedFrame`` on the new body, you can then use the
+procedure below to modify the joint to use that frame.
 
-TODO
 
+Using a ``StationDefinedFrame`` as a Parent/Child Frame in an Existing Joint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Frequently Asked Questions
---------------------------
+``StationDefinedFrame`` s can be added to existing bodies in an existing OpenSim model. They
+only require that all of the stations used to define the frame are attached to the same body. Joints
+in OpenSim models work by coupling two frames that are referenced via sockets (named ``parent_frame``
+and ``child_frame``) on the joint. Therefore, assuming you have a ``StationDefinedFrame`` called ``sdf``
+in your model and you want to use it in a model that already contains bodies and joints, you can
+follow this procedure:
 
-- Where should ``Station``s be stored in the model hierarchy?
+1. Identify which joint you want to re-socket.
+2. Right-click the joint and use the ``Sockets`` menu to change either the joint's
+   ``parent_frame`` or ``child_frame`` sockets to point to your ``StationDefinedFrame``
+   (TODO REF).
 
-TODO
-
-- Where should ``StationDefinedFrame`` s be stored in the model hierarchy?
-
-TODO
-
+TODO: must ensure this works for ``child_frame`` because the ``StationDefinedFrame`` might
+be on a body that's already somewhere in the kinematic chain
 
 .. _opensim-core/pull/3694: https://github.com/opensim-org/opensim-core/pull/3694
 .. _StationDefinedFrame.h: https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Simulation/Model/StationDefinedFrame.h
