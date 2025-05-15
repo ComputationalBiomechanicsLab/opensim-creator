@@ -114,12 +114,8 @@ public:
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
-        if (e.combination() == (KeyModifier::Ctrl | Key::P)) {
-            // `Ctrl+P`: "take a screenshot"
-            m_MaybeScreenshotRequest = App::upd().request_screenshot();
-            return true;
-        }
-        if (e.combination() == (KeyModifier::Ctrl | Key::PageUp) or e.combination() == (KeyModifier::Ctrl | KeyModifier::Alt | Key::LeftArrow)) {
+        if (e.combination() == (KeyModifier::Ctrl | Key::PageUp) or
+            e.combination() == (KeyModifier::Ctrl | KeyModifier::Alt | Key::LeftArrow)) {
             // `Ctrl+PageUp` or `Ctrl+Alt+Left`: focus the tab to the left of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.begin() and it != m_Tabs.end()) {
@@ -128,7 +124,8 @@ public:
             }
             return true;
         }
-        if (e.combination() == (KeyModifier::Ctrl | Key::PageDown) or e.combination() == (KeyModifier::Ctrl | KeyModifier::Alt | Key::RightArrow)) {
+        if (e.combination() == (KeyModifier::Ctrl | Key::PageDown) or
+            e.combination() == (KeyModifier::Ctrl | KeyModifier::Alt | Key::RightArrow)) {
             // `Ctrl+PageDown` or `Ctrl+Alt+Right`: focus the tab to the right of the currently-active tab
             auto it = findTabByID(m_ActiveTabID);
             if (it != m_Tabs.end()-1) {
@@ -228,10 +225,14 @@ public:
 
         bool handled = false;
 
-        if (ui::context::on_event(e)) {
+        if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == (KeyModifier::Ctrl | Key::P)) {
+            // `Ctrl+P`: "take a screenshot"
+            m_MaybeScreenshotRequest = App::upd().request_screenshot();
+            handled = true;
+        }
+        else if (ui::context::on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `Tab::onDraw` (immediate-mode UI)
-
             App::upd().request_redraw();
             handled = true;
         }
@@ -321,7 +322,7 @@ public:
             if (activeTabHandledEvent) {
                 // If the user dragged a file into an open tab, and the tab accepted the
                 // event (e.g. because it opened/imported the file), then the directory
-                // of the droppped file should become the next directory that the user sees
+                // of the dropped file should become the next directory that the user sees
                 // if they subsequently open a file dialog.
                 //
                 // The reason that users find this useful is because they might've just
@@ -337,12 +338,9 @@ public:
                 App::upd().request_redraw();
                 handled = true;
             }
-            else {
-                handled = onUnhandledEvent(e);
-            }
         }
 
-        return handled;
+        return handled or onUnhandledEvent(e);
     }
 
     void on_tick()

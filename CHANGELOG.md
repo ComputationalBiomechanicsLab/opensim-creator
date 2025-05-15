@@ -10,6 +10,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
   yet, due to upstream issues in OpenSim, #982).
 - Internal: the source code level for the project was upgraded from C++20 to C++23.
+- Internal: fixed a regression introduced by an ImGui upgrade that prevents the screenshot
+  taker from working if a modal dialog is shown (#1038).
 
 
 ## [0.5.22] - 2025/04/25
