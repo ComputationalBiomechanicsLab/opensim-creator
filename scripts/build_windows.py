@@ -151,17 +151,7 @@ def build_osc(conf: BuildConfiguration):
         )
 
         # test
-        excluded_tests = [  # necessary in CI: no windowing system available
-            'Renderer',
-            'ShaderTest',
-            'MaterialTest',
-            'RegisteredDemoTabsTest',
-            'RegisteredOpenSimCreatorTabs',
-            'AddComponentPopup',
-            'LoadingTab',
-        ]
-        excluded_tests_str = '|'.join(excluded_tests)
-        _run(f'ctest --test-dir {conf.get_osc_build_dir()} -j {conf.concurrency} -E {excluded_tests_str}')
+        _run(f'ctest --test-dir {conf.get_osc_build_dir()} -j {conf.concurrency}')
 
         # ensure final target is built - even if it isn't in ALL (e.g. `package`)
         _run_cmake_build(
