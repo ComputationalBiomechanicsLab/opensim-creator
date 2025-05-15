@@ -100,8 +100,6 @@ def ensure_all_files_have_trailing_newline(dirpath):
                 with open(path, "w", encoding='utf-8') as f:
                     f.write(content + "\n")
 
-
-
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('dirpaths', help='directories containing files to recursively reformat', nargs='*')

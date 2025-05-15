@@ -49,7 +49,7 @@
   - [ ] **Note**: this requires appropriate SSH credentials for `www.opensimcreator.com`
   - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately
   - [ ] Upload with (e.g.): `rsync -avz public/ www.opensimcreator.com:/var/www/opensimcreator.com/`
-- [ ] Update `files.creator.com/releases` with appropriate release artifacts
+- [ ] Update `files.opensimcreator.com/releases` with appropriate release artifacts
   - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
 - [ ] (optional) Update social media:
   - [ ] LinkedIn
@@ -58,4 +58,3 @@
   - [ ] SimTK
   - [ ] Reddit (occasionally)
   - [ ] https://research-software-directory.org/ (usually this is automatic)
-  - [ ] Threads
