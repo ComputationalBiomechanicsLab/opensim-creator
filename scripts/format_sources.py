@@ -14,6 +14,7 @@ import os
 import re
 
 _blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows', '__pycache__'}
+_default_directories = ['hellooscar', 'libopensimcreator', 'liboscar', 'liboscar-demos', 'osc', 'scripts']
 
 def num_leading_tabs(s):
     rv = 0
@@ -103,12 +104,11 @@ def ensure_all_files_have_trailing_newline(dirpath):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument(
-        "dirpaths",
-        help="directories containing files to recursively reformat",
-        nargs="+"
-    )
+    p.add_argument('dirpaths', help='directories containing files to recursively reformat', nargs='*')
+    p.add_argument('--defaults', help='add default directories', action='store_true')
     parsed = p.parse_args()
+    if parsed.defaults:
+        parsed.dirpaths += _default_directories
 
     for p in parsed.dirpaths:
         ensure_all_files_have_trailing_newline(p)
