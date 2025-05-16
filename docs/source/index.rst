@@ -59,7 +59,7 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: C++ Development
+   :caption: Development
    :numbered:
 
    building-from-source
