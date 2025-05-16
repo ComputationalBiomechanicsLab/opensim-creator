@@ -1,6 +1,13 @@
 Station Defined Frames
 ======================
 
+.. warning::
+
+    This tutorial is new ⭐, and ``StationDefinedFrame`` s require OpenSim >= v4.5.1. The content
+    of this tutorial should be valid long-term, but we are waiting for OpenSim GUI v4.6 to be
+    released before we remove any "experimental" labelling. We also anticipate adding some handy
+    tooling around re-socketing existing joints and defining ``StationDefinedFrame`` s.
+
 This tutorial focuses on the ``StationDefinedFrame`` component, which was
 merged into OpenSim in `opensim-core/pull/3694`_  and should be available in
 OpenSim >= v4.5.1. Specifically, this tutorial focuses on adding
@@ -185,7 +192,7 @@ Using a ``StationDefinedFrame`` as a Parent Frame When Adding a New Body
 
 When adding a body to a model (e.g. as described in :ref:`add-body-with-weldjoint`) a
 joint is also added (the body has to join to *something*, as far as OpenSim is
-concerned) and you can select the added ``StationDefinedFrame`` as what it joints to
+concerned) and you can select the added ``StationDefinedFrame`` as what it joins to
 directly in the add body dialog (:numref:`add-body-show-joining-to-sdf`).
 
 .. _add-body-show-joining-to-sdf:
@@ -196,28 +203,52 @@ directly in the add body dialog (:numref:`add-body-show-joining-to-sdf`).
     the model as the parent frame for the body's joint.
 
 Once you have added the new body this way, you might want to then define a
-``StationDefinedFrame`` on the new body. That's fine: the procedure is identical to this
-walkthrough. After you have a ``StationDefinedFrame`` on the new body, you can then use the
-procedure below to modify the joint to use that frame.
+``StationDefinedFrame`` on the new body. That's fine: the procedure for adding
+the new ``StationDefinedFrame`` is identical to the start of this walkthrough. After
+you have a ``StationDefinedFrame`` defined on the new body, you can then use the
+procedure below to modify a joint to use that frame.
 
 
 Using a ``StationDefinedFrame`` as a Parent/Child Frame in an Existing Joint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``StationDefinedFrame`` s can be added to existing bodies in an existing OpenSim model. They
-only require that all of the stations used to define the frame are attached to the same body. Joints
-in OpenSim models work by coupling two frames that are referenced via sockets (named ``parent_frame``
-and ``child_frame``) on the joint. Therefore, assuming you have a ``StationDefinedFrame`` called ``sdf``
-in your model and you want to use it in a model that already contains bodies and joints, you can
-follow this procedure:
+Joints in OpenSim models work by coupling two frames that are referenced via sockets
+(named ``parent_frame`` and ``child_frame``) on the joint. Therefore, assuming you have
+a ``StationDefinedFrame`` called ``sdf`` in your model, you can follow this procedure
+to modify an existing joint to use it:
 
-1. Identify which joint you want to re-socket.
+1. Identify which joint you want to re-socket (e.g. in the navigator panel).
 2. Right-click the joint and use the ``Sockets`` menu to change either the joint's
    ``parent_frame`` or ``child_frame`` sockets to point to your ``StationDefinedFrame``
-   (TODO REF).
+   (:numref:`rajagopal-resocket-joint-to-sdf`).
+3. The joint will now use the ``StationDefinedFrame`` as one of the two physical frames
+   it connects.
 
-TODO: must ensure this works for ``child_frame`` because the ``StationDefinedFrame`` might
-be on a body that's already somewhere in the kinematic chain
+.. _rajagopal-resocket-joint-to-sdf:
+.. figure:: _static/station-defined-frames/rajagopal-resocket-joint-to-sdf.jpg
+    :width: 60%
+
+    The frames that joints connect in an OpenSim model can be edited via the
+    ``Sockets`` context menu.
+
+.. warning::
+    Changing the ``child_frame`` socket has pitfalls.
+
+    Because the ``StationDefinedFrame`` is usually defined within a body, and that body
+    is likely already joined to ``ground`` either directly or indirectly, you can end up
+    creating kinematic cycle that the OpenSim engine will try to satisfy, but can't, producing
+    and error message in the log.
+
+    Unfortunately, the solution to this problem requires performing two model mutations in
+    one step:
+
+    - Delete the (temporary) joint between the ``StationDefinedFrame`` 's body and ground (if feasible).
+    - Attach the existing joint to the ``StationDefinedFrame``.
+
+    OpenSim Creator can't automatically figure out how to do this for all model types (it doesn't know
+    what you want), so may have to manually go into the ``osim`` file's XML and delete
+    the joint followed by pointing the existing joint's ``<child_frame>`` at your
+    ``StationDefinedFrame``.
 
 .. _opensim-core/pull/3694: https://github.com/opensim-org/opensim-core/pull/3694
 .. _StationDefinedFrame.h: https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Simulation/Model/StationDefinedFrame.h

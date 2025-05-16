@@ -37,14 +37,14 @@
 	
 	\node (EQN)[align=left] at (7,4.5) {$
 		\begin{aligned}
-			\hat{\mathbf{e_1}} &= \widehat{\mathbf{b}-\mathbf{a}}\\
-			\hat{\mathbf{e_2}} &= \widehat{\mathbf{c}-\mathbf{a}}\\
-			\hat{\mathbf{e_3}} &= \hat{\mathbf{e_1}} \times \hat{\mathbf{e_2}}\\
-			\hat{\mathbf{e_4}} &= \hat{\mathbf{e_1}} \times \hat{\mathbf{e_3}}\\
+			\mathbf{\hat{e}_1} &= \mathbf{b - a} / \|\mathbf{b - a}\| \\
+			\mathbf{\hat{e}_2} &= \mathbf{c - a} / \|\mathbf{c - a}\| \\
+			\mathbf{\hat{e}_3} &= \mathbf{\hat{e}_1 \times \hat{e}_2} \\
+			\mathbf{\hat{e}_4} &= \mathbf{\hat{e}_1 \times \hat{e}_3} \\
 			\mathbf{R} &= \begin{bmatrix}
-				\hat{\mathbf{e}_{\mathbf{1}x}} & \hat{\mathbf{e}_{\mathbf{3}x}} & \hat{\mathbf{e}_{\mathbf{4}x}} \\
-				\hat{\mathbf{e}_{\mathbf{1}y}} & \hat{\mathbf{e}_{\mathbf{3}y}} & \hat{\mathbf{e}_{\mathbf{4}y}} \\
-				\hat{\mathbf{e}_{\mathbf{1}z}} & \hat{\mathbf{e}_{\mathbf{3}z}} & \hat{\mathbf{e}_{\mathbf{4}z}} \end{bmatrix}\\
+			    \mathbf{\hat{e}}_{\mathbf{1}x} & \mathbf{\hat{e}}_{\mathbf{1}y} & \mathbf{\hat{e}}_{\mathbf{1}z} \\
+			    \mathbf{\hat{e}}_{\mathbf{3}x} & \mathbf{\hat{e}}_{\mathbf{3}y} & \mathbf{\hat{e}}_{\mathbf{3}z} \\
+			    \mathbf{\hat{e}}_{\mathbf{4}x} & \mathbf{\hat{e}}_{\mathbf{4}y} & \mathbf{\hat{e}}_{\mathbf{4}z} \end{bmatrix} \\
 			f(\mathbf{v}) &= \mathbf{Rv} + \mathbf{o}
 		\end{aligned}
 	$};
