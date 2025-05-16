@@ -432,7 +432,7 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
             return;  // couldn't open file for writing
         }
 
-        lm::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = static_cast<size_t>(0)]() mutable
+        lm::WriteLandmarksToCSV(fout, [&warpedNplms, &nplms, i = 0uz]() mutable
         {
             std::optional<lm::Landmark> rv;
             for (; !rv && i < warpedNplms.size(); ++i)

@@ -313,7 +313,7 @@ namespace
         Vec2i dims;
         io.Fonts->GetTexDataAsRGBA32(&pixel_data, &dims.x, &dims.y);
         io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
-        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*static_cast<size_t>(4);
+        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*4uz;
 
         Texture2D rv{
             dims,

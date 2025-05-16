@@ -157,7 +157,7 @@ namespace
     std::vector<OutputExtractor> CreateSimulatorOutputExtractors()
     {
         std::vector<OutputExtractor> rv;
-        rv.reserve(static_cast<size_t>(2) + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
+        rv.reserve(2uz + GetNumIntegratorOutputExtractors() + GetNumMultiBodySystemOutputExtractors());
 
         {
             const OutputExtractor out{AuxiliaryVariableOutputExtractor{
