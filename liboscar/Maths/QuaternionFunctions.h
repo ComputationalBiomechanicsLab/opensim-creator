@@ -13,6 +13,7 @@
 
 #include <concepts>
 #include <type_traits>
+#include <utility>
 
 namespace osc
 {
@@ -96,7 +97,6 @@ namespace osc
         const T mult = static_cast<T>(0.25) / biggest_val;
 
         switch(biggest_index) {
-        default:
         case 0:
             return Qua<T>::wxyz(biggest_val, (m[1][2] - m[2][1]) * mult, (m[2][0] - m[0][2]) * mult, (m[0][1] - m[1][0]) * mult);
         case 1:
@@ -105,6 +105,8 @@ namespace osc
             return Qua<T>::wxyz((m[2][0] - m[0][2]) * mult, (m[0][1] + m[1][0]) * mult, biggest_val, (m[1][2] + m[2][1]) * mult);
         case 3:
             return Qua<T>::wxyz((m[0][1] - m[1][0]) * mult, (m[2][0] + m[0][2]) * mult, (m[1][2] + m[2][1]) * mult, biggest_val);
+        default:
+            std::unreachable();
         }
     }
 

@@ -20,6 +20,7 @@ namespace
 {
     Color to_color(LogLevel log_level)
     {
+        static_assert(num_options<LogLevel>() == 7);
         switch (log_level) {
         case LogLevel::trace:    return {0.5f, 0.5f, 0.5f, 1.0f};
         case LogLevel::debug:    return {0.8f, 0.8f, 0.8f, 1.0f};
@@ -27,7 +28,8 @@ namespace
         case LogLevel::warn:     return {1.0f, 1.0f, 0.0f, 1.0f};
         case LogLevel::err:      return {1.0f, 0.0f, 0.0f, 1.0f};
         case LogLevel::critical: return {1.0f, 0.0f, 0.0f, 1.0f};
-        default:                 return {1.0f, 1.0f, 1.0f, 1.0f};
+        case LogLevel::off:      return {1.0f, 1.0f, 1.0f, 1.0f};
+        default:                 std::unreachable();
         }
     }
 

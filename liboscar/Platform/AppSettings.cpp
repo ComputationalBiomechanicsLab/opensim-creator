@@ -413,7 +413,7 @@ R"(# configuration options
             switch (*scope) {
             case AppSettingScope::System: return system_config_path_;
             case AppSettingScope::User:   return user_config_path_;
-            default:                      return user_config_path_;
+            default:                      std::unreachable();
             }
         }
 

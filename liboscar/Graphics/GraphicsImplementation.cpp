@@ -456,7 +456,7 @@ namespace
         case SourceBlendingFactor::Zero:                return GL_ZERO;
         case SourceBlendingFactor::SourceAlpha:         return GL_SRC_ALPHA;
         case SourceBlendingFactor::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
-        default:                                        return GL_ONE;
+        default:                                        std::unreachable();
         }
     }
 
@@ -468,7 +468,7 @@ namespace
         case DestinationBlendingFactor::Zero:                return GL_ZERO;
         case DestinationBlendingFactor::SourceAlpha:         return GL_SRC_ALPHA;
         case DestinationBlendingFactor::OneMinusSourceAlpha: return GL_ONE_MINUS_SRC_ALPHA;
-        default:                                             return GL_ONE;
+        default:                                             std::unreachable();
         }
     }
 
@@ -479,7 +479,7 @@ namespace
         case BlendingEquation::Add: return GL_FUNC_ADD;
         case BlendingEquation::Min: return GL_MIN;
         case BlendingEquation::Max: return GL_MAX;
-        default:                    return GL_FUNC_ADD;
+        default:                    std::unreachable();
         }
     }
 }
@@ -1000,7 +1000,7 @@ namespace
         case TextureWrapMode::Repeat: return GL_REPEAT;
         case TextureWrapMode::Clamp:  return GL_CLAMP_TO_EDGE;
         case TextureWrapMode::Mirror: return GL_MIRRORED_REPEAT;
-        default:                      return GL_REPEAT;
+        default:                      std::unreachable();
         }
     }
 
@@ -1028,7 +1028,7 @@ namespace
         case TextureFilterMode::Nearest: return GL_NEAREST;
         case TextureFilterMode::Linear:  return GL_LINEAR;
         case TextureFilterMode::Mipmap:  return GL_LINEAR_MIPMAP_LINEAR;
-        default:                         return GL_LINEAR;
+        default:                         std::unreachable();
         }
     }
 
@@ -1040,7 +1040,7 @@ namespace
         case TextureFilterMode::Nearest: return GL_NEAREST;
         case TextureFilterMode::Linear:  return GL_LINEAR;
         case TextureFilterMode::Mipmap:  return GL_LINEAR;
-        default:                         return GL_LINEAR;
+        default:                         std::unreachable();
         }
     }
 }
@@ -1768,10 +1768,10 @@ std::optional<TextureFormat> osc::to_texture_format(size_t num_components, Textu
 
     static_assert(num_options<TextureFormat>() == 7);
     switch (num_components) {
-    case 1: return format_is_byte_oriented ? TextureFormat::R8     : std::optional<TextureFormat>{};
-    case 2: return format_is_byte_oriented ? TextureFormat::RG16   : TextureFormat::RGFloat;
-    case 3: return format_is_byte_oriented ? TextureFormat::RGB24  : TextureFormat::RGBFloat;
-    case 4: return format_is_byte_oriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
+    case 1:  return format_is_byte_oriented ? TextureFormat::R8     : std::optional<TextureFormat>{};
+    case 2:  return format_is_byte_oriented ? TextureFormat::RG16   : TextureFormat::RGFloat;
+    case 3:  return format_is_byte_oriented ? TextureFormat::RGB24  : TextureFormat::RGBFloat;
+    case 4:  return format_is_byte_oriented ? TextureFormat::RGBA32 : TextureFormat::RGBAFloat;
     default: return std::nullopt;
     }
 }
@@ -1782,7 +1782,7 @@ size_t osc::num_bytes_per_component_in(TextureComponentFormat component_format)
     switch (component_format) {
     case TextureComponentFormat::Uint8:   return 1;
     case TextureComponentFormat::Float32: return 4;
-    default:                            return 1;
+    default:                              std::unreachable();
     }
 }
 
@@ -1937,7 +1937,7 @@ namespace
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return GL_RGB16F;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return GL_RGBA16F;
         case ColorRenderBufferFormat::R32_SFLOAT:          return GL_R32F;
-        default:                                           return GL_SRGB8_ALPHA8;
+        default:                                           std::unreachable();
         }
     }
 
@@ -1959,7 +1959,7 @@ namespace
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUImageFormat::RGB;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return CPUImageFormat::RGBA;
         case ColorRenderBufferFormat::R32_SFLOAT:          return CPUImageFormat::R8;
-        default:                                           return CPUImageFormat::RGBA;
+        default:                                           std::unreachable();
         }
     }
 
@@ -1976,7 +1976,7 @@ namespace
         case ColorRenderBufferFormat::R16G16B16_SFLOAT:    return CPUDataType::HalfFloat;
         case ColorRenderBufferFormat::R16G16B16A16_SFLOAT: return CPUDataType::HalfFloat;
         case ColorRenderBufferFormat::R32_SFLOAT:          return CPUDataType::Float;
-        default:                                           return CPUDataType::UnsignedByte;
+        default:                                           std::unreachable();
         }
     }
 
@@ -3387,7 +3387,7 @@ namespace
         switch (depth_function) {
         case DepthFunction::LessOrEqual: return GL_LEQUAL;
         case DepthFunction::Less:        return GL_LESS;
-        default:                         return GL_LESS;
+        default:                         std::unreachable();
         }
     }
 
@@ -3396,9 +3396,10 @@ namespace
         static_assert(num_options<CullMode>() == 3);
 
         switch (cull_mode) {
+        case CullMode::Off:   return GL_FRONT;  // the value isn't going to be used anyway
         case CullMode::Front: return GL_FRONT;
         case CullMode::Back:  return GL_BACK;
-        default:              return GL_BACK;
+        default:              std::unreachable();
         }
     }
 }
@@ -4178,7 +4179,7 @@ namespace
         switch (mesh_topology) {
         case MeshTopology::Triangles: return GL_TRIANGLES;
         case MeshTopology::Lines:     return GL_LINES;
-        default:                      return GL_TRIANGLES;
+        default:                      std::unreachable();
         }
     }
 
@@ -4259,7 +4260,6 @@ namespace
                 encoder_ = encode_many<T, VertexAttributeFormat::Float32x3>;
                 decoder_ = decode_many<VertexAttributeFormat::Float32x3, T>;
                 break;
-            default:
             case VertexAttributeFormat::Float32x4:
                 encoder_ = encode_many<T, VertexAttributeFormat::Float32x4>;
                 decoder_ = decode_many<VertexAttributeFormat::Float32x4, T>;
@@ -4272,6 +4272,8 @@ namespace
                 encoder_ = encode_many<T, VertexAttributeFormat::Snorm8x4>;
                 decoder_ = decode_many<VertexAttributeFormat::Snorm8x4, T>;
                 break;
+            default:
+                std::unreachable();
             }
         }
 
@@ -5378,7 +5380,7 @@ private:
         case VertexAttributeFormat::Float32x4: return GL_FLOAT;
         case VertexAttributeFormat::Unorm8x4:  return GL_UNSIGNED_BYTE;
         case VertexAttributeFormat::Snorm8x4:  return GL_BYTE;
-        default:                               return GL_FLOAT;  // should never happen (static_assert)
+        default:                               std::unreachable();
         }
     }
 
@@ -5392,7 +5394,7 @@ private:
         case VertexAttributeFormat::Float32x4: return GL_FALSE;
         case VertexAttributeFormat::Unorm8x4:  return GL_TRUE;
         case VertexAttributeFormat::Snorm8x4:  return GL_TRUE;
-        default:                               return GL_FALSE;  // should never happen (static_assert)
+        default:                               std::unreachable();
         }
     }
 
