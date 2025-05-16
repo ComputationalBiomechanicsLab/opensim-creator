@@ -14,6 +14,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The original (deprecated/prototype) version of the model warper workflow was dropped.
   References to it have been replaced with references to the new model warper, which follows
   our intended long-term design goals for the feature.
+- The frame definition tab button was removed from the splash screen, this is the next stage
+  of deprecation after labelling it as deprecated (if you use it, write something in issue #951).
 - Internal: the source code level for the project was upgraded from C++20 to C++23.
 - Internal: fixed a regression introduced by an ImGui upgrade that prevents the screenshot
   taker from working if a modal dialog is shown (#1038).
