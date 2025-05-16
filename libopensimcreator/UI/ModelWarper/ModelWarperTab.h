@@ -4,7 +4,7 @@
 
 namespace osc { class Widget; }
 
-namespace osc::mow
+namespace osc
 {
     class ModelWarperTab final : public Tab {
     public:
