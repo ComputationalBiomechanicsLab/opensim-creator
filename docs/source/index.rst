@@ -65,6 +65,7 @@ Table of Contents
    building-from-source
    setup-development-environment
    contributing-to-development
+   the-release-process
 
 
 .. toctree::

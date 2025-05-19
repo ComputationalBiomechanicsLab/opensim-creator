@@ -85,18 +85,6 @@ easiest way to build OpenSim Creator is with the python script located at
 4. The ``build/`` directory should contain the built installer
 
 
-Windows: OSC's Release Process (as of 2025/05/13)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We currently build releases of OpenSimCreator for Windows 10 >= v1507 using MSVC
-19.43.34808.0, Visual Studio 17.13.358, and Windows SDK 10.0.26100.0 via a
-GitHub action located in the ``.github/`` directory of the source code repository. Check
-`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
-language/library feature, because these toolchains do not have 100 % coverage of those
-specifications. The toolchains may be reviewed/updated late-2025, which is when Windows 10
-support is officially dropped by Microsoft.
-
-
 Building on MacOS (Sonoma or newer)
 ------------------------------------
 
@@ -119,17 +107,6 @@ Building on MacOS (Sonoma or newer)
     4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
 7. Done:
     1. The ``build/`` directory should contain the built installer
-
-
-MacOS: OSC's Release Process
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We currently build releases of OpenSimCreator for MacOS 14.5 using XCode 15.4 via a
-GitHub Action located in the ``.github/`` directory of the source code repository. Check
-`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
-language/library feature, because these toolchains do not have 100 % coverage of those
-specifications. This process will be reviewed/updated late 2026, which is roughly when
-MacOS 14.5 (Sonoma) is likely to reach its end-of-life.
 
 
 Building on Ubuntu (22.04 or newer)
@@ -157,15 +134,3 @@ Building on Ubuntu (22.04 or newer)
     3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
 8. Done:
     1. After the build is complete, the ``build/`` directory should contain the built installer
-
-.. _C++ Compiler Support: https://en.cppreference.com/w/cpp/compiler_support
-
-Ubuntu: OSC's Release Process
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-We currently build releases of OpenSimCreator for Ubuntu 22.04 using gcc 12.3.0 via a
-GitHub Action located in the ``.github/`` directory of the source code repository. Check
-`C++ Compiler Support`_ if you plan on using a newer (C++20/C++23)
-language/library feature, because these toolchains do not have 100 % coverage of those
-specifications. This process is likely to be updated around May 2026, which is when
-Ubuntu 22.04 will be EOL for free (non-ESM) editions.

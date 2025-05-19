@@ -3,6 +3,7 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Upcoming Release]
 
 - Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
@@ -11,6 +12,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   yet, due to upstream issues in OpenSim, #982).
 - The draft explaining `StationDefinedFrame`s has been upgraded to a full tutorial in the
   OpenSim Creator documentation.
+- The development documentation now outline's OpenSim Creator's release process and the
+  exact compiler versions etc. that the project is built with (#1022 #1017).
 - The original (deprecated/prototype) version of the model warper workflow was dropped.
   References to it have been replaced with references to the new model warper, which follows
   our intended long-term design goals for the feature.
