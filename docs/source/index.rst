@@ -79,7 +79,7 @@ Table of Contents
     :caption: Drafts
     :numbered:
    
-    use-the-model-warper
+    the-model-warper
 
 
 .. _Indices and Tables:
