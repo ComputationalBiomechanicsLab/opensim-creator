@@ -13,8 +13,8 @@ Visual Studio 2022
 - Open a terminal/powershell window
 - Run ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator`` to get a complete copy of OpenSim Creator's sourcecode
 - ``cd opensim-creator``
-- Run ``python scripts/build_windows.py --skip-osc`` (described above) to get a
-  complete build of OSC's dependencies.
+- Run ``python scripts/build_windows.py --skip-osc`` to get a complete build of
+  OSC's dependencies.
 - In Visual Studio 2020, open ``opensim-creator`` as a folder project
 - Later versions of Visual Studio (i.e. 2017+) should have in-built CMake support
   that automatically detects that the folder is a CMake project

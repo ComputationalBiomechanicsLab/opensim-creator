@@ -252,7 +252,7 @@ size_t std::hash<osc::Variant>::operator()(const Variant& variant) const
     return std::visit(Overload{
         []<typename T>(const T& inner)
         {
-            return std::hash<std::remove_cv_t<std::remove_reference_t<T>>>{}(inner);
+            return std::hash<std::remove_cvref_t<T>>{}(inner);
         },
     }, variant.data_);
 }

@@ -1,7 +1,7 @@
 % Compile to an SVG with:
 %
 %     pdflatex tixz-learn.tex
-%     inkscape -l tixz-learn.svg tixz-learn.pdf
+%     inkscape tixz-learn.pdf --export-type=svg --export-filename=tixz-learn.svg
 
 \documentclass[crop,tikz]{standalone}
 \usepackage{amsmath}
@@ -28,30 +28,30 @@
 	\usetikzlibrary{arrows.meta}
 	\usetikzlibrary{matrix}
 	
-	\node (A)[trianglenode] at (3.5,5) {$\vec{a}$};
-	\node (B)[trianglenode] at (1,2)  {$\vec{b}$};
-	\node (C)[trianglenode] at (3,2.5) {$\vec{c}$};
+	\node (A)[trianglenode] at (3.5,5) {$\mathbf{a}$};
+	\node (B)[trianglenode] at (1,2)  {$\mathbf{b}$};
+	\node (C)[trianglenode] at (3,2.5) {$\mathbf{c}$};
 	\node (E3) at (2.5,7) {};
 	\node (E4) at (1,4) {};
-	\node (O)[trianglenode] at (4.5, 4) {$\vec{o}$};
+	\node (O)[trianglenode] at (4.5, 4) {$\mathbf{o}$};
 	
 	\node (EQN)[align=left] at (7,4.5) {$
 		\begin{aligned}
-			\hat{e_1} &= ||b-a||\\
-			\hat{e_2} &= ||c-a||\\
-			\hat{e_3} &= \hat{e_1} \times \hat{e_2}\\
-			\hat{e_4} &= \hat{e_1} \times \hat{e_3}\\
-			R &= \begin{bmatrix}
-				\hat{e_{1x}} & \hat{e_{3x}} & \hat{e_{4x}} \\
-				\hat{e_{1y}} & \hat{e_{3y}} & \hat{e_{4y}} \\
-				\hat{e_{1z}} & \hat{e_{3z}} & \hat{e_{4z}} \end{bmatrix}\\
-			f(\vec{v}) &= R\vec{v} + \vec{o}
+			\mathbf{\hat{e}_1} &= \mathbf{b - a} / \|\mathbf{b - a}\| \\
+			\mathbf{\hat{e}_2} &= \mathbf{c - a} / \|\mathbf{c - a}\| \\
+			\mathbf{\hat{e}_3} &= \mathbf{\hat{e}_1 \times \hat{e}_2} \\
+			\mathbf{\hat{e}_4} &= \mathbf{\hat{e}_1 \times \hat{e}_3} \\
+			\mathbf{R} &= \begin{bmatrix}
+			    \mathbf{\hat{e}}_{\mathbf{1}x} & \mathbf{\hat{e}}_{\mathbf{1}y} & \mathbf{\hat{e}}_{\mathbf{1}z} \\
+			    \mathbf{\hat{e}}_{\mathbf{3}x} & \mathbf{\hat{e}}_{\mathbf{3}y} & \mathbf{\hat{e}}_{\mathbf{3}z} \\
+			    \mathbf{\hat{e}}_{\mathbf{4}x} & \mathbf{\hat{e}}_{\mathbf{4}y} & \mathbf{\hat{e}}_{\mathbf{4}z} \end{bmatrix} \\
+			f(\mathbf{v}) &= \mathbf{Rv} + \mathbf{o}
 		\end{aligned}
 	$};
 
-  	\draw [-Latex] (A) -- node[anchor=west]  {$e_1$} (B);
-  	\draw [-Latex] (A) -- node[anchor=west]  {$e_2$} (C);
-  	\draw [-Latex] (A) -- node[anchor=west]  {$e_3$} (E3);
-  	\draw [-Latex] (A) -- node[anchor=south] {$e_4$} (E4);
+  	\draw [-Latex] (A) -- node[anchor=west]  {$\mathbf{e_1}$} (B);
+  	\draw [-Latex] (A) -- node[anchor=west]  {$\mathbf{e_2}$} (C);
+  	\draw [-Latex] (A) -- node[anchor=west]  {$\mathbf{e_3}$} (E3);
+  	\draw [-Latex] (A) -- node[anchor=south] {$\mathbf{e_4}$} (E4);
 \end{tikzpicture}
 \end{document}

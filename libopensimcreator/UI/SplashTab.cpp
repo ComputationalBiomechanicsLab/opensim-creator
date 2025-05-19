@@ -4,7 +4,6 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
-#include <libopensimcreator/UI/FrameDefinition/FrameDefinitionTab.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTab.h>
@@ -286,16 +285,10 @@ private:
         App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
 
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
-            auto tab = std::make_unique<mow::ModelWarperTab>(parent());
+            auto tab = std::make_unique<ModelWarperTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         App::upd().add_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
-
-        if (ui::draw_menu_item(OSC_ICON_ARROWS_ALT " Frame Definition (" OSC_ICON_TIMES " deprecated)")) {
-            auto tab = std::make_unique<FrameDefinitionTab>(parent());
-            App::post_event<OpenTabEvent>(*parent(), std::move(tab));
-        }
-        ui::draw_tooltip_if_item_hovered("Frame Definition Workflow", "This feature is currently scheduled for deprecation. If you think it shouldn't be deprecated, then post a comment on GitHub issue #951.");
     }
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)

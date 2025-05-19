@@ -3,13 +3,25 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Upcoming Release]
 
 - Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
   cause the models not to load (#1036).
 - The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
   yet, due to upstream issues in OpenSim, #982).
+- The draft explaining `StationDefinedFrame`s has been upgraded to a full tutorial in the
+  OpenSim Creator documentation.
+- The development documentation now outline's OpenSim Creator's release process and the
+  exact compiler versions etc. that the project is built with (#1022 #1017).
+- The original (deprecated/prototype) version of the model warper workflow was dropped.
+  References to it have been replaced with references to the new model warper, which follows
+  our intended long-term design goals for the feature.
+- The frame definition tab button was removed from the splash screen, this is the next stage
+  of deprecation after labelling it as deprecated (if you use it, write something in issue #951).
 - Internal: the source code level for the project was upgraded from C++20 to C++23.
+- Internal: fixed a regression introduced by an ImGui upgrade that prevents the screenshot
+  taker from working if a modal dialog is shown (#1038).
 
 
 ## [0.5.22] - 2025/04/25

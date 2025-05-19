@@ -228,10 +228,8 @@ private:
 
     std::unique_ptr<OpenSim::Mesh> tryDrawFileChoice(const std::filesystem::path& p)
     {
-        if (p.filename().string().find(m_Search) != std::string::npos)
-        {
-            if (ui::draw_selectable(p.filename().string()))
-            {
+        if (p.filename().string().contains(m_Search)) {
+            if (ui::draw_selectable(p.filename().string())) {
                 return onMeshFileChosen(p.filename());
             }
         }

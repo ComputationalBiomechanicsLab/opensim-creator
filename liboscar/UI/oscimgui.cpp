@@ -313,7 +313,7 @@ namespace
         Vec2i dims;
         io.Fonts->GetTexDataAsRGBA32(&pixel_data, &dims.x, &dims.y);
         io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
-        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*static_cast<size_t>(4);
+        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*4uz;
 
         Texture2D rv{
             dims,
@@ -1661,7 +1661,7 @@ struct osc::Converter<ui::StyleVar, ImGuiStyleVar> final {
         case ui::StyleVar::ItemInnerSpacing: return ImGuiStyleVar_ItemInnerSpacing;
         case ui::StyleVar::ItemSpacing:      return ImGuiStyleVar_ItemSpacing;
         case ui::StyleVar::TabRounding:      return ImGuiStyleVar_TabRounding;
-        case ui::StyleVar::PanelPadding:    return ImGuiStyleVar_WindowPadding;
+        case ui::StyleVar::PanelPadding:     return ImGuiStyleVar_WindowPadding;
         default:                             return ImGuiStyleVar_Alpha;
         }
     }
@@ -3925,35 +3925,32 @@ namespace
     constexpr ImPlotStyleVar to_ImPlotStyleVar(plot::PlotStyleVar var)
     {
         static_assert(num_options<plot::PlotStyleVar>() == 4);
-
         switch (var) {
         case plot::PlotStyleVar::FitPadding:        return ImPlotStyleVar_FitPadding;
         case plot::PlotStyleVar::PlotPadding:       return ImPlotStyleVar_PlotPadding;
         case plot::PlotStyleVar::PlotBorderSize:    return ImPlotStyleVar_PlotBorderSize;
         case plot::PlotStyleVar::AnnotationPadding: return ImPlotStyleVar_AnnotationPadding;
-        default:                                    return ImPlotStyleVar_PlotPadding;  // shouldn't happen
+        default:                                    std::unreachable();
         }
     }
 
     constexpr ImPlotCol to_ImPlotCol(plot::PlotColorVar var)
     {
         static_assert(num_options<plot::PlotColorVar>() == 2);
-
         switch (var) {
         case plot::PlotColorVar::Line:           return ImPlotCol_Line;
         case plot::PlotColorVar::PlotBackground: return ImPlotCol_PlotBg;
-        default:                                 return ImPlotCol_Line;  // shouldn't happen
+        default:                                 std::unreachable();
         }
     }
 
     constexpr ImAxis to_ImAxis(plot::Axis axis)
     {
         static_assert(num_options<plot::Axis>() == 2);
-
         switch (axis) {
         case plot::Axis::X1: return ImAxis_X1;
         case plot::Axis::Y1: return ImAxis_Y1;
-        default:             return ImAxis_X1;  // shouldn't happen
+        default:             std::unreachable();
         }
     }
 
@@ -3980,7 +3977,7 @@ namespace
         switch (condition) {
         case plot::Condition::Always: return ImPlotCond_Always;
         case plot::Condition::Once:   return ImPlotCond_Once;
-        default:                      return ImPlotCond_Once;  // shouldn't happen
+        default:                      std::unreachable();
         }
     }
 
@@ -3990,7 +3987,7 @@ namespace
         switch (marker_type) {
         case plot::MarkerType::None:   return ImPlotMarker_None;
         case plot::MarkerType::Circle: return ImPlotMarker_Circle;
-        default:                       return ImPlotMarker_None;  // shouldn't happen
+        default:                       std::unreachable();
         }
     }
 
@@ -4016,7 +4013,7 @@ namespace
         case plot::Location::SouthWest: return ImPlotLocation_SouthWest;
         case plot::Location::West:      return ImPlotLocation_West;
         case plot::Location::NorthWest: return ImPlotLocation_NorthWest;
-        default:                        return ImPlotLocation_Center;  // shouldn't happen
+        default:                        std::unreachable();
         }
     }
 

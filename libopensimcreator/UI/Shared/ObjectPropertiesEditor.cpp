@@ -1309,7 +1309,7 @@ namespace
                     "Wireframe",
                     "Surface",
                 });
-                size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation())+1, static_cast<size_t>(0), options.size());
+                size_t index = clamp(static_cast<size_t>(m_EditedProperty.getValue().get_representation())+1, 0uz, options.size());
                 ui::set_next_item_width(ui::get_content_region_available().x);
                 if (ui::draw_combobox("##DisplayPref", &index, options)) {
                     m_EditedProperty.updValue().set_representation(static_cast<OpenSim::VisualRepresentation>(static_cast<int>(index)-1));

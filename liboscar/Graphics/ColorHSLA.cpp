@@ -7,6 +7,7 @@
 #include <array>
 #include <ostream>
 #include <ranges>
+#include <utility>
 
 namespace rgs = std::ranges;
 using namespace osc;
@@ -102,13 +103,13 @@ osc::ColorHSLA::operator Color() const
     const float u4 = u2 + (u1 - u2)*c2;
 
     switch (static_cast<int>(c1)) {
-    default:
     case 0: return {u1, u4, u2, a};
     case 1: return {u3, u1, u2, a};
     case 2: return {u2, u1, u4, a};
     case 3: return {u2, u3, u1, a};
     case 4: return {u4, u2, u1, a};
     case 5: return {u1, u2, u3, a};
+    default: std::unreachable();
     }
 }
 

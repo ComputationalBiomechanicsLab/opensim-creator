@@ -468,9 +468,9 @@ std::optional<CoordinateAxis> osc::CoordinateAxis::try_parse(std::string_view st
 std::ostream& osc::operator<<(std::ostream& out, CoordinateAxis axis)
 {
     switch (axis.index()) {
-    case 0: return out << 'x';
-    case 1: return out << 'y';
-    case 2: return out << 'z';
+    case 0:  return out << 'x';
+    case 1:  return out << 'y';
+    case 2:  return out << 'z';
     default: return out;
     }
 }

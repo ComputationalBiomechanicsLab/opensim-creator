@@ -55,15 +55,17 @@ Table of Contents
    the-mesh-importer-advanced
    the-mesh-warper
    preview-experimental-data
+   station-defined-frames
 
 .. toctree::
    :maxdepth: 2
-   :caption: C++ Development
+   :caption: Development
    :numbered:
 
    building-from-source
    setup-development-environment
    contributing-to-development
+   the-release-process
 
 
 .. toctree::
@@ -77,8 +79,7 @@ Table of Contents
     :caption: Drafts
     :numbered:
    
-    use-the-model-warper
-    station-defined-frames
+    the-model-warper
 
 
 .. _Indices and Tables:

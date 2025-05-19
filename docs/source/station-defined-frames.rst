@@ -1,9 +1,16 @@
 Station Defined Frames
 ======================
 
+.. warning::
+
+    This tutorial is new ⭐, and ``StationDefinedFrame`` s require OpenSim >= v4.5.1. The content
+    of this tutorial should be valid long-term, but we are waiting for OpenSim GUI v4.6 to be
+    released before we remove any "experimental" labelling. We also anticipate adding some handy
+    tooling around re-socketing existing joints and defining ``StationDefinedFrame`` s.
+
 This tutorial focuses on the ``StationDefinedFrame`` component, which was
 merged into OpenSim in `opensim-core/pull/3694`_  and should be available in
-OpenSim >= v4.3.1. Specifically, this tutorial focuses on adding
+OpenSim >= v4.5.1. Specifically, this tutorial focuses on adding
 ``StationDefinedFrames`` via OpenSim Creator. If you're more interested
 in the underlying implementation, or its associated OpenSim API,
 then `StationDefinedFrame.h`_ provides a technical (C++) description.
@@ -55,22 +62,22 @@ are shown in :numref:`sdf-maths-figure`.
 .. figure:: _static/station-defined-frames/sdf-maths.svg
     :width: 60%
 
-    The relationship between stations and a ``StationDefinedFrame``. :math:`\vec{a}`,
-    :math:`\vec{b}`, :math:`\vec{c}`, and :math:`\vec{d}` are four stations in the
-    model that must be attached---either directly, or indirectly (e.g. via a
-    ``PhysicalOffsetFrame``)---to the same body. The ``StationDefinedFrame``
-    implementation uses the stations to derive :math:`f(\vec{v})`, its transform
-    function. The origin station, :math:`\vec{o}`, may be coincident with one of
+    The relationship between stations and a ``StationDefinedFrame``. :math:`\mathbf{a}`,
+    :math:`\mathbf{b}`, :math:`\mathbf{c}`, and :math:`\mathbf{o}` (origin) are four
+    stations in the model that must be attached---either directly, or indirectly (e.g.
+    via a ``PhysicalOffsetFrame``)---to the same body. The ``StationDefinedFrame``
+    implementation uses the stations to derive :math:`f(\mathbf{v})`, its transform
+    function. The origin station, :math:`\mathbf{o}`, may be coincident with one of
     the other stations.
 
 Practically speaking, this means is that ``StationDefinedFrame`` s let modellers
-define frames by choosing 3 or 4 stations (landmarks) on each body. Once that
-relationship is established, the resulting frame is automatically recalculated
+define frames by choosing/calculating 3 or 4 stations (landmarks) on each body. Once
+that relationship is established, the resulting frame is automatically recalculated
 whenever the the stations moved (e.g. due to scaling, warping, shear, etc.).
 
 
-A Simple Example
-----------------
+Example Walkthrough
+-------------------
 
 OpenSim Creator includes example models that use ``StationDefinedFrame``:
 
@@ -81,10 +88,9 @@ OpenSim Creator includes example models that use ``StationDefinedFrame``:
   ``StationDefinedFrame`` s that are chained and use stations attached via
   ``PhysicalOffsetFrame`` s.
 
-This example walks through how something like ``StationDefinedFrame.osim`` can be built from
-scratch, so that you can get an idea of how the mathematics (:numref:`sdf-maths-figure`) is exposed via
-OpenSim's component system. The next section, `A Practical Example`_, then shows how ``StationDefinedFrame`` s
-can be added to an existing model.
+This walkthrough outlines creating something similar to ``StationDefinedFrame.osim``, so
+that you can get an idea of how the mathematics (:numref:`sdf-maths-figure`) is exposed via
+OpenSim's component system.
 
 
 Make a One-Body Model
@@ -99,51 +105,153 @@ Make a One-Body Model
 .. figure:: _static/station-defined-frames/model-with-one-body.jpg
     :width: 60%
 
-    ``TODO`` model containing one body with a brick attached.
+    A model containing one body with a brick geometry attached to it.
 
 
 Add Stations to the Body
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-``TODO``
+With a body defined, we now need to define four stations in the body. Mathematically, each
+of these stations is equivalent to the :math:`\mathbf{a}`, :math:`\mathbf{b}`, :math:`\mathbf{c}`,
+and :math:`\mathbf{o}` point vectors in :numref:`sdf-maths-figure`. Repeat the following process
+four times:
 
+1. Open the ``Add`` context menu by right-clicking somewhere in a 3D visualizer. Add a ``Station``
+   by finding it in this menu (``Component`` > ``Station``). This will bring up a dialog that looks
+   like :numref:`add-station-dialog` through which you can add a ``Station`` component.
+
+.. _add-station-dialog:
 .. figure:: _static/station-defined-frames/add-station.jpg
     :width: 60%
 
-    ``TODO``
+    The add ``Station`` dialog. Use this to attach four stations to the body by choosing the body as
+    the ``parent_frame``.
 
+2. Place the four stations somewhere in the model. An example is shown in :numref:`station-placement-example`. In
+it, all the stations were placed on the brick face and the origin station (:math:`\mathbf{o}`) was placed
+in the center.
+
+.. _station-placement-example:
 .. figure:: _static/station-defined-frames/stations-added.jpg
     :width: 60%
 
-    ``TODO``
+    The model after placing four stations attached to the body.
 
 Add a ``StationDefinedFrame``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+    ``StationDefinedFrame`` is currently placed in the ``Experimental Components`` section because, although
+    it's supported/merged into upstream OpenSim, it's only supported in versions >= v4.5.1. At time of
+    writing (2025/05/15), the latest available version of OpenSim GUI is v4.5.0, which doesn't
+    support ``StationDefinedFrame`` s yet 😞.
+
+1. Open the ``Add`` context menu by right-clicking somewhere in a 3D visualizer. Add a ``StationDefinedFrame``
+   by finding it in this menu (``Experimental Components`` > ``StationDefinedFrame``). This will bring up a dialog that looks
+   like :numref:`add-stationdefinedframe-dialog` through which you can add a ``StationDefinedFrame`` component.
+
+2. Make sure to select the correct ``Station`` s for ``point_a``, ``point_b``, etc.
+
+.. _add-stationdefinedframe-dialog:
 .. figure:: _static/station-defined-frames/add-sdf.jpg
     :width: 60%
 
-    ``TODO``
+    The add ``StationDefinedFrame`` dialog. The ``ab_axis`` property is used to customize
+    which joint axis the :math:`\mathbf{\hat{e}_1}` axis (:numref:`sdf-maths-figure`) maps onto when the implementation
+    ultimately calculates the frame's rotation (:math:`\mathbf{R}`, in :numref:`sdf-maths-figure`).
+    The ``ab_x_ac_axis`` is used to customize which axis the cross product maps
+    onto (:math:`\hat{\mathbf{e_3}}` in :numref:`sdf-maths-figure`). You don't need to use
+    either ``ab_axis`` or ``ab_x_ac_axis`` yet, but just be aware that they are available
+    if you want to flip/change an axis later on.
 
+3. After adding the ``StationDefinedFrame`` to the model, you should be able to see it in the
+   visualizer (:numref:`after-adding-stationdefinedframe`)
+
+.. _after-adding-stationdefinedframe:
 .. figure:: _static/station-defined-frames/sdf-added.jpg
     :width: 60%
 
-    ``TODO``
+    The model after adding a ``StationDefinedFrame``. The frame's location and orientation is
+    entirely derived from the ``Station`` s, which more closely mimics how frames are defined
+    in biomechanical systems.
+
+The resulting ``StationDefinedFrame`` can be used with anything in OpenSim that depends on a
+``Frame``, such as joints, geometry, stations, offset frames, and so on.
+
+In principle, you could have used a ``PhysicalOffsetFrame`` to produce a frame with the same
+``orientation`` and ``translation`` as this ``StationDefinedFrame``, but doing that would
+require manually calculating the origin and rotation. It also wouldn't automatically recalculate
+those quantities when the model is scaled non-linearly (e.g. with the Thin-Plate Spline
+technique, as described in :ref:`the-mesh-warper`).
 
 
-A Practical Example
--------------------
+Join Something to the ``StationDefinedFrame``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This example walks through how ``StationDefinedFrame`` s can be practically used in OpenSim
-Creator. It will focus on handling these common questions that arise when adding
-``StationDefinedFrame`` s to larger/existing OpenSim Models:
+The most common use for a ``StationDefinedFrame`` is to use it in a joint definition, because
+that's an important part of designing models. There's two ways to do this, outlined below.
 
-- Where should ``StationDefinedFrame`` s be stored in the model hierarchy?
-- How should ``Joint`` s be created between ``StationDefinedFrame`` s (and other ``Frame`` s)?
-- How can existing ``Joint`` s be updated to use ``StationDefinedFrame`` s?
+Using a ``StationDefinedFrame`` as a Parent Frame When Adding a New Body
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``TODO``: write up the answers to these questions!
+When adding a body to a model (e.g. as described in :ref:`add-body-with-weldjoint`) a
+joint is also added (the body has to join to *something*, as far as OpenSim is
+concerned) and you can select the added ``StationDefinedFrame`` as what it joins to
+directly in the add body dialog (:numref:`add-body-show-joining-to-sdf`).
 
+.. _add-body-show-joining-to-sdf:
+.. figure:: _static/station-defined-frames/sdf-as-parent-new-body.jpg
+    :width: 60%
+
+    When adding a new body, you can select a ``StationDefinedFrame`` that's already in
+    the model as the parent frame for the body's joint.
+
+Once you have added the new body this way, you might want to then define a
+``StationDefinedFrame`` on the new body. That's fine: the procedure for adding
+the new ``StationDefinedFrame`` is identical to the start of this walkthrough. After
+you have a ``StationDefinedFrame`` defined on the new body, you can then use the
+procedure below to modify a joint to use that frame.
+
+
+Using a ``StationDefinedFrame`` as a Parent/Child Frame in an Existing Joint
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Joints in OpenSim models work by coupling two frames that are referenced via sockets
+(named ``parent_frame`` and ``child_frame``) on the joint. Therefore, assuming you have
+a ``StationDefinedFrame`` in your model, you can follow this procedure to modify an
+existing joint to use it:
+
+1. Identify which joint you want to re-socket (e.g. in the navigator panel).
+2. Right-click the joint and use the ``Sockets`` menu to change either the joint's
+   ``parent_frame`` or ``child_frame`` sockets to point to your ``StationDefinedFrame``
+   (:numref:`rajagopal-resocket-joint-to-sdf`).
+3. The joint will now use the ``StationDefinedFrame`` as one of the two frames it connects.
+
+.. _rajagopal-resocket-joint-to-sdf:
+.. figure:: _static/station-defined-frames/rajagopal-resocket-joint-to-sdf.jpg
+    :width: 60%
+
+    The frames that joints connect in an OpenSim model can be edited via the
+    ``Sockets`` context menu.
+
+.. warning::
+    Changing the ``child_frame`` socket has pitfalls.
+
+    Because the ``StationDefinedFrame`` is usually defined within a body, and that body
+    is likely already joined to ``ground`` either directly or indirectly, you can end up
+    creating kinematic cycle that the OpenSim engine will try to satisfy, but can't, producing
+    and error message in the log.
+
+    Unfortunately, the solution to this problem requires performing two model mutations in
+    one step:
+
+    - Delete the (temporary) joint between the ``StationDefinedFrame`` 's body and ground (if feasible).
+    - Attach the existing joint to the ``StationDefinedFrame``.
+
+    OpenSim Creator can't automatically figure out how to do this for all model types (it doesn't know
+    what you want), so may have to manually go into the ``osim`` file's XML and delete
+    the joint followed by pointing the existing joint's ``<child_frame>`` at your
+    ``StationDefinedFrame``.
 
 .. _opensim-core/pull/3694: https://github.com/opensim-org/opensim-core/pull/3694
 .. _StationDefinedFrame.h: https://github.com/opensim-org/opensim-core/blob/main/OpenSim/Simulation/Model/StationDefinedFrame.h

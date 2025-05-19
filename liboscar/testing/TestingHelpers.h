@@ -53,7 +53,7 @@ namespace osc::testing
         using std::begin;
         using std::end;
 
-        std::vector<std::remove_const_t<std::remove_reference_t<decltype(std::invoke(op, std::declval<decltype(*begin(src))>()))>>> rv;
+        std::vector<std::remove_cvref_t<decltype(std::invoke(op, std::declval<decltype(*begin(src))>()))>> rv;
         rv.reserve(std::distance(begin(src), end(src)));
         for (const auto& el : src) {
             rv.push_back(std::invoke(op, el));

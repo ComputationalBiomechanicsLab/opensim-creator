@@ -1176,7 +1176,7 @@ namespace
             const auto forwardIt = backwardIt.base();
             const ptrdiff_t idxOfDeleteableEnd = std::distance(m_PreviousPlots.begin(), forwardIt);
 
-            auto shouldDelete = [i = static_cast<ptrdiff_t>(0), idxOfDeleteableEnd](const std::shared_ptr<Plot>& p) mutable
+            auto shouldDelete = [i = 0z, idxOfDeleteableEnd](const std::shared_ptr<Plot>& p) mutable
             {
                 return i++ < idxOfDeleteableEnd && !p->getIsLocked();
             };
