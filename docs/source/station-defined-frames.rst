@@ -157,12 +157,12 @@ Add a ``StationDefinedFrame``
     :width: 60%
 
     The add ``StationDefinedFrame`` dialog. The ``ab_axis`` property is used to customize
-    which axis the :math:`\widehat{\mathbf{b} - \mathbf{a}}` axis actually maps onto when
-    the implementation ultimately calculates the frame's rotation (:math:`\mathbf{R}`, in
-    :numref:`sdf-maths-figure`). The ``ab_x_ac_axis`` is used to customize which axis the
-    cross product maps onto (:math:`\hat{\mathbf{e_3}}` in :numref:`sdf-maths-figure`). You
-    don't need to use either ``ab_axis`` or ``ab_x_ac_axis`` yet, but just be aware that they
-    are available if you want to flip/change an axis later on.
+    which joint axis the :math:`\mathbf{\hat{e}_1}` axis (:numref:`sdf-maths-figure`) maps onto when the implementation
+    ultimately calculates the frame's rotation (:math:`\mathbf{R}`, in :numref:`sdf-maths-figure`).
+    The ``ab_x_ac_axis`` is used to customize which axis the cross product maps
+    onto (:math:`\hat{\mathbf{e_3}}` in :numref:`sdf-maths-figure`). You don't need to use
+    either ``ab_axis`` or ``ab_x_ac_axis`` yet, but just be aware that they are available
+    if you want to flip/change an axis later on.
 
 3. After adding the ``StationDefinedFrame`` to the model, you should be able to see it in the
    visualizer (:numref:`after-adding-stationdefinedframe`)
@@ -176,10 +176,14 @@ Add a ``StationDefinedFrame``
     in biomechanical systems.
 
 The resulting ``StationDefinedFrame`` can be used with anything in OpenSim that depends on a
-``Frame``, such as joints, geometry, stations, offset frames, and so on. In principle, you
-could have used a ``PhysicalOffsetFrame`` to reach the same point, but that would require
-manually calculating the origin and rotation - and wouldn't be anywhere near as useful when
-scaling or warping the model.
+``Frame``, such as joints, geometry, stations, offset frames, and so on.
+
+In principle, you could have used a ``PhysicalOffsetFrame`` to produce a frame with the same
+``orientation`` and ``translation`` as this ``StationDefinedFrame``, but doing that would
+require manually calculating the origin and rotation. It also wouldn't automatically recalculate
+those quantities when the model is scaled non-linearly (e.g. with the Thin-Plate Spline
+technique, as described in :ref:`the-mesh-warper`).
+
 
 Join Something to the ``StationDefinedFrame``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -214,15 +218,14 @@ Using a ``StationDefinedFrame`` as a Parent/Child Frame in an Existing Joint
 
 Joints in OpenSim models work by coupling two frames that are referenced via sockets
 (named ``parent_frame`` and ``child_frame``) on the joint. Therefore, assuming you have
-a ``StationDefinedFrame`` called ``sdf`` in your model, you can follow this procedure
-to modify an existing joint to use it:
+a ``StationDefinedFrame`` in your model, you can follow this procedure to modify an
+existing joint to use it:
 
 1. Identify which joint you want to re-socket (e.g. in the navigator panel).
 2. Right-click the joint and use the ``Sockets`` menu to change either the joint's
    ``parent_frame`` or ``child_frame`` sockets to point to your ``StationDefinedFrame``
    (:numref:`rajagopal-resocket-joint-to-sdf`).
-3. The joint will now use the ``StationDefinedFrame`` as one of the two physical frames
-   it connects.
+3. The joint will now use the ``StationDefinedFrame`` as one of the two frames it connects.
 
 .. _rajagopal-resocket-joint-to-sdf:
 .. figure:: _static/station-defined-frames/rajagopal-resocket-joint-to-sdf.jpg

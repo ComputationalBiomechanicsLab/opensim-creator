@@ -1,3 +1,5 @@
+.. _the-model-warper:
+
 The Model Warper
 ================
 
