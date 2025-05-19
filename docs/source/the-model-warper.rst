@@ -28,7 +28,9 @@ that's standard, introspectible, and reusable.
 .. figure:: _static/use-the-model-warper/model-warper.jpg
     :width: 60%
 
-    TODO
+    The model warping UI. This tutorial goes through top-level model warping concepts
+    and how OpenSim Creator's UI tooling helps design and execute a model warping
+    procedure.
 
 
 Prerequisites
@@ -45,8 +47,10 @@ Prerequisites
   recommended that you have already gone through :doc:`the-mesh-warper`, which outlines
   pairing landmarks between two corresponding meshes as inputs for the TPS technique.
 
-* **Familiarity with StationDefinedFrames**. TODO non-linear scaling essentially requires
-  this type of frame definition.
+* **Familiarity with StationDefinedFrames**. The walkthrough in this tutorial uses 
+  ``StationDefinedFrame``\s so that non-linear TPS scaling steps correctly recompute
+  the source model's joint frames. The :doc:`station-defined-frames` documentation
+  outlines what ``StationDefinedFrame``\s are and how to add them to models.
 
 
 Topics Covered by this Tutorial
@@ -60,20 +64,67 @@ Topics Covered by this Tutorial
 Technical Overview
 ------------------
 
-TODO: explanation of ``ScalingStep`` s, visualization, etc.
+A **model warping procedure** applies a sequence of **scaling steps** to the
+**source model** one-at-a-time to yield a **result model**. Each scaling
+step may require some sort of **scaling parameter**, or external data, to execute
+successfully. Model warping procedures are customizable. The number, order, and
+behavior of each scaling step may differ from procedure to procedure. This is to
+accomodate a variety of source models and experiments, which may have different
+scaling requirements.
+
+OpenSim Creator provides a user interface for designing and running a model warping
+procedure. **TODO SCREENSHOT. OVERVIEW OF AVAILABLE PANELS AND GENERAL USAGE TODO.**
+
+.. figure:: _static/use-the-model-warper/model-warper.jpg
+    :width: 60%
+
+    The model warping UI contains a toolbar with buttons for creating/loading the
+    source model, warping procedure, and other useful functions (top); a control
+    panel for editing the scaling parameters of a single warping procedure run and
+    an editable list of toggleable scaling steps which are applied in-order (left);
+    and 3D views that show both the source model and the result model after applying
+    those scaling steps (right).
 
 
 Walkthrough
 -----------
 
-TODO: step-by-step walkthrough of the latest model warper UI
-on a basic model (2 body) where we want to add some torsion
-to a bone or something similar like that.
+This walkthrough goes through the process of building a model warping procedure from
+scratch.
 
 
-Frequently Asked Questions
---------------------------
+Load Source Model
+^^^^^^^^^^^^^^^^^
 
-TODO: explain some tips about how to use the model warper in
-various challenging situations, write up some of the internal
-questions we've had about its functionality.
+**TODO**: explain the model, its use of ``StationDefinedFrame``\s, how many degrees of freedom it has, etc. - ensure the user gets a download link for it.
+
+
+Add Mesh Scaling Step
+^^^^^^^^^^^^^^^^^^^^^
+
+**TODO**: walk through adding a Thin-Plate Spline scaling step for a mesh in the model. Mention any gotchas w.r.t. where the data should be stored, how it should be stored, etc.
+
+
+Add Frame Scaling Step
+^^^^^^^^^^^^^^^^^^^^^^
+
+**TODO**: walk through adding a scaling step that scales the stations associated with a ``StationDefinedFrame``. Should explain that this is one of the reasons why SDFs are useful etc.
+
+
+Add Mass Scaling Step
+^^^^^^^^^^^^^^^^^^^^^
+
+**TODO**: add a mass scaling step. This is just another scaling step but is a good opportunity to discuss the relevance of having scaling parameters.
+
+
+Export Result Model
+^^^^^^^^^^^^^^^^^^^
+
+**TODO**: export the result model to a model editor and prompt the reader to save it if they like it.
+
+
+Summary
+-------
+
+**TODO**: quick runthrough of what was communicated, why/where model warping can be useful
+and an invite to try it on other models!
