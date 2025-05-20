@@ -72,14 +72,19 @@ behavior of each scaling step may differ from procedure to procedure. This is to
 accomodate a variety of source models and experiments, which may have different
 scaling requirements.
 
-OpenSim Creator provides a user interface for designing and running a model warping
-procedure. **TODO SCREENSHOT. OVERVIEW OF AVAILABLE PANELS AND GENERAL USAGE TODO.**
+OpenSim Creator provides a workflow for designing and executing a model warping
+procedure summarized in :numref:`model-warper-overview-screenshot`. The workflow
+UI is designed to provide visual feedback about each scaling step, so that you
+can incrementally build a warping procedure one scaling step at a time. The model
+warping procedure can then be saved to a standard XML file so that it can be reused
+and modified for future model warps.
 
+.. _model-warper-overview-screenshot:
 .. figure:: _static/use-the-model-warper/model-warper.jpg
     :width: 60%
 
     The model warping UI contains a toolbar with buttons for creating/loading the
-    source model, warping procedure, and other useful functions (top); a control
+    source model, warping procedure, and other useful functions (top); a control 
     panel for editing the scaling parameters of a single warping procedure run and
     an editable list of toggleable scaling steps which are applied in-order (left);
     and 3D views that show both the source model and the result model after applying
@@ -90,29 +95,49 @@ Walkthrough
 -----------
 
 This walkthrough goes through the process of building a model warping procedure from
-scratch.
+scratch. The aim is to show how how model warper can be used to perform tricky non-linear
+model warping procedures.
+
+In particular, we will be warping a healthy leg model to one with torsion (TODO: medical
+terms). Torsion is an interesting example because it cannot be handled with linear scaling
+and, therefore, we need to design the underlying model and model warping procedure to
+accommodate it.
 
 
-Load Source Model
-^^^^^^^^^^^^^^^^^
+Open the Model Warper Workflow UI
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: explain the model, its use of ``StationDefinedFrame``\s, how many degrees of freedom it has, etc. - ensure the user gets a download link for it.
+TODO: explain how the user should open the workflow UI etc.
+
+TODO: screenshot of the splash screen containing a link to the model warper.
 
 
-Add Mesh Scaling Step
+Load the Source Model
 ^^^^^^^^^^^^^^^^^^^^^
+
+We have already prepared a source model for this workflow, you can download it here (TODO). Key
+points about the model:
+
+- It's a two-body knee model with etc. etc. TODO
+- It uses ``StationDefinedFrame``\s in the knee joint definition, which means that the knee
+  definition is automatically recalculated whenever the associated stations are edited (see
+  :doc:`station-defined-frames`
+
+
+Add a Mesh Warping Step
+^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: walk through adding a Thin-Plate Spline scaling step for a mesh in the model. Mention any gotchas w.r.t. where the data should be stored, how it should be stored, etc.
 
 
-Add Frame Scaling Step
-^^^^^^^^^^^^^^^^^^^^^^
+Add a Frame Warping Step
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: walk through adding a scaling step that scales the stations associated with a ``StationDefinedFrame``. Should explain that this is one of the reasons why SDFs are useful etc.
 
 
-Add Mass Scaling Step
-^^^^^^^^^^^^^^^^^^^^^
+Add a Body Mass Scaling Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: add a mass scaling step. This is just another scaling step but is a good opportunity to discuss the relevance of having scaling parameters.
 
