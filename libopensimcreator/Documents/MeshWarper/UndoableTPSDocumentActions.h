@@ -47,6 +47,12 @@ namespace osc
     // sets whether the engine should recalculate the mesh's normal after applying the warp
     void ActionSetRecalculatingNormals(UndoableTPSDocument&, bool newState);
 
+    // sets the source landmark prescale for the mesh warper
+    void ActionSetSourceLandmarksPrescale(UndoableTPSDocument&, float newSourceLandmarksPrescale);
+
+    // sets the destination landmark prescale for the mesh warper
+    void ActionSetDestinationLandmarksPrescale(UndoableTPSDocument&, float newDestinationLandmarksPrescale);
+
     // creates a "fresh" (default) TPS document
     void ActionCreateNewDocument(UndoableTPSDocument&);
 

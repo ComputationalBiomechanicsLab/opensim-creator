@@ -142,6 +142,18 @@ void osc::ActionSetRecalculatingNormals(UndoableTPSDocument& doc, bool newState)
     doc.commit_scratch(msg);
 }
 
+void osc::ActionSetSourceLandmarksPrescale(UndoableTPSDocument& doc, float newSourceLandmarksPrescale)
+{
+    doc.upd_scratch().sourceLandmarksPrescale = newSourceLandmarksPrescale;
+    doc.commit_scratch("changed source prescale factor");
+}
+
+void osc::ActionSetDestinationLandmarksPrescale(UndoableTPSDocument& doc, float newDestinationLandmarksPrescale)
+{
+    doc.upd_scratch().destinationLandmarksPrescale = newDestinationLandmarksPrescale;
+    doc.commit_scratch("changed destination prescale factor");
+}
+
 void osc::ActionCreateNewDocument(UndoableTPSDocument& doc)
 {
     doc.upd_scratch() = TPSDocument{};

@@ -238,27 +238,13 @@ namespace
                     log_warn("The landmarks %s could not be paired, might be missing in the source/destination?", p.name().c_str());
                 }
             });
+            inputs.applyAffineTranslation = tpsInputs.applyAffineTranslation;
+            inputs.applyAffineScale = tpsInputs.applyAffineScale;
+            inputs.applyAffineRotation = tpsInputs.applyAffineRotation;
+            inputs.applyNonAffineWarp = tpsInputs.applyNonAffineWarp;
 
             // Solve the coefficients
             m_CoefficientsTODO = TPSCalcCoefficients(inputs);
-
-            // If required, modify the coefficients
-            if (not tpsInputs.applyAffineTranslation) {
-                m_CoefficientsTODO.a1 = {};
-            }
-            if (not tpsInputs.applyAffineScale) {
-                m_CoefficientsTODO.a2 = normalize(m_CoefficientsTODO.a2);
-                m_CoefficientsTODO.a3 = normalize(m_CoefficientsTODO.a3);
-                m_CoefficientsTODO.a4 = normalize(m_CoefficientsTODO.a4);
-            }
-            if (not tpsInputs.applyAffineRotation) {
-                m_CoefficientsTODO.a2 = {length(m_CoefficientsTODO.a2), 0.0f, 0.0f};
-                m_CoefficientsTODO.a3 = {0.0f, length(m_CoefficientsTODO.a3), 0.0f};
-                m_CoefficientsTODO.a4 = {0.0f, 0.0f, length(m_CoefficientsTODO.a4)};
-            }
-            if (not tpsInputs.applyNonAffineWarp) {
-                m_CoefficientsTODO.nonAffineTerms.clear();
-            }
 
             return m_CoefficientsTODO;
         }

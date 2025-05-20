@@ -235,10 +235,30 @@ namespace
         const std::array<size_t, 2> strides = {6, 1};
         const cpp23::layout_stride::mapping mapping{shape, strides};
 
-        return ::TPSCalcCoefficients<T>(
+        auto rv = ::TPSCalcCoefficients<T>(
             {&inputs.landmarks.front().source.x, mapping},
             {&inputs.landmarks.front().destination.x, mapping}
         );
+
+        // If required, modify the coefficients
+        if (not inputs.applyAffineTranslation) {
+            rv.a1 = {};
+        }
+        if (not inputs.applyAffineScale) {
+            rv.a2 = normalize(rv.a2);
+            rv.a3 = normalize(rv.a3);
+            rv.a4 = normalize(rv.a4);
+        }
+        if (not inputs.applyAffineRotation) {
+            rv.a2 = {length(rv.a2), T(0.0),        T(0.0)};
+            rv.a3 = {T(0.0),        length(rv.a3), T(0.0)};
+            rv.a4 = {T(0.0),        T(0.0),        length(rv.a4)};
+        }
+        if (not inputs.applyNonAffineWarp) {
+            rv.nonAffineTerms.clear();
+        }
+
+        return rv;
     }
 
     template<std::floating_point T>

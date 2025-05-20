@@ -57,14 +57,14 @@ namespace osc
 
     // returns the length of the provided vector
     template<size_t L, std::floating_point T>
-    float length(const Vec<L, T>& v)
+    T length(const Vec<L, T>& v)
     {
         return sqrt(dot(v, v));
     }
 
     // returns the squared length of the provided vector
     template<size_t L, std::floating_point T>
-    constexpr float length2(const Vec<L, T>& v)
+    constexpr T length2(const Vec<L, T>& v)
     {
         return dot(v, v);
     }

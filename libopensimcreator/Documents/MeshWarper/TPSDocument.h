@@ -21,5 +21,11 @@ namespace osc
         std::vector<TPSDocumentNonParticipatingLandmark> nonParticipatingLandmarks;
         float blendingFactor;
         bool recalculateNormals;
+        float sourceLandmarksPrescale;
+        float destinationLandmarksPrescale;
+        bool applyAffineTranslation;
+        bool applyAffineScale;
+        bool applyAffineRotation;
+        bool applyNonAffineWarp;
     };
 }

@@ -86,6 +86,7 @@ namespace osc
             ui::same_line();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
+            drawPrescaleInputs();
 
             ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
             ui::draw_checkbox("overlay destination mesh", &m_ShowDestinationMesh);
@@ -221,6 +222,47 @@ namespace osc
             if (ui::is_item_deactivated_after_edit())
             {
                 ActionSetBlendFactor(m_State->updUndoable(), factor);
+            }
+        }
+
+        void drawPrescaleInputs()
+        {
+            float sourcePrescale = m_State->getScratch().sourceLandmarksPrescale;
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);
+            ui::draw_float_input("source landmarks prescale", &sourcePrescale);
+            if (ui::is_item_deactivated_after_edit()) {
+                ActionSetSourceLandmarksPrescale(m_State->updUndoable(), sourcePrescale);
+            }
+            float destinationPrescale = m_State->getScratch().destinationLandmarksPrescale;
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);
+            ui::draw_float_input("destination prescale", &destinationPrescale);
+            if (ui::is_item_deactivated_after_edit()) {
+                ActionSetDestinationLandmarksPrescale(m_State->updUndoable(), destinationPrescale);
+            }
+
+            ui::set_cursor_pos_x(m_CursorXAtExportButton);
+            bool affineScale = m_State->getScratch().applyAffineScale;
+            ui::draw_checkbox("scale", &affineScale);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineScale = affineScale;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool affineRotation = m_State->getScratch().applyAffineRotation;
+            ui::draw_checkbox("rotate", &affineRotation);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineRotation = affineRotation;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool affineTranslation = m_State->getScratch().applyAffineTranslation;
+            ui::draw_checkbox("translate", &affineTranslation);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineTranslation = affineTranslation;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool nonAffineWarp = m_State->getScratch().applyNonAffineWarp;
+            ui::draw_checkbox("warp", &nonAffineWarp);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyNonAffineWarp = nonAffineWarp;  // TODO: undo/redo
             }
         }
 

@@ -6,13 +6,20 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The mesh warping workflow now has a `source/destination landmarks prescale` option, which
+  enables multiplying each landmark by a scaling factor before using them in the TPS technique.
+  This matches a similar feature in the model warper and is necessary when handling data in
+  different units (e.g. millimeters vs. meters).
+- The mesh warping workflow now has toggles for `scale`, `rotation`, `translation`, and `warp`,
+  which lets users toggle those parts of the TPS technique in-UI. This matches a similar feature
+  in the model warper and is useful for understanding the underlying TPS warp.
 - Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
   cause the models not to load (#1036).
 - The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
   yet, due to upstream issues in OpenSim, #982).
 - The draft explaining `StationDefinedFrame`s has been upgraded to a full tutorial in the
   OpenSim Creator documentation.
-- The development documentation now outline's OpenSim Creator's release process and the
+- The development documentation now outlines OpenSim Creator's release process and the
   exact compiler versions etc. that the project is built with (#1022 #1017).
 - The original (deprecated/prototype) version of the model warper workflow was dropped.
   References to it have been replaced with references to the new model warper, which follows
