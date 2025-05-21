@@ -71,6 +71,9 @@ private:
 
         drawVisualAidsMenuButton();
         ui::same_line();
+
+        drawSwapSourceDestinationButton();
+        ui::same_line();
     }
 
     void drawNewDocumentButton()
@@ -153,6 +156,14 @@ private:
             }
             ui::end_popup();
         }
+    }
+
+    void drawSwapSourceDestinationButton()
+    {
+        if (ui::draw_button("swap source <-> destination")) {
+            ActionSwapSourceDestination(m_State->updUndoable());
+        }
+        ui::draw_tooltip_if_item_hovered("Swap Source <-> Destination", "Swaps the source mesh with the destination mesh.\n\nNote: non-participating landmarks will be left in the source mesh, because they must always be there.");
     }
 
     std::shared_ptr<MeshWarpingTabSharedState> m_State;

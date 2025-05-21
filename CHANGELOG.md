@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The mesh warping workflow now has a 'swap source <--> destination' button, to make it
+  possible to see what the inverse of a TPS warp looks like.
 - File dialog filters now default to filtering typically-supported file extensions for
   the given prompted filetype (e.g. opening a mesh will filter `obj`, `stl`, and `vtp`;
   previously, all dialogs defaulted to 'All Files', which can be tricky when working with

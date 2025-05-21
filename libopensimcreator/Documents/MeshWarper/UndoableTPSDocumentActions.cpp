@@ -456,3 +456,17 @@ void osc::ActionSaveWarpedNonParticipatingLandmarksToCSV(
         }, flags);
     });
 }
+
+void osc::ActionSwapSourceDestination(UndoableTPSDocument& doc)
+{
+    using std::swap;
+
+    TPSDocument& scratch = doc.upd_scratch();
+    swap(scratch.destinationLandmarksPrescale, scratch.sourceLandmarksPrescale);
+    swap(scratch.sourceMesh, scratch.destinationMesh);
+    for (auto& lmp : scratch.landmarkPairs) {
+        swap(lmp.maybeSourceLocation, lmp.maybeDestinationLocation);
+    }
+
+    doc.commit_scratch("Swapped source <--> destination");
+}

@@ -99,4 +99,7 @@ namespace osc
         TPSResultCache&,
         lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None
     );
+
+    // swaps the source and destination (incl. premultiply, etc.)
+    void ActionSwapSourceDestination(UndoableTPSDocument&);
 }
