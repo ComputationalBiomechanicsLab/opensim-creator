@@ -29,6 +29,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: the source code level for the project was upgraded from C++20 to C++23.
 - Internal: fixed a regression introduced by an ImGui upgrade that prevents the screenshot
   taker from working if a modal dialog is shown (#1038).
+- Internal: googletest was updated to v1.17.0, lunasvg was updated to v3.3.0, SDL was updated
+  to v3.2.14, and stb was updated to its latest commit (802cd45).
 
 
 ## [0.5.22] - 2025/04/25
