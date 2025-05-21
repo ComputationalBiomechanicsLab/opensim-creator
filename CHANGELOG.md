@@ -6,6 +6,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- File dialog filters now default to filtering typically-supported file extensions for
+  the given prompted filetype (e.g. opening a mesh will filter `obj`, `stl`, and `vtp`;
+  previously, all dialogs defaulted to 'All Files', which can be tricky when working with
+  directories containing many files).
 - The mesh warping workflow now has a `source/destination landmarks prescale` option, which
   enables multiplying each landmark by a scaling factor before using them in the TPS technique.
   This matches a similar feature in the model warper and is necessary when handling data in

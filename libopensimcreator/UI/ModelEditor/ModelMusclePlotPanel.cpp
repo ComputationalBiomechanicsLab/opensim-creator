@@ -1400,8 +1400,8 @@ namespace
                 }
             },
             {
-                FileDialogFilter::all_files(),
                 csv_file_dialog_filter(),
+                FileDialogFilter::all_files(),
             }
         );
     }

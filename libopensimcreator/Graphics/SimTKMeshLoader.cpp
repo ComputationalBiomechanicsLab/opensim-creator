@@ -33,12 +33,12 @@ namespace
     std::span<const FileDialogFilter> get_file_dialog_filters()
     {
         static const auto s_filters = std::to_array<FileDialogFilter>({
-            FileDialogFilter::all_files(),
             FileDialogFilter{"Mesh Data (*.obj, *.vtp, *.stl, *.stla)", "obj;vtp;stl;stla"},
             FileDialogFilter{"Wavefront (*.obj)", "obj"},
             FileDialogFilter{"VTK PolyData (*.vtp)", "vtp"},
             FileDialogFilter{"STL (*.stl)", "stl"},
             FileDialogFilter{"ASCII STL (*.stla)", "stla"},
+            FileDialogFilter::all_files(),
         });
         return s_filters;
     }

@@ -246,8 +246,8 @@ void osc::ActionLoadLandmarksFromCSV(
             doc->commit_scratch("loaded landmarks");
         },
         {
-            FileDialogFilter::all_files(),
             csv_file_dialog_filter(),
+            FileDialogFilter::all_files(),
         }
     );
 }
@@ -274,8 +274,8 @@ void osc::ActionLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<Undoa
             doc->commit_scratch("added non-participating landmarks");
         },
         {
-            FileDialogFilter::all_files(),
             csv_file_dialog_filter(),
+            FileDialogFilter::all_files(),
         }
     );
 }
