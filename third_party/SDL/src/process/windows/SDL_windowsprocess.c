@@ -239,7 +239,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
-    const char *working_directory = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, NULL);
     SDL_ProcessIO stdin_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_ProcessIO stdout_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
@@ -247,7 +246,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
                            !SDL_HasProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER);
     LPWSTR createprocess_cmdline = NULL;
     LPWSTR createprocess_env = NULL;
-    LPWSTR createprocess_cwd = NULL;
     STARTUPINFOW startup_info;
     DWORD creation_flags;
     SECURITY_ATTRIBUTES security_attributes;
@@ -294,13 +292,6 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         goto done;
     }
 
-    if (working_directory) {
-        createprocess_cwd = WIN_UTF8ToStringW(working_directory);
-        if (!createprocess_cwd) {
-            goto done;
-        }
-    }
-
     // Background processes don't have access to the terminal
     // This isn't necessary on Windows, but we keep the same behavior as the POSIX implementation.
     if (process->background) {
@@ -313,6 +304,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
             stderr_option = SDL_PROCESS_STDIO_NULL;
         }
+        creation_flags |= CREATE_NO_WINDOW;
     }
 
     switch (stdin_option) {
@@ -338,7 +330,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdInput = stdin_pipe[READ_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -375,7 +367,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdOutput = stdout_pipe[WRITE_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -421,7 +413,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             startup_info.hStdError = stderr_pipe[WRITE_END];
             break;
         case SDL_PROCESS_STDIO_NULL:
-            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
             break;
         case SDL_PROCESS_STDIO_INHERITED:
         default:
@@ -436,7 +428,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         }
     }
 
-    if (!CreateProcessW(NULL, createprocess_cmdline, NULL, NULL, TRUE, creation_flags, createprocess_env, createprocess_cwd, &startup_info, &data->process_information)) {
+    if (!CreateProcessW(NULL, createprocess_cmdline, NULL, NULL, TRUE, creation_flags, createprocess_env, NULL, &startup_info, &data->process_information)) {
         WIN_SetError("CreateProcess");
         goto done;
     }
@@ -488,7 +480,6 @@ done:
     }
     SDL_free(createprocess_cmdline);
     SDL_free(createprocess_env);
-    SDL_free(createprocess_cwd);
     SDL_free(envp);
 
     if (!result) {

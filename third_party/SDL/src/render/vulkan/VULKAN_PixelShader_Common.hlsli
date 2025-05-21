@@ -23,8 +23,7 @@ cbuffer Constants : register(b1)
     float scRGB_output;
     float input_type;
     float color_scale;
-    float pixel_art;
-    float4 texel_size;
+    float unused_pad0;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -105,24 +104,7 @@ float4 GetInputColor(PixelShaderInput input)
 {
     float4 rgba;
 
-    if (pixel_art) {
-        // box filter size in texel units
-        float2 boxSize = clamp(fwidth(input.tex) * texel_size.zw, 1e-5, 1);
-
-        // scale uv by texture size to get texel coordinate
-        float2 tx = input.tex * texel_size.zw - 0.5 * boxSize;
-
-        // compute offset for pixel-sized box filter
-        float2 txOffset = smoothstep(1 - boxSize, 1, frac(tx));
-
-        // compute bilinear sample uv coordinates
-        float2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;
-
-        // sample the texture
-        rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
-    } else {
-        rgba = texture0.Sample(sampler0, input.tex).rgba;
-    }
+    rgba = texture0.Sample(sampler0, input.tex).rgba;
 
     return rgba;
 }

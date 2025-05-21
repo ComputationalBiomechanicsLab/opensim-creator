@@ -76,8 +76,7 @@ typedef struct
     int shadeModel;
     SDL_Texture *texture;
     SDL_ScaleMode texture_scale_mode;
-    SDL_TextureAddressMode texture_address_mode_u;
-    SDL_TextureAddressMode texture_address_mode_v;
+    SDL_TextureAddressMode texture_address_mode;
 } PSP_BlendState;
 
 typedef struct
@@ -541,10 +540,23 @@ static bool TextureShouldSwizzle(PSP_TextureData *psp_texture, SDL_Texture *text
     return !((texture->access == SDL_TEXTUREACCESS_TARGET) && InVram(psp_texture->data)) && texture->access != SDL_TEXTUREACCESS_STREAMING && (texture->w >= 16 || texture->h >= 16);
 }
 
+static void SetTextureAddressMode(SDL_TextureAddressMode addressMode)
+{
+    switch (addressMode) {
+    case SDL_TEXTURE_ADDRESS_CLAMP:
+        sceGuTexWrap(GU_CLAMP, GU_CLAMP);
+        break;
+    case SDL_TEXTURE_ADDRESS_WRAP:
+        sceGuTexWrap(GU_REPEAT, GU_REPEAT);
+        break;
+    default:
+        break;
+    }
+}
+
 static void SetTextureScaleMode(SDL_ScaleMode scaleMode)
 {
     switch (scaleMode) {
-    case SDL_SCALEMODE_PIXELART:
     case SDL_SCALEMODE_NEAREST:
         sceGuTexFilter(GU_NEAREST, GU_NEAREST);
         break;
@@ -554,24 +566,6 @@ static void SetTextureScaleMode(SDL_ScaleMode scaleMode)
     default:
         break;
     }
-}
-
-static int TranslateAddressMode(SDL_TextureAddressMode mode)
-{
-    switch (mode) {
-    case SDL_TEXTURE_ADDRESS_CLAMP:
-        return GU_CLAMP;
-    case SDL_TEXTURE_ADDRESS_WRAP:
-        return GU_REPEAT;
-    default:
-        SDL_assert(!"Unknown texture address mode");
-        return GU_CLAMP;
-    }
-}
-
-static void SetTextureAddressMode(SDL_TextureAddressMode addressModeU, SDL_TextureAddressMode addressModeV)
-{
-    sceGuTexWrap(TranslateAddressMode(addressModeU), TranslateAddressMode(addressModeV));
 }
 
 static void TextureActivate(SDL_Texture *texture)
@@ -1063,7 +1057,7 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
 
     if (state->texture) {
         SetTextureScaleMode(state->texture_scale_mode);
-        SetTextureAddressMode(state->texture_address_mode_u, state->texture_address_mode_v);
+        SetTextureAddressMode(state->texture_address_mode);
     }
 
     *current = *state;
@@ -1150,8 +1144,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 .color = drawstate.color,
                 .texture = NULL,
                 .texture_scale_mode = SDL_SCALEMODE_INVALID,
-                .texture_address_mode_u = SDL_TEXTURE_ADDRESS_INVALID,
-                .texture_address_mode_v = SDL_TEXTURE_ADDRESS_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1168,8 +1161,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 .color = drawstate.color,
                 .texture = NULL,
                 .texture_scale_mode = SDL_SCALEMODE_INVALID,
-                .texture_address_mode_u = SDL_TEXTURE_ADDRESS_INVALID,
-                .texture_address_mode_v = SDL_TEXTURE_ADDRESS_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1186,8 +1178,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 .color = drawstate.color,
                 .texture = NULL,
                 .texture_scale_mode = SDL_SCALEMODE_INVALID,
-                .texture_address_mode_u = SDL_TEXTURE_ADDRESS_INVALID,
-                .texture_address_mode_v = SDL_TEXTURE_ADDRESS_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1204,8 +1195,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 .color = drawstate.color,
                 .texture = cmd->data.draw.texture,
                 .texture_scale_mode = cmd->data.draw.texture_scale_mode,
-                .texture_address_mode_u = cmd->data.draw.texture_address_mode_u,
-                .texture_address_mode_v = cmd->data.draw.texture_address_mode_v,
+                .texture_address_mode = cmd->data.draw.texture_address_mode,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_SMOOTH
             };
@@ -1221,8 +1211,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 .color = drawstate.color,
                 .texture = cmd->data.draw.texture,
                 .texture_scale_mode = cmd->data.draw.texture_scale_mode,
-                .texture_address_mode_u = cmd->data.draw.texture_address_mode_u,
-                .texture_address_mode_v = cmd->data.draw.texture_address_mode_v,
+                .texture_address_mode = cmd->data.draw.texture_address_mode,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_SMOOTH
             };
@@ -1246,8 +1235,7 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                     .color = drawstate.color,
                     .texture = cmd->data.draw.texture,
                     .texture_scale_mode = cmd->data.draw.texture_scale_mode,
-                    .texture_address_mode_u = cmd->data.draw.texture_address_mode_u,
-                    .texture_address_mode_v = cmd->data.draw.texture_address_mode_v,
+                    .texture_address_mode = cmd->data.draw.texture_address_mode,
                     .mode = cmd->data.draw.blend,
                     .shadeModel = GU_SMOOTH
                 };

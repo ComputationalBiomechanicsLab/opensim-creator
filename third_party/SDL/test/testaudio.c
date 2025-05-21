@@ -718,15 +718,16 @@ static Texture *CreateTexture(const char *fname)
     if (!tex) {
         SDL_Log("Out of memory!");
     } else {
-        tex->texture = LoadTexture(state->renderers[0], fname, true);
+        int texw, texh;
+        tex->texture = LoadTexture(state->renderers[0], fname, true, &texw, &texh);
         if (!tex->texture) {
             SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
             SDL_free(tex);
             return NULL;
         }
         SDL_SetTextureBlendMode(tex->texture, SDL_BLENDMODE_BLEND);
-        tex->w = (float)tex->texture->w;
-        tex->h = (float)tex->texture->h;
+        tex->w = (float) texw;
+        tex->h = (float) texh;
     }
     return tex;
 }

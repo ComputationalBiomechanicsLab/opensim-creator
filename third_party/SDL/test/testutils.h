@@ -16,7 +16,8 @@
 
 #include <SDL3/SDL.h>
 
-SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent);
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent,
+                         int *width_out, int *height_out);
 char *GetNearbyFilename(const char *file);
 char *GetResourceFilename(const char *user_specified, const char *def);
 

@@ -79,6 +79,11 @@ static const size_t CONSTANTS_OFFSET_DECODE_BT2020_LIMITED = ALIGN_CONSTANTS(16,
 static const size_t CONSTANTS_OFFSET_DECODE_BT2020_FULL = ALIGN_CONSTANTS(16, CONSTANTS_OFFSET_DECODE_BT2020_LIMITED + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT2020_FULL + sizeof(float) * 4 * 4;
 
+#define RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v)    \
+    (((scale_mode == SDL_SCALEMODE_NEAREST) << 0) |                 \
+     ((address_u == SDL_TEXTURE_ADDRESS_WRAP) << 1) |               \
+     ((address_v == SDL_TEXTURE_ADDRESS_WRAP) << 2))
+
 typedef enum SDL_MetalVertexFunction
 {
     SDL_METAL_VERTEX_SOLID,
@@ -1257,10 +1262,9 @@ static const float TONEMAP_CHROME = 2;
 
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
-static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_NV12 = 3;
-static const float TEXTURETYPE_NV21 = 4;
-static const float TEXTURETYPE_YUV = 5;
+static const float TEXTURETYPE_NV12 = 2;
+static const float TEXTURETYPE_NV21 = 3;
+static const float TEXTURETYPE_YUV = 4;
 
 //static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -1273,11 +1277,6 @@ typedef struct
     float texture_type;
     float input_type;
     float color_scale;
-
-    float texel_width;
-    float texel_height;
-    float texture_width;
-    float texture_height;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -1329,15 +1328,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->texture_type = TEXTURETYPE_NV12;
             break;
         default:
-            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-                constants->texture_type = TEXTURETYPE_RGB_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
-            } else {
-                constants->texture_type = TEXTURETYPE_RGB;
-            }
+            constants->texture_type = TEXTURETYPE_RGB;
         }
 
         switch (SDL_COLORSPACETRANSFER(texture->colorspace)) {
@@ -1471,7 +1462,6 @@ static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_ScaleMode 
             samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
             samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
             break;
-        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
             samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
             samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
@@ -1538,17 +1528,17 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     }
 
     if (cmd->data.draw.texture_scale_mode != statecache->texture_scale_mode ||
-        cmd->data.draw.texture_address_mode_u != statecache->texture_address_mode_u ||
-        cmd->data.draw.texture_address_mode_v != statecache->texture_address_mode_v) {
-        id<MTLSamplerState> mtlsampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+        cmd->data.draw.texture_address_mode != statecache->texture_address_mode_u ||
+        cmd->data.draw.texture_address_mode != statecache->texture_address_mode_v) {
+        id<MTLSamplerState> mtlsampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode, cmd->data.draw.texture_address_mode);
         if (mtlsampler == nil) {
             return false;
         }
         [data.mtlcmdencoder setFragmentSamplerState:mtlsampler atIndex:0];
 
         statecache->texture_scale_mode = cmd->data.draw.texture_scale_mode;
-        statecache->texture_address_mode_u = cmd->data.draw.texture_address_mode_u;
-        statecache->texture_address_mode_v = cmd->data.draw.texture_address_mode_v;
+        statecache->texture_address_mode_u = cmd->data.draw.texture_address_mode;
+        statecache->texture_address_mode_v = cmd->data.draw.texture_address_mode;
     }
     return true;
 }
