@@ -31,16 +31,16 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 
     // when rendering the document's contents, flip Y so that it's compatible with the
     // renderer's coordinate system
-    const lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, svg_document->height()};
-    svg_document->setMatrix(m);
+    const lunasvg::Matrix transform{scale, 0.0f, 0.0f, -scale, 0.0f, scale*svg_document->height()};
 
-    // render to a rescaled bitmap
-    const Vec2u32 bitmap_dimensions{
-        static_cast<uint32_t>(scale*svg_document->width()),
-        static_cast<uint32_t>(scale*svg_document->height())
+    // create a `lunasvg::Bitmap` that lunasvg can render into
+    lunasvg::Bitmap bitmap{
+        static_cast<int>(scale*svg_document->width()),
+        static_cast<int>(scale*svg_document->height()),
     };
-    lunasvg::Bitmap bitmap = svg_document->renderToBitmap(bitmap_dimensions.x, bitmap_dimensions.y, 0x00000000);
-    bitmap.convertToRGBA();
+    bitmap.clear(0x00000000);  // ensure the bitmap is cleared before rendering
+    svg_document->render(bitmap, transform);
+    bitmap.convertToRGBA();  // convert lunasvg's premultiplied ARGB32 to unassociated RGBA
 
     // return as a GPU-ready texture
     Texture2D rv{
