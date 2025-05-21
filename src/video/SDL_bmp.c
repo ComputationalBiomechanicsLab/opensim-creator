@@ -92,13 +92,13 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
         | with two colour indexes to alternate between for the run
         */
         if (ch) {
-            Uint8 pixelvalue;
-            if (!SDL_ReadU8(src, &pixelvalue)) {
+            Uint8 pixel;
+            if (!SDL_ReadU8(src, &pixel)) {
                 return false;
             }
             ch /= pixels_per_byte;
             do {
-                COPY_PIXEL(pixelvalue);
+                COPY_PIXEL(pixel);
             } while (--ch);
         } else {
             /*
@@ -131,11 +131,11 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 ch /= pixels_per_byte;
                 needsPad = (ch & 1);
                 do {
-                    Uint8 pixelvalue;
-                    if (!SDL_ReadU8(src, &pixelvalue)) {
+                    Uint8 pixel;
+                    if (!SDL_ReadU8(src, &pixel)) {
                         return false;
                     }
-                    COPY_PIXEL(pixelvalue);
+                    COPY_PIXEL(pixel);
                 } while (--ch);
 
                 // pad at even boundary

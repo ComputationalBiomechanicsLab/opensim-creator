@@ -7,12 +7,12 @@ import android.view.*;
 import android.view.inputmethod.BaseInputConnection;
 import android.widget.EditText;
 
-class SDLInputConnection extends BaseInputConnection
+public class SDLInputConnection extends BaseInputConnection
 {
     protected EditText mEditText;
     protected String mCommittedText = "";
 
-    SDLInputConnection(View targetView, boolean fullEditor) {
+    public SDLInputConnection(View targetView, boolean fullEditor) {
         super(targetView, fullEditor);
         mEditText = new EditText(SDL.getContext());
     }

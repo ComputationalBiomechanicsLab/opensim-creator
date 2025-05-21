@@ -126,13 +126,12 @@ int main(int argc, char *argv[])
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true);
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false);
+        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true, NULL, NULL);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false, NULL, NULL);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }
         SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
-        SDL_SetTextureScaleMode(drawstate->sprite, SDL_SCALEMODE_PIXELART);
         drawstate->scale_direction = 1;
     }
 

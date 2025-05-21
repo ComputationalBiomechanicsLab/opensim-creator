@@ -29,19 +29,12 @@
 #include "SDL_pipeline_gpu.h"
 #include "SDL_shaders_gpu.h"
 
-typedef struct GPU_VertexShaderUniformData
+typedef struct GPU_ShaderUniformData
 {
     Float4X4 mvp;
     SDL_FColor color;
-} GPU_VertexShaderUniformData;
-
-typedef struct GPU_FragmentShaderUniformData
-{
-    float texel_width;
-    float texel_height;
-    float texture_width;
-    float texture_height;
-} GPU_FragmentShaderUniformData;
+    float texture_size[2];
+} GPU_ShaderUniformData;
 
 typedef struct GPU_RenderData
 {
@@ -81,9 +74,10 @@ typedef struct GPU_RenderData
         SDL_FColor draw_color;
         bool scissor_enabled;
         bool scissor_was_enabled;
+        GPU_ShaderUniformData shader_data;
     } state;
 
-    SDL_GPUSampler *samplers[RENDER_SAMPLER_COUNT];
+    SDL_GPUSampler *samplers[2][2];
 } GPU_RenderData;
 
 typedef struct GPU_TextureData
@@ -440,8 +434,8 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
-            *(verts++) = uv_[0];
-            *(verts++) = uv_[1];
+            *(verts++) = uv_[0] * texture->w;
+            *(verts++) = uv_[1] * texture->h;
         }
     }
     return true;
@@ -451,7 +445,6 @@ static void GPU_InvalidateCachedState(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
-    data->state.render_target = NULL;
     data->state.scissor_enabled = false;
 }
 
@@ -474,9 +467,9 @@ static SDL_GPURenderPass *RestartRenderPass(GPU_RenderData *data)
     return data->state.render_pass;
 }
 
-static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
+static void PushUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
 {
-    GPU_VertexShaderUniformData uniforms;
+    GPU_ShaderUniformData uniforms;
     SDL_zero(uniforms);
     uniforms.mvp.m[0][0] = 2.0f / data->state.viewport.w;
     uniforms.mvp.m[1][1] = -2.0f / data->state.viewport.h;
@@ -487,22 +480,17 @@ static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
 
     uniforms.color = data->state.draw_color;
 
+    if (cmd->data.draw.texture) {
+        uniforms.texture_size[0] = cmd->data.draw.texture->w;
+        uniforms.texture_size[1] = cmd->data.draw.texture->h;
+    }
+
     SDL_PushGPUVertexUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
 }
 
-static void PushFragmentUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
+static SDL_GPUSampler **SamplerPointer(GPU_RenderData *data, SDL_TextureAddressMode address_mode, SDL_ScaleMode scale_mode)
 {
-    if (cmd->data.draw.texture &&
-        cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-        SDL_Texture *texture = cmd->data.draw.texture;
-        GPU_FragmentShaderUniformData uniforms;
-        SDL_zero(uniforms);
-        uniforms.texture_width = texture->w;
-        uniforms.texture_height = texture->h;
-        uniforms.texel_width = 1.0f / uniforms.texture_width;
-        uniforms.texel_height = 1.0f / uniforms.texture_height;
-        SDL_PushGPUFragmentUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
-    }
+    return &data->samplers[scale_mode][address_mode - 1];
 }
 
 static void SetViewportAndScissor(GPU_RenderData *data)
@@ -523,58 +511,6 @@ static void SetViewportAndScissor(GPU_RenderData *data)
     }
 }
 
-static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
-{
-    Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
-    SDL_assert(key < SDL_arraysize(data->samplers));
-    if (!data->samplers[key]) {
-        SDL_GPUSamplerCreateInfo sci;
-        SDL_zero(sci);
-        switch (scale_mode) {
-        case SDL_SCALEMODE_NEAREST:
-            sci.min_filter = SDL_GPU_FILTER_NEAREST;
-            sci.mag_filter = SDL_GPU_FILTER_NEAREST;
-            sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
-            break;
-        case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
-        case SDL_SCALEMODE_LINEAR:
-            sci.min_filter = SDL_GPU_FILTER_LINEAR;
-            sci.mag_filter = SDL_GPU_FILTER_LINEAR;
-            sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
-            break;
-        default:
-            SDL_SetError("Unknown scale mode: %d", scale_mode);
-            return NULL;
-        }
-        switch (address_u) {
-        case SDL_TEXTURE_ADDRESS_CLAMP:
-            sci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-            break;
-        case SDL_TEXTURE_ADDRESS_WRAP:
-            sci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-            break;
-        default:
-            SDL_SetError("Unknown texture address mode: %d", address_u);
-            return NULL;
-        }
-        switch (address_v) {
-        case SDL_TEXTURE_ADDRESS_CLAMP:
-            sci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-            break;
-        case SDL_TEXTURE_ADDRESS_WRAP:
-            sci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-            break;
-        default:
-            SDL_SetError("Unknown texture address mode: %d", address_v);
-            return NULL;
-        }
-        sci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-
-        data->samplers[key] = SDL_CreateGPUSampler(data->device, &sci);
-    }
-    return data->samplers[key];
-}
-
 static void Draw(
     GPU_RenderData *data, SDL_RenderCommand *cmd,
     Uint32 num_verts,
@@ -585,29 +521,19 @@ static void Draw(
         RestartRenderPass(data);
     }
 
-    SDL_GPURenderPass *pass = data->state.render_pass;
-    SDL_GPURenderState *custom_state = cmd->data.draw.gpu_render_state;
-    SDL_GPUShader *custom_frag_shader = custom_state ? custom_state->fragment_shader : NULL;
     GPU_VertexShaderID v_shader;
     GPU_FragmentShaderID f_shader;
+    SDL_GPURenderPass *pass = data->state.render_pass;
+    GPU_TextureData *tdata = NULL;
+
+    if (cmd->data.draw.texture) {
+        tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
+    }
 
     if (prim == SDL_GPU_PRIMITIVETYPE_TRIANGLELIST) {
-        SDL_Texture *texture = cmd->data.draw.texture;
-        if (texture) {
+        if (cmd->data.draw.texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
-            if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
-                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-                    f_shader = FRAG_SHADER_TEXTURE_RGBA_PIXELART;
-                } else {
-                    f_shader = FRAG_SHADER_TEXTURE_RGBA;
-                }
-            } else {
-                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-                    f_shader = FRAG_SHADER_TEXTURE_RGB_PIXELART;
-                } else {
-                    f_shader = FRAG_SHADER_TEXTURE_RGB;
-                }
-            }
+            f_shader = tdata->shader;
         } else {
             v_shader = VERT_SHADER_TRI_COLOR;
             f_shader = FRAG_SHADER_COLOR;
@@ -617,18 +543,12 @@ static void Draw(
         f_shader = FRAG_SHADER_COLOR;
     }
 
-    if (custom_frag_shader) {
-        f_shader = FRAG_SHADER_TEXTURE_CUSTOM;
-        data->shaders.frag_shaders[FRAG_SHADER_TEXTURE_CUSTOM] = custom_frag_shader;
-    }
-
     GPU_PipelineParameters pipe_params;
     SDL_zero(pipe_params);
     pipe_params.blend_mode = cmd->data.draw.blend;
     pipe_params.vert_shader = v_shader;
     pipe_params.frag_shader = f_shader;
     pipe_params.primitive_type = prim;
-    pipe_params.custom_frag_shader = custom_frag_shader;
 
     if (data->state.render_target) {
         pipe_params.attachment_format = ((GPU_TextureData *)data->state.render_target->internal)->format;
@@ -637,51 +557,30 @@ static void Draw(
     }
 
     SDL_GPUGraphicsPipeline *pipe = GPU_GetPipeline(&data->pipeline_cache, &data->shaders, data->device, &pipe_params);
+
     if (!pipe) {
         return;
     }
 
-    SDL_BindGPUGraphicsPipeline(pass, pipe);
+    SetViewportAndScissor(data);
+    SDL_BindGPUGraphicsPipeline(data->state.render_pass, pipe);
 
-    Uint32 sampler_slot = 0;
-    if (cmd->data.draw.texture) {
-        GPU_TextureData *tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
+    if (tdata) {
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
-        sampler_bind.sampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+        sampler_bind.sampler = *SamplerPointer(data, cmd->data.draw.texture_address_mode, cmd->data.draw.texture_scale_mode);
         sampler_bind.texture = tdata->texture;
-        SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
-    }
-    if (custom_state) {
-        if (custom_state->num_sampler_bindings > 0) {
-            SDL_BindGPUFragmentSamplers(pass, sampler_slot, custom_state->sampler_bindings, custom_state->num_sampler_bindings);
-        }
-        if (custom_state->num_storage_textures > 0) {
-            SDL_BindGPUFragmentStorageTextures(pass, 0, custom_state->storage_textures, custom_state->num_storage_textures);
-        }
-        if (custom_state->num_storage_buffers > 0) {
-            SDL_BindGPUFragmentStorageBuffers(pass, 0, custom_state->storage_buffers, custom_state->num_storage_buffers);
-        }
-        if (custom_state->num_uniform_buffers > 0) {
-            for (int i = 0; i < custom_state->num_uniform_buffers; i++) {
-                SDL_GPURenderStateUniformBuffer *ub = &custom_state->uniform_buffers[i];
-                SDL_PushGPUFragmentUniformData(data->state.command_buffer, ub->slot_index, ub->data, ub->length);
-            }
-        }
-    } else {
-        PushFragmentUniforms(data, cmd);
+        SDL_BindGPUFragmentSamplers(pass, 0, &sampler_bind, 1);
     }
 
     SDL_GPUBufferBinding buffer_bind;
     SDL_zero(buffer_bind);
     buffer_bind.buffer = data->vertices.buffer;
     buffer_bind.offset = offset;
+
     SDL_BindGPUVertexBuffers(pass, 0, &buffer_bind, 1);
-    PushVertexUniforms(data, cmd);
-
-    SetViewportAndScissor(data);
-
-    SDL_DrawGPUPrimitives(pass, num_verts, 1, 0, 0);
+    PushUniforms(data, cmd);
+    SDL_DrawGPUPrimitives(data->state.render_pass, num_verts, 1, 0, 0);
 }
 
 static void ReleaseVertexBuffer(GPU_RenderData *data)
@@ -880,8 +779,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             SDL_Texture *thistexture = cmd->data.draw.texture;
             SDL_BlendMode thisblend = cmd->data.draw.blend;
             SDL_ScaleMode thisscalemode = cmd->data.draw.texture_scale_mode;
-            SDL_TextureAddressMode thisaddressmode_u = cmd->data.draw.texture_address_mode_u;
-            SDL_TextureAddressMode thisaddressmode_v = cmd->data.draw.texture_address_mode_v;
+            SDL_TextureAddressMode thisaddressmode = cmd->data.draw.texture_address_mode;
             const SDL_RenderCommandType thiscmdtype = cmd->command;
             SDL_RenderCommand *finalcmd = cmd;
             SDL_RenderCommand *nextcmd = cmd->next;
@@ -894,8 +792,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                     break; // can't go any further on this draw call, different render command up next.
                 } else if (nextcmd->data.draw.texture != thistexture ||
                            nextcmd->data.draw.texture_scale_mode != thisscalemode ||
-                           nextcmd->data.draw.texture_address_mode_u != thisaddressmode_u ||
-                           nextcmd->data.draw.texture_address_mode_v != thisaddressmode_v ||
+                           nextcmd->data.draw.texture_address_mode != thisaddressmode ||
                            nextcmd->data.draw.blend != thisblend) {
                     // FIXME should we check address mode too?
                     break; // can't go any further on this draw call, different texture/blendmode copy up next.
@@ -1127,27 +1024,22 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         data->state.command_buffer = NULL;
     }
 
-    for (Uint32 i = 0; i < SDL_arraysize(data->samplers); ++i) {
-        if (data->samplers[i]) {
-            SDL_ReleaseGPUSampler(data->device, data->samplers[i]);
-        }
+    for (Uint32 i = 0; i < sizeof(data->samplers) / sizeof(SDL_GPUSampler *); ++i) {
+        SDL_ReleaseGPUSampler(data->device, ((SDL_GPUSampler **)data->samplers)[i]);
     }
 
     if (data->backbuffer.texture) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
     }
 
-    if (renderer->window && data->device) {
+    if (renderer->window) {
         SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);
     GPU_DestroyPipelineCache(&data->pipeline_cache);
-
-    if (data->device) {
-        GPU_ReleaseShaders(&data->shaders, data->device);
-        SDL_DestroyGPUDevice(data->device);
-    }
+    GPU_ReleaseShaders(&data->shaders, data->device);
+    SDL_DestroyGPUDevice(data->device);
 
     SDL_free(data);
 }
@@ -1200,6 +1092,62 @@ static bool GPU_SetVSync(SDL_Renderer *renderer, const int vsync)
         } else {
             return false;
         }
+    }
+
+    return true;
+}
+
+static bool InitSamplers(GPU_RenderData *data)
+{
+    struct
+    {
+        struct
+        {
+            SDL_TextureAddressMode address_mode;
+            SDL_ScaleMode scale_mode;
+        } sdl;
+        struct
+        {
+            SDL_GPUSamplerAddressMode address_mode;
+            SDL_GPUFilter filter;
+            SDL_GPUSamplerMipmapMode mipmap_mode;
+            Uint32 anisotropy;
+        } gpu;
+    } configs[] = {
+        {
+            { SDL_TEXTURE_ADDRESS_CLAMP, SDL_SCALEMODE_NEAREST },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_NEAREST, SDL_GPU_SAMPLERMIPMAPMODE_NEAREST, 0 },
+        },
+        {
+            { SDL_TEXTURE_ADDRESS_CLAMP, SDL_SCALEMODE_LINEAR },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_LINEAR, SDL_GPU_SAMPLERMIPMAPMODE_LINEAR, 0 },
+        },
+        {
+            { SDL_TEXTURE_ADDRESS_WRAP, SDL_SCALEMODE_NEAREST },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_NEAREST, SDL_GPU_SAMPLERMIPMAPMODE_NEAREST, 0 },
+        },
+        {
+            { SDL_TEXTURE_ADDRESS_WRAP, SDL_SCALEMODE_LINEAR },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_LINEAR, SDL_GPU_SAMPLERMIPMAPMODE_LINEAR, 0 },
+        },
+    };
+
+    for (Uint32 i = 0; i < SDL_arraysize(configs); ++i) {
+        SDL_GPUSamplerCreateInfo sci;
+        SDL_zero(sci);
+        sci.max_anisotropy = configs[i].gpu.anisotropy;
+        sci.enable_anisotropy = configs[i].gpu.anisotropy > 0;
+        sci.address_mode_u = sci.address_mode_v = sci.address_mode_w = configs[i].gpu.address_mode;
+        sci.min_filter = sci.mag_filter = configs[i].gpu.filter;
+        sci.mipmap_mode = configs[i].gpu.mipmap_mode;
+
+        SDL_GPUSampler *sampler = SDL_CreateGPUSampler(data->device, &sci);
+
+        if (sampler == NULL) {
+            return false;
+        }
+
+        *SamplerPointer(data, configs[i].sdl.address_mode, configs[i].sdl.scale_mode) = sampler;
     }
 
     return true;
@@ -1270,6 +1218,10 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     // XXX what's a good initial size?
     if (!InitVertexBuffer(data, 1 << 16)) {
+        return false;
+    }
+
+    if (!InitSamplers(data)) {
         return false;
     }
 

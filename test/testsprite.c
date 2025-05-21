@@ -53,18 +53,16 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 
 static int LoadSprite(const char *file)
 {
-    int i;
+    int i, w, h;
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
         if (sprites[i]) {
             SDL_DestroyTexture(sprites[i]);
         }
-        sprites[i] = LoadTexture(state->renderers[i], file, true);
-        if (sprites[i]) {
-            sprite_w = (float)sprites[i]->w;
-            sprite_h = (float)sprites[i]->h;
-        }
+        sprites[i] = LoadTexture(state->renderers[i], file, true, &w, &h);
+        sprite_w = (float)w;
+        sprite_h = (float)h;
         if (!sprites[i]) {
             return -1;
         }

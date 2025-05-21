@@ -35,9 +35,6 @@ static UserStorageBootStrap *userbootstrap[] = {
 #ifdef SDL_STORAGE_STEAM
     &STEAM_userbootstrap,
 #endif
-#ifdef SDL_STORAGE_PRIVATE
-    &PRIVATE_userbootstrap,
-#endif
     &GENERIC_userbootstrap,
     NULL
 };
