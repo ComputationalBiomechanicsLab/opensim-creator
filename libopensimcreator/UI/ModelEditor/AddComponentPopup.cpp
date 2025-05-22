@@ -79,7 +79,7 @@ public:
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{&owner, m_Model, [proto = m_Proto]() { return proto.get(); }}
     {}
 
     void draw_content()

@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed a crash that occured when opening a property editor that spawns an external
+  panel/dialog from within the `Add Component` dialog (#1040).
 - The search bar in the "Add Component" dialog was cleaned up and now matches similar
   search bars in other dialogs.
 - The mesh warping workflow now has a 'swap source <--> destination' button, to make it
