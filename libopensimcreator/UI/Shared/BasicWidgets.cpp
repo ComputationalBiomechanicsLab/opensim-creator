@@ -473,7 +473,6 @@ void osc::DrawSimulationParams(const ParamBlock& params)
 
 void osc::DrawSearchBar(std::string& out)
 {
-    ui::set_next_item_width(ui::get_content_region_available().x);
     ui::push_style_var(ui::StyleVar::FrameRounding, 5.0f);
     ui::draw_string_input_with_hint("##hirarchtsearchbar", OSC_ICON_SEARCH " search...",  out);
     ui::pop_style_var();

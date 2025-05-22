@@ -196,13 +196,6 @@ private:
 
     void drawPropertyEditors()
     {
-        ui::draw_text("Properties");
-        ui::same_line();
-        ui::draw_help_marker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
-        ui::draw_separator();
-
-        ui::draw_vertical_spacer(3.0f/15.0f);
-
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater) {
             OpenSim::AbstractProperty* prop = FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
@@ -248,8 +241,9 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
+        ui::set_next_item_width(ui::get_content_region_available().x);
         DrawSearchBar(m_SocketSearchStrings[i]);
-        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 128.0f});
+        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 5.0f*ui::get_text_line_height_in_current_panel()});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -429,17 +423,19 @@ private:
         ui::draw_help_marker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ui::draw_separator();
 
-        ui::draw_string_input(OSC_ICON_SEARCH " search", m_PathSearchString);
-
         ui::set_num_columns(2);
         int imguiID = 0;
 
         ui::push_id(imguiID++);
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        DrawSearchBar(m_PathSearchString);
         drawPathPointEditorChoices();
         ui::pop_id();
         ui::next_column();
 
         ui::push_id(imguiID++);
+        ui::draw_dummy({0.0f, ui::get_style_frame_padding().y});
+        ui::draw_text("Chosen:");
         drawPathPointEditorAlreadyChosenPoints();
         ui::pop_id();
         ui::next_column();

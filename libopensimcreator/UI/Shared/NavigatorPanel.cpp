@@ -134,6 +134,7 @@ private:
 
     void drawFilterAndSearchRow()
     {
+        ui::set_next_item_width(ui::get_content_region_available().x);
         DrawSearchBar(m_CurrentSearch);
     }
 

@@ -615,18 +615,12 @@ namespace
                 ui::same_line();
             }
 
-            ui::set_next_item_width(ui::get_content_region_available().x);
-
-            // draw an invisible vertical line, so that `double` properties are properly
-            // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
-            DrawColoredDimensionHintVerticalLine(Color::clear());
-
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
             auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             auto frameAnnotationLabel = "ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName();
-
             auto drawRV = DrawCustomScalarInput("##doubleeditor", value, m_StepSize, frameAnnotationLabel);
 
             if (drawRV.wasEdited) {
@@ -998,12 +992,11 @@ namespace
             const ValueConverter& valueConverter)
         {
             ui::push_id(i);
-            ui::set_next_item_width(ui::get_content_region_available().x);
-
             // draw dimension hint (color bar next to the input)
             DrawColoredDimensionHintVerticalLine(Color(0.0f, 0.6f).with_element(i, 1.0f));
 
             // draw the input editor
+            ui::set_next_item_width(ui::get_content_region_available().x);
             auto frameAnnotation = GenerateVecFrameAnnotationLabel(m_EditedProperty, i);
             auto drawRV = DrawCustomScalarInput("##valueinput", editedValue[i], m_StepSize, frameAnnotation);
 
