@@ -3,6 +3,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
@@ -247,10 +248,7 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
-        ui::draw_text(OSC_ICON_SEARCH);
-        ui::same_line();
-        ui::set_next_item_width(ui::get_content_region_available().x);
-        ui::draw_string_input("##search", m_SocketSearchStrings[i]);
+        DrawSearchBar(m_SocketSearchStrings[i]);
         ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 128.0f});
 
         // iterate through potential connectees in model and print connect-able options
