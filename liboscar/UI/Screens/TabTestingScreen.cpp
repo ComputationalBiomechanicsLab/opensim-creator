@@ -19,7 +19,6 @@ public:
 
     void on_mount()
     {
-        ui::context::init(App::upd());
         current_tab_ = registry_entry_.construct_tab(&owner());
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();
@@ -30,12 +29,11 @@ public:
         App::upd().make_main_loop_waiting();
         current_tab_->on_unmount();
         current_tab_.reset();
-        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)
     {
-        bool handled = ui::context::on_event(e);
+        bool handled = ui_context_.on_event(e);
         handled = current_tab_->on_event(e) or handled;
         return handled;
     }
@@ -48,9 +46,9 @@ public:
     void on_draw()
     {
         App::upd().clear_screen();
-        ui::context::on_start_new_frame(App::upd());
+        ui_context_.on_start_new_frame();
         current_tab_->on_draw();
-        ui::context::render();
+        ui_context_.render();
 
         ++frames_shown_;
         if (frames_shown_ >= min_frames_shown_ and
@@ -61,6 +59,7 @@ public:
     }
 
 private:
+    ui::Context ui_context_{App::upd()};
     TabRegistryEntry registry_entry_;
     std::unique_ptr<Tab> current_tab_;
     size_t min_frames_shown_ = 2;

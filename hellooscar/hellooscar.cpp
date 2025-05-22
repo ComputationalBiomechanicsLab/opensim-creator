@@ -18,25 +18,21 @@ namespace
         }
     private:
         void impl_on_mount() override
-        {
-            ui::context::init(App::upd());
-        }
+        {}
 
         void impl_on_unmount() override
-        {
-            ui::context::shutdown(App::upd());
-        }
+        {}
 
         bool impl_on_event(Event& e) override
         {
-            return ui::context::on_event(e);
+            return ui_context_.on_event(e);
         }
 
         void impl_on_draw() override
         {
             App::upd().clear_screen();
 
-            ui::context::on_start_new_frame(App::upd());
+            ui_context_.on_start_new_frame();
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
@@ -60,7 +56,7 @@ namespace
             ui::draw_size_t_input("q", &edited_torus_parameters_.q);
             ui::end_panel();
 
-            ui::context::render();
+            ui_context_.render();
         }
 
         void update_torus_if_params_changed()
@@ -72,6 +68,7 @@ namespace
             torus_parameters_ = edited_torus_parameters_;
         }
 
+        ui::Context ui_context_{App::upd()};
         TorusKnotGeometryParams torus_parameters_;
         TorusKnotGeometryParams edited_torus_parameters_;
         TorusKnotGeometry mesh_;

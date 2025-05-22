@@ -42,24 +42,36 @@ struct ImDrawList;
 
 namespace osc::ui
 {
-    // functions related to top-level ui context management
-    namespace context
-    {
-        // init global UI context
-        void init(App&);
+    // Represents the top-level UI context that `ui::` functions talk to
+    // when drawing the UI.
+    class Context final {
+    public:
+        // Constructs a global UI context.
+        explicit Context(App&);
+        Context(const Context&) = delete;
+        Context(Context&&) noexcept = delete;
 
-        // shutdown UI context
-        void shutdown(App&);
+        // Shuts down the global UI context.
+        ~Context() noexcept;
 
-        // returns true if the UI handled the event
+        Context& operator=(const Context&) = delete;
+        Context& operator=(Context&&) noexcept = delete;
+
+        // Shuts down and constructs this `UiContext` in-place.
+        void reset();
+
+        // Returns true if the UI handled the event.
         bool on_event(Event&);
 
-        // should be called at the start of each frame (e.g. `Screen::on_draw()`)
-        void on_start_new_frame(App&);
+        // Should be called at the start of each frame (e.g. `Screen::on_draw()`).
+        void on_start_new_frame();
 
-        // should be called at the end of each frame (e.g. the end of `Screen::on_draw()`)
+        // Should be called at the end of each frame (e.g. the end of `Screen::on_draw()`).
         void render();
-    }
+    private:
+        void init(App&);
+        void shutdown(App&);
+    };
 
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
@@ -557,10 +569,11 @@ namespace osc::ui
     void pop_style_color(int count = 1);
 
     Color get_color(ColorVar);
-    float get_text_line_height();
-    float get_text_line_height_with_spacing();
 
-    float get_font_size();
+    float get_text_line_height_in_current_panel();
+    float get_text_line_height_with_spacing_in_current_panel();
+    float get_font_base_size();
+    float get_font_base_size_with_spacing();
 
     Vec2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false);
 

@@ -54,7 +54,7 @@ namespace
     {
         ui::push_style_color(ui::ColorVar::Button, Color::clear());
 
-        const float title_height = ui::get_text_line_height();
+        const float title_height = ui::get_text_line_height_in_current_panel();
 
         const Vec2 p = ui::get_cursor_screen_pos();
         const Vec2 bb(ui::get_column_width(), ui::get_frame_height());

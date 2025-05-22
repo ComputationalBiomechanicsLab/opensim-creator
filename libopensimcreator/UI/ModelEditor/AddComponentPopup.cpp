@@ -229,7 +229,7 @@ private:
         // connectee for it yet and provide a UI for selecting them
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i) {
             drawIthSocketEditor(i);
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
         }
     }
 

@@ -18,7 +18,7 @@ namespace
     private:
         bool impl_on_event(Event& e) final
         {
-            if (ui::context::on_event(e)) {
+            if (m_UiContext.on_event(e)) {
                 return true;
             }
             return m_LoadingTab.on_event(e);
@@ -26,14 +26,12 @@ namespace
 
         void impl_on_mount() final
         {
-            ui::context::init(App::upd());
             m_LoadingTab.on_mount();
         }
 
         void impl_on_unmount() final
         {
             m_LoadingTab.on_unmount();
-            ui::context::shutdown(App::upd());
         }
 
         void impl_on_tick() final
@@ -43,15 +41,16 @@ namespace
 
         void impl_on_draw() final
         {
-            ui::context::on_start_new_frame(App::upd());
+            m_UiContext.on_start_new_frame();
             m_LoadingTab.on_draw();
-            ui::context::render();
+            m_UiContext.render();
 
             if (m_LoadingTab.isFinishedLoading() and m_NumFramesAfterLoading-- == 0) {
                 App::upd().request_quit();
             }
         }
 
+        ui::Context m_UiContext{App::upd()};
         size_t m_NumFramesAfterLoading = 2;
         LoadingTab m_LoadingTab{this, std::filesystem::weakly_canonical(std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "models" / "Blank" / "blank.osim")};
     };

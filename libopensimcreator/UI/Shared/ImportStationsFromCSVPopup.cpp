@@ -39,13 +39,15 @@ public:
 
     void draw_content()
     {
+        const float lineHeight = ui::get_text_line_height_in_current_panel();
+
         drawHelpText();
-        ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.25f*lineHeight});
 
         if (!m_MaybeImportPath)
         {
             drawSelectInitialFileState();
-            ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.75f*lineHeight});
         }
         else
         {
@@ -53,13 +55,13 @@ public:
             drawLandmarkEntries();
             drawWarnings();
 
-            ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.25f*lineHeight});
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.5f*lineHeight});
 
         }
         drawPossiblyDisabledOkOrCancelButtons();
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.5f*lineHeight});
     }
 
 private:
@@ -70,7 +72,7 @@ private:
         ui::draw_text_wrapped("(optional) A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ui::draw_bullet_point();
         ui::draw_text_wrapped("Data rows containing four columns: name (optional, string), x (number), y (number), and z (number)");
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ui::draw_text_wrapped("Example Input: ");
         ui::same_line();
@@ -102,8 +104,8 @@ private:
         ui::draw_text_centered(m_MaybeImportPath->string());
         ui::draw_text_centered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
-        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
-        if (ui::begin_table("##importtable", 4, ui::TableFlag::ScrollY, {0.0f, 10.0f*ui::get_text_line_height()}))
+        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
+        if (ui::begin_table("##importtable", 4, ui::TableFlag::ScrollY, {0.0f, 10.0f*ui::get_text_line_height_in_current_panel()}))
         {
             ui::table_setup_column("Name");
             ui::table_setup_column("X");
@@ -130,7 +132,7 @@ private:
 
             ui::end_table();
         }
-        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
 
         if (ui::draw_button(OSC_ICON_FILE " Select Different File"))
         {

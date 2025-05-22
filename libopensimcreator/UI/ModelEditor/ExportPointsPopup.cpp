@@ -556,7 +556,7 @@ public:
         const OpenSim::Model& model = m_Model->getModel();
         const SimTK::State& state = m_Model->getState();
 
-        const float sectionSpacing = 0.5f*ui::get_text_line_height();
+        const float sectionSpacing = 0.5f*ui::get_text_line_height_in_current_panel();
 
         DrawExportPointsPopupDescriptionSection();
         ui::draw_dummy({0.0f, sectionSpacing});

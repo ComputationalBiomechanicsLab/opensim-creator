@@ -14,16 +14,12 @@ public:
     {
         // called when app receives the screen, but before it starts pumping events
         // into it, ticking it, drawing it, etc.
-
-        ui::context::init(App::upd());  // boot up 2D ui support (ImGui, plotting, etc.)
     }
 
     void on_unmount()
     {
         // called when the app is going to stop pumping events/ticks/draws into this
         // screen (e.g. because the app is quitting, or transitioning to some other screen)
-
-        ui::context::shutdown(App::upd());  // shutdown 2D UI support
     }
 
     bool on_event(Event& e)
@@ -34,7 +30,7 @@ public:
             App::upd().request_quit();
             return true;
         }
-        else if (ui::context::on_event(e)) {
+        else if (ui_context_.on_event(e)) {
             return true;  // an element in the 2D UI handled this event
         }
         return false;   // nothing handled the event
@@ -55,7 +51,7 @@ public:
         // screen buffer between frames (it's assumed that your code does this when it needs
         // to)
 
-        ui::context::on_start_new_frame(App::upd());  // prepare the 2D UI for drawing a new frame
+        ui_context_.on_start_new_frame();  // prepare the 2D UI for drawing a new frame
 
         App::upd().clear_screen();  // set app window bg color
 
@@ -64,10 +60,11 @@ public:
         ui::draw_checkbox("checkbox_state", &checkbox_state_);
         ui::end_panel();
 
-        ui::context::render();  // render the 2D UI's drawing to the screen
+        ui_context_.render();  // render the 2D UI's drawing to the screen
     }
 
 private:
+    ui::Context ui_context_{App::upd()};
     bool checkbox_state_ = false;
 };
 

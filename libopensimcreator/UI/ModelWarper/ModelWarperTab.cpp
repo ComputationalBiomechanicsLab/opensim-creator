@@ -2135,7 +2135,7 @@ namespace
 
         void draw_validation_error_message(std::span<const ScalingDocumentValidationMessage> messages)
         {
-            const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height();
+            const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height_in_current_panel();
             const float regionHeight = ui::get_content_region_available().y;
             const float top = 0.5f * (regionHeight - contentHeight);
 
@@ -2150,7 +2150,7 @@ namespace
 
             // error line(s)
             int id = 0;
-            for ([[maybe_unused]] const auto& message : messages) {
+            for (const auto& message : messages) {
                 ui::push_id(id++);
 
                 ui::push_style_color(ui::ColorVar::Text, ui_color(message.payload));
@@ -2171,7 +2171,7 @@ namespace
         void draw_scaling_error_message(CStringView message)
         {
             const float h = ui::get_content_region_available().y;
-            const float lineHeight = ui::get_text_line_height();
+            const float lineHeight = ui::get_text_line_height_in_current_panel();
             constexpr float numLines = 3.0f;
             const float top = 0.5f * (h - numLines*lineHeight);
 
@@ -2329,7 +2329,7 @@ namespace
         void impl_draw_content() final
         {
             draw_scaling_parameters();
-            ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height_in_current_panel()});
             draw_scaling_steps();
         }
 
@@ -2337,7 +2337,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Parameters");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
             if (m_State->hasScalingParameters()) {
                 if (ui::begin_table("##ScalingParameters", 2)) {
                     ui::table_setup_column("Name");
@@ -2370,7 +2370,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Steps");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
 
             if (m_State->hasScalingSteps()) {
                 size_t i = 0;
@@ -2386,7 +2386,7 @@ namespace
                 ui::draw_text_disabled_and_centered("(the model will be left unmodified)");
             }
 
-            ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
             draw_add_scaling_step_context_button();
         }
 
@@ -2424,7 +2424,7 @@ namespace
             {
                 const auto messages = m_State->validateStep(step);
                 if (not messages.empty()) {
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height()});
+                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height_in_current_panel()});
                     ui::indent();
                     for (const ScalingStepValidationMessage& message : messages) {
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
@@ -2438,12 +2438,12 @@ namespace
                         ui::pop_style_color();
                     }
                     ui::unindent();
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height()});
+                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height_in_current_panel()});
                 }
             }
 
             // draw property editors
-            ui::indent(1.0f*ui::get_text_line_height());
+            ui::indent(1.0f*ui::get_text_line_height_in_current_panel());
             {
                 const auto path = step.getAbsolutePathString();
                 const auto docPtr = m_State->getDocumentPtr();
@@ -2460,8 +2460,8 @@ namespace
                     m_State->actionApplyObjectEditToScalingDocument(std::move(objectEdit).value());
                 }
             }
-            ui::unindent(1.0f*ui::get_text_line_height());
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::unindent(1.0f*ui::get_text_line_height_in_current_panel());
+            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
         }
 
         void draw_add_scaling_step_context_button()

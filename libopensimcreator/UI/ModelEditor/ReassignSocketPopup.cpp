@@ -169,7 +169,7 @@ public:
 
         ui::begin_child_panel(
             "##componentlist",
-            Vec2{-1.0f, 16.0f*ui::get_text_line_height()},
+            Vec2{-1.0f, 16.0f*ui::get_text_line_height_in_current_panel()},
             ui::ChildPanelFlag::Border
         );
 

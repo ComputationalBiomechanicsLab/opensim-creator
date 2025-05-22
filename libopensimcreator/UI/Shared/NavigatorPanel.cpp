@@ -126,7 +126,7 @@ private:
     {
         Response rv;
         drawFilterAndSearchRow();
-        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height_in_current_panel()});
         ui::draw_separator();
         drawNavigationTreeChildPanel(rv);
         return rv;
@@ -146,7 +146,7 @@ private:
             ui::PanelFlag::NoBackground
         );
 
-        ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height_in_current_panel()});
         drawNavigationTreeContent(rv);
 
         ui::end_child_panel();
@@ -241,7 +241,7 @@ private:
             if (row++ % 2) {
                 const auto offset = ui::get_cursor_screen_pos() - ui::get_cursor_pos();
                 const auto topLeft = Vec2{0.0f, ui::get_cursor_pos().y};
-                const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing()};
+                const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing_in_current_panel()};
                 ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f));
             }
 

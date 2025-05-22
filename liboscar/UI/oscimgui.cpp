@@ -258,6 +258,8 @@ static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset()
 
 namespace
 {
+    constexpr float c_default_base_font_pixel_size = 15.0f;
+
     constexpr std::string_view c_ui_vertex_shader_src = R"(
         #version 330 core
 
@@ -832,7 +834,7 @@ namespace
         }
     }
 
-    void setup_scaling_dependent_fonts_and_styling(App& app)
+    void setup_scaling_dependent_rendering_fonts_and_styling(App& app)
     {
         ImGuiIO& io = ImGui::GetIO();
         const float scale = app.main_window_device_pixel_ratio();
@@ -847,7 +849,7 @@ namespace
             io.FontDefault = nullptr;
 
             ImFontConfig base_config;
-            base_config.SizePixels = 15.0f;
+            base_config.SizePixels = c_default_base_font_pixel_size;
             base_config.RasterizerDensity = scale;
             base_config.PixelSnapH = true;
             base_config.FontDataOwnedByAtlas = true;
@@ -1184,7 +1186,7 @@ namespace
         // Update display scale (e.g. when user changes DPI settings or moves the
         // application window to a display that has a different DPI)
         if (std::exchange(bd.WantChangeDisplayScale, false)) {
-            setup_scaling_dependent_fonts_and_styling(app);
+            setup_scaling_dependent_rendering_fonts_and_styling(app);
         }
 
         // Update `DeltaTime`
@@ -1696,7 +1698,65 @@ struct osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final 
     }
 };
 
-void osc::ui::context::init(App& app)
+osc::ui::Context::Context(App& app)
+{
+    OSC_ASSERT(ImGui::GetCurrentContext() == nullptr && "a global UI context has already been initialized");
+    init(app);
+}
+
+osc::ui::Context::~Context() noexcept
+{
+    shutdown(App::upd());
+}
+
+void osc::ui::Context::reset()
+{
+    App& app = App::upd();
+    shutdown(app);
+    init(app);
+}
+
+bool osc::ui::Context::on_event(Event& ev)
+{
+    ImGui_ImplOscar_ProcessEvent(ev);
+
+    // handle `.WantCaptureKeyboard`
+    constexpr auto keyboard_event_types = std::to_array({EventType::KeyDown, EventType::KeyUp});
+    if (ImGui::GetIO().WantCaptureKeyboard and cpp23::contains(keyboard_event_types, ev.type())) {
+        return true;
+    }
+
+    // handle `.WantCaptureMouse`
+    constexpr auto mouse_event_types = std::to_array({EventType::MouseWheel, EventType::MouseMove, EventType::MouseButtonUp, EventType::MouseButtonDown});
+    return ImGui::GetIO().WantCaptureMouse and cpp23::contains(mouse_event_types, ev.type());
+}
+
+void osc::ui::Context::on_start_new_frame()
+{
+    App& app = App::upd();
+
+    graphics_backend_on_start_new_frame();
+    ImGui_ImplOscar_NewFrame(app);
+    ImGui::NewFrame();
+
+    // extra parts
+    ImGuizmo::BeginFrame();
+}
+
+void osc::ui::Context::render()
+{
+    {
+        OSC_PERF("ImGui::Render()");
+        ImGui::Render();
+    }
+
+    {
+        OSC_PERF("graphics_backend::render(ImGui::GetDrawData())");
+        graphics_backend_render(ImGui::GetDrawData());
+    }
+}
+
+void osc::ui::Context::init(App& app)
 {
     // ensure ImGui uses the same allocator as the rest of
     // our (C++ stdlib) application
@@ -1712,7 +1772,7 @@ void osc::ui::context::init(App& app)
     load_imgui_config(app.user_data_directory(), app.upd_resource_loader());
 
     // setup fonts + styling
-    setup_scaling_dependent_fonts_and_styling(app);
+    setup_scaling_dependent_rendering_fonts_and_styling(app);
 
     // init ImGui for oscar
     ImGui_ImplOscar_Init(app.main_window_id());
@@ -1725,7 +1785,7 @@ void osc::ui::context::init(App& app)
     ImGuizmo::CreateContext();
 }
 
-void osc::ui::context::shutdown(App& app)
+void osc::ui::Context::shutdown(App& app)
 {
     ImGuizmo::DestroyContext();
     ImPlot::DestroyContext();
@@ -1733,44 +1793,6 @@ void osc::ui::context::shutdown(App& app)
     graphics_backend_shutdown();
     ImGui_ImplOscar_Shutdown(app);
     ImGui::DestroyContext();
-}
-
-bool osc::ui::context::on_event(Event& ev)
-{
-    ImGui_ImplOscar_ProcessEvent(ev);
-
-    // handle `.WantCaptureKeyboard`
-    constexpr auto keyboard_event_types = std::to_array({EventType::KeyDown, EventType::KeyUp});
-    if (ImGui::GetIO().WantCaptureKeyboard and cpp23::contains(keyboard_event_types, ev.type())) {
-        return true;
-    }
-
-    // handle `.WantCaptureMouse`
-    constexpr auto mouse_event_types = std::to_array({EventType::MouseWheel, EventType::MouseMove, EventType::MouseButtonUp, EventType::MouseButtonDown});
-    return ImGui::GetIO().WantCaptureMouse and cpp23::contains(mouse_event_types, ev.type());
-}
-
-void osc::ui::context::on_start_new_frame(App& app)
-{
-    graphics_backend_on_start_new_frame();
-    ImGui_ImplOscar_NewFrame(app);
-    ImGui::NewFrame();
-
-    // extra parts
-    ImGuizmo::BeginFrame();
-}
-
-void osc::ui::context::render()
-{
-    {
-        OSC_PERF("ImGui::Render()");
-        ImGui::Render();
-    }
-
-    {
-        OSC_PERF("graphics_backend::render(ImGui::GetDrawData())");
-        graphics_backend_render(ImGui::GetDrawData());
-    }
 }
 
 void osc::ui::align_text_to_frame_padding()
@@ -2500,19 +2522,28 @@ Color osc::ui::get_color(ColorVar var)
     return ImGui::GetStyle().Colors[to<ImGuiCol>(var)];
 }
 
-float osc::ui::get_text_line_height()
+float osc::ui::get_text_line_height_in_current_panel()
 {
+    OSC_ASSERT_ALWAYS(ImGui::GetCurrentWindow() && "not currently in a panel (use ui::get_font_base_size if you want a panel-independent size)");
     return ImGui::GetTextLineHeight();
 }
 
-float osc::ui::get_text_line_height_with_spacing()
+float osc::ui::get_text_line_height_with_spacing_in_current_panel()
 {
+    OSC_ASSERT_ALWAYS(ImGui::GetCurrentWindow() && "not currently in a panel (use ui::get_font_base_size if you want a panel-independent size)");
     return ImGui::GetTextLineHeightWithSpacing();
 }
 
-float osc::ui::get_font_size()
+float osc::ui::get_font_base_size()
 {
-    return ImGui::GetFontSize();
+    // HACK: context should be set up to return this, but font initialization is lazy in imgui
+    return c_default_base_font_pixel_size;
+}
+
+float osc::ui::get_font_base_size_with_spacing()
+{
+    // HACK: context should be set up to return this, but font initialization is lazy in imgui
+    return c_default_base_font_pixel_size + ImGui::GetStyle().ItemSpacing.y;
 }
 
 Vec2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)

@@ -525,7 +525,7 @@ private:
             }
         }
 
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
         ui::draw_text_disabled("Model Visual Preferences");
         ui::draw_separator();
         DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);
@@ -537,7 +537,7 @@ private:
             std::vector<std::string> socketNames = GetSocketNames(c);
 
             if (not socketNames.empty()) {
-                ui::push_style_var(ui::StyleVar::CellPadding, {0.5f*ui::get_text_line_height(), 0.5f*ui::get_text_line_height()});
+                ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vec2{0.5f});
 
                 if (ui::begin_table("sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
                     ui::table_setup_column("Socket Name");
@@ -621,7 +621,7 @@ private:
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-        ui::get_text_line_height()/128.0f
+        ui::get_font_base_size()/128.0f
     );
 };
 

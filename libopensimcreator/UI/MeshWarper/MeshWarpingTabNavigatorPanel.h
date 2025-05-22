@@ -233,12 +233,12 @@ namespace osc
 
         float calcCircleRadius() const
         {
-            return 0.4f*ui::get_text_line_height();
+            return 0.4f*ui::get_text_line_height_in_current_panel();
         }
 
         Vec2 calcColumnMidpointScreenPos() const
         {
-            return Vec2{ui::get_cursor_screen_pos()} + Vec2{0.5f*ui::get_column_width(), 0.5f*ui::get_text_line_height()};
+            return Vec2{ui::get_cursor_screen_pos()} + Vec2{0.5f*ui::get_column_width(), 0.5f*ui::get_text_line_height_in_current_panel()};
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

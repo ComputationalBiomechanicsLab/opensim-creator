@@ -23,6 +23,7 @@
 #include <liboscar/UI/Widgets/GuiRuler.h>
 #include <liboscar/UI/Widgets/IconWithoutMenu.h>
 #include <liboscar/Utils/Algorithms.h>
+#include <liboscar/Utils/Assertions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>
@@ -205,7 +206,7 @@ namespace
 
         std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
             App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-            ui::get_text_line_height()/128.0f
+            ui::get_font_base_size()/128.0f
         );
         std::string panel_name_;
         ModelSelectionGizmo m_Gizmo;

@@ -1010,19 +1010,19 @@ bool osc::DrawMuscleDecorationOptionsEditor(OpenSimDecorationOptions& opts)
     edited = DrawMuscleRenderingOptionsRadioButtions(opts) || edited;
     ui::pop_id();
 
-    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
     ui::push_id(id++);
     ui::draw_text_disabled("Sizing");
     edited = DrawMuscleSizingOptionsRadioButtons(opts) || edited;
     ui::pop_id();
 
-    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
     ui::push_id(id++);
     ui::draw_text_disabled("Color Source");
     edited = DrawMuscleColorSourceOptionsRadioButtons(opts) || edited;
     ui::pop_id();
 
-    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
     ui::push_id(id++);
     ui::draw_text_disabled("Color Scaling");
     edited = DrawMuscleColorScalingOptionsRadioButtons(opts) || edited;
@@ -1059,7 +1059,7 @@ bool osc::DrawOverlayOptionsEditor(OverlayDecorationOptions& opts)
         {
             if (lastGroupLabel)
             {
-                ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+                ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
             }
             ui::draw_text_disabled(groupLabel);
             lastGroupLabel = groupLabel;
@@ -1148,7 +1148,7 @@ bool osc::DrawVisualAidsContextMenuContent(ModelRendererParams& params)
     edited = DrawOverlayOptionsEditor(params.overlayOptions) || edited;
 
     // OpenSim-specific extra rendering options
-    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+    ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
     ui::draw_text_disabled("OpenSim");
     edited = DrawCustomDecorationOptionCheckboxes(params.decorationOptions) || edited;
 

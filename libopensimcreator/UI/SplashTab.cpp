@@ -320,13 +320,13 @@ private:
 
         drawActionsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height_in_current_panel()});
         ui::draw_text_disabled("Workflows");
         ui::draw_dummy({0.0f, 2.0f});
 
         drawWorkflowsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height_in_current_panel()});
         ui::draw_text_disabled("Recent Models");
         ui::draw_dummy({0.0f, 2.0f});
 
@@ -372,7 +372,7 @@ private:
     void drawVersionInfo()
     {
         const Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const float h = ui::get_text_line_height_with_spacing();
+        const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 
         const Vec2 pos{

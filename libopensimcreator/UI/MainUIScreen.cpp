@@ -183,8 +183,6 @@ public:
                 m_RequestedTab = m_Tabs.back()->id();
             }
         }
-
-        ui::context::init(App::upd());
     }
 
     void on_unmount()
@@ -204,8 +202,6 @@ public:
 
             m_ActiveTabID = UID::empty();
         }
-
-        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)
@@ -230,7 +226,7 @@ public:
             m_MaybeScreenshotRequest = App::upd().request_screenshot();
             handled = true;
         }
-        else if (ui::context::on_event(e)) {
+        else if (m_UiContext.on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `Tab::onDraw` (immediate-mode UI)
             App::upd().request_redraw();
@@ -380,30 +376,29 @@ public:
             App::upd().clear_screen();
         }
 
-        ui::context::on_start_new_frame(App::upd());
+        m_UiContext.on_start_new_frame();
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");
             drawUIContent();
         }
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             if (m_RequestedTab == UID::empty()) {
                 m_RequestedTab = m_ActiveTabID;
             }
             m_ActiveTabID = UID::empty();
 
-            ui::context::shutdown(App::upd());
-            ui::context::init(App::upd());
+            m_UiContext.reset();
             App::upd().request_redraw();
-            m_ImguiWasAggressivelyReset = false;
+            m_UiWasAggressivelyReset = false;
 
             return;
         }
 
         {
-            OSC_PERF("MainUIScreen/ui::context::render()");
-            ui::context::render();
+            OSC_PERF("MainUIScreen/render()");
+            m_UiContext.render();
         }
     }
 
@@ -428,7 +423,7 @@ public:
                         impl_close_tab(m_ActiveTabID);
                     }
 
-                    if (m_ImguiWasAggressivelyReset) {
+                    if (m_UiWasAggressivelyReset) {
                         return;  // must return here to prevent the ImGui end_panel calls from erroring
                     }
                 }
@@ -488,7 +483,7 @@ public:
                                 m_RequestedTab = UID::empty();
                             }
 
-                            if (m_ImguiWasAggressivelyReset) {
+                            if (m_UiWasAggressivelyReset) {
                                 return;
                             }
 
@@ -524,13 +519,13 @@ public:
     {
         drawTabSpecificMenu();
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
         drawTabBar();
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
@@ -557,7 +552,7 @@ public:
             handleDeletedTabs();
         }
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
@@ -695,7 +690,7 @@ public:
 
     void impl_reset_imgui()
     {
-        m_ImguiWasAggressivelyReset = true;
+        m_UiWasAggressivelyReset = true;
     }
 
     void tryHandleScreenshotRequest()
@@ -712,6 +707,9 @@ public:
 
 private:
     OSC_OWNER_GETTERS(MainUIScreen);
+
+    // top-level 2D UI context (required for `ui::` calls to work).
+    ui::Context m_UiContext{App::upd()};
 
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;
@@ -866,7 +864,7 @@ private:
     bool m_QuitRequested = false;
 
     // true if the UI context was aggressively reset by a tab (and, therefore, this screen should reset the UI)
-    bool m_ImguiWasAggressivelyReset = false;
+    bool m_UiWasAggressivelyReset = false;
 
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)
     std::future<Screenshot> m_MaybeScreenshotRequest;

@@ -103,7 +103,7 @@ public:
     {
         const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
         const Vec2 viewportDims = dimensions_of(viewportUIRect);
-        const Vec2 menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_text_line_height()};
+        const Vec2 menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_font_base_size()};
 
         // center the menu
         {

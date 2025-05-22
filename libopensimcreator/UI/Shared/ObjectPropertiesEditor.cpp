@@ -139,7 +139,7 @@ namespace
     {
         ui::DrawListView l = ui::get_panel_draw_list();
         const Vec2 p = ui::get_cursor_screen_pos();
-        const float h = ui::get_text_line_height() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
+        const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
         l.add_rect_filled({p, p + dims}, color);
         ui::set_cursor_screen_pos({p.x + 4.0f, p.y});
@@ -152,9 +152,9 @@ namespace
             ui::draw_text("Set Step Size");
             ui::same_line();
             ui::draw_help_marker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-            ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height_in_current_panel()});
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
+            ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
 
             if (ui::begin_table("CommonChoicesTable", 2, ui::TableFlag::SizingStretchProp)) {
                 ui::table_setup_column("Type");

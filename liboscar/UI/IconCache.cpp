@@ -3,6 +3,7 @@
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/Icon.h>
+#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/TransparentStringHasher.h>
 
 #include <ankerl/unordered_dense.h>
@@ -17,8 +18,12 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(ResourceLoader& loader_prefixed_at_dir_containing_svgs, float vertical_scale)
+    explicit Impl(
+        ResourceLoader& loader_prefixed_at_dir_containing_svgs,
+        float vertical_scale)
     {
+        OSC_ASSERT(vertical_scale > 0.0f && "icon cache's vertical scale must be a positive number");
+
         const auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {

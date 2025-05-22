@@ -22,7 +22,7 @@ namespace rgs = std::ranges;
 namespace
 {
     struct AxesMetrics final {
-        float font_size = ui::get_font_size();
+        float font_size = ui::get_font_base_size();
         float line_length = 2.0f * font_size;
         float circle_radius = 0.6f * font_size;
         float max_edge_length = 2.0f * (line_length + sqrt(2.0f * circle_radius * circle_radius));
