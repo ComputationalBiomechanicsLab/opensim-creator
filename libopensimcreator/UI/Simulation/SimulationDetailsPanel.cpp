@@ -39,12 +39,12 @@ public:
     void draw_content()
     {
         {
-            ui::draw_dummy({0.0f, 1.0f});
+            ui::draw_vertical_spacer(1.0f/15.0f);
             ui::draw_text("info:");
             ui::same_line();
             ui::draw_help_marker("Top-level information about the simulation");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
 
             ui::set_num_columns(2);
             ui::draw_text("num reports");
@@ -59,7 +59,7 @@ public:
             DrawSimulationParams(m_Simulation->getParams());
         }
 
-        ui::draw_dummy({0.0f, 10.0f});
+        ui::draw_vertical_spacer(10.0f/15.0f);
 
         {
             OSC_PERF("draw simulation stats");
@@ -77,7 +77,7 @@ private:
             return;
         }
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
         ui::set_num_columns(2);
         ui::draw_text("plots:");
         ui::same_line();
@@ -102,7 +102,7 @@ private:
         ui::next_column();
         ui::set_num_columns();
         ui::draw_separator();
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         int imguiID = 0;
         ui::set_num_columns(2);

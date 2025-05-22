@@ -316,19 +316,19 @@ private:
     void drawMenuLeftColumnContent(int& imguiID)
     {
         ui::draw_text_disabled("Actions");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawActionsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(1.0f);
         ui::draw_text_disabled("Workflows");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawWorkflowsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(1.0f);
         ui::draw_text_disabled("Recent Models");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawRecentlyOpenedFilesMenuSectionContent(imguiID);
     }
@@ -338,7 +338,7 @@ private:
         if (not m_MainMenuFileTab->exampleOsimFiles.empty()) {
 
             ui::draw_text_disabled("Example Models");
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
 
             for (const std::filesystem::path& examplePath : m_MainMenuFileTab->exampleOsimFiles) {
                 DrawRecentOrExampleFileMenuItem(

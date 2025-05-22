@@ -1605,7 +1605,7 @@ private:
         ui::draw_text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ui::same_line();
         ui::draw_help_marker(c.getNamePluralized(), c.getDescription());
-        ui::draw_dummy({0.0f, 5.0f});
+        ui::draw_vertical_spacer(5.0f/15.0f);
         ui::indent();
 
         bool empty = true;
@@ -1670,7 +1670,7 @@ private:
         for (const MIClass& c : GetSceneElClasses())
         {
             drawNavigatorElement(c);
-            ui::draw_dummy({0.0f, 5.0f});
+            ui::draw_vertical_spacer(5.0f/15.0f);
         }
 
         // a navigator element might have opened the context menu in the navigator panel

@@ -39,29 +39,25 @@ public:
 
     void draw_content()
     {
-        const float lineHeight = ui::get_text_line_height_in_current_panel();
-
         drawHelpText();
-        ui::draw_dummy({0.0f, 0.25f*lineHeight});
+        ui::draw_vertical_spacer(0.25f);
 
-        if (!m_MaybeImportPath)
-        {
+        if (not m_MaybeImportPath) {
             drawSelectInitialFileState();
-            ui::draw_dummy({0.0f, 0.75f*lineHeight});
+            ui::draw_vertical_spacer(0.75f);
         }
-        else
-        {
+        else {
             ui::draw_separator();
             drawLandmarkEntries();
             drawWarnings();
 
-            ui::draw_dummy({0.0f, 0.25f*lineHeight});
+            ui::draw_vertical_spacer(0.25f);
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*lineHeight});
+            ui::draw_vertical_spacer(0.5f);
 
         }
         drawPossiblyDisabledOkOrCancelButtons();
-        ui::draw_dummy({0.0f, 0.5f*lineHeight});
+        ui::draw_vertical_spacer(0.5f);
     }
 
 private:
@@ -72,7 +68,7 @@ private:
         ui::draw_text_wrapped("(optional) A header row of four columns, ideally labelled 'name', 'x', 'y', and 'z'");
         ui::draw_bullet_point();
         ui::draw_text_wrapped("Data rows containing four columns: name (optional, string), x (number), y (number), and z (number)");
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.5f);
         constexpr CStringView c_ExampleInputText = "name,x,y,z\nstationatground,0,0,0\nstation2,1.53,0.2,1.7\nstation3,3.0,2.0,0.0\n";
         ui::draw_text_wrapped("Example Input: ");
         ui::same_line();
@@ -104,7 +100,7 @@ private:
         ui::draw_text_centered(m_MaybeImportPath->string());
         ui::draw_text_centered(std::string{"("} + std::to_string(m_ImportedLandmarks.size()) + " data rows)");
 
-        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.2f);
         if (ui::begin_table("##importtable", 4, ui::TableFlag::ScrollY, {0.0f, 10.0f*ui::get_text_line_height_in_current_panel()}))
         {
             ui::table_setup_column("Name");
@@ -132,7 +128,7 @@ private:
 
             ui::end_table();
         }
-        ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.2f);
 
         if (ui::draw_button(OSC_ICON_FILE " Select Different File"))
         {

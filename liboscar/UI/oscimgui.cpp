@@ -2058,6 +2058,11 @@ void osc::ui::draw_dummy(const Vec2& size)
     ImGui::Dummy(size);
 }
 
+void osc::ui::draw_vertical_spacer(float num_lines)
+{
+    ImGui::Dummy({0.0f, num_lines * get_text_line_height_in_current_panel()});
+}
+
 bool osc::ui::begin_combobox(CStringView label, CStringView preview_value, ComboFlags flags)
 {
     return ImGui::BeginCombo(label.c_str(), preview_value.empty() ? nullptr : preview_value.c_str(), to<ImGuiComboFlags>(flags));
@@ -3138,7 +3143,7 @@ void osc::ui::draw_tooltip_header_text(CStringView content)
 
 void osc::ui::draw_tooltip_description_spacer()
 {
-    ui::draw_dummy({0.0f, 1.0f});
+    ui::draw_vertical_spacer(1.0f/15.0f);
 }
 
 void osc::ui::draw_tooltip_description_text(CStringView content)

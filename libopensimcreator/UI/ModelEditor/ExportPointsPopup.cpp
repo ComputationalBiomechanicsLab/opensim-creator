@@ -556,19 +556,17 @@ public:
         const OpenSim::Model& model = m_Model->getModel();
         const SimTK::State& state = m_Model->getState();
 
-        const float sectionSpacing = 0.5f*ui::get_text_line_height_in_current_panel();
-
         DrawExportPointsPopupDescriptionSection();
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         DrawPointSelector(m_PointSelectorState, model, state);
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         ui::draw_text("Options");
         ui::draw_separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         drawBottomButtons();
     }

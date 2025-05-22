@@ -88,17 +88,17 @@ public:
 
         drawPropertyEditors();
 
-        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_vertical_spacer(3.0f/15.0f);
 
         drawSocketEditors();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         drawPathPointEditor();
 
         drawAnyErrorMessages();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         drawBottomButtons();
     }
@@ -201,7 +201,7 @@ private:
         ui::draw_help_marker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
         ui::draw_separator();
 
-        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_vertical_spacer(3.0f/15.0f);
 
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater) {
@@ -223,13 +223,13 @@ private:
         ui::draw_help_marker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ui::draw_separator();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         // for each socket in the prototype (cached), check if the user has chosen a
         // connectee for it yet and provide a UI for selecting them
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i) {
             drawIthSocketEditor(i);
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.5f);
         }
     }
 
@@ -481,9 +481,9 @@ private:
     {
         if (not m_CurrentErrors.empty()) {
             ui::push_style_color(ui::ColorVar::Text, Color::red());
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
             ui::draw_text_wrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
             ui::pop_style_color();
         }
     }

@@ -280,7 +280,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::same_line();
     ui::draw_help_marker("OSMV's global graphical settings");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         ui::set_num_columns(2);
 
@@ -337,12 +337,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns();
     }
 
-    ui::draw_dummy({0.0f, 2.0f});
+    ui::draw_vertical_spacer(2.0f/15.0f);
     ui::draw_text("properties");
     ui::same_line();
     ui::draw_help_marker("general software properties: useful information for bug reporting etc.");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         const AppMetadata& metadata = App::get().metadata();
 
@@ -381,12 +381,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns(1);
     }
 
-    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_vertical_spacer(2.5f/15.0f);
     ui::draw_text("debugging utilities:");
     ui::same_line();
     ui::draw_help_marker("standard utilities that can help with development, debugging, etc.");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     int id = 0;
     {
         ui::set_num_columns(2);
@@ -428,12 +428,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns();
     }
 
-    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_vertical_spacer(2.5f/15.0f);
     ui::draw_text("useful links:");
     ui::same_line();
     ui::draw_help_marker("links to external sites that might be useful");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         ui::set_num_columns(2);
 

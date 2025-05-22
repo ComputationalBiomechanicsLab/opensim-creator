@@ -2329,7 +2329,7 @@ namespace
         void impl_draw_content() final
         {
             draw_scaling_parameters();
-            ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.75f);
             draw_scaling_steps();
         }
 
@@ -2337,7 +2337,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Parameters");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.5f);
             if (m_State->hasScalingParameters()) {
                 if (ui::begin_table("##ScalingParameters", 2)) {
                     ui::table_setup_column("Name");
@@ -2370,7 +2370,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Steps");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.5f);
 
             if (m_State->hasScalingSteps()) {
                 size_t i = 0;
@@ -2386,7 +2386,7 @@ namespace
                 ui::draw_text_disabled_and_centered("(the model will be left unmodified)");
             }
 
-            ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.25f);
             draw_add_scaling_step_context_button();
         }
 
@@ -2424,7 +2424,7 @@ namespace
             {
                 const auto messages = m_State->validateStep(step);
                 if (not messages.empty()) {
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height_in_current_panel()});
+                    ui::draw_vertical_spacer(0.2f);
                     ui::indent();
                     for (const ScalingStepValidationMessage& message : messages) {
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
@@ -2438,7 +2438,7 @@ namespace
                         ui::pop_style_color();
                     }
                     ui::unindent();
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height_in_current_panel()});
+                    ui::draw_vertical_spacer(0.2f);
                 }
             }
 
@@ -2461,7 +2461,7 @@ namespace
                 }
             }
             ui::unindent(1.0f*ui::get_text_line_height_in_current_panel());
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.5f);
         }
 
         void draw_add_scaling_step_context_button()

@@ -126,7 +126,7 @@ private:
     {
         Response rv;
         drawFilterAndSearchRow();
-        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.1f);
         ui::draw_separator();
         drawNavigationTreeChildPanel(rv);
         return rv;
@@ -146,7 +146,7 @@ private:
             ui::PanelFlag::NoBackground
         );
 
-        ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.05f);
         drawNavigationTreeContent(rv);
 
         ui::end_child_panel();

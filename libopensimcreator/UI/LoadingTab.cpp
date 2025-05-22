@@ -122,9 +122,9 @@ public:
         else {
             if (ui::begin_panel("Error Message", nullptr, ui::PanelFlag::NoTitleBar)) {
                 ui::draw_text_wrapped("An error occurred while loading the file:");
-                ui::draw_dummy({0.0f, 5.0f});
+                ui::draw_vertical_spacer(5.0f/15.0f);
                 ui::draw_text_wrapped(m_LoadingErrorMsg);
-                ui::draw_dummy({0.0f, 5.0f});
+                ui::draw_vertical_spacer(5.0f/15.0f);
 
                 if (ui::draw_button("try again")) {
                     App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(parent(), m_OsimPath));

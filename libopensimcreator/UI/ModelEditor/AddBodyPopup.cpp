@@ -201,8 +201,6 @@ public:
 
         // end of input prompting: show user cancel/ok buttons
 
-        ui::draw_dummy({0.0f, 1.0f});
-
         if (ui::draw_button("cancel")) {
             request_close();
         }

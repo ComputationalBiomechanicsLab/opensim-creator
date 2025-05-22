@@ -28,7 +28,7 @@ bool osc::IconWithMenu::on_draw()
     bool rv = false;
     if (ui::begin_popup(context_menu_id_, {ui::PanelFlag::AlwaysAutoResize, ui::PanelFlag::NoTitleBar, ui::PanelFlag::NoSavedSettings})) {
         ui::draw_text_disabled(icon_without_menu_.title());
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.5f);
         rv = content_renderer_();
         ui::end_popup();
     }

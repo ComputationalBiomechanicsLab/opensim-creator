@@ -98,7 +98,7 @@ public:
                 copy_traceback_log_to_clipboard();
             }
 
-            ui::draw_dummy({0.0f, 10.0f});
+            ui::draw_vertical_spacer(10.0f/15.0f);
 
             ui::end_menu_bar();
         }

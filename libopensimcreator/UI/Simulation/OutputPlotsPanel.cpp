@@ -70,7 +70,7 @@ public:
         }
 
         ui::draw_separator();
-        ui::draw_dummy({0.0f, 5.0f});
+        ui::draw_vertical_spacer(5.0f/15.0f);
 
         for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
             OutputExtractor output = m_Environment->getUserOutputExtractor(i);

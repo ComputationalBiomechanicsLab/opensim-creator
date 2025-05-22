@@ -525,7 +525,7 @@ private:
             }
         }
 
-        ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height_in_current_panel()});
+        ui::draw_vertical_spacer(0.5f);
         ui::draw_text_disabled("Model Visual Preferences");
         ui::draw_separator();
         DrawAllDecorationToggleButtons(*m_Model, *m_IconCache);

@@ -152,9 +152,9 @@ namespace
             ui::draw_text("Set Step Size");
             ui::same_line();
             ui::draw_help_marker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-            ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.1f);
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height_in_current_panel()});
+            ui::draw_vertical_spacer(0.2f);
 
             if (ui::begin_table("CommonChoicesTable", 2, ui::TableFlag::SizingStretchProp)) {
                 ui::table_setup_column("Type");

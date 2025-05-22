@@ -111,7 +111,7 @@ public:
             ui::same_line();
             ui::draw_help_marker("This is geometry that OpenSim can generate without needing an external mesh file. Useful for basic geometry.");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
 
             size_t item = 0;
             if (ui::draw_combobox("##premade", &item, c_GeomNames))
@@ -124,16 +124,16 @@ public:
         // mesh file selection
         //
         // let the user select a mesh file that the implementation should load + use
-        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_vertical_spacer(3.0f/15.0f);
         ui::draw_text("mesh file");
         ui::same_line();
         ui::draw_help_marker("This is geometry that OpenSim loads from external mesh files. Useful for custom geometry (usually, created in some other application, such as ParaView or Blender)");
         ui::draw_separator();
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         // let the user search through mesh files in pre-established Geometry/ dirs
         ui::draw_string_input("search", m_Search);
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         ui::begin_child_panel(
             "mesh list",
@@ -175,7 +175,7 @@ public:
         }
         ui::draw_tooltip_if_item_hovered("Open Mesh File", "Open a mesh file on the filesystem");
 
-        ui::draw_dummy({0.0f, 5.0f});
+        ui::draw_vertical_spacer(5.0f/15.0f);
 
         if (ui::draw_button("Cancel"))
         {

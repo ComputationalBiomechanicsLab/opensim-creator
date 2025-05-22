@@ -263,6 +263,8 @@ namespace osc::ui
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
     // Draws an invisible, non-interactive "dummy" element in the UI with the given size in device-independent pixels.
     void draw_dummy(const Vec2& size);
+    // Draws an invisible, non-interactive "dummy" element that is `num_lines` * text line height high.
+    void draw_vertical_spacer(float num_lines);
 
     enum class ComboFlag : unsigned {
         None = 0,
