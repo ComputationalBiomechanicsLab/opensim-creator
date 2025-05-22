@@ -7,6 +7,7 @@
 #include <lunasvg.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -17,6 +18,8 @@ using namespace osc;
 
 Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 {
+    OSC_ASSERT_ALWAYS(scale > 0.0f && "svg scale factor must be greater than zero");
+
     // read SVG content into a `std::string`
     std::string data;
     std::copy(
@@ -27,16 +30,16 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 
     // parse the `std::string` as an SVG document
     const std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
-    OSC_ASSERT(svg_document != nullptr && "error loading SVG document");
+    OSC_ASSERT_ALWAYS(svg_document != nullptr && "error loading SVG document");
 
     // when rendering the document's contents, flip Y so that it's compatible with the
     // renderer's coordinate system
-    const lunasvg::Matrix transform{scale, 0.0f, 0.0f, -scale, 0.0f, scale*svg_document->height()};
+    const lunasvg::Matrix transform{scale, 0.0f, 0.0f, -scale, 0.0f, std::ceil(scale*svg_document->height())};
 
     // create a `lunasvg::Bitmap` that lunasvg can render into
     lunasvg::Bitmap bitmap{
-        static_cast<int>(scale*svg_document->width()),
-        static_cast<int>(scale*svg_document->height()),
+        static_cast<int>(std::ceil(scale*svg_document->width())),
+        static_cast<int>(std::ceil(scale*svg_document->height())),
     };
     bitmap.clear(0x00000000);  // ensure the bitmap is cleared before rendering
     svg_document->render(bitmap, transform);
