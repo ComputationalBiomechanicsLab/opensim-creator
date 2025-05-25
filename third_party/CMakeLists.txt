@@ -3,19 +3,20 @@ project(osc-dependencies)
 
 # -------------- gather user-facing build cache vars ---------------- #
 
-set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
-set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
-set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
-set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
-set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
+set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
 set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
-set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
-set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
 set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
-set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
+set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
 set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
+set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
+set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
+set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
+set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
+set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
+set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
+
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 include(ExternalProject)  # ExternalProject_Add
