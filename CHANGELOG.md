@@ -7,7 +7,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - The center of mass visualization for `Body` components now matches how engineering
-  texbooks tend to represent CoMs (#575).
+  textbooks tend to represent CoMs (#575).
 - The property editors shown in the `Properties` panel were cleaned up, such that they
   align better and editor buttons now have a clear `edit` and `view` annotations.
 - A search bar was added to the `Add` context menu, enabling users to search through
