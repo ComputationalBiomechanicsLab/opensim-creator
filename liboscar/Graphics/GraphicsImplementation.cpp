@@ -5422,7 +5422,7 @@ private:
         MeshOpenGLData& buffers = **maybe_gpu_data_;
 
         // upload CPU-side vector data into the GPU-side buffer
-        OSC_ASSERT(std::bit_cast<uintptr_t>(vertex_buffer_.bytes().data()) % alignof(float) == 0);
+        OSC_ASSERT(is_aligned_at_least(vertex_buffer_.bytes().data(), alignof(float)));
         gl::bind_buffer(GL_ARRAY_BUFFER, buffers.array_buffer);
         gl::buffer_data(
             GL_ARRAY_BUFFER,
