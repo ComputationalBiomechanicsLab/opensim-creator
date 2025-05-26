@@ -22,7 +22,7 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Copy this checklist into it
     - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
     - [ ] Clean-build a debug (+ libASAN) version of OSC on Ubuntu 24 (debugging os).
-          See `scripts/build_ubuntu.sh` etc. for a guide for this.
+          See `scripts/build_linux_debugging.sh` etc. for a guide for this.
     - [ ] Ensure the test suite passes with the debug build
       - [ ] Optionally, also ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
     - [ ] Manually spot-check new changes with the debug+ASAN build
