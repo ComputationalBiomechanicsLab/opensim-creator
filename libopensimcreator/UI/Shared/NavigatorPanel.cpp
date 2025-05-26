@@ -13,6 +13,7 @@
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/Utils/VariableLengthArray.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -37,8 +38,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    // TODO: replace with VariableLengthArray once MacOS supports `std::pmr::memory_resource`
-    using ComponentTreePathPointers = std::vector<const OpenSim::Component*>;
+    using ComponentTreePathPointers = VariableLengthArray<const OpenSim::Component*, 8>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     ComponentTreePathPointers computeComponentTreePath(
