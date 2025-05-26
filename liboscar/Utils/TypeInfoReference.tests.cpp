@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include <concepts>
+#include <cstdint>
 #include <functional>
 #include <set>
 #include <type_traits>
@@ -16,7 +17,7 @@ TEST(TypeInfoReference, can_construct_from_typeid_expression)
 
 TEST(TypeInfoReference, can_be_implicitly_converted_from_typeid)
 {
-    [[maybe_unused]] const TypeInfoReference info = typeid(short);  // ensure this compiles
+    [[maybe_unused]] const TypeInfoReference info = typeid(int16_t);  // ensure this compiles
 }
 
 TEST(TypeInfoReference, get_returns_reference_to_the_type_info_used_to_construct_instance)
@@ -62,7 +63,7 @@ TEST(TypeInfoReference, can_be_used_in_a_set)
     ASSERT_EQ(s.size(), 3);
     s.emplace(typeid(int));
     ASSERT_EQ(s.size(), 3);
-    s.emplace(typeid(short));
+    s.emplace(typeid(int16_t));
     ASSERT_EQ(s.size(), 3);
     s.emplace(typeid(void*));
     ASSERT_EQ(s.size(), 4);
