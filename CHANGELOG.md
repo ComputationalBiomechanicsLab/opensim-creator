@@ -3,27 +3,31 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-
 ## [Upcoming Release]
+
+- (nothing yet)
+
+
+## [0.5.23] - 2025/05/26
 
 - The center of mass visualization for `Body` components now matches how engineering
   textbooks tend to represent CoMs (#575).
-- The property editors shown in the `Properties` panel were cleaned up, such that they
-  align better and editor buttons now have a clear `edit` and `view` annotations.
 - A search bar was added to the `Add` context menu, enabling users to search through
   all available components.
+- The property editors shown in the `Properties` panel were cleaned up, such that they
+  align better and editor buttons now have a clear `edit` and `view` annotations.
 - The alignment of property editors was adjusted such that they all align on the
   left side (previously: double editors were indented slightly).
-- Fixed a crash that occured when opening a property editor that spawns an external
+- Fixed a crash that occurred when opening a property editor that spawns an external
   panel/dialog from within the `Add Component` dialog (#1040).
 - The search bar in the "Add Component" dialog was cleaned up and now matches similar
   search bars in other dialogs.
-- The mesh warping workflow now has a 'swap source <--> destination' button, to make it
-  possible to see what the inverse of a TPS warp looks like.
 - File dialog filters now default to filtering typically-supported file extensions for
   the given prompted filetype (e.g. opening a mesh will filter `obj`, `stl`, and `vtp`;
   previously, all dialogs defaulted to 'All Files', which can be tricky when working with
   directories containing many files).
+- The mesh warping workflow now has a 'swap source <--> destination' button, to make it
+  possible to see what the inverse of a TPS warp looks like.
 - The mesh warping workflow now has a `source/destination landmarks prescale` option, which
   enables multiplying each landmark by a scaling factor before using them in the TPS technique.
   This matches a similar feature in the model warper and is necessary when handling data in
@@ -31,12 +35,12 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The mesh warping workflow now has toggles for `scale`, `rotation`, `translation`, and `warp`,
   which lets users toggle those parts of the TPS technique in-UI. This matches a similar feature
   in the model warper and is useful for understanding the underlying TPS warp.
-- Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
+- Fixed an edge-case where loading multiple model files simultaneously could sometimes
   cause the models not to load (#1036).
-- The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
-  yet, due to upstream issues in OpenSim, #982).
 - The draft explaining `StationDefinedFrame`s has been upgraded to a full tutorial in the
   OpenSim Creator documentation.
+- The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
+  yet, due to upstream issues in OpenSim, #982).
 - The development documentation now outlines OpenSim Creator's release process and the
   exact compiler versions etc. that the project is built with (#1022 #1017).
 - The original (deprecated/prototype) version of the model warper workflow was dropped.
