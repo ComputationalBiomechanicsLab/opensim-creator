@@ -55,6 +55,7 @@ namespace osc
         Mesh yline_mesh();
         Mesh quad_mesh();
         Mesh torus_mesh(float tube_center_radius, float tube_radius);
+        Mesh sphere_octant_mesh();
 
         const BVH& get_bvh(const Mesh&);
 

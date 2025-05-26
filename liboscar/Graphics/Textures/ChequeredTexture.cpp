@@ -19,7 +19,7 @@ namespace
         constexpr Vec2i chequer_dims = {1, 1};
         constexpr Vec2i texture_dims = 2 * chequer_dims;
         constexpr Color32 on_color = Color32::white();
-        constexpr Color32 off_color = Color32::very_light_grey();
+        constexpr Color32 off_color = Color32::lightest_grey();
 
         std::vector<Color32> pixels;
         pixels.reserve(area_of(texture_dims));

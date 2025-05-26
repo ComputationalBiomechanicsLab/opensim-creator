@@ -24,6 +24,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::literals;
 
 namespace
 {
@@ -161,6 +162,7 @@ public:
 
         return it->second;
     }
+    Mesh sphere_octant_mesh() { return sphere_octant_; }
 
     const BVH& get_bvh(const Mesh& mesh)
     {
@@ -243,6 +245,14 @@ public:
 
 private:
     Mesh sphere = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
+    Mesh sphere_octant_ = SphereGeometry{{
+        .num_width_segments = 16,
+        .num_height_segments = 16,
+        .phi_start = 0_deg,
+        .phi_length = 90_deg,
+        .theta_start = 0_deg,
+        .theta_length = 90_deg,
+    }};
     Mesh circle = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
     Mesh cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
     Mesh uncapped_cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
@@ -304,6 +314,10 @@ Mesh osc::SceneCache::quad_mesh() { return impl_->quad_mesh(); }
 Mesh osc::SceneCache::torus_mesh(float tube_center_radius, float tube_radius)
 {
     return impl_->torus_mesh(tube_center_radius, tube_radius);
+}
+Mesh osc::SceneCache::sphere_octant_mesh()
+{
+    return impl_->sphere_octant_mesh();
 }
 
 const BVH& osc::SceneCache::get_bvh(const Mesh& mesh)
