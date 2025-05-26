@@ -7,6 +7,7 @@
 #include <liboscar-demos/OscarDemosTabRegistry.h>
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string_view>
@@ -69,7 +70,7 @@ int main(int argc, char* argv[])
 
     // load each unnamed arg as a file in the UI
     for (const auto& unnamed_arg : unnamed_args) {
-        screen->open(unnamed_arg);
+        screen->open(std::filesystem::weakly_canonical(unnamed_arg));
     }
 
     // enter main application loop
