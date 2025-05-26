@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The property editors shown in the `Properties` panel were cleaned up, such that they
+  align better and editor buttons now have a clear `edit` and `view` annotations.
 - A search bar was added to the `Add` context menu, enabling users to search through
   all available components.
 - The alignment of property editors was adjusted such that they all align on the

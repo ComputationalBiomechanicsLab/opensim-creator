@@ -104,6 +104,7 @@ namespace
     // draws the property name and (optionally) comment tooltip
     void DrawPropertyName(const OpenSim::AbstractProperty& property)
     {
+        ui::align_text_to_frame_padding();  // ensure it aligns with the editors in the next column
         ui::draw_text(property.getName());
 
         if (not property.getComment().empty()) {
@@ -1401,11 +1402,12 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EDIT)) {
+                    if (ui::draw_button(OSC_ICON_EDIT " edit ")) {
                         App::post_event<OpenPopupEvent>(*parentWidget, createGeometryPathEditorPopup(componentPtr));
                     }
                 }
                 else {
+                    ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
                     ui::draw_text(prop.toString());
                 }
             }
@@ -1496,7 +1498,7 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EYE)) {
+                    if (ui::draw_button(OSC_ICON_EYE " view ")) {
 
                         // care: the accessor here differs from the default because the user's selection
                         // can change the accessor's behavior. This is a panel, so it should stick to
@@ -1531,12 +1533,14 @@ namespace
                     }
                 }
                 else {
+                    ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
                     ui::draw_text(prop->toString());
                 }
             }
 
             ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
+            ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
             ui::draw_text(prop->getTypeName());
             ui::next_column();
 
@@ -1766,6 +1770,7 @@ private:
         ui::draw_separator();
         DrawPropertyName(prop);
         ui::next_column();
+        ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
         ui::draw_text(prop.toString());
         ui::next_column();
     }
