@@ -5,6 +5,7 @@
 #include <liboscar/Utils/CStringView.h>
 #include <OpenSim/Common/Component.h>
 
+#include <concepts>
 #include <cstddef>
 #include <optional>
 #include <string>
@@ -15,20 +16,25 @@
 
 namespace osc
 {
+    // Represents a type-erased sequence of named/described `OpenSim::Component`s.
     class ComponentRegistryBase {
     public:
         using value_type = ComponentRegistryEntryBase;
+        using reference = value_type&;
+        using const_reference = const value_type&;
+        using const_iterator = const value_type*;
+        using size_type = size_t;
 
         CStringView name() const { return m_Name; }
         CStringView description() const { return m_Description; }
 
-        const value_type* begin() const { return m_Entries.data(); }
-        const value_type* end() const { return m_Entries.data() + m_Entries.size(); }
-        size_t size() const { return m_Entries.size(); }
-        const value_type& operator[](size_t i) const { return m_Entries[i]; }
+        const_iterator begin() const { return m_Entries.data(); }
+        const_iterator end() const { return m_Entries.data() + m_Entries.size(); }
+        size_type size() const { return m_Entries.size(); }
+        const_reference operator[](size_type pos) const { return m_Entries[pos]; }
 
     protected:
-        ComponentRegistryBase(
+        explicit ComponentRegistryBase(
             std::string_view name_,
             std::string_view description_) :
 
@@ -36,9 +42,11 @@ namespace osc
             m_Description{description_}
         {}
 
-        ComponentRegistryEntryBase& push_back_erased(ComponentRegistryEntryBase&& el)
+        template<typename... Args>
+        requires std::constructible_from<ComponentRegistryEntryBase, Args&&...>
+        reference emplace_back_erased(Args&&... args)
         {
-            return m_Entries.emplace_back(std::move(el));
+            return m_Entries.emplace_back(std::forward<Args>(args)...);
         }
 
     private:
@@ -62,3 +70,4 @@ namespace osc
         return std::nullopt;
     }
 }
+

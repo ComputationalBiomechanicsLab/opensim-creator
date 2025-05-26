@@ -3,6 +3,7 @@
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/ModelEditor/AddBodyPopup.h>
 #include <libopensimcreator/UI/ModelEditor/AddComponentPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -14,6 +15,7 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/LifetimedPtr.h>
+#include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
@@ -48,6 +50,26 @@ public:
             ui::begin_disabled();
         }
 
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        DrawSearchBar(m_SearchString);
+
+        if (m_SearchString.empty()) {
+            drawDefaultComponentList();
+        }
+        else {
+            drawSearchResultsOrNoResults();
+        }
+
+        if (disabled) {
+            ui::end_disabled();
+        }
+
+        ui::pop_id();
+    }
+
+private:
+    void drawDefaultComponentList()
+    {
         // action: add body
         {
             // draw button
@@ -74,15 +96,35 @@ public:
         renderButton(GetComponentRegistry<OpenSim::Probe>());
         renderButton(GetComponentRegistry<OpenSim::Component>());
         renderButton(GetCustomComponentRegistry());
-
-        if (disabled) {
-            ui::end_disabled();
-        }
-
-        ui::pop_id();
     }
 
-private:
+    void drawSearchResultsOrNoResults()
+    {
+        bool searchResultFount = false;
+        for (const auto& entry : GetAllRegisteredComponents()) {
+            if (contains_case_insensitive(entry.name(), m_SearchString)) {
+                if (ui::draw_menu_item(entry.name())) {
+                    if (parent()) {
+                        auto popup = std::make_unique<AddComponentPopup>(
+                            &owner(),
+                            "Add Component",
+                            m_Model,
+                            entry.instantiate()
+                        );
+                        App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+                    }
+                }
+                searchResultFount = true;
+            }
+        }
+        if (not searchResultFount) {
+            ui::draw_text_disabled_and_centered("no results ");
+            ui::same_line();
+            if (ui::draw_small_button("clear search")) {
+                m_SearchString.clear();
+            }
+        }
+    }
 
     void renderButton(const ComponentRegistryBase& registry)
     {
@@ -114,6 +156,7 @@ private:
     }
 
     std::shared_ptr<IModelStatePair> m_Model;
+    std::string m_SearchString;
 };
 
 
