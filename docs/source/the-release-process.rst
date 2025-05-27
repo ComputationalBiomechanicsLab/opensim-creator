@@ -20,10 +20,10 @@ Creator, it's usually copied into a GitHub issue:
 
     - [ ] Create an issue called something like `Release XX.xx.pp`
     - [ ] Copy this checklist into it
-    - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`)
-    - [ ] Clean-build a debug (+ libASAN) version of OSC on Ubuntu 24 (debugging os).
-          See `scripts/build_linux_debugging.sh` etc. for a guide for this.
-    - [ ] Ensure the test suite passes with the debug build
+    - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`) to the desired version
+    - [ ] Use `scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
+          version of OSC on Ubuntu 24 (debugging os).
+    - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
       - [ ] Optionally, also ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
     - [ ] Manually spot-check new changes with the debug+ASAN build
     - [ ] Fix all bugs/problems found during the above steps
@@ -31,39 +31,36 @@ Creator, it's usually copied into a GitHub issue:
           section becomes `XX.xx.pp` and add a new `Unreleased` section
           above that
     - [ ] Commit any fixes to CI and ensure CI passes
-    - [ ] Tag+push the commit as a release
-    - [ ] Rebase any currently-active feature branches to this commit (don't allow stale branches)
-    - [ ] Bump OSC's version number in `CMakeLists.txt` (`project`) to `$VERSION+1`
+    - [ ] Tag+push the passing commit as a release
+    - [ ] Rebase any currently-active feature branches to this commit (discourage allow stale branches)
     - [ ] Download artifacts from the tagged commit CI build
       - [ ] Also, create a source tarball with `./scripts/bundle_sources.sh $VERSION`
-      - [ ] Also, build a MacOS ARM64 build locally from the release and upload it
-    - [ ] Clean-install artifacts on development machines, ensure they install as-expected
     - [ ] Unzip/rename any artifacts (see prev. releases)
+    - [ ] Clean-install the release artifacts on development machines, ensure they install
+          as-expected on all target OSes (spot check)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
-      - [ ] Write a user-friendly version of CHANGELOG that explains the release's
-            changes
+      - [ ] Write a user-friendly version of CHANGELOG as the release description that explains
+            the release's changes to end-users in a readable way
     - [ ] Update Zenodo with the release
       - [ ] This usually happens automatically, via a webhook in Zenodo
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
     - [ ] Update + commit the repository with the Zenodo release details:
       - [ ] Use `bump_zenodo_details.py` to automatically do this
-      - [ ] Ensure `codemeta.json` is up-to-date
-      - [ ] Ensure `CITATION.cff` is up-to-date
-      - [ ] Ensure `README.md` is up-to-date
+      - [ ] Ensure `codemeta.json`, `CITATION.cff`, and `README.md` refer to the
+            correct Zenodo release.
     - [ ] Ensure the entire repository, incl. all tags, is pushed to the official
           TU Delft mirror at https://gitlab.tudelft.nl/computationalbiomechanicslab/opensim-creator
+    - [ ] Ensure all release artifacts, incl. the source tarball, are uploaded to
+          `files.opensimcreator.com/releases`
+      - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
     - [ ] Update `docs.opensimcreator.com` to host the documentation
-      - [ ] **Note**: this requires appropriate credentials for `docs.opensimcreator.com`
       - [ ] Build the docs yourself, or get the CI build of them
       - [ ] Upload with (e.g.) `rsync -avz --delete build/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest/`
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
-      - [ ] **Note**: this requires appropriate SSH credentials for `www.opensimcreator.com`
       - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately
       - [ ] Upload with (e.g.): `rsync -avz public/ www.opensimcreator.com:/var/www/opensimcreator.com/`
-    - [ ] Update `files.opensimcreator.com/releases` with appropriate release artifacts
-      - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
     - [ ] (optional) Update social media:
       - [ ] LinkedIn
       - [ ] Twitter
