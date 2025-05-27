@@ -346,6 +346,9 @@ namespace osc
         // Returns the dimensions of the main application window in device-independent pixels.
         Vec2 main_window_dimensions() const;
 
+        // Requests that the main window dimensions are set to the given dimensions in device-independent pixels.
+        void try_async_set_main_window_dimensions(Vec2);
+
         // Returns the dimensions of the main application window in physical pixels.
         Vec2 main_window_pixel_dimensions() const;
 

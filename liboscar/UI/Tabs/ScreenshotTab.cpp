@@ -115,6 +115,17 @@ public:
         {
             int id = 0;
             ui::begin_panel("Controls");
+
+            // show editor for setting window size
+            {
+                Vec2 s = App::get().main_window_dimensions();
+                ui::draw_text("%f %f", s.x, s.y);
+                if (ui::draw_button("change")) {
+                    App::upd().try_async_set_main_window_dimensions({1980.0f, 1080.0f});
+                }
+            }
+
+            // list each annotation
             for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
                 ui::push_id(id++);
                 ui::draw_text(annotation.label());

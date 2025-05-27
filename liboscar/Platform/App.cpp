@@ -1203,6 +1203,20 @@ public:
         return main_window_pixel_dimensions() / main_window_device_pixel_ratio();
     }
 
+    void try_async_set_main_window_dimensions(Vec2 new_dims)
+    {
+        // mirror `SDL_GetWindowSize` by figuring out the scale factor
+        // difference between what the caller provides (virtual coords,
+        // as scaled by us) and what `SDL_GetWindowSize` provides (unknown
+        // coordinate system).
+
+        Vec2i sdl_size;
+        SDL_GetWindowSize(main_window_.get(), &sdl_size.x, &sdl_size.y);
+        const Vec2 ratio = new_dims/main_window_dimensions();
+        const Vec2i scaled_dims(ratio * Vec2{sdl_size});
+        SDL_SetWindowSize(main_window_.get(), scaled_dims.x, scaled_dims.y);
+    }
+
     Vec2 main_window_pixel_dimensions() const
     {
         int w = 0;
@@ -1913,6 +1927,11 @@ WindowID osc::App::main_window_id() const
 Vec2 osc::App::main_window_dimensions() const
 {
     return impl_->main_window_dimensions();
+}
+
+void osc::App::try_async_set_main_window_dimensions(Vec2 new_dims)
+{
+    return impl_->try_async_set_main_window_dimensions(new_dims);
 }
 
 Vec2 osc::App::main_window_pixel_dimensions() const
