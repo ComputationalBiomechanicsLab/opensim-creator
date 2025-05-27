@@ -217,3 +217,29 @@ void osc::write_to_png(
         throw std::runtime_error{std::move(ss).str()};
     }
 }
+
+void osc::write_to_jpeg(const Texture2D& texture, std::ostream& out, float quality)
+{
+    const Vec2i dimensions = texture.dimensions();
+    const std::vector<Color32> pixels = texture.pixels32();
+
+    const auto guard = lock_stbi_api();
+
+    stbi_flip_vertically_on_write(c_stb_true);
+    const int rv = stbi_write_jpg_to_func(
+        osc_stbi_write_via_std_ostream,
+        &out,
+        dimensions.x,
+        dimensions.y,
+        4,
+        pixels.data(),
+        static_cast<int>(100.0f*quality)
+    );
+    stbi_flip_vertically_on_write(c_stb_false);
+
+    if (rv == 0) {
+        std::stringstream ss;
+        ss << "failed to write a texture as a JPEG: " << stbi_failure_reason();
+        throw std::runtime_error{std::move(ss).str()};
+    }
+}

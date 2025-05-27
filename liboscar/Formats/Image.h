@@ -35,8 +35,6 @@ namespace osc
         );
     }
 
-    void write_to_png(
-        const Texture2D&,
-        std::ostream&
-    );
+    void write_to_png(const Texture2D&, std::ostream&);
+    void write_to_jpeg(const Texture2D&, std::ostream&, float quality = 0.9f);
 }
