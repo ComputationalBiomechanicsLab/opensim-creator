@@ -24,20 +24,20 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Use `scripts/build_linux_debugging.sh` to clean-build a debug (+ libASAN)
           version of OSC on Ubuntu 24 (debugging os).
     - [ ] Ensure the `clang-tidy` lints and test suite passes with the debug build
-      - [ ] Optionally, also ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
+    - [ ] Ensure the test suite passes under valgrind (see: `scripts/build_linux_valgrind.sh`)
     - [ ] Manually spot-check new changes with the debug+ASAN build
     - [ ] Fix all bugs/problems found during the above steps
-    - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased`
-          section becomes `XX.xx.pp` and add a new `Unreleased` section
-          above that
     - [ ] Commit any fixes to CI and ensure CI passes
-    - [ ] Tag+push the passing commit as a release
-    - [ ] Rebase any currently-active feature branches to this commit (discourage allow stale branches)
-    - [ ] Download artifacts from the tagged commit CI build
+    - [ ] Clean-install the passing binaries on development machines, ensure they install on all OSes
+          if there's any issues, fix them, commit, ensure CI passes, etc.
+    - [ ] Update `CHANGELOG.md` sections such that the current `Unreleased` section becomes
+          `XX.xx.pp` and add a new `Unreleased` section above that.
+    - [ ] Tag+push the `CHANGELOG.md` update commit as a release (so that the commit message
+          roughly matches something release-ey).
+    - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
+    - [ ] Download release artifacts from the tagged commit CI build
       - [ ] Also, create a source tarball with `git archive $VERSION --prefix opensimcreator-${VERSION}/ --output opensimcreator-${VERSION}-src.tar.xz`
     - [ ] Unzip/rename any artifacts (see prev. releases)
-    - [ ] Clean-install the release artifacts on development machines, ensure they install
-          as-expected on all target OSes (spot check)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
       - [ ] Write a user-friendly version of CHANGELOG as the release description that explains
