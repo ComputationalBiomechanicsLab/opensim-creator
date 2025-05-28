@@ -1818,17 +1818,22 @@ namespace
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
 
-                // Create warped geom dir
-                const auto warpedGeometryDir = modelFilesystemLocation->parent_path() / "WarpedGeometry";
-                if (not std::filesystem::exists(warpedGeometryDir)) {
-                    std::filesystem::create_directories(warpedGeometryDir);
+                const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
+                if (not warpedGeometryDir) {
+                    log_error("cannot export scaled model: can't figure out where to save the warped meshes");
+                    return;
+                }
+
+                // If the warped geometry directory doesn't exist yet, create it.
+                if (not std::filesystem::exists(*warpedGeometryDir)) {
+                    std::filesystem::create_directories(*warpedGeometryDir);
                 }
 
                 // Export `InMemoryMesh`es to disk (#1003)
                 for (const InMemoryMesh& mesh : scaled->getModel().getComponentList<InMemoryMesh>()) {
                     // Figure out output file name.
                     const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
-                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
+                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(*warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
 
                     // Write warped mesh data to disk in an OBJ format.
                     {
@@ -1861,6 +1866,22 @@ namespace
         // undo/redo stuff
         std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
 
+
+        // warped geometry dir stuff
+        std::optional<std::filesystem::path> tryGetWarpedGeometryDirectory() const
+        {
+            if (m_MaybeCustomWarpedGeometryDirectory) {
+                return m_MaybeCustomWarpedGeometryDirectory;  // top-prio is user-enacted choice (#1046).
+            }
+
+            const OpenSim::Model& sourceModel = m_ScalingState->scratch().getSourceModel();
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (modelFilesystemLocation) {
+                return modelFilesystemLocation->parent_path() / "WarpedGeometry";
+            }
+
+            return std::nullopt;  // can't figure out where to save it :(
+        }
 
         // actions
         void actionCreateNewSourceModel()
@@ -1895,6 +1916,23 @@ namespace
                     GetModelFileFilters()
                 );
             }
+        }
+
+        void actionPromptUserToSelectWarpedGeometryDirectory()
+        {
+            App::upd().prompt_user_to_select_directory_async(
+                [state = shared_from_this()](const FileDialogResponse& response)
+                {
+                    if (not state) {
+                        return;  // Can't continue.
+                    }
+                    if (response.size() != 1) {
+                        return;  // Error, cancellation, or the user somehow selected >1 file.
+                    }
+
+                    state->m_MaybeCustomWarpedGeometryDirectory = response.front();
+                }
+            );
         }
 
         void actionOpenOsim(const std::filesystem::path& path)
@@ -1948,7 +1986,7 @@ namespace
             App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::optional<std::filesystem::path> p)
             {
                 if (not p) {
-                    return;  // user cancalled out of the prompt
+                    return;  // user cancelled out of the prompt
                 }
                 doc->saveTo(*p);
             }, "xml");
@@ -2018,6 +2056,8 @@ namespace
         bool m_LinkCameras = true;
         bool m_OnlyLinkRotation = false;
         PolarPerspectiveCamera m_LinkedCamera;
+
+        std::optional<std::filesystem::path> m_MaybeCustomWarpedGeometryDirectory;
     };
 }
 
@@ -2282,11 +2322,33 @@ namespace
                     ui::begin_disabled();
                     disabled = true;
                 }
+
                 ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
                 if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
                     m_State->exportWarpedModelToModelEditor();
                 }
                 ui::pop_style_color();
+                ui::same_line(0.0f, 1.0f);
+                if (ui::draw_button(OSC_ICON_COG)) {
+                    ui::open_popup("##WarpedModelExportModifiers");
+                }
+
+
+                if (ui::begin_popup("##WarpedModelExportModifiers")) {
+                    const auto geomDir = m_State->tryGetWarpedGeometryDirectory();
+                    if (geomDir) {
+                        ui::draw_text("Warped Geometry Directory: %s", geomDir->string().c_str());
+                    }
+                    else {
+                        ui::draw_text("Warped Geometry Directory: UNKNOWN");
+                    }
+
+                    ui::same_line();
+                    if (ui::draw_small_button("change")) {
+                        m_State->actionPromptUserToSelectWarpedGeometryDirectory();
+                    }
+                    ui::end_popup();
+                }
                 if (disabled) {
                     ui::end_disabled();
                 }

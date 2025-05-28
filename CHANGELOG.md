@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Fixed a crashing bug in mesh warper's landmark where it would infinitely loop
   and write the same landmark over and over when exporting to a CSV (#1045).
+- The model warper's "Export Warped Model" button now has a submenu where the
+  user can view and select which directory the warped geometry should be written
+  to (#1046).
 
 
 ## [0.5.23] - 2025/05/26
