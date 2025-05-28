@@ -34,7 +34,7 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Tag+push the passing commit as a release
     - [ ] Rebase any currently-active feature branches to this commit (discourage allow stale branches)
     - [ ] Download artifacts from the tagged commit CI build
-      - [ ] Also, create a source tarball with `./scripts/bundle_sources.sh $VERSION`
+      - [ ] Also, create a source tarball with `git archive $VERSION --prefix opensimcreator-${VERSION}/ --output opensimcreator-${VERSION}-src.tar.xz`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Clean-install the release artifacts on development machines, ensure they install
           as-expected on all target OSes (spot check)
