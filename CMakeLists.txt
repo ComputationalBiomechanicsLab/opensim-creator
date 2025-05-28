@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.15)
 
 project(osc VERSION 0.5.24 LANGUAGES CXX C)
 
-
 set(OSC_BUILD_OPENSIMCREATOR ON
     CACHE BOOL
     "enable/disable building OpenSim Creator (i.e. the OpenSim-dependent part of the codebase)"

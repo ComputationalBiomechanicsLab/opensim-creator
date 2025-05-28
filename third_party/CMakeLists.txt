@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(osc-dependencies)
 
-# -------------- gather user-facing build cache vars ---------------- #
-
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
 set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
@@ -58,6 +56,7 @@ if(TRUE)
     endforeach()
     unset(OSCDEPS_FORWARDED_VARS)
 endif()
+
 
 if(${OSCDEPS_BUILD_GOOGLETEST})
     ExternalProject_Add(googletest
@@ -162,10 +161,11 @@ endif()
 if(${OSCDEPS_BUILD_SPDLOG})
     if(MSVC)
         # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-	set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
     else()
-        set(SPDLOC_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     endif()
+
     ExternalProject_Add(spdlog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -186,6 +186,7 @@ if(${OSCDEPS_BUILD_LIBOSIM})
     if(${OSCDEPS_BUILD_SPDLOG})
         list(APPEND OSCDEPS_LIBOSIM_DEPS spdlog)
     endif()
+
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
