@@ -251,7 +251,7 @@ namespace osc
         //
         // - `callback` is called from the ui thread by the implementation when the user chooses
         //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
-        //   is called immeditately or as part of pumping the application event loop. `callback`
+        //   is called immediately or as part of pumping the application event loop. `callback`
         //   may not be called if the application quits/destructs prematurely.
         //
         // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
@@ -279,6 +279,25 @@ namespace osc
                 allow_many
             );
         }
+
+        // Prompts the user to select a single existing directory.
+        //
+        // - `callback` is called from the ui thread by the implementation when the user chooses
+        //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
+        //   is called immediately or as part of pumping the application event loop. `callback` may
+        //   not be called if the application quits/destructs prematurely.
+        //
+        // - `initial_directory_to_show` should be a filesystem path to a directory that should
+        //   initially be shown to the user. If it isn't provided, then an implementation-defined
+        //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
+        //
+        // - `allow_many` indicates whether the user can select multiple directories. However, not
+        //   all implementations support this option.
+        void prompt_user_to_select_directory_async(
+            std::function<void(FileDialogResponse&&)> callback,
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
+            bool allow_many = false
+        );
 
         // Prompts the user to select a new or existing filesystem path where they would like
         // to save a file.
