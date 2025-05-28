@@ -5,7 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- (nothing yet)
+- Fixed a crashing bug in mesh warper's landmark where it would infinitely loop
+  and write the same landmark over and over when exporting to a CSV (#1045).
 
 
 ## [0.5.23] - 2025/05/26

@@ -92,10 +92,10 @@ private:
         ui::draw_button(OSC_ICON_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
-                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Load Destination Mesh")) {
-                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             ui::end_popup();
         }
@@ -108,7 +108,7 @@ private:
     void drawSaveLandmarksButton()
     {
         if (ui::draw_button(OSC_ICON_SAVE)) {
-            ActionSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
+            ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
             "Save Landmarks to CSV (no names)",

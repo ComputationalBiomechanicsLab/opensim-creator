@@ -9,6 +9,7 @@
 #include <liboscar/Utils/StringName.h>
 #include <liboscar/Utils/UID.h>
 
+#include <concepts>
 #include <optional>
 #include <utility>
 
@@ -19,8 +20,19 @@ namespace osc
 
         explicit TPSDocumentLandmarkPair(StringName name_) :
             name{std::move(name_)}
-        {
-        }
+        {}
+
+        template<typename StringLike>
+        requires std::constructible_from<StringName, StringLike&&>
+        explicit TPSDocumentLandmarkPair(
+            StringLike&& name_,
+            std::optional<Vec3> maybeSourceLocation_,
+            std::optional<Vec3> maybeDestinationLocation_) :
+
+            name{std::forward<StringLike>(name_)},
+            maybeSourceLocation{std::move(maybeSourceLocation_)},
+            maybeDestinationLocation{std::move(maybeDestinationLocation_)}
+        {}
 
         TPSDocumentElementID sourceID() const
         {

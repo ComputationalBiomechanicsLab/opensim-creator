@@ -147,31 +147,31 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStlFile(m_State->getResultMesh());
+                    ActionPromptUserToMeshToStlFile(m_State->getResultMesh());
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache());
+                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache());
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmark Positions to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV"))
                 {
-                    ActionSavePairedLandmarksToCSV(m_State->getScratch());
+                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch());
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
                 {
-                    ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
                 }
                 ui::end_popup();
             }
