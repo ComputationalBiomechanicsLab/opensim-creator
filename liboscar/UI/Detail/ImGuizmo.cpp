@@ -25,7 +25,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
-// OPENSIM CREATOR CHANGES:
+// LIBOSCAR CHANGES:
 //
 // This header was originally copied from a third-party source:
 //
@@ -34,9 +34,8 @@
 // - Licensed under the MIT license
 // - Copyright(c) 2021 Cedric Guillemet
 //
-// Subsequent modifications to this file are licensed under OpenSim
-// Creator's license (see LICENSE/NOTICE.txt) and have the following
-// copyright:
+// Subsequent modifications to this file are licensed under liboscar's
+// license (see LICENSE/NOTICE.txt) and have the following copyright:
 //
 // - Copyright (c) 2024 Adam Kewley
 //

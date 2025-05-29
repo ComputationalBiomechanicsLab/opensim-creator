@@ -10,6 +10,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The model warper's "Export Warped Model" button now has a submenu where the
   user can view and select which directory the warped geometry should be written
   to (#1046).
+- Internal: `liboscar` now accepts its font/configuration dependencies externally,
+  which helps with decoupling it from OpenSimCreator's specific font/icon/configuration
+  assets.
 
 
 ## [0.5.23] - 2025/05/26

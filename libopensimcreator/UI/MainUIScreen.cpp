@@ -708,8 +708,18 @@ public:
 private:
     OSC_OWNER_GETTERS(MainUIScreen);
 
+    // Creates the top-level 2D UI context configuration (fonts, etc.).
+    static ui::ContextConfiguration CreateUiContextConfig()
+    {
+        ui::ContextConfiguration rv;
+        rv.set_base_imgui_ini_config_resource("OpenSimCreator/imgui_base_config.ini");
+        //rv.set_main_font_from_resource("OpenSimCreator/fonts/Ruda-Bold.ttf");
+        rv.set_icon_font_from_resource("OpenSimCreator/fonts/OpenSimCreatorIconFont.ttf", {OSC_ICON_MIN, OSC_ICON_MAX});
+        return rv;
+    }
+
     // top-level 2D UI context (required for `ui::` calls to work).
-    ui::Context m_UiContext{App::upd()};
+    ui::Context m_UiContext{App::upd(), CreateUiContextConfig()};
 
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;

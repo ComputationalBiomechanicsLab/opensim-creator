@@ -12,9 +12,7 @@
 
 namespace osc
 {
-    // a `CoordinateAxis` plus a direction along that axis
-    //
-    // inspired by simbody's `SimTK::CoordinateDirection` class
+    // A `CoordinateAxis` plus a direction along that axis.
     class CoordinateDirection final {
     public:
         // returns a `CoordinateDirection` parsed from a `std::string_view`, the format should be [direction]axis, e.g.:

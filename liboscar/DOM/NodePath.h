@@ -8,10 +8,6 @@
 namespace osc
 {
     // Represents a pre-parsed path to a node in a tree.
-    //
-    // See also:
-    // - godot's `NodePath`
-    // - OpenSim's `ComponentPath`
     class NodePath final {
     public:
         static constexpr std::string_view::value_type separator = '/';

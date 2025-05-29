@@ -14,7 +14,9 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/Key.h>
 #include <liboscar/Platform/KeyCombination.h>
+#include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Utils/Conversion.h>
+#include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Flags.h>
 #include <liboscar/Utils/UID.h>
@@ -42,12 +44,32 @@ struct ImDrawList;
 
 namespace osc::ui
 {
+    class Context;
+
+    // Represents the runtime configuration of a UI context.
+    class ContextConfiguration final {
+    public:
+        ContextConfiguration();
+
+        void set_base_imgui_ini_config_resource(ResourcePath);
+        void set_main_font_from_resource(ResourcePath);
+        void set_icon_font_from_resource(ResourcePath, ClosedInterval<char16_t> codepoint_range);
+
+        class Impl;
+    private:
+        friend class Context;
+        CopyOnUpdPtr<Impl> impl() const { return impl_; }
+
+        CopyOnUpdPtr<Impl> impl_;
+    };
+
     // Represents the top-level UI context that `ui::` functions talk to
     // when drawing the UI.
     class Context final {
     public:
-        // Constructs a global UI context.
-        explicit Context(App&);
+        // Constructs a global UI context with the given configuration.
+        explicit Context(App&, ContextConfiguration = {});
+
         Context(const Context&) = delete;
         Context(Context&&) noexcept = delete;
 
@@ -69,7 +91,7 @@ namespace osc::ui
         // Should be called at the end of each frame (e.g. the end of `Screen::on_draw()`).
         void render();
     private:
-        void init(App&);
+        void init(App&, CopyOnUpdPtr<ui::ContextConfiguration::Impl>);
         void shutdown(App&);
     };
 

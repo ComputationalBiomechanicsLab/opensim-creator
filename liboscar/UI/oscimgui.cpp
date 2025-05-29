@@ -370,9 +370,9 @@ namespace
         }
     }
 
-    struct OscarImguiBackendData final {
+    struct UiGraphicsContextData final {
 
-        OscarImguiBackendData()
+        UiGraphicsContextData()
         {
             ui_material.set_transparent(true);
             ui_material.set_cull_mode(CullMode::Off);
@@ -390,10 +390,10 @@ namespace
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
     // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
-    OscarImguiBackendData* get_graphics_backend_data()
+    UiGraphicsContextData* get_graphics_backend_data()
     {
         if (ImGui::GetCurrentContext()) {
-            return static_cast<OscarImguiBackendData*>(ImGui::GetIO().BackendRendererUserData);
+            return static_cast<UiGraphicsContextData*>(ImGui::GetIO().BackendRendererUserData);
         }
         else {
             return nullptr;
@@ -419,7 +419,7 @@ namespace
     }
 
     void render_draw_command(
-        OscarImguiBackendData& bd,
+        UiGraphicsContextData& bd,
         const ImDrawData& draw_data,
         const ImDrawList&,
         Mesh& mesh,
@@ -478,7 +478,7 @@ namespace
     }
 
     void render_drawlist(
-        OscarImguiBackendData& bd,
+        UiGraphicsContextData& bd,
         const ImDrawData& draw_data,
         ImDrawList& draw_list,
         RenderTexture* maybe_target)
@@ -522,7 +522,7 @@ namespace
     template<SameAsAnyOf<Texture2D, RenderTexture> Texture>
     ImTextureID allocate_texture_for_current_frame(const Texture& texture)
     {
-        OscarImguiBackendData* bd = get_graphics_backend_data();
+        UiGraphicsContextData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
         const UID texture_uid = bd->textures_allocated_this_frame.try_emplace(UID{}, texture).first->first;
         return to_imgui_texture_id(texture_uid);
@@ -548,14 +548,14 @@ namespace
         OSC_ASSERT(io.BackendRendererUserData == nullptr && "an oscar ImGui renderer backend is already initialized - this is a developer error (double-initialization)");
 
         // init backend data
-        io.BackendRendererUserData = static_cast<void*>(new OscarImguiBackendData{});
+        io.BackendRendererUserData = static_cast<void*>(new UiGraphicsContextData{});
         io.BackendRendererName = "imgui_impl_osc";
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
     }
 
     void graphics_backend_shutdown()
     {
-        OscarImguiBackendData* bd = get_graphics_backend_data();
+        UiGraphicsContextData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error (double-free)");
 
         // shutdown platform interface
@@ -572,7 +572,7 @@ namespace
     {
         // `ImGui_ImplOpenGL3_CreateDeviceObjects` is now part of constructing `OscarImguiBackendData`
 
-        OscarImguiBackendData* bd = get_graphics_backend_data();
+        UiGraphicsContextData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available - this is a developer error");
         bd->textures_allocated_this_frame.clear();
         if (not bd->font_texture) {
@@ -583,14 +583,14 @@ namespace
 
     void graphics_backend_mark_fonts_for_reupload()
     {
-        if (OscarImguiBackendData* bd = get_graphics_backend_data()) {
+        if (UiGraphicsContextData* bd = get_graphics_backend_data()) {
             bd->font_texture.reset();
         }
     }
 
     void graphics_backend_render(ImDrawData* draw_data, RenderTexture* maybe_target = nullptr)
     {
-        OscarImguiBackendData* bd = get_graphics_backend_data();
+        UiGraphicsContextData* bd = get_graphics_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
         setup_camera_view_matrix(*draw_data, bd->camera);
@@ -699,6 +699,53 @@ namespace
     };
 }
 
+class osc::ui::ContextConfiguration::Impl final {
+public:
+    struct MainFontConfig final {
+        ResourcePath path;
+    };
+
+    struct IconFontConfig final {
+        ResourcePath path;
+        ClosedInterval<char16_t> codepoint_range;
+    };
+
+    Impl() = default;
+
+    void set_base_imgui_ini_config_resource(ResourcePath path)
+    {
+        base_imgui_ini_config_ = std::move(path);
+    }
+
+    void set_main_font_from_resource(ResourcePath path)
+    {
+        main_font_config_ = MainFontConfig{.path = std::move(path)};
+    }
+    void set_icon_font_from_resource(ResourcePath path, ClosedInterval<char16_t> codepoint_range)
+    {
+        icon_font_config_ = IconFontConfig{.path = std::move(path), .codepoint_range = codepoint_range};
+    }
+
+    const ResourcePath* base_imgui_ini_config() const
+    {
+        return base_imgui_ini_config_ ? &base_imgui_ini_config_.value() : nullptr;
+    }
+
+    const MainFontConfig* main_font_config() const
+    {
+        return main_font_config_ ? &main_font_config_.value() : nullptr;
+    }
+
+    const IconFontConfig* icon_font_config() const
+    {
+        return icon_font_config_ ? &icon_font_config_.value() : nullptr;
+    }
+private:
+    std::optional<ResourcePath> base_imgui_ini_config_;
+    std::optional<MainFontConfig> main_font_config_;
+    std::optional<IconFontConfig> icon_font_config_;
+};
+
 namespace
 {
     // this is necessary because ImGui will take ownership and be responsible for
@@ -730,11 +777,14 @@ namespace
     }
 
     // The internal backend data associated with one UI context.
-    struct BackendData final {
+    struct UiContextData final {
 
-        explicit BackendData(WindowID window_id) :
+        explicit UiContextData(CopyOnUpdPtr<ui::ContextConfiguration::Impl> config, WindowID window_id) :
+            CallerConfig{std::move(config)},
             Window{window_id}
         {}
+
+        CopyOnUpdPtr<ui::ContextConfiguration::Impl>     CallerConfig;
 
         WindowID                                         Window;
         WindowID                                         ImeWindow;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
@@ -754,19 +804,19 @@ namespace
     // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
     // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
     // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
-    BackendData* try_get_ui_backend_data(ImGuiContext* context)
+    UiContextData* try_get_ui_backend_data(ImGuiContext* context)
     {
-        return context ? static_cast<BackendData*>(context->IO.BackendPlatformUserData) : nullptr;
+        return context ? static_cast<UiContextData*>(context->IO.BackendPlatformUserData) : nullptr;
     }
 
-    BackendData* try_get_ui_backend_data()
+    UiContextData* try_get_ui_backend_data()
     {
         return try_get_ui_backend_data(ImGui::GetCurrentContext());
     }
 
-    BackendData& get_backend_data()
+    UiContextData& get_backend_data()
     {
-        BackendData* bd = try_get_ui_backend_data();
+        UiContextData* bd = try_get_ui_backend_data();
         IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
         return *bd;
     }
@@ -797,7 +847,7 @@ namespace
 
     const char* ui_get_clipboard_text(ImGuiContext* context)
     {
-        BackendData* bd = try_get_ui_backend_data(context);
+        UiContextData* bd = try_get_ui_backend_data(context);
         bd->ClipboardText = get_clipboard_text();
         return bd->ClipboardText.c_str();
     }
@@ -807,7 +857,10 @@ namespace
         set_clipboard_text(text);
     }
 
-    void load_imgui_config(const std::filesystem::path& user_data_directory, ResourceLoader& loader)
+    void load_imgui_config(
+        const std::filesystem::path& user_data_directory,
+        ResourceLoader& loader,
+        const ui::ContextConfiguration::Impl& config)
     {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
@@ -818,10 +871,10 @@ namespace
         // load application-level ImGui settings, then the user one,
         // so that the user settings takes precedence
         {
-            // TODO: this should be provided externally by osc/libopensimcreator, so that
-            // OpenSim-independent codebases aren't dependent on it
-            if (loader.resource_exists("OpenSimCreator/imgui_base_config.ini")) {
-                const std::string base_ini_data = loader.slurp("OpenSimCreator/imgui_base_config.ini");
+            // Load the "base" config, which is the configuration that's loaded if the
+            // user hasn't got a configuration.
+            if (const auto* base_path = config.base_imgui_ini_config(); base_path and loader.resource_exists(*base_path)) {
+                const std::string base_ini_data = loader.slurp(*base_path);
                 ImGui::LoadIniSettingsFromMemory(base_ini_data.data(), base_ini_data.size());
             }
 
@@ -834,42 +887,56 @@ namespace
         }
     }
 
-    void setup_scaling_dependent_rendering_fonts_and_styling(App& app)
+    void setup_scaling_dependent_rendering_fonts_and_styling(
+        App& app,
+        const ui::ContextConfiguration::Impl& config)
     {
         ImGuiIO& io = ImGui::GetIO();
         const float scale = app.main_window_device_pixel_ratio();
 
-        // ensure imgui-to-renderer scaling is correct
+        // Setup ImGui-to-renderer scaling for HighDPI support.
         io.DisplayFramebufferScale = {scale, scale};
 
-        // setup fonts to use correct pixel scale
-        ResourceLoader loader = app.upd_resource_loader();
-        if (loader.resource_exists("oscar/fonts/Ruda-Bold.ttf")) {
-            io.Fonts->Clear();
-            io.FontDefault = nullptr;
+        // Setup fonts: ensure they have they have the correct pixel scaling for HighDPI.
+        {
+            ImFontConfig base_font_config;
+            base_font_config.SizePixels = c_default_base_font_pixel_size;
+            base_font_config.RasterizerDensity = scale;
+            base_font_config.PixelSnapH = true;
+            base_font_config.FontDataOwnedByAtlas = true;
 
-            ImFontConfig base_config;
-            base_config.SizePixels = c_default_base_font_pixel_size;
-            base_config.RasterizerDensity = scale;
-            base_config.PixelSnapH = true;
-            base_config.FontDataOwnedByAtlas = true;
-            add_resource_as_font(loader, base_config, *io.Fonts, "oscar/fonts/Ruda-Bold.ttf");
+            ResourceLoader loader = app.upd_resource_loader();
+            bool should_build_and_reupload = false;
 
-            // add icon support
-            if (loader.resource_exists("oscar/fonts/OpenSimCreatorIconFont.ttf")) {
-                ImFontConfig config = base_config;
-                config.MergeMode = true;
-                config.GlyphMinAdvanceX = floor(1.5f * config.SizePixels);
-                config.GlyphMaxAdvanceX = floor(1.5f * config.SizePixels);
-                static constexpr auto c_icon_ranges = std::to_array<ImWchar>({ OSC_ICON_MIN, OSC_ICON_MAX, 0 });
-                add_resource_as_font(loader, config, *io.Fonts, "oscar/fonts/OpenSimCreatorIconFont.ttf", c_icon_ranges.data());
+            // Main font support
+            if (const auto* main_font = config.main_font_config(); main_font and loader.resource_exists(main_font->path)) {
+                io.Fonts->Clear();
+                io.FontDefault = nullptr;
+
+                add_resource_as_font(loader, base_font_config, *io.Fonts, main_font->path);
+                should_build_and_reupload = true;
             }
 
-            io.Fonts->Build();
-            graphics_backend_mark_fonts_for_reupload();
+            // Add icon support
+            if (const auto* icon_font = config.icon_font_config(); should_build_and_reupload and icon_font and loader.resource_exists(icon_font->path)) {
+                ImFontConfig icon_font_config = base_font_config;
+                icon_font_config.MergeMode = true;
+                icon_font_config.GlyphMinAdvanceX = floor(1.5f * icon_font_config.SizePixels);
+                icon_font_config.GlyphMaxAdvanceX = floor(1.5f * icon_font_config.SizePixels);
+                static_assert(sizeof(decltype(icon_font->codepoint_range.lower)) == sizeof(ImWchar));
+                const auto c_icon_ranges = std::to_array<ImWchar>({icon_font->codepoint_range.lower, icon_font->codepoint_range.upper, 0 });
+
+                add_resource_as_font(loader, icon_font_config, *io.Fonts, icon_font->path, c_icon_ranges.data());
+                should_build_and_reupload = true;
+            }
+
+            if (should_build_and_reupload) {
+                io.Fonts->Build();
+                graphics_backend_mark_fonts_for_reupload();
+            }
         }
 
-        // ensure style is scaled correctly
+        // Setup visual styling/theme.
         {
             ImGui::GetStyle() = ImGuiStyle{};
             ui::apply_dark_theme();
@@ -885,7 +952,7 @@ namespace
     void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport* viewport, ImGuiPlatformImeData* ime_data)
     {
         App& app = App::upd();
-        BackendData* bd = try_get_ui_backend_data();
+        UiContextData* bd = try_get_ui_backend_data();
         WindowID viewport_window{viewport->PlatformHandle};
 
         if (bd->ImeWindow and (not ime_data->WantVisible or bd->ImeWindow != viewport_window)) {
@@ -911,7 +978,7 @@ namespace
     bool ImGui_ImplOscar_ProcessEvent(Event& e)
     {
         ImGuiIO& io = ImGui::GetIO();
-        BackendData* bd = try_get_ui_backend_data();
+        UiContextData* bd = try_get_ui_backend_data();
 
         switch (e.type()) {
         case EventType::MouseMove: {
@@ -1030,17 +1097,17 @@ namespace
         }
     }
 
-    void ImGui_ImplOscar_Init(WindowID window_id)
+    void ImGui_ImplOscar_Init(CopyOnUpdPtr<ui::ContextConfiguration::Impl> config, WindowID window_id)
     {
         ImGuiIO& io = ImGui::GetIO();
         OSC_ASSERT_ALWAYS(io.BackendPlatformUserData == nullptr && "Already initialized a platform backend!");
 
         // init `BackendData` and setup `ImGuiIO` pointers etc.
-        io.BackendPlatformUserData = static_cast<void*>(new BackendData{window_id});
+        io.BackendPlatformUserData = static_cast<void*>(new UiContextData{std::move(config), window_id});
         io.BackendPlatformName = "imgui_impl_oscar";
-        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;           // We can honor GetMouseCursor() values (optional)
-        io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;            // We can honor io.WantSetMousePos requests (optional, rarely used)
-        io.ConfigDebugHighlightIdConflicts = false;  // disable this highlight (annoying for users, #964)
+        io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;  // We can honor GetMouseCursor() values (optional)
+        io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;   // We can honor io.WantSetMousePos requests (optional, rarely used)
+        io.ConfigDebugHighlightIdConflicts = false;            // Disable this highlight (annoying for users, #964)
 
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         platform_io.Platform_SetClipboardTextFn = ui_set_clipboard_text;
@@ -1063,7 +1130,7 @@ namespace
 
     void ImGui_ImplOscar_Shutdown(App& app)
     {
-        BackendData* bd = try_get_ui_backend_data();
+        UiContextData* bd = try_get_ui_backend_data();
         OSC_ASSERT_ALWAYS(bd != nullptr && "No platform backend to shutdown, or already shutdown?");
 
         if (bd->CurrentCustomCursor) {
@@ -1082,7 +1149,7 @@ namespace
     void ImGui_ImplSDL2_UpdateMouseData()
     {
         App& app = App::upd();
-        BackendData* bd = try_get_ui_backend_data();
+        UiContextData* bd = try_get_ui_backend_data();
         ImGuiIO& io = ImGui::GetIO();
 
         // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
@@ -1150,7 +1217,7 @@ namespace
             return;  // ui cannot change the mouse cursor
         }
 
-        BackendData& bd = get_backend_data();
+        UiContextData& bd = get_backend_data();
         const auto oscar_cursor = to<CursorShape>(ImGui::GetMouseCursor());
 
         if (oscar_cursor != bd.CurrentCustomCursor) {
@@ -1164,7 +1231,7 @@ namespace
 
     void ImGui_ImplOscar_NewFrame(App& app)
     {
-        BackendData& bd = get_backend_data();
+        UiContextData& bd = get_backend_data();
         ImGuiIO& io = ImGui::GetIO();
 
         // Setup `DisplaySize` and `DisplayFramebufferScale`
@@ -1186,7 +1253,7 @@ namespace
         // Update display scale (e.g. when user changes DPI settings or moves the
         // application window to a display that has a different DPI)
         if (std::exchange(bd.WantChangeDisplayScale, false)) {
-            setup_scaling_dependent_rendering_fonts_and_styling(app);
+            setup_scaling_dependent_rendering_fonts_and_styling(app, *bd.CallerConfig);
         }
 
         // Update `DeltaTime`
@@ -1698,10 +1765,30 @@ struct osc::Converter<ImGuiTableColumnSortSpecs, ui::TableColumnSortSpec> final 
     }
 };
 
-osc::ui::Context::Context(App& app)
+osc::ui::ContextConfiguration::ContextConfiguration() :
+    impl_{make_cow<Impl>()}
+{}
+
+void osc::ui::ContextConfiguration::set_base_imgui_ini_config_resource(ResourcePath path)
 {
-    OSC_ASSERT(ImGui::GetCurrentContext() == nullptr && "a global UI context has already been initialized");
-    init(app);
+    impl_.upd()->set_base_imgui_ini_config_resource(std::move(path));
+}
+
+void osc::ui::ContextConfiguration::set_main_font_from_resource(ResourcePath path)
+{
+    impl_.upd()->set_main_font_from_resource(std::move(path));
+}
+
+void osc::ui::ContextConfiguration::set_icon_font_from_resource(
+    ResourcePath path,
+    ClosedInterval<char16_t> codepoint_range)
+{
+    impl_.upd()->set_icon_font_from_resource(std::move(path), codepoint_range);
+}
+
+osc::ui::Context::Context(App& app, ContextConfiguration configuration)
+{
+    init(app, std::move(configuration).impl());
 }
 
 osc::ui::Context::~Context() noexcept
@@ -1712,8 +1799,9 @@ osc::ui::Context::~Context() noexcept
 void osc::ui::Context::reset()
 {
     App& app = App::upd();
+    const auto config = get_backend_data().CallerConfig;
     shutdown(app);
-    init(app);
+    init(app, config);
 }
 
 bool osc::ui::Context::on_event(Event& ev)
@@ -1756,8 +1844,12 @@ void osc::ui::Context::render()
     }
 }
 
-void osc::ui::Context::init(App& app)
+void osc::ui::Context::init(
+    App& app,
+    CopyOnUpdPtr<ui::ContextConfiguration::Impl> config)
 {
+    OSC_ASSERT(ImGui::GetCurrentContext() == nullptr && "a global UI context has already been initialized");
+
     // ensure ImGui uses the same allocator as the rest of
     // our (C++ stdlib) application
     ImGui::SetAllocatorFunctions(
@@ -1769,13 +1861,13 @@ void osc::ui::Context::init(App& app)
     ImGui::CreateContext();
 
     // load `imgui.ini`
-    load_imgui_config(app.user_data_directory(), app.upd_resource_loader());
+    load_imgui_config(app.user_data_directory(), app.upd_resource_loader(), *config);
 
     // setup fonts + styling
-    setup_scaling_dependent_rendering_fonts_and_styling(app);
+    setup_scaling_dependent_rendering_fonts_and_styling(app, *config);
 
     // init ImGui for oscar
-    ImGui_ImplOscar_Init(app.main_window_id());
+    ImGui_ImplOscar_Init(config, app.main_window_id());
 
     // init ImGui for oscar's graphics backend (OpenGL)
     graphics_backend_init();
