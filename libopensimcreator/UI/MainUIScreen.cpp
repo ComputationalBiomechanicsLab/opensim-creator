@@ -713,7 +713,7 @@ private:
     {
         ui::ContextConfiguration rv;
         rv.set_base_imgui_ini_config_resource("OpenSimCreator/imgui_base_config.ini");
-        //rv.set_main_font_from_resource("OpenSimCreator/fonts/Ruda-Bold.ttf");
+        rv.set_main_font_from_resource("OpenSimCreator/fonts/Ruda-Bold.ttf");
         rv.set_icon_font_from_resource("OpenSimCreator/fonts/OpenSimCreatorIconFont.ttf", {OSC_ICON_MIN, OSC_ICON_MAX});
         return rv;
     }
