@@ -49,7 +49,6 @@ install(
 install(
     DIRECTORY
         "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
-        "${PROJECT_SOURCE_DIR}/resources/oscar"
         "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
     DESTINATION
         "resources/"
