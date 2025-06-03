@@ -5,8 +5,21 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- Fixed a crashing bug in mesh warper's landmark where it would infinitely loop
-  and write the same landmark over and over when exporting to a CSV (#1045).
+- The component context (right-click) menu was redesigned for consistency, and is
+  now able to add any component as a child of any other component, which is useful
+  when building complex models hierarchically:
+  - The menu more clearly separates common functions that are possible on any
+    component (or nothing, if the background is right-clicked).
+  - The `Add` menu now also takes into account which component was right-clicked,
+    so that the added component ends up as a child of the right-clicked one.
+  - Component-specific specialized adders (e.g. 'Wrap Object' when right-clicking
+    a frame, 'Add Parent Offset Frame' when right-clicking a Joint) are now part
+    of the `Add` menu, with a separator between them and the common `Add` functions.
+  - The "Toggle Frames" context menu action was removed. It was a legacy feature added
+    in Feb 2023 (#50), but has now been superseded by options in the `Display` menu and
+    the model editor's toolbar (#887).
+- Fixed a crashing bug in mesh warper's landmark exporter where it would infinitely
+  loop and write the same landmark over and over when exporting to a CSV (#1045).
 - The model warper's "Export Warped Model" button now has a submenu where the
   user can view and select which directory the warped geometry should be written
   to (#1046).

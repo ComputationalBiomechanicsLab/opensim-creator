@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/UI/Popups/Popup.h>
+#include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>
 #include <string_view>
@@ -17,7 +18,8 @@ namespace osc
             Widget* parent,
             std::string_view popupName,
             std::shared_ptr<IModelStatePair>,
-            std::unique_ptr<OpenSim::Component> prototype
+            std::unique_ptr<OpenSim::Component> prototype,
+            OpenSim::ComponentPath targetComponent = {}
         );
 
     private:

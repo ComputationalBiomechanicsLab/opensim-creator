@@ -74,12 +74,14 @@ public:
         Widget* parent,
         std::string_view popupName,
         std::shared_ptr<IModelStatePair> model,
-        std::unique_ptr<OpenSim::Component> prototype) :
+        std::unique_ptr<OpenSim::Component> prototype,
+        OpenSim::ComponentPath targetComponent) :
 
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{&owner, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{&owner, m_Model, [proto = m_Proto]() { return proto.get(); }},
+        m_MaybeTargetComponent{std::move(targetComponent)}
     {}
 
     void draw_content()
@@ -459,7 +461,7 @@ private:
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv) {
                 try {
-                    if (ActionAddComponentToModel(*m_Model, std::move(rv))) {
+                    if (ActionAddComponentToModel(*m_Model, std::move(rv), m_MaybeTargetComponent)) {
                         request_close();
                     }
                 }
@@ -499,6 +501,9 @@ private:
     // a property editor for the prototype's properties
     ObjectPropertiesEditor m_PrototypePropertiesEditor;
 
+    // the component that the added component should be added to (as a subcomponent).
+    OpenSim::ComponentPath m_MaybeTargetComponent;
+
     // user-enacted search strings for each socket input (used to filter each list)
     std::vector<std::string> m_SocketSearchStrings{m_ProtoSockets.size()};
 
@@ -520,9 +525,10 @@ osc::AddComponentPopup::AddComponentPopup(
     Widget* parent,
     std::string_view popupName,
     std::shared_ptr<IModelStatePair> model,
-    std::unique_ptr<OpenSim::Component> prototype) :
+    std::unique_ptr<OpenSim::Component> prototype,
+    OpenSim::ComponentPath targetComponent) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(prototype))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(prototype), std::move(targetComponent))}
 {}
 
 void osc::AddComponentPopup::impl_draw_content()

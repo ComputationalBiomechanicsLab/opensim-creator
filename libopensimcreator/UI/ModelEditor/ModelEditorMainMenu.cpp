@@ -97,7 +97,7 @@ private:
     void drawMainMenuAddTab()
     {
         if (ui::begin_menu("Add")) {
-            m_MainMenuAddTabMenuItems.on_draw();
+            m_MainMenuModelAddMenuItems.on_draw();
             ui::end_menu();
         }
     }
@@ -192,7 +192,7 @@ private:
 
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelAddMenuItems m_MainMenuAddTabMenuItems{&owner(), m_Model};
+    ModelAddMenuItems m_MainMenuModelAddMenuItems{&owner(), m_Model};
     WindowMenu m_WindowMenu;
     MainMenuAboutTab m_MainMenuAboutTab;
 };
