@@ -69,39 +69,40 @@ A **model warping procedure** applies a sequence of **scaling steps** to the
 step may require some sort of **scaling parameter**, or external data, to execute
 successfully. Model warping procedures are customizable. The number, order, and
 behavior of each scaling step may differ from procedure to procedure. This is to
-accomodate a variety of source models and experiments, which may have different
-scaling requirements.
+accomodate a variety of source models, experiments, and scaling requirements.
 
 OpenSim Creator provides a workflow for designing and executing a model warping
-procedure summarized in :numref:`model-warper-overview-screenshot`. The workflow
+procedure, pictured in :numref:`model-warper-overview-screenshot`. The workflow
 UI is designed to provide visual feedback about each scaling step, so that you
 can incrementally build a warping procedure one scaling step at a time. The model
 warping procedure can then be saved to a standard XML file so that it can be reused
-and modified for future model warps.
+and modified.
 
 .. _model-warper-overview-screenshot:
 .. figure:: _static/use-the-model-warper/model-warper.jpg
     :width: 60%
 
-    The model warping UI contains a toolbar with buttons for creating/loading the
-    source model, warping procedure, and other useful functions (top); a control 
-    panel for editing the scaling parameters of a single warping procedure run and
+    The model warping workflow UI contains a toolbar with buttons for creating/loading
+    the source model, warping procedure, and various other useful functions (top); a
+    control panel for editing the scaling parameters of a warping procedure and
     an editable list of toggleable scaling steps which are applied in-order (left);
-    and 3D views that show both the source model and the result model after applying
-    those scaling steps (right).
+    and 3D views that show the source model and result (warped) model after applying
+    the scaling steps side-by-side (right).
 
 
 Walkthrough
 -----------
 
 This walkthrough goes through the process of building a model warping procedure from
-scratch. The aim is to show how how model warper can be used to perform tricky non-linear
-model warping procedures.
+scratch. The aim is to show how the model warping workflow can be used to build tricky
+non-linear model warping procedures.
 
-In particular, we will be warping a healthy leg model to one with torsion (TODO: medical
-terms). Torsion is an interesting example because it cannot be handled with linear scaling
-and, therefore, we need to design the underlying model and model warping procedure to
-accommodate it.
+In particular, we will develop a procedure that warps a simple healthy leg model to account
+for femoral torsion. Torsion is tricky to handle because standard scaling techniques, which
+typically perform linear scaling, cannot handle non-linear, localized, morpological
+changes. Therefore, a designer who's familiar with the model, the underlying biomechanics,
+and the available experimental scaling parameters needs to develop a custom scaling/warping
+procedure, which is where the model warping workflow may help.
 
 
 Open the Model Warper Workflow UI
