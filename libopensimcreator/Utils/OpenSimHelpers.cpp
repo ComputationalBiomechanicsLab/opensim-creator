@@ -1919,3 +1919,18 @@ void osc::UpdateStateFromStorageTime(
 {
     UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
 }
+
+std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
+{
+    SimTK::Xml::Document d;
+    SimTK::Xml::Element el = d.getRootElement();
+    obj.updateXMLNode(el);
+    if (el.element_begin() != el.element_end()) {
+        SimTK::String str;
+        el.element_begin()->writeToString(str);
+        return str;
+    }
+    else {
+        return {};
+    }
+}

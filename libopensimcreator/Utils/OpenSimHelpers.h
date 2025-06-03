@@ -1104,4 +1104,6 @@ namespace osc
         const OpenSim::Storage&,
         double time
     );
+
+    std::string WriteObjectXMLToString(const OpenSim::Object&);
 }

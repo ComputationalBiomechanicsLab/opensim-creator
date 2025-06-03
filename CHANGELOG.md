@@ -18,6 +18,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - The "Toggle Frames" context menu action was removed. It was a legacy feature added
     in Feb 2023 (#50), but has now been superseded by options in the `Display` menu and
     the model editor's toolbar (#887).
+- The "Copy Absolute Path to Clipboard" contextual action was replaced with a "Copy"
+  menu that has additional functionalities (e.g. "Copy Name", "Copy Concrete Class Name").
 - Fixed a crashing bug in mesh warper's landmark exporter where it would infinitely
   loop and write the same landmark over and over when exporting to a CSV (#1045).
 - The model warper's "Export Warped Model" button now has a submenu where the

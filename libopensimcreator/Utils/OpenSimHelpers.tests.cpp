@@ -409,3 +409,13 @@ TEST(OpenSimHelpers, HasModelFileExtension_AcceptsCapitalizedOsimExtension)
     ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/model"));
     ASSERT_FALSE(HasModelFileExtension("some/path/to/legacy/osim"));
 }
+
+TEST(OpenSimHelpers, WriteObjectXMLToStringWorksOnBasicRootObject)
+{
+    OpenSim::Body body{"somebody", 1.0, SimTK::Vec3{2.0, 3.0, 4.0}, SimTK::Inertia{SimTK::Vec3{1.0}}};
+    body.finalizeFromProperties();
+    const std::string dump = WriteObjectXMLToString(body);
+
+    ASSERT_TRUE(dump.contains("somebody"));
+    ASSERT_TRUE(dump.contains("<mass>"));
+}

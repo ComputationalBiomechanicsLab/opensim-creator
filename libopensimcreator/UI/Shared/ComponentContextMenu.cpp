@@ -260,7 +260,9 @@ public:
             if (ui::begin_menu("Sockets", false)) {
                 ui::end_menu();
             }
-            ui::draw_menu_item("Copy Absolute Path to Clipboard", {}, nullptr, false);
+            if (ui::begin_menu("Copy", false)) {
+                ui::end_menu();
+            }
             return;
         }
 
@@ -289,10 +291,22 @@ public:
 
         drawSocketMenu(*c);
 
-        if (ui::draw_menu_item("Copy Absolute Path to Clipboard")) {
-            set_clipboard_text(GetAbsolutePathString(*c));
+        if (ui::begin_menu("Copy")) {
+            if (ui::draw_menu_item("Name to Clipboard")) {
+                set_clipboard_text(c->getName());
+            }
+            if (ui::draw_menu_item("Absolute Path to Clipboard")) {
+                set_clipboard_text(GetAbsolutePathString(*c));
+            }
+            ui::draw_tooltip_if_item_hovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
+            if (ui::draw_menu_item("Concrete Class Name to Clipboard")) {
+                set_clipboard_text(c->getConcreteClassName());
+            }
+            if (ui::draw_menu_item("Component XML to Clipboard")) {
+                set_clipboard_text(WriteObjectXMLToString(*c));
+            }
+            ui::end_menu();
         }
-        ui::draw_tooltip_if_item_hovered("Copy Component Absolute Path", "Copy the absolute path to this component to your clipboard.\n\n(This is handy if you are separately using absolute component paths to (e.g.) manipulate the model in a script or something)");
 
         if (dynamic_cast<const OpenSim::PhysicalFrame*>(c)) {
             ui::draw_separator();
