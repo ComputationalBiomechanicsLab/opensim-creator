@@ -1,4 +1,4 @@
-#include "ModelActionsMenuItems.h"
+#include "ModelAddMenuItems.h"
 
 #include <libopensimcreator/ComponentRegistry/ComponentRegistry.h>
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
@@ -29,7 +29,7 @@
 #include <sstream>
 #include <utility>
 
-class osc::ModelActionsMenuItems::Impl final : public WidgetPrivate {
+class osc::ModelAddMenuItems::Impl final : public WidgetPrivate {
 public:
 
     explicit Impl(
@@ -160,8 +160,8 @@ private:
 };
 
 
-osc::ModelActionsMenuItems::ModelActionsMenuItems(Widget* parent, std::shared_ptr<IModelStatePair> m) :
+osc::ModelAddMenuItems::ModelAddMenuItems(Widget* parent, std::shared_ptr<IModelStatePair> m) :
     Widget{std::make_unique<Impl>(*this, parent, std::move(m))}
 {}
 
-void osc::ModelActionsMenuItems::impl_on_draw() { private_data().onDraw(); }
+void osc::ModelAddMenuItems::impl_on_draw() { private_data().onDraw(); }

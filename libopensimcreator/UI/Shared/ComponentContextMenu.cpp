@@ -8,12 +8,12 @@
 #include <libopensimcreator/Documents/OutputExtractors/ComponentOutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
-#include <libopensimcreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <libopensimcreator/UI/ModelEditor/ReassignSocketPopup.h>
 #include <libopensimcreator/UI/ModelEditor/Select1PFPopup.h>
 #include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
+#include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
@@ -617,7 +617,7 @@ private:
 
     std::shared_ptr<IModelStatePair> m_Model;
     OpenSim::ComponentPath m_Path;
-    ModelActionsMenuItems m_ModelActionsMenuBar{&owner(), m_Model};
+    ModelAddMenuItems m_ModelActionsMenuBar{&owner(), m_Model};
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),

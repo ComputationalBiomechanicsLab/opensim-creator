@@ -9,9 +9,9 @@ namespace osc { class Widget; }
 
 namespace osc
 {
-    class ModelActionsMenuItems final : public Widget {
+    class ModelAddMenuItems final : public Widget {
     public:
-        explicit ModelActionsMenuItems(
+        explicit ModelAddMenuItems(
             Widget* parent,
             std::shared_ptr<IModelStatePair>
         );

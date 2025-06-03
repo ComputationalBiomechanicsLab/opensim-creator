@@ -4,11 +4,11 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/UI/ModelEditor/ExportPointsPopup.h>
-#include <libopensimcreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <libopensimcreator/UI/ModelEditor/ModelMusclePlotPanel.h>
 #include <libopensimcreator/UI/PerformanceAnalyzerTab.h>
 #include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
@@ -192,7 +192,7 @@ private:
 
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelActionsMenuItems m_MainMenuAddTabMenuItems{&owner(), m_Model};
+    ModelAddMenuItems m_MainMenuAddTabMenuItems{&owner(), m_Model};
     WindowMenu m_WindowMenu;
     MainMenuAboutTab m_MainMenuAboutTab;
 };
