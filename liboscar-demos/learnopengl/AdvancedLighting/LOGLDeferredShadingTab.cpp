@@ -301,13 +301,11 @@ private:
     Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Texture2D diffuse_map_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
-        ColorSpace::sRGB,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::sRGB
     );
     Texture2D specular_map_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
-        ColorSpace::sRGB,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::sRGB
     );
 
     // rendering state

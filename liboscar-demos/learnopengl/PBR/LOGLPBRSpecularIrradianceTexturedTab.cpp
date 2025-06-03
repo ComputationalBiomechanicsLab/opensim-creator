@@ -40,8 +40,7 @@ namespace
     {
         Texture2D hdr_texture = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-            ColorSpace::Linear,
-            ImageLoadingFlag::FlipVertically
+            ColorSpace::Linear
         );
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
@@ -194,7 +193,7 @@ namespace
     struct IBLSpecularObjectTextures final {
         explicit IBLSpecularObjectTextures(ResourceLoader loader) :
             albedo_map{load_texture2D_from_image(loader.open("albedo.jpg"), ColorSpace::sRGB)},
-            normal_map{load_texture2D_from_image(loader.open("normal.jpg"), ColorSpace::Linear)},
+            normal_map{load_texture2D_from_image(loader.open("normal.jpg"), ColorSpace::Linear, ImageLoadingFlag::TreatComponentsAsSpatialVectors)},
             metallic_map{load_texture2D_from_image(loader.open("metallic.jpg"), ColorSpace::Linear)},
             roughness_map{load_texture2D_from_image(loader.open("roughness.jpg"), ColorSpace::Linear)},
             ao_map{load_texture2D_from_image(loader.open("ao.jpg"), ColorSpace::Linear)}
@@ -214,7 +213,9 @@ public:
 
     explicit Impl(LOGLPBRSpecularIrradianceTexturedTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
-    {}
+    {
+        sphere_mesh_.recalculate_tangents();  // normal mapping
+    }
 
     void on_mount()
     {
@@ -318,8 +319,7 @@ private:
 
     Texture2D texture_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-        ColorSpace::Linear,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::Linear
     );
 
     std::array<IBLSpecularObjectTextures, 5> object_textures_ = std::to_array<IBLSpecularObjectTextures>({

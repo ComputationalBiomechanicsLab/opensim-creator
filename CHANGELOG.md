@@ -13,6 +13,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: `liboscar` now accepts its font/configuration dependencies externally,
   which helps with decoupling it from OpenSimCreator's specific font/icon/configuration
   assets.
+- Internal: `liboscar` now explicitly outlines that it uses a right-handed coordinate
+  system and encoding format for textures (i.e. x goes right, y goes up, origin is
+  bottom-left), which matches OpenGL's conventions (#1044).
 
 
 ## [0.5.23] - 2025/05/26

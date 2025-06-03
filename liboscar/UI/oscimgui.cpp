@@ -3062,26 +3062,18 @@ Rect osc::ui::content_region_avail_as_screen_rect()
     return Rect{top_left, top_left + ui::get_content_region_available()};
 }
 
-void osc::ui::draw_image(const Texture2D& texture)
-{
-    draw_image(texture, texture.device_independent_dimensions());
-}
-
-void osc::ui::draw_image(const Texture2D& texture, Vec2 dimensions)
-{
-    const Vec2 uv0 = {0.0f, 1.0f};
-    const Vec2 uv1 = {1.0f, 0.0f};
-    draw_image(texture, dimensions, uv0, uv1);
-}
-
 void osc::ui::draw_image(
     const Texture2D& texture,
-    Vec2 dimensions,
-    Vec2 top_left_texture_coordinate,
-    Vec2 bottom_right_texture_coordinate)
+    std::optional<Vec2> dimensions,
+    const Rect& region_uv_coordinates)
 {
+    if (not dimensions) {
+        dimensions = texture.device_independent_dimensions();
+    }
+    const Vec2 top_left = {region_uv_coordinates.p1.x, 1.0f - region_uv_coordinates.p1.y};
+    const Vec2 bottom_right = {region_uv_coordinates.p2.x, 1.0f - region_uv_coordinates.p2.y};
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
-    ImGui::Image(handle, dimensions, top_left_texture_coordinate, bottom_right_texture_coordinate);
+    ImGui::Image(handle, *dimensions, top_left, bottom_right);
 }
 
 void osc::ui::draw_image(const RenderTexture& texture)

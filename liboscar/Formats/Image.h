@@ -10,10 +10,10 @@
 
 namespace osc
 {
-    // loads the given (named) image stream into a `Texture2D`
+    // Loads the given (named) image stream into a `Texture2D`.
     //
-    // throws if the image data isn't representable as a GPU texture (e.g. because it has
-    // an incorrect number of components)
+    // Throws if the image data isn't representable as a GPU texture (e.g. because it has
+    // an incorrect number of components).
     Texture2D load_texture2D_from_image(
         std::istream&,
         std::string_view input_name,

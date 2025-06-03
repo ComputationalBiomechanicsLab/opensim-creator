@@ -9,36 +9,6 @@ using namespace osc;
 
 namespace
 {
-    // matches the quad used in LearnOpenGL's parallax mapping tutorial
-    Mesh generate_quad()
-    {
-        Mesh mesh;
-        mesh.set_vertices({
-            {-1.0f,  1.0f, 0.0f},
-            {-1.0f, -1.0f, 0.0f},
-            { 1.0f, -1.0f, 0.0f},
-            { 1.0f,  1.0f, 0.0f},
-        });
-        mesh.set_normals({
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-        });
-        mesh.set_tex_coords({
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-        });
-        mesh.set_indices({
-            0, 1, 2,
-            0, 2, 3,
-        });
-        mesh.recalculate_tangents();
-        return mesh;
-    }
-
     MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera rv;
@@ -56,7 +26,8 @@ namespace
         );
         const Texture2D normal_map = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/bricks2_normal.jpg"),
-            ColorSpace::Linear
+            ColorSpace::Linear,
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors
         );
         const Texture2D displacement_map = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/bricks2_disp.jpg"),
@@ -89,7 +60,9 @@ public:
 
     explicit Impl(LOGLParallaxMappingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
-    {}
+    {
+        quad_mesh_.recalculate_tangents();  // needed for parallax mapping
+    }
 
     void on_mount()
     {
@@ -142,7 +115,7 @@ private:
     Material parallax_mapping_material_ = create_parallax_mapping_material(loader_);
     Material light_cube_material_ = create_lightcube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
-    Mesh quad_mesh_ = generate_quad();
+    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();

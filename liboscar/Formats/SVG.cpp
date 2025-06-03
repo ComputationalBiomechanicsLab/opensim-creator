@@ -32,8 +32,8 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
     const std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
     OSC_ASSERT_ALWAYS(svg_document != nullptr && "error loading SVG document");
 
-    // when rendering the document's contents, flip Y so that it's compatible with the
-    // renderer's coordinate system
+    // when rendering the document's contents, flip Y so that Y=0 represents the bottom of the image
+    // and Y=H represents the top (i.e. a right-handed coordinate system that matches `Texture2D`).
     const lunasvg::Matrix transform{scale, 0.0f, 0.0f, -scale, 0.0f, std::ceil(scale*svg_document->height())};
 
     // create a `lunasvg::Bitmap` that lunasvg can render into

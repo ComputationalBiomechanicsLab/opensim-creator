@@ -686,21 +686,19 @@ namespace osc::ui
     // returns the UI content region available in screen-space as a `Rect`
     Rect content_region_avail_as_screen_rect();
 
-    // draws a texture within the 2D UI
+    // Draws a texture within the UI.
     //
-    // assumes the texture coordinates are [(0.0, 1.0), (1.0, 0.0)]
+    // - `texture`: the texture to draw within the UI.
+    // - `dimensions`: the dimensions, in device-independent pixels, that the image
+    //   should occupy in the UI. Default: `texture.device_independent_dimensions()`.
+    // - `region_uv_coordinates`: texture coordinates in texture space (`(0, 0)` means bottom-left,
+    //   `(1, 1)` means top-right) that designate the region within `texture` that should be sampled
+    //   to produce the image within the UI (e.g. for cropping, flipping). Default: entire contents
+    //   `texture`.
     void draw_image(
-        const Texture2D&
-    );
-    void draw_image(
-        const Texture2D&,
-        Vec2 dimensions
-    );
-    void draw_image(
-        const Texture2D&,
-        Vec2 dimensions,
-        Vec2 top_left_texture_coordinate,
-        Vec2 bottom_right_texture_coordinate
+        const Texture2D& texture,
+        std::optional<Vec2> dimensions = std::nullopt,
+        const Rect& region_uv_coordinates = Rect({0.0f, 0.0f}, {1.0f, 1.0f})
     );
     void draw_image(
         const RenderTexture&

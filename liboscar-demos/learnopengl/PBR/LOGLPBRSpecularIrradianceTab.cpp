@@ -45,8 +45,7 @@ namespace
     {
         Texture2D hdr_texture = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-            ColorSpace::Linear,
-            ImageLoadingFlag::FlipVertically
+            ColorSpace::Linear
         );
         hdr_texture.set_wrap_mode(TextureWrapMode::Clamp);
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
@@ -325,8 +324,7 @@ private:
 
     Texture2D texture_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
-        ColorSpace::Linear,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::Linear
     );
 
     RenderTexture projected_map_ = load_equirectangular_hdr_texture_into_cubemap(loader_);

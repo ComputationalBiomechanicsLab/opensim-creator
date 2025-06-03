@@ -73,10 +73,8 @@ namespace
         ColorSpace color_space,
         ImageLoadingFlags flags)
     {
-        const auto guard = lock_stbi_api();
-
-        if (flags & ImageLoadingFlag::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_stb_true);
+        if (not (flags & ImageLoadingFlag::FlipVertically)) {
+            stbi_set_flip_vertically_on_load_thread(c_stb_true);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
         Vec2i dimensions{};
@@ -86,8 +84,8 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlag::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_stb_false);
+        if (not (flags & ImageLoadingFlag::FlipVertically)) {
+            stbi_set_flip_vertically_on_load_thread(c_stb_false);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
         if (not pixel_data) {
@@ -123,10 +121,8 @@ namespace
         ColorSpace color_space,
         ImageLoadingFlags flags)
     {
-        const auto guard = lock_stbi_api();
-
-        if (flags & ImageLoadingFlag::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_stb_true);
+        if (not (flags & ImageLoadingFlag::FlipVertically)) {
+            stbi_set_flip_vertically_on_load_thread(c_stb_true);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
         Vec2i dimensions{};
@@ -136,8 +132,8 @@ namespace
             stbi_image_free,
         };
 
-        if (flags & ImageLoadingFlag::FlipVertically) {
-            stbi_set_flip_vertically_on_load(c_stb_false);
+        if (not (flags & ImageLoadingFlag::FlipVertically)) {
+            stbi_set_flip_vertically_on_load_thread(c_stb_false);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
         if (not pixel_data) {
@@ -184,9 +180,24 @@ Texture2D osc::load_texture2D_from_image(
 
     OSC_ASSERT_ALWAYS(in.tellg() == original_cursor_pos && "could not rewind the stream (required for loading images)");
 
-    return is_hdr ?
+    Texture2D rv = is_hdr ?
         load_32bit_texture(in, input_name, color_space, flags) :
         load_8bit_texture(in, input_name, color_space, flags);
+
+    if ((flags & ImageLoadingFlag::TreatComponentsAsSpatialVectors) and not (flags & ImageLoadingFlag::FlipVertically)) {
+        // HACK: We know that all currently-supported image formats are encoded top-to-bottom and, therefore, required
+        //       a vertical flip - unless the caller specified `ImageLoadingFlag::FlipVertically`.
+        //
+        //       Therefore, the Y component must be flipped. This assumption will fail if the implementation starts
+        //       supporting image formats that are encoded bottom-to-top.
+        auto pixels = rv.pixels();
+        for (auto& pixel : pixels) {
+            pixel.g = 1.0f - pixel.g;
+        }
+        rv.set_pixels(pixels);
+    }
+
+    return rv;
 }
 
 void osc::write_to_png(
@@ -199,6 +210,12 @@ void osc::write_to_png(
 
     const auto guard = lock_stbi_api();
 
+    // stb: The functions create an image file defined by the parameters. The image
+    //      is a rectangle of pixels stored from left-to-right, top-to-bottom.
+    //
+    // osc: `Texture2D` is a rectangle of pixels stored left-to-right, bottom-to-top.
+    //
+    // (therefore, flipping is required)
     stbi_flip_vertically_on_write(c_stb_true);
     const int rv = stbi_write_png_to_func(
         osc_stbi_write_via_std_ostream,
@@ -225,6 +242,12 @@ void osc::write_to_jpeg(const Texture2D& texture, std::ostream& out, float quali
 
     const auto guard = lock_stbi_api();
 
+    // stb: The functions create an image file defined by the parameters. The image
+    //      is a rectangle of pixels stored from left-to-right, top-to-bottom.
+    //
+    // osc: `Texture2D` is a rectangle of pixels stored left-to-right, bottom-to-top.
+    //
+    // (therefore, flipping is required)
     stbi_flip_vertically_on_write(c_stb_true);
     const int rv = stbi_write_jpg_to_func(
         osc_stbi_write_via_std_ostream,

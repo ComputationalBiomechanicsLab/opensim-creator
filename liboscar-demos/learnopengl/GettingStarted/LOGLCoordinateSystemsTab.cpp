@@ -45,8 +45,7 @@ namespace
             "uTexture1",
             load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/container.jpg"),
-                ColorSpace::sRGB,
-                ImageLoadingFlag::FlipVertically
+                ColorSpace::sRGB
             )
         );
 
@@ -54,8 +53,7 @@ namespace
             "uTexture2",
             load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
-                ColorSpace::sRGB,
-                ImageLoadingFlag::FlipVertically
+                ColorSpace::sRGB
             )
         );
 
