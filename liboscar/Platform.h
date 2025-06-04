@@ -10,7 +10,6 @@
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/FilesystemResourceLoader.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/ILogSink.h>
 #include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/Key.h>

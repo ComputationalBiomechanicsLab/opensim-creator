@@ -14,6 +14,7 @@
 #include <libopensimcreator/Graphics/MuscleSizingStyle.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -35,7 +36,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/IconCache.h>

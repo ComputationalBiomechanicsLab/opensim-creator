@@ -1,5 +1,7 @@
 #include "TPS2DTab.h"
 
+#include <libopensimcreator/Platform/IconCodepoints.h>
+
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/ColorSpace.h>
@@ -15,7 +17,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/LogViewerPanel.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>

@@ -2,10 +2,10 @@
 
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/oscimgui.h>
@@ -167,8 +167,8 @@ private:
     }
 
     std::shared_ptr<MeshWarpingTabSharedState> m_State;
-    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr()};
-    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr()};
+    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_UNDO};
+    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_REDO};
 };
 
 osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(

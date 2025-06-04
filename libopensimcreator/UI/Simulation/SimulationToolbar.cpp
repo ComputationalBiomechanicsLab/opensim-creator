@@ -1,6 +1,7 @@
 #include "SimulationToolbar.h"
 
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/SimulationScrubber.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -8,7 +9,6 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec4.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <memory>

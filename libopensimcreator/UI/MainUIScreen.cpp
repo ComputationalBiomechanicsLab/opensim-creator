@@ -1,5 +1,6 @@
 #include "MainUIScreen.h"
 
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenFileEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
@@ -11,7 +12,6 @@
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/ScreenPrivate.h>

@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/EnumHelpers.h>
 

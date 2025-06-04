@@ -7,6 +7,7 @@
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
@@ -2371,8 +2372,8 @@ namespace
         }
 
         std::shared_ptr<ModelWarperV3UIState> m_State;
-        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr()};
-        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr()};
+        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_UNDO};
+        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_REDO};
     };
 
     // control panel (design, set parameters, etc.)

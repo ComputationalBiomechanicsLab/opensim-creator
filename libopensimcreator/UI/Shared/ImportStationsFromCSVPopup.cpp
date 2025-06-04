@@ -4,11 +4,11 @@
 #include <libopensimcreator/Documents/Landmarks/LandmarkHelpers.h>
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>

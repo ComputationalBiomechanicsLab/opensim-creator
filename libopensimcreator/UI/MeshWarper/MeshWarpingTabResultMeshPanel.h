@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
@@ -16,7 +17,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 

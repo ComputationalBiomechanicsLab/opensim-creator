@@ -2,11 +2,11 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>

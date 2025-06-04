@@ -279,6 +279,7 @@ namespace osc::ui
     // Draws an interactive button with the given label and with a given size in device-independent pixels.
     bool draw_button(CStringView label, const Vec2& size = {});
     bool draw_small_button(CStringView label);
+    bool draw_arrow_down_button(CStringView label);
     // Draws an interactive, but invisible, button with the given label and the given size in device-independent pixels.
     bool draw_invisible_button(CStringView label, Vec2 size = {});
     bool draw_radio_button(CStringView label, bool active);
@@ -1073,14 +1074,20 @@ namespace osc::ui
         Gizmo&,
         bool can_translate = true,
         bool can_rotate = true,
-        bool can_scale = true
+        bool can_scale = true,
+        CStringView translate_button_text = "T",
+        CStringView rotate_button_text = "R",
+        CStringView scale_button_text = "S"
     );
 
     bool draw_gizmo_op_selector(
         GizmoOperation&,
         bool can_translate = true,
         bool can_rotate = true,
-        bool can_scale = true
+        bool can_scale = true,
+        CStringView translate_button_text = "T",
+        CStringView rotate_button_text = "R",
+        CStringView scale_button_text = "S"
     );
 
     // oscar bindings for `ImPlot`

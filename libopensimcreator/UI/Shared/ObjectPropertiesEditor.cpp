@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -13,7 +14,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>

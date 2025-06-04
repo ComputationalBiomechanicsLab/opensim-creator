@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
@@ -9,7 +10,6 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>

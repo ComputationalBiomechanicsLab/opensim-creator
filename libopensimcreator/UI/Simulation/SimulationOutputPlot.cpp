@@ -9,6 +9,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -18,7 +19,6 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>

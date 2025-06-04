@@ -7,6 +7,7 @@
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
@@ -27,7 +28,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events.h>
 #include <liboscar/UI/oscimgui.h>

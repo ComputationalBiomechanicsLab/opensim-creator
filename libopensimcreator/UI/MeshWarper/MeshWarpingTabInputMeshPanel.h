@@ -4,6 +4,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabContextMenu.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
@@ -33,7 +34,6 @@
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Typelist.h>

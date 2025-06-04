@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <memory>

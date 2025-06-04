@@ -1,13 +1,13 @@
 #include "ExportPointsPopup.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>

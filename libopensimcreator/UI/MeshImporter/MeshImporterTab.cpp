@@ -16,6 +16,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/MeshImporter/ChooseElLayer.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
@@ -47,7 +48,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
@@ -1805,7 +1805,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_gizmo_op_selector(m_Gizmo);
+        ui::draw_gizmo_op_selector(m_Gizmo, true, true, true, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT);
 
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::same_line();

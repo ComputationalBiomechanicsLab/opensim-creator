@@ -3,13 +3,13 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>

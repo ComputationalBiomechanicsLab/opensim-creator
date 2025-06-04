@@ -1,6 +1,7 @@
 #include "SplashTab.h"
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
@@ -29,7 +30,6 @@
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/oscimgui.h>

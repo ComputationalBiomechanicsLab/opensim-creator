@@ -5,6 +5,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/StoFileSimulation.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
@@ -17,7 +18,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/FileDialogFilter.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>

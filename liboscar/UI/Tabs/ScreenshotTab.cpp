@@ -19,7 +19,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/UI/oscimgui.h>
@@ -82,7 +81,7 @@ namespace
 class osc::ScreenshotTab::Impl final : public TabPrivate {
 public:
     explicit Impl(ScreenshotTab& owner, Widget* parent, Screenshot&& screenshot) :
-        TabPrivate{owner, parent, OSC_ICON_COOKIE " ScreenshotTab"},
+        TabPrivate{owner, parent, "Screenshot"},
         screenshot_{std::move(screenshot)}
     {
         image_texture_.set_filter_mode(TextureFilterMode::Mipmap);

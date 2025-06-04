@@ -4,7 +4,6 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/UI/Widgets/LogViewer.h>
@@ -18,7 +17,7 @@ using namespace osc;
 class osc::ErrorTab::Impl final : public TabPrivate {
 public:
     explicit Impl(ErrorTab& owner, Widget& parent, const std::exception& exception) :
-        TabPrivate{owner, &parent, OSC_ICON_SPIDER " Error"},
+        TabPrivate{owner, &parent, "Error!"},
         error_message_{exception.what()}
     {}
 

@@ -9,6 +9,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/FrameDefinition/FrameDefinitionTabToolbar.h>
 #include <libopensimcreator/UI/FrameDefinition/FrameDefinitionUIHelpers.h>
@@ -33,7 +34,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>

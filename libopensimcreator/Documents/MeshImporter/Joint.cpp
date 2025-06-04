@@ -3,11 +3,11 @@
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDescriptor.h>
 #include <libopensimcreator/Documents/MeshImporter/CrossrefDirection.h>
 #include <libopensimcreator/Documents/MeshImporter/MIStrings.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TransformFunctions.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>
 

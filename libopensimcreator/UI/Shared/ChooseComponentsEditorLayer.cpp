@@ -5,6 +5,7 @@
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
 #include <libopensimcreator/Graphics/OverlayDecorationGenerator.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ChooseComponentsEditorLayerParameters.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelParameters.h>
@@ -22,7 +23,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>

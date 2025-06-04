@@ -4,11 +4,11 @@
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>

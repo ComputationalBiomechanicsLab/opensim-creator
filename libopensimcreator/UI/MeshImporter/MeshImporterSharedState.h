@@ -13,6 +13,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
@@ -41,7 +42,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>

@@ -1,6 +1,7 @@
 #include "MeshHittestTab.h"
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/Color.h>
@@ -25,7 +26,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>

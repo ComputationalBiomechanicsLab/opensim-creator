@@ -1,12 +1,12 @@
 #include "NavigatorPanel.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>

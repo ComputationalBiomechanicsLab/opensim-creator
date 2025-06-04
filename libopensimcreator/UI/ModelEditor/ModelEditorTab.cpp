@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
@@ -24,7 +25,6 @@
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenNamedPanelEvent.h>

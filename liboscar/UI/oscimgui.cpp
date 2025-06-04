@@ -41,7 +41,6 @@
 #include <liboscar/Platform/Cursor.h>
 #include <liboscar/Platform/CursorShape.h>
 #include <liboscar/Platform/Events.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/PhysicalKeyModifier.h>
 #include <liboscar/Platform/ResourceLoader.h>
@@ -2130,6 +2129,11 @@ bool osc::ui::draw_small_button(CStringView label)
     return ImGui::SmallButton(label.c_str());
 }
 
+bool osc::ui::draw_arrow_down_button(CStringView label)
+{
+    return ImGui::ArrowButton(label.c_str(), ImGuiDir_Down);
+}
+
 bool osc::ui::draw_invisible_button(CStringView label, Vec2 size)
 {
     return ImGui::InvisibleButton(label.c_str(), size);
@@ -3818,10 +3822,13 @@ bool osc::ui::draw_gizmo_op_selector(
     Gizmo& gizmo,
     bool can_translate,
     bool can_rotate,
-    bool can_scale)
+    bool can_scale,
+    CStringView translate_button_text,
+    CStringView rotate_button_text,
+    CStringView scale_button_text)
 {
     GizmoOperation op = gizmo.operation();
-    if (draw_gizmo_op_selector(op, can_translate, can_rotate, can_scale)) {
+    if (draw_gizmo_op_selector(op, can_translate, can_rotate, can_scale, translate_button_text, rotate_button_text, scale_button_text)) {
         gizmo.set_operation(op);
         return true;
     }
@@ -3832,7 +3839,10 @@ bool osc::ui::draw_gizmo_op_selector(
     GizmoOperation& op,
     bool can_translate,
     bool can_rotate,
-    bool can_scale)
+    bool can_scale,
+    CStringView translate_button_text,
+    CStringView rotate_button_text,
+    CStringView scale_button_text)
 {
     bool rv = false;
 
@@ -3845,7 +3855,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(OSC_ICON_ARROWS_ALT)) {
+        if (ui::draw_button(translate_button_text)) {
             if (op != GizmoOperation::Translate) {
                 op = GizmoOperation::Translate;
                 rv = true;
@@ -3861,7 +3871,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(OSC_ICON_REDO)) {
+        if (ui::draw_button(rotate_button_text)) {
             if (op != GizmoOperation::Rotate) {
                 op = GizmoOperation::Rotate;
                 rv = true;
@@ -3877,7 +3887,7 @@ bool osc::ui::draw_gizmo_op_selector(
             ui::push_style_color(ColorVar::Button, Color::muted_blue());
             ++num_colors_pushed;
         }
-        if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT)) {
+        if (ui::draw_button(scale_button_text)) {
             if (op != GizmoOperation::Scale) {
                 op = GizmoOperation::Scale;
                 rv = true;

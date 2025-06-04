@@ -6,10 +6,10 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/Utils/StringHelpers.h>
