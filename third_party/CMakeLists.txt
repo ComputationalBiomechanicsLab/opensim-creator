@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(osc-dependencies)
 
+include(ExternalProject)  # ExternalProject_Add
+include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
+
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
 set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
@@ -16,9 +19,6 @@ set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from 
 set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 
 set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
-
-include(ExternalProject)  # ExternalProject_Add
-include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
 
 # setup `OSCDEPS_DEPENDENCY_CMAKE_ARGS`
 #

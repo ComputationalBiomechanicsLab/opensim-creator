@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+
 set(
     OSC_FORCE_ASSERTS_ENABLED ON
     CACHE BOOL
@@ -46,7 +48,6 @@ set_target_properties(oscar PROPERTIES
 target_compile_features(oscar PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(oscar PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )
