@@ -1,8 +1,8 @@
 ﻿# `liboscar`: Engine code for CAD projects
 
-`liboscar` is the "engine" part of OpenSim Creator. It's designed to have
-a minimal dependency set, such that external projects can use it without
-also pulling in OpenSim.
+`liboscar` is an engine for making CAD tooling. It's designed to have a minimal
+dependency set, such that it can be built from source on all target
+platforms+architectures.
 
 | Directory | Description |
 | - | - |
