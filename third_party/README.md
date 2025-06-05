@@ -27,8 +27,7 @@ git subtree pull --squash --prefix=third_party/googletest https://github.com/goo
 
 | Subtree                          | Patched Repo                                                    | Patched Branch    |
 | -------------------------------- | --------------------------------------------------------------- | ----------------- |
-| `third_party/osim/opensim-core/` | https://github.com/ComputationalBiomechanicsLab/opensim-creator | `opensim-creator` |
-| `third_party/imgui/`             | https://github.com/ComputationalBiomechanicsLab/imgui.git       | `opensim-creator` |
+| `third_party/osim/opensim-core/` | https://github.com/ComputationalBiomechanicsLab/opensim-core | `opensim-creator` |
 
 Those branches usually contain a couple of commits that are applied on top of upstream
 in order fix something quite minor or add a little functionality.
