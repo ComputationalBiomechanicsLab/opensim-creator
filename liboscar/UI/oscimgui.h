@@ -51,9 +51,18 @@ namespace osc::ui
     public:
         ContextConfiguration();
 
+        // Sets the resource path to an `imgui.ini` file that acts as the "base" config
+        // when the user doesn't already have one in their user data directory.
         void set_base_imgui_ini_config_resource(ResourcePath);
-        void set_main_font_from_resource(ResourcePath);
-        void set_icon_font_from_resource(ResourcePath, ClosedInterval<char16_t> codepoint_range);
+
+        // Sets the UI's main font as a merged combination of a 'standard' font
+        // and an 'icon' font, where the latter contains UTF8-to-glyph mappings
+        // for arbitrary icons.
+        void set_main_font_as_standard_plus_icon_font(
+            ResourcePath main_font_ttf_path,
+            ResourcePath icon_font_ttf_path,
+            ClosedInterval<char16_t> codepoint_range
+        );
 
         class Impl;
     private:

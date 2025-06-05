@@ -709,6 +709,11 @@ public:
         ClosedInterval<char16_t> codepoint_range;
     };
 
+    struct CustomFontConfig final {
+        MainFontConfig main_font;
+        IconFontConfig icon_font;
+    };
+
     Impl() = default;
 
     void set_base_imgui_ini_config_resource(ResourcePath path)
@@ -716,13 +721,15 @@ public:
         base_imgui_ini_config_ = std::move(path);
     }
 
-    void set_main_font_from_resource(ResourcePath path)
+    void set_main_font_as_standard_plus_icon_font(
+        ResourcePath main_font_ttf_path,
+        ResourcePath icon_font_ttf_path,
+        ClosedInterval<char16_t> codepoint_range)
     {
-        main_font_config_ = MainFontConfig{.path = std::move(path)};
-    }
-    void set_icon_font_from_resource(ResourcePath path, ClosedInterval<char16_t> codepoint_range)
-    {
-        icon_font_config_ = IconFontConfig{.path = std::move(path), .codepoint_range = codepoint_range};
+        custom_font_config_ = CustomFontConfig{
+            .main_font = {.path = std::move(main_font_ttf_path)},
+            .icon_font = {.path = std::move(icon_font_ttf_path), .codepoint_range = codepoint_range},
+        };
     }
 
     const ResourcePath* base_imgui_ini_config() const
@@ -732,17 +739,16 @@ public:
 
     const MainFontConfig* main_font_config() const
     {
-        return main_font_config_ ? &main_font_config_.value() : nullptr;
+        return custom_font_config_ ? &custom_font_config_->main_font: nullptr;
     }
 
     const IconFontConfig* icon_font_config() const
     {
-        return icon_font_config_ ? &icon_font_config_.value() : nullptr;
+        return custom_font_config_ ? &custom_font_config_->icon_font: nullptr;
     }
 private:
     std::optional<ResourcePath> base_imgui_ini_config_;
-    std::optional<MainFontConfig> main_font_config_;
-    std::optional<IconFontConfig> icon_font_config_;
+    std::optional<CustomFontConfig> custom_font_config_;
 };
 
 namespace
@@ -1773,16 +1779,16 @@ void osc::ui::ContextConfiguration::set_base_imgui_ini_config_resource(ResourceP
     impl_.upd()->set_base_imgui_ini_config_resource(std::move(path));
 }
 
-void osc::ui::ContextConfiguration::set_main_font_from_resource(ResourcePath path)
-{
-    impl_.upd()->set_main_font_from_resource(std::move(path));
-}
-
-void osc::ui::ContextConfiguration::set_icon_font_from_resource(
-    ResourcePath path,
+void osc::ui::ContextConfiguration::set_main_font_as_standard_plus_icon_font(
+    ResourcePath main_font_ttf_path,
+    ResourcePath icon_font_ttf_path,
     ClosedInterval<char16_t> codepoint_range)
 {
-    impl_.upd()->set_icon_font_from_resource(std::move(path), codepoint_range);
+    impl_.upd()->set_main_font_as_standard_plus_icon_font(
+        std::move(main_font_ttf_path),
+        std::move(icon_font_ttf_path),
+        codepoint_range
+    );
 }
 
 osc::ui::Context::Context(App& app, ContextConfiguration configuration)
