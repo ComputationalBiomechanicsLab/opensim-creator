@@ -108,25 +108,58 @@ procedure, which is where the model warping workflow may help.
 Open the Model Warper Workflow UI
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: explain how the user should open the workflow UI etc.
+The model warper is a specialized workflow in OpenSim Creator and can be accessed from the
+splash screen:
 
-TODO: screenshot of the splash screen containing a link to the model warper.
+.. figure:: _static/the-model-warper/model-warper-open-button-on-splash-screen.jpeg
+    :width: 60%
+
+    The model warper can be opened from the splash screen of OpenSim Creator (circled red).
+
+This should open a blank model that has no scaling steps:
+
+.. figure:: _static/the-model-warper/blank-model-warper-ui.jpeg
+    :width: 60%
+
+    A screenshot of the model warping UI when it's first opened.
 
 
 Load the Source Model
 ^^^^^^^^^^^^^^^^^^^^^
 
-We have already prepared a source model for this workflow, you can download it here (TODO). Key
-points about the model:
+.. note::
 
-- It's a two-body knee model with etc. etc. TODO
-- It uses ``StationDefinedFrame``\s in the knee joint definition, which means that the knee
-  definition is automatically recalculated whenever the associated stations are edited (see
-  :doc:`station-defined-frames`
+  We have already prepared a source model for this workflow, you can download it here (**TODO**).
+
+  The model contains two bodies (upper leg, lower leg) joined together with a pin joint that
+  uses :doc:`station-defined-frames` to represent (very roughly) a knee and one muscle that
+  crosses that joint over a single wrap cylinder to represent (again, roughly) how the muscle
+  wraps over bone.
+
+
+Use the ``Source Model`` entry in the model warper's toolbar to load the source model ``.osim``
+file. This should load the model and show it in the ``Source Model`` UI panel:
+
+.. _model-warper-after-loading-model:
+.. figure:: _static/the-model-warper/model-warper-after-loading-source-model.jpeg
+    :width: 60%
+
+    The model warper after loading the source model (**DOWNLOAD LINK TODO**).
 
 
 Add a Mesh Warping Step
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+The model warper is designed around applying scaling steps to the source model one-by-one
+to produce the result model. :numref:`model-warper-after-loading-model` shows the most
+trivial case of this process, which is to apply no scaling steps and produce a result
+model that's identical to the source model. The essence of building a model warping
+procedure is to incrementally add the scaling steps you need.
+
+The first step is to apply the subject's (target) femoral torsion to the femur bone
+mesh in the model. There are external tools available online to do this (e.g.
+`this one <https://simtk.org/projects/bone_deformity>`_) but, for this walkthrough, we
+will use the Thin-Plate Spline technique, as described in :doc:`the-mesh-warper`.
 
 **TODO**: walk through adding a Thin-Plate Spline scaling step for a mesh in the model. Mention any gotchas w.r.t. where the data should be stored, how it should be stored, etc.
 
