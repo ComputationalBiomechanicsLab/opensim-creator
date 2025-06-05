@@ -170,6 +170,12 @@ Add a Frame Warping Step
 **TODO**: walk through adding a scaling step that scales the stations associated with a ``StationDefinedFrame``. Should explain that this is one of the reasons why SDFs are useful etc.
 
 
+Add a Muscle Point Scaling Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Add a Wrap Cylinder Scaling Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Add a Body Mass Scaling Step
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
