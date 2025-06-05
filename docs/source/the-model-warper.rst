@@ -25,7 +25,7 @@ combine various, potentially non-uniform, scaling steps into a single warping pi
 that's standard, introspectible, and reusable.
 
 .. _model-warper-ui:
-.. figure:: _static/use-the-model-warper/model-warper.jpg
+.. figure:: _static/the-model-warper/model-warper.jpg
     :width: 60%
 
     The model warping UI. This tutorial goes through top-level model warping concepts
@@ -79,7 +79,7 @@ warping procedure can then be saved to a standard XML file so that it can be reu
 and modified.
 
 .. _model-warper-overview-screenshot:
-.. figure:: _static/use-the-model-warper/model-warper.jpg
+.. figure:: _static/the-model-warper/model-warper.jpg
     :width: 60%
 
     The model warping workflow UI contains a toolbar with buttons for creating/loading
