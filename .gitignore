@@ -1,3 +1,9 @@
+# configuration: side-effects from cmake customization
+third_party/imgui/CMakeLists.txt
+third_party/imgui/imguiConfig.cmake.in
+third_party/implot/CMakeLists.txt
+third_party/implot/implotConfig.cmake.in
+
 # build: artifacts/side-effects
 build/
 docs/build
