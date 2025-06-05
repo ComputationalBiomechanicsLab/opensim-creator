@@ -5,6 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- **Your panel locations/docking might be broken/reset**. The underlying UI system
+  for OpenSim Creator now uses a different panel ID mechanism, which means that any
+  `imgui.ini` files written by earlier versions of OSC no longer work with the new one.
+  What this practically means is that you might have to readjust your panel locations
+  when you boot this version of OSC for the first time.
 - The component context (right-click) menu was redesigned for consistency, and is
   now able to add any component as a child of any other component, which is useful
   when building complex models hierarchically:
