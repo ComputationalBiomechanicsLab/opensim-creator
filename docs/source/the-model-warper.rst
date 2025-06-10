@@ -246,19 +246,132 @@ in the appropriate input boxes. Once you do that, you should end up with somethi
 .. figure:: _static/the-model-warper/after-applying-tps-mesh-warp.jpeg
     :width: 60%
 
-    The model warping UI after applying the mesh warping step. The warped mesh is shorter
+    The model after applying the mesh warping step. The warped mesh is shorter
     and slightly twisted when compared to the source mesh. Warping the joint frames, muscle
     points, and wrap geometry is handled later in this walkthrough. An easy way to see what
     a scaling step is doing is to toggle the ``enabled`` button on the step.
 
+
 Add a Frame Warping Step
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: Explain why ``StationDefinedFrame``\s are relevant for this step.
+Warping the femur mesh only warps the mesh data while keeping the rest of the model the
+same. This means the model now looks wrong (the femur mesh is too small compared to the
+rest of the model). To fix that, we need to scale the remaining components.
 
-**TODO**: explain adding the scaling step, and any unusual-looking behavior (e.g. of
-muscle points or bodies snapping around because they are temporarily in a new coordinate
-system?)
+The next component we recommend scaling is the joint frame of the knee. The reason why
+is because it will help move the downstream components (the wrap cylinder and lower-leg
+muscle points) into a better location. As for *how* to scale the knee frame, it makes
+sense to use the TPS technique, given the femur was already scaled that way.
+
+.. note::
+
+  The TPS technique operates on points in space, not frames, which typically combine a
+  reorientation and a translation.
+
+  The way we work around that problem is by ensuring that frames in the source model use
+  ``StationDefinedFrame``\s, as described in :doc:`station-defined-frames`, rather than
+  ``PhysicalOffsetFrame``\s, which encode an orientation.
+
+  The difference between the two frame definitions is subtle, but significant: ``StationDefinedFrame``\s
+  are entirely defined in terms of points in space, which can be warped via the TPS technique,
+  whereas ``PhysicalOffsetFrame``\s include a not-TPS-warpable reorientation.
+
+  If you have a model that uses ``PhysicalOffsetFrame``\s, then the TPS technique can only
+  reliably warp the translation part of the frame. It can *approximately* warp the
+  orientation, but this relies on reprojection/orthogonalization techniques, which
+  require tweaking and aren't anywhere near as robust as using a ``StationDefinedFrame``\.
+
+In this model, the knee joint (``knee_r``) is defined as joining ``femur_r_knee_frame``
+(a ``StationDefinedFrame``) to the lower leg (``lower_leg_r``). Therefore, to warp the
+femur's side of ``knee_r``'s joint definition we should warp the stations that are used
+to define ``femur_r_knee_frame`` (listed in :numref:`stations-to-warp-for-knee-definition`).
+
+.. _stations-to-warp-for-knee-definition:
+.. list-table:: Stations that are used to define ``femur_r_knee_frame`` in the model. These should be warped via the TPS technique.
+   :header-rows: 1
+
+   * - .. centered:: Absolute Path in Model
+   * - .. centered:: ``/bodyset/femur_r/femur_r_head``
+   * - .. centered:: ``/bodyset/femur_r/femur_r_med_condyl``
+   * - .. centered:: ``/bodyset/femur_r/femur_r_lat_condyl``
+   * - .. centered:: ``/bodyset/femur_r/femur_r_condyls_midpoint``
+
+Concretely, we start by adding a "Apply Thin-Plate Spline (TPS) to Stations" scaling step to the
+model by clicking the appropriate menu item (:numref:`model-warper-apply-tps-to-stations-button`):
+
+.. _model-warper-apply-tps-to-stations-button:
+.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-stations-scaling-step-button.jpeg
+    :width: 60%
+
+    The "Add Scaling Step" button in the model warper UI opens a menu where you can select
+    the type of scaling step to add to the model warping procedure. In this first step, we
+    add a "Apply Thin-Plate Spline (TPS) to Stations" step.
+
+And then we use the same parameters as the mesh warping step (see :numref:`model-warper-mesh-scaling-properties`),
+apart from the ``meshes`` property (a station scaling step doesn't have this) - instead,
+the stations from :numref:`stations-to-warp-for-knee-definition` should be listed in the
+scaling step's ``stations`` property. After doing that, the knee should now look more
+correct, but the wrap cylinder clearly needs to be fixed (:numref:`model-warper-after-applying-tps-frame-station-warp`):
+
+.. _model-warper-after-applying-tps-frame-station-warp:
+.. figure:: _static/the-model-warper/after-applying-tps-frame-station-warp.jpeg
+    :width: 60%
+
+    The model after applying the station warping step to the knee joint's frame
+    definition stations. Compared to :numref:`model-warper-after-applying-tps-mesh-warp`,
+    it can be seen that the knee joint frame is now correctly positioned on the
+    warped femur mesh. The wrap cylinder is defined in terms of the ``femur_r``
+    body, rather than the ``femur_r_knee_frame``, so it requires separate correction.
+
+
+Add a Wrap Cylinder Scaling Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With the knee frame definition warped, the warped model looks closer to what we want.
+However, the knee's wrap cylinder still needs to be scaled.
+
+It makes sense to use the TPS technique to warp the wrap cylinder---we've used it for
+all previous scaling steps, after all---but using the TPS technique on a wrap cylinder
+is tricky because its parameterized with a position, orientation, radius, and length. Only
+one of those (position) is a point in space that can be simply passed into the transform
+yielded by the TPS technique. The others require special handling.
+
+The model warper tool comes with an "Apply Thin-Plate Spline (TPS) to WrapCylinder" step
+that's specialized for this job. Its algorithm is explained in the tooltip that pops up
+when you mouse over the option in the "Add Scaling Step" menu. In short, it works by
+generating a point along the cylinder's midline and a point on the cylinder's surface
+followed by TPS warping them and figuring out the cylinder's new parameters from their
+new positions.
+
+.. note::
+
+  **TODO** explain why hacks/heuristics like these are necessary. It's imporant to make it
+  clear that models are under-defined/under-parameterized and that scaling a model is
+  fundamentally hard when the model's parameterization doesn't match what's available in
+  the lab.
+
+To add a wrap cylinder scaling step TODO SCREENSHOT STEP NAME ETC.
+
+.. _model-warper-apply-tps-to-wrapcylinders-button:
+.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-wrapcylinder-scaling-step-button.jpeg
+    :width: 60%
+
+    TODO: rewording. The "Add Scaling Step" button in the model warper UI opens a menu where you can select
+    the type of scaling step to add to the model warping procedure. In this first step, we
+    add a "Apply Thin-Plate Spline (TPS) to Stations" step.
+
+Once the step has been added, you won't be able to see the result model until the following
+parameters are provided. TODO mention it's the same as above but with ``wrap_cylinders`` filled
+in.
+
+Once they're provided, the wrapping cylinder should then be correctly warped:
+
+.. _model-warper-after-applying-tps-wrapcylinder-warp:
+.. figure:: _static/the-model-warper/after-applying-tps-wrapcylinder-warp.jpeg
+    :width: 60%
+
+    Caption TODO.
 
 
 Add a Muscle Point Scaling Step
@@ -266,14 +379,6 @@ Add a Muscle Point Scaling Step
 
 **TODO**: explain how the muscle points ride on the skeleton, so they need to be warped too
 **TODO**: explain adding the step and then maybe a screenshot of before/after
-
-
-Add a Wrap Cylinder Scaling Step
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**TODO**: explain the difficulties of scaling wrap cycliners (they're analaytic geometry, they're
-based on external information like muscle density, they have an orientation and wrapping quadrant
-that should be handled carefully, etc.)
 
 
 Add a Body Mass Scaling Step
