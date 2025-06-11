@@ -346,10 +346,16 @@ new positions.
 
 .. note::
 
-  **TODO** explain why hacks/heuristics like these are necessary. It's imporant to make it
-  clear that models are under-defined/under-parameterized and that scaling a model is
-  fundamentally hard when the model's parameterization doesn't match what's available in
-  the lab.
+  Heuristics like those used by the wrap cylinder scaling step are sometimes necessary
+  because the source model doesn't encode *why* the cylinder has the given parameterization.
+  As a modeller, you can *guess* why (the patella, skin thickness, and so on) but, in the
+  absence of a clear, scalable, parameterization, the scaling engine can't robustly
+  figure out what how to handle it.
+
+  ``StationDefinedFrame``\s were specifically added to OpenSim when we developed the model
+  warper to address problems like these. We imagine that, long term, OpenSim will need many
+  more component parameterizations in order to support robust, non-linear subject-specific
+  scaling (e.g. ``StationDefinedWrapCylinder``, ``MarkerParameterizedBySubjectBMI``, etc.).
 
 To add a wrap cylinder scaling step, click the "Add Scaling Step" button followed by
 clicking the appropriate menu item (:numref:`model-warper-apply-tps-to-wrapcylinders-button`):
@@ -415,7 +421,9 @@ the (OpenSim) path to the relevant muscle points (:numref:`model-warper-after-ap
 .. figure:: _static/the-model-warper/after-applying-tps-path-points-warp.jpeg
     :width: 60%
 
-    Caption TODO
+    The model after applying the path point scaling step. Compared to :numref:`model-warper-after-applying-tps-wrapcylinder-warp`,
+    it can be seen that the path point at the top of the femur was slightly adjusted by
+    the TPS warp.
 
 With that, the muscle path points have been scaled/warped by the same TPS technique that was used
 on the mesh, so the muscle points should now more closely represent the subject's morphology. Given
@@ -427,17 +435,31 @@ more dramatic warping requirements, the effect of warping the muscle points will
 Export Result Model
 ^^^^^^^^^^^^^^^^^^^
 
-**TODO**: export the result model to a model editor and prompt the reader to save it if they like it.
+With the meshes, joint frames, wrap cylinder, and muscle point warped, we can now export the result
+model as a new OpenSim model.
 
+Exporting was possible at any point in the walkthrough where there wasn't any error messages, and it
+can be good idea to occasionally export the model to explore what scaling steps are missing. The export
+process involves clicking the "Export Warped Model" button, located in the toolbar:
 
-Summary
--------
+.. figure:: _static/the-model-warper/export-warped-model-button.jpeg
+    :width: 60%
 
-**TODO**: quick runthrough of what was communicated, why/where model warping can be useful
-and an invite to try it on other models!
+    To export the warped result model, press the green "Export Warped Model" (circled in red). This
+    will apply all scaling steps to the source model and create a new OpenSim model in memory that
+    can be edited, examined, or saved in the model editor. The gear icon (⚙️) next to the button
+    shows some customization points (e.g. where the exporter should write warped mesh data).
 
-Further Steps
--------------
+This will then open a standard OpenSim model editor tab (:numref:`model-editor-after-exporting-model`, the
+same workflow that's used to edit an ``.osim`` file). You can then save the ``.osim`` file, if you'd
+like, or investigate/edit the resulting model further.
 
-- Scaling body masses
-- Scaling muscle parameters
+.. _model-editor-after-exporting-model:
+.. figure:: _static/the-model-warper/final-exported-model.jpeg
+    :width: 60%
+
+    The final warped model after exporting it, which opens it in the model editor workflow. The exported
+    model is only held in memory, rather than written to disk, so you'll need to save it. All the usual
+    ``.osim`` model editing capabilities are available in this workflow (e.g. live muscle moment arm
+    plotting, as pictured), so you can also perform any final investigations/edits here before saving
+    the model.
