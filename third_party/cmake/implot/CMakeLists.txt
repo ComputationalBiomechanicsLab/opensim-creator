@@ -6,15 +6,17 @@ include(CMakePackageConfigHelpers)  # configure_package_config_file
 
 find_package(imgui REQUIRED)
 
+set(OSCDEPS_IMPLOT_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../implot)
+
 add_library(implot STATIC
-    implot.cpp
-    implot.h
-    implot_demo.cpp
-    implot_internal.h
-    implot_items.cpp
+    ${OSCDEPS_IMPLOT_ROOT}/implot.cpp
+    ${OSCDEPS_IMPLOT_ROOT}/implot.h
+    ${OSCDEPS_IMPLOT_ROOT}/implot_demo.cpp
+    ${OSCDEPS_IMPLOT_ROOT}/implot_internal.h
+    ${OSCDEPS_IMPLOT_ROOT}/implot_items.cpp
 )
 target_include_directories(implot
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+    PRIVATE ${OSCDEPS_IMPLOT_ROOT}
     INTERFACE $<INSTALL_INTERFACE:include/implot>
 )
 target_compile_features(implot
@@ -28,7 +30,7 @@ install(
 )
 install(
     FILES
-        implot.h
+        ${OSCDEPS_IMPLOT_ROOT}/implot.h
     DESTINATION
         include/implot
 )

@@ -144,11 +144,9 @@ endif()
 if(${OSCDEPS_BUILD_IMPLOT})
     ExternalProject_Add(implot
         DEPENDS imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
 
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implot.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/implotConfig.cmake.in" <SOURCE_DIR>/implotConfig.cmake.in
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
+        SOURCE_SUBDIR ../cmake/implot/
 
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
