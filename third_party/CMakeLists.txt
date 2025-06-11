@@ -3,6 +3,7 @@ project(osc-dependencies)
 
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
+find_package(Git REQUIRED)  # GIT_EXECUTABLE
 
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
 set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
@@ -129,11 +130,10 @@ endif()
 
 if (${OSCDEPS_BUILD_IMGUI})
     ExternalProject_Add(imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/0001-revert-dockspace-ids.patch
 
-        # we provide our own cmake for this dependency
-        PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imgui.cmake" <SOURCE_DIR>/CMakeLists.txt
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cmake/imguiConfig.cmake.in" <SOURCE_DIR>/imguiConfig.cmake.in
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+        SOURCE_SUBDIR ../cmake/imgui/
 
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
