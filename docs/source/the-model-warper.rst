@@ -129,7 +129,7 @@ Load the Source Model
 
 .. note::
 
-  We have already prepared a source model for this workflow, you can download it here (**TODO**).
+  We have already prepared a source model for this workflow, you can download it at `Walkthrough Model ZIP`_.
 
   The model contains two bodies (upper leg, lower leg) joined together with a pin joint that
   uses :doc:`station-defined-frames` to represent (very roughly) a knee and one muscle that
@@ -144,7 +144,7 @@ file. This should load the model and show it in the ``Source Model`` UI panel:
 .. figure:: _static/the-model-warper/model-warper-after-loading-source-model.jpeg
     :width: 60%
 
-    The model warper after loading the source model (**DOWNLOAD LINK TODO**).
+    The model warper after loading contents of `Walkthrough Model ZIP`_.
 
 
 Add a Mesh Warping Step
@@ -184,10 +184,9 @@ walkthrough, we will use the Thin-Plate Spline technique, as described in
   The model warping implementation uses pairs of landmarks from those files to warp, scale, reorient,
   and translate the applicable mesh, station, or muscle point.
 
-The model warper's TPS-based mesh scaling step requires two sequences of landmarks. The model
-download zip (**TODO**) includes a ``Geometry/`` directory that contains ``femur_r.landmarks.csv``
-and ``subject_femur_r.landmarks.csv``, which represent ``femur_r.vtp``\'s landmarks and landmarks
-``subject_femur_r.stl``\'s landmarks respectively.
+The model warper's TPS-based mesh scaling step requires two sequences of landmarks. The `Walkthrough Model ZIP`_
+includes a ``Geometry/`` directory that contains ``femur_r.landmarks.csv`` and ``subject_femur_r.landmarks.csv``, which
+represent ``femur_r.vtp``\'s landmarks and landmarks ``subject_femur_r.stl``\'s landmarks respectively.
 
 To add a scaling step in the model warper UI, click the appropriate button and add a "Apply Thin-Plate
 Spline (TPS) to Meshes" step (pictured in :numref:`model-warper-apply-tps-to-meshes-button`).
@@ -463,3 +462,5 @@ like, or investigate/edit the resulting model further.
     ``.osim`` model editing capabilities are available in this workflow (e.g. live muscle moment arm
     plotting, as pictured), so you can also perform any final investigations/edits here before saving
     the model.
+
+.. _Walkthrough Model ZIP: _static/the-model-warper/walkthrough-model.zip

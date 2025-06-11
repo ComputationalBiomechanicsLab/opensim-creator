@@ -13,7 +13,7 @@ OpenSim is based on `Simbody`_, a physics library for science- and engineering-q
 Prerequisites
 -------------
 
-This is a beginner-level introduction. The only thing you need to ensure is that you have followed the :ref:`gettingstarted` steps.
+This is a beginner-level introduction. The only thing you need to ensure is that you have followed the :doc:`installation` steps.
 
 Topics Covered by this Tutorial
 -------------------------------
