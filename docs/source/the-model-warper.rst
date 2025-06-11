@@ -351,41 +351,77 @@ new positions.
   fundamentally hard when the model's parameterization doesn't match what's available in
   the lab.
 
-To add a wrap cylinder scaling step TODO SCREENSHOT STEP NAME ETC.
+To add a wrap cylinder scaling step, click the "Add Scaling Step" button followed by
+clicking the appropriate menu item (:numref:`model-warper-apply-tps-to-wrapcylinders-button`):
 
 .. _model-warper-apply-tps-to-wrapcylinders-button:
 .. figure:: _static/the-model-warper/apply-thin-plate-spline-to-wrapcylinder-scaling-step-button.jpeg
     :width: 60%
 
-    TODO: rewording. The "Add Scaling Step" button in the model warper UI opens a menu where you can select
-    the type of scaling step to add to the model warping procedure. In this first step, we
-    add a "Apply Thin-Plate Spline (TPS) to Stations" step.
+    To warp the warp cylinder, click the "Add Scaling Step" button followed by "Apply Thin-Plate Spline
+    (TPS) to WrapCylinder". The hover tooltip for the button (pictured) explains what this step does.
 
-Once the step has been added, you won't be able to see the result model until the following
-parameters are provided. TODO mention it's the same as above but with ``wrap_cylinders`` filled
-in.
-
-Once they're provided, the wrapping cylinder should then be correctly warped:
+Once the step has been added, you won't be able to see the result model until the necessary
+parameters are provided. For this step---and similarly to the previous step where we warped the
+frame stations---we will use the parameters that were used to scale the mesh, which are listed
+in :numref:`model-warper-mesh-scaling-properties`. The only difference is that the wrap cylinder
+scaling step has a ``wrap_cylinders`` property, which you should list the (OpenSim) path to the
+knee's wrap cylinder (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`):
 
 .. _model-warper-after-applying-tps-wrapcylinder-warp:
 .. figure:: _static/the-model-warper/after-applying-tps-wrapcylinder-warp.jpeg
     :width: 60%
 
-    Caption TODO.
+    The model after applying the wrap cylinder scaling step. Compared to :numref:`model-warper-after-applying-tps-frame-station-warp`,
+    it can be seen that the wrap cylinder in the model is now correctly placed with respect
+    to the femur mesh.
 
 
 Add a Muscle Point Scaling Step
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: explain how the muscle points ride on the skeleton, so they need to be warped too
-**TODO**: explain adding the step and then maybe a screenshot of before/after
+Now that the wrap cylinder is warped, the model is looking a lot better (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`). However,
+we haven't accounted for the fact that the origin/insertion points of any muscles attached to the (warped)
+femur should also be warped.
 
+.. note::
 
-Add a Body Mass Scaling Step
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  Now that we've done it a few times, you can probably guess what the (TPS-based) process for scaling
+  the muscle path points looks like:
 
-**TODO**: add a mass scaling step. This is just another scaling step but is a good opportunity to
-discuss the relevance of having scaling parameters.
+  - Add an appropriate scaling step (in this case, "Apply Thin-Plate Spline (TPS) to Path Points")
+  - Use the same (i.e. copy and paste) the TPS warp parameters that were used on the femur mesh (:numref:`model-warper-mesh-scaling-properties`)
+
+  If this feels familiar, great! Try doing it yourself! The rest of this section will outline
+  the process step-by-step for comprehensiveness.
+
+To scale the muscle path points, click "Add Scaling Step" followed by "Apply Thin-Plate Spline (TPS) Warp
+to Path Points" (:numref:`model-warper-apply-tps-to-path-points-button`):
+
+.. _model-warper-apply-tps-to-path-points-button:
+.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-path-points.jpeg
+    :width: 60%
+
+    To warp the path points, click the "Add Scaling Step" button followed by "Apply Thin-Plate Spline
+    (TPS) to Path Points" menu item.
+
+Once the step has been added, you won't be able to see the result model until the necessary
+parameters are provided. For this step we will use the parameters that were used to scale the
+mesh, which are listed in :numref:`model-warper-mesh-scaling-properties`. The only difference
+is that the path points scaling step has a ``path_points`` property in which you should list
+the (OpenSim) path to the relevant muscle points (:numref:`model-warper-after-applying-tps-path-points-warp`):
+
+.. _model-warper-after-applying-tps-path-points-warp:
+.. figure:: _static/the-model-warper/after-applying-tps-path-points-warp.jpeg
+    :width: 60%
+
+    Caption TODO
+
+With that, the muscle path points have been scaled/warped by the same TPS technique that was used
+on the mesh, so the muscle points should now more closely represent the subject's morphology. Given
+this is a very simple model (one muscle, one origin point, one insertion point), the effect of
+warping the muscle points is going to be very subtle, but on larger, more complicated, models with
+more dramatic warping requirements, the effect of warping the muscle points will be much bigger.
 
 
 Export Result Model
@@ -399,3 +435,9 @@ Summary
 
 **TODO**: quick runthrough of what was communicated, why/where model warping can be useful
 and an invite to try it on other models!
+
+Further Steps
+-------------
+
+- Scaling body masses
+- Scaling muscle parameters
