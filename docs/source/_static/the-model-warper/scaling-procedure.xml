@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40600">
+	<ModelWarperV3Document name="modelwarperv3document">
+		<!--List of components that this component owns and serializes.-->
+		<components>
+			<ThinPlateSplineMeshesScalingStep name="thinplatesplinemeshesscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).-->
+				<destination_landmarks_prescale>0.0010000000474974513</destination_landmarks_prescale>
+				<!--Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)-->
+				<meshes>/bodyset/femur_r/femur_r_geom_1</meshes>
+			</ThinPlateSplineMeshesScalingStep>
+			<ThinPlateSplineStationsScalingStep name="thinplatesplinestationsscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).-->
+				<destination_landmarks_prescale>0.0010000000474974513</destination_landmarks_prescale>
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find stations in the source model that should be warped by this scaling step.-->
+				<stations>/bodyset/femur_r/femur_r_head /bodyset/femur_r/femur_r_med_condyl /bodyset/femur_r/femur_r_lat_condyl /bodyset/femur_r/femur_r_condyls_midpoint</stations>
+			</ThinPlateSplineStationsScalingStep>
+			<ThinPlateSplineWrapCylinderScalingStep name="thinplatesplinewrapcylinderscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).-->
+				<destination_landmarks_prescale>0.0010000000474974513</destination_landmarks_prescale>
+				<!--Absolute paths (e.g. `/bodyset/body/wrap_cylinder_2`) to `WrapCylinder` components in the model-->
+				<wrap_cylinders>/bodyset/femur_r/wrapobjectset/femur_r_condyl_wrap</wrap_cylinders>
+			</ThinPlateSplineWrapCylinderScalingStep>
+		</components>
+	</ModelWarperV3Document>
+</OpenSimDocument>
