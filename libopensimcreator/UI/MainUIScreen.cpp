@@ -406,7 +406,7 @@ public:
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (ui::begin_main_viewport_top_bar("##TabSpecificMenuBar")) {
+        if (ui::begin_main_window_top_bar("##TabSpecificMenuBar")) {
             if (ui::begin_menu_bar()) {
                 if (Tab* active = getActiveTab()) {
                     try {
@@ -442,7 +442,7 @@ public:
         ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vec2{5.0f, 0.0f});
         ui::push_style_var(ui::StyleVar::TabRounding, 10.0f);
         ui::push_style_var(ui::StyleVar::FrameRounding, 10.0f);
-        if (ui::begin_main_viewport_top_bar("##TabBarViewport")) {
+        if (ui::begin_main_window_top_bar("##MainWindowTabBarWrapper")) {
             if (ui::begin_menu_bar()) {
                 if (ui::begin_tab_bar("##TabBar")) {
                     for (size_t i = 0; i < m_Tabs.size(); ++i) {

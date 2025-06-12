@@ -26,12 +26,12 @@ public:
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        const Rect viewport_ui_rect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_ui_rect);
+        const Rect workspace_ui_rect = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Vec2 workspace_dimensions = dimensions_of(workspace_ui_rect);
 
         // error message panel
         {
-            const Vec2 pos{viewport_ui_rect.p1.x + viewport_dimensions.x/2.0f, viewport_ui_rect.p1.y + padding};
+            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p1.y + padding};
             ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
             ui::set_next_panel_size({width, 0.0f});
 
@@ -47,7 +47,7 @@ public:
 
         // log message panel
         {
-            const Vec2 pos{viewport_ui_rect.p1.x + viewport_dimensions.x/2.0f, viewport_ui_rect.p2.y - padding};
+            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p2.y - padding};
             ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 

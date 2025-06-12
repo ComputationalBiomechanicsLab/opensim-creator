@@ -144,7 +144,7 @@ public:
 
     void onDraw()
     {
-        if (area_of(ui::get_main_viewport_workspace_uiscreenspace_rect()) <= 0.0f) {
+        if (area_of(ui::get_main_window_workspace_uiscreenspace_rect()) <= 0.0f) {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
             return;
@@ -160,7 +160,7 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        Rect tabUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
         // pretend the attributation bar isn't there (avoid it)
         tabUIRect.p2.y -= max(m_TudLogo.device_independent_dimensions().y, m_CziLogo.device_independent_dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
 
@@ -185,20 +185,20 @@ private:
 
     void drawBackground()
     {
-        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect workspaceUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
 
-        ui::set_next_panel_pos(viewportUIRect.p1);
-        ui::set_next_panel_size(dimensions_of(viewportUIRect));
+        ui::set_next_panel_pos(workspaceUIRect.p1);
+        ui::set_next_panel_size(dimensions_of(workspaceUIRect));
 
         ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.virtual_pixel_dimensions = dimensions_of(viewportUIRect);
+        params.virtual_pixel_dimensions = dimensions_of(workspaceUIRect);
         params.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
         params.antialiasing_level = App::get().anti_aliasing_level();
-        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(viewportUIRect));
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(workspaceUIRect));
 
         if (params != m_LastSceneRendererParams) {
             scene_renderer_.render({}, params);
@@ -352,8 +352,8 @@ private:
 
     void drawAttributationLogos()
     {
-        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        Vec2 loc = viewportUIRect.p2;
+        const Rect workspaceUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
+        Vec2 loc = workspaceUIRect.p2;
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
 
@@ -371,7 +371,7 @@ private:
 
     void drawVersionInfo()
     {
-        const Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect tabUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
         const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 

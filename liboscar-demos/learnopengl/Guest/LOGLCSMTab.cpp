@@ -230,7 +230,7 @@ public:
         // update state from user inputs, window size, etc.
         user_camera_.on_draw();
 
-        const auto cascade_projections = render_cascades(ui::get_main_viewport_workspace_aspect_ratio());
+        const auto cascade_projections = render_cascades(ui::get_main_window_workspace_aspect_ratio());
         render_scene_with_cascaded_shadow_mapping(cascade_projections);
         draw_debug_overlays();
 
@@ -289,7 +289,7 @@ private:
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
             const auto [near, far] = user_camera_.clipping_planes();
             const Vec4 view_pos = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
-            const Mat4 proj = user_camera_.projection_matrix(aspect_ratio_of(ui::get_main_viewport_workspace_screenspace_rect()));
+            const Mat4 proj = user_camera_.projection_matrix(aspect_ratio_of(ui::get_main_window_workspace_screenspace_rect()));
             const Vec4 proj_pos = (proj * view_pos);
             ends.push_back(proj_pos.z);
         }
@@ -298,7 +298,7 @@ private:
         for (const auto& decoration : decorations_) {
             graphics::draw(decoration.mesh, decoration.transform, csm_material_, user_camera_);
         }
-        user_camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        user_camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
         user_camera_.render_to_screen();
     }
 

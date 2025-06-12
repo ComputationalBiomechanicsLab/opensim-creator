@@ -103,7 +103,7 @@ public:
 
     void on_draw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         // draw screenshot window
         {

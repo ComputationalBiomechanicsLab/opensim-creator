@@ -50,7 +50,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
 
         // draw cube
         lighting_material_.set("uObjectColor", object_color_);

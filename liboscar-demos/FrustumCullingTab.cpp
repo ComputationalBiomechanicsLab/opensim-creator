@@ -93,11 +93,11 @@ public:
 
     void on_draw()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const float x_midpoint = midpoint(viewport_screen_space_rect.p1.x, viewport_screen_space_rect.p2.x);
-        const Rect lhs_screen_space_rect = {viewport_screen_space_rect.p1, {x_midpoint, viewport_screen_space_rect.p2.y}};
-        const Rect rhs_screen_space_rect = {{x_midpoint, viewport_screen_space_rect.p1.y}, viewport_screen_space_rect.p2};
-        const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs_screen_space_rect));
+        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
+        const float x_midpoint = midpoint(workspace_screenspace_rect.p1.x, workspace_screenspace_rect.p2.x);
+        const Rect lhs_screenspace_rect = {workspace_screenspace_rect.p1, {x_midpoint, workspace_screenspace_rect.p2.y}};
+        const Rect rhs_screenspace_rect = {{x_midpoint, workspace_screenspace_rect.p1.y}, workspace_screenspace_rect.p2};
+        const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs_screenspace_rect));
 
         user_camera_.on_draw();  // update from inputs etc.
 
@@ -108,7 +108,7 @@ public:
                 graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_, blue_material_props_);
             }
         }
-        user_camera_.set_pixel_rect(lhs_screen_space_rect);
+        user_camera_.set_pixel_rect(lhs_screenspace_rect);
         user_camera_.render_to_screen();
 
         // render from top-down perspective on right-hand side
@@ -124,8 +124,8 @@ public:
             top_down_camera_,
             green_material_props_
         );
-        top_down_camera_.set_pixel_rect(rhs_screen_space_rect);
-        top_down_camera_.set_scissor_rect(rhs_screen_space_rect);  // stops camera clear from clearing left-hand side
+        top_down_camera_.set_pixel_rect(rhs_screenspace_rect);
+        top_down_camera_.set_scissor_rect(rhs_screenspace_rect);  // stops camera clear from clearing left-hand side
         top_down_camera_.set_background_color({0.1f, 1.0f});
         top_down_camera_.render_to_screen();
     }

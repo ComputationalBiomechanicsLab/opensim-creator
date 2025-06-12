@@ -149,7 +149,7 @@ private:
     void render_example_to_screen()
     {
         // update properties for this frame
-        const Vec2 workspace_dimensions = ui::get_main_viewport_workspace_screen_dimensions();
+        const Vec2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
         props_.set_time(App::get().frame_start_time());
         props_.set_resolution(workspace_dimensions * App::get().main_window_device_pixel_ratio());
         props_.set_mouse_position(ui::get_mouse_pos());

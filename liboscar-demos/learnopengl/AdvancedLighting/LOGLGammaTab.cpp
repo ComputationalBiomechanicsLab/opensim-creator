@@ -122,7 +122,7 @@ private:
     void draw_3d_scene()
     {
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
 
         // render scene
         material_.set("uViewPos", camera_.position());

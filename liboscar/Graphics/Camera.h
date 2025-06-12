@@ -22,8 +22,8 @@ namespace osc
 {
     // camera
     //
-    // encapsulates a camera viewport that can be drawn to, with the intention of producing
-    // a 2D rendered image of the drawn elements
+    // represents a camera in 3D space that can rasterize drawcalls issued
+    // via `graphics::draw` to a 2D render target.
     class Camera {
     public:
         Camera();

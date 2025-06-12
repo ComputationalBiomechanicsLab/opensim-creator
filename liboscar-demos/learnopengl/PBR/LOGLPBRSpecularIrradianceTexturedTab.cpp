@@ -236,18 +236,18 @@ public:
 
     void on_draw()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * dimensions_of(viewport_screen_space_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screenspace_rect);
 
-        output_render_.set_dimensions(viewport_pixel_dimensions);
+        output_render_.set_dimensions(workspace_pixel_dimensions);
         output_render_.set_device_pixel_ratio(device_pixel_ratio);
         output_render_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 
         camera_.on_draw();
         draw_3d_render();
         draw_background();
-        graphics::blit_to_screen(output_render_, viewport_screen_space_rect);
+        graphics::blit_to_screen(output_render_, workspace_screenspace_rect);
         perf_panel_.on_draw();
     }
 

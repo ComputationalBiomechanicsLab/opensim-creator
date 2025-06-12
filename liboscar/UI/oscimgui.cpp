@@ -840,6 +840,7 @@ namespace
 
     void update_monitors(const App& app)
     {
+        return;
         const auto os_monitors = app.monitors();
         auto& ui_monitors = ImGui::GetPlatformIO().Monitors;
 
@@ -2185,12 +2186,7 @@ void osc::ui::end_listbox()
     ImGui::EndListBox();
 }
 
-Vec2 osc::ui::get_main_viewport_center()
-{
-    return ImGui::GetMainViewport()->GetCenter();
-}
-
-void osc::ui::enable_dockspace_over_main_viewport()
+void osc::ui::enable_dockspace_over_main_window()
 {
     ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
@@ -3376,7 +3372,7 @@ ui::PanelFlags osc::ui::get_minimal_panel_flags()
     };
 }
 
-Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
+Rect osc::ui::get_main_window_workspace_uiscreenspace_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
@@ -3386,7 +3382,7 @@ Rect osc::ui::get_main_viewport_workspace_uiscreenspace_rect()
     };
 }
 
-Rect osc::ui::get_main_viewport_workspace_screenspace_rect()
+Rect osc::ui::get_main_window_workspace_screenspace_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
     const Vec2 bottom_left_uiscreenspace = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
@@ -3396,25 +3392,25 @@ Rect osc::ui::get_main_viewport_workspace_screenspace_rect()
     return {bottom_left_screenspace, top_right_screenspace};
 }
 
-Vec2 osc::ui::get_main_viewport_workspace_screen_dimensions()
+Vec2 osc::ui::get_main_window_workspace_dimensions()
 {
-    return dimensions_of(get_main_viewport_workspace_uiscreenspace_rect());
+    return dimensions_of(get_main_window_workspace_uiscreenspace_rect());
 }
 
-float osc::ui::get_main_viewport_workspace_aspect_ratio()
+float osc::ui::get_main_window_workspace_aspect_ratio()
 {
-    return aspect_ratio_of(get_main_viewport_workspace_screenspace_rect());
+    return aspect_ratio_of(get_main_window_workspace_screenspace_rect());
 }
 
-bool osc::ui::is_mouse_in_main_viewport_workspace()
+bool osc::ui::is_mouse_in_main_window_workspace()
 {
     const Vec2 mousepos = ui::get_mouse_pos();
-    const Rect hitRect = get_main_viewport_workspace_uiscreenspace_rect();
+    const Rect hitRect = get_main_window_workspace_uiscreenspace_rect();
 
     return is_intersecting(hitRect, mousepos);
 }
 
-bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, PanelFlags flags)
+bool osc::ui::begin_main_window_top_bar(CStringView label, float height, PanelFlags flags)
 {
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)
@@ -3422,7 +3418,7 @@ bool osc::ui::begin_main_viewport_top_bar(CStringView label, float height, Panel
 }
 
 
-bool osc::ui::begin_main_viewport_bottom_bar(CStringView label)
+bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 {
     // https://github.com/ocornut/imgui/issues/3518
     auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)

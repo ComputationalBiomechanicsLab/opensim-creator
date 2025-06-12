@@ -483,7 +483,7 @@ public:
     void on_draw()
     {
         try {
-            ui::enable_dockspace_over_main_viewport();
+            ui::enable_dockspace_over_main_window();
             m_Toolbar.onDraw();
             m_PanelManager->on_draw();
             m_StatusBar.on_draw();

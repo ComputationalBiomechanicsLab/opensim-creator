@@ -31,7 +31,7 @@ public:
 
     void onDraw()
     {
-        ui::begin_main_viewport_bottom_bar("bottom");
+        ui::begin_main_window_bottom_bar("bottom");
         drawSelectionBreadcrumbs();
         ui::end_panel();
     }

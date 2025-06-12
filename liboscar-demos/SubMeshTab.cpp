@@ -87,7 +87,7 @@ public:
                 sub_mesh_index
             );
         }
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
         camera_.render_to_screen();
     }
 

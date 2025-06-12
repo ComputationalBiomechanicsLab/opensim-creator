@@ -53,7 +53,7 @@ public:
         // handle hittest
         const auto raycastStartTime = std::chrono::high_resolution_clock::now();
 
-        const Rect r = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect r = ui::get_main_window_workspace_uiscreenspace_rect();
         const Vec2 d = dimensions_of(r);
         m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_pos()} - r.p1, d);
 
@@ -87,14 +87,14 @@ public:
     {
         // setup scene
         {
-            const Rect viewportScreenRect = ui::get_main_viewport_workspace_screenspace_rect();
-            m_Camera.set_pixel_rect(viewportScreenRect);
+            const Rect workspaceRect = ui::get_main_window_workspace_screenspace_rect();
+            m_Camera.set_pixel_rect(workspaceRect);
 
             // update real scene camera from constrained polar camera
             m_Camera.set_position(m_PolarCamera.position());
             m_Camera.set_clipping_planes({m_PolarCamera.znear, m_PolarCamera.zfar});
             m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());
-            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(viewportScreenRect)));
+            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(workspaceRect)));
         }
 
         // draw mesh
@@ -127,7 +127,7 @@ public:
             );
         }
 
-        // draw scene onto viewport
+        // draw scene onto workspace
         m_Camera.render_to_screen();
 
         // auxiliary 2D UI

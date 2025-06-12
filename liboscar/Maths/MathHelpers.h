@@ -32,7 +32,7 @@ namespace osc
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
 
-    // returns an XY NDC point converted from a screen/viewport point
+    // returns an XY NDC point converted from a point defined in screenspace
     //
     // - input screen point has origin in top-left, Y goes down
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
@@ -48,7 +48,8 @@ namespace osc
     // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
     Vec2 ndc_point_to_topleft_relative_pos(Vec2 ndc_pos);
 
-    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen/viewport point
+    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from
+    // a point defined in screenspace
     //
     // - input screen point has origin in top-left, Y goes down
     // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
@@ -58,7 +59,7 @@ namespace osc
     // - output will therefore be: {xNDC, yNDC, -1.0f, 1.0f}
     Vec4 topleft_relative_pos_to_ndc_cube(Vec2 relative_pos);
 
-    // "un-project" a screen/viewport point into 3D world-space, assuming a
+    // "un-project" a point defined in screenspace into 3D world-space, assuming a
     // perspective camera
     //
     // - input screen point has origin in top-left, Y goes down
@@ -74,7 +75,7 @@ namespace osc
     );
 
     // returns a rect, created by mapping a Normalized Device Coordinates (NDC) rect
-    // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
+    // (i.e. -1.0 to 1.0) to a rect defined in screenspace (pixel units, topleft == (0, 0))
     Rect ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
     // returns the location where `worldspace_location` would occur when projected via the

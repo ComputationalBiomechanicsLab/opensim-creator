@@ -2612,7 +2612,7 @@ public:
     void on_draw()
     {
         try {
-            ui::enable_dockspace_over_main_viewport();
+            ui::enable_dockspace_over_main_window();
             m_PanelManager->on_draw();
             m_Toolbar.on_draw();
             m_ExceptionThrownLastFrame = false;

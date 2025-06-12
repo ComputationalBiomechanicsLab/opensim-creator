@@ -63,7 +63,7 @@ public:
 
     void on_draw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         if (viewer_.is_hovered()) {
             ui::update_polar_camera_from_mouse_inputs(camera_, App::get().main_window_dimensions());

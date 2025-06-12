@@ -1085,7 +1085,7 @@ public:
 
     void onDraw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         m_Toolbar.on_draw();
         m_PanelManager->on_draw();

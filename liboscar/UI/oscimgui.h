@@ -311,8 +311,7 @@ namespace osc::ui
     bool begin_listbox(CStringView label);
     void end_listbox();
 
-    Vec2 get_main_viewport_center();
-    void enable_dockspace_over_main_viewport();
+    void enable_dockspace_over_main_window();
 
     enum class PanelFlag : unsigned {
         None                    = 0,
@@ -891,16 +890,18 @@ namespace osc::ui
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
     PanelFlags get_minimal_panel_flags();
 
-    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    // returns a `Rect` that indicates where the current workspace area is in the main
+    // application window
     //
     // the returned `Rect` is given in UI-compatible UI-space, such that:
     //
     // - it's measured in device-independent pixels
     // - starts in the top-left corner
     // - ends in the bottom-right corner
-    Rect get_main_viewport_workspace_uiscreenspace_rect();
+    Rect get_main_window_workspace_uiscreenspace_rect();
 
-    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    // returns a `Rect` that indicates where the current workspace area is in the main
+    // application window
     //
     // the returned `Rect` is given in osc-graphics-API-compatible screen-space, rather than UI
     // space, such that:
@@ -908,26 +909,29 @@ namespace osc::ui
     // - it's measured in device-independent pixels
     // - starts in the bottom-left corner
     // - ends in the top-right corner
-    Rect get_main_viewport_workspace_screenspace_rect();
+    Rect get_main_window_workspace_screenspace_rect();
 
-    // returns the dimensions of the current workspace area in device-independent pixels in the main viewport
-    Vec2 get_main_viewport_workspace_screen_dimensions();
+    // returns the dimensions of the current workspace area in device-independent pixels in the
+    // main application window.
+    Vec2 get_main_window_workspace_dimensions();
 
-    // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions of the current workspace area
-    float get_main_viewport_workspace_aspect_ratio();
+    // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions
+    // of the current workspace area in the main application window
+    float get_main_window_workspace_aspect_ratio();
 
-    // returns `true` if the user's mouse is within the current workspace area of the main viewport
-    bool is_mouse_in_main_viewport_workspace();
+    // returns `true` if the user's mouse is within the current workspace area of the main application
+    // window
+    bool is_mouse_in_main_window_workspace();
 
-    // begin a menu that's attached to the top of a viewport, end it with `ui::end_panel()`
-    bool begin_main_viewport_top_bar(
+    // begin a menu that's attached to the top of the main application window, end it with `ui::end_panel()`
+    bool begin_main_window_top_bar(
         CStringView label,
         float height = ui::get_frame_height(),
         PanelFlags = {PanelFlag::NoScrollbar, PanelFlag::NoSavedSettings, PanelFlag::MenuBar}
     );
 
-    // begin a menu that's attached to the bottom of a viewport, end it with `ui::end_panel()`
-    bool begin_main_viewport_bottom_bar(CStringView);
+    // begin a menu that's attached to the bottom of the main application window, end it with `ui::end_panel()`
+    bool begin_main_window_bottom_bar(CStringView);
 
     // behaves like `ui::draw_button`, but is centered on the current line
     bool draw_button_centered(CStringView);

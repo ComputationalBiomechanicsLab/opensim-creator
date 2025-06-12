@@ -68,7 +68,7 @@ public:
 
     void onDraw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         ui::begin_panel("Inputs");
 

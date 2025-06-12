@@ -108,12 +108,12 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            const Vec2 viewport_dimensions = ui::get_main_viewport_workspace_screen_dimensions();
+            const Vec2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-            const Vec2 viewport_pixel_dimensions = device_pixel_ratio * viewport_dimensions;
+            const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
             RenderTextureParams params = {
-                .dimensions = viewport_pixel_dimensions,
+                .dimensions = workspace_pixel_dimensions,
                 .device_pixel_ratio = device_pixel_ratio,
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             };
@@ -132,7 +132,7 @@ private:
     {
         Camera orthogonal_camera;
         orthogonal_camera.set_background_color(Color::clear());
-        orthogonal_camera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        orthogonal_camera.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
         orthogonal_camera.set_projection_matrix_override(identity<Mat4>());
         orthogonal_camera.set_view_matrix_override(identity<Mat4>());
 

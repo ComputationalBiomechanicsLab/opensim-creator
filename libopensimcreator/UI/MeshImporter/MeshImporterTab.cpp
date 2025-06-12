@@ -196,7 +196,7 @@ public:
     void onDraw()
     {
         // enable panel docking
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)
