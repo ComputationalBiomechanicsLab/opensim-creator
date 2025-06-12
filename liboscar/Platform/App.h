@@ -40,8 +40,9 @@ namespace osc
 {
     // top-level application class
     //
-    // the top-level osc process holds one copy of this class, which maintains all global
-    // systems (windowing, event pumping, timers, graphics, logging, etc.)
+    // the top-level osc process holds one copy of this class, which maintains all
+    // application-wide systems (windowing, event pumping, timers, graphics,
+    // logging, etc.)
     class App {
     public:
 
@@ -242,9 +243,9 @@ namespace osc
         // This fallback is activated until a call to `prompt_user*` is made without the
         // user cancelling out of the dialog (i.e. if the user cancels then this fallback
         // will remain in-place).
-        std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
-        void set_initial_directory_to_show_fallback(const std::filesystem::path&);
-        void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
+        std::optional<std::filesystem::path> prompt_initial_directory_to_show_fallback();
+        void set_prompt_initial_directory_to_show_fallback(const std::filesystem::path&);
+        void set_prompt_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
         // Prompts the user to select file(s) that they would like to open.
         //
@@ -265,7 +266,7 @@ namespace osc
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
             bool allow_many = false
         );
-        inline void prompt_user_to_select_file_async(
+        void prompt_user_to_select_file_async(
             std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
@@ -317,7 +318,7 @@ namespace osc
             std::span<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
-        inline void prompt_user_to_save_file_async(
+        void prompt_user_to_save_file_async(
             std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
@@ -352,12 +353,6 @@ namespace osc
         // this `App` is connected to.
         std::vector<Monitor> monitors() const;
 
-        // checks if the given `WindowID` is still alive (e.g. not removed or closed)
-        bool is_alive(WindowID window_id) const { return static_cast<bool>(window_id); }
-
-        // Returns the desktop-relative position of the given window in physical pixels.
-        Vec2 window_position(WindowID) const;
-
         // returns the ID of the main window
         WindowID main_window_id() const;
 
@@ -384,47 +379,8 @@ namespace osc
         // - https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
         float main_window_device_pixel_ratio() const;
 
-        // Returns the ratio between the underlying operating system's coordinate system (i.e. SDL3 API,
-        // events) to the main window's device independent pixels.
-        //
-        // Note: this is mostly for internal use: the `osc` APIs should uniformly use either device
-        //       independent pixels (mostly) or physical pixels (e.g. low-level rendering APIs).
-        float os_to_main_window_device_independent_ratio() const;
-
-        // Returns the ratio between the main window's device-independent pixels and the underlying
-        // operating system's coordinate system.
-        float main_window_device_independent_to_os_ratio() const;
-
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
-
-        // returns `true` if mouse data can be acquired from the operating system directly
-        bool can_query_mouse_state_globally() const;
-
-        // captures the mouse in order to track input outside of the application windows
-        //
-        // capturing enables the application to obtain mouse events globally, rather than just
-        // within its windows. Not all backends support this function, use `can_query_mouse_state_globally`
-        // to figure out whether the backend that's used at runtime does support it.
-        //
-        // this might also deny mouse inputs to other windows--both those in this `App`, and others
-        // on the system--so it should be used sparingly, and in small bursts. E.g. you might want
-        // to use it to track the mouse when the user is dragging something and multi-window dragging
-        // is supported by the UI.
-        //
-        // see: https://wiki.libsdl.org/SDL3/SDL_CaptureMouse for a comprehensive explanation of the
-        //      behavior/pitfalls of this function.
-        void capture_mouse_globally(bool enabled);
-
-        // returns the desktop-relative platform-cursor position, expressed in physical pixels.
-        Vec2 mouse_global_position() const;
-
-        // moves the mouse to the given position in a desktop-relative, physical pixel position.
-        void warp_mouse_globally(Vec2 new_position);
-
-        // returns `true` if the global hover state of the mouse can be queried to ask if it's
-        // currently hovering the main window (even if the window isn't focused).
-        bool can_query_if_mouse_is_hovering_main_window_globally() const;
 
         // pushes the given cursor onto the application-wide cursor stack, making it
         // the currently-active cursor until it is either popped, via `pop_cursor_override`,
@@ -436,7 +392,14 @@ namespace osc
         void enable_main_window_grab();
         void disable_main_window_grab();
 
-        // moves the mouse cursor to the given position within the window (virtual pixels).
+        // if the main window is focused with the mouse, returns the current position of the mouse
+        // relative to the top-left corner of the main window in device-independent pixels.
+        //
+        // otherwise, returns `std::nullopt`.
+        std::optional<Vec2> mouse_pos_in_main_window() const;
+
+        // moves the mouse cursor to the given position relative to the top-left corner of the
+        // given window in device-independent pixels.
         void warp_mouse_in_window(WindowID, Vec2);
 
         // returns `true` if the given window has input focus
@@ -453,7 +416,7 @@ namespace osc
         // in the UI, without covering the text that's being inputted, this indicates to
         // the OS where the input rectangle is so that it can place the overlay in the
         // correct location.
-        void set_unicode_input_rect(const Rect&);
+        void set_main_window_unicode_input_rect(const Rect&);
 
         // start accepting unicode text input events for the given window
         //
@@ -465,10 +428,10 @@ namespace osc
         void stop_text_input(WindowID);
 
         // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
-        void make_windowed_fullscreen();
+        void make_main_window_fullscreen();
 
         // makes the main window windowed (as opposed to fullscreen)
-        void make_windowed();
+        void make_main_window_windowed();
 
         // returns the recommended number of antialiasing samples that renderers that want to render
         // to this `App`'s screen should use (based on user settings, etc.)
@@ -483,30 +446,26 @@ namespace osc
         // returns the maximum number of antialiasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
-        // returns true if the main window is backed by a framebuffer/renderbuffer that automatically
-        // converts the linear outputs (from shaders) into (e.g.) sRGB on-write
-        bool is_main_window_gamma_corrected() const;
-
-        // returns true if the application is rendering in debug mode
+        // returns true if the application is in debug mode
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
         bool is_in_debug_mode() const;
         void set_debug_mode(bool);
 
-        // returns true if VSYNC has been enabled in the graphics layer
+        // returns true if VSYNC has been enabled in the graphics backend
         bool is_vsync_enabled() const;
         void set_vsync_enabled(bool);
 
         // add an annotation to the current frame
         //
         // the annotation is added to the data returned by `App::request_screenshot`
-        void add_frame_annotation(std::string_view label, Rect screen_rect);
+        void add_main_window_frame_annotation(std::string_view label, Rect screen_rect);
 
         // returns a future that asynchronously yields a complete annotated screenshot of the next frame
         //
         // client code can submit annotations with `App::add_frame_annotation`
-        std::future<Screenshot> request_screenshot();
+        std::future<Screenshot> request_screenshot_of_main_window();
 
         // returns human-readable strings representing (parts of) the currently-active graphics backend (e.g. OpenGL)
         std::string graphics_backend_vendor_string() const;
@@ -546,7 +505,7 @@ namespace osc
         void request_redraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the main window with the given color
-        void clear_screen(const Color& = Color::clear());
+        void clear_main_window(const Color& = Color::clear());
 
         // sets the main window's subtitle (e.g. document name)
         void set_main_window_subtitle(std::string_view);

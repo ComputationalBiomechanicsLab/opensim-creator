@@ -23,7 +23,6 @@
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/BitwiseHelpers.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/Perf.h>
@@ -32,9 +31,6 @@
 #include <liboscar/Utils/TypeInfoReference.h>
 
 #include <ankerl/unordered_dense.h>
-#if defined(__APPLE__)
-#include <TargetConditionals.h>  // `TARGET_OS_IOS`
-#endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_error.h>
@@ -54,19 +50,11 @@
 #include <cstdint>
 #include <ctime>
 #include <exception>
-#include <ranges>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
 
-#if SDL_VERSION_ATLEAST(2,0,4) && !defined(__EMSCRIPTEN__) && !defined(__ANDROID__) && !(defined(__APPLE__) && TARGET_OS_IOS) && !defined(__amigaos4__)
-    #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    1  // NOLINT(cppcoreguidelines-macro-usage)
-#else
-    #define SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE    0  // NOLINT(cppcoreguidelines-macro-usage)
-#endif
-
 using namespace osc;
-namespace rgs = std::ranges;
 
 template<>
 struct osc::Converter<SDL_Rect, Rect> final {
@@ -491,21 +479,6 @@ namespace
         return rv;
     }
 
-    // Returns whether global (OS-level, rather than window-level) mouse data
-    // can be acquired from the OS.
-    bool can_mouse_use_global_state()
-    {
-        // Check and store if we are on a SDL backend that supports global mouse position
-        // ("wayland" and "rpi" don't support it, but we chose to use a white-list instead of a black-list)
-        bool mouse_can_use_global_state = false;
-#if SDL_HAS_CAPTURE_AND_GLOBAL_MOUSE
-        const auto sdl_backend = std::string_view{SDL_GetCurrentVideoDriver()};
-        const auto global_mouse_whitelist = std::to_array<std::string_view>({"windows", "cocoa", "x11", "DIVE", "VMAN"});
-        mouse_can_use_global_state = rgs::any_of(global_mouse_whitelist, [sdl_backend](std::string_view whitelisted) { return sdl_backend.starts_with(whitelisted); });
-#endif
-        return mouse_can_use_global_state;
-    }
-
     WindowEventType parse_as_window_event_type(Uint32 t)
     {
         switch (t) {
@@ -521,7 +494,7 @@ namespace
         }
     }
 
-    std::unique_ptr<Event> try_parse_into_event(const SDL_Event& e)
+    std::unique_ptr<Event> try_parse_into_event(const SDL_Event& e, std::function<float()> os_to_main_window_device_independent_ratio_getter)
     {
         if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
             return std::make_unique<DropFileEvent>(std::filesystem::path{e.drop.data});
@@ -545,13 +518,12 @@ namespace
         }
         else if (e.type == SDL_EVENT_MOUSE_MOTION) {
             const MouseInputSource source = e.motion.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
-            // scales from SDL3 (events) to device-independent pixels
-            const float sdl3_to_device_independent_ratio = App::get().os_to_main_window_device_independent_ratio();
+            const float os_to_main_window_device_independent_ratio = os_to_main_window_device_independent_ratio_getter();
 
             Vec2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
-            relative_delta *= sdl3_to_device_independent_ratio;
+            relative_delta *= os_to_main_window_device_independent_ratio;
             Vec2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
-            position_in_window *= sdl3_to_device_independent_ratio;
+            position_in_window *= os_to_main_window_device_independent_ratio;
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
         else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
@@ -862,7 +834,7 @@ public:
 
                 // let screen handle the event
                 bool screen_handled_event = false;
-                if (auto parsed = try_parse_into_event(e)) {
+                if (auto parsed = try_parse_into_event(e, [this]{ return os_to_main_window_device_independent_ratio(); })) {
                     screen_handled_event = screen_->on_event(*parsed);
                 }
 
@@ -1008,17 +980,6 @@ public:
         quit_requested_ = true;
     }
 
-    Vec2 window_position(WindowID window_id) const
-    {
-        if (not window_id) {
-            return Vec2{};
-        }
-        int window_x = 0;
-        int window_y = 0;
-        SDL_GetWindowPosition(std::bit_cast<SDL_Window*>(to<void*>(window_id)), &window_x, &window_y);
-        return {static_cast<float>(window_x), static_cast<float>(window_y)};
-    }
-
     void request_invoke_on_main_thread(std::function<void()> callback)
     {
         SDL_Event e{};
@@ -1028,17 +989,17 @@ public:
         SDL_PushEvent(&e);  // Push the event onto the main thread's event queue (i.e. marshal it).
     }
 
-    std::optional<std::filesystem::path> get_initial_directory_to_show_fallback()
+    std::optional<std::filesystem::path> prompt_initial_directory_to_show_fallback()
     {
         return initial_directory_to_show_fallback_;
     }
 
-    void set_initial_directory_to_show_fallback(const std::filesystem::path& p)
+    void set_prompt_initial_directory_to_show_fallback(const std::filesystem::path& p)
     {
         initial_directory_to_show_fallback_ = p;
     }
 
-    void set_initial_directory_to_show_fallback(std::nullopt_t)
+    void set_prompt_initial_directory_to_show_fallback(std::nullopt_t)
     {
         initial_directory_to_show_fallback_.reset();
     }
@@ -1057,7 +1018,7 @@ public:
         if (initial_directory_to_show) {
             default_location = initial_directory_to_show->string();
         }
-        else if (const auto fallback = get_initial_directory_to_show_fallback()) {
+        else if (const auto fallback = prompt_initial_directory_to_show_fallback()) {
             default_location = fallback->string();
         }
 
@@ -1088,7 +1049,7 @@ public:
         if (initial_directory_to_show) {
             default_location = initial_directory_to_show->string();
         }
-        else if (const auto fallback = get_initial_directory_to_show_fallback()) {
+        else if (const auto fallback = prompt_initial_directory_to_show_fallback()) {
             default_location = fallback->string();
         }
 
@@ -1115,7 +1076,7 @@ public:
         if (initial_directory_to_show) {
             default_location = initial_directory_to_show->string();
         }
-        else if (const auto fallback = get_initial_directory_to_show_fallback()) {
+        else if (const auto fallback = prompt_initial_directory_to_show_fallback()) {
             default_location = fallback->string();
         }
 
@@ -1263,47 +1224,9 @@ public:
         return SDL_GetWindowPixelDensity(main_window_.get()) / SDL_GetWindowDisplayScale(main_window_.get());
     }
 
-    float main_window_device_independent_to_os_ratio() const
-    {
-        return 1.0f / os_to_main_window_device_independent_ratio();
-    }
-
     bool is_main_window_minimized() const
     {
         return (SDL_GetWindowFlags(main_window_.get()) & SDL_WINDOW_MINIMIZED) != 0u;
-    }
-
-    bool can_query_mouse_state_globally() const
-    {
-        return can_query_mouse_state_globally_;
-    }
-
-    void capture_mouse_globally(bool enabled)
-    {
-        SDL_CaptureMouse(enabled);
-    }
-
-    Vec2 mouse_global_position() const
-    {
-        Vec2 rv;
-        SDL_GetGlobalMouseState(&rv.x, &rv.y);
-        return rv;
-    }
-
-    void warp_mouse_globally(Vec2 new_position)
-    {
-        SDL_WarpMouseGlobal(new_position.x, new_position.y);
-    }
-
-    bool can_query_if_mouse_is_hovering_main_window_globally() const
-    {
-        // SDL on Linux/OSX doesn't report events for unfocused windows (see https://github.com/ocornut/imgui/issues/4960)
-        // We will use 'MouseCanReportHoveredViewport' to set 'ImGuiBackendFlags_HasMouseHoveredViewport' dynamically each frame.
-#ifndef __APPLE__
-        return can_query_mouse_state_globally();
-#else
-        return false;
-#endif
     }
 
     void push_cursor_override(const Cursor& cursor)
@@ -1331,9 +1254,24 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), false);
     }
 
+    std::optional<Vec2> mouse_pos_in_main_window() const
+    {
+        if (SDL_GetMouseFocus() != main_window_.get()) {
+            return std::nullopt;  // main window is unfocused
+        }
+        // SDL returns position of the mouse relative to the top-left corner
+        // of the window in OS units
+        Vec2 p;
+        SDL_GetMouseState(&p.x, &p.y);
+
+        // scale to a device-independent quantity
+        p *= os_to_main_window_device_independent_ratio();
+        return p;
+    }
+
     void warp_mouse_in_window(WindowID window_id, Vec2 pos)
     {
-        pos *= main_window_device_independent_to_os_ratio();  // HACK: assume the window is always the main window...
+        pos *= 1.0f/os_to_main_window_device_independent_ratio();  // HACK: assume the window is always the main window...
         SDL_WarpMouseInWindow(std::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
     }
 
@@ -1342,9 +1280,9 @@ public:
         return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
-    void set_unicode_input_rect(const Rect& rect)
+    void set_main_window_unicode_input_rect(const Rect& rect)
     {
-        const float device_independent_to_sdl3_ratio = main_window_device_independent_to_os_ratio();
+        const float device_independent_to_sdl3_ratio = 1.0f/os_to_main_window_device_independent_ratio();
 
         const SDL_Rect r{
             .x = static_cast<int>(device_independent_to_sdl3_ratio * rect.p1.x),
@@ -1376,13 +1314,13 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), not v);
     }
 
-    void make_windowed_fullscreen()
+    void make_main_window_fullscreen()
     {
         SDL_SetWindowFullscreenMode(main_window_.get(), nullptr);
         SDL_SetWindowFullscreen(main_window_.get(), true);
     }
 
-    void make_windowed()
+    void make_main_window_windowed()
     {
         SDL_SetWindowFullscreen(main_window_.get(), false);
     }
@@ -1400,15 +1338,6 @@ public:
     AntiAliasingLevel max_anti_aliasing_level() const
     {
         return graphics_context_.max_antialiasing_level();
-    }
-
-    bool is_main_window_gamma_corrected() const
-    {
-#ifdef EMSCRIPTEN
-        return false;
-#else
-        return true;
-#endif
     }
 
     bool is_in_debug_mode() const
@@ -1431,12 +1360,12 @@ public:
         graphics_context_.set_vsync_enabled(v);
     }
 
-    void add_frame_annotation(std::string_view label, Rect screen_rect)
+    void add_main_window_frame_annotation(std::string_view label, Rect screen_rect)
     {
         frame_annotations_.emplace_back(std::string{label}, screen_rect);
     }
 
-    std::future<Screenshot> request_screenshot()
+    std::future<Screenshot> request_screenshot_of_main_window()
     {
         AnnotatedScreenshotRequest& req = active_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
         return req.result_promise.get_future();
@@ -1516,7 +1445,7 @@ public:
         SDL_PushEvent(&e);
     }
 
-    void clear_screen(const Color& color)
+    void clear_main_window(const Color& color)
     {
         graphics_context_.clear_screen(color);
     }
@@ -1562,7 +1491,7 @@ public:
         return resource_loader_.slurp(rp);
     }
 
-    ResourceStream load_resource(const ResourcePath& rp)
+    ResourceStream go_load_resource(const ResourcePath& rp)
     {
         return resource_loader_.open(rp);
     }
@@ -1710,9 +1639,6 @@ private:
     // application-wide handler for the mouse cursor
     CursorHandler cursor_handler_;
 
-    // flag that indicates if the mouse state can be queried at a global (OS) level.
-    bool can_query_mouse_state_globally_ = can_mouse_use_global_state();
-
     // get performance counter frequency (for the delta clocks)
     Uint64 perf_counter_frequency_ = SDL_GetPerformanceFrequency();
 
@@ -1731,7 +1657,7 @@ private:
     // time since the frame before the current frame (set each frame)
     AppClock::duration time_since_last_frame_ = {};
 
-    // global cache of application-wide singletons (usually, for caching)
+    // application-wide cache of initialized singletons
     SynchronizedValue<ankerl::unordered_dense::map<TypeInfoReference, std::shared_ptr<void>>> singletons_;
 
     // how many antiAliasingLevel the implementation should actually use
@@ -1880,29 +1806,24 @@ void osc::App::request_quit()
     impl_->request_quit();
 }
 
-Vec2 osc::App::window_position(WindowID window_id) const
-{
-    return impl_->window_position(window_id);
-}
-
 void osc::App::request_invoke_on_main_thread(std::function<void()> callback)
 {
     impl_->request_invoke_on_main_thread(std::move(callback));
 }
 
-std::optional<std::filesystem::path> osc::App::get_initial_directory_to_show_fallback()
+std::optional<std::filesystem::path> osc::App::prompt_initial_directory_to_show_fallback()
 {
-    return impl_->get_initial_directory_to_show_fallback();
+    return impl_->prompt_initial_directory_to_show_fallback();
 }
 
-void osc::App::set_initial_directory_to_show_fallback(const std::filesystem::path& p)
+void osc::App::set_prompt_initial_directory_to_show_fallback(const std::filesystem::path& p)
 {
-    impl_->set_initial_directory_to_show_fallback(p);
+    impl_->set_prompt_initial_directory_to_show_fallback(p);
 }
 
-void osc::App::set_initial_directory_to_show_fallback(std::nullopt_t)
+void osc::App::set_prompt_initial_directory_to_show_fallback(std::nullopt_t)
 {
-    impl_->set_initial_directory_to_show_fallback(std::nullopt);
+    impl_->set_prompt_initial_directory_to_show_fallback(std::nullopt);
 }
 
 void osc::App::prompt_user_to_select_file_async(
@@ -1936,7 +1857,11 @@ void osc::App::prompt_user_to_save_file_async(
     std::span<const FileDialogFilter> filters,
     std::optional<std::filesystem::path> initial_directory_to_show)
 {
-    impl_->prompt_user_to_save_file_async(std::move(callback), filters, std::move(initial_directory_to_show));
+    impl_->prompt_user_to_save_file_async(
+        std::move(callback),
+        filters,
+        std::move(initial_directory_to_show)
+    );
 }
 
 void osc::App::prompt_user_to_save_file_with_extension_async(
@@ -1968,7 +1893,7 @@ Vec2 osc::App::main_window_dimensions() const
 
 void osc::App::try_async_set_main_window_dimensions(Vec2 new_dims)
 {
-    return impl_->try_async_set_main_window_dimensions(new_dims);
+    impl_->try_async_set_main_window_dimensions(new_dims);
 }
 
 Vec2 osc::App::main_window_pixel_dimensions() const
@@ -1981,44 +1906,9 @@ float osc::App::main_window_device_pixel_ratio() const
     return impl_->main_window_device_pixel_ratio();
 }
 
-float osc::App::os_to_main_window_device_independent_ratio() const
-{
-    return impl_->os_to_main_window_device_independent_ratio();
-}
-
-float osc::App::main_window_device_independent_to_os_ratio() const
-{
-    return impl_->main_window_device_independent_to_os_ratio();
-}
-
 bool osc::App::is_main_window_minimized() const
 {
     return impl_->is_main_window_minimized();
-}
-
-bool osc::App::can_query_mouse_state_globally() const
-{
-    return impl_->can_query_mouse_state_globally();
-}
-
-void osc::App::capture_mouse_globally(bool enabled)
-{
-    impl_->capture_mouse_globally(enabled);
-}
-
-Vec2 osc::App::mouse_global_position() const
-{
-    return impl_->mouse_global_position();
-}
-
-void osc::App::warp_mouse_globally(Vec2 new_position)
-{
-    impl_->warp_mouse_globally(new_position);
-}
-
-bool osc::App::can_query_if_mouse_is_hovering_main_window_globally() const
-{
-    return impl_->can_query_if_mouse_is_hovering_main_window_globally();
 }
 
 void osc::App::push_cursor_override(const Cursor& cursor)
@@ -2046,6 +1936,11 @@ void osc::App::disable_main_window_grab()
     impl_->disable_main_window_grab();
 }
 
+std::optional<Vec2> osc::App::mouse_pos_in_main_window() const
+{
+    return impl_->mouse_pos_in_main_window();
+}
+
 void osc::App::warp_mouse_in_window(WindowID window_id, Vec2 pos)
 {
     impl_->warp_mouse_in_window(window_id, pos);
@@ -2056,9 +1951,9 @@ bool osc::App::has_input_focus(WindowID id) const
     return impl_->has_input_focus(id);
 }
 
-void osc::App::set_unicode_input_rect(const Rect& rect)
+void osc::App::set_main_window_unicode_input_rect(const Rect& rect)
 {
-    impl_->set_unicode_input_rect(rect);
+    impl_->set_main_window_unicode_input_rect(rect);
 }
 
 void osc::App::start_text_input(WindowID window_id)
@@ -2071,14 +1966,14 @@ void osc::App::stop_text_input(WindowID window_id)
     impl_->stop_text_input(window_id);
 }
 
-void osc::App::make_windowed_fullscreen()
+void osc::App::make_main_window_fullscreen()
 {
-    impl_->make_windowed_fullscreen();
+    impl_->make_main_window_fullscreen();
 }
 
-void osc::App::make_windowed()
+void osc::App::make_main_window_windowed()
 {
-    impl_->make_windowed();
+    impl_->make_main_window_windowed();
 }
 
 AntiAliasingLevel osc::App::anti_aliasing_level() const
@@ -2094,11 +1989,6 @@ void osc::App::set_anti_aliasing_level(AntiAliasingLevel s)
 AntiAliasingLevel osc::App::max_anti_aliasing_level() const
 {
     return impl_->max_anti_aliasing_level();
-}
-
-bool osc::App::is_main_window_gamma_corrected() const
-{
-    return impl_->is_main_window_gamma_corrected();
 }
 
 bool osc::App::is_in_debug_mode() const
@@ -2121,14 +2011,14 @@ void osc::App::set_vsync_enabled(bool v)
     impl_->set_vsync_enabled(v);
 }
 
-void osc::App::add_frame_annotation(std::string_view label, Rect screen_rect)
+void osc::App::add_main_window_frame_annotation(std::string_view label, Rect screen_rect)
 {
-    impl_->add_frame_annotation(label, screen_rect);
+    impl_->add_main_window_frame_annotation(label, screen_rect);
 }
 
-std::future<Screenshot> osc::App::request_screenshot()
+std::future<Screenshot> osc::App::request_screenshot_of_main_window()
 {
-    return impl_->request_screenshot();
+    return impl_->request_screenshot_of_main_window();
 }
 
 std::string osc::App::graphics_backend_vendor_string() const
@@ -2201,9 +2091,9 @@ void osc::App::request_redraw()
     impl_->request_redraw();
 }
 
-void osc::App::clear_screen(const Color& color)
+void osc::App::clear_main_window(const Color& color)
 {
-    impl_->clear_screen(color);
+    impl_->clear_main_window(color);
 }
 
 void osc::App::set_main_window_subtitle(std::string_view subtitle)
@@ -2243,7 +2133,7 @@ std::string osc::App::slurp_resource(const ResourcePath& rp)
 
 ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
 {
-    return impl_->load_resource(rp);
+    return impl_->go_load_resource(rp);
 }
 
 int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor)

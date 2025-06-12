@@ -45,7 +45,7 @@ public:
 
     void on_draw()
     {
-        App::upd().clear_screen();
+        App::upd().clear_main_window();
         ui_context_.on_start_new_frame();
         current_tab_->on_draw();
         ui_context_.render();

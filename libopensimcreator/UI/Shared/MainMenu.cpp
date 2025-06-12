@@ -248,7 +248,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)  
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
-    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
+    App::upd().add_main_window_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
     if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
         if (parent()) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
@@ -316,10 +316,10 @@ void osc::MainMenuAboutTab::onDraw()
         ui::next_column();
 
         if (ui::draw_button(OSC_ICON_EXPAND " fullscreen")) {
-            App::upd().make_windowed_fullscreen();
+            App::upd().make_main_window_fullscreen();
         }
         if (ui::draw_button(OSC_ICON_WINDOW_RESTORE " windowed")) {
-            App::upd().make_windowed();
+            App::upd().make_main_window_windowed();
         }
         ui::next_column();
 

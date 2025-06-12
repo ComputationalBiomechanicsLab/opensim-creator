@@ -223,7 +223,7 @@ public:
 
         if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == (KeyModifier::Ctrl | Key::P)) {
             // `Ctrl+P`: "take a screenshot"
-            m_MaybeScreenshotRequest = App::upd().request_screenshot();
+            m_MaybeScreenshotRequest = App::upd().request_screenshot_of_main_window();
             handled = true;
         }
         else if (m_UiContext.on_event(e)) {
@@ -327,7 +327,7 @@ public:
                 if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
-                        App::upd().set_initial_directory_to_show_fallback(parentDirectory);
+                        App::upd().set_prompt_initial_directory_to_show_fallback(parentDirectory);
                     }
                 }
 
@@ -373,7 +373,7 @@ public:
 
         {
             OSC_PERF("MainUIScreen/clear_screen");
-            App::upd().clear_screen();
+            App::upd().clear_main_window();
         }
 
         m_UiContext.on_start_new_frame();

@@ -189,7 +189,7 @@ private:
         ui::next_column();
 
         ui::draw_string_input("##componentname", m_Name);
-        App::upd().add_frame_annotation("AddComponentPopup::ComponentNameInput", ui::get_last_drawn_item_screen_rect());
+        App::upd().add_main_window_frame_annotation("AddComponentPopup::ComponentNameInput", ui::get_last_drawn_item_screen_rect());
 
         ui::next_column();
 
@@ -276,7 +276,7 @@ private:
             ui::pop_id();
 
             if (selected) {
-                App::upd().add_frame_annotation(c.toString(), selectableRect);
+                App::upd().add_main_window_frame_annotation(c.toString(), selectableRect);
             }
         }
 

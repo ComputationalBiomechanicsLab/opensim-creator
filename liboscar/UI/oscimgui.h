@@ -15,7 +15,6 @@
 #include <liboscar/Platform/Key.h>
 #include <liboscar/Platform/KeyCombination.h>
 #include <liboscar/Platform/ResourcePath.h>
-#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Flags.h>
@@ -24,7 +23,6 @@
 #include <concepts>
 #include <cstdarg>
 #include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <optional>

@@ -86,7 +86,7 @@ public:
             if (ui::draw_button("clear")) {
                 global_get_traceback_log().lock()->clear();
             }
-            App::upd().add_frame_annotation("LogClearButton", ui::get_last_drawn_item_screen_rect());
+            App::upd().add_main_window_frame_annotation("LogClearButton", ui::get_last_drawn_item_screen_rect());
 
             ui::same_line();
             if (ui::draw_button("turn off")) {

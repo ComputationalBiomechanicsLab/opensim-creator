@@ -93,6 +93,9 @@
 #include <variant>
 #include <vector>
 
+#include "liboscar/Platform/Log.h"
+#include "liboscar/Utils/StringHelpers.h"
+
 namespace plot = osc::ui::plot;
 namespace rgs = std::ranges;
 using namespace osc::literals;
@@ -388,7 +391,6 @@ namespace
     };
 
     // Backend data stored in io.BackendRendererUserData to allow support for multiple Dear ImGui contexts
-    // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
     UiGraphicsContextData* get_graphics_backend_data()
     {
         if (ImGui::GetCurrentContext()) {
@@ -794,7 +796,6 @@ namespace
         WindowID                                         Window;
         WindowID                                         ImeWindow;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
         std::string                                      ClipboardText;
-        bool                                             WantUpdateMonitors = true;
         bool                                             WantChangeDisplayScale = false;
         std::optional<AppClock::time_point>              LastFrameTime;
 
@@ -806,7 +807,6 @@ namespace
     };
 
     // Backend data stored in io.BackendPlatformUserData to allow support for multiple Dear ImGui contexts
-    // It is STRONGLY preferred that you use docking branch with multi-viewports (== single Dear ImGui context + multiple windows) instead of multiple Dear ImGui contexts.
     // FIXME: multi-context support is not well tested and probably dysfunctional in this backend.
     // FIXME: some shared resources (mouse cursor shape, gamepad) are mishandled when using multi-context.
     UiContextData* try_get_ui_backend_data(ImGuiContext* context)
@@ -824,31 +824,6 @@ namespace
         UiContextData* bd = try_get_ui_backend_data();
         IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
         return *bd;
-    }
-
-    ImGuiPlatformMonitor to_ith_ui_monitor(const Monitor& os_monitor, size_t i)
-    {
-        ImGuiPlatformMonitor rv;
-        rv.MainPos = os_monitor.bounds().p1;
-        rv.MainSize = dimensions_of(os_monitor.bounds());
-        rv.WorkPos = os_monitor.usable_bounds().p1;
-        rv.WorkSize = dimensions_of(os_monitor.usable_bounds());
-        rv.DpiScale = os_monitor.physical_dpi() / 96.0f;
-        rv.PlatformHandle = std::bit_cast<void*>(i);
-        return rv;
-    }
-
-    void update_monitors(const App& app)
-    {
-        return;
-        const auto os_monitors = app.monitors();
-        auto& ui_monitors = ImGui::GetPlatformIO().Monitors;
-
-        ui_monitors.clear();
-        ui_monitors.reserve(static_cast<int>(os_monitors.size()));
-        for (size_t i = 0; i < os_monitors.size(); ++i) {
-            ui_monitors.push_back(to_ith_ui_monitor(os_monitors[i], i));
-        }
     }
 
     const char* ui_get_clipboard_text(ImGuiContext* context)
@@ -869,7 +844,10 @@ namespace
         const ui::ContextConfiguration::Impl& config)
     {
         ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags = ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags = 0;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // tabbing, using arrows to move around
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // dockable panels
+        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // OSCAR DOESN'T ALLOW IMGUI MULTI VIEWPORT
 
         // make it so that windows can only ever be moved from the title bar
         io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -970,7 +948,7 @@ namespace
             const Vec2 input_dimensions = {1.0f, ime_data->InputLineHeight};
             const Rect input_rect = Rect{input_top_left, input_top_left + input_dimensions};
 
-            app.set_unicode_input_rect(input_rect);
+            app.set_main_window_unicode_input_rect(input_rect);
             app.start_text_input(bd->Window);
             bd->ImeWindow = viewport_window;
         }
@@ -1041,7 +1019,9 @@ namespace
         case EventType::DisplayStateChange: {
             // 2.0.26 has SDL_DISPLAYEVENT_CONNECTED/SDL_DISPLAYEVENT_DISCONNECTED/SDL_DISPLAYEVENT_ORIENTATION,
             // so change of DPI/Scaling are not reflected in this event. (SDL3 has it)
-            bd->WantUpdateMonitors = true;
+
+            // triggered when monitors are connected/disconnected: oscar doesn't use imgui's multi-viewport
+            // so we don't need this
             return true;
         }
         case EventType::Window: {
@@ -1071,20 +1051,23 @@ namespace
                 return true;
             }
             case WindowEventType::WindowClosed: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
-                    viewport->PlatformRequestClose = true;
+                ImGuiViewport* vp = ImGui::GetMainViewport();
+                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                    vp->PlatformRequestClose = true;
                 }
                 return true;
             }
             case WindowEventType::WindowMoved: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
-                    viewport->PlatformRequestMove = true;
+                ImGuiViewport* vp = ImGui::GetMainViewport();
+                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                    vp->PlatformRequestMove = true;
                 }
                 return true;
             }
             case WindowEventType::WindowResized: {
-                if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle(to<void*>(window_event.window()))) {
-                    viewport->PlatformRequestResize = true;
+                ImGuiViewport* vp = ImGui::GetMainViewport();
+                if (window_event.window() == WindowID{vp->PlatformHandle}) {
+                    vp->PlatformRequestResize = true;
                 }
                 return true;
             }
@@ -1103,16 +1086,16 @@ namespace
         }
     }
 
-    void ImGui_ImplOscar_Init(CopyOnUpdPtr<ui::ContextConfiguration::Impl> config, WindowID window_id)
+    void ImGui_ImplOscar_Init(CopyOnUpdPtr<ui::ContextConfiguration::Impl> config, WindowID main_window_id)
     {
         ImGuiIO& io = ImGui::GetIO();
         OSC_ASSERT_ALWAYS(io.BackendPlatformUserData == nullptr && "Already initialized a platform backend!");
 
         // init `BackendData` and setup `ImGuiIO` pointers etc.
-        io.BackendPlatformUserData = static_cast<void*>(new UiContextData{std::move(config), window_id});
+        io.BackendPlatformUserData = static_cast<void*>(new UiContextData{std::move(config), main_window_id});
         io.BackendPlatformName = "imgui_impl_oscar";
+        io.BackendFlags = ImGuiBackendFlags_None;
         io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;  // We can honor GetMouseCursor() values (optional)
-        io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;   // We can honor io.WantSetMousePos requests (optional, rarely used)
         io.ConfigDebugHighlightIdConflicts = false;            // Disable this highlight (annoying for users, #964)
 
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
@@ -1130,8 +1113,8 @@ namespace
         //
         // Our mouse update function expect PlatformHandle to be filled for the main viewport
         ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        main_viewport->PlatformHandle = to<void*>(window_id);
-        main_viewport->PlatformHandleRaw = nullptr;
+        main_viewport->PlatformHandle = to<void*>(main_window_id);
+        main_viewport->PlatformHandleRaw = nullptr;  // oscar: don't expose underlying OS/App abstraction
     }
 
     void ImGui_ImplOscar_Shutdown(App& app)
@@ -1148,72 +1131,7 @@ namespace
         ImGuiIO& io = ImGui::GetIO();
         io.BackendPlatformName = nullptr;
         io.BackendPlatformUserData = nullptr;
-        io.BackendFlags &= ~(ImGuiBackendFlags_HasMouseCursors | ImGuiBackendFlags_HasSetMousePos | ImGuiBackendFlags_HasMouseHoveredViewport);
-    }
-
-    // This code is incredibly messy because some of the functions we need for full viewport support are not available in SDL < 2.0.4.
-    void ImGui_ImplSDL2_UpdateMouseData()
-    {
-        App& app = App::upd();
-        UiContextData* bd = try_get_ui_backend_data();
-        ImGuiIO& io = ImGui::GetIO();
-
-        // We forward mouse input when hovered or captured (via SDL_MOUSEMOTION) or when focused (below)
-        WindowID focused_window;
-        bool is_app_focused = false;
-        if (app.can_query_mouse_state_globally()) {
-            // SDL_CaptureMouse() let the OS know e.g. that our imgui drag outside the SDL window boundaries shouldn't e.g. trigger other operations outside
-            app.capture_mouse_globally(bd->MouseButtonsDown != 0);
-
-            focused_window = app.get_keyboard_focus();
-            is_app_focused = (focused_window && (bd->Window == focused_window || ImGui::FindViewportByPlatformHandle(to<void*>(focused_window)) != nullptr));
-        }
-        else {
-            focused_window = bd->Window;
-            is_app_focused = app.has_input_focus(bd->Window); // SDL 2.0.3 and non-windowed systems: single-viewport only
-        }
-
-        if (is_app_focused) {
-
-            // (Optional) Set OS mouse position from Dear ImGui if requested (rarely used, only when ImGuiConfigFlags_NavEnableSetMousePos is enabled by user)
-            if (io.WantSetMousePos) {
-                if (app.can_query_mouse_state_globally() and (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
-                    app.warp_mouse_globally(to<Vec2>(io.MousePos));
-                }
-                else {
-                    app.warp_mouse_in_window(bd->Window, to<Vec2>(io.MousePos));
-                }
-            }
-
-            // (Optional) Fallback to provide mouse position when focused (SDL_MOUSEMOTION already provides this when hovered or captured)
-            if (app.can_query_mouse_state_globally() && bd->MouseButtonsDown == 0) {
-                // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
-                // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
-                Vec2 mouse_pos = app.mouse_global_position();
-                if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)) {
-                    mouse_pos -= app.window_position(focused_window);
-                }
-                const float scale = App::get().os_to_main_window_device_independent_ratio();
-                io.AddMousePosEvent(scale * mouse_pos.x, scale * mouse_pos.y);
-            }
-        }
-
-        // (Optional) When using multiple viewports: call io.AddMouseViewportEvent() with the viewport the OS mouse cursor is hovering.
-        // If ImGuiBackendFlags_HasMouseHoveredViewport is not set by the backend, Dear imGui will ignore this field and infer the information using its flawed heuristic.
-        // - [!] SDL backend does NOT correctly ignore viewports with the _NoInputs flag.
-        //       Some backend are not able to handle that correctly. If a backend report an hovered viewport that has the _NoInputs flag (e.g. when dragging a window
-        //       for docking, the viewport has the _NoInputs flag in order to allow us to find the viewport under), then Dear ImGui is forced to ignore the value reported
-        //       by the backend, and use its flawed heuristic to guess the viewport behind.
-        // - [X] SDL backend correctly reports this regardless of another viewport behind focused and dragged from (we need this to find a useful drag and drop target).
-        if (io.BackendFlags & ImGuiBackendFlags_HasMouseHoveredViewport) {
-            ImGuiID mouse_viewport_id = 0;
-            if (app.is_alive(bd->MouseWindowID)) {
-                if (const ImGuiViewport* mouse_viewport = ImGui::FindViewportByPlatformHandle(std::bit_cast<void*>(bd->MouseWindowID))) {
-                    mouse_viewport_id = mouse_viewport->ID;
-                }
-            }
-            io.AddMouseViewportEvent(mouse_viewport_id);
-        }
+        io.BackendFlags = ImGuiBackendFlags_None;
     }
 
     void ImGui_ImplOscar_UpdateMouseCursor(App& app)
@@ -1242,18 +1160,13 @@ namespace
 
         // Setup `DisplaySize` and `DisplayFramebufferScale`
         //
-        // Performed every frame to accomodate for runtime window resizes
+        // Performed every frame to accommodate for runtime window resizes
         {
             auto window_dimensions = app.main_window_dimensions();
             if (app.is_main_window_minimized()) {
-                window_dimensions = {0.0f, 0.0f};
+                window_dimensions = {};
             }
             io.DisplaySize = to<ImVec2>(window_dimensions);
-        }
-
-        // Update monitors
-        if (std::exchange(bd.WantUpdateMonitors, false)) {
-            update_monitors(app);
         }
 
         // Update display scale (e.g. when user changes DPI settings or moves the
@@ -1285,17 +1198,10 @@ namespace
             io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
         }
 
-        // Our io.AddMouseViewportEvent() calls will only be valid when not capturing.
-        // Technically speaking testing for 'bd->MouseButtonsDown == 0' would be more rigorous, but testing for payload reduces noise and potential side effects.
-        // This is hard to use/unreliable on SDL so we'll set ImGuiBackendFlags_HasMouseHoveredViewport dynamically based on state.
-        if (app.can_query_if_mouse_is_hovering_main_window_globally() and ImGui::GetDragDropPayload() == nullptr) {
-            io.BackendFlags |= ImGuiBackendFlags_HasMouseHoveredViewport;
+        // update mouse position
+        if (const auto p = App::upd().mouse_pos_in_main_window()) {
+            ImGui::GetIO().AddMousePosEvent(p->x, p->y);
         }
-        else {
-            io.BackendFlags &= ~ImGuiBackendFlags_HasMouseHoveredViewport;
-        }
-
-        ImGui_ImplSDL2_UpdateMouseData();
         ImGui_ImplOscar_UpdateMouseCursor(app);
     }
 
@@ -2717,7 +2623,7 @@ void osc::ui::DrawListAPI::render_to(RenderTexture& target)
     data.DisplayPos = {0.0f, 0.0f};
     data.DisplaySize = ImVec2{target.dimensions()};
     data.FramebufferScale = ImGui::GetIO().DisplayFramebufferScale;
-    data.OwnerViewport = nullptr;
+    data.OwnerViewport = ImGui::GetMainViewport();
 
     graphics_backend_render(&data, &target);
 }
@@ -3412,20 +3318,27 @@ bool osc::ui::is_mouse_in_main_window_workspace()
 
 bool osc::ui::begin_main_window_top_bar(CStringView label, float height, PanelFlags flags)
 {
-    // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)
-    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Up, height, to<ImGuiWindowFlags>(flags));
+    return ImGui::BeginViewportSideBar(
+        label.c_str(),
+        ImGui::GetMainViewport(),
+        ImGuiDir_Up,
+        height,
+        to<ImGuiWindowFlags>(flags)
+    );
 }
-
 
 bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 {
-    // https://github.com/ocornut/imgui/issues/3518
-    auto* const viewport = static_cast<ImGuiViewportP*>(static_cast<void*>(ImGui::GetMainViewport()));  // NOLINT(bugprone-casting-through-void)
-    const ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
+    constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings;
     const float height = ui::get_frame_height() + ui::get_style_panel_padding().y;
 
-    return ImGui::BeginViewportSideBar(label.c_str(), viewport, ImGuiDir_Down, height, flags);
+    return ImGui::BeginViewportSideBar(
+        label.c_str(),
+        ImGui::GetMainViewport(),
+        ImGuiDir_Down,
+        height,
+        flags
+    );
 }
 
 bool osc::ui::draw_button_centered(CStringView label)
@@ -3946,7 +3859,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
         return std::nullopt;  // disabled
     }
 
-    // important: necessary for multi-viewport gizmos
+    // important: necessary when showing multiple gizmos in one frame
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
     ImGuizmo::PushID(id_);
     const ScopeExit g{[]{ ImGuizmo::PopID(); }};

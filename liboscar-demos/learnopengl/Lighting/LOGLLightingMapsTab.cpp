@@ -70,7 +70,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clear_screen(Color::dark_grey());
+        App::upd().clear_main_window(Color::dark_grey());
 
         // draw cube
         lighting_maps_material_.set("uViewPos", camera_.position());
