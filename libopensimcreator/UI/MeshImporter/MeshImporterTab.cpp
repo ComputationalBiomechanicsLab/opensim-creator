@@ -908,7 +908,7 @@ private:
 
             if (ui::draw_angle3_input("Rotation", eulers, "%.6f"))
             {
-                Quat quatRads = osc::to_worldspace_rotation_quat(eulers);
+                Quat quatRads = osc::to_world_space_rotation_quat(eulers);
                 mg.updByID(e.getID()).set_rotation(mg, quatRads);
             }
             if (ui::is_item_deactivated_after_edit())
@@ -2396,7 +2396,7 @@ private:
     // buffer that's filled with drawable geometry during a drawcall
     std::vector<DrawableThing> m_DrawablesBuffer;
 
-    // (maybe) hover + worldspace location of the hover
+    // (maybe) hover + world space location of the hover
     MeshImporterHover m_MaybeHover;
 
     // (maybe) the scene element that the user opened a context menu for

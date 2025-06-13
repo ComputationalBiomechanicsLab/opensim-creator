@@ -47,7 +47,7 @@ namespace osc
 
         void drawCurrentHoverInfo(const MeshWarpingTabHover& hover)
         {
-            drawColorCodedXYZ(hover.getWorldspaceLocation());
+            drawColorCodedXYZ(hover.getWorldSpaceLocation());
             ui::same_line();
             if (hover.isHoveringASceneElement())
             {

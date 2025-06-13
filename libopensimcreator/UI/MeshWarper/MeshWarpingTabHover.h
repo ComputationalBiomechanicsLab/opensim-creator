@@ -14,18 +14,18 @@ namespace osc
     public:
         explicit MeshWarpingTabHover(
             TPSDocumentInputIdentifier input_,
-            const Vec3& worldspaceLocation_) :
+            const Vec3& worldSpaceLocation_) :
             m_Input{input_},
-            m_WorldspaceLocation{worldspaceLocation_}
+            m_WorldSpaceLocation{worldSpaceLocation_}
         {}
 
         explicit MeshWarpingTabHover(
             TPSDocumentElementID sceneElementID_,
-            const Vec3& worldspaceLocation_) :
+            const Vec3& worldSpaceLocation_) :
 
             m_MaybeSceneElementID{std::move(sceneElementID_)},
             m_Input{m_MaybeSceneElementID->input},
-            m_WorldspaceLocation{worldspaceLocation_}
+            m_WorldSpaceLocation{worldSpaceLocation_}
         {
         }
 
@@ -49,14 +49,14 @@ namespace osc
             return m_MaybeSceneElementID == el;
         }
 
-        const Vec3& getWorldspaceLocation() const
+        const Vec3& getWorldSpaceLocation() const
         {
-            return m_WorldspaceLocation;
+            return m_WorldSpaceLocation;
         }
 
     private:
         std::optional<TPSDocumentElementID> m_MaybeSceneElementID;
         TPSDocumentInputIdentifier m_Input;
-        Vec3 m_WorldspaceLocation;
+        Vec3 m_WorldSpaceLocation;
     };
 }

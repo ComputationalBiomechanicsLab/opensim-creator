@@ -618,7 +618,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_submesh_index{maybe_submesh_index_},
             transform{mat4_cast(transform_)},
-            world_centroid{transform_point(transform, centroid_of(mesh.bounds()))}
+            world_space_centroid{transform_point(transform, centroid_of(mesh.bounds()))}
         {}
 
         RenderObject(
@@ -633,7 +633,7 @@ namespace
             mesh{std::move(mesh_)},
             maybe_submesh_index{maybe_submesh_index_},
             transform{transform_},
-            world_centroid{transform_point(transform_, centroid_of(mesh.bounds()))}
+            world_space_centroid{transform_point(transform_, centroid_of(mesh.bounds()))}
         {}
 
         friend void swap(RenderObject& a, RenderObject& b) noexcept
@@ -645,7 +645,7 @@ namespace
             swap(a.mesh, b.mesh);
             swap(a.transform, b.transform);
             swap(a.maybe_submesh_index, b.maybe_submesh_index);
-            swap(a.world_centroid, b.world_centroid);
+            swap(a.world_space_centroid, b.world_space_centroid);
         }
 
         friend bool operator==(const RenderObject&, const RenderObject&) = default;
@@ -655,7 +655,7 @@ namespace
         Mesh mesh;
         MaybeIndex maybe_submesh_index;
         Mat4 transform;
-        Vec3 world_centroid;
+        Vec3 world_space_centroid;
     };
 
     static_assert(std::is_nothrow_destructible_v<RenderObject>);
@@ -685,9 +685,9 @@ namespace
         return normal_matrix4(ro.transform);
     }
 
-    const Vec3& worldspace_centroid(const RenderObject& ro)
+    const Vec3& world_space_centroid(const RenderObject& ro)
     {
-        return ro.world_centroid;
+        return ro.world_space_centroid;
     }
 
     // function object that returns true if the first argument is farther from the second
@@ -699,8 +699,8 @@ namespace
 
         bool operator()(const RenderObject& a, const RenderObject& b) const
         {
-            const Vec3 centroid_a = worldspace_centroid(a);
-            const Vec3 centroid_b = worldspace_centroid(b);
+            const Vec3 centroid_a = world_space_centroid(a);
+            const Vec3 centroid_b = world_space_centroid(b);
             const Vec3 pos_to_a = centroid_a - pos_;
             const Vec3 pos_to_b = centroid_b - pos_;
             return length2(pos_to_a) > length2(pos_to_b);

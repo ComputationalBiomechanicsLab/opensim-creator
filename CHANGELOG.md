@@ -1080,7 +1080,7 @@ a user, these aren't important to you, but they make developers feel fuzzy insid
 - Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
 - The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (#590)
 - The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
-- There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
+- There is now a toggle that affects whether the dragging gizmos operate in world space (ground) or the parent frame (#584)
 - Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
   file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
 - The simulator panel will now only render the UI once one simulation state has been emitted from the simulator (#589)

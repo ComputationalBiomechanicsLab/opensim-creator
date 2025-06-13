@@ -78,7 +78,7 @@ public:
             m_Decorations = GenerateModelDecorations(m_SceneCache, m_Model);
         }
         if (std::exchange(m_FirstFrame, false)) {
-            const AABB sceneAABB = bounding_aabb_of(m_Decorations, worldspace_bounds_of);
+            const AABB sceneAABB = bounding_aabb_of(m_Decorations, world_space_bounds_of);
             auto_focus(m_ModelRendererParams.camera, sceneAABB);
         }
 

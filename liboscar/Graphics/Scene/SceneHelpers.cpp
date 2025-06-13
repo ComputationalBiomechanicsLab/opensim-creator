@@ -215,7 +215,7 @@ void osc::draw_line_segment(
     });
 }
 
-AABB osc::worldspace_bounds_of(const SceneDecoration& decoration)
+AABB osc::world_space_bounds_of(const SceneDecoration& decoration)
 {
     return transform_aabb(decoration.transform, decoration.mesh.bounds());
 }
@@ -225,7 +225,7 @@ void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bv
     std::vector<AABB> aabbs;
     aabbs.reserve(decorations.size());
     for (const SceneDecoration& decoration : decorations) {
-        aabbs.push_back(worldspace_bounds_of(decoration));
+        aabbs.push_back(world_space_bounds_of(decoration));
     }
 
     bvh.build_from_aabbs(aabbs);
@@ -235,67 +235,67 @@ std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
     const BVH& scene_bvh,
     SceneCache& cache,
     std::span<const SceneDecoration> decorations,
-    const Line& worldspace_ray)
+    const Line& world_space_ray)
 {
     std::vector<SceneCollision> rv;
-    scene_bvh.for_each_ray_aabb_collision(worldspace_ray, [&cache, &decorations, &worldspace_ray, &rv](BVHCollision scene_collision)
+    scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &rv](BVHCollision scene_collision)
     {
         // perform ray-triangle intersection tests on the scene collisions
         const SceneDecoration& decoration = at(decorations, scene_collision.id);
         const BVH& decoration_triangle_bvh = cache.get_bvh(decoration.mesh);
 
-        const std::optional<RayCollision> maybe_triangle_collision = get_closest_worldspace_ray_triangle_collision(
+        const std::optional<RayCollision> maybe_triangle_collision = get_closest_world_space_ray_triangle_collision(
             decoration.mesh,
             decoration_triangle_bvh,
             decoration.transform,
-            worldspace_ray
+            world_space_ray
         );
 
         if (maybe_triangle_collision) {
             rv.push_back({
                 .decoration_id = decoration.id,
                 .decoration_index = static_cast<size_t>(scene_collision.id),
-                .worldspace_location = maybe_triangle_collision->position,
-                .distance_from_ray_origin = maybe_triangle_collision->distance,
+                .world_space_location = maybe_triangle_collision->position,
+                .world_distance_from_ray_origin = maybe_triangle_collision->distance,
             });
         }
     });
     return rv;
 }
 
-std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
+std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Mesh& mesh,
     const BVH& triangle_bvh,
     const Transform& transform,
-    const Line& worldspace_ray)
+    const Line& world_space_ray)
 {
     if (mesh.topology() != MeshTopology::Triangles) {
         return std::nullopt;
     }
 
-    // map the ray into the mesh's modelspace, so that we compute a ray-mesh collision
-    const Line modespace_ray = inverse_transform_line(worldspace_ray, transform);
+    // map the ray into the mesh's model space, so that we compute a ray-mesh collision
+    const Line modespace_ray = inverse_transform_line(world_space_ray, transform);
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
-    triangle_bvh.for_each_ray_aabb_collision(modespace_ray, [&mesh, &transform, &worldspace_ray, &modespace_ray, &rv](BVHCollision modelspace_bvh_collision)
+    triangle_bvh.for_each_ray_aabb_collision(modespace_ray, [&mesh, &transform, &world_space_ray, &modespace_ray, &rv](BVHCollision model_space_bvh_collision)
     {
         // then perform a ray-triangle collision
-        if (auto modelspace_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(modelspace_bvh_collision.id))) {
-            // map it back into worldspace and check if it's closer
-            const Vec3 worldspace_location = transform * modelspace_triangle_collision->position;
-            const float distance = length(worldspace_location - worldspace_ray.origin);
+        if (auto model_space_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(model_space_bvh_collision.id))) {
+            // map it back into world space and check if it's closer
+            const Vec3 world_space_location = transform * model_space_triangle_collision->position;
+            const float distance = length(world_space_location - world_space_ray.origin);
 
             if (not rv or rv->distance > distance) {
                 // if it's closer, update the return value
-                rv = RayCollision{distance, worldspace_location};
+                rv = RayCollision{distance, world_space_location};
             }
         }
     });
     return rv;
 }
 
-std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
+std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const PolarPerspectiveCamera& camera,
     const Mesh& mesh,
     const BVH& triangle_bvh,
@@ -307,7 +307,7 @@ std::optional<RayCollision> osc::get_closest_worldspace_ray_triangle_collision(
         dimensions_of(screen_render_rect)
     );
 
-    return get_closest_worldspace_ray_triangle_collision(
+    return get_closest_world_space_ray_triangle_collision(
         mesh,
         triangle_bvh,
         identity<Transform>(),

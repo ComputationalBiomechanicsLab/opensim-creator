@@ -87,7 +87,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
 
     // un-project 2D mouse cursor into 3D scene as a ray
     const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
-    const Line worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
+    const Line worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         dimensions_of(viewportScreenRect)
     );
@@ -97,14 +97,14 @@ std::optional<SceneCollision> osc::GetClosestCollision(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
-        worldspaceCameraRay
+        worldSpaceCameraRay
     );
 
     // filter through the collisions list
     const SceneCollision* closestCollision = nullptr;
     for (const SceneCollision& c : collisions)
     {
-        if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)
+        if (closestCollision && c.world_distance_from_ray_origin > closestCollision->world_distance_from_ray_origin)
         {
             continue;  // it's further away than the current closest collision
         }

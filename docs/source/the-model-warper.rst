@@ -265,7 +265,7 @@ sense to use the TPS technique, given the femur was already scaled that way.
 
 .. note::
 
-  The TPS technique operates on points in space, not frames, which typically combine a
+  The TPS technique operates on points, not frames, which typically combine a
   reorientation and a translation.
 
   The way we work around that problem is by ensuring that frames in the source model use
@@ -273,7 +273,7 @@ sense to use the TPS technique, given the femur was already scaled that way.
   ``PhysicalOffsetFrame``\s, which encode an orientation.
 
   The difference between the two frame definitions is subtle, but significant: ``StationDefinedFrame``\s
-  are entirely defined in terms of points in space, which can be warped via the TPS technique,
+  are entirely defined in terms of points, which can be warped via the TPS technique,
   whereas ``PhysicalOffsetFrame``\s include a not-TPS-warpable reorientation.
 
   If you have a model that uses ``PhysicalOffsetFrame``\s, then the TPS technique can only
@@ -333,8 +333,8 @@ However, the knee's wrap cylinder still needs to be scaled.
 It makes sense to use the TPS technique to warp the wrap cylinder---we've used it for
 all previous scaling steps, after all---but using the TPS technique on a wrap cylinder
 is tricky because its parameterized with a position, orientation, radius, and length. Only
-one of those (position) is a point in space that can be simply passed into the transform
-yielded by the TPS technique. The others require special handling.
+one of those (position) is a point that can be simply passed into the transform yielded
+by the TPS technique. The others require special handling.
 
 The model warper tool comes with an "Apply Thin-Plate Spline (TPS) to WrapCylinder" step
 that's specialized for this job. Its algorithm is explained in the tooltip that pops up

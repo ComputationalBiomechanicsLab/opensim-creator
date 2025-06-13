@@ -127,15 +127,15 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screenspace_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
 
         reformat_all_textures(workspace_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
         render_blurred_brightness();
-        render_combined_scene(workspace_screenspace_rect);
-        draw_overlays(workspace_screenspace_rect);
+        render_combined_scene(workspace_screen_space_rect);
+        draw_overlays(workspace_screen_space_rect);
     }
 
     void reformat_all_textures(const Vec2& viewport_pixel_dimensions, float device_pixel_ratio)
@@ -264,7 +264,7 @@ private:
         }
     }
 
-    void render_combined_scene(const Rect& viewport_screenspace_rect)
+    void render_combined_scene(const Rect& viewport_screen_space_rect)
     {
         final_compositing_material_.set("uHDRSceneRender", scene_hdr_color_output_);
         final_compositing_material_.set("uBloomBlur", ping_pong_blur_output_buffers_[0]);
@@ -273,14 +273,14 @@ private:
 
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);
-        camera.set_pixel_rect(viewport_screenspace_rect);
+        camera.set_pixel_rect(viewport_screen_space_rect);
         camera.render_to_main_window();
 
         final_compositing_material_.unset("uBloomBlur");
         final_compositing_material_.unset("uHDRSceneRender");
     }
 
-    void draw_overlays(const Rect& viewport_screenspace_rect)
+    void draw_overlays(const Rect& viewport_screen_space_rect)
     {
         constexpr float overlay_width = 200.0f;
 
@@ -294,8 +294,8 @@ private:
         for (size_t i = 0; i < texture_pointers.size(); ++i) {
             const Vec2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
             const Rect overlay_rect{
-                viewport_screenspace_rect.p1 + offset,
-                viewport_screenspace_rect.p1 + offset + overlay_width,
+                viewport_screen_space_rect.p1 + offset,
+                viewport_screen_space_rect.p1 + offset + overlay_width,
             };
 
             graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);

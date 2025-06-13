@@ -45,13 +45,13 @@ public:
 
     void on_draw()
     {
-        main_window_workspace_screenspace_rect_ = ui::get_main_window_workspace_screen_space_rect();
+        main_window_workspace_screen_space_rect_ = ui::get_main_window_workspace_screen_space_rect();
 
         material_.set("uRescale", Vec2{1.0f, 1.0f});
         material_.set("uOffset", Vec2{});
         material_.set("uNumIterations", num_iterations_);
         graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
-        camera_.set_pixel_rect(main_window_workspace_screenspace_rect_);
+        camera_.set_pixel_rect(main_window_workspace_screen_space_rect_);
         camera_.render_to_main_window();
     }
 
@@ -71,18 +71,18 @@ private:
 
     void apply_zoom_to_camera(Vec2, float)
     {
-        // TODO: zoom the mandelbrot viewport into the given screen-space location by the given factor
+        // TODO: zoom the mandelbrot viewport into the given ui space location by the given factor
     }
 
     void apply_pan_to_camera(Vec2)
     {
-        // TODO: pan the mandelbrot viewport by the given screen-space offset vector
+        // TODO: pan the mandelbrot viewport by the given ui space offset vector
     }
 
     ResourceLoader loader_ = App::resource_loader();
     int num_iterations_ = 16;
     Rect normalized_mandelbrot_viewport_rect_ = {{}, {1.0f, 1.0f}};
-    Rect main_window_workspace_screenspace_rect_ = {};
+    Rect main_window_workspace_screen_space_rect_ = {};
     Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Material material_{Shader{
         loader_.slurp("oscar_demos/shaders/Mandelbrot.vert"),

@@ -131,7 +131,7 @@ To decorate the model, complete the following sub-steps:
 Attach a cube mesh to ground (the ceiling)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Right-click in an empty space in the scene, use the ``Add Other > Meshes`` menu to open the mesh file import popup
+* Right-click in an empty part of the scene, use the ``Add Other > Meshes`` menu to open the mesh file import popup
 * In the popup, browse to OpenSim Creator's install directory, which contains a ``resources/geometry`` subdirectory
 * Select ``block.vtp`` from that directory. This is a pre-made block mesh file.
 * Rename  the block mesh to ``ceiling_decoration``

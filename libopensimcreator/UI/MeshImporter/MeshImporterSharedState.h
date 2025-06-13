@@ -655,7 +655,7 @@ namespace osc::mi
                     continue;
                 }
 
-                const std::optional<RayCollision> rc = get_closest_worldspace_ray_triangle_collision(
+                const std::optional<RayCollision> rc = get_closest_world_space_ray_triangle_collision(
                     drawable.mesh,
                     cache->get_bvh(drawable.mesh),
                     drawable.transform,
@@ -1443,7 +1443,7 @@ namespace osc::mi
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
 
-        // screenspace rect where the 3D scene is currently being drawn to
+        // screen space rect where the 3D scene is currently being drawn to
         Rect m_3DSceneRect = {};
 
         // renderer that draws the scene

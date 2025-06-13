@@ -298,7 +298,7 @@ namespace
                     std::string{state.getPanelName()},
                     state.viewportUiRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->worldspace_location} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->world_space_location} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }

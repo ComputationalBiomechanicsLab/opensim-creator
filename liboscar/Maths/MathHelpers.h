@@ -65,12 +65,12 @@ namespace osc
     //
     // - input point should have origin in top-left, Y goes down
     // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
-    // - `camera_worldspace_origin` is the location of the camera in world space
-    // - `camera_view_matrix` transforms points from world-space to view-space
-    // - `camera_proj_matrix` transforms points from view-space to world-space
+    // - `camera_world_space_origin` is the location of the camera in world space
+    // - `camera_view_matrix` transforms points from world space to view space
+    // - `camera_proj_matrix` transforms points from view space to world space
     Line perspective_unproject_topleft_normalized_pos_to_world(
         Vec2 normalized_point,
-        Vec3 camera_worldspace_origin,
+        Vec3 camera_world_space_origin,
         const Mat4& camera_view_matrix,
         const Mat4& camera_proj_matrix
     );
@@ -80,10 +80,10 @@ namespace osc
     // bounded by `viewport`.
     Rect ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
-    // returns the location where `worldspace_location` would occur when projected via the
+    // returns the location where `world_space_location` would occur when projected via the
     // given `view_matrix` and `projection_matrix`es onto `viewport_rect`.
     Vec2 project_onto_viewport_rect(
-        const Vec3& worldspace_location,
+        const Vec3& world_space_location,
         const Mat4& view_matrix,
         const Mat4& projection_matrix,
         const Rect& viewport_rect
@@ -150,10 +150,10 @@ namespace osc
     }
 
     // returns a `Quat` equivalent to the given euler angles
-    Quat to_worldspace_rotation_quat(const EulerAngles&);
+    Quat to_world_space_rotation_quat(const EulerAngles&);
 
-    // applies a world-space rotation to the transform
-    void apply_worldspace_rotation(
+    // applies a world space rotation to the transform
+    void apply_world_space_rotation(
         Transform& application_target,
         const EulerAngles& euler_angles,
         const Vec3& rotation_center
@@ -162,7 +162,7 @@ namespace osc
     // returns the volume of a given tetrahedron, defined as 4 points in space
     float volume_of(const Tetrahedron&);
 
-    // returns arrays that transforms cube faces from worldspace to projection
+    // returns arrays that transforms cube faces from world space to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
     std::array<Mat4, 6> calc_cubemap_view_proj_matrices(

@@ -142,7 +142,7 @@ public:
     }
 
 private:
-    // returns screen-space rect of the screenshot within the UI
+    // returns ui space rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
         const Vec2 cursor_topleft = ui::get_cursor_ui_pos();

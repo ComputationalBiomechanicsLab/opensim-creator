@@ -165,7 +165,7 @@ namespace osc
     }
 
     // returns a `Rect` in normalized device coordinate (NDC) space that loosely
-    // bounds the worldspace-located `aabb`
+    // bounds the world-space-located `aabb`
     //
     // if the AABB does not lie within the NDC clipping bounds (i.e. between (-1, -1)
     // and (1, 1)), returns `std::nullopt`

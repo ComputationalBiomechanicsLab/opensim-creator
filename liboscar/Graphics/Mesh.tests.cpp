@@ -377,7 +377,7 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
     // create appropriate transform
     const Transform transform = {
         .scale = Vec3{0.25f},
-        .rotation = to_worldspace_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
+        .rotation = to_world_space_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     };
 
@@ -412,7 +412,7 @@ TEST(Mesh, transform_vertices_with_Mat4_applies_transform_to_vertices)
 {
     const Mat4 mat = mat4_cast(Transform{
         .scale = Vec3{0.25f},
-        .rotation = to_worldspace_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
+        .rotation = to_world_space_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
         .position = {1.0f, 0.25f, 0.125f},
     });
 

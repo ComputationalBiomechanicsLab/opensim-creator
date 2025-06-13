@@ -79,7 +79,7 @@ namespace osc
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             const BVH& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
             const std::optional<RayCollision> meshCollision = m_LastTextureHittestResult.is_hovered ?
-                get_closest_worldspace_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
+                get_closest_world_space_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -161,7 +161,7 @@ namespace osc
             const Sphere landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
             if (const auto collision = find_collision(cameraRay, landmarkSphere))
             {
-                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
@@ -195,7 +195,7 @@ namespace osc
 
             if (const auto collision = find_collision(cameraRay, decorationSphere))
             {
-                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);

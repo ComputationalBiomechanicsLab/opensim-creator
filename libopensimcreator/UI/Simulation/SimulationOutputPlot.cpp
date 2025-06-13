@@ -243,7 +243,7 @@ private:
                 plot::pop_style_color();
                 plot::pop_style_color();
 
-                plotRect = plot::get_plot_screen_rect();
+                plotRect = plot::get_plot_ui_rect();
 
                 plot::end();
             }
@@ -367,7 +367,7 @@ private:
                 plot::pop_style_color();
                 plot::pop_style_color();
 
-                plotRect = plot::get_plot_screen_rect();
+                plotRect = plot::get_plot_ui_rect();
 
                 // overlays
                 {

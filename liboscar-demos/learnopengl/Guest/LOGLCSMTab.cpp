@@ -130,7 +130,7 @@ namespace
             const float view_cascade_znear = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i]);
             const float view_cascade_zfar = lerp(view_znear, view_zfar, c_normalized_cascade_planes[i+1]);
 
-            // imagine a triangle with a point where the viewer is (0,0,0 in view-space) and another
+            // imagine a triangle with a point where the viewer is (0,0,0 in view space) and another
             // point thats znear along the minus Z axis (i.e. moving away from the front of the viewer
             // in a right-handed coordinate system). The FOV dictates the angle of the corner
             // that originates from the viewer.
@@ -283,7 +283,7 @@ private:
         csm_material_.set("gMatSpecularIntensity", 0.0f);
         csm_material_.set("gSpecularPower", 0.0f);
 
-        // TODO: the clip-space maths feels a bit wrong compared to just doing it in NDC?
+        // TODO: the clip space maths feels a bit wrong compared to just doing it in NDC?
         std::vector<float> ends;
         ends.reserve(c_normalized_cascade_planes.size()-1);
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {

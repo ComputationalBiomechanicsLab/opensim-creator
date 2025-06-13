@@ -10,7 +10,7 @@ using namespace osc;
 
 namespace
 {
-    // world-space positions of each cube (step 2)
+    // world space positions of each cube (step 2)
     constexpr auto c_cube_positions = std::to_array<Vec3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},

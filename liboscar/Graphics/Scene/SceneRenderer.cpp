@@ -699,23 +699,23 @@ private:
             return std::nullopt;
         }
 
-        // compute the worldspace bounds union of all rim-highlighted geometry
+        // compute the world space bounds union of all rim-highlighted geometry
         const auto rim_aabb_of = [](const SceneDecoration& decoration) -> std::optional<AABB>
         {
             if (decoration.is_rim_highlighted()) {
-                return worldspace_bounds_of(decoration);
+                return world_space_bounds_of(decoration);
             }
             return std::nullopt;
         };
 
-        const std::optional<AABB> maybe_rim_worldspace_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
-        if (not maybe_rim_worldspace_aabb) {
+        const std::optional<AABB> maybe_rim_world_space_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
+        if (not maybe_rim_world_space_aabb) {
             return std::nullopt;  // the scene does not contain any rim-highlighted geometry
         }
 
         // figure out if the rims actually appear on the screen and (roughly) where
         std::optional<Rect> maybe_rim_ndc_rect = loosely_project_into_ndc(
-            *maybe_rim_worldspace_aabb,
+            *maybe_rim_world_space_aabb,
             params.view_matrix,
             params.projection_matrix,
             params.near_clipping_plane,
@@ -834,7 +834,7 @@ private:
             if (decoration.flags & SceneDecorationFlag::NoCastsShadows) {
                 continue;  // this decoration shouldn't cast shadows
             }
-            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
+            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, world_space_bounds_of(decoration));
             graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
         }
 

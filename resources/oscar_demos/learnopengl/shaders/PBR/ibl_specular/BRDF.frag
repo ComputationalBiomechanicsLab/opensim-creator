@@ -38,7 +38,7 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
     H.y = sin(phi) * sinTheta;
     H.z = cosTheta;
 
-    // from tangent-space H vector to world-space sample vector
+    // from tangent space H vector to world space sample vector
     vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
     vec3 tangent   = normalize(cross(up, N));
     vec3 bitangent = cross(N, tangent);

@@ -2962,7 +2962,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = mod(eulers.y, 360_deg);
 
-    camera.set_rotation(to_worldspace_rotation_quat(eulers));
+    camera.set_rotation(to_world_space_rotation_quat(eulers));
 }
 
 Rect osc::ui::content_region_available_ui_rect()
@@ -3288,11 +3288,11 @@ Rect osc::ui::get_main_window_workspace_ui_rect()
 Rect osc::ui::get_main_window_workspace_screen_space_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
-    const Vec2 bottom_left_uiscreenspace = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
-    const Vec2 bottom_left_screenspace = Vec2{bottom_left_uiscreenspace.x, viewport.Size.y - bottom_left_uiscreenspace.y};
-    const Vec2 top_right_screenspace = bottom_left_screenspace + Vec2{viewport.WorkSize};
+    const Vec2 bottom_left_ui_space = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
+    const Vec2 bottom_left_screen_space = Vec2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
+    const Vec2 top_right_screen_space = bottom_left_screen_space + Vec2{viewport.WorkSize};
 
-    return {bottom_left_screenspace, top_right_screenspace};
+    return {bottom_left_screen_space, top_right_screen_space};
 }
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
@@ -3834,13 +3834,13 @@ std::optional<Transform> osc::ui::Gizmo::draw_to_foreground(
     Mat4& model_matrix,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
-    const Rect& screenspace_rect)
+    const Rect& ui_rect)
 {
     return draw_to(
         model_matrix,
         view_matrix,
         projection_matrix,
-        screenspace_rect,
+        ui_rect,
         ImGui::GetForegroundDrawList()
     );
 }
@@ -3849,7 +3849,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     Mat4& model_matrix,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
-    const Rect& screenspace_rect,
+    const Rect& ui_rect,
     ImDrawList* draw_list)
 {
     if (operation_ == GizmoOperation::None) {
@@ -3865,10 +3865,10 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     was_using_last_frame_ = ImGuizmo::IsUsing();
 
     ImGuizmo::SetRect(
-        screenspace_rect.p1.x,
-        screenspace_rect.p1.y,
-        dimensions_of(screenspace_rect).x,
-        dimensions_of(screenspace_rect).y
+        ui_rect.p1.x,
+        ui_rect.p1.y,
+        dimensions_of(ui_rect).x,
+        dimensions_of(ui_rect).y
     );
     ImGuizmo::SetDrawlist(draw_list);
 
@@ -4169,7 +4169,7 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
     ImPlot::PlotLine(name.c_str(), points.data(), static_cast<int>(points.size()));
 }
 
-Rect osc::ui::plot::get_plot_screen_rect()
+Rect osc::ui::plot::get_plot_ui_rect()
 {
     const Vec2 top_left = ImPlot::GetPlotPos();
     return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};

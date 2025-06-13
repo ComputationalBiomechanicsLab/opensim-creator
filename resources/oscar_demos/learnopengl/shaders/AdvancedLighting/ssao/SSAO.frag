@@ -21,7 +21,7 @@ void main()
     vec3 normal = normalize(texture(uNormalTex, TexCoords).rgb);
     vec3 randomVec = normalize(texture(uNoiseTex, TexCoords * uNoiseScale).xyz);
 
-    // create TBN change-of-basis matrix: from tangent-space to view-space
+    // create TBN change-of-basis matrix: from tangent space to view space
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
     mat3 TBN = mat3(tangent, bitangent, normal);
@@ -31,12 +31,12 @@ void main()
     for(int i = 0; i < uKernelSize; ++i)
     {
         // get sample position
-        vec3 samplePos = TBN * uSamples[i];  // from tangent to view-space
+        vec3 samplePos = TBN * uSamples[i];  // from tangent space to view space
         samplePos = fragPos + samplePos * uRadius;
 
         // project sample position (to sample texture) (to get position on screen/texture)
         vec4 offset = vec4(samplePos, 1.0);
-        offset = uProjMat * offset; // from view to clip-space
+        offset = uProjMat * offset; // from view to clip space
         offset.xyz /= offset.w; // perspective divide
         offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
 

@@ -10,7 +10,7 @@ namespace osc::mi
         static constexpr CStringView c_GroundLabel = "Ground";
         static constexpr CStringView c_GroundLabelPluralized = "Ground";
         static constexpr CStringView c_GroundLabelOptionallyPluralized = "Ground(s)";
-        static constexpr CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'worldspace' and cannot move. All bodies in the model must eventually attach to ground via joints.";
+        static constexpr CStringView c_GroundDescription = "Ground is an inertial reference frame in which the motion of all frames and points may conveniently and efficiently be expressed. It is always defined to be at (0, 0, 0) in 'world space' and cannot move. All bodies in the model must eventually attach to ground via joints.";
 
         static constexpr CStringView c_MeshLabel = "Mesh";
         static constexpr CStringView c_MeshLabelPluralized = "Meshes";

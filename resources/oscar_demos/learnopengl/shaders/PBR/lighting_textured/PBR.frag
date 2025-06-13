@@ -23,7 +23,7 @@ const float PI = 3.14159265359;
 // for simple PBR shaders
 
 // ----------------------------------------------------------------------------
-// Easy trick to get tangent-normals to world-space to keep PBR code simplified.
+// Easy trick to get tangent-normals to world space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal
 // mapping the usual way for performance anyways; I do plan make a note of this
 // technique somewhere later in the normal mapping tutorial.

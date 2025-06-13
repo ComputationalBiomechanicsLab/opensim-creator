@@ -1017,7 +1017,7 @@ namespace osc::ui
     public:
 
         // if the user manipulated the gizmo, updates `model_matrix` to match the
-        // post-manipulation transform and returns a world-space transform that
+        // post-manipulation transform and returns a world space transform that
         // represents the "difference" added by the user's manipulation. I.e.:
         //
         //     transform_returned * model_matrix_before = model_matrix_after
@@ -1039,7 +1039,7 @@ namespace osc::ui
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect
+            const Rect& ui_rect
         );
 
         bool is_using() const;
@@ -1057,7 +1057,7 @@ namespace osc::ui
             Mat4& model_matrix,
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect,
+            const Rect& ui_rect,
             ImDrawList* draw_list
         );
 
@@ -1300,10 +1300,10 @@ namespace osc::ui
         void plot_line(CStringView name, std::span<const Vec2> points);
         void plot_line(CStringView name, std::span<const float> points);
 
-        // returns the plot's rectangle in screen-space
+        // returns the plot's rectangle in ui space
         //
         // must be called between `plot::begin` and `plot::end`
-        Rect get_plot_screen_rect();
+        Rect get_plot_ui_rect();
 
         // draws an annotation callout at a chosen point
         //

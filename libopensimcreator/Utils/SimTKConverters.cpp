@@ -63,7 +63,7 @@ SimTK::Rotation osc::Converter<Quat, SimTK::Rotation>::operator()(const Quat& q)
 
 SimTK::Rotation osc::Converter<EulerAngles, SimTK::Rotation>::operator()(const EulerAngles& eulers) const
 {
-    return to<SimTK::Rotation>(to_worldspace_rotation_quat(eulers));
+    return to<SimTK::Rotation>(to_world_space_rotation_quat(eulers));
 }
 
 SimTK::Vec3 osc::Converter<Color, SimTK::Vec3>::operator()(const Color& color) const

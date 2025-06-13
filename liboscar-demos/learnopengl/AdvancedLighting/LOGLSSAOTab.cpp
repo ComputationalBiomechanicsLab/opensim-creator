@@ -155,8 +155,8 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Vec2 workspace_dimensions = dimensions_of(workspace_screenspace_rect);
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Vec2 workspace_dimensions = dimensions_of(workspace_screen_space_rect);
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
         const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
@@ -174,8 +174,8 @@ private:
         render_ssao_pass(workspace_dimensions);
         render_blur_pass();
         render_lighting_pass();
-        graphics::blit_to_main_window(lighting_state_.output_texture, workspace_screenspace_rect);
-        draw_debug_overlays(workspace_screenspace_rect);
+        graphics::blit_to_main_window(lighting_state_.output_texture, workspace_screen_space_rect);
+        draw_debug_overlays(workspace_screen_space_rect);
     }
 
     void render_geometry_pass_to_gbuffers()
@@ -253,7 +253,7 @@ private:
         lighting_state_.material.unset("uSSAOTex");
     }
 
-    void draw_debug_overlays(const Rect& viewport_screenspace_rect)
+    void draw_debug_overlays(const Rect& viewport_screen_space_rect)
     {
         const float overlay_size = 200.0f;
 
@@ -265,7 +265,7 @@ private:
             &blur_state_.output_texture,
         });
 
-        const Vec2 viewport_top_left = top_left_rh(viewport_screenspace_rect);
+        const Vec2 viewport_top_left = top_left_rh(viewport_screen_space_rect);
         for (size_t i = 0; i < textures.size(); ++i) {
             const float offset = static_cast<float>(i)*overlay_size;
             const Vec2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
