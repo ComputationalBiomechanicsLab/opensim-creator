@@ -142,7 +142,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         draw_scene_cube();
         draw_skybox();
@@ -161,7 +161,7 @@ private:
             camera_,
             cube_properties_
         );
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_skybox()
@@ -174,7 +174,7 @@ private:
             skybox_material_,
             camera_
         );
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
         camera_.set_view_matrix_override(std::nullopt);
         camera_.set_clear_flags(CameraClearFlag::Default);
     }

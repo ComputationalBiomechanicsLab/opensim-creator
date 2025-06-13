@@ -197,7 +197,7 @@ namespace osc::mi
             const Vec2 margin = {25.0f, 35.0f};
             const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
 
-            ui::set_cursor_screen_pos(buttonTopLeft);
+            ui::set_cursor_ui_pos(buttonTopLeft);
             if (ui::draw_button(text))
             {
                 requestPop();

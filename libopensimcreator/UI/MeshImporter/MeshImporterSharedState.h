@@ -337,7 +337,7 @@ namespace osc::mi
 
         Vec2 worldPosToScreenPos(const Vec3& worldPos) const
         {
-            return getCamera().project_onto_screen_rect(worldPos, get3DSceneRect());
+            return getCamera().project_onto_viewport(worldPos, get3DSceneRect());
         }
 
         void drawConnectionLine(
@@ -424,7 +424,7 @@ namespace osc::mi
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(ui::content_region_avail_as_screen_rect());
+            set3DSceneRect(ui::content_region_available_ui_rect());
         }
 
         void drawScene(std::span<const DrawableThing> drawables)
@@ -603,7 +603,7 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             const Rect sceneRect = get3DSceneRect();
-            const Vec2 mousePos = ui::get_mouse_pos();
+            const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             if (!is_intersecting(sceneRect, mousePos))
             {

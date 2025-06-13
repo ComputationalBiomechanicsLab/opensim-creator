@@ -86,8 +86,8 @@ public:
         graphics::draw(mesh_, light_transform_, light_cube_material_, camera_);
 
         // render 3D scene
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
 
         // render 2D UI
         ui::begin_panel("controls");

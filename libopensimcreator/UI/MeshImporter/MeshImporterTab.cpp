@@ -1863,13 +1863,13 @@ private:
                 r.p1.x + windowPadding.x,
                 r.p2.y - windowPadding.y - axes.dimensions().y,
             };
-            ui::set_cursor_screen_pos(topLeft);
+            ui::set_cursor_ui_pos(topLeft);
             axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-        ui::set_cursor_screen_pos(trPos);
+        ui::set_cursor_ui_pos(trPos);
 
         if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
         {
@@ -1968,7 +1968,7 @@ private:
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
         };
 
-        ui::set_cursor_screen_pos(buttonTopLeft);
+        ui::set_cursor_ui_pos(buttonTopLeft);
         ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
         if (ui::draw_button(mainButtonText))
         {

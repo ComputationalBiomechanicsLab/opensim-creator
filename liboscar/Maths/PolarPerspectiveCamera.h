@@ -19,10 +19,10 @@ namespace osc
         // reset the camera to its initial state
         void reset();
 
-        // note: relative deltas here are relative to whatever "screen" the camera
+        // note: relative deltas here are relative to whatever viewport the camera
         // is handling.
         //
-        // e.g. moving a mouse 400px in X in a screen that is 800px wide should
+        // e.g. moving a mouse 400px in X in a viewport that is 800px wide should
         //      have a delta.x of 0.5f
 
         // pan: pan along the current view plane
@@ -43,12 +43,13 @@ namespace osc
         Mat4 view_matrix() const;
         Mat4 projection_matrix(float aspect_ratio) const;
 
-        // project's a worldspace coordinate onto a screen-space rectangle
-        Vec2 project_onto_screen_rect(const Vec3& worldspace_location, const Rect& screen_rect) const;
+        // uses this camera's transform to project a world space point
+        // onto the given viewport rectangle.
+        Vec2 project_onto_viewport(const Vec3& worldspace_location, const Rect& viewport_rect) const;
 
         Vec3 position() const;
 
-        // converts a `pos` (top-left) in the output `dimensions` into a line in worldspace by unprojection
+        // converts a `pos` (top-left) in the output `dimensions` into a line in world space by unprojection
         Line unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const;
 
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;

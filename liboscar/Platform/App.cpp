@@ -14,13 +14,13 @@
 #include <liboscar/Platform/FilesystemResourceLoader.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/MouseButton.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/PhysicalKeyModifier.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Screen.h>
 #include <liboscar/Platform/Screenshot.h>
+#include <liboscar/Platform/Widget.h>
+#include <liboscar/Platform/os.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/Conversion.h>
@@ -767,13 +767,13 @@ public:
     const std::filesystem::path& executable_directory() const { return executable_dir_; }
     const std::filesystem::path& user_data_directory() const { return user_data_dir_; }
 
-    void setup_main_loop(std::unique_ptr<Screen> screen)
+    void setup_main_loop(std::unique_ptr<Widget> widget)
     {
-        if (screen_) {
-            throw std::runtime_error{"tried to call `App::setup_main_loop` when a screen is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the applications screen from *within* some other screen, call `request_transition` instead"};
+        if (current_widget_) {
+            throw std::runtime_error{"tried to call `App::setup_main_loop` when a widget is already being shown (and, therefore, `App::teardown_main_loop` wasn't called). If you want to change the application's top-level widget from *within* some other widget, call `request_transition` instead"};
         }
 
-        log_info("initializing application main loop with screen %s", screen->name().c_str());
+        log_info("initializing application main loop with widget '%s'", widget->name().c_str());
 
         // reset loop-dependent state variables
         perf_counter_ = SDL_GetPerformanceCounter();
@@ -784,9 +784,9 @@ public:
         is_in_wait_mode_ = false;
         num_frames_to_poll_ = 2;
 
-        // perform initial screen mount
-        screen_ = std::move(screen);
-        screen_->on_mount();
+        // perform initial top-level widget mount
+        current_widget_ = std::move(widget);
+        current_widget_->on_mount();
     }
 
     AppMainLoopStatus do_main_loop_step()
@@ -809,7 +809,7 @@ public:
                 //   - A custom event posted to "the top-level application". The only situation where
                 //     that's permitted is thread marshalling.
                 //   - A "blank" event, used to crank the event loop and make the application redraw
-                //     the screen
+                //     the top-level widget
                 if (e.type == SDL_EVENT_USER) {
                     if (e.user.data1 and e.user.data2) {
                         // a custom event posted to a `Widget`
@@ -832,33 +832,33 @@ public:
                     }
                 }
 
-                // let screen handle the event
-                bool screen_handled_event = false;
+                // let top-level widget handle the event
+                bool widget_handled_event = false;
                 if (auto parsed = try_parse_into_event(e, [this]{ return os_to_main_window_device_independent_ratio(); })) {
-                    screen_handled_event = screen_->on_event(*parsed);
+                    widget_handled_event = current_widget_->on_event(*parsed);
                 }
 
-                // if the active screen didn't handle the event, try to handle it here by following
+                // if the current widget didn't handle the event, try to handle it here by following
                 // reasonable heuristics
-                if (not screen_handled_event) {
+                if (not widget_handled_event) {
                     if (SDL_EVENT_WINDOW_FIRST <= e.type and e.type <= SDL_EVENT_WINDOW_LAST) {
                         // window was resized and should be drawn a couple of times quickly
-                        // to ensure any immediate UIs in screens are updated
+                        // to ensure the current top-level widget has a chance to reflow etc.
                         num_frames_to_poll_ = 2;
                     }
                     else if (e.type == SDL_EVENT_QUIT) {
-                        request_quit();  // i.e. "as if the current screen tried to quit"
+                        request_quit();  // i.e. "as if the top-level widget tried to quit"
                     }
                 }
 
                 if (std::exchange(quit_requested_, false)) {
-                    // screen requested that the application quits, so propagate this upwards
+                    // something requested that the application quits, so propagate this upwards
                     return AppMainLoopStatus::quit_requested();
                 }
 
-                if (next_screen_) {
-                    // screen requested a new screen, so perform the transition
-                    transition_to_next_screen();
+                if (next_widget_) {
+                    // something requested a new top-level widget, so perform the transition
+                    transition_to_next_top_level_widget();
                 }
             }
         }
@@ -873,30 +873,30 @@ public:
             time_since_last_frame_ = convert_perf_ticks_to_appclock_duration(delta_ticks, perf_counter_frequency_);
         }
 
-        // "tick" the screen
+        // "tick" the widget
         {
             OSC_PERF("App/on_tick");
-            screen_->on_tick();
+            current_widget_->on_tick();
         }
 
         if (std::exchange(quit_requested_, false)) {
-            // screen requested that the application quits, so propagate this upwards
+            // something requested that the application quits, so propagate this upwards
             return AppMainLoopStatus::quit_requested();
         }
 
-        if (next_screen_) {
-            // screen requested a new screen, so perform the transition
-            transition_to_next_screen();
+        if (next_widget_) {
+            // something requested a new top-level widget, so perform the transition
+            transition_to_next_top_level_widget();
             return AppMainLoopStatus::ok();
         }
 
-        // "draw" the screen into the window framebuffer
+        // "draw" the top-level widget into the main window framebuffer
         {
             OSC_PERF("App/on_draw");
-            screen_->on_draw();
+            current_widget_->on_draw();
         }
 
-        // "present" the rendered screen to the user (can block on VSYNC)
+        // "present" the framebuffer to the user (can block on VSYNC)
         {
             OSC_PERF("App/swap_buffers");
             graphics_context_.swap_buffers(*main_window_);
@@ -911,13 +911,13 @@ public:
         ++frame_counter_;
 
         if (std::exchange(quit_requested_, false)) {
-            // screen requested that the application quits, so propagate this upwards
+            // something requested that the application quits, so propagate this upwards
             return AppMainLoopStatus::quit_requested();
         }
 
-        if (next_screen_) {
-            // screen requested a new screen, so perform the transition
-            transition_to_next_screen();
+        if (next_widget_) {
+            // something requested a new top-level widget, so perform the transition
+            transition_to_next_top_level_widget();
         }
 
         return AppMainLoopStatus::ok();
@@ -925,11 +925,11 @@ public:
 
     void teardown_main_loop()
     {
-        if (screen_) {
-            screen_->on_unmount();
-            screen_.reset();
+        if (current_widget_) {
+            current_widget_->on_unmount();
+            current_widget_.reset();
         }
-        next_screen_.reset();
+        next_widget_.reset();
 
         frame_annotations_.clear();
         active_screenshot_requests_.clear();
@@ -958,9 +958,9 @@ public:
         return false;
     }
 
-    void show(std::unique_ptr<Screen> screen)
+    void show(std::unique_ptr<Widget> widget)
     {
-        setup_main_loop(std::move(screen));
+        setup_main_loop(std::move(widget));
 
         // ensure `teardown_main_loop` is called - even if there's an exception
         const ScopeExit scope_guard{[this]() { teardown_main_loop(); }};
@@ -970,9 +970,9 @@ public:
         }
     }
 
-    void request_transition(std::unique_ptr<Screen> screen)
+    void request_transition(std::unique_ptr<Widget> widget)
     {
-        next_screen_ = std::move(screen);
+        next_widget_ = std::move(widget);
     }
 
     void request_quit()
@@ -1447,7 +1447,7 @@ public:
 
     void clear_main_window(const Color& color)
     {
-        graphics_context_.clear_screen(color);
+        graphics_context_.clear_main_window(color);
     }
 
     void set_main_window_subtitle(std::string_view subtitle)
@@ -1521,36 +1521,37 @@ private:
         return graphics_context_.request_screenshot();
     }
 
-    // perform a screen transition between two top-level `Screen`s
-    void transition_to_next_screen()
+    // transitions from the current top-level widget to the next top-level
+    // widget (if available)
+    void transition_to_next_top_level_widget()
     {
-        if (not next_screen_) {
+        if (not next_widget_) {
             return;
         }
 
-        if (screen_) {
-            log_info("unmounting screen %s", screen_->name().c_str());
+        if (current_widget_) {
+            log_info("unmounting widget '%s'", current_widget_->name().c_str());
 
             try {
-                screen_->on_unmount();
+                current_widget_->on_unmount();
             }
             catch (const std::exception& ex) {
-                log_error("error unmounting screen %s: %s", screen_->name().c_str(), ex.what());
-                screen_.reset();
+                log_error("error unmounting widget '%s': %s", current_widget_->name().c_str(), ex.what());
+                current_widget_.reset();
                 throw;
             }
 
-            screen_.reset();
+            current_widget_.reset();
         }
 
-        screen_ = std::move(next_screen_);
+        current_widget_ = std::move(next_widget_);
 
-        // the next screen might need to draw a couple of frames
+        // the next top-level widget might need to draw a couple of frames
         // to "warm up" (e.g. because it's using an immediate ui)
         num_frames_to_poll_ = 2;
 
-        log_info("mounting screen %s", screen_->name().c_str());
-        screen_->on_mount();
+        log_info("mounting widget '%s'", current_widget_->name().c_str());
+        current_widget_->on_mount();
     }
 
     // tries to handle any active (asynchronous) screenshot requests
@@ -1674,11 +1675,11 @@ private:
     // set >0 to force that `n` frames are polling-driven: even in waiting mode
     int32_t num_frames_to_poll_ = 0;
 
-    // current screen being shown (if any)
-    std::unique_ptr<Screen> screen_;
+    // current top-level widget (if any)
+    std::unique_ptr<Widget> current_widget_;
 
-    // the *next* screen the application should show
-    std::unique_ptr<Screen> next_screen_;
+    // the *next* top-level widget (if any - usually via a request to transition to it)
+    std::unique_ptr<Widget> next_widget_;
 
     // frame annotations made during this frame
     std::vector<ScreenshotAnnotation> frame_annotations_;
@@ -1766,9 +1767,9 @@ const std::filesystem::path& osc::App::user_data_directory() const
     return impl_->user_data_directory();
 }
 
-void osc::App::setup_main_loop(std::unique_ptr<Screen> screen)
+void osc::App::setup_main_loop(std::unique_ptr<Widget> widget)
 {
-    impl_->setup_main_loop(std::move(screen));
+    impl_->setup_main_loop(std::move(widget));
 }
 
 AppMainLoopStatus osc::App::do_main_loop_step()
@@ -1791,14 +1792,14 @@ bool osc::App::notify(Widget& receiver, Event& event)
     return upd().impl_->notify(receiver, event);
 }
 
-void osc::App::show(std::unique_ptr<Screen> s)
+void osc::App::show(std::unique_ptr<Widget> widget)
 {
-    impl_->show(std::move(s));
+    impl_->show(std::move(widget));
 }
 
-void osc::App::request_transition(std::unique_ptr<Screen> s)
+void osc::App::request_transition(std::unique_ptr<Widget> widget)
 {
-    impl_->request_transition(std::move(s));
+    impl_->request_transition(std::move(widget));
 }
 
 void osc::App::request_quit()
@@ -2136,13 +2137,13 @@ ResourceStream osc::App::go_load_resource(const ResourcePath& rp)
     return impl_->go_load_resource(rp);
 }
 
-int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor)
+int osc::App::main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor)
 {
     // If running via EMSCRIPTEN, then the engine (usually, browser) is
     // responsible for calling into each step of the render loop.
 #ifdef EMSCRIPTEN
     App* app = new App{metadata};
-    app->setup_main_loop(screen_ctor());
+    app->setup_main_loop(widget_ctor());
     emscripten_set_main_loop_arg([](void* ptr) -> void
     {
         if (not static_cast<App*>(ptr)->do_main_loop_step()) {
@@ -2152,7 +2153,7 @@ int osc::App::main_internal(const AppMetadata& metadata, const std::function<std
     return 0;
 #else
     App app{metadata};
-    app.show(screen_ctor());
+    app.show(widget_ctor());
     return 0;
 #endif
 }

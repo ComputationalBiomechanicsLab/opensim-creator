@@ -96,7 +96,7 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
+        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screen_space_rect();
         const Vec2 top_left = top_left_rh(workspace_screenspace_rect);
         constexpr float depth_overlay_size = 200.0f;
 
@@ -112,9 +112,9 @@ private:
 
         draw_meshes_with_material(scene_material_);
         camera_.set_pixel_rect(workspace_screenspace_rect);
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
         camera_.set_pixel_rect(std::nullopt);
-        graphics::blit_to_screen(depth_texture_, Rect{top_left - Vec2{0.0f, depth_overlay_size}, top_left + Vec2{depth_overlay_size, 0.0f}});
+        graphics::blit_to_main_window(depth_texture_, Rect{top_left - Vec2{0.0f, depth_overlay_size}, top_left + Vec2{depth_overlay_size, 0.0f}});
 
         scene_material_.unset("uShadowMapTexture");
     }

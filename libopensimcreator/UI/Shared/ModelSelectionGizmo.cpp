@@ -390,7 +390,7 @@ namespace
             ss << "Note: this is effectively moving " << pof->getParentFrame().getName() << ", because " << pof->getName() << " is\nconstrained by a joint.";
             const std::string label = std::move(ss).str();
             const Vec3 worldPos{getCurrentTransformInGround()[3]};
-            const Vec2 screenPos = project_onto_screen_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vec2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
             const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height_in_current_panel()};
 
             drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);
@@ -639,7 +639,7 @@ namespace
             ss << "Note: manipulating the joint center moves both the parent (" << joint->getParentFrame().getName() << ") and\nchild (" << joint->getParentFrame().getName() << ") frames.";
             const std::string label = std::move(ss).str();
             const Vec3 worldPos{getCurrentTransformInGround()[3]};
-            const Vec2 screenPos = project_onto_screen_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vec2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
             const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height_in_current_panel()};
 
             drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);

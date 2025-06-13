@@ -1228,7 +1228,7 @@ bool osc::DrawCameraControlButtons(
     const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
     const Vec2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
-    ui::set_cursor_screen_pos(topleft);
+    ui::set_cursor_ui_pos(topleft);
 
     bool edited = false;
     if (zoomOutButton.on_draw()) {
@@ -1250,9 +1250,9 @@ bool osc::DrawCameraControlButtons(
     {
         const Vec2 tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
-            ui::get_cursor_screen_pos().y,
+            ui::get_cursor_ui_pos().y,
         };
-        ui::set_cursor_screen_pos(tl);
+        ui::set_cursor_ui_pos(tl);
         if (sceneSettingsButton.on_draw()) {
             edited = true;
         }
@@ -1275,7 +1275,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw top-left buttons
     const Vec2 windowPadding = ui::get_style_panel_padding();
-    ui::set_cursor_screen_pos(renderRect.p1 + windowPadding);
+    ui::set_cursor_ui_pos(renderRect.p1 + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
@@ -1288,11 +1288,11 @@ bool osc::DrawViewerImGuiOverlays(
     };
 
     // draw the bottom overlays
-    ui::set_cursor_screen_pos(axesTopLeft);
+    ui::set_cursor_ui_pos(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
     const Vec2 cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
-    ui::set_cursor_screen_pos(cameraButtonsTopLeft);
+    ui::set_cursor_ui_pos(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
         drawlist,

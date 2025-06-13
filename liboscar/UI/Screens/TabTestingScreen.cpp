@@ -1,7 +1,7 @@
 #include "TabTestingScreen.h"
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/ScreenPrivate.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Tabs/Tab.h>
 #include <liboscar/UI/Tabs/TabRegistryEntry.h>
 #include <liboscar/UI/oscimgui.h>
@@ -10,12 +10,14 @@
 #include <memory>
 #include <utility>
 
-class osc::TabTestingScreen::Impl final : public ScreenPrivate {
+class osc::TabTestingScreen::Impl final : public WidgetPrivate {
 public:
     explicit Impl(TabTestingScreen& owner, TabRegistryEntry registry_entry) :
-        ScreenPrivate{owner, nullptr, "TabTestingScreen"},
+        WidgetPrivate{owner, nullptr},
         registry_entry_{std::move(registry_entry)}
-    {}
+    {
+        set_name("TabTestingScreen");
+    }
 
     void on_mount()
     {
@@ -69,7 +71,7 @@ private:
 };
 
 osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) :
-    Screen{std::make_unique<Impl>(*this, registry_entry)}
+    Widget{std::make_unique<Impl>(*this, registry_entry)}
 {}
 void osc::TabTestingScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::TabTestingScreen::impl_on_unmount() { private_data().on_unmount(); }

@@ -127,7 +127,7 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
+        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
         const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screenspace_rect);
 
@@ -274,7 +274,7 @@ private:
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);
         camera.set_pixel_rect(viewport_screenspace_rect);
-        camera.render_to_screen();
+        camera.render_to_main_window();
 
         final_compositing_material_.unset("uBloomBlur");
         final_compositing_material_.unset("uHDRSceneRender");
@@ -298,7 +298,7 @@ private:
                 viewport_screenspace_rect.p1 + offset + overlay_width,
             };
 
-            graphics::blit_to_screen(*texture_pointers[i], overlay_rect);
+            graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);
         }
     }
 

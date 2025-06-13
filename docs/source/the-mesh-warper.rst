@@ -121,7 +121,7 @@ OpenSim Creator's splash screen:
     :width: 60%
 
     A screenshot of OpenSim Creator's main splash screen. The mesh warping UI
-    can be opened from the main splash screen of OpenSim Creator (highlighted red).
+    can be opened from the splash screen of OpenSim Creator (highlighted red).
 
 
 Mesh Warping UI Overview

@@ -54,7 +54,7 @@ namespace osc
             ui::draw_image(renderTexture);
             m_LastTextureHittestResult = ui::hittest_last_drawn_item();
 
-            drawOverlays(m_LastTextureHittestResult.item_screen_rect);
+            drawOverlays(m_LastTextureHittestResult.item_ui_rect);
         }
 
         void updateCamera()
@@ -65,7 +65,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
+                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect)))
                 {
                     m_State->setLinkedBaseCamera(m_Camera);  // reflects latest modification
                 }
@@ -76,7 +76,7 @@ namespace osc
         void drawOverlays(const Rect& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ui::set_cursor_screen_pos(renderRect.p1 + m_OverlayPadding);
+            ui::set_cursor_ui_pos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
             ui::same_line();
@@ -141,7 +141,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            m_CursorXAtExportButton = ui::get_cursor_pos().x;  // needed to align the blending factor slider
+            m_CursorXAtExportButton = ui::get_cursor_pos_x();  // needed to align the blending factor slider
             ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
@@ -185,7 +185,7 @@ namespace osc
                 auto_focus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
-                    aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect)
+                    aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect)
                 );
                 m_State->setLinkedBaseCamera(m_Camera);
             }

@@ -33,7 +33,7 @@ public:
         }
         else if (ev.type() == EventType::MouseWheel) {
             const float factor = dynamic_cast<const MouseWheelEvent&>(ev).delta().y > 0 ? 0.9f : 1.11111111f;
-            apply_zoom_to_camera(ui::get_mouse_pos(), factor);
+            apply_zoom_to_camera(ui::get_mouse_ui_pos(), factor);
             return true;
         }
         else if (ev.type() == EventType::MouseMove) {
@@ -45,14 +45,14 @@ public:
 
     void on_draw()
     {
-        main_window_workspace_screenspace_rect_ = ui::get_main_window_workspace_screenspace_rect();
+        main_window_workspace_screenspace_rect_ = ui::get_main_window_workspace_screen_space_rect();
 
         material_.set("uRescale", Vec2{1.0f, 1.0f});
         material_.set("uOffset", Vec2{});
         material_.set("uNumIterations", num_iterations_);
         graphics::draw(quad_mesh_, identity<Transform>(), material_, camera_);
         camera_.set_pixel_rect(main_window_workspace_screenspace_rect_);
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
 private:

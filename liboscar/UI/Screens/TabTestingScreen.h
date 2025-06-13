@@ -1,12 +1,12 @@
 #pragma once
 
-#include <liboscar/Platform/Screen.h>
+#include <liboscar/Platform/Widget.h>
 
 namespace osc { class TabRegistryEntry; }
 
 namespace osc
 {
-    class TabTestingScreen final : public Screen {
+    class TabTestingScreen final : public Widget {
     public:
         explicit TabTestingScreen(TabRegistryEntry const&);
 

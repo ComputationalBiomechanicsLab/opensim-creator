@@ -103,7 +103,7 @@ private:
     void draw_3d_scene()
     {
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         // draw 3D scene
         if (show_step1_) {
@@ -125,7 +125,7 @@ private:
             }
         }
 
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_2d_ui()

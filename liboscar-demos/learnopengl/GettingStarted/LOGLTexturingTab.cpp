@@ -71,8 +71,8 @@ public:
     {
         graphics::draw(mesh_, identity<Transform>(), material_, camera_);
 
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
     }
 
 private:

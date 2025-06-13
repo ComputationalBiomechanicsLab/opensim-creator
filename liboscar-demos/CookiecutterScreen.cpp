@@ -4,11 +4,13 @@
 
 #include <memory>
 
-class osc::CookiecutterScreen::Impl final : public ScreenPrivate {
+class osc::CookiecutterScreen::Impl final : public WidgetPrivate {
 public:
     explicit Impl(CookiecutterScreen& owner, Widget* parent) :
-        ScreenPrivate{owner, parent, "CookiecutterScreen"}
-    {}
+        WidgetPrivate{owner, parent}
+    {
+        set_name("CookiecutterScreen");
+    }
 
     void on_mount()
     {
@@ -69,7 +71,7 @@ private:
 };
 
 osc::CookiecutterScreen::CookiecutterScreen(Widget* parent) :
-    Screen{std::make_unique<Impl>(*this, parent)}
+    Widget{std::make_unique<Impl>(*this, parent)}
 {}
 void osc::CookiecutterScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::CookiecutterScreen::impl_on_unmount() { private_data().on_unmount(); }

@@ -132,7 +132,7 @@ private:
     {
         Camera orthogonal_camera;
         orthogonal_camera.set_background_color(Color::clear());
-        orthogonal_camera.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
+        orthogonal_camera.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
         orthogonal_camera.set_projection_matrix_override(identity<Mat4>());
         orthogonal_camera.set_view_matrix_override(identity<Mat4>());
 
@@ -141,7 +141,7 @@ private:
         tonemap_material_.set("uExposure", exposure_);
 
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, orthogonal_camera);
-        orthogonal_camera.render_to_screen();
+        orthogonal_camera.render_to_main_window();
 
         tonemap_material_.unset("uTexture");
     }

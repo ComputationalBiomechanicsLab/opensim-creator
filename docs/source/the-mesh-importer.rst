@@ -136,7 +136,7 @@ Attach a cube mesh to ground (the ceiling)
 * Select ``block.vtp`` from that directory. This is a pre-made block mesh file.
 * Rename  the block mesh to ``ceiling_decoration``
 * Move the mesh to the location of the highest pin joint (``pendulum_head_to_ground``). The easiest way to do this is to right-click the mesh and use ``Translate > To (select something)``.
-* Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the screen from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
+* Rescale the mesh so that it's displayed as a thin "ceiling" cuboid the pendulum hangs from, rather than a cube. To do this, use scale property in the mesh's context menu (right-click it) **or** the scaling gizmo (press ``S`` or change the manipulation dropdown at the top of the ui from ``translate`` to ``scale``). Recommended scale factors: ``(5.0, 0.1, 5.0)``.
 
 .. figure:: _static/the-mesh-importer/after-adding-ceiling-mesh.jpg
     :width: 60%

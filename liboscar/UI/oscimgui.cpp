@@ -474,7 +474,7 @@ namespace
             bd.camera.render_to(*maybe_target);
         }
         else {
-            bd.camera.render_to_screen();
+            bd.camera.render_to_main_window();
         }
     }
 
@@ -494,13 +494,10 @@ namespace
         //
         // so what we do here is linearize all colors from ImGui and
         // always provide textures in the OSC style. The shaders in ImGui
-        // then write linear color values to the screen, but because we
-        // are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL backend
-        // will correctly convert those linear colors to sRGB if necessary
-        // automatically
-        //
-        // (this shitshow is because ImGui's OpenGL backend behaves differently
-        //  from OSCs - ultimately, we need an ImGui_ImplOSC backend)
+        // then write linear color values to the render target, but
+        // because we are *also* enabling GL_FRAMEBUFFER_SRGB, the OpenGL
+        // backend will correctly convert those linear colors to sRGB if
+        // necessary automatically
         convert_draw_data_from_srgb_to_linear(draw_list);
 
         Mesh& mesh = bd.mesh;
@@ -2167,12 +2164,12 @@ void osc::ui::set_cursor_pos_x(float local_x)
     ImGui::SetCursorPosX(local_x);
 }
 
-Vec2 osc::ui::get_cursor_screen_pos()
+Vec2 osc::ui::get_cursor_ui_pos()
 {
     return ImGui::GetCursorScreenPos();
 }
 
-void osc::ui::set_cursor_screen_pos(Vec2 pos)
+void osc::ui::set_cursor_ui_pos(Vec2 pos)
 {
     ImGui::SetCursorScreenPos(pos);
 }
@@ -2392,7 +2389,7 @@ void osc::ui::end_popup()
     ImGui::EndPopup();
 }
 
-Vec2 osc::ui::get_mouse_pos()
+Vec2 osc::ui::get_mouse_ui_pos()
 {
     return ImGui::GetMousePos();
 }
@@ -2968,9 +2965,9 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     camera.set_rotation(to_worldspace_rotation_quat(eulers));
 }
 
-Rect osc::ui::content_region_avail_as_screen_rect()
+Rect osc::ui::content_region_available_ui_rect()
 {
-    const Vec2 top_left = ui::get_cursor_screen_pos();
+    const Vec2 top_left = ui::get_cursor_ui_pos();
     return Rect{top_left, top_left + ui::get_content_region_available()};
 }
 
@@ -3036,7 +3033,7 @@ bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec
     return draw_image_button(label, texture, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
 }
 
-Rect osc::ui::get_last_drawn_item_screen_rect()
+Rect osc::ui::get_last_drawn_item_ui_rect()
 {
     return {ui::get_item_topleft(), ui::get_item_bottomright()};
 }
@@ -3049,8 +3046,8 @@ ui::HittestResult osc::ui::hittest_last_drawn_item()
 ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
 {
     HittestResult rv;
-    rv.item_screen_rect.p1 = ui::get_item_topleft();
-    rv.item_screen_rect.p2 = ui::get_item_bottomright();
+    rv.item_ui_rect.p1 = ui::get_item_topleft();
+    rv.item_ui_rect.p2 = ui::get_item_bottomright();
     rv.is_hovered = ui::is_item_hovered();
     rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Left, drag_threshold);
     rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Right, drag_threshold);
@@ -3278,7 +3275,7 @@ ui::PanelFlags osc::ui::get_minimal_panel_flags()
     };
 }
 
-Rect osc::ui::get_main_window_workspace_uiscreenspace_rect()
+Rect osc::ui::get_main_window_workspace_ui_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
@@ -3288,7 +3285,7 @@ Rect osc::ui::get_main_window_workspace_uiscreenspace_rect()
     };
 }
 
-Rect osc::ui::get_main_window_workspace_screenspace_rect()
+Rect osc::ui::get_main_window_workspace_screen_space_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
     const Vec2 bottom_left_uiscreenspace = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
@@ -3300,18 +3297,18 @@ Rect osc::ui::get_main_window_workspace_screenspace_rect()
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
 {
-    return dimensions_of(get_main_window_workspace_uiscreenspace_rect());
+    return dimensions_of(get_main_window_workspace_ui_rect());
 }
 
 float osc::ui::get_main_window_workspace_aspect_ratio()
 {
-    return aspect_ratio_of(get_main_window_workspace_screenspace_rect());
+    return aspect_ratio_of(get_main_window_workspace_screen_space_rect());
 }
 
 bool osc::ui::is_mouse_in_main_window_workspace()
 {
-    const Vec2 mousepos = ui::get_mouse_pos();
-    const Rect hitRect = get_main_window_workspace_uiscreenspace_rect();
+    const Vec2 mousepos = ui::get_mouse_ui_pos();
+    const Rect hitRect = get_main_window_workspace_ui_rect();
 
     return is_intersecting(hitRect, mousepos);
 }
@@ -3344,10 +3341,10 @@ bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 bool osc::ui::draw_button_centered(CStringView label)
 {
     const float button_width = ui::calc_text_size(label).x + 2.0f*ui::get_style_frame_padding().x;
-    const float midpoint = ui::get_cursor_screen_pos().x + 0.5f*ui::get_content_region_available().x;
+    const float midpoint = ui::get_cursor_ui_pos().x + 0.5f*ui::get_content_region_available().x;
     const float button_start_x = midpoint - 0.5f*button_width;
 
-    ui::set_cursor_screen_pos({button_start_x, ui::get_cursor_screen_pos().y});
+    ui::set_cursor_ui_pos({button_start_x, ui::get_cursor_ui_pos().y});
 
     return ui::draw_button(label);
 }
@@ -3524,7 +3521,7 @@ bool osc::ui::draw_float_circular_slider(
     // calculate top-level item info for early-cull checks etc.
     const Vec2 label_size = ui::calc_text_size(label, true);
     const Vec2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
-    const Vec2 cursor_screen_pos = ui::get_cursor_screen_pos();
+    const Vec2 cursor_screen_pos = ui::get_cursor_ui_pos();
     const ImRect frame_bounds = {cursor_screen_pos, cursor_screen_pos + frame_dims};
     const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
     const ImRect total_bounds = {frame_bounds.Min, Vec2{frame_bounds.Max} + Vec2{label_width_with_spacing, 0.0f}};
@@ -3822,13 +3819,13 @@ std::optional<Transform> osc::ui::Gizmo::draw(
     Mat4& model_matrix,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
-    const Rect& screenspace_rect)
+    const Rect& ui_rect)
 {
     return draw_to(
         model_matrix,
         view_matrix,
         projection_matrix,
-        screenspace_rect,
+        ui_rect,
         ImGui::GetWindowDrawList()
     );
 }

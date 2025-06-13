@@ -111,7 +111,7 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
+        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screen_space_rect();
 
         draw_shadow_pass_to_cubemap();
         draw_shadowmapped_scene_to_screen(workspace_screenspace_rect);
@@ -170,7 +170,7 @@ private:
         graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screenspace_rect);
-        scene_camera_.render_to_screen();
+        scene_camera_.render_to_main_window();
         scene_camera_.set_pixel_rect(std::nullopt);
     }
 

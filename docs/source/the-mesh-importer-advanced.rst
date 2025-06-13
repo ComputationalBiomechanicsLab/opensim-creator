@@ -34,13 +34,13 @@ Topics Covered by this Tutorial
 Import Meshes
 -------------
 
-The first step is to get these  :download:`meshes <_static/the-mesh-importer-advanced/arm-meshes.zip>` into OpenSim Creator. The easiest way to do this is with the **mesh importer screen**, which was described in :doc:`the-mesh-importer`. You need to:
+The first step is to get these  :download:`meshes <_static/the-mesh-importer-advanced/arm-meshes.zip>` into OpenSim Creator. The easiest way to do this is with the **mesh importer workflow**, which was described in :doc:`the-mesh-importer`. You need to:
 
-* Open OpenSim Creator's mesh importer screen
+* Open OpenSim Creator's mesh importer workflow
 * Import these :download:`meshes <_static/the-mesh-importer-advanced/arm-meshes.zip>` by either:
 
   * Using the `Meshes` button in the right-click menu
-  * Dragging & dropping the mesh files into the mesh importer screen.
+  * Dragging & dropping the mesh files into the mesh importer ui.
 * Move all the meshes together such that they are above ground
 
 This will give you a scene with the meshes in roughly the right place:
@@ -48,7 +48,7 @@ This will give you a scene with the meshes in roughly the right place:
 .. figure:: _static/the-mesh-importer-advanced/after-importing-meshes.jpg
     :width: 60%
 
-    The mesh importer screen after initially importing the :download:`meshes <_static/the-mesh-importer-advanced/arm-meshes.zip>` and moving them above ground.
+    The mesh importer ui after initially importing the :download:`meshes <_static/the-mesh-importer-advanced/arm-meshes.zip>` and moving them above ground.
 
 
 

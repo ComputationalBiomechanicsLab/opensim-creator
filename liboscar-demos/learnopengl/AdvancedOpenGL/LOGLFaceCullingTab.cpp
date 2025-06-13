@@ -74,9 +74,9 @@ public:
 private:
     void draw_scene()
     {
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
         graphics::draw(cube_, identity<Transform>(), material_, camera_);
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_2d_ui()

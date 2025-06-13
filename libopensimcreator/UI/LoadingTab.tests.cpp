@@ -4,7 +4,7 @@
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/Platform/Screen.h>
+#include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <filesystem>
@@ -13,7 +13,7 @@ using namespace osc;
 
 namespace
 {
-    class LoadingTabTestingScreen final : public Screen {
+    class LoadingTabTestingScreen final : public Widget {
     public:
     private:
         bool impl_on_event(Event& e) final

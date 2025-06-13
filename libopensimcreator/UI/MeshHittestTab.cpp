@@ -53,9 +53,9 @@ public:
         // handle hittest
         const auto raycastStartTime = std::chrono::high_resolution_clock::now();
 
-        const Rect r = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Rect r = ui::get_main_window_workspace_ui_rect();
         const Vec2 d = dimensions_of(r);
-        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_pos()} - r.p1, d);
+        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_ui_pos()} - r.p1, d);
 
         m_IsMousedOver = false;
         if (m_UseBVH) {
@@ -87,7 +87,7 @@ public:
     {
         // setup scene
         {
-            const Rect workspaceRect = ui::get_main_window_workspace_screenspace_rect();
+            const Rect workspaceRect = ui::get_main_window_workspace_screen_space_rect();
             m_Camera.set_pixel_rect(workspaceRect);
 
             // update real scene camera from constrained polar camera
@@ -128,7 +128,7 @@ public:
         }
 
         // draw scene onto workspace
-        m_Camera.render_to_screen();
+        m_Camera.render_to_main_window();
 
         // auxiliary 2D UI
         // printout stats

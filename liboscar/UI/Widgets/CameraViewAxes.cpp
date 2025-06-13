@@ -40,9 +40,9 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     // calculate widget metrics
     const auto metrics = AxesMetrics{};
 
-    // calculate widget screen-space metrics
-    const Vec2 topleft = ui::get_cursor_screen_pos();
-    const Rect bounds = {topleft, topleft + metrics.dimensions};
+    // calculate widget ui space metrics
+    const Vec2 top_left = ui::get_cursor_ui_pos();
+    const Rect bounds = {top_left, top_left + metrics.dimensions};
     const Vec2 origin = centroid_of(bounds);
 
     // figure out rendering order (back-to-front)
@@ -57,22 +57,22 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     bool edited = false;
     ui::DrawListView draw_list = ui::get_panel_draw_list();
     for (auto axis_index : axis_indices) {
-        // calc direction vector in screen space
-        Vec2 view = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
-        view.y = -view.y;  // y goes down in screen-space
+        // calc direction vector in ui space
+        Vec2 view_space_pos = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
+        view_space_pos.y = -view_space_pos.y;  // y goes down in ui space
 
         Color base_color = {0.15f, 0.15f, 0.15f, 1.0f};
         base_color[axis_index] = 0.7f;
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
-            const Vec2 end = origin + metrics.line_length*view;
+            const Vec2 end = origin + metrics.line_length*view_space_pos;
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
             const auto id = ui::get_id(labels[axis_index]);
-            ui::set_cursor_screen_pos(circle_bounds.p1);
+            ui::set_cursor_ui_pos(circle_bounds.p1);
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
                 const Vec2 label_size = ui::calc_text_size(labels[axis_index]);
@@ -94,13 +94,13 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // negative axes: draw a faded (clickable) circle ending - no line
         {
-            const Vec2 end = origin - metrics.line_length*view;
+            const Vec2 end = origin - metrics.line_length*view_space_pos;
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 
             const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
             const auto id = ui::get_id(labels[axis_index]);
-            ui::set_cursor_screen_pos(circle_bounds.p1);
+            ui::set_cursor_ui_pos(circle_bounds.p1);
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);

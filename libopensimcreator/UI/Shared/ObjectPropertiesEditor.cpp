@@ -139,11 +139,11 @@ namespace
     void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
         ui::DrawListView l = ui::get_panel_draw_list();
-        const Vec2 p = ui::get_cursor_screen_pos();
+        const Vec2 p = ui::get_cursor_ui_pos();
         const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
         l.add_rect_filled({p, p + dims}, color);
-        ui::set_cursor_screen_pos({p.x + 4.0f, p.y});
+        ui::set_cursor_ui_pos({p.x + 4.0f, p.y});
     }
 
     // draws a context menu that the user can use to change the step interval of the +/- buttons
@@ -285,7 +285,7 @@ namespace
         }
         ui::pop_style_var();
         rv.shouldSave = ui::should_save_last_drawn_item_value();
-        App::upd().add_main_window_frame_annotation(frameAnnotationLabel, ui::get_last_drawn_item_screen_rect());
+        App::upd().add_main_window_frame_annotation(frameAnnotationLabel, ui::get_last_drawn_item_ui_rect());
         ui::draw_tooltip_if_item_hovered("Step Size", "You can right-click to adjust the step size of the buttons");
         DrawStepSizeEditor(stepSize);
 
@@ -541,7 +541,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
 
             if (ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
@@ -708,7 +708,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
 
             if (edited or ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
@@ -1023,14 +1023,14 @@ namespace
                 if (ui::draw_button("radians")) {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
                 ui::draw_tooltip_body_only_if_item_hovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else {
                 if (ui::draw_button("degrees")) {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
                 ui::draw_tooltip_body_only_if_item_hovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
@@ -1113,7 +1113,7 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
                 shouldSave = shouldSave or ui::should_save_last_drawn_item_value();
-                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
 
                 ui::pop_id();
             }
@@ -1196,7 +1196,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            App::upd().add_main_window_frame_annotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_ui_rect());
 
             if (edited or ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));

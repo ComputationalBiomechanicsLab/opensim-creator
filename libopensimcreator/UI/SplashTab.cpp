@@ -144,7 +144,7 @@ public:
 
     void onDraw()
     {
-        if (area_of(ui::get_main_window_workspace_uiscreenspace_rect()) <= 0.0f) {
+        if (area_of(ui::get_main_window_workspace_ui_rect()) <= 0.0f) {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
             return;
@@ -160,7 +160,7 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
+        Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
         // pretend the attributation bar isn't there (avoid it)
         tabUIRect.p2.y -= max(m_TudLogo.device_independent_dimensions().y, m_CziLogo.device_independent_dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
 
@@ -185,7 +185,7 @@ private:
 
     void drawBackground()
     {
-        const Rect workspaceUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
 
         ui::set_next_panel_pos(workspaceUIRect.p1);
         ui::set_next_panel_size(dimensions_of(workspaceUIRect));
@@ -261,7 +261,7 @@ private:
             auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_main_window_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
+        App::upd().add_main_window_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_ui_rect());
         if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
             open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
         }
@@ -282,13 +282,13 @@ private:
             auto tab = std::make_unique<MeshWarpingTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_main_window_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
+        App::upd().add_main_window_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_ui_rect());
 
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
             auto tab = std::make_unique<ModelWarperTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_main_window_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
+        App::upd().add_main_window_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_ui_rect());
     }
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
@@ -352,7 +352,7 @@ private:
 
     void drawAttributationLogos()
     {
-        const Rect workspaceUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
         Vec2 loc = workspaceUIRect.p2;
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
@@ -371,7 +371,7 @@ private:
 
     void drawVersionInfo()
     {
-        const Rect tabUIRect = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
         const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 

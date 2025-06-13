@@ -238,7 +238,7 @@ namespace osc
 
         Vec2 calcColumnMidpointScreenPos() const
         {
-            return Vec2{ui::get_cursor_screen_pos()} + Vec2{0.5f*ui::get_column_width(), 0.5f*ui::get_text_line_height_in_current_panel()};
+            return ui::get_cursor_ui_pos() + 0.5f*Vec2{ui::get_column_width(), ui::get_text_line_height_in_current_panel()};
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

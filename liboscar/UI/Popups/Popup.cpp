@@ -142,7 +142,7 @@ bool osc::Popup::begin_popup()
         //
         // else, do nothing - the popup's position will be determined
         // by other means (unlike a modal, which usually takes control
-        // of the screen and, therefore, should probably be centered
+        // of the ui and, therefore, should probably be centered
         // in it)
         if (pimpl.maybe_position_) {
             ui::set_next_panel_pos(

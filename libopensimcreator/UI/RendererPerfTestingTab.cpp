@@ -82,7 +82,7 @@ public:
             auto_focus(m_ModelRendererParams.camera, sceneAABB);
         }
 
-        const Rect workspaceRect = ui::get_main_window_workspace_screenspace_rect();
+        const Rect workspaceRect = ui::get_main_window_workspace_screen_space_rect();
         const SceneRendererParams params = CalcSceneRendererParams(
             m_ModelRendererParams,
             dimensions_of(workspaceRect),
@@ -92,7 +92,7 @@ public:
         );
         m_Renderer.render(m_Decorations, params);
         RenderTexture& sceneTexture = m_Renderer.upd_render_texture();
-        graphics::blit_to_screen(sceneTexture, workspaceRect);
+        graphics::blit_to_main_window(sceneTexture, workspaceRect);
 
         ui::begin_panel("stats");
         ui::draw_checkbox("paused", &m_Paused);

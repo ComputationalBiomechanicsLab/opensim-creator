@@ -20,15 +20,15 @@ public:
     void on_draw()
     {
         const Mat4 view_matrix = scene_camera_.view_matrix();
-        const Rect workspace_ui_rect = ui::get_main_window_workspace_uiscreenspace_rect();
-        const Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(workspace_ui_rect));
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
 
         // Render 3D scene: a grid floor and a cube that has a different color per face
         {
             Camera render_camera;
             render_camera.set_view_matrix_override(view_matrix);
             render_camera.set_projection_matrix_override(projection_matrix);
-            render_camera.set_pixel_rect(workspace_ui_rect);
+            render_camera.set_pixel_rect(workspace_screen_space_rect);
 
             for (size_t i = 0; i < 6; ++i) {
                 // axis-aligned vector
@@ -53,7 +53,7 @@ public:
                 render_camera,
                 MeshBasicMaterial::PropertyBlock{Color::white().with_alpha(0.1f)}
             );
-            render_camera.render_to_screen();
+            render_camera.render_to_main_window();
         }
 
         // Draw UI overlays (incl. gizmo)
@@ -61,7 +61,7 @@ public:
             model_matrix_,
             view_matrix,
             projection_matrix,
-            workspace_ui_rect
+            ui::get_main_window_workspace_ui_rect()
         );
         ui::draw_gizmo_mode_selector(gizmo_);
         ui::draw_gizmo_op_selector(gizmo_);

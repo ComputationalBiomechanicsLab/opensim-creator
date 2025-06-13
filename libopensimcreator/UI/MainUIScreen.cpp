@@ -13,25 +13,23 @@
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/Platform/ScreenPrivate.h>
 #include <liboscar/Platform/Screenshot.h>
+#include <liboscar/Platform/WidgetPrivate.h>
+#include <liboscar/Platform/os.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/Events/ResetUIContextEvent.h>
-#include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/SaveChangesPopup.h>
 #include <liboscar/UI/Popups/SaveChangesPopupConfig.h>
 #include <liboscar/UI/Tabs/ErrorTab.h>
 #include <liboscar/UI/Tabs/ScreenshotTab.h>
 #include <liboscar/UI/Tabs/Tab.h>
 #include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/LifetimedPtr.h>
+#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/UID.h>
 
@@ -105,12 +103,14 @@ namespace
     }
 }
 
-class osc::MainUIScreen::Impl final : public ScreenPrivate {
+class osc::MainUIScreen::Impl final : public WidgetPrivate {
 public:
 
     explicit Impl(MainUIScreen& owner) :
-        ScreenPrivate{owner, nullptr, "MainUIScreen"}
-    {}
+        WidgetPrivate{owner, nullptr}
+    {
+        set_name("MainUIScreen");
+    }
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
@@ -884,7 +884,7 @@ private:
 };
 
 osc::MainUIScreen::MainUIScreen() :
-    Screen{std::make_unique<Impl>(*this)}
+    Widget{std::make_unique<Impl>(*this)}
 {}
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 void osc::MainUIScreen::open(const std::filesystem::path& path) { private_data().open(path); }

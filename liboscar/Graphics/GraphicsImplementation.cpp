@@ -5923,7 +5923,7 @@ public:
         return inverse(view_projection_matrix(aspect_ratio));
     }
 
-    void render_to_screen();
+    void render_to_main_window();
 
     void render_to(RenderTexture& render_texture)
     {
@@ -6227,9 +6227,9 @@ Mat4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const
     return impl_->inverse_view_projection_matrix(aspect_ratio);
 }
 
-void osc::Camera::render_to_screen()
+void osc::Camera::render_to_main_window()
 {
-    impl_.upd()->render_to_screen();
+    impl_.upd()->render_to_main_window();
 }
 
 void osc::Camera::render_to(RenderTexture& render_texture)
@@ -6834,20 +6834,20 @@ namespace osc
             RenderTexture&
         );
 
-        static void blit_to_screen(
+        static void blit_to_main_window(
             const RenderTexture&,
             const Rect&,
             BlitFlags
         );
 
-        static void blit_to_screen(
+        static void blit_to_main_window(
             const RenderTexture&,
             const Rect&,
             const Material&,
             BlitFlags
         );
 
-        static void blit_to_screen(
+        static void blit_to_main_window(
             const Texture2D&,
             const Rect&
         );
@@ -6871,7 +6871,7 @@ namespace osc
     };
 }
 
-void osc::Camera::Impl::render_to_screen()
+void osc::Camera::Impl::render_to_main_window()
 {
     GraphicsBackend::render_camera_queue(*this);
 }
@@ -6920,7 +6920,7 @@ void osc::GraphicsContext::set_debug_mode(bool v)
     g_graphics_context_impl->set_debug_mode(v);
 }
 
-void osc::GraphicsContext::clear_screen(const Color& color)
+void osc::GraphicsContext::clear_main_window(const Color& color)
 {
     g_graphics_context_impl->clear_screen(color);
 }
@@ -6996,28 +6996,28 @@ void osc::graphics::blit(const Texture2D& source, RenderTexture& destination)
     GraphicsBackend::blit(source, destination);
 }
 
-void osc::graphics::blit_to_screen(
+void osc::graphics::blit_to_main_window(
     const RenderTexture& render_texture,
     const Rect& rect,
     BlitFlags flags)
 {
-    GraphicsBackend::blit_to_screen(render_texture, rect, flags);
+    GraphicsBackend::blit_to_main_window(render_texture, rect, flags);
 }
 
-void osc::graphics::blit_to_screen(
+void osc::graphics::blit_to_main_window(
     const RenderTexture& render_texture,
     const Rect& rect,
     const Material& material,
     BlitFlags flags)
 {
-    GraphicsBackend::blit_to_screen(render_texture, rect, material, flags);
+    GraphicsBackend::blit_to_main_window(render_texture, rect, material, flags);
 }
 
-void osc::graphics::blit_to_screen(
+void osc::graphics::blit_to_main_window(
     const Texture2D& texture,
     const Rect& rect)
 {
-    GraphicsBackend::blit_to_screen(texture, rect);
+    GraphicsBackend::blit_to_main_window(texture, rect);
 }
 
 void osc::graphics::copy_texture(
@@ -7974,15 +7974,15 @@ void osc::GraphicsBackend::blit(
     camera.render_to(destination);
 }
 
-void osc::GraphicsBackend::blit_to_screen(
+void osc::GraphicsBackend::blit_to_main_window(
     const RenderTexture& source,
     const Rect& rect,
     BlitFlags flags)
 {
-    blit_to_screen(source, rect, g_graphics_context_impl->quad_material(), flags);
+    blit_to_main_window(source, rect, g_graphics_context_impl->quad_material(), flags);
 }
 
-void osc::GraphicsBackend::blit_to_screen(
+void osc::GraphicsBackend::blit_to_main_window(
     const RenderTexture& source,
     const Rect& rect,
     const Material& material,
@@ -8001,11 +8001,11 @@ void osc::GraphicsBackend::blit_to_screen(
     Material material_copy{material};
     material_copy.set("uTexture", source);
     graphics::draw(g_graphics_context_impl->quad_mesh(), Transform{}, material_copy, camera);
-    camera.render_to_screen();
+    camera.render_to_main_window();
     material_copy.unset("uTexture");
 }
 
-void osc::GraphicsBackend::blit_to_screen(
+void osc::GraphicsBackend::blit_to_main_window(
     const Texture2D& source,
     const Rect& rect)
 {
@@ -8021,7 +8021,7 @@ void osc::GraphicsBackend::blit_to_screen(
     Material material_copy{g_graphics_context_impl->quad_material()};
     material_copy.set("uTexture", source);
     graphics::draw(g_graphics_context_impl->quad_mesh(), Transform{}, material_copy, camera);
-    camera.render_to_screen();
+    camera.render_to_main_window();
     material_copy.unset("uTexture");
 }
 

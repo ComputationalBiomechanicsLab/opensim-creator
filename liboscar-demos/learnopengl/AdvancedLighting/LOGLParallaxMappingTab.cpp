@@ -100,8 +100,8 @@ public:
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
 
         ui::begin_panel("controls");
         ui::draw_checkbox("normal mapping", &parallax_mapping_enabled_);

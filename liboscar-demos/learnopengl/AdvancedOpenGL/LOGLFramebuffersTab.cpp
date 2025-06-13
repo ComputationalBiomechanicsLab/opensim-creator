@@ -82,9 +82,9 @@ public:
         scene_camera_.on_draw();
 
         // setup render texture
-        const Rect workspace_screenspace_rect = ui::get_main_window_workspace_screenspace_rect();
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screenspace_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
 
         render_texture_.set_dimensions(workspace_pixel_dimensions);
         render_texture_.set_device_pixel_ratio(device_pixel_ratio);
@@ -104,7 +104,7 @@ public:
         scene_camera_.render_to(render_texture_);
 
         // render via a effect sampler
-        graphics::blit_to_screen(render_texture_, workspace_screenspace_rect, screen_material_);
+        graphics::blit_to_main_window(render_texture_, workspace_screen_space_rect, screen_material_);
 
         // auxiliary UI
         log_viewer_.on_draw();

@@ -29,8 +29,6 @@
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Screen.h>
-#include <liboscar/Platform/ScreenPrivate.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/ScreenshotAnnotation.h>
 #include <liboscar/Platform/Widget.h>

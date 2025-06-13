@@ -65,16 +65,16 @@ int main(int argc, char* argv[])
     register_demo_tabs(app.upd_tab_registry());
 #endif
 
-    // init top-level screen (tab host)
-    auto screen = std::make_unique<MainUIScreen>();
+    // init top-level widget (tab host)
+    auto tabbed_widget = std::make_unique<MainUIScreen>();
 
     // load each unnamed arg as a file in the UI
     for (const auto& unnamed_arg : unnamed_args) {
-        screen->open(std::filesystem::weakly_canonical(unnamed_arg));
+        tabbed_widget->open(std::filesystem::weakly_canonical(unnamed_arg));
     }
 
     // enter main application loop
-    app.show(std::move(screen));
+    app.show(std::move(tabbed_widget));
 
     return EXIT_SUCCESS;
 }

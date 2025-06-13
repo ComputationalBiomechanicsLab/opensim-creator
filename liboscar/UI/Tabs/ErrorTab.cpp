@@ -26,7 +26,7 @@ public:
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        const Rect workspace_ui_rect = ui::get_main_window_workspace_uiscreenspace_rect();
+        const Rect workspace_ui_rect = ui::get_main_window_workspace_ui_rect();
         const Vec2 workspace_dimensions = dimensions_of(workspace_ui_rect);
 
         // error message panel

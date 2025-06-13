@@ -56,21 +56,21 @@ namespace osc::graphics
         RenderTexture&
     );
 
-    // Blits the texture into a rectangular area of the screen.
+    // Blits the texture into a rectangular subspace of the main window.
     //
     // The rectangle should be defined in screen space, which:
     //
     // - Is measured in device-independent pixels
     // - Starts in the bottom-left corner
     // - Ends in the top-right corner
-    void blit_to_screen(
+    void blit_to_main_window(
         const RenderTexture&,
         const Rect&,
         BlitFlags = {}
     );
 
-    // Renders the texture to a quad via the given `Material` into a rectangular area
-    // of the screen.
+    // Renders the texture to a quad via the given `Material` into a rectangular
+    // subspace of the main application window.
     //
     // The rectangle should be defined in screen space, which:
     //
@@ -83,21 +83,21 @@ namespace osc::graphics
     // - Have a `sampler2D` or `samplerCube` property called "uTexture". The texture
     //   will be assigned to this property. The texture's `dimensionality()` dictates
     //   whether to use a `sampler2D` or `samplerCube` in the shader.
-    void blit_to_screen(
+    void blit_to_main_window(
         const RenderTexture&,
         const Rect&,
         const Material&,
         BlitFlags = {}
     );
 
-    // Blits the texture into a rectangular area of the screen.
+    // Blits the texture into a rectangular subspace of the main window.
     //
     // The rectangle should be defined in screen space, which:
     //
     // - Is measured in device-independent pixels
     // - Starts in the bottom-left corner
     // - Ends in the top-right corner
-    void blit_to_screen(
+    void blit_to_main_window(
         const Texture2D&,
         const Rect&
     );

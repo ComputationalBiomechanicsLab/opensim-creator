@@ -27,7 +27,7 @@ Topics Covered by this Tutorial
 Create a New Model
 ------------------
 
-In OpenSim Creator, create a new model. You can create a new model by clicking "New Model" in the home screen, or pressing ``Ctrl+N``. It should create a blank model that looks like this:
+In OpenSim Creator, create a new model. You can create a new model by clicking "New Model" in the splash screen, or pressing ``Ctrl+N``. It should create a blank model that looks like this:
 
 .. figure:: _static/make-a-pendulum/blankscene.jpg
     :width: 60%

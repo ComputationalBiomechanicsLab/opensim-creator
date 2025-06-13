@@ -144,7 +144,7 @@ public:
     {
         return ui::update_polar_camera_from_keyboard_inputs(
             params.updRenderParams().camera,
-            state.viewportRect,
+            state.viewportUiRect,
             m_Decorations.bvh.bounds()
         );
     }
@@ -155,7 +155,7 @@ public:
     {
         bool rv = ui::update_polar_camera_from_mouse_inputs(
             params.updRenderParams().camera,
-            dimensions_of(state.viewportRect)
+            dimensions_of(state.viewportUiRect)
         );
 
         if (ui::is_mouse_dragging_with_any_button_down())
@@ -190,7 +190,7 @@ public:
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
         const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
-            dimensions_of(panelState.viewportRect),
+            dimensions_of(panelState.viewportUiRect),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
             m_State.model->getFixupScaleFactor()
@@ -202,7 +202,7 @@ public:
         // blit texture as ImGui image
         ui::draw_image(
             m_Renderer.upd_render_texture(),
-            dimensions_of(panelState.viewportRect)
+            dimensions_of(panelState.viewportUiRect)
         );
 
         // do hovertest
@@ -213,8 +213,8 @@ public:
                 *m_State.meshCache,
                 m_Decorations.decorations,
                 m_State.renderParams.camera,
-                ui::get_mouse_pos(),
-                panelState.viewportRect
+                ui::get_mouse_ui_pos(),
+                panelState.viewportUiRect
             );
             if (collision)
             {
@@ -233,7 +233,7 @@ public:
         }
 
         // show header
-        ui::set_cursor_screen_pos(panelState.viewportRect.p1 + Vec2{10.0f, 10.0f});
+        ui::set_cursor_ui_pos(panelState.viewportUiRect.p1 + Vec2{10.0f, 10.0f});
         ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
@@ -250,8 +250,8 @@ public:
             constexpr CStringView cancellationButtonText = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 25.0f};
             const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
-            const Vec2 buttonTopLeft = panelState.viewportRect.p2 - (buttonDims + margin);
-            ui::set_cursor_screen_pos(buttonTopLeft);
+            const Vec2 buttonTopLeft = panelState.viewportUiRect.p2 - (buttonDims + margin);
+            ui::set_cursor_ui_pos(buttonTopLeft);
             if (ui::draw_button(cancellationButtonText))
             {
                 m_State.shouldClosePopup = true;

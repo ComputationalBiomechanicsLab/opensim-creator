@@ -68,9 +68,9 @@ namespace osc
         void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            const Rect contentRect = ui::content_region_avail_as_screen_rect();
+            const Rect contentRect = ui::content_region_available_ui_rect();
             const Vec2 contentRectDims = dimensions_of(contentRect);
-            const Vec2 mousePos = ui::get_mouse_pos();
+            const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
             const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
@@ -109,7 +109,7 @@ namespace osc
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
 
             // render 2D: draw any 2D overlays over the 3D render
-            draw2DOverlayUI(m_LastTextureHittestResult.item_screen_rect);
+            draw2DOverlayUI(m_LastTextureHittestResult.item_ui_rect);
         }
 
         // update the 3D camera from user inputs/external data
@@ -120,7 +120,7 @@ namespace osc
 
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.is_hovered and
-                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect))) {
+                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect))) {
 
                 m_State->setLinkedBaseCamera(m_Camera);
             }
@@ -415,7 +415,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
-            ui::set_cursor_screen_pos(renderRect.p1 + m_State->getOverlayPadding());
+            ui::set_cursor_ui_pos(renderRect.p1 + m_State->getOverlayPadding());
 
             drawInformationIcon();
             ui::same_line();
@@ -560,7 +560,7 @@ namespace osc
         {
             if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
             {
-                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect));
+                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
                 m_State->setLinkedBaseCamera(m_Camera);
             }
             ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

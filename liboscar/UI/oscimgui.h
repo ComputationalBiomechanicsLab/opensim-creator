@@ -92,10 +92,10 @@ namespace osc::ui
         // Returns true if the UI handled the event.
         bool on_event(Event&);
 
-        // Should be called at the start of each frame (e.g. `Screen::on_draw()`).
+        // Should be called at the start of each frame (e.g. `Widget::on_draw()`).
         void on_start_new_frame();
 
-        // Should be called at the end of each frame (e.g. the end of `Screen::on_draw()`).
+        // Should be called at the end of each frame (e.g. the end of `Widget::on_draw()`).
         void render();
     private:
         void init(App&, CopyOnUpdPtr<ui::ContextConfiguration::Impl>);
@@ -392,11 +392,11 @@ namespace osc::ui
     // the current panel in device-independent pixels.
     void set_cursor_pos_x(float local_x);
 
-    // Returns the current position of the panel cursor in screen-space in device-independent pixels.
-    Vec2 get_cursor_screen_pos();
+    // Returns the current position of the panel cursor in ui space in device-independent pixels.
+    Vec2 get_cursor_ui_pos();
 
-    // Sets the current position of the panel cursor in screen-space in device-independent pixels.
-    void set_cursor_screen_pos(Vec2);
+    // Sets the current position of the panel cursor in ui space in device-independent pixels.
+    void set_cursor_ui_pos(Vec2);
 
     enum class Conditional {
         Always,
@@ -527,7 +527,7 @@ namespace osc::ui
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
-    Vec2 get_mouse_pos();
+    Vec2 get_mouse_ui_pos();
     float get_mouse_wheel_amount();
 
     bool begin_menu_bar();
@@ -690,8 +690,8 @@ namespace osc::ui
         EulerAngles&
     );
 
-    // returns the UI content region available in screen-space as a `Rect`
-    Rect content_region_avail_as_screen_rect();
+    // returns the UI content region available in ui space as a `Rect`
+    Rect content_region_available_ui_rect();
 
     // Draws a texture within the UI.
     //
@@ -737,12 +737,12 @@ namespace osc::ui
         Vec2 dimensions
     );
 
-    // returns the screen-space bounding rectangle of the last-drawn item
-    Rect get_last_drawn_item_screen_rect();
+    // returns the ui space bounding rectangle of the last-drawn item
+    Rect get_last_drawn_item_ui_rect();
 
     // hittest the last-drawn item in the UI
     struct HittestResult final {
-        Rect item_screen_rect = {};
+        Rect item_ui_rect = {};
         bool is_hovered = false;
         bool is_left_click_released_without_dragging = false;
         bool is_right_click_released_without_dragging = false;
@@ -891,23 +891,22 @@ namespace osc::ui
     // returns a `Rect` that indicates where the current workspace area is in the main
     // application window
     //
-    // the returned `Rect` is given in UI-compatible UI-space, such that:
+    // the returned `Rect` is given in ui space, such that:
     //
     // - it's measured in device-independent pixels
     // - starts in the top-left corner
     // - ends in the bottom-right corner
-    Rect get_main_window_workspace_uiscreenspace_rect();
+    Rect get_main_window_workspace_ui_rect();
 
     // returns a `Rect` that indicates where the current workspace area is in the main
     // application window
     //
-    // the returned `Rect` is given in osc-graphics-API-compatible screen-space, rather than UI
-    // space, such that:
+    // the returned `Rect` is given in screen space, such that:
     //
     // - it's measured in device-independent pixels
     // - starts in the bottom-left corner
     // - ends in the top-right corner
-    Rect get_main_window_workspace_screenspace_rect();
+    Rect get_main_window_workspace_screen_space_rect();
 
     // returns the dimensions of the current workspace area in device-independent pixels in the
     // main application window.
@@ -1031,7 +1030,7 @@ namespace osc::ui
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect
+            const Rect& ui_rect
         );
 
         // same as `draw`, but draws to the foreground draw list, rather than the

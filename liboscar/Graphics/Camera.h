@@ -22,7 +22,7 @@ namespace osc
 {
     // camera
     //
-    // represents a camera in 3D space that can rasterize drawcalls issued
+    // represents a camera in world space that can rasterize drawcalls issued
     // via `graphics::draw` to a 2D render target.
     class Camera {
     public:
@@ -36,7 +36,7 @@ namespace osc
         Color background_color() const;
         void set_background_color(const Color&);
 
-        // get/set the kind of projection that the camera should use when projecting view-space
+        // get/set the kind of projection that the camera should use when projecting view space
         // vertices into clip space (ignored if `set_projection_matrix_override` is used)
         CameraProjection projection() const;
         void set_projection(CameraProjection);
@@ -44,7 +44,7 @@ namespace osc
         // get/set the height of the orthographic projection plane that the camera will use
         //
         // undefined behavior if `projection() != CameraProjection::Orthographic`, or the
-        // projection matrix has been overriden with `set_projection_matrix_override`, the
+        // projection matrix has been overridden with `set_projection_matrix_override`, the
         // width of the orthographic plane is calculated from the aspect ratio of the render
         // target at runtime.
         float orthographic_size() const;
@@ -53,7 +53,7 @@ namespace osc
         // get/set the vertical field-of-view angle of the viewer's projection camera
         //
         // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
-        // has been overriden with `set_projection_matrix_override`.
+        // has been overridden with `set_projection_matrix_override`.
         Radians vertical_field_of_view() const;
         void set_vertical_field_of_view(Radians);
 
@@ -61,20 +61,20 @@ namespace osc
         // it's rendering to a render target with the given `aspect_ratio`.
         //
         // undefined behavior if `projection() != CameraProjection::Perspective` or the projection matrix
-        // has been overriden with `set_projection_matrix_override`.
+        // has been overridden with `set_projection_matrix_override`.
         Radians horizontal_field_of_view(float aspect_ratio) const;
 
-        // get/set the distance, in worldspace units, between both the camera and the nearest
+        // get/set the distance, in world space units, between both the camera and the nearest
         // clipping plane, and the camera and the farthest clipping plane
         CameraClippingPlanes clipping_planes() const;
         void set_clipping_planes(CameraClippingPlanes);
 
-        // get/set the distance, in worldspace units, between the camera and the nearest
+        // get/set the distance, in world space units, between the camera and the nearest
         // clipping plane
         float near_clipping_plane() const;
         void set_near_clipping_plane(float);
 
-        // get/set the distance, in worldspace units, between the camera and the farthest
+        // get/set the distance, in world space units, between the camera and the farthest
         // clipping plane
         float far_clipping_plane() const;
         void set_far_clipping_plane(float);
@@ -94,7 +94,7 @@ namespace osc
         // - ends in the top-right corner
         //
         // `std::nullopt` implies that the camera should render to the full extents
-        // of the screen or render target
+        // of the render target
         std::optional<Rect> pixel_rect() const;
         void set_pixel_rect(std::optional<Rect>);
 
@@ -119,7 +119,7 @@ namespace osc
         std::optional<Rect> scissor_rect() const;
         void set_scissor_rect(std::optional<Rect>);
 
-        // get/set the worldspace position of this `Camera`
+        // get/set the world space position of this `Camera`
         Vec3 position() const;
         void set_position(const Vec3&);
 
@@ -146,15 +146,15 @@ namespace osc
         // returns the "up" direction of this camera
         Vec3 upwards_direction() const;
 
-        // returns the matrix that this camera uses to transform world-space locations into
-        // view-space
+        // returns the matrix that this camera uses to transform world space locations into
+        // view space
         //
-        // world-space and view-space operate with the same units-of-measure, handedness, etc.
-        // but view-space places the camera at `(0, 0, 0)`
+        // world space and view space operate with the same units-of-measure, handedness, etc.
+        // but view space places the camera at `(0, 0, 0)`
         Mat4 view_matrix() const;
 
         // returns the equivalent of `inverse(view_matrix())`, i.e. a matrix that transforms
-        // view-space locations into world-space locations.
+        // view space locations into world space locations.
         Mat4 inverse_view_matrix() const;
 
         // get/set matrices that override the default view matrix that this `Camera` uses
@@ -164,22 +164,24 @@ namespace osc
         std::optional<Mat4> view_matrix_override() const;
         void set_view_matrix_override(std::optional<Mat4>);
 
-        // returns the matrix that this camera uses to transform view-space locations into
-        // clip-space.
+        // returns the matrix that this camera uses to transform view space points into
+        // clip space.
         //
-        // clip-space is defined such that there exists a unit cube in it that eventually
+        // clip space is defined such that there exists a unit cube in it that eventually
         // projects onto screen space in the following way:
         //
-        // - `( 0,  0,  0)` is the center of the screen
-        // - `(-1, -1, -1)` is the bottom-left, and closest part, of the screen
-        // - `(+1, +1, +1)` is the top-right, and farthest part, of the screen
+        // - transformed points (affine) are divided by their `w` component (perspective
+        //   divide) to yield their native device coordinates (NDC).
+        // - Anything outside of [{-1,-1,-1},{+1,+1,+1}] in NDC is discarded (clipping)
+        // - NDC `( 0,  0,  0)` maps to the midpoint of screen space (i.e. 0.5 * {w, h})
+        // - NDC `(-1, -1, -1)` maps to the bottom-left of screen space (z = -1 means 'closest')
+        // - NDC `(+1, +1, +1)` maps to the top-right of screen space (z = +1 means 'farthest')
         //
-        // anything that projects into clip space but doesn't land within that cube won't be
-        // drawn to the output. The XY component of fragments that land within clip space
-        // are transformed into screen space and drawn to the output pixel rectangle (assuming
-        // they also pass the scissor test). The Z component of things that land within clip
-        // space are written to the depth buffer if the `Material` that's being drawn enables
-        // this behavior (and there's a depth buffer attached to the render target)
+        // The XY component of fragments that land within clip space are transformed into screen
+        // space and drawn to the output pixel rectangle (assuming they also pass the scissor test).
+        // The Z component of things that land within the NDC cube are written to the depth buffer
+        // if the `Material` that's being drawn enables this behavior (and there's a depth buffer
+        // attached to the render target).
         Mat4 projection_matrix(float aspect_ratio) const;
         std::optional<Mat4> projection_matrix_override() const;
         void set_projection_matrix_override(std::optional<Mat4>);
@@ -192,7 +194,7 @@ namespace osc
 
         // flushes and renders any queued drawcalls from `graphics::draw(...)` to the
         // main application window.
-        void render_to_screen();
+        void render_to_main_window();
 
         // flushes and renders any queued drawcalls from `graphics::draw(...)` to `render_texture`.
         void render_to(RenderTexture& render_texture);

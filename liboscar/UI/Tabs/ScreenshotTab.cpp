@@ -145,10 +145,10 @@ private:
     // returns screen-space rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
-        const Vec2 cursor_topleft = ui::get_cursor_screen_pos();
+        const Vec2 cursor_topleft = ui::get_cursor_ui_pos();
         const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_available()}};
         const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.device_independent_dimensions()));
-        ui::set_cursor_screen_pos(image_rect.p1);
+        ui::set_cursor_ui_pos(image_rect.p1);
         ui::draw_image(image_texture_, dimensions_of(image_rect));
         return image_rect;
     }
@@ -159,7 +159,7 @@ private:
         const Color& unselected_color,
         const Color& selected_color)
     {
-        const Vec2 mouse_pos = ui::get_mouse_pos();
+        const Vec2 mouse_pos = ui::get_mouse_ui_pos();
         const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
         const Rect image_source_rect = {{0.0f, 0.0f}, screenshot_.device_independent_dimensions()};
 

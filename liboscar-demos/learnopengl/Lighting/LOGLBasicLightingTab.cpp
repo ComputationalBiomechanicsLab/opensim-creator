@@ -50,7 +50,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_window_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         // draw cube
         lighting_material_.set("uObjectColor", object_color_);
@@ -67,7 +67,7 @@ public:
         graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
 
         // render to output (window)
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
 
         // render auxiliary UI
         ui::begin_panel("controls");

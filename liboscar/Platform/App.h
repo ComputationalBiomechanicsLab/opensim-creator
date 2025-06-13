@@ -33,7 +33,6 @@ namespace osc { class AppSettings; }
 namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class FileDialogResponse; }
-namespace osc { class Screen; }
 namespace osc { class Widget; }
 
 namespace osc
@@ -80,24 +79,24 @@ namespace osc
         static ResourceLoader& resource_loader();
 
         // Convenience function that initializes an instance of `App` according to the target
-        // platform's requirements and immediately starts showing the given `TScreen` according
+        // platform's requirements and immediately starts showing the given `TWidget` according
         // to the target platform's main application loop requirements.
         //
         // This function should only be called once per-process, and should be the last statement
         // in the application's `main` function (i.e. `return App::main(...)` from `main`), because
         // the target platform might have unusual lifetime behavior (e.g. web browsers may continue
         // to run after `main` has completed).
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         static int main(const AppMetadata& metadata, Args&&... args)
         {
-            // Pack the `TScreen` constructor arguments into a type-erased `std::function` and defer
+            // Pack the `TWidget` constructor arguments into a type-erased `std::function` and defer
             // to the internal implementation.
-            return main_internal(metadata, [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::unique_ptr<Screen>
+            return main_internal(metadata, [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::unique_ptr<Widget>
             {
-                return std::apply([](auto&&... inner_args) -> std::unique_ptr<Screen>
+                return std::apply([](auto&&... inner_args) -> std::unique_ptr<Widget>
                 {
-                    return std::make_unique<TScreen>(std::forward<Args>(inner_args)...);
+                    return std::make_unique<TWidget>(std::forward<Args>(inner_args)...);
                 }, std::move(args_tuple));
             });
         }
@@ -132,12 +131,12 @@ namespace osc
         // application
         const std::filesystem::path& user_data_directory() const;
 
-        void setup_main_loop(std::unique_ptr<Screen>);
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        void setup_main_loop(std::unique_ptr<Widget>);
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void setup_main_loop(Args&&... args)
         {
-            setup_main_loop(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            setup_main_loop(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
         AppMainLoopStatus do_main_loop_step();
         void teardown_main_loop();
@@ -171,16 +170,16 @@ namespace osc
             return notify(receiver, event);
         }
 
-        // sets the currently active screen, creates an application loop, then starts showing
-        // the supplied screen
+        // sets the currently active widget, creates an application loop, then starts showing
+        // the supplied widget
         //
-        // this function only returns once the active screen calls `app.request_quit()`, or an exception
-        // is thrown. Use `set_screen` in combination with `handle_one_frame` if you want to use your
+        // this function only returns once the active widget calls `app.request_quit()`, or an exception
+        // is thrown. Use `set_widget` in combination with `handle_one_frame` if you want to use your
         // own application loop
         //
         // this is effectively sugar over:
         //
-        //     set_screen(...);
+        //     set_widget(...);
         //     setup_main_loop();
         //     while (true) {
         //         do_main_loop_step(...);
@@ -188,36 +187,37 @@ namespace osc
         //     teardown_main_loop();
         //
         // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
-        void show(std::unique_ptr<Screen>);
+        void show(std::unique_ptr<Widget>);
 
-        // constructs `TScreen` with `Args` and starts `show`ing it
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        // constructs `TWidget` with `Args` and starts `show`ing it
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void show(Args&&... args)
         {
-            show(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            show(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
 
-        // requests that the app transitions to a new screen
+        // requests that the application's main window transitions to a new
+        // top-level widget
         //
         // this is merely a *request* that the `App` will fulfill at a later
         // time (usually, after it's done handling some part of the top-level
         // application rendering loop)
         //
-        // When the App decides it's ready to transition to the new screen, it will:
+        // When the App decides it's ready to transition to the new widget, it will:
         //
-        // - unmount the current screen
-        // - destroy the current screen
-        // - mount the new screen
-        // - make the new screen the current screen
-        void request_transition(std::unique_ptr<Screen>);
+        // - unmount the current widget
+        // - destroy the current widget
+        // - mount the new widget
+        // - make the new widget the current top-level widget
+        void request_transition(std::unique_ptr<Widget>);
 
-        // constructs `TScreen` with `Args` then requests that the app transitions to it
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        // constructs `TWidget` with `Args` then requests that the app transitions to it
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void request_transition(Args&&... args)
         {
-            request_transition(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            request_transition(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
 
         // requests that the app quits
@@ -433,14 +433,15 @@ namespace osc
         // makes the main window windowed (as opposed to fullscreen)
         void make_main_window_windowed();
 
-        // returns the recommended number of antialiasing samples that renderers that want to render
-        // to this `App`'s screen should use (based on user settings, etc.)
+        // returns the recommended number of antialiasing samples that 3D rendering
+        // code should use when rendering directly to the main application window (based
+        // on user settings, etc.)
         AntiAliasingLevel anti_aliasing_level() const;
 
-        // sets the number of antialiasing samples that multi-sampled renderers should use when they
-        // want to render to this `App`'s screen
+        // sets the recommended number of antialiasing samples that 3D rendering code
+        // should use when rendering directly to the main application window.
         //
-        // throws if `samples > max_samples()`
+        // throws if `samples > max_anti_aliasing_level()`
         void set_anti_aliasing_level(AntiAliasingLevel);
 
         // returns the maximum number of antialiasing samples that the graphics backend supports
@@ -459,10 +460,11 @@ namespace osc
 
         // add an annotation to the current frame
         //
-        // the annotation is added to the data returned by `App::request_screenshot`
+        // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
         void add_main_window_frame_annotation(std::string_view label, Rect screen_rect);
 
-        // returns a future that asynchronously yields a complete annotated screenshot of the next frame
+        // returns a future that asynchronously yields an annotated screenshot of the
+        // next frame of the main application window
         //
         // client code can submit annotations with `App::add_frame_annotation`
         std::future<Screenshot> request_screenshot_of_main_window();
@@ -473,7 +475,8 @@ namespace osc
         std::string graphics_backend_version_string() const;
         std::string graphics_backend_shading_language_version_string() const;
 
-        // returns the number of times this `App` has drawn a frame to the screen
+        // returns the number of times this `App` has drawn a frame to the main application
+        // window.
         size_t num_frames_drawn() const;
 
         // returns the time at which this `App` started up (arbitrary timepoint, don't assume 0)
@@ -496,7 +499,7 @@ namespace osc
         // an event occurs.
         //
         // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
-        // like laptops), but downstream screens *must* ensure the application keeps moving forward by
+        // like laptops), but top-level widgets *must* ensure the application keeps moving forward by
         // calling methods like `request_redraw` or by pumping other events into the loop.
         bool is_main_loop_waiting() const;
         void set_main_loop_waiting(bool);
@@ -527,7 +530,7 @@ namespace osc
         ResourceStream go_load_resource(const ResourcePath&);
 
     private:
-        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor);
+        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path get_resource_filepath(const ResourcePath&) const;
