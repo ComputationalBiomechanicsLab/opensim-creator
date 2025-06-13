@@ -2012,9 +2012,9 @@ void osc::App::set_vsync_enabled(bool v)
     impl_->set_vsync_enabled(v);
 }
 
-void osc::App::add_main_window_frame_annotation(std::string_view label, Rect screen_rect)
+void osc::App::add_main_window_frame_annotation(std::string_view label, Rect ui_rect)
 {
-    impl_->add_main_window_frame_annotation(label, screen_rect);
+    impl_->add_main_window_frame_annotation(label, ui_rect);
 }
 
 std::future<Screenshot> osc::App::request_screenshot_of_main_window()

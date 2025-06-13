@@ -56,7 +56,7 @@ namespace osc::graphics
         RenderTexture&
     );
 
-    // Blits the texture into a rectangular subspace of the main window.
+    // Blits the texture into a rectangular region in the main window.
     //
     // The rectangle should be defined in screen space, which:
     //
@@ -70,7 +70,7 @@ namespace osc::graphics
     );
 
     // Renders the texture to a quad via the given `Material` into a rectangular
-    // subspace of the main application window.
+    // region in the main application window.
     //
     // The rectangle should be defined in screen space, which:
     //
@@ -90,7 +90,7 @@ namespace osc::graphics
         BlitFlags = {}
     );
 
-    // Blits the texture into a rectangular subspace of the main window.
+    // Blits the texture into a rectangular region in the main window.
     //
     // The rectangle should be defined in screen space, which:
     //

@@ -461,7 +461,7 @@ namespace osc
         // add an annotation to the current frame
         //
         // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
-        void add_main_window_frame_annotation(std::string_view label, Rect screen_rect);
+        void add_main_window_frame_annotation(std::string_view label, Rect ui_rect);
 
         // returns a future that asynchronously yields an annotated screenshot of the
         // next frame of the main application window

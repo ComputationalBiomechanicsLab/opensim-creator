@@ -75,9 +75,9 @@ namespace osc
         const Mat4& camera_proj_matrix
     );
 
-    // returns a rectangular subspace defined in, and bounded by, native device
-    // coordinates (NDC) to a subspace defined in a normalized y-points-down space
-    // bounded by `viewport`.
+    // returns a rectangular region defined in, and bounded by, native device
+    // coordinates (NDC) mapped from a region defined in a normalized y-points-down
+    // space bounded by `viewport`.
     Rect ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
     // returns the location where `world_space_location` would occur when projected via the
