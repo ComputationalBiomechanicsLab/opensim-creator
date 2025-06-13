@@ -1805,7 +1805,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_gizmo_op_selector(m_Gizmo, true, true, true, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT);
+        ui::draw_gizmo_operation_selector(m_Gizmo, true, true, true, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT);
 
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
@@ -2351,7 +2351,7 @@ private:
             // outside of the panel
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
-            ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
+            ui::set_next_panel_ui_pos(m_Shared->get3DSceneRect().p1);
             ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
             const ui::PanelFlags modalFlags = {
@@ -2379,7 +2379,7 @@ private:
             {
                 ui::pop_style_var();
                 draw3DViewer();
-                ui::set_cursor_pos(ui::get_cursor_start_pos() + Vec2{10.0f, 10.0f});
+                ui::set_cursor_panel_pos(ui::get_cursor_start_panel_pos() + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else

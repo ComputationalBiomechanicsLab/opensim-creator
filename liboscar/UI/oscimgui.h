@@ -374,23 +374,23 @@ namespace osc::ui
 
     // Returns the position that the panel cursor started at relative to the top-left
     // corner of the current panel in device-independent pixels.
-    Vec2 get_cursor_start_pos();
+    Vec2 get_cursor_start_panel_pos();
 
     // Returns the current position of the panel cursor relative to the top-left corner
     // of the current panel in device-independent pixels.
-    Vec2 get_cursor_pos();
+    Vec2 get_cursor_panel_pos();
 
     // Sets the current position of the panel cursor relative to the top-left corner
     // of the panel in device-independent pixels.
-    void set_cursor_pos(Vec2);
+    void set_cursor_panel_pos(Vec2);
 
     // Returns the current x position of the panel cursor relative to the left edge
     // of the current panel in device-independent pixels.
-    float get_cursor_pos_x();
+    float get_cursor_panel_pos_x();
 
     // Sets the current x position of the panel cursor relative to the left edge of
     // the current panel in device-independent pixels.
-    void set_cursor_pos_x(float local_x);
+    void set_cursor_panel_pos_x(float local_x);
 
     // Returns the current position of the panel cursor in ui space in device-independent pixels.
     Vec2 get_cursor_ui_pos();
@@ -405,7 +405,7 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void set_next_panel_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
+    void set_next_panel_ui_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
 
     void set_next_panel_size(Vec2 size, Conditional = Conditional::Always);
 
@@ -509,8 +509,8 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void push_style_var(StyleVar, const Vec2& pos);
-    void push_style_var(StyleVar, float pos);
+    void push_style_var(StyleVar, Vec2);
+    void push_style_var(StyleVar, float);
     void pop_style_var(int count = 1);
 
     enum class PopupFlag : unsigned {
@@ -560,8 +560,8 @@ namespace osc::ui
     };
     using TableFlags = Flags<TableFlag>;
 
-    Vec2 get_item_topleft();
-    Vec2 get_item_bottomright();
+    Vec2 get_item_top_left_ui_pos();
+    Vec2 get_item_bottom_right_ui_pos();
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
@@ -620,13 +620,13 @@ namespace osc::ui
     public:
         virtual ~DrawListAPI() noexcept = default;
 
-        void add_rect(const Rect& rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
-        void add_rect_filled(const Rect& rect, const Color& color, float rounding = 0.0f);
-        void add_circle(const Circle& circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
-        void add_circle_filled(const Circle& circle, const Color& color, int num_segments = 0);
-        void add_text(const Vec2& position, const Color& color, CStringView text);
-        void add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness = 1.0f);
-        void add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color);
+        void add_rect(const Rect& ui_rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
+        void add_rect_filled(const Rect& ui_rect, const Color& color, float rounding = 0.0f);
+        void add_circle(const Circle& ui_circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
+        void add_circle_filled(const Circle& ui_circle, const Color& color, int num_segments = 0);
+        void add_text(const Vec2& ui_position, const Color& color, CStringView text);
+        void add_line(const Vec2& ui_start, const Vec2& ui_end, const Color& color, float thickness = 1.0f);
+        void add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_p1, const Vec2& ui_p2, const Color& color);
         void push_clip_rect(const Rect&, bool intersect_with_currect_clip_rect = false);
         void pop_clip_rect();
 
@@ -675,14 +675,14 @@ namespace osc::ui
     bool update_polar_camera_from_keyboard_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_aabb
+        std::optional<AABB> maybe_scene_world_space_aabb
     );
 
     // updates a polar camera's rotation, position, etc. from UI input state (all)
     bool update_polar_camera_from_all_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_aabb
+        std::optional<AABB> maybe_scene_world_space_aabb
     );
 
     void update_camera_from_all_inputs(
@@ -988,7 +988,7 @@ namespace osc::ui
         SliderFlags = {}
     );
 
-    // updates a polar comera's rotation, position, etc. from UI mouse input state, assuming
+    // updates a polar camera's rotation, position, etc. from UI mouse input state, assuming
     // the viewport it's connected to has the given device-independent pixel dimensions.
     bool update_polar_camera_from_mouse_inputs(
         PolarPerspectiveCamera&,
@@ -1046,7 +1046,7 @@ namespace osc::ui
         bool was_using() const { return was_using_last_frame_; }
         bool is_over() const;
         GizmoOperation operation() const { return operation_; }
-        void set_operation(GizmoOperation op) { operation_ = op; }
+        void set_operation(GizmoOperation operation) { operation_ = operation; }
         GizmoMode mode() const { return mode_; }
         void set_mode(GizmoMode mode) { mode_ = mode; }
 
@@ -1080,7 +1080,7 @@ namespace osc::ui
         GizmoMode&
     );
 
-    bool draw_gizmo_op_selector(
+    bool draw_gizmo_operation_selector(
         Gizmo&,
         bool can_translate = true,
         bool can_rotate = true,
@@ -1090,7 +1090,7 @@ namespace osc::ui
         CStringView scale_button_text = "S"
     );
 
-    bool draw_gizmo_op_selector(
+    bool draw_gizmo_operation_selector(
         GizmoOperation&,
         bool can_translate = true,
         bool can_rotate = true,
@@ -1321,43 +1321,47 @@ namespace osc::ui
             va_end(args);
         }
 
-        // draws a draggable point at `location` in the plot area
+        // draws a draggable point at `plot_point`, expressed in plot space, in
+        // the plot area
         //
         // - returns `true` if the user has interacted with the point. In this
-        //   case, `location` will be updated with the new location
+        //   case, `plot_point` will be updated with user's interaction location
+        //   in plot space.
         bool drag_point(
             int id,
-            Vec2d* location,
+            Vec2d* plot_point,
             const Color&,
             float size = 4,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a draggable vertical guideline at an x-value in the plot area
+        // draws a draggable vertical guideline at an x value (plot space) in the
+        // plot area.
         bool drag_line_x(
             int id,
-            double* x,
+            double* plot_x,
             const Color&,
             float thickness = 1,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a draggable horizontal guideline at a y-value in the plot area
+        // draws a draggable horizontal guideline at a y value (plot space) in the
+        // plot area.
         bool drag_line_y(
             int id,
-            double* y,
+            double* plot_y,
             const Color&,
             float thickness = 1,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a tag on the x-axis at the specified x value
-        void tag_x(double x, const Color&, bool round = false);
+        // draws a tag on the x-axis at the specified x value in plot space
+        void tag_x(double plot_x, const Color&, bool round = false);
 
         // returns `true` if the plot area in the current plot is hovered
         bool is_plot_hovered();
 
-        // returns the mouse position in the coordinate system of the current axes
+        // returns the position of the mouse in plot space
         Vec2 get_plot_mouse_pos();
 
         // returns the mouse position in the coordinate system of the given axes

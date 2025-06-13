@@ -189,7 +189,7 @@ namespace
             ui::same_line();
 
             // draw translate/rotate/scale selector
-            if (ui::draw_gizmo_op_selector(m_Gizmo, true, true, false, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT)) {
+            if (ui::draw_gizmo_operation_selector(m_Gizmo, true, true, false, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT)) {
                 edited = true;
             }
 
@@ -542,7 +542,7 @@ private:
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ui::set_next_panel_pos(m_State.viewportUiRect.p1);
+            ui::set_next_panel_ui_pos(m_State.viewportUiRect.p1);
             const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
             if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportUiRect), ui::ChildPanelFlags{}, windowFlags))
             {

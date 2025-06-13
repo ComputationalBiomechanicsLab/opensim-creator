@@ -2180,7 +2180,7 @@ namespace
             const float regionHeight = ui::get_content_region_available().y;
             const float top = 0.5f * (regionHeight - contentHeight);
 
-            ui::set_cursor_pos({0.0f, top});
+            ui::set_cursor_panel_pos({0.0f, top});
 
             // header line
             {
@@ -2216,7 +2216,7 @@ namespace
             constexpr float numLines = 3.0f;
             const float top = 0.5f * (h - numLines*lineHeight);
 
-            ui::set_cursor_pos({0.0f, top});
+            ui::set_cursor_panel_pos({0.0f, top});
             ui::draw_text_centered("An error occured while trying to scale the model:");
             ui::draw_text_centered(message);
             if (ui::draw_button_centered(OSC_ICON_RECYCLE " Retry Scaling")) {
@@ -2474,11 +2474,11 @@ namespace
 
                 ui::same_line();
 
-                const Vec2 oldCursorPos = ui::get_cursor_pos();
+                const Vec2 oldCursorPos = ui::get_cursor_panel_pos();
                 const float endX = oldCursorPos.x + ui::get_content_region_available().x;
 
                 const Vec2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x, oldCursorPos.y};
-                ui::set_cursor_pos(newCursorPos);
+                ui::set_cursor_panel_pos(newCursorPos);
                 if (ui::draw_small_button(deletionButtonIcon)) {
                     m_State->eraseScalingStepDeferred(step);
                 }

@@ -96,13 +96,13 @@ bool osc::Popup::begin_popup()
         //
         // else, position the modal in the center of the application window
         if (pimpl.maybe_position_) {
-            ui::set_next_panel_pos(
+            ui::set_next_panel_ui_pos(
                 static_cast<Vec2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );
         }
         else {
-            ui::set_next_panel_pos(
+            ui::set_next_panel_ui_pos(
                 0.5f*App::get().main_window_dimensions(),
                 ui::Conditional::Appearing,
                 Vec2{0.5f, 0.5f}
@@ -145,7 +145,7 @@ bool osc::Popup::begin_popup()
         // of the ui and, therefore, should probably be centered
         // in it)
         if (pimpl.maybe_position_) {
-            ui::set_next_panel_pos(
+            ui::set_next_panel_ui_pos(
                 static_cast<Vec2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );

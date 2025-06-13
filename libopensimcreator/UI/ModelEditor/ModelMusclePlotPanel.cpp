@@ -1640,7 +1640,7 @@ namespace
                 ui::get_style_frame_padding().x;
 
             const float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
-            ui::set_cursor_pos_x(cursorStart);
+            ui::set_cursor_panel_pos_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
             if (ui::begin_combobox("##musclename", muscleName, ui::ComboFlag::NoArrowButton))
@@ -1658,7 +1658,7 @@ namespace
             }
 
             ui::same_line();
-            ui::set_cursor_pos_x(ui::get_cursor_pos_x() - ui::get_style_item_spacing().x);
+            ui::set_cursor_panel_pos_x(ui::get_cursor_panel_pos_x() - ui::get_style_item_spacing().x);
             ui::draw_text("'s");
             ui::same_line();
             ui::set_next_item_width(outputNameWidth);

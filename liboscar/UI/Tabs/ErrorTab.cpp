@@ -32,7 +32,7 @@ public:
         // error message panel
         {
             const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p1.y + padding};
-            ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
+            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("fatal error")) {
@@ -48,7 +48,7 @@ public:
         // log message panel
         {
             const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p2.y - padding};
-            ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
+            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("Error Log", nullptr, ui::PanelFlag::MenuBar)) {

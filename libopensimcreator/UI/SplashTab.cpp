@@ -187,7 +187,7 @@ private:
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
 
-        ui::set_next_panel_pos(workspaceUIRect.p1);
+        ui::set_next_panel_ui_pos(workspaceUIRect.p1);
         ui::set_next_panel_size(dimensions_of(workspaceUIRect));
 
         ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
@@ -214,7 +214,7 @@ private:
     {
         const Rect logoRect = calcLogoRect();
 
-        ui::set_next_panel_pos(logoRect.p1);
+        ui::set_next_panel_ui_pos(logoRect.p1);
         ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_MainAppLogo, dimensions_of(logoRect));
         ui::end_panel();
@@ -225,7 +225,7 @@ private:
         // center the menu window
         const Rect mmr = calcMainMenuRect();
         const Vec2 dims = dimensions_of(mmr);
-        ui::set_next_panel_pos(mmr.p1);
+        ui::set_next_panel_ui_pos(mmr.p1);
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
@@ -357,13 +357,13 @@ private:
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
 
-        ui::set_next_panel_pos(loc);
+        ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
         loc.x += m_CziLogo.device_independent_dimensions().x + 2.0f*ui::get_style_item_spacing().x;
-        ui::set_next_panel_pos(loc);
+        ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);
         ui::end_panel();

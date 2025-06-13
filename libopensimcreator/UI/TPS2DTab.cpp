@@ -371,7 +371,7 @@ public:
             const float leftPadding = 10.0f;
             const float bottomPadding = 10.0f;
             const float panelHeight = 50.0f;
-            ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
+            ui::set_next_panel_ui_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
             ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::PanelFlag::NoInputs));
             ui::set_next_item_width(ui::get_content_region_available().x);

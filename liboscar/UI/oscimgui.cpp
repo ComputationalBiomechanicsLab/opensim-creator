@@ -2139,27 +2139,27 @@ Vec2 osc::ui::get_content_region_available()
     return ImGui::GetContentRegionAvail();
 }
 
-Vec2 osc::ui::get_cursor_start_pos()
+Vec2 osc::ui::get_cursor_start_panel_pos()
 {
     return ImGui::GetCursorStartPos();
 }
 
-Vec2 osc::ui::get_cursor_pos()
+Vec2 osc::ui::get_cursor_panel_pos()
 {
     return ImGui::GetCursorPos();
 }
 
-void osc::ui::set_cursor_pos(Vec2 pos)
+void osc::ui::set_cursor_panel_pos(Vec2 pos)
 {
     ImGui::SetCursorPos(pos);
 }
 
-float osc::ui::get_cursor_pos_x()
+float osc::ui::get_cursor_panel_pos_x()
 {
     return ImGui::GetCursorPosX();
 }
 
-void osc::ui::set_cursor_pos_x(float local_x)
+void osc::ui::set_cursor_panel_pos_x(float local_x)
 {
     ImGui::SetCursorPosX(local_x);
 }
@@ -2174,7 +2174,7 @@ void osc::ui::set_cursor_ui_pos(Vec2 pos)
     ImGui::SetCursorScreenPos(pos);
 }
 
-void osc::ui::set_next_panel_pos(Vec2 pos, Conditional conditional, Vec2 pivot)
+void osc::ui::set_next_panel_ui_pos(Vec2 pos, Conditional conditional, Vec2 pivot)
 {
     ImGui::SetNextWindowPos(pos, to<ImGuiCond>(conditional), pivot);
 }
@@ -2349,7 +2349,7 @@ bool osc::ui::wants_keyboard()
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void osc::ui::push_style_var(StyleVar var, const Vec2& pos)
+void osc::ui::push_style_var(StyleVar var, Vec2 pos)
 {
     ImGui::PushStyleVar(to<ImGuiStyleVar>(var), pos);
 }
@@ -2449,12 +2449,12 @@ bool osc::ui::is_item_deactivated_after_edit()
     return ImGui::IsItemDeactivatedAfterEdit();
 }
 
-Vec2 osc::ui::get_item_topleft()
+Vec2 osc::ui::get_item_top_left_ui_pos()
 {
     return ImGui::GetItemRectMin();
 }
 
-Vec2 osc::ui::get_item_bottomright()
+Vec2 osc::ui::get_item_bottom_right_ui_pos()
 {
     return ImGui::GetItemRectMax();
 }
@@ -2562,44 +2562,44 @@ Vec2 osc::ui::get_panel_size()
     return ImGui::GetWindowSize();
 }
 
-void osc::ui::DrawListAPI::add_rect(const Rect& rect, const Color& color, float rounding, float thickness)
+void osc::ui::DrawListAPI::add_rect(const Rect& ui_rect, const Color& color, float rounding, float thickness)
 {
-    impl_get_drawlist().AddRect(rect.p1, rect.p2, to_ImU32(color), rounding, 0, thickness);
+    impl_get_drawlist().AddRect(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding, 0, thickness);
 }
 
-void osc::ui::DrawListAPI::add_rect_filled(const Rect& rect, const Color& color, float rounding)
+void osc::ui::DrawListAPI::add_rect_filled(const Rect& ui_rect, const Color& color, float rounding)
 {
-    impl_get_drawlist().AddRectFilled(rect.p1, rect.p2, to_ImU32(color), rounding);
+    impl_get_drawlist().AddRectFilled(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding);
 }
 
-void osc::ui::DrawListAPI::add_circle(const Circle& circle, const Color& color, int num_segments, float thickness)
+void osc::ui::DrawListAPI::add_circle(const Circle& ui_circle, const Color& color, int num_segments, float thickness)
 {
-    impl_get_drawlist().AddCircle(circle.origin, circle.radius, to_ImU32(color), num_segments, thickness);
+    impl_get_drawlist().AddCircle(ui_circle.origin, ui_circle.radius, to_ImU32(color), num_segments, thickness);
 }
 
-void osc::ui::DrawListAPI::add_circle_filled(const Circle& circle, const Color& color, int num_segments)
+void osc::ui::DrawListAPI::add_circle_filled(const Circle& ui_circle, const Color& color, int num_segments)
 {
-    impl_get_drawlist().AddCircleFilled(circle.origin, circle.radius, to_ImU32(color), num_segments);
+    impl_get_drawlist().AddCircleFilled(ui_circle.origin, ui_circle.radius, to_ImU32(color), num_segments);
 }
 
-void osc::ui::DrawListAPI::add_text(const Vec2& position, const Color& color, CStringView text)
+void osc::ui::DrawListAPI::add_text(const Vec2& ui_position, const Color& color, CStringView text)
 {
-    impl_get_drawlist().AddText(position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
+    impl_get_drawlist().AddText(ui_position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
 }
 
-void osc::ui::DrawListAPI::add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness)
+void osc::ui::DrawListAPI::add_line(const Vec2& ui_start, const Vec2& ui_end, const Color& color, float thickness)
 {
-    impl_get_drawlist().AddLine(p1, p2, to_ImU32(color), thickness);
+    impl_get_drawlist().AddLine(ui_start, ui_end, to_ImU32(color), thickness);
 }
 
-void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color)
+void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_p1, const Vec2& ui_p2, const Color& color)
 {
-    impl_get_drawlist().AddTriangleFilled(p0, p1, p2, to_ImU32(color));
+    impl_get_drawlist().AddTriangleFilled(ui_p0, ui_p1, ui_p2, to_ImU32(color));
 }
 
-void osc::ui::DrawListAPI::push_clip_rect(const Rect& rect, bool intersect_with_currect_clip_rect)
+void osc::ui::DrawListAPI::push_clip_rect(const Rect& r, bool intersect_with_currect_clip_rect)
 {
-    impl_get_drawlist().PushClipRect(rect.p1, rect.p2, intersect_with_currect_clip_rect);
+    impl_get_drawlist().PushClipRect(r.p1, r.p2, intersect_with_currect_clip_rect);
 }
 
 void osc::ui::DrawListAPI::pop_clip_rect()
@@ -2790,7 +2790,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 bool osc::ui::update_polar_camera_from_keyboard_inputs(
     PolarPerspectiveCamera& camera,
     const Rect& viewport_rect,
-    std::optional<AABB> maybe_scene_aabb)
+    std::optional<AABB> maybe_scene_world_space_aabb)
 {
     const bool shift_down = is_shift_down();
     const bool ctrl_or_super_down = is_ctrl_or_super_down();
@@ -2814,10 +2814,10 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
     }
     else if (ui::is_key_pressed(Key::F)) {
         if (ctrl_or_super_down) {
-            if (maybe_scene_aabb) {
+            if (maybe_scene_world_space_aabb) {
                 auto_focus(
                     camera,
-                    *maybe_scene_aabb,
+                    *maybe_scene_world_space_aabb,
                     aspect_ratio_of(viewport_rect)
                 );
                 return true;
@@ -2829,10 +2829,10 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
         }
     }
     else if (ctrl_or_super_down and ui::is_key_pressed(Key::_8)) {
-        if (maybe_scene_aabb) {
+        if (maybe_scene_world_space_aabb) {
             auto_focus(
                 camera,
-                *maybe_scene_aabb,
+                *maybe_scene_world_space_aabb,
                 aspect_ratio_of(viewport_rect)
             );
             return true;
@@ -2908,7 +2908,7 @@ bool osc::ui::update_polar_camera_from_keyboard_inputs(
 bool osc::ui::update_polar_camera_from_all_inputs(
     PolarPerspectiveCamera& camera,
     const Rect& viewport_rect,
-    std::optional<AABB> maybe_scene_aabb)
+    std::optional<AABB> maybe_scene_world_space_aabb)
 {
     const ImGuiIO& io = ImGui::GetIO();
 
@@ -2918,7 +2918,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
         update_polar_camera_from_mouse_inputs(camera, dimensions_of(viewport_rect));
 
     const bool keyboard_handled = not io.WantCaptureKeyboard ?
-        update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_aabb) :
+        update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_world_space_aabb) :
         false;
 
     return mouse_handled or keyboard_handled;
@@ -3035,7 +3035,7 @@ bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec
 
 Rect osc::ui::get_last_drawn_item_ui_rect()
 {
-    return {ui::get_item_topleft(), ui::get_item_bottomright()};
+    return {ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
 }
 
 ui::HittestResult osc::ui::hittest_last_drawn_item()
@@ -3046,8 +3046,8 @@ ui::HittestResult osc::ui::hittest_last_drawn_item()
 ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
 {
     HittestResult rv;
-    rv.item_ui_rect.p1 = ui::get_item_topleft();
-    rv.item_ui_rect.p2 = ui::get_item_bottomright();
+    rv.item_ui_rect.p1 = ui::get_item_top_left_ui_pos();
+    rv.item_ui_rect.p2 = ui::get_item_bottom_right_ui_pos();
     rv.is_hovered = ui::is_item_hovered();
     rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Left, drag_threshold);
     rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Right, drag_threshold);
@@ -3354,7 +3354,7 @@ void osc::ui::draw_text_centered(CStringView content)
     const float panel_width = ui::get_panel_size().x;
     const float text_width   = ui::calc_text_size(content).x;
 
-    ui::set_cursor_pos_x(0.5f * (panel_width - text_width));
+    ui::set_cursor_panel_pos_x(0.5f * (panel_width - text_width));
     draw_text(content);
 }
 
@@ -3363,7 +3363,7 @@ void osc::ui::draw_text_panel_centered(CStringView content)
     const auto panel_dimensions = ui::get_panel_size();
     const auto text_dimensions = ui::calc_text_size(content);
 
-    ui::set_cursor_pos(0.5f * (panel_dimensions - text_dimensions));
+    ui::set_cursor_panel_pos(0.5f * (panel_dimensions - text_dimensions));
     draw_text(content);
 }
 
@@ -3384,10 +3384,10 @@ void osc::ui::draw_text_disabled_and_panel_centered(CStringView content)
 void osc::ui::draw_text_column_centered(CStringView content)
 {
     const float column_width = ui::get_column_width();
-    const float column_offset = ui::get_cursor_pos().x;
+    const float column_offset = ui::get_cursor_panel_pos().x;
     const float text_width = ui::calc_text_size(content).x;
 
-    ui::set_cursor_pos_x(column_offset + 0.5f*(column_width-text_width));
+    ui::set_cursor_panel_pos_x(column_offset + 0.5f*(column_width-text_width));
     draw_text(content);
 }
 
@@ -3730,7 +3730,7 @@ bool osc::ui::draw_gizmo_mode_selector(GizmoMode& mode)
     return rv;
 }
 
-bool osc::ui::draw_gizmo_op_selector(
+bool osc::ui::draw_gizmo_operation_selector(
     Gizmo& gizmo,
     bool can_translate,
     bool can_rotate,
@@ -3740,14 +3740,14 @@ bool osc::ui::draw_gizmo_op_selector(
     CStringView scale_button_text)
 {
     GizmoOperation op = gizmo.operation();
-    if (draw_gizmo_op_selector(op, can_translate, can_rotate, can_scale, translate_button_text, rotate_button_text, scale_button_text)) {
+    if (draw_gizmo_operation_selector(op, can_translate, can_rotate, can_scale, translate_button_text, rotate_button_text, scale_button_text)) {
         gizmo.set_operation(op);
         return true;
     }
     return false;
 }
 
-bool osc::ui::draw_gizmo_op_selector(
+bool osc::ui::draw_gizmo_operation_selector(
     GizmoOperation& op,
     bool can_translate,
     bool can_rotate,
@@ -4180,24 +4180,24 @@ void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Col
     ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
 }
 
-bool osc::ui::plot::drag_point(int id, Vec2d* location, const Color& color, float size, DragToolFlags flags)
+bool osc::ui::plot::drag_point(int id, Vec2d* plot_point, const Color& color, float size, DragToolFlags flags)
 {
-    return ImPlot::DragPoint(id, &location->x, &location->y, color, size, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragPoint(id, &plot_point->x, &plot_point->y, color, size, to_ImPlotDragToolFlags(flags));
 }
 
-bool osc::ui::plot::drag_line_x(int id, double* x, const Color& color, float thickness, DragToolFlags flags)
+bool osc::ui::plot::drag_line_x(int id, double* plot_x, const Color& color, float thickness, DragToolFlags flags)
 {
-    return ImPlot::DragLineX(id, x, color, thickness, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragLineX(id, plot_x, color, thickness, to_ImPlotDragToolFlags(flags));
 }
 
-bool osc::ui::plot::drag_line_y(int id, double* y, const Color& color, float thickness, DragToolFlags flags)
+bool osc::ui::plot::drag_line_y(int id, double* plot_y, const Color& color, float thickness, DragToolFlags flags)
 {
-    return ImPlot::DragLineY(id, y, color, thickness, to_ImPlotDragToolFlags(flags));
+    return ImPlot::DragLineY(id, plot_y, color, thickness, to_ImPlotDragToolFlags(flags));
 }
 
-void osc::ui::plot::tag_x(double x, const Color& color, bool round)
+void osc::ui::plot::tag_x(double plot_x, const Color& color, bool round)
 {
-    ImPlot::TagX(x, color, round);
+    ImPlot::TagX(plot_x, color, round);
 }
 
 bool osc::ui::plot::is_plot_hovered()

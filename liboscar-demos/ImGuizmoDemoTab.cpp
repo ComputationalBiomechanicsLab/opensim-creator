@@ -64,7 +64,7 @@ public:
             ui::get_main_window_workspace_ui_rect()
         );
         ui::draw_gizmo_mode_selector(gizmo_);
-        ui::draw_gizmo_op_selector(gizmo_);
+        ui::draw_gizmo_operation_selector(gizmo_);
     }
 
 private:
