@@ -931,8 +931,8 @@ public:
         }
         next_widget_.reset();
 
-        frame_annotations_.clear();
-        active_screenshot_requests_.clear();
+        main_window_annotations_this_frame_.clear();
+        main_window_screenshot_requests_.clear();
     }
 
     void post_event(Widget& receiver, std::unique_ptr<Event> event)
@@ -1360,14 +1360,14 @@ public:
         graphics_context_.set_vsync_enabled(v);
     }
 
-    void add_main_window_frame_annotation(std::string_view label, Rect screen_rect)
+    void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect)
     {
-        frame_annotations_.emplace_back(std::string{label}, screen_rect);
+        main_window_annotations_this_frame_.emplace_back(std::string{label}, screen_rect);
     }
 
     std::future<Screenshot> request_screenshot_of_main_window()
     {
-        AnnotatedScreenshotRequest& req = active_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
+        AnnotatedScreenshotRequest& req = main_window_screenshot_requests_.emplace_back(frame_counter_, request_screenshot_texture());
         return req.result_promise.get_future();
     }
 
@@ -1558,15 +1558,15 @@ private:
     void handle_screenshot_requests_for_this_frame()
     {
         // save this frame's annotations into the requests, if necessary
-        for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
+        for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
             if (req.frame_requested == frame_counter_) {
-                req.annotations = frame_annotations_;
+                req.annotations = main_window_annotations_this_frame_;
             }
         }
-        frame_annotations_.clear();  // this frame's annotations are now saved (if necessary)
+        main_window_annotations_this_frame_.clear();  // this frame's annotations are now saved (if necessary)
 
         // complete any requests for which screenshot data has arrived
-        for (AnnotatedScreenshotRequest& req : active_screenshot_requests_) {
+        for (AnnotatedScreenshotRequest& req : main_window_screenshot_requests_) {
 
             if (req.underlying_future.valid() and
                 req.underlying_future.wait_for(std::chrono::seconds{0}) == std::future_status::ready) {
@@ -1579,7 +1579,7 @@ private:
 
         // gc any invalid (i.e. handled) requests
         std::erase_if(
-            active_screenshot_requests_,
+            main_window_screenshot_requests_,
             [](const AnnotatedScreenshotRequest& request)
             {
                 return not request.underlying_future.valid();
@@ -1682,10 +1682,10 @@ private:
     std::unique_ptr<Widget> next_widget_;
 
     // frame annotations made during this frame
-    std::vector<ScreenshotAnnotation> frame_annotations_;
+    std::vector<ScreenshotAnnotation> main_window_annotations_this_frame_;
 
     // any active promises for an annotated frame
-    std::vector<AnnotatedScreenshotRequest> active_screenshot_requests_;
+    std::vector<AnnotatedScreenshotRequest> main_window_screenshot_requests_;
 };
 
 App& osc::App::upd()
@@ -2012,9 +2012,9 @@ void osc::App::set_vsync_enabled(bool v)
     impl_->set_vsync_enabled(v);
 }
 
-void osc::App::add_main_window_frame_annotation(std::string_view label, Rect ui_rect)
+void osc::App::add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect)
 {
-    impl_->add_main_window_frame_annotation(label, ui_rect);
+    impl_->add_main_window_frame_annotation(label, screen_rect);
 }
 
 std::future<Screenshot> osc::App::request_screenshot_of_main_window()

@@ -69,7 +69,7 @@ private:
             }
         }
         ui::pop_style_color();
-        App::upd().add_main_window_frame_annotation("Simulate Button", ui::get_last_drawn_item_ui_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("Simulate Button");
         ui::draw_tooltip_if_item_hovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
         ui::same_line();

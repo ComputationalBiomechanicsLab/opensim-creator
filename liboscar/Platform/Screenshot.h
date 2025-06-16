@@ -11,21 +11,21 @@ namespace osc
 {
     class Screenshot final {
     public:
-        Screenshot(
-            Texture2D image,
+        explicit Screenshot(
+            Texture2D texture,
             std::vector<ScreenshotAnnotation> annotations) :
 
-            image_{std::move(image)},
+            texture_{std::move(texture)},
             annotations_{std::move(annotations)}
         {}
 
-        const Texture2D& image() const { return image_; }
-        Vec2i dimensions() const { return image_.dimensions(); }
-        Vec2 device_independent_dimensions() const { return image_.device_independent_dimensions(); }
+        const Texture2D& texture() const { return texture_; }
+        Vec2i dimensions() const { return texture_.dimensions(); }
+        Vec2 device_independent_dimensions() const { return texture_.device_independent_dimensions(); }
         std::span<const ScreenshotAnnotation> annotations() const { return annotations_; }
 
     private:
-        Texture2D image_;
+        Texture2D texture_;
         std::vector<ScreenshotAnnotation> annotations_;
     };
 }

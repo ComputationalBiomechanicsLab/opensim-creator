@@ -302,7 +302,7 @@ namespace osc
         // Prompts the user to select a new or existing filesystem path where they would like
         // to save a file.
         //
-        // - `callback` is called from the ui thread by the implementation when the user chooses
+        // - `callback` is called from the main thread by the implementation when the user chooses
         //   a file, cancels or there's an error. It is implementation-defined whether `callback` is
         //   called  immediately, or as part of pumping the application event loop. `callback` may
         //   not be called if the application quits/destructs prematurely.
@@ -410,12 +410,13 @@ namespace osc
         // a default-constructed `WindowID` is returned if no window has keyboard focus.
         WindowID get_keyboard_focus() const;
 
-        // sets the rectangle that's used to type unicode text inputs
+        // sets the rectangle, defined in ui space and device-independent pixels that's,
+        // used to type unicode text inputs.
         //
         // native input methods can place a window with word suggestions near the input
-        // in the UI, without covering the text that's being inputted, this indicates to
-        // the OS where the input rectangle is so that it can place the overlay in the
-        // correct location.
+        // in the main window, without covering the text that's being inputted, this
+        // indicates to the operating system  where the input rectangle is so that it
+        // can place and operating-system-defined overlay in the correct location.
         void set_main_window_unicode_input_rect(const Rect&);
 
         // start accepting unicode text input events for the given window
@@ -458,10 +459,11 @@ namespace osc
         bool is_vsync_enabled() const;
         void set_vsync_enabled(bool);
 
-        // add an annotation to the current frame
+        // add an annotation to the current frame with the given `label`
+        // and location in screen space and device-independent pixels.
         //
         // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
-        void add_main_window_frame_annotation(std::string_view label, Rect ui_rect);
+        void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect);
 
         // returns a future that asynchronously yields an annotated screenshot of the
         // next frame of the main application window

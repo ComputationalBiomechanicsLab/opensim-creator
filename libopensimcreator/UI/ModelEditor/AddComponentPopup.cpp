@@ -189,7 +189,7 @@ private:
         ui::next_column();
 
         ui::draw_string_input("##componentname", m_Name);
-        App::upd().add_main_window_frame_annotation("AddComponentPopup::ComponentNameInput", ui::get_last_drawn_item_ui_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("AddComponentPopup::ComponentNameInput");
 
         ui::next_column();
 
@@ -270,13 +270,13 @@ private:
                 connectee = absPath;
             }
 
-            const Rect selectableRect = ui::get_last_drawn_item_ui_rect();
+            const Rect selectableScreenRect = ui::get_last_drawn_item_screen_rect();
             ui::draw_tooltip_if_item_hovered(absPath.toString());
 
             ui::pop_id();
 
             if (selected) {
-                App::upd().add_main_window_frame_annotation(c.toString(), selectableRect);
+                App::upd().add_main_window_frame_annotation(c.toString(), selectableScreenRect);
             }
         }
 

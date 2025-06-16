@@ -2328,7 +2328,7 @@ namespace
                 if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
                     m_State->exportWarpedModelToModelEditor();
                 }
-                App::upd().add_main_window_frame_annotation("Export Warped Model Button", ui::get_last_drawn_item_ui_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("Export Warped Model Button");
                 ui::pop_style_color();
                 ui::same_line(0.0f, 1.0f);
                 if (ui::draw_button(OSC_ICON_COG)) {

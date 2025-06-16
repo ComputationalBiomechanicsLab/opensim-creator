@@ -248,7 +248,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)  
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
-    App::upd().add_main_window_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_ui_rect());
+    ui::add_screenshot_annotation_to_last_drawn_item("MainMenu/ImportMeshesMenuItem");
     if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
         if (parent()) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());

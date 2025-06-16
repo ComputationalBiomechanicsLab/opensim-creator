@@ -737,8 +737,19 @@ namespace osc::ui
         Vec2 dimensions
     );
 
-    // returns the ui space bounding rectangle of the last-drawn item
+    // returns the ui space bounding rectangle of the last-drawn item in
+    // device-independent pixels.
     Rect get_last_drawn_item_ui_rect();
+
+    // returns the screen space bounding rectangle of the last-drawn item
+    // in device-independent pixels.
+    Rect get_last_drawn_item_screen_rect();
+
+    // adds a screenshot annotation around the last drawn item to the
+    // application-level annotation collector
+    //
+    // equivalent to: `App::upd().add_main_window_frame_annotation(label, get_last_drawn_item_screen_rect());`
+    void add_screenshot_annotation_to_last_drawn_item(std::string_view label);
 
     // hittest the last-drawn item in the UI
     struct HittestResult final {

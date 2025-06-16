@@ -3038,6 +3038,21 @@ Rect osc::ui::get_last_drawn_item_ui_rect()
     return {ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
 }
 
+Rect osc::ui::get_last_drawn_item_screen_rect()
+{
+    const Rect ui_rect = get_last_drawn_item_ui_rect();
+    const Vec2 r = ImGui::GetIO().DisplaySize;
+    return Rect{
+        {ui_rect.p1.x, r.y - ui_rect.p2.y},
+        {ui_rect.p2.x, r.y - ui_rect.p1.y},
+    };
+}
+
+void osc::ui::add_screenshot_annotation_to_last_drawn_item(std::string_view label)
+{
+    App::upd().add_main_window_frame_annotation(label, get_last_drawn_item_screen_rect());
+}
+
 ui::HittestResult osc::ui::hittest_last_drawn_item()
 {
     return hittest_last_drawn_item(c_default_drag_threshold);

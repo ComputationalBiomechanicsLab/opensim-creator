@@ -5,12 +5,10 @@
 #include <liboscar/Graphics/ColorSpace.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/RenderTexture.h>
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/Mat4.h>
 #include <liboscar/Maths/MatFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
@@ -19,11 +17,12 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Screenshot.h>
-#include <liboscar/UI/oscimgui.h>
+#include <liboscar/Platform/os.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/EnumHelpers.h>
+#include <liboscar/Utils/StringHelpers.h>
 
 #include <filesystem>
 #include <fstream>
@@ -40,6 +39,8 @@ namespace
 {
     constexpr Color c_unselected_color = Color::white().with_alpha(0.4f);
     constexpr Color c_selected_color = Color::red().with_alpha(0.8f);
+    constexpr float c_annotation_rect_rounding = 3.0f;
+    constexpr float c_annotation_rect_thickness = 3.0f;
 
     // returns a rect that fully spans at least one dimension of the target rect, but has
     // the given aspect ratio
@@ -65,13 +66,22 @@ namespace
         }
     }
 
-    Rect map_rect(const Rect& source_rect, const Rect& target_rect, const Rect& rect)
+    Rect map_rect(const Vec2& screen_dimensions, const Rect& annotation_screen_rect, const Rect& viewport_ui_rect)
     {
-        const Vec2 scale = dimensions_of(target_rect) / dimensions_of(source_rect);
+        Rect normalized_rect{
+            annotation_screen_rect.p1/screen_dimensions,
+            annotation_screen_rect.p2/screen_dimensions
+        };
+        // flip y: normalized screen --> normalized ui
+        const float ui_top_y = 1.0f - normalized_rect.p2.y;
+        const float ui_bottom_y = 1.0f - normalized_rect.p1.y;
+        normalized_rect.p1.y = ui_top_y;
+        normalized_rect.p2.y = ui_bottom_y;
 
+        const Vec2 ui_dims = dimensions_of(viewport_ui_rect);
         return Rect{
-            target_rect.p1 + scale*(rect.p1 - source_rect.p1),
-            target_rect.p1 + scale*(rect.p2 - source_rect.p1),
+            viewport_ui_rect.p1 + ui_dims*normalized_rect.p1,
+            viewport_ui_rect.p1 + ui_dims*normalized_rect.p2,
         };
     }
 
@@ -131,12 +141,24 @@ public:
                 }
             }
 
-            // list each annotation
-            for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
-                ui::push_id(id++);
-                ui::draw_text(annotation.label());
-                ui::pop_id();
+            if (ui::begin_table("##Annotations", 2)) {
+                ui::table_setup_column("Label");
+                ui::table_setup_column("Screen Position");
+                ui::table_headers_row();
+                ui::table_next_row();
+                for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
+                    ui::push_id(id++);
+                    ui::table_set_column_index(0);
+                    ui::draw_text(annotation.label());
+                    ui::table_set_column_index(1);
+                    ui::draw_text(stream_to_string(annotation.rect()));
+                    ui::table_next_row();
+                    ui::pop_id();
+                }
+                ui::end_table();
             }
+
+
             ui::end_panel();
         }
     }
@@ -155,18 +177,18 @@ private:
 
     void draw_image_overlays(
         ui::DrawListView draw_list,
-        const Rect& image_rect,
+        const Rect& image_ui_rect,
         const Color& unselected_color,
         const Color& selected_color)
     {
-        const Vec2 mouse_pos = ui::get_mouse_ui_pos();
+        const Vec2 mouse_ui_pos = ui::get_mouse_ui_pos();
         const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
-        const Rect image_source_rect = {{0.0f, 0.0f}, screenshot_.device_independent_dimensions()};
+        const Vec2 screenshot_dimensions = screenshot_.device_independent_dimensions();
 
         for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
-            const Rect annotation_rect_screen = map_rect(image_source_rect, image_rect, annotation.rect());
+            const Rect annotation_ui_rect = map_rect(screenshot_dimensions, annotation.rect(), image_ui_rect);
             const bool selected = user_selected_annotations_.contains(annotation.label());
-            const bool hovered = is_intersecting(annotation_rect_screen, mouse_pos);
+            const bool hovered = is_intersecting(annotation_ui_rect, mouse_ui_pos);
 
             Color color = selected ? selected_color : unselected_color;
             if (hovered) {
@@ -183,10 +205,10 @@ private:
             }
 
             draw_list.add_rect(
-                annotation_rect_screen,
+                annotation_ui_rect,
                 color,
-                3.0f,
-                3.0f
+                c_annotation_rect_rounding,
+                c_annotation_rect_thickness
             );
         }
     }
@@ -222,12 +244,12 @@ private:
 
         // draw overlays to a local ImGui draw list
         ui::DrawList draw_list;
-        draw_list.push_clip_rect({{}, image_texture_.dimensions()});
+        draw_list.push_clip_rect(Rect{{}, image_texture_.dimensions()});
 
         draw_image_overlays(
             draw_list,
             Rect{{0.0f, 0.0f}, image_texture_.dimensions()},
-            {0.0f, 0.0f, 0.0f, 0.0f},
+            Color::clear(),
             c_selected_color.with_alpha(1.0f)
         );
 
@@ -241,7 +263,7 @@ private:
     }
 
     Screenshot screenshot_;
-    Texture2D image_texture_ = screenshot_.image();
+    Texture2D image_texture_ = screenshot_.texture();
     std::unordered_set<std::string> user_selected_annotations_;
     float jpeg_quality_level_ = 0.7f;
 };
