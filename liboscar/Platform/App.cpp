@@ -1246,15 +1246,19 @@ public:
         return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
     }
 
-    void set_main_window_unicode_input_rect(const Rect& rect)
+    void set_main_window_unicode_input_rect(const Rect& screen_rect)
     {
         const float device_independent_to_sdl3_ratio = 1.0f/os_to_main_window_device_independent_ratio();
+        const float main_window_height = main_window_dimensions().y;
 
+        // convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
+        // coordinate system that SDL3 wants
+        const Vec2 sdl3_rect_dimensions = device_independent_to_sdl3_ratio * dimensions_of(screen_rect);
         const SDL_Rect r{
-            .x = static_cast<int>(device_independent_to_sdl3_ratio * rect.p1.x),
-            .y = static_cast<int>(device_independent_to_sdl3_ratio * rect.p1.y),
-            .w = static_cast<int>(device_independent_to_sdl3_ratio * dimensions_of(rect).x),
-            .h = static_cast<int>(device_independent_to_sdl3_ratio * dimensions_of(rect).y),
+            .x = static_cast<int>(device_independent_to_sdl3_ratio * screen_rect.p1.x),
+            .y = static_cast<int>(device_independent_to_sdl3_ratio * (main_window_height - screen_rect.p2.y)),  // top-left
+            .w = static_cast<int>(sdl3_rect_dimensions.x),
+            .h = static_cast<int>(sdl3_rect_dimensions.y),
         };
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
@@ -1913,9 +1917,9 @@ bool osc::App::has_input_focus(WindowID id) const
     return impl_->has_input_focus(id);
 }
 
-void osc::App::set_main_window_unicode_input_rect(const Rect& rect)
+void osc::App::set_main_window_unicode_input_rect(const Rect& screen_rect)
 {
-    impl_->set_main_window_unicode_input_rect(rect);
+    impl_->set_main_window_unicode_input_rect(screen_rect);
 }
 
 void osc::App::start_text_input(WindowID window_id)

@@ -930,7 +930,10 @@ namespace
     //       However, even if the native overlay isn't showing it's still __VERY IMPORTANT__ to handle
     //       IME correctly, because ImGui's text input widgets use text input events, rather than key
     //       events, to track user input.
-    void ImGui_ImplOscar_PlatformSetImeData(ImGuiContext*, ImGuiViewport* viewport, ImGuiPlatformImeData* ime_data)
+    void ImGui_ImplOscar_PlatformSetImeData(
+        ImGuiContext*,
+        ImGuiViewport* viewport,
+        ImGuiPlatformImeData* ime_data)
     {
         App& app = App::upd();
         UiContextData* bd = try_get_ui_backend_data();
@@ -941,11 +944,12 @@ namespace
         }
 
         if (ime_data->WantVisible) {
-            const Vec2 input_top_left = to<Vec2>(ime_data->InputPos);
             const Vec2 input_dimensions = {1.0f, ime_data->InputLineHeight};
-            const Rect input_rect = Rect{input_top_left, input_top_left + input_dimensions};
+            const Vec2 input_top_left_ui = to<Vec2>(ime_data->InputPos);
+            const Vec2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
+            const Vec2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
 
-            app.set_main_window_unicode_input_rect(input_rect);
+            app.set_main_window_unicode_input_rect(Rect{input_bottom_left_screen, input_bottom_left_screen + input_dimensions});
             app.start_text_input(bd->Window);
             bd->ImeWindow = viewport_window;
         }

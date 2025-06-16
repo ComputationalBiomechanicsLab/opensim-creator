@@ -404,14 +404,14 @@ namespace osc
         // a default-constructed `WindowID` is returned if no window has keyboard focus.
         WindowID get_keyboard_focus() const;
 
-        // sets the rectangle, defined in ui space and device-independent pixels that's,
+        // sets the rectangle, defined in screen space and device-independent pixels that's,
         // used to type unicode text inputs.
         //
         // native input methods can place a window with word suggestions near the input
         // in the main window, without covering the text that's being inputted, this
         // indicates to the operating system  where the input rectangle is so that it
         // can place and operating-system-defined overlay in the correct location.
-        void set_main_window_unicode_input_rect(const Rect&);
+        void set_main_window_unicode_input_rect(const Rect& screen_rect);
 
         // start accepting unicode text input events for the given window
         //
