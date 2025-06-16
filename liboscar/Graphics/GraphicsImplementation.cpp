@@ -6836,14 +6836,14 @@ namespace osc
 
         static void blit_to_main_window(
             const RenderTexture&,
-            const Rect&,
+            std::optional<Rect>,
             BlitFlags
         );
 
         static void blit_to_main_window(
             const RenderTexture&,
-            const Rect&,
             const Material&,
+            std::optional<Rect>,
             BlitFlags
         );
 
@@ -6998,19 +6998,19 @@ void osc::graphics::blit(const Texture2D& source, RenderTexture& destination)
 
 void osc::graphics::blit_to_main_window(
     const RenderTexture& render_texture,
-    const Rect& rect,
+    std::optional<Rect> destination_screen_rect,
     BlitFlags flags)
 {
-    GraphicsBackend::blit_to_main_window(render_texture, rect, flags);
+    GraphicsBackend::blit_to_main_window(render_texture, destination_screen_rect, flags);
 }
 
 void osc::graphics::blit_to_main_window(
     const RenderTexture& render_texture,
-    const Rect& rect,
     const Material& material,
+    std::optional<Rect> destination_screen_rect,
     BlitFlags flags)
 {
-    GraphicsBackend::blit_to_main_window(render_texture, rect, material, flags);
+    GraphicsBackend::blit_to_main_window(render_texture, material, destination_screen_rect, flags);
 }
 
 void osc::graphics::blit_to_main_window(
@@ -7038,9 +7038,9 @@ void osc::graphics::copy_texture(
 void osc::graphics::copy_texture(
     const RenderTexture& source,
     Cubemap& destination,
-    size_t mip)
+    size_t mipmap_level)
 {
-    GraphicsBackend::copy_texture(source, destination, mip);
+    GraphicsBackend::copy_texture(source, destination, mipmap_level);
 }
 
 // helper: binds to instanced attributes (per-drawcall)
@@ -7976,16 +7976,16 @@ void osc::GraphicsBackend::blit(
 
 void osc::GraphicsBackend::blit_to_main_window(
     const RenderTexture& source,
-    const Rect& rect,
+    std::optional<Rect> destination_screen_rect,
     BlitFlags flags)
 {
-    blit_to_main_window(source, rect, g_graphics_context_impl->quad_material(), flags);
+    blit_to_main_window(source, g_graphics_context_impl->quad_material(), destination_screen_rect, flags);
 }
 
 void osc::GraphicsBackend::blit_to_main_window(
     const RenderTexture& source,
-    const Rect& rect,
     const Material& material,
+    std::optional<Rect> destination_screen_rect,
     BlitFlags)
 {
     OSC_ASSERT(g_graphics_context_impl);
@@ -7993,7 +7993,7 @@ void osc::GraphicsBackend::blit_to_main_window(
 
     Camera camera;
     camera.set_background_color(Color::clear());
-    camera.set_pixel_rect(rect);
+    camera.set_pixel_rect(*destination_screen_rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
     camera.set_clear_flags(CameraClearFlag::None);
@@ -8131,7 +8131,7 @@ void osc::GraphicsBackend::copy_texture(
 void osc::GraphicsBackend::copy_texture(
     const RenderTexture& source,
     Cubemap& destination,
-    size_t mip)
+    size_t mipmap_level)
 {
     // from: https://registry.khronos.org/OpenGL-Refpages/es2.0/xhtml/glTexParameter.xml
     //
@@ -8148,7 +8148,7 @@ void osc::GraphicsBackend::copy_texture(
     ));
 
     OSC_ASSERT(source.dimensionality() == TextureDimensionality::Cube && "provided render texture must be a cubemap to call this method");
-    OSC_ASSERT(mip <= max_mipmap_level);
+    OSC_ASSERT(mipmap_level <= max_mipmap_level);
 
     // blit each face of the source cubemap into the output cubemap
     for (size_t face = 0; face < 6; ++face) {
@@ -8184,7 +8184,7 @@ void osc::GraphicsBackend::copy_texture(
             GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLenum>(face),
             destination.impl_.upd()->upd_cubemap().get(),
-            static_cast<GLint>(mip)
+            static_cast<GLint>(mipmap_level)
         );
         {
             const GLenum buf = GL_COLOR_ATTACHMENT0;
@@ -8199,8 +8199,8 @@ void osc::GraphicsBackend::copy_texture(
             source.dimensions().y,
             0,
             0,
-            destination.width() / (1<<mip),
-            destination.width() / (1<<mip),
+            destination.width() / (1<<mipmap_level),
+            destination.width() / (1<<mipmap_level),
             GL_COLOR_BUFFER_BIT,
             GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
         );

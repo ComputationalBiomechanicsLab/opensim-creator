@@ -46,7 +46,7 @@ namespace
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
-            graphics::blit_to_main_window(target_texture_, Rect{{}, App::get().main_window_dimensions()});
+            graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
             ui::draw_text("source code");

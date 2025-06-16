@@ -4,6 +4,7 @@
 #include <liboscar/Graphics/CubemapFace.h>
 #include <liboscar/Graphics/MaterialPropertyBlock.h>
 #include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Rect.h>
 
 #include <cstddef>
 #include <optional>
@@ -50,43 +51,40 @@ namespace osc::graphics
         std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
-    // Blits (copies) the `Texture` to the `RenderTexture`.
+    // Blits the `Texture` to the `RenderTexture`.
     void blit(
         const Texture2D&,
         RenderTexture&
     );
 
-    // Blits the texture into a rectangular region in the main window.
+    // Blits `render_texture` into a rectangular region of the main window.
     //
-    // The rectangle should be defined in screen space, which:
-    //
-    // - Is measured in device-independent pixels
-    // - Starts in the bottom-left corner
-    // - Ends in the top-right corner
+    // If provided, `destination_screen_rect` should be defined in screen space
+    // and device-independent pixels. Screen space starts in the bottom-left
+    // corner and ends in the top-right corner. If it is not provided, the
+    // destination region will be the entire contents of the main window.
     void blit_to_main_window(
-        const RenderTexture&,
-        const Rect&,
+        const RenderTexture& render_texture,
+        std::optional<Rect> destination_screen_rect = std::nullopt,
         BlitFlags = {}
     );
 
-    // Renders the texture to a quad via the given `Material` into a rectangular
-    // region in the main application window.
+    // Renders `render_texture` as a quad using `material` into a rectangular region
+    // of the main window.
     //
-    // The rectangle should be defined in screen space, which:
+    // `material` should have a `sampler2D` or `samplerCube` property called
+    // "uTexture". `texture` will be assigned to this property. `texture`'s
+    // `dimensionality()` dictates whether a `sampler2D` or `samplerCube` is
+    // required in the shader.
     //
-    // - Is measured in device-independent pixels
-    // - Starts in the bottom-left corner
-    // - Ends in the top-right corner
-    //
-    // The `Material` should:
-    //
-    // - Have a `sampler2D` or `samplerCube` property called "uTexture". The texture
-    //   will be assigned to this property. The texture's `dimensionality()` dictates
-    //   whether to use a `sampler2D` or `samplerCube` in the shader.
+    // If provided, `destination_screen_rect` should be defined in screen space
+    // and device-independent pixels. Screen space starts in the bottom-left
+    // corner and ends in the top-right corner. If it is not provided, the
+    // destination region will be the entire contents of the main window.
     void blit_to_main_window(
-        const RenderTexture&,
-        const Rect&,
-        const Material&,
+        const RenderTexture& render_texture,
+        const Material& material,
+        std::optional<Rect> destination_screen_rect = std::nullopt,
         BlitFlags = {}
     );
 
@@ -118,6 +116,6 @@ namespace osc::graphics
     void copy_texture(
         const RenderTexture&,
         Cubemap&,
-        size_t mip
+        size_t mipmap_level
     );
 }

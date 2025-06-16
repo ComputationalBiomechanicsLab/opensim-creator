@@ -104,7 +104,7 @@ public:
         scene_camera_.render_to(render_texture_);
 
         // render via a effect sampler
-        graphics::blit_to_main_window(render_texture_, workspace_screen_space_rect, screen_material_);
+        graphics::blit_to_main_window(render_texture_, screen_material_, workspace_screen_space_rect);
 
         // auxiliary UI
         log_viewer_.on_draw();
