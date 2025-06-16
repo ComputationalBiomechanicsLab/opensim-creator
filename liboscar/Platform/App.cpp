@@ -1235,12 +1235,6 @@ public:
         return p;
     }
 
-    void warp_mouse_in_window(WindowID window_id, Vec2 pos)
-    {
-        pos *= 1.0f/os_to_main_window_device_independent_ratio();  // HACK: assume the window is always the main window...
-        SDL_WarpMouseInWindow(std::bit_cast<SDL_Window*>(to<void*>(window_id)), pos.x, pos.y);
-    }
-
     bool has_input_focus(WindowID window_id) const
     {
         return (SDL_GetWindowFlags(std::bit_cast<SDL_Window*>(to<void*>(window_id))) & SDL_WINDOW_INPUT_FOCUS) != 0;
@@ -1905,11 +1899,6 @@ void osc::App::disable_main_window_grab()
 std::optional<Vec2> osc::App::mouse_pos_in_main_window() const
 {
     return impl_->mouse_pos_in_main_window();
-}
-
-void osc::App::warp_mouse_in_window(WindowID window_id, Vec2 pos)
-{
-    impl_->warp_mouse_in_window(window_id, pos);
 }
 
 bool osc::App::has_input_focus(WindowID id) const

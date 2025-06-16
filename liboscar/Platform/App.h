@@ -392,10 +392,6 @@ namespace osc
         // otherwise, returns `std::nullopt`.
         std::optional<Vec2> mouse_pos_in_main_window() const;
 
-        // moves the mouse cursor to the given position relative to the top-left corner of the
-        // given window in device-independent pixels.
-        void warp_mouse_in_window(WindowID, Vec2);
-
         // returns `true` if the given window has input focus
         bool has_input_focus(WindowID) const;
 
