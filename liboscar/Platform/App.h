@@ -373,6 +373,12 @@ namespace osc
         // - https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
         float main_window_device_pixel_ratio() const;
 
+        // Returns the highest ratio of physical pixels to device-independent pixels
+        // supported by all currently-accessible video displays.
+        //
+        // Returns `1.0f` as a fallback if no video displays can be queried.
+        float highest_device_pixel_ratio() const;
+
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
 

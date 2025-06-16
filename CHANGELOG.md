@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- SVG icons and banners now rasterize in high DPI mode when rendering to a
+  high DPI monitor.
 - Keyboard navigation between elements in the UI is now easier and supports (e.g.)
   using the arrow keys to move between UI elements.
 - The component context (right-click) menu was redesigned for consistency, and is

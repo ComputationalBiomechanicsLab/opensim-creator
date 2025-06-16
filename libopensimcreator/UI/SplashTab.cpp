@@ -201,11 +201,11 @@ private:
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(workspaceUIRect));
 
         if (params != m_LastSceneRendererParams) {
-            scene_renderer_.render({}, params);
+            m_SceneRenderer.render({}, params);
             m_LastSceneRendererParams = params;
         }
 
-        ui::draw_image(scene_renderer_.upd_render_texture());
+        ui::draw_image(m_SceneRenderer.upd_render_texture());
 
         ui::end_panel();
     }
@@ -387,14 +387,14 @@ private:
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer scene_renderer_{
+    SceneRenderer m_SceneRenderer{
         *App::singleton<SceneCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/banner.svg"));
-    Texture2D m_CziLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f);
-    Texture2D m_TudLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f);
+    Texture2D m_MainAppLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/banner.svg"), 1.0f, App::get().highest_device_pixel_ratio());
+    Texture2D m_CziLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
+    Texture2D m_TudLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};

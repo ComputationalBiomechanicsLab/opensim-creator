@@ -16,9 +16,10 @@
 
 using namespace osc;
 
-Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
+Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale, float device_pixel_ratio)
 {
     OSC_ASSERT_ALWAYS(scale > 0.0f && "svg scale factor must be greater than zero");
+    OSC_ASSERT_ALWAYS(device_pixel_ratio > 0.0f && "device pixel ratio must be greater than zero");
 
     // read SVG content into a `std::string`
     std::string data;
@@ -34,12 +35,13 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 
     // when rendering the document's contents, flip Y so that Y=0 represents the bottom of the image
     // and Y=H represents the top (i.e. a right-handed coordinate system that matches `Texture2D`).
-    const lunasvg::Matrix transform{scale, 0.0f, 0.0f, -scale, 0.0f, std::ceil(scale*svg_document->height())};
+    const float pixel_scale = scale * device_pixel_ratio;
+    const lunasvg::Matrix transform{pixel_scale, 0.0f, 0.0f, -pixel_scale, 0.0f, std::ceil(pixel_scale*svg_document->height())};
 
     // create a `lunasvg::Bitmap` that lunasvg can render into
     lunasvg::Bitmap bitmap{
-        static_cast<int>(std::ceil(scale*svg_document->width())),
-        static_cast<int>(std::ceil(scale*svg_document->height())),
+        static_cast<int>(std::ceil(pixel_scale*svg_document->width())),
+        static_cast<int>(std::ceil(pixel_scale*svg_document->height())),
     };
     bitmap.clear(0x00000000);  // ensure the bitmap is cleared before rendering
     svg_document->render(bitmap, transform);
@@ -54,5 +56,6 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
         TextureFilterMode::Nearest,
     };
     rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
+    rv.set_device_pixel_ratio(device_pixel_ratio);
     return rv;
 }

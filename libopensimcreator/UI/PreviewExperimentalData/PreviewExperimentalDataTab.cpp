@@ -330,7 +330,8 @@ namespace
                     if (not m_IconCache) {
                         m_IconCache = App::singleton<IconCache>(
                             App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-                            ui::get_text_line_height_in_current_panel()/128.0f
+                            ui::get_text_line_height_in_current_panel()/128.0f,
+                            App::get().highest_device_pixel_ratio()
                         );
                     }
                     ui::same_line();

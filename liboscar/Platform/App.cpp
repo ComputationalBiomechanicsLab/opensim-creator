@@ -1189,6 +1189,16 @@ public:
         return SDL_GetWindowDisplayScale(main_window_.get());
     }
 
+    float highest_device_pixel_ratio() const
+    {
+        std::optional<float> rv;
+        int displays = 0;
+        for (SDL_DisplayID* it = SDL_GetDisplays(&displays); displays > 0; ++it, --displays) {
+            rv = std::max(rv, std::optional{SDL_GetDisplayContentScale(*it)});
+        }
+        return rv.value_or(1.0f);
+    }
+
     float os_to_main_window_device_independent_ratio() const
     {
         // i.e. scale the event by multiplying it by the pixel density (yielding a
@@ -1877,6 +1887,11 @@ Vec2 osc::App::main_window_pixel_dimensions() const
 float osc::App::main_window_device_pixel_ratio() const
 {
     return impl_->main_window_device_pixel_ratio();
+}
+
+float osc::App::highest_device_pixel_ratio() const
+{
+    return impl_->highest_device_pixel_ratio();
 }
 
 bool osc::App::is_main_window_minimized() const

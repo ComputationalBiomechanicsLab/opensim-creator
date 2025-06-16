@@ -496,7 +496,8 @@ private:
     ComponentContextMenuFlags m_Flags;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-        ui::get_font_base_size()/128.0f
+        ui::get_font_base_size()/128.0f,
+        App::get().highest_device_pixel_ratio()
     );
 };
 
