@@ -37,7 +37,7 @@ public:
             return true;
         }
         else if (ev.type() == EventType::MouseMove) {
-            apply_pan_to_camera(dynamic_cast<const MouseEvent&>(ev).relative_delta());
+            apply_pan_to_camera(dynamic_cast<const MouseEvent&>(ev).delta());
             return true;
         }
         return false;
@@ -74,7 +74,7 @@ private:
         // TODO: zoom the mandelbrot viewport into the given ui space location by the given factor
     }
 
-    void apply_pan_to_camera(Vec2)
+    void apply_pan_to_camera([[maybe_unused]] Vec2 screen_space_delta)
     {
         // TODO: pan the mandelbrot viewport by the given ui space offset vector
     }

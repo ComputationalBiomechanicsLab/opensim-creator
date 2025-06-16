@@ -8,6 +8,7 @@
 
 namespace osc
 {
+    // Represents a file that has been dragged into the application.
     class DropFileEvent final : public Event {
     public:
         explicit DropFileEvent(std::filesystem::path path) :

@@ -7,6 +7,9 @@
 
 namespace osc
 {
+    // Represents an event related to a button press or motion of a mouse.
+    //
+    // Related: `MouseWheelEvent`.
     class MouseEvent final : public Event {
     public:
         static MouseEvent button_down(MouseInputSource source, MouseButton button)
@@ -27,13 +30,14 @@ namespace osc
         MouseInputSource input_source() const { return input_source_; }
         MouseButton button() const { return button_; }
 
-        // Returns the relative delta of the mouse motion (i.e. how much the mouse moved
-        // since the previous `MouseEvent`) in device-independent pixels.
-        Vec2 relative_delta() const { return relative_delta_; }
+        // Returns the relative delta vector of the mouse motion (i.e. how much the mouse
+        // moved since the previous `MouseEvent`) in screen space and device-independent
+        // pixels.
+        Vec2 delta() const { return relative_delta_; }
 
-        // Returns the position of the mouse cursor in a top-left coordinate system in
-        // virtual device-independent pixels.
-        Vec2 position_in_window() const { return position_in_window_; }
+        // Returns the location of the mouse cursor in screen space and device-independent
+        // pixels.
+        Vec2 location() const { return location_in_window_; }
 
     private:
         explicit MouseEvent(
@@ -53,12 +57,12 @@ namespace osc
 
             Event{EventType::MouseMove},
             relative_delta_{relative_delta},
-            position_in_window_{position_in_window},
+            location_in_window_{position_in_window},
             input_source_{input_source}
         {}
 
         Vec2 relative_delta_;
-        Vec2 position_in_window_;
+        Vec2 location_in_window_;
         MouseInputSource input_source_ = MouseInputSource::Mouse;
         MouseButton button_ = MouseButton::None;
     };

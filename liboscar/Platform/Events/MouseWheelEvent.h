@@ -7,6 +7,8 @@
 
 namespace osc
 {
+    // Represents a motion of a mouse wheel or similar (e.g. double-fingered scroll
+    // on a touch screen) event.
     class MouseWheelEvent final : public Event {
     public:
         explicit MouseWheelEvent(Vec2 delta, MouseInputSource input_source) :

@@ -7,6 +7,8 @@
 
 namespace osc
 {
+    // Represents a single key press (down) or key release (up), possibly
+    // while other modifier keys (e.g. ctrl) are also pressed.
     class KeyEvent final : public Event {
     public:
         static KeyEvent key_up(KeyCombination combination)

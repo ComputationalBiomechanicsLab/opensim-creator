@@ -494,7 +494,10 @@ namespace
         }
     }
 
-    std::unique_ptr<Event> try_parse_into_event(const SDL_Event& e, std::function<float()> os_to_main_window_device_independent_ratio_getter)
+    std::unique_ptr<Event> try_parse_into_event(
+        const SDL_Event& e,
+        Vec2 main_window_dimensions,
+        std::function<float()> os_to_main_window_device_independent_ratio_getter)
     {
         if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
             return std::make_unique<DropFileEvent>(std::filesystem::path{e.drop.data});
@@ -521,9 +524,13 @@ namespace
             const float os_to_main_window_device_independent_ratio = os_to_main_window_device_independent_ratio_getter();
 
             Vec2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
-            relative_delta *= os_to_main_window_device_independent_ratio;
+            relative_delta *= os_to_main_window_device_independent_ratio;            // convert SDL3 units (pixels) to device-independent pixels
+            relative_delta.y = main_window_dimensions.y - relative_delta.y;          // convert from SDL3 space (top-left origin, left-handed) to screen space
+
             Vec2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
-            position_in_window *= os_to_main_window_device_independent_ratio;
+            position_in_window *= os_to_main_window_device_independent_ratio;        // convert SDL3 units (pixels) to device-independent pixels
+            position_in_window.y = main_window_dimensions.y - position_in_window.y;  // convert from SDL3 space (top-left origin, left-handed) to screen space
+
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
         else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
@@ -834,7 +841,7 @@ public:
 
                 // let top-level widget handle the event
                 bool widget_handled_event = false;
-                if (auto parsed = try_parse_into_event(e, [this]{ return os_to_main_window_device_independent_ratio(); })) {
+                if (auto parsed = try_parse_into_event(e, main_window_dimensions(), [this]{ return os_to_main_window_device_independent_ratio(); })) {
                     widget_handled_event = current_widget_->on_event(*parsed);
                 }
 
@@ -1225,13 +1232,19 @@ public:
         if (SDL_GetMouseFocus() != main_window_.get()) {
             return std::nullopt;  // main window is unfocused
         }
+
         // SDL returns position of the mouse relative to the top-left corner
         // of the window in OS units
         Vec2 p;
         SDL_GetMouseState(&p.x, &p.y);
 
-        // scale to a device-independent quantity
+        // scale OS units to device-independent pixels
         p *= os_to_main_window_device_independent_ratio();
+
+        // transform from left-handed origin-in-top-left coordinate system
+        // to screen space
+        p.y = main_window_dimensions().y - p.y;
+
         return p;
     }
 

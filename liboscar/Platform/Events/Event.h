@@ -4,7 +4,12 @@
 
 namespace osc
 {
-    // base class for application events
+    // Represents an event, either spontaneous (i.e. from the operating system
+    // as a result of actual user/hardware interaction), or synthesized.
+    //
+    // Events may or may not "propagate", which indicates to parts of the
+    // application that if a particular `Widget` does not handle the event
+    // it should bubble it up to its parent `Widget` (if applicable).
     class Event {
     protected:
         Event() = default;

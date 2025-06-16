@@ -969,7 +969,7 @@ namespace
         case EventType::MouseMove: {
             const auto& move_event = dynamic_cast<const MouseEvent&>(e);
             io.AddMouseSourceEvent(move_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
-            io.AddMousePosEvent(move_event.position_in_window().x, move_event.position_in_window().y);
+            io.AddMousePosEvent(move_event.location().x, io.DisplaySize.y - move_event.location().y);
             return true;
         }
         case EventType::MouseWheel: {
@@ -1201,7 +1201,7 @@ namespace
 
         // update mouse position
         if (const auto p = App::upd().mouse_pos_in_main_window()) {
-            ImGui::GetIO().AddMousePosEvent(p->x, p->y);
+            ImGui::GetIO().AddMousePosEvent(p->x, io.DisplaySize.y - p->y);
         }
         ImGui_ImplOscar_UpdateMouseCursor(app);
     }

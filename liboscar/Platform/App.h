@@ -386,8 +386,8 @@ namespace osc
         void enable_main_window_grab();
         void disable_main_window_grab();
 
-        // if the main window is focused with the mouse, returns the current position of the mouse
-        // relative to the top-left corner of the main window in device-independent pixels.
+        // if the main window is focused with the mouse, returns the current position
+        // of the mouse in screen space in device-independent pixels.
         //
         // otherwise, returns `std::nullopt`.
         std::optional<Vec2> mouse_pos_in_main_window() const;
@@ -418,7 +418,8 @@ namespace osc
         // stop accepting unicode text input events for the given window
         void stop_text_input(WindowID);
 
-        // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
+        // makes the main window fullscreen, but still composited with the desktop (so-called
+        // 'windowed maximized' in games)
         void make_main_window_fullscreen();
 
         // makes the main window windowed (as opposed to fullscreen)
