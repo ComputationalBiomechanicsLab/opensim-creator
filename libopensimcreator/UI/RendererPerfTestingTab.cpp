@@ -82,17 +82,17 @@ public:
             auto_focus(m_ModelRendererParams.camera, sceneAABB);
         }
 
-        const Rect workspaceRect = ui::get_main_window_workspace_screen_space_rect();
+        const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
         const SceneRendererParams params = CalcSceneRendererParams(
             m_ModelRendererParams,
-            dimensions_of(workspaceRect),
+            dimensions_of(workspaceScreenRect),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
             1.0f
         );
         m_Renderer.render(m_Decorations, params);
         RenderTexture& sceneTexture = m_Renderer.upd_render_texture();
-        graphics::blit_to_main_window(sceneTexture, workspaceRect);
+        graphics::blit_to_main_window(sceneTexture, workspaceScreenRect);
 
         ui::begin_panel("stats");
         ui::draw_checkbox("paused", &m_Paused);

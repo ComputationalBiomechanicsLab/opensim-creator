@@ -899,6 +899,9 @@ namespace osc::ui
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
     PanelFlags get_minimal_panel_flags();
 
+    // returns `true` if the area of the main window's workspace is greater than zero.
+    bool main_window_has_workspace();
+
     // returns a `Rect` that indicates where the current workspace area is in the main
     // application window
     //

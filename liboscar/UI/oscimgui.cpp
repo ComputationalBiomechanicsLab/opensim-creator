@@ -3294,6 +3294,12 @@ ui::PanelFlags osc::ui::get_minimal_panel_flags()
     };
 }
 
+bool osc::ui::main_window_has_workspace()
+{
+    return area_of(get_main_window_workspace_ui_rect()) > 0.0f;
+}
+
+
 Rect osc::ui::get_main_window_workspace_ui_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
@@ -3321,7 +3327,8 @@ Vec2 osc::ui::get_main_window_workspace_dimensions()
 
 float osc::ui::get_main_window_workspace_aspect_ratio()
 {
-    return aspect_ratio_of(get_main_window_workspace_screen_space_rect());
+    const ImGuiViewport& viewport = *ImGui::GetMainViewport();
+    return aspect_ratio_of(Vec2{viewport.WorkSize});
 }
 
 bool osc::ui::is_mouse_in_main_window_workspace()
