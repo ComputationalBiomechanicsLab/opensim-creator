@@ -1145,40 +1145,6 @@ public:
         );
     }
 
-    std::vector<Monitor> monitors() const
-    {
-        std::vector<Monitor> rv;
-
-        int display_count = 0;
-        SDL_DisplayID* const first_display = SDL_GetDisplays(&display_count);
-        if (first_display == nullptr) {
-            const char* error = SDL_GetError();
-            std::stringstream msg;
-            msg << "SDL_GetDisplays: error: " << error;
-            throw std::runtime_error{std::move(msg).str()};
-        }
-        const ScopeExit displays_deleter{[first_display]{ SDL_free(first_display); }};
-        const std::span<const SDL_DisplayID> display_ids{first_display, static_cast<size_t>(display_count)};
-
-        rv.reserve(display_count);
-        for (const SDL_DisplayID display_id : display_ids) {
-            SDL_Rect display_bounds;
-            SDL_GetDisplayBounds(display_id, &display_bounds);
-
-
-#if SDL_HAS_USABLE_DISPLAY_BOUNDS
-            SDL_Rect usable_bounds;
-            SDL_GetDisplayUsableBounds(display_id, &usable_bounds);
-#else
-            const SDL_Rect usable_bounds = display_bounds;
-#endif
-            const float dpi = SDL_GetDisplayContentScale(display_id) * 96.0f;
-            rv.emplace_back(to<Rect>(display_bounds), to<Rect>(usable_bounds), dpi);
-        }
-
-        return rv;
-    }
-
     WindowID main_window_id() const
     {
         return WindowID{main_window_.get()};
@@ -1875,11 +1841,6 @@ void osc::App::prompt_user_to_save_file_with_extension_async(
         maybe_extension,
         std::move(initial_directory_to_show)
     );
-}
-
-std::vector<Monitor> osc::App::monitors() const
-{
-    return impl_->monitors();
 }
 
 WindowID osc::App::main_window_id() const

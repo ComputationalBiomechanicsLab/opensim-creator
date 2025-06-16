@@ -10,7 +10,6 @@
 #include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Monitor.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/WindowID.h>
 
@@ -26,7 +25,6 @@
 #include <string_view>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 namespace osc { class AppMetadata; }
 namespace osc { class AppSettings; }
@@ -237,7 +235,7 @@ namespace osc
 
         // Gets/sets the directory that should be shown to the user if a call to one of the
         // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
-        // fallback isn't provided, the implementation will fallback to whatever the
+        // fallback isn't provided, the implementation will fall back to whatever the
         // OS's default behavior is (typically, it remembers the user's last usage).
         //
         // This fallback is activated until a call to `prompt_user*` is made without the
@@ -348,10 +346,6 @@ namespace osc
             std::optional<std::string_view> maybe_extension = std::nullopt,
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
-
-        // returns a sequence of all physical monitors associated with the windowing system that
-        // this `App` is connected to.
-        std::vector<Monitor> monitors() const;
 
         // returns the ID of the main window
         WindowID main_window_id() const;

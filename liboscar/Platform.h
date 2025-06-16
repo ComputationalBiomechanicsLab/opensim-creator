@@ -21,7 +21,6 @@
 #include <liboscar/Platform/LogMessage.h>
 #include <liboscar/Platform/LogMessageView.h>
 #include <liboscar/Platform/LogSink.h>
-#include <liboscar/Platform/Monitor.h>
 #include <liboscar/Platform/MouseButton.h>
 #include <liboscar/Platform/MouseInputSource.h>
 #include <liboscar/Platform/os.h>
