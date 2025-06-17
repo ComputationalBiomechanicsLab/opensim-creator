@@ -14,7 +14,7 @@ using namespace osc;
 TEST(RenderTexture, default_constructor_creates_1x1_default_texture)
 {
     const RenderTexture render_texture;
-    ASSERT_EQ(render_texture.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(render_texture.dimensions(), Vec2(1.0f, 1.0f));
     ASSERT_EQ(render_texture.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
     ASSERT_EQ(render_texture.color_format(), ColorRenderBufferFormat::Default);
     ASSERT_EQ(render_texture.anti_aliasing_level(), AntiAliasingLevel{1});
@@ -81,11 +81,11 @@ TEST(RenderTexture, reformat_throws_if_given_CubeDimensionality_and_anti_aliasin
     ASSERT_ANY_THROW(RenderTexture().reformat(render_texture_params));
 }
 
-TEST(RenderTexture, throws_if_given_non_square_dimensions_but_Cube_dimensionality)
+TEST(RenderTexture, throws_if_given_non_square_pixel_dimensions_but_Cube_dimensionality)
 {
     // permitted
     const RenderTextureParams render_texture_params = {
-        .dimensions = {1, 2},
+        .pixel_dimensions = {1, 2},
         .dimensionality = TextureDimensionality::Cube,
     };
 
@@ -93,20 +93,20 @@ TEST(RenderTexture, throws_if_given_non_square_dimensions_but_Cube_dimensionalit
     ASSERT_ANY_THROW(const RenderTexture render_texture(render_texture_params));
 }
 
-TEST(RenderTexture, set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_dimensions)
+TEST(RenderTexture, set_dimensionality_throws_if_set_on_RenderTexture_with_non_square_pixel_dimensions)
 {
     RenderTexture render_texture;
-    render_texture.set_dimensions({1, 2});  // not square
+    render_texture.set_pixel_dimensions({1, 2});  // not square
 
     ASSERT_ANY_THROW(render_texture.set_dimensionality(TextureDimensionality::Cube));
 }
 
-TEST(RenderTexture, set_dimensions_throws_if_set_on_RenderTexture_with_cube_dimensionality)
+TEST(RenderTexture, set_pixel_dimensions_throws_if_set_on_RenderTexture_with_cube_dimensionality)
 {
     RenderTexture render_texture;
     render_texture.set_dimensionality(TextureDimensionality::Cube);
 
-    ASSERT_ANY_THROW(render_texture.set_dimensions({1, 2}));
+    ASSERT_ANY_THROW(render_texture.set_pixel_dimensions({1, 2}));
 }
 
 TEST(RenderTexture, set_dimension_changes_equality)
@@ -121,11 +121,11 @@ TEST(RenderTexture, set_dimension_changes_equality)
     ASSERT_NE(texture_a, texture_b);
 }
 
-TEST(RenderTexture, can_be_constructed_from_dimensions_vector)
+TEST(RenderTexture, can_be_constructed_from_pixel_dimensions_vector)
 {
-    const Vec2i dimensions = {12, 12};
-    const RenderTexture render_texture{{.dimensions = dimensions}};
-    ASSERT_EQ(render_texture.dimensions(), dimensions);
+    const Vec2i pixel_dimensions = {12, 12};
+    const RenderTexture render_texture{{.pixel_dimensions = pixel_dimensions}};
+    ASSERT_EQ(render_texture.pixel_dimensions(), pixel_dimensions);
 }
 
 TEST(RenderTexture, can_be_constructed_from_RenderTextureParams)
@@ -136,13 +136,13 @@ TEST(RenderTexture, can_be_constructed_from_RenderTextureParams)
 
 TEST(RenderTexture, FromDescriptorHasExpectedValues)
 {
-    const Vec2i dimensions = {8, 8};
+    const Vec2i pixel_dimensions = {8, 8};
     const AntiAliasingLevel aa_level{1};
     const ColorRenderBufferFormat format = ColorRenderBufferFormat::R8_UNORM;
     const TextureDimensionality dimensionality = TextureDimensionality::Cube;
 
     const RenderTextureParams render_texture_params = {
-        .dimensions = dimensions,
+        .pixel_dimensions = pixel_dimensions,
         .dimensionality = dimensionality,
         .anti_aliasing_level = aa_level,
         .color_format = format,
@@ -150,7 +150,7 @@ TEST(RenderTexture, FromDescriptorHasExpectedValues)
 
     const RenderTexture render_texture{render_texture_params};
 
-    ASSERT_EQ(render_texture.dimensions(), dimensions);
+    ASSERT_EQ(render_texture.pixel_dimensions(), pixel_dimensions);
     ASSERT_EQ(render_texture.dimensionality(), TextureDimensionality::Cube);
     ASSERT_EQ(render_texture.anti_aliasing_level(), aa_level);
     ASSERT_EQ(render_texture.color_format(), format);
@@ -201,25 +201,25 @@ TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copi
     ASSERT_NE(copy.upd_depth_buffer(), rt.upd_depth_buffer());
 }
 
-TEST(RenderTexture, device_independent_dimensions_equal_dimensions_on_construction)
+TEST(RenderTexture, dimensions_equal_pixel_dimensions_on_construction)
 {
     RenderTexture render_texture;
-    render_texture.set_dimensions({7, 7});
+    render_texture.set_pixel_dimensions({7, 7});
 
-    ASSERT_EQ(render_texture.dimensions(), Vec2i(7, 7));
-    ASSERT_EQ(Vec2(render_texture.dimensions()), render_texture.device_independent_dimensions());
+    ASSERT_EQ(render_texture.pixel_dimensions(), Vec2i(7, 7));
+    ASSERT_EQ(render_texture.dimensions(), Vec2(render_texture.pixel_dimensions()));
 }
 
-TEST(RenderTexture, device_independent_dimensions_are_scaled_by_device_pixel_ratio)
+TEST(RenderTexture, dimensions_are_scaled_by_device_pixel_ratio)
 {
     RenderTexture render_texture;
-    render_texture.set_dimensions({7, 7});
+    render_texture.set_pixel_dimensions({7, 7});
 
-    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f, 7.0f));
+    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f, 7.0f));
     render_texture.set_device_pixel_ratio(2.0f);
-    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f,7.0f)/2.0f);
+    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f,7.0f)/2.0f);
     render_texture.set_device_pixel_ratio(0.5f);
-    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(7.0f,7.0f)/0.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f,7.0f)/0.5f);
 }
 
 TEST(RenderTexture, device_pixel_ratio_is_initially_1)
@@ -246,13 +246,13 @@ TEST(RenderTexture, device_pixel_ratio_is_propagated_from_params)
     ASSERT_EQ(render_texture.device_pixel_ratio(), 3.0f);
 }
 
-TEST(RenderTexture, device_pixel_ratio_from_params_affects_device_independent_dimensions)
+TEST(RenderTexture, device_pixel_ratio_from_params_affects_dimensions)
 {
     const RenderTexture render_texture{{
-        .dimensions = {13, 13},
+        .pixel_dimensions = {13, 13},
         .device_pixel_ratio = 2.5f,
     }};
-    ASSERT_EQ(render_texture.dimensions(), Vec2i(13, 13));
+    ASSERT_EQ(render_texture.pixel_dimensions(), Vec2i(13, 13));
     ASSERT_EQ(render_texture.device_pixel_ratio(), 2.5f);
-    ASSERT_EQ(render_texture.device_independent_dimensions(), Vec2(13.0f, 13.0f)/2.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vec2(13.0f, 13.0f)/2.5f);
 }

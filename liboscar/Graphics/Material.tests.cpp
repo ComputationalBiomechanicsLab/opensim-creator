@@ -176,7 +176,7 @@ namespace
 
     RenderTexture generate_render_texture()
     {
-        return RenderTexture{{.dimensions = {2, 2}}};
+        return RenderTexture{{.pixel_dimensions = {2, 2}}};
     }
 }
 
