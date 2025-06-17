@@ -429,8 +429,8 @@ namespace
     {
         OSC_ASSERT(draw_command.UserCallback == nullptr && "user callbacks are not supported in oscar's ImGui renderer impl");
 
-        // Project scissor/clipping rectangles from device-independent top-left coordinate
-        // space into device-independent right-handed space
+        // Project scissor/clipping rectangles from ui space, in device-independent
+        // pixels, into screenspace, also in device-independent pixels.
         const Vec2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
         const Vec2 clip_min(draw_command.ClipRect.x - clip_off.x, draw_command.ClipRect.y - clip_off.y);
         const Vec2 clip_max(draw_command.ClipRect.z - clip_off.x, draw_command.ClipRect.w - clip_off.y);

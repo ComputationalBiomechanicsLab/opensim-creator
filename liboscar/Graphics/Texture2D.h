@@ -38,8 +38,7 @@ namespace osc
         // Returns the dimensions of the texture in device-independent pixels.
         //
         // - These dimensions should be used when compositing the texture into a
-        //   high DPI user interface.
-        //
+        //   user interface.
         // - Returns the equivalent of `texture.dimensions() / texture.device_pixel_ratio()`.
         Vec2 device_independent_dimensions() const;
 
