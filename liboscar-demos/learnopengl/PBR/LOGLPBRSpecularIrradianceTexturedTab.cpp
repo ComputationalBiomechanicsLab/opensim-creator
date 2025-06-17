@@ -46,7 +46,7 @@ namespace
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
         RenderTexture cubemap_render_target{{
-            .dimensions = {512, 512},
+            .pixel_dimensions = {512, 512},
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
@@ -74,7 +74,7 @@ namespace
     RenderTexture create_irradiance_cubemap(ResourceLoader& loader, const RenderTexture& skybox)
     {
         RenderTexture irradiance_cubemap{{
-            .dimensions = {32, 32},
+            .pixel_dimensions = {32, 32},
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
@@ -103,7 +103,7 @@ namespace
         static_assert(std::popcount(static_cast<unsigned>(level_zero_width)) == 1);
 
         RenderTexture capture_render_target{{
-            .dimensions = {level_zero_width, level_zero_width},
+            .pixel_dimensions = {level_zero_width, level_zero_width},
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
@@ -134,7 +134,7 @@ namespace
         // LOD of the cubemap's mipmaps
         for (size_t mip = 0; mip <= max_mipmap_level; ++mip) {
             const size_t mip_width = level_zero_width >> mip;
-            capture_render_target.set_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
+            capture_render_target.set_pixel_dimensions({static_cast<int>(mip_width), static_cast<int>(mip_width)});
 
             material.set("uRoughness", static_cast<float>(mip)/static_cast<float>(max_mipmap_level));
 
@@ -164,7 +164,7 @@ namespace
         );
 
         RenderTexture render_texture{{
-            .dimensions = {512, 512},
+            .pixel_dimensions = {512, 512},
             .color_format = ColorRenderBufferFormat::R16G16_SFLOAT,
         }};
         camera.render_to(render_texture);
@@ -240,7 +240,7 @@ public:
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
         const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
 
-        output_render_.set_dimensions(workspace_pixel_dimensions);
+        output_render_.set_pixel_dimensions(workspace_pixel_dimensions);
         output_render_.set_device_pixel_ratio(device_pixel_ratio);
         output_render_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 

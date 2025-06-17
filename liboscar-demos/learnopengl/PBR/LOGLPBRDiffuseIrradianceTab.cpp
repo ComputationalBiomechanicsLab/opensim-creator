@@ -50,7 +50,7 @@ namespace
         hdr_texture.set_filter_mode(TextureFilterMode::Linear);
 
         RenderTexture cubemap_render_texture{{
-            .dimensions = {512, 512},
+            .pixel_dimensions = {512, 512},
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
@@ -85,7 +85,7 @@ namespace
         const RenderTexture& skybox)
     {
         RenderTexture irradiance_cubemap{{
-            .dimensions = {32, 32},
+            .pixel_dimensions = {32, 32},
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};

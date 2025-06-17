@@ -237,7 +237,7 @@ private:
 
     Texture2D render_annotated_screenshot()
     {
-        RenderTexture render_texture{{.dimensions = image_texture_.pixel_dimensions()}};
+        RenderTexture render_texture{{.pixel_dimensions = image_texture_.pixel_dimensions()}};
 
         // blit the screenshot into the output
         graphics::blit(image_texture_, render_texture);
@@ -257,7 +257,7 @@ private:
         draw_list.render_to(render_texture);
         draw_list.pop_clip_rect();
 
-        Texture2D rv{render_texture.dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
+        Texture2D rv{render_texture.pixel_dimensions(), TextureFormat::RGB24, ColorSpace::sRGB};
         graphics::copy_texture(render_texture, rv);
         return rv;
     }

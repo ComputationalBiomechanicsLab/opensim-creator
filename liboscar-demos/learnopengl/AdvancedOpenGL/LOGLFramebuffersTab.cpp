@@ -86,7 +86,7 @@ public:
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
         const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
 
-        render_texture_.set_dimensions(workspace_pixel_dimensions);
+        render_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
         render_texture_.set_device_pixel_ratio(device_pixel_ratio);
         render_texture_.set_anti_aliasing_level(App::get().anti_aliasing_level());
 

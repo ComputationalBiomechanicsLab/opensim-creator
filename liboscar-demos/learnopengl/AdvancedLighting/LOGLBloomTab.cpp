@@ -143,7 +143,7 @@ private:
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         RenderTextureParams params = {
-            .dimensions = viewport_pixel_dimensions,
+            .pixel_dimensions = viewport_pixel_dimensions,
             .device_pixel_ratio = device_pixel_ratio,
             .anti_aliasing_level = aa_level,
             .color_format = ColorRenderBufferFormat::DefaultHDR,

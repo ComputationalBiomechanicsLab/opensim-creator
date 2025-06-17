@@ -321,7 +321,7 @@ private:
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = pixel_dimensions,
+                    .pixel_dimensions = pixel_dimensions,
                     .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
@@ -336,7 +336,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
@@ -348,7 +348,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
@@ -360,7 +360,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }

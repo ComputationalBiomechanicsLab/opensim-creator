@@ -22,7 +22,7 @@ public:
     void on_draw()
     {
         RenderTexture tex{{
-            .dimensions = {256.0f, 256.0f},
+            .pixel_dimensions = {256, 256},
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
         }};
 

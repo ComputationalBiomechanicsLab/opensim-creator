@@ -674,7 +674,7 @@ public:
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        output_rendertexture_.set_dimensions(params.device_pixel_ratio * params.virtual_pixel_dimensions);
+        output_rendertexture_.set_pixel_dimensions(params.device_pixel_ratio * params.virtual_pixel_dimensions);
         output_rendertexture_.set_device_pixel_ratio(params.device_pixel_ratio);
         output_rendertexture_.set_anti_aliasing_level(params.antialiasing_level);
         camera_.render_to(output_rendertexture_);
@@ -783,7 +783,7 @@ private:
 
         // configure the off-screen solid-colored texture
         rims_rendertexture_.reformat({
-            .dimensions = params.virtual_pixel_dimensions,
+            .pixel_dimensions = params.device_pixel_ratio * params.virtual_pixel_dimensions,
             .device_pixel_ratio = params.device_pixel_ratio,
             .anti_aliasing_level = params.antialiasing_level,
         });
@@ -870,7 +870,7 @@ private:
     Camera camera_;
     RenderTexture rims_rendertexture_;
     SharedDepthStencilRenderBuffer shadowmap_render_buffer_{DepthStencilRenderBufferParams{
-        .dimensions = {1024, 1024},
+        .pixel_dimensions = {1024, 1024},
     }};
     RenderTexture output_rendertexture_;
 };

@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr Vec2i c_shadowmap_dimensions = {1024, 1024};
+    constexpr Vec2i c_shadowmap_pixel_dimensions = {1024, 1024};
 
     Transform make_rotated_transform()
     {
@@ -52,7 +52,7 @@ namespace
     RenderTexture create_depth_texture()
     {
         return RenderTexture{{
-            .dimensions = c_shadowmap_dimensions,
+            .pixel_dimensions = c_shadowmap_pixel_dimensions,
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R32_SFLOAT,
         }};
@@ -124,7 +124,7 @@ private:
         const float zfar = 25.0f;
         const Mat4 projection_matrix = perspective(
             90_deg,
-            aspect_ratio_of(c_shadowmap_dimensions),
+            aspect_ratio_of(c_shadowmap_pixel_dimensions),
             znear,
             zfar
         );

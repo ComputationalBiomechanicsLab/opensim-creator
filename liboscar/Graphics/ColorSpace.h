@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace osc
 {
     // Used to indicate the encoding used when converting the color components of

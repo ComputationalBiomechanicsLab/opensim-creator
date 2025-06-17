@@ -2020,8 +2020,8 @@ std::ostream& osc::operator<<(std::ostream& o, DepthStencilRenderBufferFormat de
 std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params)
 {
     return o <<
-        "RenderTextureParams(width = " << params.dimensions.x
-        << ", height = " << params.dimensions.y
+        "RenderTextureParams(width = " << params.pixel_dimensions.x
+        << ", height = " << params.pixel_dimensions.y
         << ", device_pixel_ratio = " << params.device_pixel_ratio
         << ", antialiasing_level = " << params.anti_aliasing_level
         << ", color_format = " << params.color_format
@@ -2036,13 +2036,13 @@ namespace
     public:
         explicit RenderBufferImpl(const RenderBufferParams& params) : params_{params}
         {
-            OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
+            OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or pixel_dimensions().x == pixel_dimensions().y) && "cannot construct a Cube renderbuffer with non-square dimensions");
             OSC_ASSERT_ALWAYS((dimensionality() != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel::none()) && "cannot construct a Cube renderbuffer that is anti-aliased (not supported by backends like OpenGL)");
         }
 
         void reformat(const RenderBufferParams& params)
         {
-            OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.dimensions.x == params.dimensions.y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
+            OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.pixel_dimensions.x == params.pixel_dimensions.y) && "cannot reformat a render buffer to a Cube dimensionality with non-square dimensions");
             OSC_ASSERT((params.dimensionality != TextureDimensionality::Cube or params.anti_aliasing_level == AntiAliasingLevel::none()) && "cannot reformat a renderbuffer to a Cube dimensionality with is anti-aliased (not supported by backends like OpenGL)");
 
             if (params_ != params) {
@@ -2053,14 +2053,14 @@ namespace
 
         const RenderBufferParams& parameters() const { return params_; }
 
-        Vec2i dimensions() const { return params_.dimensions; }
+        Vec2i pixel_dimensions() const { return params_.pixel_dimensions; }
 
-        void set_dimensions(Vec2i new_dimensions)
+        void set_pixel_dimensions(Vec2i new_pixel_dimensions)
         {
-            OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_dimensions.x == new_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
+            OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_pixel_dimensions.x == new_pixel_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
 
-            if (new_dimensions != dimensions()) {
-                params_.dimensions = new_dimensions;
+            if (new_pixel_dimensions != pixel_dimensions()) {
+                params_.pixel_dimensions = new_pixel_dimensions;
                 maybe_opengl_data_->reset();
             }
         }
@@ -2069,7 +2069,7 @@ namespace
 
         void set_dimensionality(TextureDimensionality new_dimensionality)
         {
-            OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or dimensions().x == dimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
+            OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or pixel_dimensions().x == pixel_dimensions().y) && "cannot set dimensionality to Cube for non-square render buffer");
             OSC_ASSERT((new_dimensionality != TextureDimensionality::Cube or anti_aliasing_level() == AntiAliasingLevel{1}) && "cannot set dimensionality to Cube for an anti-aliased render buffer (not supported by backends like OpenGL)");
 
             if (new_dimensionality != dimensionality()) {
@@ -2127,16 +2127,14 @@ namespace
             using detail::equivalent_cpu_datatype_of;
             using ::equivalent_cpu_datatype_of;
 
-            const Vec2i dimensions = params_.dimensions;
-
             // setup resolved texture
             gl::bind_texture(single_sampled_texture.texture2D);
             gl::tex_image2D(
                 GL_TEXTURE_2D,
                 0,
                 to_opengl_internal_color_format_enum(params_),
-                dimensions.x,
-                dimensions.y,
+                params_.pixel_dimensions.x,
+                params_.pixel_dimensions.y,
                 0,
                 opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                 opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -2157,16 +2155,14 @@ namespace
             using detail::equivalent_cpu_datatype_of;
             using ::equivalent_cpu_datatype_of;
 
-            const Vec2i dimensions = params_.dimensions;
-
             // setup multisampled RBO
             gl::bind_renderbuffer(multisampled_rbo_and_texture.multisampled_rbo);
             glRenderbufferStorageMultisample(
                 GL_RENDERBUFFER,
                 params_.anti_aliasing_level.template get_as<GLsizei>(),
                 to_opengl_internal_color_format_enum(params_),
-                dimensions.x,
-                dimensions.y
+                params_.pixel_dimensions.x,
+                params_.pixel_dimensions.y
             );
             gl::bind_renderbuffer();
 
@@ -2176,8 +2172,8 @@ namespace
                 GL_TEXTURE_2D,
                 0,
                 to_opengl_internal_color_format_enum(params_),
-                dimensions.x,
-                dimensions.y,
+                params_.pixel_dimensions.x,
+                params_.pixel_dimensions.y,
                 0,
                 opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                 opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -2198,8 +2194,6 @@ namespace
             using detail::equivalent_cpu_datatype_of;
             using ::equivalent_cpu_datatype_of;
 
-            const Vec2i dimensions = params_.dimensions;
-
             // setup resolved texture
             gl::bind_texture(single_sampled_cubemap.cubemap);
             for (int i = 0; i < 6; ++i)
@@ -2208,8 +2202,8 @@ namespace
                     GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
                     0,
                     to_opengl_internal_color_format_enum(params_),
-                    dimensions.x,
-                    dimensions.y,
+                    params_.pixel_dimensions.x,
+                    params_.pixel_dimensions.y,
                     0,
                     opengl_format_of(equivalent_cpu_image_format_of(params_.format)),
                     opengl_data_type_of(equivalent_cpu_datatype_of(params_.format)),
@@ -2275,9 +2269,9 @@ SharedColorRenderBuffer osc::SharedColorRenderBuffer::clone() const
     return SharedColorRenderBuffer{*impl_};
 }
 
-Vec2i osc::SharedColorRenderBuffer::dimensions() const
+Vec2i osc::SharedColorRenderBuffer::pixel_dimensions() const
 {
-    return impl_->dimensions();
+    return impl_->pixel_dimensions();
 }
 
 TextureDimensionality osc::SharedColorRenderBuffer::dimensionality() const
@@ -2313,7 +2307,7 @@ struct osc::Converter<RenderTextureParams, ColorRenderBufferParams> final {
     ColorRenderBufferParams operator()(const RenderTextureParams& params) const
     {
         return ColorRenderBufferParams{
-            .dimensions = params.dimensions,
+            .pixel_dimensions = params.pixel_dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
             .format = params.color_format,
@@ -2326,7 +2320,7 @@ struct osc::Converter<RenderTextureParams, DepthStencilRenderBufferParams> final
     DepthStencilRenderBufferParams operator()(const RenderTextureParams& params) const
     {
         return DepthStencilRenderBufferParams{
-            .dimensions = params.dimensions,
+            .pixel_dimensions = params.pixel_dimensions,
             .dimensionality = params.dimensionality,
             .anti_aliasing_level = params.anti_aliasing_level,
             .format = params.depth_stencil_format,
@@ -2356,9 +2350,9 @@ SharedDepthStencilRenderBuffer osc::SharedDepthStencilRenderBuffer::clone() cons
     return SharedDepthStencilRenderBuffer{*impl_};
 }
 
-Vec2i osc::SharedDepthStencilRenderBuffer::dimensions() const
+Vec2i osc::SharedDepthStencilRenderBuffer::pixel_dimensions() const
 {
-    return impl_->dimensions();
+    return impl_->pixel_dimensions();
 }
 
 TextureDimensionality osc::SharedDepthStencilRenderBuffer::dimensionality() const
@@ -2380,7 +2374,9 @@ class osc::RenderTexture::Impl final {
 public:
     Impl() : Impl{RenderTextureParams{}} {}
 
-    explicit Impl(Vec2i dimensions) : Impl{RenderTextureParams{.dimensions = dimensions}} {}
+    explicit Impl(Vec2i pixel_dimensions) :
+        Impl{RenderTextureParams{.pixel_dimensions = pixel_dimensions}}
+    {}
 
     explicit Impl(const RenderTextureParams& params) :
         color_buffer_{to<ColorRenderBufferParams>(params)},
@@ -2413,22 +2409,22 @@ public:
 
     ~Impl() noexcept = default;
 
-    Vec2i dimensions() const
+    Vec2i pixel_dimensions() const
     {
-        return color_buffer_.impl_->dimensions();
+        return color_buffer_.impl_->pixel_dimensions();
     }
 
-    void set_dimensions(Vec2i new_dimensions)
+    void set_pixel_dimensions(Vec2i new_pixel_dimensions)
     {
-        if (new_dimensions != dimensions()) {
-            color_buffer_.impl_->set_dimensions(new_dimensions);
-            depth_buffer_.impl_->set_dimensions(new_dimensions);
+        if (new_pixel_dimensions != pixel_dimensions()) {
+            color_buffer_.impl_->set_pixel_dimensions(new_pixel_dimensions);
+            depth_buffer_.impl_->set_pixel_dimensions(new_pixel_dimensions);
         }
     }
 
-    Vec2 device_independent_dimensions() const
+    Vec2 dimensions() const
     {
-        return Vec2{dimensions()} / device_pixel_ratio_;
+        return Vec2{pixel_dimensions()} / device_pixel_ratio_;
     }
 
     float device_pixel_ratio() const
@@ -2538,19 +2534,19 @@ osc::RenderTexture::RenderTexture(const RenderTextureParams& params) :
     impl_{make_cow<Impl>(params)}
 {}
 
-Vec2i osc::RenderTexture::dimensions() const
+Vec2i osc::RenderTexture::pixel_dimensions() const
+{
+    return impl_->pixel_dimensions();
+}
+
+void osc::RenderTexture::set_pixel_dimensions(Vec2i new_pixel_dimensions)
+{
+    impl_.upd()->set_pixel_dimensions(new_pixel_dimensions);
+}
+
+Vec2 osc::RenderTexture::dimensions() const
 {
     return impl_->dimensions();
-}
-
-void osc::RenderTexture::set_dimensions(Vec2i new_dimensions)
-{
-    impl_.upd()->set_dimensions(new_dimensions);
-}
-
-Vec2 osc::RenderTexture::device_independent_dimensions() const
-{
-    return impl_->device_independent_dimensions();
 }
 
 float osc::RenderTexture::device_pixel_ratio() const
@@ -6771,7 +6767,7 @@ namespace osc
         struct ViewportGeometry final {
             struct Viewport {
                 Vec2 bottom_left;
-                Vec2 dimensions;
+                Vec2 pixel_dimensions;
             } viewport;
 
             struct Scissor {
@@ -7536,19 +7532,19 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     if (auto pixel_rect = camera.pixel_rect()) {
         rv.viewport = {
             .bottom_left = scaler * pixel_rect->p1,
-            .dimensions = scaler * dimensions_of(*pixel_rect)
+            .pixel_dimensions = scaler * dimensions_of(*pixel_rect)
         };
     }
     else if (maybe_custom_render_target) {
         rv.viewport = {
             .bottom_left = {},
-            .dimensions = maybe_custom_render_target->dimensions(),
+            .pixel_dimensions = maybe_custom_render_target->pixel_dimensions(),
         };
     }
     else {
         rv.viewport = {
             .bottom_left = {},
-            .dimensions = scaler * App::get().main_window_dimensions(),
+            .pixel_dimensions = scaler * App::get().main_window_dimensions(),
         };
     }
 
@@ -7571,8 +7567,8 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
     gl::viewport(
         static_cast<GLint>(viewport_geom.viewport.bottom_left.x),
         static_cast<GLint>(viewport_geom.viewport.bottom_left.y),
-        static_cast<GLsizei>(viewport_geom.viewport.dimensions.x),
-        static_cast<GLsizei>(viewport_geom.viewport.dimensions.y)
+        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.x),
+        static_cast<GLsizei>(viewport_geom.viewport.pixel_dimensions.y)
     );
 
     if (viewport_geom.scissor) {
@@ -7588,7 +7584,7 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
         gl::disable(GL_SCISSOR_TEST);
     }
 
-    return aspect_ratio_of(viewport_geom.viewport.dimensions);
+    return aspect_ratio_of(viewport_geom.viewport.pixel_dimensions);
 }
 
 void osc::GraphicsBackend::teardown_top_level_pipeline_state(
@@ -7816,16 +7812,16 @@ void osc::GraphicsBackend::resolve_render_buffers(
         }, buffer_opengl_data);
 
         if (can_resolve_buffer) {
-            const Vec2i dimensions = attachment.buffer.impl_->dimensions();
+            const Vec2i pixel_dimensions = attachment.buffer.impl_->pixel_dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
-                dimensions.x,
-                dimensions.y,
+                pixel_dimensions.x,
+                pixel_dimensions.y,
                 0,
                 0,
-                dimensions.x,
-                dimensions.y,
+                pixel_dimensions.x,
+                pixel_dimensions.y,
                 GL_COLOR_BUFFER_BIT,
                 GL_NEAREST
             );
@@ -7868,16 +7864,16 @@ void osc::GraphicsBackend::resolve_render_buffers(
 
         if (can_resolve_buffer)
         {
-            const Vec2i dimensions = render_target.depth_attachment()->buffer.impl_->dimensions();
+            const Vec2i pixel_dimensions = render_target.depth_attachment()->buffer.impl_->pixel_dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
-                dimensions.x,
-                dimensions.y,
+                pixel_dimensions.x,
+                pixel_dimensions.y,
                 0,
                 0,
-                dimensions.x,
-                dimensions.y,
+                pixel_dimensions.x,
+                pixel_dimensions.y,
                 GL_DEPTH_BUFFER_BIT,
                 GL_NEAREST
             );
@@ -8093,8 +8089,8 @@ void osc::GraphicsBackend::copy_texture(
     gl::blit_framebuffer(
         0,
         0,
-        source.dimensions().x,
-        source.dimensions().y,
+        source.pixel_dimensions().x,
+        source.pixel_dimensions().y,
         0,
         0,
         destination.pixel_dimensions().x,
@@ -8195,8 +8191,8 @@ void osc::GraphicsBackend::copy_texture(
         gl::blit_framebuffer(
             0,
             0,
-            source.dimensions().x,
-            source.dimensions().y,
+            source.pixel_dimensions().x,
+            source.pixel_dimensions().y,
             0,
             0,
             destination.width() / (1<<mipmap_level),

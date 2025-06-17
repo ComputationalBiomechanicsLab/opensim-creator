@@ -133,7 +133,7 @@ namespace
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = pixel_dimensions,
+                    .pixel_dimensions = pixel_dimensions,
                     .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
@@ -198,7 +198,7 @@ private:
         // ensure textures/buffers have correct dimensions
         {
             gbuffer_.reformat(workspace_pixel_dimensions, device_pixel_scale, anti_aliasing_level);
-            output_texture_.set_dimensions(workspace_pixel_dimensions);
+            output_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
             output_texture_.set_anti_aliasing_level(anti_aliasing_level);
         }
 

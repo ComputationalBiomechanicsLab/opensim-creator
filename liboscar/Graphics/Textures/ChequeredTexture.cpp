@@ -16,23 +16,23 @@ namespace
 {
     Texture2D generate_chequer_texture()
     {
-        constexpr Vec2i chequer_dims = {1, 1};
-        constexpr Vec2i texture_dims = 2 * chequer_dims;
+        constexpr Vec2i chequer_pixel_dimensions = {1, 1};
+        constexpr Vec2i texture_pixel_dimensions = 2 * chequer_pixel_dimensions;
         constexpr Color32 on_color = Color32::white();
         constexpr Color32 off_color = Color32::lightest_grey();
 
         std::vector<Color32> pixels;
-        pixels.reserve(area_of(texture_dims));
-        for (int y = 0; y < texture_dims.y; ++y) {
-            const bool y_on = (y / chequer_dims.y) % 2 == 0;
-            for (int x = 0; x < texture_dims.x; ++x) {
-                const bool x_on = (x / chequer_dims.x) % 2 == 0;
+        pixels.reserve(area_of(texture_pixel_dimensions));
+        for (int y = 0; y < texture_pixel_dimensions.y; ++y) {
+            const bool y_on = (y / chequer_pixel_dimensions.y) % 2 == 0;
+            for (int x = 0; x < texture_pixel_dimensions.x; ++x) {
+                const bool x_on = (x / chequer_pixel_dimensions.x) % 2 == 0;
                 pixels.push_back(y_on ^ x_on ? on_color : off_color);
             }
         }
 
         Texture2D rv{
-            texture_dims,
+            texture_pixel_dimensions,
             TextureFormat::RGBA32,
             ColorSpace::sRGB,
             TextureWrapMode::Repeat,

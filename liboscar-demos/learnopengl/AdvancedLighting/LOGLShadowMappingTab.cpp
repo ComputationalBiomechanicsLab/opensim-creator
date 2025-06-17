@@ -56,7 +56,7 @@ namespace
     RenderTexture create_depth_texture()
     {
         return RenderTexture{{
-            .dimensions = {1024, 1024},
+            .pixel_dimensions = {1024, 1024},
             .color_format = ColorRenderBufferFormat::R8G8B8A8_UNORM,  // linear depth values
         }};
     }

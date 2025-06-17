@@ -2622,7 +2622,7 @@ void osc::ui::DrawListAPI::render_to(RenderTexture& target)
     data.TotalIdxCount = drawlist.IdxBuffer.Size;
     data.CmdLists.push_back(&drawlist);
     data.DisplayPos = {0.0f, 0.0f};
-    data.DisplaySize = ImVec2{target.dimensions()};
+    data.DisplaySize = ImVec2{target.pixel_dimensions()};
     data.FramebufferScale = ImGui::GetIO().DisplayFramebufferScale;
     data.OwnerViewport = ImGui::GetMainViewport();
 
@@ -2991,7 +2991,7 @@ void osc::ui::draw_image(
 
 void osc::ui::draw_image(const RenderTexture& texture)
 {
-    draw_image(texture, texture.device_independent_dimensions());
+    draw_image(texture, texture.dimensions());
 }
 
 void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)

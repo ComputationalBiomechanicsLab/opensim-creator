@@ -77,7 +77,7 @@ namespace
     std::vector<SharedDepthStencilRenderBuffer> generate_blank_cascade_buffers()
     {
         const DepthStencilRenderBufferParams params = {
-            .dimensions = Vec2i{c_shadowmap_edge_length},
+            .pixel_dimensions = Vec2i{c_shadowmap_edge_length},
             .format = DepthStencilRenderBufferFormat::D32_SFloat,
         };
         return {

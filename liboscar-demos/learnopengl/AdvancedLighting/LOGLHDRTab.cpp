@@ -113,7 +113,7 @@ private:
             const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
             RenderTextureParams params = {
-                .dimensions = workspace_pixel_dimensions,
+                .pixel_dimensions = workspace_pixel_dimensions,
                 .device_pixel_ratio = device_pixel_ratio,
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             };
