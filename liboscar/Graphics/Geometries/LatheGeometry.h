@@ -6,7 +6,6 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
-#include <span>
 #include <vector>
 
 namespace osc
