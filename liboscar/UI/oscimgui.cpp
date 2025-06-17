@@ -2981,7 +2981,7 @@ void osc::ui::draw_image(
     const Rect& region_uv_coordinates)
 {
     if (not dimensions) {
-        dimensions = texture.device_independent_dimensions();
+        dimensions = texture.dimensions();
     }
     const Vec2 top_left = {region_uv_coordinates.p1.x, 1.0f - region_uv_coordinates.p1.y};
     const Vec2 bottom_right = {region_uv_coordinates.p2.x, 1.0f - region_uv_coordinates.p2.y};

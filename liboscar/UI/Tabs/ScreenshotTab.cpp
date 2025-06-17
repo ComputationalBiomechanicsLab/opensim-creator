@@ -169,7 +169,7 @@ private:
     {
         const Vec2 cursor_topleft = ui::get_cursor_ui_pos();
         const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_available()}};
-        const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.device_independent_dimensions()));
+        const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
         ui::set_cursor_ui_pos(image_rect.p1);
         ui::draw_image(image_texture_, dimensions_of(image_rect));
         return image_rect;
@@ -183,7 +183,7 @@ private:
     {
         const Vec2 mouse_ui_pos = ui::get_mouse_ui_pos();
         const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
-        const Vec2 screenshot_dimensions = screenshot_.device_independent_dimensions();
+        const Vec2 screenshot_dimensions = screenshot_.dimensions();
 
         for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
             const Rect annotation_ui_rect = map_rect(screenshot_dimensions, annotation.rect(), image_ui_rect);
@@ -237,7 +237,7 @@ private:
 
     Texture2D render_annotated_screenshot()
     {
-        RenderTexture render_texture{{.dimensions = image_texture_.dimensions()}};
+        RenderTexture render_texture{{.dimensions = image_texture_.pixel_dimensions()}};
 
         // blit the screenshot into the output
         graphics::blit(image_texture_, render_texture);

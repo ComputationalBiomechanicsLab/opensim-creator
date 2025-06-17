@@ -211,7 +211,7 @@ private:
         ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
         ssao_state_.material.set("uNoiseTex", noise_texture_);
         ssao_state_.material.set_array("uSamples", sample_kernel_);
-        ssao_state_.material.set("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set("uNoiseScale", viewport_dimensions / noise_texture_.dimensions());
         ssao_state_.material.set("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
         ssao_state_.material.set("uRadius", 0.5f);
         ssao_state_.material.set("uBias", 0.125f);

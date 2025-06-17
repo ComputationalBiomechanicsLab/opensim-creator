@@ -162,7 +162,7 @@ private:
     {
         Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
         // pretend the attributation bar isn't there (avoid it)
-        tabUIRect.p2.y -= max(m_TudLogo.device_independent_dimensions().y, m_CziLogo.device_independent_dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
+        tabUIRect.p2.y -= max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
 
         const Vec2 menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         const Vec2 menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
@@ -354,15 +354,15 @@ private:
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
         Vec2 loc = workspaceUIRect.p2;
-        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
-        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
+        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
+        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
 
         ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
-        loc.x += m_CziLogo.device_independent_dimensions().x + 2.0f*ui::get_style_item_spacing().x;
+        loc.x += m_CziLogo.dimensions().x + 2.0f*ui::get_style_item_spacing().x;
         ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);
@@ -398,7 +398,7 @@ private:
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    Vec2 m_MainAppLogoDims =  m_MainAppLogo.device_independent_dimensions();
+    Vec2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
     Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state

@@ -24,14 +24,14 @@ TEST(load_texture2D_from_svg, returns_expected_texture_dimensions_for_basic_case
 {
     std::istringstream ss{std::string{c_minimal_svg}};
     const Texture2D returned_texture = load_texture2D_from_svg(ss);
-    ASSERT_EQ(returned_texture.dimensions(), c_minimal_svg_dimensions);
+    ASSERT_EQ(returned_texture.pixel_dimensions(), c_minimal_svg_dimensions);
 }
 
 TEST(load_texture2D_from_svg, returns_2x_dimension_texture_if_given_2x_scale)
 {
     std::istringstream ss{std::string{c_minimal_svg}};
     const Texture2D returned_texture = load_texture2D_from_svg(ss, 2.0f);
-    ASSERT_EQ(returned_texture.dimensions(), 2 * c_minimal_svg_dimensions);
+    ASSERT_EQ(returned_texture.pixel_dimensions(), 2 * c_minimal_svg_dimensions);
 }
 
 TEST(load_texture2D_from_svg, throws_if_given_0x_scale)

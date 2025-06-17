@@ -51,7 +51,7 @@ TEST(load_texture2D_from_image, can_load_image_from_ResourceStream)
         ColorSpace::sRGB
     );
 
-    ASSERT_EQ(loaded_texture.dimensions(), Vec2i(512, 512));
+    ASSERT_EQ(loaded_texture.pixel_dimensions(), Vec2i(512, 512));
 }
 
 TEST(load_texture2D_from_image, throws_when_called_with_an_invalid_path)
@@ -79,7 +79,7 @@ TEST(load_texture2D_from_image, with_TreatComponentsAsSpatialVectors_negates_Y)
     const auto normal_pixels = normally_loaded_texture.pixels();
     const auto corrected_pixels = spatial_texture.pixels();
 
-    ASSERT_EQ(normally_loaded_texture.dimensions(), spatial_texture.dimensions());
+    ASSERT_EQ(normally_loaded_texture.pixel_dimensions(), spatial_texture.pixel_dimensions());
     ASSERT_EQ(normal_pixels.size(), corrected_pixels.size());
     for (size_t i = 0; i < normal_pixels.size(); ++i) {
         const Color normal_pixel = normal_pixels[i];
@@ -111,7 +111,7 @@ TEST(write_to_jpeg, is_compatible_with_reader)
     std::istringstream input_stream{data};
     const Texture2D parsed_texture = load_texture2D_from_image(input_stream, "data.jpeg", ColorSpace::sRGB);
 
-    ASSERT_EQ(parsed_texture.dimensions(), Vec2i(2, 2));
+    ASSERT_EQ(parsed_texture.pixel_dimensions(), Vec2i(2, 2));
     const auto parsed_pixels = parsed_texture.pixels32();
 
     // Ensure the pixels are approximately equal to (lossy compression) the ones that were put in.

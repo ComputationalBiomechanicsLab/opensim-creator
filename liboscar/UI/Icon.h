@@ -20,7 +20,7 @@ namespace osc
 
         const Texture2D& texture() const { return texture_; }
 
-        Vec2 dimensions() const { return texture_.device_independent_dimensions(); }
+        Vec2 dimensions() const { return texture_.dimensions(); }
 
         const Rect& texture_coordinates() const { return texture_coordinates_; }
 

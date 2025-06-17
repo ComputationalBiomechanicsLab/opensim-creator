@@ -30,7 +30,7 @@ namespace
             ColorSpace::sRGB
         );
 
-        const Vec2i texture_dimensions = face_texture.dimensions();
+        const Vec2i texture_dimensions = face_texture.pixel_dimensions();
         OSC_ASSERT(texture_dimensions.x == texture_dimensions.y);
 
         // load all face data into the cubemap
@@ -46,8 +46,8 @@ namespace
                 loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
-            OSC_ASSERT(face_texture.dimensions().x == texture_dimensions.x);
-            OSC_ASSERT(face_texture.dimensions().y == texture_dimensions.x);
+            OSC_ASSERT(face_texture.pixel_dimensions().x == texture_dimensions.x);
+            OSC_ASSERT(face_texture.pixel_dimensions().y == texture_dimensions.x);
             OSC_ASSERT(face_texture.texture_format() == cubemap.texture_format());
             cubemap.set_pixel_data(*face_iterator, face_texture.pixel_data());
         }

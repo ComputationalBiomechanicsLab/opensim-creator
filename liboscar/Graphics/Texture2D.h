@@ -19,13 +19,14 @@ namespace osc
     // Represents a 2D image array that can be read by `Shader`s.
     class Texture2D final {
     public:
-        // Default constructs a single-pixel texture.
+        // Constructs a `Texture2D` that contains a single pixel.
         Texture2D() :
             Texture2D{Vec2i{1, 1}}
         {}
 
+        // Constructs a `Texture2D` with the given `pixel_dimensions`.
         explicit Texture2D(
-            Vec2i dimensions,
+            Vec2i pixel_dimensions,
             TextureFormat = TextureFormat::RGBA32,
             ColorSpace = ColorSpace::sRGB,
             TextureWrapMode = TextureWrapMode::Repeat,
@@ -33,19 +34,17 @@ namespace osc
         );
 
         // Returns the dimensions of the texture in physical pixels.
-        Vec2i dimensions() const;
+        Vec2i pixel_dimensions() const;
 
         // Returns the dimensions of the texture in device-independent pixels.
         //
-        // - These dimensions should be used when compositing the texture into a
-        //   user interface.
-        // - Returns the equivalent of `texture.dimensions() / texture.device_pixel_ratio()`.
-        Vec2 device_independent_dimensions() const;
+        // Effectively, returns the equivalent of `texture.pixel_dimensions() / texture.device_pixel_ratio()`.
+        Vec2 dimensions() const;
 
         // Returns the ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels. This is useful
-        // when compositing the texture into high DPI user interfaces that are built
-        // around a device-independent pixel scaling architecture.
+        // when compositing the texture into mixed/high DPI user interfaces that
+        // are built with device-independent pixel scaling in mind.
         float device_pixel_ratio() const;
 
         // Sets the device-to-pixel ratio for the texture, which has the effect

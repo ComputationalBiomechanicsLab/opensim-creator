@@ -19,9 +19,16 @@ namespace osc
             annotations_{std::move(annotations)}
         {}
 
+        // Returns a texture that represents the content of the screenshot.
         const Texture2D& texture() const { return texture_; }
-        Vec2i dimensions() const { return texture_.dimensions(); }
-        Vec2 device_independent_dimensions() const { return texture_.device_independent_dimensions(); }
+
+        // Returns the dimensions of the screenshot in physical pixels.
+        Vec2i pixel_dimensions() const { return texture_.pixel_dimensions(); }
+
+        // Returns the dimensions of the screenshot in device-independent pixels.
+        Vec2 dimensions() const { return texture_.dimensions(); }
+
+        // Returns a sequence of annotations (metadata) associated with the screenshot.
         std::span<const ScreenshotAnnotation> annotations() const { return annotations_; }
 
     private:

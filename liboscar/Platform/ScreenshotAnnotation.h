@@ -21,6 +21,7 @@ namespace osc
         // Returns the bounding rectangle of the annotation in screenspace in
         // device-independent pixels.
         const Rect& rect() const { return rect_; }
+
     private:
         std::string label_;
         Rect rect_;

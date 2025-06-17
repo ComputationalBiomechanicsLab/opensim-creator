@@ -204,7 +204,7 @@ void osc::write_to_png(
     const Texture2D& texture,
     std::ostream& out)
 {
-    const Vec2i dimensions = texture.dimensions();
+    const Vec2i dimensions = texture.pixel_dimensions();
     const int row_stride = 4 * dimensions.x;
     const std::vector<Color32> pixels = texture.pixels32();
 
@@ -237,7 +237,7 @@ void osc::write_to_png(
 
 void osc::write_to_jpeg(const Texture2D& texture, std::ostream& out, float quality)
 {
-    const Vec2i dimensions = texture.dimensions();
+    const Vec2i dimensions = texture.pixel_dimensions();
     const std::vector<Color32> pixels = texture.pixels32();
 
     const auto guard = lock_stbi_api();

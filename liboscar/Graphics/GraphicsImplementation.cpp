@@ -1508,14 +1508,14 @@ namespace
 
 class osc::Texture2D::Impl final {
 public:
-    Impl(
-        Vec2i dimensions,
+    explicit Impl(
+        Vec2i pixel_dimensions,
         TextureFormat texture_format,
         ColorSpace color_space,
         TextureWrapMode wrap_mode,
         TextureFilterMode filter_mode) :
 
-        dimensions_{dimensions},
+        pixel_dimensions_{pixel_dimensions},
         texture_format_{texture_format},
         color_space_{color_space},
         wrap_mode_u_{wrap_mode},
@@ -1523,17 +1523,17 @@ public:
         wrap_mode_w_{wrap_mode},
         filter_mode_{filter_mode}
     {
-        OSC_ASSERT(dimensions_.x > 0 and dimensions_.y > 0);
+        OSC_ASSERT(pixel_dimensions_.x > 0 and pixel_dimensions_.y > 0);
     }
 
-    Vec2i dimensions() const
+    Vec2i pixel_dimensions() const
     {
-        return dimensions_;
+        return pixel_dimensions_;
     }
 
-    Vec2 device_independent_dimensions() const
+    Vec2 dimensions() const
     {
-        return Vec2{dimensions()} / device_pixel_ratio();
+        return Vec2{pixel_dimensions()} / device_pixel_ratio();
     }
 
     float device_pixel_ratio() const
@@ -1620,7 +1620,7 @@ public:
 
     void set_pixels(std::span<const Color> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == area_of(dimensions_));
+        OSC_ASSERT(ssize(pixels) == area_of(pixel_dimensions_));
         convert_colors_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
@@ -1631,7 +1631,7 @@ public:
 
     void set_pixels32(std::span<const Color32> pixels)
     {
-        OSC_ASSERT(ssize(pixels) == area_of(dimensions_));
+        OSC_ASSERT(ssize(pixels) == area_of(pixel_dimensions_));
         convert_color32s_to_pixel_bytes(pixels, texture_format_, pixel_data_);
     }
 
@@ -1642,7 +1642,7 @@ public:
 
     void set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
     {
-        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*dimensions_.x*dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
+        OSC_ASSERT(pixel_components_row_by_row.size() == num_bytes_per_pixel_in(texture_format_)*pixel_dimensions_.x*pixel_dimensions_.y && "incorrect number of bytes passed to Texture2D::set_pixel_data");
         OSC_ASSERT(pixel_components_row_by_row.size() == pixel_data_.size());
 
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
@@ -1672,7 +1672,7 @@ private:
         *maybe_opengl_data_ = Texture2DOpenGLData{};
 
         const size_t num_bytes_per_pixel = num_bytes_per_pixel_in(texture_format_);
-        const size_t num_bytes_per_row = dimensions_.x * num_bytes_per_pixel;
+        const size_t num_bytes_per_row = pixel_dimensions_.x * num_bytes_per_pixel;
         const GLint unpack_alignment = opengl_unpack_alignment_of(texture_format_);
         const CPUDataType cpu_data_type = equivalent_cpu_datatype_of(texture_format_);  // TextureFormat's datatype == CPU format's datatype for cubemaps
         const CPUImageFormat cpu_component_layout = equivalent_cpu_image_format_of(texture_format_);  // TextureFormat's layout == CPU formats's layout for cubemaps
@@ -1688,8 +1688,8 @@ private:
             GL_TEXTURE_2D,
             0,
             opengl_internal_format_of(texture_format_, color_space_),
-            dimensions_.x,
-            dimensions_.y,
+            pixel_dimensions_.x,
+            pixel_dimensions_.y,
             0,
             opengl_format_of(cpu_component_layout),
             opengl_data_type_of(cpu_data_type),
@@ -1713,14 +1713,14 @@ private:
 
     friend class GraphicsBackend;
 
-    Vec2i dimensions_;
+    Vec2i pixel_dimensions_;
     TextureFormat texture_format_;
     ColorSpace color_space_;
     TextureWrapMode wrap_mode_u_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_v_ = TextureWrapMode::Repeat;
     TextureWrapMode wrap_mode_w_ = TextureWrapMode::Repeat;
     TextureFilterMode filter_mode_ = TextureFilterMode::Nearest;
-    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * dimensions_.x * dimensions_.y, 0xff);
+    std::vector<uint8_t> pixel_data_ = std::vector<uint8_t>(num_bytes_per_pixel_in(texture_format_) * pixel_dimensions_.x * pixel_dimensions_.y, 0xff);
     float device_pixel_ratio_ = 1.0f;
     UID texture_params_version_;
     DefaultConstructOnCopy<std::optional<Texture2DOpenGLData>> maybe_opengl_data_;
@@ -1787,23 +1787,23 @@ size_t osc::num_bytes_per_component_in(TextureComponentFormat component_format)
 }
 
 osc::Texture2D::Texture2D(
-    Vec2i dimensions,
+    Vec2i pixel_dimensions,
     TextureFormat texture_format,
     ColorSpace color_space,
     TextureWrapMode wrap_mode,
     TextureFilterMode filter_mode) :
 
-    impl_{make_cow<Impl>(dimensions, texture_format, color_space, wrap_mode, filter_mode)}
+    impl_{make_cow<Impl>(pixel_dimensions, texture_format, color_space, wrap_mode, filter_mode)}
 {}
 
-Vec2i osc::Texture2D::dimensions() const
+Vec2i osc::Texture2D::pixel_dimensions() const
 {
-    return impl_->dimensions();
+    return impl_->pixel_dimensions();
 }
 
-Vec2 osc::Texture2D::device_independent_dimensions() const
+Vec2 osc::Texture2D::dimensions() const
 {
-    return impl_->device_independent_dimensions();
+    return impl_->dimensions();
 }
 
 float osc::Texture2D::device_pixel_ratio() const
@@ -8097,8 +8097,8 @@ void osc::GraphicsBackend::copy_texture(
         source.dimensions().y,
         0,
         0,
-        destination.dimensions().x,
-        destination.dimensions().y,
+        destination.pixel_dimensions().x,
+        destination.pixel_dimensions().y,
         GL_COLOR_BUFFER_BIT,
         GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
     );
@@ -8109,17 +8109,17 @@ void osc::GraphicsBackend::copy_texture(
         const GLint pack_format = to_opengl_image_pixel_pack_alignment(destination.texture_format());
 
         OSC_ASSERT(is_aligned_at_least(cpu_buffer.data(), pack_format) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
-        OSC_ASSERT(cpu_buffer.size() == area_of(destination.dimensions())*num_bytes_per_pixel_in(destination.texture_format()));
+        OSC_ASSERT(cpu_buffer.size() == area_of(destination.pixel_dimensions())*num_bytes_per_pixel_in(destination.texture_format()));
 
-        gl::viewport(0, 0, destination.dimensions().x, destination.dimensions().y);
+        gl::viewport(0, 0, destination.pixel_dimensions().x, destination.pixel_dimensions().y);
         gl::bind_framebuffer(GL_READ_FRAMEBUFFER, draw_fbo);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         gl::pixel_store_i(GL_PACK_ALIGNMENT, pack_format);
         glReadPixels(
             0,
             0,
-            destination.dimensions().x,
-            destination.dimensions().y,
+            destination.pixel_dimensions().x,
+            destination.pixel_dimensions().y,
             to_opengl_image_color_format_enum(destination.texture_format()),
             to_opengl_image_data_type_enum(destination.texture_format()),
             cpu_buffer.data()
