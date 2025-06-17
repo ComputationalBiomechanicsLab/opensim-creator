@@ -455,7 +455,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
             {
-                open_file_in_os_default_application(std::filesystem::path{std::string_view{*repoURL}});
+                open_url_in_os_default_web_browser(*repoURL);
             }
             ui::draw_tooltip_body_only_if_item_hovered("this will open the repository homepage in a separate browser window");
             ui::pop_id();
@@ -469,7 +469,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
             {
-                open_file_in_os_default_application(std::filesystem::path{std::string_view{*helpURL}});
+                open_url_in_os_default_web_browser(*helpURL);
             }
             ui::draw_tooltip_body_only_if_item_hovered("this will open the help/discussion page in a separate browser window");
             ui::pop_id();
@@ -481,7 +481,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::push_id(id++);
         if (ui::draw_button(OSC_ICON_LINK " open"))
         {
-            open_file_in_os_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
+            open_url_in_os_default_web_browser("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
         ui::draw_tooltip_body_only_if_item_hovered("this will open the documentation in a separate browser window");
         ui::pop_id();

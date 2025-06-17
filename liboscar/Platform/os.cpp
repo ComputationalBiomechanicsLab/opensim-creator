@@ -11,6 +11,7 @@
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_filesystem.h>
+#include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_stdinc.h>
 
 #include <algorithm>
@@ -98,6 +99,23 @@ std::filesystem::path osc::user_data_directory(
         SDL_free,
     };
     return convert_SDL_filepath_to_std_filepath("SDL_GetPrefPath", p.get());
+}
+
+void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
+{
+    const std::string url = "file://" + std::filesystem::canonical(fp).string();
+    open_url_in_os_default_web_browser(url);
+}
+
+void osc::open_url_in_os_default_web_browser(std::string_view url_view)
+{
+    const std::string url{url_view};
+    if (SDL_OpenURL(url.c_str())) {
+        log_info("opened %s", url.c_str());
+    }
+    else {
+        log_error("could not open '%s': %s", url.c_str(), SDL_GetError());
+    }
 }
 
 std::string osc::get_clipboard_text()
@@ -332,61 +350,6 @@ void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
     }
 }
 
-void osc::open_file_in_os_default_application(const std::filesystem::path& fp)
-{
-    // fork a subprocess
-    const pid_t pid = fork();
-
-    if (pid == -1)
-    {
-        // failed to fork a process
-        log_error("failed to fork() a new subprocess: this usually only happens if you have unusual OS settings: see 'man fork' ERRORS for details");
-        return;
-    }
-    else if (pid != 0)
-    {
-        // fork successful and this thread is inside the parent
-        //
-        // have the parent thread `wait` for the child thread to finish
-        // what it's doing (xdg-open, itself, forks + detaches)
-        log_info("fork()ed a subprocess for 'xdg-open %s'", fp.c_str());
-
-        int rv = 0;
-        waitpid(pid, &rv, 0);
-
-        if (rv)
-        {
-            log_error("fork()ed subprocess returned an error code of %i", rv);
-        }
-
-        return;
-    }
-    else
-    {
-        // fork successful and we're inside the child
-        //
-        // immediately `exec` into `xdg-open`, which will aggro-replace this process
-        // image (+ this thread) with xdg-open
-        const int rv = execlp("xdg-open", "xdg-open", fp.c_str(), static_cast<char*>(nullptr));
-
-        // this thread only reaches here if there is some kind of error in `exec`
-        //
-        // aggressively exit this thread, returning the status code. Do **not**
-        // return from this thread, because it shouldn't behave as-if it were
-        // the calling thread
-        //
-        // use `_exit`, rather than `exit`, because we don't want the fork to
-        // potentially call `atexit` handlers that screw the parent (#627)
-        _exit(rv);
-    }
-}
-
-void osc::open_url_in_os_default_web_browser(std::string_view url)
-{
-    // (we know that xdg-open handles this automatically)
-    open_file_in_os_default_application(std::filesystem::path{url});
-}
-
 #elif defined(__APPLE__)
 #include <errno.h>  // ERANGE
 #include <execinfo.h>  // backtrace(), backtrace_symbols()
@@ -464,19 +427,6 @@ void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
     {
         log_warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
     }
-}
-
-void osc::open_file_in_os_default_application(const std::filesystem::path& p)
-{
-    std::string cmd = "open " + p.string();
-    system(cmd.c_str());
-}
-
-void osc::open_url_in_os_default_web_browser(std::string_view url)
-{
-    std::stringstream cmd;
-    cmd << "open " << url;
-    system(std::move(cmd).str().c_str());
 }
 
 #elif defined(WIN32)
@@ -665,16 +615,6 @@ void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path& cra
     SetUnhandledExceptionFilter(crash_handler);
 
     signal(SIGABRT, signal_handler);
-}
-
-void osc::open_file_in_os_default_application(const std::filesystem::path& p)
-{
-    ShellExecute(0, 0, p.string().c_str(), 0, 0 , SW_SHOW);
-}
-
-void osc::open_url_in_os_default_web_browser(std::string_view url)
-{
-    ShellExecute(0, 0, std::string{url}.c_str(), 0, 0 , SW_SHOW);
 }
 
 #elif EMSCRIPTEN
