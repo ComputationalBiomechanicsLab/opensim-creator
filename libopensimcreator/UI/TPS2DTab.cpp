@@ -387,12 +387,12 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(const Mesh& mesh, Vec2 virtual_dimensions, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vec2 dimensions, std::optional<RenderTexture>& out)
     {
         const RenderTextureParams textureParameters = {
-            .pixel_dimensions = App::get().main_window_device_pixel_ratio() * virtual_dimensions,
+            .pixel_dimensions = App::get().main_window_device_pixel_ratio() * dimensions,
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
-            .anti_aliasing_level = App::get().anti_aliasing_level()
+            .anti_aliasing_level = App::get().anti_aliasing_level(),
         };
         out.emplace(textureParameters);
         graphics::draw(mesh, identity<Transform>(), m_TexturedMaterial, m_Camera);

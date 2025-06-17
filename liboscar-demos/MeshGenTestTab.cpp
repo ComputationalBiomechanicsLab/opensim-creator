@@ -80,11 +80,11 @@ public:
             ui::start_new_line();
 
             const Vec2 content_region = ui::get_content_region_available();
-            render_params_.virtual_pixel_dimensions = elementwise_max(content_region, {0.0f, 0.0f});
+            render_params_.dimensions = elementwise_max(content_region, {0.0f, 0.0f});
             render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);
-            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.virtual_pixel_dimensions));
+            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
             render_params_.view_pos = camera_.position();
             render_params_.near_clipping_plane = camera_.znear;

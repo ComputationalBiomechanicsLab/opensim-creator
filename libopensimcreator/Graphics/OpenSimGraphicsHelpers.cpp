@@ -31,7 +31,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     SceneRendererParams rv;
 
     if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f) {
-        rv.virtual_pixel_dimensions = viewportDims;
+        rv.dimensions = viewportDims;
     }
     rv.device_pixel_ratio = viewportDevicePixelRatio;
     rv.antialiasing_level = antiAliasingLevel;

@@ -318,17 +318,17 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
 SceneRendererParams osc::calc_standard_dark_scene_render_params(
     const PolarPerspectiveCamera& camera,
     AntiAliasingLevel aa_level,
-    Vec2 render_virtual_pixel_dimensions,
-    float render_device_pixel_ratio)
+    Vec2 dimensions,
+    float device_pixel_ratio)
 {
     return SceneRendererParams{
-        .virtual_pixel_dimensions = render_virtual_pixel_dimensions,
-        .device_pixel_ratio = render_device_pixel_ratio,
+        .dimensions = dimensions,
+        .device_pixel_ratio = device_pixel_ratio,
         .antialiasing_level = aa_level,
         .draw_mesh_normals = false,
         .draw_floor = false,
         .view_matrix = camera.view_matrix(),
-        .projection_matrix = camera.projection_matrix(aspect_ratio_of(render_virtual_pixel_dimensions)),
+        .projection_matrix = camera.projection_matrix(aspect_ratio_of(dimensions)),
         .view_pos = camera.position(),
         .light_direction = recommended_light_direction(camera),
         .background_color = {0.1f, 1.0f},
