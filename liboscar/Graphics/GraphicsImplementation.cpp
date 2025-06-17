@@ -6601,23 +6601,23 @@ public:
         if (not screenshot_request_queue_.empty()) {
 
             // copy GPU-side window framebuffer into response
-            const Vec2i dims = App::get().main_window_pixel_dimensions();
+            const Vec2i pixel_dimensions = App::get().main_window_pixel_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
 
-            std::vector<uint8_t> pixels(static_cast<size_t>(4*dims.x*dims.y));
+            std::vector<uint8_t> pixels(static_cast<size_t>(4*pixel_dimensions.x*pixel_dimensions.y));
             OSC_ASSERT(is_aligned_at_least(pixels.data(), 4) && "glReadPixels must be called with a buffer that is aligned to GL_PACK_ALIGNMENT (see: https://www.khronos.org/opengl/wiki/Common_Mistakes)");
             gl::pixel_store_i(GL_PACK_ALIGNMENT, 4);
             glReadPixels(
                 0,
                 0,
-                dims.x,
-                dims.y,
+                pixel_dimensions.x,
+                pixel_dimensions.y,
                 GL_RGBA,
                 GL_UNSIGNED_BYTE,
                 pixels.data()
             );
 
-            Texture2D screenshot{dims, TextureFormat::RGBA32, ColorSpace::sRGB};
+            Texture2D screenshot{pixel_dimensions, TextureFormat::RGBA32, ColorSpace::sRGB};
             screenshot.set_pixel_data(pixels);
             screenshot.set_device_pixel_ratio(device_pixel_ratio);
 
@@ -6772,7 +6772,7 @@ namespace osc
 
             struct Scissor {
                 Vec2 bottom_left;
-                Vec2 dimensions;
+                Vec2 pixel_dimensions;
             };
             std::optional<Scissor> scissor;
         };
@@ -7551,7 +7551,7 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     if (camera.maybe_scissor_rect_) {
         rv.scissor = {
             .bottom_left = scaler * camera.maybe_scissor_rect_->p1,
-            .dimensions = scaler * dimensions_of(*camera.maybe_scissor_rect_),
+            .pixel_dimensions = scaler * dimensions_of(*camera.maybe_scissor_rect_),
         };
     }
 
@@ -7576,8 +7576,8 @@ float osc::GraphicsBackend::setup_top_level_pipeline_state(
         glScissor(
             static_cast<GLint>(viewport_geom.scissor->bottom_left.x),
             static_cast<GLint>(viewport_geom.scissor->bottom_left.y),
-            static_cast<GLsizei>(viewport_geom.scissor->dimensions.x),
-            static_cast<GLsizei>(viewport_geom.scissor->dimensions.y)
+            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.x),
+            static_cast<GLsizei>(viewport_geom.scissor->pixel_dimensions.y)
         );
     }
     else {
@@ -8096,7 +8096,7 @@ void osc::GraphicsBackend::copy_texture(
         destination.pixel_dimensions().x,
         destination.pixel_dimensions().y,
         GL_COLOR_BUFFER_BIT,
-        GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
+        GL_LINEAR  // the two texture may have different pixel dimensions (avoid GL_NEAREST)
     );
 
     // then download the blitted data into the texture's CPU buffer
@@ -8198,7 +8198,7 @@ void osc::GraphicsBackend::copy_texture(
             destination.width() / (1<<mipmap_level),
             destination.width() / (1<<mipmap_level),
             GL_COLOR_BUFFER_BIT,
-            GL_LINEAR  // the two texture may have different dimensions (avoid GL_NEAREST)
+            GL_LINEAR  // the two texture may have different pixel dimensions (avoid GL_NEAREST)
         );
     }
 
