@@ -170,12 +170,13 @@ namespace osc
         // clip space is defined such that there exists a unit cube in it that eventually
         // projects onto screen space in the following way:
         //
-        // - transformed points (affine) are divided by their `w` component (perspective
-        //   divide) to yield their native device coordinates (NDC).
+        // - transformed points (affine, homogeneous) are divided by their `w` component (perspective
+        //   divide) to yield their normalized device coordinates (NDC).
         // - Anything outside of [{-1,-1,-1},{+1,+1,+1}] in NDC is discarded (clipping)
         // - NDC `( 0,  0,  0)` maps to the midpoint of screen space (i.e. 0.5 * {w, h})
         // - NDC `(-1, -1, -1)` maps to the bottom-left of screen space (z = -1 means 'closest')
         // - NDC `(+1, +1, +1)` maps to the top-right of screen space (z = +1 means 'farthest')
+        // - Therefore, NDC is left-handed
         //
         // The XY component of fragments that land within clip space are transformed into screen
         // space and drawn to the output pixel rectangle (assuming they also pass the scissor test).

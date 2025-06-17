@@ -32,7 +32,7 @@ namespace osc
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
 
-    // returns a native-device-coordinate-like (NDC-like) point converted from a point
+    // returns a normalized device coordinate-like (NDC-like) point converted from a point
     // defined in a normalized y-points-down space.
     //
     // - input point should have origin in top-left, Y goes down
@@ -42,7 +42,7 @@ namespace osc
     Vec2 topleft_normalized_point_to_ndc(Vec2 normalized_point);
 
     // returns a normalized y-points-down point converted from a point defined in a
-    // native-device-coordinate-like (NDC-like) space.
+    // normalized device coordinate-like (NDC-like) space.
     //
     // - input point should have origin in the middle, Y goes up
     // - input point should have an origin-centered range: (-1, -1) is bottom-left, (+1, +1) is top-right
@@ -75,9 +75,9 @@ namespace osc
         const Mat4& camera_proj_matrix
     );
 
-    // returns a rectangular region defined in, and bounded by, native device
-    // coordinates (NDC) mapped from a region defined in a normalized y-points-down
-    // space bounded by `viewport`.
+    // returns a rectangular region defined in, and bounded by, normalized device coordinates
+    // (NDCs) mapped from a region defined in a normalized y-points-down space bounded
+    // by `viewport`.
     Rect ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
     // returns the location where `world_space_location` would occur when projected via the

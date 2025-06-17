@@ -10,8 +10,26 @@
 
 namespace osc
 {
+    // Represents a single texture composed of six images that are tessellated into
+    // a cube shape such that they can be sampled using a direction vector that
+    // originates from the center of the cube (i.e. via a `samplerCube`, in GLSL).
+    //
+    // Note: Each of the six faces of the cube should be provided in the same way
+    //       as for a `Texture2D` (i.e. starting in the bottom-left and moving row
+    //       by row to the top right), but the direction vector in the GLSL shader
+    //       is not in something resembling the texture or world coordinate system.
+    //       Instead, it's in a left-handed cube map coordinate system that's used
+    //       by shader implementations to figure out which of the six faces to
+    //       address with a standard 2D vector in texture coordinate space.
+    //
+    //       See the OpenGL specification, section 8.13, "Cube Map Texture Selection"
+    //       (e.g. https://registry.khronos.org/OpenGL/specs/gl/glspec46.core.pdf) for
+    //       more details, but it usually means that the images either have to be
+    //       rotated or the direction vector has to be flipped.
     class Cubemap final {
     public:
+        // Constructs a cubemap that is `width` physical pixels wide and high, and
+        // the given `format`.
         Cubemap(int32_t width, TextureFormat format);
 
         int32_t width() const;
