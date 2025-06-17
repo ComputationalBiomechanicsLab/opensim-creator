@@ -260,7 +260,7 @@ static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset()
 
 namespace
 {
-    constexpr float c_default_base_font_pixel_size = 15.0f;
+    constexpr float c_default_base_font_device_independent_pixel_size = 15.0f;
 
     constexpr std::string_view c_ui_vertex_shader_src = R"(
         #version 330 core
@@ -314,13 +314,13 @@ namespace
         ImGuiIO& io = ImGui::GetIO();
 
         uint8_t* pixel_data = nullptr;
-        Vec2i dims;
-        io.Fonts->GetTexDataAsRGBA32(&pixel_data, &dims.x, &dims.y);
+        Vec2i pixel_dimensions;
+        io.Fonts->GetTexDataAsRGBA32(&pixel_data, &pixel_dimensions.x, &pixel_dimensions.y);
         io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
-        const size_t num_bytes = static_cast<size_t>(dims.x)*static_cast<size_t>(dims.y)*4uz;
+        const size_t num_bytes = static_cast<size_t>(pixel_dimensions.x)*static_cast<size_t>(pixel_dimensions.y)*4uz;
 
         Texture2D rv{
-            dims,
+            pixel_dimensions,
             TextureFormat::RGBA32,
             ColorSpace::Linear,
         };
@@ -878,10 +878,10 @@ namespace
         // Setup ImGui-to-renderer scaling for HighDPI support.
         io.DisplayFramebufferScale = {scale, scale};
 
-        // Setup fonts: ensure they have they have the correct pixel scaling for HighDPI.
+        // Setup fonts: ensure they have the correct pixel scaling for HighDPI.
         {
             ImFontConfig base_font_config;
-            base_font_config.SizePixels = c_default_base_font_pixel_size;
+            base_font_config.SizePixels = c_default_base_font_device_independent_pixel_size;
             base_font_config.RasterizerDensity = scale;
             base_font_config.PixelSnapH = true;
             base_font_config.FontDataOwnedByAtlas = true;
@@ -2547,13 +2547,13 @@ float osc::ui::get_text_line_height_with_spacing_in_current_panel()
 float osc::ui::get_font_base_size()
 {
     // HACK: context should be set up to return this, but font initialization is lazy in imgui
-    return c_default_base_font_pixel_size;
+    return c_default_base_font_device_independent_pixel_size;
 }
 
 float osc::ui::get_font_base_size_with_spacing()
 {
     // HACK: context should be set up to return this, but font initialization is lazy in imgui
-    return c_default_base_font_pixel_size + ImGui::GetStyle().ItemSpacing.y;
+    return c_default_base_font_device_independent_pixel_size + ImGui::GetStyle().ItemSpacing.y;
 }
 
 Vec2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)
@@ -2622,8 +2622,8 @@ void osc::ui::DrawListAPI::render_to(RenderTexture& target)
     data.TotalIdxCount = drawlist.IdxBuffer.Size;
     data.CmdLists.push_back(&drawlist);
     data.DisplayPos = {0.0f, 0.0f};
-    data.DisplaySize = ImVec2{target.pixel_dimensions()};
-    data.FramebufferScale = ImGui::GetIO().DisplayFramebufferScale;
+    data.DisplaySize = target.dimensions();
+    data.FramebufferScale = ImVec2{target.device_pixel_ratio(), target.device_pixel_ratio()};
     data.OwnerViewport = ImGui::GetMainViewport();
 
     graphics_backend_render(&data, &target);

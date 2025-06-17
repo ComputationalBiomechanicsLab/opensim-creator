@@ -237,7 +237,10 @@ private:
 
     Texture2D render_annotated_screenshot()
     {
-        RenderTexture render_texture{{.pixel_dimensions = image_texture_.pixel_dimensions()}};
+        RenderTexture render_texture{{
+            .pixel_dimensions = image_texture_.pixel_dimensions(),
+            .device_pixel_ratio = image_texture_.device_pixel_ratio(),
+        }};
 
         // blit the screenshot into the output
         graphics::blit(image_texture_, render_texture);
