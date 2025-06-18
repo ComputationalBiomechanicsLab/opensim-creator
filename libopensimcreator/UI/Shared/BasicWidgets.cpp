@@ -216,14 +216,16 @@ namespace
             }
 
             // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 
-            ofs << content;
+                ofs << content;
+            }
+            catch (const std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "obj");
     }
 
@@ -258,14 +260,16 @@ namespace
             }
 
             // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 
-            ofs << content;
+                ofs << content;
+            }
+            catch (const std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "stl");
     }
 

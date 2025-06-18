@@ -14,10 +14,6 @@ namespace osc
     // returns current system time as a calendar time
     std::tm system_calendar_time();
 
-    // returns a `std::string` describing the current value of `errno`, but in
-    // an implementation-defined threadsafe way
-    std::string errno_to_string_threadsafe();
-
     // returns the full path to the currently-executing application
     //
     // care: can be slow: downstream callers should cache it

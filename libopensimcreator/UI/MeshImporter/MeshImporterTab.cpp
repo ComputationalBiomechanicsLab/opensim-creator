@@ -1361,19 +1361,21 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
-
             const ObjMetadata objMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+            }
+            catch (std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "obj");
     }
 
@@ -1387,19 +1389,21 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
-
             const StlMetadata stlMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_stl(ofs, mesh, stlMetadata);
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                write_as_stl(ofs, mesh, stlMetadata);
+            }
+            catch (std::exception& e) {
+                log_error("error saving stl output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "stl");
     }
 

@@ -57,10 +57,6 @@ namespace
     // returns a `std::tm` populated 'as-if' by calling `std::gmtime(&t)`, but in
     // an implementation-defined threadsafe way
     std::tm gmtime_threadsafe(std::time_t);
-
-    // returns a `std::string` describing the given error number (errnum), but in
-    // an implementation-defined threadsafe way
-    std::string strerror_threadsafe(int errnum);
 }
 
 std::tm osc::system_calendar_time()
@@ -142,11 +138,6 @@ std::optional<std::string> osc::find_environment_variable(std::string_view name)
     }
 }
 
-std::string osc::errno_to_string_threadsafe()
-{
-    return strerror_threadsafe(errno);
-}
-
 namespace
 {
     constexpr std::string_view c_valid_dynamic_characters = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -188,14 +179,8 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
 
 #ifdef __LINUX__
 
-#include <liboscar/Platform/Log.h>  // osc::log_warn
-
 #include <ctime>                    // std::time_t, std::tm
-#include <array>                    // std::array
-#include <string>                   // std::string
-#include <type_traits>              // std::is_same_v
 
-#include <string.h>                 // strerror_r
 #include <time.h>                   // gmtime_r
 
 namespace
@@ -206,35 +191,13 @@ namespace
         gmtime_r(&t, &rv);
         return rv;
     }
-
-    std::string strerror_threadsafe(int errnum)
-    {
-        std::array<char, 1024> buffer{};
-
-        [[maybe_unused]] auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
-        if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr) {
-            osc::log_warn("a call to strerror_r failed with error code %i", maybeErr);
-            return {};
-        }
-
-        std::string rv{buffer.data()};
-        if (rv.size() == buffer.size()) {
-            osc::log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
-        }
-        return rv;
-    }
 }
 
 #elif defined(__APPLE__)
 
-#include <liboscar/Platform/Log.h>  // osc::log_warn
-
-#include <string.h>                 // strerror_r
-#include <time.h>                   // gmtime_r
-
-#include <array>                    // std::array
 #include <ctime>                    // std::time_t, std::tm
-#include <string>                   // std::string
+
+#include <time.h>                   // gmtime_r
 
 namespace
 {
@@ -244,27 +207,11 @@ namespace
         gmtime_r(&t, &rv);
         return rv;
     }
-
-    std::string strerror_threadsafe(int errnum)
-    {
-        std::array<char, 512> buffer{};
-        if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE) {
-            osc::log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
-        }
-        return std::string{buffer.data()};
-    }
 }
 
 #elif defined(WIN32)
 
-#include <liboscar/Platform/Log.h>  // osc::log_warn
-
-#define STDC_WANT_LIB_EXT1 1        // required to define strerror_s
-#include <string.h>                 // strerror_s
-
-#include <array>                    // std::array
 #include <ctime>                    // std::time_t, std::tm, gmtime_s
-#include <string>                   // std::string
 
 namespace
 {
@@ -273,15 +220,6 @@ namespace
         std::tm rv;
         gmtime_s(&rv, &t);
         return rv;
-    }
-
-    std::string strerror_threadsafe(int errnum)
-    {
-        std::array<char, 512> buf{};
-        if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0) {
-            osc::log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
-        }
-        return std::string{buf.data()};
     }
 }
 
