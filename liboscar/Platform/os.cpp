@@ -1,9 +1,6 @@
 #include "os.h"
 
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/LogLevel.h>
-#include <liboscar/Platform/LogSink.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/SynchronizedValue.h>
@@ -16,16 +13,11 @@
 
 #include <algorithm>
 #include <array>
-#include <bit>
 #include <cerrno>
 #include <cstddef>
-#include <ctime>
 #include <fstream>
-#include <iostream>
 #include <memory>
 #include <random>
-#include <ranges>
-#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -36,10 +28,6 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    // care: this is necessary because segfault crash handlers don't appear to
-    // be able to have data passed to them
-    constinit SynchronizedValue<std::optional<std::filesystem::path>> g_crash_dump_dir;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
     std::filesystem::path convert_SDL_filepath_to_std_filepath(CStringView method_name, const char* p)
     {
         // nullptr disallowed
@@ -188,7 +176,7 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
         // TODO: remove these `pragma`s once the codebase is upgraded to C++23, because it has `std::ios_base::noreplace` support
 #pragma warning(push)
 #pragma warning(suppress : 4996)
-        if (auto fd = std::fopen(attempt_path.string().c_str(), "w+x"); fd != nullptr) {  // TODO: replace with `std::ios_base::noreplace` in C++23
+        if (auto fd = std::fopen(attempt_path.string().c_str(), "w+x"); fd != nullptr) {  // TODO: replace with `std::ios_base::noreplace` in C++23 (waiting on XCode16)
             std::fclose(fd);
             return {std::fstream{attempt_path, std::ios_base::in | std::ios_base::out | std::ios_base::binary}, std::move(attempt_path)};
         }
@@ -200,24 +188,15 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
 
 #ifdef __LINUX__
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#ifndef __USE_GNU
-#define __USE_GNU
-#endif
+#include <liboscar/Platform/Log.h>  // osc::log_warn
 
-#include <csignal>
-#include <cstdio>
-#include <cstdlib>
+#include <ctime>                    // std::time_t, std::tm
+#include <array>                    // std::array
+#include <string>                   // std::string
+#include <type_traits>              // std::is_same_v
 
-#include <execinfo.h>
-#include <ucontext.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-using osc::log_error;
+#include <string.h>                 // strerror_r
+#include <time.h>                   // gmtime_r
 
 namespace
 {
@@ -232,135 +211,30 @@ namespace
     {
         std::array<char, 1024> buffer{};
 
-        auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
-        if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr)
-        {
-            log_warn("a call to strerror_r failed with error code %i", maybeErr);
+        [[maybe_unused]] auto* maybeErr = strerror_r(errnum, buffer.data(), buffer.size());
+        if (std::is_same_v<int, decltype(maybeErr)> && !maybeErr) {
+            osc::log_warn("a call to strerror_r failed with error code %i", maybeErr);
             return {};
-        }
-        else
-        {
-            static_cast<void>(maybeErr);
         }
 
         std::string rv{buffer.data()};
-        if (rv.size() == buffer.size())
-        {
-            log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
+        if (rv.size() == buffer.size()) {
+            osc::log_warn("a call to strerror_r returned an error string that was as big as the buffer: an OS error message may have been truncated!");
         }
         return rv;
     }
 }
 
-
-void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
-{
-    std::array<void*, 50> ary{};
-    const int size = backtrace(ary.data(), ary.size());
-    const std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
-
-    if (not messages) {
-        return;
-    }
-
-    for (int i = 0; i < size; ++i) {
-        callback(messages.get()[i]);
-    }
-}
-
-namespace
-{
-    /* This structure mirrors the one found in /usr/include/asm/ucontext.h */
-    struct osc_sig_ucontext final {
-        unsigned long uc_flags;  // NOLINT(google-runtime-int)
-        ucontext_t* uc_link;
-        stack_t uc_stack;
-        sigcontext uc_mcontext;
-        sigset_t uc_sigmask;
-    };
-
-    void OnCriticalSignalRecv(int sig_num, siginfo_t* info, void* ucontext)
-    {
-#ifdef EMSCRIPTEN
-        static_cast<void>(sig_num);
-        static_cast<void>(info);
-        static_cast<void>(ucontext);
-#else
-        // reset abort signal handler
-        if (signal(SIGABRT, SIG_DFL) == SIG_ERR)
-        {
-            log_error("failed to reset SIGABRT handler - the program may not be able to crash correctly");
-        }
-
-        // reset segfault signal handler
-        if (signal(SIGSEGV, SIG_DFL) == SIG_ERR)
-        {
-            log_error("failed to reset SIGSEGV handler - the program may not be able to crash correctly");
-        }
-
-        auto* uc = static_cast<osc_sig_ucontext*>(ucontext);
-
-        /* Get the address at the time the signal was raised */
-#if defined(__i386__)  // gcc specific
-        void* caller_address = std::bit_cast<void*>(uc->uc_mcontext.eip);  // EIP: x86 specific
-#elif defined(__x86_64__)  // gcc specific
-        void* callerAddress = std::bit_cast<void*>(uc->uc_mcontext.rip);  // RIP: x86_64 specific
-#else
-#error Unsupported architecture.
-#endif
-
-        std::cerr << "critical error: signal " << sig_num << '(' << strsignal(sig_num) << ") received from OS: address is " <<  info->si_addr << " from " << callerAddress;  // NOLINT(concurrency-mt-unsafe)
-
-        std::array<void*, 50> ary{};
-        const int size = backtrace(ary.data(), ary.size());
-        ary[1] = callerAddress;  // overwrite sigaction with caller's address
-
-        const std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(ary.data(), size), ::free};
-        if (!messages)
-        {
-            return;
-        }
-
-        /* skip first stack frame (points here) */
-        for (int i = 1; i < size; ++i)
-        {
-            std::cerr << "    #" << std::setw(2) << i << ' ' << messages.get()[i] << '\n';
-        }
-#endif
-    }
-}
-
-void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
-{
-    struct sigaction sigact{};
-
-    sigact.sa_sigaction = OnCriticalSignalRecv;
-    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-
-    // install segfault handler
-    if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
-    {
-        log_error("could not set signal handler for SIGSEGV: error reporting may not work as intended");
-    }
-
-    // install abort handler: this triggers whenever a non-throwing `assert` causes a termination
-    if (sigaction(SIGABRT, &sigact, nullptr) != 0)
-    {
-        log_error("could not set signal handler for SIGABRT: error reporting may not work as intended");
-    }
-}
-
 #elif defined(__APPLE__)
-#include <errno.h>  // ERANGE
-#include <execinfo.h>  // backtrace(), backtrace_symbols()
-#include <signal.h>  // sigaction(), struct sigaction, strsignal()
-#include <stdlib.h>  // exit(), free()
-#include <string.h>  // strerror_r()
-#include <time.h>  // gmtime_r()
 
-using osc::log_error;
-using osc::log_message;
-using osc::log_warn;
+#include <liboscar/Platform/Log.h>  // osc::log_warn
+
+#include <string.h>                 // strerror_r
+#include <time.h>                   // gmtime_r
+
+#include <array>                    // std::array
+#include <ctime>                    // std::time_t, std::tm
+#include <string>                   // std::string
 
 namespace
 {
@@ -374,73 +248,23 @@ namespace
     std::string strerror_threadsafe(int errnum)
     {
         std::array<char, 512> buffer{};
-        if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE)
-        {
-            log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
+        if (strerror_r(errnum, buffer.data(), buffer.size()) == ERANGE) {
+            osc::log_warn("a call to strerror_r returned ERANGE: an OS error message may have been truncated!");
         }
         return std::string{buffer.data()};
     }
 }
 
-
-void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
-{
-    void* array[50];
-    int size = backtrace(array, 50);
-    std::unique_ptr<char*, decltype(::free)*> messages{backtrace_symbols(array, size), ::free};
-
-    if (!messages)
-    {
-        return;
-    }
-
-    for (int i = 0; i < size; ++i) {
-        callback(messages.get()[i]);
-    }
-}
-
-namespace
-{
-    [[noreturn]] void OSC_critical_error_handler(int sig_num, siginfo_t*, void*)
-    {
-        log_error("critical error: signal %d (%s) received from OS", sig_num, strsignal(sig_num));
-        log_error("backtrace:");
-        for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { osc::log_error("%s", entry); });
-        exit(EXIT_FAILURE);
-    }
-}
-
-void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
-{
-    struct sigaction sigact;
-    sigact.sa_sigaction = OSC_critical_error_handler;
-    sigact.sa_flags = SA_RESTART | SA_SIGINFO;
-
-    // enable SIGSEGV (segmentation fault) handler
-    if (sigaction(SIGSEGV, &sigact, nullptr) != 0)
-    {
-        log_warn("could not set a signal handler for SIGSEGV: crash error reporting may not work as intended");
-    }
-
-    // enable SIGABRT (abort) handler - usually triggers when `assert` fails or std::terminate is called
-    if (sigaction(SIGABRT, &sigact, nullptr) != 0)
-    {
-        log_warn("could not set a signal handler for SIGABRT: crash error reporting may not work as intended");
-    }
-}
-
 #elif defined(WIN32)
-#include <Windows.h>  // PVOID, RtlCaptureStackBackTrace(), MEMORY_BASIC_INFORMATION, VirtualQuery(), DWORD64, TCHAR, GetModuleFileName()
-#include <time.h>  // gmtime_s
-#include <cinttypes>  // PRIXPTR
-#include <signal.h>   // signal()
 
-using osc::global_default_logger;
-using osc::global_get_traceback_log;
-using osc::LogMessage;
-using osc::LogMessageView;
-using osc::LogSink;
-using osc::to_cstringview;
+#include <liboscar/Platform/Log.h>  // osc::log_warn
+
+#define STDC_WANT_LIB_EXT1 1        // required to define strerror_s
+#include <string.h>                 // strerror_s
+
+#include <array>                    // std::array
+#include <ctime>                    // std::time_t, std::tm, gmtime_s
+#include <string>                   // std::string
 
 namespace
 {
@@ -455,172 +279,13 @@ namespace
     {
         std::array<char, 512> buf{};
         if (errno_t rv = strerror_s(buf.data(), buf.size(), errnum); rv != 0) {
-            log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
+            osc::log_warn("a call to strerror_s returned an error (%i): an OS error message may be missing!", rv);
         }
         return std::string{buf.data()};
     }
 }
 
-void osc::for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>& callback)
-{
-    constexpr size_t skipped_frames = 0;
-    constexpr size_t num_frames = 16;
-
-    PVOID return_addrs[num_frames];
-
-    // populate [0, n) with return addresses (see MSDN)
-    USHORT n = RtlCaptureStackBackTrace(skipped_frames, num_frames, return_addrs, nullptr);
-
-    for (size_t i = 0; i < n; ++i) {
-        // figure out where the address is relative to the start of the page range the address
-        // falls in (effectively, where it is relative to the start of the memory-mapped DLL/exe)
-        MEMORY_BASIC_INFORMATION bmi;
-        VirtualQuery(return_addrs[i], &bmi, sizeof(bmi));
-        DWORD64 base_addr = std::bit_cast<DWORD64>(bmi.AllocationBase);
-        static_assert(sizeof(DWORD64) == 8 && sizeof(PVOID) == 8, "review this code - might not work so well on 32-bit systems");
-
-        // use the base address to figure out the file name
-        TCHAR module_namebuf[1024];
-        GetModuleFileName(std::bit_cast<HMODULE>(base_addr), module_namebuf, 1024);
-
-        // find the final element in the filename
-        TCHAR* cursor = module_namebuf;
-        TCHAR* filename_start = cursor;
-        while (*cursor != '\0')
-        {
-            if (*cursor == '\\')
-            {
-                filename_start = cursor + 1;  // skip the slash
-            }
-            ++cursor;
-        }
-
-        PVOID relative_addr = std::bit_cast<PVOID>(std::bit_cast<DWORD64>(return_addrs[i]) - base_addr);
-
-        std::array<char, 1024> formatted_buffer{};
-        if (const auto size = std::snprintf(formatted_buffer.data(), formatted_buffer.size(), "    #%zu %s+0x%" PRIXPTR " [0x%" PRIXPTR "]", i, filename_start, (uintptr_t)relative_addr, (uintptr_t)return_addrs[i]); size > 0) {
-            callback(std::string_view{formatted_buffer.data(), static_cast<size_t>(size)});
-        }
-    }
-}
-
-namespace
-{
-    // temporarily attach a crash logger to the log
-    class CrashFileSink final : public LogSink {
-    public:
-        explicit CrashFileSink(std::ostream& out_) : m_Out{out_}
-        {}
-
-    private:
-        void impl_sink_message(const LogMessageView& msg) final
-        {
-            if (m_Out) {
-                m_Out << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << std::endl;
-            }
-        }
-
-        std::ostream& m_Out;
-    };
-
-    // returns a unix timestamp in seconds since the epoch
-    std::chrono::seconds get_current_time_as_unix_timestamp()
-    {
-        return std::chrono::seconds(std::time(nullptr));
-    }
-
-    std::optional<std::filesystem::path> get_crash_report_path()
-    {
-        auto guard = g_crash_dump_dir.lock();
-        if (not *guard) {
-            return std::nullopt;  // global wasn't set: programmer error
-        }
-
-        std::stringstream filename;
-        filename << get_current_time_as_unix_timestamp().count();
-        filename << "_CrashReport.txt";
-        return **guard / std::move(filename).str();
-    }
-
-    LONG crash_handler(EXCEPTION_POINTERS*)
-    {
-        log_error("exception propagated to root of the application: might be a segfault?");
-
-        const std::optional<std::filesystem::path> maybe_crash_report_path =
-            get_crash_report_path();
-
-        std::optional<std::ofstream> maybe_crash_report_ostream = maybe_crash_report_path ?
-            std::ofstream{*maybe_crash_report_path} :
-            std::optional<std::ofstream>{};
-
-        // dump out the log history (it's handy for context)
-        if (maybe_crash_report_ostream and *maybe_crash_report_ostream)
-        {
-            *maybe_crash_report_ostream << "----- log -----\n";
-            auto guard = global_get_traceback_log().lock();
-            for (const LogMessage& msg : *guard) {
-                *maybe_crash_report_ostream << '[' << msg.logger_name() << "] [" << msg.level() << "] " << msg.payload() << '\n';
-            }
-            *maybe_crash_report_ostream << "----- /log -----\n";
-        }
-
-        // then write a traceback to both the log (in case the user is running from a console)
-        // *and* the crash dump (in case the user is running from a GUI and wants to report it)
-        if (maybe_crash_report_ostream and *maybe_crash_report_ostream) {
-            *maybe_crash_report_ostream << "----- traceback -----\n";
-
-            auto sink = std::make_shared<CrashFileSink>(*maybe_crash_report_ostream);
-
-            global_default_logger()->sinks().push_back(sink);
-            for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
-            global_default_logger()->sinks().erase(global_default_logger()->sinks().end() - 1);
-
-            *maybe_crash_report_ostream << "----- /traceback -----\n";
-        }
-        else {
-            // (no crash dump file, but still write it to stdout etc.)
-
-            *maybe_crash_report_ostream << "----- traceback -----\n";
-            for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
-            *maybe_crash_report_ostream << "----- /traceback -----\n";
-        }
-
-        log_error("note: backtrace addresses are return addresses, not call addresses (see: https://devblogs.microsoft.com/oldnewthing/20170505-00/?p=96116)");
-        log_error("to analyze the backtrace in WinDbg: `ln application.exe+ADDR`");
-
-        // in windbg: ln osc.exe+ADDR
-        // viewing it: https://stackoverflow.com/questions/54022914/c-is-there-any-command-likes-addr2line-on-windows
-
-        return EXCEPTION_CONTINUE_SEARCH;
-    }
-
-    void signal_handler(int)
-    {
-        log_error("signal caught by application: printing backtrace");
-        for_each_stacktrace_entry_in_this_thread([](std::string_view entry) { log_error("%s", entry); });
-    }
-}
-
-void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path& crash_dump_directory)
-{
-    // https://stackoverflow.com/questions/13591334/what-actions-do-i-need-to-take-to-get-a-crash-dump-in-all-error-scenarios
-
-    // set crash dump directory globally so that the crash handler can see it
-    g_crash_dump_dir.lock()->emplace(crash_dump_directory);
-
-    // system default: display all errors
-    SetErrorMode(0);
-
-    // when the application crashes due to an exception, call this handler
-    SetUnhandledExceptionFilter(crash_handler);
-
-    signal(SIGABRT, signal_handler);
-}
-
 #elif EMSCRIPTEN
-
-void osc::enable_crash_signal_backtrace_handler(const std::filesystem::path&)
-{}
 
 namespace
 {

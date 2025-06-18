@@ -358,18 +358,6 @@ namespace
     }
 #endif
 
-    // install backtrace dumper
-    //
-    // useful if the application fails in prod: can provide some basic backtrace
-    // info that users can paste into an issue or something, which is *a lot* more
-    // information than "yeah, it's broke"
-    bool ensure_backtrace_handler_enabled(const std::filesystem::path& crash_dump_dir)
-    {
-        log_info("enabling backtrace handler");
-        enable_crash_signal_backtrace_handler(crash_dump_dir);
-        return true;
-    }
-
     LogLevel get_log_level_from_settings(const AppSettings& settings)
     {
         if (const auto v = settings.find_value("log_level")) {
@@ -1605,9 +1593,6 @@ private:
     // ensures that the global application log is configured according to the
     // application's configuration file
     bool log_is_configured_ = configure_application_log(config_);
-
-    // enable the stack backtrace handler (if necessary - once per process)
-    bool backtrace_handler_is_installed_ = ensure_backtrace_handler_enabled(user_data_dir_);
 
     // top-level runtime resource loader
     ResourceLoader resource_loader_ = make_resource_loader<FilesystemResourceLoader>(resources_dir_);

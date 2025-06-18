@@ -3,7 +3,6 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <functional>
 #include <optional>
 #include <string_view>
 #include <string>
@@ -29,14 +28,6 @@ namespace osc
         std::string_view organization_name,
         std::string_view application_name
     );
-
-    // calls the callback with each entry in the calling thread's stack
-    void for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>&);
-
-    // installs a signal handler for crashes (SIGABRT/SIGSEGV, etc.) that will
-    // print a thread backtrace to the process-wide log, followed by trying to
-    // write a crash report as `CrashReport_DATE.txt` to `crash_dump_directory`
-    void enable_crash_signal_backtrace_handler(const std::filesystem::path& crash_dump_directory);
 
     // tries to open the specified filepath in the OS's default application for opening
     // a path (usually, based on its extension)
