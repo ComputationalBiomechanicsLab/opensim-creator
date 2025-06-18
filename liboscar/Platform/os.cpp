@@ -3,7 +3,6 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
-#include <liboscar/Utils/SynchronizedValue.h>
 
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_error.h>
@@ -14,7 +13,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cerrno>
 #include <cstddef>
 #include <fstream>
 #include <memory>
