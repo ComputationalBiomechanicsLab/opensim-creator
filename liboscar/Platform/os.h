@@ -11,7 +11,7 @@
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc
 {
-    // returns current system time as a calendar time
+    // returns local system time as a calendar date and time broken down into its components.
     std::tm system_calendar_time();
 
     // returns the full path to the currently-executing application

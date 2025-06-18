@@ -10,6 +10,7 @@
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_time.h>
 
 #include <algorithm>
 #include <array>
@@ -53,17 +54,31 @@ namespace
 
         return std::filesystem::weakly_canonical(sv);
     }
-
-    // returns a `std::tm` populated 'as-if' by calling `std::gmtime(&t)`, but in
-    // an implementation-defined threadsafe way
-    std::tm gmtime_threadsafe(std::time_t);
 }
 
 std::tm osc::system_calendar_time()
 {
-    const std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
-    const std::time_t t = std::chrono::system_clock::to_time_t(tp);
-    return gmtime_threadsafe(t);
+    SDL_Time t{};
+    SDL_GetCurrentTime(&t);
+
+    SDL_DateTime dt{};
+    SDL_TimeToDateTime(t, &dt, true);
+
+    const auto doy = SDL_GetDayOfYear(dt.year, dt.month, dt.day);
+
+    std::tm rv{};
+    rv.tm_sec = dt.second;
+    rv.tm_min = dt.minute;
+    rv.tm_hour = dt.hour;
+    rv.tm_mday = dt.day;
+    rv.tm_mon = dt.month - 1;
+    rv.tm_year = dt.year - 1900;
+    rv.tm_wday = dt.day_of_week;
+    rv.tm_yday = doy;
+    rv.tm_isdst = dt.utc_offset > 0;
+    rv.tm_gmtoff = dt.utc_offset;
+    // rv.tm_zone  // TODO
+    return rv;
 }
 
 std::filesystem::path osc::current_executable_directory()
@@ -175,66 +190,3 @@ std::pair<std::fstream, std::filesystem::path> osc::mkstemp(std::string_view suf
     }
     throw std::runtime_error{"failed to create a unique temporary filename after 100 attempts - are you creating _a lot_ of temporary files? ;)"};
 }
-
-
-#ifdef __LINUX__
-
-#include <ctime>                    // std::time_t, std::tm
-
-#include <time.h>                   // gmtime_r
-
-namespace
-{
-    std::tm gmtime_threadsafe(std::time_t t)
-    {
-        std::tm rv{};
-        gmtime_r(&t, &rv);
-        return rv;
-    }
-}
-
-#elif defined(__APPLE__)
-
-#include <ctime>                    // std::time_t, std::tm
-
-#include <time.h>                   // gmtime_r
-
-namespace
-{
-    std::tm gmtime_threadsafe(std::time_t t)
-    {
-        std::tm rv;
-        gmtime_r(&t, &rv);
-        return rv;
-    }
-}
-
-#elif defined(WIN32)
-
-#include <ctime>                    // std::time_t, std::tm, gmtime_s
-
-namespace
-{
-    std::tm gmtime_threadsafe(std::time_t t)
-    {
-        std::tm rv;
-        gmtime_s(&rv, &t);
-        return rv;
-    }
-}
-
-#elif EMSCRIPTEN
-
-namespace
-{
-    std::tm gmtime_threadsafe(std::time_t t)
-    {
-        std::tm rv{};
-        gmtime_r(&t, &rv);
-        return rv;
-    }
-}
-
-#else
-#error "Unsupported platform?"
-#endif
