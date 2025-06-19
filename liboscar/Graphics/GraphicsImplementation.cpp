@@ -7989,7 +7989,7 @@ void osc::GraphicsBackend::blit_to_main_window(
 
     Camera camera;
     camera.set_background_color(Color::clear());
-    camera.set_pixel_rect(*destination_screen_rect);
+    camera.set_pixel_rect(destination_screen_rect);
     camera.set_projection_matrix_override(identity<Mat4>());
     camera.set_view_matrix_override(identity<Mat4>());
     camera.set_clear_flags(CameraClearFlag::None);
