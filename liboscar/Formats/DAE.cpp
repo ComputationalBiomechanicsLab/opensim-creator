@@ -10,12 +10,13 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/VecFunctions.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/Utils/ChronoHelpers.h>
 #include <liboscar/Strings.h>
 
 #include <array>
 #include <cstddef>
 #include <cstdio>
-#include <iomanip>
+#include <chrono>
 #include <ostream>
 #include <span>
 #include <sstream>
@@ -184,8 +185,8 @@ namespace
         out << "      <author>" << metadata.author << "</author>\n";
         out << "      <authoring_tool>" << metadata.authoring_tool << "</authoring_tool>\n";
         out << "    </contributor>\n";
-        out << "    <created>" << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << "</created>\n";
-        out << "    <modified>" << std::put_time(&metadata.modification_time, "%Y-%m-%d %H:%M:%S") << "</modified>\n";
+        out << "    <created>" << to_iso8601_timestamp(metadata.creation_time) << "</created>\n";
+        out << "    <modified>" << to_iso8601_timestamp(metadata.modification_time) << "</modified>\n";
         out << "    <unit name=\"meter\" meter=\"1\" />\n";
         out << "    <up_axis>Y_UP</up_axis>\n";
         out << "  </asset>\n";
@@ -424,7 +425,7 @@ osc::DAEMetadata::DAEMetadata(
 
     author{author_},
     authoring_tool{authoring_tool_},
-    creation_time{system_calendar_time()},
+    creation_time{std::chrono::current_zone(), std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())},
     modification_time{creation_time}
 {}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctime>
+#include <chrono>
 #include <iosfwd>
 #include <span>
 #include <string>
@@ -21,8 +21,8 @@ namespace osc
 
         std::string author;
         std::string authoring_tool;
-        std::tm creation_time;
-        std::tm modification_time;
+        std::chrono::zoned_seconds creation_time;
+        std::chrono::zoned_seconds modification_time;
     };
 
     void write_as_dae(

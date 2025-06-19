@@ -2,7 +2,7 @@
 
 #include <liboscar/Utils/Flags.h>
 
-#include <ctime>
+#include <chrono>
 #include <iosfwd>
 #include <string>
 #include <string_view>
@@ -24,7 +24,7 @@ namespace osc
         explicit ObjMetadata(std::string_view authoring_tool_);
 
         std::string authoring_tool;
-        std::tm creation_time;
+        std::chrono::zoned_seconds creation_time;
     };
 
     void write_as_obj(
