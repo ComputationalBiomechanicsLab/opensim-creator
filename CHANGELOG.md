@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- `OpenSim::PathPoint`s now have the same icon as an `OpenSim::Marker`, to
+  make them easier to spot in the UI/navigator.
 - Mouse hittesting in the 3D viewport now use an algorithm that prioritizes
   subcomponents over parent components in the case where the mouse ray
   intersects multiple components, which makes it easier to (e.g.) select

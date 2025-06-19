@@ -314,7 +314,7 @@ CStringView osc::IconFor(const OpenSim::Component& c)
     else if (dynamic_cast<const OpenSim::ContactGeometry*>(&c)) {
         return OSC_ICON_CONTACT;
     }
-    else if (dynamic_cast<const OpenSim::Station*>(&c)) {
+    else if (dynamic_cast<const OpenSim::Station*>(&c) or dynamic_cast<const OpenSim::PathPoint*>(&c)) {
         return OSC_ICON_MARKER;
     }
     else if (dynamic_cast<const OpenSim::Constraint*>(&c)) {
