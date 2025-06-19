@@ -1,5 +1,7 @@
+# a filesystem path relative to this configuration file to the root
+# of OpenSim Creator's runtime resources directory (i.e. where it
+# loads its fonts, shaders, example models, etc. from)
 resources = "resources"
-docs_url = "@OSC_DOCS_URL@"
 
 # change this if you need OSC to print more information to the log
 # log_level = "trace"  # trace < debug < info < warn < err < critical
@@ -9,4 +11,10 @@ docs_url = "@OSC_DOCS_URL@"
 
 # a scale factor that is multiplied by the number of physical pixels that comprise
 # each 3D element in the UI (e.g. you can use this to downscale HighDPI viewports)
-graphics.render_scale = 1.0
+# graphics.render_scale = 1.0
+
+# [model_editor]
+#
+# # tells the OpenSim model editor interface to enable/disable auto-reloading osim
+# # files if the associated .osim file changes (#1000)
+# monitor_osim_changes = true

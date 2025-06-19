@@ -22,6 +22,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
@@ -281,9 +282,12 @@ public:
 
     void on_tick()
     {
-        if (m_FileChangePoller.change_detected(m_Model->getModel().getInputFileName()))
-        {
-            ActionUpdateModelFromBackingFile(*m_Model);
+        // If the user has defined auto-reload behavior, obey it. Otherwise, default-enable
+        // auto-reloading (#1000)
+        if (App::settings().find_value("model_editor/monitor_osim_changes").value_or(true)) {
+            if (m_FileChangePoller.change_detected(m_Model->getModel().getInputFileName())) {
+                ActionUpdateModelFromBackingFile(*m_Model);
+            }
         }
 
         set_name(computeTabName());
