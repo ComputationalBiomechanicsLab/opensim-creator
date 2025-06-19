@@ -74,8 +74,10 @@ std::tm osc::system_calendar_time()
     rv.tm_wday = dt.day_of_week;
     rv.tm_yday = doy;
     rv.tm_isdst = dt.utc_offset > 0;
+#ifdef __USE_MISC
     rv.tm_gmtoff = dt.utc_offset;
     // rv.tm_zone  // TODO
+#endif
     return rv;
 }
 
