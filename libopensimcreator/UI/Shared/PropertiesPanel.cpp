@@ -33,11 +33,6 @@ namespace
             return;
         }
 
-        const bool disabled = model->isReadonly();
-        if (disabled) {
-            ui::begin_disabled();
-        }
-
         ui::set_num_columns(2);
         ui::align_text_to_frame_padding();  // ensure it aligns with the button in the next column
         ui::draw_text("actions");
@@ -51,10 +46,6 @@ namespace
         ui::pop_style_color();
         ui::next_column();
         ui::set_num_columns();
-
-        if (disabled) {
-            ui::end_disabled();
-        }
     }
 
     class ObjectNameEditor final {

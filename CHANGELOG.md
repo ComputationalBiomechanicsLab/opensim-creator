@@ -9,6 +9,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   boolean option, which can be used to explicitly tell the OpenSim model editor
   whether or not to auto-reload the file when it changes on disk (defaults to
   `true`, #1000).
+- The lightning button in the properties panel is now clickable even if the
+  model is readonly (e.g. when simulating, #777).
 - SVG icons and banners now rasterize in high DPI mode when rendering to a
   high DPI monitor.
 - Keyboard navigation between elements in the UI is now easier and supports (e.g.)
