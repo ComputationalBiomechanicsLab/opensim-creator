@@ -154,8 +154,7 @@ public:
 
         m_Shared->tick(dt);
 
-        if (m_Maybe3DViewerModal)
-        {
+        if (m_Maybe3DViewerModal) {
             std::shared_ptr<MeshImporterUILayer> ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
             ptr->tick(dt);
         }

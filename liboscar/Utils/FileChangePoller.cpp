@@ -28,7 +28,7 @@ osc::FileChangePoller::FileChangePoller(
         const std::string& path) :
 
     delay_between_checks_{delay_between_checks},
-    next_polling_time_{std::chrono::system_clock::now() + delay_between_checks},
+    next_polling_time_{std::chrono::steady_clock::now() + delay_between_checks},
     file_last_modification_time_{get_last_modification_time(path)}
 {}
 
@@ -39,7 +39,7 @@ bool osc::FileChangePoller::change_detected(const std::string& path)
         return false;
     }
 
-    const auto now = std::chrono::system_clock::now();
+    const auto now = std::chrono::steady_clock::now();
 
     if (now < next_polling_time_) {
         // too soon to poll again

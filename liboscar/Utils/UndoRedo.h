@@ -39,12 +39,10 @@ namespace osc
             virtual ~UndoRedoEntryMetadata() noexcept = default;
 
             UID id() const { return id_; }
-            std::chrono::system_clock::time_point time() const { return time_; }
             CStringView message() const { return message_; }
 
         private:
             UID id_;
-            std::chrono::system_clock::time_point time_ = std::chrono::system_clock::now();
             std::string message_;
         };
 
@@ -79,7 +77,6 @@ namespace osc
         const detail::UndoRedoEntryMetadata& metadata() const { return *data_; }
     public:
         UID id() const { return data_->id(); }
-        std::chrono::system_clock::time_point time() const { return data_->time(); }
         CStringView message() const { return data_->message(); }
 
     private:

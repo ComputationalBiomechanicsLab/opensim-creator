@@ -17,7 +17,7 @@ namespace osc
 
     private:
         std::chrono::milliseconds delay_between_checks_;
-        std::chrono::system_clock::time_point next_polling_time_;
+        std::chrono::steady_clock::time_point next_polling_time_;
         std::filesystem::file_time_type file_last_modification_time_;
     };
 }

@@ -14,7 +14,6 @@
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
 #include <liboscar/Maths/Line.h>
@@ -29,9 +28,8 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/Utils/PerfClock.h>
 
-#include <array>
 #include <cinttypes>
 #include <chrono>
 
@@ -51,7 +49,7 @@ public:
         ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().main_window_dimensions());
 
         // handle hittest
-        const auto raycastStartTime = std::chrono::high_resolution_clock::now();
+        const auto raycastStartTime = PerfClock::now();
 
         const Rect r = ui::get_main_window_workspace_ui_rect();
         const Vec2 d = dimensions_of(r);
@@ -79,7 +77,7 @@ public:
             });
         }
 
-        const auto raycastEndTime = std::chrono::high_resolution_clock::now();
+        const auto raycastEndTime = PerfClock::now();
         m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastEndTime - raycastStartTime);
     }
 

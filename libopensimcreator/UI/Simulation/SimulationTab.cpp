@@ -331,7 +331,7 @@ private:
     void implSetSimulationPlaybackState(SimulationUIPlaybackState newState) final
     {
         if (newState == SimulationUIPlaybackState::Playing) {
-            m_PlaybackStartWallTime = std::chrono::system_clock::now();
+            m_PlaybackStartWallTime = std::chrono::steady_clock::now();
             m_PlaybackState = newState;
         }
         else {
@@ -373,8 +373,8 @@ private:
             return m_Simulation->getStartTime();
         }
         else {
-            std::chrono::system_clock::time_point wallNow = std::chrono::system_clock::now();
-            std::chrono::system_clock::duration wallDur = wallNow - m_PlaybackStartWallTime;
+            const auto wallNow = std::chrono::steady_clock::now();
+            const auto wallDur = wallNow - m_PlaybackStartWallTime;
 
             const SimulationClock::duration simDur = m_PlaybackSpeed * SimulationClock::duration{wallDur};
             const SimulationClock::time_point simNow = m_PlaybackStartSimtime + simDur;
@@ -396,7 +396,7 @@ private:
     void implSetSimulationScrubTime(SimulationClock::time_point t) final
     {
         m_PlaybackStartSimtime = t;
-        m_PlaybackStartWallTime = std::chrono::system_clock::now();
+        m_PlaybackStartWallTime = std::chrono::steady_clock::now();
     }
 
     void implStepBack() final
@@ -467,7 +467,7 @@ private:
     SimulationUILoopingState m_LoopingState = SimulationUILoopingState::PlayOnce;
     float m_PlaybackSpeed = 1.0f;
     SimulationClock::time_point m_PlaybackStartSimtime = m_Simulation->getStartTime();
-    std::chrono::system_clock::time_point m_PlaybackStartWallTime = std::chrono::system_clock::now();
+    std::chrono::steady_clock::time_point m_PlaybackStartWallTime = std::chrono::steady_clock::now();
 
     // manager for toggleable and spawnable UI panels
     std::shared_ptr<PanelManager> m_PanelManager = std::make_shared<PanelManager>(&owner());

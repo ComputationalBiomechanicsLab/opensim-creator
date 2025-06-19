@@ -1189,7 +1189,6 @@ namespace
             const auto delta = bd.LastFrameTime ? t - *bd.LastFrameTime : AppClock::duration{1.0/60.0};
             io.DeltaTime = static_cast<float>(delta.count());
             bd.LastFrameTime = t;
-
         }
 
         // Handle mouse leaving the window

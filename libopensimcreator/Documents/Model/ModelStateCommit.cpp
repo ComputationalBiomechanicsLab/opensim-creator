@@ -24,7 +24,6 @@ public:
 
     Impl(const IModelStatePair& msp, std::string_view message, UID parent) :
         m_MaybeParentID{parent},
-        m_CommitTime{std::chrono::system_clock::now()},
         m_Model{std::make_unique<OpenSim::Model>(msp.getModel())},
         m_ModelVersion{msp.getModelVersion()},
         m_FixupScaleFactor{msp.getFixupScaleFactor()},
@@ -47,11 +46,6 @@ public:
     UID getParentID() const
     {
         return m_MaybeParentID;
-    }
-
-    std::chrono::system_clock::time_point getCommitTime() const
-    {
-        return m_CommitTime;
     }
 
     CStringView getCommitMessage() const
@@ -78,7 +72,6 @@ private:
     mutable std::mutex m_AccessMutex;
     UID m_ID;
     UID m_MaybeParentID;
-    std::chrono::system_clock::time_point m_CommitTime;
     std::unique_ptr<OpenSim::Model> m_Model;
     UID m_ModelVersion;
     float m_FixupScaleFactor;
@@ -106,11 +99,6 @@ bool osc::ModelStateCommit::hasParent() const
 UID osc::ModelStateCommit::getParentID() const
 {
     return m_Impl->getParentID();
-}
-
-std::chrono::system_clock::time_point osc::ModelStateCommit::getCommitTime() const
-{
-    return m_Impl->getCommitTime();
 }
 
 CStringView osc::ModelStateCommit::getCommitMessage() const

@@ -14,6 +14,7 @@
 #include <liboscar/Shims/Cpp20/stop_token.h>
 #include <liboscar/Shims/Cpp20/thread.h>
 #include <liboscar/Utils/HashHelpers.h>
+#include <liboscar/Utils/PerfClock.h>
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -21,7 +22,6 @@
 #include <simmath/TimeStepper.h>
 #include <SimTKsimbody.h>
 
-#include <array>
 #include <atomic>
 #include <chrono>
 #include <cstddef>
@@ -29,7 +29,6 @@
 #include <functional>
 #include <memory>
 #include <optional>
-#include <span>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -264,7 +263,7 @@ namespace
         SimulatorThreadInput& input,
         SharedState& shared)
     {
-        const std::chrono::high_resolution_clock::time_point tSimStart = std::chrono::high_resolution_clock::now();
+        const auto tSimStart = PerfClock::now();
 
         const ForwardDynamicSimulatorParams& params = input.getParams();
 
@@ -281,7 +280,7 @@ namespace
 
         // immediately report t = start
         {
-            const std::chrono::duration<float> wallDur = std::chrono::high_resolution_clock::now() - tSimStart;
+            const std::chrono::duration<float> wallDur = PerfClock::now() - tSimStart;
             input.emitReport(CreateSimulationReport(wallDur, {}, input.getMultiBodySystem(), *integ));
         }
 
@@ -301,9 +300,9 @@ namespace
             const SimulationClock::time_point tNext = tStart + step*params.reportingInterval;
 
             // perform an integration step
-            const std::chrono::high_resolution_clock::time_point tStepStart = std::chrono::high_resolution_clock::now();
+            const auto tStepStart = PerfClock::now();
             const SimTK::Integrator::SuccessfulStepStatus timestepRv = ts.stepTo(tNext.time_since_epoch().count());
-            const std::chrono::high_resolution_clock::time_point tStepEnd = std::chrono::high_resolution_clock::now();
+            const auto tStepEnd = PerfClock::now();
 
             // handle integrator response
             if (integ->isSimulationOver() &&
