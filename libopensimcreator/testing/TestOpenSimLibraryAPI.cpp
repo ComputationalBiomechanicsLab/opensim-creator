@@ -586,7 +586,7 @@ TEST(OpenSimModel, DISABLED_ReFinalizingAnEvenSimplerModelWithUnusualJointTopolo
     }
 }
 
-// random check: it screwed me over that `getComponentList` does not include the
+// spot check: it screwed me over that `getComponentList` does not include the
 // component being called
 TEST(OpenSimModel, MeshGetComponentListDoesNotIterate)
 {

@@ -19,8 +19,6 @@
 
 namespace osc::testing
 {
-    std::default_random_engine& get_process_random_engine();
-
     template<typename T>
     T generate();
 

@@ -215,7 +215,7 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     }
 }
 
-// useful, because it enables adding random geometry etc. into the component set that the user can
+// useful, because it enables adding geometry etc. into the component set that the user can
 // later clean up in the UI
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)
 {
