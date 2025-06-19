@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ctime>
+#include <chrono>
 #include <iosfwd>
 #include <string>
 #include <string_view>
@@ -18,7 +18,7 @@ namespace osc
         );
 
         std::string authoring_tool;
-        std::tm creation_time;
+        std::chrono::zoned_seconds creation_time;
     };
 
     void write_as_stl(

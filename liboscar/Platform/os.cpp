@@ -9,7 +9,6 @@
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_time.h>
 
 #include <algorithm>
 #include <array>
@@ -52,33 +51,6 @@ namespace
 
         return std::filesystem::weakly_canonical(sv);
     }
-}
-
-std::tm osc::system_calendar_time()
-{
-    SDL_Time t{};
-    SDL_GetCurrentTime(&t);
-
-    SDL_DateTime dt{};
-    SDL_TimeToDateTime(t, &dt, true);
-
-    const auto doy = SDL_GetDayOfYear(dt.year, dt.month, dt.day);
-
-    std::tm rv{};
-    rv.tm_sec = dt.second;
-    rv.tm_min = dt.minute;
-    rv.tm_hour = dt.hour;
-    rv.tm_mday = dt.day;
-    rv.tm_mon = dt.month - 1;
-    rv.tm_year = dt.year - 1900;
-    rv.tm_wday = dt.day_of_week;
-    rv.tm_yday = doy;
-    rv.tm_isdst = dt.utc_offset > 0;
-#ifdef __USE_MISC
-    rv.tm_gmtoff = dt.utc_offset;
-    // rv.tm_zone  // TODO
-#endif
-    return rv;
 }
 
 std::filesystem::path osc::current_executable_directory()

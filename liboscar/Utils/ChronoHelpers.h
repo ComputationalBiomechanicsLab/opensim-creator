@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <string>
 #include <type_traits>
 
 namespace osc
@@ -29,4 +30,8 @@ namespace osc
     {
         return std::chrono::time_point<Clock, Duration>{lerp(a.time_since_epoch(), b.time_since_epoch(), t)};
     }
+
+    // Returns the given time point as an ISO 8601 extended-format timestamp
+    // (e.g. 2025-06-19 10:06:35+01:00) string.
+    std::string to_iso8601_timestamp(std::chrono::zoned_seconds);
 }
