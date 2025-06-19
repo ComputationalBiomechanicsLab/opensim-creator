@@ -16,10 +16,48 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/Perf.h>
 
+#include <algorithm>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 using namespace osc;
+namespace rgs = std::ranges;
+
+namespace
+{
+    class PriorityOrderableCollision {
+    public:
+        explicit PriorityOrderableCollision(const SceneCollision& collision, const SceneDecoration& decoration) :
+            collision_{&collision},
+            decoration_{&decoration}
+        {}
+
+        friend bool operator<(const PriorityOrderableCollision& lhs,  const PriorityOrderableCollision& rhs)
+        {
+            // heuristic: if one collision has an ID that is a strict substring of the other
+            // thing then it's a subcomponent, which should be prioritized for hit-testing because
+            // it's likely that the user wants to actually select the more specific component (e.g.
+            // when mousing over a muscle, prefer the muscle points (#592).
+            const std::string_view lhsv{lhs.decoration_->id};
+            const std::string_view rhsv{rhs.decoration_->id};
+            if (lhsv.size() != rhsv.size()) {
+                const auto shortest = std::min(lhsv.size(), rhsv.size());
+                if (lhsv.substr(0, shortest) == rhsv.substr(0, shortest)) {
+                    return rhsv.size() > lhsv.size();  // rhs is a strict substring of lhs (higher prio)
+                }
+            }
+
+            // else: rhs is "greater than" lhs if it's closer
+            return rhs.collision_->world_distance_from_ray_origin < lhs.collision_->world_distance_from_ray_origin;
+        }
+
+        const SceneCollision& collision() const { return *collision_; }
+    private:
+        const SceneCollision* collision_;
+        const SceneDecoration* decoration_;
+    };
+}
 
 SceneRendererParams osc::CalcSceneRendererParams(
     const ModelRendererParams& renderParams,
@@ -83,7 +121,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     Vec2 mouseScreenPos,
     const Rect& viewportScreenRect)
 {
-    OSC_PERF("ModelSceneDecorations/getClosestCollision");
+    OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
     const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
@@ -100,24 +138,20 @@ std::optional<SceneCollision> osc::GetClosestCollision(
         worldSpaceCameraRay
     );
 
-    // filter through the collisions list
-    const SceneCollision* closestCollision = nullptr;
-    for (const SceneCollision& c : collisions)
-    {
-        if (closestCollision && c.world_distance_from_ray_origin > closestCollision->world_distance_from_ray_origin)
-        {
-            continue;  // it's further away than the current closest collision
+    // Filter through the collisions list, ensuring that hittest
+    // priority is handled (#592).
+    std::optional<PriorityOrderableCollision> bestCollision;
+    for (const SceneCollision& c : collisions) {
+        const SceneDecoration& decoration = at(taggedDrawlist, c.decoration_index);
+        if (decoration.id.empty()) {
+            continue;  // filter out decorations with no ID
         }
-
-        const SceneDecoration& decoration = taggedDrawlist[c.decoration_index];
-
-        if (decoration.id.empty())
-        {
-            continue;  // filtered out by external filter
+        if (const PriorityOrderableCollision sortable{c, decoration}; bestCollision < sortable) {
+            bestCollision = sortable;
         }
-
-        closestCollision = &c;
     }
 
-    return closestCollision ? *closestCollision : std::optional<SceneCollision>{};
+    return bestCollision ?
+        std::make_optional<SceneCollision>(bestCollision->collision()) :
+        std::nullopt;
 }

@@ -5,6 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Mouse hittesting in the 3D viewport now use an algorithm that prioritizes
+  subcomponents over parent components in the case where the mouse ray
+  intersects multiple components, which makes it easier to (e.g.) select
+  muscle points that are surrounded by fibers (#592).
 - The `osc.toml` configuration file now supports a `model_editor/monitor_osim_changes`
   boolean option, which can be used to explicitly tell the OpenSim model editor
   whether or not to auto-reload the file when it changes on disk (defaults to
