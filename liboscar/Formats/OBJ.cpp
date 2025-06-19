@@ -4,9 +4,9 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Strings.h>
+#include <liboscar/Utils/ChronoHelpers.h>
 
 #include <cstddef>
-#include <iomanip>
 #include <ostream>
 #include <string_view>
 
@@ -17,7 +17,7 @@ namespace
     void write_header(std::ostream& out, const ObjMetadata& metadata)
     {
         out << "# " << metadata.authoring_tool << '\n';
-        out << "# created: " << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << '\n';
+        out << "# created: " << to_iso8601_timestamp(metadata.creation_time) << '\n';
     }
 
     std::ostream& write_vec3(std::ostream& out, const Vec3& vec)
@@ -78,7 +78,7 @@ osc::ObjMetadata::ObjMetadata() :
 
 osc::ObjMetadata::ObjMetadata(std::string_view authoring_tool_) :
     authoring_tool{authoring_tool_},
-    creation_time{system_calendar_time()}
+    creation_time{std::chrono::current_zone(), std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())}
 {}
 
 void osc::write_as_obj(
