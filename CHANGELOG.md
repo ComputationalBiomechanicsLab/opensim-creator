@@ -41,6 +41,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: `liboscar` now explicitly outlines that it uses a right-handed coordinate
   system and encoding format for textures (i.e. x goes right, y goes up, origin is
   bottom-left), which matches OpenGL's conventions (#1044).
+- Internal: All graphics test suites now use the same test source file convention as
+  the rest of the codebase (#763).
 
 
 ## [0.5.23] - 2025/05/26

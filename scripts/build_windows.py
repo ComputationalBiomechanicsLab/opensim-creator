@@ -152,7 +152,9 @@ def build_osc(conf: BuildConfiguration):
 
         # test
         excluded_tests = [  # necessary in CI: no windowing system available
-            'Renderer',
+            'Graphics',
+            'MeshDepthWritingMaterialFixture',
+            'MeshNormalVectorsMaterialFixture',
             'ShaderTest',
             'MaterialTest',
             'RegisteredDemoTabsTest',

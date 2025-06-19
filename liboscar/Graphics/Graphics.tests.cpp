@@ -1,50 +1,30 @@
-#include <liboscar/Formats/Image.h>
+#include "Graphics.h"
+
 #include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
-#include <liboscar/Graphics/Materials/MeshDepthWritingMaterial.h>
-#include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/Shader.h>
 #include <liboscar/Graphics/SubMeshDescriptor.h>
-#include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Transform.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/testing/TestingHelpers.h>
-#include <liboscar/testing/testoscarconfig.h>
-#include <liboscar/Utils/CStringView.h>
 
 #include <gtest/gtest.h>
 
-#include <algorithm>
-#include <array>
-#include <cstdint>
 #include <memory>
-#include <span>
-#include <sstream>
-#include <string>
-#include <unordered_set>
+#include <optional>
 
-namespace graphics = osc::graphics;
-using namespace osc::testing;
 using namespace osc;
 
 namespace
 {
     std::unique_ptr<App> g_renderer_app;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-    class Renderer : public ::testing::Test {
+    class Graphics : public ::testing::Test {
     protected:
         static void SetUpTestSuite()
         {
-            AppMetadata metadata;
-            metadata.set_organization_name(TESTOSCAR_ORGNAME_STRING);
-            metadata.set_application_name(TESTOSCAR_APPNAME_STRING);
-            g_renderer_app = std::make_unique<App>(metadata);
+            g_renderer_app = std::make_unique<App>();
         }
 
         static void TearDownTestSuite()
@@ -173,50 +153,35 @@ namespace
             Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
         }
     )";
-
-    Material generate_material()
-    {
-        const Shader shader{c_vertex_shader_src, c_fragment_shader_src};
-        return Material{shader};
-    }
 }
-TEST_F(Renderer, graphics_draw_does_not_throw_with_standard_args)
+
+TEST_F(Graphics, graphics_draw_does_not_throw_with_standard_args)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
-    const Material material = generate_material();
+    const Material material{Shader{c_vertex_shader_src, c_fragment_shader_src}};
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera); });
 }
 
-TEST_F(Renderer, graphics_draw_throws_if_given_out_of_bounds_sub_mesh_index)
+TEST_F(Graphics, graphics_draw_throws_if_given_out_of_bounds_sub_mesh_index)
 {
     const Mesh mesh;
     const Transform transform = identity<Transform>();
-    const Material material = generate_material();
+    const Material material{Shader{c_vertex_shader_src, c_fragment_shader_src}};
     Camera camera;
 
     ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
 }
 
-TEST_F(Renderer, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
+TEST_F(Graphics, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
 {
     Mesh mesh;
     mesh.push_submesh_descriptor({0, 0, MeshTopology::Triangles});
     const Transform transform = identity<Transform>();
-    const Material material = generate_material();
+    const Material material{Shader{c_vertex_shader_src, c_fragment_shader_src}};
     Camera camera;
 
     ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
-}
-
-TEST_F(Renderer, MeshDepthWritingMaterial_can_default_construct)
-{
-    [[maybe_unused]] const MeshDepthWritingMaterial default_constructed;  // should compile, run, etc.
-}
-
-TEST_F(Renderer, MeshNormalVectorsMaterial_can_default_construct)
-{
-    [[maybe_unused]] const MeshNormalVectorsMaterial default_constructed;  // should compile, run, etc.
 }

@@ -22,7 +22,6 @@ add_executable(testoscar
     ${OSC_OSCAR_TEST_SOURCES}
     TestingHelpers.cpp
     TestingHelpers.h
-    TestRenderer.cpp
 )
 set_target_properties(testoscar PROPERTIES
     CXX_EXTENSIONS OFF
