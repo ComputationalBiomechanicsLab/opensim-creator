@@ -231,14 +231,14 @@ void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bv
     bvh.build_from_aabbs(aabbs);
 }
 
-std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
-    const BVH& scene_bvh,
-    SceneCache& cache,
-    std::span<const SceneDecoration> decorations,
-    const Line& world_space_ray)
+void osc::for_each_ray_collision_with_scene(
+        const BVH& scene_bvh,
+        SceneCache& cache,
+        std::span<const SceneDecoration> decorations,
+        const Line& world_space_ray,
+        const std::function<void(SceneCollision&&)>& out)
 {
-    std::vector<SceneCollision> rv;
-    scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &rv](BVHCollision scene_collision)
+    scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &out](const BVHCollision& scene_collision)
     {
         // perform ray-triangle intersection tests on the scene collisions
         const SceneDecoration& decoration = at(decorations, scene_collision.id);
@@ -252,13 +252,26 @@ std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
         );
 
         if (maybe_triangle_collision) {
-            rv.push_back({
+            out({
                 .decoration_id = decoration.id,
                 .decoration_index = static_cast<size_t>(scene_collision.id),
                 .world_space_location = maybe_triangle_collision->position,
                 .world_distance_from_ray_origin = maybe_triangle_collision->distance,
             });
         }
+    });
+}
+
+std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
+    const BVH& scene_bvh,
+    SceneCache& cache,
+    std::span<const SceneDecoration> decorations,
+    const Line& world_space_ray)
+{
+    std::vector<SceneCollision> rv;
+    for_each_ray_collision_with_scene(scene_bvh, cache, decorations, world_space_ray, [&rv](SceneCollision&& scene_collision)
+    {
+        rv.push_back(std::move(scene_collision));
     });
     return rv;
 }

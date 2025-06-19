@@ -106,6 +106,15 @@ namespace osc
         BVH&
     );
 
+    // calls `out` with each `SceneCollision` found along `world_space_ray`
+    void for_each_ray_collision_with_scene(
+        const BVH& scene_bvh,
+        SceneCache&,
+        std::span<const SceneDecoration>,
+        const Line& world_space_ray,
+        const std::function<void(SceneCollision&&)>& out
+    );
+
     // returns all collisions along `world_space_ray`
     std::vector<SceneCollision> get_all_ray_collisions_with_scene(
         const BVH& scene_bvh,

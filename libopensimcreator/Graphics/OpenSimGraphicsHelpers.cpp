@@ -22,41 +22,23 @@
 #include <vector>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 namespace
 {
-    class PriorityOrderableCollision {
-    public:
-        explicit PriorityOrderableCollision(const SceneCollision& collision, const SceneDecoration& decoration) :
-            collision_{&collision},
-            decoration_{&decoration}
-        {}
-
-        friend bool operator<(const PriorityOrderableCollision& lhs,  const PriorityOrderableCollision& rhs)
-        {
-            // heuristic: if one collision has an ID that is a strict substring of the other
-            // thing then it's a subcomponent, which should be prioritized for hit-testing because
-            // it's likely that the user wants to actually select the more specific component (e.g.
-            // when mousing over a muscle, prefer the muscle points (#592).
-            const std::string_view lhsv{lhs.decoration_->id};
-            const std::string_view rhsv{rhs.decoration_->id};
-            if (lhsv.size() != rhsv.size()) {
-                const auto shortest = std::min(lhsv.size(), rhsv.size());
-                if (lhsv.substr(0, shortest) == rhsv.substr(0, shortest)) {
-                    return rhsv.size() > lhsv.size();  // rhs is a strict substring of lhs (higher prio)
-                }
-            }
-
-            // else: rhs is "greater than" lhs if it's closer
-            return rhs.collision_->world_distance_from_ray_origin < lhs.collision_->world_distance_from_ray_origin;
+    bool collision_priority_greater(const std::optional<SceneCollision>& lhs, const SceneCollision& rhs)
+    {
+        if (not lhs) {
+            return true;  // any collision is better than no collision
         }
-
-        const SceneCollision& collision() const { return *collision_; }
-    private:
-        const SceneCollision* collision_;
-        const SceneDecoration* decoration_;
-    };
+        if (lhs->decoration_id.size() < rhs.decoration_id.size() and lhs->decoration_id.starts_with(rhs.decoration_id)) {
+            // if rhs is collision with an ID (presumed to be an absolute path) that is
+            // prefixed by lhs then it's a subcomponent, which should be prioritized for
+            // hit-testing (#592).
+            return true;
+        }
+        // else: the closest collision gets priority
+        return rhs.world_distance_from_ray_origin < lhs->world_distance_from_ray_origin;
+    }
 }
 
 SceneRendererParams osc::CalcSceneRendererParams(
@@ -130,28 +112,20 @@ std::optional<SceneCollision> osc::GetClosestCollision(
         dimensions_of(viewportScreenRect)
     );
 
-    // find all collisions along the camera ray
-    const std::vector<SceneCollision> collisions = get_all_ray_collisions_with_scene(
+    // iterate over all collisions along the camera ray and find the best one
+    std::optional<SceneCollision> best;
+    for_each_ray_collision_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
-        worldSpaceCameraRay
-    );
+        worldSpaceCameraRay,
+        [&best](SceneCollision&& sceneCollision)
+        {
+            if (not sceneCollision.decoration_id.empty()
+                and collision_priority_greater(best, sceneCollision)) {
 
-    // Filter through the collisions list, ensuring that hittest
-    // priority is handled (#592).
-    std::optional<PriorityOrderableCollision> bestCollision;
-    for (const SceneCollision& c : collisions) {
-        const SceneDecoration& decoration = at(taggedDrawlist, c.decoration_index);
-        if (decoration.id.empty()) {
-            continue;  // filter out decorations with no ID
-        }
-        if (const PriorityOrderableCollision sortable{c, decoration}; bestCollision < sortable) {
-            bestCollision = sortable;
-        }
-    }
-
-    return bestCollision ?
-        std::make_optional<SceneCollision>(bestCollision->collision()) :
-        std::nullopt;
+                best = std::move(sceneCollision);
+            }
+        });
+    return best;
 }

@@ -214,6 +214,11 @@ namespace osc
             return size() == 0;
         }
 
+        bool starts_with(std::string_view sv) const noexcept
+        {
+            return std::string_view{*this}.starts_with(sv);
+        }
+
         // returns the number of characters in the string
         size_type size() const
         {
