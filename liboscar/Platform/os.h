@@ -45,10 +45,6 @@ namespace osc
     // returns `true` if `content` was successfully copied to the user's clipboard
     bool set_clipboard_text(std::string_view);
 
-    // returns `true` if an environment variable with the given `name` is set in
-    // the calling process.
-    bool is_environment_variable_set(std::string_view name);
-
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`
     // flag
