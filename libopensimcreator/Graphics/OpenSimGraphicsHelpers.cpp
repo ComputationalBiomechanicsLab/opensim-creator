@@ -30,11 +30,17 @@ namespace
         if (not lhs) {
             return true;  // any collision is better than no collision
         }
-        if (lhs->decoration_id.size() < rhs.decoration_id.size() and lhs->decoration_id.starts_with(rhs.decoration_id)) {
-            // if rhs is collision with an ID (presumed to be an absolute path) that is
-            // prefixed by lhs then it's a subcomponent, which should be prioritized for
-            // hit-testing (#592).
+        // if a collision has an ID (presumed to be an absolute path) that is prefixed by the other
+        // then it's a subcomponent, which should be prioritized for hit-testing (#592).
+        if (lhs->decoration_id.size() < rhs.decoration_id.size()
+            and rhs.decoration_id.starts_with(lhs->decoration_id)) {
+
             return true;
+        }
+        if (lhs->decoration_id.size() > rhs.decoration_id.size()
+            and lhs->decoration_id.starts_with(rhs.decoration_id)) {
+
+            return false;
         }
         // else: the closest collision gets priority
         return rhs.world_distance_from_ray_origin < lhs->world_distance_from_ray_origin;
