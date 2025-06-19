@@ -121,7 +121,7 @@ std::string osc::get_clipboard_text()
 {
     if (char* str = SDL_GetClipboardText()) {
         const ScopeExit guard{[str]() { SDL_free(str); }};
-        return str;
+        return std::string{str};
     }
     else {
         return {};
@@ -131,26 +131,6 @@ std::string osc::get_clipboard_text()
 bool osc::set_clipboard_text(std::string_view content)
 {
     return SDL_SetClipboardText(std::string{content}.c_str());
-}
-
-void osc::set_environment_variable(std::string_view name, std::string_view value, bool overwrite)
-{
-    SDL_setenv_unsafe(std::string{name}.c_str(), std::string{value}.c_str(), overwrite ? 1 : 0);
-}
-
-bool osc::is_environment_variable_set(std::string_view name)
-{
-    return SDL_getenv_unsafe(std::string{name}.c_str()) != nullptr;
-}
-
-std::optional<std::string> osc::find_environment_variable(std::string_view name)
-{
-    if (const char* v = SDL_getenv_unsafe(std::string{name}.c_str())) {
-        return std::string{v};
-    }
-    else {
-        return std::nullopt;
-    }
 }
 
 namespace

@@ -3,7 +3,6 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <optional>
 #include <string_view>
 #include <string>
 #include <utility>
@@ -46,19 +45,9 @@ namespace osc
     // returns `true` if `content` was successfully copied to the user's clipboard
     bool set_clipboard_text(std::string_view);
 
-    // sets an environment variable's value process-wide
-    //
-    // if `overwrite` is `true`, then it overwrites any previous value; otherwise,
-    // it will only set the environment variable if no environment variable with
-    // `name` exists
-    void set_environment_variable(std::string_view name, std::string_view value, bool overwrite);
-
     // returns `true` if an environment variable with the given `name` is set in
     // the calling process.
     bool is_environment_variable_set(std::string_view name);
-
-    // returns the content of an environment variable, if it's set. Otherwise, returns `std::nullopt`.
-    std::optional<std::string> find_environment_variable(std::string_view name);
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

@@ -48,6 +48,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <sstream>
@@ -426,7 +427,7 @@ namespace
         SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, application_name.c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 800);
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 600);
-        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, is_environment_variable_set("OSC_INTERNAL_HIDE_WINDOW"));
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, std::getenv("OSC_INTERNAL_HIDE_WINDOW"));
 
         SDL_Window* const rv = SDL_CreateWindowWithProperties(properties);
         if (rv == nullptr) {
