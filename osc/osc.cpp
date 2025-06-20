@@ -35,6 +35,7 @@ namespace
         metadata.set_build_id(OSC_BUILD_ID);
         metadata.set_repository_url(OSC_REPO_URL);
         metadata.set_help_url(OSC_HELP_URL);
+        metadata.set_documentation_url(OSC_DOCS_URL);
         return metadata;
     }
 }

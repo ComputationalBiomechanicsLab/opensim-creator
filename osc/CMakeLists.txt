@@ -7,6 +7,12 @@ set(
 )
 mark_as_advanced(OSC_REPO_URL)
 set(
+    OSC_DOCS_URL "https://docs.opensimcreator.com"
+    CACHE STRING
+    "a url for the software's documentation - used by in-app links, installers, etc."
+)
+mark_as_advanced(OSC_DOCS_URL)
+set(
     OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
     CACHE STRING
     "the internet location of the software's help page - used by in-app links, installers, etc."

@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The documentation link shown on the splash screen or help menu is now
+  set at compile time to be equal to `docs.opensimcreator.com` (#1048).
 - Attempting to import an incorrect `.osim` file into the mesh importer now
   results in a log error message rather than a crashing exception
   (thanks @davidpagnon, #1050).

@@ -33,6 +33,9 @@ namespace osc
         std::optional<CStringView> repository_url() const { return repository_url_; }
         void set_repository_url(std::string_view new_repository_url) { repository_url_ = new_repository_url; }
 
+        std::optional<CStringView> documentation_url() const { return documentation_url_; }
+        void set_documentation_url(std::string_view new_documentation_url) { documentation_url_ = new_documentation_url; }
+
         std::optional<CStringView> help_url() const { return help_url_; }
         void set_help_url(std::string_view new_help_url) { help_url_ = new_help_url; }
 
@@ -51,6 +54,7 @@ namespace osc
         std::optional<std::string> version_string_;
         std::optional<std::string> build_id_;
         std::optional<std::string> repository_url_;
+        std::optional<std::string> documentation_url_;
         std::optional<std::string> help_url_;
     };
 }

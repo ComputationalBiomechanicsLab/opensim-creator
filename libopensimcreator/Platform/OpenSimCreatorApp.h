@@ -41,7 +41,5 @@ namespace osc
         using App::show;
 
         TabRegistry& upd_tab_registry();
-
-        std::string docs_url() const;
     };
 }

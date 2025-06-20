@@ -262,8 +262,10 @@ private:
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
         ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/ImportMeshesMenuItem");
-        if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
-            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
+        if (const auto docsURL = App::get().metadata().documentation_url()) {
+            if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
+                open_url_in_os_default_web_browser(*docsURL);
+            }
         }
     }
 

@@ -436,16 +436,19 @@ void osc::MainMenuAboutTab::onDraw()
     {
         ui::set_num_columns(2);
 
-        ui::draw_text("OpenSim Creator Documentation");
-        ui::next_column();
-        ui::push_id(id++);
-        if (ui::draw_button(OSC_ICON_LINK " open"))
+        if (auto docsURL = App::get().metadata().documentation_url())
         {
-            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
+            ui::draw_text("OpenSim Creator Documentation");
+            ui::next_column();
+            ui::push_id(id++);
+            if (ui::draw_button(OSC_ICON_LINK " open"))
+            {
+                open_url_in_os_default_web_browser(*docsURL);
+            }
+            ui::draw_tooltip_body_only_if_item_hovered("this will open the documentation in a separate browser window");
+            ui::pop_id();
+            ui::next_column();
         }
-        ui::draw_tooltip_body_only_if_item_hovered("this will open the (locally installed) documentation in a separate browser window");
-        ui::pop_id();
-        ui::next_column();
 
         if (auto repoURL = App::get().metadata().repository_url())
         {

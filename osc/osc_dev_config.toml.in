@@ -12,7 +12,6 @@
 # INSTALL configuration file.
 
 resources = "@CMAKE_CURRENT_SOURCE_DIR@/../resources"
-docs_url = "file://@CMAKE_CURRENT_SOURCE_DIR@/../docs/build/index.html"
 
 # change this if you need OSC to print more information to the log
 # log_level = "trace"  # trace < debug < info < warn < err < critical
