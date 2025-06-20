@@ -141,7 +141,7 @@ namespace
 
         const auto max_mipmap_level = static_cast<size_t>(max(
             0,
-            std::bit_width(static_cast<size_t>(level_zero_width)) - 1
+            static_cast<int>(std::bit_width(static_cast<size_t>(level_zero_width))) - 1  // casted to int because of LWG3656
         ));
         static_assert(max_mipmap_level == 7);
 
