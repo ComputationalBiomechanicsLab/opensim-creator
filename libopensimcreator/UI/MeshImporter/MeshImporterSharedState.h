@@ -142,9 +142,18 @@ namespace osc::mi
                         return;  // Error, cancellation, or the user somehow selected >1 file.
                     }
 
-                    state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
-                    state->m_MaybeModelGraphExportLocation = response.front();
-                    state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
+                    // Wrap model import in a `try..catch` because the user may provide malformed
+                    // data and we don't want the exception to propagate all the way up to the
+                    // event loop (#1050).
+                    try {
+                        state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
+                        state->m_MaybeModelGraphExportLocation = response.front();
+                        state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
+                    }
+                    catch (const std::exception& ex) {
+                        log_error("Error importing %s as a model: %s", response.front().c_str(), ex.what());
+                        return;  // Error importing the model
+                    }
                 },
                 GetModelFileFilters()
             );

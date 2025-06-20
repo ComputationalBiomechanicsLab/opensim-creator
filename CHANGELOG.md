@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Attempting to import an incorrect `.osim` file into the mesh importer now
+  results in a log error message rather than a crashing exception
+  (thanks @davidpagnon, #1050).
 - `OpenSim::PathPoint`s now have the same icon as an `OpenSim::Marker`, to
   make them easier to spot in the UI/navigator.
 - Mouse hittesting in the 3D viewport now use an algorithm that prioritizes
