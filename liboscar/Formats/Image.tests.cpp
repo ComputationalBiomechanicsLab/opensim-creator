@@ -15,7 +15,6 @@
 #include <filesystem>
 
 using namespace osc;
-namespace rgs = std::ranges;
 
 TEST(load_texture2D_from_image, respects_sRGB_color_space)
 {
