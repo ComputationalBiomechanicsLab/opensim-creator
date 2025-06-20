@@ -17,7 +17,6 @@
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>

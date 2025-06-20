@@ -18,8 +18,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/os.h>
+#include <liboscar/Platform/FileDialogFilter.h>
 
 #include <array>
 #include <filesystem>

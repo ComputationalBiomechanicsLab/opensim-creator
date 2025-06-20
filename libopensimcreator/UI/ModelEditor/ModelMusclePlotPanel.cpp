@@ -14,6 +14,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
+#include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
