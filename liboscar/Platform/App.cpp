@@ -1180,9 +1180,12 @@ public:
 
     float highest_device_pixel_ratio() const
     {
-        std::optional<float> rv;
         int displays = 0;
-        for (SDL_DisplayID* it = SDL_GetDisplays(&displays); displays > 0; ++it, --displays) {
+        SDL_DisplayID* display_list_head = SDL_GetDisplays(&displays);
+        ScopeExit list_destructor{[display_list_head] { SDL_free(display_list_head); }};
+
+        std::optional<float> rv;
+        for (SDL_DisplayID* it = display_list_head; displays > 0; ++it, --displays) {
             rv = std::max(rv, std::optional{SDL_GetDisplayContentScale(*it)});
         }
         return rv.value_or(1.0f);
