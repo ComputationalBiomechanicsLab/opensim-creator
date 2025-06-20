@@ -59,7 +59,7 @@ TEST(TypeInfoReference, can_be_used_in_a_set)
     ASSERT_EQ(s.size(), 1);
     s.emplace(typeid(int));
     ASSERT_EQ(s.size(), 2);
-    s.emplace(typeid(short));
+    s.emplace(typeid(short));  // NOLINT(google-runtime-int)
     ASSERT_EQ(s.size(), 3);
     s.emplace(typeid(int));
     ASSERT_EQ(s.size(), 3);

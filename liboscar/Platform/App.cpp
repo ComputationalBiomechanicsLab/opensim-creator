@@ -427,7 +427,7 @@ namespace
         SDL_SetStringProperty(properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, application_name.c_str());
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 800);
         SDL_SetNumberProperty(properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 600);
-        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, SDL_getenv_unsafe("OSC_INTERNAL_HIDE_WINDOW"));
+        SDL_SetBooleanProperty(properties, SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, SDL_getenv_unsafe("OSC_INTERNAL_HIDE_WINDOW") != nullptr);
 
         SDL_Window* const rv = SDL_CreateWindowWithProperties(properties);
         if (rv == nullptr) {
@@ -486,7 +486,7 @@ namespace
     std::unique_ptr<Event> try_parse_into_event(
         const SDL_Event& e,
         Vec2 main_window_dimensions,
-        std::function<float()> os_to_main_window_device_independent_ratio_getter)
+        const std::function<float()>& os_to_main_window_device_independent_ratio_getter)
     {
         if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
             return std::make_unique<DropFileEvent>(std::filesystem::path{e.drop.data});

@@ -352,7 +352,7 @@ namespace
         int                                              MouseLastLeaveFrame = 0;
 
         // Font handling
-        std::array<ImWchar, 3>                           IconFontGlyphRanges;  // CARE: it's here because ImGui says it must outlive the context
+        std::array<ImWchar, 3>                           IconFontGlyphRanges{};  // CARE: it's here because ImGui says it must outlive the context
 
         // Config handling
         std::string                                      UserIniFilePath;  // CARE: it's here because ImGui says it must outlive the context
@@ -1655,9 +1655,9 @@ void osc::ui::ContextConfiguration::set_main_font_as_standard_plus_icon_font(
     );
 }
 
-osc::ui::Context::Context(App& app, ContextConfiguration configuration)
+osc::ui::Context::Context(App& app, const ContextConfiguration& configuration)
 {
-    init(app, std::move(configuration).impl());
+    init(app, configuration.impl());
 }
 
 osc::ui::Context::~Context() noexcept
@@ -1715,7 +1715,7 @@ void osc::ui::Context::render()
 
 void osc::ui::Context::init(
     App& app,
-    CopyOnUpdPtr<ui::ContextConfiguration::Impl> config)
+    const CopyOnUpdPtr<ui::ContextConfiguration::Impl>& config)
 {
     OSC_ASSERT(ImGui::GetCurrentContext() == nullptr && "a global UI context has already been initialized");
     {

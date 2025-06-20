@@ -75,7 +75,7 @@ namespace osc::ui
     class Context final {
     public:
         // Constructs a global UI context with the given configuration.
-        explicit Context(App&, ContextConfiguration = {});
+        explicit Context(App&, const ContextConfiguration& = {});
 
         Context(const Context&) = delete;
         Context(Context&&) noexcept = delete;
@@ -98,7 +98,7 @@ namespace osc::ui
         // Should be called at the end of each frame (e.g. the end of `Widget::on_draw()`).
         void render();
     private:
-        void init(App&, CopyOnUpdPtr<ui::ContextConfiguration::Impl>);
+        void init(App&, const CopyOnUpdPtr<ui::ContextConfiguration::Impl>&);
         void shutdown(App&);
     };
 

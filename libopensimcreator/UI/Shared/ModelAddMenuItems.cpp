@@ -26,7 +26,6 @@
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
-#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -183,7 +182,7 @@ private:
 
     void drawSpecializedContextualActions(const OpenSim::PhysicalFrame& frame)
     {
-        if (ui::draw_menu_item("Geometry", {}, nullptr, m_Model->canUpdModel() and parent())) {
+        if (ui::draw_menu_item("Geometry", {}, nullptr, m_Model->canUpdModel() and parent() != nullptr)) {
             const std::function<void(std::unique_ptr<OpenSim::Geometry>)> callback = [
                 model = m_Model,
                 path = frame.getAbsolutePath(),
