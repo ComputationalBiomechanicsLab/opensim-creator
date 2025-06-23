@@ -34,6 +34,7 @@ Table of Contents
    the-mesh-warper
    preview-experimental-data
    station-defined-frames
+   make-a-lower-leg
    the-model-warper
 
 .. toctree::
@@ -45,7 +46,6 @@ Table of Contents
    development-environment
    contributing
    the-release-process
-
 
 .. toctree::
     :caption: Other Links

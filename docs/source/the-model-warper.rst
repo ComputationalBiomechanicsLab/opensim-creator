@@ -9,23 +9,23 @@ The Model Warper
 
     The model warper has been in development since 2023 and has undergone several
     redesigns from its initial version (an extended form of :ref:`the-mesh-warper`)
-    to what it is now (a way of combining various scaling steps in a linear pipeline).
-    This is because because non-linear "model warping" combines a variety of scaling
-    algorithms in a model-specific way - our goal is to provide clear UI tooling
-    that makes combining those algorithms easier.
+    to what it is now. This is because because non-linear "model warping" combines
+    a variety of scaling algorithms in a model-specific way - our goal is to
+    provide clear UI tooling that makes combining various scaling algorithms into a
+    single pipeline easier.
 
     We invite you to try the model warper out and get a feel for how it might be
     useful. Maybe it's already useful enough for you to use it in something
-    serious (some researchers already have 🎉).
+    serious.
 
 In this tutorial, we will be using the model warper to create a warping pipeline that
-can be used to warp an entire OpenSim model using experimental measurements, such as
-CT scans and weight measurements. The benefit of the model warper is that it lets you
+can be used to warp an entire OpenSim model using subject-specific data, such as CT
+scans and weight measurements. The benefit of the model warper is that it lets you
 combine various, potentially non-uniform, scaling steps into a single warping pipeline
 that's standard, introspectible, and reusable.
 
 .. _model-warper-ui:
-.. figure:: _static/the-model-warper/model-warper.jpg
+.. figure:: _static/the-model-warper/model-warper.jpeg
     :width: 60%
 
     The model warping UI. This tutorial goes through top-level model warping concepts
@@ -48,16 +48,21 @@ Prerequisites
   pairing landmarks between two corresponding meshes as inputs for the TPS technique.
 
 * **Familiarity with StationDefinedFrames**. The walkthrough in this tutorial uses 
-  ``StationDefinedFrame``\s so that non-linear TPS scaling steps correctly recompute
-  the source model's joint frames. The :doc:`station-defined-frames` documentation
-  outlines what ``StationDefinedFrame``\s are and how to add them to models.
+  a model that contains ``StationDefinedFrame``\s so that non-linear TPS scaling steps
+  correctly recompute the model's joint frames. The :doc:`station-defined-frames`
+  documentation outlines what ``StationDefinedFrame``\s are and how to add them to
+  models.
+
+* **Familiarity with the previous tutorial**: The model created in :doc:`make-a-lower-leg`
+  is the source model in this one, so going through it will provide valuable context about
+  the source model's design.
 
 
 Topics Covered by this Tutorial
 -------------------------------
 
 * A technical overview of how the model warper works
-* A concrete walkthrough of warping a simple model
+* A concrete walkthrough of warping the model from :doc:`make-a-lower-leg`
 * An explanation of how model warping behavior can be customized
 
 
@@ -75,11 +80,11 @@ OpenSim Creator provides a workflow for designing and executing a model warping
 procedure, pictured in :numref:`model-warper-overview-screenshot`. The workflow
 UI is designed to provide visual feedback about each scaling step, so that you
 can incrementally build a warping procedure one scaling step at a time. The model
-warping procedure can then be saved to a standard XML file so that it can be reused
-and modified.
+warping procedure (scaling document) can then be saved to a standard XML file so
+that it can be reused and modified.
 
 .. _model-warper-overview-screenshot:
-.. figure:: _static/the-model-warper/model-warper.jpg
+.. figure:: _static/the-model-warper/model-warper.jpeg
     :width: 60%
 
     The model warping workflow UI contains a toolbar with buttons for creating/loading
@@ -93,16 +98,15 @@ and modified.
 Walkthrough
 -----------
 
-This walkthrough goes through the process of building a model warping procedure from
-scratch. The aim is to show how the model warping workflow can be used to build tricky
-non-linear model warping procedures.
+This walkthrough goes through the process of building a model warping procedure for the
+model made in :doc:`make-a-lower-leg` from scratch. The aim is to show how the model
+warping workflow can be used to build a multi-step model warping pipeline containing
+non-linear scaling steps.
 
-In particular, we will develop a procedure that warps a simple healthy leg model to account
-for femoral torsion. Torsion is tricky to handle because standard scaling techniques, which
-typically perform linear scaling, cannot handle non-linear, localized, morpological
-changes. Therefore, a designer who's familiar with the model, the underlying biomechanics,
-and the available experimental scaling parameters needs to develop a custom scaling/warping
-procedure, which is where the model warping workflow may help.
+The warping procedure we design here will try to account for femoral torsion in the
+subject. Torsion is tricky to handle because standard scaling techniques, which
+typically perform linear scaling, cannot account for localized, morpological
+changes.
 
 
 Open the Model Warper Workflow UI
@@ -129,22 +133,30 @@ Load the Source Model
 
 .. note::
 
-  We have already prepared a source model for this workflow, you can download it at `Walkthrough Model ZIP`_.
+  The source model for this workflow is the final (cleaned up) model made in :doc:`make-a-lower-leg`. You
+  can access it by downloading `Walkthrough Model ZIP`_, which contains the final model built in
+  that tutorial, named ``make-a-lower-leg_final.osim``.
 
-  The model contains two bodies (upper leg, lower leg) joined together with a pin joint that
-  uses :doc:`station-defined-frames` to represent (very roughly) a knee and one muscle that
-  crosses that joint over a single wrap cylinder to represent (again, roughly) how the muscle
-  wraps over bone.
+  Briefly, if you're unfamiliar with the model:
+
+  - It contains three bodies (``pelvis``, ``femur_r``, and ``tibia_r``).
+  - Joints at the hip (``hip_r``, a ``BallJoint``) and knee (``knee_r``, a ``PinJoint``).
+  - Three muscles (``glmed_r``, ``semimem_r``, and ``recfem_r``).
+  - One of the muscles (``recfem_r``) wraps over a ``WrapCylinder`` at the knee.
+  - All joint frames in the model are ``StationDefinedFrame``\s, which means they can be recalculated
+    by warping their associated ``Station``\s (crucial).
 
 
-Use the ``Source Model`` entry in the model warper's toolbar to load the source model ``.osim``
-file. This should load the model and show it in the ``Source Model`` UI panel:
+Use the ``Source Model`` entry in the model warper's toolbar to load ``make-a-lower-leg_final.osim``
+as the source model. This should load the model and show it in the ``Source Model`` UI panel:
 
 .. _model-warper-after-loading-model:
 .. figure:: _static/the-model-warper/model-warper-after-loading-source-model.jpeg
     :width: 60%
 
-    The model warper after loading contents of `Walkthrough Model ZIP`_.
+    The model warper after loading ``make-a-lower-leg_final.osim`` from `Walkthrough Model ZIP`_. For
+    clarity, the visual aids of the scene (grid button, top left of a visualizer panel) were
+    adjusted to disable the floor and enale axis lines.
 
 
 Add a Mesh Warping Step
@@ -155,41 +167,31 @@ to produce the result model. :numref:`model-warper-after-loading-model` shows th
 trivial case of this process, which is to apply no scaling steps and produce a result
 model that's identical to the source model.
 
-The essence of building a model warping procedure is to incrementally add the scaling
-steps you need. The first step is to apply the subject's (target) femoral torsion to
-the femur bone mesh in the model. There are external tools available online to do
-this (e.g. `this one <https://simtk.org/projects/bone_deformity>`_) but, for this
-walkthrough, we will use the Thin-Plate Spline technique, as described in
-:doc:`the-mesh-warper`, because the model warper has in-built support for it.
+Building a model warping procedure involves incrementally adding scaling steps that
+can take the available subject-specific data and apply it to the model. In this
+case, we have access to CT scans of the source and subject's femurs, which means
+we can use the Thin-Plate Spline technique, as described in :doc:`the-mesh-warper`,
+to warp the source bone mesh using paired landmarks on the femur meshes.
 
 .. note::
 
-  In preparation for the mesh warping step, we have already established a TPS warp
-  *from* the source femur mesh in the model *to* a subject-specific femur mesh by
-  pairing landmarks between them in :doc:`the-mesh-warper`. Here's a screenshot of
-  how that looked:
+  In preparation for the non-linear warping steps, we have already established paired
+  landmarks *from* the source femur mesh in the model *to* a subject-specific femur
+  in :doc:`the-mesh-warper`. Here's a screenshot of how that looked:
 
   .. figure:: _static/the-model-warper/mesh-warper-showing-basic-TPS-warp-of-femur.jpeg
-    :width: 60%
+    :width: 40%
 
-    Screenshot of how landmarks were paired between the source mesh and the destination one
-    in the mesh warper. Rotation and translation (i.e. reorientation) of the mesh was removed
-    from the TPS warp using the appropriate checkboxes to correct for subject/scanner
-    orientation. Destination data was pre-scaled by 0.001 to account for a difference in
-    units between the mesh files (meters vs. millimeters).
+    Screenshot of how landmarks were paired between the source femur (``femur_r.obj``,
+    ``femur_r_warp.landmarks.csv``) and the subject femur (``subject_femur_r.obj``,
+    ``subject_femur_r.landmarks.csv``) in :doc:`the-mesh-warper`. Rotation and
+    translation (i.e. reorientation) of the mesh was removed from the TPS warp using the
+    appropriate checkboxes to correct for subject/scanner orientation. Destination data
+    was pre-scaled by 0.001 to account for a difference in units between the mesh
+    files (meters vs. millimeters).
 
-  For the pruposes of model warping, all you need to know is that the TPS warping technique
-  requires a ``.landmarks.csv`` for the "source" and a ``.landmarks.csv`` for the destination.
-  Where the landmarks in those files come from is up to you (:doc:`the-mesh-warper` is one way).
-  The model warping implementation uses pairs of landmarks from those files to warp, scale, reorient,
-  and translate the applicable mesh, station, or muscle point.
 
-The model warper's TPS-based mesh scaling step requires two sequences of landmarks. The `Walkthrough Model ZIP`_
-includes a ``Geometry/`` directory that contains ``femur_r.landmarks.csv`` and ``subject_femur_r.landmarks.csv``, which
-represent ``femur_r.vtp``\'s landmarks and landmarks ``subject_femur_r.stl``\'s landmarks respectively.
-
-To add a scaling step in the model warper UI, click the appropriate button and add a "Apply Thin-Plate
-Spline (TPS) to Meshes" step (pictured in :numref:`model-warper-apply-tps-to-meshes-button`).
+To warp the femur mesh, add a "Apply Thin-Plate Spline (TPS) to Meshes" scaling step:
 
 .. _model-warper-apply-tps-to-meshes-button:
 .. figure:: _static/the-model-warper/apply-thin-plate-spline-to-meshes-scaling-step-button.jpeg
@@ -200,10 +202,10 @@ Spline (TPS) to Meshes" step (pictured in :numref:`model-warper-apply-tps-to-mes
     add a "Apply Thin-Plate Spline (TPS) to Meshes" step.
 
 Once you add the scaling step, you will find that the ``Result Model`` panel is blanked out with
-error messages (:numref:`model-warper-after-adding-mesh-warping-step`). This is because the step
-has been added, but the model warping procedure now needs additional information (i.e. which mesh
-to warp and the two corresponding ``.landmarks.csv`` files) in order to apply the scaling step to
-the source model.
+error messages (:numref:`model-warper-after-adding-mesh-warping-step`). This is because the scaling
+step has been added, but the model warping procedure now needs additional information (in this case,
+which mesh to warp and the two corresponding ``.landmarks.csv`` files) in order to apply the
+scaling step to the source model:
 
 .. _model-warper-after-adding-mesh-warping-step:
 .. figure:: _static/the-model-warper/error-after-adding-mesh-warping-scaling-step.jpeg
@@ -213,12 +215,17 @@ the source model.
     the resultant (output) model because the warping procedure is missing the information it needs
     to apply the step.
 
-To fix this issue, you need to fill in the values from :numref:`model-warper-mesh-scaling-properties`
-in the appropriate input boxes. Once you do that, you should end up with something resembling
-:numref:`model-warper-after-applying-tps-mesh-warp`.
+The model warper's TPS-based mesh scaling step requires two sequences of landmarks. The
+`Walkthrough Model ZIP`_ includes a ``Geometry/`` directory that contains ``femur_r_warp.landmarks.csv``
+and ``subject_femur_r.landmarks.csv``, which represent ``femur_r.obj``\'s landmarks and
+landmarks ``subject_femur_r.obj``\'s landmarks respectively.
+
+To fix the errors shown in :numref:`model-warper-after-adding-mesh-warping-step`, you need to fill
+in the values from :numref:`model-warper-mesh-scaling-properties` in the appropriate input boxes. Once
+you do that, you should end up with something resembling :numref:`model-warper-after-applying-tps-mesh-warp`.
 
 .. _model-warper-mesh-scaling-properties:
-.. list-table:: Property values for the TPS femur mesh scaling step.
+.. list-table:: Property values for the femur's "Apply Thin-Plate Spline (TPS) Warp to Meshes" scaling step.
    :widths: 25 25 50
    :header-rows: 1
 
@@ -226,7 +233,7 @@ in the appropriate input boxes. Once you do that, you should end up with somethi
      - Value
      - Comment
    * - ``source_landmarks_file``
-     - ``Geometry/femur_r.landmarks.csv``
+     - ``Geometry/femur_r_warp.landmarks.csv``
      - Source landmark locations
    * - ``destination_landmarks_file``
      - ``Geometry/subject_femur_r.landmarks.csv``
@@ -234,12 +241,9 @@ in the appropriate input boxes. Once you do that, you should end up with somethi
    * - ``landmarks_frame``
      - ``/bodyset/femur_r``
      - The coordinate frame that the two landmark files are defined in.
-   * - ``destination_landmarks_prescale``
-     - 0.001
-     - The destination landmarks (and mesh) were defined in millimeters.
    * - ``meshes``
      - ``/bodyset/femur_r/femur_r_geom_1``
-     - Path within the OpenSim model to the femur mesh component that should be warped.
+     - Path within the OpenSim model to the femur mesh component that should be warped by this scaling step.
 
 .. _model-warper-after-applying-tps-mesh-warp:
 .. figure:: _static/the-model-warper/after-applying-tps-mesh-warp.jpeg
@@ -248,198 +252,180 @@ in the appropriate input boxes. Once you do that, you should end up with somethi
     The model after applying the mesh warping step. The warped mesh is shorter
     and slightly twisted when compared to the source mesh. Warping the joint frames, muscle
     points, and wrap geometry is handled later in this walkthrough. An easy way to see what
-    a scaling step is doing is to toggle the ``enabled`` button on the step.
+    a scaling step is doing is to toggle the ``enabled`` button of the step.
 
-
-Add a Frame Warping Step
-^^^^^^^^^^^^^^^^^^^^^^^^
 
 Warping the femur mesh only warps the mesh data while keeping the rest of the model the
-same. This means the model now looks wrong (the femur mesh is too small compared to the
-rest of the model). To fix that, we need to scale the remaining components.
+same. This means the model now looks wrong because the femur mesh is too small compared
+to the rest of the model. To fix that, we need to scale the remaining components.
 
-The next component we recommend scaling is the joint frame of the knee. The reason why
-is because it will help move the downstream components (the wrap cylinder and lower-leg
-muscle points) into a better location. As for *how* to scale the knee frame, it makes
-sense to use the TPS technique, given the femur was already scaled that way.
+.. _model-warper_add-station-warping-step:
 
-.. note::
+Add a Station Warping Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  The TPS technique operates on points, not frames, which typically combine a
-  reorientation and a translation.
+The next components we recommend scaling are ``Station``\s. The reason why is because, in
+this model, ``StationDefinedFrame``\s were used to define frames on the femur. So if we
+warp the stations, we also recompute the femur's joint frame definitions. See :doc:`station-defined-frames`
+for more information on ``StationDefinedFrame``\s, and :doc:`make-a-lower-leg` for more
+context about how they were added into this model.
 
-  The way we work around that problem is by ensuring that frames in the source model use
-  ``StationDefinedFrame``\s, as described in :doc:`station-defined-frames`, rather than
-  ``PhysicalOffsetFrame``\s, which encode an orientation.
+To warp the stations, add a "Apply Thin-Plate Spline (TPS) to Stations" scaling step:
 
-  The difference between the two frame definitions is subtle, but significant: ``StationDefinedFrame``\s
-  are entirely defined in terms of points, which can be warped via the TPS technique,
-  whereas ``PhysicalOffsetFrame``\s include a not-TPS-warpable reorientation.
-
-  If you have a model that uses ``PhysicalOffsetFrame``\s, then the TPS technique can only
-  reliably warp the translation part of the frame. It can *approximately* warp the
-  orientation, but this relies on reprojection/orthogonalization techniques, which
-  require tweaking and aren't anywhere near as robust as using a ``StationDefinedFrame``\.
-
-In this model, the knee joint (``knee_r``) is defined as joining ``femur_r_knee_frame``
-(a ``StationDefinedFrame``) to the lower leg (``lower_leg_r``). Therefore, to warp the
-femur's side of ``knee_r``'s joint definition we should warp the stations that are used
-to define ``femur_r_knee_frame`` (listed in :numref:`stations-to-warp-for-knee-definition`).
-
-.. _stations-to-warp-for-knee-definition:
-.. list-table:: Stations that are used to define ``femur_r_knee_frame`` in the model. These should be warped via the TPS technique.
-   :header-rows: 1
-
-   * - .. centered:: Absolute Path in Model
-   * - .. centered:: ``/bodyset/femur_r/femur_r_head``
-   * - .. centered:: ``/bodyset/femur_r/femur_r_med_condyl``
-   * - .. centered:: ``/bodyset/femur_r/femur_r_lat_condyl``
-   * - .. centered:: ``/bodyset/femur_r/femur_r_condyls_midpoint``
-
-Concretely, we start by adding a "Apply Thin-Plate Spline (TPS) to Stations" scaling step to the
-model by clicking the appropriate menu item (:numref:`model-warper-apply-tps-to-stations-button`):
-
-.. _model-warper-apply-tps-to-stations-button:
 .. figure:: _static/the-model-warper/apply-thin-plate-spline-to-stations-scaling-step-button.jpeg
     :width: 60%
 
-    The "Add Scaling Step" button in the model warper UI opens a menu where you can select
-    the type of scaling step to add to the model warping procedure. In this first step, we
-    add a "Apply Thin-Plate Spline (TPS) to Stations" step.
+    Use the "Add Scaling Step" menu to add a "Apply Thin-Plate Spline (TPS) to Stations" scaling step.
 
-And then we use the same parameters as the mesh warping step (see :numref:`model-warper-mesh-scaling-properties`),
-apart from the ``meshes`` property (a station scaling step doesn't have this) - instead,
-the stations from :numref:`stations-to-warp-for-knee-definition` should be listed in the
-scaling step's ``stations`` property. After doing that, the knee should now look more
-correct, but the wrap cylinder clearly needs to be fixed (:numref:`model-warper-after-applying-tps-frame-station-warp`):
+Similar to the previous step, you will need to fix the errors shown by filling in
+the appropriate values. This time, from :numref:`stations-to-warp-for-knee-definition`:
+
+.. _stations-to-warp-for-knee-definition:
+.. list-table:: Property values for the femur's "Apply Thin-Plate Spline (TPS) to Stations" scaling step.
+   :widths: 25 25 50
+   :header-rows: 1
+
+   * - Property Name
+     - Value
+     - Comment
+   * - ``source_landmarks_file``
+     - ``Geometry/femur_r_warp.landmarks.csv``
+     - Source landmark locations
+   * - ``destination_landmarks_file``
+     - ``Geometry/subject_femur_r.landmarks.csv``
+     - Destination landmark locations
+   * - ``landmarks_frame``
+     - ``/bodyset/femur_r``
+     - The coordinate frame that the two landmark files are defined in.
+   * - ``stations``
+     - ``/bodyset/femur_r/femur_r_epicondyle_centroid``, ``/bodyset/femur_r/femur_r_epicondyle_lat``, ``/bodyset/femur_r/femur_r_epicondyle_med``, ``/bodyset/femur_r/femur_r_head_center``, ``/markerset/RT1``, ``/markerset/RT2``, ``/markerset/RT3``, and ``/markerset/RKNE``
+     - Path within the OpenSim model to the ``Station``\s that should be warped by this scaling step.
+     
+After warping the stations, the femur should now be correctly joined to the pelvis and knee, but
+some further adjustments are still necessary:
 
 .. _model-warper-after-applying-tps-frame-station-warp:
 .. figure:: _static/the-model-warper/after-applying-tps-frame-station-warp.jpeg
     :width: 60%
 
-    The model after applying the station warping step to the knee joint's frame
-    definition stations. Compared to :numref:`model-warper-after-applying-tps-mesh-warp`,
-    it can be seen that the knee joint frame is now correctly positioned on the
-    warped femur mesh. The wrap cylinder is defined in terms of the ``femur_r``
-    body, rather than the ``femur_r_knee_frame``, so it requires separate correction.
+    The model after applying the station warping step to ``Station``\s attached to
+    the femur. Compared to :numref:`model-warper-after-applying-tps-mesh-warp`,
+    it can be seen that the pelvis and knee joint frames are now correctly joined
+    with the warped femur mesh, but a muscle (``glmed_r``) is clearly detatched
+    from the femur.
 
 
-Add a Wrap Cylinder Scaling Step
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Add a Path Point Warping Step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-With the knee frame definition warped, the warped model looks closer to what we want.
-However, the knee's wrap cylinder still needs to be scaled.
+The muscle point ``glmed_r-P2`` is defined in terms of the femur in the source model, so
+it must also be warped. This process is simliar to :ref:`model-warper_add-station-warping-step`.
 
-It makes sense to use the TPS technique to warp the wrap cylinder---we've used it for
-all previous scaling steps, after all---but using the TPS technique on a wrap cylinder
-is tricky because its parameterized with a position, orientation, radius, and length. Only
-one of those (position) is a point that can be simply passed into the transform yielded
-by the TPS technique. The others require special handling.
+To warp the muscle path point, add a "Apply Thin-Plate Spline (TPS) to Path Points" scaling step:
 
-The model warper tool comes with an "Apply Thin-Plate Spline (TPS) to WrapCylinder" step
-that's specialized for this job. Its algorithm is explained in the tooltip that pops up
-when you mouse over the option in the "Add Scaling Step" menu. In short, it works by
-generating a point along the cylinder's midline and a point on the cylinder's surface
-followed by TPS warping them and figuring out the cylinder's new parameters from their
-new positions.
-
-.. note::
-
-  Heuristics like those used by the wrap cylinder scaling step are sometimes necessary
-  because the source model doesn't encode *why* the cylinder has the given parameterization.
-  As a modeller, you can *guess* why (the patella, skin thickness, and so on) but, in the
-  absence of a clear, scalable, parameterization, the scaling engine can't robustly
-  figure out what how to handle it.
-
-  ``StationDefinedFrame``\s were specifically added to OpenSim when we developed the model
-  warper to address problems like these. We imagine that, long term, OpenSim will need many
-  more component parameterizations in order to support robust, non-linear subject-specific
-  scaling (e.g. ``StationDefinedWrapCylinder``, ``MarkerParameterizedBySubjectBMI``, etc.).
-
-To add a wrap cylinder scaling step, click the "Add Scaling Step" button followed by
-clicking the appropriate menu item (:numref:`model-warper-apply-tps-to-wrapcylinders-button`):
-
-.. _model-warper-apply-tps-to-wrapcylinders-button:
-.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-wrapcylinder-scaling-step-button.jpeg
+.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-path-points-scaling-step-button.jpeg
     :width: 60%
 
-    To warp the warp cylinder, click the "Add Scaling Step" button followed by "Apply Thin-Plate Spline
-    (TPS) to WrapCylinder". The hover tooltip for the button (pictured) explains what this step does.
+    Use the "Add Scaling Step" menu to add a "Apply Thin-Plate Spline (TPS) to Path Points" scaling step.
 
-Once the step has been added, you won't be able to see the result model until the necessary
-parameters are provided. For this step---and similarly to the previous step where we warped the
-frame stations---we will use the parameters that were used to scale the mesh, which are listed
-in :numref:`model-warper-mesh-scaling-properties`. The only difference is that the wrap cylinder
-scaling step has a ``wrap_cylinders`` property, which you should list the (OpenSim) path to the
-knee's wrap cylinder (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`):
+Similar to the previous step, you will need to fix the errors shown by filling in
+the appropriate values. This time, from :numref:`path-points-to-warp-for-knee-definition`:
 
-.. _model-warper-after-applying-tps-wrapcylinder-warp:
-.. figure:: _static/the-model-warper/after-applying-tps-wrapcylinder-warp.jpeg
-    :width: 60%
+.. _path-points-to-warp-for-knee-definition:
+.. list-table:: Property values for the femur's "Apply Thin-Plate Spline (TPS) to Path Points" scaling step.
+   :widths: 25 25 50
+   :header-rows: 1
 
-    The model after applying the wrap cylinder scaling step. Compared to :numref:`model-warper-after-applying-tps-frame-station-warp`,
-    it can be seen that the wrap cylinder in the model is now correctly placed with respect
-    to the femur mesh.
+   * - Property Name
+     - Value
+     - Comment
+   * - ``source_landmarks_file``
+     - ``Geometry/femur_r_warp.landmarks.csv``
+     - Source landmark locations
+   * - ``destination_landmarks_file``
+     - ``Geometry/subject_femur_r.landmarks.csv``
+     - Destination landmark locations
+   * - ``landmarks_frame``
+     - ``/bodyset/femur_r``
+     - The coordinate frame that the two landmark files are defined in.
+   * - ``path_points``
+     - ``/forceset/glmed_r/path/glmed_r-P2``
+     - Path within the OpenSim model to the muscle path point(s) that should be warped.
 
-
-Add a Muscle Point Scaling Step
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Now that the wrap cylinder is warped, the model is looking a lot better (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`). However,
-we haven't accounted for the fact that the origin/insertion points of any muscles attached to the (warped)
-femur should also be warped.
-
-.. note::
-
-  Now that we've done it a few times, you can probably guess what the (TPS-based) process for scaling
-  the muscle path points looks like:
-
-  - Add an appropriate scaling step (in this case, "Apply Thin-Plate Spline (TPS) to Path Points")
-  - Use the same (i.e. copy and paste) the TPS warp parameters that were used on the femur mesh (:numref:`model-warper-mesh-scaling-properties`)
-
-  If this feels familiar, great! Try doing it yourself! The rest of this section will outline
-  the process step-by-step for comprehensiveness.
-
-To scale the muscle path points, click "Add Scaling Step" followed by "Apply Thin-Plate Spline (TPS) Warp
-to Path Points" (:numref:`model-warper-apply-tps-to-path-points-button`):
-
-.. _model-warper-apply-tps-to-path-points-button:
-.. figure:: _static/the-model-warper/apply-thin-plate-spline-to-path-points.jpeg
-    :width: 60%
-
-    To warp the path points, click the "Add Scaling Step" button followed by "Apply Thin-Plate Spline
-    (TPS) to Path Points" menu item.
-
-Once the step has been added, you won't be able to see the result model until the necessary
-parameters are provided. For this step we will use the parameters that were used to scale the
-mesh, which are listed in :numref:`model-warper-mesh-scaling-properties`. The only difference
-is that the path points scaling step has a ``path_points`` property in which you should list
-the (OpenSim) path to the relevant muscle points (:numref:`model-warper-after-applying-tps-path-points-warp`):
+After warping ``glmed_r-P2``, you should see that it is now correctly attached to the warped femur:
 
 .. _model-warper-after-applying-tps-path-points-warp:
 .. figure:: _static/the-model-warper/after-applying-tps-path-points-warp.jpeg
     :width: 60%
 
-    The model after applying the path point scaling step. Compared to :numref:`model-warper-after-applying-tps-wrapcylinder-warp`,
-    it can be seen that the path point at the top of the femur was slightly adjusted by
-    the TPS warp.
+    The model after applying the path point warping step to ``glmed_r-P2``. Compared
+    to :numref:`model-warper-after-applying-tps-frame-station-warp`, it can be seen that the
+    ``glmed_r`` muscle now correctly attaches to the warped femur mesh.
 
-With that, the muscle path points have been scaled/warped by the same TPS technique that was used
-on the mesh, so the muscle points should now more closely represent the subject's morphology. Given
-this is a very simple model (one muscle, one origin point, one insertion point), the effect of
-warping the muscle points is going to be very subtle, but on larger, more complicated, models with
-more dramatic warping requirements, the effect of warping the muscle points will be much bigger.
+
+Manually Scale Other Body Segments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To keep this tutorial brief, we will only non-linearly warp the femur. If warping was required
+on the other body segments, the same steps would be used. Here, the other body segments (``pelvis``, ``tibia_r``),
+will be manually scaled with a scale factor. This is equivalent to the scaling that's already
+available in OpenSim.
+
+.. note::
+  
+  The scale factors used in this section were approximated using the scale and inverse
+  kinematics tools in OpenSim on experimental marker data collected from the subject. This
+  is a common way to scale models in OpenSim. However, we have omitted scaling ``femur_r``
+  here because it has already been warped by the other Thin-Plate Spline (TPS) scaling
+  steps.
+
+  If you're curious about the difference between linear and non-linear scaling, the equivalent
+  ``femur_r`` linear scale factors would be ``(0.853983, 0.826068, 0.839395)``. You could even
+  add a manual scaling step for ``femur_r`` here and disable the TPS warping steps to create
+  a side-by-side comparison of the two scaling techniques.
+
+To manually scale ``pelvis``, add a "Manually Scale Body Segments" scaling step:
+
+.. figure:: _static/the-model-warper/apply-manual-scale-scaling-step-button.jpeg
+    :width: 60%
+
+    Use the "Add Scaling Step" menu to add a "Manually Scale Body Segments" scaling step.
+
+And add ``/bodyset/pelvis`` to ``bodies``, followed by setting the ``scale_factors`` to
+``(0.75828, 0.73484, 0.771248)``. Next, add a second "Manually Scale Body Segments" scaling
+step with ``/bodyset/tibia_r`` in ``bodies`` and ``scale_factors`` of ``(0.776503, 0.849965, 0.890335)``.
+
+You should end up with two manual scaling steps for the other two body segments, which
+should scale the rest of the model to roughly match the femur:
+
+.. figure:: _static/the-model-warper/after-applying-manual-scaling-steps.jpeg
+    :width: 60%
+
+    The model after applying manual scaling steps to ``pelvis`` and ``tibia_r``. Compared
+    to :numref:`model-warper-after-applying-tps-path-points-warp`, it can be seen that the
+    pelvis and tibia are smaller and more closely match the size of the (warped) femur.
+
+
+Scale Wrap Cylinder
+^^^^^^^^^^^^^^^^^^^
+
+.. error::
+  
+  TODO: there are appropriate wrap-cylinder-scaling steps available but the markers that
+  were supplied don't include a knee surface marker and it might be better to supply a
+  "manually scale wrap objects" scaling step to match the previous manual scaling step -
+  depends if everything should be point-driven!
 
 
 Export Result Model
 ^^^^^^^^^^^^^^^^^^^
 
-With the meshes, joint frames, wrap cylinder, and muscle point warped, we can now export the result
-model as a new OpenSim model.
+With everything warped, we can now export the result model as a new OpenSim model.
 
-Exporting was possible at any point in the walkthrough where there wasn't any error messages, and it
-can be good idea to occasionally export the model to explore what scaling steps are missing. The export
-process involves clicking the "Export Warped Model" button, located in the toolbar:
+Exporting was possible at any point in the walkthrough where there wasn't any error messages shown in
+the result model panel, and it can be good idea to occasionally export the model to explore what
+scaling steps are missing. The export process involves clicking the "Export Warped Model" button,
+located in the toolbar:
 
 .. figure:: _static/the-model-warper/export-warped-model-button.jpeg
     :width: 60%
@@ -448,6 +434,19 @@ process involves clicking the "Export Warped Model" button, located in the toolb
     will apply all scaling steps to the source model and create a new OpenSim model in memory that
     can be edited, examined, or saved in the model editor. The gear icon (⚙️) next to the button
     shows some customization points (e.g. where the exporter should write warped mesh data).
+
+.. warning::
+
+  If your warped model needs to be compatible with OpenSim <4.6, you should also enable the
+  "Bake StationDefinedFrames" option using the gear icon (⚙️) next to the "Export Warped Model"
+  button:
+
+  .. figure:: _static/the-model-warper/bake-station-defined-frames-option.jpeg
+    :width: 40%
+
+    The "Bake StationDefinedFrames" checkbox causes the model warper to also convert all
+    ``StationDefinedFrame``\s in the source model into ``PhysicalOffsetFrame``\s, which are
+    compatible with OpenSim <4.6.
 
 This will then open a standard OpenSim model editor tab (:numref:`model-editor-after-exporting-model`, the
 same workflow that's used to edit an ``.osim`` file). You can then save the ``.osim`` file, if you'd
@@ -463,4 +462,40 @@ like, or investigate/edit the resulting model further.
     plotting, as pictured), so you can also perform any final investigations/edits here before saving
     the model.
 
-.. _Walkthrough Model ZIP: _static/the-model-warper/walkthrough-model.zip
+
+Summary
+^^^^^^^
+
+In this tutorial, we built a subject-specific warping pipeline using the model warper in OpenSim
+Creator. We warped the femur with Thin-Plate Spline (TPS) techniques, adjusted stations and muscle path
+points to maintain correct anatomical relationships, and manually scaled the pelvis and tibia. By
+incrementally adding and customizing scaling steps, we created a reusable pipeline that accounted
+for non-linear changes such as femoral torsion.
+
+Main takeaways:
+
+- We combined multiple scaling steps (mesh, station, path point, manual) into one pipeline.
+- TPS warping handled localized, non-linear changes while manual scaling adjusted remaining segments.
+- Using ``StationDefinedFrames`` ensured joint frames updated correctly during warping.
+- The result was a reusable, exportable OpenSim model tailored to subject-specific data.
+
+
+Next Steps
+^^^^^^^^^^
+
+- **Validate and analyze the warped model**. Leverage OpenSim Creator’s built-in tools to plot
+  and monitor model quantities (e.g., joint frames, muscle paths, moments). You can also export
+  your warped model and examine it in the full OpenSim GUI, which provides additional analysis
+  workflows such as Static Optimization, Computed Muscle Control, and Inverse Dynamics.
+
+- **Enhance model fidelity by scaling inertial properties**. Consider expanding your pipeline
+  to include mass and inertia scaling of the rigid body segments—a capability that isn’t yet
+  supported natively in OpenSim Creator. Adjusting these properties using external tools or
+  manual methods can significantly improve dynamic simulation accuracy (e.g., joint moments and balance).
+
+- **Explore muscle parameter scaling for realistic muscle dynamics**. To refine the muscular behavior
+  in your model, you can adjust key muscle parameters—such as maximum isometric force, optimal fiber
+  length, tendon slack length, and contraction velocity—which are available in OpenSim’s muscle
+  components.
+
+.. _Walkthrough Model ZIP: _static/the-model-warper/make-a-lower-leg_resources.zip

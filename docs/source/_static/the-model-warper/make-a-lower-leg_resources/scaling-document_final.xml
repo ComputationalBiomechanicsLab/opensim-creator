@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40600">
+	<ModelWarperV3Document name="modelwarperv3document">
+		<!--List of components that this component owns and serializes.-->
+		<components>
+			<ThinPlateSplineMeshesScalingStep name="thinplatesplinemeshesscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r_warp.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Component path(s), relative to the model, that locates mesh(es) that should be scaled by this scaling step (e.g. `/bodyset/torso/torso_geom_4`)-->
+				<meshes>/bodyset/femur_r/femur_r_geom_1</meshes>
+			</ThinPlateSplineMeshesScalingStep>
+			<ThinPlateSplineStationsScalingStep name="thinplatesplinestationsscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r_warp.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find stations in the source model that should be warped by this scaling step.-->
+				<stations>/bodyset/femur_r/femur_r_epicondyle_centroid /bodyset/femur_r/femur_r_epicondyle_lat /bodyset/femur_r/femur_r_epicondyle_med /bodyset/femur_r/femur_r_head_center /markerset/RT1 /markerset/RT2 /markerset/RT3 /markerset/RKNE</stations>
+			</ThinPlateSplineStationsScalingStep>
+			<ThinPlateSplinePathPointsScalingStep name="thinplatesplinepathpointsscalingstep">
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
+				<source_landmarks_file>Geometry/femur_r_warp.landmarks.csv</source_landmarks_file>
+				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
+				<destination_landmarks_file>Geometry/subject_femur_r.landmarks.csv</destination_landmarks_file>
+				<!--Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.
+
+The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
+				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
+				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find path points in the source model that should be warped by this scaling step.-->
+				<path_points>/forceset/glmed_r/path/glmed_r-P2</path_points>
+			</ThinPlateSplinePathPointsScalingStep>
+			<ManuallyScaleBodySegmentsScalingStep name="manuallyscalebodysegmentsscalingstep">
+				<!--Absolute paths (e.g. `/bodyset/femur`) to `Body` components in the model-->
+				<bodies>/bodyset/pelvis</bodies>
+				<!--The manual scale factors that should be applied to the specified bodies-->
+				<scale_factors>0.75827997922897339 0.73483997583389282 0.7712479829788208</scale_factors>
+			</ManuallyScaleBodySegmentsScalingStep>
+			<ManuallyScaleBodySegmentsScalingStep name="manuallyscalebodysegmentsscalingstep_0">
+				<!--Absolute paths (e.g. `/bodyset/femur`) to `Body` components in the model-->
+				<bodies>/bodyset/tibia_r</bodies>
+				<!--The manual scale factors that should be applied to the specified bodies-->
+				<scale_factors>0.77650302648544312 0.84996497631072998 0.89033502340316772</scale_factors>
+			</ManuallyScaleBodySegmentsScalingStep>
+		</components>
+	</ModelWarperV3Document>
+</OpenSimDocument>
