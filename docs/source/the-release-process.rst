@@ -35,7 +35,8 @@ Creator, it's usually copied into a GitHub issue:
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
     - [ ] Download release artifacts from the tagged commit CI build
-      - [ ] Also, create a source tarball with `git archive $VERSION --prefix opensimcreator-${VERSION}/ --output opensimcreator-${VERSION}-src.tar.xz`
+      - [ ] Also, create a source tarball with `git archive --format=tar.xz --prefix=opensimcreator-${VERSION}/ -o opensimcreator-${VERSION}-src.tar.xz $VERSION`
+      - [ ] You might need to configure `.tar.xz` support with `git config tar.tar.xz.command "xz -c"`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
@@ -46,7 +47,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
     - [ ] Update + commit the repository with the Zenodo release details:
-      - [ ] Use `bump_zenodo_details.py` to automatically do this
+      - [ ] Use `./scripts/bump_zenodo_details.py` to automatically do this
       - [ ] Ensure `codemeta.json`, `CITATION.cff`, and `README.md` refer to the
             correct Zenodo release.
     - [ ] Ensure the entire repository, incl. all tags, is pushed to the official
@@ -58,7 +59,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Build the docs yourself, or get the CI build of them
       - [ ] Upload with (e.g.) `rsync -avz --delete build/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest/`
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
-      - [ ] Edit https://github.com/ComputationalBiomechanicsLab/opensim-creator-site appropriately
+      - [ ] Edit https://github.com/ComputationalBiomechanicsLab/www.opensimcreator.com appropriately
       - [ ] Upload with (e.g.): `rsync -avz public/ www.opensimcreator.com:/var/www/opensimcreator.com/`
     - [ ] (optional) Update social media:
       - [ ] LinkedIn
