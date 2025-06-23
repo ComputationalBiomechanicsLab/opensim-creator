@@ -5,29 +5,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The documentation link shown on the splash screen or help menu is now
-  set at compile time to be equal to `docs.opensimcreator.com` (#1048).
-- Attempting to import an incorrect `.osim` file into the mesh importer now
-  results in a log error message rather than a crashing exception
-  (thanks @davidpagnon, #1050).
-- `OpenSim::PathPoint`s now have the same icon as an `OpenSim::Marker`, to
-  make them easier to spot in the UI/navigator.
-- Mouse hittesting in the 3D viewport now use an algorithm that prioritizes
-  subcomponents over parent components in the case where the mouse ray
-  intersects multiple components, which makes it easier to (e.g.) select
-  muscle points that are surrounded by fibers (#592).
-- The `osc.toml` configuration file now supports a `model_editor/monitor_osim_changes`
-  boolean option, which can be used to explicitly tell the OpenSim model editor
-  whether or not to auto-reload the file when it changes on disk (defaults to
-  `true`, #1000).
-- The lightning button in the properties panel is now clickable even if the
-  model is readonly (e.g. when simulating, #777).
-- SVG icons and banners now rasterize in high DPI mode when rendering to a
-  high DPI monitor.
-- Keyboard navigation between elements in the UI is now easier and supports (e.g.)
-  using the arrow keys to move between UI elements.
-- The component context (right-click) menu was redesigned for consistency, and is
-  now able to add any component as a child of any other component, which is useful
+## [0.5.24] - 2025/06/23
+
+- The component context menu (right-click menu) was redesigned for consistency, and is
+  now able to add any component as a child of any other component, which can be useful
   when building complex models hierarchically:
   - The menu more clearly separates common functions that are possible on any
     component (or nothing, if the background is right-clicked).
@@ -35,17 +16,39 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
     so that the added component ends up as a child of the right-clicked one.
   - Component-specific specialized adders (e.g. 'Wrap Object' when right-clicking
     a frame, 'Add Parent Offset Frame' when right-clicking a Joint) are now part
-    of the `Add` menu, with a separator between them and the common `Add` functions.
+    of the `Add` menu, with a separator between them and the `Add` functions that
+    are available to all components.
   - The "Toggle Frames" context menu action was removed. It was a legacy feature added
     in Feb 2023 (#50), but has now been superseded by options in the `Display` menu and
     the model editor's toolbar (#887).
+- Mouse hittesting in the 3D viewport now uses an algorithm that prioritizes
+  subcomponents over parent components in the case where the mouse ray
+  intersects multiple components, which makes it easier to (e.g.) select
+  muscle points that are surrounded by fibers (#592).
 - The "Copy Absolute Path to Clipboard" contextual action was replaced with a "Copy"
   menu that has additional functionalities (e.g. "Copy Name", "Copy Concrete Class Name").
-- Fixed a crashing bug in mesh warper's landmark exporter where it would infinitely
-  loop and write the same landmark over and over when exporting to a CSV (#1045).
+- The `osc.toml` configuration file now supports a `model_editor/monitor_osim_changes`
+  boolean option, which can be used to explicitly tell the OpenSim model editor
+  whether or not to auto-reload the file when it changes on disk (defaults to
+  `true`, #1000).
+- The documentation link shown on the splash screen or help menu is now
+  set at compile time to be equal to `docs.opensimcreator.com` (#1048).
+- Attempting to import an incorrect `.osim` file into the mesh importer now
+  results in a log error message rather than a crashing exception
+  (thanks @davidpagnon, #1050).
+- `OpenSim::PathPoint`s now have the same icon as an `OpenSim::Marker`, to
+  make them easier to spot in the UI/navigator.
+- The lightning button in the properties panel is now clickable even if the
+  model is readonly (e.g. when simulating, #777).
+- SVG icons and banners now rasterize in high DPI mode when rendering to a
+  high DPI monitor.
+- Keyboard navigation between elements in the UI is now easier and supports (e.g.)
+  using the arrow keys to move between UI elements.
 - The model warper's "Export Warped Model" button now has a submenu where the
   user can view and select which directory the warped geometry should be written
   to (#1046).
+- Fixed a crashing bug in mesh warper's landmark exporter where it would infinitely
+  loop and write the same landmark over and over when exporting to a CSV (#1045).
 - Internal: `liboscar` now accepts its font/configuration dependencies externally,
   which helps with decoupling it from OpenSimCreator's specific font/icon/configuration
   assets.
