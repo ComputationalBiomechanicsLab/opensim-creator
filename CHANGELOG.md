@@ -30,7 +30,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The `osc.toml` configuration file now supports a `model_editor/monitor_osim_changes`
   boolean option, which can be used to explicitly tell the OpenSim model editor
   whether or not to auto-reload the file when it changes on disk (defaults to
-  `true`, #1000).
+  `true`; thanks @mrrezaie, #1000).
 - The documentation link shown on the splash screen or help menu is now
   set at compile time to be equal to `docs.opensimcreator.com` (#1048).
 - Attempting to import an incorrect `.osim` file into the mesh importer now
