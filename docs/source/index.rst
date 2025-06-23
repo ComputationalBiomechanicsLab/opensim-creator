@@ -42,8 +42,8 @@ Table of Contents
    :numbered:
 
    building-from-source
-   setup-development-environment
-   contributing-to-development
+   development-environment
+   contributing
    the-release-process
 
 

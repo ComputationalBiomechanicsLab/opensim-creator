@@ -1,5 +1,5 @@
-Contributing to OpenSim Creator
-===============================
+Contributing
+============
 
 If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
 that make open-source awesome!

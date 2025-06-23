@@ -1,8 +1,8 @@
 .. _Setup Development Environment:
 
 
-Setup Development Environment
-=============================
+Development Environment
+=======================
 
 These are some generic tips that might be handy when setting up your own development environment.
 
