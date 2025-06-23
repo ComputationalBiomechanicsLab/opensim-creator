@@ -57,6 +57,12 @@ Table of Contents
     OpenSim Documentation <https://simtk-confluence.stanford.edu/display/OpenSim/Documentation>
 
 
+.. toctree::
+    :caption: Drafts
+
+    esmac-2025
+
+
 .. _Indices and Tables:
 
 Indices and tables
