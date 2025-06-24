@@ -46,6 +46,10 @@ Table of Contents
    contributing
    the-release-process
 
+.. toctree::
+    :caption: Events
+
+    esmac-2025
 
 .. toctree::
     :caption: Other Links
@@ -55,12 +59,6 @@ Table of Contents
     OpenSim Creator Bug Tracker <https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues>
     OpenSim GitHub <https://github.com/opensim-org/opensim-core>
     OpenSim Documentation <https://simtk-confluence.stanford.edu/display/OpenSim/Documentation>
-
-
-.. toctree::
-    :caption: Drafts
-
-    esmac-2025
 
 
 .. _Indices and Tables:
