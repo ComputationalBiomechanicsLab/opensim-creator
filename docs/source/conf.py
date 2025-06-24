@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'OpenSim Creator'
-copyright = '2025, Adam Kewley'
+copyright = '%Y, Adam Kewley'
 author = 'Adam Kewley'
 github_username = 'ComputationalBiomechanicsLab'
 github_repository = 'https://github.com/ComputationalBiomechanicsLab/opensim-creator'
