@@ -49,7 +49,12 @@ The workshop will last around four hours, with a thirty minute break in the
 middle. There will be three presentations at the start, middle, and end of
 the workshop.
 
-**TODO**: rough planning diagram
+.. figure:: _static/esmac-2025/rough-schedule.png
+    :width: 80%
+
+    A (very 🙃) rough schedule for the workshop. The longest parts will be
+    work sessions in which we'll go through some walkthroughs, specific
+    features, and answer attendants' questions.
 
 The first half of the workshop will be focused on model building. The work
 session will include feature demonstrations by the team, specific model
@@ -78,15 +83,20 @@ Presentation: Model Building with OpenSim Creator
 **TODO**: OpenSim and Model Building Presentation. Target duration is 15-30
 minutes and should include:
 
-- Welcome, quick overview of the workshop plan (above), direct people to the
-  documentation pages, etc.
-- A basic OpenSim ecosystem overview (e.g. briefly mentioning OpenCap, Add
-  Bioinformatics, etc.)
-- A brief historical/development overview behind OpenSim Creator (major feature
-  releases, old screenshots, development methodology, etc.)
-- Introduce/start the work session. Introduce walkthroughs, exercises, etc. Give
-  the attendants something concrete they can do, even if they aren't already
-  working on a model.
+1. Welcome
+2. Quick overview of the workshop plan (above)
+3. Direct people to the documentation/guidebook pages, etc.
+4. Basic OpenSim ecosystem overview (e.g. briefly mentioning OpenCap, Add Bioinformatics, etc.)
+5. (cont.)
+6. Historical/development overview of OpenSim Creator (major feature releases, old screenshots, development methodology, etc.)
+7. (cont.)
+8. (cont.)
+9. Introduce model building concepts/challenges
+10. Introduce/start the work session. Introduce walkthroughs, exercises, etc. Give
+    the attendants something concrete they can do, even if they aren't already
+    working on a model.
+11. (cont.)
+12. Splash slide, call to action
 
 Work Session: Model Building
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -111,18 +121,27 @@ Presentation: Model Warping with OpenSim Creator
 **TODO**: Model warping presentation. Target duration is 15-25 minutes and
 should include:
 
-- Quick historical overview of model scaling in OpenSim
-- Why attendants might need non-linear model scaling
-- The problems that non-linear scaling brings
-- Our solutions to some of the low-level problems (e.g. :doc:`station-defined-frames`)
-- Our overall solution (:doc:`the-model-warper`)
+1. Introduction, what scaling is, where it's handy (obvious)
+2. Quick overview of existing model scaling in OpenSim
+3. Why attendants might need non-linear model scaling
+4. The problems that non-linear scaling brings to the modelling process
+5. Our solutions to some of the low-level problems (e.g. :doc:`station-defined-frames`)
+6. (cont.)
+7. Our solution to the model warping/scaling problem (:doc:`the-model-warper`)
+8.
+9. Splash slide, call to action
+
 
 Work Session: Model Warping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+**TODO**: work session exercises, example models, walkthroughs, etc. Target
+duration is 1h30-1h45 and should include:
+
 - Invite attendants to work through :doc:`the-model-warper`
 - Ask for feedback, make it clear that it's a beta workflow and needs additions etc.
-- If attendants need something else to do then model building is a good fallback
+- If attendants need something else to do then model building is also suitable
+  to continue during this work session.
 
 
 Presentation: Closing Thoughts, Outlook
@@ -131,12 +150,13 @@ Presentation: Closing Thoughts, Outlook
 **TODO**: Final closing presentation. Target duration is 10-20 minutes and should
 include:
 
-- Quick overview of what's been covered, we hope attendants enjoyed it, etc.
-- Outlook, what we're planning on working on in the future, project direction,
-  etc.
-- Direct attendants to post-workshop actions (feedback, surveys, things they can
-  do once they get home)
-- Acknowledgements, thank you, see you around.
+1. What's been covered, hope it was helpful, etc.
+2. Outlook, where OpenSim Creator's going
+3. Outlook, where we'd like to see things going
+4. Direct attendants to post-workshop actions (feedback, surveys, things they can
+   do afterwards).
+5. Acknowledgements, thank you, see you around.
+6. Thank you (and maybe re-list the actions!)
 
 
 ⚡ Post-Workshop Actions
