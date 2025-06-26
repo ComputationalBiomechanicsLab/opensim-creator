@@ -950,10 +950,14 @@ namespace
         case EventType::KeyUp: {
             const auto& key_event = dynamic_cast<const KeyEvent&>(e);
 
-            io.AddKeyEvent(ImGuiMod_Ctrl,  key_event.has_modifier(KeyModifier::Ctrl));
-            io.AddKeyEvent(ImGuiMod_Shift, key_event.has_modifier(KeyModifier::Shift));
-            io.AddKeyEvent(ImGuiMod_Alt,   key_event.has_modifier(KeyModifier::Alt));
-            io.AddKeyEvent(ImGuiMod_Super, key_event.has_modifier(KeyModifier::Meta));
+            // ImGui internally contains MacOS correction code, so pass
+            // the key modifiers "in the raw" (PhysicalKeyModifier, #1069).
+            //
+            // see: ImGuiIO's `ConfigMacOSXBehaviors`
+            io.AddKeyEvent(ImGuiMod_Ctrl,  key_event.has_modifier(PhysicalKeyModifier::Ctrl));
+            io.AddKeyEvent(ImGuiMod_Shift, key_event.has_modifier(PhysicalKeyModifier::Shift));
+            io.AddKeyEvent(ImGuiMod_Alt,   key_event.has_modifier(PhysicalKeyModifier::Alt));
+            io.AddKeyEvent(ImGuiMod_Super, key_event.has_modifier(PhysicalKeyModifier::Meta));
 
             io.AddKeyEvent(to<ImGuiKey>(key_event.key()), key_event.type() == EventType::KeyDown);
             return true;

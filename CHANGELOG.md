@@ -5,6 +5,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
+  been used (#1069).
+
 ## [0.5.24] - 2025/06/23
 
 - The component context menu (right-click menu) was redesigned for consistency, and is
