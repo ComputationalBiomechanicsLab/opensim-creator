@@ -1418,7 +1418,7 @@ void osc::GenerateSubcomponentDecorations(
             GenerateBodySpatialVectorArrowDecorationsForForcesThatOnlyHaveComputeForceMethod(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
-        else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c)) {
+        else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
             // EDGE-CASE:
             //
             // if the component being rendered is geometry that was explicitly added into the model then
