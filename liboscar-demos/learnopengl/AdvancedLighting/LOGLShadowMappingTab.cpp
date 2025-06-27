@@ -172,7 +172,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Mesh plane_mesh_ = generate_learnopengl_plane_mesh();
     Material scene_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),

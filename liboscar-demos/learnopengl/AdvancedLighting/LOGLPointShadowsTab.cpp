@@ -207,7 +207,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
     RenderTexture depth_texture_ = create_depth_texture();
     Vec3 light_pos_;

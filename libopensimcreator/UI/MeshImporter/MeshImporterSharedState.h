@@ -433,7 +433,7 @@ namespace osc::mi
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(ui::content_region_available_ui_rect());
+            set3DSceneRect(ui::get_content_region_available_ui_rect());
         }
 
         void drawScene(std::span<const DrawableThing> drawables)

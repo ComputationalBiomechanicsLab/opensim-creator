@@ -395,7 +395,7 @@ public:
         // because GCing destroyed them before they were rendered
         layersGarbageCollect();
 
-        m_State.viewportUiRect = ui::content_region_available_ui_rect();
+        m_State.viewportUiRect = ui::get_content_region_available_ui_rect();
         m_State.isLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
         m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
 

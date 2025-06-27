@@ -332,7 +332,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
 
     RenderTexture scene_hdr_color_output_;

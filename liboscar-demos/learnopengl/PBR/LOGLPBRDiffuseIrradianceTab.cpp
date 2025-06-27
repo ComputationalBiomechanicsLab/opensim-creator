@@ -69,7 +69,7 @@ namespace
 
         Camera camera;
         graphics::draw(
-            BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
+            BoxGeometry{{.dimensions = Vec3{2.0f}}},
             identity<Transform>(),
             material,
             camera
@@ -101,7 +101,7 @@ namespace
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -235,7 +235,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     MouseCapturingCamera camera_ = create_camera();

@@ -2934,7 +2934,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     camera.set_rotation(to_world_space_rotation_quat(eulers));
 }
 
-Rect osc::ui::content_region_available_ui_rect()
+Rect osc::ui::get_content_region_available_ui_rect()
 {
     const Vec2 top_left = ui::get_cursor_ui_pos();
     return Rect{top_left, top_left + ui::get_content_region_available()};

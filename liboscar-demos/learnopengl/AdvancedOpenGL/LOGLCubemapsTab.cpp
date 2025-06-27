@@ -211,7 +211,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
-    Mesh skybox_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh skybox_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Cubemap cubemap_ = load_cubemap(loader_);
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();

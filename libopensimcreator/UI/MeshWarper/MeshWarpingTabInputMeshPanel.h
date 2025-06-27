@@ -68,7 +68,7 @@ namespace osc
         void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            const Rect contentRect = ui::content_region_available_ui_rect();
+            const Rect contentRect = ui::get_content_region_available_ui_rect();
             const Vec2 contentRectDims = dimensions_of(contentRect);
             const Vec2 mousePos = ui::get_mouse_ui_pos();
 

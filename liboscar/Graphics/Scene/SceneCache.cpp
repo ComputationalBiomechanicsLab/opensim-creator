@@ -256,7 +256,7 @@ private:
     Mesh circle = CircleGeometry{{.radius = 1.0f, .num_segments = 16}};
     Mesh cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16}};
     Mesh uncapped_cylinder = CylinderGeometry{{.height = 2.0f, .num_radial_segments = 16, .open_ended = true}};
-    Mesh cube = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Mesh cone = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
     Mesh floor = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
     Mesh grid100x100 = GridGeometry{{.num_divisions = 1000}};

@@ -72,7 +72,7 @@ namespace
         );
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(cubemap_render_target);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -103,7 +103,7 @@ namespace
         );
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -154,7 +154,7 @@ namespace
             const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
             material.set("uRoughness", mip_roughness);
 
-            graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+            graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_texture);
             graphics::copy_texture(capture_render_texture, rv, mip);
         }
@@ -338,7 +338,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 

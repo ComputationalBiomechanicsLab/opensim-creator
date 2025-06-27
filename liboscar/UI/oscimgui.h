@@ -691,7 +691,7 @@ namespace osc::ui
     );
 
     // returns the UI content region available in ui space as a `Rect`
-    Rect content_region_available_ui_rect();
+    Rect get_content_region_available_ui_rect();
 
     // Draws a texture within the UI.
     //

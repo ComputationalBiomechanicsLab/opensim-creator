@@ -64,7 +64,7 @@ namespace
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(cubemap_render_target);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -90,7 +90,7 @@ namespace
         material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(captureProjection, Vec3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -138,7 +138,7 @@ namespace
 
             material.set("uRoughness", static_cast<float>(mip)/static_cast<float>(max_mipmap_level));
 
-            graphics::draw(BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}, identity<Transform>(), material, camera);
+            graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_target);
             graphics::copy_texture(capture_render_target, rv, mip);
         }
@@ -341,7 +341,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Skybox.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 
