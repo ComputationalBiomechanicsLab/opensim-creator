@@ -16,14 +16,14 @@ osc::PlaneGeometry::PlaneGeometry(const Params& p)
     //
     // https://threejs.org/docs/#api/en/geometries/PlaneGeometry
 
-    const float half_width = 0.5f * p.width;
-    const float half_height = 0.5f * p.height;
-    const size_t grid_x = p.num_width_segments;
-    const size_t grid_y = p.num_height_segments;
+    const float half_width = 0.5f * p.dimensions.x;
+    const float half_height = 0.5f * p.dimensions.y;
+    const size_t grid_x = p.num_segments.x;
+    const size_t grid_y = p.num_segments.y;
     const size_t grid_x1 = grid_x + 1;
     const size_t grid_y1 = grid_y + 1;
-    const float segment_width = p.width / static_cast<float>(grid_x);
-    const float segment_height = p.height / static_cast<float>(grid_y);
+    const float segment_width = p.dimensions.x / static_cast<float>(grid_x);
+    const float segment_height = p.dimensions.y / static_cast<float>(grid_y);
 
     std::vector<uint32_t> indices;
     std::vector<Vec3> vertices;

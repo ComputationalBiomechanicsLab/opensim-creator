@@ -5,7 +5,7 @@
 
 namespace osc
 {
-    // fired off when the state of a display changes, such as:
+    // Represents a display state change, such as:
     //
     // - display connected
     // - display disconnected

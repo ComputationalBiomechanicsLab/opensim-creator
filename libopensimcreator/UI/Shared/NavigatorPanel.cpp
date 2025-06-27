@@ -1,18 +1,19 @@
 #include "NavigatorPanel.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/StringHelpers.h>
+#include <liboscar/Utils/VariableLengthArray.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -37,8 +38,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    // TODO: replace with VariableLengthArray once MacOS supports `std::pmr::memory_resource`
-    using ComponentTreePathPointers = std::vector<const OpenSim::Component*>;
+    using ComponentTreePathPointers = VariableLengthArray<const OpenSim::Component*, 8>;
 
     // populates `out` with the sequence of nodes between (ancestor..child]
     ComponentTreePathPointers computeComponentTreePath(
@@ -126,7 +126,7 @@ private:
     {
         Response rv;
         drawFilterAndSearchRow();
-        ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
+        ui::draw_vertical_spacer(0.1f);
         ui::draw_separator();
         drawNavigationTreeChildPanel(rv);
         return rv;
@@ -134,6 +134,7 @@ private:
 
     void drawFilterAndSearchRow()
     {
+        ui::set_next_item_width(ui::get_content_region_available().x);
         DrawSearchBar(m_CurrentSearch);
     }
 
@@ -146,7 +147,7 @@ private:
             ui::PanelFlag::NoBackground
         );
 
-        ui::draw_dummy({0.0f, 0.05f*ui::get_text_line_height()});
+        ui::draw_vertical_spacer(0.05f);
         drawNavigationTreeContent(rv);
 
         ui::end_child_panel();
@@ -239,9 +240,9 @@ private:
 
             // handle alternating background colors
             if (row++ % 2) {
-                const auto offset = ui::get_cursor_screen_pos() - ui::get_cursor_pos();
-                const auto topLeft = Vec2{0.0f, ui::get_cursor_pos().y};
-                const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing()};
+                const auto offset = ui::get_cursor_ui_pos() - ui::get_cursor_panel_pos();
+                const auto topLeft = Vec2{0.0f, ui::get_cursor_panel_pos().y};
+                const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing_in_current_panel()};
                 ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f));
             }
 

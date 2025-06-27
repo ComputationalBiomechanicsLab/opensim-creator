@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Graphics/CachedModelRenderer.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelSelectionGizmo.h>
 #include <libopensimcreator/UI/Shared/ModelViewerPanelLayer.h>
@@ -23,6 +24,7 @@
 #include <liboscar/UI/Widgets/GuiRuler.h>
 #include <liboscar/UI/Widgets/IconWithoutMenu.h>
 #include <liboscar/Utils/Algorithms.h>
+#include <liboscar/Utils/Assertions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>
@@ -70,7 +72,7 @@ namespace
         {
             m_Ruler.on_draw(
                 params.getRenderParams().camera,
-                state.viewportRect,
+                state.viewportUiRect,
                 state.maybeBaseLayerHittest
             );
         }
@@ -136,7 +138,7 @@ namespace
                 params.updRenderParams(),
                 state.getDrawlist(),
                 state.maybeSceneVisibleAABB,
-                state.viewportRect,
+                state.viewportUiRect,
                 *m_IconCache,
                 [this, &state]() { return drawExtraTopButtons(state); }
             );
@@ -156,7 +158,7 @@ namespace
             }
 
             // draw gizmo manipulators over the top
-            m_Gizmo.onDraw(state.viewportRect, params.getRenderParams().camera);
+            m_Gizmo.onDraw(state.viewportUiRect, params.getRenderParams().camera);
         }
 
         bool implShouldClose() const final
@@ -187,7 +189,7 @@ namespace
             ui::same_line();
 
             // draw translate/rotate/scale selector
-            if (ui::draw_gizmo_op_selector(m_Gizmo, true, true, false)) {
+            if (ui::draw_gizmo_operation_selector(m_Gizmo, true, true, false, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT)) {
                 edited = true;
             }
 
@@ -205,7 +207,8 @@ namespace
 
         std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
             App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-            ui::get_text_line_height()/128.0f
+            ui::get_font_base_size()/128.0f,
+            App::get().highest_device_pixel_ratio()
         );
         std::string panel_name_;
         ModelSelectionGizmo m_Gizmo;
@@ -227,7 +230,7 @@ namespace
         {
             return ui::update_polar_camera_from_keyboard_inputs(
                 params.updRenderParams().camera,
-                state.viewportRect,
+                state.viewportUiRect,
                 state.maybeSceneVisibleAABB
             );
         }
@@ -241,7 +244,7 @@ namespace
             // try updating the camera (mouse panning, etc.)
             bool rv = ui::update_polar_camera_from_mouse_inputs(
                 params.updRenderParams().camera,
-                dimensions_of(state.viewportRect)
+                dimensions_of(state.viewportUiRect)
             );
 
             if (ui::is_mouse_dragging_with_any_button_down())
@@ -294,9 +297,9 @@ namespace
                 const ModelViewerPanelRightClickEvent e
                 {
                     std::string{state.getPanelName()},
-                    state.viewportRect,
+                    state.viewportUiRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->worldspace_location} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->world_space_location} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }
@@ -367,7 +370,7 @@ public:
 
     std::optional<Rect> getScreenRect() const
     {
-        return m_State.viewportRect;
+        return m_State.viewportUiRect;
     }
 
     const PolarPerspectiveCamera& getCamera() const
@@ -392,7 +395,7 @@ public:
         // because GCing destroyed them before they were rendered
         layersGarbageCollect();
 
-        m_State.viewportRect = ui::content_region_avail_as_screen_rect();
+        m_State.viewportUiRect = ui::get_content_region_available_ui_rect();
         m_State.isLeftClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Left);
         m_State.isRightClickReleasedWithoutDragging = ui::is_mouse_released_without_dragging(ui::MouseButton::Right);
 
@@ -402,7 +405,7 @@ public:
             m_State.updRenderer().autoFocusCamera(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.updRenderParams(),
-                aspect_ratio_of(m_State.viewportRect)
+                aspect_ratio_of(m_State.viewportUiRect)
             );
             m_IsFirstFrame = false;
         }
@@ -425,13 +428,13 @@ public:
             RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
-                dimensions_of(m_State.viewportRect),
+                dimensions_of(m_State.viewportUiRect),
                 App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
                 App::get().anti_aliasing_level()
             );
             ui::draw_image(
                 sceneTexture,
-                dimensions_of(m_State.viewportRect)
+                dimensions_of(m_State.viewportUiRect)
             );
 
             // care: hittesting is done here, rather than using ui::is_panel_hovered, because
@@ -464,8 +467,8 @@ public:
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
-                ui::get_mouse_pos(),
-                m_State.viewportRect
+                ui::get_mouse_ui_pos(),
+                m_State.viewportUiRect
             );
         }
         else
@@ -540,9 +543,9 @@ private:
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ui::set_next_panel_pos(m_State.viewportRect.p1);
+            ui::set_next_panel_ui_pos(m_State.viewportUiRect.p1);
             const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportRect), ui::ChildPanelFlags{}, windowFlags))
+            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportUiRect), ui::ChildPanelFlags{}, windowFlags))
             {
                 layer.onDraw(m_Parameters, m_State);
                 ui::end_child_panel();

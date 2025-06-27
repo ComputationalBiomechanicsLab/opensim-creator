@@ -19,5 +19,4 @@ TEST(KeyCombination, operator_or_can_construct_key_combinations)
     static_assert(Key::X == KeyCombination{Key::X});
     static_assert((KeyModifier::Ctrl | Key::Z) == KeyCombination{KeyModifier::Ctrl, Key::Z});
     static_assert((KeyModifier::Ctrl | KeyModifier::Alt | Key::Delete) == KeyCombination{KeyModifiers{KeyModifier::Ctrl, KeyModifier::Alt}, Key::Delete});
-
 }

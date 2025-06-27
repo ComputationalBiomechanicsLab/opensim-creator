@@ -3,14 +3,12 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/MeshTopology.h>
-#include <liboscar/Graphics/VertexAttribute.h>
-#include <liboscar/Graphics/VertexAttributeFormat.h>
 #include <liboscar/Graphics/VertexFormat.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/Vec3.h>
+#include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Utils/Assertions.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
@@ -33,12 +31,12 @@ namespace
     std::span<const FileDialogFilter> get_file_dialog_filters()
     {
         static const auto s_filters = std::to_array<FileDialogFilter>({
-            FileDialogFilter::all_files(),
             FileDialogFilter{"Mesh Data (*.obj, *.vtp, *.stl, *.stla)", "obj;vtp;stl;stla"},
             FileDialogFilter{"Wavefront (*.obj)", "obj"},
             FileDialogFilter{"VTK PolyData (*.vtp)", "vtp"},
             FileDialogFilter{"STL (*.stl)", "stl"},
             FileDialogFilter{"ASCII STL (*.stla)", "stla"},
+            FileDialogFilter::all_files(),
         });
         return s_filters;
     }

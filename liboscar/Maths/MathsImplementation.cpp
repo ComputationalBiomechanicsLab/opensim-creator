@@ -646,21 +646,21 @@ Vec3 osc::PolarPerspectiveCamera::position() const
     return PolarToCartesian(focus_point, radius, theta, phi);
 }
 
-Vec2 osc::PolarPerspectiveCamera::project_onto_screen_rect(
-    const Vec3& worldspace_location,
-    const Rect& screen_rect) const
+Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
+    const Vec3& world_space_location,
+    const Rect& viewport_rect) const
 {
-    return osc::project_onto_screen_rect(
-        worldspace_location,
+    return osc::project_onto_viewport_rect(
+        world_space_location,
         view_matrix(),
-        projection_matrix(aspect_ratio_of(screen_rect)),
-        screen_rect
+        projection_matrix(aspect_ratio_of(viewport_rect)),
+        viewport_rect
     );
 }
 
 Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
 {
-    return perspective_unproject_topleft_screen_pos_to_world_ray(
+    return perspective_unproject_topleft_normalized_pos_to_world(
         pos / dimensions,
         this->position(),
         view_matrix(),
@@ -1007,41 +1007,41 @@ EulerAngles osc::extract_eulers_xyz(const Quat& quaternion)
     return extract_eulers_xyz(mat4_cast(quaternion));
 }
 
-Vec2 osc::topleft_relative_pos_to_ndc_point(Vec2 relative_pos)
+Vec2 osc::topleft_normalized_point_to_ndc(Vec2 normalized_point)
 {
-    relative_pos.y = 1.0f - relative_pos.y;
-    return 2.0f*relative_pos - 1.0f;
+    normalized_point.y = 1.0f - normalized_point.y;
+    return 2.0f*normalized_point - 1.0f;
 }
 
-Vec2 osc::ndc_point_to_topleft_relative_pos(Vec2 ndc_pos)
+Vec2 osc::ndc_point_to_topleft_normalized(Vec2 ndc_point)
 {
-    ndc_pos = (ndc_pos + 1.0f) * 0.5f;
-    ndc_pos.y = 1.0f - ndc_pos.y;
-    return ndc_pos;
+    ndc_point = (ndc_point + 1.0f) * 0.5f;
+    ndc_point.y = 1.0f - ndc_point.y;
+    return ndc_point;
 }
 
-Vec4 osc::topleft_relative_pos_to_ndc_cube(Vec2 relative_pos)
+Vec4 osc::topleft_normalized_point_to_ndc_cube(Vec2 normalized_point)
 {
-    return {topleft_relative_pos_to_ndc_point(relative_pos), -1.0f, 1.0f};
+    return {topleft_normalized_point_to_ndc(normalized_point), -1.0f, 1.0f};
 }
 
-Line osc::perspective_unproject_topleft_screen_pos_to_world_ray(
-    Vec2 relative_pos,
-    Vec3 camera_worldspace_origin,
+Line osc::perspective_unproject_topleft_normalized_pos_to_world(
+    Vec2 normalized_point,
+    Vec3 camera_world_space_origin,
     const Mat4& camera_view_matrix,
     const Mat4& camera_proj_matrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    const Vec4 line_origin_ndc = topleft_relative_pos_to_ndc_cube(relative_pos);
+    const Vec4 line_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
 
     Vec4 line_origin_view = inverse(camera_proj_matrix) * line_origin_ndc;
     line_origin_view /= line_origin_view.w;  // perspective divide
 
-    // location of mouse in worldspace
+    // location of mouse in world space
     const Vec3 line_origin_world{inverse(camera_view_matrix) * line_origin_view};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    const Vec3 line_direction_world = normalize(line_origin_world - camera_worldspace_origin);
+    const Vec3 line_direction_world = normalize(line_origin_world - camera_world_space_origin);
 
     return Line{
         .origin = line_origin_world,
@@ -1099,7 +1099,7 @@ Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
     };
 }
 
-Rect osc::ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
+Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
 {
     const Vec2 viewport_dimensions = dimensions_of(viewport);
 
@@ -1116,23 +1116,22 @@ Rect osc::ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect
     return rv;
 }
 
-Vec2 osc::project_onto_screen_rect(
-    const Vec3& worldspace_location,
+Vec2 osc::project_onto_viewport_rect(
+    const Vec3& world_space_location,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
-    const Rect& screen_rect)
+    const Rect& viewport_rect)
 {
-    const Vec2 screen_dims = dimensions_of(screen_rect);
+    const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
 
-    Vec4 ndc = projection_matrix * view_matrix * Vec4{worldspace_location, 1.0f};
-    ndc /= ndc.w;  // perspective divide
+    Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_location, 1.0f};
+    ndc /= ndc.w;  // perspective divide (clip space -> NDC)
 
-    Vec2 ndc2D;
-    ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
-    ndc2D += 1.0f;                  // [0, 2]
-    ndc2D *= 0.5f;                  // [0, 1]
-    ndc2D *= screen_dims;           // [0, w]
-    ndc2D += screen_rect.p1;        // [x, x + w]
+    Vec2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
+    ndc2D += 1.0f;                       // [0, 2]
+    ndc2D *= 0.5f;                       // [0, 1]
+    ndc2D *= viewport_dimensions;        // [0, w]
+    ndc2D += viewport_rect.p1;           // [x, x + w]
 
     return ndc2D;
 }
@@ -1282,28 +1281,28 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     float znear,
     float zfar)
 {
-    // create a new AABB in viewspace that bounds the worldspace AABB
-    AABB viewspace_aabb = transform_aabb(view_mat, aabb);
+    // create a new AABB in view space that bounds the world space AABB
+    AABB view_space_aabb = transform_aabb(view_mat, aabb);
 
-    // z-test the viewspace AABB to see if any part of it falls within the
+    // z-test the view space AABB to see if any part of it falls within the
     // camera's clipping planes
     //
     // care: `znear` and `zfar` are usually defined as positive distances from the
-    //       camera but viewspace points along -Z
+    //       camera but view space points along -Z
 
-    if (viewspace_aabb.min.z > -znear and viewspace_aabb.max.z > -znear) {
+    if (view_space_aabb.min.z > -znear and view_space_aabb.max.z > -znear) {
         return std::nullopt;  // AABB out of NDC bounds
     }
-    if (viewspace_aabb.min.z < -zfar and viewspace_aabb.max.z < -zfar) {
+    if (view_space_aabb.min.z < -zfar and view_space_aabb.max.z < -zfar) {
         return std::nullopt;  // AABB out of NDC bounds
     }
 
-    // clamp the viewspace AABB to within the camera's clipping planes
-    viewspace_aabb.min.z = clamp(viewspace_aabb.min.z, -zfar, -znear);
-    viewspace_aabb.max.z = clamp(viewspace_aabb.max.z, -zfar, -znear);
+    // clamp the view space AABB to within the camera's clipping planes
+    view_space_aabb.min.z = clamp(view_space_aabb.min.z, -zfar, -znear);
+    view_space_aabb.max.z = clamp(view_space_aabb.max.z, -zfar, -znear);
 
     // transform it into an NDC-aligned NDC-space AABB
-    const AABB ndc_aabb = transform_aabb(proj_mat, viewspace_aabb);
+    const AABB ndc_aabb = transform_aabb(proj_mat, view_space_aabb);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
     Rect rv{Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}};
@@ -1374,17 +1373,17 @@ Transform osc::y_to_y_cone_to_segment_transform(const LineSegment& line_segment,
     return cylinder_to_line_segment_transform(line_segment, radius);
 }
 
-Quat osc::to_worldspace_rotation_quat(const EulerAngles& eulers)
+Quat osc::to_world_space_rotation_quat(const EulerAngles& eulers)
 {
     return normalize(Quat{eulers});
 }
 
-void osc::apply_worldspace_rotation(
+void osc::apply_world_space_rotation(
     Transform& application_target,
     const EulerAngles& euler_angles,
     const Vec3& rotation_center)
 {
-    const Quat q = to_worldspace_rotation_quat(euler_angles);
+    const Quat q = to_world_space_rotation_quat(euler_angles);
     application_target.position = q*(application_target.position - rotation_center) + rotation_center;
     application_target.rotation = normalize(q*application_target.rotation);
 }

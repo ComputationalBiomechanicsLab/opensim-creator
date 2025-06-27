@@ -34,7 +34,7 @@ TEST(ClosedInterval, reversing_lower_and_upper_is_allowed)
 
 TEST(ClosedInterval, can_be_constructed_from_time_points)
 {
-    using TimePoint = std::chrono::system_clock::time_point;
+    using TimePoint = std::chrono::steady_clock::time_point;
     [[maybe_unused]] const ClosedInterval<TimePoint> r{TimePoint{}, TimePoint{} + std::chrono::seconds{1}};
 }
 

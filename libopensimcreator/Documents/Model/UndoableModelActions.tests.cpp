@@ -116,7 +116,7 @@ TEST(OpenSimActions, ActionSetComponentNameOnModelWithUnusualJointTopologyDoesNo
 
     // loop `n` times because the segfault is stochastic
     //
-    // ... which is a cute way of saying "really fucking random" :(
+    // ... which is a cute way of saying "really fucking unpredictable" :(
     for (size_t i = 0; i < 25; ++i)
     {
         UndoableModelStatePair model = loadedModel;

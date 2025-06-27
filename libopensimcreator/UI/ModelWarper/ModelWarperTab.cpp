@@ -7,6 +7,7 @@
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorTab.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
@@ -238,27 +239,13 @@ namespace
                     log_warn("The landmarks %s could not be paired, might be missing in the source/destination?", p.name().c_str());
                 }
             });
+            inputs.applyAffineTranslation = tpsInputs.applyAffineTranslation;
+            inputs.applyAffineScale = tpsInputs.applyAffineScale;
+            inputs.applyAffineRotation = tpsInputs.applyAffineRotation;
+            inputs.applyNonAffineWarp = tpsInputs.applyNonAffineWarp;
 
             // Solve the coefficients
             m_CoefficientsTODO = TPSCalcCoefficients(inputs);
-
-            // If required, modify the coefficients
-            if (not tpsInputs.applyAffineTranslation) {
-                m_CoefficientsTODO.a1 = {};
-            }
-            if (not tpsInputs.applyAffineScale) {
-                m_CoefficientsTODO.a2 = normalize(m_CoefficientsTODO.a2);
-                m_CoefficientsTODO.a3 = normalize(m_CoefficientsTODO.a3);
-                m_CoefficientsTODO.a4 = normalize(m_CoefficientsTODO.a4);
-            }
-            if (not tpsInputs.applyAffineRotation) {
-                m_CoefficientsTODO.a2 = {length(m_CoefficientsTODO.a2), 0.0f, 0.0f};
-                m_CoefficientsTODO.a3 = {0.0f, length(m_CoefficientsTODO.a3), 0.0f};
-                m_CoefficientsTODO.a4 = {0.0f, 0.0f, length(m_CoefficientsTODO.a4)};
-            }
-            if (not tpsInputs.applyNonAffineWarp) {
-                m_CoefficientsTODO.nonAffineTerms.clear();
-            }
 
             return m_CoefficientsTODO;
         }
@@ -1832,17 +1819,22 @@ namespace
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
 
-                // Create warped geom dir
-                const auto warpedGeometryDir = modelFilesystemLocation->parent_path() / "WarpedGeometry";
-                if (not std::filesystem::exists(warpedGeometryDir)) {
-                    std::filesystem::create_directories(warpedGeometryDir);
+                const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
+                if (not warpedGeometryDir) {
+                    log_error("cannot export scaled model: can't figure out where to save the warped meshes");
+                    return;
+                }
+
+                // If the warped geometry directory doesn't exist yet, create it.
+                if (not std::filesystem::exists(*warpedGeometryDir)) {
+                    std::filesystem::create_directories(*warpedGeometryDir);
                 }
 
                 // Export `InMemoryMesh`es to disk (#1003)
                 for (const InMemoryMesh& mesh : scaled->getModel().getComponentList<InMemoryMesh>()) {
                     // Figure out output file name.
                     const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
-                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
+                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(*warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
 
                     // Write warped mesh data to disk in an OBJ format.
                     {
@@ -1875,6 +1867,22 @@ namespace
         // undo/redo stuff
         std::shared_ptr<UndoRedoBase> getUndoRedoPtr() { return m_ScalingState; }
 
+
+        // warped geometry dir stuff
+        std::optional<std::filesystem::path> tryGetWarpedGeometryDirectory() const
+        {
+            if (m_MaybeCustomWarpedGeometryDirectory) {
+                return m_MaybeCustomWarpedGeometryDirectory;  // top-prio is user-enacted choice (#1046).
+            }
+
+            const OpenSim::Model& sourceModel = m_ScalingState->scratch().getSourceModel();
+            const auto modelFilesystemLocation = TryFindInputFile(sourceModel);
+            if (modelFilesystemLocation) {
+                return modelFilesystemLocation->parent_path() / "WarpedGeometry";
+            }
+
+            return std::nullopt;  // can't figure out where to save it :(
+        }
 
         // actions
         void actionCreateNewSourceModel()
@@ -1909,6 +1917,23 @@ namespace
                     GetModelFileFilters()
                 );
             }
+        }
+
+        void actionPromptUserToSelectWarpedGeometryDirectory()
+        {
+            App::upd().prompt_user_to_select_directory_async(
+                [state = shared_from_this()](const FileDialogResponse& response)
+                {
+                    if (not state) {
+                        return;  // Can't continue.
+                    }
+                    if (response.size() != 1) {
+                        return;  // Error, cancellation, or the user somehow selected >1 file.
+                    }
+
+                    state->m_MaybeCustomWarpedGeometryDirectory = response.front();
+                }
+            );
         }
 
         void actionOpenOsim(const std::filesystem::path& path)
@@ -1962,7 +1987,7 @@ namespace
             App::upd().prompt_user_to_save_file_with_extension_async([doc = m_ScalingState->upd_scratch().getScalingDocumentPtr()](std::optional<std::filesystem::path> p)
             {
                 if (not p) {
-                    return;  // user cancalled out of the prompt
+                    return;  // user cancelled out of the prompt
                 }
                 doc->saveTo(*p);
             }, "xml");
@@ -2032,6 +2057,8 @@ namespace
         bool m_LinkCameras = true;
         bool m_OnlyLinkRotation = false;
         PolarPerspectiveCamera m_LinkedCamera;
+
+        std::optional<std::filesystem::path> m_MaybeCustomWarpedGeometryDirectory;
     };
 }
 
@@ -2149,11 +2176,11 @@ namespace
 
         void draw_validation_error_message(std::span<const ScalingDocumentValidationMessage> messages)
         {
-            const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height();
+            const float contentHeight = static_cast<float>(messages.size() + 2) * ui::get_text_line_height_in_current_panel();
             const float regionHeight = ui::get_content_region_available().y;
             const float top = 0.5f * (regionHeight - contentHeight);
 
-            ui::set_cursor_pos({0.0f, top});
+            ui::set_cursor_panel_pos({0.0f, top});
 
             // header line
             {
@@ -2164,7 +2191,7 @@ namespace
 
             // error line(s)
             int id = 0;
-            for ([[maybe_unused]] const auto& message : messages) {
+            for (const auto& message : messages) {
                 ui::push_id(id++);
 
                 ui::push_style_color(ui::ColorVar::Text, ui_color(message.payload));
@@ -2185,11 +2212,11 @@ namespace
         void draw_scaling_error_message(CStringView message)
         {
             const float h = ui::get_content_region_available().y;
-            const float lineHeight = ui::get_text_line_height();
+            const float lineHeight = ui::get_text_line_height_in_current_panel();
             constexpr float numLines = 3.0f;
             const float top = 0.5f * (h - numLines*lineHeight);
 
-            ui::set_cursor_pos({0.0f, top});
+            ui::set_cursor_panel_pos({0.0f, top});
             ui::draw_text_centered("An error occured while trying to scale the model:");
             ui::draw_text_centered(message);
             if (ui::draw_button_centered(OSC_ICON_RECYCLE " Retry Scaling")) {
@@ -2296,11 +2323,34 @@ namespace
                     ui::begin_disabled();
                     disabled = true;
                 }
+
                 ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
                 if (ui::draw_button(OSC_ICON_PLAY " Export Warped Model")) {
                     m_State->exportWarpedModelToModelEditor();
                 }
+                ui::add_screenshot_annotation_to_last_drawn_item("Export Warped Model Button");
                 ui::pop_style_color();
+                ui::same_line(0.0f, 1.0f);
+                if (ui::draw_button(OSC_ICON_COG)) {
+                    ui::open_popup("##WarpedModelExportModifiers");
+                }
+
+
+                if (ui::begin_popup("##WarpedModelExportModifiers")) {
+                    const auto geomDir = m_State->tryGetWarpedGeometryDirectory();
+                    if (geomDir) {
+                        ui::draw_text("Warped Geometry Directory: %s", geomDir->string().c_str());
+                    }
+                    else {
+                        ui::draw_text("Warped Geometry Directory: UNKNOWN");
+                    }
+
+                    ui::same_line();
+                    if (ui::draw_small_button("change")) {
+                        m_State->actionPromptUserToSelectWarpedGeometryDirectory();
+                    }
+                    ui::end_popup();
+                }
                 if (disabled) {
                     ui::end_disabled();
                 }
@@ -2323,8 +2373,8 @@ namespace
         }
 
         std::shared_ptr<ModelWarperV3UIState> m_State;
-        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr()};
-        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr()};
+        UndoButton m_UndoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_UNDO};
+        RedoButton m_RedoButton{this, m_State->getUndoRedoPtr(), OSC_ICON_REDO};
     };
 
     // control panel (design, set parameters, etc.)
@@ -2343,7 +2393,7 @@ namespace
         void impl_draw_content() final
         {
             draw_scaling_parameters();
-            ui::draw_dummy({0.0f, 0.75f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.75f);
             draw_scaling_steps();
         }
 
@@ -2351,7 +2401,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Parameters");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.5f);
             if (m_State->hasScalingParameters()) {
                 if (ui::begin_table("##ScalingParameters", 2)) {
                     ui::table_setup_column("Name");
@@ -2384,7 +2434,7 @@ namespace
         {
             ui::draw_text_centered("Scaling Steps");
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.5f);
 
             if (m_State->hasScalingSteps()) {
                 size_t i = 0;
@@ -2400,7 +2450,7 @@ namespace
                 ui::draw_text_disabled_and_centered("(the model will be left unmodified)");
             }
 
-            ui::draw_dummy({0.0f, 0.25f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.25f);
             draw_add_scaling_step_context_button();
         }
 
@@ -2424,11 +2474,11 @@ namespace
 
                 ui::same_line();
 
-                const Vec2 oldCursorPos = ui::get_cursor_pos();
+                const Vec2 oldCursorPos = ui::get_cursor_panel_pos();
                 const float endX = oldCursorPos.x + ui::get_content_region_available().x;
 
                 const Vec2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x, oldCursorPos.y};
-                ui::set_cursor_pos(newCursorPos);
+                ui::set_cursor_panel_pos(newCursorPos);
                 if (ui::draw_small_button(deletionButtonIcon)) {
                     m_State->eraseScalingStepDeferred(step);
                 }
@@ -2438,7 +2488,7 @@ namespace
             {
                 const auto messages = m_State->validateStep(step);
                 if (not messages.empty()) {
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height()});
+                    ui::draw_vertical_spacer(0.2f);
                     ui::indent();
                     for (const ScalingStepValidationMessage& message : messages) {
                         ui::push_style_color(ui::ColorVar::Text, ui_color(message));
@@ -2452,12 +2502,12 @@ namespace
                         ui::pop_style_color();
                     }
                     ui::unindent();
-                    ui::draw_dummy({0.0f, 0.2f * ui::get_text_line_height()});
+                    ui::draw_vertical_spacer(0.2f);
                 }
             }
 
             // draw property editors
-            ui::indent(1.0f*ui::get_text_line_height());
+            ui::indent(1.0f*ui::get_text_line_height_in_current_panel());
             {
                 const auto path = step.getAbsolutePathString();
                 const auto docPtr = m_State->getDocumentPtr();
@@ -2474,8 +2524,8 @@ namespace
                     m_State->actionApplyObjectEditToScalingDocument(std::move(objectEdit).value());
                 }
             }
-            ui::unindent(1.0f*ui::get_text_line_height());
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::unindent(1.0f*ui::get_text_line_height_in_current_panel());
+            ui::draw_vertical_spacer(0.5f);
         }
 
         void draw_add_scaling_step_context_button()
@@ -2562,7 +2612,7 @@ public:
     void on_draw()
     {
         try {
-            ui::enable_dockspace_over_main_viewport();
+            ui::enable_dockspace_over_main_window();
             m_PanelManager->on_draw();
             m_Toolbar.on_draw();
             m_ExceptionThrownLastFrame = false;

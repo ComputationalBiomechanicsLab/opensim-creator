@@ -1,6 +1,7 @@
 #include "SplashTab.h"
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
@@ -29,7 +30,6 @@
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/oscimgui.h>
@@ -144,7 +144,7 @@ public:
 
     void onDraw()
     {
-        if (area_of(ui::get_main_viewport_workspace_uiscreenspace_rect()) <= 0.0f) {
+        if (not ui::main_window_has_workspace()) {
             // edge-case: splash screen is the first rendered frame and ImGui
             //            is being unusual about it
             return;
@@ -160,9 +160,9 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
         // pretend the attributation bar isn't there (avoid it)
-        tabUIRect.p2.y -= max(m_TudLogo.device_independent_dimensions().y, m_CziLogo.device_independent_dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
+        tabUIRect.p2.y -= max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
 
         const Vec2 menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         const Vec2 menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
@@ -185,27 +185,27 @@ private:
 
     void drawBackground()
     {
-        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
 
-        ui::set_next_panel_pos(viewportUIRect.p1);
-        ui::set_next_panel_size(dimensions_of(viewportUIRect));
+        ui::set_next_panel_ui_pos(workspaceUIRect.p1);
+        ui::set_next_panel_size(dimensions_of(workspaceUIRect));
 
         ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.virtual_pixel_dimensions = dimensions_of(viewportUIRect);
+        params.dimensions = dimensions_of(workspaceUIRect);
         params.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
         params.antialiasing_level = App::get().anti_aliasing_level();
-        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(viewportUIRect));
+        params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(workspaceUIRect));
 
         if (params != m_LastSceneRendererParams) {
-            scene_renderer_.render({}, params);
+            m_SceneRenderer.render({}, params);
             m_LastSceneRendererParams = params;
         }
 
-        ui::draw_image(scene_renderer_.upd_render_texture());
+        ui::draw_image(m_SceneRenderer.upd_render_texture());
 
         ui::end_panel();
     }
@@ -214,7 +214,7 @@ private:
     {
         const Rect logoRect = calcLogoRect();
 
-        ui::set_next_panel_pos(logoRect.p1);
+        ui::set_next_panel_ui_pos(logoRect.p1);
         ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_MainAppLogo, dimensions_of(logoRect));
         ui::end_panel();
@@ -225,7 +225,7 @@ private:
         // center the menu window
         const Rect mmr = calcMainMenuRect();
         const Vec2 dims = dimensions_of(mmr);
-        ui::set_next_panel_pos(mmr.p1);
+        ui::set_next_panel_ui_pos(mmr.p1);
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
@@ -261,9 +261,11 @@ private:
             auto tab = std::make_unique<mi::MeshImporterTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_frame_annotation("SplashTab/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
-        if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
-            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
+        ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/ImportMeshesMenuItem");
+        if (const auto docsURL = App::get().metadata().documentation_url()) {
+            if (ui::draw_menu_item(OSC_ICON_BOOK " Open Documentation")) {
+                open_url_in_os_default_web_browser(*docsURL);
+            }
         }
     }
 
@@ -282,13 +284,13 @@ private:
             auto tab = std::make_unique<MeshWarpingTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_frame_annotation("SplashTab/MeshWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/MeshWarpingMenuItem");
 
         if (ui::draw_menu_item(OSC_ICON_MAGIC " Model Warping (" OSC_ICON_MAGIC " experimental)")) {
             auto tab = std::make_unique<ModelWarperTab>(parent());
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
-        App::upd().add_frame_annotation("SplashTab/ModelWarpingMenuItem", ui::get_last_drawn_item_screen_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("SplashTab/ModelWarpingMenuItem");
     }
 
     void drawRecentlyOpenedFilesMenuSectionContent(int& imguiID)
@@ -304,7 +306,7 @@ private:
             }
         }
         else {
-            ui::push_style_color(ui::ColorVar::Text, Color::half_grey());
+            ui::push_style_color(ui::ColorVar::Text, Color::dark_grey());
             ui::draw_text_wrapped("No files opened recently. Try:");
             ui::draw_text_bullet_pointed("Creating a new model (Ctrl+N)");
             ui::draw_text_bullet_pointed("Opening an existing model (Ctrl+O)");
@@ -316,19 +318,19 @@ private:
     void drawMenuLeftColumnContent(int& imguiID)
     {
         ui::draw_text_disabled("Actions");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawActionsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_vertical_spacer(1.0f);
         ui::draw_text_disabled("Workflows");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawWorkflowsMenuSectionContent();
 
-        ui::draw_dummy({0.0f, 1.0f*ui::get_text_line_height()});
+        ui::draw_vertical_spacer(1.0f);
         ui::draw_text_disabled("Recent Models");
-        ui::draw_dummy({0.0f, 2.0f});
+        ui::draw_vertical_spacer(2.0f/15.0f);
 
         drawRecentlyOpenedFilesMenuSectionContent(imguiID);
     }
@@ -338,7 +340,7 @@ private:
         if (not m_MainMenuFileTab->exampleOsimFiles.empty()) {
 
             ui::draw_text_disabled("Example Models");
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
 
             for (const std::filesystem::path& examplePath : m_MainMenuFileTab->exampleOsimFiles) {
                 DrawRecentOrExampleFileMenuItem(
@@ -352,18 +354,18 @@ private:
 
     void drawAttributationLogos()
     {
-        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        Vec2 loc = viewportUIRect.p2;
-        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.device_independent_dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.device_independent_dimensions().x;
-        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.device_independent_dimensions().y, m_TudLogo.device_independent_dimensions().y);
+        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
+        Vec2 loc = workspaceUIRect.p2;
+        loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
+        loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
 
-        ui::set_next_panel_pos(loc);
+        ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
-        loc.x += m_CziLogo.device_independent_dimensions().x + 2.0f*ui::get_style_item_spacing().x;
-        ui::set_next_panel_pos(loc);
+        loc.x += m_CziLogo.dimensions().x + 2.0f*ui::get_style_item_spacing().x;
+        ui::set_next_panel_ui_pos(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);
         ui::end_panel();
@@ -371,8 +373,8 @@ private:
 
     void drawVersionInfo()
     {
-        const Rect tabUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const float h = ui::get_text_line_height_with_spacing();
+        const Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
+        const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 
         const Vec2 pos{
@@ -387,18 +389,18 @@ private:
 
     // for rendering the 3D scene
     PolarPerspectiveCamera m_Camera = GetSplashScreenDefaultPolarCamera();
-    SceneRenderer scene_renderer_{
+    SceneRenderer m_SceneRenderer{
         *App::singleton<SceneCache>(App::resource_loader()),
     };
     SceneRendererParams m_LastSceneRendererParams = GetSplashScreenDefaultRenderParams(m_Camera);
 
-    Texture2D m_MainAppLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/banner.svg"));
-    Texture2D m_CziLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f);
-    Texture2D m_TudLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f);
+    Texture2D m_MainAppLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/banner.svg"), 1.0f, App::get().highest_device_pixel_ratio());
+    Texture2D m_CziLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/chanzuckerberg_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
+    Texture2D m_TudLogo = load_texture2D_from_svg(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
 
     // dimensions of stuff
     Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    Vec2 m_MainAppLogoDims =  m_MainAppLogo.device_independent_dimensions();
+    Vec2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
     Vec2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state

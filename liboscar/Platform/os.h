@@ -3,8 +3,6 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <functional>
-#include <optional>
 #include <string_view>
 #include <string>
 #include <utility>
@@ -12,12 +10,8 @@
 // os: where all the icky OS/distro/filesystem-specific stuff is hidden
 namespace osc
 {
-    // returns current system time as a calendar time
+    // returns local system time as a calendar date and time broken down into its components.
     std::tm system_calendar_time();
-
-    // returns a `std::string` describing the current value of `errno`, but in
-    // an implementation-defined threadsafe way
-    std::string errno_to_string_threadsafe();
 
     // returns the full path to the currently-executing application
     //
@@ -29,14 +23,6 @@ namespace osc
         std::string_view organization_name,
         std::string_view application_name
     );
-
-    // calls the callback with each entry in the calling thread's stack
-    void for_each_stacktrace_entry_in_this_thread(const std::function<void(std::string_view)>&);
-
-    // installs a signal handler for crashes (SIGABRT/SIGSEGV, etc.) that will
-    // print a thread backtrace to the process-wide log, followed by trying to
-    // write a crash report as `CrashReport_DATE.txt` to `crash_dump_directory`
-    void enable_crash_signal_backtrace_handler(const std::filesystem::path& crash_dump_directory);
 
     // tries to open the specified filepath in the OS's default application for opening
     // a path (usually, based on its extension)
@@ -58,20 +44,6 @@ namespace osc
 
     // returns `true` if `content` was successfully copied to the user's clipboard
     bool set_clipboard_text(std::string_view);
-
-    // sets an environment variable's value process-wide
-    //
-    // if `overwrite` is `true`, then it overwrites any previous value; otherwise,
-    // it will only set the environment variable if no environment variable with
-    // `name` exists
-    void set_environment_variable(std::string_view name, std::string_view value, bool overwrite);
-
-    // returns `true` if an environment variable with the given `name` is set in
-    // the calling process.
-    bool is_environment_variable_set(std::string_view name);
-
-    // returns the content of an environment variable, if it's set. Otherwise, returns `std::nullopt`.
-    std::optional<std::string> find_environment_variable(std::string_view name);
 
     // creates a temporary file in the most secure manner possible. There are no race conditions
     // in the file's creation - assuming that the operating system properly implements the `os.O_EXCL`

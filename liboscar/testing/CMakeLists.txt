@@ -1,9 +1,11 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+include(GoogleTest)  # gtest_discover_tests
+
 set(OSC_DISCOVER_TESTS ON
     CACHE BOOL
     "enable/disable automatically running test discovery (IDE integration)"
 )
 
-include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 configure_file(
@@ -20,7 +22,6 @@ add_executable(testoscar
     ${OSC_OSCAR_TEST_SOURCES}
     TestingHelpers.cpp
     TestingHelpers.h
-    TestRenderer.cpp
 )
 set_target_properties(testoscar PROPERTIES
     CXX_EXTENSIONS OFF
@@ -28,7 +29,6 @@ set_target_properties(testoscar PROPERTIES
 target_compile_features(testoscar PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(testoscar PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )

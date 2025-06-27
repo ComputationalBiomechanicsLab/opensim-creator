@@ -31,7 +31,7 @@ namespace osc
         bool is_in_debug_mode() const;
         void set_debug_mode(bool);
 
-        void clear_screen(const Color&);
+        void clear_main_window(const Color&);
 
         // Returns a future that asynchronously yields a complete screenshot
         // of the next frame once it has been rendered.

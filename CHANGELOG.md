@@ -3,16 +3,99 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-
 ## [Upcoming Release]
 
-- Hotfixed an edge-case where loading multiple model files simultaneously could sometimes
+- Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
+  been used (#1069).
+
+## [0.5.24] - 2025/06/23
+
+- The component context menu (right-click menu) was redesigned for consistency, and is
+  now able to add any component as a child of any other component, which can be useful
+  when building complex models hierarchically:
+  - The menu more clearly separates common functions that are possible on any
+    component (or nothing, if the background is right-clicked).
+  - The `Add` menu now also takes into account which component was right-clicked,
+    so that the added component ends up as a child of the right-clicked one.
+  - Component-specific specialized adders (e.g. 'Wrap Object' when right-clicking
+    a frame, 'Add Parent Offset Frame' when right-clicking a Joint) are now part
+    of the `Add` menu, with a separator between them and the `Add` functions that
+    are available to all components.
+  - The "Toggle Frames" context menu action was removed. It was a legacy feature added
+    in Feb 2023 (#50), but has now been superseded by options in the `Display` menu and
+    the model editor's toolbar (#887).
+- Mouse hittesting in the 3D viewport now uses an algorithm that prioritizes
+  subcomponents over parent components in the case where the mouse ray
+  intersects multiple components, which makes it easier to (e.g.) select
+  muscle points that are surrounded by fibers (#592).
+- The "Copy Absolute Path to Clipboard" contextual action was replaced with a "Copy"
+  menu that has additional functionalities (e.g. "Copy Name", "Copy Concrete Class Name").
+- The `osc.toml` configuration file now supports a `model_editor/monitor_osim_changes`
+  boolean option, which can be used to explicitly tell the OpenSim model editor
+  whether or not to auto-reload the file when it changes on disk (defaults to
+  `true`; thanks @mrrezaie, #1000).
+- The documentation link shown on the splash screen or help menu is now
+  set at compile time to be equal to `docs.opensimcreator.com` (#1048).
+- Attempting to import an incorrect `.osim` file into the mesh importer now
+  results in a log error message rather than a crashing exception
+  (thanks @davidpagnon, #1050).
+- `OpenSim::PathPoint`s now have the same icon as an `OpenSim::Marker`, to
+  make them easier to spot in the UI/navigator.
+- The lightning button in the properties panel is now clickable even if the
+  model is readonly (e.g. when simulating, #777).
+- SVG icons and banners now rasterize in high DPI mode when rendering to a
+  high DPI monitor.
+- Keyboard navigation between elements in the UI is now easier and supports (e.g.)
+  using the arrow keys to move between UI elements.
+- The model warper's "Export Warped Model" button now has a submenu where the
+  user can view and select which directory the warped geometry should be written
+  to (#1046).
+- Fixed a crashing bug in mesh warper's landmark exporter where it would infinitely
+  loop and write the same landmark over and over when exporting to a CSV (#1045).
+- Internal: `liboscar` now accepts its font/configuration dependencies externally,
+  which helps with decoupling it from OpenSimCreator's specific font/icon/configuration
+  assets.
+- Internal: `liboscar` now explicitly outlines that it uses a right-handed coordinate
+  system and encoding format for textures (i.e. x goes right, y goes up, origin is
+  bottom-left), which matches OpenGL's conventions (#1044).
+- Internal: All graphics test suites now use the same test source file convention as
+  the rest of the codebase (#763).
+
+
+## [0.5.23] - 2025/05/26
+
+- The center of mass visualization for `Body` components now matches how engineering
+  textbooks tend to represent CoMs (#575).
+- A search bar was added to the `Add` context menu, enabling users to search through
+  all available components.
+- The property editors shown in the `Properties` panel were cleaned up, such that they
+  align better and editor buttons now have a clear `edit` and `view` annotations.
+- The alignment of property editors was adjusted such that they all align on the
+  left side (previously: double editors were indented slightly).
+- Fixed a crash that occurred when opening a property editor that spawns an external
+  panel/dialog from within the `Add Component` dialog (#1040).
+- The search bar in the "Add Component" dialog was cleaned up and now matches similar
+  search bars in other dialogs.
+- File dialog filters now default to filtering typically-supported file extensions for
+  the given prompted filetype (e.g. opening a mesh will filter `obj`, `stl`, and `vtp`;
+  previously, all dialogs defaulted to 'All Files', which can be tricky when working with
+  directories containing many files).
+- The mesh warping workflow now has a 'swap source <--> destination' button, to make it
+  possible to see what the inverse of a TPS warp looks like.
+- The mesh warping workflow now has a `source/destination landmarks prescale` option, which
+  enables multiplying each landmark by a scaling factor before using them in the TPS technique.
+  This matches a similar feature in the model warper and is necessary when handling data in
+  different units (e.g. millimeters vs. meters).
+- The mesh warping workflow now has toggles for `scale`, `rotation`, `translation`, and `warp`,
+  which lets users toggle those parts of the TPS technique in-UI. This matches a similar feature
+  in the model warper and is useful for understanding the underlying TPS warp.
+- Fixed an edge-case where loading multiple model files simultaneously could sometimes
   cause the models not to load (#1036).
-- The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
-  yet, due to upstream issues in OpenSim, #982).
 - The draft explaining `StationDefinedFrame`s has been upgraded to a full tutorial in the
   OpenSim Creator documentation.
-- The development documentation now outline's OpenSim Creator's release process and the
+- The test suite for `liboscar` now works in Debug mode with MSVC (OpenSimCreator doesn't
+  yet, due to upstream issues in OpenSim, #982).
+- The development documentation now outlines OpenSim Creator's release process and the
   exact compiler versions etc. that the project is built with (#1022 #1017).
 - The original (deprecated/prototype) version of the model warper workflow was dropped.
   References to it have been replaced with references to the new model warper, which follows
@@ -22,6 +105,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: the source code level for the project was upgraded from C++20 to C++23.
 - Internal: fixed a regression introduced by an ImGui upgrade that prevents the screenshot
   taker from working if a modal dialog is shown (#1038).
+- Internal: googletest was updated to v1.17.0, lunasvg was updated to v3.3.0, SDL was updated
+  to v3.2.14, and stb was updated to its latest commit (802cd45).
 
 
 ## [0.5.22] - 2025/04/25
@@ -1022,7 +1107,7 @@ a user, these aren't important to you, but they make developers feel fuzzy insid
 - Rendering `OpenSim::PointToPointSpring`s is how a user-facing toggle (previously: was always on, #576)
 - The direction that the editor's 3D scene light is now right-to-left, to more closely match OpenSim GUI (#590)
 - The camera control hotkeys (e.g. for zooming in, looking along an axis) are now documented in the button's tooltips (#620)
-- There is now a toggle that affects whether the dragging gizmos operate in world-space (ground) or the parent frame (#584)
+- There is now a toggle that affects whether the dragging gizmos operate in world space (ground) or the parent frame (#584)
 - Added muscle coloring style "OpenSim (Appearance Property)", which uses the muscle colors as-defined in the osim
   file (previously: would always use OpenSim's state-dependent coloring method, which is based on activation, #586)
 - The simulator panel will now only render the UI once one simulation state has been emitted from the simulator (#589)

@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+
 add_executable(hellooscar
     hellooscar.cpp
 )
@@ -7,7 +9,6 @@ set_target_properties(hellooscar PROPERTIES
 target_compile_features(hellooscar PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(hellooscar PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )

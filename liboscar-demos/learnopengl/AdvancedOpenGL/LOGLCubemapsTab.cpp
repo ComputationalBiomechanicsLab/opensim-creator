@@ -30,7 +30,7 @@ namespace
             ColorSpace::sRGB
         );
 
-        const Vec2i texture_dimensions = face_texture.dimensions();
+        const Vec2i texture_dimensions = face_texture.pixel_dimensions();
         OSC_ASSERT(texture_dimensions.x == texture_dimensions.y);
 
         // load all face data into the cubemap
@@ -46,8 +46,8 @@ namespace
                 loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
-            OSC_ASSERT(face_texture.dimensions().x == texture_dimensions.x);
-            OSC_ASSERT(face_texture.dimensions().y == texture_dimensions.x);
+            OSC_ASSERT(face_texture.pixel_dimensions().x == texture_dimensions.x);
+            OSC_ASSERT(face_texture.pixel_dimensions().y == texture_dimensions.x);
             OSC_ASSERT(face_texture.texture_format() == cubemap.texture_format());
             cubemap.set_pixel_data(*face_iterator, face_texture.pixel_data());
         }
@@ -142,7 +142,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         draw_scene_cube();
         draw_skybox();
@@ -161,7 +161,7 @@ private:
             camera_,
             cube_properties_
         );
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_skybox()
@@ -174,7 +174,7 @@ private:
             skybox_material_,
             camera_
         );
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
         camera_.set_view_matrix_override(std::nullopt);
         camera_.set_clear_flags(CameraClearFlag::Default);
     }
@@ -211,7 +211,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
-    Mesh skybox_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh skybox_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Cubemap cubemap_ = load_cubemap(loader_);
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();

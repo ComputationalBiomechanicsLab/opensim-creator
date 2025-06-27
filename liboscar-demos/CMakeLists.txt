@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+
 file(GLOB_RECURSE OSC_OSCAR_DEMO_SOURCES
     LIST_DIRECTORIES FALSE
     "*.cpp"
@@ -14,7 +16,6 @@ set_target_properties(oscar_demos PROPERTIES
 target_compile_features(oscar_demos PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(oscar_demos PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )

@@ -4,7 +4,6 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/UI/Widgets/LogViewer.h>
@@ -18,7 +17,7 @@ using namespace osc;
 class osc::ErrorTab::Impl final : public TabPrivate {
 public:
     explicit Impl(ErrorTab& owner, Widget& parent, const std::exception& exception) :
-        TabPrivate{owner, &parent, OSC_ICON_SPIDER " Error"},
+        TabPrivate{owner, &parent, "Error!"},
         error_message_{exception.what()}
     {}
 
@@ -27,13 +26,13 @@ public:
         constexpr float width = 800.0f;
         constexpr float padding = 10.0f;
 
-        const Rect viewport_ui_rect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_ui_rect);
+        const Rect workspace_ui_rect = ui::get_main_window_workspace_ui_rect();
+        const Vec2 workspace_dimensions = dimensions_of(workspace_ui_rect);
 
         // error message panel
         {
-            const Vec2 pos{viewport_ui_rect.p1.x + viewport_dimensions.x/2.0f, viewport_ui_rect.p1.y + padding};
-            ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
+            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p1.y + padding};
+            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("fatal error")) {
@@ -48,8 +47,8 @@ public:
 
         // log message panel
         {
-            const Vec2 pos{viewport_ui_rect.p1.x + viewport_dimensions.x/2.0f, viewport_ui_rect.p2.y - padding};
-            ui::set_next_panel_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
+            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p2.y - padding};
+            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("Error Log", nullptr, ui::PanelFlag::MenuBar)) {

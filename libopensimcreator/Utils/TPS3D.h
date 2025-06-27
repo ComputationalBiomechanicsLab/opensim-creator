@@ -1,10 +1,10 @@
 #pragma once
 
+#include <libopensimcreator/Shims/Cpp23/mdspan.h>
 #include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vec3.h>
-#include <liboscar/Shims/Cpp23/mdspan.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -37,6 +37,10 @@ namespace osc
         friend bool operator==(const TPSCoefficientSolverInputs3D&, const TPSCoefficientSolverInputs3D&) = default;
 
         std::vector<LandmarkPair3D<T>> landmarks;
+        bool applyAffineTranslation = true;
+        bool applyAffineScale = true;
+        bool applyAffineRotation = true;
+        bool applyNonAffineWarp = true;
     };
 
     std::ostream& operator<<(std::ostream&, const TPSCoefficientSolverInputs3D<float>&);

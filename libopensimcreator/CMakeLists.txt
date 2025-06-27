@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+
 set(
     OSC_BUILD_OSIM_INLINED OFF
     CACHE BOOL
@@ -36,7 +38,6 @@ set_target_properties(OpenSimCreator PROPERTIES
 target_compile_features(OpenSimCreator PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(OpenSimCreator
 PUBLIC
     # gcc/clang

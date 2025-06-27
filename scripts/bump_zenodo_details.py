@@ -42,7 +42,7 @@ def _collect_inputs_from_user() -> BumperInputs:
     date_published = _input_with_default('date published', default_date)
 
     # e.g. 7fdbd6c231dd582c16c68d343cc39c38d0a487f3
-    default_commit = subprocess.run(f'git rev-list -n 1 {new_version}', stdout=subprocess.PIPE).stdout.decode('utf-8').strip()
+    default_commit = subprocess.run(f'git rev-list -n 1 {new_version}', shell=True, stdout=subprocess.PIPE).stdout.decode('utf-8').strip()
     commit = _input_with_default('commit', default_commit)
 
     return BumperInputs(citation_string, doi_url, new_version, date_published, commit)

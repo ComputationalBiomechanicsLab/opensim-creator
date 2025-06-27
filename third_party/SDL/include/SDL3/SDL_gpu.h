@@ -222,7 +222,6 @@
  * - `depthClamp`
  * - `shaderClipDistance`
  * - `drawIndirectFirstInstance`
- * - `sampleRateShading`
  *
  * **D3D12:** Supported on Windows 10 or newer, Xbox One (GDK), and Xbox
  * Series X|S (GDK). Requires a GPU that supports DirectX 12 Feature Level
@@ -1311,12 +1310,6 @@ typedef struct SDL_GPUViewport
  * A structure specifying parameters related to transferring data to or from a
  * texture.
  *
- * If either of `pixels_per_row` or `rows_per_layer` is zero, then width and
- * height of passed SDL_GPUTextureRegion to SDL_UploadToGPUTexture
- *
- * / SDL_DownloadFromGPUTexture are used as default values respectively and
- * data is considered to be tightly packed.
- *
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUTexture
@@ -1767,7 +1760,7 @@ typedef struct SDL_GPUMultisampleState
     SDL_GPUSampleCount sample_count;  /**< The number of samples to be used in rasterization. */
     Uint32 sample_mask;               /**< Reserved for future use. Must be set to 0. */
     bool enable_mask;             /**< Reserved for future use. Must be set to false. */
-    bool enable_alpha_to_coverage;    /**< true enables the alpha-to-coverage feature. */
+    Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
 } SDL_GPUMultisampleState;
@@ -2147,8 +2140,6 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   properties and validations, defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN`: enable to prefer
  *   energy efficiency over maximum GPU performance, defaults to false.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN`: enable to automatically log
- *   useful debug information on device creation, defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired.
  *
@@ -2188,7 +2179,6 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 
 #define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN          "SDL.gpu.device.create.debugmode"
 #define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN     "SDL.gpu.device.create.preferlowpower"
-#define SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN            "SDL.gpu.device.create.verbose"
 #define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                "SDL.gpu.device.create.name"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN    "SDL.gpu.device.create.shaders.private"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN      "SDL.gpu.device.create.shaders.spirv"
@@ -2259,116 +2249,6 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *d
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUDevice *device);
-
-/**
- * Get the properties associated with a GPU device.
- *
- * All properties are optional and may differ between GPU backends and SDL
- * versions.
- *
- * The following properties are provided by SDL:
- *
- * `SDL_PROP_GPU_DEVICE_NAME_STRING`: Contains the name of the underlying
- * device as reported by the system driver. This string has no standardized
- * format, is highly inconsistent between hardware devices and drivers, and is
- * able to change at any time. Do not attempt to parse this string as it is
- * bound to fail at some point in the future when system drivers are updated,
- * new hardware devices are introduced, or when SDL adds new GPU backends or
- * modifies existing ones.
- *
- * Strings that have been found in the wild include:
- *
- * - GTX 970
- * - GeForce GTX 970
- * - NVIDIA GeForce GTX 970
- * - Microsoft Direct3D12 (NVIDIA GeForce GTX 970)
- * - NVIDIA Graphics Device
- * - GeForce GPU
- * - P106-100
- * - AMD 15D8:C9
- * - AMD Custom GPU 0405
- * - AMD Radeon (TM) Graphics
- * - ASUS Radeon RX 470 Series
- * - Intel(R) Arc(tm) A380 Graphics (DG2)
- * - Virtio-GPU Venus (NVIDIA TITAN V)
- * - SwiftShader Device (LLVM 16.0.0)
- * - llvmpipe (LLVM 15.0.4, 256 bits)
- * - Microsoft Basic Render Driver
- * - unknown device
- *
- * The above list shows that the same device can have different formats, the
- * vendor name may or may not appear in the string, the included vendor name
- * may not be the vendor of the chipset on the device, some manufacturers
- * include pseudo-legal marks while others don't, some devices may not use a
- * marketing name in the string, the device string may be wrapped by the name
- * of a translation interface, the device may be emulated in software, or the
- * string may contain generic text that does not identify the device at all.
- *
- * `SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING`: Contains the self-reported name
- * of the underlying system driver.
- *
- * Strings that have been found in the wild include:
- *
- * - Intel Corporation
- * - Intel open-source Mesa driver
- * - Qualcomm Technologies Inc. Adreno Vulkan Driver
- * - MoltenVK
- * - Mali-G715
- * - venus
- *
- * `SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING`: Contains the self-reported
- * version of the underlying system driver. This is a relatively short version
- * string in an unspecified format. If SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING
- * is available then that property should be preferred over this one as it may
- * contain additional information that is useful for identifying the exact
- * driver version used.
- *
- * Strings that have been found in the wild include:
- *
- * - 53.0.0
- * - 0.405.2463
- * - 32.0.15.6614
- *
- * `SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING`: Contains the detailed version
- * information of the underlying system driver as reported by the driver. This
- * is an arbitrary string with no standardized format and it may contain
- * newlines. This property should be preferred over
- * SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING if it is available as it usually
- * contains the same information but in a format that is easier to read.
- *
- * Strings that have been found in the wild include:
- *
- * - 101.6559
- * - 1.2.11
- * - Mesa 21.2.2 (LLVM 12.0.1)
- * - Mesa 22.2.0-devel (git-f226222 2022-04-14 impish-oibaf-ppa)
- * - v1.r53p0-00eac0.824c4f31403fb1fbf8ee1042422c2129
- *
- * This string has also been observed to be a multiline string (which has a
- * trailing newline):
- *
- * ```
- * Driver Build: 85da404, I46ff5fc46f, 1606794520
- * Date: 11/30/20
- * Compiler Version: EV031.31.04.01
- * Driver Branch: promo490_3_Google
- * ```
- *
- * \param device a GPU context to query.
- * \returns a valid property ID on success or 0 on failure; call
- *          SDL_GetError() for more information.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.4.0.
- */
-extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUDevice *device);
-
-#define SDL_PROP_GPU_DEVICE_NAME_STRING               "SDL.gpu.device.name"
-#define SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING        "SDL.gpu.device.driver_name"
-#define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING     "SDL.gpu.device.driver_version"
-#define SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING        "SDL.gpu.device.driver_info"
-
 
 /* State Creation */
 
@@ -2587,9 +2467,9 @@ extern SDL_DECLSPEC SDL_GPUShader * SDLCALL SDL_CreateGPUShader(
  * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT`: (Direct3D 12 only)
  *   if the texture usage is SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET, clear
  *   the texture to a depth of this value. Defaults to zero.
- * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8`: (Direct3D 12
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER`: (Direct3D 12
  *   only) if the texture usage is SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
- *   clear the texture to a stencil of this value. Defaults to zero.
+ *   clear the texture to a stencil of this Uint8 value. Defaults to zero.
  * - `SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING`: a name that can be displayed
  *   in debugging tools.
  *
@@ -2615,13 +2495,13 @@ extern SDL_DECLSPEC SDL_GPUTexture * SDLCALL SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
     const SDL_GPUTextureCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT       "SDL.gpu.texture.create.d3d12.clear.r"
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT       "SDL.gpu.texture.create.d3d12.clear.g"
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT       "SDL.gpu.texture.create.d3d12.clear.b"
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT       "SDL.gpu.texture.create.d3d12.clear.a"
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.texture.create.d3d12.clear.depth"
-#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.texture.create.d3d12.clear.stencil"
-#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING               "SDL.gpu.texture.create.name"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT         "SDL.gpu.texture.create.d3d12.clear.r"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT         "SDL.gpu.texture.create.d3d12.clear.g"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT         "SDL.gpu.texture.create.d3d12.clear.b"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT         "SDL.gpu.texture.create.d3d12.clear.a"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT     "SDL.gpu.texture.create.d3d12.clear.depth"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER  "SDL.gpu.texture.create.d3d12.clear.stencil"
+#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING                 "SDL.gpu.texture.create.name"
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -3895,7 +3775,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseWindowFromGPUDevice(
  * supported via SDL_WindowSupportsGPUPresentMode /
  * SDL_WindowSupportsGPUSwapchainComposition prior to calling this function.
  *
- * SDL_GPU_PRESENTMODE_VSYNC and SDL_GPU_SWAPCHAINCOMPOSITION_SDR are always
+ * SDL_GPU_PRESENTMODE_VSYNC with SDL_GPU_SWAPCHAINCOMPOSITION_SDR are always
  * supported.
  *
  * \param device a GPU context.
@@ -4331,8 +4211,3 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_gpu_h_ */
-
-
-
-
-

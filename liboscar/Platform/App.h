@@ -10,7 +10,6 @@
 #include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Monitor.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/WindowID.h>
 
@@ -24,25 +23,23 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include <vector>
 
 namespace osc { class AppMetadata; }
 namespace osc { class AppSettings; }
 namespace osc { class Cursor; }
 namespace osc { class Event; }
 namespace osc { class FileDialogResponse; }
-namespace osc { class Screen; }
 namespace osc { class Widget; }
 
 namespace osc
 {
     // top-level application class
     //
-    // the top-level osc process holds one copy of this class, which maintains all global
-    // systems (windowing, event pumping, timers, graphics, logging, etc.)
+    // the top-level osc process holds one copy of this class, which maintains all
+    // application-wide systems (windowing, event pumping, timers, graphics,
+    // logging, etc.)
     class App {
     public:
 
@@ -80,24 +77,24 @@ namespace osc
         static ResourceLoader& resource_loader();
 
         // Convenience function that initializes an instance of `App` according to the target
-        // platform's requirements and immediately starts showing the given `TScreen` according
+        // platform's requirements and immediately starts showing the given `TWidget` according
         // to the target platform's main application loop requirements.
         //
         // This function should only be called once per-process, and should be the last statement
         // in the application's `main` function (i.e. `return App::main(...)` from `main`), because
         // the target platform might have unusual lifetime behavior (e.g. web browsers may continue
         // to run after `main` has completed).
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         static int main(const AppMetadata& metadata, Args&&... args)
         {
-            // Pack the `TScreen` constructor arguments into a type-erased `std::function` and defer
+            // Pack the `TWidget` constructor arguments into a type-erased `std::function` and defer
             // to the internal implementation.
-            return main_internal(metadata, [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::unique_ptr<Screen>
+            return main_internal(metadata, [args_tuple = std::make_tuple(std::forward<Args>(args)...)]() mutable -> std::unique_ptr<Widget>
             {
-                return std::apply([](auto&&... inner_args) -> std::unique_ptr<Screen>
+                return std::apply([](auto&&... inner_args) -> std::unique_ptr<Widget>
                 {
-                    return std::make_unique<TScreen>(std::forward<Args>(inner_args)...);
+                    return std::make_unique<TWidget>(std::forward<Args>(inner_args)...);
                 }, std::move(args_tuple));
             });
         }
@@ -132,12 +129,12 @@ namespace osc
         // application
         const std::filesystem::path& user_data_directory() const;
 
-        void setup_main_loop(std::unique_ptr<Screen>);
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        void setup_main_loop(std::unique_ptr<Widget>);
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void setup_main_loop(Args&&... args)
         {
-            setup_main_loop(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            setup_main_loop(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
         AppMainLoopStatus do_main_loop_step();
         void teardown_main_loop();
@@ -171,16 +168,16 @@ namespace osc
             return notify(receiver, event);
         }
 
-        // sets the currently active screen, creates an application loop, then starts showing
-        // the supplied screen
+        // sets the currently active widget, creates an application loop, then starts showing
+        // the supplied widget
         //
-        // this function only returns once the active screen calls `app.request_quit()`, or an exception
-        // is thrown. Use `set_screen` in combination with `handle_one_frame` if you want to use your
+        // this function only returns once the active widget calls `app.request_quit()`, or an exception
+        // is thrown. Use `set_widget` in combination with `handle_one_frame` if you want to use your
         // own application loop
         //
         // this is effectively sugar over:
         //
-        //     set_screen(...);
+        //     set_widget(...);
         //     setup_main_loop();
         //     while (true) {
         //         do_main_loop_step(...);
@@ -188,36 +185,37 @@ namespace osc
         //     teardown_main_loop();
         //
         // which you may need to write yourself if your loop is external (e.g. from a browser's event loop)
-        void show(std::unique_ptr<Screen>);
+        void show(std::unique_ptr<Widget>);
 
-        // constructs `TScreen` with `Args` and starts `show`ing it
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        // constructs `TWidget` with `Args` and starts `show`ing it
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void show(Args&&... args)
         {
-            show(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            show(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
 
-        // requests that the app transitions to a new screen
+        // requests that the application's main window transitions to a new
+        // top-level widget
         //
         // this is merely a *request* that the `App` will fulfill at a later
         // time (usually, after it's done handling some part of the top-level
         // application rendering loop)
         //
-        // When the App decides it's ready to transition to the new screen, it will:
+        // When the App decides it's ready to transition to the new widget, it will:
         //
-        // - unmount the current screen
-        // - destroy the current screen
-        // - mount the new screen
-        // - make the new screen the current screen
-        void request_transition(std::unique_ptr<Screen>);
+        // - unmount the current widget
+        // - destroy the current widget
+        // - mount the new widget
+        // - make the new widget the current top-level widget
+        void request_transition(std::unique_ptr<Widget>);
 
-        // constructs `TScreen` with `Args` then requests that the app transitions to it
-        template<std::derived_from<Screen> TScreen, typename... Args>
-        requires std::constructible_from<TScreen, Args&&...>
+        // constructs `TWidget` with `Args` then requests that the app transitions to it
+        template<std::derived_from<Widget> TWidget, typename... Args>
+        requires std::constructible_from<TWidget, Args&&...>
         void request_transition(Args&&... args)
         {
-            request_transition(std::make_unique<TScreen>(std::forward<Args>(args)...));
+            request_transition(std::make_unique<TWidget>(std::forward<Args>(args)...));
         }
 
         // requests that the app quits
@@ -237,21 +235,21 @@ namespace osc
 
         // Gets/sets the directory that should be shown to the user if a call to one of the
         // `prompt_user*` files does not provide an `initial_directory_to_show`. If this
-        // fallback isn't provided, the implementation will fallback to whatever the
+        // fallback isn't provided, the implementation will fall back to whatever the
         // OS's default behavior is (typically, it remembers the user's last usage).
         //
         // This fallback is activated until a call to `prompt_user*` is made without the
         // user cancelling out of the dialog (i.e. if the user cancels then this fallback
         // will remain in-place).
-        std::optional<std::filesystem::path> get_initial_directory_to_show_fallback();
-        void set_initial_directory_to_show_fallback(const std::filesystem::path&);
-        void set_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
+        std::optional<std::filesystem::path> prompt_initial_directory_to_show_fallback();
+        void set_prompt_initial_directory_to_show_fallback(const std::filesystem::path&);
+        void set_prompt_initial_directory_to_show_fallback(std::nullopt_t);  // reset it
 
         // Prompts the user to select file(s) that they would like to open.
         //
         // - `callback` is called from the ui thread by the implementation when the user chooses
         //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
-        //   is called immeditately or as part of pumping the application event loop. `callback`
+        //   is called immediately or as part of pumping the application event loop. `callback`
         //   may not be called if the application quits/destructs prematurely.
         //
         // - `filters` should be a sequence of permitted `FileDialogFilter`s, which will constrain
@@ -266,7 +264,7 @@ namespace osc
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
             bool allow_many = false
         );
-        inline void prompt_user_to_select_file_async(
+        void prompt_user_to_select_file_async(
             std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
@@ -280,10 +278,29 @@ namespace osc
             );
         }
 
+        // Prompts the user to select a single existing directory.
+        //
+        // - `callback` is called from the ui thread by the implementation when the user chooses
+        //   a file, cancels, or there's an error. It is implementation-defined whether `callback`
+        //   is called immediately or as part of pumping the application event loop. `callback` may
+        //   not be called if the application quits/destructs prematurely.
+        //
+        // - `initial_directory_to_show` should be a filesystem path to a directory that should
+        //   initially be shown to the user. If it isn't provided, then an implementation-defined
+        //   directory will be shown (e.g. based on previous user choices, OS defaults, etc.).
+        //
+        // - `allow_many` indicates whether the user can select multiple directories. However, not
+        //   all implementations support this option.
+        void prompt_user_to_select_directory_async(
+            std::function<void(FileDialogResponse&&)> callback,
+            std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt,
+            bool allow_many = false
+        );
+
         // Prompts the user to select a new or existing filesystem path where they would like
         // to save a file.
         //
-        // - `callback` is called from the ui thread by the implementation when the user chooses
+        // - `callback` is called from the main thread by the implementation when the user chooses
         //   a file, cancels or there's an error. It is implementation-defined whether `callback` is
         //   called  immediately, or as part of pumping the application event loop. `callback` may
         //   not be called if the application quits/destructs prematurely.
@@ -299,7 +316,7 @@ namespace osc
             std::span<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
-        inline void prompt_user_to_save_file_async(
+        void prompt_user_to_save_file_async(
             std::function<void(FileDialogResponse&&)> callback,
             std::initializer_list<const FileDialogFilter> filters = {},
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt)
@@ -330,21 +347,14 @@ namespace osc
             std::optional<std::filesystem::path> initial_directory_to_show = std::nullopt
         );
 
-        // returns a sequence of all physical monitors associated with the windowing system that
-        // this `App` is connected to.
-        std::vector<Monitor> monitors() const;
-
-        // checks if the given `WindowID` is still alive (e.g. not removed or closed)
-        bool is_alive(WindowID window_id) const { return static_cast<bool>(window_id); }
-
-        // Returns the desktop-relative position of the given window in physical pixels.
-        Vec2 window_position(WindowID) const;
-
         // returns the ID of the main window
         WindowID main_window_id() const;
 
         // Returns the dimensions of the main application window in device-independent pixels.
         Vec2 main_window_dimensions() const;
+
+        // Requests that the main window dimensions are set to the given dimensions in device-independent pixels.
+        void try_async_set_main_window_dimensions(Vec2);
 
         // Returns the dimensions of the main application window in physical pixels.
         Vec2 main_window_pixel_dimensions() const;
@@ -363,47 +373,14 @@ namespace osc
         // - https://github.com/libsdl-org/SDL/blob/main/docs/README-highdpi.md
         float main_window_device_pixel_ratio() const;
 
-        // Returns the ratio between the underlying operating system's coordinate system (i.e. SDL3 API,
-        // events) to the main window's device independent pixels.
+        // Returns the highest ratio of physical pixels to device-independent pixels
+        // supported by all currently-accessible video displays.
         //
-        // Note: this is mostly for internal use: the `osc` APIs should uniformly use either device
-        //       independent pixels (mostly) or physical pixels (e.g. low-level rendering APIs).
-        float os_to_main_window_device_independent_ratio() const;
-
-        // Returns the ratio between the main window's device-independent pixels and the underlying
-        // operating system's coordinate system.
-        float main_window_device_independent_to_os_ratio() const;
+        // Returns `1.0f` as a fallback if no video displays can be queried.
+        float highest_device_pixel_ratio() const;
 
         // returns `true` if the main application window is minimized
         bool is_main_window_minimized() const;
-
-        // returns `true` if mouse data can be acquired from the operating system directly
-        bool can_query_mouse_state_globally() const;
-
-        // captures the mouse in order to track input outside of the application windows
-        //
-        // capturing enables the application to obtain mouse events globally, rather than just
-        // within its windows. Not all backends support this function, use `can_query_mouse_state_globally`
-        // to figure out whether the backend that's used at runtime does support it.
-        //
-        // this might also deny mouse inputs to other windows--both those in this `App`, and others
-        // on the system--so it should be used sparingly, and in small bursts. E.g. you might want
-        // to use it to track the mouse when the user is dragging something and multi-window dragging
-        // is supported by the UI.
-        //
-        // see: https://wiki.libsdl.org/SDL3/SDL_CaptureMouse for a comprehensive explanation of the
-        //      behavior/pitfalls of this function.
-        void capture_mouse_globally(bool enabled);
-
-        // returns the desktop-relative platform-cursor position, expressed in physical pixels.
-        Vec2 mouse_global_position() const;
-
-        // moves the mouse to the given position in a desktop-relative, physical pixel position.
-        void warp_mouse_globally(Vec2 new_position);
-
-        // returns `true` if the global hover state of the mouse can be queried to ask if it's
-        // currently hovering the main window (even if the window isn't focused).
-        bool can_query_if_mouse_is_hovering_main_window_globally() const;
 
         // pushes the given cursor onto the application-wide cursor stack, making it
         // the currently-active cursor until it is either popped, via `pop_cursor_override`,
@@ -415,8 +392,11 @@ namespace osc
         void enable_main_window_grab();
         void disable_main_window_grab();
 
-        // moves the mouse cursor to the given position within the window (virtual pixels).
-        void warp_mouse_in_window(WindowID, Vec2);
+        // if the main window is focused with the mouse, returns the current position
+        // of the mouse in screen space in device-independent pixels.
+        //
+        // otherwise, returns `std::nullopt`.
+        std::optional<Vec2> mouse_pos_in_main_window() const;
 
         // returns `true` if the given window has input focus
         bool has_input_focus(WindowID) const;
@@ -426,13 +406,14 @@ namespace osc
         // a default-constructed `WindowID` is returned if no window has keyboard focus.
         WindowID get_keyboard_focus() const;
 
-        // sets the rectangle that's used to type unicode text inputs
+        // sets the rectangle, defined in screen space and device-independent pixels that's,
+        // used to type unicode text inputs.
         //
         // native input methods can place a window with word suggestions near the input
-        // in the UI, without covering the text that's being inputted, this indicates to
-        // the OS where the input rectangle is so that it can place the overlay in the
-        // correct location.
-        void set_unicode_input_rect(const Rect&);
+        // in the main window, without covering the text that's being inputted, this
+        // indicates to the operating system  where the input rectangle is so that it
+        // can place and operating-system-defined overlay in the correct location.
+        void set_main_window_unicode_input_rect(const Rect& screen_rect);
 
         // start accepting unicode text input events for the given window
         //
@@ -443,49 +424,49 @@ namespace osc
         // stop accepting unicode text input events for the given window
         void stop_text_input(WindowID);
 
-        // makes the main window fullscreen, but still composited with the desktop (so-called 'windowed maximized' in games)
-        void make_windowed_fullscreen();
+        // makes the main window fullscreen, but still composited with the desktop (so-called
+        // 'windowed maximized' in games)
+        void make_main_window_fullscreen();
 
         // makes the main window windowed (as opposed to fullscreen)
-        void make_windowed();
+        void make_main_window_windowed();
 
-        // returns the recommended number of antialiasing samples that renderers that want to render
-        // to this `App`'s screen should use (based on user settings, etc.)
+        // returns the recommended number of antialiasing samples that 3D rendering
+        // code should use when rendering directly to the main application window (based
+        // on user settings, etc.)
         AntiAliasingLevel anti_aliasing_level() const;
 
-        // sets the number of antialiasing samples that multi-sampled renderers should use when they
-        // want to render to this `App`'s screen
+        // sets the recommended number of antialiasing samples that 3D rendering code
+        // should use when rendering directly to the main application window.
         //
-        // throws if `samples > max_samples()`
+        // throws if `samples > max_anti_aliasing_level()`
         void set_anti_aliasing_level(AntiAliasingLevel);
 
         // returns the maximum number of antialiasing samples that the graphics backend supports
         AntiAliasingLevel max_anti_aliasing_level() const;
 
-        // returns true if the main window is backed by a framebuffer/renderbuffer that automatically
-        // converts the linear outputs (from shaders) into (e.g.) sRGB on-write
-        bool is_main_window_gamma_corrected() const;
-
-        // returns true if the application is rendering in debug mode
+        // returns true if the application is in debug mode
         //
         // other parts of the application can use this to decide whether to render
         // extra debug elements, etc.
         bool is_in_debug_mode() const;
         void set_debug_mode(bool);
 
-        // returns true if VSYNC has been enabled in the graphics layer
+        // returns true if VSYNC has been enabled in the graphics backend
         bool is_vsync_enabled() const;
         void set_vsync_enabled(bool);
 
-        // add an annotation to the current frame
+        // add an annotation to the current frame with the given `label`
+        // and location in screen space and device-independent pixels.
         //
-        // the annotation is added to the data returned by `App::request_screenshot`
-        void add_frame_annotation(std::string_view label, Rect screen_rect);
+        // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
+        void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect);
 
-        // returns a future that asynchronously yields a complete annotated screenshot of the next frame
+        // returns a future that asynchronously yields an annotated screenshot of the
+        // next frame of the main application window
         //
         // client code can submit annotations with `App::add_frame_annotation`
-        std::future<Screenshot> request_screenshot();
+        std::future<Screenshot> request_screenshot_of_main_window();
 
         // returns human-readable strings representing (parts of) the currently-active graphics backend (e.g. OpenGL)
         std::string graphics_backend_vendor_string() const;
@@ -493,7 +474,8 @@ namespace osc
         std::string graphics_backend_version_string() const;
         std::string graphics_backend_shading_language_version_string() const;
 
-        // returns the number of times this `App` has drawn a frame to the screen
+        // returns the number of times this `App` has drawn a frame to the main application
+        // window.
         size_t num_frames_drawn() const;
 
         // returns the time at which this `App` started up (arbitrary timepoint, don't assume 0)
@@ -516,7 +498,7 @@ namespace osc
         // an event occurs.
         //
         // Rendering this way is *much* more power efficient (especially handy on TDP-limited devices
-        // like laptops), but downstream screens *must* ensure the application keeps moving forward by
+        // like laptops), but top-level widgets *must* ensure the application keeps moving forward by
         // calling methods like `request_redraw` or by pumping other events into the loop.
         bool is_main_loop_waiting() const;
         void set_main_loop_waiting(bool);
@@ -525,7 +507,7 @@ namespace osc
         void request_redraw();  // threadsafe: used to make a waiting loop redraw
 
         // fill all pixels in the main window with the given color
-        void clear_screen(const Color& = Color::clear());
+        void clear_main_window(const Color& = Color::clear());
 
         // sets the main window's subtitle (e.g. document name)
         void set_main_window_subtitle(std::string_view);
@@ -547,7 +529,7 @@ namespace osc
         ResourceStream go_load_resource(const ResourcePath&);
 
     private:
-        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Screen>()>& screen_ctor);
+        static int main_internal(const AppMetadata& metadata, const std::function<std::unique_ptr<Widget>()>& widget_ctor);
 
         // returns a full filesystem path to runtime resource in `resources/` dir
         std::filesystem::path get_resource_filepath(const ResourcePath&) const;

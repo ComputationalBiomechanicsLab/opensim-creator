@@ -11,9 +11,9 @@ TEST(SharedColorRenderBuffer, can_default_construct)
     [[maybe_unused]] const SharedColorRenderBuffer default_constructed;
 }
 
-TEST(SharedColorRenderBuffer, default_constructed_as_1x1_dimensions)
+TEST(SharedColorRenderBuffer, default_constructed_as_1x1_pixel_dimensions)
 {
-    ASSERT_EQ(SharedColorRenderBuffer{}.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(SharedColorRenderBuffer{}.pixel_dimensions(), Vec2i(1, 1));
 }
 
 TEST(SharedColorRenderBuffer, default_constructed_with_1x_anti_aliasing)
@@ -36,10 +36,10 @@ TEST(SharedColorRenderBuffer, dimensionality_is_based_on_parameters)
     ASSERT_EQ(buffer.dimensionality(), TextureDimensionality::Cube);
 }
 
-TEST(SharedColorRenderBuffer, dimensions_is_based_on_parameters)
+TEST(SharedColorRenderBuffer, pixel_dimensions_is_based_on_parameters)
 {
-    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.dimensions = Vec2i(3, 5)}};
-    ASSERT_EQ(buffer.dimensions(), Vec2i(3,5));
+    const SharedColorRenderBuffer buffer{ColorRenderBufferParams{.pixel_dimensions = Vec2i(3, 5)}};
+    ASSERT_EQ(buffer.pixel_dimensions(), Vec2i(3,5));
 }
 
 TEST(SharedColorRenderBuffer, anti_aliasing_level_is_based_on_parameters)

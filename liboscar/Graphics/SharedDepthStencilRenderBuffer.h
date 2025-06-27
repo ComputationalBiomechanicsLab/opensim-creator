@@ -56,7 +56,7 @@ namespace osc
         SharedDepthStencilRenderBuffer clone() const;
 
         // Returns the dimensions of the buffer in physical pixels.
-        Vec2i dimensions() const;
+        Vec2i pixel_dimensions() const;
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
         DepthStencilRenderBufferFormat format() const;

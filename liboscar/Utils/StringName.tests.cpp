@@ -121,6 +121,26 @@ TEST(StringName, empty_returns_true_on_default_constructed_instance)
     ASSERT_TRUE(StringName{}.empty());
 }
 
+TEST(StringName, starts_with_returns_true_when_it_prefixes_the_arg)
+{
+    ASSERT_TRUE(StringName{"abcd"}.starts_with("abc"));
+}
+
+TEST(StringName, starts_with_returns_false_when_it_does_not_prefix_the_arg)
+{
+    ASSERT_FALSE(StringName{"abcd"}.starts_with("xyz"));
+}
+
+TEST(StringName, starts_with_returns_true_if_given_blank_string)
+{
+    ASSERT_TRUE(StringName{"abcd"}.starts_with(""));
+}
+
+TEST(StringName, starts_with_returns_true_when_both_the_string_and_arg_are_blank)
+{
+    ASSERT_TRUE(StringName{""}.starts_with(""));
+}
+
 TEST(StringName, size_returns_0_on_default_constructed_instance)
 {
     ASSERT_EQ(StringName{}.size(), 0);

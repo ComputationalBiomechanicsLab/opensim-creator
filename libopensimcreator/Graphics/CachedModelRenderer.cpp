@@ -68,7 +68,7 @@ namespace
                 const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
                     if (IsPartOfVisibilitySet(dec)) {
-                        m_VisibleAABB = bounding_aabb_of(m_VisibleAABB, worldspace_bounds_of(dec));
+                        m_VisibleAABB = bounding_aabb_of(m_VisibleAABB, world_space_bounds_of(dec));
                     }
                     m_Drawlist.push_back(std::move(dec));
                 };

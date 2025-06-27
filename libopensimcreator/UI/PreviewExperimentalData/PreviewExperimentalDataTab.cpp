@@ -6,6 +6,7 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
@@ -23,7 +24,6 @@
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events.h>
@@ -330,7 +330,8 @@ namespace
                     if (not m_IconCache) {
                         m_IconCache = App::singleton<IconCache>(
                             App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-                            ui::get_text_line_height()/128.0f
+                            ui::get_text_line_height_in_current_panel()/128.0f,
+                            App::get().highest_device_pixel_ratio()
                         );
                     }
                     ui::same_line();
@@ -483,7 +484,7 @@ public:
     void on_draw()
     {
         try {
-            ui::enable_dockspace_over_main_viewport();
+            ui::enable_dockspace_over_main_window();
             m_Toolbar.onDraw();
             m_PanelManager->on_draw();
             m_StatusBar.on_draw();

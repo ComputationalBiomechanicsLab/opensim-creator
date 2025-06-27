@@ -13,6 +13,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterHover.h>
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
@@ -41,7 +42,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
@@ -142,9 +142,18 @@ namespace osc::mi
                         return;  // Error, cancellation, or the user somehow selected >1 file.
                     }
 
-                    state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
-                    state->m_MaybeModelGraphExportLocation = response.front();
-                    state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
+                    // Wrap model import in a `try..catch` because the user may provide malformed
+                    // data and we don't want the exception to propagate all the way up to the
+                    // event loop (#1050).
+                    try {
+                        state->m_ModelGraphSnapshots = UndoableDocument{CreateModelFromOsimFile(response.front())};
+                        state->m_MaybeModelGraphExportLocation = response.front();
+                        state->m_MaybeModelGraphExportedUID = state->m_ModelGraphSnapshots.head_id();
+                    }
+                    catch (const std::exception& ex) {
+                        log_error("Error importing %s as a model: %s", response.front().c_str(), ex.what());
+                        return;  // Error importing the model
+                    }
                 },
                 GetModelFileFilters()
             );
@@ -337,7 +346,7 @@ namespace osc::mi
 
         Vec2 worldPosToScreenPos(const Vec3& worldPos) const
         {
-            return getCamera().project_onto_screen_rect(worldPos, get3DSceneRect());
+            return getCamera().project_onto_viewport(worldPos, get3DSceneRect());
         }
 
         void drawConnectionLine(
@@ -424,7 +433,7 @@ namespace osc::mi
 
         void setContentRegionAvailAsSceneRect()
         {
-            set3DSceneRect(ui::content_region_avail_as_screen_rect());
+            set3DSceneRect(ui::get_content_region_available_ui_rect());
         }
 
         void drawScene(std::span<const DrawableThing> drawables)
@@ -433,7 +442,7 @@ namespace osc::mi
 
             // setup rendering params
             SceneRendererParams p;
-            p.virtual_pixel_dimensions = dimensions_of(get3DSceneRect());
+            p.dimensions = dimensions_of(get3DSceneRect());
             p.device_pixel_ratio = app.settings().get_value<float>("graphics/render_scale", 1.0f) * app.main_window_device_pixel_ratio();
             p.antialiasing_level = app.anti_aliasing_level();
             p.draw_rims = true;
@@ -441,7 +450,7 @@ namespace osc::mi
             p.near_clipping_plane = m_3DSceneCamera.znear;
             p.far_clipping_plane = m_3DSceneCamera.zfar;
             p.view_matrix = m_3DSceneCamera.view_matrix();
-            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.virtual_pixel_dimensions));
+            p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.dimensions));
             p.view_pos = m_3DSceneCamera.position();
             p.light_direction = recommended_light_direction(m_3DSceneCamera);
             p.light_color = Color::white();
@@ -603,7 +612,7 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             const Rect sceneRect = get3DSceneRect();
-            const Vec2 mousePos = ui::get_mouse_pos();
+            const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             if (!is_intersecting(sceneRect, mousePos))
             {
@@ -655,7 +664,7 @@ namespace osc::mi
                     continue;
                 }
 
-                const std::optional<RayCollision> rc = get_closest_worldspace_ray_triangle_collision(
+                const std::optional<RayCollision> rc = get_closest_world_space_ray_triangle_collision(
                     drawable.mesh,
                     cache->get_bvh(drawable.mesh),
                     drawable.transform,
@@ -1443,7 +1452,7 @@ namespace osc::mi
         // main 3D scene camera
         PolarPerspectiveCamera m_3DSceneCamera = CreateDefaultCamera();
 
-        // screenspace rect where the 3D scene is currently being drawn to
+        // screen space rect where the 3D scene is currently being drawn to
         Rect m_3DSceneRect = {};
 
         // renderer that draws the scene

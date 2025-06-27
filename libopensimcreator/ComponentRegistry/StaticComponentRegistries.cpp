@@ -753,6 +753,18 @@ namespace
     {
         return CreateRegistryFromLUT<OpenSim::Component>(name, description, CreateCustomComponentList());
     }
+
+    ComponentRegistry<OpenSim::Component> CreateAllComponentRegistry(
+        std::string_view name,
+        std::string_view description,
+        bool useBlacklist = true)
+    {
+        auto rv = CreateRegistry<OpenSim::Component>(name, description, useBlacklist);
+        for (const auto& entry : CreateCustomComponentRegistry(name, description)) {
+            rv.emplace_back(entry);
+        }
+        return rv;
+    }
 }
 
 template<>
@@ -847,7 +859,7 @@ const ComponentRegistry<OpenSim::Component>& osc::GetCustomComponentRegistry()
 
 const ComponentRegistry<OpenSim::Component>& osc::GetAllRegisteredComponents()
 {
-    static const auto s_StaticReg = CreateRegistry<OpenSim::Component>(
+    static const auto s_StaticReg = CreateAllComponentRegistry(
         "All Components",
         "These are all the components that OpenSim Creator knows about"
     );

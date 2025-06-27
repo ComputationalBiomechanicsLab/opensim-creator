@@ -21,10 +21,10 @@ namespace ui = osc::ui;
 TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPopup)
 {
     OpenSimCreatorApp app;
-    ui::context::init(app);
+    ui::Context context{app};
     for (const auto& entry : GetAllRegisteredComponents()) {
         try {
-            ui::context::on_start_new_frame(app);
+            context.on_start_new_frame();
             Widget parent;
             auto model = std::make_shared<UndoableModelStatePair>();
             AddComponentPopup popup{&parent, "popupname", model, entry.instantiate()};
@@ -32,11 +32,10 @@ TEST(AddComponentPopup, CanOpenAndDrawAllRegisteredComponentsInTheAddComponentPo
             popup.begin_popup();
             popup.on_draw();
             popup.end_popup();
-            ui::context::render();
+            context.render();
         }
         catch (const std::exception& ex) {
             FAIL() << entry.name() << ": " << ex.what();
         }
     }
-    ui::context::shutdown(App::upd());
 }

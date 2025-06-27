@@ -4,6 +4,7 @@ namespace osc { class Event; }
 
 namespace osc
 {
+    // Represents an object that can receive events.
     class IEventListener {
     protected:
         IEventListener() = default;

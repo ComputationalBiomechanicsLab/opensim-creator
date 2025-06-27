@@ -46,7 +46,8 @@ namespace
         );
         const Texture2D normal = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/normal.jpg"),
-            ColorSpace::Linear
+            ColorSpace::Linear,
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors
         );
         const Texture2D metallic = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/pbr/rusted_iron/metallic.jpg"),
@@ -82,7 +83,9 @@ public:
 
     explicit Impl(LOGLPBRLightingTexturedTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
-    {}
+    {
+        sphere_mesh_.recalculate_tangents();  // normal mapping
+    }
 
     void on_mount()
     {
@@ -111,14 +114,14 @@ public:
 private:
     void draw_3d_render()
     {
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         pbr_material_.set("uCameraWorldPosition", camera_.position());
 
         draw_spheres();
         draw_lights();
 
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_spheres()

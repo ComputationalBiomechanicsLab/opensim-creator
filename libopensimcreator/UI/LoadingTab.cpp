@@ -101,14 +101,14 @@ public:
 
     void onDraw()
     {
-        const Rect viewportUIRect = ui::get_main_viewport_workspace_uiscreenspace_rect();
-        const Vec2 viewportDims = dimensions_of(viewportUIRect);
-        const Vec2 menuDimsGuess = {0.3f * viewportDims.x, 6.0f * ui::get_text_line_height()};
+        const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
+        const Vec2 workspaceDims = dimensions_of(workspaceUIRect);
+        const Vec2 menuDimsGuess = {0.3f * workspaceDims.x, 6.0f * ui::get_font_base_size()};
 
         // center the menu
         {
-            const Vec2 menuTopLeft = 0.5f * (viewportDims - menuDimsGuess);
-            ui::set_next_panel_pos(viewportUIRect.p1 + menuTopLeft);
+            const Vec2 menuTopLeft = 0.5f * (workspaceDims - menuDimsGuess);
+            ui::set_next_panel_ui_pos(workspaceUIRect.p1 + menuTopLeft);
             ui::set_next_panel_size({menuDimsGuess.x, -1.0f});
         }
 
@@ -122,9 +122,9 @@ public:
         else {
             if (ui::begin_panel("Error Message", nullptr, ui::PanelFlag::NoTitleBar)) {
                 ui::draw_text_wrapped("An error occurred while loading the file:");
-                ui::draw_dummy({0.0f, 5.0f});
+                ui::draw_vertical_spacer(5.0f/15.0f);
                 ui::draw_text_wrapped(m_LoadingErrorMsg);
-                ui::draw_dummy({0.0f, 5.0f});
+                ui::draw_vertical_spacer(5.0f/15.0f);
 
                 if (ui::draw_button("try again")) {
                     App::post_event<OpenTabEvent>(*parent(), std::make_unique<LoadingTab>(parent(), m_OsimPath));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -11,10 +12,8 @@ namespace osc
     struct PlaneGeometryParams final {
         friend bool operator==(const PlaneGeometryParams&, const PlaneGeometryParams&) = default;
 
-        float width = 1.0f;
-        float height = 1.0f;
-        size_t num_width_segments = 1;
-        size_t num_height_segments = 1;
+        Vec2 dimensions = {1.0f, 1.0f};
+        Vec2uz num_segments = {1, 1};
     };
 
     class PlaneGeometry final : public Mesh {

@@ -12,7 +12,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr Vec2i c_shadowmap_dimensions = {1024, 1024};
+    constexpr Vec2i c_shadowmap_pixel_dimensions = {1024, 1024};
 
     Transform make_rotated_transform()
     {
@@ -52,7 +52,7 @@ namespace
     RenderTexture create_depth_texture()
     {
         return RenderTexture{{
-            .dimensions = c_shadowmap_dimensions,
+            .pixel_dimensions = c_shadowmap_pixel_dimensions,
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R32_SFLOAT,
         }};
@@ -111,10 +111,10 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
 
         draw_shadow_pass_to_cubemap();
-        draw_shadowmapped_scene_to_screen(viewport_screen_space_rect);
+        draw_shadowmapped_scene_to_screen(workspace_screen_space_rect);
     }
 
     void draw_shadow_pass_to_cubemap()
@@ -124,7 +124,7 @@ private:
         const float zfar = 25.0f;
         const Mat4 projection_matrix = perspective(
             90_deg,
-            aspect_ratio_of(c_shadowmap_dimensions),
+            aspect_ratio_of(c_shadowmap_pixel_dimensions),
             znear,
             zfar
         );
@@ -170,7 +170,7 @@ private:
         graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screen_space_rect);
-        scene_camera_.render_to_screen();
+        scene_camera_.render_to_main_window();
         scene_camera_.set_pixel_rect(std::nullopt);
     }
 
@@ -207,7 +207,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
     RenderTexture depth_texture_ = create_depth_texture();
     Vec3 light_pos_;

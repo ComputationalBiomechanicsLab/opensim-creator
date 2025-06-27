@@ -16,6 +16,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/MeshImporter/ChooseElLayer.h>
 #include <libopensimcreator/UI/MeshImporter/DrawableThing.h>
@@ -47,7 +48,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
@@ -154,8 +154,7 @@ public:
 
         m_Shared->tick(dt);
 
-        if (m_Maybe3DViewerModal)
-        {
+        if (m_Maybe3DViewerModal) {
             std::shared_ptr<MeshImporterUILayer> ptr = m_Maybe3DViewerModal;  // ensure it stays alive - even if it pops itself during the drawcall
             ptr->tick(dt);
         }
@@ -196,7 +195,7 @@ public:
     void onDraw()
     {
         // enable panel docking
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         // handle keyboards using ImGui's input poller
         if (!m_Maybe3DViewerModal)
@@ -908,7 +907,7 @@ private:
 
             if (ui::draw_angle3_input("Rotation", eulers, "%.6f"))
             {
-                Quat quatRads = osc::to_worldspace_rotation_quat(eulers);
+                Quat quatRads = osc::to_world_space_rotation_quat(eulers);
                 mg.updByID(e.getID()).set_rotation(mg, quatRads);
             }
             if (ui::is_item_deactivated_after_edit())
@@ -1361,19 +1360,21 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
-
             const ObjMetadata objMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+            }
+            catch (std::exception& e) {
+                log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "obj");
     }
 
@@ -1387,19 +1388,21 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            // write transformed mesh to output
-            std::ofstream ofs{*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary};
-            if (not ofs) {
-                const std::string error = errno_to_string_threadsafe();
-                log_error("%s: could not save obj output: %s", p->string().c_str(), error.c_str());
-                return;
-            }
-
             const StlMetadata stlMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_stl(ofs, mesh, stlMetadata);
+            // write transformed mesh to output
+            try {
+                std::ofstream ofs;
+                ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+                ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
+
+                write_as_stl(ofs, mesh, stlMetadata);
+            }
+            catch (std::exception& e) {
+                log_error("error saving stl output to %s: %s", p->string().c_str(), e.what());
+            }
         }, "stl");
     }
 
@@ -1605,7 +1608,7 @@ private:
         ui::draw_text("%s %s", c.getIconUTF8().c_str(), c.getNamePluralized().c_str());
         ui::same_line();
         ui::draw_help_marker(c.getNamePluralized(), c.getDescription());
-        ui::draw_dummy({0.0f, 5.0f});
+        ui::draw_vertical_spacer(5.0f/15.0f);
         ui::indent();
 
         bool empty = true;
@@ -1670,7 +1673,7 @@ private:
         for (const MIClass& c : GetSceneElClasses())
         {
             drawNavigatorElement(c);
-            ui::draw_dummy({0.0f, 5.0f});
+            ui::draw_vertical_spacer(5.0f/15.0f);
         }
 
         // a navigator element might have opened the context menu in the navigator panel
@@ -1805,7 +1808,7 @@ private:
 
         ui::same_line();
 
-        ui::draw_gizmo_op_selector(m_Gizmo);
+        ui::draw_gizmo_operation_selector(m_Gizmo, true, true, true, OSC_ICON_ARROWS_ALT, OSC_ICON_REDO, OSC_ICON_EXPAND_ARROWS_ALT);
 
         ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
         ui::same_line();
@@ -1863,13 +1866,13 @@ private:
                 r.p1.x + windowPadding.x,
                 r.p2.y - windowPadding.y - axes.dimensions().y,
             };
-            ui::set_cursor_screen_pos(topLeft);
+            ui::set_cursor_ui_pos(topLeft);
             axes.draw(m_Shared->updCamera());
         }
 
         Rect sceneRect = m_Shared->get3DSceneRect();
         Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-        ui::set_cursor_screen_pos(trPos);
+        ui::set_cursor_ui_pos(trPos);
 
         if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
         {
@@ -1968,7 +1971,7 @@ private:
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
         };
 
-        ui::set_cursor_screen_pos(buttonTopLeft);
+        ui::set_cursor_ui_pos(buttonTopLeft);
         ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
         if (ui::draw_button(mainButtonText))
         {
@@ -2351,7 +2354,7 @@ private:
             // outside of the panel
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
-            ui::set_next_panel_pos(m_Shared->get3DSceneRect().p1);
+            ui::set_next_panel_ui_pos(m_Shared->get3DSceneRect().p1);
             ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
             const ui::PanelFlags modalFlags = {
@@ -2379,7 +2382,7 @@ private:
             {
                 ui::pop_style_var();
                 draw3DViewer();
-                ui::set_cursor_pos(ui::get_cursor_start_pos() + Vec2{10.0f, 10.0f});
+                ui::set_cursor_panel_pos(ui::get_cursor_start_panel_pos() + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else
@@ -2396,7 +2399,7 @@ private:
     // buffer that's filled with drawable geometry during a drawcall
     std::vector<DrawableThing> m_DrawablesBuffer;
 
-    // (maybe) hover + worldspace location of the hover
+    // (maybe) hover + world space location of the hover
     MeshImporterHover m_MaybeHover;
 
     // (maybe) the scene element that the user opened a context menu for

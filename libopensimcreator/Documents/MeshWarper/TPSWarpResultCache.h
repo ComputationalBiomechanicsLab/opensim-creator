@@ -57,18 +57,21 @@ namespace osc
         // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
         bool updateInputs(const TPSDocument& doc)
         {
-            TPSCoefficientSolverInputs3D newInputs
-            {
-                GetLandmarkPairs(doc),
-            };
+            TPSCoefficientSolverInputs3D newInputs{GetLandmarkPairs(doc)};
+            for (auto& [source, destination] : newInputs.landmarks) {
+                source *= doc.sourceLandmarksPrescale;
+                destination *= doc.destinationLandmarksPrescale;
+            }
+            newInputs.applyAffineTranslation = doc.applyAffineTranslation;
+            newInputs.applyAffineScale = doc.applyAffineScale;
+            newInputs.applyAffineRotation = doc.applyAffineRotation;
+            newInputs.applyNonAffineWarp = doc.applyNonAffineWarp;
 
-            if (newInputs != m_CachedInputs)
-            {
+            if (newInputs != m_CachedInputs) {
                 m_CachedInputs = std::move(newInputs);
                 return true;
             }
-            else
-            {
+            else {
                 return false;
             }
         }

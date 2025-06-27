@@ -1,7 +1,7 @@
 #include "TabTestingScreen.h"
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/ScreenPrivate.h>
+#include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Tabs/Tab.h>
 #include <liboscar/UI/Tabs/TabRegistryEntry.h>
 #include <liboscar/UI/oscimgui.h>
@@ -10,16 +10,17 @@
 #include <memory>
 #include <utility>
 
-class osc::TabTestingScreen::Impl final : public ScreenPrivate {
+class osc::TabTestingScreen::Impl final : public WidgetPrivate {
 public:
     explicit Impl(TabTestingScreen& owner, TabRegistryEntry registry_entry) :
-        ScreenPrivate{owner, nullptr, "TabTestingScreen"},
+        WidgetPrivate{owner, nullptr},
         registry_entry_{std::move(registry_entry)}
-    {}
+    {
+        set_name("TabTestingScreen");
+    }
 
     void on_mount()
     {
-        ui::context::init(App::upd());
         current_tab_ = registry_entry_.construct_tab(&owner());
         current_tab_->on_mount();
         App::upd().make_main_loop_polling();
@@ -30,12 +31,11 @@ public:
         App::upd().make_main_loop_waiting();
         current_tab_->on_unmount();
         current_tab_.reset();
-        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)
     {
-        bool handled = ui::context::on_event(e);
+        bool handled = ui_context_.on_event(e);
         handled = current_tab_->on_event(e) or handled;
         return handled;
     }
@@ -47,10 +47,10 @@ public:
 
     void on_draw()
     {
-        App::upd().clear_screen();
-        ui::context::on_start_new_frame(App::upd());
+        App::upd().clear_main_window();
+        ui_context_.on_start_new_frame();
         current_tab_->on_draw();
-        ui::context::render();
+        ui_context_.render();
 
         ++frames_shown_;
         if (frames_shown_ >= min_frames_shown_ and
@@ -61,6 +61,7 @@ public:
     }
 
 private:
+    ui::Context ui_context_{App::upd()};
     TabRegistryEntry registry_entry_;
     std::unique_ptr<Tab> current_tab_;
     size_t min_frames_shown_ = 2;
@@ -70,7 +71,7 @@ private:
 };
 
 osc::TabTestingScreen::TabTestingScreen(const TabRegistryEntry& registry_entry) :
-    Screen{std::make_unique<Impl>(*this, registry_entry)}
+    Widget{std::make_unique<Impl>(*this, registry_entry)}
 {}
 void osc::TabTestingScreen::impl_on_mount() { private_data().on_mount(); }
 void osc::TabTestingScreen::impl_on_unmount() { private_data().on_unmount(); }

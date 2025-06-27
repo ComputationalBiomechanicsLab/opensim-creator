@@ -106,7 +106,7 @@ public:
         }
         ui::set_num_columns();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         if (ui::draw_button("save")) {
             *m_OutputTarget = m_LocalCopy;

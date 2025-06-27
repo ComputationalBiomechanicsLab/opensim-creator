@@ -2,9 +2,9 @@
 
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
@@ -156,7 +156,7 @@ private:
         const SimulationClock::time_point tEnd = m_Simulation->getEndTime();
         const SimulationClock::time_point tCur = m_SimulatorAPI->getSimulationScrubTime();
 
-        ui::set_next_item_width(ui::get_font_size() * 20.0f);
+        ui::set_next_item_width(ui::get_font_base_size() * 20.0f);
         float v = static_cast<float>(tCur.time_since_epoch().count());
         const bool userScrubbed = ui::draw_float_circular_slider(
             "##scrubber",

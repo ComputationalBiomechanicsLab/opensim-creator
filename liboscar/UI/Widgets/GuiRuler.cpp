@@ -36,7 +36,7 @@ void osc::GuiRuler::on_draw(
         return;
     }
 
-    const Vec2 mouse_pos = ui::get_mouse_pos();
+    const Vec2 mouse_ui_pos = ui::get_mouse_ui_pos();
     const Color circle_moused_over_nothing_color = Color::red().with_alpha(0.6f);
     const Color circle_color = Color::white().with_alpha(0.8f);
     const Color line_color = circle_color;
@@ -63,34 +63,34 @@ void osc::GuiRuler::on_draw(
     if (state_ == State::WaitingForFirstPoint) {
         if (not maybe_mouseover) {
             // not mousing over anything
-            draw_list.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_moused_over_nothing_color);
+            draw_list.add_circle_filled(Circle{mouse_ui_pos, circle_radius}, circle_moused_over_nothing_color);
             return;
         }
         else {
             // mousing over something
-            draw_list.add_circle_filled(Circle{mouse_pos, circle_radius}, circle_color);
+            draw_list.add_circle_filled(Circle{mouse_ui_pos, circle_radius}, circle_color);
 
             if (ui::is_mouse_released(ui::MouseButton::Left)) {
                 state_ = State::WaitingForSecondPoint;
-                start_world_pos_ = maybe_mouseover->worldspace_location;
+                start_world_pos_ = maybe_mouseover->world_space_location;
             }
             return;
         }
     }
     else if (state_ == State::WaitingForSecondPoint) {
-        const Vec2 start_screenpos = camera.project_onto_screen_rect(start_world_pos_, render_rect);
+        const Vec2 start_ui_pos = camera.project_onto_viewport(start_world_pos_, render_rect);
 
         if (maybe_mouseover) {
             // user is moused over something, so draw a line + circle between the two hitlocs
-            const Vec2 end_screenpos = mouse_pos;
-            const Vec2 line_screen_direction = normalize(start_screenpos - end_screenpos);
-            const Vec2 offset_vec = 15.0f * Vec2{line_screen_direction.y, -line_screen_direction.x};
-            const Vec2 line_midpoint = (start_screenpos + end_screenpos) / 2.0f;
-            const float line_world_length = length(maybe_mouseover->worldspace_location - start_world_pos_);
+            const Vec2 end_ui_pos = mouse_ui_pos;
+            const Vec2 line_ui_direction = normalize(start_ui_pos - end_ui_pos);
+            const Vec2 offset_vec = 15.0f * Vec2{line_ui_direction.y, -line_ui_direction.x};
+            const Vec2 line_midpoint = (start_ui_pos + end_ui_pos) / 2.0f;
+            const float line_world_length = length(maybe_mouseover->world_space_location - start_world_pos_);
 
-            draw_list.add_circle_filled({start_screenpos, circle_radius}, circle_color);
-            draw_list.add_line(start_screenpos, end_screenpos, line_color, line_thickness);
-            draw_list.add_circle_filled({end_screenpos, circle_radius}, circle_color);
+            draw_list.add_circle_filled({start_ui_pos, circle_radius}, circle_color);
+            draw_list.add_line(start_ui_pos, end_ui_pos, line_color, line_thickness);
+            draw_list.add_circle_filled({end_ui_pos, circle_radius}, circle_color);
 
             // label the line's length
             {
@@ -104,7 +104,7 @@ void osc::GuiRuler::on_draw(
             }
         }
         else {
-            draw_list.add_circle_filled({start_screenpos, circle_radius}, circle_color);
+            draw_list.add_circle_filled({start_ui_pos, circle_radius}, circle_color);
         }
     }
 }

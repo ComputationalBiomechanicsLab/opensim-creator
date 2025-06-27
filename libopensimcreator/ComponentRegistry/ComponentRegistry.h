@@ -3,6 +3,7 @@
 #include <libopensimcreator/ComponentRegistry/ComponentRegistryBase.h>
 #include <libopensimcreator/ComponentRegistry/ComponentRegistryEntry.h>
 
+#include <concepts>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -12,48 +13,46 @@
 
 namespace osc
 {
+    // Represents a sequence of named/described `OpenSim::Component`s of type `T`.
     template<typename T>
     class ComponentRegistry final : public ComponentRegistryBase {
     public:
         using value_type = ComponentRegistryEntry<T>;
+        using reference = value_type&;
+        using const_reference = const value_type&;
+        using const_iterator = const value_type*;
 
-        ComponentRegistry(
+        explicit ComponentRegistry(
             std::string_view name_,
             std::string_view description_) :
 
             ComponentRegistryBase{name_, description_}
         {}
 
-        const value_type* begin() const
+        const_iterator begin() const
         {
             const auto& base = static_cast<const ComponentRegistryBase&>(*this);
-            return static_cast<const value_type*>(base.begin());
+            return static_cast<const_iterator>(base.begin());
         }
 
-        const value_type* end() const
+        const_iterator end() const
         {
             const auto& base = static_cast<const ComponentRegistryBase&>(*this);
-            return static_cast<const value_type*>(base.end());
+            return static_cast<const_iterator>(base.end());
         }
 
-        const value_type& operator[](size_t i) const
+        const_reference operator[](size_t pos) const
         {
             const auto& base = static_cast<const ComponentRegistryBase&>(*this);
-            return static_cast<const value_type&>(base[i]);
+            return static_cast<const_reference>(base[pos]);
         }
 
-        ComponentRegistryEntry<T>& emplace_back(
-            std::string_view name,
-            std::string_view description,
-            std::shared_ptr<const T> prototype)
+        template<typename... Args>
+        requires std::constructible_from<value_type, Args&&...>
+        const_reference emplace_back(Args&&... args)
         {
-            auto& erased = push_back_erased(ComponentRegistryEntry<T>
-            {
-                name,
-                description,
-                std::move(prototype),
-            });
-            return static_cast<ComponentRegistryEntry<T>&>(erased);
+            auto& erased = emplace_back_erased(std::forward<Args>(args)...);
+            return static_cast<reference>(erased);
         }
     };
 

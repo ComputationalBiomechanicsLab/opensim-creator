@@ -25,7 +25,7 @@ namespace
     Mesh generate_mesh_with_sub_meshes()
     {
         const auto meshes = std::to_array<Mesh>({
-            BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}},
+            BoxGeometry{{.dimensions = Vec3{2.0f}}},
             SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}},
             CircleGeometry{{.radius = 1.0f, .num_segments = 32}},
         });
@@ -87,8 +87,8 @@ public:
                 sub_mesh_index
             );
         }
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
     }
 
 private:

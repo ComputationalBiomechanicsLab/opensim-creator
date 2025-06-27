@@ -1,6 +1,7 @@
 #include "MeshHittestTab.h"
 
 #include <libopensimcreator/Graphics/SimTKMeshLoader.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/Color.h>
@@ -13,7 +14,6 @@
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
 #include <liboscar/Maths/Line.h>
@@ -25,13 +25,11 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/UID.h>
+#include <liboscar/Utils/PerfClock.h>
 
-#include <array>
 #include <cinttypes>
 #include <chrono>
 
@@ -51,11 +49,11 @@ public:
         ui::update_polar_camera_from_mouse_inputs(m_PolarCamera, App::get().main_window_dimensions());
 
         // handle hittest
-        const auto raycastStartTime = std::chrono::high_resolution_clock::now();
+        const auto raycastStartTime = PerfClock::now();
 
-        const Rect r = ui::get_main_viewport_workspace_uiscreenspace_rect();
+        const Rect r = ui::get_main_window_workspace_ui_rect();
         const Vec2 d = dimensions_of(r);
-        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_pos()} - r.p1, d);
+        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_ui_pos()} - r.p1, d);
 
         m_IsMousedOver = false;
         if (m_UseBVH) {
@@ -79,7 +77,7 @@ public:
             });
         }
 
-        const auto raycastEndTime = std::chrono::high_resolution_clock::now();
+        const auto raycastEndTime = PerfClock::now();
         m_RaycastDuration = std::chrono::duration_cast<std::chrono::microseconds>(raycastEndTime - raycastStartTime);
     }
 
@@ -87,14 +85,14 @@ public:
     {
         // setup scene
         {
-            const Rect viewportScreenRect = ui::get_main_viewport_workspace_screenspace_rect();
-            m_Camera.set_pixel_rect(viewportScreenRect);
+            const Rect workspaceRect = ui::get_main_window_workspace_screen_space_rect();
+            m_Camera.set_pixel_rect(workspaceRect);
 
             // update real scene camera from constrained polar camera
             m_Camera.set_position(m_PolarCamera.position());
             m_Camera.set_clipping_planes({m_PolarCamera.znear, m_PolarCamera.zfar});
             m_Camera.set_view_matrix_override(m_PolarCamera.view_matrix());
-            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(viewportScreenRect)));
+            m_Camera.set_projection_matrix_override(m_PolarCamera.projection_matrix(aspect_ratio_of(workspaceRect)));
         }
 
         // draw mesh
@@ -127,8 +125,8 @@ public:
             );
         }
 
-        // draw scene onto viewport
-        m_Camera.render_to_screen();
+        // draw scene onto workspace
+        m_Camera.render_to_main_window();
 
         // auxiliary 2D UI
         // printout stats

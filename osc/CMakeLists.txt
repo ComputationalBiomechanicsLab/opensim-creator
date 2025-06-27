@@ -1,9 +1,17 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+
 set(
     OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
     CACHE STRING
     "the internet location of the software's repo - used by in-app links, installers, etc."
 )
 mark_as_advanced(OSC_REPO_URL)
+set(
+    OSC_DOCS_URL "https://docs.opensimcreator.com"
+    CACHE STRING
+    "a url for the software's documentation - used by in-app links, installers, etc."
+)
+mark_as_advanced(OSC_DOCS_URL)
 set(
     OSC_HELP_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator/discussions"
     CACHE STRING
@@ -120,7 +128,6 @@ set_target_properties(osc PROPERTIES
 target_compile_features(osc PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(osc PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )

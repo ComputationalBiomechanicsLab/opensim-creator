@@ -62,6 +62,7 @@
 #include <vector>
 
 using namespace osc;
+using namespace osc::literals;
 namespace rgs = std::ranges;
 
 namespace
@@ -77,7 +78,8 @@ namespace
     inline constexpr Color c_PointForceArrowColor = Color::muted_yellow();  // note: should be similar to body force arrows
     inline constexpr Color c_StationColor = Color::red();
     inline constexpr Color c_ScapulothoracicJointColor =  Color::yellow().with_alpha(0.2f);
-    inline constexpr Color c_CenterOfMassColor = Color::black();
+    inline constexpr Color c_CenterOfMassFirstColor = Color::lighter_grey();
+    inline constexpr Color c_CenterOfMassSecondColor = Color::darker_grey();
 
     // helper: convert a physical frame's transform to ground into an Transform
     Transform TransformInGround(const OpenSim::Frame& frame, const SimTK::State& state)
@@ -261,6 +263,11 @@ namespace
             return m_SphereMesh;
         }
 
+        const Mesh& sphere_octant_mesh() const
+        {
+            return m_SphereOctantMesh;
+        }
+
         const Mesh& uncapped_cylinder_mesh() const
         {
             return m_UncappedCylinderMesh;
@@ -385,6 +392,7 @@ namespace
     private:
         SceneCache& m_MeshCache;
         Mesh m_SphereMesh = m_MeshCache.sphere_mesh();
+        Mesh m_SphereOctantMesh = m_MeshCache.sphere_octant_mesh();
         Mesh m_UncappedCylinderMesh = m_MeshCache.uncapped_cylinder_mesh();
         const OpenSim::Model& m_Model;
         const OpenSim::ModelDisplayHints& m_ModelDisplayHints = m_Model.getDisplayHints();
@@ -735,15 +743,65 @@ namespace
             return;
         }
 
-        const float radius = rs.getFixupScaleFactor() * 0.005f;
+        // draw a COM by drawing 8 sphere octants to form a sphere
+        // with two alternating colors (standard visual notation used
+        // by engineers etc.)
+
+        const float radius = rs.getFixupScaleFactor() * 0.0075f;
         Transform t = TransformInGround(b, rs.getState());
         t.position = t * to<Vec3>(b.getMassCenter());
         t.scale = Vec3{radius};
 
+        // draw four octants with the first color
         rs.consume(b, SceneDecoration{
-            .mesh = rs.sphere_mesh(),
+            .mesh = rs.sphere_octant_mesh(),
             .transform = t,
-            .shading = c_CenterOfMassColor,
+            .shading = c_CenterOfMassFirstColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
+            .shading = c_CenterOfMassFirstColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
+            .shading = c_CenterOfMassFirstColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
+            .shading = c_CenterOfMassFirstColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+
+        // draw four octants with the second color
+        t.scale.x *= -1.0f;  // mirror image along one plane
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t,
+            .shading = c_CenterOfMassSecondColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
+            .shading = c_CenterOfMassSecondColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
+            .shading = c_CenterOfMassSecondColor,
+            .flags = SceneDecorationFlag::AnnotationElement,
+        });
+        rs.consume(b, SceneDecoration{
+            .mesh = rs.sphere_octant_mesh(),
+            .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
+            .shading = c_CenterOfMassSecondColor,
             .flags = SceneDecorationFlag::AnnotationElement,
         });
     }
@@ -1360,7 +1418,7 @@ void osc::GenerateSubcomponentDecorations(
             GenerateBodySpatialVectorArrowDecorationsForForcesThatOnlyHaveComputeForceMethod(rendererState, *hcf);
             HandleHuntCrossleyForce(rendererState, *hcf);
         }
-        else if (const auto* const geom = dynamic_cast<const OpenSim::Geometry*>(&c)) {
+        else if (dynamic_cast<const OpenSim::Geometry*>(&c)) {
             // EDGE-CASE:
             //
             // if the component being rendered is geometry that was explicitly added into the model then
@@ -1460,7 +1518,7 @@ float osc::GetRecommendedScaleFactor(
         1.0f,
         [&aabb](const OpenSim::Component&, const SceneDecoration& dec)
         {
-            aabb = bounding_aabb_of(aabb, worldspace_bounds_of(dec));
+            aabb = bounding_aabb_of(aabb, world_space_bounds_of(dec));
         }
     );
 

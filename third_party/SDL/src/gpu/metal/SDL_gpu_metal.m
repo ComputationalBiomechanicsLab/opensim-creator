@@ -643,7 +643,6 @@ struct MetalRenderer
     id<MTLCommandQueue> queue;
 
     bool debugMode;
-    SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
     MetalWindowData **claimedWindows;
@@ -766,18 +765,9 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
     // Release the command queue
     renderer->queue = nil;
 
-    // Release properties
-    SDL_DestroyProperties(renderer->props);
-
     // Free the primary structures
     SDL_free(renderer);
     SDL_free(device);
-}
-
-static SDL_PropertiesID METAL_GetDeviceProperties(SDL_GPUDevice *device)
-{
-    MetalRenderer *renderer = (MetalRenderer *)device->driverData;
-    return renderer->props;
 }
 
 // Resource tracking
@@ -1135,7 +1125,6 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         // Multisample
 
         pipelineDescriptor.rasterSampleCount = SDLToMetal_SampleCount[createinfo->multisample_state.sample_count];
-        pipelineDescriptor.alphaToCoverageEnabled = createinfo->multisample_state.enable_alpha_to_coverage;
 
         // Depth Stencil
 
@@ -4457,11 +4446,6 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         id<MTLDevice> device = NULL;
         bool hasHardwareSupport = false;
 
-        bool verboseLogs = SDL_GetBooleanProperty(
-            props,
-            SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN,
-            true);
-
         if (debugMode) {
             /* Due to a Metal driver quirk, once a MTLDevice has been created
              * with this environment variable set, the Metal validation layers
@@ -4515,20 +4499,12 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->device = device;
         renderer->queue = [device newCommandQueue];
 
-        renderer->props = SDL_CreateProperties();
-        if (verboseLogs) {
-            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Metal");
-        }
-
-        // Record device name
-        const char *deviceName = [device.name UTF8String];
-        SDL_SetStringProperty(
-            renderer->props,
-            SDL_PROP_GPU_DEVICE_NAME_STRING,
-            deviceName);
-        if (verboseLogs) {
-            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Metal Device: %s", deviceName);
-        }
+        // Print driver info
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Metal");
+        SDL_LogInfo(
+            SDL_LOG_CATEGORY_GPU,
+            "Metal Device: %s",
+            [device.name UTF8String]);
 
         // Remember debug mode
         renderer->debugMode = debugMode;

@@ -30,7 +30,7 @@ class HIDDeviceUSB implements HIDDevice {
         mRunning = false;
     }
 
-    String getIdentifier() {
+    public String getIdentifier() {
         return String.format("%s/%x/%x/%d", mDevice.getDeviceName(), mDevice.getVendorId(), mDevice.getProductId(), mInterfaceIndex);
     }
 
@@ -100,7 +100,7 @@ class HIDDeviceUSB implements HIDDevice {
         return mDevice;
     }
 
-    String getDeviceName() {
+    public String getDeviceName() {
         return getManufacturerName() + " " + getProductName() + "(0x" + String.format("%x", getVendorId()) + "/0x" + String.format("%x", getProductId()) + ")";
     }
 

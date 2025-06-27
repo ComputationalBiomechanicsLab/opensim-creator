@@ -114,7 +114,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         // cubes
         {
@@ -137,7 +137,7 @@ public:
             }
         }
 
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
 
         // auxiliary UI
         log_viewer_.on_draw();

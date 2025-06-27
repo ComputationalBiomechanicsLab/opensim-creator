@@ -98,7 +98,7 @@ namespace osc
         const std::function<void(SceneDecoration&&)>& out
     );
 
-    AABB worldspace_bounds_of(const SceneDecoration&);
+    AABB world_space_bounds_of(const SceneDecoration&);
 
     // updates the given BVH with the given component decorations
     void update_scene_bvh(
@@ -106,25 +106,34 @@ namespace osc
         BVH&
     );
 
-    // returns all collisions along `worldspace_ray`
+    // calls `out` with each `SceneCollision` found along `world_space_ray`
+    void for_each_ray_collision_with_scene(
+        const BVH& scene_bvh,
+        SceneCache&,
+        std::span<const SceneDecoration>,
+        const Line& world_space_ray,
+        const std::function<void(SceneCollision&&)>& out
+    );
+
+    // returns all collisions along `world_space_ray`
     std::vector<SceneCollision> get_all_ray_collisions_with_scene(
         const BVH& scene_bvh,
         SceneCache&,
         std::span<const SceneDecoration>,
-        const Line& worldspace_ray
+        const Line& world_space_ray
     );
 
-    // returns closest ray-triangle collision along `worldspace_ray`
-    std::optional<RayCollision> get_closest_worldspace_ray_triangle_collision(
+    // returns closest ray-triangle collision along `world_space_ray`
+    std::optional<RayCollision> get_closest_world_space_ray_triangle_collision(
         const Mesh&,
         const BVH& triangle_bvh,
         const Transform&,
-        const Line& worldspace_ray
+        const Line& world_space_ray
     );
 
-    // returns closest ray-triangle collision in worldspace for a given mouse position
+    // returns closest ray-triangle collision in world space for a given mouse position
     // within the given render rectangle
-    std::optional<RayCollision> get_closest_worldspace_ray_triangle_collision(
+    std::optional<RayCollision> get_closest_world_space_ray_triangle_collision(
         const PolarPerspectiveCamera&,
         const Mesh&,
         const BVH& triangle_bvh,
@@ -136,8 +145,8 @@ namespace osc
     SceneRendererParams calc_standard_dark_scene_render_params(
         const PolarPerspectiveCamera&,
         AntiAliasingLevel,
-        Vec2 render_virtual_pixel_dimensions,
-        float render_device_pixel_ratio
+        Vec2 dimensions,
+        float device_pixel_ratio
     );
 
     // returns a triangle BVH for the given triangle mesh, or an empty BVH if the mesh is non-triangular or empty

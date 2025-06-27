@@ -121,7 +121,7 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # false-positive in googletest https://github.com/google/googletest/issues/4232
         -Wno-restrict
 
-	# false-positives (e.g. https://github.com/fmtlib/fmt/issues/3415)
+        # false-positives (e.g. https://github.com/fmtlib/fmt/issues/3415)
         -Wno-dangling-reference
     >
 

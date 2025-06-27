@@ -7,6 +7,7 @@
 #include <liboscar-demos/OscarDemosTabRegistry.h>
 
 #include <cstdlib>
+#include <filesystem>
 #include <iostream>
 #include <memory>
 #include <string_view>
@@ -34,6 +35,7 @@ namespace
         metadata.set_build_id(OSC_BUILD_ID);
         metadata.set_repository_url(OSC_REPO_URL);
         metadata.set_help_url(OSC_HELP_URL);
+        metadata.set_documentation_url(OSC_DOCS_URL);
         return metadata;
     }
 }
@@ -64,16 +66,16 @@ int main(int argc, char* argv[])
     register_demo_tabs(app.upd_tab_registry());
 #endif
 
-    // init top-level screen (tab host)
-    auto screen = std::make_unique<MainUIScreen>();
+    // init top-level widget (tab host)
+    auto tabbed_widget = std::make_unique<MainUIScreen>();
 
     // load each unnamed arg as a file in the UI
     for (const auto& unnamed_arg : unnamed_args) {
-        screen->open(unnamed_arg);
+        tabbed_widget->open(std::filesystem::weakly_canonical(unnamed_arg));
     }
 
     // enter main application loop
-    app.show(std::move(screen));
+    app.show(std::move(tabbed_widget));
 
     return EXIT_SUCCESS;
 }

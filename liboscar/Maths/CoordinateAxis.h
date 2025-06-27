@@ -9,9 +9,7 @@
 
 namespace osc
 {
-    // provides convenient manipulation of the three coordinate axes (X, Y, Z)
-    //
-    // inspired by simbody's `SimTK::CoordinateAxis` class
+    // Provides convenient manipulation of the three coordinate axes (X, Y, Z).
     class CoordinateAxis final {
     public:
         // returns a `CoordinateAxis` parsed from a `std::string_view`, the format can only be one of:

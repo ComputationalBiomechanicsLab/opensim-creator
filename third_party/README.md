@@ -4,10 +4,9 @@ This directory contains the source code for of OpenSim Creator's third-party run
 dependencies, such that the entire technology stack can be compiled from source on
 all target platforms with only `cmake` and a C++ compiler and no internet connection.
 
-This directory operates as a `cmake` "superbuild". It contains a `CMakeLists.txt`
-file that uses the `ExternalProject` API to build+install these third-party
-dependencies into a standalone install directory. That directory can then be used by 
-OpenSim Creator's main build via the `CMAKE_PREFIX_PATH` variable.
+There's a `CMakeLists.txt` file that uses the `ExternalProject` API to build+install
+these third-party dependencies into a standalone install directory. That directory
+can then be used by OpenSim Creator's main build via the `CMAKE_PREFIX_PATH` variable.
 
 Because OpenSim Creator uniformly uses `find_package`, you can also reconfigure what
 third-party dependencies it *actually* uses at configure-time. This is particularly
@@ -15,21 +14,20 @@ useful for LAPACK/BLAS, because Linux/MacOS provide these at an OS-level, so you
 skip building it in this superbuild and just let `find_package` find the OS-level
 version.
 
-## Note: `opensim-core`/`simbody` Get Special Treatment
 
-OpenSim Creator tries to use `opensim-core` and `simbody` without any modifications
-but, sometimes, there might be additional patches. For this reason, the `opensim-core`
-and `simbody` seen here are usually pulled from a branch on `ComputationalBiomechanicsLab`:
+## Update Procedure
+
+Third-party libraries are maintained/changed using `git subtree`:
 
 ```bash
-git subtree pull --squash --prefix=third_party/opensim-core https://github.com/ComputationalBiomechanicsLab/opensim-core opensim-creator
-git subtree pull --squash --prefix=third_party/simbody https://github.com/ComputationalBiomechanicsLab/simbody opensim-creator
+git subtree pull --squash --prefix=third_party/googletest https://github.com/google/googletest
 ```
 
-Also, `opensim-core` and `simbody` aren't built by the "superbuild". They're built using
-a custom cmake build in `libosim`. This is because OSC doesn't use all parts of OpenSim
-(notably, Moco), and it statically compiles all libraries. Doing it this way means that
-developers can (e.g.) edit OpenSim's sources when debugging and recompile the whole
-stack including the OpenSim Creator GUI in one step - very very very useful for finding+fixing
-bugs in those upstream projects.
+### NOTE: Some Subtrees are Patched
 
+| Subtree                          | Patched Repo                                                    | Patched Branch    |
+| -------------------------------- | --------------------------------------------------------------- | ----------------- |
+| `third_party/osim/opensim-core/` | https://github.com/ComputationalBiomechanicsLab/opensim-core | `opensim-creator` |
+
+Those branches usually contain a couple of commits that are applied on top of upstream
+in order fix something quite minor or add a little functionality.

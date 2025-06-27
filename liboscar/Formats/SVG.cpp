@@ -7,6 +7,7 @@
 #include <lunasvg.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -15,8 +16,11 @@
 
 using namespace osc;
 
-Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
+Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale, float device_pixel_ratio)
 {
+    OSC_ASSERT_ALWAYS(scale > 0.0f && "svg scale factor must be greater than zero");
+    OSC_ASSERT_ALWAYS(device_pixel_ratio > 0.0f && "device pixel ratio must be greater than zero");
+
     // read SVG content into a `std::string`
     std::string data;
     std::copy(
@@ -27,20 +31,21 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
 
     // parse the `std::string` as an SVG document
     const std::unique_ptr<lunasvg::Document> svg_document = lunasvg::Document::loadFromData(data);
-    OSC_ASSERT(svg_document != nullptr && "error loading SVG document");
+    OSC_ASSERT_ALWAYS(svg_document != nullptr && "error loading SVG document");
 
-    // when rendering the document's contents, flip Y so that it's compatible with the
-    // renderer's coordinate system
-    const lunasvg::Matrix m{1.0, 0.0, 0.0, -1.0, 0.0, svg_document->height()};
-    svg_document->setMatrix(m);
+    // when rendering the document's contents, flip Y so that Y=0 represents the bottom of the image
+    // and Y=H represents the top (i.e. a right-handed coordinate system that matches `Texture2D`).
+    const float pixel_scale = scale * device_pixel_ratio;
+    const lunasvg::Matrix transform{pixel_scale, 0.0f, 0.0f, -pixel_scale, 0.0f, std::ceil(pixel_scale*svg_document->height())};
 
-    // render to a rescaled bitmap
-    const Vec2u32 bitmap_dimensions{
-        static_cast<uint32_t>(scale*svg_document->width()),
-        static_cast<uint32_t>(scale*svg_document->height())
+    // create a `lunasvg::Bitmap` that lunasvg can render into
+    lunasvg::Bitmap bitmap{
+        static_cast<int>(std::ceil(pixel_scale*svg_document->width())),
+        static_cast<int>(std::ceil(pixel_scale*svg_document->height())),
     };
-    lunasvg::Bitmap bitmap = svg_document->renderToBitmap(bitmap_dimensions.x, bitmap_dimensions.y, 0x00000000);
-    bitmap.convertToRGBA();
+    bitmap.clear(0x00000000);  // ensure the bitmap is cleared before rendering
+    svg_document->render(bitmap, transform);
+    bitmap.convertToRGBA();  // convert lunasvg's premultiplied ARGB32 to unassociated RGBA
 
     // return as a GPU-ready texture
     Texture2D rv{
@@ -51,5 +56,6 @@ Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale)
         TextureFilterMode::Nearest,
     };
     rv.set_pixel_data({bitmap.data(), static_cast<size_t>(bitmap.width()*bitmap.height()*4)});
+    rv.set_device_pixel_ratio(device_pixel_ratio);
     return rv;
 }

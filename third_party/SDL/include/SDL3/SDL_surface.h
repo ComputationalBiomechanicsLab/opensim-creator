@@ -83,9 +83,8 @@ typedef Uint32 SDL_SurfaceFlags;
 typedef enum SDL_ScaleMode
 {
     SDL_SCALEMODE_INVALID = -1,
-    SDL_SCALEMODE_NEAREST,  /**< nearest pixel sampling */
-    SDL_SCALEMODE_LINEAR,   /**< linear filtering */
-    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art */
+    SDL_SCALEMODE_NEAREST, /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR   /**< linear filtering */
 } SDL_ScaleMode;
 
 /**
@@ -1135,9 +1134,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SD
  *
  * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
  * `dst`) is copied while ensuring clipping to `dst->clip_rect`.
- *
- * The final blit rectangles are saved in `srcrect` and `dstrect` after all
- * clipping is performed.
  *
  * The blit function should not be called on a locked surface.
  *

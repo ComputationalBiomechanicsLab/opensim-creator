@@ -674,7 +674,7 @@ public:
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        output_rendertexture_.set_dimensions(params.device_pixel_ratio * params.virtual_pixel_dimensions);
+        output_rendertexture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
         output_rendertexture_.set_device_pixel_ratio(params.device_pixel_ratio);
         output_rendertexture_.set_anti_aliasing_level(params.antialiasing_level);
         camera_.render_to(output_rendertexture_);
@@ -699,23 +699,23 @@ private:
             return std::nullopt;
         }
 
-        // compute the worldspace bounds union of all rim-highlighted geometry
+        // compute the world space bounds union of all rim-highlighted geometry
         const auto rim_aabb_of = [](const SceneDecoration& decoration) -> std::optional<AABB>
         {
             if (decoration.is_rim_highlighted()) {
-                return worldspace_bounds_of(decoration);
+                return world_space_bounds_of(decoration);
             }
             return std::nullopt;
         };
 
-        const std::optional<AABB> maybe_rim_worldspace_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
-        if (not maybe_rim_worldspace_aabb) {
+        const std::optional<AABB> maybe_rim_world_space_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
+        if (not maybe_rim_world_space_aabb) {
             return std::nullopt;  // the scene does not contain any rim-highlighted geometry
         }
 
         // figure out if the rims actually appear on the screen and (roughly) where
         std::optional<Rect> maybe_rim_ndc_rect = loosely_project_into_ndc(
-            *maybe_rim_worldspace_aabb,
+            *maybe_rim_world_space_aabb,
             params.view_matrix,
             params.projection_matrix,
             params.near_clipping_plane,
@@ -730,7 +730,7 @@ private:
         Rect& rim_ndc_rect = *maybe_rim_ndc_rect;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness_in_virtual_pixels/params.virtual_pixel_dimensions;
+        const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
 
         // expand by the rim thickness, so that the output has space for the rims
         rim_ndc_rect = expand_by_absolute_amount(rim_ndc_rect, rim_ndc_thickness);
@@ -743,7 +743,7 @@ private:
         }
 
         // compute rim rectangle in texture coordinates
-        const Rect rim_rect_uv = ndc_rect_to_screenspace_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
+        const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
 
         // compute where the quad needs to eventually be drawn in the scene
         const Transform quad_mesh_to_rims_quad{
@@ -783,7 +783,7 @@ private:
 
         // configure the off-screen solid-colored texture
         rims_rendertexture_.reformat({
-            .dimensions = params.virtual_pixel_dimensions,
+            .pixel_dimensions = params.device_pixel_ratio * params.dimensions,
             .device_pixel_ratio = params.device_pixel_ratio,
             .anti_aliasing_level = params.antialiasing_level,
         });
@@ -834,7 +834,7 @@ private:
             if (decoration.flags & SceneDecorationFlag::NoCastsShadows) {
                 continue;  // this decoration shouldn't cast shadows
             }
-            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, worldspace_bounds_of(decoration));
+            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, world_space_bounds_of(decoration));
             graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
         }
 
@@ -870,7 +870,7 @@ private:
     Camera camera_;
     RenderTexture rims_rendertexture_;
     SharedDepthStencilRenderBuffer shadowmap_render_buffer_{DepthStencilRenderBufferParams{
-        .dimensions = {1024, 1024},
+        .pixel_dimensions = {1024, 1024},
     }};
     RenderTexture output_rendertexture_;
 };

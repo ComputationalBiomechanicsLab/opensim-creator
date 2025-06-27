@@ -11,10 +11,10 @@ TEST(DepthStencilRenderBufferParams, can_default_construct)
     [[maybe_unused]] const DepthStencilRenderBufferParams default_constructed;
 }
 
-TEST(DepthStencilRenderBufferParams, default_constructed_has_1x1_dimensions)
+TEST(DepthStencilRenderBufferParams, default_constructed_has_1x1_pixel_dimensions)
 {
     const DepthStencilRenderBufferParams default_constructed;
-    ASSERT_EQ(default_constructed.dimensions, Vec2i(1, 1));
+    ASSERT_EQ(default_constructed.pixel_dimensions, Vec2i(1, 1));
 }
 
 TEST(DepthStencilRenderBufferParams, has_value_equality)
@@ -24,17 +24,17 @@ TEST(DepthStencilRenderBufferParams, has_value_equality)
     ASSERT_EQ(lhs, rhs);
 }
 
-TEST(DepthStencilRenderBufferParams, changing_dimensions_changes_equality)
+TEST(DepthStencilRenderBufferParams, changing_pixel_dimensions_changes_equality)
 {
     const DepthStencilRenderBufferParams lhs;
-    const DepthStencilRenderBufferParams rhs{.dimensions = {2, 2}};
+    const DepthStencilRenderBufferParams rhs{.pixel_dimensions = {2, 2}};
     ASSERT_NE(lhs, rhs);
 }
 
 TEST(DepthStencilRenderBufferParams, can_be_initialized_with_designated_initializer)
 {
     [[maybe_unused]] const DepthStencilRenderBufferParams params = {
-        .dimensions = {2, 3},
+        .pixel_dimensions = {2, 3},
         .dimensionality = TextureDimensionality::Cube,
         .format = DepthStencilRenderBufferFormat::D32_SFloat,
     };

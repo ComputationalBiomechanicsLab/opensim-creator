@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <filesystem>
 #include <span>
-#include <string>
 #include <string_view>
 
 namespace SimTK { class PolygonalMesh; }

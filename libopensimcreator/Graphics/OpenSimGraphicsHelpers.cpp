@@ -16,10 +16,36 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/Perf.h>
 
+#include <algorithm>
 #include <optional>
+#include <string_view>
 #include <vector>
 
 using namespace osc;
+
+namespace
+{
+    bool collision_priority_greater(const std::optional<SceneCollision>& lhs, const SceneCollision& rhs)
+    {
+        if (not lhs) {
+            return true;  // any collision is better than no collision
+        }
+        // if a collision has an ID (presumed to be an absolute path) that is prefixed by the other
+        // then it's a subcomponent, which should be prioritized for hit-testing (#592).
+        if (lhs->decoration_id.size() < rhs.decoration_id.size()
+            and rhs.decoration_id.starts_with(lhs->decoration_id)) {
+
+            return true;
+        }
+        if (lhs->decoration_id.size() > rhs.decoration_id.size()
+            and lhs->decoration_id.starts_with(rhs.decoration_id)) {
+
+            return false;
+        }
+        // else: the closest collision gets priority
+        return rhs.world_distance_from_ray_origin < lhs->world_distance_from_ray_origin;
+    }
+}
 
 SceneRendererParams osc::CalcSceneRendererParams(
     const ModelRendererParams& renderParams,
@@ -31,7 +57,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     SceneRendererParams rv;
 
     if (viewportDims.x >= 1.0f && viewportDims.y >= 1.0f) {
-        rv.virtual_pixel_dimensions = viewportDims;
+        rv.dimensions = viewportDims;
     }
     rv.device_pixel_ratio = viewportDevicePixelRatio;
     rv.antialiasing_level = antiAliasingLevel;
@@ -83,41 +109,29 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     Vec2 mouseScreenPos,
     const Rect& viewportScreenRect)
 {
-    OSC_PERF("ModelSceneDecorations/getClosestCollision");
+    OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
     const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
-    const Line worldspaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
+    const Line worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         dimensions_of(viewportScreenRect)
     );
 
-    // find all collisions along the camera ray
-    const std::vector<SceneCollision> collisions = get_all_ray_collisions_with_scene(
+    // iterate over all collisions along the camera ray and find the best one
+    std::optional<SceneCollision> best;
+    for_each_ray_collision_with_scene(
         sceneBVH,
         sceneCache,
         taggedDrawlist,
-        worldspaceCameraRay
-    );
-
-    // filter through the collisions list
-    const SceneCollision* closestCollision = nullptr;
-    for (const SceneCollision& c : collisions)
-    {
-        if (closestCollision && c.distance_from_ray_origin > closestCollision->distance_from_ray_origin)
+        worldSpaceCameraRay,
+        [&best](SceneCollision&& sceneCollision)
         {
-            continue;  // it's further away than the current closest collision
-        }
+            if (not sceneCollision.decoration_id.empty()
+                and collision_priority_greater(best, sceneCollision)) {
 
-        const SceneDecoration& decoration = taggedDrawlist[c.decoration_index];
-
-        if (decoration.id.empty())
-        {
-            continue;  // filtered out by external filter
-        }
-
-        closestCollision = &c;
-    }
-
-    return closestCollision ? *closestCollision : std::optional<SceneCollision>{};
+                best = std::move(sceneCollision);
+            }
+        });
+    return best;
 }

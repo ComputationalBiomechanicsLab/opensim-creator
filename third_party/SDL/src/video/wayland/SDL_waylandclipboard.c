@@ -142,13 +142,8 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
         primary_selection_device = video_data->input->primary_selection_device;
         if (primary_selection_device->selection_source) {
             text = Wayland_primary_selection_source_get_data(primary_selection_device->selection_source, TEXT_MIME, &length);
-        } else {
-            for (size_t i = 0; i < SDL_arraysize(text_mime_types); i++) {
-                if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, text_mime_types[i])) {
-                    text = Wayland_primary_selection_offer_receive(primary_selection_device->selection_offer, text_mime_types[i], &length);
-                    break;
-                }
-            }
+        } else if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, TEXT_MIME)) {
+            text = Wayland_primary_selection_offer_receive(primary_selection_device->selection_offer, TEXT_MIME, &length);
         }
     }
 
@@ -170,14 +165,7 @@ bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
         if (primary_selection_device->selection_source) {
             result = true;
         } else {
-            size_t mime_count = 0;
-            const char **mime_types = Wayland_GetTextMimeTypes(_this, &mime_count);
-            for (size_t i = 0; i < mime_count; i++) {
-                if (Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, mime_types[i])) {
-                    result = true;
-                    break;
-                }
-            }
+            result = Wayland_primary_selection_offer_has_mime(primary_selection_device->selection_offer, TEXT_MIME);
         }
     }
     return result;

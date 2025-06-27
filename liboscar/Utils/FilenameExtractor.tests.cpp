@@ -9,6 +9,11 @@ TEST(extract_filename, returns_blank_when_called_with_blank_string)
     static_assert(extract_filename("").empty());
 }
 
+TEST(extract_filename, returns_filename_when_given_only_filename)
+{
+    static_assert(extract_filename("file.cpp") == "file.cpp");
+}
+
 TEST(extract_filename, works_for_unix_paths)
 {
     static_assert(extract_filename("/home/user/file.cpp") == "file.cpp");

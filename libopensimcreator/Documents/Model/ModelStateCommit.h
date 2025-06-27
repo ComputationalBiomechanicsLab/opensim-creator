@@ -24,7 +24,6 @@ namespace osc
         UID getID() const;
         bool hasParent() const;
         UID getParentID() const;
-        std::chrono::system_clock::time_point getCommitTime() const;
         CStringView getCommitMessage() const;
         SynchronizedValueGuard<const OpenSim::Model> getModel() const;
         UID getModelVersion() const;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Platform/Screen.h>
+#include <liboscar/Platform/Widget.h>
 
 #include <filesystem>
 
@@ -8,7 +8,7 @@ namespace osc { class Event; }
 
 namespace osc
 {
-    class MainUIScreen final : public Screen {
+    class MainUIScreen final : public Widget {
     public:
         MainUIScreen();
         MainUIScreen(const MainUIScreen&) = delete;

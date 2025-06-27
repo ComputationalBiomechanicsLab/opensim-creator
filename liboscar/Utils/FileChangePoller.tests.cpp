@@ -10,10 +10,10 @@ using namespace std::chrono_literals;
 
 // repro for #495
 //
-// @JuliaVanBeesel reported that, when editing an OpenSim model via the editor UI, if
-// they then delete the backing file (e.g. via Windows explorer), the editor UI will
-// then show an error message from an exception, rather than carrying on or warning
-// that something not-quite-right has happened
+// @JuliaVanBeesel reported that, when editing a file via the editor UI, if they then
+// delete the backing file (e.g. via Windows explorer), the editor UI will then show
+// an error message from an exception, rather than carrying on or warning that
+// something not-quite-right has happened.
 TEST(FileChangePoller, constructor_does_not_throw_exception_when_given_invalid_path)
 {
     const std::string path = "doesnt-exist";
@@ -24,10 +24,10 @@ TEST(FileChangePoller, constructor_does_not_throw_exception_when_given_invalid_p
 
 // repro for #495
 //
-// @JuliaVanBeesel reported that, when editing an OpenSim model via the editor UI, if
-// they then delete the backing file (e.g. via Windows explorer), the editor UI will
-// then show an error message from an exception, rather than carrying on or warning
-// that something not-quite-right has happened
+// @JuliaVanBeesel reported that, when editing a file via the editor UI, if they then
+// delete the backing file (e.g. via Windows explorer), the editor UI will then show
+// an error message from an exception, rather than carrying on or warning that something
+// not-quite-right has happened.
 TEST(FileChangePoller, change_detected_does_not_throw_exception_if_given_invalid_path)
 {
     const std::string path = "doesnt-exist";

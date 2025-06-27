@@ -18,14 +18,14 @@ namespace osc
         //
         // note: the vertex shader for the `Material` should apply the decoration's transform
         //       to the decoration's mesh "normally" (`SceneRenderer` relies on knowing the
-        //       worldspace mesh bounds etc. for various calculations)
+        //       world space mesh bounds etc. for various calculations)
         Material,
 
         // draws the `SceneDecoration` with this `(Material, MaterialPropertyBlock)` pair
         //
         // note: the vertex shader for the `Material` should apply the decoration's transform
         //       to the decoration's mesh "normally" (`SceneRenderer` relies on knowing the
-        //       worldspace mesh bounds etc. for various calculations)
+        //       world space mesh bounds etc. for various calculations)
         std::pair<Material, MaterialPropertyBlock>
     >;
 }

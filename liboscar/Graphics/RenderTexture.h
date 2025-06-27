@@ -21,18 +21,15 @@ namespace osc
         explicit RenderTexture(const RenderTextureParams&);
 
         // Returns the dimensions of the texture in physical pixels.
-        Vec2i dimensions() const;
+        Vec2i pixel_dimensions() const;
 
         // Sets the dimensions of the texture in physical pixels.
-        void set_dimensions(Vec2i);
+        void set_pixel_dimensions(Vec2i);
 
         // Returns the dimensions of the texture in device-independent pixels.
         //
-        // These dimensions should be used when compositing the texture in a
-        // user interface.
-        //
-        // The return value is equivalent to `texture.dimensions() / texture.device_pixel_ratio()`.
-        Vec2 device_independent_dimensions() const;
+        // The return value is equivalent to `texture.pixel_dimensions() / texture.device_pixel_ratio()`.
+        Vec2 dimensions() const;
 
         // Returns the ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels.

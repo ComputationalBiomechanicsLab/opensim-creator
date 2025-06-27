@@ -9,13 +9,16 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/UID.h>
 
+#include <iosfwd>
 #include <memory>
+#include <span>
 #include <string_view>
 #include <unordered_set>
 
 namespace osc { class Mesh; }
-namespace osc { struct TPSDocument; }
 namespace osc { class TPSResultCache; }
+namespace osc { struct TPSDocument; }
+namespace osc { struct TPSDocumentLandmarkPair; }
 
 // user-enactable actions
 namespace osc
@@ -47,6 +50,12 @@ namespace osc
     // sets whether the engine should recalculate the mesh's normal after applying the warp
     void ActionSetRecalculatingNormals(UndoableTPSDocument&, bool newState);
 
+    // sets the source landmark prescale for the mesh warper
+    void ActionSetSourceLandmarksPrescale(UndoableTPSDocument&, float newSourceLandmarksPrescale);
+
+    // sets the destination landmark prescale for the mesh warper
+    void ActionSetDestinationLandmarksPrescale(UndoableTPSDocument&, float newDestinationLandmarksPrescale);
+
     // creates a "fresh" (default) TPS document
     void ActionCreateNewDocument(UndoableTPSDocument&);
 
@@ -64,33 +73,39 @@ namespace osc
     void ActionLoadMesh(UndoableTPSDocument&, const Mesh&, TPSDocumentInputIdentifier);
 
     // prompts the user to browse for an input mesh and assigns it to the document
-    void ActionLoadMeshFile(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
+    void ActionPromptUserToLoadMeshFile(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
 
     // loads landmarks from a CSV file into source/destination slot of the document
-    void ActionLoadLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
+    void ActionPromptUserToLoadLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&, TPSDocumentInputIdentifier);
 
     // loads non-participating landmarks from a CSV file into the source input
-    void ActionLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&);
+    void ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shared_ptr<UndoableTPSDocument>&);
 
     // saves all source/destination landmarks to a CSV file (matches loading)
-    void ActionSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSaveLandmarksToCSV(const TPSDocument&, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+
+    // writes all source/destination landmark pairs with a location to the output stream in a CSV format.
+    void ActionWriteLandmarksAsCSV(std::span<const TPSDocumentLandmarkPair>, TPSDocumentInputIdentifier, lm::LandmarkCSVFlags, std::ostream&);
 
     // saves non-participating landmarks to a CSV file (matches loading)
-    void ActionSaveNonParticipatingLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSaveNonParticipatingLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
 
     // saves all pairable landmarks in the TPS document to a user-specified CSV file
-    void ActionSavePairedLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
+    void ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
 
     // prompts the user to save the mesh to an obj file
-    void ActionTrySaveMeshToObjFile(const Mesh&, ObjWriterFlags);
+    void ActionPromptUserToSaveMeshToObjFile(const Mesh&, ObjWriterFlags);
 
     // prompts the user to save the mesh to an stl file
-    void ActionTrySaveMeshToStlFile(const Mesh&);
+    void ActionPromptUserToMeshToStlFile(const Mesh&);
 
     // prompts the user to save the (already warped) points to a CSV file
-    void ActionSaveWarpedNonParticipatingLandmarksToCSV(
+    void ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
         const TPSDocument&,
         TPSResultCache&,
         lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None
     );
+
+    // swaps the source and destination (incl. premultiply, etc.)
+    void ActionSwapSourceDestination(UndoableTPSDocument&);
 }

@@ -14,7 +14,7 @@ namespace osc
         friend bool operator==(const RenderTextureParams&, const RenderTextureParams&) = default;
 
         // The dimensions of the texture in physical pixels.
-        Vec2i dimensions = {1, 1};
+        Vec2i pixel_dimensions = {1, 1};
 
         // The ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels.

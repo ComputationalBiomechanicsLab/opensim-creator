@@ -14,7 +14,8 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/Key.h>
 #include <liboscar/Platform/KeyCombination.h>
-#include <liboscar/Utils/Conversion.h>
+#include <liboscar/Platform/ResourcePath.h>
+#include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Flags.h>
 #include <liboscar/Utils/UID.h>
@@ -22,7 +23,6 @@
 #include <concepts>
 #include <cstdarg>
 #include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <optional>
@@ -42,24 +42,65 @@ struct ImDrawList;
 
 namespace osc::ui
 {
-    // functions related to top-level ui context management
-    namespace context
-    {
-        // init global UI context
-        void init(App&);
+    class Context;
 
-        // shutdown UI context
-        void shutdown(App&);
+    // Represents the runtime configuration of a UI context.
+    class ContextConfiguration final {
+    public:
+        ContextConfiguration();
 
-        // returns true if the UI handled the event
+        // Sets the resource path to an `imgui.ini` file that acts as the "base" config
+        // when the user doesn't already have one in their user data directory.
+        void set_base_imgui_ini_config_resource(ResourcePath);
+
+        // Sets the UI's main font as a merged combination of a 'standard' font
+        // and an 'icon' font, where the latter contains UTF8-to-glyph mappings
+        // for arbitrary icons.
+        void set_main_font_as_standard_plus_icon_font(
+            ResourcePath main_font_ttf_path,
+            ResourcePath icon_font_ttf_path,
+            ClosedInterval<char16_t> codepoint_range
+        );
+
+        class Impl;
+    private:
+        friend class Context;
+        CopyOnUpdPtr<Impl> impl() const { return impl_; }
+
+        CopyOnUpdPtr<Impl> impl_;
+    };
+
+    // Represents the top-level UI context that `ui::` functions talk to
+    // when drawing the UI.
+    class Context final {
+    public:
+        // Constructs a global UI context with the given configuration.
+        explicit Context(App&, const ContextConfiguration& = {});
+
+        Context(const Context&) = delete;
+        Context(Context&&) noexcept = delete;
+
+        // Shuts down the global UI context.
+        ~Context() noexcept;
+
+        Context& operator=(const Context&) = delete;
+        Context& operator=(Context&&) noexcept = delete;
+
+        // Shuts down and constructs this `UiContext` in-place.
+        void reset();
+
+        // Returns true if the UI handled the event.
         bool on_event(Event&);
 
-        // should be called at the start of each frame (e.g. `Screen::on_draw()`)
-        void on_start_new_frame(App&);
+        // Should be called at the start of each frame (e.g. `Widget::on_draw()`).
+        void on_start_new_frame();
 
-        // should be called at the end of each frame (e.g. the end of `Screen::on_draw()`)
+        // Should be called at the end of each frame (e.g. the end of `Widget::on_draw()`).
         void render();
-    }
+    private:
+        void init(App&, const CopyOnUpdPtr<ui::ContextConfiguration::Impl>&);
+        void shutdown(App&);
+    };
 
     // vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item)
     void align_text_to_frame_padding();
@@ -245,12 +286,15 @@ namespace osc::ui
     // Draws an interactive button with the given label and with a given size in device-independent pixels.
     bool draw_button(CStringView label, const Vec2& size = {});
     bool draw_small_button(CStringView label);
+    bool draw_arrow_down_button(CStringView label);
     // Draws an interactive, but invisible, button with the given label and the given size in device-independent pixels.
     bool draw_invisible_button(CStringView label, Vec2 size = {});
     bool draw_radio_button(CStringView label, bool active);
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
     // Draws an invisible, non-interactive "dummy" element in the UI with the given size in device-independent pixels.
     void draw_dummy(const Vec2& size);
+    // Draws an invisible, non-interactive "dummy" element that is `num_lines` * text line height high.
+    void draw_vertical_spacer(float num_lines);
 
     enum class ComboFlag : unsigned {
         None = 0,
@@ -265,8 +309,7 @@ namespace osc::ui
     bool begin_listbox(CStringView label);
     void end_listbox();
 
-    Vec2 get_main_viewport_center();
-    void enable_dockspace_over_main_viewport();
+    void enable_dockspace_over_main_window();
 
     enum class PanelFlag : unsigned {
         None                    = 0,
@@ -331,29 +374,29 @@ namespace osc::ui
 
     // Returns the position that the panel cursor started at relative to the top-left
     // corner of the current panel in device-independent pixels.
-    Vec2 get_cursor_start_pos();
+    Vec2 get_cursor_start_panel_pos();
 
     // Returns the current position of the panel cursor relative to the top-left corner
     // of the current panel in device-independent pixels.
-    Vec2 get_cursor_pos();
+    Vec2 get_cursor_panel_pos();
 
     // Sets the current position of the panel cursor relative to the top-left corner
     // of the panel in device-independent pixels.
-    void set_cursor_pos(Vec2);
+    void set_cursor_panel_pos(Vec2);
 
     // Returns the current x position of the panel cursor relative to the left edge
     // of the current panel in device-independent pixels.
-    float get_cursor_pos_x();
+    float get_cursor_panel_pos_x();
 
     // Sets the current x position of the panel cursor relative to the left edge of
     // the current panel in device-independent pixels.
-    void set_cursor_pos_x(float local_x);
+    void set_cursor_panel_pos_x(float local_x);
 
-    // Returns the current position of the panel cursor in screen-space in device-independent pixels.
-    Vec2 get_cursor_screen_pos();
+    // Returns the current position of the panel cursor in ui space in device-independent pixels.
+    Vec2 get_cursor_ui_pos();
 
-    // Sets the current position of the panel cursor in screen-space in device-independent pixels.
-    void set_cursor_screen_pos(Vec2);
+    // Sets the current position of the panel cursor in ui space in device-independent pixels.
+    void set_cursor_ui_pos(Vec2);
 
     enum class Conditional {
         Always,
@@ -362,7 +405,7 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void set_next_panel_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
+    void set_next_panel_ui_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
 
     void set_next_panel_size(Vec2 size, Conditional = Conditional::Always);
 
@@ -466,8 +509,8 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void push_style_var(StyleVar, const Vec2& pos);
-    void push_style_var(StyleVar, float pos);
+    void push_style_var(StyleVar, Vec2);
+    void push_style_var(StyleVar, float);
     void pop_style_var(int count = 1);
 
     enum class PopupFlag : unsigned {
@@ -484,7 +527,7 @@ namespace osc::ui
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
-    Vec2 get_mouse_pos();
+    Vec2 get_mouse_ui_pos();
     float get_mouse_wheel_amount();
 
     bool begin_menu_bar();
@@ -517,8 +560,8 @@ namespace osc::ui
     };
     using TableFlags = Flags<TableFlag>;
 
-    Vec2 get_item_topleft();
-    Vec2 get_item_bottomright();
+    Vec2 get_item_top_left_ui_pos();
+    Vec2 get_item_bottom_right_ui_pos();
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
@@ -557,10 +600,11 @@ namespace osc::ui
     void pop_style_color(int count = 1);
 
     Color get_color(ColorVar);
-    float get_text_line_height();
-    float get_text_line_height_with_spacing();
 
-    float get_font_size();
+    float get_text_line_height_in_current_panel();
+    float get_text_line_height_with_spacing_in_current_panel();
+    float get_font_base_size();
+    float get_font_base_size_with_spacing();
 
     Vec2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false);
 
@@ -576,13 +620,13 @@ namespace osc::ui
     public:
         virtual ~DrawListAPI() noexcept = default;
 
-        void add_rect(const Rect& rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
-        void add_rect_filled(const Rect& rect, const Color& color, float rounding = 0.0f);
-        void add_circle(const Circle& circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
-        void add_circle_filled(const Circle& circle, const Color& color, int num_segments = 0);
-        void add_text(const Vec2& position, const Color& color, CStringView text);
-        void add_line(const Vec2& p1, const Vec2& p2, const Color& color, float thickness = 1.0f);
-        void add_triangle_filled(const Vec2 p0, const Vec2& p1, const Vec2& p2, const Color& color);
+        void add_rect(const Rect& ui_rect, const Color& color, float rounding = 0.0f, float thickness = 1.0f);
+        void add_rect_filled(const Rect& ui_rect, const Color& color, float rounding = 0.0f);
+        void add_circle(const Circle& ui_circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
+        void add_circle_filled(const Circle& ui_circle, const Color& color, int num_segments = 0);
+        void add_text(const Vec2& ui_position, const Color& color, CStringView text);
+        void add_line(const Vec2& ui_start, const Vec2& ui_end, const Color& color, float thickness = 1.0f);
+        void add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_p1, const Vec2& ui_p2, const Color& color);
         void push_clip_rect(const Rect&, bool intersect_with_currect_clip_rect = false);
         void pop_clip_rect();
 
@@ -631,14 +675,14 @@ namespace osc::ui
     bool update_polar_camera_from_keyboard_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_aabb
+        std::optional<AABB> maybe_scene_world_space_aabb
     );
 
     // updates a polar camera's rotation, position, etc. from UI input state (all)
     bool update_polar_camera_from_all_inputs(
         PolarPerspectiveCamera&,
         const Rect& viewport_rect,
-        std::optional<AABB> maybe_scene_aabb
+        std::optional<AABB> maybe_scene_world_space_aabb
     );
 
     void update_camera_from_all_inputs(
@@ -646,24 +690,22 @@ namespace osc::ui
         EulerAngles&
     );
 
-    // returns the UI content region available in screen-space as a `Rect`
-    Rect content_region_avail_as_screen_rect();
+    // returns the UI content region available in ui space as a `Rect`
+    Rect get_content_region_available_ui_rect();
 
-    // draws a texture within the 2D UI
+    // Draws a texture within the UI.
     //
-    // assumes the texture coordinates are [(0.0, 1.0), (1.0, 0.0)]
+    // - `texture`: the texture to draw within the UI.
+    // - `dimensions`: the dimensions, in device-independent pixels, that the image
+    //   should occupy in the UI. Default: `texture.device_independent_dimensions()`.
+    // - `region_uv_coordinates`: texture coordinates in texture space (`(0, 0)` means bottom-left,
+    //   `(1, 1)` means top-right) that designate the region within `texture` that should be sampled
+    //   to produce the image within the UI (e.g. for cropping, flipping). Default: entire contents
+    //   `texture`.
     void draw_image(
-        const Texture2D&
-    );
-    void draw_image(
-        const Texture2D&,
-        Vec2 dimensions
-    );
-    void draw_image(
-        const Texture2D&,
-        Vec2 dimensions,
-        Vec2 top_left_texture_coordinate,
-        Vec2 bottom_right_texture_coordinate
+        const Texture2D& texture,
+        std::optional<Vec2> dimensions = std::nullopt,
+        const Rect& region_uv_coordinates = Rect{{0.0f, 0.0f}, {1.0f, 1.0f}}
     );
     void draw_image(
         const RenderTexture&
@@ -695,12 +737,23 @@ namespace osc::ui
         Vec2 dimensions
     );
 
-    // returns the screen-space bounding rectangle of the last-drawn item
+    // returns the ui space bounding rectangle of the last-drawn item in
+    // device-independent pixels.
+    Rect get_last_drawn_item_ui_rect();
+
+    // returns the screen space bounding rectangle of the last-drawn item
+    // in device-independent pixels.
     Rect get_last_drawn_item_screen_rect();
+
+    // adds a screenshot annotation around the last drawn item to the
+    // application-level annotation collector
+    //
+    // equivalent to: `App::upd().add_main_window_frame_annotation(label, get_last_drawn_item_screen_rect());`
+    void add_screenshot_annotation_to_last_drawn_item(std::string_view label);
 
     // hittest the last-drawn item in the UI
     struct HittestResult final {
-        Rect item_screen_rect = {};
+        Rect item_ui_rect = {};
         bool is_hovered = false;
         bool is_left_click_released_without_dragging = false;
         bool is_right_click_released_without_dragging = false;
@@ -846,43 +899,50 @@ namespace osc::ui
     // returns "minimal" panel flags (i.e. no title bar, can't move the panel - ideal for images etc.)
     PanelFlags get_minimal_panel_flags();
 
-    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    // returns `true` if the area of the main window's workspace is greater than zero.
+    bool main_window_has_workspace();
+
+    // returns a `Rect` that indicates where the current workspace area is in the main
+    // application window
     //
-    // the returned `Rect` is given in UI-compatible UI-space, such that:
+    // the returned `Rect` is given in ui space, such that:
     //
     // - it's measured in device-independent pixels
     // - starts in the top-left corner
     // - ends in the bottom-right corner
-    Rect get_main_viewport_workspace_uiscreenspace_rect();
+    Rect get_main_window_workspace_ui_rect();
 
-    // returns a `Rect` that indicates where the current workspace area is in the main viewport
+    // returns a `Rect` that indicates where the current workspace area is in the main
+    // application window
     //
-    // the returned `Rect` is given in osc-graphics-API-compatible screen-space, rather than UI
-    // space, such that:
+    // the returned `Rect` is given in screen space, such that:
     //
     // - it's measured in device-independent pixels
     // - starts in the bottom-left corner
     // - ends in the top-right corner
-    Rect get_main_viewport_workspace_screenspace_rect();
+    Rect get_main_window_workspace_screen_space_rect();
 
-    // returns the dimensions of the current workspace area in device-independent pixels in the main viewport
-    Vec2 get_main_viewport_workspace_screen_dimensions();
+    // returns the dimensions of the current workspace area in device-independent pixels in the
+    // main application window.
+    Vec2 get_main_window_workspace_dimensions();
 
-    // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions of the current workspace area
-    float get_main_viewport_workspace_aspect_ratio();
+    // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions
+    // of the current workspace area in the main application window
+    float get_main_window_workspace_aspect_ratio();
 
-    // returns `true` if the user's mouse is within the current workspace area of the main viewport
-    bool is_mouse_in_main_viewport_workspace();
+    // returns `true` if the user's mouse is within the current workspace area of the main application
+    // window
+    bool is_mouse_in_main_window_workspace();
 
-    // begin a menu that's attached to the top of a viewport, end it with `ui::end_panel()`
-    bool begin_main_viewport_top_bar(
+    // begin a menu that's attached to the top of the main application window, end it with `ui::end_panel()`
+    bool begin_main_window_top_bar(
         CStringView label,
         float height = ui::get_frame_height(),
         PanelFlags = {PanelFlag::NoScrollbar, PanelFlag::NoSavedSettings, PanelFlag::MenuBar}
     );
 
-    // begin a menu that's attached to the bottom of a viewport, end it with `ui::end_panel()`
-    bool begin_main_viewport_bottom_bar(CStringView);
+    // begin a menu that's attached to the bottom of the main application window, end it with `ui::end_panel()`
+    bool begin_main_window_bottom_bar(CStringView);
 
     // behaves like `ui::draw_button`, but is centered on the current line
     bool draw_button_centered(CStringView);
@@ -942,7 +1002,7 @@ namespace osc::ui
         SliderFlags = {}
     );
 
-    // updates a polar comera's rotation, position, etc. from UI mouse input state, assuming
+    // updates a polar camera's rotation, position, etc. from UI mouse input state, assuming
     // the viewport it's connected to has the given device-independent pixel dimensions.
     bool update_polar_camera_from_mouse_inputs(
         PolarPerspectiveCamera&,
@@ -971,7 +1031,7 @@ namespace osc::ui
     public:
 
         // if the user manipulated the gizmo, updates `model_matrix` to match the
-        // post-manipulation transform and returns a world-space transform that
+        // post-manipulation transform and returns a world space transform that
         // represents the "difference" added by the user's manipulation. I.e.:
         //
         //     transform_returned * model_matrix_before = model_matrix_after
@@ -984,7 +1044,7 @@ namespace osc::ui
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect
+            const Rect& ui_rect
         );
 
         // same as `draw`, but draws to the foreground draw list, rather than the
@@ -993,14 +1053,14 @@ namespace osc::ui
             Mat4& model_matrix,  // edited in-place
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect
+            const Rect& ui_rect
         );
 
         bool is_using() const;
         bool was_using() const { return was_using_last_frame_; }
         bool is_over() const;
         GizmoOperation operation() const { return operation_; }
-        void set_operation(GizmoOperation op) { operation_ = op; }
+        void set_operation(GizmoOperation operation) { operation_ = operation; }
         GizmoMode mode() const { return mode_; }
         void set_mode(GizmoMode mode) { mode_ = mode; }
 
@@ -1011,7 +1071,7 @@ namespace osc::ui
             Mat4& model_matrix,
             const Mat4& view_matrix,
             const Mat4& projection_matrix,
-            const Rect& screenspace_rect,
+            const Rect& ui_rect,
             ImDrawList* draw_list
         );
 
@@ -1034,18 +1094,24 @@ namespace osc::ui
         GizmoMode&
     );
 
-    bool draw_gizmo_op_selector(
+    bool draw_gizmo_operation_selector(
         Gizmo&,
         bool can_translate = true,
         bool can_rotate = true,
-        bool can_scale = true
+        bool can_scale = true,
+        CStringView translate_button_text = "T",
+        CStringView rotate_button_text = "R",
+        CStringView scale_button_text = "S"
     );
 
-    bool draw_gizmo_op_selector(
+    bool draw_gizmo_operation_selector(
         GizmoOperation&,
         bool can_translate = true,
         bool can_rotate = true,
-        bool can_scale = true
+        bool can_scale = true,
+        CStringView translate_button_text = "T",
+        CStringView rotate_button_text = "R",
+        CStringView scale_button_text = "S"
     );
 
     // oscar bindings for `ImPlot`
@@ -1248,10 +1314,10 @@ namespace osc::ui
         void plot_line(CStringView name, std::span<const Vec2> points);
         void plot_line(CStringView name, std::span<const float> points);
 
-        // returns the plot's rectangle in screen-space
+        // returns the plot's rectangle in ui space
         //
         // must be called between `plot::begin` and `plot::end`
-        Rect get_plot_screen_rect();
+        Rect get_plot_ui_rect();
 
         // draws an annotation callout at a chosen point
         //
@@ -1269,43 +1335,47 @@ namespace osc::ui
             va_end(args);
         }
 
-        // draws a draggable point at `location` in the plot area
+        // draws a draggable point at `plot_point`, expressed in plot space, in
+        // the plot area
         //
         // - returns `true` if the user has interacted with the point. In this
-        //   case, `location` will be updated with the new location
+        //   case, `plot_point` will be updated with user's interaction location
+        //   in plot space.
         bool drag_point(
             int id,
-            Vec2d* location,
+            Vec2d* plot_point,
             const Color&,
             float size = 4,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a draggable vertical guideline at an x-value in the plot area
+        // draws a draggable vertical guideline at an x value (plot space) in the
+        // plot area.
         bool drag_line_x(
             int id,
-            double* x,
+            double* plot_x,
             const Color&,
             float thickness = 1,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a draggable horizontal guideline at a y-value in the plot area
+        // draws a draggable horizontal guideline at a y value (plot space) in the
+        // plot area.
         bool drag_line_y(
             int id,
-            double* y,
+            double* plot_y,
             const Color&,
             float thickness = 1,
             DragToolFlags = DragToolFlag::Default
         );
 
-        // draws a tag on the x-axis at the specified x value
-        void tag_x(double x, const Color&, bool round = false);
+        // draws a tag on the x-axis at the specified x value in plot space
+        void tag_x(double plot_x, const Color&, bool round = false);
 
         // returns `true` if the plot area in the current plot is hovered
         bool is_plot_hovered();
 
-        // returns the mouse position in the coordinate system of the current axes
+        // returns the position of the mouse in plot space
         Vec2 get_plot_mouse_pos();
 
         // returns the mouse position in the coordinate system of the given axes

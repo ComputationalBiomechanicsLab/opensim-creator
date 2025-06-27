@@ -24,9 +24,14 @@ namespace osc
         using iterator = value_type*;
         using const_iterator = const value_type*;
 
-        static constexpr Rgba very_light_grey()
+        static constexpr Rgba lightest_grey()
         {
             return {0.95f, 0.95f, 0.95f};
+        }
+
+        static constexpr Rgba lighter_grey()
+        {
+            return {0.85f, 0.85f, 0.85f};
         }
 
         static constexpr Rgba light_grey()
@@ -39,9 +44,14 @@ namespace osc
             return {0.5f, 0.5f, 0.5f};
         }
 
-        static constexpr Rgba half_grey()
+        static constexpr Rgba darker_grey()
         {
-            return {0.5f, 0.5f, 0.5f};
+            return {0.35f, 0.35f, 0.35f};
+        }
+
+        static constexpr Rgba darkest_grey()
+        {
+            return {0.05f, 0.05f, 0.05f};
         }
 
         static constexpr Rgba black()

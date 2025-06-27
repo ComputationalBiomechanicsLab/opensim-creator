@@ -3,13 +3,13 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
@@ -69,7 +69,7 @@ private:
             }
         }
         ui::pop_style_color();
-        App::upd().add_frame_annotation("Simulate Button", ui::get_last_drawn_item_screen_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("Simulate Button");
         ui::draw_tooltip_if_item_hovered("Simulate Model", "Run a forward-dynamic simulation of the model");
 
         ui::same_line();
@@ -109,7 +109,8 @@ private:
 
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
-        ui::get_text_line_height()/128.0f
+        ui::get_font_base_size()/128.0f,
+        App::get().highest_device_pixel_ratio()
     );
 };
 

@@ -88,9 +88,9 @@ TEST(RenderTarget, can_construct_with_3x_color_and_1x_depth_attachments)
 
 TEST(RenderTarget, validate_or_throw_doesnt_throw_when_given_buffers_with_same_dimensions_and_anti_aliasing_level)
 {
-    const SharedColorRenderBuffer color_buffer{ColorRenderBufferParams{.dimensions = Vec2i(3, 3), .anti_aliasing_level = AntiAliasingLevel{4}}};
+    const SharedColorRenderBuffer color_buffer{ColorRenderBufferParams{.pixel_dimensions = Vec2i(3, 3), .anti_aliasing_level = AntiAliasingLevel{4}}};
     const RenderTargetColorAttachment color_attachment{.buffer = color_buffer};
-    const SharedDepthStencilRenderBuffer depth_buffer{DepthStencilRenderBufferParams{.dimensions = Vec2i(3,3), .anti_aliasing_level = AntiAliasingLevel{4}}};
+    const SharedDepthStencilRenderBuffer depth_buffer{DepthStencilRenderBufferParams{.pixel_dimensions = Vec2i(3,3), .anti_aliasing_level = AntiAliasingLevel{4}}};
     const RenderTargetDepthStencilAttachment depth_attachment{.buffer = depth_buffer};
 
     const RenderTarget render_target{color_attachment, depth_attachment};

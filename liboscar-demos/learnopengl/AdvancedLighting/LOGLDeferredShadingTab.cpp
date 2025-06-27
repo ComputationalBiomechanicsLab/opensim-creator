@@ -133,7 +133,7 @@ namespace
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = pixel_dimensions,
+                    .pixel_dimensions = pixel_dimensions,
                     .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
@@ -189,24 +189,24 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Vec2 workspace_dimensions = dimensions_of(workspace_screen_space_rect);
         const float device_pixel_scale = App::get().main_window_device_pixel_ratio();
-        const Vec2 viewport_pixel_dimensions = device_pixel_scale * viewport_dimensions;
+        const Vec2 workspace_pixel_dimensions = device_pixel_scale * workspace_dimensions;
         const AntiAliasingLevel anti_aliasing_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
         {
-            gbuffer_.reformat(viewport_pixel_dimensions, device_pixel_scale, anti_aliasing_level);
-            output_texture_.set_dimensions(viewport_pixel_dimensions);
+            gbuffer_.reformat(workspace_pixel_dimensions, device_pixel_scale, anti_aliasing_level);
+            output_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
             output_texture_.set_anti_aliasing_level(anti_aliasing_level);
         }
 
         render_3d_scene_to_gbuffers();
         render_lighting_pass();
         render_light_cubes();
-        graphics::blit_to_screen(output_texture_, viewport_screen_space_rect);
-        draw_gbuffer_overlays(viewport_screen_space_rect);
+        graphics::blit_to_main_window(output_texture_, workspace_screen_space_rect);
+        draw_gbuffer_overlays(workspace_screen_space_rect);
     }
 
     void render_3d_scene_to_gbuffers()
@@ -232,15 +232,15 @@ private:
         const Vec2 viewport_top_left = top_left_rh(viewport_screen_space_rect);
         const Vec2 overlays_bottom_left = viewport_top_left - Vec2{0.0f, overlay_size};
 
-        graphics::blit_to_screen(
+        graphics::blit_to_main_window(
             gbuffer_.albedo,
             Rect{overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f} + overlay_size}
         );
-        graphics::blit_to_screen(
+        graphics::blit_to_main_window(
             gbuffer_.normal,
             Rect{overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f} + overlay_size}
         );
-        graphics::blit_to_screen(
+        graphics::blit_to_main_window(
             gbuffer_.position,
             Rect{overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f} + overlay_size}
         );
@@ -297,17 +297,15 @@ private:
     std::vector<Vec3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
     std::vector<Vec3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
     Texture2D diffuse_map_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
-        ColorSpace::sRGB,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::sRGB
     );
     Texture2D specular_map_ = load_texture2D_from_image(
         loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
-        ColorSpace::sRGB,
-        ImageLoadingFlag::FlipVertically
+        ColorSpace::sRGB
     );
 
     // rendering state

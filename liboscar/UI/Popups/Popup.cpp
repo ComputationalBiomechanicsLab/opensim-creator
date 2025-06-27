@@ -4,6 +4,7 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
+#include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
 
@@ -93,16 +94,16 @@ bool osc::Popup::begin_popup()
     if (pimpl.is_modal_) {
         // if specified, set the position of the modal upon appearing
         //
-        // else, position the modal in the center of the viewport
+        // else, position the modal in the center of the application window
         if (pimpl.maybe_position_) {
-            ui::set_next_panel_pos(
+            ui::set_next_panel_ui_pos(
                 static_cast<Vec2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );
         }
         else {
-            ui::set_next_panel_pos(
-                ui::get_main_viewport_center(),
+            ui::set_next_panel_ui_pos(
+                0.5f*App::get().main_window_dimensions(),
                 ui::Conditional::Appearing,
                 Vec2{0.5f, 0.5f}
             );
@@ -141,10 +142,10 @@ bool osc::Popup::begin_popup()
         //
         // else, do nothing - the popup's position will be determined
         // by other means (unlike a modal, which usually takes control
-        // of the screen and, therefore, should probably be centered
+        // of the ui and, therefore, should probably be centered
         // in it)
         if (pimpl.maybe_position_) {
-            ui::set_next_panel_pos(
+            ui::set_next_panel_ui_pos(
                 static_cast<Vec2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );

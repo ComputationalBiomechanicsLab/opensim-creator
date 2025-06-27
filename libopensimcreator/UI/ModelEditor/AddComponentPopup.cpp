@@ -3,12 +3,13 @@
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
@@ -73,12 +74,14 @@ public:
         Widget* parent,
         std::string_view popupName,
         std::shared_ptr<IModelStatePair> model,
-        std::unique_ptr<OpenSim::Component> prototype) :
+        std::unique_ptr<OpenSim::Component> prototype,
+        OpenSim::ComponentPath targetComponent) :
 
         PopupPrivate{owner, parent, popupName},
         m_Model{std::move(model)},
         m_Proto{std::move(prototype)},
-        m_PrototypePropertiesEditor{parent, m_Model, [proto = m_Proto]() { return proto.get(); }}
+        m_PrototypePropertiesEditor{&owner, m_Model, [proto = m_Proto]() { return proto.get(); }},
+        m_MaybeTargetComponent{std::move(targetComponent)}
     {}
 
     void draw_content()
@@ -87,17 +90,17 @@ public:
 
         drawPropertyEditors();
 
-        ui::draw_dummy({0.0f, 3.0f});
+        ui::draw_vertical_spacer(3.0f/15.0f);
 
         drawSocketEditors();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         drawPathPointEditor();
 
         drawAnyErrorMessages();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         drawBottomButtons();
     }
@@ -186,7 +189,7 @@ private:
         ui::next_column();
 
         ui::draw_string_input("##componentname", m_Name);
-        App::upd().add_frame_annotation("AddComponentPopup::ComponentNameInput", ui::get_last_drawn_item_screen_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item("AddComponentPopup::ComponentNameInput");
 
         ui::next_column();
 
@@ -195,13 +198,6 @@ private:
 
     void drawPropertyEditors()
     {
-        ui::draw_text("Properties");
-        ui::same_line();
-        ui::draw_help_marker("These are properties of the OpenSim::Component being added. Their datatypes, default values, and help text are defined in the source code (see OpenSim_DECLARE_PROPERTY in OpenSim's C++ source code, if you want the details). Their default values are typically sane enough to let you add the component directly into your model.");
-        ui::draw_separator();
-
-        ui::draw_dummy({0.0f, 3.0f});
-
         auto maybeUpdater = m_PrototypePropertiesEditor.onDraw();
         if (maybeUpdater) {
             OpenSim::AbstractProperty* prop = FindPropertyMut(*m_Proto, maybeUpdater->getPropertyName());
@@ -222,13 +218,13 @@ private:
         ui::draw_help_marker("The OpenSim::Component being added has `socket`s that connect to other components in the model. You must specify what these sockets should be connected to; otherwise, the component cannot be added to the model.\n\nIn OpenSim, a Socket formalizes the dependency between a Component and another object (typically another Component) without owning that object. While Components can be composites (of multiple components) they often depend on unrelated objects/components that are defined and owned elsewhere. The object that satisfies the requirements of the Socket we term the 'connectee'. When a Socket is satisfied by a connectee we have a successful 'connection' or is said to be connected.");
         ui::draw_separator();
 
-        ui::draw_dummy({0.0f, 1.0f});
+        ui::draw_vertical_spacer(1.0f/15.0f);
 
         // for each socket in the prototype (cached), check if the user has chosen a
         // connectee for it yet and provide a UI for selecting them
         for (size_t i = 0; i < m_ProtoSockets.size(); ++i) {
             drawIthSocketEditor(i);
-            ui::draw_dummy({0.0f, 0.5f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.5f);
         }
     }
 
@@ -247,11 +243,9 @@ private:
 
         // rhs: search and connectee choices
         ui::push_id(static_cast<int>(i));
-        ui::draw_text(OSC_ICON_SEARCH);
-        ui::same_line();
         ui::set_next_item_width(ui::get_content_region_available().x);
-        ui::draw_string_input("##search", m_SocketSearchStrings[i]);
-        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 128.0f});
+        DrawSearchBar(m_SocketSearchStrings[i]);
+        ui::begin_child_panel("##pfselector", {ui::get_content_region_available().x, 5.0f*ui::get_text_line_height_in_current_panel()});
 
         // iterate through potential connectees in model and print connect-able options
         int innerID = 0;
@@ -276,13 +270,13 @@ private:
                 connectee = absPath;
             }
 
-            const Rect selectableRect = ui::get_last_drawn_item_screen_rect();
+            const Rect selectableScreenRect = ui::get_last_drawn_item_screen_rect();
             ui::draw_tooltip_if_item_hovered(absPath.toString());
 
             ui::pop_id();
 
             if (selected) {
-                App::upd().add_frame_annotation(c.toString(), selectableRect);
+                App::upd().add_main_window_frame_annotation(c.toString(), selectableScreenRect);
             }
         }
 
@@ -431,17 +425,19 @@ private:
         ui::draw_help_marker("The Component being added is (effectively) a line that connects physical frames (e.g. bodies) in the model. For example, an OpenSim::Muscle can be described as an actuator that connects bodies in the model together. You **must** specify at least two physical frames on the line in order to add a PathActuator component.\n\nDetails: in OpenSim, some `Components` are `PathActuator`s. All `Muscle`s are defined as `PathActuator`s. A `PathActuator` is an `Actuator` that actuates along a path. Therefore, a `Model` containing a `PathActuator` with zero or one points would be invalid. This is why it is required that you specify at least two points");
         ui::draw_separator();
 
-        ui::draw_string_input(OSC_ICON_SEARCH " search", m_PathSearchString);
-
         ui::set_num_columns(2);
         int imguiID = 0;
 
         ui::push_id(imguiID++);
+        ui::set_next_item_width(ui::get_content_region_available().x);
+        DrawSearchBar(m_PathSearchString);
         drawPathPointEditorChoices();
         ui::pop_id();
         ui::next_column();
 
         ui::push_id(imguiID++);
+        ui::draw_dummy({0.0f, ui::get_style_frame_padding().y});
+        ui::draw_text("Chosen:");
         drawPathPointEditorAlreadyChosenPoints();
         ui::pop_id();
         ui::next_column();
@@ -465,7 +461,7 @@ private:
             std::unique_ptr<OpenSim::Component> rv = tryCreateComponentFromState();
             if (rv) {
                 try {
-                    if (ActionAddComponentToModel(*m_Model, std::move(rv))) {
+                    if (ActionAddComponentToModel(*m_Model, std::move(rv), m_MaybeTargetComponent)) {
                         request_close();
                     }
                 }
@@ -483,9 +479,9 @@ private:
     {
         if (not m_CurrentErrors.empty()) {
             ui::push_style_color(ui::ColorVar::Text, Color::red());
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
             ui::draw_text_wrapped("Error adding component to model: %s", m_CurrentErrors.c_str());
-            ui::draw_dummy({0.0f, 2.0f});
+            ui::draw_vertical_spacer(2.0f/15.0f);
             ui::pop_style_color();
         }
     }
@@ -504,6 +500,9 @@ private:
 
     // a property editor for the prototype's properties
     ObjectPropertiesEditor m_PrototypePropertiesEditor;
+
+    // the component that the added component should be added to (as a subcomponent).
+    OpenSim::ComponentPath m_MaybeTargetComponent;
 
     // user-enacted search strings for each socket input (used to filter each list)
     std::vector<std::string> m_SocketSearchStrings{m_ProtoSockets.size()};
@@ -526,9 +525,10 @@ osc::AddComponentPopup::AddComponentPopup(
     Widget* parent,
     std::string_view popupName,
     std::shared_ptr<IModelStatePair> model,
-    std::unique_ptr<OpenSim::Component> prototype) :
+    std::unique_ptr<OpenSim::Component> prototype,
+    OpenSim::ComponentPath targetComponent) :
 
-    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(prototype))}
+    Popup{std::make_unique<Impl>(*this, parent, popupName, std::move(model), std::move(prototype), std::move(targetComponent))}
 {}
 
 void osc::AddComponentPopup::impl_draw_content()

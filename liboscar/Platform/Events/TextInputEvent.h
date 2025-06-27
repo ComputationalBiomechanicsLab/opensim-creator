@@ -9,6 +9,9 @@
 
 namespace osc
 {
+    // Represents a "text input event", which can occur when (e.g.) a user
+    // uses an on-screen keyboard or operating-system-defined method to input
+    // text (e.g. emoji, non-ASCII character).
     class TextInputEvent final : public Event {
     public:
         explicit TextInputEvent(std::string utf8_text) :

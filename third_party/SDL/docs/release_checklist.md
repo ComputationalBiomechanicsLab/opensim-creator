@@ -15,8 +15,6 @@
 
 * Create a GitHub release and attach the archives you just generated.
 
-* If this is a feature release, also tag the sdlwiki with the same tag.
-
 ## New feature release
 
 * Update `WhatsNew.txt`

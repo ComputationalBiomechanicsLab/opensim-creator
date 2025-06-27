@@ -1,13 +1,13 @@
 #include "ExportPointsPopup.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Formats/CSV.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
@@ -556,19 +556,17 @@ public:
         const OpenSim::Model& model = m_Model->getModel();
         const SimTK::State& state = m_Model->getState();
 
-        const float sectionSpacing = 0.5f*ui::get_text_line_height();
-
         DrawExportPointsPopupDescriptionSection();
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         DrawPointSelector(m_PointSelectorState, model, state);
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         ui::draw_text("Options");
         ui::draw_separator();
         DrawFrameSelector(m_FrameSelectorState, model);
         DrawOutputFormatEditor(m_OutputFormatState);
-        ui::draw_dummy({0.0f, sectionSpacing});
+        ui::draw_vertical_spacer(0.5f);
 
         drawBottomButtons();
     }

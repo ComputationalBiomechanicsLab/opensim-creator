@@ -1,9 +1,11 @@
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+include(GoogleTest)  # gtest_discover_tests
+
 set(OSC_DISCOVER_TESTS ON
     CACHE BOOL
     "enable/disable automatically running test discovery (IDE integration)"
 )
 
-include(GoogleTest)
 find_package(GTest REQUIRED CONFIG)
 
 configure_file(
@@ -27,7 +29,6 @@ set_target_properties(TestOpenSimCreator PROPERTIES
 target_compile_features(TestOpenSimCreator PUBLIC
     cxx_std_23
 )
-include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)
 target_compile_options(TestOpenSimCreator PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )

@@ -32,58 +32,61 @@ namespace osc
     // computes horizontal FoV for a given vertical FoV + aspect ratio
     Radians vertical_to_horizontal_field_of_view(Radians vertical_field_of_view, float aspect_ratio);
 
-    // returns an XY NDC point converted from a screen/viewport point
+    // returns a normalized device coordinate-like (NDC-like) point converted from a point
+    // defined in a normalized y-points-down space.
     //
-    // - input screen point has origin in top-left, Y goes down
-    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
-    // - output NDC point has origin in middle, Y goes up
-    // - output NDC point has range: (-1, 1) is top-left, (1, -1) is bottom-right
-    Vec2 topleft_relative_pos_to_ndc_point(Vec2 relative_pos);
+    // - input point should have origin in top-left, Y goes down
+    // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
+    // - output point's origin will be in the middle of the input space, Y goes up
+    // - output point's range will be origin-centered: (-1, -1) is bottom-left, (+1, +1) is top-right
+    Vec2 topleft_normalized_point_to_ndc(Vec2 normalized_point);
 
-    // returns an XY top-left relative point converted from the given NDC point
+    // returns a normalized y-points-down point converted from a point defined in a
+    // normalized device coordinate-like (NDC-like) space.
     //
-    // - input NDC point has origin in the middle, Y goes up
-    // - input NDC point has range: (-1, -1) for top-left, (1, -1) is bottom-right
-    // - output point has origin in the top-left, Y goes down
+    // - input point should have origin in the middle, Y goes up
+    // - input point should have an origin-centered range: (-1, -1) is bottom-left, (+1, +1) is top-right
+    // - output point origin will have an origin in the top-left, Y goes down
     // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
-    Vec2 ndc_point_to_topleft_relative_pos(Vec2 ndc_pos);
+    Vec2 ndc_point_to_topleft_normalized(Vec2 ndc_point);
 
-    // returns an NDC affine point vector (i.e. {x, y, z, 1.0}) converted from a screen/viewport point
+    // returns an NDC affine point (i.e. {x, y, z, 1.0}) converted from a point
+    // defined in a normalized y-points-down space.
     //
-    // - input screen point has origin in top-left, Y goes down
-    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
-    // - output NDC point has origin in middle, Y goes up
-    // - output NDC point has range -1 to +1 in each dimension
-    // - output assumes Z is "at the front of the cube" (Z = -1.0f)
-    // - output will therefore be: {xNDC, yNDC, -1.0f, 1.0f}
-    Vec4 topleft_relative_pos_to_ndc_cube(Vec2 relative_pos);
+    // - input point should have origin in top-left, Y goes down
+    // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
+    // - output point origin will have an origin in the top-left, Y goes down
+    // - output point has range: (0, 0) for top-left, (1, 1) for bottom-right
+    // - output point will have a `z` of `-1.0f` (i.e. nearest depth)
+    Vec4 topleft_normalized_point_to_ndc_cube(Vec2 normalized_point);
 
-    // "un-project" a screen/viewport point into 3D world-space, assuming a
-    // perspective camera
+    // "un-project" a point defined in a normalized y-points-down space into world
+    // space, assuming a perspective projection
     //
-    // - input screen point has origin in top-left, Y goes down
-    // - input screen point has range: (0,0) is top-left, (1, 1) is bottom-right
-    // - `camera_worldspace_origin` is the location of the camera in world space
-    // - `camera_view_matrix` transforms points from world-space to view-space
-    // - `camera_proj_matrix` transforms points from view-space to world-space
-    Line perspective_unproject_topleft_screen_pos_to_world_ray(
-        Vec2 relative_pos,
-        Vec3 camera_worldspace_origin,
+    // - input point should have origin in top-left, Y goes down
+    // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
+    // - `camera_world_space_origin` is the location of the camera in world space
+    // - `camera_view_matrix` transforms points from world space to view space
+    // - `camera_proj_matrix` transforms points from view space to world space
+    Line perspective_unproject_topleft_normalized_pos_to_world(
+        Vec2 normalized_point,
+        Vec3 camera_world_space_origin,
         const Mat4& camera_view_matrix,
         const Mat4& camera_proj_matrix
     );
 
-    // returns a rect, created by mapping a Normalized Device Coordinates (NDC) rect
-    // (i.e. -1.0 to 1.0) within a screenspace viewport (pixel units, topleft == (0, 0))
-    Rect ndc_rect_to_screenspace_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
+    // returns a rectangular region defined in, and bounded by, normalized device coordinates
+    // (NDCs) mapped from a region defined in a normalized y-points-down space bounded
+    // by `viewport`.
+    Rect ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
-    // returns the location where `worldspace_location` would occur when projected via the
-    // given `view_matrix` and `projection_matrix`es onto `screen_rect`
-    Vec2 project_onto_screen_rect(
-        const Vec3& worldspace_location,
+    // returns the location where `world_space_location` would occur when projected via the
+    // given `view_matrix` and `projection_matrix`es onto `viewport_rect`.
+    Vec2 project_onto_viewport_rect(
+        const Vec3& world_space_location,
         const Mat4& view_matrix,
         const Mat4& projection_matrix,
-        const Rect& screen_rect
+        const Rect& viewport_rect
     );
 
 
@@ -147,10 +150,10 @@ namespace osc
     }
 
     // returns a `Quat` equivalent to the given euler angles
-    Quat to_worldspace_rotation_quat(const EulerAngles&);
+    Quat to_world_space_rotation_quat(const EulerAngles&);
 
-    // applies a world-space rotation to the transform
-    void apply_worldspace_rotation(
+    // applies a world space rotation to the transform
+    void apply_world_space_rotation(
         Transform& application_target,
         const EulerAngles& euler_angles,
         const Vec3& rotation_center
@@ -159,7 +162,7 @@ namespace osc
     // returns the volume of a given tetrahedron, defined as 4 points in space
     float volume_of(const Tetrahedron&);
 
-    // returns arrays that transforms cube faces from worldspace to projection
+    // returns arrays that transforms cube faces from world space to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
     std::array<Mat4, 6> calc_cubemap_view_proj_matrices(

@@ -10,7 +10,6 @@
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/FileDialogResponse.h>
 #include <liboscar/Platform/FilesystemResourceLoader.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/ILogSink.h>
 #include <liboscar/Platform/IResourceLoader.h>
 #include <liboscar/Platform/Key.h>
@@ -22,7 +21,6 @@
 #include <liboscar/Platform/LogMessage.h>
 #include <liboscar/Platform/LogMessageView.h>
 #include <liboscar/Platform/LogSink.h>
-#include <liboscar/Platform/Monitor.h>
 #include <liboscar/Platform/MouseButton.h>
 #include <liboscar/Platform/MouseInputSource.h>
 #include <liboscar/Platform/os.h>
@@ -30,8 +28,6 @@
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/Platform/ResourcePath.h>
 #include <liboscar/Platform/ResourceStream.h>
-#include <liboscar/Platform/Screen.h>
-#include <liboscar/Platform/ScreenPrivate.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/ScreenshotAnnotation.h>
 #include <liboscar/Platform/Widget.h>

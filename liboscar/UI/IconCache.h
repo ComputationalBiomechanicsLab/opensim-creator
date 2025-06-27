@@ -13,7 +13,8 @@ namespace osc
     public:
         explicit IconCache(
             ResourceLoader loader_prefixed_at_dir_containing_svgs,
-            float vertical_scale
+            float vertical_scale,
+            float device_pixel_ratio
         );
         IconCache(const IconCache&) = delete;
         IconCache(IconCache&&) noexcept;

@@ -23,7 +23,7 @@ namespace osc
         constexpr AntiAliasingLevel() = default;
 
         explicit constexpr AntiAliasingLevel(int value) :
-            value_{value > 1 ? uint32_t(1) << (std::bit_width(static_cast<unsigned>(value))-1) : 1}
+            value_{value > 1 ? uint32_t{1} << (std::bit_width(static_cast<unsigned>(value))-1) : 1}
         {}
 
         template<std::integral T>

@@ -13,6 +13,16 @@
 
 using namespace osc;
 
+TEST(contains_case_insensitive, returns_true_if_search_string_is_empty)
+{
+    ASSERT_TRUE(contains_case_insensitive("str", ""));
+}
+
+TEST(contains_case_insensitive, works_in_trivial_case)
+{
+    ASSERT_TRUE(contains_case_insensitive("sTring", "trin"));
+}
+
 TEST(strip_whitespace, works_as_expected)
 {
     struct TestCase final {

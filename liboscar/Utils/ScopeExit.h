@@ -10,7 +10,7 @@ namespace osc
     //
     // Inspired by `std::experimental::scope_exit`.
     template<std::invocable Destructor>
-    class ScopeExit final {
+    class [[nodiscard]] ScopeExit final {
     public:
         explicit ScopeExit(Destructor&& exit_function) :
             exit_function_{std::forward<Destructor>(exit_function)}

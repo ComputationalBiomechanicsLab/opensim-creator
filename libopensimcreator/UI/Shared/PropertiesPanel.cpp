@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
 #include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
 #include <libopensimcreator/UI/Shared/ObjectPropertiesEditor.h>
@@ -9,7 +10,6 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
@@ -33,12 +33,8 @@ namespace
             return;
         }
 
-        const bool disabled = model->isReadonly();
-        if (disabled) {
-            ui::begin_disabled();
-        }
-
         ui::set_num_columns(2);
+        ui::align_text_to_frame_padding();  // ensure it aligns with the button in the next column
         ui::draw_text("actions");
         ui::same_line();
         ui::draw_help_marker("Shows a menu containing extra actions that can be performed on this component.\n\nYou can also access the same menu by right-clicking the component in the 3D viewer, bottom status bar, or navigator panel.");
@@ -50,10 +46,6 @@ namespace
         ui::pop_style_color();
         ui::next_column();
         ui::set_num_columns();
-
-        if (disabled) {
-            ui::end_disabled();
-        }
     }
 
     class ObjectNameEditor final {
@@ -84,6 +76,7 @@ namespace
             ui::set_num_columns(2);
 
             ui::draw_separator();
+            ui::align_text_to_frame_padding();  // ensure it aligns with the next column
             ui::draw_text("name");
             ui::same_line();
             ui::draw_help_marker("The name of the component", "The component's name can be important. It can be used when components want to refer to eachover. E.g. a joint will name the two frames it attaches to.");

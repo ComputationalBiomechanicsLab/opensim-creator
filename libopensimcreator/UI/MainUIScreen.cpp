@@ -1,5 +1,6 @@
 #include "MainUIScreen.h"
 
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenFileEvent.h>
 #include <libopensimcreator/UI/LoadingTab.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
@@ -11,27 +12,24 @@
 #include <liboscar/Platform/Events/DropFileEvent.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/Platform/ScreenPrivate.h>
 #include <liboscar/Platform/Screenshot.h>
+#include <liboscar/Platform/WidgetPrivate.h>
+#include <liboscar/Platform/os.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/Events/ResetUIContextEvent.h>
-#include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/SaveChangesPopup.h>
 #include <liboscar/UI/Popups/SaveChangesPopupConfig.h>
 #include <liboscar/UI/Tabs/ErrorTab.h>
 #include <liboscar/UI/Tabs/ScreenshotTab.h>
 #include <liboscar/UI/Tabs/Tab.h>
 #include <liboscar/UI/Tabs/TabRegistry.h>
+#include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/LifetimedPtr.h>
+#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/UID.h>
 
@@ -105,12 +103,14 @@ namespace
     }
 }
 
-class osc::MainUIScreen::Impl final : public ScreenPrivate {
+class osc::MainUIScreen::Impl final : public WidgetPrivate {
 public:
 
     explicit Impl(MainUIScreen& owner) :
-        ScreenPrivate{owner, nullptr, "MainUIScreen"}
-    {}
+        WidgetPrivate{owner, nullptr}
+    {
+        set_name("MainUIScreen");
+    }
 
     bool onUnhandledKeyUp(const KeyEvent& e)
     {
@@ -183,8 +183,6 @@ public:
                 m_RequestedTab = m_Tabs.back()->id();
             }
         }
-
-        ui::context::init(App::upd());
     }
 
     void on_unmount()
@@ -204,8 +202,6 @@ public:
 
             m_ActiveTabID = UID::empty();
         }
-
-        ui::context::shutdown(App::upd());
     }
 
     bool on_event(Event& e)
@@ -227,10 +223,10 @@ public:
 
         if (e.type() == EventType::KeyUp and dynamic_cast<const KeyEvent&>(e).combination() == (KeyModifier::Ctrl | Key::P)) {
             // `Ctrl+P`: "take a screenshot"
-            m_MaybeScreenshotRequest = App::upd().request_screenshot();
+            m_MaybeScreenshotRequest = App::upd().request_screenshot_of_main_window();
             handled = true;
         }
-        else if (ui::context::on_event(e)) {
+        else if (m_UiContext.on_event(e)) {
             // if the 2D UI captured the event, then assume that the event will be "handled"
             // during `Tab::onDraw` (immediate-mode UI)
             App::upd().request_redraw();
@@ -331,7 +327,7 @@ public:
                 if (auto* dropEv = dynamic_cast<DropFileEvent*>(&e)) {
                     const auto parentDirectory = dropEv->path().parent_path();
                     if (not parentDirectory.empty()) {
-                        App::upd().set_initial_directory_to_show_fallback(parentDirectory);
+                        App::upd().set_prompt_initial_directory_to_show_fallback(parentDirectory);
                     }
                 }
 
@@ -377,33 +373,32 @@ public:
 
         {
             OSC_PERF("MainUIScreen/clear_screen");
-            App::upd().clear_screen();
+            App::upd().clear_main_window();
         }
 
-        ui::context::on_start_new_frame(App::upd());
+        m_UiContext.on_start_new_frame();
 
         {
             OSC_PERF("MainUIScreen/drawUIContent");
             drawUIContent();
         }
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             if (m_RequestedTab == UID::empty()) {
                 m_RequestedTab = m_ActiveTabID;
             }
             m_ActiveTabID = UID::empty();
 
-            ui::context::shutdown(App::upd());
-            ui::context::init(App::upd());
+            m_UiContext.reset();
             App::upd().request_redraw();
-            m_ImguiWasAggressivelyReset = false;
+            m_UiWasAggressivelyReset = false;
 
             return;
         }
 
         {
-            OSC_PERF("MainUIScreen/ui::context::render()");
-            ui::context::render();
+            OSC_PERF("MainUIScreen/render()");
+            m_UiContext.render();
         }
     }
 
@@ -411,7 +406,7 @@ public:
     {
         OSC_PERF("MainUIScreen/drawTabSpecificMenu");
 
-        if (ui::begin_main_viewport_top_bar("##TabSpecificMenuBar")) {
+        if (ui::begin_main_window_top_bar("##TabSpecificMenuBar")) {
             if (ui::begin_menu_bar()) {
                 if (Tab* active = getActiveTab()) {
                     try {
@@ -428,7 +423,7 @@ public:
                         impl_close_tab(m_ActiveTabID);
                     }
 
-                    if (m_ImguiWasAggressivelyReset) {
+                    if (m_UiWasAggressivelyReset) {
                         return;  // must return here to prevent the ImGui end_panel calls from erroring
                     }
                 }
@@ -447,7 +442,7 @@ public:
         ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vec2{5.0f, 0.0f});
         ui::push_style_var(ui::StyleVar::TabRounding, 10.0f);
         ui::push_style_var(ui::StyleVar::FrameRounding, 10.0f);
-        if (ui::begin_main_viewport_top_bar("##TabBarViewport")) {
+        if (ui::begin_main_window_top_bar("##MainWindowTabBarWrapper")) {
             if (ui::begin_menu_bar()) {
                 if (ui::begin_tab_bar("##TabBar")) {
                     for (size_t i = 0; i < m_Tabs.size(); ++i) {
@@ -488,7 +483,7 @@ public:
                                 m_RequestedTab = UID::empty();
                             }
 
-                            if (m_ImguiWasAggressivelyReset) {
+                            if (m_UiWasAggressivelyReset) {
                                 return;
                             }
 
@@ -524,13 +519,13 @@ public:
     {
         drawTabSpecificMenu();
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
         drawTabBar();
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
@@ -557,7 +552,7 @@ public:
             handleDeletedTabs();
         }
 
-        if (m_ImguiWasAggressivelyReset) {
+        if (m_UiWasAggressivelyReset) {
             return;
         }
 
@@ -695,7 +690,7 @@ public:
 
     void impl_reset_imgui()
     {
-        m_ImguiWasAggressivelyReset = true;
+        m_UiWasAggressivelyReset = true;
     }
 
     void tryHandleScreenshotRequest()
@@ -712,6 +707,22 @@ public:
 
 private:
     OSC_OWNER_GETTERS(MainUIScreen);
+
+    // Creates the top-level 2D UI context configuration (fonts, etc.).
+    static ui::ContextConfiguration CreateUiContextConfig()
+    {
+        ui::ContextConfiguration rv;
+        rv.set_base_imgui_ini_config_resource("OpenSimCreator/imgui_base_config.ini");
+        rv.set_main_font_as_standard_plus_icon_font(
+            "OpenSimCreator/fonts/Ruda-Bold.ttf",
+            "OpenSimCreator/fonts/OpenSimCreatorIconFont.ttf",
+            {OSC_ICON_MIN, OSC_ICON_MAX}
+        );
+        return rv;
+    }
+
+    // top-level 2D UI context (required for `ui::` calls to work).
+    ui::Context m_UiContext{App::upd(), CreateUiContextConfig()};
 
     // user-visible UI tabs
     std::vector<std::unique_ptr<Tab>> m_Tabs;
@@ -866,14 +877,14 @@ private:
     bool m_QuitRequested = false;
 
     // true if the UI context was aggressively reset by a tab (and, therefore, this screen should reset the UI)
-    bool m_ImguiWasAggressivelyReset = false;
+    bool m_UiWasAggressivelyReset = false;
 
     // `valid` if the user has requested a screenshot (that hasn't yet been handled)
     std::future<Screenshot> m_MaybeScreenshotRequest;
 };
 
 osc::MainUIScreen::MainUIScreen() :
-    Screen{std::make_unique<Impl>(*this)}
+    Widget{std::make_unique<Impl>(*this)}
 {}
 osc::MainUIScreen::~MainUIScreen() noexcept = default;
 void osc::MainUIScreen::open(const std::filesystem::path& path) { private_data().open(path); }

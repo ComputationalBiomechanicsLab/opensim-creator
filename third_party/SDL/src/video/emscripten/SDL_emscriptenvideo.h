@@ -36,7 +36,6 @@ struct SDL_WindowData
     SDL_GLContext gl_context;
 
     char *canvas_id;
-    char *keyboard_element;
 
     float pixel_ratio;
 

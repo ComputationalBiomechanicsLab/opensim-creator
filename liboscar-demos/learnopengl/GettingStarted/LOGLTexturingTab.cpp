@@ -30,8 +30,7 @@ namespace
         {
             Texture2D container = load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/container.jpg"),
-                ColorSpace::sRGB,
-                ImageLoadingFlag::FlipVertically
+                ColorSpace::sRGB
             );
             container.set_wrap_mode(TextureWrapMode::Clamp);
 
@@ -42,8 +41,7 @@ namespace
         {
             const Texture2D face = load_texture2D_from_image(
                 loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
-                ColorSpace::sRGB,
-                ImageLoadingFlag::FlipVertically
+                ColorSpace::sRGB
             );
 
             rv.set("uTexture2", face);
@@ -73,8 +71,8 @@ public:
     {
         graphics::draw(mesh_, identity<Transform>(), material_, camera_);
 
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
     }
 
 private:

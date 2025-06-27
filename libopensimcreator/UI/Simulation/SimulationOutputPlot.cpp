@@ -9,6 +9,7 @@
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
 #include <libopensimcreator/Documents/Simulation/SimulationClock.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
@@ -18,7 +19,6 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
@@ -243,7 +243,7 @@ private:
                 plot::pop_style_color();
                 plot::pop_style_color();
 
-                plotRect = plot::get_plot_screen_rect();
+                plotRect = plot::get_plot_ui_rect();
 
                 plot::end();
             }
@@ -280,7 +280,7 @@ private:
         }
 
         if (ui::is_item_hovered()) {
-            const Vec2 mp = ui::get_mouse_pos();
+            const Vec2 mp = ui::get_mouse_ui_pos();
             const Vec2 plotLoc = mp - plotRect.p1;
             const float relLoc = plotLoc.x / dimensions_of(plotRect).x;
             const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
@@ -367,7 +367,7 @@ private:
                 plot::pop_style_color();
                 plot::pop_style_color();
 
-                plotRect = plot::get_plot_screen_rect();
+                plotRect = plot::get_plot_ui_rect();
 
                 // overlays
                 {

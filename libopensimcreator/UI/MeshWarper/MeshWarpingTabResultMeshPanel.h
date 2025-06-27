@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabPanel.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
@@ -16,7 +17,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -54,7 +54,7 @@ namespace osc
             ui::draw_image(renderTexture);
             m_LastTextureHittestResult = ui::hittest_last_drawn_item();
 
-            drawOverlays(m_LastTextureHittestResult.item_screen_rect);
+            drawOverlays(m_LastTextureHittestResult.item_ui_rect);
         }
 
         void updateCamera()
@@ -65,7 +65,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect)))
+                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect)))
                 {
                     m_State->setLinkedBaseCamera(m_Camera);  // reflects latest modification
                 }
@@ -76,7 +76,7 @@ namespace osc
         void drawOverlays(const Rect& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ui::set_cursor_screen_pos(renderRect.p1 + m_OverlayPadding);
+            ui::set_cursor_ui_pos(renderRect.p1 + m_OverlayPadding);
 
             drawInformationIcon();
             ui::same_line();
@@ -86,8 +86,9 @@ namespace osc
             ui::same_line();
             drawLandmarkRadiusSlider();
             drawBlendingFactorSlider();
+            drawPrescaleInputs();
 
-            ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
             ui::draw_checkbox("overlay destination mesh", &m_ShowDestinationMesh);
             ui::same_line();
             {
@@ -140,37 +141,37 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            m_CursorXAtExportButton = ui::get_cursor_pos().x;  // needed to align the blending factor slider
+            m_CursorXAtExportButton = ui::get_cursor_panel_pos_x();  // needed to align the blending factor slider
             ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStlFile(m_State->getResultMesh());
+                    ActionPromptUserToMeshToStlFile(m_State->getResultMesh());
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmarks to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache());
+                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache());
                 }
                 if (ui::draw_menu_item("Warped Non-Participating Landmark Positions to CSV"))
                 {
-                    ActionSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(m_State->getScratch(), m_State->updResultCache(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV"))
                 {
-                    ActionSavePairedLandmarksToCSV(m_State->getScratch());
+                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch());
                 }
                 if (ui::draw_menu_item("Landmark Pairs to CSV (no names)"))
                 {
-                    ActionSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoNames);
                 }
                 ui::end_popup();
             }
@@ -184,7 +185,7 @@ namespace osc
                 auto_focus(
                     m_Camera,
                     m_State->getResultMesh().bounds(),
-                    aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect)
+                    aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect)
                 );
                 m_State->setLinkedBaseCamera(m_Camera);
             }
@@ -208,7 +209,7 @@ namespace osc
 
         void drawBlendingFactorSlider()
         {
-            ui::set_cursor_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
             const CStringView label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
@@ -221,6 +222,47 @@ namespace osc
             if (ui::is_item_deactivated_after_edit())
             {
                 ActionSetBlendFactor(m_State->updUndoable(), factor);
+            }
+        }
+
+        void drawPrescaleInputs()
+        {
+            float sourcePrescale = m_State->getScratch().sourceLandmarksPrescale;
+            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            ui::draw_float_input("source landmarks prescale", &sourcePrescale);
+            if (ui::is_item_deactivated_after_edit()) {
+                ActionSetSourceLandmarksPrescale(m_State->updUndoable(), sourcePrescale);
+            }
+            float destinationPrescale = m_State->getScratch().destinationLandmarksPrescale;
+            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            ui::draw_float_input("destination prescale", &destinationPrescale);
+            if (ui::is_item_deactivated_after_edit()) {
+                ActionSetDestinationLandmarksPrescale(m_State->updUndoable(), destinationPrescale);
+            }
+
+            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            bool affineScale = m_State->getScratch().applyAffineScale;
+            ui::draw_checkbox("scale", &affineScale);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineScale = affineScale;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool affineRotation = m_State->getScratch().applyAffineRotation;
+            ui::draw_checkbox("rotate", &affineRotation);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineRotation = affineRotation;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool affineTranslation = m_State->getScratch().applyAffineTranslation;
+            ui::draw_checkbox("translate", &affineTranslation);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyAffineTranslation = affineTranslation;  // TODO: undo/redo
+            }
+            ui::same_line();
+            bool nonAffineWarp = m_State->getScratch().applyNonAffineWarp;
+            ui::draw_checkbox("warp", &nonAffineWarp);
+            if (ui::is_item_deactivated_after_edit()) {
+                m_State->updUndoable().upd_scratch().applyNonAffineWarp = nonAffineWarp;  // TODO: undo/redo
             }
         }
 

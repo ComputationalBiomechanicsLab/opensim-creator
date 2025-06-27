@@ -2,7 +2,7 @@
 
 namespace osc
 {
-    // hold the distance along the depth (z) axis, in worldspace units, between a
+    // hold the distance along the depth (z) axis, in world space units, between a
     // camera's origin and each clipping plane
     struct CameraClippingPlanes final {
         friend constexpr bool operator==(const CameraClippingPlanes&, const CameraClippingPlanes&) = default;

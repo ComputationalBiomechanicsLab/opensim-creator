@@ -1,25 +1,25 @@
 cmake_minimum_required(VERSION 3.10)
 project(osc-dependencies)
 
-# -------------- gather user-facing build cache vars ---------------- #
+include(ExternalProject)  # ExternalProject_Add
+include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
+find_package(Git REQUIRED)  # GIT_EXECUTABLE
 
-set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
-set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
-set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
-set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
-set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
+set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
 set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
 set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
-set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
-set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
 set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
-set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
+set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
 set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
-set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
+set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
+set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
+set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
+set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
+set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
+set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 
-include(ExternalProject)  # ExternalProject_Add
-include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
+set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
 
 # setup `OSCDEPS_DEPENDENCY_CMAKE_ARGS`
 #
@@ -58,6 +58,7 @@ if(TRUE)
     unset(OSCDEPS_FORWARDED_VARS)
 endif()
 
+
 if(${OSCDEPS_BUILD_GOOGLETEST})
     ExternalProject_Add(googletest
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
@@ -76,6 +77,7 @@ if(${OSCDEPS_BUILD_LUNASVG})
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DBUILD_SHARED_LIBS:BOOL=OFF
+            -DLUNASVG_BUILD_EXAMPLES:BOOL=OFF
     )
 endif()
 
@@ -128,7 +130,11 @@ endif()
 
 if (${OSCDEPS_BUILD_IMGUI})
     ExternalProject_Add(imgui
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/0001-revert-dockspace-ids.patch
+
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+        SOURCE_SUBDIR ../cmake/imgui/
+
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -138,7 +144,10 @@ endif()
 if(${OSCDEPS_BUILD_IMPLOT})
     ExternalProject_Add(implot
         DEPENDS imgui
+
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
+        SOURCE_SUBDIR ../cmake/implot/
+
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -160,10 +169,11 @@ endif()
 if(${OSCDEPS_BUILD_SPDLOG})
     if(MSVC)
         # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-	set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
+        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
     else()
-        set(SPDLOC_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     endif()
+
     ExternalProject_Add(spdlog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -184,6 +194,7 @@ if(${OSCDEPS_BUILD_LIBOSIM})
     if(${OSCDEPS_BUILD_SPDLOG})
         list(APPEND OSCDEPS_LIBOSIM_DEPS spdlog)
     endif()
+
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim

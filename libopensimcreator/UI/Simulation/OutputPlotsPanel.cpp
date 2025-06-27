@@ -3,11 +3,11 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataTypeHelpers.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
@@ -70,7 +70,7 @@ public:
         }
 
         ui::draw_separator();
-        ui::draw_dummy({0.0f, 5.0f});
+        ui::draw_vertical_spacer(5.0f/15.0f);
 
         for (int i = 0; i < m_Environment->getNumUserOutputExtractors(); ++i) {
             OutputExtractor output = m_Environment->getUserOutputExtractor(i);

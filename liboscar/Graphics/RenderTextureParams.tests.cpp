@@ -18,7 +18,7 @@ TEST(RenderTextureParams, can_be_default_constructed)
 
 TEST(RenderTextureParams, can_be_constructed_via_designated_initializer)
 {
-    [[maybe_unused]] const RenderTextureParams params{.dimensions = {1, 4}};
+    [[maybe_unused]] const RenderTextureParams params{.pixel_dimensions = {1, 4}};
 }
 
 TEST(RenderTextureParams, can_be_copy_constructed)
@@ -74,8 +74,8 @@ TEST(RenderTextureParams, compares_equivalent_on_copy_construction)
 
 TEST(RenderTextureParams, compares_equivalent_when_independently_constructed_with_same_params)
 {
-    const RenderTextureParams first{.dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
-    const RenderTextureParams second{.dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams first{.pixel_dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
+    const RenderTextureParams second{.pixel_dimensions = {3, 3}, .device_pixel_ratio = 2.0f, .dimensionality = TextureDimensionality::Cube};
 
     ASSERT_EQ(first, second);
 }

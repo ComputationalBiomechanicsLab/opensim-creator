@@ -261,6 +261,7 @@ namespace osc
 
     // add the given component into the model graph, or throw
     bool ActionAddComponentToModel(IModelStatePair&, std::unique_ptr<OpenSim::Component>);
+    bool ActionAddComponentToModel(IModelStatePair&, std::unique_ptr<OpenSim::Component>, const OpenSim::ComponentPath& desiredParent);
 
     // add the given `OpenSim::WrapObject` to the `WrapObjectSet` of
     // the `OpenSim::PhysicalFrame` located at `physicalFramePath`

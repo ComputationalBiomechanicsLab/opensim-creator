@@ -155,27 +155,27 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 viewport_dimensions = dimensions_of(viewport_screen_space_rect);
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Vec2 workspace_dimensions = dimensions_of(workspace_screen_space_rect);
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * viewport_dimensions;
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
         // ensure textures/buffers have correct dimensions
         {
             constexpr AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
-            gbuffer_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            ssao_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            blur_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
-            lighting_state_.reformat(viewport_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            gbuffer_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            ssao_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            blur_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
+            lighting_state_.reformat(workspace_pixel_dimensions, device_pixel_ratio, anti_aliasing_level);
         }
 
         render_geometry_pass_to_gbuffers();
-        render_ssao_pass(viewport_dimensions);
+        render_ssao_pass(workspace_dimensions);
         render_blur_pass();
         render_lighting_pass();
-        graphics::blit_to_screen(lighting_state_.output_texture, viewport_screen_space_rect);
-        draw_debug_overlays(viewport_screen_space_rect);
+        graphics::blit_to_main_window(lighting_state_.output_texture, workspace_screen_space_rect);
+        draw_debug_overlays(workspace_screen_space_rect);
     }
 
     void render_geometry_pass_to_gbuffers()
@@ -211,7 +211,7 @@ private:
         ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
         ssao_state_.material.set("uNoiseTex", noise_texture_);
         ssao_state_.material.set_array("uSamples", sample_kernel_);
-        ssao_state_.material.set("uNoiseScale", viewport_dimensions / Vec2{noise_texture_.dimensions()});
+        ssao_state_.material.set("uNoiseScale", viewport_dimensions / noise_texture_.dimensions());
         ssao_state_.material.set("uKernelSize", static_cast<int32_t>(sample_kernel_.size()));
         ssao_state_.material.set("uRadius", 0.5f);
         ssao_state_.material.set("uBias", 0.125f);
@@ -270,7 +270,7 @@ private:
             const float offset = static_cast<float>(i)*overlay_size;
             const Vec2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
             const Vec2 overlay_top_right = overlay_bottom_left + Vec2{overlay_size};
-            graphics::blit_to_screen(*textures[i], Rect{overlay_bottom_left, overlay_top_right});
+            graphics::blit_to_main_window(*textures[i], Rect{overlay_bottom_left, overlay_top_right});
         }
     }
 
@@ -282,8 +282,8 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 32, .num_height_segments = 32}};
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     // rendering state
     struct GBufferRenderingState final {
@@ -321,7 +321,7 @@ private:
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
-                    .dimensions = pixel_dimensions,
+                    .pixel_dimensions = pixel_dimensions,
                     .device_pixel_ratio = device_pixel_ratio,
                     .anti_aliasing_level = aa_level,
                     .color_format = texture_ptr->color_format(),
@@ -336,7 +336,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
@@ -348,7 +348,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }
@@ -360,7 +360,7 @@ private:
 
         void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
-            output_texture.set_dimensions(pixel_dimensions);
+            output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
             output_texture.set_anti_aliasing_level(aa_level);
         }

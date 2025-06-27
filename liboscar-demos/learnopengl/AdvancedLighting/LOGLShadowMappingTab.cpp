@@ -56,7 +56,7 @@ namespace
     RenderTexture create_depth_texture()
     {
         return RenderTexture{{
-            .dimensions = {1024, 1024},
+            .pixel_dimensions = {1024, 1024},
             .color_format = ColorRenderBufferFormat::R8G8B8A8_UNORM,  // linear depth values
         }};
     }
@@ -96,8 +96,8 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
-        const Vec2 top_left = top_left_rh(viewport_screen_space_rect);
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
+        const Vec2 top_left = top_left_rh(workspace_screen_space_rect);
         constexpr float depth_overlay_size = 200.0f;
 
         render_shadows_to_depth_texture();
@@ -111,10 +111,10 @@ private:
         scene_material_.set("uShadowMapTexture", depth_texture_);
 
         draw_meshes_with_material(scene_material_);
-        camera_.set_pixel_rect(viewport_screen_space_rect);
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(workspace_screen_space_rect);
+        camera_.render_to_main_window();
         camera_.set_pixel_rect(std::nullopt);
-        graphics::blit_to_screen(depth_texture_, Rect{top_left - Vec2{0.0f, depth_overlay_size}, top_left + Vec2{depth_overlay_size, 0.0f}});
+        graphics::blit_to_main_window(depth_texture_, Rect{top_left - Vec2{0.0f, depth_overlay_size}, top_left + Vec2{depth_overlay_size, 0.0f}});
 
         scene_material_.unset("uShadowMapTexture");
     }
@@ -172,7 +172,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Mesh plane_mesh_ = generate_learnopengl_plane_mesh();
     Material scene_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),

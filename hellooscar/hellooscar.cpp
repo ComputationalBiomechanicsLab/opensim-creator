@@ -4,12 +4,12 @@ using namespace osc;
 
 namespace
 {
-    class HelloTriangleScreen final : public Screen {
+    class HelloTriangleScreen final : public Widget {
     public:
         HelloTriangleScreen()
         {
             // setup camera
-            const Vec3 viewer_position = {3.0f, 0.0f, 0.0f};
+            constexpr Vec3 viewer_position = {3.0f, 0.0f, 0.0f};
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
 
@@ -18,29 +18,25 @@ namespace
         }
     private:
         void impl_on_mount() override
-        {
-            ui::context::init(App::upd());
-        }
+        {}
 
         void impl_on_unmount() override
-        {
-            ui::context::shutdown(App::upd());
-        }
+        {}
 
         bool impl_on_event(Event& e) override
         {
-            return ui::context::on_event(e);
+            return ui_context_.on_event(e);
         }
 
         void impl_on_draw() override
         {
-            App::upd().clear_screen();
+            App::upd().clear_main_window();
 
-            ui::context::on_start_new_frame(App::upd());
+            ui_context_.on_start_new_frame();
 
             // ensure target texture matches screen dimensions
             target_texture_.reformat({
-                .dimensions = App::get().main_window_pixel_dimensions(),
+                .pixel_dimensions = App::get().main_window_pixel_dimensions(),
                 .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
                 .anti_aliasing_level = App::get().anti_aliasing_level()
             });
@@ -50,7 +46,7 @@ namespace
             const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
-            graphics::blit_to_screen(target_texture_, Rect{{}, App::get().main_window_dimensions()});
+            graphics::blit_to_main_window(target_texture_);
 
             ui::begin_panel("window");
             ui::draw_text("source code");
@@ -60,7 +56,7 @@ namespace
             ui::draw_size_t_input("q", &edited_torus_parameters_.q);
             ui::end_panel();
 
-            ui::context::render();
+            ui_context_.render();
         }
 
         void update_torus_if_params_changed()
@@ -72,6 +68,7 @@ namespace
             torus_parameters_ = edited_torus_parameters_;
         }
 
+        ui::Context ui_context_{App::upd()};
         TorusKnotGeometryParams torus_parameters_;
         TorusKnotGeometryParams edited_torus_parameters_;
         TorusKnotGeometry mesh_;

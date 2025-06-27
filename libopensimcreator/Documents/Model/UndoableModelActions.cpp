@@ -1331,6 +1331,14 @@ bool osc::ActionAddComponentToModel(
     IModelStatePair& model,
     std::unique_ptr<OpenSim::Component> c)
 {
+    return ActionAddComponentToModel(model, std::move(c), OpenSim::ComponentPath{});
+}
+
+bool osc::ActionAddComponentToModel(
+    IModelStatePair& model,
+    std::unique_ptr<OpenSim::Component> c,
+    const OpenSim::ComponentPath& desiredParent)
+{
     if (model.isReadonly()) {
         return false;
     }
@@ -1342,14 +1350,26 @@ bool osc::ActionAddComponentToModel(
     try {
         OpenSim::Model& mutModel = model.updModel();
 
-        const OpenSim::Component& ref = AddComponentToAppropriateSet(mutModel, std::move(c));
+        const OpenSim::Component* added = nullptr;
+
+        if (desiredParent.empty()) {
+            added = &AddComponentToAppropriateSet(mutModel, std::move(c));
+        }
+        else if (OpenSim::Component* desired = FindComponentMut(mutModel, desiredParent)) {
+            added = &AddComponent(*desired, std::move(c));
+        }
+        else {
+            log_error("The target parent component, %s, could not be found: adding component to the model instead.", desiredParent.toString().c_str());
+            added = &AddComponentToAppropriateSet(mutModel, std::move(c));
+        }
+
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
-        model.setSelected(&ref);
+        model.setSelected(added);
 
         std::stringstream ss;
-        ss << "added " << ref.getName();
+        ss << "added " << added->getName();
         model.commit(std::move(ss).str());
 
         return true;

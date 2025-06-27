@@ -50,9 +50,9 @@ namespace osc
 
         std::span<const RenderTargetColorAttachment> color_attachments() const { return colors_; }
         const std::optional<RenderTargetDepthStencilAttachment>& depth_attachment() const { return depth_; }
-        Vec2i dimensions() const
+        Vec2i pixel_dimensions() const
         {
-            return depth_ ? depth_->buffer.dimensions() : colors_.front().buffer.dimensions();
+            return depth_ ? depth_->buffer.pixel_dimensions() : colors_.front().buffer.pixel_dimensions();
         }
         void validate_or_throw() const;
 

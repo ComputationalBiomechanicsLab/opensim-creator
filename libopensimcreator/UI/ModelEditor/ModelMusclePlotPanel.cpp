@@ -3,6 +3,7 @@
 #include <libopensimcreator/Documents/Model/ModelStateCommit.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -13,7 +14,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
+#include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
@@ -1400,8 +1401,8 @@ namespace
                 }
             },
             {
-                FileDialogFilter::all_files(),
                 csv_file_dialog_filter(),
+                FileDialogFilter::all_files(),
             }
         );
     }
@@ -1640,7 +1641,7 @@ namespace
                 ui::get_style_frame_padding().x;
 
             const float cursorStart = 0.5f*(ui::get_content_region_available().x - totalWidth);
-            ui::set_cursor_pos_x(cursorStart);
+            ui::set_cursor_panel_pos_x(cursorStart);
 
             ui::set_next_item_width(muscleNameWidth);
             if (ui::begin_combobox("##musclename", muscleName, ui::ComboFlag::NoArrowButton))
@@ -1658,7 +1659,7 @@ namespace
             }
 
             ui::same_line();
-            ui::set_cursor_pos_x(ui::get_cursor_pos_x() - ui::get_style_item_spacing().x);
+            ui::set_cursor_panel_pos_x(ui::get_cursor_panel_pos_x() - ui::get_style_item_spacing().x);
             ui::draw_text("'s");
             ui::same_line();
             ui::set_next_item_width(outputNameWidth);

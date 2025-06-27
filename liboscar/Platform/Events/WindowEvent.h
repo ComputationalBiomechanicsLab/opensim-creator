@@ -8,6 +8,7 @@
 
 namespace osc
 {
+    // Represents a possible change in a single application window.
     class WindowEvent final : public Event {
     public:
         explicit WindowEvent(

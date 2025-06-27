@@ -27,7 +27,7 @@ namespace osc
 
         void onDraw()
         {
-            if (ui::begin_main_viewport_bottom_bar(m_Label))
+            if (ui::begin_main_window_bottom_bar(m_Label))
             {
                 drawContent();
             }
@@ -47,7 +47,7 @@ namespace osc
 
         void drawCurrentHoverInfo(const MeshWarpingTabHover& hover)
         {
-            drawColorCodedXYZ(hover.getWorldspaceLocation());
+            drawColorCodedXYZ(hover.getWorldSpaceLocation());
             ui::same_line();
             if (hover.isHoveringASceneElement())
             {

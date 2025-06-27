@@ -57,7 +57,7 @@ public:
             grab_mouse(false);
             return true;
         }
-        else if (e.type() == EventType::MouseButtonDown and ui::is_mouse_in_main_viewport_workspace()) {
+        else if (e.type() == EventType::MouseButtonDown and ui::is_mouse_in_main_window_workspace()) {
             grab_mouse(true);
             return true;
         }
@@ -70,12 +70,12 @@ public:
         if (m_IsMouseCaptured) {
             ui::update_camera_from_all_inputs(m_SceneCamera, m_CameraEulers);
         }
-        m_SceneCamera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        m_SceneCamera.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         m_SceneMaterial.set("uDiffuseColor", m_MeshColor);
         graphics::draw(m_Mesh, identity<Transform>(), m_SceneMaterial, m_SceneCamera);
         graphics::draw(m_Mesh, identity<Transform>(), m_NormalsMaterial, m_SceneCamera);
-        m_SceneCamera.render_to_screen();
+        m_SceneCamera.render_to_main_window();
     }
 
 private:

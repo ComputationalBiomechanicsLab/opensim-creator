@@ -3,6 +3,7 @@
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Platform/ResourceLoader.h>
 #include <liboscar/UI/Icon.h>
+#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/TransparentStringHasher.h>
 
 #include <ankerl/unordered_dense.h>
@@ -17,8 +18,14 @@ using osc::Icon;
 
 class osc::IconCache::Impl final {
 public:
-    Impl(ResourceLoader& loader_prefixed_at_dir_containing_svgs, float vertical_scale)
+    explicit Impl(
+        ResourceLoader& loader_prefixed_at_dir_containing_svgs,
+        float vertical_scale,
+        float device_pixel_ratio)
     {
+        OSC_ASSERT(vertical_scale > 0.0f && "icon cache's vertical scale must be a positive number");
+        OSC_ASSERT(device_pixel_ratio > 0.0f && "icon cache's device pixel ratio must be a positive number");
+
         const auto it = loader_prefixed_at_dir_containing_svgs.iterate_directory(".");
 
         for (auto el = it(); el; el = it()) {
@@ -27,9 +34,9 @@ public:
             if (p.has_extension(".svg")) {
                 Texture2D texture = load_texture2D_from_svg(
                     loader_prefixed_at_dir_containing_svgs.open(p),
-                    vertical_scale
+                    vertical_scale,
+                    device_pixel_ratio
                 );
-                texture.set_filter_mode(TextureFilterMode::Nearest);
 
                 icons_by_name_.try_emplace(
                     p.stem(),
@@ -57,8 +64,8 @@ private:
 };
 
 
-osc::IconCache::IconCache(ResourceLoader loader_prefixed_at_dir_containing_svgs, float vertical_scale) :
-    impl_{std::make_unique<Impl>(loader_prefixed_at_dir_containing_svgs, vertical_scale)}
+osc::IconCache::IconCache(ResourceLoader loader_prefixed_at_dir_containing_svgs, float vertical_scale, float device_pixel_ratio) :
+    impl_{std::make_unique<Impl>(loader_prefixed_at_dir_containing_svgs, vertical_scale, device_pixel_ratio)}
 {}
 osc::IconCache::IconCache(IconCache&&) noexcept = default;
 osc::IconCache& osc::IconCache::operator=(IconCache&&) noexcept = default;

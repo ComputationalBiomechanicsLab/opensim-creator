@@ -108,12 +108,12 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            const Vec2 viewport_dimensions = ui::get_main_viewport_workspace_screen_dimensions();
+            const Vec2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-            const Vec2 viewport_pixel_dimensions = device_pixel_ratio * viewport_dimensions;
+            const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
             RenderTextureParams params = {
-                .dimensions = viewport_pixel_dimensions,
+                .pixel_dimensions = workspace_pixel_dimensions,
                 .device_pixel_ratio = device_pixel_ratio,
                 .anti_aliasing_level = App::get().anti_aliasing_level(),
             };
@@ -132,7 +132,7 @@ private:
     {
         Camera orthogonal_camera;
         orthogonal_camera.set_background_color(Color::clear());
-        orthogonal_camera.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        orthogonal_camera.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
         orthogonal_camera.set_projection_matrix_override(identity<Mat4>());
         orthogonal_camera.set_view_matrix_override(identity<Mat4>());
 
@@ -141,7 +141,7 @@ private:
         tonemap_material_.set("uExposure", exposure_);
 
         graphics::draw(quad_mesh_, identity<Transform>(), tonemap_material_, orthogonal_camera);
-        orthogonal_camera.render_to_screen();
+        orthogonal_camera.render_to_main_window();
 
         tonemap_material_.unset("uTexture");
     }
@@ -161,8 +161,8 @@ private:
     Material scene_material_ = create_scene_material(loader_);
     Material tonemap_material_ = create_tonemap_material(loader_);
     MouseCapturingCamera camera_ = create_scene_camera();
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
     Transform corridoor_transform_ = calc_corridoor_transform();
     RenderTexture scene_hdr_texture_;
     float exposure_ = 1.0f;

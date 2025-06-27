@@ -39,8 +39,9 @@ namespace
             {"y-line", cache.yline_mesh()},
             {"quad", cache.quad_mesh()},
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
+            {"plane", PlaneGeometry{}},
             {"torus_knot", TorusKnotGeometry{}},
-            {"box", BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}}},
+            {"box", BoxGeometry{{.dimensions = Vec3{2.0f}}}},
             {"icosahedron", IcosahedronGeometry{}},
             {"dodecahedron", DodecahedronGeometry{}},
             {"octahedron", OctahedronGeometry{}},
@@ -63,7 +64,7 @@ public:
 
     void on_draw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         if (viewer_.is_hovered()) {
             ui::update_polar_camera_from_mouse_inputs(camera_, App::get().main_window_dimensions());
@@ -79,12 +80,13 @@ public:
             }
             ui::start_new_line();
 
-            const Vec2 content_region = ui::get_content_region_available();
-            render_params_.virtual_pixel_dimensions = elementwise_max(content_region, {0.0f, 0.0f});
+            const Rect viewport_rect = ui::get_content_region_available_ui_rect();
+            const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+            render_params_.dimensions = elementwise_max(viewport_dimensions, {0.0f, 0.0f});
             render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);
-            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.virtual_pixel_dimensions));
+            render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
             render_params_.view_pos = camera_.position();
             render_params_.near_clipping_plane = camera_.znear;
@@ -97,6 +99,10 @@ public:
                 .shading = Color::white(),
                 .flags = draw_wireframe_ ? SceneDecorationFlag::WireframeOverlayedDefault : SceneDecorationFlag::Default,
             }}}, render_params_);
+
+            // Draw camera manipulator
+            ui::set_cursor_ui_pos({viewport_dimensions.x - camera_axes_ui_.dimensions().x, viewport_rect.p1.y});
+            camera_axes_ui_.draw(camera_);
         }
         ui::end_panel();
     }
@@ -108,6 +114,7 @@ private:
     SceneViewer viewer_;
     SceneRendererParams render_params_;
     PolarPerspectiveCamera camera_;
+    CameraViewAxes camera_axes_ui_;
 };
 
 

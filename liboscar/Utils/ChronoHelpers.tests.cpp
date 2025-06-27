@@ -16,7 +16,7 @@ TEST(ChronoHelpers, lerp_works_on_std_chrono_durations)
 
 TEST(ChronoHelpers, lerp_works_on_std_chrono_time_points)
 {
-    using TimePoint = std::chrono::system_clock::time_point;
+    using TimePoint = std::chrono::steady_clock::time_point;
     static_assert(lerp(TimePoint{}, TimePoint{1s}, 0.0f) == TimePoint{});
     static_assert(lerp(TimePoint{}, TimePoint{10s}, 1.0f) == TimePoint{10s});
     static_assert(lerp(TimePoint{}, TimePoint{10s}, 0.5f) == TimePoint{5s});

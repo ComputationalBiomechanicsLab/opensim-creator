@@ -1,5 +1,7 @@
 #include "TPS2DTab.h"
 
+#include <libopensimcreator/Platform/IconCodepoints.h>
+
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/ColorSpace.h>
@@ -15,7 +17,6 @@
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/LogViewerPanel.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -315,7 +316,7 @@ public:
 
     void onDraw()
     {
-        ui::enable_dockspace_over_main_viewport();
+        ui::enable_dockspace_over_main_window();
 
         ui::begin_panel("Input");
         {
@@ -342,7 +343,7 @@ public:
         Vec2 outputWindowDims;
         ui::begin_panel("Output");
         {
-            outputWindowPos = ui::get_cursor_screen_pos();
+            outputWindowPos = ui::get_cursor_ui_pos();
             outputWindowDims = ui::get_content_region_available();
             const float minDim = min(outputWindowDims.x, outputWindowDims.y);
             const Vec2i texDims = Vec2i{minDim, minDim};
@@ -370,7 +371,7 @@ public:
             const float leftPadding = 10.0f;
             const float bottomPadding = 10.0f;
             const float panelHeight = 50.0f;
-            ui::set_next_panel_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
+            ui::set_next_panel_ui_pos({ outputWindowPos.x + leftPadding, outputWindowPos.y + outputWindowDims.y - panelHeight - bottomPadding });
             ui::set_next_panel_size({ outputWindowDims.x - leftPadding, panelHeight });
             ui::begin_panel("##scrubber", nullptr, ui::get_minimal_panel_flags().without(ui::PanelFlag::NoInputs));
             ui::set_next_item_width(ui::get_content_region_available().x);
@@ -386,12 +387,12 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(const Mesh& mesh, Vec2 dims, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vec2 dimensions, std::optional<RenderTexture>& out)
     {
         const RenderTextureParams textureParameters = {
-            .dimensions = App::get().main_window_device_pixel_ratio() * dims,
+            .pixel_dimensions = App::get().main_window_device_pixel_ratio() * dimensions,
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
-            .anti_aliasing_level = App::get().anti_aliasing_level()
+            .anti_aliasing_level = App::get().anti_aliasing_level(),
         };
         out.emplace(textureParameters);
         graphics::draw(mesh, identity<Transform>(), m_TexturedMaterial, m_Camera);
@@ -410,8 +411,8 @@ private:
 
         // render all fully-established landmark pairs
         for (const LandmarkPair2D& p : m_LandmarkPairs) {
-            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.src));
-            const Vec2 p2 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(p.dest));
+            const Vec2 p1 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(p.src));
+            const Vec2 p2 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(p.dest));
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
@@ -422,8 +423,8 @@ private:
         if (ht.is_hovered and std::holds_alternative<GUIFirstClickMouseState>(m_MouseState)) {
             const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            const Vec2 p1 = ht.item_screen_rect.p1 + (dimensions_of(ht.item_screen_rect) * ndc_point_to_topleft_relative_pos(st.srcNDCPos));
-            const Vec2 p2 = ui::get_mouse_pos();
+            const Vec2 p1 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(st.srcNDCPos));
+            const Vec2 p2 = ui::get_mouse_ui_pos();
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
@@ -442,10 +443,10 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
-        const Vec2 mouseScreenPos = ui::get_mouse_pos();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_ui_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_ui_rect);
+        const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos));
 
@@ -457,10 +458,10 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
-        const Vec2 mouseScreenPos = ui::get_mouse_pos();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_screen_rect.p1;
-        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_screen_rect);
-        const Vec2 mouseImageNDCPos = topleft_relative_pos_to_ndc_point(mouseImageRelPos);
+        const Vec2 mouseScreenPos = ui::get_mouse_ui_pos();
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.p1;
+        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_ui_rect);
+        const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos) + "*");
 
@@ -479,12 +480,7 @@ private:
     Texture2D m_BoxTexture = load_texture2D_from_svg(
         App::resource_loader().open("OpenSimCreator/textures/uv_checker.svg")
     );
-    Mesh m_InputGrid = PlaneGeometry{{
-        .width = 2.0f,
-        .height = 2.0f,
-        .num_width_segments = 50,
-        .num_height_segments = 50,
-    }};
+    Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vec2{2.0f}, .num_segments = Vec2{50}}};
     Mesh m_OutputGrid = m_InputGrid;
     MeshBasicTexturedMaterial m_TexturedMaterial;
     MeshBasicMaterial wireframe_material_;

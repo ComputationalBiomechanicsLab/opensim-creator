@@ -84,7 +84,7 @@ public:
 private:
     void draw_3d_render()
     {
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
 
         pbr_material_.set("uCameraWorldPos", camera_.position());
         pbr_material_.set_array("uLightPositions", c_light_positions);
@@ -93,7 +93,7 @@ private:
         draw_spheres();
         draw_lights();
 
-        camera_.render_to_screen();
+        camera_.render_to_main_window();
     }
 
     void draw_spheres()

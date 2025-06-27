@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IVersionedComponentAccessor.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Shared/FunctionCurveViewerPopup.h>
 #include <libopensimcreator/UI/Shared/GeometryPathEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -13,7 +14,6 @@
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
@@ -104,6 +104,7 @@ namespace
     // draws the property name and (optionally) comment tooltip
     void DrawPropertyName(const OpenSim::AbstractProperty& property)
     {
+        ui::align_text_to_frame_padding();  // ensure it aligns with the editors in the next column
         ui::draw_text(property.getName());
 
         if (not property.getComment().empty()) {
@@ -138,11 +139,11 @@ namespace
     void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
         ui::DrawListView l = ui::get_panel_draw_list();
-        const Vec2 p = ui::get_cursor_screen_pos();
-        const float h = ui::get_text_line_height() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
+        const Vec2 p = ui::get_cursor_ui_pos();
+        const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
         l.add_rect_filled({p, p + dims}, color);
-        ui::set_cursor_screen_pos({p.x + 4.0f, p.y});
+        ui::set_cursor_ui_pos({p.x + 4.0f, p.y});
     }
 
     // draws a context menu that the user can use to change the step interval of the +/- buttons
@@ -152,9 +153,9 @@ namespace
             ui::draw_text("Set Step Size");
             ui::same_line();
             ui::draw_help_marker("Sets the decrement/increment of the + and - buttons. Can be handy for tweaking property values");
-            ui::draw_dummy({0.0f, 0.1f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.1f);
             ui::draw_separator();
-            ui::draw_dummy({0.0f, 0.2f*ui::get_text_line_height()});
+            ui::draw_vertical_spacer(0.2f);
 
             if (ui::begin_table("CommonChoicesTable", 2, ui::TableFlag::SizingStretchProp)) {
                 ui::table_setup_column("Type");
@@ -284,7 +285,7 @@ namespace
         }
         ui::pop_style_var();
         rv.shouldSave = ui::should_save_last_drawn_item_value();
-        App::upd().add_frame_annotation(frameAnnotationLabel, ui::get_last_drawn_item_screen_rect());
+        ui::add_screenshot_annotation_to_last_drawn_item(frameAnnotationLabel);
         ui::draw_tooltip_if_item_hovered("Step Size", "You can right-click to adjust the step size of the buttons");
         DrawStepSizeEditor(stepSize);
 
@@ -540,7 +541,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_frame_annotation("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::StringEditor/" + m_EditedProperty.getName());
 
             if (ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
@@ -615,18 +616,12 @@ namespace
                 ui::same_line();
             }
 
-            ui::set_next_item_width(ui::get_content_region_available().x);
-
-            // draw an invisible vertical line, so that `double` properties are properly
-            // aligned with `Vec3` properties (that have a non-invisible R/G/B line)
-            DrawColoredDimensionHintVerticalLine(Color::clear());
-
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
             auto value = static_cast<float>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : 0.0);
+            ui::set_next_item_width(ui::get_content_region_available().x);
             auto frameAnnotationLabel = "ObjectPropertiesEditor::DoubleEditor/" + m_EditedProperty.getName();
-
             auto drawRV = DrawCustomScalarInput("##doubleeditor", value, m_StepSize, frameAnnotationLabel);
 
             if (drawRV.wasEdited) {
@@ -713,7 +708,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_frame_annotation("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::BoolEditor/" + m_EditedProperty.getName());
 
             if (edited or ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
@@ -998,12 +993,11 @@ namespace
             const ValueConverter& valueConverter)
         {
             ui::push_id(i);
-            ui::set_next_item_width(ui::get_content_region_available().x);
-
             // draw dimension hint (color bar next to the input)
             DrawColoredDimensionHintVerticalLine(Color(0.0f, 0.6f).with_element(i, 1.0f));
 
             // draw the input editor
+            ui::set_next_item_width(ui::get_content_region_available().x);
             auto frameAnnotation = GenerateVecFrameAnnotationLabel(m_EditedProperty, i);
             auto drawRV = DrawCustomScalarInput("##valueinput", editedValue[i], m_StepSize, frameAnnotation);
 
@@ -1029,14 +1023,14 @@ namespace
                 if (ui::draw_button("radians")) {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().add_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName());
                 ui::draw_tooltip_body_only_if_item_hovered("This quantity is edited in radians (click to switch to degrees)");
             }
             else {
                 if (ui::draw_button("degrees")) {
                     m_OrientationValsAreInRadians = !m_OrientationValsAreInRadians;
                 }
-                App::upd().add_frame_annotation("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::OrientationToggle/" + m_EditedProperty.getName());
                 ui::draw_tooltip_body_only_if_item_hovered("This quantity is edited in degrees (click to switch to radians)");
             }
         }
@@ -1119,7 +1113,7 @@ namespace
                     m_EditedProperty.updValue(idx)[3*i + 2] = static_cast<double>(rawValue[3*i + 2]);
                 }
                 shouldSave = shouldSave or ui::should_save_last_drawn_item_value();
-                App::upd().add_frame_annotation("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::Vec6Editor/" + m_EditedProperty.getName());
 
                 ui::pop_id();
             }
@@ -1202,7 +1196,7 @@ namespace
             }
 
             // globally annotate the editor rect, for downstream screenshot automation
-            App::upd().add_frame_annotation("ObjectPropertiesEditor::IntEditor/" + m_EditedProperty.getName(), ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("ObjectPropertiesEditor::IntEditor/");
 
             if (edited or ui::should_save_last_drawn_item_value()) {
                 rv = MakePropertyValueSetter(idx, m_EditedProperty.getValue(idx));
@@ -1408,11 +1402,12 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EDIT)) {
+                    if (ui::draw_button(OSC_ICON_EDIT " edit ")) {
                         App::post_event<OpenPopupEvent>(*parentWidget, createGeometryPathEditorPopup(componentPtr));
                     }
                 }
                 else {
+                    ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
                     ui::draw_text(prop.toString());
                 }
             }
@@ -1503,7 +1498,7 @@ namespace
                 Widget* parentWidget = tryGetParentWidget();
                 const auto componentPtr = tryGetComponentSharedPtr();
                 if (parentWidget and componentPtr) {
-                    if (ui::draw_button(OSC_ICON_EYE)) {
+                    if (ui::draw_button(OSC_ICON_EYE " view ")) {
 
                         // care: the accessor here differs from the default because the user's selection
                         // can change the accessor's behavior. This is a panel, so it should stick to
@@ -1538,12 +1533,14 @@ namespace
                     }
                 }
                 else {
+                    ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
                     ui::draw_text(prop->toString());
                 }
             }
 
             ui::draw_tooltip_if_item_hovered("View Function", OSC_ICON_MAGIC " Experimental Feature " OSC_ICON_MAGIC ": currently, plots the `OpenSim::Function`, but it doesn't know what the X or Y axes are, or what values might be reasonable for either. It also doesn't spawn a non-modal panel, which would be handy if you wanted to view multiple functions at the same time - I should work on that ;)");
             ui::same_line();
+            ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
             ui::draw_text(prop->getTypeName());
             ui::next_column();
 
@@ -1773,6 +1770,7 @@ private:
         ui::draw_separator();
         DrawPropertyName(prop);
         ui::next_column();
+        ui::align_text_to_frame_padding();  // ensure it aligns with the property name in the previous column
         ui::draw_text(prop.toString());
         ui::next_column();
     }

@@ -4,6 +4,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabContextMenu.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabDecorationGenerators.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabHover.h>
@@ -33,7 +34,6 @@
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Typelist.h>
@@ -68,9 +68,9 @@ namespace osc
         void impl_draw_content() final
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
-            const Rect contentRect = ui::content_region_avail_as_screen_rect();
+            const Rect contentRect = ui::get_content_region_available_ui_rect();
             const Vec2 contentRectDims = dimensions_of(contentRect);
-            const Vec2 mousePos = ui::get_mouse_pos();
+            const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
             const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
@@ -79,7 +79,7 @@ namespace osc
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             const BVH& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
             const std::optional<RayCollision> meshCollision = m_LastTextureHittestResult.is_hovered ?
-                get_closest_worldspace_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
+                get_closest_world_space_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
             // landmark hittest: compute whether the user is hovering over a landmark
@@ -109,7 +109,7 @@ namespace osc
             handleInputAndHoverEvents(m_LastTextureHittestResult, meshCollision, landmarkCollision);
 
             // render 2D: draw any 2D overlays over the 3D render
-            draw2DOverlayUI(m_LastTextureHittestResult.item_screen_rect);
+            draw2DOverlayUI(m_LastTextureHittestResult.item_ui_rect);
         }
 
         // update the 3D camera from user inputs/external data
@@ -120,7 +120,7 @@ namespace osc
 
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.is_hovered and
-                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_screen_rect))) {
+                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect))) {
 
                 m_State->setLinkedBaseCamera(m_Camera);
             }
@@ -161,7 +161,7 @@ namespace osc
             const Sphere landmarkSphere = {.origin = *maybePos, .radius = m_LandmarkRadius};
             if (const auto collision = find_collision(cameraRay, landmarkSphere))
             {
-                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{landmark.uid, TPSDocumentElementType::Landmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), *maybePos);
@@ -195,7 +195,7 @@ namespace osc
 
             if (const auto collision = find_collision(cameraRay, decorationSphere))
             {
-                if (!closest || length(closest->getWorldspaceLocation() - cameraRay.origin) > collision->distance)
+                if (!closest || length(closest->getWorldSpaceLocation() - cameraRay.origin) > collision->distance)
                 {
                     TPSDocumentElementID fullID{nonPariticpatingLandmark.uid, TPSDocumentElementType::NonParticipatingLandmark, m_DocumentIdentifier};
                     closest.emplace(std::move(fullID), nonPariticpatingLandmark.location);
@@ -415,7 +415,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
-            ui::set_cursor_screen_pos(renderRect.p1 + m_State->getOverlayPadding());
+            ui::set_cursor_ui_pos(renderRect.p1 + m_State->getOverlayPadding());
 
             drawInformationIcon();
             ui::same_line();
@@ -481,7 +481,7 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh File"))
                 {
-                    ActionLoadMeshFile(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
+                    ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
                 }
                 if (ui::begin_menu("Generated Mesh")) {
                     drawGeneratedMeshOptions(SolidGeometries{});
@@ -489,12 +489,12 @@ namespace osc
                 }
                 if (ui::draw_menu_item("Landmarks from CSV"))
                 {
-                    ActionLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
+                    ActionPromptUserToLoadLandmarksFromCSV(m_State->getUndoableSharedPtr(), m_DocumentIdentifier);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source &&
                     ui::draw_menu_item("Non-Participating Landmarks from CSV"))
                 {
-                    ActionLoadNonParticipatingLandmarksFromCSV(m_State->getUndoableSharedPtr());
+                    ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(m_State->getUndoableSharedPtr());
                 }
                 ui::end_popup();
             }
@@ -522,33 +522,33 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::Default);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionTrySaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::NoWriteNormals);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getScratchMesh(m_DocumentIdentifier), ObjWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {
-                    ActionTrySaveMeshToStlFile(m_State->getScratchMesh(m_DocumentIdentifier));
+                    ActionPromptUserToMeshToStlFile(m_State->getScratchMesh(m_DocumentIdentifier));
                 }
                 if (ui::draw_menu_item("Landmarks to CSV"))
                 {
-                    ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier);
+                    ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier);
                 }
                 if (ui::draw_menu_item("Landmark Positions to CSV"))
                 {
-                    ActionSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                    ActionPromptUserToSaveLandmarksToCSV(m_State->getScratch(), m_DocumentIdentifier, LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                 }
                 if (m_DocumentIdentifier == TPSDocumentInputIdentifier::Source)
                 {
                     if (ui::draw_menu_item("Non-Participating Landmarks to CSV"))
                     {
-                        ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
+                        ActionPromptUserToSaveNonParticipatingLandmarksToCSV(m_State->getScratch());
                     }
                     if (ui::draw_menu_item("Non-Participating Landmark Positions to CSV"))
                     {
-                        ActionSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
+                        ActionPromptUserToSaveNonParticipatingLandmarksToCSV(m_State->getScratch(), LandmarkCSVFlags::NoHeader | LandmarkCSVFlags::NoNames);
                     }
                 }
                 ui::end_popup();
@@ -560,7 +560,7 @@ namespace osc
         {
             if (ui::draw_button(OSC_ICON_EXPAND_ARROWS_ALT))
             {
-                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_screen_rect));
+                auto_focus(m_Camera, m_State->getScratchMesh(m_DocumentIdentifier).bounds(), aspect_ratio_of(m_LastTextureHittestResult.item_ui_rect));
                 m_State->setLinkedBaseCamera(m_Camera);
             }
             ui::draw_tooltip_if_item_hovered("Autoscale Scene", "Zooms camera to try and fit everything in the scene into the viewer");

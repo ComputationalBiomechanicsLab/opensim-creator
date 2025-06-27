@@ -127,15 +127,15 @@ public:
 private:
     void draw_3d_scene()
     {
-        const Rect viewport_screen_space_rect = ui::get_main_viewport_workspace_screenspace_rect();
+        const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 viewport_pixel_dimensions = device_pixel_ratio * dimensions_of(viewport_screen_space_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
 
-        reformat_all_textures(viewport_pixel_dimensions, device_pixel_ratio);
+        reformat_all_textures(workspace_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
         render_blurred_brightness();
-        render_combined_scene(viewport_screen_space_rect);
-        draw_overlays(viewport_screen_space_rect);
+        render_combined_scene(workspace_screen_space_rect);
+        draw_overlays(workspace_screen_space_rect);
     }
 
     void reformat_all_textures(const Vec2& viewport_pixel_dimensions, float device_pixel_ratio)
@@ -143,7 +143,7 @@ private:
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
         RenderTextureParams params = {
-            .dimensions = viewport_pixel_dimensions,
+            .pixel_dimensions = viewport_pixel_dimensions,
             .device_pixel_ratio = device_pixel_ratio,
             .anti_aliasing_level = aa_level,
             .color_format = ColorRenderBufferFormat::DefaultHDR,
@@ -264,7 +264,7 @@ private:
         }
     }
 
-    void render_combined_scene(const Rect& viewport_rect)
+    void render_combined_scene(const Rect& viewport_screen_space_rect)
     {
         final_compositing_material_.set("uHDRSceneRender", scene_hdr_color_output_);
         final_compositing_material_.set("uBloomBlur", ping_pong_blur_output_buffers_[0]);
@@ -273,8 +273,8 @@ private:
 
         Camera camera;
         graphics::draw(quad_mesh_, identity<Transform>(), final_compositing_material_, camera);
-        camera.set_pixel_rect(viewport_rect);
-        camera.render_to_screen();
+        camera.set_pixel_rect(viewport_screen_space_rect);
+        camera.render_to_main_window();
 
         final_compositing_material_.unset("uBloomBlur");
         final_compositing_material_.unset("uHDRSceneRender");
@@ -298,7 +298,7 @@ private:
                 viewport_screen_space_rect.p1 + offset + overlay_width,
             };
 
-            graphics::blit_to_screen(*texture_pointers[i], overlay_rect);
+            graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);
         }
     }
 
@@ -332,8 +332,8 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.width = 2.0f, .height = 2.0f, .depth = 2.0f}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     RenderTexture scene_hdr_color_output_;
     RenderTexture scene_hdr_thresholded_output_;

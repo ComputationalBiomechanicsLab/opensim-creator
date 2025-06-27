@@ -1620,14 +1620,14 @@ OpenSim::Component& osc::AddComponentToAppropriateSet(OpenSim::Model& m, std::un
 OpenSim::ModelComponent& osc::AddModelComponent(OpenSim::Model& model, std::unique_ptr<OpenSim::ModelComponent>&& p)
 {
     OpenSim::ModelComponent& rv = *p;
-    model.addModelComponent(p.release());
+    model.addModelComponent(std::move(p).release());
     return rv;
 }
 
 OpenSim::Component& osc::AddComponent(OpenSim::Component& c, std::unique_ptr<OpenSim::Component>&& p)
 {
     OpenSim::Component& rv = *p;
-    c.addComponent(p.release());
+    c.addComponent(std::move(p).release());
     return rv;
 }
 
@@ -1918,4 +1918,19 @@ void osc::UpdateStateFromStorageTime(
     double time)
 {
     UpdateStateVariablesFromStorageRow(model, state, columnIndexToModelStateVarIndex, storage, storage.findIndex(time));
+}
+
+std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
+{
+    SimTK::Xml::Document d;
+    SimTK::Xml::Element el = d.getRootElement();
+    obj.updateXMLNode(el);
+    if (el.element_begin() != el.element_end()) {
+        SimTK::String str;
+        el.element_begin()->writeToString(str);
+        return str;
+    }
+    else {
+        return {};
+    }
 }

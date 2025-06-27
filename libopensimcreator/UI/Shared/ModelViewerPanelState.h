@@ -39,7 +39,7 @@ namespace osc
             return m_Flags;
         }
 
-        Rect viewportRect{};
+        Rect viewportUiRect{};
         bool isLeftClickReleasedWithoutDragging = false;
         bool isRightClickReleasedWithoutDragging = false;
         std::optional<AABB> maybeSceneVisibleAABB;

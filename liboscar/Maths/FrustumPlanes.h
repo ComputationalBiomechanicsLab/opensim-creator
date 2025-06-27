@@ -30,7 +30,7 @@ namespace osc
         constexpr reference operator[](size_t pos) { return begin()[pos]; }
         constexpr const_reference operator[](size_t pos) const { return begin()[pos]; }
 
-        AnalyticPlane p0 = {.distance = 0.0f, .normal = { 0.0f,  0.0f, -1.0f}};
+        AnalyticPlane p0 = {.distance = 1.0f, .normal = { 0.0f,  0.0f, -1.0f}};
         AnalyticPlane p1 = {.distance = 1.0f, .normal = { 0.0f,  0.0f,  1.0f}};
         AnalyticPlane p2 = {.distance = 1.0f, .normal = { 1.0f,  0.0f,  0.0f}};
         AnalyticPlane p3 = {.distance = 1.0f, .normal = {-1.0f,  0.0f,  0.0f}};

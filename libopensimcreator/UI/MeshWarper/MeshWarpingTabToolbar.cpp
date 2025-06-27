@@ -2,10 +2,10 @@
 
 #include <libopensimcreator/Documents/Landmarks/LandmarkCSVFlags.h>
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocumentActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/oscimgui.h>
@@ -71,6 +71,9 @@ private:
 
         drawVisualAidsMenuButton();
         ui::same_line();
+
+        drawSwapSourceDestinationButton();
+        ui::same_line();
     }
 
     void drawNewDocumentButton()
@@ -89,10 +92,10 @@ private:
         ui::draw_button(OSC_ICON_FOLDER_OPEN);
         if (ui::begin_popup_context_menu("##OpenFolder", ui::PopupFlag::MouseButtonLeft)) {
             if (ui::draw_menu_item("Load Source Mesh")) {
-                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Source);
             }
             if (ui::draw_menu_item("Load Destination Mesh")) {
-                ActionLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
+                ActionPromptUserToLoadMeshFile(m_State->getUndoableSharedPtr(), TPSDocumentInputIdentifier::Destination);
             }
             ui::end_popup();
         }
@@ -105,7 +108,7 @@ private:
     void drawSaveLandmarksButton()
     {
         if (ui::draw_button(OSC_ICON_SAVE)) {
-            ActionSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
+            ActionPromptUserToSavePairedLandmarksToCSV(m_State->getScratch(), lm::LandmarkCSVFlags::NoNames);
         }
         ui::draw_tooltip_if_item_hovered(
             "Save Landmarks to CSV (no names)",
@@ -155,9 +158,17 @@ private:
         }
     }
 
+    void drawSwapSourceDestinationButton()
+    {
+        if (ui::draw_button("swap source <-> destination")) {
+            ActionSwapSourceDestination(m_State->updUndoable());
+        }
+        ui::draw_tooltip_if_item_hovered("Swap Source <-> Destination", "Swaps the source mesh with the destination mesh.\n\nNote: non-participating landmarks will be left in the source mesh, because they must always be there.");
+    }
+
     std::shared_ptr<MeshWarpingTabSharedState> m_State;
-    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr()};
-    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr()};
+    UndoButton m_UndoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_UNDO};
+    RedoButton m_RedoButton{&owner(), m_State->getUndoableSharedPtr(), OSC_ICON_REDO};
 };
 
 osc::MeshWarpingTabToolbar::MeshWarpingTabToolbar(

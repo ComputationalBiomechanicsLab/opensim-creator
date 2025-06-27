@@ -151,7 +151,7 @@ namespace osc
             const Vec2 direction = normalize(dest.origin - src.origin);
             const Vec2 start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
             const Vec2 end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
-            const Color color = Color::half_grey();
+            const Color color = Color::dark_grey();
             ui::get_panel_draw_list().add_line(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
@@ -223,7 +223,7 @@ namespace osc
                     return m_State->getUnpairedLandmarkColor();
                 }
             }
-            return Color::half_grey();
+            return Color::dark_grey();
         }
 
         ui::TableFlags getTableFlags() const
@@ -233,12 +233,12 @@ namespace osc
 
         float calcCircleRadius() const
         {
-            return 0.4f*ui::get_text_line_height();
+            return 0.4f*ui::get_text_line_height_in_current_panel();
         }
 
         Vec2 calcColumnMidpointScreenPos() const
         {
-            return Vec2{ui::get_cursor_screen_pos()} + Vec2{0.5f*ui::get_column_width(), 0.5f*ui::get_text_line_height()};
+            return ui::get_cursor_ui_pos() + 0.5f*Vec2{ui::get_column_width(), ui::get_text_line_height_in_current_panel()};
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

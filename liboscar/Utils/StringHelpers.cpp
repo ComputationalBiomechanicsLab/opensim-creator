@@ -28,7 +28,7 @@ namespace
 bool osc::contains_case_insensitive(std::string_view sv, std::string_view substr)
 {
     const auto tolower = [](const auto c) { return std::tolower(c); };
-    return not std::ranges::search(sv, substr, std::ranges::equal_to{}, tolower, tolower).empty();
+    return std::ranges::search(sv, substr, std::ranges::equal_to{}, tolower, tolower).size() == substr.size();
 }
 
 bool osc::is_string_case_insensitive_greater_than(std::string_view a, std::string_view b)

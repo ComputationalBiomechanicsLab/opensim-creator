@@ -12,9 +12,9 @@ TEST(SharedDepthStencilRenderBuffer, can_default_construct)
     [[maybe_unused]] const SharedDepthStencilRenderBuffer default_constructed;
 }
 
-TEST(SharedDepthStencilRenderBuffer, default_constructed_as_1x1_dimensions)
+TEST(SharedDepthStencilRenderBuffer, default_constructed_as_1x1_pixel_dimensions)
 {
-    ASSERT_EQ(SharedDepthStencilRenderBuffer{}.dimensions(), Vec2i(1, 1));
+    ASSERT_EQ(SharedDepthStencilRenderBuffer{}.pixel_dimensions(), Vec2i(1, 1));
 }
 
 TEST(SharedDepthStencilRenderBuffer, default_constructed_with_1x_anti_aliasing)
@@ -43,10 +43,10 @@ TEST(SharedDepthStencilRenderBuffer, dimensionality_is_based_on_parameters)
     ASSERT_EQ(buffer.dimensionality(), TextureDimensionality::Cube);
 }
 
-TEST(SharedDepthStencilRenderBuffer, dimensions_is_based_on_parameters)
+TEST(SharedDepthStencilRenderBuffer, pixel_dimensions_is_based_on_parameters)
 {
-    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{.dimensions = Vec2i(3, 5)}};
-    ASSERT_EQ(buffer.dimensions(), Vec2i(3,5));
+    const SharedDepthStencilRenderBuffer buffer{DepthStencilRenderBufferParams{.pixel_dimensions = Vec2i(3, 5)}};
+    ASSERT_EQ(buffer.pixel_dimensions(), Vec2i(3,5));
 }
 
 TEST(SharedDepthStencilRenderBuffer, anti_aliasing_level_is_based_on_parameters)

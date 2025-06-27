@@ -5,6 +5,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/StoFileSimulation.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
@@ -16,8 +17,6 @@
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/FileDialogFilter.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
@@ -248,7 +247,7 @@ void osc::MainMenuFileTab::onDraw(std::shared_ptr<IModelStatePair> maybeModel)  
             App::post_event<OpenTabEvent>(*parent(), std::move(tab));
         }
     }
-    App::upd().add_frame_annotation("MainMenu/ImportMeshesMenuItem", ui::get_last_drawn_item_screen_rect());
+    ui::add_screenshot_annotation_to_last_drawn_item("MainMenu/ImportMeshesMenuItem");
     if (ui::draw_menu_item(OSC_ICON_BEZIER_CURVE " Preview Experimental Data")) {
         if (parent()) {
             auto tab = std::make_unique<PreviewExperimentalDataTab>(parent());
@@ -280,7 +279,7 @@ void osc::MainMenuAboutTab::onDraw()
     ui::same_line();
     ui::draw_help_marker("OSMV's global graphical settings");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         ui::set_num_columns(2);
 
@@ -316,10 +315,10 @@ void osc::MainMenuAboutTab::onDraw()
         ui::next_column();
 
         if (ui::draw_button(OSC_ICON_EXPAND " fullscreen")) {
-            App::upd().make_windowed_fullscreen();
+            App::upd().make_main_window_fullscreen();
         }
         if (ui::draw_button(OSC_ICON_WINDOW_RESTORE " windowed")) {
-            App::upd().make_windowed();
+            App::upd().make_main_window_windowed();
         }
         ui::next_column();
 
@@ -337,12 +336,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns();
     }
 
-    ui::draw_dummy({0.0f, 2.0f});
+    ui::draw_vertical_spacer(2.0f/15.0f);
     ui::draw_text("properties");
     ui::same_line();
     ui::draw_help_marker("general software properties: useful information for bug reporting etc.");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         const AppMetadata& metadata = App::get().metadata();
 
@@ -381,12 +380,12 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns(1);
     }
 
-    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_vertical_spacer(2.5f/15.0f);
     ui::draw_text("debugging utilities:");
     ui::same_line();
     ui::draw_help_marker("standard utilities that can help with development, debugging, etc.");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     int id = 0;
     {
         ui::set_num_columns(2);
@@ -428,25 +427,28 @@ void osc::MainMenuAboutTab::onDraw()
         ui::set_num_columns();
     }
 
-    ui::draw_dummy({0.0f, 2.5f});
+    ui::draw_vertical_spacer(2.5f/15.0f);
     ui::draw_text("useful links:");
     ui::same_line();
     ui::draw_help_marker("links to external sites that might be useful");
     ui::draw_separator();
-    ui::draw_dummy({0.0f, 0.5f});
+    ui::draw_vertical_spacer(0.5f/15.0f);
     {
         ui::set_num_columns(2);
 
-        ui::draw_text("OpenSim Creator Documentation");
-        ui::next_column();
-        ui::push_id(id++);
-        if (ui::draw_button(OSC_ICON_LINK " open"))
+        if (auto docsURL = App::get().metadata().documentation_url())
         {
-            open_url_in_os_default_web_browser(OpenSimCreatorApp::get().docs_url());
+            ui::draw_text("OpenSim Creator Documentation");
+            ui::next_column();
+            ui::push_id(id++);
+            if (ui::draw_button(OSC_ICON_LINK " open"))
+            {
+                open_url_in_os_default_web_browser(*docsURL);
+            }
+            ui::draw_tooltip_body_only_if_item_hovered("this will open the documentation in a separate browser window");
+            ui::pop_id();
+            ui::next_column();
         }
-        ui::draw_tooltip_body_only_if_item_hovered("this will open the (locally installed) documentation in a separate browser window");
-        ui::pop_id();
-        ui::next_column();
 
         if (auto repoURL = App::get().metadata().repository_url())
         {
@@ -455,7 +457,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
             {
-                open_file_in_os_default_application(std::filesystem::path{std::string_view{*repoURL}});
+                open_url_in_os_default_web_browser(*repoURL);
             }
             ui::draw_tooltip_body_only_if_item_hovered("this will open the repository homepage in a separate browser window");
             ui::pop_id();
@@ -469,7 +471,7 @@ void osc::MainMenuAboutTab::onDraw()
             ui::push_id(id++);
             if (ui::draw_button(OSC_ICON_LINK " open"))
             {
-                open_file_in_os_default_application(std::filesystem::path{std::string_view{*helpURL}});
+                open_url_in_os_default_web_browser(*helpURL);
             }
             ui::draw_tooltip_body_only_if_item_hovered("this will open the help/discussion page in a separate browser window");
             ui::pop_id();
@@ -481,7 +483,7 @@ void osc::MainMenuAboutTab::onDraw()
         ui::push_id(id++);
         if (ui::draw_button(OSC_ICON_LINK " open"))
         {
-            open_file_in_os_default_application("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
+            open_url_in_os_default_web_browser("https://simtk-confluence.stanford.edu/display/OpenSim/Documentation");
         }
         ui::draw_tooltip_body_only_if_item_hovered("this will open the documentation in a separate browser window");
         ui::pop_id();

@@ -4,11 +4,11 @@
 #include <libopensimcreator/ComponentRegistry/StaticComponentRegistries.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
@@ -73,7 +73,7 @@ public:
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##bodyname", m_BodyDetails.bodyName);
-            App::upd().add_frame_annotation("AddBodyPopup::BodyNameInput", ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::BodyNameInput");
             ui::next_column();
         }
 
@@ -124,7 +124,7 @@ public:
                     m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
                 }
                 if (&pf == selectedPf) {
-                    App::upd().add_frame_annotation(pf.getName(), ui::get_last_drawn_item_screen_rect());
+                    ui::add_screenshot_annotation_to_last_drawn_item(pf.getName());
                 }
             }
             ui::end_child_panel();
@@ -145,7 +145,7 @@ public:
                     registry.size(),
                     [&registry](size_t i) { return registry[i].name(); }
                 );
-                App::upd().add_frame_annotation("AddBodyPopup::JointTypeInput", ui::get_last_drawn_item_screen_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::JointTypeInput");
             }
             ui::next_column();
         }
@@ -158,7 +158,7 @@ public:
             ui::next_column();
             ui::set_next_item_width(ui::get_content_region_available().x);
             ui::draw_string_input("##jointnameinput", m_BodyDetails.jointName);
-            App::upd().add_frame_annotation("AddBodyPopup::JointNameInput", ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::JointNameInput");
             ui::next_column();
         }
 
@@ -169,7 +169,7 @@ public:
             ui::draw_help_marker("Whether osc should automatically add intermediate offset frames to the OpenSim::Joint. A joint can attach to the two bodies (this added one, plus the selected one) directly. However, many OpenSim model designs instead make the joint attach to offset frames which, themselves, attach to the bodies. The utility of doing this is that the offset frames can be manually adjusted later, rather than *having* to attach the center of the joint to the center of the body");
             ui::next_column();
             ui::draw_checkbox("##addoffsetframescheckbox", &m_BodyDetails.addOffsetFrames);
-            App::upd().add_frame_annotation("AddBodyPopup::AddOffsetFramesInput", ui::get_last_drawn_item_screen_rect());
+            ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::AddOffsetFramesInput");
             ui::next_column();
         }
 
@@ -192,7 +192,7 @@ public:
                     );
                     App::post_event<OpenPopupEvent>(owner(), std::move(popup));
                 }
-                App::upd().add_frame_annotation("AddBodyPopup::GeometryButton", ui::get_last_drawn_item_screen_rect());
+                ui::add_screenshot_annotation_to_last_drawn_item("AddBodyPopup::GeometryButton");
             }
             ui::next_column();
         }
@@ -200,8 +200,6 @@ public:
         ui::set_num_columns();
 
         // end of input prompting: show user cancel/ok buttons
-
-        ui::draw_dummy({0.0f, 1.0f});
 
         if (ui::draw_button("cancel")) {
             request_close();

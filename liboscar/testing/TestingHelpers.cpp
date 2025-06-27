@@ -20,14 +20,14 @@ namespace
         }
         return rv;
     }
-}
 
-std::default_random_engine& osc::testing::get_process_random_engine()
-{
-    // the RNG is deliberately deterministic, so that
-    // test errors are reproducible
-    static std::default_random_engine e{};  // NOLINT(cert-msc32-c,cert-msc51-cpp)
-    return e;
+    std::default_random_engine& get_process_random_engine()
+    {
+        // the RNG is deliberately deterministic, so that
+        // test errors are reproducible
+        static std::default_random_engine e{};  // NOLINT(cert-msc32-c,cert-msc51-cpp)
+        return e;
+    }
 }
 
 template<> float osc::testing::generate()

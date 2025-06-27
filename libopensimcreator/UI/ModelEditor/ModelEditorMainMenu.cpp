@@ -3,17 +3,17 @@
 #include <libopensimcreator/Documents/Model/Environment.h>
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/ModelEditor/ExportPointsPopup.h>
-#include <libopensimcreator/UI/ModelEditor/ModelActionsMenuItems.h>
 #include <libopensimcreator/UI/ModelEditor/ModelMusclePlotPanel.h>
 #include <libopensimcreator/UI/PerformanceAnalyzerTab.h>
 #include <libopensimcreator/UI/Shared/ImportStationsFromCSVPopup.h>
 #include <libopensimcreator/UI/Shared/MainMenu.h>
+#include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/IconCodepoints.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
@@ -97,7 +97,7 @@ private:
     void drawMainMenuAddTab()
     {
         if (ui::begin_menu("Add")) {
-            m_MainMenuAddTabMenuItems.on_draw();
+            m_MainMenuModelAddMenuItems.on_draw();
             ui::end_menu();
         }
     }
@@ -192,7 +192,7 @@ private:
 
     std::shared_ptr<IModelStatePair> m_Model;
     MainMenuFileTab m_MainMenuFileTab;
-    ModelActionsMenuItems m_MainMenuAddTabMenuItems{&owner(), m_Model};
+    ModelAddMenuItems m_MainMenuModelAddMenuItems{&owner(), m_Model};
     WindowMenu m_WindowMenu;
     MainMenuAboutTab m_MainMenuAboutTab;
 };

@@ -9,36 +9,6 @@ using namespace osc;
 
 namespace
 {
-    // matches the quad used in LearnOpenGL's normal mapping tutorial
-    Mesh generate_quad()
-    {
-        Mesh mesh;
-        mesh.set_vertices({
-            {-1.0f,  1.0f, 0.0f},
-            {-1.0f, -1.0f, 0.0f},
-            { 1.0f, -1.0f, 0.0f},
-            { 1.0f,  1.0f, 0.0f},
-        });
-        mesh.set_normals({
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-            {0.0f, 0.0f, 1.0f},
-        });
-        mesh.set_tex_coords({
-            {0.0f, 1.0f},
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-        });
-        mesh.set_indices({
-            0, 1, 2,
-            0, 2, 3,
-        });
-        mesh.recalculate_tangents();
-        return mesh;
-    }
-
     MouseCapturingCamera create_camera()
     {
         MouseCapturingCamera camera;
@@ -56,7 +26,8 @@ namespace
         );
         const Texture2D normal_map = load_texture2D_from_image(
             loader.open("oscar_demos/learnopengl/textures/brickwall_normal.jpg"),
-            ColorSpace::Linear
+            ColorSpace::Linear,
+            ImageLoadingFlag::TreatComponentsAsSpatialVectors
         );
 
         Material rv{Shader{
@@ -84,7 +55,9 @@ public:
 
     explicit Impl(LOGLNormalMappingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, static_label()}
-    {}
+    {
+        quad_mesh_.recalculate_tangents();  // needed for normal mapping
+    }
 
     void on_mount()
     {
@@ -115,7 +88,7 @@ public:
         camera_.on_draw();
 
         // clear screen and ensure camera has correct pixel rect
-        App::upd().clear_screen(Color::dark_grey());
+        App::upd().clear_main_window(Color::dark_grey());
 
         // draw normal-mapped quad
         {
@@ -131,8 +104,8 @@ public:
             graphics::draw(cube_mesh_, light_transform_, light_cube_material_, camera_);
         }
 
-        camera_.set_pixel_rect(ui::get_main_viewport_workspace_screenspace_rect());
-        camera_.render_to_screen();
+        camera_.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
+        camera_.render_to_main_window();
 
         ui::begin_panel("controls");
         ui::draw_checkbox("normal mapping", &normal_mapping_enabled_);
@@ -146,7 +119,7 @@ private:
     Material normal_mapping_material_ = create_normal_mapping_material(loader_);
     Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
-    Mesh quad_mesh_ = generate_quad();
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();
