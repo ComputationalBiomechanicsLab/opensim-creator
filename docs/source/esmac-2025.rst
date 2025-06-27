@@ -1,9 +1,9 @@
 ESMAC 2025 Workshop
 ===================
 
-The OpenSim Creator team will present a model building and warping workshop at
-the European Society for Movement Analysis in Adults and Children (ESMAC). This
-documentation is a guidebook for that workshop.
+The OpenSim Creator team will present **"Building Patient-Specific Musculoskeletal
+Models with OpenSim Creator"** at the European Society for Movement Analysis in
+Adults and Children (ESMAC). This documentation is a guidebook for that workshop.
 
 
 📅 When/Where
@@ -13,8 +13,8 @@ The workshop shall be held at the ESMAC conference on the afternoon of the 10th
 September 2025. The exact time and room is still to-be-decided (TBD).
 
 
-🧑🏽‍🔬 Organizers and Expert Helpers
--------------------------------------
+🧑🏽‍🔬 Organizers and Helpers
+------------------------------
 
 - Adam Kewley
 - Ajay Seth
@@ -128,7 +128,7 @@ should include:
 5. Our solutions to some of the low-level problems (e.g. :doc:`station-defined-frames`)
 6. (cont.)
 7. Our solution to the model warping/scaling problem (:doc:`the-model-warper`)
-8.
+8. (cont.)
 9. Splash slide, call to action
 
 
