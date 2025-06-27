@@ -48,12 +48,8 @@ TEST(BoxGeometry, can_default_construct)
 TEST(BoxGeometry, works_with_non_default_args)
 {
     ASSERT_NO_THROW({ BoxGeometry({
-        .width = 0.5f,
-        .height = 100.0f,
-        .depth = 0.0f,
-        .num_width_segments = 10,
-        .num_height_segments = 1,
-        .num_depth_segments = 5,
+        .dimensions = {0.5f, 100.0f, 0.0f},
+        .num_segments = {10, 1, 5},
     }); });
 }
 
@@ -334,10 +330,8 @@ TEST(PlaneGeometry, can_default_construct)
 TEST(PlaneGeometry, works_with_non_default_args)
 {
     const Mesh mesh = PlaneGeometry{{
-        .width = 0.5f,
-        .height = 2.0f,
-        .num_width_segments = 4,
-        .num_height_segments = 4,
+        .dimensions = {0.5f, 2.0f},
+        .num_segments = {4, 4},
     }};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
