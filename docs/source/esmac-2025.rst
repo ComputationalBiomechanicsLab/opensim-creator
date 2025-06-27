@@ -10,7 +10,7 @@ Adults and Children (ESMAC). This documentation is a guidebook for that workshop
 -------------
 
 The workshop shall be held at the ESMAC conference on the afternoon of the 10th
-September 2025. The exact time and room is still to-be-decided (TBD).
+September 2025. The exact time and room is still to-be-decided (:red:`TBD`).
 
 
 🧑🏽‍🔬 Organizers and Helpers
@@ -18,7 +18,7 @@ September 2025. The exact time and room is still to-be-decided (TBD).
 
 - Adam Kewley
 - Ajay Seth
-- TBD (Judith/mmreazie?)
+- :red:`Other helpers TBD`
 
 
 👩‍💻 Before You Arrive
@@ -77,6 +77,7 @@ a `CC BY 4.0 <https://creativecommons.org/licenses/by/4.0/deed.en>`_ license.
 We will keep hosting these materials at `docs.opensimcreator.com <https://docs.opensimcreator.com>`_
 for a while after the workshop has ended.
 
+
 Presentation: Model Building with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -98,6 +99,7 @@ minutes and should include:
 11. (cont.)
 12. Splash slide, call to action
 
+
 Work Session: Model Building
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -106,14 +108,25 @@ duration is 1h30-1h45 and should include:
 
 - Direct people to the tutorials or ESMAC-specific exercises. Maybe shape
   it such that morphometric (mesh) scaling is an available thing they can
-  work on if they are mostly here for the 2nd half of the workshop.
+  work on if they are mostly here for the 2nd half of the workshop - **ensure
+  a warp-able model is made**
 - On-whiteboard walkthroughs about specific features in OpenSim.
 - Staff/team milling around answering questions, and so on.
+- Show gallery page, which unofficially documents new buttons/features, etc.
+- Show live moment arm plotting
+- Edit meshes in Blender, update in OpenSim Creator?
+- Plot muscle curves, show how to edit them in external software?
+- Make a model with a ``StationDefinedFrame``
+
+- Maybe in parallel, or at the end, try to edit/mutate a bigger model with
+  motion data to be warpable in the knee or similar.
+
 
 Break
 ^^^^^
 
 Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
+
 
 Presentation: Model Warping with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -139,9 +152,16 @@ Work Session: Model Warping
 duration is 1h30-1h45 and should include:
 
 - Invite attendants to work through :doc:`the-model-warper`
+- Ideally, get people to warp the model made in the first half, walking through
+  any issues
 - Ask for feedback, make it clear that it's a beta workflow and needs additions etc.
 - If attendants need something else to do then model building is also suitable
   to continue during this work session.
+
+- To finish, try and use the warped model in some kind of useful way. Ideally, IK
+  on before vs. after would be nice because then attendants could visually see what's
+  going on. This would also be a good time to show the preview experimental data
+  feature.
 
 
 Presentation: Closing Thoughts, Outlook
@@ -151,12 +171,11 @@ Presentation: Closing Thoughts, Outlook
 include:
 
 1. What's been covered, hope it was helpful, etc.
-2. Outlook, where OpenSim Creator's going
-3. Outlook, where we'd like to see things going
-4. Direct attendants to post-workshop actions (feedback, surveys, things they can
+2. Outlook, where OpenSim Creator's going in terms of design etc.
+3. Direct attendants to post-workshop actions (feedback, surveys, things they can
    do afterwards).
-5. Acknowledgements, thank you, see you around.
-6. Thank you (and maybe re-list the actions!)
+4. Acknowledgements, thank you, see you around.
+5. Thank you (and maybe re-list the actions!)
 
 
 ⚡ Post-Workshop Actions
