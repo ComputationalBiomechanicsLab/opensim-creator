@@ -154,7 +154,7 @@ namespace
         camera.set_view_matrix_override(identity<Mat4>());
 
         graphics::draw(
-            PlaneGeometry{{.width = 2.0f, .height = 2.0f}},
+            PlaneGeometry{{.dimensions = Vec2{2.0f}}},
             identity<Transform>(),
             Material{Shader{
                 loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/BRDF.vert"),

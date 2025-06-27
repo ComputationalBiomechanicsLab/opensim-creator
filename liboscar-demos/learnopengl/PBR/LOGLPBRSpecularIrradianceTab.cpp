@@ -180,7 +180,7 @@ namespace
         camera.set_projection_matrix_override(identity<Mat4>());
         camera.set_view_matrix_override(identity<Mat4>());
 
-        graphics::draw(PlaneGeometry{{.width = 2.0f, .height = 2.0f}}, identity<Transform>(), material, camera);
+        graphics::draw(PlaneGeometry{{.dimensions = Vec2{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(render_texture);
 
         Texture2D rv{

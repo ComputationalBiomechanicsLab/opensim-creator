@@ -333,7 +333,7 @@ private:
         ColorSpace::sRGB
     );
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     RenderTexture scene_hdr_color_output_;
     RenderTexture scene_hdr_thresholded_output_;

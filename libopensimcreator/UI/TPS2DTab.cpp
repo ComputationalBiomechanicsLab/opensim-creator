@@ -480,12 +480,7 @@ private:
     Texture2D m_BoxTexture = load_texture2D_from_svg(
         App::resource_loader().open("OpenSimCreator/textures/uv_checker.svg")
     );
-    Mesh m_InputGrid = PlaneGeometry{{
-        .width = 2.0f,
-        .height = 2.0f,
-        .num_width_segments = 50,
-        .num_height_segments = 50,
-    }};
+    Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vec2{2.0f}, .num_segments = Vec2{50}}};
     Mesh m_OutputGrid = m_InputGrid;
     MeshBasicTexturedMaterial m_TexturedMaterial;
     MeshBasicMaterial wireframe_material_;

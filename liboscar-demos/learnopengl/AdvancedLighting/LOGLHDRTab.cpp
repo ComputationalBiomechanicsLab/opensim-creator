@@ -162,7 +162,7 @@ private:
     Material tonemap_material_ = create_tonemap_material(loader_);
     MouseCapturingCamera camera_ = create_scene_camera();
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
     Transform corridoor_transform_ = calc_corridoor_transform();
     RenderTexture scene_hdr_texture_;
     float exposure_ = 1.0f;

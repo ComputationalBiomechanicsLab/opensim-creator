@@ -132,7 +132,7 @@ private:
 
     Mesh cube_mesh_ = BoxGeometry{};
     Mesh plane_mesh_ = generate_plane();
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     RenderTexture render_texture_;
     Camera screen_camera_ = create_screen_camera();

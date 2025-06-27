@@ -283,7 +283,7 @@ private:
 
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 32, .num_height_segments = 32}};
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     // rendering state
     struct GBufferRenderingState final {

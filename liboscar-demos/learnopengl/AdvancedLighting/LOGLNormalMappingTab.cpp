@@ -119,7 +119,7 @@ private:
     Material normal_mapping_material_ = create_normal_mapping_material(loader_);
     Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
-    Mesh quad_mesh_ = PlaneGeometry{{.width = 2.0f, .height = 2.0f}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();

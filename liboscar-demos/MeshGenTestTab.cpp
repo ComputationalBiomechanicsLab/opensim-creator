@@ -39,6 +39,7 @@ namespace
             {"y-line", cache.yline_mesh()},
             {"quad", cache.quad_mesh()},
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
+            {"plane", PlaneGeometry{}},
             {"torus_knot", TorusKnotGeometry{}},
             {"box", BoxGeometry{{.dimensions = Vec3{2.0f}}}},
             {"icosahedron", IcosahedronGeometry{}},
