@@ -5,6 +5,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Mouse wheel scrolling was improved on MacOS (again) and should now feel much closer
+  to the other OSes.
 - Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
   been used (#1069).
 

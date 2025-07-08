@@ -2693,14 +2693,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     // handle mousewheel scrolling
     if (const float wheel = ImGui::GetIO().MouseWheel; wheel != 0.0f) {
-        // careful: different operating systems have different orders of
-        // of magnitude and frequency for scroll events, so this section
-        // needs to make sure that the user can't (e.g.) zoom in too much
-        // or too quickly (MacOS used to have aggressive scrolling, #971).
-        float r = camera.radius * (1.0f - 0.1f*wheel);
-        r = clamp(r, 0.2f*camera.radius, 5.0f*camera.radius);  // clamp how much zooming can happen in one go
-        r = clamp(r, 0.0001f, 1000.0f);  // clamp absolute amount between 0.1 mm and 1 km
-        camera.radius = r;
+        camera.radius *= (1.0f - 0.2f*wheel);
         modified = true;
     }
 

@@ -523,8 +523,22 @@ namespace
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
         else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-            const Vec2 delta = {e.wheel.x, e.wheel.y};
+            Vec2 delta = {e.wheel.x, e.wheel.y};
             const MouseInputSource source = e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
+            if (source == MouseInputSource::Mouse) {
+                // Normalize mouse inputs such that each "click" of the mouse maps to -1 or +1
+                //
+                // The reason to do this is because different operating systems have different
+                // orders of magnitude and frequency for scroll events, so this section needs
+                // to try and hide that fact (MacOS, in particular, reports completely different
+                // raw deltas from other OSes #971).
+                if (delta.x != 0.0f) {
+                    delta.x = delta.x > 0.0f ? +1.0f : -1.0f;
+                }
+                if (delta.y != 0.0f) {
+                    delta.y = delta.y > 0.0f ? +1.0f : -1.0f;
+                }
+            }
             return std::make_unique<MouseWheelEvent>(delta, source);
         }
         else if (e.type == SDL_EVENT_TEXT_INPUT) {
