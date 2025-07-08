@@ -46,7 +46,7 @@ jobs:
         cd $GITHUB_WORKSPACE
 
         # configure buildscript
-        export OSC_CMAKE_CONFIG_EXTRA="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.5"
+        export OSC_CMAKE_CONFIG_EXTRA="-DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.5 -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
 
         # run buildscript
         ./scripts/build_mac.sh
@@ -73,7 +73,7 @@ jobs:
         cd $GITHUB_WORKSPACE
 
         # configure buildscript
-        export OSC_CMAKE_CONFIG_EXTRA="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.5"
+        export OSC_CMAKE_CONFIG_EXTRA="-DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=14.5 -DCMAKE_OSX_SYSROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
 
         # run buildscript
         ./scripts/build_mac.sh
