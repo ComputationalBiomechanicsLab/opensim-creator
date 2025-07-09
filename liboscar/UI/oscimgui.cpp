@@ -1317,28 +1317,28 @@ namespace
 }
 
 template<>
-struct osc::Converter<ui::GizmoOperation, ImGuizmo::OPERATION> final {
-    ImGuizmo::OPERATION operator()(ui::GizmoOperation op) const
+struct osc::Converter<ui::GizmoOperation, ImGuizmo::Operation> final {
+    ImGuizmo::Operation operator()(ui::GizmoOperation op) const
     {
         static_assert(num_flags<ui::GizmoOperation>() == 3);
         switch (op) {
-        case ui::GizmoOperation::Scale:     return ImGuizmo::OPERATION::SCALE;
-        case ui::GizmoOperation::Rotate:    return ImGuizmo::OPERATION::ROTATE;
-        case ui::GizmoOperation::Translate: return ImGuizmo::OPERATION::TRANSLATE;
-        default:                            return ImGuizmo::OPERATION::TRANSLATE;
+        case ui::GizmoOperation::Scale:     return ImGuizmo::Operation::Scale;
+        case ui::GizmoOperation::Rotate:    return ImGuizmo::Operation::Rotate;
+        case ui::GizmoOperation::Translate: return ImGuizmo::Operation::Translate;
+        default:                            return ImGuizmo::Operation::Translate;
         }
     }
 };
 
 template<>
-struct osc::Converter<ui::GizmoMode, ImGuizmo::MODE> final {
-    ImGuizmo::MODE operator()(ui::GizmoMode mode) const
+struct osc::Converter<ui::GizmoMode, ImGuizmo::Mode> final {
+    ImGuizmo::Mode operator()(ui::GizmoMode mode) const
     {
         static_assert(num_options<ui::GizmoMode>() == 2);
         switch (mode) {
-        case ui::GizmoMode::Local: return ImGuizmo::MODE::LOCAL;
-        case ui::GizmoMode::World: return ImGuizmo::MODE::WORLD;
-        default:                   return ImGuizmo::MODE::WORLD;
+        case ui::GizmoMode::Local: return ImGuizmo::Mode::Local;
+        case ui::GizmoMode::World: return ImGuizmo::Mode::World;
+        default:                   return ImGuizmo::Mode::World;
         }
     }
 };
@@ -3857,8 +3857,8 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
         value_ptr(view_matrix),
         value_ptr(projection_matrix),
-        to<ImGuizmo::OPERATION>(operation_),
-        to<ImGuizmo::MODE>(mode_),
+        to<ImGuizmo::Operation>(operation_),
+        to<ImGuizmo::Mode>(mode_),
         value_ptr(model_matrix),
         value_ptr(delta_matrix),
         nullptr,

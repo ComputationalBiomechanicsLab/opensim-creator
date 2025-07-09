@@ -69,6 +69,7 @@ namespace
     constexpr float ZPI = 3.14159265358979323846f;
     constexpr float DEG2RAD = (ZPI / 180.f);
     constexpr float screenRotateSize = 0.06f;
+
     // scale a bit so translate axis do not touch when in universal
     constexpr float rotationDisplayFactor = 1.2f;
     const char* translationInfoMask[] = {
@@ -107,30 +108,49 @@ namespace
     constexpr int halfCircleSegmentCount = 64;
     constexpr float snapTension = 0.5f;
 
+    enum COLOR {
+        DIRECTION_X,      // directionColor[0]
+        DIRECTION_Y,      // directionColor[1]
+        DIRECTION_Z,      // directionColor[2]
+        PLANE_X,          // planeColor[0]
+        PLANE_Y,          // planeColor[1]
+        PLANE_Z,          // planeColor[2]
+        SELECTION,        // selectionColor
+        INACTIVE,         // inactiveColor
+        TRANSLATION_LINE, // translationLineColor
+        SCALE_LINE,
+        ROTATION_USING_BORDER,
+        ROTATION_USING_FILL,
+        HATCHED_AXIS_LINES,
+        TEXT,
+        TEXT_SHADOW,
+        COUNT
+    };
+
     constexpr ImGuiID blank_id()
     {
         return std::numeric_limits<ImGuiID>::max();
     }
 
-    OPERATION operator&(OPERATION lhs, OPERATION rhs)
+    Operation operator&(Operation lhs, Operation rhs)
     {
-        return static_cast<OPERATION>(static_cast<int>(lhs) & static_cast<int>(rhs));
+        return static_cast<Operation>(static_cast<int>(lhs) & static_cast<int>(rhs));
     }
 
-    bool operator!=(OPERATION lhs, int rhs)
+    bool operator!=(Operation lhs, int rhs)
     {
         return static_cast<int>(lhs) != rhs;
     }
 
-    bool Intersects(OPERATION lhs, OPERATION rhs)
+    bool Intersects(Operation lhs, Operation rhs)
     {
-        return (lhs & rhs) != 0;
+        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
     }
 
     // True if lhs contains rhs
-    bool Contains(OPERATION lhs, OPERATION rhs)
+    bool Contains(Operation lhs, Operation rhs)
     {
-        return (lhs & rhs) == rhs;
+        return static_cast<Operation>(std::to_underlying(lhs) & std::to_underlying(rhs)) == rhs;
     }
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -602,10 +622,10 @@ namespace
    }
 
    // Matches MT_MOVE_AB order
-   constexpr OPERATION TRANSLATE_PLANS[3] = {
-       TRANSLATE_Y | TRANSLATE_Z,
-       TRANSLATE_X | TRANSLATE_Z,
-       TRANSLATE_X | TRANSLATE_Y
+   constexpr Operation TRANSLATE_PLANS[3] = {
+       Operation::TranslateY | Operation::TranslateZ,
+       Operation::TranslateX | Operation::TranslateZ,
+       Operation::TranslateX | Operation::TranslateY
    };
 
    struct Style {
@@ -668,7 +688,7 @@ namespace
       ImDrawList* mDrawList;
       Style mStyle;
 
-      MODE mMode;
+      Mode mMode;
       matrix_t mViewMat;
       matrix_t mProjectionMat;
       matrix_t mModel;
@@ -755,7 +775,7 @@ namespace
 
       ImVector<ImGuiID> mIDStack;
       ImGuiID mEditingID = blank_id();
-      OPERATION mOperation = OPERATION::NONE;
+      Operation mOperation = Operation::None;
 
       bool mAllowAxisFlip = false;
       float mGizmoSizeClipSpace = 0.1f;
@@ -765,9 +785,9 @@ namespace
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    //
-   int GetMoveType(OPERATION op, vec_t* gizmoHitProportion);
-   int GetRotateType(OPERATION op);
-   int GetScaleType(OPERATION op);
+   int GetMoveType(Operation op, vec_t* gizmoHitProportion);
+   int GetRotateType(Operation op);
+   int GetScaleType(Operation op);
 
    ImU32 GetColorU32(int idx)
    {
@@ -919,7 +939,7 @@ namespace
       return false;
    }
 
-   void ComputeContext(const float* view, const float* projection, float* matrix, MODE mode)
+   void ComputeContext(const float* view, const float* projection, float* matrix, Mode mode)
    {
       gCurrentContext->mMode = mode;
       gCurrentContext->mViewMat = *(const matrix_t*)view;
@@ -929,7 +949,7 @@ namespace
       gCurrentContext->mModelLocal = *(const matrix_t*)matrix;
       gCurrentContext->mModelLocal.OrthoNormalize();
 
-      if (mode == LOCAL)
+      if (mode == Mode::Local)
       {
          gCurrentContext->mModel = gCurrentContext->mModelLocal;
       }
@@ -978,7 +998,7 @@ namespace
       ComputeCameraRay(gCurrentContext->mRayOrigin, gCurrentContext->mRayVector);
    }
 
-   void ComputeColors(ImU32* colors, int type, OPERATION operation)
+   void ComputeColors(ImU32* colors, int type, Operation operation)
    {
       if (gCurrentContext->mbEnable)
       {
@@ -986,7 +1006,7 @@ namespace
 
          switch (operation)
          {
-         case TRANSLATE:
+         case Operation::Translate:
             colors[0] = (type == MT_MOVE_SCREEN) ? selectionColor : ImGui::ColorConvertFloat4ToU32({0.8f, 0.5f, 0.3f, 0.8f});  // HACK: osc: make translation circle orange, which stands out from the mostly-white geometry
             for (int i = 0; i < 3; i++)
             {
@@ -995,15 +1015,15 @@ namespace
                colors[i + 4] = (type == MT_MOVE_SCREEN) ? selectionColor : colors[i + 4];
             }
             break;
-         case ROTATE:
+         case Operation::Rotate:
             colors[0] = (type == MT_ROTATE_SCREEN) ? selectionColor : IM_COL32_WHITE;
             for (int i = 0; i < 3; i++)
             {
                colors[i + 1] = (type == (int)(MT_ROTATE_X + i)) ? selectionColor : GetColorU32(DIRECTION_X + i);
             }
             break;
-         case SCALEU:
-         case SCALE:
+         case Operation::ScaleU:
+         case Operation::Scale:
             colors[0] = (type == MT_SCALE_XYZ) ? selectionColor : IM_COL32_WHITE;
             for (int i = 0; i < 3; i++)
             {
@@ -1122,9 +1142,9 @@ namespace
       return angle;
    }
 
-   void DrawRotationGizmo(OPERATION op, int type)
+   void DrawRotationGizmo(Operation op, int type)
    {
-      if(!Intersects(op, ROTATE))
+      if(!Intersects(op, Operation::Rotate))
       {
          return;
       }
@@ -1135,7 +1155,7 @@ namespace
 
       // colors
       ImU32 colors[7];
-      ComputeColors(colors, type, ROTATE);
+      ComputeColors(colors, type, Operation::Rotate);
 
       vec_t cameraToModelNormalized;
       if (gCurrentContext->mIsOrthographic)
@@ -1153,10 +1173,10 @@ namespace
 
       gCurrentContext->mRadiusSquareCenter = screenRotateSize * gCurrentContext->mHeight;
 
-      bool hasRSC = Intersects(op, ROTATE_SCREEN);
+      bool hasRSC = Intersects(op, Operation::RotateInScreen);
       for (int axis = 0; axis < 3; axis++)
       {
-         if(!Intersects(op, static_cast<OPERATION>(ROTATE_Z >> axis)))
+         if(!Intersects(op, Operation::RotateZ >> axis))
          {
             continue;
          }
@@ -1240,18 +1260,18 @@ namespace
       }
    }
 
-   void DrawScaleGizmo(OPERATION op, int type)
+   void DrawScaleGizmo(Operation op, int type)
    {
       ImDrawList* drawList = gCurrentContext->mDrawList;
 
-      if(!Intersects(op, SCALE))
+      if(!Intersects(op, Operation::Scale))
       {
         return;
       }
 
       // colors
       ImU32 colors[7];
-      ComputeColors(colors, type, SCALE);
+      ComputeColors(colors, type, Operation::Scale);
 
       // draw
       vec_t scaleDisplay = { 1.f, 1.f, 1.f, 1.f };
@@ -1263,7 +1283,7 @@ namespace
 
       for (int i = 0; i < 3; i++)
       {
-         if(!Intersects(op, static_cast<OPERATION>(SCALE_X << i)))
+         if(!Intersects(op, Operation::ScaleX << i))
          {
             continue;
          }
@@ -1277,7 +1297,7 @@ namespace
             // draw axis
             if (belowAxisLimit)
             {
-               bool hasTranslateOnAxis = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i));
+               bool hasTranslateOnAxis = Contains(op, Operation::TranslateX << i);
                float markerScale = hasTranslateOnAxis ? 1.4f : 1.0f;
                ImVec2 baseSSpace = worldToPos(dirAxis * 0.1f * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
                ImVec2 worldDirSSpaceNoScale = worldToPos(dirAxis * markerScale * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
@@ -1327,18 +1347,18 @@ namespace
       }
    }
 
-   void DrawScaleUniveralGizmo(OPERATION op, int type)
+   void DrawScaleUniveralGizmo(Operation op, int type)
    {
       ImDrawList* drawList = gCurrentContext->mDrawList;
 
-      if (!Intersects(op, SCALEU))
+      if (!Intersects(op, Operation::ScaleU))
       {
          return;
       }
 
       // colors
       ImU32 colors[7];
-      ComputeColors(colors, type, SCALEU);
+      ComputeColors(colors, type, Operation::ScaleU);
 
       // draw
       vec_t scaleDisplay = { 1.f, 1.f, 1.f, 1.f };
@@ -1350,7 +1370,7 @@ namespace
 
       for (int i = 0; i < 3; i++)
       {
-         if (!Intersects(op, static_cast<OPERATION>(SCALE_XU << i)))
+         if (!Intersects(op, Operation::ScaleXU << i))
          {
             continue;
          }
@@ -1364,7 +1384,7 @@ namespace
             // draw axis
             if (belowAxisLimit)
             {
-               bool hasTranslateOnAxis = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i));
+               bool hasTranslateOnAxis = Contains(op, Operation::TranslateX << i);
                float markerScale = hasTranslateOnAxis ? 1.4f : 1.0f;
                //ImVec2 baseSSpace = worldToPos(dirAxis * 0.1f * gCurrentContext->mScreenFactor, gCurrentContext->mMVPLocal);
                //ImVec2 worldDirSSpaceNoScale = worldToPos(dirAxis * markerScale * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
@@ -1411,7 +1431,7 @@ namespace
       }
    }
 
-   void DrawTranslationGizmo(OPERATION op, int type)
+   void DrawTranslationGizmo(Operation op, int type)
    {
       ImDrawList* drawList = gCurrentContext->mDrawList;
       if (!drawList)
@@ -1419,14 +1439,14 @@ namespace
          return;
       }
 
-      if(!Intersects(op, TRANSLATE))
+      if(!Intersects(op, Operation::Translate))
       {
          return;
       }
 
       // colors
       ImU32 colors[7];
-      ComputeColors(colors, type, TRANSLATE);
+      ComputeColors(colors, type, Operation::Translate);
 
       const ImVec2 origin = worldToPos(gCurrentContext->mModel.v.position, gCurrentContext->mViewProjection);
 
@@ -1441,7 +1461,7 @@ namespace
          if (!gCurrentContext->mbUsing || (gCurrentContext->mbUsing && type == MT_MOVE_X + i))
          {
             // draw axis
-            if (belowAxisLimit && Intersects(op, static_cast<OPERATION>(TRANSLATE_X << i)))
+            if (belowAxisLimit && Intersects(op, Operation::TranslateX << i))
             {
                ImVec2 baseSSpace = worldToPos(dirAxis * 0.1f * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
                ImVec2 worldDirSSpace = worldToPos(dirAxis * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
@@ -1516,7 +1536,7 @@ namespace
       return false;
    }
 
-   void HandleAndDrawLocalBounds(const float* bounds, matrix_t* matrix, const float* snapValues, OPERATION operation)
+   void HandleAndDrawLocalBounds(const float* bounds, matrix_t* matrix, const float* snapValues, Operation operation)
    {
       ImGuiIO& io = ImGui::GetIO();
       ImDrawList* drawList = gCurrentContext->mDrawList;
@@ -1634,15 +1654,15 @@ namespace
             int type = MT_NONE;
             vec_t gizmoHitProportion;
 
-            if(Intersects(operation, TRANSLATE))
+            if(Intersects(operation, Operation::Translate))
             {
                type = GetMoveType(operation, &gizmoHitProportion);
             }
-            if(Intersects(operation, ROTATE) && type == MT_NONE)
+            if(Intersects(operation, Operation::Rotate) && type == MT_NONE)
             {
                type = GetRotateType(operation);
             }
-            if(Intersects(operation, SCALE) && type == MT_NONE)
+            if(Intersects(operation, Operation::Scale) && type == MT_NONE)
             {
                type = GetScaleType(operation);
             }
@@ -1780,7 +1800,7 @@ namespace
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    //
 
-   int GetScaleType(OPERATION op)
+   int GetScaleType(Operation op)
    {
       if (gCurrentContext->mbUsing)
       {
@@ -1792,7 +1812,7 @@ namespace
       // screen
       if (io.MousePos.x >= gCurrentContext->mScreenSquareMin.x && io.MousePos.x <= gCurrentContext->mScreenSquareMax.x &&
          io.MousePos.y >= gCurrentContext->mScreenSquareMin.y && io.MousePos.y <= gCurrentContext->mScreenSquareMax.y &&
-         Contains(op, SCALE))
+         Contains(op, Operation::Scale))
       {
          type = MT_SCALE_XYZ;
       }
@@ -1800,7 +1820,7 @@ namespace
       // compute
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if(!Intersects(op, static_cast<OPERATION>(SCALE_X << i)))
+         if(!Intersects(op, Operation::ScaleX << i))
          {
             continue;
          }
@@ -1816,8 +1836,8 @@ namespace
          const float len = IntersectRayPlane(gCurrentContext->mRayOrigin, gCurrentContext->mRayVector, BuildPlan(gCurrentContext->mModelLocal.v.position, dirAxis));
          vec_t posOnPlan = gCurrentContext->mRayOrigin + gCurrentContext->mRayVector * len;
 
-         const float startOffset = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i)) ? 1.0f : 0.1f;
-         const float endOffset = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i)) ? 1.4f : 1.0f;
+         const float startOffset = Contains(op, Operation::TranslateX << i) ? 1.0f : 0.1f;
+         const float endOffset = Contains(op, Operation::TranslateX << i) ? 1.4f : 1.0f;
          const ImVec2 posOnPlanScreen = worldToPos(posOnPlan, gCurrentContext->mViewProjection);
          const ImVec2 axisStartOnScreen = worldToPos(gCurrentContext->mModelLocal.v.position + dirAxis * gCurrentContext->mScreenFactor * startOffset, gCurrentContext->mViewProjection);
          const ImVec2 axisEndOnScreen = worldToPos(gCurrentContext->mModelLocal.v.position + dirAxis * gCurrentContext->mScreenFactor * endOffset, gCurrentContext->mViewProjection);
@@ -1835,14 +1855,14 @@ namespace
 
       vec_t deltaScreen = { io.MousePos.x - gCurrentContext->mScreenSquareCenter.x, io.MousePos.y - gCurrentContext->mScreenSquareCenter.y, 0.f, 0.f };
       float dist = deltaScreen.Length();
-      if (Contains(op, SCALEU) && dist >= 17.0f && dist < 23.0f)
+      if (Contains(op, Operation::ScaleU) && dist >= 17.0f && dist < 23.0f)
       {
          type = MT_SCALE_XYZ;
       }
 
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if (!Intersects(op, static_cast<OPERATION>(SCALE_XU << i)))
+         if (!Intersects(op, Operation::ScaleXU << i))
          {
             continue;
          }
@@ -1854,7 +1874,7 @@ namespace
          // draw axis
          if (belowAxisLimit)
          {
-            bool hasTranslateOnAxis = Contains(op, static_cast<OPERATION>(TRANSLATE_X << i));
+            bool hasTranslateOnAxis = Contains(op, Operation::TranslateX << i);
             float markerScale = hasTranslateOnAxis ? 1.4f : 1.0f;
             //ImVec2 baseSSpace = worldToPos(dirAxis * 0.1f * gCurrentContext->mScreenFactor, gCurrentContext->mMVPLocal);
             //ImVec2 worldDirSSpaceNoScale = worldToPos(dirAxis * markerScale * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
@@ -1870,7 +1890,7 @@ namespace
       return type;
    }
 
-   int GetRotateType(OPERATION op)
+   int GetRotateType(Operation op)
    {
       if (gCurrentContext->mbUsing)
       {
@@ -1885,7 +1905,7 @@ namespace
 
       vec_t deltaScreen = { io.MousePos.x - gCurrentContext->mScreenSquareCenter.x, io.MousePos.y - gCurrentContext->mScreenSquareCenter.y, 0.f, 0.f };
       float dist = deltaScreen.Length();
-      if (Intersects(op, ROTATE_SCREEN) && dist >= (gCurrentContext->mRadiusSquareCenter - 4.0f) && dist < (gCurrentContext->mRadiusSquareCenter + 4.0f))
+      if (Intersects(op, Operation::RotateInScreen) && dist >= (gCurrentContext->mRadiusSquareCenter - 4.0f) && dist < (gCurrentContext->mRadiusSquareCenter + 4.0f))
       {
          if (!isNoAxesMasked)
             return MT_NONE;
@@ -1899,7 +1919,7 @@ namespace
 
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if(!Intersects(op, static_cast<OPERATION>(ROTATE_X << i)))
+         if(!Intersects(op, Operation::RotateX << i))
          {
             continue;
          }
@@ -1937,9 +1957,9 @@ namespace
       return type;
    }
 
-   int GetMoveType(OPERATION op, vec_t* gizmoHitProportion)
+   int GetMoveType(Operation op, vec_t* gizmoHitProportion)
    {
-      if(!Intersects(op, TRANSLATE) || gCurrentContext->mbUsing || !gCurrentContext->mbMouseOver)
+      if(!Intersects(op, Operation::Translate) || gCurrentContext->mbUsing || !gCurrentContext->mbMouseOver)
       {
         return MT_NONE;
       }
@@ -1953,7 +1973,7 @@ namespace
       // screen
       if (io.MousePos.x >= gCurrentContext->mScreenSquareMin.x && io.MousePos.x <= gCurrentContext->mScreenSquareMax.x &&
          io.MousePos.y >= gCurrentContext->mScreenSquareMin.y && io.MousePos.y <= gCurrentContext->mScreenSquareMax.y &&
-         Contains(op, TRANSLATE))
+         Contains(op, Operation::Translate))
       {
          type = MT_MOVE_SCREEN;
       }
@@ -1978,7 +1998,7 @@ namespace
          const ImVec2 axisEndOnScreen = worldToPos(gCurrentContext->mModel.v.position + dirAxis * gCurrentContext->mScreenFactor, gCurrentContext->mViewProjection) - ImVec2(gCurrentContext->mX, gCurrentContext->mY);
 
          vec_t closestPointOnAxis = PointOnSegment(screenCoord, makeVect(axisStartOnScreen), makeVect(axisEndOnScreen));
-         if ((closestPointOnAxis - screenCoord).Length() < 12.f && Intersects(op, static_cast<OPERATION>(TRANSLATE_X << i))) // pixel size
+         if ((closestPointOnAxis - screenCoord).Length() < 12.f && Intersects(op, Operation::TranslateX << i)) // pixel size
          {
             if (isAxisMasked)
                break;
@@ -2002,14 +2022,14 @@ namespace
       return type;
    }
 
-   bool HandleTranslation(float* matrix, float* deltaMatrix, OPERATION op, int& type, const float* snap)
+   bool HandleTranslation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if(!Intersects(op, TRANSLATE) || type != MT_NONE)
+      if(!Intersects(op, Operation::Translate) || type != MT_NONE)
       {
         return false;
       }
       const ImGuiIO& io = ImGui::GetIO();
-      const bool applyRotationLocaly = gCurrentContext->mMode == LOCAL || type == MT_MOVE_SCREEN;
+      const bool applyRotationLocaly = gCurrentContext->mMode == Mode::Local || type == MT_MOVE_SCREEN;
       bool modified = false;
 
       // move
@@ -2125,9 +2145,9 @@ namespace
       return modified;
    }
 
-   bool HandleScale(float* matrix, float* deltaMatrix, OPERATION op, int& type, const float* snap)
+   bool HandleScale(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if((!Intersects(op, SCALE) && !Intersects(op, SCALEU)) || type != MT_NONE || !gCurrentContext->mbMouseOver)
+      if((!Intersects(op, Operation::Scale) && !Intersects(op, Operation::ScaleU)) || type != MT_NONE || !gCurrentContext->mbMouseOver)
       {
          return false;
       }
@@ -2248,14 +2268,14 @@ namespace
       return modified;
    }
 
-   bool HandleRotation(float* matrix, float* deltaMatrix, OPERATION op, int& type, const float* snap)
+   bool HandleRotation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if(!Intersects(op, ROTATE) || type != MT_NONE || !gCurrentContext->mbMouseOver)
+      if(!Intersects(op, Operation::Rotate) || type != MT_NONE || !gCurrentContext->mbMouseOver)
       {
         return false;
       }
       ImGuiIO& io = ImGui::GetIO();
-      bool applyRotationLocaly = gCurrentContext->mMode == LOCAL;
+      bool applyRotationLocaly = gCurrentContext->mMode == Mode::Local;
       bool modified = false;
 
       if (!gCurrentContext->mbUsing)
@@ -2416,24 +2436,24 @@ void ImGuizmo::BeginFrame()
 bool ImGuizmo::IsOver()
 {
     return
-        (Intersects(gCurrentContext->mOperation, TRANSLATE) and GetMoveType(gCurrentContext->mOperation, NULL) != MT_NONE) or
-        (Intersects(gCurrentContext->mOperation, ROTATE)    and GetRotateType(gCurrentContext->mOperation) != MT_NONE)     or
-        (Intersects(gCurrentContext->mOperation, SCALE)     and GetScaleType(gCurrentContext->mOperation) != MT_NONE)      or
+        (Intersects(gCurrentContext->mOperation, Operation::Translate) and GetMoveType(gCurrentContext->mOperation, NULL) != MT_NONE) or
+        (Intersects(gCurrentContext->mOperation, Operation::Rotate)    and GetRotateType(gCurrentContext->mOperation) != MT_NONE)     or
+        (Intersects(gCurrentContext->mOperation, Operation::Scale)     and GetScaleType(gCurrentContext->mOperation) != MT_NONE)      or
         IsUsing();
 }
 
-bool ImGuizmo::IsOver(OPERATION op)
+bool ImGuizmo::IsOver(Operation op)
 {
     if (IsUsing()) {
         return true;
     }
-    if (Intersects(op, SCALE) and GetScaleType(op) != MT_NONE) {
+    if (Intersects(op, Operation::Scale) and GetScaleType(op) != MT_NONE) {
         return true;
     }
-    if (Intersects(op, ROTATE) and GetRotateType(op) != MT_NONE) {
+    if (Intersects(op, Operation::Rotate) and GetRotateType(op) != MT_NONE) {
         return true;
     }
-    if (Intersects(op, TRANSLATE) and GetMoveType(op, NULL) != MT_NONE) {
+    if (Intersects(op, Operation::Translate) and GetMoveType(op, NULL) != MT_NONE) {
         return true;
     }
     return false;
@@ -2478,8 +2498,8 @@ void ImGuizmo::SetOrthographic(bool isOrthographic)
 bool ImGuizmo::Manipulate(
     const float* view,
     const float* projection,
-    OPERATION operation,
-    MODE mode,
+    Operation operation,
+    Mode mode,
     float* matrix,
     float* deltaMatrix,
     const float* snap,
@@ -2493,7 +2513,7 @@ bool ImGuizmo::Manipulate(
     );
 
     // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
-    ComputeContext(view, projection, matrix, (operation & SCALE) ? LOCAL : mode);
+    ComputeContext(view, projection, matrix, (operation & Operation::Scale) ? Mode::Local : mode);
 
     // set delta to identity
     if (deltaMatrix) {
