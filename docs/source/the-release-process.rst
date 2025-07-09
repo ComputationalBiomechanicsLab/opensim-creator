@@ -78,7 +78,7 @@ the same combinations (it's healthy to exercise other combinations!) but these a
 the ones that are used during a release, so everything must eventually compile+pass
 with these combinations:
 
-.. list-table:: OpenSim Creator's Release Matrix. The exact way in which this matrix is built is outlined in the ``.github/`` directory in OpenSim Creator's source repository.
+.. list-table:: OpenSim Creator's Release Matrix.
    :header-rows: 1
 
    * - Architecture
