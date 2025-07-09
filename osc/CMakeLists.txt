@@ -70,6 +70,7 @@ if(DEFINED ENV{OSC_BUILD_ID})
     set(OSC_BUILD_ID "$ENV{OSC_BUILD_ID}"
         CACHE STRING
         "a unique identifier for this particular build configuration (handy for bug tracing)"
+        FORCE
     )
 else()
     set(OSC_BUILD_ID "CUSTOM_BUILD"
