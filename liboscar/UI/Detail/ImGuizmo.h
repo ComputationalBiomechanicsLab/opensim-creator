@@ -45,6 +45,7 @@
 // that would be insanely impractical. The project's vcs (i.e. git) can be
 // used to track each change.
 
+#include <liboscar/Maths/Rect.h>
 #include <liboscar/Utils/UID.h>
 
 struct ImDrawList;
@@ -132,7 +133,9 @@ namespace ImGuizmo
     // gizmo is rendered with gray half transparent color when disabled
     void Enable(bool enable);
 
-    void SetRect(float x, float y, float width, float height);
+    // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
+    // where the gizmo shall be drawn.
+    void SetRect(const osc::Rect& ui_rect);
 
     // default is false
     void SetOrthographic(bool isOrthographic);

@@ -3848,12 +3848,7 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     // update last-frame cache
     was_using_last_frame_ = ImGuizmo::IsUsing();
 
-    ImGuizmo::SetRect(
-        ui_rect.p1.x,
-        ui_rect.p1.y,
-        dimensions_of(ui_rect).x,
-        dimensions_of(ui_rect).y
-    );
+    ImGuizmo::SetRect(ui_rect);
     ImGuizmo::SetDrawlist(draw_list);
 
     // use rotation from the parent, translation from station

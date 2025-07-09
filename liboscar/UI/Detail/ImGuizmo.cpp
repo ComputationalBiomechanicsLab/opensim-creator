@@ -52,6 +52,9 @@
 #include "imgui_internal.h"
 #include "ImGuizmo.h"
 
+#include <liboscar/Maths/Rect.h>
+#include <liboscar/Maths/RectFunctions.h>
+
 #include <functional>
 #include <limits>
 #include <vector>
@@ -2455,10 +2458,11 @@ void ImGuizmo::Enable(bool enable)
     }
 }
 
-void ImGuizmo::SetRect(float x, float y, float width, float height)
+void ImGuizmo::SetRect(const osc::Rect& ui_rect)
 {
-    gCurrentContext->mX = x;
-    gCurrentContext->mY = y;
+    const auto [width, height] = dimensions_of(ui_rect);
+    gCurrentContext->mX = ui_rect.p1.x;
+    gCurrentContext->mY = ui_rect.p1.y;
     gCurrentContext->mWidth = width;
     gCurrentContext->mHeight = height;
     gCurrentContext->mXMax = gCurrentContext->mX + gCurrentContext->mWidth;
