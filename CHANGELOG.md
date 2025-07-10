@@ -74,6 +74,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   bottom-left), which matches OpenGL's conventions (#1044).
 - Internal: All graphics test suites now use the same test source file convention as
   the rest of the codebase (#763).
+- Internal: `SceneDecorationFlag::NoSceneVolumeContribution` was added to help support
+  rendering decorations that don't contribute to the camera's auto-focus (thanks
+  @PashavanBijlert, #1071).
 
 
 ## [0.5.23] - 2025/05/26
