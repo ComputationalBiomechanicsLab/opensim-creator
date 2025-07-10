@@ -215,6 +215,29 @@ TEST(OpenSimHelpers, CanTryToDeleteEveryComponentFromComplicatedModelWithNoFault
     }
 }
 
+// repro for #1070
+//
+// User reported that they would like OSC to be able to edit models that have
+// not-yet-optimized muscle parameters, so the system should ensure that it can
+// load and initialize those kinds of models.
+TEST(OpenSimHelpers, InitializeModelAndInitializeStateWorkOnModelWithNotOptimizedMuscles)
+{
+    GloballyInitOpenSim();  // for loading the osim
+
+    const std::filesystem::path brokenFilePath =
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
+    OpenSim::Model model{brokenFilePath.string()};
+    InitializeModel(model);  // shouldn't throw
+
+    // sanity check: the model should throw when equilibrating the muscles
+    {
+        SimTK::State& state = model.initializeState();
+        ASSERT_ANY_THROW({ model.equilibrateMuscles(state); }) << "the user-provided osim file should contain a defect that prevents equilibration";
+    }
+
+    InitializeState(model);  // shouldn't throw
+}
+
 // useful, because it enables adding geometry etc. into the component set that the user can
 // later clean up in the UI
 TEST(OpenSimHelpers, CanDeleteAnOffsetFrameFromAModelsComponentSet)

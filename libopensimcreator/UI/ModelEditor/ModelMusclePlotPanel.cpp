@@ -523,24 +523,25 @@ namespace
 
             const double xVal = firstXValue + (i * stepBetweenXValues);
             coord.setValue(state, xVal);
-
-            model->equilibrateMuscles(state);
-
-            if (stopToken.stop_requested())
-            {
-                return PlottingTaskStatus::Cancelled;
-            }
-
-            model->realizeReport(state);
-
-            if (stopToken.stop_requested())
-            {
-                return PlottingTaskStatus::Cancelled;
-            }
-
             const float xDisplayVal = ConvertCoordValueToDisplayValue(coord, xVal);
-            const auto yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
 
+            float yVal = quiet_nan_v<float>;
+            try
+            {
+                model->equilibrateMuscles(state);
+                model->realizeReport(state);
+                yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
+            }
+            catch (const std::exception&)
+            {
+                // Either cannot equilibrate the muscle for this state, or cannot
+                // realize the state to a level that's plottable. Either way, emit
+                // a NaN value to the callback rather than fatally stopping processing,
+                // so that the user can see gaps in the plot where the errors are.
+                //
+                // Related: #1070: users might be editing models that contain
+                // in-development muscles that cannot be equilibrated.
+            }
             callback(PlotDataPoint{xDisplayVal, yVal});
         }
 

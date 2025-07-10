@@ -1546,7 +1546,7 @@ bool osc::ActionSetCoordinateSpeed(
         //       when the caller wants to save the coordinate change
         mutCoord->setDefaultSpeedValue(newSpeed);
         mutCoord->setSpeedValue(mutModel.updWorkingState(), newSpeed);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         return true;
@@ -1604,7 +1604,7 @@ bool osc::ActionSetCoordinateLockedAndSave(
 
         mutCoord->setDefaultLocked(v);
         mutCoord->setLocked(mutModel.updWorkingState(), v);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         std::stringstream ss;
@@ -1653,7 +1653,7 @@ bool osc::ActionSetCoordinateValue(
         //       when the caller wants to save the coordinate change
         mutCoord->setDefaultValue(newValue);
         mutCoord->setValue(mutModel.updWorkingState(), newValue);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         return true;

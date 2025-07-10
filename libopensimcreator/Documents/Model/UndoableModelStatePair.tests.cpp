@@ -157,3 +157,17 @@ TEST(UndoableModelStatePair, CanCommitWhenModelContainsExternalLoads)
     p.updModel().addModelComponent(&dynamic_cast<OpenSim::ExternalLoads&>(*OpenSim::Object::makeObjectFromFile(exampleExternalLoadsFile.string())));
     ASSERT_NO_THROW({ p.commit("this shouldn't throw if `OpenSim::ExternalLoads` is behaving itself"); }) << "this shouldn't throw (see: opensim-core/3926 or opensim-core/3927)";
 }
+
+// repro for #1070
+//
+// User reported that they would like OSC to be able to edit models that have
+// not-yet-optimized muscle parameters, so the system should ensure that it can
+// load and initialize those kinds of models.
+TEST(UndoableModelStatePair, CanLoadModelWithMuscleEquilibrationProblems)
+{
+    GloballyInitOpenSim();  // for loading the osim
+
+    const std::filesystem::path brokenFilePath =
+        std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "opensim-creator_1070_repro.osim";
+    ASSERT_NO_THROW({ UndoableModelStatePair{brokenFilePath}; });
+}

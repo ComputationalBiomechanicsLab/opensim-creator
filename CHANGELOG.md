@@ -5,11 +5,14 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- Models that contain muscles that cannot be equilibrated can now be loaded. Instead
+  of halting with an error message, the system will log a warning message mentioning
+  the issue and continue as normal (#1070).
 - Mouse wheel scrolling was improved on MacOS (again) and should now feel much closer
   to the other OSes.
 - Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
   been used (#1069).
-- Fixed keybinds not working in the mesh impoter workflow (#1072). Unfortunately, this
+- Fixed keybindings not working in the mesh importer workflow (#1072). Unfortunately, this
   reverses the "keyboard navigation between elements in the UI is now easier" feature
   that was introduced in 0.5.24.
 
