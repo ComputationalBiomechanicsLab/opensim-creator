@@ -73,7 +73,6 @@ namespace
     constinit Context* gCurrentContext = nullptr;
 
     constexpr float ZPI = 3.14159265358979323846f;
-    constexpr float DEG2RAD = (ZPI / 180.f);
     constexpr float screenRotateSize = 0.06f;
 
     // scale a bit so translate axis do not touch when in universal
