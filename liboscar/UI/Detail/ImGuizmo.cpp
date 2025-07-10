@@ -2552,7 +2552,13 @@ std::optional<osc::Transform> ImGuizmo::Manipulate(
     }
 
     if (manipulated) {
-        return osc::decompose_to_transform(deltaMatrix);
+        osc::Transform rv;
+        if (osc::try_decompose_to_transform(deltaMatrix, rv)) {
+            return rv;
+        }
+        else {
+            return std::nullopt;
+        }
     } else {
         return std::nullopt;
     }
