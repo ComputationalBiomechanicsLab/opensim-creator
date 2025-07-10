@@ -132,21 +132,6 @@ namespace
         return std::numeric_limits<ImGuiID>::max();
     }
 
-    Operation operator&(Operation lhs, Operation rhs)
-    {
-        return static_cast<Operation>(static_cast<int>(lhs) & static_cast<int>(rhs));
-    }
-
-    bool operator!=(Operation lhs, int rhs)
-    {
-        return static_cast<int>(lhs) != rhs;
-    }
-
-    bool Intersects(Operation lhs, Operation rhs)
-    {
-        return (std::to_underlying(lhs) & std::to_underlying(rhs)) != 0;
-    }
-
     // True if lhs contains rhs
     bool Contains(Operation lhs, Operation rhs)
     {
@@ -1144,7 +1129,7 @@ namespace
 
    void DrawRotationGizmo(Operation op, int type)
    {
-      if(!Intersects(op, Operation::Rotate))
+      if(not (op & Operation::Rotate))
       {
          return;
       }
@@ -1173,11 +1158,10 @@ namespace
 
       gCurrentContext->mRadiusSquareCenter = screenRotateSize * gCurrentContext->mHeight;
 
-      bool hasRSC = Intersects(op, Operation::RotateInScreen);
+      bool hasRSC = op & Operation::RotateInScreen;
       for (int axis = 0; axis < 3; axis++)
       {
-         if(!Intersects(op, Operation::RotateZ >> axis))
-         {
+         if (not (op & (Operation::RotateZ >> axis))) {
             continue;
          }
 
@@ -1264,8 +1248,7 @@ namespace
    {
       ImDrawList* drawList = gCurrentContext->mDrawList;
 
-      if(!Intersects(op, Operation::Scale))
-      {
+      if (not (op & Operation::Scale)) {
         return;
       }
 
@@ -1283,7 +1266,7 @@ namespace
 
       for (int i = 0; i < 3; i++)
       {
-         if(!Intersects(op, Operation::ScaleX << i))
+         if (not (op & (Operation::ScaleX << i)))
          {
             continue;
          }
@@ -1351,7 +1334,7 @@ namespace
    {
       ImDrawList* drawList = gCurrentContext->mDrawList;
 
-      if (!Intersects(op, Operation::ScaleU))
+      if (not (op & Operation::ScaleU))
       {
          return;
       }
@@ -1370,7 +1353,7 @@ namespace
 
       for (int i = 0; i < 3; i++)
       {
-         if (!Intersects(op, Operation::ScaleXU << i))
+         if (not (op & (Operation::ScaleXU << i)))
          {
             continue;
          }
@@ -1439,7 +1422,7 @@ namespace
          return;
       }
 
-      if(!Intersects(op, Operation::Translate))
+      if(not (op & Operation::Translate))
       {
          return;
       }
@@ -1461,7 +1444,7 @@ namespace
          if (!gCurrentContext->mbUsing || (gCurrentContext->mbUsing && type == MT_MOVE_X + i))
          {
             // draw axis
-            if (belowAxisLimit && Intersects(op, Operation::TranslateX << i))
+            if (belowAxisLimit && (op & (Operation::TranslateX << i)))
             {
                ImVec2 baseSSpace = worldToPos(dirAxis * 0.1f * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
                ImVec2 worldDirSSpace = worldToPos(dirAxis * gCurrentContext->mScreenFactor, gCurrentContext->mMVP);
@@ -1654,21 +1637,17 @@ namespace
             int type = MT_NONE;
             vec_t gizmoHitProportion;
 
-            if(Intersects(operation, Operation::Translate))
-            {
+            if (operation & Operation::Translate) {
                type = GetMoveType(operation, &gizmoHitProportion);
             }
-            if(Intersects(operation, Operation::Rotate) && type == MT_NONE)
-            {
+            if ((operation & Operation::Rotate) and type == MT_NONE) {
                type = GetRotateType(operation);
             }
-            if(Intersects(operation, Operation::Scale) && type == MT_NONE)
-            {
+            if ((operation & Operation::Scale) and type == MT_NONE) {
                type = GetScaleType(operation);
             }
 
-            if (type != MT_NONE)
-            {
+            if (type != MT_NONE) {
                overBigAnchor = false;
                overSmallAnchor = false;
             }
@@ -1820,8 +1799,7 @@ namespace
       // compute
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if(!Intersects(op, Operation::ScaleX << i))
-         {
+         if (not (op & (Operation::ScaleX << i))) {
             continue;
          }
          bool isAxisMasked = (1 << i) & gCurrentContext->mAxisMask;
@@ -1862,8 +1840,7 @@ namespace
 
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if (!Intersects(op, Operation::ScaleXU << i))
-         {
+         if (not (op & (Operation::ScaleXU << i))) {
             continue;
          }
 
@@ -1905,7 +1882,7 @@ namespace
 
       vec_t deltaScreen = { io.MousePos.x - gCurrentContext->mScreenSquareCenter.x, io.MousePos.y - gCurrentContext->mScreenSquareCenter.y, 0.f, 0.f };
       float dist = deltaScreen.Length();
-      if (Intersects(op, Operation::RotateInScreen) && dist >= (gCurrentContext->mRadiusSquareCenter - 4.0f) && dist < (gCurrentContext->mRadiusSquareCenter + 4.0f))
+      if ((op & Operation::RotateInScreen) && dist >= (gCurrentContext->mRadiusSquareCenter - 4.0f) && dist < (gCurrentContext->mRadiusSquareCenter + 4.0f))
       {
          if (!isNoAxesMasked)
             return MT_NONE;
@@ -1919,7 +1896,7 @@ namespace
 
       for (int i = 0; i < 3 && type == MT_NONE; i++)
       {
-         if(!Intersects(op, Operation::RotateX << i))
+         if (not (op & (Operation::RotateX << i)))
          {
             continue;
          }
@@ -1959,8 +1936,7 @@ namespace
 
    int GetMoveType(Operation op, vec_t* gizmoHitProportion)
    {
-      if(!Intersects(op, Operation::Translate) || gCurrentContext->mbUsing || !gCurrentContext->mbMouseOver)
-      {
+      if (not (op & Operation::Translate) or gCurrentContext->mbUsing or not gCurrentContext->mbMouseOver) {
         return MT_NONE;
       }
 
@@ -1998,7 +1974,7 @@ namespace
          const ImVec2 axisEndOnScreen = worldToPos(gCurrentContext->mModel.v.position + dirAxis * gCurrentContext->mScreenFactor, gCurrentContext->mViewProjection) - ImVec2(gCurrentContext->mX, gCurrentContext->mY);
 
          vec_t closestPointOnAxis = PointOnSegment(screenCoord, makeVect(axisStartOnScreen), makeVect(axisEndOnScreen));
-         if ((closestPointOnAxis - screenCoord).Length() < 12.f && Intersects(op, Operation::TranslateX << i)) // pixel size
+         if ((closestPointOnAxis - screenCoord).Length() < 12.f and (op & (Operation::TranslateX << i))) // pixel size
          {
             if (isAxisMasked)
                break;
@@ -2024,8 +2000,7 @@ namespace
 
    bool HandleTranslation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if(!Intersects(op, Operation::Translate) || type != MT_NONE)
-      {
+      if (not (op & Operation::Translate) or type != MT_NONE) {
         return false;
       }
       const ImGuiIO& io = ImGui::GetIO();
@@ -2147,8 +2122,10 @@ namespace
 
    bool HandleScale(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if((!Intersects(op, Operation::Scale) && !Intersects(op, Operation::ScaleU)) || type != MT_NONE || !gCurrentContext->mbMouseOver)
-      {
+      if ((not (op & Operation::Scale) and not (op & Operation::ScaleU))
+          or type != MT_NONE
+          or not gCurrentContext->mbMouseOver) {
+
          return false;
       }
       ImGuiIO& io = ImGui::GetIO();
@@ -2270,8 +2247,10 @@ namespace
 
    bool HandleRotation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
    {
-      if(!Intersects(op, Operation::Rotate) || type != MT_NONE || !gCurrentContext->mbMouseOver)
-      {
+      if (not (op & Operation::Rotate)
+          or type != MT_NONE
+          or not gCurrentContext->mbMouseOver) {
+
         return false;
       }
       ImGuiIO& io = ImGui::GetIO();
@@ -2435,28 +2414,15 @@ void ImGuizmo::BeginFrame()
 
 bool ImGuizmo::IsOver()
 {
-    return
-        (Intersects(gCurrentContext->mOperation, Operation::Translate) and GetMoveType(gCurrentContext->mOperation, NULL) != MT_NONE) or
-        (Intersects(gCurrentContext->mOperation, Operation::Rotate)    and GetRotateType(gCurrentContext->mOperation) != MT_NONE)     or
-        (Intersects(gCurrentContext->mOperation, Operation::Scale)     and GetScaleType(gCurrentContext->mOperation) != MT_NONE)      or
-        IsUsing();
+    return ImGuizmo::IsOver(gCurrentContext->mOperation);
 }
 
 bool ImGuizmo::IsOver(Operation op)
 {
-    if (IsUsing()) {
-        return true;
-    }
-    if (Intersects(op, Operation::Scale) and GetScaleType(op) != MT_NONE) {
-        return true;
-    }
-    if (Intersects(op, Operation::Rotate) and GetRotateType(op) != MT_NONE) {
-        return true;
-    }
-    if (Intersects(op, Operation::Translate) and GetMoveType(op, NULL) != MT_NONE) {
-        return true;
-    }
-    return false;
+    return IsUsing()
+           or ((op & Operation::Scale)     and GetScaleType(op) != MT_NONE)
+           or ((op & Operation::Rotate)    and GetRotateType(op) != MT_NONE)
+           or ((op & Operation::Translate) and GetMoveType(op, NULL) != MT_NONE);
 }
 
 bool ImGuizmo::IsUsing()
