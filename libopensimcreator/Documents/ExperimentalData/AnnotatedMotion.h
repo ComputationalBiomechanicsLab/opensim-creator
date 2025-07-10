@@ -12,8 +12,8 @@ namespace osc
     // Holds an annotated motion track.
     //
     // Note: This is similar to OpenSim GUI (4.5)'s `AnnotatedMotion.java` class. The
-    //       reason it's reproduced here is to provide like-for-like behavior between
-    //       OSC's 'preview experimental data' and OpenSim's.
+    //       reason it's reproduced here is to provide like-for-like (ish) behavior
+    //       between OSC's 'Preview Experimental Data' workflow and OpenSim GUI's.
     class AnnotatedMotion final : public OpenSim::ModelComponent {
         OpenSim_DECLARE_CONCRETE_OBJECT(AnnotatedMotion, OpenSim::ModelComponent)
     public:
@@ -22,6 +22,8 @@ namespace osc
         // path, or throws an `std::exception` if any error occurs.
         explicit AnnotatedMotion(const std::filesystem::path& path);
 
+        // Returns the number of data series in the motion.
+        size_t getNumDataSeries() const;
     private:
         static std::shared_ptr<OpenSim::Storage> loadPathIntoStorage(const std::filesystem::path&);
         explicit AnnotatedMotion(std::shared_ptr<OpenSim::Storage>);
