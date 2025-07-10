@@ -8,6 +8,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Models that contain muscles that cannot be equilibrated can now be loaded. Instead
   of halting with an error message, the system will log a warning message mentioning
   the issue and continue as normal (#1070).
+- The 'Add' context menu for an `OpenSim::GeometryPath` now contains an "Add Path Point"
+  option, which operates the same way as the same option on `OpenSim::PathActuator`s (#1061).
 - Mouse wheel scrolling was improved on MacOS (again) and should now feel much closer
   to the other OSes.
 - Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've

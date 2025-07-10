@@ -162,7 +162,7 @@ private:
             auto popup = std::make_unique<Select1PFPopup>(parent(), "Select Physical Frame", m_Model, onSelection);
             App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
         }
-        ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
+        ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::GeometryPath");
 
         if (const auto* gp = dynamic_cast<const OpenSim::GeometryPath*>(&pa.getPath())) {
             if (ui::begin_menu("Path Wrap", m_Model->canUpdModel())) {
@@ -178,6 +178,15 @@ private:
             drawPathWrapToggleMenuItems(geometryPath);
             ui::end_menu();
         }
+        if (ui::draw_menu_item("Path Point", {}, nullptr, m_Model->canUpdModel())) {
+            auto onSelection = [model = m_Model, path = geometryPath.getAbsolutePath()](const OpenSim::ComponentPath& pfPath)
+            {
+                ActionAddPathPointToGeometryPath(*model, path, pfPath);
+            };
+            auto popup = std::make_unique<Select1PFPopup>(parent(), "Select Physical Frame", m_Model, onSelection);
+            App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
+        }
+        ui::draw_tooltip_if_item_hovered("Add Path Point", "Add a new path point, attached to an OpenSim::PhysicalFrame in the model, to the end of the sequence of path points in this OpenSim::PathActuator");
     }
 
     void drawSpecializedContextualActions(const OpenSim::PhysicalFrame& frame)
