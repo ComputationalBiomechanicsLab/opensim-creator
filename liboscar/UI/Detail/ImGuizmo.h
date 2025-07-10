@@ -45,9 +45,14 @@
 // that would be insanely impractical. The project's vcs (i.e. git) can be
 // used to track each change.
 
+#include <liboscar/Maths/Angle.h>
+#include <liboscar/Maths/Mat4.h>
 #include <liboscar/Maths/Rect.h>
+#include <liboscar/Maths/Transform.h>
+#include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/UID.h>
 
+#include <optional>
 #include <utility>
 
 struct ImDrawList;
@@ -140,22 +145,6 @@ namespace ImGuizmo
     // default is false
     void SetOrthographic(bool isOrthographic);
 
-    // call it when you want a gizmo
-    // Needs view and projection matrices.
-    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
-    // translation is applied in world space
-    bool Manipulate(
-        const float* view,
-        const float* projection,
-        Operation operation,
-        Mode mode,
-        float* matrix,
-        float* deltaMatrix = nullptr,
-        const float* snap = nullptr,
-        const float* localBounds = nullptr,
-        const float* boundsSnap = nullptr
-    );
-
     // Push/Pop IDs from ImGuizmo's local ID stack
     void          PushID(osc::UID);
     void          PopID();                                                        // pop from the ID stack.
@@ -168,4 +157,27 @@ namespace ImGuizmo
     void SetAxisMask(bool x, bool y, bool z);
     // Configure the limit where planes are hidden
     void SetPlaneLimit(float value);
+
+    // Represents the step size that the gizmo should stick to when the user is
+    // using a gizmo operation.
+    struct OperationSnappingSteps final {
+        std::optional<osc::Vec3> scale;
+        std::optional<osc::Radians> rotation;
+        std::optional<osc::Vec3> position;
+    };
+
+    // call it when you want a gizmo
+    // Needs view and projection matrices.
+    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
+    // translation is applied in world space
+    std::optional<osc::Transform> Manipulate(
+        const osc::Mat4& view,
+        const osc::Mat4& projection,
+        Operation operation,
+        Mode mode,
+        osc::Mat4& matrix,
+        std::optional<OperationSnappingSteps> snap = std::nullopt,
+        const float* localBounds = nullptr,
+        const float* boundsSnap = nullptr
+    );
 }

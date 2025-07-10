@@ -52,11 +52,17 @@
 #include "imgui_internal.h"
 #include "ImGuizmo.h"
 
+#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/MatFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
+#include <liboscar/Maths/Transform.h>
+#include <liboscar/Maths/TransformFunctions.h>
+#include <liboscar/Utils/ScopeExit.h>
 
 #include <functional>
 #include <limits>
+#include <optional>
 #include <vector>
 
 using namespace ImGuizmo;
@@ -1105,7 +1111,7 @@ namespace
       }
    }
 
-   void ComputeSnap(vec_t& value, const float* snap)
+   void ComputeSnap(vec_t& value, const osc::Vec3& snap)
    {
       for (int i = 0; i < 3; i++)
       {
@@ -1998,7 +2004,7 @@ namespace
       return type;
    }
 
-   bool HandleTranslation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
+   bool HandleTranslation(float* matrix, float* deltaMatrix, Operation op, int& type, const std::optional<OperationSnappingSteps>& snap)
    {
       if (not (op & Operation::Translate) or type != MT_NONE) {
         return false;
@@ -2033,7 +2039,7 @@ namespace
          }
 
          // snap
-         if (snap)
+         if (snap and snap->position)
          {
             vec_t cumulativeDelta = gCurrentContext->mModel.v.position + delta - gCurrentContext->mMatrixOrigin;
             if (applyRotationLocaly)
@@ -2043,15 +2049,14 @@ namespace
                matrix_t modelSourceNormalizedInverse;
                modelSourceNormalizedInverse.Inverse(modelSourceNormalized);
                cumulativeDelta.TransformVector(modelSourceNormalizedInverse);
-               ComputeSnap(cumulativeDelta, snap);
+               ComputeSnap(cumulativeDelta, *snap->position);
                cumulativeDelta.TransformVector(modelSourceNormalized);
             }
             else
             {
-               ComputeSnap(cumulativeDelta, snap);
+               ComputeSnap(cumulativeDelta, *snap->position);
             }
             delta = gCurrentContext->mMatrixOrigin + cumulativeDelta - gCurrentContext->mModel.v.position;
-
          }
 
          if (delta != gCurrentContext->mTranslationLastDelta)
@@ -2120,7 +2125,7 @@ namespace
       return modified;
    }
 
-   bool HandleScale(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
+   bool HandleScale(float* matrix, float* deltaMatrix, Operation op, int& type, const std::optional<OperationSnappingSteps>& snap)
    {
       if ((not (op & Operation::Scale) and not (op & Operation::ScaleU))
           or type != MT_NONE
@@ -2196,10 +2201,8 @@ namespace
          }
 
          // snap
-         if (snap)
-         {
-            float scaleSnap[] = { snap[0], snap[0], snap[0] };
-            ComputeSnap(gCurrentContext->mScale, scaleSnap);
+         if (snap and snap->scale) {
+            ComputeSnap(gCurrentContext->mScale, *snap->scale);
          }
 
          // no 0 allowed
@@ -2245,7 +2248,7 @@ namespace
       return modified;
    }
 
-   bool HandleRotation(float* matrix, float* deltaMatrix, Operation op, int& type, const float* snap)
+   bool HandleRotation(float* matrix, float* deltaMatrix, Operation op, int& type, const std::optional<OperationSnappingSteps>& snap)
    {
       if (not (op & Operation::Rotate)
           or type != MT_NONE
@@ -2308,10 +2311,9 @@ namespace
          ImGui::CaptureMouseFromApp();
 #endif
          gCurrentContext->mRotationAngle = ComputeAngleOnPlan();
-         if (snap)
-         {
-            float snapInRadian = snap[0] * DEG2RAD;
-            ComputeSnap(&gCurrentContext->mRotationAngle, snapInRadian);
+         if (snap and snap->rotation) {
+             static_assert(std::same_as<const osc::Radians&, decltype(*snap->rotation)>);
+             ComputeSnap(&gCurrentContext->mRotationAngle, snap->rotation->count());
          }
          vec_t rotationAxisLocalSpace;
 
@@ -2461,65 +2463,6 @@ void ImGuizmo::SetOrthographic(bool isOrthographic)
     gCurrentContext->mIsOrthographic = isOrthographic;
 }
 
-bool ImGuizmo::Manipulate(
-    const float* view,
-    const float* projection,
-    Operation operation,
-    Mode mode,
-    float* matrix,
-    float* deltaMatrix,
-    const float* snap,
-    const float* localBounds,
-    const float* boundsSnap)
-{
-    gCurrentContext->mDrawList->PushClipRect(
-        ImVec2(gCurrentContext->mX, gCurrentContext->mY),
-        ImVec2(gCurrentContext->mX + gCurrentContext->mWidth, gCurrentContext->mY + gCurrentContext->mHeight),
-        false
-    );
-
-    // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
-    ComputeContext(view, projection, matrix, (operation & Operation::Scale) ? Mode::Local : mode);
-
-    // set delta to identity
-    if (deltaMatrix) {
-        ((matrix_t*)deltaMatrix)->SetToIdentity();
-    }
-
-    // behind camera
-    vec_t camSpacePosition;
-    camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gCurrentContext->mMVP);
-    if (not gCurrentContext->mIsOrthographic and camSpacePosition.z < 0.0001f and not gCurrentContext->mbUsing) {
-        return false;
-    }
-
-    // --
-    int type = MT_NONE;
-    bool manipulated = false;
-    if (gCurrentContext->mbEnable) {
-        if (not gCurrentContext->mbUsingBounds) {
-            manipulated = HandleTranslation(matrix, deltaMatrix, operation, type, snap) ||
-                HandleScale(matrix, deltaMatrix, operation, type, snap) ||
-                HandleRotation(matrix, deltaMatrix, operation, type, snap);
-        }
-    }
-
-    if (localBounds and not gCurrentContext->mbUsing) {
-        HandleAndDrawLocalBounds(localBounds, (matrix_t*)matrix, boundsSnap, operation);
-    }
-
-    gCurrentContext->mOperation = operation;
-    if (not gCurrentContext->mbUsingBounds) {
-        DrawRotationGizmo(operation, type);
-        DrawTranslationGizmo(operation, type);
-        DrawScaleGizmo(operation, type);
-        DrawScaleUniveralGizmo(operation, type);
-    }
-
-    gCurrentContext->mDrawList->PopClipRect ();
-    return manipulated;
-}
-
 void ImGuizmo::PushID(osc::UID uid)
 {
     ImGuiID id = ::GetID(static_cast<int>(std::hash<osc::UID>{}(uid)));
@@ -2550,6 +2493,69 @@ void ImGuizmo::SetAxisMask(bool x, bool y, bool z)
 void ImGuizmo::SetPlaneLimit(float value)
 {
     gCurrentContext->mPlaneLimit = value;
+}
+
+std::optional<osc::Transform> ImGuizmo::Manipulate(
+    const osc::Mat4& view,
+    const osc::Mat4& projection,
+    Operation operation,
+    Mode mode,
+    osc::Mat4& matrix,
+    std::optional<OperationSnappingSteps> snap,
+    const float* localBounds,
+    const float* boundsSnap)
+{
+    const float* viewPtr = value_ptr(view);
+    const float* projectionPtr = value_ptr(projection);
+    float* matrixPtr = value_ptr(matrix);
+
+    gCurrentContext->mDrawList->PushClipRect(
+        ImVec2(gCurrentContext->mX, gCurrentContext->mY),
+        ImVec2(gCurrentContext->mX + gCurrentContext->mWidth, gCurrentContext->mY + gCurrentContext->mHeight),
+        false
+    );
+    const osc::ScopeExit popClipRectOnExit{[&] { gCurrentContext->mDrawList->PopClipRect(); }};
+
+    // Scale is always local or matrix will be skewed when applying world scale or oriented matrix
+    ComputeContext(viewPtr, projectionPtr, matrixPtr, (operation & Operation::Scale) ? Mode::Local : mode);
+
+    // behind camera
+    vec_t camSpacePosition;
+    camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gCurrentContext->mMVP);
+    if (not gCurrentContext->mIsOrthographic and camSpacePosition.z < 0.0001f and not gCurrentContext->mbUsing) {
+        return std::nullopt;
+    }
+
+    // --
+    int type = MT_NONE;
+    bool manipulated = false;
+    osc::Mat4 deltaMatrix;
+    if (gCurrentContext->mbEnable) {
+        if (not gCurrentContext->mbUsingBounds) {
+            manipulated =
+                   HandleTranslation(matrixPtr, value_ptr(deltaMatrix), operation, type, snap)
+                or HandleScale(matrixPtr, value_ptr(deltaMatrix), operation, type, snap)
+                or HandleRotation(matrixPtr, value_ptr(deltaMatrix), operation, type, snap);
+        }
+    }
+
+    if (localBounds and not gCurrentContext->mbUsing) {
+        HandleAndDrawLocalBounds(localBounds, (matrix_t*)matrixPtr, boundsSnap, operation);
+    }
+
+    gCurrentContext->mOperation = operation;
+    if (not gCurrentContext->mbUsingBounds) {
+        DrawRotationGizmo(operation, type);
+        DrawTranslationGizmo(operation, type);
+        DrawScaleGizmo(operation, type);
+        DrawScaleUniveralGizmo(operation, type);
+    }
+
+    if (manipulated) {
+        return osc::decompose_to_transform(deltaMatrix);
+    } else {
+        return std::nullopt;
+    }
 }
 
 // NOLINTEND

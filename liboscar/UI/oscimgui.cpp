@@ -3850,27 +3850,13 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     ImGuizmo::SetRect(ui_rect);
     ImGuizmo::SetDrawlist(draw_list);
-
-    // use rotation from the parent, translation from station
-    Mat4 delta_matrix;
-
-    const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
-        value_ptr(view_matrix),
-        value_ptr(projection_matrix),
+    return ImGuizmo::Manipulate(
+        view_matrix,
+        projection_matrix,
         to<ImGuizmo::Operation>(operation_),
         to<ImGuizmo::Mode>(mode_),
-        value_ptr(model_matrix),
-        value_ptr(delta_matrix),
-        nullptr,
-        nullptr,
-        nullptr
+        model_matrix
     );
-
-    if (not gizmo_was_manipulated_by_user) {
-        return std::nullopt;  // user is not interacting, so no changes to apply
-    }
-
-    return decompose_to_transform(delta_matrix);
 }
 
 bool osc::ui::Gizmo::is_using() const
