@@ -787,9 +787,19 @@ namespace
     {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags = 0;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // tabbing, using arrows to move around
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // dockable panels
-        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // OSCAR DOESN'T ALLOW IMGUI MULTI VIEWPORT
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // dockable panels
+        // DISABLED: io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
+        //
+        //   Setting this flag causes ImGui to almost always adsorb keyboard events
+        //   whenever there's any ImGui window focused. This makes `WantCaptureKeyboard`
+        //   always `true`, which makes the UI context adsorb almost all key events, which
+        //   starves the application of them.
+        //
+        // DISABLED: io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable
+        //
+        //   The oscar ImGui backend doesn't support multi-viewport ImGui. The reason
+        //   why is because the long-term intention is for oscar to handle windows via
+        //   a combination of the `osc::App` and `osc::Widget` APIs.
 
         // make it so that windows can only ever be moved from the title bar
         io.ConfigWindowsMoveFromTitleBarOnly = true;

@@ -9,6 +9,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to the other OSes.
 - Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
   been used (#1069).
+- Fixed keybinds not working in the mesh impoter workflow (#1072). Unfortunately, this
+  reverses the "keyboard navigation between elements in the UI is now easier" feature
+  that was introduced in 0.5.24.
 
 ## [0.5.24] - 2025/06/23
 
