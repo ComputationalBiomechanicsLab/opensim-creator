@@ -93,10 +93,10 @@ osc::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage)
         // model being viewed" (in OSC: `UndoableModelStatePair`) from "The
         // renderable UI tree that the GUI is showing" (in OpenSim GUI:
         // `ExperimentalMarkerNode` and `OpenSimNode`).
+        try {
             auto series = std::make_unique<DataSeries>(m_Storage, annotation);
             series->finalizeFromProperties();
             addComponent(series.release());
-        try {
         }
         catch (const std::exception& ex) {
             log_warn("Error loading a data series from %s: %s", getName().c_str(), ex.what());
