@@ -17,17 +17,11 @@ version.
 
 ## Update Procedure
 
-Third-party libraries are maintained/changed using `git subtree`:
+Third-party libraries are maintained/changed using `git subtree`, for example:
 
 ```bash
-git subtree pull --squash --prefix=third_party/googletest https://github.com/google/googletest
+git subtree pull --squash --prefix=third_party/googletest https://github.com/google/googletest v1.17.0
 ```
 
-### NOTE: Some Subtrees are Patched
-
-| Subtree                          | Patched Repo                                                    | Patched Branch    |
-| -------------------------------- | --------------------------------------------------------------- | ----------------- |
-| `third_party/osim/opensim-core/` | https://github.com/ComputationalBiomechanicsLab/opensim-core | `opensim-creator` |
-
-Those branches usually contain a couple of commits that are applied on top of upstream
-in order fix something quite minor or add a little functionality.
+**Note**: the build procedure also applies patches so some of the upstream code so
+that it works better in OpenSim Creator. See `patches/`.

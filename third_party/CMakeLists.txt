@@ -203,6 +203,7 @@ if(${OSCDEPS_BUILD_LIBOSIM})
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0001_add-static-library-define.patch ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0002_add-removecomponent.patch
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}

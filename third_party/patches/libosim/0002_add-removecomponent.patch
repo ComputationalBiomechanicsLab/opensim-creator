@@ -1,0 +1,59 @@
+This adds `OpenSim::Component::removeComponent`, which OpenSim Creator uses
+for some UI functionality.
+
+---
+
+diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
+index 578aee767..dade8f748 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
++++ b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
+@@ -159,6 +159,28 @@ void Component::addComponent(Component* subcomponent)
+     extendAddComponent(subcomponent);
+ }
+ 
++bool Component::removeComponent(Component* subcomponent)
++{
++    auto& componentsProp = updProperty_components();
++
++    // Try to find `subcomponent` in the `components` property.
++    int idx = -1;
++    for (int i = 0; i < componentsProp.size(); ++i) {
++        if (&componentsProp[i] == subcomponent) {
++            idx = i;
++            break;
++        }
++    }
++    if (idx == -1) {
++        return false;  // Not found.
++    }
++
++    // Perform removal
++    componentsProp.removeValueAtIndex(idx);
++    finalizeFromProperties();
++    return true;
++}
++
+ void Component::prependComponentPathToConnecteePath(
+         Component& subcomponent) {
+     const std::string compPath = subcomponent.getAbsolutePathString();
+diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Component.h b/third_party/libosim/opensim-core/OpenSim/Common/Component.h
+index 652848467..c601204d5 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Common/Component.h
++++ b/third_party/libosim/opensim-core/OpenSim/Common/Component.h
+@@ -670,6 +670,16 @@ public:
+     * @param subcomponent is the Component to be added. */
+     void addComponent(Component* subcomponent);
+ 
++    /**
++     * Returns `true` if `subcomponent`, which should be a direct subcomponent
++     * of this component, was sucessfully removed from this component.
++     *
++     * Specifically, this tries to remove a direct component that was
++     * previously added via `addComponent`, or existed in the `<components>`
++     * list XML for this component.
++     */
++    bool removeComponent(Component* subcomponent);
++
+     /**
+      * Get an iterator through the underlying subcomponents that this component is
+      * composed of. The hierarchy of Components/subComponents forms a tree.
