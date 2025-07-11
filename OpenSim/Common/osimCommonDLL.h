@@ -34,9 +34,7 @@
     #define WIN32_LEAN_AND_MEAN
     #define NOMINMAX
     #include <windows.h>
-    #if defined(OPENSIM_USE_STATIC_LIBRARIES)
-        #define OSIMCOMMON_API
-    #elif defined(OSIMCOMMON_EXPORTS)
+    #ifdef OSIMCOMMON_EXPORTS
         #define OSIMCOMMON_API __declspec(dllexport)
     #else
         #define OSIMCOMMON_API __declspec(dllimport)

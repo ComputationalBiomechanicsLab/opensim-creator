@@ -159,28 +159,6 @@ void Component::addComponent(Component* subcomponent)
     extendAddComponent(subcomponent);
 }
 
-bool Component::removeComponent(Component* subcomponent)
-{
-    auto& componentsProp = updProperty_components();
-
-    // Try to find `subcomponent` in the `components` property.
-    int idx = -1;
-    for (int i = 0; i < componentsProp.size(); ++i) {
-        if (&componentsProp[i] == subcomponent) {
-            idx = i;
-            break;
-        }
-    }
-    if (idx == -1) {
-        return false;  // Not found.
-    }
-
-    // Perform removal
-    componentsProp.removeValueAtIndex(idx);
-    finalizeFromProperties();
-    return true;
-}
-
 void Component::prependComponentPathToConnecteePath(
         Component& subcomponent) {
     const std::string compPath = subcomponent.getAbsolutePathString();
