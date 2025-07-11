@@ -1,4 +1,3 @@
-[![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)](https://github.com/ComputationalBiomechanicsLab/opensim-creator/blob/main/.github/workflows/continuous-integration-workflow.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703588.svg)](https://doi.org/10.5281/zenodo.7703588)
 
 # OpenSim Creator <img src="resources/OpenSimCreator/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />

@@ -6,11 +6,6 @@ Installation
 The easiest way to install OpenSim Creator is to download a prebuilt installer
 from the `GitHub Releases Page`_.
 
-OpenSim Creator is also regularly built from source using GitHub Actions, so if
-you want a bleeding-edge---but unreleased---build of OpenSim Creator, check
-out the `GitHub Actions Page`_ (**note**: you must be logged into GitHub to see
-artifact download links).
-
 
 Installing on Windows (10 or newer)
 -----------------------------------
@@ -73,5 +68,4 @@ Building from Source
 See :ref:`buildingfromsource` for an explanation of how to do this.
 
 .. _GitHub Releases Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/releases
-.. _GitHub Actions Page: https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions
 .. _Apple Gatekeeper Documentation: https://support.apple.com/en-us/102445
