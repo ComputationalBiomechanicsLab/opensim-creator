@@ -54,10 +54,6 @@ PUBLIC
 PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )
-target_compile_definitions(OpenSimCreator PRIVATE
-    # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-    $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
-)
 target_include_directories(OpenSimCreator PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <libopensimcreator/HEADER.h>` works
 )
