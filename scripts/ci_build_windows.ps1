@@ -6,6 +6,10 @@
 # a desktop environment.
 $env:OSC_INTERNAL_HIDE_WINDOW="1"
 
+# Ensure dependencies are re-checked/re-built if the CI script is ran on
+# a potentially stale/cached workspace directory.
+$env:OSCDEPS_BUILD_ALWAYS="ON"
+
 # --system-version is necessary because, otherwise, the wrong Windows
 # SDK might be chosen, resulting in either missing headers (e.g. https://github.com/actions/runner-images/issues/10980)
 # or shipping a binary that doesn't run on target systems.
