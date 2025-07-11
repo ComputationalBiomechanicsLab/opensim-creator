@@ -21,6 +21,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed keybindings not working in the mesh importer workflow (#1072). Unfortunately, this
   reverses the "keyboard navigation between elements in the UI is now easier" feature
   that was introduced in 0.5.24.
+- Internal: `SceneDecorationFlag::NoSceneVolumeContribution` was added to help support
+  rendering decorations that don't contribute to the camera's auto-focus (thanks
+  @PashavanBijlert, #1071).
 
 ## [0.5.24] - 2025/06/23
 
@@ -74,9 +77,6 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   bottom-left), which matches OpenGL's conventions (#1044).
 - Internal: All graphics test suites now use the same test source file convention as
   the rest of the codebase (#763).
-- Internal: `SceneDecorationFlag::NoSceneVolumeContribution` was added to help support
-  rendering decorations that don't contribute to the camera's auto-focus (thanks
-  @PashavanBijlert, #1071).
 
 
 ## [0.5.23] - 2025/05/26
