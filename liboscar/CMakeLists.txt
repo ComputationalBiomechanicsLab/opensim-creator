@@ -51,17 +51,11 @@ target_compile_features(oscar PUBLIC
 target_compile_options(oscar PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )
-if(NOT ${OSC_EMSCRIPTEN} AND UNIX AND NOT APPLE)
-    set(OSC_ADD_LINUX_DEF ON)
-else()
-    set(OSC_ADD_LINUX_DEF OFF)
-endif()
 target_compile_definitions(oscar
 PUBLIC
     $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
     $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
 PRIVATE
-    $<$<BOOL:${OSC_ADD_LINUX_DEF}>:__LINUX__>
     LUNASVG_BUILD_STATIC
 )
 target_include_directories(oscar
