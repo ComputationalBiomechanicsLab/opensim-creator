@@ -241,7 +241,7 @@ namespace osc
     requires HasAbsFunction<T> and LessThanComparable<T>
     bool equal_within_absdiff(T x, T y, T absdiff)
     {
-        return abs(x - y) < absdiff;
+        return abs(x - y) <= absdiff;
     }
 
     // returns a vector containing `equal_within_absdiff(xv, yv, absdiffv)` for each `(xv, yv, absdiffv)` in `x`, `y`, and `absdiff`

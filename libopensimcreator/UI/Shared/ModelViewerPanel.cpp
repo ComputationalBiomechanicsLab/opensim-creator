@@ -244,7 +244,7 @@ namespace
             // try updating the camera (mouse panning, etc.)
             bool rv = ui::update_polar_camera_from_mouse_inputs(
                 params.updRenderParams().camera,
-                dimensions_of(state.viewportUiRect)
+                state.viewportUiRect.dimensions()
             );
 
             if (ui::is_mouse_dragging_with_any_button_down())
@@ -428,13 +428,13 @@ public:
             RenderTexture& sceneTexture = m_State.updRenderer().onDraw(
                 *m_Parameters.getModelSharedPtr(),
                 m_Parameters.getRenderParams(),
-                dimensions_of(m_State.viewportUiRect),
+                m_State.viewportUiRect.dimensions(),
                 App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
                 App::get().anti_aliasing_level()
             );
             ui::draw_image(
                 sceneTexture,
-                dimensions_of(m_State.viewportUiRect)
+                m_State.viewportUiRect.dimensions()
             );
 
             // care: hittesting is done here, rather than using ui::is_panel_hovered, because
@@ -543,10 +543,9 @@ private:
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ui::set_next_panel_ui_pos(m_State.viewportUiRect.p1);
+            ui::set_next_panel_ui_pos(m_State.viewportUiRect.ypd_top_left());
             const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
-            if (ui::begin_child_panel(childID, dimensions_of(m_State.viewportUiRect), ui::ChildPanelFlags{}, windowFlags))
-            {
+            if (ui::begin_child_panel(childID, m_State.viewportUiRect.dimensions(), ui::ChildPanelFlags{}, windowFlags)) {
                 layer.onDraw(m_Parameters, m_State);
                 ui::end_child_panel();
             }

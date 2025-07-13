@@ -315,16 +315,16 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Rect& screen_render_rect,
     Vec2 screen_mouse_pos)
 {
-    const Line ray = camera.unproject_topleft_pos_to_world_ray(
-        screen_mouse_pos - screen_render_rect.p1,
-        dimensions_of(screen_render_rect)
+    const Line world_ray = camera.unproject_topleft_pos_to_world_ray(
+        screen_mouse_pos - screen_render_rect.ypd_top_left(),
+        screen_render_rect.dimensions()
     );
 
     return get_closest_world_space_ray_triangle_collision(
         mesh,
         triangle_bvh,
         identity<Transform>(),
-        ray
+        world_ray
     );
 }
 

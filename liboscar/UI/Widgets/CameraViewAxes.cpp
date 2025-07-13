@@ -43,7 +43,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     // calculate widget ui space metrics
     const Vec2 top_left = ui::get_cursor_ui_pos();
     const Rect bounds = {top_left, top_left + metrics.dimensions};
-    const Vec2 origin = centroid_of(bounds);
+    const Vec2 origin = bounds.origin();
 
     // figure out rendering order (back-to-front)
     const Mat4 view_matrix = camera.view_matrix();
@@ -72,7 +72,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
             const auto labels = std::to_array<CStringView>({ "X", "Y", "Z" });
             const auto id = ui::get_id(labels[axis_index]);
-            ui::set_cursor_ui_pos(circle_bounds.p1);
+            ui::set_cursor_ui_pos(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
                 const Vec2 label_size = ui::calc_text_size(labels[axis_index]);
@@ -100,7 +100,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
             const auto labels = std::to_array<CStringView>({ "-X", "-Y", "-Z" });
             const auto id = ui::get_id(labels[axis_index]);
-            ui::set_cursor_ui_pos(circle_bounds.p1);
+            ui::set_cursor_ui_pos(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);

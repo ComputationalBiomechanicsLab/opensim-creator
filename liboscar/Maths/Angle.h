@@ -30,7 +30,7 @@ namespace osc
 
         // explicitly constructs the angle from a raw value in the given units
         template<std::convertible_to<Rep> Rep2>
-        constexpr explicit Angle(const Rep2& value_) :
+        explicit constexpr Angle(const Rep2& value_) :
             value_{static_cast<Rep>(value_)}
         {}
 

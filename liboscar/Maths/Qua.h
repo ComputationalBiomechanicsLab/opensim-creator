@@ -48,7 +48,7 @@ namespace osc
 
         // constructs a `Qua` by `static_cast<T>`ing each element in `q`
         template<typename U>
-        constexpr explicit Qua(const Qua<U>& q) :
+        explicit constexpr Qua(const Qua<U>& q) :
             w{static_cast<T>(q.w)},
             x{static_cast<T>(q.x)},
             y{static_cast<T>(q.y)},

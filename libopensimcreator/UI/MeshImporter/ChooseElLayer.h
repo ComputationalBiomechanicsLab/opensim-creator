@@ -303,7 +303,7 @@ namespace osc::mi
             }
 
             const Vec2 padding = Vec2{10.0f, 10.0f};
-            const Vec2 pos = m_Shared->get3DSceneRect().p1 + padding;
+            const Vec2 pos = m_Shared->get3DSceneRect().ypd_top_left() + padding;
             ui::get_panel_draw_list().add_text(pos, Color::white(), m_Options.header);
         }
 
@@ -315,7 +315,7 @@ namespace osc::mi
 
             const CStringView text = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 35.0f};
-            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().p2 - (ui::calc_button_size(text) + margin);
+            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_ui_pos(buttonTopLeft);
             if (ui::draw_button(text))

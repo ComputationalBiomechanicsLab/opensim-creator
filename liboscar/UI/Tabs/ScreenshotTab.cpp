@@ -46,42 +46,46 @@ namespace
     // the given aspect ratio
     //
     // the returned rectangle is in the same space as the target rectangle
-    Rect shrink_to_fit(Rect target_rect, float aspect_ratio)
+    Rect shrink_to_fit(Rect target_ui_rect, float aspect_ratio)
     {
-        const float target_aspect_ratio = aspect_ratio_of(target_rect);
+        const float target_aspect_ratio = aspect_ratio_of(target_ui_rect);
         const float ratio = target_aspect_ratio / aspect_ratio;
-        const Vec2 target_dimensions = dimensions_of(target_rect);
+        const Vec2 target_dimensions = target_ui_rect.dimensions();
+        const Vec2 target_ui_top_left = target_ui_rect.ypd_top_left();
 
         if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
             const Vec2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
-            const Vec2 rv_topleft = {target_rect.p1.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_rect.p1.y};
-            return {rv_topleft, rv_topleft + rv_dimensions};
+            const Vec2 rv_top_left = {target_ui_top_left.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_ui_top_left.y};
+            return {rv_top_left, rv_top_left + rv_dimensions};
         }
         else {
             // it will touch the left/right but will not touch the top/bottom
             const Vec2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
-            const Vec2 rv_topleft = {target_rect.p1.x, target_rect.p1.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
-            return {rv_topleft, rv_topleft + rv_dimensions};
+            const Vec2 rv_top_left = {target_ui_top_left.x, target_ui_top_left.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
+            return {rv_top_left, rv_top_left + rv_dimensions};
         }
     }
 
-    Rect map_rect(const Vec2& screen_dimensions, const Rect& annotation_screen_rect, const Rect& viewport_ui_rect)
+    Rect map_rect(
+        const Vec2& screen_dimensions,
+        const Rect& annotation_screen_rect,
+        const Rect& viewport_ui_rect)
     {
-        Rect normalized_rect{
-            annotation_screen_rect.p1/screen_dimensions,
-            annotation_screen_rect.p2/screen_dimensions
-        };
-        // flip y: normalized screen --> normalized ui
-        const float ui_top_y = 1.0f - normalized_rect.p2.y;
-        const float ui_bottom_y = 1.0f - normalized_rect.p1.y;
-        normalized_rect.p1.y = ui_top_y;
-        normalized_rect.p2.y = ui_bottom_y;
+        const auto annotation_screen_rect_corners = annotation_screen_rect.corners();
 
-        const Vec2 ui_dims = dimensions_of(viewport_ui_rect);
+        const Rect normalized_ypu_rect{
+            annotation_screen_rect_corners.min/screen_dimensions,
+            annotation_screen_rect_corners.max/screen_dimensions,
+        };
+        const Rect normalized_ypd_rect = normalized_ypu_rect.with_flipped_y(1.0f);
+        const auto normalized_ypd_corners = normalized_ypd_rect.corners();
+
+        const Vec2 ui_dims = viewport_ui_rect.dimensions();
+        const Vec2 ui_top_left = viewport_ui_rect.ypd_top_left();
         return Rect{
-            viewport_ui_rect.p1 + ui_dims*normalized_rect.p1,
-            viewport_ui_rect.p1 + ui_dims*normalized_rect.p2,
+            ui_top_left + ui_dims*normalized_ypd_corners.min,
+            ui_top_left + ui_dims*normalized_ypd_corners.max,
         };
     }
 
@@ -167,12 +171,11 @@ private:
     // returns ui space rect of the screenshot within the UI
     Rect draw_screenshot_as_image()
     {
-        const Vec2 cursor_topleft = ui::get_cursor_ui_pos();
-        const Rect window_rect = {cursor_topleft, cursor_topleft + Vec2{ui::get_content_region_available()}};
-        const Rect image_rect = shrink_to_fit(window_rect, aspect_ratio_of(screenshot_.dimensions()));
-        ui::set_cursor_ui_pos(image_rect.p1);
-        ui::draw_image(image_texture_, dimensions_of(image_rect));
-        return image_rect;
+        const Rect window_ui_rect = ui::get_content_region_available_ui_rect();
+        const Rect image_ui_rect = shrink_to_fit(window_ui_rect, aspect_ratio_of(screenshot_.dimensions()));
+        ui::set_cursor_ui_pos(image_ui_rect.ypd_top_left());
+        ui::draw_image(image_texture_, image_ui_rect.dimensions());
+        return image_ui_rect;
     }
 
     void draw_image_overlays(

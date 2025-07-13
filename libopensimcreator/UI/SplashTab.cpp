@@ -160,12 +160,14 @@ public:
 private:
     Rect calcMainMenuRect() const
     {
-        Rect tabUIRect = ui::get_main_window_workspace_ui_rect();
-        // pretend the attributation bar isn't there (avoid it)
-        tabUIRect.p2.y -= max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y;
+        const auto tabUIRectCorners = ui::get_main_window_workspace_ui_rect().corners();
+        const Rect tabUIRectWithoutBar{
+            tabUIRectCorners.min,
+            tabUIRectCorners.max - Vec2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y},
+        };
 
-        const Vec2 menuAndTopLogoDims = elementwise_min(dimensions_of(tabUIRect), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        const Vec2 menuAndTopLogoTopLeft = tabUIRect.p1 + 0.5f*(dimensions_of(tabUIRect) - menuAndTopLogoDims);
+        const Vec2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        const Vec2 menuAndTopLogoTopLeft = tabUIRectWithoutBar.ypd_top_left() + 0.5f*(tabUIRectWithoutBar.dimensions() - menuAndTopLogoDims);
         const Vec2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         const Vec2 menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
@@ -176,8 +178,8 @@ private:
     {
         const Rect mmr = calcMainMenuRect();
         const Vec2 topLeft{
-            mmr.p1.x + dimensions_of(mmr).x/2.0f - m_MainAppLogoDims.x/2.0f,
-            mmr.p1.y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
+            mmr.ypd_top_left().x + 0.5f*mmr.dimensions().x - 0.5f*m_MainAppLogoDims.x,
+            mmr.ypd_top_left().y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
         return Rect{topLeft, topLeft + m_MainAppLogoDims};
@@ -187,15 +189,15 @@ private:
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
 
-        ui::set_next_panel_ui_pos(workspaceUIRect.p1);
-        ui::set_next_panel_size(dimensions_of(workspaceUIRect));
+        ui::set_next_panel_ui_pos(workspaceUIRect.ypd_top_left());
+        ui::set_next_panel_size(workspaceUIRect.dimensions());
 
         ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
         ui::begin_panel("##splashscreenbackground", nullptr, ui::get_minimal_panel_flags());
         ui::pop_style_var();
 
         SceneRendererParams params{m_LastSceneRendererParams};
-        params.dimensions = dimensions_of(workspaceUIRect);
+        params.dimensions = workspaceUIRect.dimensions();
         params.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
         params.antialiasing_level = App::get().anti_aliasing_level();
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(workspaceUIRect));
@@ -214,9 +216,9 @@ private:
     {
         const Rect logoRect = calcLogoRect();
 
-        ui::set_next_panel_ui_pos(logoRect.p1);
+        ui::set_next_panel_ui_pos(logoRect.ypd_top_left());
         ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
-        ui::draw_image(m_MainAppLogo, dimensions_of(logoRect));
+        ui::draw_image(m_MainAppLogo, logoRect.dimensions());
         ui::end_panel();
     }
 
@@ -224,8 +226,8 @@ private:
     {
         // center the menu window
         const Rect mmr = calcMainMenuRect();
-        const Vec2 dims = dimensions_of(mmr);
-        ui::set_next_panel_ui_pos(mmr.p1);
+        const Vec2 dims = mmr.dimensions();
+        ui::set_next_panel_ui_pos(mmr.ypd_top_left());
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
@@ -355,7 +357,7 @@ private:
     void drawAttributationLogos()
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
-        Vec2 loc = workspaceUIRect.p2;
+        Vec2 loc = workspaceUIRect.ypd_bottom_right();
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
 
@@ -378,8 +380,8 @@ private:
         const float padding = 5.0f;
 
         const Vec2 pos{
-            tabUIRect.p1.x + padding,
-            tabUIRect.p2.y - h - padding,
+            tabUIRect.ypd_top_left().x + padding,
+            tabUIRect.ypd_bottom_right().y - h - padding,
         };
 
         ui::DrawListView dl = ui::get_foreground_draw_list();

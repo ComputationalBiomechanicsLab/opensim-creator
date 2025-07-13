@@ -411,19 +411,19 @@ private:
 
         // render all fully-established landmark pairs
         for (const LandmarkPair2D& p : m_LandmarkPairs) {
-            const Vec2 p1 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(p.src));
-            const Vec2 p2 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(p.dest));
+            const Vec2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.src));
+            const Vec2 p2 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.dest));
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
             drawlist.add_circle_filled({p2, 10.0f}, m_DestCircleColor);
         }
 
-        // render any currenty-placing landmark pairs in a more-faded color
+        // render any currently-placing landmark pairs in a more-faded color
         if (ht.is_hovered and std::holds_alternative<GUIFirstClickMouseState>(m_MouseState)) {
             const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            const Vec2 p1 = ht.item_ui_rect.p1 + (dimensions_of(ht.item_ui_rect) * ndc_point_to_topleft_normalized(st.srcNDCPos));
+            const Vec2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(st.srcNDCPos));
             const Vec2 p2 = ui::get_mouse_ui_pos();
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
@@ -444,8 +444,8 @@ private:
     void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
         const Vec2 mouseScreenPos = ui::get_mouse_ui_pos();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.p1;
-        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_ui_rect);
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
+        const Vec2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
         const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos));
@@ -459,8 +459,8 @@ private:
     void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
         const Vec2 mouseScreenPos = ui::get_mouse_ui_pos();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.p1;
-        const Vec2 mouseImageRelPos = mouseImagePos / dimensions_of(ht.item_ui_rect);
+        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
+        const Vec2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
         const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos) + "*");

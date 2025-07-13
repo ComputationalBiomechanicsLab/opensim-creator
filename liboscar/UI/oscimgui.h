@@ -560,6 +560,7 @@ namespace osc::ui
     };
     using TableFlags = Flags<TableFlag>;
 
+    Rect get_item_ui_rect();
     Vec2 get_item_top_left_ui_pos();
     Vec2 get_item_bottom_right_ui_pos();
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);

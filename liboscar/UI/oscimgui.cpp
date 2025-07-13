@@ -257,6 +257,15 @@ struct osc::Converter<Key, ImGuiKey> final {
 
 static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset());
 
+template<>
+struct osc::Converter<Rect, ImRect> final {
+    ImRect operator()(const Rect& rect) const
+    {
+        const auto corners = rect.corners();
+        return {corners.min, corners.max};
+    }
+};
+
 namespace
 {
     // The default size of the font in the UI
@@ -2230,17 +2239,17 @@ ui::ID osc::ui::get_id(std::string_view str_id)
 
 void osc::ui::set_next_item_size(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
 {
-    ImGui::ItemSize(ImRect{r.p1, r.p2});
+    ImGui::ItemSize(to<ImRect>(r));
 }
 
 bool osc::ui::add_item(Rect bounds, ID id)
 {
-    return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id.value());
+    return ImGui::ItemAdd(to<ImRect>(bounds), id.value());
 }
 
 bool osc::ui::is_item_hoverable(Rect bounds, ID id)
 {
-    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id.value(), ImGui::GetItemFlags());
+    return ImGui::ItemHoverable(to<ImRect>(bounds), id.value(), ImGui::GetItemFlags());
 }
 
 void osc::ui::draw_separator()
@@ -2428,6 +2437,11 @@ bool osc::ui::is_item_deactivated_after_edit()
     return ImGui::IsItemDeactivatedAfterEdit();
 }
 
+Rect osc::ui::get_item_ui_rect()
+{
+    return Rect{get_item_top_left_ui_pos(), get_item_bottom_right_ui_pos()};
+}
+
 Vec2 osc::ui::get_item_top_left_ui_pos()
 {
     return ImGui::GetItemRectMin();
@@ -2543,12 +2557,14 @@ Vec2 osc::ui::get_panel_size()
 
 void osc::ui::DrawListAPI::add_rect(const Rect& ui_rect, const Color& color, float rounding, float thickness)
 {
-    impl_get_drawlist().AddRect(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding, 0, thickness);
+    const auto ui_corners = ui_rect.corners();
+    impl_get_drawlist().AddRect(ui_corners.min, ui_corners.max, to_ImU32(color), rounding, 0, thickness);
 }
 
 void osc::ui::DrawListAPI::add_rect_filled(const Rect& ui_rect, const Color& color, float rounding)
 {
-    impl_get_drawlist().AddRectFilled(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding);
+    const auto ui_corners = ui_rect.corners();
+    impl_get_drawlist().AddRectFilled(ui_corners.min, ui_corners.max, to_ImU32(color), rounding);
 }
 
 void osc::ui::DrawListAPI::add_circle(const Circle& ui_circle, const Color& color, int num_segments, float thickness)
@@ -2578,7 +2594,8 @@ void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_
 
 void osc::ui::DrawListAPI::push_clip_rect(const Rect& r, bool intersect_with_currect_clip_rect)
 {
-    impl_get_drawlist().PushClipRect(r.p1, r.p2, intersect_with_currect_clip_rect);
+    const auto corners = r.corners();
+    impl_get_drawlist().PushClipRect(corners.min, corners.max, intersect_with_currect_clip_rect);
 }
 
 void osc::ui::DrawListAPI::pop_clip_rect()
@@ -2887,7 +2904,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
     // is classed as a mouse interaction
     const bool mouse_handled =
-        update_polar_camera_from_mouse_inputs(camera, dimensions_of(viewport_rect));
+        update_polar_camera_from_mouse_inputs(camera, viewport_rect.dimensions());
 
     const bool keyboard_handled = not io.WantCaptureKeyboard ?
         update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_world_space_aabb) :
@@ -2951,10 +2968,8 @@ void osc::ui::draw_image(
     if (not dimensions) {
         dimensions = texture.dimensions();
     }
-    const Vec2 top_left = {region_uv_coordinates.p1.x, 1.0f - region_uv_coordinates.p1.y};
-    const Vec2 bottom_right = {region_uv_coordinates.p2.x, 1.0f - region_uv_coordinates.p2.y};
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
-    ImGui::Image(handle, *dimensions, top_left, bottom_right);
+    ImGui::Image(handle, *dimensions, region_uv_coordinates.ypu_top_left(), region_uv_coordinates.ypu_bottom_right());
 }
 
 void osc::ui::draw_image(const RenderTexture& texture)
@@ -2997,7 +3012,7 @@ bool osc::ui::draw_image_button(
     const Rect& texture_coordinates)
 {
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
-    return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.p1, texture_coordinates.p2);
+    return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.ypu_top_left(), texture_coordinates.ypu_bottom_right());
 }
 
 bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec2 dimensions)
@@ -3013,10 +3028,11 @@ Rect osc::ui::get_last_drawn_item_ui_rect()
 Rect osc::ui::get_last_drawn_item_screen_rect()
 {
     const Rect ui_rect = get_last_drawn_item_ui_rect();
-    const Vec2 r = ImGui::GetIO().DisplaySize;
+    const auto ui_rect_corners = ui_rect.corners();
+    const float ui_height = ImGui::GetIO().DisplaySize.y;
     return Rect{
-        {ui_rect.p1.x, r.y - ui_rect.p2.y},
-        {ui_rect.p2.x, r.y - ui_rect.p1.y},
+        {ui_rect_corners.min.x, ui_height - ui_rect_corners.max.y},
+        {ui_rect_corners.max.x, ui_height - ui_rect_corners.min.y},
     };
 }
 
@@ -3033,8 +3049,7 @@ ui::HittestResult osc::ui::hittest_last_drawn_item()
 ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
 {
     HittestResult rv;
-    rv.item_ui_rect.p1 = ui::get_item_top_left_ui_pos();
-    rv.item_ui_rect.p2 = ui::get_item_bottom_right_ui_pos();
+    rv.item_ui_rect = ui::get_item_ui_rect();
     rv.is_hovered = ui::is_item_hovered();
     rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Left, drag_threshold);
     rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Right, drag_threshold);
@@ -3264,7 +3279,7 @@ ui::PanelFlags osc::ui::get_minimal_panel_flags()
 
 bool osc::ui::main_window_has_workspace()
 {
-    return area_of(get_main_window_workspace_ui_rect()) > 0.0f;
+    return get_main_window_workspace_ui_rect().area() > 0.0f;
 }
 
 
@@ -3290,7 +3305,7 @@ Rect osc::ui::get_main_window_workspace_screen_space_rect()
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
 {
-    return dimensions_of(get_main_window_workspace_ui_rect());
+    return get_main_window_workspace_ui_rect().dimensions();
 }
 
 float osc::ui::get_main_window_workspace_aspect_ratio()

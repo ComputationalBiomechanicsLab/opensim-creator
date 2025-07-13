@@ -2447,14 +2447,16 @@ void ImGuizmo::Enable(bool enable)
 
 void ImGuizmo::SetRect(const osc::Rect& ui_rect)
 {
-    const auto [width, height] = dimensions_of(ui_rect);
-    gCurrentContext->mX = ui_rect.p1.x;
-    gCurrentContext->mY = ui_rect.p1.y;
-    gCurrentContext->mWidth = width;
-    gCurrentContext->mHeight = height;
+    const osc::Vec2 top_left = ui_rect.ypd_top_left();
+    const osc::Vec2 dimensions = ui_rect.dimensions();
+
+    gCurrentContext->mX = top_left.x;
+    gCurrentContext->mY = top_left.y;
+    gCurrentContext->mWidth = dimensions.x;
+    gCurrentContext->mHeight = dimensions.y;
     gCurrentContext->mXMax = gCurrentContext->mX + gCurrentContext->mWidth;
     gCurrentContext->mYMax = gCurrentContext->mY + gCurrentContext->mXMax;
-    gCurrentContext->mDisplayRatio = width / height;
+    gCurrentContext->mDisplayRatio = osc::aspect_ratio_of(ui_rect);
 }
 
 void ImGuizmo::SetOrthographic(bool isOrthographic)

@@ -85,7 +85,7 @@ public:
         const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
         const SceneRendererParams params = CalcSceneRendererParams(
             m_ModelRendererParams,
-            dimensions_of(workspaceScreenRect),
+            workspaceScreenRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
             1.0f

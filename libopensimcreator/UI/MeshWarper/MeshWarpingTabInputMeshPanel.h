@@ -69,11 +69,11 @@ namespace osc
         {
             // compute top-level UI variables (render rect, mouse pos, etc.)
             const Rect contentRect = ui::get_content_region_available_ui_rect();
-            const Vec2 contentRectDims = dimensions_of(contentRect);
+            const Vec2 contentRectDims = contentRect.dimensions();
             const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.p1, contentRectDims);
+            const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
@@ -120,7 +120,7 @@ namespace osc
 
             // if the user interacts with the render, update the camera as necessary
             if (m_LastTextureHittestResult.is_hovered and
-                ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect))) {
+                ui::update_polar_camera_from_mouse_inputs(m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions())) {
 
                 m_State->setLinkedBaseCamera(m_Camera);
             }
@@ -415,7 +415,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
-            ui::set_cursor_ui_pos(renderRect.p1 + m_State->getOverlayPadding());
+            ui::set_cursor_ui_pos(renderRect.ypd_top_left() + m_State->getOverlayPadding());
 
             drawInformationIcon();
             ui::same_line();

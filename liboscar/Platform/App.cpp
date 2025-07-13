@@ -1274,15 +1274,18 @@ public:
         const float device_independent_to_sdl3_ratio = 1.0f/os_to_main_window_device_independent_ratio();
         const float main_window_height = main_window_dimensions().y;
 
-        // convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
+        // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
         // coordinate system that SDL3 wants
-        const Vec2 sdl3_rect_dimensions = device_independent_to_sdl3_ratio * dimensions_of(screen_rect);
-        const SDL_Rect r{
-            .x = static_cast<int>(device_independent_to_sdl3_ratio * screen_rect.p1.x),
-            .y = static_cast<int>(device_independent_to_sdl3_ratio * (main_window_height - screen_rect.p2.y)),  // top-left
-            .w = static_cast<int>(sdl3_rect_dimensions.x),
-            .h = static_cast<int>(sdl3_rect_dimensions.y),
-        };
+        const Rect rescaled_rect =
+            screen_rect
+            .with_flipped_y(main_window_height)
+            .with_origin_and_dimensions_scaled_by(device_independent_to_sdl3_ratio);
+
+        // Convert into `SDL_Rect`
+        const Vec2i top_left = rescaled_rect.ypd_top_left();
+        const Vec2i dimensions = rescaled_rect.dimensions();
+        const SDL_Rect r{.x = top_left.x, .y = top_left.y, .w = dimensions.x, .h = dimensions.y};
+
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
 

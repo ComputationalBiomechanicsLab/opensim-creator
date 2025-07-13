@@ -102,13 +102,13 @@ public:
     void onDraw()
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
-        const Vec2 workspaceDims = dimensions_of(workspaceUIRect);
+        const Vec2 workspaceDims = workspaceUIRect.dimensions();
         const Vec2 menuDimsGuess = {0.3f * workspaceDims.x, 6.0f * ui::get_font_base_size()};
 
         // center the menu
         {
             const Vec2 menuTopLeft = 0.5f * (workspaceDims - menuDimsGuess);
-            ui::set_next_panel_ui_pos(workspaceUIRect.p1 + menuTopLeft);
+            ui::set_next_panel_ui_pos(workspaceUIRect.ypd_top_left() + menuTopLeft);
             ui::set_next_panel_size({menuDimsGuess.x, -1.0f});
         }
 

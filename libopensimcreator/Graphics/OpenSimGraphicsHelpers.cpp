@@ -112,10 +112,10 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.p1;
+    const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.ypd_top_left();
     const Line worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
-        dimensions_of(viewportScreenRect)
+        viewportScreenRect.dimensions()
     );
 
     // iterate over all collisions along the camera ray and find the best one

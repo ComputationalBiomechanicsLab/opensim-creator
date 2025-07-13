@@ -273,22 +273,22 @@ private:
 
         // draw a vertical Y line showing the current scrub time over the plots
         {
-            const float plotScrubLineX = plotRect.p1.x + simScrubPct*(dimensions_of(plotRect).x);
-            const Vec2 p1 = {plotScrubLineX, plotRect.p1.y};
-            const Vec2 p2 = {plotScrubLineX, plotRect.p2.y};
+            const float plotScrubLineX = plotRect.ypd_top_left().x + simScrubPct*(plotRect.dimensions().x);
+            const Vec2 p1 = {plotScrubLineX, plotRect.ypd_top_left().y};
+            const Vec2 p2 = {plotScrubLineX, plotRect.ypd_bottom_right().y};
             drawlist.add_line(p1, p2, currentTimeLineColor);
         }
 
         if (ui::is_item_hovered()) {
             const Vec2 mp = ui::get_mouse_ui_pos();
-            const Vec2 plotLoc = mp - plotRect.p1;
-            const float relLoc = plotLoc.x / dimensions_of(plotRect).x;
+            const Vec2 plotLoc = mp - plotRect.ypd_top_left();
+            const float relLoc = plotLoc.x / plotRect.dimensions().x;
             const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                const Vec2 p1 = {mp.x, plotRect.p1.y};
-                const Vec2 p2 = {mp.x, plotRect.p2.y};
+                const Vec2 p1 = {mp.x, plotRect.ypd_top_left().y};
+                const Vec2 p2 = {mp.x, plotRect.ypd_bottom_right().y};
                 drawlist.add_line(p1, p2, hoverTimeLineColor);
             }
 

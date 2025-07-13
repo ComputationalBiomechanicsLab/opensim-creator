@@ -65,7 +65,7 @@ namespace osc
             // update camera if user drags it around etc.
             if (m_LastTextureHittestResult.is_hovered)
             {
-                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, dimensions_of(m_LastTextureHittestResult.item_ui_rect)))
+                if (ui::update_polar_camera_from_mouse_inputs(m_Camera, m_LastTextureHittestResult.item_ui_rect.dimensions()))
                 {
                     m_State->setLinkedBaseCamera(m_Camera);  // reflects latest modification
                 }
@@ -76,7 +76,7 @@ namespace osc
         void drawOverlays(const Rect& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ui::set_cursor_ui_pos(renderRect.p1 + m_OverlayPadding);
+            ui::set_cursor_ui_pos(renderRect.ypd_top_left() + m_OverlayPadding);
 
             drawInformationIcon();
             ui::same_line();

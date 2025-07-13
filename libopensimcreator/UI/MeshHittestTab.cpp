@@ -52,8 +52,8 @@ public:
         const auto raycastStartTime = PerfClock::now();
 
         const Rect r = ui::get_main_window_workspace_ui_rect();
-        const Vec2 d = dimensions_of(r);
-        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(Vec2{ui::get_mouse_ui_pos()} - r.p1, d);
+        const Vec2 d = r.dimensions();
+        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(ui::get_mouse_ui_pos() - r.ypd_top_left(), d);
 
         m_IsMousedOver = false;
         if (m_UseBVH) {
