@@ -24,6 +24,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Internal: `SceneDecorationFlag::NoSceneVolumeContribution` was added to help support
   rendering decorations that don't contribute to the camera's auto-focus (thanks
   @PashavanBijlert, #1071).
+- Internal: `osc::Rect` was heavily refactored to make it easier to use and more clearly
+  state its coordinate system assumptions (Y points up, Y points down, etc.).
 
 ## [0.5.24] - 2025/06/23
 
