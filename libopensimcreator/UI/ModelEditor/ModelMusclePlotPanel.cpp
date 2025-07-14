@@ -532,7 +532,7 @@ namespace
                 model->realizeReport(state);
                 yVal = static_cast<float>(params.getPlottedOutput()(state, muscle, coord));
             }
-            catch (const std::exception&)
+            catch (const std::exception& ex)
             {
                 // Either cannot equilibrate the muscle for this state, or cannot
                 // realize the state to a level that's plottable. Either way, emit
@@ -541,6 +541,7 @@ namespace
                 //
                 // Related: #1070: users might be editing models that contain
                 // in-development muscles that cannot be equilibrated.
+                static_cast<void>(ex);
             }
             callback(PlotDataPoint{xDisplayVal, yVal});
         }
