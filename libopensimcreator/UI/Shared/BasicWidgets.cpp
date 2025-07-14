@@ -1287,8 +1287,8 @@ bool osc::DrawViewerImGuiOverlays(
     const Vec2 renderDims = renderRect.dimensions();
     const Vec2 axesDims = axes.dimensions();
     const Vec2 axesTopLeft = {
-        renderRect.ypd_top_left().x + renderDims.x - windowPadding.x - axesDims.x,
-        renderRect.ypd_top_left().y + windowPadding.y,
+        renderRect.left() + renderDims.x - windowPadding.x - axesDims.x,
+        renderRect.ypd_top() + windowPadding.y,
     };
 
     // draw the bottom overlays

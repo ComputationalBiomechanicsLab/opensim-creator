@@ -30,12 +30,12 @@ namespace osc { class IOutputExtractor; }
 namespace osc { class OpenSimDecorationOptions; }
 namespace osc { class OverlayDecorationOptions; }
 namespace osc { class ParamBlock; }
+namespace osc { class Rect; }
 namespace osc { class SimulationModelStatePair; }
 namespace osc { class UndoableModelStatePair; }
 namespace osc { class Widget; }
 namespace osc { struct ModelRendererParams; }
 namespace osc { struct PolarPerspectiveCamera; }
-namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
 namespace SimTK { class State; }
 

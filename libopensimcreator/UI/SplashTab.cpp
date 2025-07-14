@@ -178,8 +178,8 @@ private:
     {
         const Rect mmr = calcMainMenuRect();
         const Vec2 topLeft{
-            mmr.ypd_top_left().x + 0.5f*mmr.dimensions().x - 0.5f*m_MainAppLogoDims.x,
-            mmr.ypd_top_left().y - m_TopLogoPadding.y - m_MainAppLogoDims.y,
+            mmr.left() + 0.5f*mmr.width() - 0.5f*m_MainAppLogoDims.x,
+            mmr.ypd_top() - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
         return Rect{topLeft, topLeft + m_MainAppLogoDims};
@@ -379,10 +379,7 @@ private:
         const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 
-        const Vec2 pos{
-            tabUIRect.ypd_top_left().x + padding,
-            tabUIRect.ypd_bottom_right().y - h - padding,
-        };
+        const Vec2 pos{tabUIRect.left() + padding, tabUIRect.ypd_bottom() - h - padding};
 
         ui::DrawListView dl = ui::get_foreground_draw_list();
         const std::string text = App::get().application_name_with_version_and_buildid();

@@ -32,6 +32,62 @@ TEST(Rect, dimensions_returns_expected_dimensions)
     ASSERT_EQ(rect.dimensions(), Vec2(4.0f, 6.0f));
 }
 
+TEST(Rect, width_returns_expected_width)
+{
+    const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.width(), 4.0f);
+}
+
+TEST(Rect, height_returns_expected_width)
+{
+    const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.height(), 6.0f);
+}
+
+TEST(Rect, left_returns_expected_left_offset)
+{
+    const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.left(), -13.0f);
+}
+
+TEST(Rect, right_returns_expected_right_offset)
+{
+    const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.right(), -9.0f);
+}
+
+TEST(Rect, ypd_top_returns_expected_top_offset)
+{
+    const Rect rect{Vec2(9.0f, 3.0f), Vec2(13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.ypd_top(), 3.0f);
+}
+
+TEST(Rect, ypu_top_returns_expected_top_offset)
+{
+    const Rect rect{Vec2(9.0f, 3.0f), Vec2(13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.ypu_top(), 9.0f);
+}
+
+TEST(Rect, ypd_bottom_returns_expected_bottom_offset)
+{
+    const Rect rect{Vec2(9.0f, 3.0f), Vec2(13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.ypd_bottom(), 9.0f);
+}
+
+TEST(Rect, ypu_bottom_returns_expected_bottom_offset)
+{
+    const Rect rect{Vec2(9.0f, 3.0f), Vec2(13.0f, 9.0f)};
+
+    ASSERT_EQ(rect.ypu_bottom(), 3.0f);
+}
+
 TEST(Rect, half_extents_returns_expected_half_dimensions)
 {
     const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
@@ -175,21 +231,11 @@ TEST(Rect, with_flipped_y_returns_expected_rect)
     ASSERT_EQ(corners.max.y, 120.0f);
 }
 
-TEST(Rect, expanded_by_float_adds_float_to_dimensions)
+TEST(Rect, with_dimensions_returns_expected_rect)
 {
-    const Rect rect{Vec2{-1.0f}, Vec2{+1.0f}};
+    const Rect rect{Vec2{5.0f}, Vec2{50.0f}};
 
-    const Rect result = rect.expanded_by(1.0f);
+    const Rect result = rect.with_dimensions({1.0f, 1.0f});
 
-    ASSERT_EQ(result.dimensions(), Vec2{4.0f});
-}
-
-
-TEST(Rect, expanded_by_Vec2_adds_to_each_part_of_dimensions)
-{
-    const Rect rect{Vec2{-1.0f}, Vec2{+1.0f}};
-
-    const Rect result = rect.expanded_by(Vec2{1.0f, 0.5f});
-
-    ASSERT_EQ(result.dimensions(), Vec2(4.0f, 3.0f));
+    ASSERT_EQ(result.dimensions(), Vec2(1.0f, 1.0f));
 }

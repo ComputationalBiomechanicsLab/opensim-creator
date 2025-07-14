@@ -18,14 +18,14 @@
 #include <optional>
 #include <span>
 
-namespace osc { struct AABB; }
 namespace osc { class BVH; }
 namespace osc { class Camera; }
 namespace osc { class Mesh; }
-namespace osc { struct PolarPerspectiveCamera; }
-namespace osc { struct Rect; }
-namespace osc { struct LineSegment; }
+namespace osc { class Rect; }
 namespace osc { class SceneCache; }
+namespace osc { struct AABB; }
+namespace osc { struct LineSegment; }
+namespace osc { struct PolarPerspectiveCamera; }
 namespace osc { struct Transform; }
 
 namespace osc

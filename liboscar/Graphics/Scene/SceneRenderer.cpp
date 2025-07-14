@@ -733,7 +733,7 @@ private:
         const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
 
         // expand by the rim thickness, so that the output has space for the rims
-        rim_ndc_rect = rim_ndc_rect.expanded_by(rim_ndc_thickness);
+        rim_ndc_rect = rim_ndc_rect.with_dimensions(rim_ndc_rect.dimensions() + 2.0f*rim_ndc_thickness);
 
         // constrain the result of the above to within clip space
         rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});

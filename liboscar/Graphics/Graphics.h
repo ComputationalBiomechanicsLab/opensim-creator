@@ -11,9 +11,9 @@
 
 namespace osc { class Camera; }
 namespace osc { class Cubemap; }
-namespace osc { class Mesh; }
 namespace osc { class Material; }
-namespace osc { struct Rect; }
+namespace osc { class Mesh; }
+namespace osc { class Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { class Texture2D; }
 namespace osc { struct Transform; }

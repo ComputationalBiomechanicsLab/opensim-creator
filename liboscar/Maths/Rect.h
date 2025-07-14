@@ -9,9 +9,11 @@
 
 namespace osc
 {
-    // Represents a 2D rectangle in a caller-defined coordinate system.
-    struct Rect final {
-
+    // Represents a 2D rectangle in a caller-defined coordinate system in which
+    // X always points towards the right, but Y can point either up (ypu) or
+    // down (ypd).
+    class Rect final {
+    public:
         // Returns a zero-dimension `Rect` with an `origin` of `point` in the coordinate
         // system of `point`.
         static constexpr Rect of_point(const Vec2& point)
@@ -49,12 +51,40 @@ namespace osc
         // Returns the dimensions of this `Rect`.
         Vec2 dimensions() const { return dimensions_; }
 
+        // Returns the width of this `Rect`.
+        float width() const { return dimensions_.x; }
+
+        // Returns the height of this `Rect`.
+        float height() const { return dimensions_.y; }
+
         // Returns the half extents of this `Rect`, which represents the distance from
         // the origin to the edge of the `Rect` in each dimension.
         Vec2 half_extents() const { return 0.5f * dimensions_; }
 
         // Returns the area of this `Rect`.
         float area() const { return dimensions_.x * dimensions_.y; }
+
+        // Returns the X coordinate of this `Rect`'s left edge.
+        float left() const { return origin_.x - 0.5f*dimensions_.x; }
+
+        // Returns the X coordinate of this `Rect`'s right edge.
+        float right() const { return origin_.x + 0.5f*dimensions_.x; }
+
+        // Assuming Y "points down" in the coordinate system of this `Rect`, returns the
+        // Y coordinate of this `Rect`'s top edge.
+        float ypd_top() const { return origin_.y - 0.5f*dimensions_.y; }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns the
+        // Y coordinate of this `Rect`'s top edge.
+        float ypu_top() const { return origin_.y + 0.5f*dimensions_.y; }
+
+        // Assuming Y "points down" in the coordinate system of this `Rect`, returns the
+        // Y coordinate of this `Rect`'s bottom edge.
+        float ypd_bottom() const { return origin_.y + 0.5f*dimensions_.y; }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns the
+        // Y coordinate of this `Rect`'s bottom edge.
+        float ypu_bottom() const { return origin_.y - 0.5f*dimensions_.y; }
 
         // Returns the minimum and maximum opposite corner points of this `Rect`.
         RectCorners corners() const
@@ -71,10 +101,7 @@ namespace osc
         //   the UI coordinate system), then it means "top left".
         // - If the `Rect`'s data is in a coordinate system where Y points up (e.g.
         //   viewport coordinate system), then it means "bottom left".
-        Vec2 min_corner() const
-        {
-            return origin_ - half_extents();
-        }
+        Vec2 min_corner() const { return origin_ - half_extents(); }
 
         // Returns the maximum corner point of this `Rect`.
         //
@@ -84,10 +111,7 @@ namespace osc
         //   the UI coordinate system), then it means "bottom right".
         // - If the `Rect`'s data is in a coordinate system where Y points up (e.g.
         //   viewport coordinate system), then it means "top right".
-        Vec2 max_corner() const
-        {
-            return origin_ + half_extents();
-        }
+        Vec2 max_corner() const { return origin_ + half_extents(); }
 
         // Assuming Y "points down" in the coordinate system of this `Rect`, returns a point
         // that represents the top-left corner of this `Rect` in that coordinate system.
@@ -104,6 +128,22 @@ namespace osc
         // Assuming Y "points down" in the coordinate system of this `Rect`, returns a point
         // that represents the bottom-right corner of this `Rect` in that coordinate system.
         Vec2 ypd_bottom_right() const { return max_corner(); }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
+        // that represents the top-left corner of this `Rect` in that coordinate system.
+        Vec2 ypu_top_left() const { const auto c = corners(); return Vec2{c.min.x, c.max.y}; }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
+        // that represents the top-right corner of this `Rect` in that coordinate system.
+        Vec2 ypu_top_right() const { return max_corner(); }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
+        // that represents the bottom-left corner of this `Rect` in that coordinate system.
+        Vec2 ypu_bottom_left() const { return min_corner(); }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
+        // that represents the bottom-right corner of this `Rect` in that coordinate system.
+        Vec2 ypu_bottom_right() const { const auto c = corners(); return Vec2{c.max.x, c.min.y}; }
 
         // Assuming the Y axis in the coordinate system of this `Rect` points in one direction
         // (up or down), returns a new `Rect` in a flipped coordinate system that has the
@@ -122,21 +162,12 @@ namespace osc
             return copy;
         }
 
-        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
-        // that represents the top-left corner of this `Rect` in that coordinate system.
-        Vec2 ypu_top_left() const { const auto c = corners(); return Vec2{c.min.x, c.max.y}; }
-
-        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
-        // that represents the top-right corner of this `Rect` in that coordinate system.
-        Vec2 ypu_top_right() const { return max_corner(); }
-
-        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
-        // that represents the bottom-left corner of this `Rect` in that coordinate system.
-        Vec2 ypu_bottom_left() const { return min_corner(); }
-
-        // Assuming Y "points up" in the coordinate system of this `Rect`, returns a point
-        // that represents the bottom-right corner of this `Rect` in that coordinate system.
-        Vec2 ypu_bottom_right() const { const auto c = corners(); return Vec2{c.max.x, c.min.y}; }
+        // Returns a new `Rect` with the same `origin` as this `Rect`, but with the given
+        // new dimensions.
+        Rect with_dimensions(const Vec2& new_dimensions) const
+        {
+            return Rect::from_origin_and_dimensions(origin_, new_dimensions);
+        }
 
         // Returns a new `Rect` with the same `origin` as this `Rect`, but with its `dimensions`
         // scaled by the given `scale_factors`
@@ -156,25 +187,6 @@ namespace osc
             copy.dimensions_ = scale_factor * copy.dimensions_;
             return copy;
         }
-
-        // Returns a new `Rect` with the same `origin` and coordinate system as this `Rect`,
-        // but with its `dimensions` expanded by the given `padding`.
-        Rect expanded_by(float padding) const
-        {
-            Rect copy{*this};
-            copy.dimensions_ += 2.0f*padding;
-            return copy;
-        }
-
-        // Returns a new `Rect` with the same `origin` and coordinate system as this `Rect`,
-        // but with its `dimensions` expanded by the given `padding`.
-        Rect expanded_by(Vec2 padding) const
-        {
-            Rect copy{*this};
-            copy.dimensions_ += 2.0f*padding;
-            return copy;
-        }
-
     private:
         Vec2 origin_{};
         Vec2 dimensions_{};

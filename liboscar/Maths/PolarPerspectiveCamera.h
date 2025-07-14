@@ -7,7 +7,7 @@
 #include <liboscar/Maths/Vec3.h>
 
 namespace osc { struct AABB; }
-namespace osc { struct Rect; }
+namespace osc { class Rect; }
 
 namespace osc
 {

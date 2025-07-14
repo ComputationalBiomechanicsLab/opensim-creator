@@ -10,11 +10,11 @@
 #include <span>
 
 namespace osc { class IModelStatePair; }
+namespace osc { class Rect; }
 namespace osc { class RenderTexture; }
 namespace osc { class SceneCache; }
 namespace osc { struct Line; }
 namespace osc { struct ModelRendererParams; }
-namespace osc { struct Rect; }
 namespace osc { struct SceneDecoration; }
 
 namespace osc
