@@ -2447,13 +2447,10 @@ void ImGuizmo::Enable(bool enable)
 
 void ImGuizmo::SetRect(const osc::Rect& ui_rect)
 {
-    const osc::Vec2 top_left = ui_rect.ypd_top_left();
-    const osc::Vec2 dimensions = ui_rect.dimensions();
-
-    gCurrentContext->mX = top_left.x;
-    gCurrentContext->mY = top_left.y;
-    gCurrentContext->mWidth = dimensions.x;
-    gCurrentContext->mHeight = dimensions.y;
+    gCurrentContext->mX = ui_rect.left();
+    gCurrentContext->mY = ui_rect.ypd_top();
+    gCurrentContext->mWidth = ui_rect.width();
+    gCurrentContext->mHeight = ui_rect.height();
     gCurrentContext->mXMax = gCurrentContext->mX + gCurrentContext->mWidth;
     gCurrentContext->mYMax = gCurrentContext->mY + gCurrentContext->mXMax;
     gCurrentContext->mDisplayRatio = osc::aspect_ratio_of(ui_rect);

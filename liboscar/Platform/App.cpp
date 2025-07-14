@@ -67,6 +67,19 @@ struct osc::Converter<SDL_Rect, Rect> final {
     }
 };
 
+template<>
+struct osc::Converter<Rect, SDL_Rect> final {
+    SDL_Rect operator()(const Rect& ypd_rect) const
+    {
+        return {
+            .x = static_cast<int>(ypd_rect.left()),
+            .y = static_cast<int>(ypd_rect.ypd_top()),
+            .w = static_cast<int>(ypd_rect.width()),
+            .h = static_cast<int>(ypd_rect.height()),
+        };
+    }
+};
+
 PhysicalKeyModifiers osc::Converter<KeyModifiers, PhysicalKeyModifiers>::operator()(KeyModifiers modifiers) const
 {
     // Ensure the remapping/casting tricks being done in this function are valid.
@@ -1271,20 +1284,13 @@ public:
 
     void set_main_window_unicode_input_rect(const Rect& screen_rect)
     {
-        const float device_independent_to_sdl3_ratio = 1.0f/os_to_main_window_device_independent_ratio();
-        const float main_window_height = main_window_dimensions().y;
-
         // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
-        // coordinate system that SDL3 wants
-        const Rect rescaled_rect =
+        // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
+        const SDL_Rect r = to<SDL_Rect>(
             screen_rect
-            .with_flipped_y(main_window_height)
-            .with_origin_and_dimensions_scaled_by(device_independent_to_sdl3_ratio);
-
-        // Convert into `SDL_Rect`
-        const Vec2i top_left = rescaled_rect.ypd_top_left();
-        const Vec2i dimensions = rescaled_rect.dimensions();
-        const SDL_Rect r{.x = top_left.x, .y = top_left.y, .w = dimensions.x, .h = dimensions.y};
+            .with_flipped_y(main_window_dimensions().y)
+            .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())
+        );
 
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
