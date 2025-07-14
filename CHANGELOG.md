@@ -5,6 +5,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- (nothing here, yet!)
+
+
+## [0.5.25] - 2025/07/14
+
 - Models that contain muscles that cannot be equilibrated can now be loaded. Instead
   of halting with an error message, the system will log a warning message mentioning
   the issue and continue as normal (thanks @modenaxe, #1070).
@@ -26,6 +31,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   @PashavanBijlert, #1071).
 - Internal: `osc::Rect` was heavily refactored to make it easier to use and more clearly
   state its coordinate system assumptions (Y points up, Y points down, etc.).
+
 
 ## [0.5.24] - 2025/06/23
 
