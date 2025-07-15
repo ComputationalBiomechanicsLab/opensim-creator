@@ -30,12 +30,6 @@ github_repository = 'https://github.com/ComputationalBiomechanicsLab/opensim-cre
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-
-    # sphinx-toolbox: https://sphinx-toolbox.readthedocs.io/en/latest/extensions/index.html
-    'sphinx.ext.viewcode',
-    'sphinx_tabs.tabs',
-    'sphinx-prompt',
-    'sphinx_toolbox',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
