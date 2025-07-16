@@ -743,7 +743,7 @@ private:
         }
 
         // compute rim rectangle in texture coordinates
-        const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
+        const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect::from_corners({}, {1.0f, 1.0f}));
 
         // compute where the quad needs to eventually be drawn in the scene
         const Transform quad_mesh_to_rims_quad{

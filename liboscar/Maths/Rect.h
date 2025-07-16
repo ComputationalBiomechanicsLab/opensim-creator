@@ -18,39 +18,24 @@ namespace osc
         // system of `point`.
         static constexpr Rect of_point(const Vec2& point)
         {
-            Rect rv;
-            rv.origin_ = point;
-            return rv;
+            return Rect{point, Vec2{}};
         }
 
         // Returns a `Rect` with a centroid of `origin` and dimensions of `dimensions`.
         static constexpr Rect from_origin_and_dimensions(const Vec2& origin, const Vec2& dimensions)
         {
-            Rect rv;
-            rv.origin_ = origin;
-            rv.dimensions_ = dimensions;
-            return rv;
+            return Rect{origin, dimensions};
         }
 
         // Returns a `Rect` constructed from two opposite corner points in the coordinate
         // system of those points.
         static Rect from_corners(const Vec2& p1, const Vec2& p2)
         {
-            Rect rv;
-            rv.origin_ = 0.5f * (p1 + p2);
-            rv.dimensions_= abs(p1 - p2);
-            return rv;
+            return Rect{0.5f * (p1 + p2), abs(p1 - p2)};
         }
 
         // Constructs an empty `Rect` with an `origin` of zero and `dimensions` of zero.
         Rect() = default;
-
-        // Constructs a `Rect` from two opposite corner points in the coordinate system
-        // of those points.
-        Rect(const Vec2& p1, const Vec2& p2) :
-            origin_{0.5f * (p1 + p2)},
-            dimensions_{abs(p1 - p2)}
-        {}
 
         friend bool operator==(const Rect&, const Rect&) = default;
 
@@ -167,37 +152,36 @@ namespace osc
         // (ypu) and the top of the viewport (ypd): i.e. the height of the viewport.
         Rect with_flipped_y(float distance_between_x_axes) const
         {
-            Rect copy{*this};
-            copy.origin_.y = distance_between_x_axes - copy.origin_.y;
-            return copy;
+            return Rect{Vec2{origin_.x, distance_between_x_axes - origin_.y}, dimensions_};
         }
 
         // Returns a new `Rect` with the same `origin` as this `Rect`, but with the given
         // new dimensions.
         Rect with_dimensions(const Vec2& new_dimensions) const
         {
-            return Rect::from_origin_and_dimensions(origin_, new_dimensions);
+            return Rect{origin_, new_dimensions};
         }
 
         // Returns a new `Rect` with the same `origin` as this `Rect`, but with its `dimensions`
         // scaled by the given `scale_factors`
         Rect with_dimensions_scaled_by(const Vec2& scale_factors) const
         {
-            Rect copy{*this};
-            copy.dimensions_ *= scale_factors;
-            return copy;
+            return Rect{origin_, scale_factors * dimensions_};
         }
 
         // Returns a new `Rect` with and `origin` equivalent to `scale_factor * original_origin` and
         // `dimensions` equivalent to `scale_factor * original_dimensions`.
         Rect with_origin_and_dimensions_scaled_by(float scale_factor) const
         {
-            Rect copy{*this};
-            copy.origin_ *= scale_factor;
-            copy.dimensions_ = scale_factor * copy.dimensions_;
-            return copy;
+            return Rect{scale_factor * origin_, scale_factor * dimensions_};
         }
     private:
+        // Constructs a `Rect` from its data members.
+        explicit constexpr Rect(const Vec2& origin, const Vec2& dimensions) :
+            origin_{origin},
+            dimensions_{dimensions}
+        {}
+
         Vec2 origin_{};
         Vec2 dimensions_{};
     };

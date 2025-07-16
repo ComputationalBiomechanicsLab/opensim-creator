@@ -161,17 +161,17 @@ private:
     Rect calcMainMenuRect() const
     {
         const auto tabUIRectCorners = ui::get_main_window_workspace_ui_rect().corners();
-        const Rect tabUIRectWithoutBar{
+        const Rect tabUIRectWithoutBar = Rect::from_corners(
             tabUIRectCorners.min,
-            tabUIRectCorners.max - Vec2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y},
-        };
+            tabUIRectCorners.max - Vec2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y}
+        );
 
         const Vec2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
         const Vec2 menuAndTopLogoTopLeft = tabUIRectWithoutBar.ypd_top_left() + 0.5f*(tabUIRectWithoutBar.dimensions() - menuAndTopLogoDims);
         const Vec2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
         const Vec2 menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
-        return Rect{menuTopLeft, menuTopLeft + menuDims};
+        return Rect::from_corners(menuTopLeft, menuTopLeft + menuDims);
     }
 
     Rect calcLogoRect() const
@@ -182,7 +182,7 @@ private:
             mmr.ypd_top() - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
 
-        return Rect{topLeft, topLeft + m_MainAppLogoDims};
+        return Rect::from_corners(topLeft, topLeft + m_MainAppLogoDims);
     }
 
     void drawBackground()

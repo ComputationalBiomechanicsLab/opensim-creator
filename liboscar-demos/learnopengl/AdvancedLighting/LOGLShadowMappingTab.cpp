@@ -114,7 +114,13 @@ private:
         camera_.set_pixel_rect(workspace_screen_space_rect);
         camera_.render_to_main_window();
         camera_.set_pixel_rect(std::nullopt);
-        graphics::blit_to_main_window(depth_texture_, Rect{workspace_screen_space_top_left - Vec2{0.0f, depth_overlay_size}, workspace_screen_space_top_left + Vec2{depth_overlay_size, 0.0f}});
+        graphics::blit_to_main_window(
+            depth_texture_,
+            Rect::from_corners(
+                workspace_screen_space_top_left - Vec2{0.0f, depth_overlay_size},
+                workspace_screen_space_top_left + Vec2{depth_overlay_size, 0.0f}
+            )
+        );
 
         scene_material_.unset("uShadowMapTexture");
     }

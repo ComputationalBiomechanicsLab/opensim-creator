@@ -29,7 +29,7 @@ namespace osc
     inline Rect bounding_rect_of(const Rect& x, const Vec2& y)
     {
         const auto corners = x.corners();
-        return Rect{elementwise_min(corners.min, y), elementwise_max(corners.max, y)};
+        return Rect::from_corners(elementwise_min(corners.min, y), elementwise_max(corners.max, y));
     }
 
     // returns a `Rect` that tightly bounds `x` and `y`
@@ -37,7 +37,10 @@ namespace osc
     {
         const auto x_corners = x.corners();
         const auto y_corners = y.corners();
-        return Rect{elementwise_min(x_corners.min, y_corners.min), elementwise_max(x_corners.max, y_corners.max)};
+        return Rect::from_corners(
+            elementwise_min(x_corners.min, y_corners.min),
+            elementwise_max(x_corners.max, y_corners.max)
+        );
     }
 
     // returns a `Rect` that tightly bounds the `Vec2`s projected from `r`

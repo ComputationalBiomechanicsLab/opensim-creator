@@ -63,7 +63,7 @@ struct osc::Converter<SDL_Rect, Rect> final {
     {
         const Vec2 top_left{rect.x, rect.y};
         const Vec2 dimensions{rect.w, rect.h};
-        return Rect{top_left, top_left + dimensions};
+        return Rect::from_corners(top_left, top_left + dimensions);
     }
 };
 

@@ -490,7 +490,7 @@ namespace
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlag::None);
-        bd.camera.set_scissor_rect(Rect{minflip, maxflip});
+        bd.camera.set_scissor_rect(Rect::from_corners(minflip, maxflip));
 
         // setup sub-mesh description
         const size_t sub_mesh_index = mesh.num_submesh_descriptors();
@@ -914,7 +914,10 @@ namespace
             const Vec2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
             const Vec2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
 
-            app.set_main_window_unicode_input_rect(Rect{input_bottom_left_screen, input_bottom_left_screen + input_dimensions});
+            app.set_main_window_unicode_input_rect(Rect::from_corners(
+                input_bottom_left_screen,
+                input_bottom_left_screen + input_dimensions
+            ));
             app.start_text_input(bd->Window);
             bd->ImeWindow = viewport_window;
         }
@@ -2439,7 +2442,7 @@ bool osc::ui::is_item_deactivated_after_edit()
 
 Rect osc::ui::get_item_ui_rect()
 {
-    return Rect{get_item_top_left_ui_pos(), get_item_bottom_right_ui_pos()};
+    return Rect::from_corners(get_item_top_left_ui_pos(), get_item_bottom_right_ui_pos());
 }
 
 Vec2 osc::ui::get_item_top_left_ui_pos()
@@ -2957,7 +2960,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 Rect osc::ui::get_content_region_available_ui_rect()
 {
     const Vec2 top_left = ui::get_cursor_ui_pos();
-    return Rect{top_left, top_left + ui::get_content_region_available()};
+    return Rect::from_corners(top_left, top_left + ui::get_content_region_available());
 }
 
 void osc::ui::draw_image(
@@ -3017,12 +3020,12 @@ bool osc::ui::draw_image_button(
 
 bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec2 dimensions)
 {
-    return draw_image_button(label, texture, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
+    return draw_image_button(label, texture, dimensions, Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f}));
 }
 
 Rect osc::ui::get_last_drawn_item_ui_rect()
 {
-    return Rect{ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
+    return Rect::from_corners(ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos());
 }
 
 Rect osc::ui::get_last_drawn_item_screen_rect()
@@ -3030,10 +3033,10 @@ Rect osc::ui::get_last_drawn_item_screen_rect()
     const Rect ui_rect = get_last_drawn_item_ui_rect();
     const auto ui_rect_corners = ui_rect.corners();
     const float ui_height = ImGui::GetIO().DisplaySize.y;
-    return Rect{
+    return Rect::from_corners(
         {ui_rect_corners.min.x, ui_height - ui_rect_corners.max.y},
-        {ui_rect_corners.max.x, ui_height - ui_rect_corners.min.y},
-    };
+        {ui_rect_corners.max.x, ui_height - ui_rect_corners.min.y}
+    );
 }
 
 void osc::ui::add_screenshot_annotation_to_last_drawn_item(std::string_view label)
@@ -3287,10 +3290,10 @@ Rect osc::ui::get_main_window_workspace_ui_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
-    return Rect{
+    return Rect::from_corners(
         viewport.WorkPos,
         Vec2{viewport.WorkPos} + Vec2{viewport.WorkSize}
-    };
+    );
 }
 
 Rect osc::ui::get_main_window_workspace_screen_space_rect()
@@ -3300,7 +3303,7 @@ Rect osc::ui::get_main_window_workspace_screen_space_rect()
     const Vec2 bottom_left_screen_space = Vec2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
     const Vec2 top_right_screen_space = bottom_left_screen_space + Vec2{viewport.WorkSize};
 
-    return Rect{bottom_left_screen_space, top_right_screen_space};
+    return Rect::from_corners(bottom_left_screen_space, top_right_screen_space);
 }
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
@@ -4162,7 +4165,7 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
 Rect osc::ui::plot::get_plot_ui_rect()
 {
     const Vec2 top_left = ImPlot::GetPlotPos();
-    return Rect{top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
+    return Rect::from_corners(top_left, top_left + Vec2{ImPlot::GetPlotSize()});
 }
 
 void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)

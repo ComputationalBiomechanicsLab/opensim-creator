@@ -33,10 +33,10 @@ namespace
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
-        const Rect bg_rect = {
+        const Rect bg_rect = Rect::from_corners(
             {pos.x, pmid.y - slot_half_height},
-            {pos.x + size.x, pmid.y + slot_half_height},
-        };
+            {pos.x + size.x, pmid.y + slot_half_height}
+        );
 
         ui::DrawListView draw_list = ui::get_panel_draw_list();
         draw_list.add_rect_filled(bg_rect, bg_color, rounding);
@@ -46,7 +46,7 @@ namespace
         }
         else {
             const Vec2 offs = {radius*0.8f, radius*0.8f};
-            draw_list.add_rect_filled({pmid - offs, pmid + offs}, ui::get_color(ui::ColorVar::SliderGrab), rounding);
+            draw_list.add_rect_filled(Rect::from_origin_and_dimensions(pmid, 2.0f*offs), ui::get_color(ui::ColorVar::SliderGrab), rounding);
         }
     }
 

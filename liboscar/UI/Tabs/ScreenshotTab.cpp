@@ -57,13 +57,13 @@ namespace
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
             const Vec2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
             const Vec2 rv_top_left = {target_ui_top_left.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_ui_top_left.y};
-            return {rv_top_left, rv_top_left + rv_dimensions};
+            return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
         else {
             // it will touch the left/right but will not touch the top/bottom
             const Vec2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
             const Vec2 rv_top_left = {target_ui_top_left.x, target_ui_top_left.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
-            return {rv_top_left, rv_top_left + rv_dimensions};
+            return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
     }
 
@@ -74,19 +74,19 @@ namespace
     {
         const auto annotation_screen_rect_corners = annotation_screen_rect.corners();
 
-        const Rect normalized_ypu_rect{
+        const Rect normalized_ypu_rect = Rect::from_corners(
             annotation_screen_rect_corners.min/screen_dimensions,
-            annotation_screen_rect_corners.max/screen_dimensions,
-        };
+            annotation_screen_rect_corners.max/screen_dimensions
+        );
         const Rect normalized_ypd_rect = normalized_ypu_rect.with_flipped_y(1.0f);
         const auto normalized_ypd_corners = normalized_ypd_rect.corners();
 
         const Vec2 ui_dims = viewport_ui_rect.dimensions();
         const Vec2 ui_top_left = viewport_ui_rect.ypd_top_left();
-        return Rect{
+        return Rect::from_corners(
             ui_top_left + ui_dims*normalized_ypd_corners.min,
-            ui_top_left + ui_dims*normalized_ypd_corners.max,
-        };
+            ui_top_left + ui_dims*normalized_ypd_corners.max
+        );
     }
 
     enum class ScreenshotFileFormat { png, jpeg, NUM_OPTIONS };
@@ -250,11 +250,11 @@ private:
 
         // draw overlays to a local ImGui draw list
         ui::DrawList draw_list;
-        draw_list.push_clip_rect(Rect{{}, image_texture_.dimensions()});
+        draw_list.push_clip_rect(Rect::from_corners({}, image_texture_.dimensions()));
 
         draw_image_overlays(
             draw_list,
-            Rect{{0.0f, 0.0f}, image_texture_.dimensions()},
+            Rect::from_corners({}, image_texture_.dimensions()),
             Color::clear(),
             c_selected_color.with_alpha(1.0f)
         );

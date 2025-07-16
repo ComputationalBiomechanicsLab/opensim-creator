@@ -234,15 +234,24 @@ private:
 
         graphics::blit_to_main_window(
             gbuffer_.albedo,
-            Rect{overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f} + overlay_size}
+            Rect::from_corners(
+                overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f} + overlay_size
+            )
         );
         graphics::blit_to_main_window(
             gbuffer_.normal,
-            Rect{overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f} + overlay_size}
+            Rect::from_corners(
+                overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f} + overlay_size
+            )
         );
         graphics::blit_to_main_window(
             gbuffer_.position,
-            Rect{overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f}, overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f} + overlay_size}
+            Rect::from_corners(
+                overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f} + overlay_size
+            )
         );
     }
 

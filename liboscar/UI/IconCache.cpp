@@ -41,7 +41,7 @@ public:
                 icons_by_name_.try_emplace(
                     p.stem(),
                     std::move(texture),
-                    Rect{{0.0f, 1.0f}, {1.0f, 0.0f}}
+                    Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f})
                 );
             }
         }

@@ -415,8 +415,8 @@ private:
             const Vec2 p2 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.dest));
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
-            drawlist.add_circle_filled({p2, 10.0f}, m_DestCircleColor);
+            drawlist.add_rect_filled(Rect::from_corners(p1 - 12.0f, p1 + 12.0f), m_SrcSquareColor);
+            drawlist.add_circle_filled({.origin = p2, .radius = 10.0f}, m_DestCircleColor);
         }
 
         // render any currently-placing landmark pairs in a more-faded color
@@ -427,8 +427,8 @@ private:
             const Vec2 p2 = ui::get_mouse_ui_pos();
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
-            drawlist.add_rect_filled({p1 - 12.0f, p1 + 12.0f}, m_SrcSquareColor);
-            drawlist.add_circle_filled({p2, 10.0f}, m_DestCircleColor);
+            drawlist.add_rect_filled(Rect::from_corners(p1 - 12.0f, p1 + 12.0f), m_SrcSquareColor);
+            drawlist.add_circle_filled({.origin = p2, .radius = 10.0f}, m_DestCircleColor);
         }
     }
 

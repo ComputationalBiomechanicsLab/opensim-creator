@@ -30,7 +30,7 @@ public:
         ui::DrawList dl;
         dl.add_circle({.origin = {}, .radius = 50.0f}, Color::red());
         dl.add_circle_filled({.origin = Vec2{125.0f}, .radius = 100.0f}, Color::red());
-        dl.add_rect_filled(Rect{{0.0f, 0.0f}, {100.0f, 100.0f}}, Color::blue(), 3.0f);
+        dl.add_rect_filled(Rect::from_corners({}, {100.0f, 100.0f}), Color::blue(), 3.0f);
         dl.render_to(tex);
         ui::draw_image(tex);
         ui::end_panel();

@@ -1052,16 +1052,16 @@ Line osc::perspective_unproject_topleft_normalized_pos_to_world(
 Rect osc::bounding_rect_of(const Circle& circle)
 {
     const float hypotenuse = sqrt(2.0f * circle.radius * circle.radius);
-    return {circle.origin - hypotenuse, circle.origin + hypotenuse};
+    return Rect::from_corners(circle.origin - hypotenuse, circle.origin + hypotenuse);
 }
 
 Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
 {
     const auto corners = r.corners();
-    return{
+    return Rect::from_corners(
         elementwise_clamp(corners.min, min, max),
-        elementwise_clamp(corners.max, min, max),
-    };
+        elementwise_clamp(corners.max, min, max)
+    );
 }
 
 Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
@@ -1072,10 +1072,10 @@ Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& vi
 
     // remap [-1, 1] into [0, viewport_dimensions] and offset the result to wherever
     // the viewport's top-left is
-    return {
+    return Rect::from_corners(
         viewport_top_left + (viewport_dimensions * (0.5f * (ndc_corners.min + 1.0f))),
-        viewport_top_left + (viewport_dimensions * (0.5f * (ndc_corners.max + 1.0f))),
-    };
+        viewport_top_left + (viewport_dimensions * (0.5f * (ndc_corners.max + 1.0f)))
+    );
 }
 
 Vec2 osc::project_onto_viewport_rect(
@@ -1265,7 +1265,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     const AABB ndc_aabb = transform_aabb(proj_mat, view_space_aabb);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
-    return clamp(Rect{Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}}, Vec2{-1.0f}, Vec2{1.0f});
+    return clamp(Rect::from_corners(Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}), Vec2{-1.0f}, Vec2{1.0f});
 }
 
 Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)

@@ -52,10 +52,10 @@ void osc::GuiRuler::on_draw(
         const float background_padding = 5.0f;
         const float edge_rounding = background_padding - 2.0f;
 
-        const Rect background_rect = {
-            {pos - background_padding},
-            {pos + text_size + background_padding},
-        };
+        const Rect background_rect = Rect::from_corners(
+            pos - background_padding,
+            pos + text_size + background_padding
+        );
         draw_list.add_rect_filled(background_rect, text_background_color, edge_rounding);
         draw_list.add_text(pos, text_color, tooltip_text);
     };

@@ -293,10 +293,10 @@ private:
 
         for (size_t i = 0; i < texture_pointers.size(); ++i) {
             const Vec2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
-            const Rect overlay_rect{
+            const Rect overlay_rect = Rect::from_corners(
                 viewport_screen_space_rect.ypu_bottom_left() + offset,
-                viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width,
-            };
+                viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width
+            );
 
             graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);
         }

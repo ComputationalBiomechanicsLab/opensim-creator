@@ -270,7 +270,7 @@ private:
             const float offset = static_cast<float>(i)*overlay_size;
             const Vec2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
             const Vec2 overlay_top_right = overlay_bottom_left + Vec2{overlay_size};
-            graphics::blit_to_main_window(*textures[i], Rect{overlay_bottom_left, overlay_top_right});
+            graphics::blit_to_main_window(*textures[i], Rect::from_corners(overlay_bottom_left, overlay_top_right));
         }
     }
 

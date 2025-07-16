@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(is_intersecting, rect_point_works_as_expected)
 {
-    const Rect rect{Vec2{-1.0f}, Vec2{+1.0f}};
+    const Rect rect = Rect::from_corners(Vec2{-1.0f}, Vec2{+1.0f});
 
     // test on-the -origin/-edge cases
     ASSERT_TRUE(is_intersecting(rect, Vec2( 0.0f,  0.0f)));
