@@ -3022,7 +3022,7 @@ bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec
 
 Rect osc::ui::get_last_drawn_item_ui_rect()
 {
-    return {ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
+    return Rect{ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
 }
 
 Rect osc::ui::get_last_drawn_item_screen_rect()
@@ -3300,7 +3300,7 @@ Rect osc::ui::get_main_window_workspace_screen_space_rect()
     const Vec2 bottom_left_screen_space = Vec2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
     const Vec2 top_right_screen_space = bottom_left_screen_space + Vec2{viewport.WorkSize};
 
-    return {bottom_left_screen_space, top_right_screen_space};
+    return Rect{bottom_left_screen_space, top_right_screen_space};
 }
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
@@ -4162,7 +4162,7 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
 Rect osc::ui::plot::get_plot_ui_rect()
 {
     const Vec2 top_left = ImPlot::GetPlotPos();
-    return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
+    return Rect{top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
 }
 
 void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)
