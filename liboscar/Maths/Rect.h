@@ -32,6 +32,16 @@ namespace osc
             return rv;
         }
 
+        // Returns a `Rect` constructed from two opposite corner points in the coordinate
+        // system of those points.
+        static Rect from_corners(const Vec2& p1, const Vec2& p2)
+        {
+            Rect rv;
+            rv.origin_ = 0.5f * (p1 + p2);
+            rv.dimensions_= abs(p1 - p2);
+            return rv;
+        }
+
         // Constructs an empty `Rect` with an `origin` of zero and `dimensions` of zero.
         Rect() = default;
 

@@ -25,6 +25,28 @@ TEST(Rect, from_origin_and_dimensions)
     ASSERT_EQ(result.dimensions(), dimensions);
 }
 
+TEST(Rect, from_corners)
+{
+    const Vec2 p0 = {-5.0f, -10.0f};
+    const Vec2 p1 = { 3.0f,  11.0f};
+
+    const Rect result = Rect::from_corners(p0, p1);
+
+    ASSERT_EQ(result.origin(), 0.5f * (p0 + p1));
+    ASSERT_EQ(result.dimensions(), p1 - p0);
+}
+
+TEST(Rect, from_corners_argument_order_doesnt_matter)
+{
+    const Vec2 p0 = {-5.0f, -10.0f};
+    const Vec2 p1 = { 3.0f,  11.0f};
+
+    const Rect result_a = Rect::from_corners(p0, p1);
+    const Rect result_b = Rect::from_corners(p1, p0);
+
+    ASSERT_EQ(result_a, result_b);
+}
+
 TEST(Rect, dimensions_returns_expected_dimensions)
 {
     const Rect rect{Vec2(-9.0f, 3.0f), Vec2(-13.0f, 9.0f)};
