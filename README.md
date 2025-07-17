@@ -12,6 +12,7 @@
 - ❓ Have a question? [Go to the discussions page](../../discussions)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
 - 🏗️ Want to build it from source? [There's a development section in the documentation](https://docs.opensimcreator.com)
+- 🥰 Want to contribute to it? [There's a contribution section in the documentation](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
 
 
 ## 👓 Overview
@@ -62,6 +63,12 @@ every release of OpenSim Creator:
   (apart from widely-available compiler toolchains) is available in this repository and not dependent
   on external services that might change over time.
 
+## 🥰 Contributing
+
+If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
+that make open-source awesome! Please consult the [contribution section](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
+in the official documentation. The development section of the documentation also outlines how
+to build the project from source!
 
 ## ❤️ Acknowledgements
 
