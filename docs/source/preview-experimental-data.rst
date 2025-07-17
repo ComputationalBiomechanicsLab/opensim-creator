@@ -78,7 +78,7 @@ are tailored towards visualizing and debugging experimental data:
   is useful for (e.g.) debugging whether the output from OpenSim's Inverse
   Kinematics (IK) solver matches your experimental data.
 
-- **It can load raw experimental data files**. The ``load raw data file`` button
+- **It can load raw experimental data files**. The ``load sto/mot/trc file`` button
   in the top toolbar lets you load raw data files into the scene. The data series
   in the raw data file can then be clicked, inspected, scrubbed, etc. to
   visualize how OpenSim understands them. Because they are "raw" data files
@@ -151,7 +151,7 @@ Load Raw Marker Data
 The first step is to load the raw marker data (``.trc``) file into the UI. To do
 that, you will need to:
 
-1. Click the ``load raw data file`` button in the toolbar
+1. Click the ``load sto/mot/trc file`` button in the toolbar
 2. Select the ``subject01_walk.trc`` file (path: ``ExperimentalData/subject01_walk.trc``).
 
 Once loaded, it should look something like this:
@@ -221,7 +221,7 @@ Load Raw Ground Reaction Forces
 
 This step is identical to `Load Raw Marker Data`_ :
 
-1. Click the ``load raw data file`` button in the toolbar
+1. Click the ``load sto/mot/trc file`` button in the toolbar
 2. Select the GRF data, ``subject01_walk_grf.mot`` (path: ``ExperimentalData/subject01_walk_grf.mot``).
 
 Once loaded, you should be able to see the marker data, your model, the model's motion,
@@ -254,7 +254,7 @@ is a common source of errors. This section aims to demystify what's going on.
 
 Experimental Motivation
   Imagine you've attached an accelerometer to a subject's hand. If you
-  load its measurements into the UI with ``load raw data file``, then the
+  load its measurements into the UI with ``load sto/mot/trc file``, then the
   UI will show the measurements with respect to the origin (ground). This
   represents what the accelerometer recorded.
 

@@ -282,7 +282,7 @@ namespace
                     }
 
                     ui::same_line();
-                    if (ui::draw_button("load raw data file")) {
+                    if (ui::draw_button("load sto/mot/trc file")) {
                         App::upd().prompt_user_to_select_file_async(
                             [state = m_UiState](const FileDialogResponse& response)
                             {

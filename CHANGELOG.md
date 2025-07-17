@@ -8,6 +8,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The search term "OpenSim Creator" should now find OpenSim Creator in the start
   menu (previously, it was 'opensimcreator'; reported by @clairehammond; #1079).
+- The "load raw data file" button in the preview experimental data workflow was
+  changed to "load sto/mot/trc file" to clarify its purpose (reported by
+  @davidpagnon, #1057).
 
 
 ## [0.5.25] - 2025/07/14
