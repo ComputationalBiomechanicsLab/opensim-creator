@@ -30,16 +30,17 @@ We recommend attendants prepare for the workshop in the following ways:
   on using OpenSim Creator's features for model building and warping.
   The :ref:`installation` page outlines the procedure.
 - **(optional) Download and install OpenSim**. To answer attendants' specific
-  modelling questions, team members may recommend OpenSim. It can be downloaded
-  from the `OpenSim SimTK Page`_.
+  modelling questions, team members may recommend OpenSim GUI/API. OpenSim
+  can be downloaded from the `OpenSim SimTK Page`_. Setting up a scripting (API)
+  environment is described in the `OpenSim Scripting Documentation`_.
 - **(optional) Familiarize Yourself with the basics of OpenSim/modelling**. The
   work sessions may be easier to follow if you have already gone through an early
-  tutorial such as :doc:`make-a-pendulum`.
+  tutorial, such as :doc:`make-a-pendulum`.
 
 **If you are already working on an OpenSim model**, bring it along. The workshop
 is structured such that work sessions' walkthroughs and exercises can *usually* be
 completed with any model. The work sessions are an ideal time to ask specific
-questions about your model.
+questions about creating your model.
 
 
 🗺️ Workshop Overview
@@ -78,8 +79,8 @@ We will keep hosting these materials at `docs.opensimcreator.com <https://docs.o
 for a while after the workshop has ended.
 
 
-Presentation: Model Building with OpenSim Creator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Presentation: Model Building with OpenSim Creator (~20 min.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: OpenSim and Model Building Presentation. Target duration is 15-30
 minutes and should include:
@@ -100,11 +101,10 @@ minutes and should include:
 12. Splash slide, call to action
 
 
-Work Session: Model Building
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Work Session: Model Building (~80 min.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: work session exercises, example models, walkthroughs, etc. Target
-duration is 1h30-1h45 and should include:
+**TODO**: work session exercises, example models, walkthroughs, etc.
 
 - Direct people to the tutorials or ESMAC-specific exercises. Maybe shape
   it such that morphometric (mesh) scaling is an available thing they can
@@ -119,17 +119,17 @@ duration is 1h30-1h45 and should include:
 - Make a model with a ``StationDefinedFrame``
 
 - Maybe in parallel, or at the end, try to edit/mutate a bigger model with
-  motion data to be warpable in the knee or similar.
+  motion data to be warpable in the knee or similar?
 
 
-Break
-^^^^^
+Break (~30 min.)
+^^^^^^^^^^^^^^^^
 
 Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
 
 
-Presentation: Model Warping with OpenSim Creator
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Presentation: Model Warping with OpenSim Creator (15 min.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: Model warping presentation. Target duration is 15-25 minutes and
 should include:
@@ -145,8 +145,8 @@ should include:
 9. Splash slide, call to action
 
 
-Work Session: Model Warping
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Work Session: Model Warping (~80 min.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: work session exercises, example models, walkthroughs, etc. Target
 duration is 1h30-1h45 and should include:
@@ -164,8 +164,8 @@ duration is 1h30-1h45 and should include:
   feature.
 
 
-Presentation: Closing Thoughts, Outlook
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Presentation: Closing Thoughts, Outlook (15 min.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: Final closing presentation. Target duration is 10-20 minutes and should
 include:
@@ -187,3 +187,4 @@ include:
   collaborating on it?
 
 .. _OpenSim SimTK Page: https://simtk.org/projects/opensim
+.. _OpenSim Scripting Documentation: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089359/Scripting
