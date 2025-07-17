@@ -255,7 +255,7 @@ namespace
                     if (not m_UiState->isModelLoaded()) {
                         ui::begin_disabled();
                     }
-                    if (ui::draw_button("load model trajectory/states")) {
+                    if (ui::draw_button("load model trajectory sto/mot file")) {
                         App::upd().prompt_user_to_select_file_async(
                             [state = m_UiState](const FileDialogResponse& response)
                             {

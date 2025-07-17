@@ -14,6 +14,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - A small contribution section was added to the README, which directs users to
   the contribution section in the official documentation, which is also available
   in-tree (reported by @davidpagnon, #1056).
+- The "load model trajectory/states" button in the preview experimental data workflow
+  was changed to "load model trajectory sto/mot file" to clarify its purpose (reported
+  by @davidpagnon, #1052).
 
 
 ## [0.5.25] - 2025/07/14
