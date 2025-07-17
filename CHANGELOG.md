@@ -3,9 +3,11 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Upcoming Release]
 
-- (nothing here, yet!)
+- The search term "OpenSim Creator" should now find OpenSim Creator in the start
+  menu (previously, it was 'opensimcreator'; reported by @clairehammond; #1079).
 
 
 ## [0.5.25] - 2025/07/14
