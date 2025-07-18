@@ -91,8 +91,7 @@ after the workshop has ended.
 1. Presentation: Model Building with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: OpenSim and Model Building Presentation. Target duration is 15-30
-minutes and should include:
+Approx 20 min., LINK: `Presentation, Model Building with OpenSim Creator`_
 
 1. Welcome
 2. Quick overview of the workshop plan (above)
@@ -113,7 +112,12 @@ minutes and should include:
 2. Work Session: Model Building
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: work session exercises, example models, walkthroughs, etc.
+Approx 90 min., LINK: `Work Session, Model Building`_
+
+TODO: provide a list of actions, exercies, etc. here in the
+documentation page. Work session exercises, example models,
+walkthroughs, etc. The 'presentation' for this section is just
+a backdrop we can throw up while people mill around etc.
 
 - Direct people to the tutorials or ESMAC-specific exercises. Maybe shape
   it such that morphometric (mesh) scaling is an available thing they can
@@ -134,14 +138,17 @@ minutes and should include:
 3. Break
 ^^^^^^^^
 
+30 min., LINK: `Backdrop, Break`_
+
 Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
 
 
 4. Presentation: Model Warping with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: Model warping presentation. Target duration is 15-25 minutes and
-should include:
+Approx 20 min., LINK: `Presentation, Model Warping with OpenSim Creator`_
+
+Presentation should include:
 
 1. Introduction, what scaling is, where it's handy (obvious)
 2. Quick overview of existing model scaling in OpenSim
@@ -157,8 +164,9 @@ should include:
 5. Work Session: Model Warping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**TODO**: work session exercises, example models, walkthroughs, etc. Target
-duration is 1h30-1h45 and should include:
+Approx 90 min., LINK: `Work Session, Model Warping with OpenSim Creator`_
+
+**TODO**: work session exercises, example models, walkthroughs, etc.
 
 - Invite attendants to work through :doc:`the-model-warper`
 - Ideally, get people to warp the model made in the first half, walking through
@@ -176,6 +184,8 @@ duration is 1h30-1h45 and should include:
 6. Presentation: Closing Thoughts, Outlook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Approx 10 min., LINK: `Presentation, Closing Thoughts`_
+
 **TODO**: Final closing presentation. Target duration is 10-20 minutes and should
 include:
 
@@ -190,7 +200,6 @@ include:
 ⚡ Post-Workshop Actions
 -------------------------
 
-- **TODO**: ask for feedback about the software, general design directions, etc.
 - **TODO**: ask for feedback via a questionnaire?
 - **TODO**: mention our upcoming project, maybe someone's interested in
   collaborating on it?
@@ -198,3 +207,9 @@ include:
 .. _OpenSim SimTK Page: https://simtk.org/projects/opensim
 .. _OpenSim Scripting Documentation: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089359/Scripting
 .. _ESMAC 2025 Workshop Development Issue: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/1081
+.. _Presentation, Model Building with OpenSim Creator: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/1_Model%20Building%20with%20OpenSim%20Creator.pptx?d=w741836bb5fc24492aeabea26c4ef49e0&csf=1&web=1&e=Jqwc8r
+.. _Work Session, Model Building: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/2_Work%20Session%20Model%20Building.pptx?d=wcc76a2637c354612b118fb934d494a6f&csf=1&web=1&e=HBrVQe
+.. _Backdrop, Break: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/3_Break.pptx?d=wc4a47228b84c411fb93959ed4560c450&csf=1&web=1&e=BIfq62
+.. _Presentation, Model Warping with OpenSim Creator: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/4_Model%20Warping%20with%20OpenSim%20Creator.pptx?d=w46186c240d954422bfe6660352c3fce9&csf=1&web=1&e=xC2RqH
+.. _Work Session, Model Warping with OpenSim Creator: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/5_Work%20Session%20Model%20Warping.pptx?d=w87554a93c2e24d67b7a6b4bc373f2a1b&csf=1&web=1&e=f20p8z
+.. _Presentation, Closing Thoughts: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/6_Closing%20Thoughts%20and%20Outlook.pptx?d=w8ed7523e920449ebbca6f886d26c6301&csf=1&web=1&e=EJoInk
