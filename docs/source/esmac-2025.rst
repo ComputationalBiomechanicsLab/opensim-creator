@@ -1,6 +1,15 @@
 ESMAC 2025 Workshop
 ===================
 
+.. warning::
+
+    This explanation is :red:`work in progress`. We plan on updating/polishing
+    this documentation in mid-August to early-September before ESMAC 2025 in
+    response to feedback.
+
+    If you're on the team, or going to ESMAC, and you spot a problem or would
+    like things to be different, then leave a comment on the `ESMAC 2025 Workshop Development Issue`_.
+
 The OpenSim Creator team will present **"Building Patient-Specific Musculoskeletal
 Models with OpenSim Creator"** at the European Society for Movement Analysis in
 Adults and Children (ESMAC). This documentation is a guidebook for that workshop.
@@ -76,11 +85,11 @@ build models.
 The materials for the workshop and all documentation pages are published under
 a `CC BY 4.0 <https://creativecommons.org/licenses/by/4.0/deed.en>`_ license.
 We will keep hosting these materials at `docs.opensimcreator.com <https://docs.opensimcreator.com>`_
-for a while after the workshop has ended.
+after the workshop has ended.
 
 
-Presentation: Model Building with OpenSim Creator (~20 min.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1. Presentation: Model Building with OpenSim Creator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: OpenSim and Model Building Presentation. Target duration is 15-30
 minutes and should include:
@@ -101,8 +110,8 @@ minutes and should include:
 12. Splash slide, call to action
 
 
-Work Session: Model Building (~80 min.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2. Work Session: Model Building
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: work session exercises, example models, walkthroughs, etc.
 
@@ -122,14 +131,14 @@ Work Session: Model Building (~80 min.)
   motion data to be warpable in the knee or similar?
 
 
-Break (~30 min.)
-^^^^^^^^^^^^^^^^
+3. Break
+^^^^^^^^
 
 Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
 
 
-Presentation: Model Warping with OpenSim Creator (15 min.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+4. Presentation: Model Warping with OpenSim Creator
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: Model warping presentation. Target duration is 15-25 minutes and
 should include:
@@ -145,8 +154,8 @@ should include:
 9. Splash slide, call to action
 
 
-Work Session: Model Warping (~80 min.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+5. Work Session: Model Warping
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: work session exercises, example models, walkthroughs, etc. Target
 duration is 1h30-1h45 and should include:
@@ -164,8 +173,8 @@ duration is 1h30-1h45 and should include:
   feature.
 
 
-Presentation: Closing Thoughts, Outlook (15 min.)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6. Presentation: Closing Thoughts, Outlook
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **TODO**: Final closing presentation. Target duration is 10-20 minutes and should
 include:
@@ -188,3 +197,4 @@ include:
 
 .. _OpenSim SimTK Page: https://simtk.org/projects/opensim
 .. _OpenSim Scripting Documentation: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089359/Scripting
+.. _ESMAC 2025 Workshop Development Issue: https://github.com/ComputationalBiomechanicsLab/opensim-creator/issues/1081
