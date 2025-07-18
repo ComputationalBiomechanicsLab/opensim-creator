@@ -19,4 +19,4 @@ jobs:
           OSC_ESMAC2025_SSH_KEY: ${{ secrets.OSC_ESMAC2025_SSH_KEY }}
       run: |
         echo "${OSC_ESMAC2025_SSH_KEY}" > esmac2025_key
-        rsync -avz -e "ssh -i esmac2025_key" cd $GITHUB_WORKSPACE/docs/build/ esmac2025@docs.opensimcreator.com:/var/www/docs.opensimcreator.com/esmac2025
+        rsync -avz -e "ssh -i esmac2025_key -o 'StrictHostKeyChecking no'" cd $GITHUB_WORKSPACE/docs/build/ esmac2025@docs.opensimcreator.com:/var/www/docs.opensimcreator.com/esmac2025
