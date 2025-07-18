@@ -1,73 +1,22 @@
 on: [push]
 
-env:
-  # Bake a GitHub build ID into the binary so that there's a way of looking
-  # up the build logs for a build via GitHub Actions' UI/API.
-  OSC_BUILD_ID: "GITHUB_${{ github.run_id }}.${{ github.run_number }}"
-
 jobs:
 
-  windows_amd64:
-    name: Windows (amd64)
-    runs-on: windows-2022
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: build
-      run: Set-Location $env:GITHUB_WORKSPACE -ErrorAction Stop; .\scripts\ci_build_windows.ps1
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: opensimcreator-windows-amd64.zip
-        path: build/*windows-amd64.exe
-        if-no-files-found: error
-
-  macos_amd64:
-    name: MacOS (amd64)
-    runs-on: macos-14
-    steps:
-
-    - uses: actions/checkout@v4
-
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_mac-amd64.sh
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: opensimcreator-macos-amd64.zip
-        path: build/*.dmg
-        if-no-files-found: error
-
-  macos_arm64:
-    name: MacOS (arm64)
-    runs-on: macos-14
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && bash ./scripts/ci_build_mac-arm64.sh
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: opensimcreator-macos-arm64.zip
-        path: build/*.dmg
-        if-no-files-found: error
-
-  ubuntu22_amd64:
-    name: Ubuntu 22.04 (amd64)
+  esmac_docs:
+    name: docs.opensimcreator.com/esmac2025 Build+Deploy
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
 
-    - name: setup system
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_setup_ubuntu22.sh
+    - name: Setup Python Virtual Environment
+      run: cd $GITHUB_WORKSPACE/docs && python -m venv venv/ && pip install -r requirements.txt
 
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_ubuntu22.sh
+    - name: Build Sphinx Documentation
+      run: cd $GITHUB_WORKSPACE/docs && sphinx-build source/ build/
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: opensimcreator-ubuntu22-amd64.zip
-        path: build/*.deb
-        if-no-files-found: error
+    - name: Deploy documentation to docs.opensimcreator.com/esmac2025
+      env:
+          OSC_ESMAC2025_SSH_KEY: ${{ secrets.OSC_ESMAC2025_SSH_KEY }}
+      run: |
+        echo "${OSC_ESMAC2025_SSH_KEY}" > esmac2025_key
+        rsync -avz -e "ssh -i esmac2025_key" cd $GITHUB_WORKSPACE/docs/build/ esmac2025@docs.opensimcreator.com:/var/www/docs.opensimcreator.com/esmac2025
