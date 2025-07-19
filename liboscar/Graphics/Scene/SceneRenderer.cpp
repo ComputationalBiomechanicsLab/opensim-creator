@@ -733,22 +733,22 @@ private:
         const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
 
         // expand by the rim thickness, so that the output has space for the rims
-        rim_ndc_rect = expand_by_absolute_amount(rim_ndc_rect, rim_ndc_thickness);
+        rim_ndc_rect = rim_ndc_rect.with_dimensions(rim_ndc_rect.dimensions() + 2.0f*rim_ndc_thickness);
 
         // constrain the result of the above to within clip space
         rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});
 
-        if (area_of(rim_ndc_rect) <= 0.0f) {
+        if (rim_ndc_rect.area() <= 0.0f) {
             return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
 
         // compute rim rectangle in texture coordinates
-        const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect{{}, {1.0f, 1.0f}});
+        const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect::from_corners({}, {1.0f, 1.0f}));
 
         // compute where the quad needs to eventually be drawn in the scene
         const Transform quad_mesh_to_rims_quad{
-            .scale = {0.5f * dimensions_of(rim_ndc_rect), 1.0f},
-            .position = {centroid_of(rim_ndc_rect), 0.0f},
+            .scale = Vec3{rim_ndc_rect.half_extents(), 1.0f},
+            .position = Vec3{rim_ndc_rect.origin(), 0.0f},
         };
 
         // rendering:
@@ -804,8 +804,8 @@ private:
         edge_detection_material_.set("uRim0Color", params.rim_group_colors[0]);
         edge_detection_material_.set("uRim1Color", params.rim_group_colors[1]);
         edge_detection_material_.set("uRimThickness", 0.5f*rim_ndc_thickness);
-        edge_detection_material_.set("uTextureOffset", rim_rect_uv.p1);
-        edge_detection_material_.set("uTextureScale", dimensions_of(rim_rect_uv));
+        edge_detection_material_.set("uTextureOffset", rim_rect_uv.ypu_bottom_left());
+        edge_detection_material_.set("uTextureScale", rim_rect_uv.dimensions());
 
         // return necessary information for rendering the rims
         return RimHighlights{

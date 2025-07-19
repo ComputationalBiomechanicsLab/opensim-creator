@@ -801,7 +801,7 @@ void osc::auto_focus(
 
 std::ostream& osc::operator<<(std::ostream& out, const Rect& rect)
 {
-    return out << "Rect(p1 = " << rect.p1 << ", p2 = " << rect.p2 << ")";
+    return out << "Rect(origin = " << rect.origin() << ", dimensions = " << rect.dimensions() << ")";
 }
 
 
@@ -1049,71 +1049,33 @@ Line osc::perspective_unproject_topleft_normalized_pos_to_world(
     };
 }
 
-Vec2 osc::bottom_left_lh(const Rect& rect)
-{
-    return Vec2{min(rect.p1.x, rect.p2.x), max(rect.p1.y, rect.p2.y)};
-}
-
-Vec2 osc::top_left_rh(const Rect& rect)
-{
-    return Vec2{min(rect.p1.x, rect.p2.x), max(rect.p1.y, rect.p2.y)};
-}
-
 Rect osc::bounding_rect_of(const Circle& circle)
 {
     const float hypotenuse = sqrt(2.0f * circle.radius * circle.radius);
-    return {circle.origin - hypotenuse, circle.origin + hypotenuse};
-}
-
-Rect osc::expand_by_absolute_amount(const Rect& rect, float abs_amount)
-{
-    Rect rv{
-        elementwise_min(rect.p1, rect.p2),
-        elementwise_max(rect.p1, rect.p2)
-    };
-    rv.p1.x -= abs_amount;
-    rv.p2.x += abs_amount;
-    rv.p1.y -= abs_amount;
-    rv.p2.y += abs_amount;
-    return rv;
-}
-
-Rect osc::expand_by_absolute_amount(const Rect& rect, Vec2 abs_amount)
-{
-    Rect rv{
-        elementwise_min(rect.p1, rect.p2),
-        elementwise_max(rect.p1, rect.p2)
-    };
-    rv.p1.x -= abs_amount.x;
-    rv.p2.x += abs_amount.x;
-    rv.p1.y -= abs_amount.y;
-    rv.p2.y += abs_amount.y;
-    return rv;
+    return Rect::from_corners(circle.origin - hypotenuse, circle.origin + hypotenuse);
 }
 
 Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
 {
-    return{
-        elementwise_clamp(r.p1, min, max),
-        elementwise_clamp(r.p2, min, max),
-    };
+    const auto corners = r.corners();
+    return Rect::from_corners(
+        elementwise_clamp(corners.min, min, max),
+        elementwise_clamp(corners.max, min, max)
+    );
 }
 
 Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
 {
-    const Vec2 viewport_dimensions = dimensions_of(viewport);
+    const Vec2 viewport_dimensions = viewport.dimensions();
+    const auto ndc_corners = ndc_rect.corners();
+    const auto viewport_top_left = viewport.ypd_top_left();
 
-    // remap [-1, 1] into [0, viewport_dimensions]
-    Rect rv{
-        0.5f * (ndc_rect.p1 + 1.0f) * viewport_dimensions,
-        0.5f * (ndc_rect.p2 + 1.0f) * viewport_dimensions,
-    };
-
-    // offset by viewport's top-left
-    rv.p1 += viewport.p1;
-    rv.p2 += viewport.p1;
-
-    return rv;
+    // remap [-1, 1] into [0, viewport_dimensions] and offset the result to wherever
+    // the viewport's top-left is
+    return Rect::from_corners(
+        viewport_top_left + (viewport_dimensions * (0.5f * (ndc_corners.min + 1.0f))),
+        viewport_top_left + (viewport_dimensions * (0.5f * (ndc_corners.max + 1.0f)))
+    );
 }
 
 Vec2 osc::project_onto_viewport_rect(
@@ -1122,16 +1084,14 @@ Vec2 osc::project_onto_viewport_rect(
     const Mat4& projection_matrix,
     const Rect& viewport_rect)
 {
-    const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
-
     Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_location, 1.0f};
     ndc /= ndc.w;  // perspective divide (clip space -> NDC)
 
     Vec2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
     ndc2D += 1.0f;                       // [0, 2]
     ndc2D *= 0.5f;                       // [0, 1]
-    ndc2D *= viewport_dimensions;        // [0, w]
-    ndc2D += viewport_rect.p1;           // [x, x + w]
+    ndc2D *= viewport_rect.dimensions(); // [0, w]
+    ndc2D += viewport_rect.min_corner(); // [x, x + w]
 
     return ndc2D;
 }
@@ -1305,11 +1265,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     const AABB ndc_aabb = transform_aabb(proj_mat, view_space_aabb);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
-    Rect rv{Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}};
-    rv.p1 = elementwise_clamp(rv.p1, {-1.0f, -1.0f}, {1.0f, 1.0f});
-    rv.p2 = elementwise_clamp(rv.p2, {-1.0f, -1.0f}, {1.0f, 1.0f});
-
-    return rv;
+    return clamp(Rect::from_corners(Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}), Vec2{-1.0f}, Vec2{1.0f});
 }
 
 Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)
@@ -1390,12 +1346,7 @@ void osc::apply_world_space_rotation(
 
 bool osc::is_intersecting(const Rect& rect, const Vec2& point)
 {
-    const Vec2 relative_pos = point - rect.p1;
-    const Vec2 rect_dims = dimensions_of(rect);
-
-    return
-        (0.0f <= relative_pos.x and relative_pos.x <= rect_dims.x) and
-        (0.0f <= relative_pos.y and relative_pos.y <= rect_dims.y);
+    return all_of(equal_within_absdiff(rect.origin(), point, rect.half_extents()));
 }
 
 bool osc::is_intersecting(const FrustumPlanes& frustum, const AABB& aabb)

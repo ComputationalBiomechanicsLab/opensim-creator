@@ -374,6 +374,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractPathPoint.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Blankevoort1991Ligament.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CMCActuatorSubsystem.cpp
+    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedPathForce.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Probe.cpp

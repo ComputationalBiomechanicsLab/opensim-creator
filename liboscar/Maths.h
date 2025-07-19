@@ -41,6 +41,7 @@
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
+#include <liboscar/Maths/RectCorners.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Scalar.h>
 #include <liboscar/Maths/Sphere.h>

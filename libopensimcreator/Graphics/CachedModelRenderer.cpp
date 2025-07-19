@@ -31,8 +31,14 @@ using namespace osc;
 
 namespace
 {
-    bool IsPartOfVisibilitySet(const SceneDecoration& dec)
+    bool IsContributorToSceneVolume(const SceneDecoration& dec)
     {
+        if (dec.flags & SceneDecorationFlag::NoSceneVolumeContribution) {
+            // If this flag is set, then the decoration shouldn't contribute to
+            // the scene's volume - even if it's visible (#1071).
+            return false;
+        }
+
         // If it's a decoration that's either fully drawn or a wireframe, it's part of the
         // scene's visible bounds (invisible objects may cast shadows, but they shouldn't be
         // considered part of the visible bounds, #1029).
@@ -62,13 +68,13 @@ namespace
             {
                 m_Drawlist.clear();
                 m_BVH.clear();
-                m_VisibleAABB.reset();
+                m_SceneVolume.reset();
 
                 // regenerate
                 const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
-                    if (IsPartOfVisibilitySet(dec)) {
-                        m_VisibleAABB = bounding_aabb_of(m_VisibleAABB, world_space_bounds_of(dec));
+                    if (IsContributorToSceneVolume(dec)) {
+                        m_SceneVolume = bounding_aabb_of(m_SceneVolume, world_space_bounds_of(dec));
                     }
                     m_Drawlist.push_back(std::move(dec));
                 };
@@ -111,7 +117,7 @@ namespace
         }
         std::optional<AABB> getVisibleAABB() const
         {
-            return m_VisibleAABB;
+            return m_SceneVolume;
         }
         SceneCache& updSceneCache() const
         {
@@ -126,7 +132,7 @@ namespace
         OverlayDecorationOptions m_PrevOverlayOptions;
         std::vector<SceneDecoration> m_Drawlist;
         BVH m_BVH;
-        std::optional<AABB> m_VisibleAABB;
+        std::optional<AABB> m_SceneVolume;
     };
 }
 

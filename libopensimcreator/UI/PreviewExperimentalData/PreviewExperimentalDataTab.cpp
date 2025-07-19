@@ -236,7 +236,16 @@ namespace
                                     return;  // Error, cancellation, or more than one file somehow selected.
                                 }
 
-                                state->loadModelFile(response.front());
+                                // Guard against loading errors by emitting a log message rather
+                                // than potentially crashing the main thread (#1068).
+                                try {
+                                    state->loadModelFile(response.front());
+                                }
+                                catch (const std::exception& ex) {
+                                    log_error("error detected: %s", ex.what());
+                                    log_error("rolling back model");
+                                    state->rollbackModel();
+                                }
                             },
                             GetModelFileFilters()
                         );
@@ -246,14 +255,24 @@ namespace
                     if (not m_UiState->isModelLoaded()) {
                         ui::begin_disabled();
                     }
-                    if (ui::draw_button("load model trajectory/states")) {
+                    if (ui::draw_button("load model trajectory sto/mot file")) {
                         App::upd().prompt_user_to_select_file_async(
                             [state = m_UiState](const FileDialogResponse& response)
                             {
                                 if (response.size() != 1) {
                                     return;  // Error, cancellation, or more than one file somehow selected.
                                 }
-                                state->loadModelTrajectoryFile(response.front());
+
+                                // Guard against loading errors by emitting a log message rather
+                                // than potentially crashing the main thread (#1068).
+                                try {
+                                    state->loadModelTrajectoryFile(response.front());
+                                }
+                                catch (const std::exception& ex) {
+                                    log_error("error detected: %s", ex.what());
+                                    log_error("rolling back model");
+                                    state->rollbackModel();
+                                }
                             },
                             GetMotionFileFilters()
                         );
@@ -263,11 +282,20 @@ namespace
                     }
 
                     ui::same_line();
-                    if (ui::draw_button("load raw data file")) {
+                    if (ui::draw_button("load sto/mot/trc file")) {
                         App::upd().prompt_user_to_select_file_async(
                             [state = m_UiState](const FileDialogResponse& response)
                             {
-                                state->loadMotionFiles(response);
+                                // Guard against loading errors by emitting a log message rather
+                                // than potentially crashing the main thread (#1068).
+                                try {
+                                    state->loadMotionFiles(response);
+                                }
+                                catch (const std::exception& ex) {
+                                    log_error("error detected: %s", ex.what());
+                                    log_error("rolling back model");
+                                    state->rollbackModel();
+                                }
                             },
                             GetMotionFileFiltersIncludingTRC(),
                             std::nullopt,
@@ -283,7 +311,17 @@ namespace
                         App::upd().prompt_user_to_select_file_async(
                             [state = m_UiState](const FileDialogResponse& response)
                             {
-                                state->loadXMLAsOpenSimDocument(response);
+                                // Guard against loading errors by emitting a log message rather
+                                // than potentially crashing the main thread (#1068).
+                                try {
+                                    state->loadXMLAsOpenSimDocument(response);
+                                }
+                                catch (const std::exception& ex) {
+                                    log_error("error detected: %s", ex.what());
+                                    log_error("rolling back model");
+                                    state->rollbackModel();
+                                }
+
                             },
                             GetOpenSimXMLFileFilters()
                         );

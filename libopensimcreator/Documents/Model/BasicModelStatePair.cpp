@@ -67,7 +67,7 @@ public:
         InitializeModel(*m_Model);
         SimTK::State& state = m_Model->initializeState();
         state = o.m_Model->getWorkingState();
-        m_Model->equilibrateMuscles(state);
+        TryEquilibrateMusclesOrLogWarning(*m_Model, state);
         m_Model->realizeDynamics(state);
     }
     Impl(Impl&&) noexcept = default;

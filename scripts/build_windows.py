@@ -104,9 +104,7 @@ def build_osc_dependencies(conf: BuildConfiguration):
             binary_dir=conf.get_dependencies_build_dir(),
             generator=conf.generator,
             architecture=conf.architecture,
-            cache_variables=cache_variables,
-            # note: this is necessary because OpenSim transitively uses `spdlog`, which has deprecated this
-            extra_env_vars={'CXXFLAGS': '/D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING'}
+            cache_variables=cache_variables
         )
         # build
         _run_cmake_build(

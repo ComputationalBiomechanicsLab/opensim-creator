@@ -80,8 +80,8 @@ public:
             }
             ui::start_new_line();
 
-            const Rect viewport_rect = ui::get_content_region_available_ui_rect();
-            const Vec2 viewport_dimensions = dimensions_of(viewport_rect);
+            const Rect viewport_ui_rect = ui::get_content_region_available_ui_rect();
+            const Vec2 viewport_dimensions = viewport_ui_rect.dimensions();
             render_params_.dimensions = elementwise_max(viewport_dimensions, {0.0f, 0.0f});
             render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
@@ -101,7 +101,7 @@ public:
             }}}, render_params_);
 
             // Draw camera manipulator
-            ui::set_cursor_ui_pos({viewport_dimensions.x - camera_axes_ui_.dimensions().x, viewport_rect.p1.y});
+            ui::set_cursor_ui_pos(viewport_ui_rect.ypd_top_right() - Vec2{camera_axes_ui_.dimensions().x, 0.0f});
             camera_axes_ui_.draw(camera_);
         }
         ui::end_panel();

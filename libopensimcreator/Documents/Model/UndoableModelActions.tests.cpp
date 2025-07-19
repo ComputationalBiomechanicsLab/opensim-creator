@@ -640,3 +640,19 @@ TEST(OpenSimActions, DISABLED_ActionBakeStationDefinedFramesCopiesSubcomponents)
         ASSERT_EQ(std::distance(lst.begin(), lst.end()), 2);
     }
 }
+
+TEST(OpenSimActions, ActionAddPathPointToGeometryPathWorksAsExpected)
+{
+    UndoableModelStatePair model;
+    auto& gp = AddModelComponent<OpenSim::GeometryPath>(model.updModel());
+    gp.appendNewPathPoint("p1", model.getModel().getGround(), SimTK::Vec3{0.0, 0.0, 0.0});
+    gp.appendNewPathPoint("p2", model.getModel().getGround(), SimTK::Vec3{1.0, 0.0, 0.0});
+    FinalizeConnections(model.updModel());
+    InitializeModel(model.updModel());
+    InitializeState(model.updModel());
+    const auto gpPath = gp.getAbsolutePath();
+    const auto groundPath = model.getModel().getGround().getAbsolutePath();
+
+    ASSERT_TRUE(ActionAddPathPointToGeometryPath(model, gpPath, groundPath)) << "should work";
+    ASSERT_EQ(gp.getPathPointSet().getSize(), 3);
+}

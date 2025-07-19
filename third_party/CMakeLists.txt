@@ -12,14 +12,23 @@ set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
 set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
 set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
 set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
-set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")
+set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")  # default OFF because it's a big build and only necessary on Windows
 set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
 set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
 set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
 set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
 
-set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
+# set OSCDEPS_BUILD_ALWAYS
+if(TRUE)
+    set(OSCDEPS_BUILD_ALWAYS_DOCS "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
+    if(DEFINED ENV{OSCDEPS_BUILD_ALWAYS})
+        set(OSCDEPS_BUILD_ALWAYS "$ENV{OSCDEPS_BUILD_ALWAYS}" CACHE BOOL "${OSCDEPS_BUILD_ALWAYS_DOCS}" FORCE)
+    else()
+        set(OSCDEPS_BUILD_ALWAYS OFF CACHE BOOL "${OSCDEPS_BUILD_ALWAYS_DOCS}")
+    endif()
+    unset(OSCDEPS_BUILD_ALWAYS_DOCS)
+endif()
 
 # setup `OSCDEPS_DEPENDENCY_CMAKE_ARGS`
 #
@@ -131,10 +140,8 @@ endif()
 if (${OSCDEPS_BUILD_IMGUI})
     ExternalProject_Add(imgui
         PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/0001-revert-dockspace-ids.patch
-
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
         SOURCE_SUBDIR ../cmake/imgui/
-
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -144,10 +151,8 @@ endif()
 if(${OSCDEPS_BUILD_IMPLOT})
     ExternalProject_Add(implot
         DEPENDS imgui
-
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
         SOURCE_SUBDIR ../cmake/implot/
-
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -198,6 +203,7 @@ if(${OSCDEPS_BUILD_LIBOSIM})
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0001_add-static-library-define.patch ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0002_add-removecomponent.patch
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -209,6 +215,7 @@ endif()
 if (${OSCDEPS_BUILD_STB})
     ExternalProject_Add(stb
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )

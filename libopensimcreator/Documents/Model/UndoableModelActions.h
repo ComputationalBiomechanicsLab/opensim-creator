@@ -213,6 +213,13 @@ namespace osc
         ObjectPropertyEdit&
     );
 
+    // adds a path point to the selected geometry path
+    bool ActionAddPathPointToGeometryPath(
+        IModelStatePair&,
+        const OpenSim::ComponentPath& geometryPathPath,
+        const OpenSim::ComponentPath& pointPhysFrame
+    );
+
     // adds a path point to the selected path actuator (if applicable)
     bool ActionAddPathPointToPathActuator(
         IModelStatePair&,

@@ -635,6 +635,14 @@ namespace osc
     // fully initialize an OpenSim model (clear connections, finalize properties, remake SimTK::System)
     void InitializeModel(OpenSim::Model&);
 
+    // Tries to equilibrate the muscles in the given model for the given state, or logs a warning
+    // message if the muscles cannot be equilibriated.
+    //
+    // This should be used in the UI in cases where the user may load or edit a model that contains
+    // invalid/incorrect muscles. Some OpenSim models can have this problem, and it shouldn't be
+    // treated as a fatal error (#1070).
+    void TryEquilibrateMusclesOrLogWarning(OpenSim::Model&, SimTK::State&);
+
     // fully initalize an OpenSim model's working state
     SimTK::State& InitializeState(OpenSim::Model&);
 

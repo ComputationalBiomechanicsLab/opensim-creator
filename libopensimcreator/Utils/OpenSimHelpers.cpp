@@ -1061,6 +1061,16 @@ void osc::InitializeModel(OpenSim::Model& model)
     model.buildSystem();             // creates a new underlying physics system
 }
 
+void osc::TryEquilibrateMusclesOrLogWarning(OpenSim::Model& model, SimTK::State& state)
+{
+    try {
+        model.equilibrateMuscles(state);
+    }
+    catch (const std::exception& ex) {
+        log_warn("Cannot equilibrate model's muscles: %s", ex.what());
+    }
+}
+
 void osc::FinalizeConnections(OpenSim::Model& model)
 {
     OSC_PERF("osc::FinalizeConnections");
@@ -1071,7 +1081,7 @@ SimTK::State& osc::InitializeState(OpenSim::Model& model)
 {
     OSC_PERF("osc::InitializeState");
     SimTK::State& state = model.initializeState();  // creates+returns a new working state
-    model.equilibrateMuscles(state);
+    TryEquilibrateMusclesOrLogWarning(model, state);
     model.realizeDynamics(state);
     return state;
 }

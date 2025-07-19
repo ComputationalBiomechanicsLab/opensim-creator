@@ -70,6 +70,7 @@ if(DEFINED ENV{OSC_BUILD_ID})
     set(OSC_BUILD_ID "$ENV{OSC_BUILD_ID}"
         CACHE STRING
         "a unique identifier for this particular build configuration (handy for bug tracing)"
+        FORCE
     )
 else()
     set(OSC_BUILD_ID "CUSTOM_BUILD"
@@ -164,12 +165,11 @@ target_link_options(osc PRIVATE
 
 # set shared/common CPack variables
 set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
 set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
 set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
-set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_PACKAGE_NAME}")
+set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")
 
 # `include` platform-specific packaging instructions
 include(${OSC_PACKAGING_DIR}/Packaging.cmake)

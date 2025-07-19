@@ -45,65 +45,71 @@
 // that would be insanely impractical. The project's vcs (i.e. git) can be
 // used to track each change.
 
+#include <liboscar/Maths/Angle.h>
+#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Rect.h>
+#include <liboscar/Maths/Transform.h>
+#include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/UID.h>
+
+#include <optional>
+#include <utility>
 
 struct ImDrawList;
 
 namespace ImGuizmo
 {
-    enum OPERATION {
-        NONE             =  0,
-        TRANSLATE_X      = (1u << 0),
-        TRANSLATE_Y      = (1u << 1),
-        TRANSLATE_Z      = (1u << 2),
-        ROTATE_X         = (1u << 3),
-        ROTATE_Y         = (1u << 4),
-        ROTATE_Z         = (1u << 5),
-        ROTATE_SCREEN    = (1u << 6),
-        SCALE_X          = (1u << 7),
-        SCALE_Y          = (1u << 8),
-        SCALE_Z          = (1u << 9),
-        BOUNDS           = (1u << 10),
-        SCALE_XU         = (1u << 11),
-        SCALE_YU         = (1u << 12),
-        SCALE_ZU         = (1u << 13),
+    enum class Operation {
+        None           =  0,
+        TranslateX     = (1u << 0),
+        TranslateY     = (1u << 1),
+        TranslateZ     = (1u << 2),
+        RotateX        = (1u << 3),
+        RotateY        = (1u << 4),
+        RotateZ        = (1u << 5),
+        RotateInScreen = (1u << 6),
+        ScaleX         = (1u << 7),
+        ScaleY         = (1u << 8),
+        ScaleZ         = (1u << 9),
+        Bounds         = (1u << 10),
+        ScaleXU        = (1u << 11),
+        ScaleYU        = (1u << 12),
+        ScaleZU        = (1u << 13),
 
-        TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
-        ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
-        SCALE = SCALE_X | SCALE_Y | SCALE_Z,
-        SCALEU = SCALE_XU | SCALE_YU | SCALE_ZU, // universal
-        UNIVERSAL = TRANSLATE | ROTATE | SCALEU
+        Translate      = TranslateX | TranslateY | TranslateZ,
+        Rotate         = RotateX | RotateY | RotateZ | RotateInScreen,
+        Scale          = ScaleX | ScaleY | ScaleZ,
+        ScaleU         = ScaleXU | ScaleYU | ScaleZU, // universal
+        Universal      = Translate | Rotate | ScaleU
     };
 
-    inline constexpr OPERATION operator|(OPERATION lhs, OPERATION rhs)
+    inline constexpr Operation operator|(Operation lhs, Operation rhs)
     {
-        return static_cast<OPERATION>(static_cast<int>(lhs) | static_cast<int>(rhs));
+        return static_cast<Operation>(static_cast<int>(lhs) | static_cast<int>(rhs));
     }
 
-    enum MODE {
-        LOCAL,
-        WORLD
+    inline constexpr Operation operator<<(Operation lhs, int rhs)
+    {
+        return static_cast<Operation>(std::to_underlying(lhs) << rhs);
+    }
+
+    inline constexpr Operation operator>>(Operation lhs, int rhs)
+    {
+        return static_cast<Operation>(std::to_underlying(lhs) >> rhs);
+    }
+
+    inline constexpr bool operator&(Operation lhs, Operation rhs)
+    {
+        return static_cast<bool>(std::to_underlying(lhs) & std::to_underlying(rhs));
+    }
+
+    enum class Mode {
+        Local,
+        World
     };
 
-    enum COLOR {
-        DIRECTION_X,      // directionColor[0]
-        DIRECTION_Y,      // directionColor[1]
-        DIRECTION_Z,      // directionColor[2]
-        PLANE_X,          // planeColor[0]
-        PLANE_Y,          // planeColor[1]
-        PLANE_Z,          // planeColor[2]
-        SELECTION,        // selectionColor
-        INACTIVE,         // inactiveColor
-        TRANSLATION_LINE, // translationLineColor
-        SCALE_LINE,
-        ROTATION_USING_BORDER,
-        ROTATION_USING_FILL,
-        HATCHED_AXIS_LINES,
-        TEXT,
-        TEXT_SHADOW,
-        COUNT
-    };
-
+    // Returns the padding distance between the gizmo and any textual annotations
+    // on it in device-independent pixels.
     inline constexpr float AnnotationOffset() { return 15.0f; }
 
     void CreateContext();
@@ -120,7 +126,7 @@ namespace ImGuizmo
     bool IsOver();
 
     // return true if the cursor is over the operation's gizmo
-    bool IsOver(OPERATION op);
+    bool IsOver(Operation op);
 
     // return true if mouse IsOver or if the gizmo is in moving state
     bool IsUsing();
@@ -132,26 +138,12 @@ namespace ImGuizmo
     // gizmo is rendered with gray half transparent color when disabled
     void Enable(bool enable);
 
-    void SetRect(float x, float y, float width, float height);
+    // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
+    // where the gizmo shall be drawn.
+    void SetRect(const osc::Rect& ui_rect);
 
     // default is false
     void SetOrthographic(bool isOrthographic);
-
-    // call it when you want a gizmo
-    // Needs view and projection matrices.
-    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
-    // translation is applied in world space
-    bool Manipulate(
-        const float* view,
-        const float* projection,
-        OPERATION operation,
-        MODE mode,
-        float* matrix,
-        float* deltaMatrix = NULL,
-        const float* snap = NULL,
-        const float* localBounds = NULL,
-        const float* boundsSnap = NULL
-    );
 
     // Push/Pop IDs from ImGuizmo's local ID stack
     void          PushID(osc::UID);
@@ -163,6 +155,29 @@ namespace ImGuizmo
     void SetAxisLimit(float value);
     // Set an axis mask to permanently hide a given axis (true -> hidden, false -> shown)
     void SetAxisMask(bool x, bool y, bool z);
-    // Configure the limit where planes are hiden
+    // Configure the limit where planes are hidden
     void SetPlaneLimit(float value);
+
+    // Represents the step size that the gizmo should stick to when the user is
+    // using a gizmo operation.
+    struct OperationSnappingSteps final {
+        std::optional<osc::Vec3> scale;
+        std::optional<osc::Radians> rotation;
+        std::optional<osc::Vec3> position;
+    };
+
+    // call it when you want a gizmo
+    // Needs view and projection matrices.
+    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
+    // translation is applied in world space
+    std::optional<osc::Transform> Manipulate(
+        const osc::Mat4& view,
+        const osc::Mat4& projection,
+        Operation operation,
+        Mode mode,
+        osc::Mat4& matrix,
+        std::optional<OperationSnappingSteps> snap = std::nullopt,
+        const float* localBounds = nullptr,
+        const float* boundsSnap = nullptr
+    );
 }

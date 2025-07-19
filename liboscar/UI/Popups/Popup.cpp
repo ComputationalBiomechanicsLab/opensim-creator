@@ -195,8 +195,8 @@ void osc::Popup::set_modal(bool v)
 void osc::Popup::set_rect(const Rect& rect)
 {
     PopupPrivate& pimpl = private_data();
-    pimpl.maybe_position_ = rect.p1;
-    pimpl.dimensions_ = dimensions_of(rect);
+    pimpl.maybe_position_ = rect.ypd_top_left();
+    pimpl.dimensions_ = rect.dimensions();
 }
 void osc::Popup::set_dimensions(Vec2 d)
 {

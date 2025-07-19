@@ -442,7 +442,7 @@ namespace osc::mi
 
             // setup rendering params
             SceneRendererParams p;
-            p.dimensions = dimensions_of(get3DSceneRect());
+            p.dimensions = get3DSceneDims();
             p.device_pixel_ratio = app.settings().get_value<float>("graphics/render_scale", 1.0f) * app.main_window_device_pixel_ratio();
             p.antialiasing_level = app.anti_aliasing_level();
             p.draw_rims = true;
@@ -491,7 +491,7 @@ namespace osc::mi
 
         Vec2 get3DSceneDims() const
         {
-            return dimensions_of(m_3DSceneRect);
+            return m_3DSceneRect.dimensions();
         }
 
         const PolarPerspectiveCamera& getCamera() const
@@ -620,8 +620,8 @@ namespace osc::mi
                 return MeshImporterHover{};
             }
 
-            const Vec2 sceneDims = dimensions_of(sceneRect);
-            const Vec2 relMousePos = mousePos - sceneRect.p1;
+            const Vec2 sceneDims = sceneRect.dimensions();
+            const Vec2 relMousePos = mousePos - sceneRect.ypd_top_left();
 
             const Line ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
             const bool hittestMeshes = isMeshesInteractable();

@@ -1279,16 +1279,16 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw top-left buttons
     const Vec2 windowPadding = ui::get_style_panel_padding();
-    ui::set_cursor_ui_pos(renderRect.p1 + windowPadding);
+    ui::set_cursor_ui_pos(renderRect.ypd_top_left() + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    const Vec2 renderDims = dimensions_of(renderRect);
+    const Vec2 renderDims = renderRect.dimensions();
     const Vec2 axesDims = axes.dimensions();
     const Vec2 axesTopLeft = {
-        renderRect.p1.x + renderDims.x - windowPadding.x - axesDims.x,
-        renderRect.p1.y + windowPadding.y,
+        renderRect.left() + renderDims.x - windowPadding.x - axesDims.x,
+        renderRect.ypd_top() + windowPadding.y,
     };
 
     // draw the bottom overlays

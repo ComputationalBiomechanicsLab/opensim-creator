@@ -94,9 +94,16 @@ public:
     void on_draw()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const float x_midpoint = midpoint(workspace_screen_space_rect.p1.x, workspace_screen_space_rect.p2.x);
-        const Rect lhs_screen_space_rect = {workspace_screen_space_rect.p1, {x_midpoint, workspace_screen_space_rect.p2.y}};
-        const Rect rhs_screen_space_rect = {{x_midpoint, workspace_screen_space_rect.p1.y}, workspace_screen_space_rect.p2};
+        const auto workspace_screen_space_rect_corners = workspace_screen_space_rect.corners();
+        const float x_midpoint = workspace_screen_space_rect.origin().x;
+        const Rect lhs_screen_space_rect = Rect::from_corners(
+            workspace_screen_space_rect_corners.min,
+            {x_midpoint, workspace_screen_space_rect_corners.max.y}
+        );
+        const Rect rhs_screen_space_rect = Rect::from_corners(
+            {x_midpoint, workspace_screen_space_rect_corners.min.y},
+            workspace_screen_space_rect_corners.max
+        );
         const FrustumPlanes frustum = calc_frustum_planes(user_camera_, aspect_ratio_of(lhs_screen_space_rect));
 
         user_camera_.on_draw();  // update from inputs etc.

@@ -15,4 +15,3 @@ cmake -S third_party/SDL -B sdl-build \
     -DSDL_WAYLAND_LIBDECOR=ON
 
 cmake --build sdl-build --target install -j$(nproc)
-

@@ -1855,24 +1855,17 @@ private:
     {
         ui::push_id("##3DViewerOverlay");
 
-        // bottom-left axes overlay
+        // draw axis overlay in the bottom-left
         {
             CameraViewAxes axes;
 
             const Vec2 windowPadding = ui::get_style_panel_padding();
-            const Rect& r = m_Shared->get3DSceneRect();
-            const Vec2 topLeft =
-            {
-                r.p1.x + windowPadding.x,
-                r.p2.y - windowPadding.y - axes.dimensions().y,
-            };
-            ui::set_cursor_ui_pos(topLeft);
+            const Vec2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{windowPadding.x, -windowPadding.y} - Vec2{0.0f, axes.dimensions().y};
+            ui::set_cursor_ui_pos(axesTopLeft);
             axes.draw(m_Shared->updCamera());
         }
 
-        Rect sceneRect = m_Shared->get3DSceneRect();
-        Vec2 trPos = {sceneRect.p1.x + 100.0f, sceneRect.p2.y - 55.0f};
-        ui::set_cursor_ui_pos(trPos);
+        ui::set_cursor_ui_pos(m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{100.0f, -55.0f});
 
         if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
         {
@@ -1963,7 +1956,7 @@ private:
 
         const Vec2 mainButtonDims = ui::calc_button_size(mainButtonText);
         const Vec2 settingButtonDims = ui::calc_button_size(settingButtonText);
-        const Vec2 viewportBottomRight = m_Shared->get3DSceneRect().p2;
+        const Vec2 viewportBottomRight = m_Shared->get3DSceneRect().ypd_bottom_right();
 
         const Vec2 buttonTopLeft =
         {
@@ -2354,7 +2347,7 @@ private:
             // outside of the panel
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
-            ui::set_next_panel_ui_pos(m_Shared->get3DSceneRect().p1);
+            ui::set_next_panel_ui_pos(m_Shared->get3DSceneRect().ypd_top_left());
             ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
             const ui::PanelFlags modalFlags = {

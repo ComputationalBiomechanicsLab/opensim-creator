@@ -18,6 +18,10 @@ namespace osc
         {}
 
         MouseInputSource input_source() const { return input_source_; }
+
+        // Returns the "delta" introduced by the wheel event. With typical
+        // mouse wheels, this almost always translates to `{0.0f, -1.0f}`
+        // when scrolling down and `{0.0f, +1.0f}` when scrolling up.
         Vec2 delta() const { return delta_; }
     private:
         Vec2 delta_;

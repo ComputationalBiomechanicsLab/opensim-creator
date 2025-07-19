@@ -5,12 +5,12 @@
 
 #include <optional>
 
+namespace osc { class Rect; }
 namespace osc { struct AABB; }
 namespace osc { struct Disc; }
 namespace osc { struct FrustumPlanes;}
 namespace osc { struct Line; }
 namespace osc { struct Plane; }
-namespace osc { struct Rect; }
 namespace osc { struct Sphere; }
 namespace osc { struct Triangle; }
 

@@ -1,4 +1,3 @@
-[![workflow](https://github.com/ComputationalBiomechanicsLab/opensim-creator/actions/workflows/continuous-integration-workflow.yml/badge.svg)](https://github.com/ComputationalBiomechanicsLab/opensim-creator/blob/main/.github/workflows/continuous-integration-workflow.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7703588.svg)](https://doi.org/10.5281/zenodo.7703588)
 
 # OpenSim Creator <img src="resources/OpenSimCreator/textures/logo.svg" align="right" alt="OpenSim Creator Logo" width="128" height="128" />
@@ -13,6 +12,7 @@
 - ❓ Have a question? [Go to the discussions page](../../discussions)
 - 🐛 Found a bug or want to request a feature? [Post it on the issues page](../../issues)
 - 🏗️ Want to build it from source? [There's a development section in the documentation](https://docs.opensimcreator.com)
+- 🥰 Want to contribute to it? [There's a contribution section in the documentation](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
 
 
 ## 👓 Overview
@@ -37,7 +37,7 @@ fairly easy to build, integrate, and package.
 
 OpenSim Creator doesn't have a central _written_ software publication that you can cite (yet 😉). However, if you _need_ to directly cite OpenSim Creator (e.g. because you think it's relevant that you built a model with it), the closest thing you can use is our DOI-ed Zenodo releases (metadata available in this repo: `CITATION.cff`/`codemeta.json`):
 
-> Kewley, A., Beesel, J., & Seth, A. (2025). OpenSim Creator (0.5.24). Zenodo. https://doi.org/10.5281/zenodo.15720627
+> Kewley, A., Beesel, J., & Seth, A. (2025). OpenSim Creator (0.5.25). Zenodo. https://doi.org/10.5281/zenodo.15882091
 
 If you need a general citation for the simulation/modelling technique, you can directly cite OpenSim via this paper:
 
@@ -63,6 +63,12 @@ every release of OpenSim Creator:
   (apart from widely-available compiler toolchains) is available in this repository and not dependent
   on external services that might change over time.
 
+## 🥰 Contributing
+
+If you would like to contribute to OpenSim Creator then thank you 🥰: it's people like you
+that make open-source awesome! Please consult the [contribution section](https://docs.opensimcreator.com/manual/en/latest/contributing.html)
+in the official documentation. The development section of the documentation also outlines how
+to build the project from source!
 
 ## ❤️ Acknowledgements
 

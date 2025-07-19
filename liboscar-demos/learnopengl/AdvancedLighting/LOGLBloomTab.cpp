@@ -129,7 +129,7 @@ private:
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         reformat_all_textures(workspace_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
@@ -293,10 +293,10 @@ private:
 
         for (size_t i = 0; i < texture_pointers.size(); ++i) {
             const Vec2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
-            const Rect overlay_rect{
-                viewport_screen_space_rect.p1 + offset,
-                viewport_screen_space_rect.p1 + offset + overlay_width,
-            };
+            const Rect overlay_rect = Rect::from_corners(
+                viewport_screen_space_rect.ypu_bottom_left() + offset,
+                viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width
+            );
 
             graphics::blit_to_main_window(*texture_pointers[i], overlay_rect);
         }

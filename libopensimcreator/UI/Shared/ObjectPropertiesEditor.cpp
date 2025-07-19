@@ -142,7 +142,7 @@ namespace
         const Vec2 p = ui::get_cursor_ui_pos();
         const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
-        l.add_rect_filled({p, p + dims}, color);
+        l.add_rect_filled(Rect::from_corners(p, p + dims), color);
         ui::set_cursor_ui_pos({p.x + 4.0f, p.y});
     }
 

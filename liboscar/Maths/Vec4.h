@@ -24,7 +24,7 @@ namespace osc
         using const_iterator = const T*;
 
         constexpr Vec() = default;
-        constexpr explicit Vec(T value) :
+        explicit constexpr Vec(T value) :
             x{value},
             y{value},
             z{value},

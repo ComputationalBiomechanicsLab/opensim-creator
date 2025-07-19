@@ -84,6 +84,17 @@ namespace osc
         return adjugate(transpose(mat3_cast(transform)));
     }
 
+    // returns `true` if `out` was updated with the decomposition of `m`
+    //
+    // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
+    // - uses matrix decomposition to break up the provided matrix
+    inline bool try_decompose_to_transform(const Mat4& m, Transform& out)
+    {
+        Vec3 skew;
+        Vec4 perspective;
+        return decompose(m, out.scale, out.rotation, out.position, skew, perspective);
+    }
+
     // returns a transform that *tries to* perform the equivalent transform as the provided `Mat4`
     //
     // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
@@ -92,9 +103,7 @@ namespace osc
     inline Transform decompose_to_transform(const Mat4& m)
     {
         Transform rv;
-        Vec3 skew;
-        Vec4 perspective;
-        if (not decompose(m, rv.scale, rv.rotation, rv.position, skew, perspective)) {
+        if (not try_decompose_to_transform(m, rv)) {
             throw std::runtime_error{"failed to decompose a matrix into scale, rotation, etc."};
         }
         return rv;

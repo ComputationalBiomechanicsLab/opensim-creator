@@ -103,7 +103,7 @@ namespace osc
         // constructs a `UnitVec` by constructing the underlying `Vec` and skips normalization
         template<typename... Args>
         requires std::constructible_from<Vec<L, T>, Args&&...>
-        constexpr explicit UnitVec(AlreadyNormalizedTag, Args&&... args) :
+        explicit constexpr UnitVec(AlreadyNormalizedTag, Args&&... args) :
             data_{Vec<L, T>{std::forward<Args>(args)...}}
         {}
 

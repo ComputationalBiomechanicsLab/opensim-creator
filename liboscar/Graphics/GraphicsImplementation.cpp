@@ -7531,8 +7531,8 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     // handle viewport (which should be in raw pixels for low-level graphics API calls)
     if (auto pixel_rect = camera.pixel_rect()) {
         rv.viewport = {
-            .bottom_left = scaler * pixel_rect->p1,
-            .pixel_dimensions = scaler * dimensions_of(*pixel_rect)
+            .bottom_left = scaler * pixel_rect->ypu_bottom_left(),
+            .pixel_dimensions = scaler * pixel_rect->dimensions()
         };
     }
     else if (maybe_custom_render_target) {
@@ -7550,8 +7550,8 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
 
     if (camera.maybe_scissor_rect_) {
         rv.scissor = {
-            .bottom_left = scaler * camera.maybe_scissor_rect_->p1,
-            .pixel_dimensions = scaler * dimensions_of(*camera.maybe_scissor_rect_),
+            .bottom_left = scaler * camera.maybe_scissor_rect_->ypu_bottom_left(),
+            .pixel_dimensions = scaler * camera.maybe_scissor_rect_->dimensions(),
         };
     }
 

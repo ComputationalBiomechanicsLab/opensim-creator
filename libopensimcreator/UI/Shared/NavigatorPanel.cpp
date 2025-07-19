@@ -243,7 +243,9 @@ private:
                 const auto offset = ui::get_cursor_ui_pos() - ui::get_cursor_panel_pos();
                 const auto topLeft = Vec2{0.0f, ui::get_cursor_panel_pos().y};
                 const auto bottomRight =  topLeft + Vec2{ui::get_panel_size().x, ui::get_text_line_height_with_spacing_in_current_panel()};
-                ui::get_panel_draw_list().add_rect_filled({offset+topLeft, offset+bottomRight}, multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f));
+                const auto rect = Rect::from_corners(offset + topLeft, offset + bottomRight);
+                const auto color = multiply_luminance(ui::get_color(ui::ColorVar::PanelBg), 1.2f);
+                ui::get_panel_draw_list().add_rect_filled(rect, color);
             }
 
             // handle coloring

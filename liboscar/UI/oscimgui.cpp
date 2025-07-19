@@ -257,6 +257,15 @@ struct osc::Converter<Key, ImGuiKey> final {
 
 static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset());
 
+template<>
+struct osc::Converter<Rect, ImRect> final {
+    ImRect operator()(const Rect& rect) const
+    {
+        const auto corners = rect.corners();
+        return {corners.min, corners.max};
+    }
+};
+
 namespace
 {
     // The default size of the font in the UI
@@ -481,7 +490,7 @@ namespace
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlag::None);
-        bd.camera.set_scissor_rect(Rect{minflip, maxflip});
+        bd.camera.set_scissor_rect(Rect::from_corners(minflip, maxflip));
 
         // setup sub-mesh description
         const size_t sub_mesh_index = mesh.num_submesh_descriptors();
@@ -787,9 +796,19 @@ namespace
     {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags = 0;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // tabbing, using arrows to move around
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // dockable panels
-        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // OSCAR DOESN'T ALLOW IMGUI MULTI VIEWPORT
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // dockable panels
+        // DISABLED: io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard
+        //
+        //   Setting this flag causes ImGui to almost always adsorb keyboard events
+        //   whenever there's any ImGui window focused. This makes `WantCaptureKeyboard`
+        //   always `true`, which makes the UI context adsorb almost all key events, which
+        //   starves the application of them.
+        //
+        // DISABLED: io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable
+        //
+        //   The oscar ImGui backend doesn't support multi-viewport ImGui. The reason
+        //   why is because the long-term intention is for oscar to handle windows via
+        //   a combination of the `osc::App` and `osc::Widget` APIs.
 
         // make it so that windows can only ever be moved from the title bar
         io.ConfigWindowsMoveFromTitleBarOnly = true;
@@ -895,7 +914,10 @@ namespace
             const Vec2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
             const Vec2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
 
-            app.set_main_window_unicode_input_rect(Rect{input_bottom_left_screen, input_bottom_left_screen + input_dimensions});
+            app.set_main_window_unicode_input_rect(Rect::from_corners(
+                input_bottom_left_screen,
+                input_bottom_left_screen + input_dimensions
+            ));
             app.start_text_input(bd->Window);
             bd->ImeWindow = viewport_window;
         }
@@ -1317,28 +1339,28 @@ namespace
 }
 
 template<>
-struct osc::Converter<ui::GizmoOperation, ImGuizmo::OPERATION> final {
-    ImGuizmo::OPERATION operator()(ui::GizmoOperation op) const
+struct osc::Converter<ui::GizmoOperation, ImGuizmo::Operation> final {
+    ImGuizmo::Operation operator()(ui::GizmoOperation op) const
     {
         static_assert(num_flags<ui::GizmoOperation>() == 3);
         switch (op) {
-        case ui::GizmoOperation::Scale:     return ImGuizmo::OPERATION::SCALE;
-        case ui::GizmoOperation::Rotate:    return ImGuizmo::OPERATION::ROTATE;
-        case ui::GizmoOperation::Translate: return ImGuizmo::OPERATION::TRANSLATE;
-        default:                            return ImGuizmo::OPERATION::TRANSLATE;
+        case ui::GizmoOperation::Scale:     return ImGuizmo::Operation::Scale;
+        case ui::GizmoOperation::Rotate:    return ImGuizmo::Operation::Rotate;
+        case ui::GizmoOperation::Translate: return ImGuizmo::Operation::Translate;
+        default:                            return ImGuizmo::Operation::Translate;
         }
     }
 };
 
 template<>
-struct osc::Converter<ui::GizmoMode, ImGuizmo::MODE> final {
-    ImGuizmo::MODE operator()(ui::GizmoMode mode) const
+struct osc::Converter<ui::GizmoMode, ImGuizmo::Mode> final {
+    ImGuizmo::Mode operator()(ui::GizmoMode mode) const
     {
         static_assert(num_options<ui::GizmoMode>() == 2);
         switch (mode) {
-        case ui::GizmoMode::Local: return ImGuizmo::MODE::LOCAL;
-        case ui::GizmoMode::World: return ImGuizmo::MODE::WORLD;
-        default:                   return ImGuizmo::MODE::WORLD;
+        case ui::GizmoMode::Local: return ImGuizmo::Mode::Local;
+        case ui::GizmoMode::World: return ImGuizmo::Mode::World;
+        default:                   return ImGuizmo::Mode::World;
         }
     }
 };
@@ -2220,17 +2242,17 @@ ui::ID osc::ui::get_id(std::string_view str_id)
 
 void osc::ui::set_next_item_size(Rect r)  // note: ImGui API assumes cursor is located at `p1` already
 {
-    ImGui::ItemSize(ImRect{r.p1, r.p2});
+    ImGui::ItemSize(to<ImRect>(r));
 }
 
 bool osc::ui::add_item(Rect bounds, ID id)
 {
-    return ImGui::ItemAdd(ImRect{bounds.p1, bounds.p2}, id.value());
+    return ImGui::ItemAdd(to<ImRect>(bounds), id.value());
 }
 
 bool osc::ui::is_item_hoverable(Rect bounds, ID id)
 {
-    return ImGui::ItemHoverable(ImRect{bounds.p1, bounds.p2}, id.value(), ImGui::GetItemFlags());
+    return ImGui::ItemHoverable(to<ImRect>(bounds), id.value(), ImGui::GetItemFlags());
 }
 
 void osc::ui::draw_separator()
@@ -2418,6 +2440,11 @@ bool osc::ui::is_item_deactivated_after_edit()
     return ImGui::IsItemDeactivatedAfterEdit();
 }
 
+Rect osc::ui::get_item_ui_rect()
+{
+    return Rect::from_corners(get_item_top_left_ui_pos(), get_item_bottom_right_ui_pos());
+}
+
 Vec2 osc::ui::get_item_top_left_ui_pos()
 {
     return ImGui::GetItemRectMin();
@@ -2533,12 +2560,14 @@ Vec2 osc::ui::get_panel_size()
 
 void osc::ui::DrawListAPI::add_rect(const Rect& ui_rect, const Color& color, float rounding, float thickness)
 {
-    impl_get_drawlist().AddRect(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding, 0, thickness);
+    const auto ui_corners = ui_rect.corners();
+    impl_get_drawlist().AddRect(ui_corners.min, ui_corners.max, to_ImU32(color), rounding, 0, thickness);
 }
 
 void osc::ui::DrawListAPI::add_rect_filled(const Rect& ui_rect, const Color& color, float rounding)
 {
-    impl_get_drawlist().AddRectFilled(ui_rect.p1, ui_rect.p2, to_ImU32(color), rounding);
+    const auto ui_corners = ui_rect.corners();
+    impl_get_drawlist().AddRectFilled(ui_corners.min, ui_corners.max, to_ImU32(color), rounding);
 }
 
 void osc::ui::DrawListAPI::add_circle(const Circle& ui_circle, const Color& color, int num_segments, float thickness)
@@ -2568,7 +2597,8 @@ void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_
 
 void osc::ui::DrawListAPI::push_clip_rect(const Rect& r, bool intersect_with_currect_clip_rect)
 {
-    impl_get_drawlist().PushClipRect(r.p1, r.p2, intersect_with_currect_clip_rect);
+    const auto corners = r.corners();
+    impl_get_drawlist().PushClipRect(corners.min, corners.max, intersect_with_currect_clip_rect);
 }
 
 void osc::ui::DrawListAPI::pop_clip_rect()
@@ -2693,14 +2723,7 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     // handle mousewheel scrolling
     if (const float wheel = ImGui::GetIO().MouseWheel; wheel != 0.0f) {
-        // careful: different operating systems have different orders of
-        // of magnitude and frequency for scroll events, so this section
-        // needs to make sure that the user can't (e.g.) zoom in too much
-        // or too quickly (MacOS used to have aggressive scrolling, #971).
-        float r = camera.radius * (1.0f - 0.1f*wheel);
-        r = clamp(r, 0.2f*camera.radius, 5.0f*camera.radius);  // clamp how much zooming can happen in one go
-        r = clamp(r, 0.0001f, 1000.0f);  // clamp absolute amount between 0.1 mm and 1 km
-        camera.radius = r;
+        camera.radius *= (1.0f - 0.2f*wheel);
         modified = true;
     }
 
@@ -2884,7 +2907,7 @@ bool osc::ui::update_polar_camera_from_all_inputs(
     // we don't check `io.WantCaptureMouse` because clicking/dragging on an `ImGui::Image`
     // is classed as a mouse interaction
     const bool mouse_handled =
-        update_polar_camera_from_mouse_inputs(camera, dimensions_of(viewport_rect));
+        update_polar_camera_from_mouse_inputs(camera, viewport_rect.dimensions());
 
     const bool keyboard_handled = not io.WantCaptureKeyboard ?
         update_polar_camera_from_keyboard_inputs(camera, viewport_rect, maybe_scene_world_space_aabb) :
@@ -2937,7 +2960,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 Rect osc::ui::get_content_region_available_ui_rect()
 {
     const Vec2 top_left = ui::get_cursor_ui_pos();
-    return Rect{top_left, top_left + ui::get_content_region_available()};
+    return Rect::from_corners(top_left, top_left + ui::get_content_region_available());
 }
 
 void osc::ui::draw_image(
@@ -2948,10 +2971,8 @@ void osc::ui::draw_image(
     if (not dimensions) {
         dimensions = texture.dimensions();
     }
-    const Vec2 top_left = {region_uv_coordinates.p1.x, 1.0f - region_uv_coordinates.p1.y};
-    const Vec2 bottom_right = {region_uv_coordinates.p2.x, 1.0f - region_uv_coordinates.p2.y};
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
-    ImGui::Image(handle, *dimensions, top_left, bottom_right);
+    ImGui::Image(handle, *dimensions, region_uv_coordinates.ypu_top_left(), region_uv_coordinates.ypu_bottom_right());
 }
 
 void osc::ui::draw_image(const RenderTexture& texture)
@@ -2994,27 +3015,28 @@ bool osc::ui::draw_image_button(
     const Rect& texture_coordinates)
 {
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
-    return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.p1, texture_coordinates.p2);
+    return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.ypu_top_left(), texture_coordinates.ypu_bottom_right());
 }
 
 bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec2 dimensions)
 {
-    return draw_image_button(label, texture, dimensions, Rect{{0.0f, 1.0f}, {1.0f, 0.0f}});
+    return draw_image_button(label, texture, dimensions, Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f}));
 }
 
 Rect osc::ui::get_last_drawn_item_ui_rect()
 {
-    return {ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos()};
+    return Rect::from_corners(ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos());
 }
 
 Rect osc::ui::get_last_drawn_item_screen_rect()
 {
     const Rect ui_rect = get_last_drawn_item_ui_rect();
-    const Vec2 r = ImGui::GetIO().DisplaySize;
-    return Rect{
-        {ui_rect.p1.x, r.y - ui_rect.p2.y},
-        {ui_rect.p2.x, r.y - ui_rect.p1.y},
-    };
+    const auto ui_rect_corners = ui_rect.corners();
+    const float ui_height = ImGui::GetIO().DisplaySize.y;
+    return Rect::from_corners(
+        {ui_rect_corners.min.x, ui_height - ui_rect_corners.max.y},
+        {ui_rect_corners.max.x, ui_height - ui_rect_corners.min.y}
+    );
 }
 
 void osc::ui::add_screenshot_annotation_to_last_drawn_item(std::string_view label)
@@ -3030,8 +3052,7 @@ ui::HittestResult osc::ui::hittest_last_drawn_item()
 ui::HittestResult osc::ui::hittest_last_drawn_item(float drag_threshold)
 {
     HittestResult rv;
-    rv.item_ui_rect.p1 = ui::get_item_top_left_ui_pos();
-    rv.item_ui_rect.p2 = ui::get_item_bottom_right_ui_pos();
+    rv.item_ui_rect = ui::get_item_ui_rect();
     rv.is_hovered = ui::is_item_hovered();
     rv.is_left_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Left, drag_threshold);
     rv.is_right_click_released_without_dragging = rv.is_hovered and is_mouse_released_without_dragging(MouseButton::Right, drag_threshold);
@@ -3261,7 +3282,7 @@ ui::PanelFlags osc::ui::get_minimal_panel_flags()
 
 bool osc::ui::main_window_has_workspace()
 {
-    return area_of(get_main_window_workspace_ui_rect()) > 0.0f;
+    return get_main_window_workspace_ui_rect().area() > 0.0f;
 }
 
 
@@ -3269,10 +3290,10 @@ Rect osc::ui::get_main_window_workspace_ui_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
-    return Rect{
+    return Rect::from_corners(
         viewport.WorkPos,
         Vec2{viewport.WorkPos} + Vec2{viewport.WorkSize}
-    };
+    );
 }
 
 Rect osc::ui::get_main_window_workspace_screen_space_rect()
@@ -3282,12 +3303,12 @@ Rect osc::ui::get_main_window_workspace_screen_space_rect()
     const Vec2 bottom_left_screen_space = Vec2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
     const Vec2 top_right_screen_space = bottom_left_screen_space + Vec2{viewport.WorkSize};
 
-    return {bottom_left_screen_space, top_right_screen_space};
+    return Rect::from_corners(bottom_left_screen_space, top_right_screen_space);
 }
 
 Vec2 osc::ui::get_main_window_workspace_dimensions()
 {
-    return dimensions_of(get_main_window_workspace_ui_rect());
+    return get_main_window_workspace_ui_rect().dimensions();
 }
 
 float osc::ui::get_main_window_workspace_aspect_ratio()
@@ -3855,34 +3876,15 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
     // update last-frame cache
     was_using_last_frame_ = ImGuizmo::IsUsing();
 
-    ImGuizmo::SetRect(
-        ui_rect.p1.x,
-        ui_rect.p1.y,
-        dimensions_of(ui_rect).x,
-        dimensions_of(ui_rect).y
-    );
+    ImGuizmo::SetRect(ui_rect);
     ImGuizmo::SetDrawlist(draw_list);
-
-    // use rotation from the parent, translation from station
-    Mat4 delta_matrix;
-
-    const bool gizmo_was_manipulated_by_user = ImGuizmo::Manipulate(
-        value_ptr(view_matrix),
-        value_ptr(projection_matrix),
-        to<ImGuizmo::OPERATION>(operation_),
-        to<ImGuizmo::MODE>(mode_),
-        value_ptr(model_matrix),
-        value_ptr(delta_matrix),
-        nullptr,
-        nullptr,
-        nullptr
+    return ImGuizmo::Manipulate(
+        view_matrix,
+        projection_matrix,
+        to<ImGuizmo::Operation>(operation_),
+        to<ImGuizmo::Mode>(mode_),
+        model_matrix
     );
-
-    if (not gizmo_was_manipulated_by_user) {
-        return std::nullopt;  // user is not interacting, so no changes to apply
-    }
-
-    return decompose_to_transform(delta_matrix);
 }
 
 bool osc::ui::Gizmo::is_using() const
@@ -4163,7 +4165,7 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
 Rect osc::ui::plot::get_plot_ui_rect()
 {
     const Vec2 top_left = ImPlot::GetPlotPos();
-    return {top_left, top_left + Vec2{ImPlot::GetPlotSize()}};
+    return Rect::from_corners(top_left, top_left + Vec2{ImPlot::GetPlotSize()});
 }
 
 void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)

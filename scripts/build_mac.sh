@@ -87,9 +87,9 @@ cmake --build "build/" --verbose -j${OSC_BUILD_CONCURRENCY}
 ctest --test-dir build/ --output-on-failure -j${OSC_BUILD_CONCURRENCY}
 
 # build final package
-
-# FIXME: this is in a retry loop because packaging
-# can sometimes fail in GitHub's macos-13 runner
+#
+# this is in a retry loop because some CI servers have
+# wonky packaging behavior.
 for i in {1..8}; do
     set +e
     cmake \

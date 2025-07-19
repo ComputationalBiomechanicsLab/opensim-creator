@@ -63,7 +63,20 @@ struct osc::Converter<SDL_Rect, Rect> final {
     {
         const Vec2 top_left{rect.x, rect.y};
         const Vec2 dimensions{rect.w, rect.h};
-        return {top_left, top_left + dimensions};
+        return Rect::from_corners(top_left, top_left + dimensions);
+    }
+};
+
+template<>
+struct osc::Converter<Rect, SDL_Rect> final {
+    SDL_Rect operator()(const Rect& ypd_rect) const
+    {
+        return {
+            .x = static_cast<int>(ypd_rect.left()),
+            .y = static_cast<int>(ypd_rect.ypd_top()),
+            .w = static_cast<int>(ypd_rect.width()),
+            .h = static_cast<int>(ypd_rect.height()),
+        };
     }
 };
 
@@ -523,8 +536,22 @@ namespace
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
         else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-            const Vec2 delta = {e.wheel.x, e.wheel.y};
+            Vec2 delta = {e.wheel.x, e.wheel.y};
             const MouseInputSource source = e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
+            if (source == MouseInputSource::Mouse) {
+                // Normalize mouse inputs such that each "click" of the mouse maps to -1 or +1
+                //
+                // The reason to do this is because different operating systems have different
+                // orders of magnitude and frequency for scroll events, so this section needs
+                // to try and hide that fact (MacOS, in particular, reports completely different
+                // raw deltas from other OSes #971).
+                if (delta.x != 0.0f) {
+                    delta.x = delta.x > 0.0f ? +1.0f : -1.0f;
+                }
+                if (delta.y != 0.0f) {
+                    delta.y = delta.y > 0.0f ? +1.0f : -1.0f;
+                }
+            }
             return std::make_unique<MouseWheelEvent>(delta, source);
         }
         else if (e.type == SDL_EVENT_TEXT_INPUT) {
@@ -1257,18 +1284,14 @@ public:
 
     void set_main_window_unicode_input_rect(const Rect& screen_rect)
     {
-        const float device_independent_to_sdl3_ratio = 1.0f/os_to_main_window_device_independent_ratio();
-        const float main_window_height = main_window_dimensions().y;
+        // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
+        // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
+        const SDL_Rect r = to<SDL_Rect>(
+            screen_rect
+            .with_flipped_y(main_window_dimensions().y)
+            .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())
+        );
 
-        // convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
-        // coordinate system that SDL3 wants
-        const Vec2 sdl3_rect_dimensions = device_independent_to_sdl3_ratio * dimensions_of(screen_rect);
-        const SDL_Rect r{
-            .x = static_cast<int>(device_independent_to_sdl3_ratio * screen_rect.p1.x),
-            .y = static_cast<int>(device_independent_to_sdl3_ratio * (main_window_height - screen_rect.p2.y)),  // top-left
-            .w = static_cast<int>(sdl3_rect_dimensions.x),
-            .h = static_cast<int>(sdl3_rect_dimensions.y),
-        };
         SDL_SetTextInputArea(main_window_.get(), &r, 0);
     }
 

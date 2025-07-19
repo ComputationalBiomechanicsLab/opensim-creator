@@ -81,8 +81,8 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
     int num_iterations_ = 16;
-    Rect normalized_mandelbrot_viewport_rect_ = {{}, {1.0f, 1.0f}};
-    Rect main_window_workspace_screen_space_rect_ = {};
+    Rect normalized_mandelbrot_viewport_rect_ = Rect::from_corners({}, {1.0f, 1.0f});
+    Rect main_window_workspace_screen_space_rect_;
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
     Material material_{Shader{
         loader_.slurp("oscar_demos/shaders/Mandelbrot.vert"),

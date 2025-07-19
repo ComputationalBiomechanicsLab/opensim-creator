@@ -7,7 +7,15 @@ request related to the change, then we may provide the commit.
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
 v4.6
-====
+=====
+- Move BoolLike class outside of template Array class for the `VS 17.14` linker (#4081)
+- Improvements for the `XsensDataReader`. Add a configuration option to XSensDataReaderSettings to specify a known data rate (sampling frequency). Automatically detect the delimiter used in the file. Support the new Xsens export rotations formats (Rotation Matrix, Quaternion, or Euler angles) values from Xsens files. Update the parser to handle the path separator for data_folder and fix a memory leak. Verify integrity and uniformity of all files. Add tests with additional new and old Xsens formats. (#4063)
+- Remove `using namespace SimTK;` from core OpenSim files to prevent namespace conflicts and operator overshadowing (#4066)
+- Use catch2 `INFO` logging macros in tests instead of OpenSim `log_info` (#4066)
+
+
+v4.5.2
+======
 - The performance of `getStateVariableValue`, `getStateVariableDerivativeValue`, and `getModelingOption` was improved in
   the case where provided string is just the name of the value, rather than a path to it (#3782)
 - Fixed bugs in `MocoStepTimeAsymmetryGoal::printDescriptionImpl()` where there were missing or incorrect values printed. (#3842)
@@ -29,7 +37,7 @@ v4.6
 - Fixed an issue where a copy of an `OpenSim::Model` containing a `OpenSim::ExternalLoads` could not be
   finalized (#3926)
 - Updated all code examples to use C++17 (after a few months of compiling as C++14 : #3929).
-- Added class `OpenSim::StateDocument` as a systematic means of serializing and deserializing a complete trajectory
+- Added class `OpenSim::StatesDocument` as a systematic means of serializing and deserializing a complete trajectory
   (i.e., time history) of all states in the `SimTK::State` to and from a single `.ostates` file. Prior to `StatesDocument`,
   only the trajectories of continuous states (e.g., joint angles, joint speeds, muscle forces, and the like) could be systematically
   written to file, either in the form of a `Storage` file or as a `TimeSeriesTable` file, leaving discrete states (e.g., muscle
@@ -81,6 +89,18 @@ v4.6
   Tropter-related dependencies have been removed: `adolc`, `colpack`, and `eigen`. (#3988)
 - `OpenSim::Mesh` now retains a reference-counted copy of the mesh data when it's copied, which should make
   copying + re-finalizing `OpenSim::Model`s faster (#4010).
+- Updated `TableUtilities::filterLowpass` to apply padding after resampling, so that the 
+  initial time point of an input table is preserved. (#4020)
+- Support using swig version 4.2 to generate Java & Python bindings. (#4028)
+- Added `ExpressionBasedPathForce`, which can be used to create non-linear path springs or 
+  other path-based force elements dependent on a user-provided expression. (#4035)
+- Fixed a bug where `DeGrooteFregly2016Muscle::getBoundsNormalizedFiberLength()` was returning
+  tendon force bounds rather than fiber length bounds. (#4040)
+- Fixed bugs in `PolynomialPathFitter` when too few coordinate samples were provided. (#4039)
+- In `StaticOptimization`, state derivatives are now pre-calculated at the time points of the original data, rather than calculated during optimization from splines. This change reduces computational time by as much as 25%. (#4037)
+- Exposed the "dissipated energy" state variable allocated by the `SimTK::Force::LinearBushing` that is internal to `BushingForce`. 
+  This change fixed a bug in Moco where adding a `BushingForce` led to a segfault due to a mismatch between the size of the 
+  auxiliary state vector reserved by Moco and `SimTK::State::getZ()`. (#4054)
 
 
 v4.5.1

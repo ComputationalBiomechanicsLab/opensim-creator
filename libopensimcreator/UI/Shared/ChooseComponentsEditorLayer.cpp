@@ -155,7 +155,7 @@ public:
     {
         bool rv = ui::update_polar_camera_from_mouse_inputs(
             params.updRenderParams().camera,
-            dimensions_of(state.viewportUiRect)
+            state.viewportUiRect.dimensions()
         );
 
         if (ui::is_mouse_dragging_with_any_button_down())
@@ -190,7 +190,7 @@ public:
         GenerateChooseComponentsDecorations(m_State, m_Decorations);
         const SceneRendererParams rendererParameters = CalcSceneRendererParams(
             m_State.renderParams,
-            dimensions_of(panelState.viewportUiRect),
+            panelState.viewportUiRect.dimensions(),
             App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             App::get().anti_aliasing_level(),
             m_State.model->getFixupScaleFactor()
@@ -202,7 +202,7 @@ public:
         // blit texture as ImGui image
         ui::draw_image(
             m_Renderer.upd_render_texture(),
-            dimensions_of(panelState.viewportUiRect)
+            panelState.viewportUiRect.dimensions()
         );
 
         // do hovertest
@@ -233,7 +233,7 @@ public:
         }
 
         // show header
-        ui::set_cursor_ui_pos(panelState.viewportUiRect.p1 + Vec2{10.0f, 10.0f});
+        ui::set_cursor_ui_pos(panelState.viewportUiRect.ypd_top_left() + Vec2{10.0f, 10.0f});
         ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
@@ -250,7 +250,7 @@ public:
             constexpr CStringView cancellationButtonText = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
             const Vec2 margin = {25.0f, 25.0f};
             const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
-            const Vec2 buttonTopLeft = panelState.viewportUiRect.p2 - (buttonDims + margin);
+            const Vec2 buttonTopLeft = panelState.viewportUiRect.ypd_bottom_right() - (buttonDims + margin);
             ui::set_cursor_ui_pos(buttonTopLeft);
             if (ui::draw_button(cancellationButtonText))
             {

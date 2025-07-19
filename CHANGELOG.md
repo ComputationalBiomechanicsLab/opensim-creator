@@ -3,10 +3,46 @@
 All notable changes to this project will be documented here. The format is based
 on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+
 ## [Upcoming Release]
 
+- The search term "OpenSim Creator" should now find OpenSim Creator in the start
+  menu (previously, it was 'opensimcreator'; reported by @clairehammond; #1079).
+- The "load raw data file" button in the preview experimental data workflow was
+  changed to "load sto/mot/trc file" to clarify its purpose (reported by
+  @davidpagnon, #1057).
+- A small contribution section was added to the README, which directs users to
+  the contribution section in the official documentation, which is also available
+  in-tree (reported by @davidpagnon, #1056).
+- The "load model trajectory/states" button in the preview experimental data workflow
+  was changed to "load model trajectory sto/mot file" to clarify its purpose (reported
+  by @davidpagnon, #1052).
+
+
+## [0.5.25] - 2025/07/14
+
+- Models that contain muscles that cannot be equilibrated can now be loaded. Instead
+  of halting with an error message, the system will log a warning message mentioning
+  the issue and continue as normal (thanks @modenaxe, #1070).
+- The 'Add' context menu for an `OpenSim::GeometryPath` now contains an "Add Path Point"
+  option, which operates the same way as the same option on `OpenSim::PathActuator`s (#1061).
+- Mouse wheel scrolling was improved on MacOS (again) and should now feel much closer
+  to the other OSes.
+- The "Preview Experimental Data" workflow now filters out data series with names that
+  are incompatible with `OpenSim::Component`'s naming conventions (thanks @alexbeattie42, #1068).
+- Fixed "Preview Experimental Data" crashing when it loads invalid data. Instead, it now
+  emits an error message to the log (thanks @alexbeattie42,#1068).
 - Fixed MacOS keybindings incorrectly using CTRL in places where COMMAND should've
   been used (#1069).
+- Fixed keybindings not working in the mesh importer workflow (#1072). Unfortunately, this
+  reverses the "keyboard navigation between elements in the UI is now easier" feature
+  that was introduced in 0.5.24.
+- Internal: `SceneDecorationFlag::NoSceneVolumeContribution` was added to help support
+  rendering decorations that don't contribute to the camera's auto-focus (thanks
+  @PashavanBijlert, #1071).
+- Internal: `osc::Rect` was heavily refactored to make it easier to use and more clearly
+  state its coordinate system assumptions (Y points up, Y points down, etc.).
+
 
 ## [0.5.24] - 2025/06/23
 

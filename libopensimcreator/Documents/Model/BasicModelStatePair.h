@@ -16,8 +16,8 @@ namespace osc
     // an `OpenSim::Model` + `SimTK::State` that is a value type, constructed with:
     //
     // - `osc::Initialize`
-    // - (if creating a new state) `model.equilibrateMuscles(State&)`
-    // - (if creating a new state) `model.realizeAcceleration(State&)`
+    // - (if creating a new state) `TryEquilibrateMusclesOrLogWarning(model, state)`
+    // - (if creating a new state) `model.realizeDynamics(State&)` / `model.realizeReport(State&)`
     //
     // this is a *basic* class that only guarantees the model is *initialized* this way. It
     // does not guarantee that everything is up-to-date after a caller mutates the model.

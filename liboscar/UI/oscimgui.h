@@ -560,6 +560,7 @@ namespace osc::ui
     };
     using TableFlags = Flags<TableFlag>;
 
+    Rect get_item_ui_rect();
     Vec2 get_item_top_left_ui_pos();
     Vec2 get_item_bottom_right_ui_pos();
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
@@ -705,7 +706,7 @@ namespace osc::ui
     void draw_image(
         const Texture2D& texture,
         std::optional<Vec2> dimensions = std::nullopt,
-        const Rect& region_uv_coordinates = Rect{{0.0f, 0.0f}, {1.0f, 1.0f}}
+        const Rect& region_uv_coordinates = Rect::from_corners({0.0f, 0.0f}, {1.0f, 1.0f})
     );
     void draw_image(
         const RenderTexture&

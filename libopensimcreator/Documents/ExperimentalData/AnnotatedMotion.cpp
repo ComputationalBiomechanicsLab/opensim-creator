@@ -2,6 +2,7 @@
 
 #include <libopensimcreator/Documents/ExperimentalData/DataSeriesAnnotation.h>
 #include <libopensimcreator/Documents/ExperimentalData/StorageSchema.h>
+#include <liboscar/Platform/Log.h>
 
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
@@ -80,6 +81,31 @@ osc::AnnotatedMotion::AnnotatedMotion(std::shared_ptr<OpenSim::Storage> storage)
 
     const auto schema = StorageSchema::parse(*m_Storage);
     for (const auto& annotation : schema.annotations()) {
-        addComponent(std::make_unique<DataSeries>(m_Storage, annotation).release());
+        // Handle issue #1068
+        //
+        // A data series loaded from an `OpenSim::Storage` may not be mappable to
+        // an `OpenSim::Component` because the series' name may contain invalid
+        // characters (for an `OpenSim::Component` name, at least).
+        //
+        // In those (edge) cases, the implementation should filter out the data series
+        // and warn the user what's happened, rather than failing. This is because
+        // OpenSim GUI can load this kind of data: it separates "The OpenSim
+        // model being viewed" (in OSC: `UndoableModelStatePair`) from "The
+        // renderable UI tree that the GUI is showing" (in OpenSim GUI:
+        // `ExperimentalMarkerNode` and `OpenSimNode`).
+        try {
+            auto series = std::make_unique<DataSeries>(m_Storage, annotation);
+            series->finalizeFromProperties();
+            addComponent(series.release());
+        }
+        catch (const std::exception& ex) {
+            log_warn("Error loading a data series from %s: %s", getName().c_str(), ex.what());
+        }
     }
+}
+
+size_t osc::AnnotatedMotion::getNumDataSeries() const
+{
+    const auto lst = getComponentList<DataSeries>();
+    return std::distance(lst.begin(), lst.end());
 }

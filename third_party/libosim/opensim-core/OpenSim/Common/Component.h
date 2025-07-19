@@ -671,16 +671,6 @@ public:
     void addComponent(Component* subcomponent);
 
     /**
-     * Returns `true` if `subcomponent`, which should be a direct subcomponent
-     * of this component, was sucessfully removed from this component.
-     *
-     * Specifically, this tries to remove a direct component that was
-     * previously added via `addComponent`, or existed in the `<components>`
-     * list XML for this component.
-     */
-    bool removeComponent(Component* subcomponent);
-
-    /**
      * Get an iterator through the underlying subcomponents that this component is
      * composed of. The hierarchy of Components/subComponents forms a tree.
      * The order of the Components is that of tree preorder traversal so that a

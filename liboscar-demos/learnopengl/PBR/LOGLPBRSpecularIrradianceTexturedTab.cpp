@@ -238,7 +238,7 @@ public:
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * dimensions_of(workspace_screen_space_rect);
+        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         output_render_.set_pixel_dimensions(workspace_pixel_dimensions);
         output_render_.set_device_pixel_ratio(device_pixel_ratio);

@@ -27,12 +27,13 @@ public:
         constexpr float padding = 10.0f;
 
         const Rect workspace_ui_rect = ui::get_main_window_workspace_ui_rect();
-        const Vec2 workspace_dimensions = dimensions_of(workspace_ui_rect);
+        const Vec2 workspace_dimensions = workspace_ui_rect.dimensions();
+        const Vec2 workspace_ui_top_left = workspace_ui_rect.ypd_top_left();
 
         // error message panel
         {
-            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p1.y + padding};
-            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 0.0f});
+            const Vec2 ui_pos{workspace_ui_top_left.x + workspace_dimensions.x/2.0f, workspace_ui_top_left.y + padding};
+            ui::set_next_panel_ui_pos(ui_pos, ui::Conditional::Once, {0.5f, 0.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("fatal error")) {
@@ -47,8 +48,8 @@ public:
 
         // log message panel
         {
-            const Vec2 pos{workspace_ui_rect.p1.x + workspace_dimensions.x/2.0f, workspace_ui_rect.p2.y - padding};
-            ui::set_next_panel_ui_pos(pos, ui::Conditional::Once, {0.5f, 1.0f});
+            const Vec2 ui_pos{workspace_ui_top_left.x + workspace_dimensions.x/2.0f, workspace_ui_top_left.y - padding};
+            ui::set_next_panel_ui_pos(ui_pos, ui::Conditional::Once, {0.5f, 1.0f});
             ui::set_next_panel_size({width, 0.0f});
 
             if (ui::begin_panel("Error Log", nullptr, ui::PanelFlag::MenuBar)) {

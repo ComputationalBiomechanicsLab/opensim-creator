@@ -34,12 +34,10 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
-#if defined(OPENSIM_USE_STATIC_LIBRARIES)
-    #define OSIMANALYSES_API
-#elif defined(OSIMANALYSES_EXPORTS)
-    #define OSIMANALYSES_API __declspec(dllexport)
+#ifdef OSIMANALYSES_EXPORTS
+#define OSIMANALYSES_API __declspec(dllexport)
 #else
-    #define OSIMANALYSES_API __declspec(dllimport)
+#define OSIMANALYSES_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

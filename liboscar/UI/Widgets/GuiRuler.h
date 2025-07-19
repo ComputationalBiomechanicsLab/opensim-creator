@@ -5,8 +5,8 @@
 
 #include <optional>
 
+namespace osc { class Rect; }
 namespace osc { struct PolarPerspectiveCamera; }
-namespace osc { struct Rect; }
 
 namespace osc
 {

@@ -1140,6 +1140,67 @@ bool osc::ActionApplyPropertyEdit(IModelStatePair& uim, ObjectPropertyEdit& resp
     }
 }
 
+bool osc::ActionAddPathPointToGeometryPath(
+    IModelStatePair& uim,
+    const OpenSim::ComponentPath& geometryPathPath,
+    const OpenSim::ComponentPath& pointPhysFrame)
+{
+    if (uim.isReadonly()) {
+        return false;
+    }
+
+    const auto* const gp = FindComponent<OpenSim::GeometryPath>(uim.getModel(), geometryPathPath);
+    if (not gp) {
+        return false;
+    }
+
+    const auto* const pf = FindComponent<OpenSim::PhysicalFrame>(uim.getModel(), pointPhysFrame);
+    if (not pf) {
+        return false;
+    }
+
+    const size_t n = size(gp->getPathPointSet());
+    const std::string name = gp->getName() + "-P" + std::to_string(n + 1);
+    const SimTK::Vec3 pos = {0.0f, 0.0f, 0.0f};
+
+    const UID oldVersion = uim.getModelVersion();
+    try {
+        OpenSim::Model& mutModel = uim.updModel();
+
+        auto* const mutGP = FindComponentMut<OpenSim::GeometryPath>(mutModel, geometryPathPath);
+        if (not mutGP) {
+            uim.setModelVersion(oldVersion);
+            return false;
+        }
+
+        const std::string gpName = mutGP->getName();
+
+        mutGP->appendNewPathPoint(name, *pf, pos);
+        FinalizeConnections(mutModel);
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        // try to select the new path point, if possible, so that the user
+        // can immediately see the grab handles etc. (#779)
+        if (const auto* gpAfterFinalization = FindComponent<OpenSim::GeometryPath>(mutModel, geometryPathPath)) {
+            const auto& pps = gpAfterFinalization->getPathPointSet();
+            if (not empty(pps)) {
+                uim.setSelected(&At(pps, ssize(pps) - 1));
+            }
+        }
+
+        std::stringstream ss;
+        ss << "added path point to " << gpName;
+        uim.commit(std::move(ss).str());
+
+        return true;
+    }
+    catch (const std::exception&) {
+        std::throw_with_nested(std::runtime_error{"error detected while trying to add a path point to a geometry path"});
+        return false;
+    }
+}
+
 bool osc::ActionAddPathPointToPathActuator(
     IModelStatePair& uim,
     const OpenSim::ComponentPath& pathActuatorPath,
@@ -1546,7 +1607,7 @@ bool osc::ActionSetCoordinateSpeed(
         //       when the caller wants to save the coordinate change
         mutCoord->setDefaultSpeedValue(newSpeed);
         mutCoord->setSpeedValue(mutModel.updWorkingState(), newSpeed);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         return true;
@@ -1604,7 +1665,7 @@ bool osc::ActionSetCoordinateLockedAndSave(
 
         mutCoord->setDefaultLocked(v);
         mutCoord->setLocked(mutModel.updWorkingState(), v);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         std::stringstream ss;
@@ -1653,7 +1714,7 @@ bool osc::ActionSetCoordinateValue(
         //       when the caller wants to save the coordinate change
         mutCoord->setDefaultValue(newValue);
         mutCoord->setValue(mutModel.updWorkingState(), newValue);
-        mutModel.equilibrateMuscles(mutModel.updWorkingState());
+        TryEquilibrateMusclesOrLogWarning(mutModel, mutModel.updWorkingState());
         mutModel.realizeDynamics(mutModel.updWorkingState());
 
         return true;
