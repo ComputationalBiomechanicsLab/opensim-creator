@@ -19,7 +19,7 @@ Adults and Children (ESMAC). This documentation is a guidebook for that workshop
 -------------
 
 The workshop shall be held at the ESMAC conference on the afternoon of the 10th
-September 2025. The exact time and room is still to-be-decided (:red:`TBD`).
+September 2025. The exact time and room is still to-be-decided (:red:`TODO`).
 
 
 🧑🏽‍🔬 Organizers and Helpers
@@ -27,7 +27,7 @@ September 2025. The exact time and room is still to-be-decided (:red:`TBD`).
 
 - Adam Kewley
 - Ajay Seth
-- :red:`Other helpers TBD`
+- :red:`Other helpers TODO`
 
 
 👩‍💻 Before You Arrive
@@ -91,54 +91,34 @@ after the workshop has ended.
 1. Presentation: Model Building with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approx 20 min., LINK: `Presentation, Model Building with OpenSim Creator`_
+LINK: `Presentation, Model Building with OpenSim Creator`_
 
-1. Welcome
-2. Quick overview of the workshop plan (above)
-3. Direct people to the documentation/guidebook pages, etc.
-4. Basic OpenSim ecosystem overview (e.g. briefly mentioning OpenCap, Add Bioinformatics, etc.)
-5. (cont.)
-6. Historical/development overview of OpenSim Creator (major feature releases, old screenshots, development methodology, etc.)
-7. (cont.)
-8. (cont.)
-9. Introduce model building concepts/challenges
-10. Introduce/start the work session. Introduce walkthroughs, exercises, etc. Give
-    the attendants something concrete they can do, even if they aren't already
-    working on a model.
-11. (cont.)
-12. Splash slide, call to action
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
 
 2. Work Session: Model Building
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approx 90 min., LINK: `Work Session, Model Building`_
+LINK: `Work Session, Model Building`_
 
-TODO: provide a list of actions, exercies, etc. here in the
-documentation page. Work session exercises, example models,
-walkthroughs, etc. The 'presentation' for this section is just
-a backdrop we can throw up while people mill around etc.
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
-- Direct people to the tutorials or ESMAC-specific exercises. Maybe shape
-  it such that morphometric (mesh) scaling is an available thing they can
-  work on if they are mostly here for the 2nd half of the workshop - **ensure
-  a warp-able model is made**
-- On-whiteboard walkthroughs about specific features in OpenSim.
-- Staff/team milling around answering questions, and so on.
-- Show gallery page, which unofficially documents new buttons/features, etc.
-- Show live moment arm plotting
-- Edit meshes in Blender, update in OpenSim Creator?
-- Plot muscle curves, show how to edit them in external software?
-- Make a model with a ``StationDefinedFrame``
-
-- Maybe in parallel, or at the end, try to edit/mutate a bigger model with
-  motion data to be warpable in the knee or similar?
+**TODO**: download links for any supplamentary data that attendants might need
+during this session (e.g. meshes).
 
 
 3. Break
 ^^^^^^^^
 
-30 min., LINK: `Backdrop, Break`_
+LINK: `Backdrop, Break`_
+
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
 Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
 
@@ -146,63 +126,38 @@ Chill out for 30 minutes. Stretch your legs, chat to other attendants, etc.
 4. Presentation: Model Warping with OpenSim Creator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approx 20 min., LINK: `Presentation, Model Warping with OpenSim Creator`_
+LINK: `Presentation, Model Warping with OpenSim Creator`_
 
-Presentation should include:
-
-1. Introduction, what scaling is, where it's handy (obvious)
-2. Quick overview of existing model scaling in OpenSim
-3. Why attendants might need non-linear model scaling
-4. The problems that non-linear scaling brings to the modelling process
-5. Our solutions to some of the low-level problems (e.g. :doc:`station-defined-frames`)
-6. (cont.)
-7. Our solution to the model warping/scaling problem (:doc:`the-model-warper`)
-8. (cont.)
-9. Splash slide, call to action
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
 
 5. Work Session: Model Warping
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approx 90 min., LINK: `Work Session, Model Warping with OpenSim Creator`_
+LINK: `Work Session, Model Warping with OpenSim Creator`_
 
-**TODO**: work session exercises, example models, walkthroughs, etc.
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
-- Invite attendants to work through :doc:`the-model-warper`
-- Ideally, get people to warp the model made in the first half, walking through
-  any issues
-- Ask for feedback, make it clear that it's a beta workflow and needs additions etc.
-- If attendants need something else to do then model building is also suitable
-  to continue during this work session.
-
-- To finish, try and use the warped model in some kind of useful way. Ideally, IK
-  on before vs. after would be nice because then attendants could visually see what's
-  going on. This would also be a good time to show the preview experimental data
-  feature.
+**TODO**: download links for any supplamentary data that attendants might need
+during this session (e.g. meshes).
 
 
 6. Presentation: Closing Thoughts, Outlook
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Approx 10 min., LINK: `Presentation, Closing Thoughts`_
+LINK: `Presentation, Closing Thoughts`_
 
-**TODO**: Final closing presentation. Target duration is 10-20 minutes and should
-include:
+**TODO**: once everything is basically ready in OneDrive, publish a final(ish)
+version to files.opensimcreator.com, put a screenshot of the first slide here
+and link to the download.
 
-1. What's been covered, hope it was helpful, etc.
-2. Outlook, where OpenSim Creator's going in terms of design etc.
-3. Direct attendants to post-workshop actions (feedback, surveys, things they can
-   do afterwards).
-4. Acknowledgements, thank you, see you around.
-5. Thank you (and maybe re-list the actions!)
+**TODO**: Make sure the survey link is for the respondants, not the editors.
 
-
-⚡ Post-Workshop Actions
--------------------------
-
-- **TODO**: ask for feedback via a questionnaire?
-- **TODO**: mention our upcoming project, maybe someone's interested in
-  collaborating on it?
+`Survey for OpenSim Creator Model Building Workshop`_
 
 .. _OpenSim SimTK Page: https://simtk.org/projects/opensim
 .. _OpenSim Scripting Documentation: https://opensimconfluence.atlassian.net/wiki/spaces/OpenSim/pages/53089359/Scripting
@@ -213,3 +168,4 @@ include:
 .. _Presentation, Model Warping with OpenSim Creator: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/4_Model%20Warping%20with%20OpenSim%20Creator.pptx?d=w46186c240d954422bfe6660352c3fce9&csf=1&web=1&e=xC2RqH
 .. _Work Session, Model Warping with OpenSim Creator: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/5_Work%20Session%20Model%20Warping.pptx?d=w87554a93c2e24d67b7a6b4bc373f2a1b&csf=1&web=1&e=f20p8z
 .. _Presentation, Closing Thoughts: https://tud365-my.sharepoint.com/:p:/r/personal/akewley_tudelft_nl/Documents/2025_ESMAC-OpenSimCreatorWorkshop/6_Closing%20Thoughts%20and%20Outlook.pptx?d=w8ed7523e920449ebbca6f886d26c6301&csf=1&web=1&e=EJoInk
+.. _Survey for OpenSim Creator Model Building Workshop: https://forms.office.com/Pages/DesignPageV2.aspx?subpage=design&FormId=TVJuCSlpMECM04q0LeCIe85Hb1mJVfpCldOXrckn9LdUM0VVV1daMks5NU9STzJYNlBJTlJTUVRXUCQlQCN0PWcu&Token=ca70514d1ba64a3baccffa0c4f0338a3
