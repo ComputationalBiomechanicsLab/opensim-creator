@@ -17,7 +17,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The "load model trajectory/states" button in the preview experimental data workflow
   was changed to "load model trajectory sto/mot file" to clarify its purpose (reported
   by @davidpagnon, #1052).
-
+- Fixed incorrect icon DPI scaling on MacOS. The algorithm that figures out the
+  correct DPI scaling for icons now also takes the main window's current scaling
+  mode into account.
 
 ## [0.5.25] - 2025/07/14
 

@@ -1211,11 +1211,18 @@ public:
         SDL_DisplayID* display_list_head = SDL_GetDisplays(&displays);
         ScopeExit list_destructor{[display_list_head] { SDL_free(display_list_head); }};
 
-        std::optional<float> rv;
+        // note: On some OSes, like MacOS, SDL_GetDisplayContentScale() might return
+        //       a different (lower) value from SDL_GetWindowDisplayScale().
+        //
+        //       In the current design, there's guranteed to be at least one window
+        //       open (the main one), so it should contribute to this calculation.
+        float rv = main_window_device_pixel_ratio();
         for (SDL_DisplayID* it = display_list_head; displays > 0; ++it, --displays) {
-            rv = std::max(rv, std::optional{SDL_GetDisplayContentScale(*it)});
+            if (const float scale = SDL_GetDisplayContentScale(*it); scale != 0.0f) {
+                rv = std::max(rv, scale);
+            }
         }
-        return rv.value_or(1.0f);
+        return rv;
     }
 
     float os_to_main_window_device_independent_ratio() const
