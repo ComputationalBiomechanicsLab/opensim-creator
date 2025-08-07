@@ -15,6 +15,8 @@ namespace osc
         Progress,
         Forbidden,
         Hidden,
-        NUM_OPTIONS
+        NUM_OPTIONS,
+
+        Default = Arrow,
     };
 }

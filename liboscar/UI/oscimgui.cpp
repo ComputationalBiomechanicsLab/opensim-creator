@@ -118,7 +118,7 @@ struct osc::Converter<ImGuiMouseCursor, CursorShape> final {
         case ImGuiMouseCursor_Wait:       return CursorShape::Wait;
         case ImGuiMouseCursor_Progress:   return CursorShape::Progress;
         case ImGuiMouseCursor_NotAllowed: return CursorShape::Forbidden;
-        default:                          return CursorShape::Arrow;
+        default:                          return CursorShape::Default;
         }
     }
 };

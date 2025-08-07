@@ -649,7 +649,8 @@ namespace
     public:
         CursorHandler()
         {
-            push_cursor_override(Cursor{CursorShape::Forbidden});  // initialize sentinel
+            // initialize stack sentinel
+            push_cursor_override(Cursor{CursorShape::Default});
         }
         CursorHandler(const CursorHandler&) = delete;
         CursorHandler(CursorHandler&&) = delete;
@@ -660,7 +661,7 @@ namespace
             // try to reset the cursor to default
             if (cursor_stack_.size() > 1) {
                 SDL_ShowCursor();
-                SDL_SetCursor(system_mouse_cursors_[CursorShape::Arrow].get());
+                SDL_SetCursor(system_mouse_cursors_[CursorShape::Default].get());
             }
         }
 
