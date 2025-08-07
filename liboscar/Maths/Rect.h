@@ -10,13 +10,13 @@
 namespace osc
 {
     // Represents a 2D rectangle in a caller-defined coordinate system in which
-    // X always points towards the right, but Y can point either up (ypu) or
-    // down (ypd).
+    // X always points towards the right, but Y can point either up (methods
+    // prefixed with `ypu_`) or down (methods prefixed with `ypd_`).
     class Rect final {
     public:
-        // Returns a zero-dimension `Rect` with an `origin` of `point` in the coordinate
-        // system of `point`.
-        static constexpr Rect of_point(const Vec2& point)
+        // Returns a `Rect` with an `origin` of `point` and an area of zero (i.e.
+        // dimensions = {0, 0}) in the coordinate system of `point`.
+        static constexpr Rect from_point(const Vec2& point)
         {
             return Rect{point, Vec2{}};
         }
@@ -59,23 +59,25 @@ namespace osc
         // Returns the area of this `Rect`.
         float area() const { return dimensions_.x * dimensions_.y; }
 
-        // Returns the X coordinate of this `Rect`'s left edge.
+        // Returns the X coordinate of this `Rect`'s left edge. Assumes X "points right"
+        // in the coordinate system of this `Rect`.
         float left() const { return origin_.x - 0.5f*dimensions_.x; }
 
-        // Returns the X coordinate of this `Rect`'s right edge.
+        // Returns the X coordinate of this `Rect`'s right edge. Assumes X "points right"
+        // in the coordinate system of this `Rect`.
         float right() const { return origin_.x + 0.5f*dimensions_.x; }
 
         // Assuming Y "points down" in the coordinate system of this `Rect`, returns the
         // Y coordinate of this `Rect`'s top edge.
         float ypd_top() const { return origin_.y - 0.5f*dimensions_.y; }
 
-        // Assuming Y "points up" in the coordinate system of this `Rect`, returns the
-        // Y coordinate of this `Rect`'s top edge.
-        float ypu_top() const { return origin_.y + 0.5f*dimensions_.y; }
-
         // Assuming Y "points down" in the coordinate system of this `Rect`, returns the
         // Y coordinate of this `Rect`'s bottom edge.
         float ypd_bottom() const { return origin_.y + 0.5f*dimensions_.y; }
+
+        // Assuming Y "points up" in the coordinate system of this `Rect`, returns the
+        // Y coordinate of this `Rect`'s top edge.
+        float ypu_top() const { return origin_.y + 0.5f*dimensions_.y; }
 
         // Assuming Y "points up" in the coordinate system of this `Rect`, returns the
         // Y coordinate of this `Rect`'s bottom edge.
@@ -88,9 +90,11 @@ namespace osc
             return {.min = origin_ - half_extentz, .max = origin_ + half_extentz};
         }
 
-        // Returns the minimum corner point of this `Rect`.
+        // Returns the minimum corner point of this `Rect`, which is the point in this
+        // `Rect`'s coordinate system that has the smallest X and Y within the `Rect`'s
+        // bounds.
         //
-        // What "minimum" contextually means depends on the coordinate system of this `Rect`:
+        // What minimum "means" depends on the coordinate system of this `Rect`:
         //
         // - If the `Rect`'s data is in a coordinate system where Y points down (e.g.
         //   the UI coordinate system), then it means "top left".
@@ -98,7 +102,8 @@ namespace osc
         //   viewport coordinate system), then it means "bottom left".
         Vec2 min_corner() const { return origin_ - half_extents(); }
 
-        // Returns the maximum corner point of this `Rect`.
+        // Returns the maximum corner point of this `Rect`, which is the point in this `Rect`'s
+        // coordinate system that has the smallest X and Y within the `Rect`'s bounds.
         //
         // What "maximum" contextually means depends on the coordinate system of this `Rect`:
         //
