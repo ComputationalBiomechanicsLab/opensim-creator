@@ -169,7 +169,7 @@ set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
 set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
 set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
-set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")
+set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
 
 # `include` platform-specific packaging instructions
 include(${OSC_PACKAGING_DIR}/Packaging.cmake)

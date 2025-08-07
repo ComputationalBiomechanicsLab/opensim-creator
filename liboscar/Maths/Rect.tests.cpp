@@ -4,14 +4,14 @@
 
 using namespace osc;
 
-TEST(Rect, of_point_origin_is_the_point)
+TEST(Rect, from_point_origin_is_the_point)
 {
-    ASSERT_EQ(Rect::of_point(Vec2{3.0f}).origin(), Vec2{3.0f});
+    ASSERT_EQ(Rect::from_point(Vec2{3.0f}).origin(), Vec2{3.0f});
 }
 
-TEST(Rect, of_point_returns_zero_dimension_Rect)
+TEST(Rect, from_point_returns_zero_dimension_Rect)
 {
-    ASSERT_EQ(Rect::of_point(Vec2{3.0f}).dimensions(), Vec2{});
+    ASSERT_EQ(Rect::from_point(Vec2{3.0f}).dimensions(), Vec2{});
 }
 
 TEST(Rect, from_origin_and_dimensions)
@@ -89,18 +89,18 @@ TEST(Rect, ypd_top_returns_expected_top_offset)
     ASSERT_EQ(rect.ypd_top(), 3.0f);
 }
 
-TEST(Rect, ypu_top_returns_expected_top_offset)
-{
-    const Rect rect = Rect::from_corners({9.0f, 3.0f}, {13.0f, 9.0f});
-
-    ASSERT_EQ(rect.ypu_top(), 9.0f);
-}
-
 TEST(Rect, ypd_bottom_returns_expected_bottom_offset)
 {
     const Rect rect = Rect::from_corners({9.0f, 3.0f}, {13.0f, 9.0f});
 
     ASSERT_EQ(rect.ypd_bottom(), 9.0f);
+}
+
+TEST(Rect, ypu_top_returns_expected_top_offset)
+{
+    const Rect rect = Rect::from_corners({9.0f, 3.0f}, {13.0f, 9.0f});
+
+    ASSERT_EQ(rect.ypu_top(), 9.0f);
 }
 
 TEST(Rect, ypu_bottom_returns_expected_bottom_offset)

@@ -22,7 +22,7 @@ namespace osc
     // returns a `Rect` that tightly bounds `x` (i.e. a `Rect` with an area of zero)
     constexpr Rect bounding_rect_of(const Vec2& x)
     {
-        return Rect::of_point(x);
+        return Rect::from_point(x);
     }
 
     // returns a `Rect` that tightly bounds `x` and `y`

@@ -83,22 +83,22 @@ namespace ImGuizmo
         Universal      = Translate | Rotate | ScaleU
     };
 
-    inline constexpr Operation operator|(Operation lhs, Operation rhs)
+    constexpr Operation operator|(Operation lhs, Operation rhs)
     {
         return static_cast<Operation>(static_cast<int>(lhs) | static_cast<int>(rhs));
     }
 
-    inline constexpr Operation operator<<(Operation lhs, int rhs)
+    constexpr Operation operator<<(Operation lhs, int rhs)
     {
         return static_cast<Operation>(std::to_underlying(lhs) << rhs);
     }
 
-    inline constexpr Operation operator>>(Operation lhs, int rhs)
+    constexpr Operation operator>>(Operation lhs, int rhs)
     {
         return static_cast<Operation>(std::to_underlying(lhs) >> rhs);
     }
 
-    inline constexpr bool operator&(Operation lhs, Operation rhs)
+    constexpr bool operator&(Operation lhs, Operation rhs)
     {
         return static_cast<bool>(std::to_underlying(lhs) & std::to_underlying(rhs));
     }
@@ -110,7 +110,7 @@ namespace ImGuizmo
 
     // Returns the padding distance between the gizmo and any textual annotations
     // on it in device-independent pixels.
-    inline constexpr float AnnotationOffset() { return 15.0f; }
+    constexpr float AnnotationOffset() { return 15.0f; }
 
     void CreateContext();
     void DestroyContext();
