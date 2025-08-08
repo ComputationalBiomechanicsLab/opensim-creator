@@ -10,10 +10,10 @@ namespace osc
     //
     // - see `LineSegment` for the finite version of this
     // - sometimes called `Ray` in the literature
-    struct Line final {
+    struct Ray final {
         Vec3 origin{};
         Vec3 direction = {0.0f, 1.0f, 0.0f};
     };
 
-    std::ostream& operator<<(std::ostream&, const Line&);
+    std::ostream& operator<<(std::ostream&, const Ray&);
 }

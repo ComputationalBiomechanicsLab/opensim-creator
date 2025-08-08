@@ -9,10 +9,10 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
+#include <liboscar/Maths/Ray.h>
+#include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Utils/Perf.h>
 
@@ -113,7 +113,7 @@ std::optional<SceneCollision> osc::GetClosestCollision(
 
     // un-project 2D mouse cursor into 3D scene as a ray
     const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.ypd_top_left();
-    const Line worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
+    const Ray worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
         mouseRenderPos,
         viewportScreenRect.dimensions()
     );

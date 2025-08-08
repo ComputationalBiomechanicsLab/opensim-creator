@@ -30,9 +30,9 @@
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
@@ -623,7 +623,7 @@ namespace osc::mi
             const Vec2 sceneDims = sceneRect.dimensions();
             const Vec2 relMousePos = mousePos - sceneRect.ypd_top_left();
 
-            const Line ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
+            const Ray ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
             const bool hittestMeshes = isMeshesInteractable();
             const bool hittestBodies = isBodiesInteractable();
             const bool hittestJointCenters = isJointCentersInteractable();

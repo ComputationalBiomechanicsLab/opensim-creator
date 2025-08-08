@@ -13,7 +13,7 @@
 #include <span>
 #include <vector>
 
-namespace osc { struct Line; }
+namespace osc { struct Ray; }
 
 namespace osc
 {
@@ -40,12 +40,12 @@ namespace osc
         std::optional<BVHCollision> closest_ray_indexed_triangle_collision(
             std::span<const Vec3> vertices,
             std::span<const uint16_t> indices,
-            const Line&
+            const Ray&
         ) const;
         std::optional<BVHCollision> closest_ray_indexed_triangle_collision(
             std::span<const Vec3> vertices,
             std::span<const uint32_t> indices,
-            const Line&
+            const Ray&
         ) const;
 
         // `AABB` `BVH`es
@@ -53,9 +53,9 @@ namespace osc
         // `prim.id()` will refer to the index of the `AABB`
         void build_from_aabbs(std::span<const AABB>);
 
-        // calls the callback with each collision between the line and an `AABB` in
+        // calls the callback with each collision between the `Ray` and an `AABB` in
         // the `BVH`
-        void for_each_ray_aabb_collision(const Line&, const std::function<void(BVHCollision)>&) const;
+        void for_each_ray_aabb_collision(const Ray&, const std::function<void(BVHCollision)>&) const;
 
         // returns `true` if the `BVH` contains no `BVHNode`s
         [[nodiscard]] bool empty() const;

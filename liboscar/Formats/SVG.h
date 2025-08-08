@@ -14,5 +14,5 @@ namespace osc
             float device_pixel_ratio = 1.0f
         );
     };
-    
+
 }

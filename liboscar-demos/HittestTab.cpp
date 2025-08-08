@@ -75,7 +75,7 @@ namespace
         return rv;
     }
 
-    Line get_camera_ray(const Camera& camera)
+    Ray get_camera_ray(const Camera& camera)
     {
         return {
             camera.position(),
@@ -115,7 +115,7 @@ public:
     {
         // hit-test spheres
 
-        const Line ray = get_camera_ray(camera_);
+        const Ray ray = get_camera_ray(camera_);
         float closest_distance = std::numeric_limits<float>::max();
         SceneSphere* closest_sphere = nullptr;
 
@@ -169,7 +169,7 @@ public:
 
         // hittest + draw disc
         {
-            const Line ray = get_camera_ray(camera_);
+            const Ray ray = get_camera_ray(camera_);
 
             const Disc scene_disc{
                 .origin = {0.0f, 0.0f, 0.0f},
@@ -196,7 +196,7 @@ public:
 
         // hit-test + draw triangle
         {
-            const Line ray = get_camera_ray(camera_);
+            const Ray ray = get_camera_ray(camera_);
             const std::optional<RayCollision> maybe_collision = find_collision(
                 ray,
                 Triangle{c_triangle_vertices.at(0), c_triangle_vertices.at(1), c_triangle_vertices.at(2)}

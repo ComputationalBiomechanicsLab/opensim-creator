@@ -121,7 +121,7 @@ namespace
     bool bvh_for_each_ray_aabb_collisions_recursive(
         std::span<const BVHNode> nodes,
         std::span<const BVHPrim> prims,
-        const Line& ray,
+        const Ray& ray,
         ptrdiff_t node_index,
         const std::function<void(BVHCollision)>& callback)
     {
@@ -155,7 +155,7 @@ namespace
         std::span<const BVHPrim> prims,
         std::span<const Vec3> vertices,
         std::span<const TIndex> indices,
-        const Line& ray,
+        const Ray& ray,
         float& closest,
         ptrdiff_t node_index)
     {
@@ -255,7 +255,7 @@ namespace
         std::span<const BVHPrim> prims,
         std::span<const Vec3> vertices,
         std::span<const TIndex> indices,
-        const Line& ray)
+        const Ray& ray)
     {
         if (nodes.empty() or prims.empty() or indices.empty()) {
             return std::nullopt;
@@ -315,28 +315,28 @@ void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std:
 std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
     std::span<const Vec3> vertices,
     std::span<const uint16_t> indices,
-    const Line& line) const
+    const Ray& ray) const
 {
     return bvh_get_closest_ray_indexed_triangle_collision<uint16_t>(
         nodes_,
         prims_,
         vertices,
         indices,
-        line
+        ray
     );
 }
 
 std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
     std::span<const Vec3> vertices,
     std::span<const uint32_t> indices,
-    const Line& line) const
+    const Ray& ray) const
 {
     return bvh_get_closest_ray_indexed_triangle_collision<uint32_t>(
         nodes_,
         prims_,
         vertices,
         indices,
-        line
+        ray
     );
 }
 
@@ -363,7 +363,7 @@ void osc::BVH::build_from_aabbs(std::span<const AABB> aabbs)
 }
 
 void osc::BVH::for_each_ray_aabb_collision(
-    const Line& ray,
+    const Ray& ray,
     const std::function<void(BVHCollision)>& callback) const
 {
     if (nodes_.empty() or prims_.empty()) {
@@ -540,9 +540,9 @@ Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
 }
 
 
-std::ostream& osc::operator<<(std::ostream& out, const Line& line)
+std::ostream& osc::operator<<(std::ostream& out, const Ray& ray)
 {
-    return out << "Line(origin = " << line.origin << ", direction = " << line.direction << ')';
+    return out << "Ray(origin = " << ray.origin << ", direction = " << ray.direction << ')';
 }
 
 
@@ -658,7 +658,7 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
     );
 }
 
-Line osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
+Ray osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
 {
     return perspective_unproject_topleft_normalized_pos_to_world(
         pos / dimensions,
@@ -908,11 +908,11 @@ namespace
         return res;
     }
 
-    std::optional<RayCollision> find_collision_analytic(const Sphere& sphere, const Line& line)
+    std::optional<RayCollision> find_collision_analytic(const Sphere& sphere, const Ray& ray)
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-        const Vec3 L = line.origin - sphere.origin;
+        const Vec3 L = ray.origin - sphere.origin;
 
         // coefficients of the quadratic implicit:
         //
@@ -924,16 +924,16 @@ namespace
         //
         //     P    a point on the surface of the sphere
         //     R    the radius of the sphere
-        //     O    origin of line
-        //     t    scaling factor for line direction (we want this)
-        //     D    direction of line
+        //     O    origin of ray
+        //     t    scaling factor for ray direction (we want this)
+        //     D    direction of ray
         //     C    center of sphere
         //
         // if the quadratic has solutions, then there must exist one or two
         // `t`s that are points on the sphere's surface.
 
-        const float a = dot(line.direction, line.direction);  // always == 1.0f if d is normalized
-        const float b = 2.0f * dot(line.direction, L);
+        const float a = dot(ray.direction, ray.direction);  // always == 1.0f if d is normalized
+        const float b = 2.0f * dot(ray.direction, L);
         const float c = dot(L, L) - dot(sphere.radius, sphere.radius);
 
         auto [ok, t0, t1] = solve_quadratic(a, b, c);
@@ -955,7 +955,7 @@ namespace
             }
         }
 
-        return RayCollision{t0, line.origin + t0*line.direction};
+        return RayCollision{t0, ray.origin + t0*ray.direction};
     }
 }
 
@@ -1025,27 +1025,27 @@ Vec4 osc::topleft_normalized_point_to_ndc_cube(Vec2 normalized_point)
     return {topleft_normalized_point_to_ndc(normalized_point), -1.0f, 1.0f};
 }
 
-Line osc::perspective_unproject_topleft_normalized_pos_to_world(
+Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
     Vec2 normalized_point,
     Vec3 camera_world_space_origin,
     const Mat4& camera_view_matrix,
     const Mat4& camera_proj_matrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    const Vec4 line_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
+    const Vec4 ray_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
 
-    Vec4 line_origin_view = inverse(camera_proj_matrix) * line_origin_ndc;
-    line_origin_view /= line_origin_view.w;  // perspective divide
+    Vec4 ray_origin_view = inverse(camera_proj_matrix) * ray_origin_ndc;
+    ray_origin_view /= ray_origin_view.w;  // perspective divide
 
     // location of mouse in world space
-    const Vec3 line_origin_world{inverse(camera_view_matrix) * line_origin_view};
+    const Vec3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
 
     // direction vector from camera to mouse location (i.e. the projection)
-    const Vec3 line_direction_world = normalize(line_origin_world - camera_world_space_origin);
+    const Vec3 ray_direction_world = normalize(ray_origin_world - camera_world_space_origin);
 
-    return Line{
-        .origin = line_origin_world,
-        .direction = line_direction_world,
+    return Ray{
+        .origin = ray_origin_world,
+        .direction = ray_direction_world,
     };
 }
 
@@ -1126,19 +1126,19 @@ AABB osc::bounding_aabb_of(const Sphere& sphere)
     return rv;
 }
 
-Line osc::transform_line(const Line& line, const Mat4& mat)
+Ray osc::transform_ray(const Ray& ray, const Mat4& mat)
 {
-    Line rv{};
-    rv.direction = Vec3{mat * Vec4{line.direction, 0.0f}};
-    rv.origin = Vec3{mat * Vec4{line.origin, 1.0f}};
+    Ray rv{};
+    rv.direction = Vec3{mat * Vec4{ray.direction, 0.0f}};
+    rv.origin = Vec3{mat * Vec4{ray.origin, 1.0f}};
     return rv;
 }
 
-Line osc::inverse_transform_line(const Line& line, const Transform& transform)
+Ray osc::inverse_transform_ray(const Ray& ray, const Transform& transform)
 {
-    return Line{
-        inverse_transform_point(transform, line.origin),
-        inverse_transform_direction(transform, line.direction),
+    return Ray{
+        inverse_transform_point(transform, ray.origin),
+        inverse_transform_direction(transform, ray.direction),
     };
 }
 
@@ -1354,16 +1354,16 @@ bool osc::is_intersecting(const FrustumPlanes& frustum, const AABB& aabb)
     return not rgs::any_of(frustum, [&aabb](const auto& plane) { return is_in_front_of(plane, aabb); });
 }
 
-std::optional<RayCollision> osc::find_collision(const Line& line, const Sphere& sphere)
+std::optional<RayCollision> osc::find_collision(const Ray& ray, const Sphere& sphere)
 {
-    return find_collision_analytic(sphere, line);
+    return find_collision_analytic(sphere, ray);
 }
 
-std::optional<RayCollision> osc::find_collision(const Line& line, const AABB& aabb)
+std::optional<RayCollision> osc::find_collision(const Ray& ray, const AABB& aabb)
 {
     // intersect the ray with each axis-aligned slab for each dimension
     //
-    // i.e. figure out where the line intersects the front+back of the AABB
+    // i.e. figure out where the ray intersects the front+back of the AABB
     //      in (e.g.) X, then Y, then Z, and intersect those interactions such
     //      that if the intersection is ever empty (or, negative here) then there
     //      is no intersection
@@ -1371,9 +1371,9 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const AABB& aa
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
     for (Vec3::size_type i = 0; i < 3; ++i) {
-        const float inv_dir = 1.0f / line.direction[i];
-        float t_near = (aabb.min[i] - line.origin[i]) * inv_dir;
-        float t_far = (aabb.max[i] - line.origin[i]) * inv_dir;
+        const float inv_dir = 1.0f / ray.direction[i];
+        float t_near = (aabb.min[i] - ray.origin[i]) * inv_dir;
+        float t_far = (aabb.max[i] - ray.origin[i]) * inv_dir;
         if (t_near > t_far) {
             std::swap(t_near, t_far);
         }
@@ -1385,10 +1385,10 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const AABB& aa
         }
     }
 
-    return RayCollision{t0, line.origin + t0*line.direction};
+    return RayCollision{t0, ray.origin + t0*ray.direction};
 }
 
-std::optional<RayCollision> osc::find_collision(const Line& line, const Plane& plane)
+std::optional<RayCollision> osc::find_collision(const Ray& ray, const Plane& plane)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
     //
@@ -1400,34 +1400,34 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Plane& p
     //
     // against: dot(P-P0, N)
     //
-    // which must equal zero for any point in the plane. Given that, a line can
+    // which must equal zero for any point in the plane. Given that, a ray can
     // be parameterized as `P = O + tD` where:
     //
-    //     P, point along the line
-    //     O, origin of line
-    //     t, distance along line direction
-    //     D, line direction
+    //     P, point along the ray
+    //     O, origin of ray
+    //     t, distance along ray direction
+    //     D, ray direction
     //
-    // sub the line equation into the plane equation, rearrange for `t` and you
-    // can figure out how far a plane is along a line
+    // sub the ray equation into the plane equation, rearrange for `t` and you
+    // can figure out how far a plane is along a ray
     //
     // equation: t = dot(P0 - O, n) / dot(D, n)
 
-    const float denominator = dot(plane.normal, line.direction);
+    const float denominator = dot(plane.normal, ray.direction);
 
     if (abs(denominator) > 1e-6) {
-        const float numerator = dot(plane.origin - line.origin, plane.normal);
+        const float numerator = dot(plane.origin - ray.origin, plane.normal);
         const float distance = numerator / denominator;
-        return RayCollision{distance, line.origin + distance*line.direction};
+        return RayCollision{distance, ray.origin + distance*ray.direction};
     }
     else {
-        // the line is *very* parallel to the plane, which could cause
+        // the ray is *very* parallel to the plane, which could cause
         // some divide-by-zero havoc: pretend it didn't intersect
         return std::nullopt;
     }
 }
 
-std::optional<RayCollision> osc::find_collision(const Line& line, const Disc& disc)
+std::optional<RayCollision> osc::find_collision(const Ray& ray, const Disc& disc)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection
 
@@ -1435,7 +1435,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Disc& di
     // constraint that the ray has to be within the radius of the disc
 
     const std::optional<RayCollision> plane_collision =
-        find_collision(line, Plane{.origin = disc.origin, .normal = disc.normal});
+        find_collision(ray, Plane{.origin = disc.origin, .normal = disc.normal});
 
     if (not plane_collision) {
         return std::nullopt;
@@ -1453,7 +1453,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Disc& di
     return plane_collision;
 }
 
-std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle& triangle)
+std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& triangle)
 {
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
@@ -1461,7 +1461,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle
     const Vec3 N = triangle_normal(triangle);
 
     // compute dot product between normal and ray
-    const float NdotR = dot(N, line.direction);
+    const float NdotR = dot(N, ray.direction);
 
     // if the dot product is small, then the ray is probably very parallel to
     // the triangle (or, perpendicular to the normal) and doesn't intersect
@@ -1479,7 +1479,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle
     //
     // - the other side of the equation is that the same is true for *any* point on the plane
     // - so: D = P.N also
-    // - where P == O + tR (our line)
+    // - where P == O + tR (our ray)
     // - expand: D = (O + tR).N
     // - rearrange:
     //
@@ -1488,15 +1488,15 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle
     //     (D - O.N)/(R.N) = t
     //
     // tah-dah: we have the ray distance
-    const float t = -(dot(N, line.origin) - D) / NdotR;
+    const float t = -(dot(N, ray.origin) - D) / NdotR;
 
-    // if triangle plane is behind line then return early
+    // if triangle plane is behind ray then return early
     if (t < 0.0f) {
         return std::nullopt;
     }
 
-    // intersection point on triangle plane, computed from line equation
-    const Vec3 P = line.origin + t*line.direction;
+    // intersection point on triangle plane, computed from ray equation
+    const Vec3 P = ray.origin + t*ray.direction;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
@@ -1525,7 +1525,7 @@ std::optional<RayCollision> osc::find_collision(const Line& line, const Triangle
         }
     }
 
-    return RayCollision{t, line.origin + t*line.direction};
+    return RayCollision{t, ray.origin + t*ray.direction};
 }
 
 float osc::ease_out_elastic(float x)

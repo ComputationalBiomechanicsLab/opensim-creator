@@ -3,18 +3,18 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/Mat3.h>
 #include <liboscar/Maths/Mat4.h>
 #include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
+#include <liboscar/Maths/TransformFunctions.h>
 #include <liboscar/Maths/Vec.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/TransformFunctions.h>
 
 #include <array>
 #include <span>
@@ -68,7 +68,7 @@ namespace osc
     // - `camera_world_space_origin` is the location of the camera in world space
     // - `camera_view_matrix` transforms points from world space to view space
     // - `camera_proj_matrix` transforms points from view space to world space
-    Line perspective_unproject_topleft_normalized_pos_to_world(
+    Ray perspective_unproject_topleft_normalized_pos_to_world(
         Vec2 normalized_point,
         Vec3 camera_world_space_origin,
         const Mat4& camera_view_matrix,
@@ -102,13 +102,13 @@ namespace osc
     AABB bounding_aabb_of(const Sphere&);
 
 
-    // ----- `Line` helpers -----
+    // ----- `Ray` helpers -----
 
-    // returns a `Line` that has been transformed by the `Mat4`
-    Line transform_line(const Line&, const Mat4&);
+    // returns a `Ray` that has been transformed by the `Mat4`
+    Ray transform_ray(const Ray&, const Mat4&);
 
-    // returns a `Line` that has been transformed by the inverse of the supplied `Transform`
-    Line inverse_transform_line(const Line&, const Transform&);
+    // returns a `Ray` that has been transformed by the inverse of the supplied `Transform`
+    Ray inverse_transform_ray(const Ray&, const Transform&);
 
 
     // ----- `Disc` helpers -----

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 
@@ -49,8 +49,8 @@ namespace osc
 
         Vec3 position() const;
 
-        // converts a `pos` (top-left) in the output `dimensions` into a line in world space by unprojection
-        Line unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const;
+        // converts a `pos` (top-left) in the output `dimensions` into a `Ray` in world space by unprojection
+        Ray unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const;
 
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 

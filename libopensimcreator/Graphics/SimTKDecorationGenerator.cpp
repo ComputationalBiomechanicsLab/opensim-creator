@@ -291,11 +291,11 @@ namespace
                 Vec3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
-                const LineSegment line = {
+                const LineSegment lineSegment = {
                     t.position,
                     t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
-                const Transform legXform = cylinder_to_line_segment_transform(line, legThickness);
+                const Transform legXform = cylinder_to_line_segment_transform(lineSegment, legThickness);
 
                 Color color = {0.0f, 0.0f, 0.0f, 1.0f};
                 color[axis] = 1.0f;

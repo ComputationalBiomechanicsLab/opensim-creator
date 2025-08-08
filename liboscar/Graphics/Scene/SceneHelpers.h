@@ -9,7 +9,7 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/FrustumPlanes.h>
-#include <liboscar/Maths/Line.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
@@ -111,7 +111,7 @@ namespace osc
         const BVH& scene_bvh,
         SceneCache&,
         std::span<const SceneDecoration>,
-        const Line& world_space_ray,
+        const Ray& world_space_ray,
         const std::function<void(SceneCollision&&)>& out
     );
 
@@ -120,7 +120,7 @@ namespace osc
         const BVH& scene_bvh,
         SceneCache&,
         std::span<const SceneDecoration>,
-        const Line& world_space_ray
+        const Ray& world_space_ray
     );
 
     // returns closest ray-triangle collision along `world_space_ray`
@@ -128,7 +128,7 @@ namespace osc
         const Mesh&,
         const BVH& triangle_bvh,
         const Transform&,
-        const Line& world_space_ray
+        const Ray& world_space_ray
     );
 
     // returns closest ray-triangle collision in world space for a given mouse position

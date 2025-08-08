@@ -22,9 +22,9 @@
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
@@ -73,7 +73,7 @@ namespace osc
             const Vec2 mousePos = ui::get_mouse_ui_pos();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            const Line cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
+            const Ray cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
@@ -127,7 +127,7 @@ namespace osc
         }
 
         // returns the closest collision, if any, between the provided camera ray and a landmark
-        std::optional<MeshWarpingTabHover> getMouseLandmarkCollisions(const Line& cameraRay) const
+        std::optional<MeshWarpingTabHover> getMouseLandmarkCollisions(const Ray& cameraRay) const
         {
             std::optional<MeshWarpingTabHover> rv;
             hittestLandmarks(cameraRay, rv);
@@ -137,7 +137,7 @@ namespace osc
 
         // 3D hittests landmarks and updates `closest` if a closer collision is found
         void hittestLandmarks(
-            const Line& cameraRay,
+            const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest) const
         {
             for (const TPSDocumentLandmarkPair& landmark : m_State->getScratch().landmarkPairs)
@@ -148,7 +148,7 @@ namespace osc
 
         // 3D hittests one landmark and updates `closest` if a closer collision is found
         void hittestLandmark(
-            const Line& cameraRay,
+            const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest,
             const TPSDocumentLandmarkPair& landmark) const
         {
@@ -171,7 +171,7 @@ namespace osc
 
         // 3D hittests non-participating landmarks and updates `closest` if a closer collision is found
         void hittestNonParticipatingLandmarks(
-            const Line& cameraRay,
+            const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest) const
         {
             for (const auto& nonPariticpatingLandmark : m_State->getScratch().nonParticipatingLandmarks)
@@ -182,7 +182,7 @@ namespace osc
 
         // 3D hittests one non-participating landmark and updates `closest` if a closer collision is found
         void hittestNonParticipatingLandmark(
-            const Line& cameraRay,
+            const Ray& cameraRay,
             std::optional<MeshWarpingTabHover>& closest,
             const TPSDocumentNonParticipatingLandmark& nonPariticpatingLandmark) const
         {

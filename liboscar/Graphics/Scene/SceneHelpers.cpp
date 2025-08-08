@@ -14,12 +14,12 @@
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/LineSegment.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PlaneFunctions.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
@@ -235,7 +235,7 @@ void osc::for_each_ray_collision_with_scene(
         const BVH& scene_bvh,
         SceneCache& cache,
         std::span<const SceneDecoration> decorations,
-        const Line& world_space_ray,
+        const Ray& world_space_ray,
         const std::function<void(SceneCollision&&)>& out)
 {
     scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &out](const BVHCollision& scene_collision)
@@ -266,7 +266,7 @@ std::vector<SceneCollision> osc::get_all_ray_collisions_with_scene(
     const BVH& scene_bvh,
     SceneCache& cache,
     std::span<const SceneDecoration> decorations,
-    const Line& world_space_ray)
+    const Ray& world_space_ray)
 {
     std::vector<SceneCollision> rv;
     for_each_ray_collision_with_scene(scene_bvh, cache, decorations, world_space_ray, [&rv](SceneCollision&& scene_collision)
@@ -280,14 +280,14 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Mesh& mesh,
     const BVH& triangle_bvh,
     const Transform& transform,
-    const Line& world_space_ray)
+    const Ray& world_space_ray)
 {
     if (mesh.topology() != MeshTopology::Triangles) {
         return std::nullopt;
     }
 
     // map the ray into the mesh's model space, so that we compute a ray-mesh collision
-    const Line modespace_ray = inverse_transform_line(world_space_ray, transform);
+    const Ray modespace_ray = inverse_transform_ray(world_space_ray, transform);
 
     // then perform a ray-AABB (of triangles) collision
     std::optional<RayCollision> rv;
@@ -315,7 +315,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Rect& screen_render_rect,
     Vec2 screen_mouse_pos)
 {
-    const Line world_ray = camera.unproject_topleft_pos_to_world_ray(
+    const Ray world_ray = camera.unproject_topleft_pos_to_world_ray(
         screen_mouse_pos - screen_render_rect.ypd_top_left(),
         screen_render_rect.dimensions()
     );

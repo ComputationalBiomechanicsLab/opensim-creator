@@ -16,9 +16,9 @@
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/Line.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
@@ -166,7 +166,7 @@ private:
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;
     Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
-    Line m_Ray{};
+    Ray m_Ray{};
 
     PerfPanel m_PerfPanel{&owner()};
 };
