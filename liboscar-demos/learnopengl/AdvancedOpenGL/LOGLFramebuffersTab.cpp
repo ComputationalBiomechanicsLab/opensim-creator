@@ -121,11 +121,11 @@ private:
 
     MouseCapturingCamera scene_camera_ = create_scene_camera();
 
-    Texture2D container_texture_ = load_texture2D_from_image(
+    Texture2D container_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D metal_texture_ = load_texture2D_from_image(
+    Texture2D metal_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/metal.jpg"),
         ColorSpace::sRGB
     );

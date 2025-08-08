@@ -203,7 +203,7 @@ private:
     }};
 
     MouseCapturingCamera scene_camera_ = create_camera();
-    Texture2D m_WoodTexture = load_texture2D_from_image(
+    Texture2D m_WoodTexture = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );

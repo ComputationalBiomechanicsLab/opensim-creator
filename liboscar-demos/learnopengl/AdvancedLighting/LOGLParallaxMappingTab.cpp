@@ -20,16 +20,16 @@ namespace
 
     Material create_parallax_mapping_material(IResourceLoader& loader)
     {
-        const Texture2D diffuse_map = load_texture2D_from_image(
+        const Texture2D diffuse_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/bricks2.jpg"),
             ColorSpace::sRGB
         );
-        const Texture2D normal_map = load_texture2D_from_image(
+        const Texture2D normal_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/bricks2_normal.jpg"),
             ColorSpace::Linear,
             ImageLoadingFlag::TreatComponentsAsSpatialVectors
         );
-        const Texture2D displacement_map = load_texture2D_from_image(
+        const Texture2D displacement_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/bricks2_disp.jpg"),
             ColorSpace::Linear
         );

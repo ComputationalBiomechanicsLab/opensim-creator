@@ -477,7 +477,7 @@ private:
     float m_BlendingFactor = 1.0f;
 
     // GUI state (rendering, colors, etc.)
-    Texture2D m_BoxTexture = load_texture2D_from_svg(
+    Texture2D m_BoxTexture = SVG::read_into_texture(
         App::resource_loader().open("OpenSimCreator/textures/uv_checker.svg")
     );
     Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vec2{2.0f}, .num_segments = Vec2{50}}};

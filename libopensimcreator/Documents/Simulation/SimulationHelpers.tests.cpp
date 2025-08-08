@@ -33,10 +33,10 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
     std::stringstream out;
     WriteOutputsAsCSV(model, extractors,reports, out);
 
-    const auto row0 = read_csv_row(out);
-    const auto row1 = read_csv_row(out);
-    ASSERT_TRUE(read_csv_row(out)) << "trailing newline?";
-    ASSERT_FALSE(read_csv_row(out)) << "EOF";
+    const auto row0 = CSV::read_row(out);
+    const auto row1 = CSV::read_row(out);
+    ASSERT_TRUE(CSV::read_row(out)) << "trailing newline?";
+    ASSERT_FALSE(CSV::read_row(out)) << "EOF";
 
     const std::vector<std::string> row0Expected = { "time", "dummy" };
     ASSERT_EQ(row0, row0Expected);
@@ -61,10 +61,10 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesVec2DataCorrectly)
     std::stringstream out;
     WriteOutputsAsCSV(model, extractors,reports, out);
 
-    const auto row0 = read_csv_row(out);
-    const auto row1 = read_csv_row(out);
-    ASSERT_TRUE(read_csv_row(out)) << "trailing newline?";
-    ASSERT_FALSE(read_csv_row(out)) << "EOF";
+    const auto row0 = CSV::read_row(out);
+    const auto row1 = CSV::read_row(out);
+    ASSERT_TRUE(CSV::read_row(out)) << "trailing newline?";
+    ASSERT_FALSE(CSV::read_row(out)) << "EOF";
 
     const std::vector<std::string> row0Expected = { "time", "dummy/0", "dummy/1" };
     ASSERT_EQ(row0, row0Expected);

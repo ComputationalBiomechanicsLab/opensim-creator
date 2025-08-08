@@ -147,11 +147,11 @@ namespace osc
             {
                 if (ui::draw_menu_item("Mesh to OBJ"))
                 {
-                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::Default);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), OBJWriterFlag::Default);
                 }
                 if (ui::draw_menu_item("Mesh to OBJ (no normals)"))
                 {
-                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), ObjWriterFlag::NoWriteNormals);
+                    ActionPromptUserToSaveMeshToObjFile(m_State->getResultMesh(), OBJWriterFlag::NoWriteNormals);
                 }
                 if (ui::draw_menu_item("Mesh to STL"))
                 {

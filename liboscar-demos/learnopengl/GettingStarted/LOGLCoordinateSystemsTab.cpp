@@ -43,7 +43,7 @@ namespace
 
         material.set(
             "uTexture1",
-            load_texture2D_from_image(
+            Image::read_into_texture(
                 loader.open("oscar_demos/learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB
             )
@@ -51,7 +51,7 @@ namespace
 
         material.set(
             "uTexture2",
-            load_texture2D_from_image(
+            Image::read_into_texture(
                 loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB
             )

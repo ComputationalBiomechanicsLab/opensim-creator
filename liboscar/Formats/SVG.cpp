@@ -16,7 +16,7 @@
 
 using namespace osc;
 
-Texture2D osc::load_texture2D_from_svg(std::istream& in, float scale, float device_pixel_ratio)
+Texture2D osc::SVG::read_into_texture(std::istream& in, float scale, float device_pixel_ratio)
 {
     OSC_ASSERT_ALWAYS(scale > 0.0f && "svg scale factor must be greater than zero");
     OSC_ASSERT_ALWAYS(device_pixel_ratio > 0.0f && "device pixel ratio must be greater than zero");

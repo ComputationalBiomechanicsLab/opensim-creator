@@ -245,7 +245,7 @@ void osc::ActionPromptUserToLoadLandmarksFromCSV(
             doc->commit_scratch("loaded landmarks");
         },
         {
-            csv_file_dialog_filter(),
+            CSV::file_dialog_filter(),
             FileDialogFilter::all_files(),
         }
     );
@@ -273,7 +273,7 @@ void osc::ActionPromptUserToLoadNonParticipatingLandmarksFromCSV(const std::shar
             doc->commit_scratch("added non-participating landmarks");
         },
         {
-            csv_file_dialog_filter(),
+            CSV::file_dialog_filter(),
             FileDialogFilter::all_files(),
         }
     );
@@ -359,10 +359,10 @@ void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm:
         // if applicable, write header row
         if (not (flags & lm::LandmarkCSVFlags::NoHeader)) {
             if (flags & lm::LandmarkCSVFlags::NoNames) {
-                write_csv_row(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+                CSV::write_row(fout, {{"source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
             }
             else {
-                write_csv_row(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
+                CSV::write_row(fout, {{"name", "source.x", "source.y", "source.z", "dest.x", "dest.y", "dest.z"}});
             }
         }
 
@@ -383,14 +383,14 @@ void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm:
             cols.push_back(to_string(p.destination.y));
             cols.push_back(to_string(p.destination.z));
 
-            write_csv_row(fout, cols);
+            CSV::write_row(fout, cols);
 
             cols.clear();
         }
     }, "csv");
 }
 
-void osc::ActionPromptUserToSaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags flags)
+void osc::ActionPromptUserToSaveMeshToObjFile(const Mesh& mesh, OBJWriterFlags flags)
 {
     App::upd().prompt_user_to_save_file_with_extension_async([mesh, flags](std::optional<std::filesystem::path> p)
     {
@@ -402,11 +402,11 @@ void osc::ActionPromptUserToSaveMeshToObjFile(const Mesh& mesh, ObjWriterFlags f
             return;  // couldn't open for writing
         }
 
-        const ObjMetadata objMetadata{
+        const OBJMetadata objMetadata{
             App::get().application_name_with_version_and_buildid(),
         };
 
-        write_as_obj(ofs, mesh, objMetadata, flags);
+        OBJ::write(ofs, mesh, objMetadata, flags);
     }, "obj");
 }
 
@@ -423,11 +423,11 @@ void osc::ActionPromptUserToMeshToStlFile(const Mesh& mesh)
             return;  // couldn't open for writing
         }
 
-        const StlMetadata stlMetadata{
+        const STLMetadata stlMetadata{
             App::get().application_name_with_version_and_buildid()
         };
 
-        write_as_stl(ofs, mesh, stlMetadata);
+        STL::write(ofs, mesh, stlMetadata);
     }, "stl");
 }
 

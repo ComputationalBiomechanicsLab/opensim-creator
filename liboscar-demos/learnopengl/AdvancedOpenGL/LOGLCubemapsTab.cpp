@@ -25,7 +25,7 @@ namespace
     Cubemap load_cubemap(ResourceLoader& loader)
     {
         // load the first face, so we know the width
-        Texture2D face_texture = load_texture2D_from_image(
+        Texture2D face_texture = Image::read_into_texture(
             loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames.front()),
             ColorSpace::sRGB
         );
@@ -42,7 +42,7 @@ namespace
         cubemap.set_pixel_data(*face_iterator++, face_texture.pixel_data());
         for (; face_iterator != cubemap_faces.end(); ++face_iterator)
         {
-            face_texture = load_texture2D_from_image(
+            face_texture = Image::read_into_texture(
                 loader.open(ResourcePath{"oscar_demos/learnopengl/textures"} / c_skybox_texture_filenames[to_index(*face_iterator)]),
                 ColorSpace::sRGB
             );
@@ -201,7 +201,7 @@ private:
     size_t cube_material_index_ = 0;
     MaterialPropertyBlock cube_properties_;
     Mesh cube_mesh_ = BoxGeometry{};
-    Texture2D container_texture_ = load_texture2D_from_image(
+    Texture2D container_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container.jpg"),
         ColorSpace::sRGB
     );

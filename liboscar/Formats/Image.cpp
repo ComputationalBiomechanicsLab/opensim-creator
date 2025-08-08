@@ -167,7 +167,7 @@ namespace
     }
 }
 
-Texture2D osc::load_texture2D_from_image(
+Texture2D osc::Image::read_into_texture(
     std::istream& in,
     std::string_view input_name,
     ColorSpace color_space,
@@ -200,9 +200,9 @@ Texture2D osc::load_texture2D_from_image(
     return rv;
 }
 
-void osc::write_to_png(
-    const Texture2D& texture,
-    std::ostream& out)
+void osc::PNG::write(
+    std::ostream& out,
+    const Texture2D& texture)
 {
     const Vec2i dimensions = texture.pixel_dimensions();
     const int row_stride = 4 * dimensions.x;
@@ -235,7 +235,7 @@ void osc::write_to_png(
     }
 }
 
-void osc::write_to_jpeg(const Texture2D& texture, std::ostream& out, float quality)
+void osc::JPEG::write(std::ostream& out, const Texture2D& texture, float quality)
 {
     const Vec2i dimensions = texture.pixel_dimensions();
     const std::vector<Color32> pixels = texture.pixels32();

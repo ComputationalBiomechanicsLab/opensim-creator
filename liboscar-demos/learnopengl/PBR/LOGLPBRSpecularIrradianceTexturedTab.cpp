@@ -38,7 +38,7 @@ namespace
 
     RenderTexture load_equirectangular_hdr_texture_into_cubemap(ResourceLoader& loader)
     {
-        Texture2D hdr_texture = load_texture2D_from_image(
+        Texture2D hdr_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear
         );
@@ -192,11 +192,11 @@ namespace
 
     struct IBLSpecularObjectTextures final {
         explicit IBLSpecularObjectTextures(ResourceLoader loader) :
-            albedo_map{load_texture2D_from_image(loader.open("albedo.jpg"), ColorSpace::sRGB)},
-            normal_map{load_texture2D_from_image(loader.open("normal.jpg"), ColorSpace::Linear, ImageLoadingFlag::TreatComponentsAsSpatialVectors)},
-            metallic_map{load_texture2D_from_image(loader.open("metallic.jpg"), ColorSpace::Linear)},
-            roughness_map{load_texture2D_from_image(loader.open("roughness.jpg"), ColorSpace::Linear)},
-            ao_map{load_texture2D_from_image(loader.open("ao.jpg"), ColorSpace::Linear)}
+            albedo_map{Image::read_into_texture(loader.open("albedo.jpg"), ColorSpace::sRGB)},
+            normal_map{Image::read_into_texture(loader.open("normal.jpg"), ColorSpace::Linear, ImageLoadingFlag::TreatComponentsAsSpatialVectors)},
+            metallic_map{Image::read_into_texture(loader.open("metallic.jpg"), ColorSpace::Linear)},
+            roughness_map{Image::read_into_texture(loader.open("roughness.jpg"), ColorSpace::Linear)},
+            ao_map{Image::read_into_texture(loader.open("ao.jpg"), ColorSpace::Linear)}
         {}
 
         Texture2D albedo_map;
@@ -317,7 +317,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
 
-    Texture2D texture_ = load_texture2D_from_image(
+    Texture2D texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear
     );

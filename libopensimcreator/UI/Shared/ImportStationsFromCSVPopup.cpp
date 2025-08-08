@@ -215,7 +215,7 @@ private:
                 actionLoadCSVFile(response.front());
             },
             {
-                csv_file_dialog_filter(),
+                CSV::file_dialog_filter(),
                 FileDialogFilter::all_files(),
             }
         );

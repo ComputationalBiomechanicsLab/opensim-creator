@@ -218,7 +218,7 @@ private:
 
     void action_try_save_annotated_screenshot(ScreenshotFileFormat format)
     {
-        App::upd().prompt_user_to_save_file_with_extension_async([format, screenshot = render_annotated_screenshot()](std::optional<std::filesystem::path> p)
+        App::upd().prompt_user_to_save_file_with_extension_async([format, screenshot = render_annotated_screenshot(), jpeg_quality_level=jpeg_quality_level_](std::optional<std::filesystem::path> p)
         {
             if (not p) {
                 return;  // User cancelled out.
@@ -229,8 +229,8 @@ private:
                 throw std::runtime_error{p->string() + ": cannot open for writing"};
             }
             switch (format) {
-            case ScreenshotFileFormat::jpeg: write_to_jpeg(screenshot, fout); break;
-            case ScreenshotFileFormat::png:  write_to_png(screenshot, fout);  break;
+            case ScreenshotFileFormat::jpeg: JPEG::write(fout, screenshot, jpeg_quality_level); break;
+            case ScreenshotFileFormat::png:  PNG::write(fout, screenshot);  break;
             default:                         std::unreachable();
             }
             open_file_in_os_default_application(*p);

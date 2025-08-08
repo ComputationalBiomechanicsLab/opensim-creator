@@ -199,11 +199,11 @@ private:
             }
 
             // write header
-            write_csv_row(ostream, std::to_array<std::string>({ "x", "y" }));
+            CSV::write_row(ostream, std::to_array<std::string>({ "x", "y" }));
 
             // write data rows
             for (const auto& [x, y] : points) {
-                write_csv_row(ostream, std::to_array({ std::to_string(x), std::to_string(y) }));
+                CSV::write_row(ostream, std::to_array({ std::to_string(x), std::to_string(y) }));
             }
         }, "csv");
     }

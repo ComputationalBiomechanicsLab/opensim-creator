@@ -428,7 +428,7 @@ osc::DAEMetadata::DAEMetadata(
     modification_time{creation_time}
 {}
 
-void osc::write_as_dae(
+void osc::DAE::write(
     std::ostream& out,
     std::span<const SceneDecoration> decorations,
     const DAEMetadata& metadata)

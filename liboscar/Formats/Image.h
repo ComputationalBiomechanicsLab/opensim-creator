@@ -10,31 +10,41 @@
 
 namespace osc
 {
-    // Loads the given (named) image stream into a `Texture2D`.
-    //
-    // Throws if the image data isn't representable as a GPU texture (e.g. because it has
-    // an incorrect number of components).
-    Texture2D load_texture2D_from_image(
-        std::istream&,
-        std::string_view input_name,
-        ColorSpace,
-        ImageLoadingFlags = {}
-    );
-
-    template<NamedInputStream Stream>
-    Texture2D load_texture2D_from_image(
-        Stream&& stream,
-        ColorSpace color_space,
-        ImageLoadingFlags flags = {})
-    {
-        return load_texture2D_from_image(
-            std::forward<Stream>(stream),
-            stream.name(),
-            color_space,
-            flags
+    class Image final {
+    public:
+        // Read the given (named) image stream into a `Texture2D`.
+        //
+        // Throws if the image data isn't representable as a GPU texture (e.g. because it has
+        // an incorrect number of components).
+        static Texture2D read_into_texture(
+            std::istream&,
+            std::string_view input_name,
+            ColorSpace,
+            ImageLoadingFlags = {}
         );
-    }
 
-    void write_to_png(const Texture2D&, std::ostream&);
-    void write_to_jpeg(const Texture2D&, std::ostream&, float quality = 0.9f);
+        template<NamedInputStream Stream>
+        static Texture2D read_into_texture(
+            Stream&& stream,
+            ColorSpace color_space,
+            ImageLoadingFlags flags = {})
+        {
+            return read_into_texture(
+                std::forward<Stream>(stream),
+                stream.name(),
+                color_space,
+                flags
+            );
+        }
+    };
+
+    class PNG final {
+    public:
+        static void write(std::ostream&, const Texture2D&);
+    };
+
+    class JPEG final {
+    public:
+        static void write(std::ostream&, const Texture2D&, float quality = 0.9f);
+    };
 }

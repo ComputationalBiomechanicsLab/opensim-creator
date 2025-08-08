@@ -9,11 +9,11 @@ namespace osc { class Mesh; }
 
 namespace osc
 {
-    struct StlMetadata final {
+    struct STLMetadata final {
 
-        explicit StlMetadata();
+        explicit STLMetadata();
 
-        explicit StlMetadata(
+        explicit STLMetadata(
             std::string_view authoring_tool_
         );
 
@@ -21,9 +21,8 @@ namespace osc
         std::tm creation_time;
     };
 
-    void write_as_stl(
-        std::ostream&,
-        const Mesh&,
-        const StlMetadata&
-    );
+    class STL final {
+    public:
+        static void write(std::ostream&, const Mesh&, const STLMetadata&);
+    };
 }

@@ -12,13 +12,13 @@ namespace osc { class StringName; }
 
 namespace osc
 {
-    // Represents the shared aspects of objects that are based on this class.
+    // Represents the shared aspects of `Object`s that are instances on this class.
     //
     // In oscar's runtime engine foundation systems, C++ classes should have
-    // a single linear inheritence chain with `Object` at the root. Each
+    // a single linear inheritance chain with `Object` at the root. Each
     // C++ class should also define one of these `Class` objects, usually behind
     // a static `klass` member function getter. This is so that runtime systems
-    // can "see" the inheritence chain and handle (e.g.) inherited properties
+    // can "see" the inheritance chain and handle (e.g.) inherited properties
     // correctly.
     class Class final {
     public:
@@ -40,7 +40,7 @@ namespace osc
         // it's the `Class` that represents `Object`) then `std::nullopt` is returned.
         std::optional<Class> parent_class() const;
 
-        // Returns a readonly view of the `PropertyInfo` for all properties of this `Class`.
+        // Returns a read-only view of the `PropertyInfo` for all properties of this `Class`.
         std::span<const PropertyInfo> properties() const;
 
         // Returns the index of the `PropertyInfo` that has the given `property_name`, or

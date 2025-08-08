@@ -155,15 +155,15 @@ private:
     Mesh plane_mesh_ = generate_plane();
     Mesh transparent_mesh_ = generate_transparent();
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
-    Texture2D marble_texture_ = load_texture2D_from_image(
+    Texture2D marble_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/marble.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D metal_texture_ = load_texture2D_from_image(
+    Texture2D metal_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/metal.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D window_texture_ = load_texture2D_from_image(
+    Texture2D window_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/window.png"),
         ColorSpace::sRGB
     );

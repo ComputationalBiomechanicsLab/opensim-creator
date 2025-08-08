@@ -324,11 +324,11 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/bloom/Final.frag"),
     }};
 
-    Texture2D wood_texture_ = load_texture2D_from_image(
+    Texture2D wood_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D container_texture_ = load_texture2D_from_image(
+    Texture2D container_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );

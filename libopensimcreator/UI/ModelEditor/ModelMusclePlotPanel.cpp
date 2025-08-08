@@ -861,14 +861,14 @@ namespace
 
         // try to read header row
         std::vector<std::string> headers;
-        if (!read_csv_row_into_vector(inputFileStream, headers))
+        if (!CSV::read_row_into_vector(inputFileStream, headers))
         {
             return {};  // no CSV data (headers) in top row
         }
 
         // map each CSV row from [$independent, ...$dependent] -> [($independent, $dependent[i])]
         std::vector<std::vector<PlotDataPoint>> columnsAsPlots;
-        for (std::vector<std::string> row; read_csv_row_into_vector(inputFileStream, row);)
+        for (std::vector<std::string> row; CSV::read_row_into_vector(inputFileStream, row);)
         {
             if (row.size() < 2)
             {
@@ -945,7 +945,7 @@ namespace
         std::ostream& out)
     {
         // write header
-        write_csv_row(
+        CSV::write_row(
             out,
             std::to_array({ ComputePlotXAxisTitle(params, coord), ComputePlotYAxisTitle(params) })
         );
@@ -953,7 +953,7 @@ namespace
         // write data rows
         auto lock = plot.lockDataPoints();
         for (const PlotDataPoint& p : *lock) {
-            write_csv_row(
+            CSV::write_row(
                 out,
                 std::to_array({ std::to_string(p.x), std::to_string(p.y) })
             );
@@ -1342,7 +1342,7 @@ namespace
         std::ostream& out)
     {
         // write header
-        write_csv_row(out, GetAllCSVHeaders(coord, params, lines));
+        CSV::write_row(out, GetAllCSVHeaders(coord, params, lines));
 
         // get incrementable cursors to all curves in the plot
         std::vector<LineCursor> cursors = GetCursorsToAllPlotLines(lines);
@@ -1379,7 +1379,7 @@ namespace
                 }
             }
 
-            write_csv_row(out, cols);
+            CSV::write_row(out, cols);
 
             maybeX = maybeNextX;
             maybeNextX = std::nullopt;
@@ -1403,7 +1403,7 @@ namespace
                 }
             },
             {
-                csv_file_dialog_filter(),
+                CSV::file_dialog_filter(),
                 FileDialogFilter::all_files(),
             }
         );

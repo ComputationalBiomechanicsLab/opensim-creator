@@ -20,22 +20,22 @@ namespace
     constexpr Vec2i c_minimal_svg_dimensions = {100, 100};
 }
 
-TEST(load_texture2D_from_svg, returns_expected_texture_dimensions_for_basic_case)
+TEST(SVG, read_into_texture_returns_expected_texture_dimensions_for_basic_case)
 {
     std::istringstream ss{std::string{c_minimal_svg}};
-    const Texture2D returned_texture = load_texture2D_from_svg(ss);
+    const Texture2D returned_texture = SVG::read_into_texture(ss);
     ASSERT_EQ(returned_texture.pixel_dimensions(), c_minimal_svg_dimensions);
 }
 
-TEST(load_texture2D_from_svg, returns_2x_dimension_texture_if_given_2x_scale)
+TEST(SVG, read_into_texture_returns_2x_dimension_texture_if_given_2x_scale)
 {
     std::istringstream ss{std::string{c_minimal_svg}};
-    const Texture2D returned_texture = load_texture2D_from_svg(ss, 2.0f);
+    const Texture2D returned_texture = SVG::read_into_texture(ss, 2.0f);
     ASSERT_EQ(returned_texture.pixel_dimensions(), 2 * c_minimal_svg_dimensions);
 }
 
-TEST(load_texture2D_from_svg, throws_if_given_0x_scale)
+TEST(SVG, read_into_texture_throws_if_given_0x_scale)
 {
     std::istringstream ss{std::string{c_minimal_svg}};
-    ASSERT_ANY_THROW({ load_texture2D_from_svg(ss, 0.0f); });
+    ASSERT_ANY_THROW({ SVG::read_into_texture(ss, 0.0f); });
 }

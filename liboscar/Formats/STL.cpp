@@ -27,14 +27,14 @@ using namespace osc;
 
 namespace
 {
-    std::string calc_header_text(const StlMetadata& metadata)
+    std::string calc_header_text(const STLMetadata& metadata)
     {
         std::stringstream ss;
         ss << "created " << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << " by " << metadata.authoring_tool;
         return std::move(ss).str();
     }
 
-    void write_header(std::ostream& out, const StlMetadata& metadata)
+    void write_header(std::ostream& out, const STLMetadata& metadata)
     {
         constexpr size_t c_num_bytes_in_stl_header = 80;
         constexpr size_t c_max_chars_in_stl_header = c_num_bytes_in_stl_header - 1;  // nul-terminator
@@ -100,21 +100,21 @@ namespace
     }
 }
 
-osc::StlMetadata::StlMetadata() :
-    StlMetadata{strings::library_name()}
+osc::STLMetadata::STLMetadata() :
+    STLMetadata{strings::library_name()}
 {}
 
-osc::StlMetadata::StlMetadata(
+osc::STLMetadata::STLMetadata(
     std::string_view authoring_tool_) :
 
     authoring_tool{authoring_tool_},
     creation_time{system_calendar_time()}
 {}
 
-void osc::write_as_stl(
+void osc::STL::write(
     std::ostream& output,
     const Mesh& mesh,
-    const StlMetadata& metadata)
+    const STLMetadata& metadata)
 {
     if (mesh.topology() != MeshTopology::Triangles) {
         return;

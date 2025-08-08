@@ -42,7 +42,7 @@ namespace
     RenderTexture load_equirectangular_hdr_texture_into_cubemap(
         IResourceLoader& loader)
     {
-        Texture2D hdr_texture = load_texture2D_from_image(
+        Texture2D hdr_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
             ColorSpace::Linear
         );
@@ -222,7 +222,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
 
-    Texture2D texture_ = load_texture2D_from_image(
+    Texture2D texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/hdr/newport_loft.hdr"),
         ColorSpace::Linear
     );

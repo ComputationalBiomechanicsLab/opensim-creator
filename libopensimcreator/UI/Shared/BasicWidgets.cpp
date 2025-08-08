@@ -89,7 +89,7 @@ namespace
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_dae(outfile, scene, daeMetadata);
+            DAE::write(outfile, scene, daeMetadata);
             log_info("wrote scene as a DAE file to %s", p->string().c_str());
         }, "dae");
     }
@@ -201,11 +201,11 @@ namespace
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-            const ObjMetadata objMetadata{
+            const OBJMetadata objMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_obj(ss, oscMesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+            OBJ::write(ss, oscMesh, objMetadata, OBJWriterFlag::NoWriteNormals);
         }
 
         // Asynchronously prompt the user and write the data
@@ -245,11 +245,11 @@ namespace
             // bake transform into mesh data
             oscMesh.transform_vertices(CalcTransformWithRespectTo(openSimMesh, frame, state));
 
-            const StlMetadata stlMetadata{
+            const STLMetadata stlMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
-            write_as_stl(ss, oscMesh, stlMetadata);
+            STL::write(ss, oscMesh, stlMetadata);
         }
 
         // Asynchronously prompt the user for a save location and write the content to it.

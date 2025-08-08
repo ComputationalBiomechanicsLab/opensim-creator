@@ -174,7 +174,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
     MouseCapturingCamera camera_ = create_camera();
-    Texture2D wood_texture_ = load_texture2D_from_image(
+    Texture2D wood_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );

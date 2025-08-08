@@ -20,12 +20,12 @@ namespace
 
     Material create_light_mapping_material(IResourceLoader& loader)
     {
-        const Texture2D diffuse_map = load_texture2D_from_image(
+        const Texture2D diffuse_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/container2.jpg"),
             ColorSpace::sRGB
         );
 
-        const Texture2D specular_map = load_texture2D_from_image(
+        const Texture2D specular_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
             ColorSpace::sRGB
         );

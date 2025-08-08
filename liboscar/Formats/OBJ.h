@@ -11,26 +11,29 @@ namespace osc { class Mesh; }
 
 namespace osc
 {
-    enum class ObjWriterFlag {
+    enum class OBJWriterFlag {
         None           = 0,
         NoWriteNormals = 1<<0,
 
         Default = None,
     };
-    using ObjWriterFlags = Flags<ObjWriterFlag>;
+    using OBJWriterFlags = Flags<OBJWriterFlag>;
 
-    struct ObjMetadata final {
-        explicit ObjMetadata();
-        explicit ObjMetadata(std::string_view authoring_tool_);
+    struct OBJMetadata final {
+        explicit OBJMetadata();
+        explicit OBJMetadata(std::string_view authoring_tool_);
 
         std::string authoring_tool;
         std::tm creation_time;
     };
 
-    void write_as_obj(
-        std::ostream&,
-        const Mesh&,
-        const ObjMetadata& = ObjMetadata{},
-        ObjWriterFlags = ObjWriterFlag::Default
-    );
+    class OBJ final {
+    public:
+        static void write(
+            std::ostream&,
+            const Mesh&,
+            const OBJMetadata& = OBJMetadata{},
+            OBJWriterFlags = OBJWriterFlag::Default
+        );
+    };
 }

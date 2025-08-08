@@ -25,19 +25,19 @@ namespace
     }
 }
 
-std::optional<std::vector<std::string>> osc::read_csv_row(
+std::optional<std::vector<std::string>> osc::CSV::read_row(
     std::istream& in)
 {
     std::optional<std::vector<std::string>> columns;
     columns.emplace();
 
-    if (not read_csv_row_into_vector(in, *columns)) {
+    if (not read_row_into_vector(in, *columns)) {
         columns.reset();
     }
     return columns;
 }
 
-bool osc::read_csv_row_into_vector(
+bool osc::CSV::read_row_into_vector(
     std::istream& in,
     std::vector<std::string>& r_columns)
 {
@@ -109,7 +109,7 @@ bool osc::read_csv_row_into_vector(
     }
 }
 
-void osc::write_csv_row(
+void osc::CSV::write_row(
     std::ostream& out,
     std::span<const std::string> columns)
 {
@@ -140,7 +140,7 @@ void osc::write_csv_row(
     out << '\n';
 }
 
-const FileDialogFilter& osc::csv_file_dialog_filter()
+const FileDialogFilter& osc::CSV::file_dialog_filter()
 {
     static const FileDialogFilter s_csv_file_dialog_filter{"Text CSV (*.csv)", "csv"};
     return s_csv_file_dialog_filter;

@@ -32,7 +32,7 @@ public:
             const ResourcePath& p = *el;
 
             if (p.has_extension(".svg")) {
-                Texture2D texture = load_texture2D_from_svg(
+                Texture2D texture = SVG::read_into_texture(
                     loader_prefixed_at_dir_containing_svgs.open(p),
                     vertical_scale,
                     device_pixel_ratio

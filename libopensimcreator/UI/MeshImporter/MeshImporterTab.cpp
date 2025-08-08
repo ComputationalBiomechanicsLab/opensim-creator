@@ -1360,7 +1360,7 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            const ObjMetadata objMetadata{
+            const OBJMetadata objMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
@@ -1370,7 +1370,7 @@ private:
                 ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                 ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 
-                write_as_obj(ofs, mesh, objMetadata, ObjWriterFlag::NoWriteNormals);
+                OBJ::write(ofs, mesh, objMetadata, OBJWriterFlag::NoWriteNormals);
             }
             catch (std::exception& e) {
                 log_error("error saving obj output to %s: %s", p->string().c_str(), e.what());
@@ -1388,7 +1388,7 @@ private:
                 return;  // user cancelled out of the prompt
             }
 
-            const StlMetadata stlMetadata{
+            const STLMetadata stlMetadata{
                 App::get().application_name_with_version_and_buildid(),
             };
 
@@ -1398,7 +1398,7 @@ private:
                 ofs.exceptions(std::ofstream::failbit | std::ofstream::badbit);
                 ofs.open(*p, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary);
 
-                write_as_stl(ofs, mesh, stlMetadata);
+                STL::write(ofs, mesh, stlMetadata);
             }
             catch (std::exception& e) {
                 log_error("error saving stl output to %s: %s", p->string().c_str(), e.what());

@@ -25,9 +25,12 @@ namespace osc
         std::tm modification_time;
     };
 
-    void write_as_dae(
-        std::ostream&,
-        std::span<const SceneDecoration>,
-        const DAEMetadata& = DAEMetadata{}
-    );
+    class DAE final {
+    public:
+        static void write(
+            std::ostream&,
+            std::span<const SceneDecoration>,
+            const DAEMetadata& = DAEMetadata{}
+        );
+    };
 }

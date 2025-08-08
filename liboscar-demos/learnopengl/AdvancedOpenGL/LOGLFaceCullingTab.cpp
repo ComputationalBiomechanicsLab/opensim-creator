@@ -21,7 +21,7 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/FaceCulling.frag"),
         }};
 
-        material.set("uTexture", load_texture2D_from_svg(
+        material.set("uTexture", SVG::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/uv_checker.svg")
         ));
 

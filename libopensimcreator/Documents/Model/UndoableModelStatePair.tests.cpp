@@ -110,7 +110,7 @@ TEST(UndoableModelStatePair, canWriteRajagopalModelToDAE)
     // write decorations to a fake (testing) `std::ostream`
     NullOStream stream;
     const DAEMetadata metadata{TESTOPENSIMCREATOR_APPNAME_STRING, TESTOPENSIMCREATOR_APPNAME_STRING};
-    write_as_dae(stream, decorations, metadata);
+    DAE::write(stream, decorations, metadata);
 
     ASSERT_TRUE(stream.was_written_to()) << "the DAE writer should write content to the stream";
 }

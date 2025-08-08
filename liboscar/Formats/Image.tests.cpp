@@ -16,36 +16,36 @@
 
 using namespace osc;
 
-TEST(load_texture2D_from_image, respects_sRGB_color_space)
+TEST(Image, read_into_texture_respects_sRGB_color_space)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
-    const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB);
+    const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::sRGB);
 }
 
-TEST(load_texture2D_from_image, respects_linear_color_space)
+TEST(Image, read_into_texture_respects_linear_color_space)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
-    const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
+    const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::Linear);
 
     ASSERT_EQ(loaded_texture.color_space(), ColorSpace::Linear);
 }
 
-TEST(load_texture2D_from_image, is_compatible_with_write_to_png)
+TEST(Image, read_into_texture_is_compatible_with_PNG_write)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
-    const Texture2D loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::Linear);
+    const Texture2D loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::Linear);
 
     NullOStream out;
-    ASSERT_NO_THROW({ write_to_png(loaded_texture, out); });
+    ASSERT_NO_THROW({ PNG::write(out, loaded_texture); });
     ASSERT_TRUE(out.was_written_to());
 }
 
-TEST(load_texture2D_from_image, can_load_image_from_ResourceStream)
+TEST(Image, read_into_texture_can_load_image_from_ResourceStream)
 {
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
-    const Texture2D loaded_texture = load_texture2D_from_image(
+    const Texture2D loaded_texture = Image::read_into_texture(
         ResourceStream{path},
         ColorSpace::sRGB
     );
@@ -53,18 +53,18 @@ TEST(load_texture2D_from_image, can_load_image_from_ResourceStream)
     ASSERT_EQ(loaded_texture.pixel_dimensions(), Vec2i(512, 512));
 }
 
-TEST(load_texture2D_from_image, throws_when_called_with_an_invalid_path)
+TEST(Image, read_into_texture_throws_when_called_with_an_invalid_path)
 {
     ASSERT_ANY_THROW(
     {
-        load_texture2D_from_image(
+        Image::read_into_texture(
             ResourceStream{"oscar/textures/doesnt_exist.png"},
             ColorSpace::sRGB
         );
     });
 }
 
-TEST(load_texture2D_from_image, with_TreatComponentsAsSpatialVectors_negates_Y)
+TEST(Image, read_into_texture_with_TreatComponentsAsSpatialVectors_negates_Y)
 {
     // This is just a quick and dirty test to ensure that the implementation is
     // actually flipping the G component of the image if the caller indicates that
@@ -73,8 +73,8 @@ TEST(load_texture2D_from_image, with_TreatComponentsAsSpatialVectors_negates_Y)
 
     const auto path = std::filesystem::path{OSC_TESTING_RESOURCES_DIR} / "awesomeface.png";
 
-    const Texture2D normally_loaded_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB);
-    const Texture2D spatial_texture = load_texture2D_from_image(ResourceStream{path}, ColorSpace::sRGB, ImageLoadingFlag::TreatComponentsAsSpatialVectors);
+    const Texture2D normally_loaded_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB);
+    const Texture2D spatial_texture = Image::read_into_texture(ResourceStream{path}, ColorSpace::sRGB, ImageLoadingFlag::TreatComponentsAsSpatialVectors);
     const auto normal_pixels = normally_loaded_texture.pixels();
     const auto corrected_pixels = spatial_texture.pixels();
 
@@ -91,7 +91,7 @@ TEST(load_texture2D_from_image, with_TreatComponentsAsSpatialVectors_negates_Y)
     }
 }
 
-TEST(write_to_jpeg, is_compatible_with_reader)
+TEST(JPEG, write_is_compatible_with_reader)
 {
     constexpr std::array<Color32, 4> pixels = {
         Color::red(),  Color::green(),
@@ -102,13 +102,13 @@ TEST(write_to_jpeg, is_compatible_with_reader)
     texture.set_pixels32(pixels);
 
     std::ostringstream written_stream;
-    write_to_jpeg(texture, written_stream, 1.0f);
+    JPEG::write(written_stream, texture, 1.0f);
     const std::string data = written_stream.str();
 
     ASSERT_FALSE(data.empty());
 
     std::istringstream input_stream{data};
-    const Texture2D parsed_texture = load_texture2D_from_image(input_stream, "data.jpeg", ColorSpace::sRGB);
+    const Texture2D parsed_texture = Image::read_into_texture(input_stream, "data.jpeg", ColorSpace::sRGB);
 
     ASSERT_EQ(parsed_texture.pixel_dimensions(), Vec2i(2, 2));
     const auto parsed_pixels = parsed_texture.pixels32();

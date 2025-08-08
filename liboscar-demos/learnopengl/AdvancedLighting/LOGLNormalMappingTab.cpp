@@ -20,11 +20,11 @@ namespace
 
     Material create_normal_mapping_material(IResourceLoader& loader)
     {
-        const Texture2D diffuse_map = load_texture2D_from_image(
+        const Texture2D diffuse_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/brickwall.jpg"),
             ColorSpace::sRGB
         );
-        const Texture2D normal_map = load_texture2D_from_image(
+        const Texture2D normal_map = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/brickwall_normal.jpg"),
             ColorSpace::Linear,
             ImageLoadingFlag::TreatComponentsAsSpatialVectors

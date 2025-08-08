@@ -94,7 +94,7 @@ namespace osc
     void ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument&, lm::LandmarkCSVFlags = lm::LandmarkCSVFlags::None);
 
     // prompts the user to save the mesh to an obj file
-    void ActionPromptUserToSaveMeshToObjFile(const Mesh&, ObjWriterFlags);
+    void ActionPromptUserToSaveMeshToObjFile(const Mesh&, OBJWriterFlags);
 
     // prompts the user to save the mesh to an stl file
     void ActionPromptUserToMeshToStlFile(const Mesh&);

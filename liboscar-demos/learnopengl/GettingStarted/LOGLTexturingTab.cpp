@@ -28,7 +28,7 @@ namespace
 
         // set uTexture1
         {
-            Texture2D container = load_texture2D_from_image(
+            Texture2D container = Image::read_into_texture(
                 loader.open("oscar_demos/learnopengl/textures/container.jpg"),
                 ColorSpace::sRGB
             );
@@ -39,7 +39,7 @@ namespace
 
         // set uTexture2
         {
-            const Texture2D face = load_texture2D_from_image(
+            const Texture2D face = Image::read_into_texture(
                 loader.open("oscar_demos/learnopengl/textures/awesomeface.png"),
                 ColorSpace::sRGB
             );

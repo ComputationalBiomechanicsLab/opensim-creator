@@ -308,11 +308,11 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
     Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
-    Texture2D diffuse_map_ = load_texture2D_from_image(
+    Texture2D diffuse_map_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );
-    Texture2D specular_map_ = load_texture2D_from_image(
+    Texture2D specular_map_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container2_specular.jpg"),
         ColorSpace::sRGB
     );

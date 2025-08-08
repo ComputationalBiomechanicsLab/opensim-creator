@@ -70,7 +70,7 @@ namespace
 
     Material create_floor_material(IResourceLoader& loader)
     {
-        const Texture2D wood_texture = load_texture2D_from_image(
+        const Texture2D wood_texture = Image::read_into_texture(
             loader.open("oscar_demos/learnopengl/textures/wood.jpg"),
             ColorSpace::sRGB
         );
