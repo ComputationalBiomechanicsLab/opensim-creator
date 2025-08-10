@@ -18,10 +18,10 @@ namespace osc
     std::ostream& operator<<(std::ostream& o, const Mat<C, R, T>& m)
     {
         for (size_t row = 0; row < R; ++row) {
-            std::string_view delimeter;
+            std::string_view delimiter;
             for (size_t column = 0; column < C; ++column) {
-                o << delimeter << m[column][row];
-                delimeter = " ";
+                o << delimiter << m[column][row];
+                delimiter = " ";
             }
             o << '\n';
         }
