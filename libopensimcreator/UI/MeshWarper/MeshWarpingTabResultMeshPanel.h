@@ -76,7 +76,7 @@ namespace osc
         void drawOverlays(const Rect& renderRect)
         {
             // ImGui: set cursor to draw over the top-right of the render texture (with padding)
-            ui::set_cursor_ui_pos(renderRect.ypd_top_left() + m_OverlayPadding);
+            ui::set_cursor_ui_position(renderRect.ypd_top_left() + m_OverlayPadding);
 
             drawInformationIcon();
             ui::same_line();
@@ -88,7 +88,7 @@ namespace osc
             drawBlendingFactorSlider();
             drawPrescaleInputs();
 
-            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::set_cursor_panel_x(m_CursorXAtExportButton);  // align with "export" button in row above
             ui::draw_checkbox("overlay destination mesh", &m_ShowDestinationMesh);
             ui::same_line();
             {
@@ -141,7 +141,7 @@ namespace osc
         // draws an export button that enables the user to export things from this input
         void drawExportButton()
         {
-            m_CursorXAtExportButton = ui::get_cursor_panel_pos_x();  // needed to align the blending factor slider
+            m_CursorXAtExportButton = ui::get_cursor_panel_x();  // needed to align the blending factor slider
             ui::draw_button(OSC_ICON_FILE_EXPORT " export" OSC_ICON_CARET_DOWN);
             if (ui::begin_popup_context_menu("##exportcontextmenu", ui::PopupFlag::MouseButtonLeft))
             {
@@ -209,7 +209,7 @@ namespace osc
 
         void drawBlendingFactorSlider()
         {
-            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);  // align with "export" button in row above
+            ui::set_cursor_panel_x(m_CursorXAtExportButton);  // align with "export" button in row above
 
             const CStringView label = "blending factor  ";  // deliberate trailing spaces (for alignment with "landmark radius")
             ui::set_next_item_width(ui::get_content_region_available().x - ui::calc_text_size(label).x - ui::get_style_item_inner_spacing().x - m_OverlayPadding.x);
@@ -228,19 +228,19 @@ namespace osc
         void drawPrescaleInputs()
         {
             float sourcePrescale = m_State->getScratch().sourceLandmarksPrescale;
-            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            ui::set_cursor_panel_x(m_CursorXAtExportButton);
             ui::draw_float_input("source landmarks prescale", &sourcePrescale);
             if (ui::is_item_deactivated_after_edit()) {
                 ActionSetSourceLandmarksPrescale(m_State->updUndoable(), sourcePrescale);
             }
             float destinationPrescale = m_State->getScratch().destinationLandmarksPrescale;
-            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            ui::set_cursor_panel_x(m_CursorXAtExportButton);
             ui::draw_float_input("destination prescale", &destinationPrescale);
             if (ui::is_item_deactivated_after_edit()) {
                 ActionSetDestinationLandmarksPrescale(m_State->updUndoable(), destinationPrescale);
             }
 
-            ui::set_cursor_panel_pos_x(m_CursorXAtExportButton);
+            ui::set_cursor_panel_x(m_CursorXAtExportButton);
             bool affineScale = m_State->getScratch().applyAffineScale;
             ui::draw_checkbox("scale", &affineScale);
             if (ui::is_item_deactivated_after_edit()) {
@@ -295,7 +295,7 @@ namespace osc
                     .mesh = m_State->getLandmarkSphereMesh(),
                     .transform = {
                         .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
-                        .position = nonParticipatingLandmarkPos,
+                        .translation = nonParticipatingLandmarkPos,
                     },
                     .shading = m_State->getNonParticipatingLandmarkColor(),
                 });

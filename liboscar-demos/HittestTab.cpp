@@ -148,7 +148,7 @@ public:
 
             graphics::draw(
                 sphere_mesh_,
-                {.position = scene_sphere.pos},
+                {.translation = scene_sphere.pos},
                 material_,
                 camera_,
                 scene_sphere.is_hovered ? blue_color_material_props_ : red_color_material_props_
@@ -159,7 +159,7 @@ public:
 
                 graphics::draw(
                     wireframe_mesh_,
-                    {.scale = half_widths_of(scene_sphere_aabb_), .position = scene_sphere.pos},
+                    {.scale = half_widths_of(scene_sphere_aabb_), .translation = scene_sphere.pos},
                     material_,
                     camera_,
                     black_color_material_props_

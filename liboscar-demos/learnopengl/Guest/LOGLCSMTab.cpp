@@ -54,7 +54,7 @@ namespace
                     .mesh = mesh,
                     .transform = {
                         .scale = Vec3{abs(dist(rng))},
-                        .position = cell_pos,
+                        .translation = cell_pos,
                     }
                 });
             }
@@ -66,7 +66,7 @@ namespace
             .transform = {
                 .scale = {10.0f, 10.0f, 1.0f},
                 .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
-                .position = {0.0f, -1.0f, 0.0f},
+                .translation = {0.0f, -1.0f, 0.0f},
             },
         });
 
@@ -188,8 +188,8 @@ namespace
 
         // Create a transform that maps the edges of the orthogonal proection to NDC (i.e. [-1.0, +1.0])
         return mat4_cast(Transform{
-            .scale    = {   2.0f/(r - l),    2.0f/(t - b),     2.0f/(f - n)  },
-            .position = {-(r + l)/(r - l), -(t + b)/(t - b), -(f + n)/(f - n)},
+            .scale       = {  2.0f/(r - l)  ,   2.0f/(t - b)  ,   2.0f/(f - n)  },
+            .translation = {-(r + l)/(r - l), -(t + b)/(t - b), -(f + n)/(f - n)},
         });
     }
 }
@@ -288,9 +288,9 @@ private:
         ends.reserve(c_normalized_cascade_planes.size()-1);
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
             const auto [near, far] = user_camera_.clipping_planes();
-            const Vec4 view_pos = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
+            const Vec4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
             const Mat4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
-            const Vec4 proj_pos = (proj * view_pos);
+            const Vec4 proj_pos = (proj * viewer_position);
             ends.push_back(proj_pos.z);
         }
         csm_material_.set_array("gCascadeEndClipSpace", ends);

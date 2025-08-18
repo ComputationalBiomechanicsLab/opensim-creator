@@ -64,7 +64,7 @@ namespace osc
             }
         }
 
-        void drawColorCodedXYZ(Vec3 pos)
+        void drawColorCodedXYZ(Vec3 position)
         {
             ui::draw_text("(");
             ui::same_line();
@@ -73,7 +73,7 @@ namespace osc
                 color[i] = 1.0f;
 
                 ui::push_style_color(ui::ColorVar::Text, color);
-                ui::draw_text("%f", pos[i]);
+                ui::draw_text("%f", position[i]);
                 ui::same_line();
                 ui::pop_style_color();
             }

@@ -184,7 +184,7 @@ private:
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
 
-                graphics::draw(sphere_mesh_, {.position = {x, y, 0.0f}}, pbr_material_, camera_);
+                graphics::draw(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_, camera_);
             }
         }
     }
@@ -194,7 +194,7 @@ private:
         pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
 
         for (const Vec3& light_positions : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_positions}, pbr_material_, camera_);
+            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .translation = light_positions}, pbr_material_, camera_);
         }
     }
 

@@ -34,17 +34,17 @@ using osc::Vec3;
 void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    const Vec3& pos)
+    const Vec3& position)
 {
-    AddLandmarkToInput(doc.upd_scratch(), which, pos);
+    AddLandmarkToInput(doc.upd_scratch(), which, position);
     doc.commit_scratch("added landmark");
 }
 
 void osc::ActionAddNonParticipatingLandmark(
     UndoableTPSDocument& doc,
-    const Vec3& pos)
+    const Vec3& position)
 {
-    AddNonParticipatingLandmark(doc.upd_scratch(), pos);
+    AddNonParticipatingLandmark(doc.upd_scratch(), position);
     doc.commit_scratch("added non-participating landmark");
 }
 
@@ -52,7 +52,7 @@ void osc::ActionSetLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
     TPSDocumentInputIdentifier side,
-    const Vec3& newPos)
+    const Vec3& newPosition)
 {
     TPSDocumentLandmarkPair* p = FindLandmarkPair(doc.upd_scratch(), id);
     if (!p)
@@ -60,7 +60,7 @@ void osc::ActionSetLandmarkPosition(
         return;
     }
 
-    UpdLocation(*p, side) = newPos;
+    UpdLocation(*p, side) = newPosition;
     doc.commit_scratch("set landmark position");
 }
 
@@ -88,7 +88,7 @@ void osc::ActionRenameLandmark(
 void osc::ActionSetNonParticipatingLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
-    const Vec3& newPos)
+    const Vec3& newPosition)
 {
     auto* lm = FindNonParticipatingLandmark(doc.upd_scratch(), id);
     if (!lm)
@@ -96,7 +96,7 @@ void osc::ActionSetNonParticipatingLandmarkPosition(
         return;
     }
 
-    lm->location = newPos;
+    lm->location = newPosition;
     doc.commit_scratch("change non-participating landmark position");
 }
 

@@ -28,15 +28,15 @@
 void osc::fd::ActionAddSphereInMeshFrame(
     IModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    const std::optional<Vec3>& maybeClickPosInGround)
+    const std::optional<Vec3>& clickPositionInGround)
 {
     if (model.isReadonly()) {
         return;
     }
 
-    // if the caller requests a location via a click, set the position accordingly
-    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
-        CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
+    // if the caller requests a location via a click, set the location accordingly
+    const SimTK::Vec3 locationInMeshFrame = clickPositionInGround ?
+        CalcLocationInFrame(mesh.getFrame(), model.getState(), *clickPositionInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
     const std::string sphereName = GenerateSceneElementName("sphere_");
@@ -68,15 +68,15 @@ void osc::fd::ActionAddSphereInMeshFrame(
 void osc::fd::ActionAddOffsetFrameInMeshFrame(
     IModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    const std::optional<Vec3>& maybeClickPosInGround)
+    const std::optional<Vec3>& clickPositionInGround)
 {
     if (model.isReadonly()) {
         return;
     }
 
     // if the caller requests a location via a click, set the position accordingly
-    const SimTK::Vec3 locationInMeshFrame = maybeClickPosInGround ?
-        CalcLocationInFrame(mesh.getFrame(), model.getState(), *maybeClickPosInGround) :
+    const SimTK::Vec3 locationInMeshFrame = clickPositionInGround ?
+        CalcLocationInFrame(mesh.getFrame(), model.getState(), *clickPositionInGround) :
         SimTK::Vec3{0.0, 0.0, 0.0};
 
     const std::string pofName = GenerateSceneElementName("pof_");

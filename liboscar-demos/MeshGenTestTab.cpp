@@ -88,7 +88,7 @@ public:
             render_params_.light_direction = recommended_light_direction(camera_);
             render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
-            render_params_.view_pos = camera_.position();
+            render_params_.viewer_position = camera_.position();
             render_params_.near_clipping_plane = camera_.znear;
             render_params_.far_clipping_plane = camera_.zfar;
             render_params_.draw_floor = false;
@@ -101,7 +101,7 @@ public:
             }}}, render_params_);
 
             // Draw camera manipulator
-            ui::set_cursor_ui_pos(viewport_ui_rect.ypd_top_right() - Vec2{camera_axes_ui_.dimensions().x, 0.0f});
+            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vec2{camera_axes_ui_.dimensions().x, 0.0f});
             camera_axes_ui_.draw(camera_);
         }
         ui::end_panel();

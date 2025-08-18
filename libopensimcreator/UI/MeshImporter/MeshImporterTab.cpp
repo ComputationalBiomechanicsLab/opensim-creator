@@ -1282,7 +1282,7 @@ private:
 
         if (ui::draw_menu_item("reset"))
         {
-            el.setXform(m_Shared->getModelGraph(), Transform{.position = el.getPos(m_Shared->getModelGraph())});
+            el.setXform(m_Shared->getModelGraph(), Transform{.translation = el.getPos(m_Shared->getModelGraph())});
             m_Shared->commitCurrentModelGraph("reset " + el.getLabel() + " orientation");
         }
 
@@ -1861,11 +1861,11 @@ private:
 
             const Vec2 windowPadding = ui::get_style_panel_padding();
             const Vec2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{windowPadding.x, -windowPadding.y} - Vec2{0.0f, axes.dimensions().y};
-            ui::set_cursor_ui_pos(axesTopLeft);
+            ui::set_cursor_ui_position(axesTopLeft);
             axes.draw(m_Shared->updCamera());
         }
 
-        ui::set_cursor_ui_pos(m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{100.0f, -55.0f});
+        ui::set_cursor_ui_position(m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{100.0f, -55.0f});
 
         if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
         {
@@ -1964,7 +1964,7 @@ private:
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
         };
 
-        ui::set_cursor_ui_pos(buttonTopLeft);
+        ui::set_cursor_ui_position(buttonTopLeft);
         ui::push_style_color(ui::ColorVar::Button, Color::dark_green());
         if (ui::draw_button(mainButtonText))
         {
@@ -2060,14 +2060,14 @@ private:
 
             while (it != end) {
                 const Transform t = mg.getXFormByID(*it);
-                ras.position += t.position;
+                ras.translation += t.translation;
                 ras.rotation += t.rotation;
                 ras.scale += t.scale;
                 ++it;
                 ++n;
             }
 
-            ras.position /= static_cast<float>(n);
+            ras.translation /= static_cast<float>(n);
             ras.rotation /= static_cast<float>(n);
             ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
@@ -2103,7 +2103,7 @@ private:
                 el.applyRotation(m_Shared->getModelGraph(), extract_eulers_xyz(userManipulation->rotation), Vec3{m_GizmoModelMatrix[3]});
                 break;
             case ui::GizmoOperation::Translate: {
-                el.applyTranslation(m_Shared->getModelGraph(), userManipulation->position);
+                el.applyTranslation(m_Shared->getModelGraph(), userManipulation->translation);
                 break;
             }
             case ui::GizmoOperation::Scale:
@@ -2347,7 +2347,7 @@ private:
             // outside of the panel
             ui::open_popup("##visualizermodalpopup");
             ui::set_next_panel_size(m_Shared->get3DSceneDims());
-            ui::set_next_panel_ui_pos(m_Shared->get3DSceneRect().ypd_top_left());
+            ui::set_next_panel_ui_position(m_Shared->get3DSceneRect().ypd_top_left());
             ui::push_style_var(ui::StyleVar::PanelPadding, {0.0f, 0.0f});
 
             const ui::PanelFlags modalFlags = {
@@ -2375,7 +2375,7 @@ private:
             {
                 ui::pop_style_var();
                 draw3DViewer();
-                ui::set_cursor_panel_pos(ui::get_cursor_start_panel_pos() + Vec2{10.0f, 10.0f});
+                ui::set_cursor_panel_position(ui::get_cursor_start_panel_position() + Vec2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else

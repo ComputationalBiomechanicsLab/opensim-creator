@@ -90,7 +90,7 @@ bool osc::mi::TryCreateJoint(
         std::string{},
         parentID,
         childID,
-        Transform{.position = midPoint}
+        Transform{.translation = midPoint}
     );
     doc.selectOnly(joint);
 
@@ -394,12 +394,12 @@ bool osc::mi::TryCopyOrientation(
 
 UID osc::mi::AddBody(
     UndoableDocument& udoc,
-    const Vec3& pos,
+    const Vec3& position,
     UID andTryAttach)
 {
     Document& doc = udoc.upd_scratch();
 
-    const auto& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.position = pos});
+    const auto& b = doc.emplace<Body>(UID{}, Body::Class().generateName(), Transform{.translation = position});
     doc.deSelectAll();
     doc.select(b.getID());
 

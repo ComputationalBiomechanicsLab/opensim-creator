@@ -50,7 +50,7 @@ namespace
                         .mesh = mesh,
                         .transform = {
                             .scale = Vec3{dist(rng)},
-                            .position = pos,
+                            .translation = pos,
                         }
                     });
                 }
@@ -126,7 +126,7 @@ public:
         }
         graphics::draw(
             SphereGeometry{},
-            {.scale = Vec3{0.1f}, .position = user_camera_.position()},
+            {.scale = Vec3{0.1f}, .translation = user_camera_.position()},
             material_,
             top_down_camera_,
             green_material_props_

@@ -213,7 +213,7 @@ public:
                 *m_State.meshCache,
                 m_Decorations.decorations,
                 m_State.renderParams.camera,
-                ui::get_mouse_ui_pos(),
+                ui::get_mouse_ui_position(),
                 panelState.viewportUiRect
             );
             if (collision)
@@ -233,7 +233,7 @@ public:
         }
 
         // show header
-        ui::set_cursor_ui_pos(panelState.viewportUiRect.ypd_top_left() + Vec2{10.0f, 10.0f});
+        ui::set_cursor_ui_position(panelState.viewportUiRect.ypd_top_left() + Vec2{10.0f, 10.0f});
         ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
@@ -251,7 +251,7 @@ public:
             const Vec2 margin = {25.0f, 25.0f};
             const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
             const Vec2 buttonTopLeft = panelState.viewportUiRect.ypd_bottom_right() - (buttonDims + margin);
-            ui::set_cursor_ui_pos(buttonTopLeft);
+            ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(cancellationButtonText))
             {
                 m_State.shouldClosePopup = true;

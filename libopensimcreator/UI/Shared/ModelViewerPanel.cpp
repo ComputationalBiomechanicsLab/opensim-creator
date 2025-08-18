@@ -363,9 +363,9 @@ public:
         return m_State.pushLayer(std::move(layer));
     }
 
-    void focusOn(const Vec3& pos)
+    void focusOn(const Vec3& position)
     {
-        m_Parameters.updRenderParams().camera.focus_point = -pos;
+        m_Parameters.updRenderParams().camera.focus_point = -position;
     }
 
     std::optional<Rect> getScreenRect() const
@@ -467,7 +467,7 @@ public:
         {
             m_State.maybeBaseLayerHittest = m_State.getRenderer().getClosestCollision(
                 m_Parameters.getRenderParams(),
-                ui::get_mouse_ui_pos(),
+                ui::get_mouse_ui_position(),
                 m_State.viewportUiRect
             );
         }
@@ -543,7 +543,7 @@ private:
             // draw the layer in a child window, so that ImGui understands that hittests
             // should happen window-by-window (otherwise, you'll have problems with overlapping
             // buttons, widgets, etc.)
-            ui::set_next_panel_ui_pos(m_State.viewportUiRect.ypd_top_left());
+            ui::set_next_panel_ui_position(m_State.viewportUiRect.ypd_top_left());
             const std::string childID = std::to_string(std::distance(it, m_Layers.end()));
             if (ui::begin_child_panel(childID, m_State.viewportUiRect.dimensions(), ui::ChildPanelFlags{}, windowFlags)) {
                 layer.onDraw(m_Parameters, m_State);
@@ -588,7 +588,7 @@ ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelVie
 {
     return private_data().pushLayer(std::move(layer));
 }
-void osc::ModelViewerPanel::focusOn(const Vec3& pos) { private_data().focusOn(pos); }
+void osc::ModelViewerPanel::focusOn(const Vec3& position) { private_data().focusOn(position); }
 std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const { return private_data().getScreenRect(); }
 const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
 void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }

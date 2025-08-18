@@ -706,7 +706,7 @@ namespace
 
         if (userEditInGround) {
             // propagate user edit to the model via the `ISelectionManipulator` interface
-            manipulator.onApplyTransform(SimTK::Transform{to<SimTK::Rotation>(userEditInGround->rotation), to<SimTK::Vec3>(userEditInGround->position)});
+            manipulator.onApplyTransform(SimTK::Transform{to<SimTK::Rotation>(userEditInGround->rotation), to<SimTK::Vec3>(userEditInGround->translation)});
         }
 
         // once the user stops using the manipulator, save the changes

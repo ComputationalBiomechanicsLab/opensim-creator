@@ -173,7 +173,7 @@ private:
     {
         const Rect window_ui_rect = ui::get_content_region_available_ui_rect();
         const Rect image_ui_rect = shrink_to_fit(window_ui_rect, aspect_ratio_of(screenshot_.dimensions()));
-        ui::set_cursor_ui_pos(image_ui_rect.ypd_top_left());
+        ui::set_cursor_ui_position(image_ui_rect.ypd_top_left());
         ui::draw_image(image_texture_, image_ui_rect.dimensions());
         return image_ui_rect;
     }
@@ -184,7 +184,7 @@ private:
         const Color& unselected_color,
         const Color& selected_color)
     {
-        const Vec2 mouse_ui_pos = ui::get_mouse_ui_pos();
+        const Vec2 mouse_ui_pos = ui::get_mouse_ui_position();
         const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
         const Vec2 screenshot_dimensions = screenshot_.dimensions();
 

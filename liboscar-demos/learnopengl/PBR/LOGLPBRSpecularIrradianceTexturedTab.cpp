@@ -286,7 +286,7 @@ private:
         Vec3 pos = {-5.0f, 0.0f, 2.0f};
         for (const IBLSpecularObjectTextures& texture : object_textures_) {
             set_material_maps(pbr_material_, texture);
-            graphics::draw(sphere_mesh_, {.position = pos}, pbr_material_, camera_);
+            graphics::draw(sphere_mesh_, {.translation = pos}, pbr_material_, camera_);
             pos.x += 2.0f;
         }
     }
@@ -296,7 +296,7 @@ private:
         for (const Vec3& position : c_light_positions) {
             graphics::draw(
                 sphere_mesh_,
-                {.scale = Vec3{0.5f}, .position = position},
+                {.scale = Vec3{0.5f}, .translation = position},
                 pbr_material_,
                 camera_
             );

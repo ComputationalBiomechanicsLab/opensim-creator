@@ -61,7 +61,7 @@ namespace osc
 
         std::optional<SceneCollision> getClosestCollision(
             const ModelRendererParams&,
-            Vec2 mouseScreenPos,
+            Vec2 mouseScreenPosition,
             const Rect& viewportScreenRect
         ) const;
 

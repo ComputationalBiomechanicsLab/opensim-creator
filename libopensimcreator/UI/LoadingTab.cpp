@@ -108,7 +108,7 @@ public:
         // center the menu
         {
             const Vec2 menuTopLeft = 0.5f * (workspaceDims - menuDimsGuess);
-            ui::set_next_panel_ui_pos(workspaceUIRect.ypd_top_left() + menuTopLeft);
+            ui::set_next_panel_ui_position(workspaceUIRect.ypd_top_left() + menuTopLeft);
             ui::set_next_panel_size({menuDimsGuess.x, -1.0f});
         }
 

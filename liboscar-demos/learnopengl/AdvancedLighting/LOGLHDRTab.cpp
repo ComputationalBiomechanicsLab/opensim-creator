@@ -29,7 +29,7 @@ namespace
 
     Transform calc_corridoor_transform()
     {
-        return {.scale = {2.5f, 2.5f, 27.5f}, .position = {0.0f, 0.0f, 25.0f}};
+        return {.scale = {2.5f, 2.5f, 27.5f}, .translation = {0.0f, 0.0f, 25.0f}};
     }
 
     MouseCapturingCamera create_scene_camera()

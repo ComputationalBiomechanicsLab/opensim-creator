@@ -41,7 +41,7 @@ namespace osc
         SceneCache&,
         std::span<const SceneDecoration> taggedDrawlist,
         const PolarPerspectiveCamera&,
-        Vec2 mouseScreenPos,
+        Vec2 mouseScreenPosition,
         const Rect& viewportScreenRect
     );
 }

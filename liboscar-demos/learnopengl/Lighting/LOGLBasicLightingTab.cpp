@@ -55,7 +55,7 @@ public:
         // draw cube
         lighting_material_.set("uObjectColor", object_color_);
         lighting_material_.set("uLightColor", light_color_);
-        lighting_material_.set("uLightPos", light_transform_.position);
+        lighting_material_.set("uLightPos", light_transform_.translation);
         lighting_material_.set("uViewPos", camera_.position());
         lighting_material_.set("uAmbientStrength", ambient_strength_);
         lighting_material_.set("uDiffuseStrength", diffuse_strength_);
@@ -71,7 +71,7 @@ public:
 
         // render auxiliary UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("light pos", light_transform_.position);
+        ui::draw_vec3_input("light pos", light_transform_.translation);
         ui::draw_float_input("ambient strength", &ambient_strength_);
         ui::draw_float_input("diffuse strength", &diffuse_strength_);
         ui::draw_float_input("specular strength", &specular_strength_);
@@ -99,7 +99,7 @@ private:
 
     Transform light_transform_ = {
         .scale = Vec3{0.2f},
-        .position = {1.2f, 1.0f, 2.0f},
+        .translation = {1.2f, 1.0f, 2.0f},
     };
     Color object_color_ = {1.0f, 0.5f, 0.31f, 1.0f};
     Color light_color_ = Color::white();

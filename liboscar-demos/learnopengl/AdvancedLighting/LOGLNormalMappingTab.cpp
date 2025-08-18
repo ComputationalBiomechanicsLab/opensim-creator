@@ -92,7 +92,7 @@ public:
 
         // draw normal-mapped quad
         {
-            normal_mapping_material_.set("uLightWorldPos", light_transform_.position);
+            normal_mapping_material_.set("uLightWorldPos", light_transform_.translation);
             normal_mapping_material_.set("uViewWorldPos", camera_.position());
             normal_mapping_material_.set("uEnableNormalMapping", normal_mapping_enabled_);
             graphics::draw(quad_mesh_, quad_transform_, normal_mapping_material_, camera_);
@@ -126,7 +126,7 @@ private:
     Transform quad_transform_;
     Transform light_transform_ = {
         .scale = Vec3{0.2f},
-        .position = {0.5f, 1.0f, 0.3f},
+        .translation = {0.5f, 1.0f, 0.3f},
     };
     bool normal_mapping_enabled_ = true;
 };

@@ -292,8 +292,8 @@ namespace
                 direction[axis] = 1.0f;
 
                 const LineSegment lineSegment = {
-                    t.position,
-                    t.position + (legLen * axisLengths[axis] * transform_direction(t, direction))
+                    t.translation,
+                    t.translation + (legLen * axisLengths[axis] * transform_direction(t, direction))
                 };
                 const Transform legXform = cylinder_to_line_segment_transform(lineSegment, legThickness);
 

@@ -1465,7 +1465,7 @@ namespace
         const auto halfspace2parent = to<Transform>(halfSpace.getTransform());
 
         return Plane{
-            .origin = parent2ground * halfspace2parent.position,
+            .origin = parent2ground * halfspace2parent.translation,
             .normal = parent2ground.rotation * halfspace2parent.rotation * c_ContactHalfSpaceUpwardsNormal,
         };
     }

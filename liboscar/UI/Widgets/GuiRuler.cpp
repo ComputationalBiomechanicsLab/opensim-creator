@@ -36,7 +36,7 @@ void osc::GuiRuler::on_draw(
         return;
     }
 
-    const Vec2 mouse_ui_pos = ui::get_mouse_ui_pos();
+    const Vec2 mouse_ui_pos = ui::get_mouse_ui_position();
     const Color circle_moused_over_nothing_color = Color::red().with_alpha(0.6f);
     const Color circle_color = Color::white().with_alpha(0.8f);
     const Color line_color = circle_color;

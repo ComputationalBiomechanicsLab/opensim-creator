@@ -138,7 +138,7 @@ namespace osc
         const Mesh&,
         const BVH& triangle_bvh,
         const Rect& screen_render_rect,
-        Vec2 screen_mouse_pos
+        Vec2 mouse_screen_position
     );
 
     // returns scene rendering parameters for an generic panel

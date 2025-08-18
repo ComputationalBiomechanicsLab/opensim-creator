@@ -54,7 +54,7 @@ namespace osc
         float far_clipping_plane = 100.0f;
         Mat4 view_matrix = identity<Mat4>();
         Mat4 projection_matrix = identity<Mat4>();
-        Vec3 view_pos = {0.0f, 0.0f, 0.0f};
+        Vec3 viewer_position = {0.0f, 0.0f, 0.0f};
 
         // shading parameters
         Vec3 light_direction = {-0.34f, -0.25f, 0.05f};

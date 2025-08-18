@@ -658,10 +658,10 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
     );
 }
 
-Ray osc::PolarPerspectiveCamera::unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const
+Ray osc::PolarPerspectiveCamera::unproject_topleft_position_to_world_ray(Vec2 position, Vec2 dimensions) const
 {
     return perspective_unproject_topleft_normalized_pos_to_world(
-        pos / dimensions,
+        position / dimensions,
         this->position(),
         view_matrix(),
         projection_matrix(aspect_ratio_of(dimensions))
@@ -1213,7 +1213,7 @@ AABB osc::transform_aabb(const Transform& transform, const AABB& aabb)
 
     const Mat3 mat = mat3_cast(transform);
 
-    AABB rv = bounding_aabb_of(transform.position);  // add in the translation
+    AABB rv = bounding_aabb_of(transform.translation);  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i) {
 
         // form extent by summing smaller and larger terms respectively
@@ -1311,7 +1311,7 @@ Transform osc::transform_between(const LineSegment& a, const LineSegment& b)
     return Transform{
         .scale = Vec3{1.0f, 1.0f, 1.0f} + ((b_length/a_length - 1.0f)*a_direction),
         .rotation = rotation(a_direction, b_direction),
-        .position = b_center - a_center,
+        .translation = b_center - a_center,
     };
 }
 
@@ -1340,7 +1340,7 @@ void osc::apply_world_space_rotation(
     const Vec3& rotation_center)
 {
     const Quat q = to_world_space_rotation_quat(euler_angles);
-    application_target.position = q*(application_target.position - rotation_center) + rotation_center;
+    application_target.translation = q*(application_target.translation - rotation_center) + rotation_center;
     application_target.rotation = normalize(q*application_target.rotation);
 }
 

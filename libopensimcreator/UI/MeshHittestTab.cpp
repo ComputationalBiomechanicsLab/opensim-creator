@@ -53,7 +53,7 @@ public:
 
         const Rect r = ui::get_main_window_workspace_ui_rect();
         const Vec2 d = r.dimensions();
-        m_Ray = m_PolarCamera.unproject_topleft_pos_to_world_ray(ui::get_mouse_ui_pos() - r.ypd_top_left(), d);
+        m_Ray = m_PolarCamera.unproject_topleft_position_to_world_ray(ui::get_mouse_ui_position() - r.ypd_top_left(), d);
 
         m_IsMousedOver = false;
         if (m_UseBVH) {

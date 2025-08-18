@@ -710,7 +710,7 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = {
                 .scale = Vec3{radius},
-                .position = to<Vec3>(s.getLocationInGround(rs.getState())),
+                .translation = to<Vec3>(s.getLocationInGround(rs.getState())),
             },
             .shading = c_StationColor,
         });
@@ -749,7 +749,7 @@ namespace
 
         const float radius = rs.getFixupScaleFactor() * 0.0075f;
         Transform t = TransformInGround(b, rs.getState());
-        t.position = t * to<Vec3>(b.getMassCenter());
+        t.translation = t * to<Vec3>(b.getMassCenter());
         t.scale = Vec3{radius};
 
         // draw four octants with the first color
@@ -864,7 +864,7 @@ namespace
             if (p.maybeUnderlyingUserPathPoint) {
                 c = p.maybeUnderlyingUserPathPoint;
             }
-            rs.consume(*c, tendonSpherePrototype.with_position(p.locationInGround));
+            rs.consume(*c, tendonSpherePrototype.with_translation(p.locationInGround));
         };
         const auto emitTendonCylinder = [&](const Vec3& p1, const Vec3& p2)
         {
@@ -877,7 +877,7 @@ namespace
             if (p.maybeUnderlyingUserPathPoint) {
                 c = p.maybeUnderlyingUserPathPoint;
             }
-            rs.consume(*c, fiberSpherePrototype.with_position(p.locationInGround));
+            rs.consume(*c, fiberSpherePrototype.with_translation(p.locationInGround));
         };
         auto emitFiberCylinder = [&](const Vec3& p1, const Vec3& p2)
         {
@@ -902,20 +902,20 @@ namespace
 
         size_t i = 1;
         GeometryPathPoint prevPoint = pps.front();
-        float prevTraversalPos = 0.0f;
+        float prevTraversalPosition = 0.0f;
 
         // emit first sphere for first tendon
-        if (prevTraversalPos < tendonLen) {
+        if (prevTraversalPosition < tendonLen) {
             emitTendonSphere(prevPoint);  // emit first tendon sphere
         }
 
         // emit remaining cylinders + spheres for first tendon
-        while (i < pps.size() && prevTraversalPos < tendonLen) {
+        while (i < pps.size() && prevTraversalPosition < tendonLen) {
 
             const GeometryPathPoint& point = pps[i];
             const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
-            const float traversalPos = prevTraversalPos + prevToPosLen;
+            const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - tendonLen;
 
             if (excess > 0.0f) {
@@ -926,7 +926,7 @@ namespace
                 emitTendonSphere(GeometryPathPoint{tendonEnd});
 
                 prevPoint.locationInGround = tendonEnd;
-                prevTraversalPos = tendonLen;
+                prevTraversalPosition = tendonLen;
             }
             else {
                 emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -934,23 +934,23 @@ namespace
 
                 i++;
                 prevPoint = point;
-                prevTraversalPos = traversalPos;
+                prevTraversalPosition = traversalPos;
             }
         }
 
         // emit first sphere for fiber
-        if (i < pps.size() && prevTraversalPos < fiberEnd) {
+        if (i < pps.size() && prevTraversalPosition < fiberEnd) {
             // label the sphere if no tendon spheres were previously emitted
             emitFiberSphere(hasTendonSpheres ? GeometryPathPoint{prevPoint.locationInGround} : prevPoint);
         }
 
         // emit remaining cylinders + spheres for fiber
-        while (i < pps.size() && prevTraversalPos < fiberEnd) {
+        while (i < pps.size() && prevTraversalPosition < fiberEnd) {
 
             const GeometryPathPoint& point = pps[i];
             const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
-            const float traversalPos = prevTraversalPos + prevToPosLen;
+            const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - fiberEnd;
 
             if (excess > 0.0f) {
@@ -962,7 +962,7 @@ namespace
                 emitFiberSphere(GeometryPathPoint{fiberEndPos});
 
                 prevPoint.locationInGround = fiberEndPos;
-                prevTraversalPos = fiberEnd;
+                prevTraversalPosition = fiberEnd;
             }
             else {
                 emitFiberCylinder(prevPoint.locationInGround, point.locationInGround);
@@ -970,7 +970,7 @@ namespace
 
                 i++;
                 prevPoint = point;
-                prevTraversalPos = traversalPos;
+                prevTraversalPosition = traversalPos;
             }
         }
 
@@ -985,14 +985,14 @@ namespace
             const GeometryPathPoint& point = pps[i];
             const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
-            const float traversalPos = prevTraversalPos + prevToPosLen;
+            const float traversalPos = prevTraversalPosition + prevToPosLen;
 
             emitTendonCylinder(prevPoint.locationInGround, point.locationInGround);
             emitTendonSphere(point);
 
             i++;
             prevPoint = point;
-            prevTraversalPos = traversalPos;
+            prevTraversalPosition = traversalPos;
         }
     }
 
@@ -1026,7 +1026,7 @@ namespace
                     // the "join" between the sphere and cylinders nicer (#593)
                     .scale = Vec3{radius},
                     .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
-                    .position = pp.locationInGround
+                    .translation = pp.locationInGround
                 },
                 .shading = color,
             });

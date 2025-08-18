@@ -1182,7 +1182,7 @@ namespace
         }
 
         // update mouse position
-        if (const auto p = App::upd().mouse_pos_in_main_window()) {
+        if (const auto p = App::upd().mouse_position_in_main_window()) {
             ImGui::GetIO().AddMousePosEvent(p->x, io.DisplaySize.y - p->y);
         }
         ImGui_ImplOscar_UpdateMouseCursor(app);
@@ -2130,44 +2130,44 @@ Vec2 osc::ui::get_content_region_available()
     return ImGui::GetContentRegionAvail();
 }
 
-Vec2 osc::ui::get_cursor_start_panel_pos()
+Vec2 osc::ui::get_cursor_start_panel_position()
 {
     return ImGui::GetCursorStartPos();
 }
 
-Vec2 osc::ui::get_cursor_panel_pos()
+Vec2 osc::ui::get_cursor_panel_position()
 {
     return ImGui::GetCursorPos();
 }
 
-void osc::ui::set_cursor_panel_pos(Vec2 pos)
+void osc::ui::set_cursor_panel_position(Vec2 position)
 {
-    ImGui::SetCursorPos(pos);
+    ImGui::SetCursorPos(position);
 }
 
-float osc::ui::get_cursor_panel_pos_x()
+float osc::ui::get_cursor_panel_x()
 {
     return ImGui::GetCursorPosX();
 }
 
-void osc::ui::set_cursor_panel_pos_x(float local_x)
+void osc::ui::set_cursor_panel_x(float local_x)
 {
     ImGui::SetCursorPosX(local_x);
 }
 
-Vec2 osc::ui::get_cursor_ui_pos()
+Vec2 osc::ui::get_cursor_ui_position()
 {
     return ImGui::GetCursorScreenPos();
 }
 
-void osc::ui::set_cursor_ui_pos(Vec2 pos)
+void osc::ui::set_cursor_ui_position(Vec2 position)
 {
-    ImGui::SetCursorScreenPos(pos);
+    ImGui::SetCursorScreenPos(position);
 }
 
-void osc::ui::set_next_panel_ui_pos(Vec2 pos, Conditional conditional, Vec2 pivot)
+void osc::ui::set_next_panel_ui_position(Vec2 position, Conditional conditional, Vec2 pivot)
 {
-    ImGui::SetNextWindowPos(pos, to<ImGuiCond>(conditional), pivot);
+    ImGui::SetNextWindowPos(position, to<ImGuiCond>(conditional), pivot);
 }
 
 void osc::ui::set_next_panel_size(Vec2 size, Conditional conditional)
@@ -2340,14 +2340,14 @@ bool osc::ui::wants_keyboard()
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void osc::ui::push_style_var(StyleVar var, Vec2 pos)
+void osc::ui::push_style_var(StyleVar var, Vec2 value)
 {
-    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), pos);
+    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), value);
 }
 
-void osc::ui::push_style_var(StyleVar var, float pos)
+void osc::ui::push_style_var(StyleVar var, float value)
 {
-    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), pos);
+    ImGui::PushStyleVar(to<ImGuiStyleVar>(var), value);
 }
 
 void osc::ui::pop_style_var(int count)
@@ -2380,7 +2380,7 @@ void osc::ui::end_popup()
     ImGui::EndPopup();
 }
 
-Vec2 osc::ui::get_mouse_ui_pos()
+Vec2 osc::ui::get_mouse_ui_position()
 {
     return ImGui::GetMousePos();
 }
@@ -2442,15 +2442,15 @@ bool osc::ui::is_item_deactivated_after_edit()
 
 Rect osc::ui::get_item_ui_rect()
 {
-    return Rect::from_corners(get_item_top_left_ui_pos(), get_item_bottom_right_ui_pos());
+    return Rect::from_corners(get_item_top_left_ui_position(), get_item_bottom_right_ui_position());
 }
 
-Vec2 osc::ui::get_item_top_left_ui_pos()
+Vec2 osc::ui::get_item_top_left_ui_position()
 {
     return ImGui::GetItemRectMin();
 }
 
-Vec2 osc::ui::get_item_bottom_right_ui_pos()
+Vec2 osc::ui::get_item_bottom_right_ui_position()
 {
     return ImGui::GetItemRectMax();
 }
@@ -2959,7 +2959,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 
 Rect osc::ui::get_content_region_available_ui_rect()
 {
-    const Vec2 top_left = ui::get_cursor_ui_pos();
+    const Vec2 top_left = ui::get_cursor_ui_position();
     return Rect::from_corners(top_left, top_left + ui::get_content_region_available());
 }
 
@@ -3025,7 +3025,7 @@ bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec
 
 Rect osc::ui::get_last_drawn_item_ui_rect()
 {
-    return Rect::from_corners(ui::get_item_top_left_ui_pos(), ui::get_item_bottom_right_ui_pos());
+    return Rect::from_corners(ui::get_item_top_left_ui_position(), ui::get_item_bottom_right_ui_position());
 }
 
 Rect osc::ui::get_last_drawn_item_screen_rect()
@@ -3319,10 +3319,7 @@ float osc::ui::get_main_window_workspace_aspect_ratio()
 
 bool osc::ui::is_mouse_in_main_window_workspace()
 {
-    const Vec2 mousepos = ui::get_mouse_ui_pos();
-    const Rect hitRect = get_main_window_workspace_ui_rect();
-
-    return is_intersecting(hitRect, mousepos);
+    return is_intersecting(get_main_window_workspace_ui_rect(), get_mouse_ui_position());
 }
 
 bool osc::ui::begin_main_window_top_bar(CStringView label, float height, PanelFlags flags)
@@ -3353,10 +3350,10 @@ bool osc::ui::begin_main_window_bottom_bar(CStringView label)
 bool osc::ui::draw_button_centered(CStringView label)
 {
     const float button_width = ui::calc_text_size(label).x + 2.0f*ui::get_style_frame_padding().x;
-    const float midpoint = ui::get_cursor_ui_pos().x + 0.5f*ui::get_content_region_available().x;
+    const float midpoint = ui::get_cursor_ui_position().x + 0.5f*ui::get_content_region_available().x;
     const float button_start_x = midpoint - 0.5f*button_width;
 
-    ui::set_cursor_ui_pos({button_start_x, ui::get_cursor_ui_pos().y});
+    ui::set_cursor_ui_position({button_start_x, ui::get_cursor_ui_position().y});
 
     return ui::draw_button(label);
 }
@@ -3366,7 +3363,7 @@ void osc::ui::draw_text_centered(CStringView content)
     const float panel_width = ui::get_panel_size().x;
     const float text_width   = ui::calc_text_size(content).x;
 
-    ui::set_cursor_panel_pos_x(0.5f * (panel_width - text_width));
+    ui::set_cursor_panel_x(0.5f * (panel_width - text_width));
     draw_text(content);
 }
 
@@ -3375,7 +3372,7 @@ void osc::ui::draw_text_panel_centered(CStringView content)
     const auto panel_dimensions = ui::get_panel_size();
     const auto text_dimensions = ui::calc_text_size(content);
 
-    ui::set_cursor_panel_pos(0.5f * (panel_dimensions - text_dimensions));
+    ui::set_cursor_panel_position(0.5f * (panel_dimensions - text_dimensions));
     draw_text(content);
 }
 
@@ -3396,10 +3393,10 @@ void osc::ui::draw_text_disabled_and_panel_centered(CStringView content)
 void osc::ui::draw_text_column_centered(CStringView content)
 {
     const float column_width = ui::get_column_width();
-    const float column_offset = ui::get_cursor_panel_pos().x;
+    const float column_offset = ui::get_cursor_panel_position().x;
     const float text_width = ui::calc_text_size(content).x;
 
-    ui::set_cursor_panel_pos_x(column_offset + 0.5f*(column_width-text_width));
+    ui::set_cursor_panel_x(column_offset + 0.5f*(column_width-text_width));
     draw_text(content);
 }
 
@@ -3533,7 +3530,7 @@ bool osc::ui::draw_float_circular_slider(
     // calculate top-level item info for early-cull checks etc.
     const Vec2 label_size = ui::calc_text_size(label, true);
     const Vec2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
-    const Vec2 cursor_screen_pos = ui::get_cursor_ui_pos();
+    const Vec2 cursor_screen_pos = ui::get_cursor_ui_position();
     const ImRect frame_bounds = {cursor_screen_pos, cursor_screen_pos + frame_dims};
     const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
     const ImRect total_bounds = {frame_bounds.Min, Vec2{frame_bounds.Max} + Vec2{label_width_with_spacing, 0.0f}};
@@ -4198,13 +4195,13 @@ bool osc::ui::plot::is_plot_hovered()
     return ImPlot::IsPlotHovered();
 }
 
-Vec2 osc::ui::plot::get_plot_mouse_pos()
+Vec2 osc::ui::plot::get_plot_mouse_position()
 {
     const auto pos = ImPlot::GetPlotMousePos();
     return Vec2{pos.x, pos.y};
 }
 
-Vec2 osc::ui::plot::get_plot_mouse_pos(Axis x_axis, Axis y_axis)
+Vec2 osc::ui::plot::get_plot_mouse_position(Axis x_axis, Axis y_axis)
 {
     const auto pos = ImPlot::GetPlotMousePos(to_ImAxis(x_axis), to_ImAxis(y_axis));
     return Vec2{pos.x, pos.y};

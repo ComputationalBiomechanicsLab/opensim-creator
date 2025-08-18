@@ -1161,7 +1161,7 @@ bool osc::ActionAddPathPointToGeometryPath(
 
     const size_t n = size(gp->getPathPointSet());
     const std::string name = gp->getName() + "-P" + std::to_string(n + 1);
-    const SimTK::Vec3 pos = {0.0f, 0.0f, 0.0f};
+    const SimTK::Vec3 position = {0.0f, 0.0f, 0.0f};
 
     const UID oldVersion = uim.getModelVersion();
     try {
@@ -1175,7 +1175,7 @@ bool osc::ActionAddPathPointToGeometryPath(
 
         const std::string gpName = mutGP->getName();
 
-        mutGP->appendNewPathPoint(name, *pf, pos);
+        mutGP->appendNewPathPoint(name, *pf, position);
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);
@@ -1222,7 +1222,7 @@ bool osc::ActionAddPathPointToPathActuator(
 
     const size_t n = size(pa->getGeometryPath().getPathPointSet());
     const std::string name = pa->getName() + "-P" + std::to_string(n + 1);
-    const SimTK::Vec3 pos = {0.0f, 0.0f, 0.0f};
+    const SimTK::Vec3 position = {0.0f, 0.0f, 0.0f};
 
     const UID oldVersion = uim.getModelVersion();
     try {
@@ -1236,7 +1236,7 @@ bool osc::ActionAddPathPointToPathActuator(
 
         const std::string paName = mutPA->getName();
 
-        mutPA->addNewPathPoint(name, *pf, pos);
+        mutPA->addNewPathPoint(name, *pf, position);
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
         InitializeState(mutModel);

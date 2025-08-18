@@ -94,8 +94,8 @@ public:
         {
             // cubes
             scene_render_material_.set("uTexture1", container_texture_);
-            graphics::draw(cube_mesh_, {.position = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
-            graphics::draw(cube_mesh_, {.position = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
+            graphics::draw(cube_mesh_, {.translation = {-1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
+            graphics::draw(cube_mesh_, {.translation = { 1.0f, 0.0f, -1.0f}}, scene_render_material_, scene_camera_);
 
             // floor
             scene_render_material_.set("uTexture1", metal_texture_);

@@ -206,7 +206,7 @@ public:
 
     std::optional<SceneCollision> getClosestCollision(
         const ModelRendererParams& params,
-        Vec2 mouseScreenPos,
+        Vec2 mouseScreenPosition,
         const Rect& viewportScreenRect) const
     {
         return GetClosestCollision(
@@ -214,7 +214,7 @@ public:
             m_DecorationCache.updSceneCache(),
             m_DecorationCache.getDrawlist(),
             params.camera,
-            mouseScreenPos,
+            mouseScreenPosition,
             viewportScreenRect
         );
     }
@@ -279,8 +279,8 @@ std::optional<AABB> osc::CachedModelRenderer::visibleBounds() const
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     const ModelRendererParams& params,
-    Vec2 mouseScreenPos,
+    Vec2 mouseScreenPosition,
     const Rect& viewportScreenRect) const
 {
-    return m_Impl->getClosestCollision(params, mouseScreenPos, viewportScreenRect);
+    return m_Impl->getClosestCollision(params, mouseScreenPosition, viewportScreenRect);
 }

@@ -56,7 +56,7 @@ namespace
 
         const float title_height = ui::get_text_line_height_in_current_panel();
 
-        const Vec2 p = ui::get_cursor_ui_pos();
+        const Vec2 p = ui::get_cursor_ui_position();
         const Vec2 bb(ui::get_column_width(), ui::get_frame_height());
         ui::push_style_var(ui::StyleVar::ButtonTextAlign, {0.0f, 0.0f});
         ui::push_id(label);
@@ -68,8 +68,8 @@ namespace
 
         ui::pop_id();
         ui::pop_style_var();
-        const Vec2 button_top_left = ui::get_item_top_left_ui_pos();
-        const Vec2 button_bottom_right = ui::get_item_bottom_right_ui_pos();
+        const Vec2 button_top_left = ui::get_item_top_left_ui_position();
+        const Vec2 button_bottom_right = ui::get_item_bottom_right_ui_position();
 
         draw_widget_title(label, p);
 

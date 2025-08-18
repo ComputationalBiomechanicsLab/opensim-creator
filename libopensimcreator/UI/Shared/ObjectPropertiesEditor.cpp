@@ -139,11 +139,11 @@ namespace
     void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
         ui::DrawListView l = ui::get_panel_draw_list();
-        const Vec2 p = ui::get_cursor_ui_pos();
+        const Vec2 p = ui::get_cursor_ui_position();
         const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
         const Vec2 dims = Vec2{4.0f, h};
         l.add_rect_filled(Rect::from_corners(p, p + dims), color);
-        ui::set_cursor_ui_pos({p.x + 4.0f, p.y});
+        ui::set_cursor_ui_position({p.x + 4.0f, p.y});
     }
 
     // draws a context menu that the user can use to change the step interval of the +/- buttons

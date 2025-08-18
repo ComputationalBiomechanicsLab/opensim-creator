@@ -66,7 +66,7 @@ namespace
         rv.view_matrix = camera.view_matrix();
         rv.near_clipping_plane = camera.znear;
         rv.far_clipping_plane = camera.zfar;
-        rv.view_pos = camera.position();
+        rv.viewer_position = camera.position();
         rv.light_direction = {-0.34f, -0.25f, 0.05f};
         rv.light_color = {248.0f / 255.0f, 247.0f / 255.0f, 247.0f / 255.0f, 1.0f};
         rv.background_color = {0.89f, 0.89f, 0.89f, 1.0f};
@@ -189,7 +189,7 @@ private:
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
 
-        ui::set_next_panel_ui_pos(workspaceUIRect.ypd_top_left());
+        ui::set_next_panel_ui_position(workspaceUIRect.ypd_top_left());
         ui::set_next_panel_size(workspaceUIRect.dimensions());
 
         ui::push_style_var(ui::StyleVar::PanelPadding, { 0.0f, 0.0f });
@@ -216,7 +216,7 @@ private:
     {
         const Rect logoRect = calcLogoRect();
 
-        ui::set_next_panel_ui_pos(logoRect.ypd_top_left());
+        ui::set_next_panel_ui_position(logoRect.ypd_top_left());
         ui::begin_panel("##osclogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_MainAppLogo, logoRect.dimensions());
         ui::end_panel();
@@ -227,7 +227,7 @@ private:
         // center the menu window
         const Rect mmr = calcMainMenuRect();
         const Vec2 dims = mmr.dimensions();
-        ui::set_next_panel_ui_pos(mmr.ypd_top_left());
+        ui::set_next_panel_ui_position(mmr.ypd_top_left());
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
 
@@ -361,13 +361,13 @@ private:
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
 
-        ui::set_next_panel_ui_pos(loc);
+        ui::set_next_panel_ui_position(loc);
         ui::begin_panel("##czlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_CziLogo);
         ui::end_panel();
 
         loc.x += m_CziLogo.dimensions().x + 2.0f*ui::get_style_item_spacing().x;
-        ui::set_next_panel_ui_pos(loc);
+        ui::set_next_panel_ui_position(loc);
         ui::begin_panel("##tudlogo", nullptr, ui::get_minimal_panel_flags());
         ui::draw_image(m_TudLogo);
         ui::end_panel();
@@ -379,11 +379,11 @@ private:
         const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 
-        const Vec2 pos{tabUIRect.left() + padding, tabUIRect.ypd_bottom() - h - padding};
+        const Vec2 position{tabUIRect.left() + padding, tabUIRect.ypd_bottom() - h - padding};
 
         ui::DrawListView dl = ui::get_foreground_draw_list();
         const std::string text = App::get().application_name_with_version_and_buildid();
-        dl.add_text(pos, Color::black(), text);
+        dl.add_text(position, Color::black(), text);
     }
 
     // for rendering the 3D scene

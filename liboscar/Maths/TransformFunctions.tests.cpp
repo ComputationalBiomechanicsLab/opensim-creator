@@ -49,15 +49,15 @@ TEST(any_element_is_nan, returns_true_if_rotation_z_is_nan)
 
 TEST(any_element_is_nan, returns_true_if_position_x_is_nan)
 {
-    ASSERT_TRUE(any_element_is_nan(Transform{.position = {quiet_nan_v<float>, 0.0f, 0.0f}}));
+    ASSERT_TRUE(any_element_is_nan(Transform{.translation = {quiet_nan_v<float>, 0.0f, 0.0f}}));
 }
 
 TEST(any_element_is_nan, returns_true_if_position_y_is_nan)
 {
-    ASSERT_TRUE(any_element_is_nan(Transform{.position = {0.0f, quiet_nan_v<float>, 0.0f}}));
+    ASSERT_TRUE(any_element_is_nan(Transform{.translation = {0.0f, quiet_nan_v<float>, 0.0f}}));
 }
 
 TEST(any_element_is_nan, returns_true_if_position_z_is_nan)
 {
-    ASSERT_TRUE(any_element_is_nan(Transform{.position = {0.0f, 0.0f, quiet_nan_v<float>}}));
+    ASSERT_TRUE(any_element_is_nan(Transform{.translation = {0.0f, 0.0f, quiet_nan_v<float>}}));
 }

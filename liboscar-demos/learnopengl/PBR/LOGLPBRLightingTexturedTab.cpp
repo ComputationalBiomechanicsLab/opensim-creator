@@ -130,7 +130,7 @@ private:
             for (int col = 0; col < c_num_cols; ++col) {
                 const float x = (static_cast<float>(col) - static_cast<float>(c_num_cols)/2.0f) * c_cell_spacing;
                 const float y = (static_cast<float>(row) - static_cast<float>(c_num_rows)/2.0f) * c_cell_spacing;
-                graphics::draw(sphere_mesh_, {.position = {x, y, 0.0f}}, pbr_material_, camera_);
+                graphics::draw(sphere_mesh_, {.translation = {x, y, 0.0f}}, pbr_material_, camera_);
             }
         }
     }
@@ -138,7 +138,7 @@ private:
     void draw_lights()
     {
         for (const Vec3& light_position : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .position = light_position}, pbr_material_, camera_);
+            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .translation = light_position}, pbr_material_, camera_);
         }
     }
 

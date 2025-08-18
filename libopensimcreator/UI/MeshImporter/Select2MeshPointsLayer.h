@@ -134,11 +134,11 @@ namespace osc::mi
             }
 
             // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-            const std::string pos = [](const Vec3& pos)
+            const std::string pos = [](const Vec3& position)
             {
                 std::stringstream ss;
                 ss.precision(4);
-                ss << '(' << pos.x << ", " << pos.y << ", " << pos.z << ')';
+                ss << '(' << position.x << ", " << position.y << ", " << position.z << ')';
                 return std::move(ss).str();
             }(m_MaybeCurrentHover.Pos);
 
@@ -183,8 +183,8 @@ namespace osc::mi
             }
 
             const Vec2 padding{10.0f, 10.0f};
-            const Vec2 pos = m_Shared->get3DSceneRect().ypd_top_left() + padding;
-            ui::get_panel_draw_list().add_text(pos, Color::white(), m_Options.header);
+            const Vec2 position = m_Shared->get3DSceneRect().ypd_top_left() + padding;
+            ui::get_panel_draw_list().add_text(position, Color::white(), m_Options.header);
         }
 
         // draw a user-clickable button for cancelling out of this choosing state
@@ -197,7 +197,7 @@ namespace osc::mi
             const Vec2 margin = {25.0f, 35.0f};
             const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
-            ui::set_cursor_ui_pos(buttonTopLeft);
+            ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(text))
             {
                 requestPop();

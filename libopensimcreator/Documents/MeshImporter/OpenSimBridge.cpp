@@ -369,7 +369,7 @@ namespace
         parentFrame->setName("ground_offset");
         childFrame->setName(std::string{bodyEl.getLabel()} + "_offset");
 
-        // make the parent have the same position + rotation as the placed body
+        // make the parent have the same coordinate frame as the placed body
         parentFrame->setOffsetTransform(to<SimTK::Transform>(bodyEl.getXForm()));
 
         // attach the parent directly to ground and the child directly to the body
@@ -649,10 +649,10 @@ namespace
                 continue;
             }
 
-            const Vec3 pos = to<Vec3>(station.findLocationInFrame(st, m.getGround()));
+            const Vec3 position = to<Vec3>(station.findLocationInFrame(st, m.getGround()));
             const std::string name = station.getName();
 
-            rv.emplace<StationEl>(attachment, pos, name);
+            rv.emplace<StationEl>(attachment, position, name);
         }
 
         return rv;

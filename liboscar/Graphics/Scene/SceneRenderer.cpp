@@ -53,7 +53,7 @@ namespace
             // note: this should be the same as draw_grid
             .scale = {50.0f * fixup_scale_factor, 50.0f * fixup_scale_factor, 1.0f},
             .rotation = angle_axis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
-            .position = floor_origin,
+            .translation = floor_origin,
         };
     }
 
@@ -552,7 +552,7 @@ public:
 
         // setup camera for this render
         camera_.reset();
-        camera_.set_position(params.view_pos);
+        camera_.set_position(params.viewer_position);
         camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
@@ -748,14 +748,14 @@ private:
         // compute where the quad needs to eventually be drawn in the scene
         const Transform quad_mesh_to_rims_quad{
             .scale = Vec3{rim_ndc_rect.half_extents(), 1.0f},
-            .position = Vec3{rim_ndc_rect.origin(), 0.0f},
+            .translation = Vec3{rim_ndc_rect.origin(), 0.0f},
         };
 
         // rendering:
 
         // setup scene camera
         camera_.reset();
-        camera_.set_position(params.view_pos);
+        camera_.set_position(params.viewer_position);
         camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);

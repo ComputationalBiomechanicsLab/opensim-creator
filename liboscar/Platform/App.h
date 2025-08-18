@@ -396,7 +396,7 @@ namespace osc
         // of the mouse in screen space in device-independent pixels.
         //
         // otherwise, returns `std::nullopt`.
-        std::optional<Vec2> mouse_pos_in_main_window() const;
+        std::optional<Vec2> mouse_position_in_main_window() const;
 
         // returns `true` if the given window has input focus
         bool has_input_focus(WindowID) const;

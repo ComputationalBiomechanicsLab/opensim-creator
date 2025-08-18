@@ -117,7 +117,7 @@ private:
                     mesh_,
                     Transform{
                         .rotation = angle_axis(i * 20_deg, axis),
-                        .position = c_cube_positions[i],
+                        .translation = c_cube_positions[i],
                     },
                     material_,
                     camera_

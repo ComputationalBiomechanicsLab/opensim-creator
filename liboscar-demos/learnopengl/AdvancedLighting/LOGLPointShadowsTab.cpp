@@ -19,7 +19,7 @@ namespace
         return {
             .scale = Vec3(0.75f),
             .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
-            .position = {-1.5f, 2.0f, -3.0f},
+            .translation = {-1.5f, 2.0f, -3.0f},
         };
     }
 
@@ -41,10 +41,10 @@ namespace
     {
         return std::to_array<SceneCube>({
             SceneCube{{.scale = Vec3{5.0f}}, true},
-            SceneCube{{.scale = Vec3{0.50f}, .position = {4.0f, -3.5f, 0.0f}}},
-            SceneCube{{.scale = Vec3{0.75f}, .position = {2.0f, 3.0f, 1.0f}}},
-            SceneCube{{.scale = Vec3{0.50f}, .position = {-3.0f, -1.0f, 0.0f}}},
-            SceneCube{{.scale = Vec3{0.50f}, .position = {-1.5f, 1.0f, 1.5f}}},
+            SceneCube{{.scale = Vec3{0.50f}, .translation = {4.0f, -3.5f, 0.0f}}},
+            SceneCube{{.scale = Vec3{0.75f}, .translation = {2.0f, 3.0f, 1.0f}}},
+            SceneCube{{.scale = Vec3{0.50f}, .translation = {-3.0f, -1.0f, 0.0f}}},
+            SceneCube{{.scale = Vec3{0.50f}, .translation = {-1.5f, 1.0f, 1.5f}}},
             SceneCube{make_rotated_transform()},
         });
     }
@@ -167,7 +167,7 @@ private:
 
         // also, draw the light as a little cube
         material.set("uShadows", soft_shadows_);
-        graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .position = light_pos_}, material, scene_camera_);
+        graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .translation = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screen_space_rect);
         scene_camera_.render_to_main_window();

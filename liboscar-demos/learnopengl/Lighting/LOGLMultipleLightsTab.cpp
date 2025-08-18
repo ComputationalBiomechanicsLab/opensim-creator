@@ -153,7 +153,7 @@ public:
 
             graphics::draw(
                 mesh_,
-                {.rotation = angle_axis(angle, axis), .position = pos},
+                {.rotation = angle_axis(angle, axis), .translation = pos},
                 multiple_lights_material_,
                 camera_
             );
@@ -161,7 +161,7 @@ public:
 
         // render lamps
         for (const Vec3& light_position : c_point_light_positions) {
-            graphics::draw(mesh_, {.scale = Vec3{0.2f}, .position = light_position}, light_cube_material_, camera_);
+            graphics::draw(mesh_, {.scale = Vec3{0.2f}, .translation = light_position}, light_cube_material_, camera_);
         }
 
         // render to output (window)

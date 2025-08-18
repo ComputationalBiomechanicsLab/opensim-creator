@@ -217,7 +217,7 @@ StringName osc::NextNonParticipatingLandmarkName(const TPSDocument& doc)
 void osc::AddLandmarkToInput(
     TPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    const Vec3& pos,
+    const Vec3& position,
     std::optional<std::string_view> suggestedName)
 {
     if (suggestedName)
@@ -232,7 +232,7 @@ void osc::AddLandmarkToInput(
         {
             p = &doc.landmarkPairs.emplace_back(name);
         }
-        UpdLocation(*p, which) = pos;
+        UpdLocation(*p, which) = position;
     }
     else
     {
@@ -247,7 +247,7 @@ void osc::AddLandmarkToInput(
             std::optional<Vec3>& maybeLoc = UpdLocation(p, which);
             if (!maybeLoc)
             {
-                maybeLoc = pos;
+                maybeLoc = position;
                 wasAssignedToExistingEmptySlot = true;
                 break;
             }
@@ -258,7 +258,7 @@ void osc::AddLandmarkToInput(
         if (!wasAssignedToExistingEmptySlot)
         {
             TPSDocumentLandmarkPair& p = doc.landmarkPairs.emplace_back(NextLandmarkName(doc));
-            UpdLocation(p, which) = pos;
+            UpdLocation(p, which) = position;
         }
     }
 }

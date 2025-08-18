@@ -53,7 +53,7 @@ SimTK::Inertia osc::Converter<Vec3, SimTK::Inertia>::operator()(const Vec3& v) c
 
 SimTK::Transform osc::Converter<Transform, SimTK::Transform>::operator()(const Transform& t) const
 {
-    return SimTK::Transform{to<SimTK::Rotation>(t.rotation), to<SimTK::Vec3>(t.position)};
+    return SimTK::Transform{to<SimTK::Rotation>(t.rotation), to<SimTK::Vec3>(t.translation)};
 }
 
 SimTK::Rotation osc::Converter<Quat, SimTK::Rotation>::operator()(const Quat& q) const
@@ -175,5 +175,5 @@ std::array<float, 6> osc::Converter<SimTK::Vec6, std::array<float, 6>>::operator
 
 Transform osc::Converter<SimTK::Transform, Transform>::operator()(const SimTK::Transform& t) const
 {
-    return Transform{.rotation = to<Quat>(t.R()), .position = to<Vec3>(t.p())};
+    return Transform{.rotation = to<Quat>(t.R()), .translation = to<Vec3>(t.p())};
 }

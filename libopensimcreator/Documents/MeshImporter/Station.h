@@ -40,7 +40,7 @@ namespace osc::mi
 
         Transform getXForm() const
         {
-            return Transform{.position = m_Position};
+            return Transform{.translation = m_Position};
         }
 
     private:
@@ -88,7 +88,7 @@ namespace osc::mi
 
         void implSetXform(const IObjectFinder&, const Transform& t) final
         {
-            m_Position = t.position;
+            m_Position = t.translation;
         }
 
         AABB implCalcBounds(const IObjectFinder&) const final

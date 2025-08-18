@@ -67,7 +67,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     rv.projection_matrix = renderParams.camera.projection_matrix(aspect_ratio_of(viewportDims));
     rv.near_clipping_plane = renderParams.camera.znear;
     rv.far_clipping_plane = renderParams.camera.zfar;
-    rv.view_pos = renderParams.camera.position();
+    rv.viewer_position = renderParams.camera.position();
     rv.fixup_scale_factor = fixupScaleFactor;
     rv.light_color = renderParams.lightColor;
     rv.background_color = renderParams.backgroundColor;
@@ -106,15 +106,15 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     SceneCache& sceneCache,
     std::span<const SceneDecoration> taggedDrawlist,
     const PolarPerspectiveCamera& camera,
-    Vec2 mouseScreenPos,
+    Vec2 mouseScreenPosition,
     const Rect& viewportScreenRect)
 {
     OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    const Vec2 mouseRenderPos = mouseScreenPos - viewportScreenRect.ypd_top_left();
-    const Ray worldSpaceCameraRay = camera.unproject_topleft_pos_to_world_ray(
-        mouseRenderPos,
+    const Vec2 mouseRenderPosition = mouseScreenPosition - viewportScreenRect.ypd_top_left();
+    const Ray worldSpaceCameraRay = camera.unproject_topleft_position_to_world_ray(
+        mouseRenderPosition,
         viewportScreenRect.dimensions()
     );
 

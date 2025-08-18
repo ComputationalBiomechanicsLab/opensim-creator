@@ -374,29 +374,29 @@ namespace osc::ui
 
     // Returns the position that the panel cursor started at relative to the top-left
     // corner of the current panel in device-independent pixels.
-    Vec2 get_cursor_start_panel_pos();
+    Vec2 get_cursor_start_panel_position();
 
     // Returns the current position of the panel cursor relative to the top-left corner
     // of the current panel in device-independent pixels.
-    Vec2 get_cursor_panel_pos();
+    Vec2 get_cursor_panel_position();
 
     // Sets the current position of the panel cursor relative to the top-left corner
     // of the panel in device-independent pixels.
-    void set_cursor_panel_pos(Vec2);
+    void set_cursor_panel_position(Vec2);
 
     // Returns the current x position of the panel cursor relative to the left edge
     // of the current panel in device-independent pixels.
-    float get_cursor_panel_pos_x();
+    float get_cursor_panel_x();
 
     // Sets the current x position of the panel cursor relative to the left edge of
     // the current panel in device-independent pixels.
-    void set_cursor_panel_pos_x(float local_x);
+    void set_cursor_panel_x(float local_x);
 
     // Returns the current position of the panel cursor in ui space in device-independent pixels.
-    Vec2 get_cursor_ui_pos();
+    Vec2 get_cursor_ui_position();
 
     // Sets the current position of the panel cursor in ui space in device-independent pixels.
-    void set_cursor_ui_pos(Vec2);
+    void set_cursor_ui_position(Vec2);
 
     enum class Conditional {
         Always,
@@ -405,7 +405,7 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void set_next_panel_ui_pos(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
+    void set_next_panel_ui_position(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
 
     void set_next_panel_size(Vec2 size, Conditional = Conditional::Always);
 
@@ -527,7 +527,7 @@ namespace osc::ui
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
-    Vec2 get_mouse_ui_pos();
+    Vec2 get_mouse_ui_position();
     float get_mouse_wheel_amount();
 
     bool begin_menu_bar();
@@ -561,8 +561,8 @@ namespace osc::ui
     using TableFlags = Flags<TableFlag>;
 
     Rect get_item_ui_rect();
-    Vec2 get_item_top_left_ui_pos();
-    Vec2 get_item_bottom_right_ui_pos();
+    Vec2 get_item_top_left_ui_position();
+    Vec2 get_item_bottom_right_ui_position();
     bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
@@ -1377,10 +1377,10 @@ namespace osc::ui
         bool is_plot_hovered();
 
         // returns the position of the mouse in plot space
-        Vec2 get_plot_mouse_pos();
+        Vec2 get_plot_mouse_position();
 
         // returns the mouse position in the coordinate system of the given axes
-        Vec2 get_plot_mouse_pos(Axis x_axis, Axis y_axis);
+        Vec2 get_plot_mouse_position(Axis x_axis, Axis y_axis);
 
         // sets up the plot legend
         void setup_legend(Location, LegendFlags = LegendFlags::Default);

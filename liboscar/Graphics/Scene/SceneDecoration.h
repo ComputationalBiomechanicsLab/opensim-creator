@@ -17,10 +17,10 @@ namespace osc
         friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;
 
         // returns a copy of this `SceneDecoration` with `position` set the provided position
-        SceneDecoration with_position(const Vec3& position_) const
+        SceneDecoration with_translation(const Vec3& position_) const
         {
             SceneDecoration copy{*this};
-            copy.transform.position = position_;
+            copy.transform.translation = position_;
             return copy;
         }
 

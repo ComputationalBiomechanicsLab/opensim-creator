@@ -280,7 +280,7 @@ private:
         }
 
         if (ui::is_item_hovered()) {
-            const Vec2 mp = ui::get_mouse_ui_pos();
+            const Vec2 mp = ui::get_mouse_ui_position();
             const Vec2 plotLoc = mp - plotRect.ypd_top_left();
             const float relLoc = plotLoc.x / plotRect.width();
             const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);

@@ -133,13 +133,13 @@ private:
         // cubes
         graphics::draw(
             cube_mesh_,
-            {.scale = Vec3{0.5f}, .position = {0.0f, 1.0f, 0.0f}},
+            {.scale = Vec3{0.5f}, .translation = {0.0f, 1.0f, 0.0f}},
             material,
             camera_
         );
         graphics::draw(
             cube_mesh_,
-            {.scale = Vec3{0.5f}, .position = {2.0f, 0.0f, 1.0f}},
+            {.scale = Vec3{0.5f}, .translation = {2.0f, 0.0f, 1.0f}},
             material,
             camera_
         );
@@ -148,7 +148,7 @@ private:
             Transform{
                 .scale = Vec3{0.25f},
                 .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
-                .position = {-1.0f, 0.0f, 2.0f},
+                .translation = {-1.0f, 0.0f, 2.0f},
             },
             material,
             camera_

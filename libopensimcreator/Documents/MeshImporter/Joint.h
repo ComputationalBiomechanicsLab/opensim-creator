@@ -118,7 +118,7 @@ namespace osc::mi
 
         AABB implCalcBounds(const IObjectFinder&) const final
         {
-            return bounding_aabb_of(m_Xform.position);
+            return bounding_aabb_of(m_Xform.translation);
         }
 
         UID m_ID;

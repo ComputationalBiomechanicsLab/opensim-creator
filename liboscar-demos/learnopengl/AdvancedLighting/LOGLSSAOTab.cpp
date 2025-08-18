@@ -185,7 +185,7 @@ private:
             gbuffer_state_.material.set("uInvertedNormals", true);
             graphics::draw(
                 cube_mesh_,
-                {.scale = Vec3{7.5f}, .position = {0.0f, 7.0f, 0.0f}},
+                {.scale = Vec3{7.5f}, .translation = {0.0f, 7.0f, 0.0f}},
                 gbuffer_state_.material,
                 camera_
             );
@@ -196,7 +196,7 @@ private:
             gbuffer_state_.material.set("uInvertedNormals", false);
             graphics::draw(
                 sphere_mesh_,
-                {.position = {0.0f, 0.5f, 0.0f}},
+                {.translation = {0.0f, 0.5f, 0.0f}},
                 gbuffer_state_.material,
                 camera_
             );

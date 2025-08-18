@@ -591,13 +591,13 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     Vec3 locationInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 position = to<Vec3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
+    Vec3 translation = to<Vec3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
 
     ui::draw_text("translation");
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", position, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vec3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
@@ -621,14 +621,14 @@ void osc::DrawFrameInformationExpressedIn(
     const OpenSim::Frame& otherFrame)
 {
     const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
-    Vec3 position = to<Vec3>(xform.p());
+    Vec3 translation = to<Vec3>(xform.p());
     Vec3 rotationEulers = to<Vec3>(xform.R().convertRotationToBodyFixedXYZ());
 
     ui::draw_text("translation");
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", position, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vec3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
 
     ui::draw_text("orientation");
     ui::same_line();
@@ -1232,7 +1232,7 @@ bool osc::DrawCameraControlButtons(
     const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
     const Vec2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
-    ui::set_cursor_ui_pos(topleft);
+    ui::set_cursor_ui_position(topleft);
 
     bool edited = false;
     if (zoomOutButton.on_draw()) {
@@ -1254,9 +1254,9 @@ bool osc::DrawCameraControlButtons(
     {
         const Vec2 tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
-            ui::get_cursor_ui_pos().y,
+            ui::get_cursor_ui_position().y,
         };
-        ui::set_cursor_ui_pos(tl);
+        ui::set_cursor_ui_position(tl);
         if (sceneSettingsButton.on_draw()) {
             edited = true;
         }
@@ -1279,7 +1279,7 @@ bool osc::DrawViewerImGuiOverlays(
 
     // draw top-left buttons
     const Vec2 windowPadding = ui::get_style_panel_padding();
-    ui::set_cursor_ui_pos(renderRect.ypd_top_left() + windowPadding);
+    ui::set_cursor_ui_position(renderRect.ypd_top_left() + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
@@ -1292,11 +1292,11 @@ bool osc::DrawViewerImGuiOverlays(
     };
 
     // draw the bottom overlays
-    ui::set_cursor_ui_pos(axesTopLeft);
+    ui::set_cursor_ui_position(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
     const Vec2 cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
-    ui::set_cursor_ui_pos(cameraButtonsTopLeft);
+    ui::set_cursor_ui_position(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
         drawlist,

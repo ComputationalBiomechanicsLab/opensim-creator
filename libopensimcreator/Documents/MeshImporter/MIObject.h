@@ -110,11 +110,11 @@ namespace osc::mi
 
         Vec3 getPos(const IObjectFinder& lookup) const
         {
-            return getXForm(lookup).position;
+            return getXForm(lookup).translation;
         }
         void setPos(const IObjectFinder& lookup, const Vec3& newPos)
         {
-            setXform(lookup, getXForm(lookup).with_position(newPos));
+            setXform(lookup, getXForm(lookup).with_translation(newPos));
         }
 
         Vec3 getScale(const IObjectFinder& lookup) const

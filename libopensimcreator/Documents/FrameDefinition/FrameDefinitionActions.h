@@ -20,13 +20,13 @@ namespace osc::fd
     void ActionAddSphereInMeshFrame(
         IModelStatePair&,
         const OpenSim::Mesh&,
-        const std::optional<Vec3>& maybeClickPosInGround
+        const std::optional<Vec3>& clickPositionInGround
     );
 
     void ActionAddOffsetFrameInMeshFrame(
         IModelStatePair&,
         const OpenSim::Mesh&,
-        const std::optional<Vec3>& maybeClickPosInGround
+        const std::optional<Vec3>& clickPositionInGround
     );
 
     void ActionAddPointToPointEdge(

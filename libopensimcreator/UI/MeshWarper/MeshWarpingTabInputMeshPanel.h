@@ -67,13 +67,13 @@ namespace osc
         // draws all of the panel's content
         void impl_draw_content() final
         {
-            // compute top-level UI variables (render rect, mouse pos, etc.)
+            // compute top-level UI variables (render rect, mouse position, etc.)
             const Rect contentRect = ui::get_content_region_available_ui_rect();
             const Vec2 contentRectDims = contentRect.dimensions();
-            const Vec2 mousePos = ui::get_mouse_ui_pos();
+            const Vec2 mousePos = ui::get_mouse_ui_position();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
-            const Ray cameraRay = m_Camera.unproject_topleft_pos_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
+            const Ray cameraRay = m_Camera.unproject_topleft_position_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
 
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
@@ -279,7 +279,7 @@ namespace osc
             const Color color = IsFullyPaired(landmarkPair) ? m_State->getPairedLandmarkColor() : m_State->getUnpairedLandmarkColor();
             SceneDecoration decoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform = {.scale = Vec3{m_LandmarkRadius}, .position = *location},
+                .transform = {.scale = Vec3{m_LandmarkRadius}, .translation = *location},
                 .shading = color,
             };
 
@@ -316,7 +316,7 @@ namespace osc
                 .mesh = m_State->getLandmarkSphereMesh(),
                 .transform = {
                     .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
-                    .position = npl.location,
+                    .translation = npl.location,
                 },
                 .shading = color,
             };
@@ -348,7 +348,7 @@ namespace osc
 
             decorationConsumer(SceneDecoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform = {.scale = Vec3{radius}, .position = meshCollisionPosition},
+                .transform = {.scale = Vec3{radius}, .translation = meshCollisionPosition},
                 .shading = color.with_alpha(0.8f),  // faded
             });
         }
@@ -372,14 +372,14 @@ namespace osc
                 }
                 else if (meshCollision)
                 {
-                    const auto pos = meshCollision->position;
+                    const auto position = meshCollision->position;
                     if (isUserPlacingNonParticipatingLandmark())
                     {
-                        ActionAddNonParticipatingLandmark(m_State->updUndoable(), pos);
+                        ActionAddNonParticipatingLandmark(m_State->updUndoable(), position);
                     }
                     else
                     {
-                        ActionAddLandmark(m_State->updUndoable(), m_DocumentIdentifier, pos);
+                        ActionAddLandmark(m_State->updUndoable(), m_DocumentIdentifier, position);
                     }
                 }
             }
@@ -415,7 +415,7 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
-            ui::set_cursor_ui_pos(renderRect.ypd_top_left() + m_State->getOverlayPadding());
+            ui::set_cursor_ui_position(renderRect.ypd_top_left() + m_State->getOverlayPadding());
 
             drawInformationIcon();
             ui::same_line();

@@ -241,7 +241,7 @@ void osc::mi::point_axis_towards(
     UID other)
 {
     const Vec3 choicePos = doc.getPosByID(other);
-    const Transform sourceXform = {.position = doc.getPosByID(id)};
+    const Transform sourceXform = {.translation = doc.getPosByID(id)};
 
     doc.updByID(id).setXform(doc, point_axis_towards(sourceXform, axis, choicePos));
 }

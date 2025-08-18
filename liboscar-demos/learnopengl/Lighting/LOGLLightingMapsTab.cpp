@@ -74,7 +74,7 @@ public:
 
         // draw cube
         lighting_maps_material_.set("uViewPos", camera_.position());
-        lighting_maps_material_.set("uLightPos", light_transform_.position);
+        lighting_maps_material_.set("uLightPos", light_transform_.translation);
         lighting_maps_material_.set("uLightAmbient", light_ambient_);
         lighting_maps_material_.set("uLightDiffuse", light_diffuse_);
         lighting_maps_material_.set("uLightSpecular", light_specular_);
@@ -91,7 +91,7 @@ public:
 
         // render 2D UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("uLightPos", light_transform_.position);
+        ui::draw_vec3_input("uLightPos", light_transform_.translation);
         ui::draw_float_input("uLightAmbient", &light_ambient_);
         ui::draw_float_input("uLightDiffuse", &light_diffuse_);
         ui::draw_float_input("uLightSpecular", &light_specular_);
@@ -111,7 +111,7 @@ private:
 
     Transform light_transform_ = {
         .scale = Vec3{0.2f},
-        .position = {0.4f, 0.4f, 2.0f},
+        .translation = {0.4f, 0.4f, 2.0f},
     };
     float light_ambient_ = 0.02f;
     float light_diffuse_ = 0.4f;

@@ -1264,7 +1264,7 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), false);
     }
 
-    std::optional<Vec2> mouse_pos_in_main_window() const
+    std::optional<Vec2> mouse_position_in_main_window() const
     {
         if (SDL_GetMouseFocus() != main_window_.get()) {
             return std::nullopt;  // main window is unfocused
@@ -1944,9 +1944,9 @@ void osc::App::disable_main_window_grab()
     impl_->disable_main_window_grab();
 }
 
-std::optional<Vec2> osc::App::mouse_pos_in_main_window() const
+std::optional<Vec2> osc::App::mouse_position_in_main_window() const
 {
-    return impl_->mouse_pos_in_main_window();
+    return impl_->mouse_position_in_main_window();
 }
 
 bool osc::App::has_input_focus(WindowID id) const

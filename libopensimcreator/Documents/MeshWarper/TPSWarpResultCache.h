@@ -106,9 +106,9 @@ namespace osc
             const bool samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
-                [](const TPSDocumentNonParticipatingLandmark& lm, const Vec3& pos)
+                [](const TPSDocumentNonParticipatingLandmark& lm, const Vec3& position)
                 {
-                    return lm.location == pos;
+                    return lm.location == position;
                 }
             );
 

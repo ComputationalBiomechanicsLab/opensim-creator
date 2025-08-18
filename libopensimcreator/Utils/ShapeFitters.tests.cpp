@@ -51,7 +51,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 {
     Transform t;
-    t.position = {7.0f, 3.0f, 1.5f};
+    t.translation = {7.0f, 3.0f, 1.5f};
     t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
     t.rotation = angle_axis(45_deg, UnitVec3{1.0f, 1.0f, 0.0f});
 
@@ -60,7 +60,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 
     const Sphere sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, t.position, 0.000001f)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, t.translation, 0.000001f)));
     ASSERT_TRUE(equal_within_reldiff(sphereFit.radius, t.scale.x, 0.000001f));
 }
 

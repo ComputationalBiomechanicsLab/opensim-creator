@@ -24,6 +24,7 @@ namespace osc
 
     private:
         enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
+
         State state_ = State::Inactive;
         Vec3 start_world_pos_ = {};
     };

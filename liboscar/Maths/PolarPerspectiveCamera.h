@@ -50,7 +50,7 @@ namespace osc
         Vec3 position() const;
 
         // converts a `pos` (top-left) in the output `dimensions` into a `Ray` in world space by unprojection
-        Ray unproject_topleft_pos_to_world_ray(Vec2 pos, Vec2 dimensions) const;
+        Ray unproject_topleft_position_to_world_ray(Vec2 pos, Vec2 dimensions) const;
 
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 

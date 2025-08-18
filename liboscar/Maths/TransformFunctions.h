@@ -55,9 +55,9 @@ namespace osc
         rv[2][1] *= transform.scale.z;
         rv[2][2] *= transform.scale.z;
 
-        rv[3][0] = transform.position.x;
-        rv[3][1] = transform.position.y;
-        rv[3][2] = transform.position.z;
+        rv[3][0] = transform.translation.x;
+        rv[3][1] = transform.translation.y;
+        rv[3][2] = transform.translation.z;
 
         return rv;
     }
@@ -65,7 +65,7 @@ namespace osc
     // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
     inline Mat4 inverse_mat4_cast(const Transform& transform)
     {
-        const Mat4 translator = translate(identity<Mat4>(), -transform.position);
+        const Mat4 translator = translate(identity<Mat4>(), -transform.translation);
         const Mat4 rotator = mat4_cast(conjugate(transform.rotation));
         const Mat4 scaler = scale(identity<Mat4>(), 1.0f/transform.scale);
 
@@ -92,7 +92,7 @@ namespace osc
     {
         Vec3 skew;
         Vec4 perspective;
-        return decompose(m, out.scale, out.rotation, out.position, skew, perspective);
+        return decompose(m, out.scale, out.rotation, out.translation, skew, perspective);
     }
 
     // returns a transform that *tries to* perform the equivalent transform as the provided `Mat4`
@@ -134,7 +134,7 @@ namespace osc
     // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
     constexpr Vec3 inverse_transform_point(const Transform& transform, Vec3 point)
     {
-        point -= transform.position;
+        point -= transform.translation;
         point = conjugate(transform.rotation) * point;
         point /= transform.scale;
         return point;
@@ -198,7 +198,7 @@ namespace osc
         Vec3::size_type axis_index,
         const Vec3& location)
     {
-        return point_axis_along(transform, axis_index, normalize(location - transform.position));
+        return point_axis_along(transform, axis_index, normalize(location - transform.translation));
     }
 
     // returns the provided transform, but intrinsically rotated along the given axis by
@@ -221,6 +221,6 @@ namespace osc
     // `position` is NaN.
     inline bool any_element_is_nan(const Transform& transform)
     {
-        return any_of(isnan(transform.scale)) or any_of(isnan(transform.rotation)) or any_of(isnan(transform.position));
+        return any_of(isnan(transform.scale)) or any_of(isnan(transform.rotation)) or any_of(isnan(transform.translation));
     }
 }

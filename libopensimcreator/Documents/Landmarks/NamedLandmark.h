@@ -9,7 +9,10 @@
 namespace osc::lm
 {
     struct NamedLandmark final {
+        // The name of this landmark.
         std::string name;
+
+        // The position of the landmark in its caller-specified coordinate system.
         Vec3 position;
 
         friend bool operator==(const NamedLandmark&, const NamedLandmark&) = default;

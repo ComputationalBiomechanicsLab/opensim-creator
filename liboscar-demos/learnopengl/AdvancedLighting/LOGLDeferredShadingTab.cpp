@@ -218,7 +218,7 @@ private:
         for (const Vec3& object_position : c_object_positions) {
             graphics::draw(
                 cube_mesh_,
-                {.scale = Vec3{0.5f}, .position = object_position},
+                {.scale = Vec3{0.5f}, .translation = object_position},
                 gbuffer_.material,
                 camera_
             );
@@ -281,7 +281,7 @@ private:
 
         for (size_t i = 0; i < light_positions_.size(); ++i) {
             light_box_material_.set("uLightColor", light_colors_[i]);
-            graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .position = light_positions_[i]}, light_box_material_, camera_);
+            graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .translation = light_positions_[i]}, light_box_material_, camera_);
         }
 
         const RenderTarget render_target{

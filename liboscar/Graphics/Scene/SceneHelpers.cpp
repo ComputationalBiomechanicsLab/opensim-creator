@@ -66,7 +66,7 @@ void osc::draw_bvh(
             .mesh = cube,
             .transform = {
                 .scale = half_widths_of(node.bounds()),
-                .position = centroid_of(node.bounds()),
+                .translation = centroid_of(node.bounds()),
             },
             .shading = Color::black(),
             .flags = SceneDecorationFlag::AnnotationElement,
@@ -93,7 +93,7 @@ void osc::draw_aabbs(
             .mesh = cube,
             .transform = {
                 .scale = half_widths_of(aabb),
-                .position = centroid_of(aabb),
+                .translation = centroid_of(aabb),
             },
             .shading = Color::black(),
             .flags = SceneDecorationFlag::AnnotationElement,
@@ -313,10 +313,10 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Mesh& mesh,
     const BVH& triangle_bvh,
     const Rect& screen_render_rect,
-    Vec2 screen_mouse_pos)
+    Vec2 mouse_screen_position)
 {
-    const Ray world_ray = camera.unproject_topleft_pos_to_world_ray(
-        screen_mouse_pos - screen_render_rect.ypd_top_left(),
+    const Ray world_ray = camera.unproject_topleft_position_to_world_ray(
+        mouse_screen_position - screen_render_rect.ypd_top_left(),
         screen_render_rect.dimensions()
     );
 
@@ -342,7 +342,7 @@ SceneRendererParams osc::calc_standard_dark_scene_render_params(
         .draw_floor = false,
         .view_matrix = camera.view_matrix(),
         .projection_matrix = camera.projection_matrix(aspect_ratio_of(dimensions)),
-        .view_pos = camera.position(),
+        .viewer_position = camera.position(),
         .light_direction = recommended_light_direction(camera),
         .background_color = {0.1f, 1.0f},
     };

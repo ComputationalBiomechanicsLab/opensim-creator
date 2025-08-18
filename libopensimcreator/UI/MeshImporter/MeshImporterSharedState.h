@@ -451,7 +451,7 @@ namespace osc::mi
             p.far_clipping_plane = m_3DSceneCamera.zfar;
             p.view_matrix = m_3DSceneCamera.view_matrix();
             p.projection_matrix = m_3DSceneCamera.projection_matrix(aspect_ratio_of(p.dimensions));
-            p.view_pos = m_3DSceneCamera.position();
+            p.viewer_position = m_3DSceneCamera.position();
             p.light_direction = recommended_light_direction(m_3DSceneCamera);
             p.light_color = Color::white();
             p.ambient_strength *= 1.5f;
@@ -612,18 +612,18 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             const Rect sceneRect = get3DSceneRect();
-            const Vec2 mousePos = ui::get_mouse_ui_pos();
+            const Vec2 mouseUiPosition = ui::get_mouse_ui_position();
 
-            if (!is_intersecting(sceneRect, mousePos))
+            if (!is_intersecting(sceneRect, mouseUiPosition))
             {
                 // mouse isn't over the scene render
                 return MeshImporterHover{};
             }
 
             const Vec2 sceneDims = sceneRect.dimensions();
-            const Vec2 relMousePos = mousePos - sceneRect.ypd_top_left();
+            const Vec2 relMousePos = mouseUiPosition - sceneRect.ypd_top_left();
 
-            const Ray ray = getCamera().unproject_topleft_pos_to_world_ray(relMousePos, sceneDims);
+            const Ray ray = getCamera().unproject_topleft_position_to_world_ray(relMousePos, sceneDims);
             const bool hittestMeshes = isMeshesInteractable();
             const bool hittestBodies = isBodiesInteractable();
             const bool hittestJointCenters = isJointCentersInteractable();
@@ -1217,7 +1217,7 @@ namespace osc::mi
                 .transform = {
                     .scale = Vec3{coreRadius},
                     .rotation = xform.rotation,
-                    .position = xform.position,
+                    .translation = xform.translation,
                 },
                 .shading = coreColor.with_alpha(coreColor.a * alpha),
                 .flags = flags,
@@ -1246,7 +1246,7 @@ namespace osc::mi
                     .transform = {
                         .scale = {legThickness, 0.5f * actualLegLen, legThickness}, // note: cylinder is 2 units high
                         .rotation = rot,
-                        .position = xform.position + (rot * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection)),
+                        .translation = xform.translation + (rot * (((getSphereRadius() + (0.5f * actualLegLen)) - cylinderPullback) * meshDirection)),
                     },
                     .shading = Color{0.0f, alpha}.with_element(i, 1.0f),
                     .flags = flags,
@@ -1293,7 +1293,7 @@ namespace osc::mi
                     .transform = {
                         .scale = 0.5f * Vec3{halfWidth, coneHeight, halfWidth},
                         .rotation = rot,
-                        .position = xform.position + (rot * ((halfWidth + (0.5f * coneHeight)) * meshDirection)),
+                        .translation = xform.translation + (rot * ((halfWidth + (0.5f * coneHeight)) * meshDirection)),
                     },
                     .shading = Color::black().with_element(i, 1.0f),
                 });
@@ -1369,7 +1369,7 @@ namespace osc::mi
                 .id = bodyEl.getID(),
                 .groupId = MIIDs::BodyGroup(),
                 .mesh = m_SphereMesh,
-                .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().position)),
+                .transform = SphereMeshToSceneSphereTransform(sphereAtTranslation(bodyEl.getXForm().translation)),
                 .shading = color,
             };
         }
@@ -1408,7 +1408,7 @@ namespace osc::mi
         {
             return {
                 .scale = Vec3{sceneSphere.radius},
-                .position = sceneSphere.origin,
+                .translation = sceneSphere.origin,
             };
         }
 

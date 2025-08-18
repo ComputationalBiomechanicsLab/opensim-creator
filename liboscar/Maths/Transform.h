@@ -10,31 +10,31 @@ namespace osc
     // packaged-up SQT transform (scale -> rotate -> translate)
     struct Transform final {
 
-        constexpr Transform with_position(const Vec3& position_) const
+        constexpr Transform with_translation(const Vec3& new_translation) const
         {
-            return Transform{.scale = scale, .rotation = rotation, .position = position_};
+            return Transform{.scale = scale, .rotation = rotation, .translation = new_translation};
         }
 
-        constexpr Transform with_rotation(const Quat& rotation_) const
+        constexpr Transform with_rotation(const Quat& new_rotation) const
         {
-            return Transform{.scale = scale, .rotation = rotation_, .position = position};
+            return Transform{.scale = scale, .rotation = new_rotation, .translation = translation};
         }
 
-        constexpr Transform with_scale(const Vec3& scale_) const
+        constexpr Transform with_scale(const Vec3& new_scale) const
         {
-            return Transform{.scale = scale_, .rotation = rotation, .position = position};
+            return Transform{.scale = new_scale, .rotation = rotation, .translation = translation};
         }
 
-        constexpr Transform with_scale(float scale_) const
+        constexpr Transform with_scale(float new_scale) const
         {
-            return Transform{.scale = Vec3{scale_}, .rotation = rotation, .position = position};
+            return Transform{.scale = Vec3{new_scale}, .rotation = rotation, .translation = translation};
         }
 
         friend bool operator==(const Transform&, const Transform&) = default;
 
         Vec3 scale{1.0f};
         Quat rotation{};
-        Vec3 position{};
+        Vec3 translation{};
     };
 
     // applies the transform to a point vector (equivalent to `transform_point`)
@@ -42,7 +42,7 @@ namespace osc
     {
         point *= transform.scale;
         point  = transform.rotation * point;
-        point += transform.position;
+        point += transform.translation;
         return point;
     }
 
@@ -57,6 +57,6 @@ namespace osc
 
     inline std::ostream& operator<<(std::ostream& out, const Transform& transform)
     {
-        return out << "Transform(position = " << transform.position << ", rotation = " << transform.rotation << ", scale = " << transform.scale << ')';
+        return out << "Transform(translation = " << transform.translation << ", rotation = " << transform.rotation << ", scale = " << transform.scale << ')';
     }
 }
