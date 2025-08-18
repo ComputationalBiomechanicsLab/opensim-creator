@@ -35,7 +35,7 @@
 #include <liboscar/Maths/PlaneFunctions.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Qua.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>

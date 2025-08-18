@@ -5,7 +5,7 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Sphere.h>
@@ -137,7 +137,7 @@ namespace osc
     Matrix4x4 matrix4x4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
-    EulerAngles extract_eulers_xyz(const Quat&);
+    EulerAngles extract_eulers_xyz(const Quaternion&);
 
     inline Vec3 transform_point(const Matrix4x4& mat, const Vec3& point)
     {
@@ -149,8 +149,8 @@ namespace osc
         return Vec3{mat * Vec4{direction, 0.0f}};
     }
 
-    // returns a `Quat` equivalent to the given euler angles
-    Quat to_world_space_rotation_quat(const EulerAngles&);
+    // returns a `Quaternion` equivalent to the given euler angles
+    Quaternion to_world_space_rotation_quaternion(const EulerAngles&);
 
     // applies a world space rotation to the transform
     void apply_world_space_rotation(

@@ -1002,7 +1002,7 @@ Matrix4x4 osc::matrix4x4_transform_between_directions(const Vec3& dir1, const Ve
     return rotate(identity<Matrix4x4>(), theta, rotation_axis);
 }
 
-EulerAngles osc::extract_eulers_xyz(const Quat& quaternion)
+EulerAngles osc::extract_eulers_xyz(const Quaternion& quaternion)
 {
     return extract_eulers_xyz(matrix4x4_cast(quaternion));
 }
@@ -1329,9 +1329,9 @@ Transform osc::y_to_y_cone_to_segment_transform(const LineSegment& line_segment,
     return cylinder_to_line_segment_transform(line_segment, radius);
 }
 
-Quat osc::to_world_space_rotation_quat(const EulerAngles& eulers)
+Quaternion osc::to_world_space_rotation_quaternion(const EulerAngles& eulers)
 {
-    return normalize(Quat{eulers});
+    return normalize(Quaternion{eulers});
 }
 
 void osc::apply_world_space_rotation(
@@ -1339,7 +1339,7 @@ void osc::apply_world_space_rotation(
     const EulerAngles& euler_angles,
     const Vec3& rotation_center)
 {
-    const Quat q = to_world_space_rotation_quat(euler_angles);
+    const Quaternion q = to_world_space_rotation_quaternion(euler_angles);
     application_target.translation = q*(application_target.translation - rotation_center) + rotation_center;
     application_target.rotation = normalize(q*application_target.rotation);
 }

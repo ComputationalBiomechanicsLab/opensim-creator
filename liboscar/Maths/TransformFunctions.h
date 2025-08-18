@@ -8,7 +8,7 @@
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
@@ -182,8 +182,8 @@ namespace osc
         old_direction[axis_index] = 1.0f;
         old_direction = transform.rotation * old_direction;
 
-        const Quat rotation_old_to_new = rotation(old_direction, new_direction);
-        const Quat new_rotation = normalize(rotation_old_to_new * transform.rotation);
+        const Quaternion rotation_old_to_new = rotation(old_direction, new_direction);
+        const Quaternion new_rotation = normalize(rotation_old_to_new * transform.rotation);
 
         return transform.with_rotation(new_rotation);
     }
@@ -212,7 +212,7 @@ namespace osc
         ax[axis_index] = 1.0f;
         ax = transform.rotation * ax;
 
-        const Quat q = angle_axis(angle, ax);
+        const Quaternion q = angle_axis(angle, ax);
 
         return transform.with_rotation(normalize(q * transform.rotation));
     }

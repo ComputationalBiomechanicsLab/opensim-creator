@@ -11,7 +11,7 @@
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>

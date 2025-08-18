@@ -4,7 +4,7 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/Utils/Conversion.h>
@@ -45,8 +45,8 @@ namespace osc
     };
 
     template<>
-    struct Converter<Quat, SimTK::Rotation> final {
-        SimTK::Rotation operator()(const Quat&) const;
+    struct Converter<Quaternion, SimTK::Rotation> final {
+        SimTK::Rotation operator()(const Quaternion&) const;
     };
 
     template<>
@@ -85,8 +85,8 @@ namespace osc
     };
 
     template<>
-    struct Converter<SimTK::Rotation, Quat> final {
-        Quat operator()(const SimTK::Rotation&) const;
+    struct Converter<SimTK::Rotation, Quaternion> final {
+        Quaternion operator()(const SimTK::Rotation&) const;
     };
 
     template<>

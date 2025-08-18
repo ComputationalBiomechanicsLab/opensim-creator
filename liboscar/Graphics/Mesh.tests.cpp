@@ -11,7 +11,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
@@ -366,7 +366,7 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
     // create appropriate transform
     const Transform transform = {
         .scale = Vec3{0.25f},
-        .rotation = to_world_space_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
+        .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
         .translation = {1.0f, 0.25f, 0.125f},
     };
 
@@ -401,7 +401,7 @@ TEST(Mesh, transform_vertices_with_Matrix4x4_applies_transform_to_vertices)
 {
     const Matrix4x4 mat = matrix4x4_cast(Transform{
         .scale = Vec3{0.25f},
-        .rotation = to_world_space_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
+        .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
         .translation = {1.0f, 0.25f, 0.125f},
     });
 

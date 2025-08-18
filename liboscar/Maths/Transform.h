@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Vec3.h>
 
 #include <ostream>
@@ -15,7 +15,7 @@ namespace osc
             return Transform{.scale = scale, .rotation = rotation, .translation = new_translation};
         }
 
-        constexpr Transform with_rotation(const Quat& new_rotation) const
+        constexpr Transform with_rotation(const Quaternion& new_rotation) const
         {
             return Transform{.scale = scale, .rotation = new_rotation, .translation = translation};
         }
@@ -33,7 +33,7 @@ namespace osc
         friend bool operator==(const Transform&, const Transform&) = default;
 
         Vec3 scale{1.0f};
-        Quat rotation{};
+        Quaternion rotation{};
         Vec3 translation{};
     };
 

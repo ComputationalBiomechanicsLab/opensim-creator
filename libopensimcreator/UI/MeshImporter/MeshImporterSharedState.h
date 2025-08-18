@@ -1238,7 +1238,7 @@ namespace osc::mi
 
                 const float actualLegLen = 4.0f * legLen[i] * coreRadius;
 
-                const Quat rot = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
+                const Quaternion rot = normalize(xform.rotation * rotation(meshDirection, cylinderDirection));
                 appendOut.push_back(DrawableThing{
                     .id = logicalID,
                     .groupId = groupID,
@@ -1284,7 +1284,7 @@ namespace osc::mi
                 const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
                 const Vec3 coneDirection = Vec3{}.with_element(i, 1.0f);
 
-                const Quat rot = xform.rotation * rotation(meshDirection, coneDirection);
+                const Quaternion rot = xform.rotation * rotation(meshDirection, coneDirection);
 
                 appendOut.push_back(DrawableThing{
                     .id = logicalID,

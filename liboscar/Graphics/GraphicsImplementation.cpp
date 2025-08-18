@@ -66,7 +66,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
@@ -5822,12 +5822,12 @@ public:
         position_ = position;
     }
 
-    Quat rotation() const
+    Quaternion rotation() const
     {
         return rotation_;
     }
 
-    void set_rotation(const Quat& rotation)
+    void set_rotation(const Quaternion& rotation)
     {
         rotation_ = rotation;
     }
@@ -6016,7 +6016,7 @@ private:
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
     Vec3 position_;
-    Quat rotation_ = identity<Quat>();
+    Quaternion rotation_ = identity<Quaternion>();
     std::optional<Matrix4x4> maybe_view_matrix_override_;
     std::optional<Matrix4x4> maybe_projection_matrix_override_;
     std::vector<RenderObject> render_queue_;
@@ -6153,12 +6153,12 @@ void osc::Camera::set_position(const Vec3& position)
     impl_.upd()->set_position(position);
 }
 
-Quat osc::Camera::rotation() const
+Quaternion osc::Camera::rotation() const
 {
     return impl_->rotation();
 }
 
-void osc::Camera::set_rotation(const Quat& rotation)
+void osc::Camera::set_rotation(const Quaternion& rotation)
 {
     impl_.upd()->set_rotation(rotation);
 }

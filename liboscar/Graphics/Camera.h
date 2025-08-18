@@ -6,7 +6,7 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
@@ -127,8 +127,8 @@ namespace osc
         //
         // the default/identity orientation of the camera has it pointing along `-Z`, with
         // `+Y` pointing "up"
-        Quat rotation() const;
-        void set_rotation(const Quat&);
+        Quaternion rotation() const;
+        void set_rotation(const Quaternion&);
 
         // get/set the direction in which this `Camera` is pointing
         //

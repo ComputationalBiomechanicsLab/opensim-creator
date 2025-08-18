@@ -18,7 +18,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PlaneFunctions.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
@@ -40,7 +40,7 @@ namespace
 {
     void draw_grid(
         SceneCache& cache,
-        const Quat& rotation,
+        const Quaternion& rotation,
         const std::function<void(SceneDecoration&&)>& out)
     {
         out(SceneDecoration{
@@ -146,7 +146,7 @@ void osc::draw_xz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Quat rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
+    const Quaternion rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
     draw_grid(cache, rotation, out);
 }
 
@@ -154,14 +154,14 @@ void osc::draw_xy_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    draw_grid(cache, identity<Quat>(), out);
+    draw_grid(cache, identity<Quaternion>(), out);
 }
 
 void osc::draw_yz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Quat rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
+    const Quaternion rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
     draw_grid(cache, rotation, out);
 }
 

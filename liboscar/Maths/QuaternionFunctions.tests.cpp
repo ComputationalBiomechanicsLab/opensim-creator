@@ -1,7 +1,7 @@
 #include "QuaternionFunctions.h"
 
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 
 #include <gtest/gtest.h>
 
@@ -9,10 +9,10 @@
 
 using namespace osc;
 
-TEST(Quat_isnan, returns_expected_results)
+TEST(Quaternion_isnan, returns_expected_results)
 {
     struct TestCase {
-        Quat input;
+        Quaternion input;
         Vec<4, bool> expected_output;
     };
 

@@ -98,13 +98,13 @@ namespace osc
         // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(const Matrix<3, 3, T>& m)
         {
-            *this = quat_cast(m);
+            *this = quaternion_cast(m);
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
         explicit Qua(const Matrix<4, 4, T>& m)
         {
-            *this = quat_cast(m);
+            *this = quaternion_cast(m);
         }
 
         constexpr size_type size() const { return 4; }
@@ -220,9 +220,9 @@ namespace osc
     template<typename T>
     constexpr Vec<3, T> operator*(const Qua<T>& q, const Vec<3, T>& v)
     {
-        const Vec<3, T> QuatVector(q.x, q.y, q.z);
-        const Vec<3, T> uv(cross(QuatVector, v));
-        const Vec<3, T> uuv(cross(QuatVector, uv));
+        const Vec<3, T> qvector(q.x, q.y, q.z);
+        const Vec<3, T> uv(cross(qvector, v));
+        const Vec<3, T> uuv(cross(qvector, uv));
 
         return v + ((uv * q.w) + uuv) * static_cast<T>(2);
     }
@@ -266,7 +266,7 @@ namespace osc
     template<typename T>
     std::ostream& operator<<(std::ostream& o, const Qua<T>& v)
     {
-        return o << "Quat(" << v.w << ", " << v.x << ", " << v.y << ", " << v.z << ')';
+        return o << "Quaternion(" << v.w << ", " << v.x << ", " << v.y << ", " << v.z << ')';
     }
 
     template<typename T>
@@ -277,7 +277,7 @@ namespace osc
         return std::move(ss).str();
     }
 
-    // when handled as a tuple-like object, a `Quat` decomposes into its elements
+    // when handled as a tuple-like object, a `Quaternion` decomposes into its elements
 
     template<size_t I, typename T>
     constexpr const T& get(const Qua<T>& v) { return v[I]; }

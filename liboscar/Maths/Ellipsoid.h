@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Vec3.h>
 
 namespace osc
@@ -11,6 +11,6 @@ namespace osc
 
         Vec3 origin{};
         Vec3 radii{1.0f};
-        Quat orientation{};
+        Quaternion orientation{};
     };
 }

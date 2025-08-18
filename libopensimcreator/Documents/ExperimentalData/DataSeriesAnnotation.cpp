@@ -84,7 +84,7 @@ namespace
         std::span<const double, 4> data,
         SimTK::Array_<SimTK::DecorativeGeometry>& out)
     {
-        const Quat q = normalize(Quat{
+        const Quaternion q = normalize(Quaternion{
             static_cast<float>(data[0]),
             static_cast<float>(data[1]),
             static_cast<float>(data[2]),

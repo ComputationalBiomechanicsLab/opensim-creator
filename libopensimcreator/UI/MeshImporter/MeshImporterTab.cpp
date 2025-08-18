@@ -37,7 +37,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
@@ -907,8 +907,8 @@ private:
 
             if (ui::draw_angle3_input("Rotation", eulers, "%.6f"))
             {
-                Quat quatRads = osc::to_world_space_rotation_quat(eulers);
-                mg.updByID(e.getID()).set_rotation(mg, quatRads);
+                const Quaternion rotationRadians = osc::to_world_space_rotation_quaternion(eulers);
+                mg.updByID(e.getID()).set_rotation(mg, rotationRadians);
             }
             if (ui::is_item_deactivated_after_edit())
             {

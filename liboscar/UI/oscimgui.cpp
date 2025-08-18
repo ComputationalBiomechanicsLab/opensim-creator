@@ -28,7 +28,7 @@
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
@@ -2954,7 +2954,7 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
     eulers.y += sensitivity * -mouseDelta.x;
     eulers.y = mod(eulers.y, 360_deg);
 
-    camera.set_rotation(to_world_space_rotation_quat(eulers));
+    camera.set_rotation(to_world_space_rotation_quaternion(eulers));
 }
 
 Rect osc::ui::get_content_region_available_ui_rect()

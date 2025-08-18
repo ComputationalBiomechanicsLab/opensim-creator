@@ -26,7 +26,7 @@
 #include <liboscar/Maths/EllipsoidFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Plane.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Platform/App.h>
@@ -2308,7 +2308,7 @@ bool osc::ActionFitPlaneToMesh(IModelStatePair& model, const OpenSim::Mesh& open
     offsetFrame->connectSocket_parent(dynamic_cast<const OpenSim::PhysicalFrame&>(openSimMesh.getFrame()));
     {
         // +1Y in "brick space" should map to the plane's normal
-        const Quat q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
+        const Quaternion q = rotation({0.0f, 1.0f, 0.0f}, plane.normal);
         offsetFrame->setOffsetTransform(SimTK::Transform{to<SimTK::Rotation>(q), to<SimTK::Vec3>(plane.origin)});
     }
 

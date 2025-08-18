@@ -7,7 +7,7 @@
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Quat.h>
+#include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CStringView.h>
@@ -127,12 +127,12 @@ namespace osc::mi
             setXform(lookup, getXForm(lookup).with_scale(newScale));
         }
 
-        Quat rotation(const IObjectFinder& lookup) const
+        Quaternion rotation(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).rotation;
         }
 
-        void set_rotation(const IObjectFinder& lookup, const Quat& newRotation)
+        void set_rotation(const IObjectFinder& lookup, const Quaternion& newRotation)
         {
             setXform(lookup, getXForm(lookup).with_rotation(newRotation));
         }
