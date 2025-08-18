@@ -51,14 +51,14 @@ namespace
         {
             Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = rotate(m, 60_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = rotate(m, 60_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 
         {
             Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = rotate(m, 23_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = rotate(m, 23_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             m = scale(m, Vec3(1.25));
             rv.push_back(m);
         }
@@ -66,7 +66,7 @@ namespace
         {
             Mat4 m = identity<Mat4>();
             m = translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = rotate(m, 124_deg, UnitVec3{1.0, 0.0, 1.0});
+            m = rotate(m, 124_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 

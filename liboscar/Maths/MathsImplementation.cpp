@@ -591,9 +591,9 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     const Vec4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
-    const Mat4 rotation_theta = rotate(identity<Mat4>(), theta, UnitVec3::along_y());
-    const UnitVec3 theta_vec{sin(theta), 0.0f, cos(theta)};
-    const UnitVec3 phi_axis = cross(theta_vec, UnitVec3::along_y());
+    const Mat4 rotation_theta = rotate(identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
+    const Vec3 theta_vec{sin(theta), 0.0f, cos(theta)};
+    const Vec3 phi_axis = cross(theta_vec, Vec3{0.0f, 1.0f, 0.0f});
     const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
 
     const Vec4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
@@ -1290,7 +1290,7 @@ Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)
     const Mat4 rotate = mat4_transform_between_directions(a_direction, b_direction);
     const Mat4 move = translate(identity<Mat4>(), b_center - a_center);
 
-    return move * rotate * scale(identity<Mat4>(), scaler);
+    return move * rotate * scale(identity<Mat4>(), normalize(scaler));
 }
 
 Transform osc::transform_between(const LineSegment& a, const LineSegment& b)

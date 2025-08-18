@@ -15,7 +15,6 @@
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/UnitVec3.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -161,15 +160,6 @@ TEST(Mesh, set_vertices_can_be_called_with_an_initializer_list_of_vertices)
     mesh.set_vertices({a, b, c});
     const std::vector<Vec3> expected = {a, b, c};
 
-    ASSERT_EQ(mesh.vertices(), expected);
-}
-
-TEST(Mesh, set_vertices_can_be_called_with_UnitVec3_because_of_implicit_conversion)
-{
-    Mesh mesh;
-    UnitVec3 unit_vec3{1.0f, 0.0f, 0.0f};
-    mesh.set_vertices({unit_vec3});
-    const std::vector<Vec3> expected = {unit_vec3};
     ASSERT_EQ(mesh.vertices(), expected);
 }
 

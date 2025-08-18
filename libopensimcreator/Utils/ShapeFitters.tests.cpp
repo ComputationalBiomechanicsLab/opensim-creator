@@ -15,7 +15,6 @@
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/UnitVec3.h>
 #include <liboscar/Maths/Vec3.h>
 
 #include <array>
@@ -50,10 +49,11 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
 
 TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 {
-    Transform t;
-    t.translation = {7.0f, 3.0f, 1.5f};
-    t.scale = {3.25f, 3.25f, 3.25f};  // keep it spherical
-    t.rotation = angle_axis(45_deg, UnitVec3{1.0f, 1.0f, 0.0f});
+    const Transform t = {
+        .scale = {3.25f, 3.25f, 3.25f},  // keep it spherical
+        .rotation = angle_axis(45_deg, normalize(Vec3{1.0f, 1.0f, 0.0f})),
+        .translation = {7.0f, 3.0f, 1.5f},
+    };
 
     Mesh sphereMesh = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     sphereMesh.transform_vertices(t);

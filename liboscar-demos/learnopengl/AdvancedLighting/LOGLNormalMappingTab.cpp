@@ -79,7 +79,7 @@ public:
         // rotate the quad over time
         const AppClock::duration dt = App::get().frame_delta_since_startup();
         const auto angle = Degrees{-10.0 * dt.count()};
-        const auto axis = UnitVec3{1.0f, 0.0f, 1.0f};
+        const auto axis = normalize(Vec3{1.0f, 0.0f, 1.0f});
         quad_transform_.rotation = angle_axis(angle, axis);
     }
 

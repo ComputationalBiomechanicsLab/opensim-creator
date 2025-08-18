@@ -105,7 +105,7 @@ namespace
     std::vector<OrthogonalProjectionParameters> calculate_light_source_orthographic_projections(
         const Camera& camera,
         float aspect_ratio,
-        UnitVec3 light_world_direction)
+        Vec3 light_world_direction)
     {
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
@@ -321,7 +321,7 @@ private:
         resource_loader_.slurp("oscar_demos/learnopengl/shaders/Guest/CSM/lighting.vert"),
         resource_loader_.slurp("oscar_demos/learnopengl/shaders/Guest/CSM/lighting.frag"),
     }};
-    UnitVec3 light_direction_{0.5f, -1.0f, 0.0f};
+    Vec3 light_direction_ = normalize(Vec3{0.5f, -1.0f, 0.0f});
     std::vector<SharedDepthStencilRenderBuffer> cascade_rasters_ = generate_blank_cascade_buffers();
 
     // ui

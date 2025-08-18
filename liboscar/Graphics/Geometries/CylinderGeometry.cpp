@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/SubMeshDescriptor.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/UnitVec3.h>
+#include <liboscar/Maths/Vec3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -59,7 +59,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
                     (-v * p.height) + half_height,
                     radius * cos_theta
                 );
-                normals.push_back(UnitVec3{sin_theta, slope, cos_theta});
+                normals.push_back(normalize(Vec3{sin_theta, slope, cos_theta}));
                 uvs.emplace_back(u, 1 - v);
                 row_indices.push_back(index++);
             }

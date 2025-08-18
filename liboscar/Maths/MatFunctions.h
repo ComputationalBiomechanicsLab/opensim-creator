@@ -5,7 +5,6 @@
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Maths/Mat.h>
 #include <liboscar/Maths/Qua.h>
-#include <liboscar/Maths/UnitVec3.h>
 #include <liboscar/Maths/Vec.h>
 #include <liboscar/Utils/HashHelpers.h>
 
@@ -87,7 +86,7 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> rotate(const Mat<4, 4, T>& m, Angle<T, Units> angle, UnitVec<3, T> axis)
+    Mat<4, 4, T> rotate(const Mat<4, 4, T>& m, Angle<T, Units> angle, Vec<3, T> axis)
     {
         const T c = cos(angle);
         const T s = sin(angle);
@@ -113,12 +112,6 @@ namespace osc
         rv[2] = m[0] * rotate[2][0] + m[1] * rotate[2][1] + m[2] * rotate[2][2];
         rv[3] = m[3];
         return rv;
-    }
-
-    template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> rotate(const Mat<4, 4, T>& m, Angle<T, Units> angle, const Vec<3, T>& axis)
-    {
-        return rotate(m, angle, UnitVec<3, T>{axis});
     }
 
     template<typename T>

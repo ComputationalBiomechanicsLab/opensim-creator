@@ -89,7 +89,7 @@ public:
     void on_tick()
     {
         const double dt = App::get().frame_delta_since_startup().count();
-        step1_transform_.rotation = angle_axis(50_deg * dt, UnitVec3{0.5f, 1.0f, 0.0f});
+        step1_transform_.rotation = angle_axis(50_deg * dt, normalize(Vec3{0.5f, 1.0f, 0.0f}));
     }
 
     void on_draw()
@@ -110,7 +110,7 @@ private:
             graphics::draw(mesh_, step1_transform_, material_, camera_);
         }
         else {
-            const UnitVec3 axis{1.0f, 0.3f, 0.5f};
+            const Vec3 axis = normalize(Vec3{1.0f, 0.3f, 0.5f});
 
             for (size_t i = 0; i < c_cube_positions.size(); ++i) {
                 graphics::draw(

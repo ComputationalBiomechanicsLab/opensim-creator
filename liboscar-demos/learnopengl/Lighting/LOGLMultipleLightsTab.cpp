@@ -146,7 +146,7 @@ public:
         multiple_lights_material_.set("uSpotLightDirection", camera_.direction());
 
         // render containers
-        const UnitVec3 axis{1.0f, 0.3f, 0.5f};
+        const Vec3 axis = normalize(Vec3{1.0f, 0.3f, 0.5f});
         for (size_t i = 0; i < c_cube_positions.size(); ++i) {
             const Vec3& pos = c_cube_positions[i];
             const auto angle = i++ * 20_deg;

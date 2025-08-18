@@ -3,7 +3,6 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/UnitVec3.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 
@@ -42,11 +41,11 @@ osc::TorusGeometry::TorusGeometry(const Params& p)
                 (p.tube_center_radius + p.tube_radius * cos(v)) * sin(u),
                 p.tube_radius * sin(v)
             );
-            normals.push_back(UnitVec3{
+            normals.push_back(normalize(Vec3{
                 vertex.x - p.tube_center_radius*cos(u),
                 vertex.y - p.tube_center_radius*sin(u),
                 vertex.z - 0.0f,
-            });
+            }));
             uvs.emplace_back(fi/fnum_tubular_segments, fj/fnum_radial_segments);
         }
     }

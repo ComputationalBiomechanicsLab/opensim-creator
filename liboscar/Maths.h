@@ -50,8 +50,6 @@
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/UnitVec.h>
-#include <liboscar/Maths/UnitVec3.h>
 #include <liboscar/Maths/Vec.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>

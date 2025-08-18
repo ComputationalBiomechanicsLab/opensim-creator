@@ -5169,7 +5169,7 @@ public:
             const Triangle triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
 
             // calculate + validate triangle normal
-            const auto normal = triangle_normal(triangle).unwrap();
+            const auto normal = triangle_normal(triangle);
             if (any_of(isnan(normal))) {
                 continue;  // probably co-located, or invalid: don't accumulate it
             }

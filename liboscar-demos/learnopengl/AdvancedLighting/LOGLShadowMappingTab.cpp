@@ -147,7 +147,7 @@ private:
             cube_mesh_,
             Transform{
                 .scale = Vec3{0.25f},
-                .rotation = angle_axis(60_deg, UnitVec3{1.0f, 0.0f, 1.0f}),
+                .rotation = angle_axis(60_deg, normalize(Vec3{1.0f, 0.0f, 1.0f})),
                 .translation = {-1.0f, 0.0f, 2.0f},
             },
             material,
