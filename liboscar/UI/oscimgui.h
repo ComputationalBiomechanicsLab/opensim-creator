@@ -6,7 +6,7 @@
 #include <liboscar/Maths/Circle.h>
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec.h>
@@ -1042,18 +1042,18 @@ namespace osc::ui
         //       ignore the translational part of the transform" then you're in
         //       for a nasty surprise: T(origin)*R*S*T(-origin)
         std::optional<Transform> draw(
-            Mat4& model_matrix,  // edited in-place
-            const Mat4& view_matrix,
-            const Mat4& projection_matrix,
+            Matrix4x4& model_matrix,  // edited in-place
+            const Matrix4x4& view_matrix,
+            const Matrix4x4& projection_matrix,
             const Rect& ui_rect
         );
 
         // same as `draw`, but draws to the foreground draw list, rather than the
         // draw list of the currently active panel
         std::optional<Transform> draw_to_foreground(
-            Mat4& model_matrix,  // edited in-place
-            const Mat4& view_matrix,
-            const Mat4& projection_matrix,
+            Matrix4x4& model_matrix,  // edited in-place
+            const Matrix4x4& view_matrix,
+            const Matrix4x4& projection_matrix,
             const Rect& ui_rect
         );
 
@@ -1069,9 +1069,9 @@ namespace osc::ui
         bool handle_keyboard_inputs();
     private:
         std::optional<Transform> draw_to(
-            Mat4& model_matrix,
-            const Mat4& view_matrix,
-            const Mat4& projection_matrix,
+            Matrix4x4& model_matrix,
+            const Matrix4x4& view_matrix,
+            const Matrix4x4& projection_matrix,
             const Rect& ui_rect,
             ImDrawList* draw_list
         );

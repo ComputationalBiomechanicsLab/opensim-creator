@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/CommonFunctions.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
@@ -56,7 +56,7 @@ namespace osc
     std::array<Vec3, 8> corner_vertices_of(const AABB& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `m`
-    AABB transform_aabb(const Mat4& m, const AABB& aabb);
+    AABB transform_aabb(const Matrix4x4& m, const AABB& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `t`
     AABB transform_aabb(const Transform& t, const AABB& aabb);
@@ -171,8 +171,8 @@ namespace osc
     // and (1, 1)), returns `std::nullopt`
     std::optional<Rect> loosely_project_into_ndc(
         const AABB& aabb,
-        const Mat4& view_mat,
-        const Mat4& proj_mat,
+        const Matrix4x4& view_mat,
+        const Matrix4x4& proj_mat,
         float znear,
         float zfar
     );

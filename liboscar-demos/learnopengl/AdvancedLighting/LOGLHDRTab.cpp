@@ -133,8 +133,8 @@ private:
         Camera orthogonal_camera;
         orthogonal_camera.set_background_color(Color::clear());
         orthogonal_camera.set_pixel_rect(ui::get_main_window_workspace_screen_space_rect());
-        orthogonal_camera.set_projection_matrix_override(identity<Mat4>());
-        orthogonal_camera.set_view_matrix_override(identity<Mat4>());
+        orthogonal_camera.set_projection_matrix_override(identity<Matrix4x4>());
+        orthogonal_camera.set_view_matrix_override(identity<Matrix4x4>());
 
         tonemap_material_.set("uTexture", scene_hdr_texture_);
         tonemap_material_.set("uUseTonemap", use_tonemap_);

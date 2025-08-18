@@ -4,8 +4,8 @@
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Maths/CoordinateDirection.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Qua.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Vec2.h>
@@ -71,7 +71,7 @@ namespace osc
     }
 
     template<typename T>
-    Qua<T> quat_cast(const Mat<3, 3, T>& m)
+    Qua<T> quat_cast(const Matrix<3, 3, T>& m)
     {
         const T four_x_squared_minus_1 = m[0][0] - m[1][1] - m[2][2];
         const T four_y_squared_minus_1 = m[1][1] - m[0][0] - m[2][2];
@@ -111,13 +111,13 @@ namespace osc
     }
 
     template<typename T>
-    Qua<T> quat_cast(const Mat<4, 4, T>& m)
+    Qua<T> quat_cast(const Matrix<4, 4, T>& m)
     {
-        return quat_cast(Mat<3, 3, T>(m));
+        return quat_cast(Matrix<3, 3, T>(m));
     }
 
     template<typename T>
-    constexpr Mat<3, 3, T> mat3_cast(const Qua<T>& q)
+    constexpr Matrix<3, 3, T> matrix3x3_cast(const Qua<T>& q)
     {
         const T qxx(q.x * q.x);
         const T qyy(q.y * q.y);
@@ -129,7 +129,7 @@ namespace osc
         const T qwy(q.w * q.y);
         const T qwz(q.w * q.z);
 
-        Mat<3, 3, T> rv(T(1));
+        Matrix<3, 3, T> rv(T(1));
 
         rv[0][0] = T(1) - T(2) * (qyy +  qzz);
         rv[0][1] = T(2) * (qxy + qwz);
@@ -147,9 +147,9 @@ namespace osc
     }
 
     template<typename T>
-    constexpr Mat<4, 4, T> mat4_cast(const Qua<T>& q)
+    constexpr Matrix<4, 4, T> matrix4x4_cast(const Qua<T>& q)
     {
-        return Mat<4, 4, T>(mat3_cast(q));
+        return Matrix<4, 4, T>(matrix3x3_cast(q));
     }
 
     template<typename T>

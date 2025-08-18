@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/MeshIndicesView.h>
 #include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/MeshUpdateFlags.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/Vec2.h>
@@ -53,7 +53,7 @@ namespace osc
         }
         void transform_vertices(const std::function<Vec3(Vec3)>&);
         void transform_vertices(const Transform&);
-        void transform_vertices(const Mat4&);
+        void transform_vertices(const Matrix4x4&);
 
         // attribute: you can only set an equal amount of normals to the number of
         //            vertices (or zero, which means "clear them")

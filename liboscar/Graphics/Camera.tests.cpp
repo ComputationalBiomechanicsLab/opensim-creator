@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/CameraProjection.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/testing/TestingHelpers.h>
@@ -264,7 +264,7 @@ TEST(Camera, view_matrix_returns_view_matrix_based_on_position_direction_and_up)
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({1.0f, 2.0f, 3.0f});
 
-    Mat4 expected_matrix = identity<Mat4>();
+    Matrix4x4 expected_matrix = identity<Matrix4x4>();
     expected_matrix[3][0] = -1.0f;
     expected_matrix[3][1] = -2.0f;
     expected_matrix[3][2] = -3.0f;
@@ -278,7 +278,7 @@ TEST(Camera, inverse_view_matrix_returns_inverse_of_view_matrix_based_on_positio
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({1.0f, 2.0f, 3.0f});
 
-    Mat4 expected_view_matrix = identity<Mat4>();
+    Matrix4x4 expected_view_matrix = identity<Matrix4x4>();
     expected_view_matrix[3][0] = -1.0f;
     expected_view_matrix[3][1] = -2.0f;
     expected_view_matrix[3][2] = -3.0f;
@@ -294,7 +294,7 @@ TEST(Camera, set_view_matrix_override_makes_view_matrix_return_the_override)
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
-    Mat4 view_matrix = identity<Mat4>();
+    Matrix4x4 view_matrix = identity<Matrix4x4>();
     view_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_view_matrix_override(view_matrix);
@@ -305,9 +305,9 @@ TEST(Camera, set_view_matrix_override_makes_view_matrix_return_the_override)
 TEST(Camera, set_view_matrix_override_to_nullopt_resets_view_matrix_to_use_camera_position_and_up)
 {
     Camera camera;
-    const Mat4 initial_view_matrix = camera.view_matrix();
+    const Matrix4x4 initial_view_matrix = camera.view_matrix();
 
-    Mat4 view_matrix = identity<Mat4>();
+    Matrix4x4 view_matrix = identity<Matrix4x4>();
     view_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_view_matrix_override(view_matrix);
@@ -325,8 +325,8 @@ TEST(Camera, projection_matrix_returns_matrix_based_on_camera_position_and_up)
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({0.0f, 0.0f, 0.0f});
 
-    const Mat4 returned = camera.projection_matrix(1.0f);
-    const Mat4 expected = identity<Mat4>();
+    const Matrix4x4 returned = camera.projection_matrix(1.0f);
+    const Matrix4x4 expected = identity<Matrix4x4>();
 
     // only compare the Y, Z, and W columns: the X column depends on the aspect ratio of the output
     // target
@@ -343,7 +343,7 @@ TEST(Camera, set_projection_matrix_override_makes_projection_matrix_return_the_o
     camera.set_projection(CameraProjection::Orthographic);
     camera.set_position({7.0f, 5.0f, -3.0f});
 
-    Mat4 projection_matrix = identity<Mat4>();
+    Matrix4x4 projection_matrix = identity<Matrix4x4>();
     projection_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_projection_matrix_override(projection_matrix);
@@ -354,9 +354,9 @@ TEST(Camera, set_projection_matrix_override_makes_projection_matrix_return_the_o
 TEST(Camera, set_projection_matrix_override_to_nullopt_resets_projection_matrix_to_use_camera_field_of_view_etc)
 {
     Camera camera;
-    const Mat4 initial_projection_matrix = camera.projection_matrix(1.0f);
+    const Matrix4x4 initial_projection_matrix = camera.projection_matrix(1.0f);
 
-    Mat4 projection_matrix = identity<Mat4>();
+    Matrix4x4 projection_matrix = identity<Matrix4x4>();
     projection_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_projection_matrix_override(projection_matrix);
@@ -372,16 +372,16 @@ TEST(Camera, view_projection_matrix_returns_view_matrix_multiplied_by_projection
 {
     Camera camera;
 
-    Mat4 view_matrix = identity<Mat4>();
+    Matrix4x4 view_matrix = identity<Matrix4x4>();
     view_matrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projection_matrix = identity<Mat4>();
+    Matrix4x4 projection_matrix = identity<Matrix4x4>();
     projection_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_view_matrix_override(view_matrix);
     camera.set_projection_matrix_override(projection_matrix);
 
-    const Mat4 expected = projection_matrix * view_matrix;
+    const Matrix4x4 expected = projection_matrix * view_matrix;
     ASSERT_EQ(camera.view_projection_matrix(1.0f), expected);
 }
 
@@ -389,16 +389,16 @@ TEST(Camera, inverse_view_projection_matrix_returns_expected_matrix)
 {
     Camera camera;
 
-    Mat4 view_matrix = identity<Mat4>();
+    Matrix4x4 view_matrix = identity<Matrix4x4>();
     view_matrix[0][3] = 2.5f;  // change some part of it
 
-    Mat4 projection_matrix = identity<Mat4>();
+    Matrix4x4 projection_matrix = identity<Matrix4x4>();
     projection_matrix[0][1] = 9.0f;  // change some part of it
 
     camera.set_view_matrix_override(view_matrix);
     camera.set_projection_matrix_override(projection_matrix);
 
-    const Mat4 expected = inverse(projection_matrix * view_matrix);
+    const Matrix4x4 expected = inverse(projection_matrix * view_matrix);
     ASSERT_EQ(camera.inverse_view_projection_matrix(1.0f), expected);
 }
 

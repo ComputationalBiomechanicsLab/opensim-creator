@@ -112,9 +112,9 @@ namespace
         // - https://ogldev.org/www/tutorial49/tutorial49.html
 
         // precompute transforms
-        const Mat4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_world_direction}, {0.0f, 1.0f, 0.0f});
-        const Mat4 view_to_world = camera.inverse_view_matrix();
-        const Mat4 view_to_light = world_to_light * view_to_world;
+        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_world_direction}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 view_to_world = camera.inverse_view_matrix();
+        const Matrix4x4 view_to_light = world_to_light * view_to_world;
 
         // precompute necessary values to figure out the corners of the view frustum
         const auto [view_znear, view_zfar] = camera.clipping_planes();
@@ -177,7 +177,7 @@ namespace
     }
 
     // returns a projection matrix for the given projection parameters
-    Mat4 to_mat4(const OrthogonalProjectionParameters& p)
+    Matrix4x4 to_matrix4x4(const OrthogonalProjectionParameters& p)
     {
         const float l = p.left;
         const float r = p.right;
@@ -187,7 +187,7 @@ namespace
         const float f = p.far;
 
         // Create a transform that maps the edges of the orthogonal proection to NDC (i.e. [-1.0, +1.0])
-        return mat4_cast(Transform{
+        return matrix4x4_cast(Transform{
             .scale       = {  2.0f/(r - l)  ,   2.0f/(t - b)  ,   2.0f/(f - n)  },
             .translation = {-(r + l)/(r - l), -(t + b)/(t - b), -(f + n)/(f - n)},
         });
@@ -238,35 +238,35 @@ public:
     }
 
 private:
-    std::vector<Mat4> render_cascades(float user_aspect_ratio)
+    std::vector<Matrix4x4> render_cascades(float user_aspect_ratio)
     {
         // calculate how each cascade maps from the user's camera to light-space
         const auto cascade_projections = calculate_light_source_orthographic_projections(user_camera_, user_aspect_ratio, light_direction_);
 
         // for each of those mappings, render a cascade
         OSC_ASSERT_ALWAYS(cascade_projections.size() == cascade_rasters_.size());
-        const Mat4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction_}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction_}, {0.0f, 1.0f, 0.0f});
 
-        std::vector<Mat4> rv;
+        std::vector<Matrix4x4> rv;
         rv.reserve(cascade_projections.size());
         for (size_t i = 0; i < cascade_projections.size(); ++i) {
-            const Mat4 cascade_projection_mat4 = to_mat4(cascade_projections[i]) * world_to_light;
+            const Matrix4x4 cascade_projection_matrix = to_matrix4x4(cascade_projections[i]) * world_to_light;
 
             Camera camera;
-            camera.set_view_matrix_override(identity<Mat4>());
-            camera.set_projection_matrix_override(cascade_projection_mat4);
+            camera.set_view_matrix_override(identity<Matrix4x4>());
+            camera.set_projection_matrix_override(cascade_projection_matrix);
 
             for (const auto& decoration : decorations_) {
                 graphics::draw(decoration.mesh, decoration.transform, shadow_mapping_material_, camera);
             }
 
             camera.render_to(cascade_rasters_[i]);
-            rv.push_back(cascade_projection_mat4);
+            rv.push_back(cascade_projection_matrix);
         }
         return rv;
     }
 
-    void render_scene_with_cascaded_shadow_mapping(std::span<const Mat4> cascade_projections)
+    void render_scene_with_cascaded_shadow_mapping(std::span<const Matrix4x4> cascade_projections)
     {
         // setup material
         csm_material_.set_array("uLightWVP", cascade_projections);
@@ -289,7 +289,7 @@ private:
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
             const auto [near, far] = user_camera_.clipping_planes();
             const Vec4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
-            const Mat4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
+            const Matrix4x4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
             const Vec4 proj_pos = (proj * viewer_position);
             ends.push_back(proj_pos.z);
         }

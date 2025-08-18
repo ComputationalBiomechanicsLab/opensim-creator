@@ -75,14 +75,14 @@ template<> Vec4 osc::testing::generate()
     return Vec4{generate<float>(), generate<float>(), generate<float>(), generate<float>()};
 }
 
-template<> Mat3 osc::testing::generate()
+template<> Matrix3x3 osc::testing::generate()
 {
-    return Mat3{generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
+    return Matrix3x3{generate<Vec3>(), generate<Vec3>(), generate<Vec3>()};
 }
 
-template<> Mat4 osc::testing::generate()
+template<> Matrix4x4 osc::testing::generate()
 {
-    return Mat4{generate<Vec4>(), generate<Vec4>(), generate<Vec4>(), generate<Vec4>()};
+    return Matrix4x4{generate<Vec4>(), generate<Vec4>(), generate<Vec4>(), generate<Vec4>()};
 }
 
 template<> Triangle osc::testing::generate()

@@ -34,8 +34,8 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Rect.h>
@@ -1423,7 +1423,7 @@ private:
                     {
                         const Transform MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         const Transform meshVertToGround = el.getXForm();
-                        const Mat4 meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
+                        const Matrix4x4 meshVertToMIObjectVert = inverse_matrix4x4_cast(MIObjectToGround) * matrix4x4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transform_vertices(meshVertToMIObjectVert);
@@ -1434,7 +1434,7 @@ private:
                     {
                         const Transform MIObjectToGround = MIObject.getXForm(m_Shared->getModelGraph());
                         const Transform meshVertToGround = el.getXForm();
-                        const Mat4 meshVertToMIObjectVert = inverse_mat4_cast(MIObjectToGround) * mat4_cast(meshVertToGround);
+                        const Matrix4x4 meshVertToMIObjectVert = inverse_matrix4x4_cast(MIObjectToGround) * matrix4x4_cast(meshVertToGround);
 
                         osc::Mesh mesh = el.getMeshData();
                         mesh.transform_vertices(meshVertToMIObjectVert);
@@ -2072,7 +2072,7 @@ private:
             ras.scale /= static_cast<float>(n);
             ras.rotation = normalize(ras.rotation);
 
-            m_GizmoModelMatrix = mat4_cast(ras);
+            m_GizmoModelMatrix = matrix4x4_cast(ras);
         }
 
         // else: is using OR nselected > 0 (so draw it)
@@ -2403,7 +2403,7 @@ private:
 
     // Gizmo state
     ui::Gizmo m_Gizmo;
-    Mat4 m_GizmoModelMatrix = identity<Mat4>();
+    Matrix4x4 m_GizmoModelMatrix = identity<Matrix4x4>();
 
     // manager for active modal popups (importer popups, etc.)
     PopupManager m_PopupManager;

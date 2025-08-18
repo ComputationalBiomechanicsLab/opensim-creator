@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/BlitFlags.h>
 #include <liboscar/Graphics/CubemapFace.h>
 #include <liboscar/Graphics/MaterialPropertyBlock.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 
 #include <cstddef>
@@ -37,14 +37,14 @@ namespace osc::graphics
         std::optional<size_t> maybe_submesh_index = std::nullopt
     );
 
-    // Queues the given `Mesh` + `Mat4` + `Material` + extras against
+    // Queues the given `Mesh` + `Matrix4x4` + `Material` + extras against
     // the `Camera`.
     //
     // Once everything is queued against the `Camera`, the caller should call
     // `Camera::render()` or `Camera::render_to()` to flush the queue.
     void draw(
         const Mesh&,
-        const Mat4&,
+        const Matrix4x4&,
         const Material&,
         Camera&,
         const std::optional<MaterialPropertyBlock>& = std::nullopt,

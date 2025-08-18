@@ -6,8 +6,8 @@
 #include <liboscar/Graphics/SharedColorRenderBuffer.h>
 #include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -22,8 +22,8 @@ namespace osc::detail
         Cubemap,
         float,
         int,
-        Mat3,
-        Mat4,
+        Matrix3x3,
+        Matrix4x4,
         RenderTexture,
         SharedColorRenderBuffer,
         SharedDepthStencilRenderBuffer,

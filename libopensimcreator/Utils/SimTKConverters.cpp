@@ -1,8 +1,8 @@
 #include "SimTKConverters.h"
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
@@ -33,7 +33,7 @@ SimTK::Vec3 osc::Converter<EulerAngles, SimTK::Vec3>::operator()(const EulerAngl
     };
 }
 
-SimTK::Mat33 osc::Converter<Mat3, SimTK::Mat33>::operator()(const Mat3& m) const
+SimTK::Mat33 osc::Converter<Matrix3x3, SimTK::Mat33>::operator()(const Matrix3x3& m) const
 {
     return SimTK::Mat33 {
         static_cast<double>(m[0][0]), static_cast<double>(m[1][0]), static_cast<double>(m[2][0]),
@@ -58,7 +58,7 @@ SimTK::Transform osc::Converter<Transform, SimTK::Transform>::operator()(const T
 
 SimTK::Rotation osc::Converter<Quat, SimTK::Rotation>::operator()(const Quat& q) const
 {
-    return SimTK::Rotation{to<SimTK::Mat33>(mat3_cast(q))};
+    return SimTK::Rotation{to<SimTK::Mat33>(matrix3x3_cast(q))};
 }
 
 SimTK::Rotation osc::Converter<EulerAngles, SimTK::Rotation>::operator()(const EulerAngles& eulers) const
@@ -85,9 +85,9 @@ Vec3 osc::Converter<SimTK::UnitVec3, Vec3>::operator()(const SimTK::UnitVec3& v)
     return to<Vec3>(SimTK::Vec3{v});
 }
 
-Mat4 osc::Converter<SimTK::Transform, Mat4>::operator()(const SimTK::Transform& t) const
+Matrix4x4 osc::Converter<SimTK::Transform, Matrix4x4>::operator()(const SimTK::Transform& t) const
 {
-    Mat4 m{};
+    Matrix4x4 m{};
 
     // x0 y0 z0 w0
     const SimTK::Rotation& r = t.R();
@@ -126,9 +126,9 @@ Mat4 osc::Converter<SimTK::Transform, Mat4>::operator()(const SimTK::Transform& 
     return m;
 }
 
-Mat3 osc::Converter<SimTK::Mat33, Mat3>::operator()(const SimTK::Mat33& m) const
+Matrix3x3 osc::Converter<SimTK::Mat33, Matrix3x3>::operator()(const SimTK::Mat33& m) const
 {
-    Mat3 rv{};
+    Matrix3x3 rv{};
     for (int row = 0; row < 3; ++row) {
         const auto& r = m[row];
         rv[0][row] = static_cast<float>(r[0]);
@@ -138,10 +138,10 @@ Mat3 osc::Converter<SimTK::Mat33, Mat3>::operator()(const SimTK::Mat33& m) const
     return rv;
 }
 
-Mat4 osc::Converter<SimTK::Rotation, Mat4>::operator()(const SimTK::Rotation& r) const
+Matrix4x4 osc::Converter<SimTK::Rotation, Matrix4x4>::operator()(const SimTK::Rotation& r) const
 {
     const SimTK::Transform t{r};
-    return to<Mat4>(t);
+    return to<Matrix4x4>(t);
 }
 
 Quat osc::Converter<SimTK::Rotation, Quat>::operator()(const SimTK::Rotation& r) const

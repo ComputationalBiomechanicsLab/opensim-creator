@@ -5,9 +5,9 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Functors.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/MatFunctions.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Transform.h>
@@ -19,9 +19,9 @@
 namespace osc
 {
     // returns a 3x3 transform matrix equivalent to the provided transform (ignores position)
-    constexpr Mat3 mat3_cast(const Transform& transform)
+    constexpr Matrix3x3 matrix3x3_cast(const Transform& transform)
     {
-        Mat3 rv = mat3_cast(transform.rotation);
+        Matrix3x3 rv = matrix3x3_cast(transform.rotation);
 
         rv[0][0] *= transform.scale.x;
         rv[0][1] *= transform.scale.x;
@@ -39,9 +39,9 @@ namespace osc
     }
 
     // returns a 4x4 transform matrix equivalent to the provided transform
-    constexpr Mat4 mat4_cast(const Transform& transform)
+    constexpr Matrix4x4 matrix4x4_cast(const Transform& transform)
     {
-        Mat4 rv = mat4_cast(transform.rotation);
+        Matrix4x4 rv = matrix4x4_cast(transform.rotation);
 
         rv[0][0] *= transform.scale.x;
         rv[0][1] *= transform.scale.x;
@@ -63,44 +63,44 @@ namespace osc
     }
 
     // returns a 4x4 transform matrix equivalent to the inverse of the provided transform
-    inline Mat4 inverse_mat4_cast(const Transform& transform)
+    inline Matrix4x4 inverse_matrix4x4_cast(const Transform& transform)
     {
-        const Mat4 translator = translate(identity<Mat4>(), -transform.translation);
-        const Mat4 rotator = mat4_cast(conjugate(transform.rotation));
-        const Mat4 scaler = scale(identity<Mat4>(), 1.0f/transform.scale);
+        const Matrix4x4 translator = translate(identity<Matrix4x4>(), -transform.translation);
+        const Matrix4x4 rotator = matrix4x4_cast(conjugate(transform.rotation));
+        const Matrix4x4 scaler = scale(identity<Matrix4x4>(), 1.0f/transform.scale);
 
         return scaler * rotator * translator;
     }
 
     // returns a 3x3 normal matrix for the provided transform
-    constexpr Mat3 normal_matrix(const Transform& transform)
+    constexpr Matrix3x3 normal_matrix(const Transform& transform)
     {
-        return adjugate(transpose(mat3_cast(transform)));
+        return adjugate(transpose(matrix3x3_cast(transform)));
     }
 
     // returns a 4x4 normal matrix for the provided transform
-    constexpr Mat4 normal_matrix_4x4(const Transform& transform)
+    constexpr Matrix4x4 normal_matrix_4x4(const Transform& transform)
     {
-        return adjugate(transpose(mat3_cast(transform)));
+        return adjugate(transpose(matrix3x3_cast(transform)));
     }
 
     // returns `true` if `out` was updated with the decomposition of `m`
     //
     // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
     // - uses matrix decomposition to break up the provided matrix
-    inline bool try_decompose_to_transform(const Mat4& m, Transform& out)
+    inline bool try_decompose_to_transform(const Matrix4x4& m, Transform& out)
     {
         Vec3 skew;
         Vec4 perspective;
         return decompose(m, out.scale, out.rotation, out.translation, skew, perspective);
     }
 
-    // returns a transform that *tries to* perform the equivalent transform as the provided `Mat4`
+    // returns a transform that *tries to* perform the equivalent transform as the provided `Matrix4x4`
     //
     // - not all 4x4 matrices can be expressed as an `Transform` (e.g. those containing skews)
     // - uses matrix decomposition to break up the provided matrix
     // - throws if decomposition of the provided matrix is not possible
-    inline Transform decompose_to_transform(const Mat4& m)
+    inline Transform decompose_to_transform(const Matrix4x4& m)
     {
         Transform rv;
         if (not try_decompose_to_transform(m, rv)) {
@@ -156,7 +156,7 @@ namespace osc
     // see: https://en.wikipedia.org/wiki/Euler_angles#Conventions_by_intrinsic_rotations
     inline EulerAngles extract_eulers_xyz(const Transform& transform)
     {
-        return extract_eulers_xyz(mat4_cast(transform.rotation));
+        return extract_eulers_xyz(matrix4x4_cast(transform.rotation));
     }
 
     // returns XYZ (pitch, yaw, roll) Euler angles for an extrinsic rotation

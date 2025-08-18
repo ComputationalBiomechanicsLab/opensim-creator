@@ -6,8 +6,8 @@
 #include <liboscar/Graphics/SharedColorRenderBuffer.h>
 #include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -92,19 +92,19 @@ namespace osc
         template<std::same_as<Vec4>> void set(std::string_view property_name, const Vec4&);
         template<std::same_as<Vec4>> void set(const StringName& property_name, const Vec4&);
 
-        template<std::same_as<Mat3>> std::optional<Mat3> get(std::string_view property_name) const;
-        template<std::same_as<Mat3>> std::optional<Mat3> get(const StringName& property_name) const;
-        template<std::same_as<Mat3>> void set(std::string_view property_name, const Mat3&);
-        template<std::same_as<Mat3>> void set(const StringName& property_name, const Mat3&);
+        template<std::same_as<Matrix3x3>> std::optional<Matrix3x3> get(std::string_view property_name) const;
+        template<std::same_as<Matrix3x3>> std::optional<Matrix3x3> get(const StringName& property_name) const;
+        template<std::same_as<Matrix3x3>> void set(std::string_view property_name, const Matrix3x3&);
+        template<std::same_as<Matrix3x3>> void set(const StringName& property_name, const Matrix3x3&);
 
-        template<std::same_as<Mat4>> std::optional<Mat4> get(std::string_view property_name) const;
-        template<std::same_as<Mat4>> std::optional<Mat4> get(const StringName& property_name) const;
-        template<std::same_as<Mat4>> void set(std::string_view, const Mat4&);
-        template<std::same_as<Mat4>> void set(const StringName& property_name, const Mat4&);
-        template<std::same_as<Mat4>> std::optional<std::span<const Mat4>> get_array(std::string_view property_name) const;
-        template<std::same_as<Mat4>> std::optional<std::span<const Mat4>> get_array(const StringName& property_name) const;
-        template<std::same_as<Mat4>> void set_array(std::string_view property_name, std::span<const Mat4>);
-        template<std::same_as<Mat4>> void set_array(const StringName& property_name, std::span<const Mat4>);
+        template<std::same_as<Matrix4x4>> std::optional<Matrix4x4> get(std::string_view property_name) const;
+        template<std::same_as<Matrix4x4>> std::optional<Matrix4x4> get(const StringName& property_name) const;
+        template<std::same_as<Matrix4x4>> void set(std::string_view, const Matrix4x4&);
+        template<std::same_as<Matrix4x4>> void set(const StringName& property_name, const Matrix4x4&);
+        template<std::same_as<Matrix4x4>> std::optional<std::span<const Matrix4x4>> get_array(std::string_view property_name) const;
+        template<std::same_as<Matrix4x4>> std::optional<std::span<const Matrix4x4>> get_array(const StringName& property_name) const;
+        template<std::same_as<Matrix4x4>> void set_array(std::string_view property_name, std::span<const Matrix4x4>);
+        template<std::same_as<Matrix4x4>> void set_array(const StringName& property_name, std::span<const Matrix4x4>);
 
         template<std::same_as<int>> std::optional<int32_t> get(std::string_view property_name) const;
         template<std::same_as<int>> std::optional<int32_t> get(const StringName& property_name) const;

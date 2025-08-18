@@ -46,7 +46,7 @@
 // used to track each change.
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
@@ -171,11 +171,11 @@ namespace ImGuizmo
     // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
     // translation is applied in world space
     std::optional<osc::Transform> Manipulate(
-        const osc::Mat4& view,
-        const osc::Mat4& projection,
+        const osc::Matrix4x4& view,
+        const osc::Matrix4x4& projection,
         Operation operation,
         Mode mode,
-        osc::Mat4& matrix,
+        osc::Matrix4x4& matrix,
         std::optional<OperationSnappingSteps> snap = std::nullopt,
         const float* localBounds = nullptr,
         const float* boundsSnap = nullptr

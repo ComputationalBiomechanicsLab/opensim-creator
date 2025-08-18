@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/CameraProjection.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Vec3.h>
@@ -151,18 +151,18 @@ namespace osc
         //
         // world space and view space operate with the same units-of-measure, handedness, etc.
         // but view space places the camera at `(0, 0, 0)`
-        Mat4 view_matrix() const;
+        Matrix4x4 view_matrix() const;
 
         // returns the equivalent of `inverse(view_matrix())`, i.e. a matrix that transforms
         // view space points into world space points.
-        Mat4 inverse_view_matrix() const;
+        Matrix4x4 inverse_view_matrix() const;
 
         // get/set matrices that override the default view matrix that this `Camera` uses
         //
         // by default, `Camera` computes its view matrix from its position and rotation, but
         // it's sometimes necessary/handy to override this default behavior.
-        std::optional<Mat4> view_matrix_override() const;
-        void set_view_matrix_override(std::optional<Mat4>);
+        std::optional<Matrix4x4> view_matrix_override() const;
+        void set_view_matrix_override(std::optional<Matrix4x4>);
 
         // returns the matrix that this camera uses to transform view space points into
         // clip space.
@@ -183,15 +183,15 @@ namespace osc
         // The Z component of things that land within the NDC cube are written to the depth buffer
         // if the `Material` that's being drawn enables this behavior (and there's a depth buffer
         // attached to the render target).
-        Mat4 projection_matrix(float aspect_ratio) const;
-        std::optional<Mat4> projection_matrix_override() const;
-        void set_projection_matrix_override(std::optional<Mat4>);
+        Matrix4x4 projection_matrix(float aspect_ratio) const;
+        std::optional<Matrix4x4> projection_matrix_override() const;
+        void set_projection_matrix_override(std::optional<Matrix4x4>);
 
         // returns the equivalent of `projection_matrix(aspect_ratio) * view_matrix()`
-        Mat4 view_projection_matrix(float aspect_ratio) const;
+        Matrix4x4 view_projection_matrix(float aspect_ratio) const;
 
         // returns the equivalent of `inverse(view_projection_matrix(aspect_ratio))`
-        Mat4 inverse_view_projection_matrix(float aspect_ratio) const;
+        Matrix4x4 inverse_view_projection_matrix(float aspect_ratio) const;
 
         // flushes and renders any queued drawcalls from `graphics::draw(...)` to the
         // main application window.

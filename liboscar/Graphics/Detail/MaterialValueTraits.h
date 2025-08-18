@@ -8,8 +8,8 @@
 #include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -64,15 +64,15 @@ namespace osc::detail
     };
 
     template<>
-    struct MaterialValueTraits<Mat3> final {
-        static constexpr void constructor_assertions(std::span<const Mat3>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Mat3>) { return ShaderPropertyType::Mat3; }
+    struct MaterialValueTraits<Matrix3x3> final {
+        static constexpr void constructor_assertions(std::span<const Matrix3x3>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix3x3>) { return ShaderPropertyType::Mat3; }
     };
 
     template<>
-    struct MaterialValueTraits<Mat4> final {
-        static constexpr void constructor_assertions(std::span<const Mat4>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Mat4>) { return ShaderPropertyType::Mat4; }
+    struct MaterialValueTraits<Matrix4x4> final {
+        static constexpr void constructor_assertions(std::span<const Matrix4x4>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix4x4>) { return ShaderPropertyType::Mat4; }
     };
 
     template<>

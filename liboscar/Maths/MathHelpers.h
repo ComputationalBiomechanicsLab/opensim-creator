@@ -3,8 +3,8 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Rect.h>
@@ -71,8 +71,8 @@ namespace osc
     Ray perspective_unproject_topleft_normalized_pos_to_world(
         Vec2 normalized_point,
         Vec3 camera_world_space_origin,
-        const Mat4& camera_view_matrix,
-        const Mat4& camera_proj_matrix
+        const Matrix4x4& camera_view_matrix,
+        const Matrix4x4& camera_proj_matrix
     );
 
     // returns a rectangular region defined in, and bounded by, normalized device coordinates
@@ -84,8 +84,8 @@ namespace osc
     // given `view_matrix` and `projection_matrix`es onto `viewport_rect`.
     Vec2 project_onto_viewport_rect(
         const Vec3& world_space_position,
-        const Mat4& view_matrix,
-        const Mat4& projection_matrix,
+        const Matrix4x4& view_matrix,
+        const Matrix4x4& projection_matrix,
         const Rect& viewport_rect
     );
 
@@ -105,7 +105,7 @@ namespace osc
     // ----- `Ray` helpers -----
 
     // returns a `Ray` that has been transformed by the `Mat4`
-    Ray transform_ray(const Ray&, const Mat4&);
+    Ray transform_ray(const Ray&, const Matrix4x4&);
 
     // returns a `Ray` that has been transformed by the inverse of the supplied `Transform`
     Ray inverse_transform_ray(const Ray&, const Transform&);
@@ -114,13 +114,13 @@ namespace osc
     // ----- `Disc` helpers -----
 
     // returns a `Mat4` that maps one `Disc` to another `Disc`
-    Mat4 mat4_transform_between(const Disc&, const Disc&);
+    Matrix4x4 matrix4x4_transform_between(const Disc&, const Disc&);
 
 
     // ----- `Segment` helpers -----
 
     // returns a transform matrix that maps a path segment to another path segment
-    Mat4 mat4_transform_between(const LineSegment&, const LineSegment&);
+    Matrix4x4 matrix4x4_transform_between(const LineSegment&, const LineSegment&);
 
     // returns a `Transform` that maps a path segment to another path segment
     Transform transform_between(const LineSegment&, const LineSegment&);
@@ -134,17 +134,17 @@ namespace osc
     // ----- VecX/MatX helpers -----
 
     // returns a transform matrix that rotates `dir1` to point in the same direction as `dir2`
-    Mat4 mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
+    Matrix4x4 matrix4x4_transform_between_directions(const Vec3& dir1, const Vec3& dir2);
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     EulerAngles extract_eulers_xyz(const Quat&);
 
-    inline Vec3 transform_point(const Mat4& mat, const Vec3& point)
+    inline Vec3 transform_point(const Matrix4x4& mat, const Vec3& point)
     {
         return Vec3{mat * Vec4{point, 1.0f}};
     }
 
-    inline Vec3 transform_direction(const Mat4& mat, const Vec3& direction)
+    inline Vec3 transform_direction(const Matrix4x4& mat, const Vec3& direction)
     {
         return Vec3{mat * Vec4{direction, 0.0f}};
     }
@@ -165,8 +165,8 @@ namespace osc
     // returns arrays that transforms cube faces from world space to projection
     // space such that the observer is looking at each face of the cube from
     // the center of the cube
-    std::array<Mat4, 6> calc_cubemap_view_proj_matrices(
-        const Mat4& projection_matrix,
+    std::array<Matrix4x4, 6> calc_cubemap_view_proj_matrices(
+        const Matrix4x4& projection_matrix,
         Vec3 cube_center
     );
 }

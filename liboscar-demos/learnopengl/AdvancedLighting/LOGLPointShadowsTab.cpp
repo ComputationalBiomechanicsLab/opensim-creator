@@ -122,7 +122,7 @@ private:
         // create a 90 degree cube cone projection matrix
         const float znear = 0.1f;
         const float zfar = 25.0f;
-        const Mat4 projection_matrix = perspective(
+        const Matrix4x4 projection_matrix = perspective(
             90_deg,
             aspect_ratio_of(c_shadowmap_pixel_dimensions),
             znear,

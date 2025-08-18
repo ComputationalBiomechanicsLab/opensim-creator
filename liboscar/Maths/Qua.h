@@ -4,7 +4,7 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Mat.h>
+#include <liboscar/Maths/Matrix.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/HashHelpers.h>
 
@@ -96,13 +96,13 @@ namespace osc
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Mat<3, 3, T>& m)
+        explicit Qua(const Matrix<3, 3, T>& m)
         {
             *this = quat_cast(m);
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Mat<4, 4, T>& m)
+        explicit Qua(const Matrix<4, 4, T>& m)
         {
             *this = quat_cast(m);
         }

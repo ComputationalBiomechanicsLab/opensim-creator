@@ -7,8 +7,8 @@
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Quat.h>
@@ -61,7 +61,7 @@ namespace
             return implGetSupportedManipulationOps();
         }
 
-        Mat4 getCurrentTransformInGround() const
+        Matrix4x4 getCurrentTransformInGround() const
         {
             return implGetCurrentTransformInGround();
         }
@@ -78,21 +78,21 @@ namespace
 
         void drawExtraOnUsingOverlays(
             ui::DrawListView drawList,
-            const Mat4& viewMatrix,
-            const Mat4& projectionMatrix,
+            const Matrix4x4& viewMatrix,
+            const Matrix4x4& projectionMatrix,
             const Rect& screenRect) const
         {
             implDrawExtraOnUsingOverlays(std::move(drawList), viewMatrix, projectionMatrix, screenRect);
         }
     private:
         virtual ui::GizmoOperations implGetSupportedManipulationOps() const = 0;
-        virtual Mat4 implGetCurrentTransformInGround() const = 0;
+        virtual Matrix4x4 implGetCurrentTransformInGround() const = 0;
         virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
         virtual void implOnSave() = 0;
         virtual void implDrawExtraOnUsingOverlays(
             ui::DrawListView,  // NOLINT(performance-unnecessary-value-param)
-            const Mat4&,
-            const Mat4&,
+            const Matrix4x4&,
+            const Matrix4x4&,
             const Rect&) const
         {}
     };
@@ -142,11 +142,11 @@ namespace
 
     private:
         // perform runtime lookup for `AssociatedComponent` and forward into concrete implementation
-        Mat4 implGetCurrentTransformInGround() const final
+        Matrix4x4 implGetCurrentTransformInGround() const final
         {
             const AssociatedComponent* maybeSelected = findSelection();
             if (not maybeSelected) {
-                return identity<Mat4>();  // selection of that type does not exist in the model
+                return identity<Matrix4x4>();  // selection of that type does not exist in the model
             }
             return implGetCurrentTransformInGround(*maybeSelected);
         }
@@ -178,7 +178,7 @@ namespace
         }
 
         // inheritors must implement concrete manipulation methods
-        virtual Mat4 implGetCurrentTransformInGround(const AssociatedComponent&) const = 0;
+        virtual Matrix4x4 implGetCurrentTransformInGround(const AssociatedComponent&) const = 0;
         virtual void implOnApplyTransform(const AssociatedComponent&, const SimTK::Transform& transformInGround) = 0;
 
         std::shared_ptr<IModelStatePair> m_Model;
@@ -204,11 +204,11 @@ namespace
             return ui::GizmoOperation::Translate;
         }
 
-        Mat4 implGetCurrentTransformInGround(
+        Matrix4x4 implGetCurrentTransformInGround(
             const OpenSim::Station& station) const final
         {
             const SimTK::State& state = getState();
-            Mat4 transformInGround = to<Mat4>(station.getParentFrame().getRotationInGround(state));
+            Matrix4x4 transformInGround = to<Matrix4x4>(station.getParentFrame().getRotationInGround(state));
             transformInGround[3] = Vec4{to<Vec3>(station.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
@@ -248,11 +248,11 @@ namespace
             return ui::GizmoOperation::Translate;
         }
 
-        Mat4 implGetCurrentTransformInGround(
+        Matrix4x4 implGetCurrentTransformInGround(
             const OpenSim::PathPoint& pathPoint) const final
         {
             const SimTK::State& state = getState();
-            Mat4 transformInGround = to<Mat4>(pathPoint.getParentFrame().getRotationInGround(state));
+            Matrix4x4 transformInGround = to<Matrix4x4>(pathPoint.getParentFrame().getRotationInGround(state));
             transformInGround[3] = Vec4{to<Vec3>(pathPoint.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
@@ -303,17 +303,17 @@ namespace
             return {ui::GizmoOperation::Translate, ui::GizmoOperation::Rotate};
         }
 
-        Mat4 implGetCurrentTransformInGround(
+        Matrix4x4 implGetCurrentTransformInGround(
             const OpenSim::PhysicalOffsetFrame& pof) const final
         {
             if (m_IsChildFrameOfJoint) {
                 // if the POF that's being edited is the child frame of a joint then
                 // its offset/orientation is constrained to be in the same location/orientation
                 // as the joint's parent frame (plus coordinate transforms)
-                return to<Mat4>(pof.getParentFrame().getTransformInGround(getState()));
+                return to<Matrix4x4>(pof.getParentFrame().getTransformInGround(getState()));
             }
             else {
-                return to<Mat4>(pof.getTransformInGround(getState()));
+                return to<Matrix4x4>(pof.getTransformInGround(getState()));
             }
         }
 
@@ -370,8 +370,8 @@ namespace
 
         void implDrawExtraOnUsingOverlays(
             ui::DrawListView drawList,
-            const Mat4& viewMatrix,
-            const Mat4& projectionMatrix,
+            const Matrix4x4& viewMatrix,
+            const Matrix4x4& projectionMatrix,
             const Rect& screenRect) const final
         {
             if (not m_IsChildFrameOfJoint) {
@@ -415,14 +415,14 @@ namespace
             return {ui::GizmoOperation::Rotate, ui::GizmoOperation::Translate};
         }
 
-        Mat4 implGetCurrentTransformInGround(
+        Matrix4x4 implGetCurrentTransformInGround(
             const OpenSim::WrapObject& wrapObj) const final
         {
             const SimTK::Transform& wrapToFrame = wrapObj.getTransform();
             const SimTK::Transform frameToGround = wrapObj.getFrame().getTransformInGround(getState());
             const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
-            return to<Mat4>(wrapToGround);
+            return to<Matrix4x4>(wrapToGround);
         }
 
         void implOnApplyTransform(
@@ -466,14 +466,14 @@ namespace
             return {ui::GizmoOperation::Rotate, ui::GizmoOperation::Translate};
         }
 
-        Mat4 implGetCurrentTransformInGround(
+        Matrix4x4 implGetCurrentTransformInGround(
             const OpenSim::ContactGeometry& contactGeom) const final
         {
             const SimTK::Transform wrapToFrame = contactGeom.getTransform();
             const SimTK::Transform frameToGround = contactGeom.getFrame().getTransformInGround(getState());
             const SimTK::Transform wrapToGround = frameToGround * wrapToFrame;
 
-            return to<Mat4>(wrapToGround);
+            return to<Matrix4x4>(wrapToGround);
         }
 
         void implOnApplyTransform(
@@ -536,10 +536,10 @@ namespace
             return {ui::GizmoOperation::Translate, ui::GizmoOperation::Rotate};
         }
 
-        Mat4 implGetCurrentTransformInGround(const OpenSim::Joint& joint) const final
+        Matrix4x4 implGetCurrentTransformInGround(const OpenSim::Joint& joint) const final
         {
             // present the "joint center" as equivalent to the parent frame
-            return to<Mat4>(joint.getParentFrame().getTransformInGround(getState()));
+            return to<Matrix4x4>(joint.getParentFrame().getTransformInGround(getState()));
         }
 
         void implOnApplyTransform(const OpenSim::Joint& joint, const SimTK::Transform& M_n) final
@@ -622,8 +622,8 @@ namespace
 
         void implDrawExtraOnUsingOverlays(
             ui::DrawListView drawList,
-            const Mat4& viewMatrix,
-            const Mat4& projectionMatrix,
+            const Matrix4x4& viewMatrix,
+            const Matrix4x4& projectionMatrix,
             const Rect& screenRect) const final
         {
             const OpenSim::Joint* joint = findSelection();
@@ -693,9 +693,9 @@ namespace
         }
 
         // draw the manipulator
-        Mat4 modelMatrix = manipulator.getCurrentTransformInGround();
-        const Mat4 viewMatrix = camera.view_matrix();
-        const Mat4 projectionMatrix = camera.projection_matrix(aspect_ratio_of(screenRect));
+        Matrix4x4 modelMatrix = manipulator.getCurrentTransformInGround();
+        const Matrix4x4 viewMatrix = camera.view_matrix();
+        const Matrix4x4 projectionMatrix = camera.projection_matrix(aspect_ratio_of(screenRect));
 
         const auto userEditInGround = gizmo.draw(modelMatrix, viewMatrix, projectionMatrix, screenRect);
 

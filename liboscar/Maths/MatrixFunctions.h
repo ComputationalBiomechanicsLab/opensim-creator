@@ -3,7 +3,7 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Maths/Mat.h>
+#include <liboscar/Maths/Matrix.h>
 #include <liboscar/Maths/Qua.h>
 #include <liboscar/Maths/Vec.h>
 #include <liboscar/Utils/HashHelpers.h>
@@ -15,7 +15,7 @@
 namespace osc
 {
     template<std::floating_point T>
-    Mat<4, 4, T> look_at(
+    Matrix<4, 4, T> look_at(
         const Vec<3, T>& eye,
         const Vec<3, T>& center,
         const Vec<3, T>& up)
@@ -24,7 +24,7 @@ namespace osc
         const Vec<3, T> s(normalize(cross(f, up)));
         const Vec<3, T> u(cross(s, f));
 
-        Mat<4, 4, T> rv(1);
+        Matrix<4, 4, T> rv(1);
         rv[0][0] =  s.x;
         rv[1][0] =  s.y;
         rv[2][0] =  s.z;
@@ -41,18 +41,18 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> perspective(Angle<T, Units> vertical_field_of_view, T aspect, T z_near, T z_far)
+    Matrix<4, 4, T> perspective(Angle<T, Units> vertical_field_of_view, T aspect, T z_near, T z_far)
     {
         if (fabs(aspect - epsilon_v<T>) <= T{}) {
             // edge-case: some UIs ask for a perspective matrix on first frame before
             // aspect ratio is known or the aspect ratio is NaN because of a division
             // by zero
-            return Mat<4, 4, T>{T(1)};
+            return Matrix<4, 4, T>{T(1)};
         }
 
         const T tan_half_fovy = tan(vertical_field_of_view / static_cast<T>(2));
 
-        Mat<4, 4, T> rv(static_cast<T>(0));
+        Matrix<4, 4, T> rv(static_cast<T>(0));
         rv[0][0] = static_cast<T>(1) / (aspect * tan_half_fovy);
         rv[1][1] = static_cast<T>(1) / (tan_half_fovy);
         rv[2][2] = - (z_far + z_near) / (z_far - z_near);
@@ -62,9 +62,9 @@ namespace osc
     }
 
     template<std::floating_point T>
-    Mat<4, 4, T> ortho(T left, T right, T bottom, T top, T z_near, T z_far)
+    Matrix<4, 4, T> ortho(T left, T right, T bottom, T top, T z_near, T z_far)
     {
-        Mat<4, 4, T> rv(1);
+        Matrix<4, 4, T> rv(1);
         rv[0][0] = static_cast<T>(2) / (right - left);
         rv[1][1] = static_cast<T>(2) / (top - bottom);
         rv[2][2] = - static_cast<T>(2) / (z_far - z_near);
@@ -75,9 +75,9 @@ namespace osc
     }
 
     template<typename T>
-    Mat<4, 4, T> scale(const Mat<4, 4, T>& m, const Vec<3, T>& v)
+    Matrix<4, 4, T> scale(const Matrix<4, 4, T>& m, const Vec<3, T>& v)
     {
-        Mat<4, 4, T> rv;
+        Matrix<4, 4, T> rv;
         rv[0] = m[0] * v[0];
         rv[1] = m[1] * v[1];
         rv[2] = m[2] * v[2];
@@ -86,14 +86,14 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Mat<4, 4, T> rotate(const Mat<4, 4, T>& m, Angle<T, Units> angle, Vec<3, T> axis)
+    Matrix<4, 4, T> rotate(const Matrix<4, 4, T>& m, Angle<T, Units> angle, Vec<3, T> axis)
     {
         const T c = cos(angle);
         const T s = sin(angle);
 
         const Vec<3, T> temp((T(1) - c) * axis);
 
-        Mat<4, 4, T> rotate;
+        Matrix<4, 4, T> rotate;
         rotate[0][0] = c + temp[0] * axis[0];
         rotate[0][1] = temp[0] * axis[1] + s * axis[2];
         rotate[0][2] = temp[0] * axis[2] - s * axis[1];
@@ -106,7 +106,7 @@ namespace osc
         rotate[2][1] = temp[2] * axis[1] - s * axis[0];
         rotate[2][2] = c + temp[2] * axis[2];
 
-        Mat<4, 4, T> rv;
+        Matrix<4, 4, T> rv;
         rv[0] = m[0] * rotate[0][0] + m[1] * rotate[0][1] + m[2] * rotate[0][2];
         rv[1] = m[0] * rotate[1][0] + m[1] * rotate[1][1] + m[2] * rotate[1][2];
         rv[2] = m[0] * rotate[2][0] + m[1] * rotate[2][1] + m[2] * rotate[2][2];
@@ -115,15 +115,15 @@ namespace osc
     }
 
     template<typename T>
-    Mat<4, 4, T> translate(const Mat<4, 4, T>& m, const Vec<3, T>& v)
+    Matrix<4, 4, T> translate(const Matrix<4, 4, T>& m, const Vec<3, T>& v)
     {
-        Mat<4, 4, T> rv(m);
+        Matrix<4, 4, T> rv(m);
         rv[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
         return rv;
     }
 
     template<std::floating_point T>
-    T determinant_of(const Mat<3, 3, T>& m)
+    T determinant_of(const Matrix<3, 3, T>& m)
     {
         return
             + m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])
@@ -133,7 +133,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    T determinant_of(const Mat<4, 4, T>& m)
+    T determinant_of(const Matrix<4, 4, T>& m)
     {
         const T subfactor_00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
         const T subfactor_01 = m[2][1] * m[3][3] - m[3][1] * m[2][3];
@@ -155,11 +155,11 @@ namespace osc
     }
 
     template<std::floating_point T>
-    T inverse(const Mat<3, 3, T>& m)
+    T inverse(const Matrix<3, 3, T>& m)
     {
         const T one_over_determinant = static_cast<T>(1) / determinant_of(m);
 
-        Mat<3, 3, T> rv;
+        Matrix<3, 3, T> rv;
         rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * one_over_determinant;
         rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]) * one_over_determinant;
         rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]) * one_over_determinant;
@@ -173,7 +173,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    Mat<4, 4, T> inverse(const Mat<4, 4, T>& m)
+    Matrix<4, 4, T> inverse(const Matrix<4, 4, T>& m)
     {
         const T coef_00 = m[2][2] * m[3][3] - m[3][2] * m[2][3];
         const T coef_02 = m[1][2] * m[3][3] - m[3][2] * m[1][3];
@@ -218,7 +218,7 @@ namespace osc
 
         const Vec<4, T> sign_a(+1, -1, +1, -1);
         const Vec<4, T> sign_b(-1, +1, -1, +1);
-        const Mat<4, 4, T> inverted(inv_0 * sign_a, inv_1 * sign_b, inv_2 * sign_a, inv_3 * sign_b);
+        const Matrix<4, 4, T> inverted(inv_0 * sign_a, inv_1 * sign_b, inv_2 * sign_a, inv_3 * sign_b);
 
         const Vec<4, T> row_0(inverted[0][0], inverted[1][0], inverted[2][0], inverted[3][0]);
 
@@ -231,9 +231,9 @@ namespace osc
     }
 
     template<typename T>
-    constexpr Mat<3, 3, T> transpose(const Mat<3, 3, T>& m)
+    constexpr Matrix<3, 3, T> transpose(const Matrix<3, 3, T>& m)
     {
-        Mat<3, 3, T> rv;
+        Matrix<3, 3, T> rv;
         rv[0][0] = m[0][0];
         rv[0][1] = m[1][0];
         rv[0][2] = m[2][0];
@@ -249,9 +249,9 @@ namespace osc
     }
 
     template<typename T>
-    Mat<4, 4, T> transpose(const Mat<4, 4, T>& m)
+    Matrix<4, 4, T> transpose(const Matrix<4, 4, T>& m)
     {
-        Mat<4, 4, T> rv;
+        Matrix<4, 4, T> rv;
         rv[0][0] = m[0][0];
         rv[0][1] = m[1][0];
         rv[0][2] = m[2][0];
@@ -276,7 +276,7 @@ namespace osc
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     template<std::floating_point T>
-    Vec<3, RadiansT<T>> extract_eulers_xyz(const Mat<4, 4, T>& m)
+    Vec<3, RadiansT<T>> extract_eulers_xyz(const Matrix<4, 4, T>& m)
     {
         const RadiansT<T> t1 = atan2(m[2][1], m[2][2]);
         const T c2 = sqrt(m[0][0]*m[0][0] + m[1][0]*m[1][0]);
@@ -306,7 +306,7 @@ namespace osc
 
     template<typename T>
     bool decompose(
-        const Mat<4, 4, T>& model_mat4,
+        const Matrix<4, 4, T>& model_matrix,
         Vec<3, T>& r_scale,
         Qua<T>& r_orientation,
         Vec<3, T>& r_translation,
@@ -317,7 +317,7 @@ namespace osc
         // http://www.opensource.apple.com/source/WebCore/WebCore-514/platform/graphics/transforms/TransformationMatrix.cpp
         // Decomposes the mode matrix to translations,rotation scale components
 
-        Mat<4, 4, T> local_matrix(model_mat4);
+        Matrix<4, 4, T> local_matrix(model_matrix);
 
         // normalize the matrix
         if (equal_within_epsilon(local_matrix[3][3], static_cast<T>(0))) {
@@ -332,7 +332,7 @@ namespace osc
 
         // `perspective_matrix` is used to solve for perspective, but it also provides
         // an easy way to test for singularity of the upper 3x3 component
-        Mat<4, 4, T> perspective_matrix(local_matrix);
+        Matrix<4, 4, T> perspective_matrix(local_matrix);
         for (size_t i = 0; i < 3; i++) {
             perspective_matrix[i][3] = static_cast<T>(0);
         }
@@ -359,8 +359,8 @@ namespace osc
             // solve the equation by inverting `perspective_matrix` and multiplying
             // `right_hand_side` by the inverse. This is the easiest way, not
             // necessarily the best.
-            const Mat<4, 4, T> inverse_perspective_matrix = inverse(perspective_matrix);
-            const Mat<4, 4, T> transposed_inverse_perspective_matrix = transpose(inverse_perspective_matrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
+            const Matrix<4, 4, T> inverse_perspective_matrix = inverse(perspective_matrix);
+            const Matrix<4, 4, T> transposed_inverse_perspective_matrix = transpose(inverse_perspective_matrix);//   transposeMatrix4(inversePerspectiveMatrix, transposedInversePerspectiveMatrix);
 
             r_perspective = transposed_inverse_perspective_matrix * right_hand_side;
 
@@ -475,14 +475,14 @@ namespace osc
     }
 
     template<std::floating_point T>
-    constexpr Mat<3, 3, T> adjugate(const Mat<3, 3, T>& m)
+    constexpr Matrix<3, 3, T> adjugate(const Matrix<3, 3, T>& m)
     {
         // google: "Adjugate Matrix": it's related to the cofactor matrix and is
         // related to the inverse of a matrix through:
         //
         //     inverse(M) = Adjugate(M) / determinant_of(M);
 
-        Mat<3, 3, T> rv;
+        Matrix<3, 3, T> rv;
         rv[0][0] = + (m[1][1] * m[2][2] - m[2][1] * m[1][2]);
         rv[1][0] = - (m[1][0] * m[2][2] - m[2][0] * m[1][2]);
         rv[2][0] = + (m[1][0] * m[2][1] - m[2][0] * m[1][1]);
@@ -496,7 +496,7 @@ namespace osc
     }
 
     template<std::floating_point T>
-    Mat<3, 3, T> normal_matrix(const Mat<4, 4, T>& m)
+    Matrix<3, 3, T> normal_matrix(const Matrix<4, 4, T>& m)
     {
         // "On the Transformation of Surface Normals" by Andrew Glassner (1987)
         //
@@ -512,32 +512,32 @@ namespace osc
         //  be normalized after mutiplication with a normal matrix anyway, so
         //  nothing is lost"
 
-        const Mat<3, 3, T> top_left{m};
+        const Matrix<3, 3, T> top_left{m};
         return adjugate(transpose(top_left));
     }
 
     template<std::floating_point T>
-    Mat<4, 4, T> normal_matrix4(const Mat<4, 4, T>& m)
+    Matrix<4, 4, T> normal_matrix4x4(const Matrix<4, 4, T>& m)
     {
-        return Mat<4, 4, T>{normal_matrix(m)};
+        return Matrix<4, 4, T>{normal_matrix(m)};
     }
 
     template<size_t C, size_t R, typename T>
-    constexpr const T* value_ptr(const Mat<C, R, T>& m)
+    constexpr const T* value_ptr(const Matrix<C, R, T>& m)
     {
         return m.data()->data();
     }
 
     template<size_t C, size_t R, typename T>
-    constexpr T* value_ptr(Mat<C, R, T>& m)
+    constexpr T* value_ptr(Matrix<C, R, T>& m)
     {
         return m.data()->data();
     }
 }
 
 template<size_t C, size_t R, typename T>
-struct std::hash<osc::Mat<C, R, T>> final {
-    size_t operator()(const osc::Mat<C, R, T>& m) const
+struct std::hash<osc::Matrix<C, R, T>> final {
+    size_t operator()(const osc::Matrix<C, R, T>& m) const
     {
         return osc::hash_range(m);
     }

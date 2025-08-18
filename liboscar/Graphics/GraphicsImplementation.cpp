@@ -62,9 +62,9 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Rect.h>
@@ -617,13 +617,13 @@ namespace
             property_block{maybe_prop_block_ ? std::move(maybe_prop_block_).value() : MaterialPropertyBlock{}},
             mesh{std::move(mesh_)},
             maybe_submesh_index{maybe_submesh_index_},
-            transform{mat4_cast(transform_)},
+            transform{matrix4x4_cast(transform_)},
             world_space_centroid{transform_point(transform, centroid_of(mesh.bounds()))}
         {}
 
         RenderObject(
             Mesh mesh_,
-            const Mat4& transform_,
+            const Matrix4x4& transform_,
             Material material_,
             std::optional<MaterialPropertyBlock> maybe_prop_block_,
             std::optional<size_t> maybe_submesh_index_) :
@@ -654,7 +654,7 @@ namespace
         MaterialPropertyBlock property_block;
         Mesh mesh;
         MaybeIndex maybe_submesh_index;
-        Mat4 transform;
+        Matrix4x4 transform;
         Vec3 world_space_centroid;
     };
 
@@ -670,19 +670,19 @@ namespace
         return ro.material.is_depth_tested();
     }
 
-    const Mat4& model_mat4(const RenderObject& ro)
+    const Matrix4x4& model_matrix4x4(const RenderObject& ro)
     {
         return ro.transform;
     }
 
-    Mat3 normal_matrix(const RenderObject& ro)
+    Matrix3x3 normal_matrix(const RenderObject& ro)
     {
         return normal_matrix(ro.transform);
     }
 
-    Mat4 normal_matrix4(const RenderObject& ro)
+    Matrix4x4 normal_matrix4x4(const RenderObject& ro)
     {
-        return normal_matrix4(ro.transform);
+        return normal_matrix4x4(ro.transform);
     }
 
     const Vec3& world_space_centroid(const RenderObject& ro)
@@ -844,8 +844,8 @@ namespace
 
         RenderPassState(
             const Vec3& camera_pos_,
-            const Mat4& view_matrix_,
-            const Mat4& projection_matrix_) :
+            const Matrix4x4& view_matrix_,
+            const Matrix4x4& projection_matrix_) :
 
             camera_pos{camera_pos_},
             view_matrix{view_matrix_},
@@ -853,9 +853,9 @@ namespace
         {}
 
         Vec3 camera_pos;
-        Mat4 view_matrix;
-        Mat4 projection_matrix;
-        Mat4 view_projection_matrix = projection_matrix * view_matrix;
+        Matrix4x4 view_matrix;
+        Matrix4x4 projection_matrix;
+        Matrix4x4 view_projection_matrix = projection_matrix * view_matrix;
     };
 
     // the OpenGL data associated with a `Texture2D`
@@ -3043,25 +3043,25 @@ namespace
     };
 
     template<>
-    struct MaterialValueOpenGLTraits<Mat3> final {
+    struct MaterialValueOpenGLTraits<Matrix3x3> final {
         static void try_bind_material_value_to_shader_element(
-            std::span<const Mat3> mats,
+            std::span<const Matrix3x3> mats,
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Mat3) == 9*sizeof(GLfloat) and alignof(Mat3) >= alignof(GLfloat));
+            static_assert(sizeof(Matrix3x3) == 9*sizeof(GLfloat) and alignof(Matrix3x3) >= alignof(GLfloat));
             glUniformMatrix3fv(shader_element.location, glsizei(mats), GL_FALSE, value_ptr(at(mats, 0)));
         }
     };
 
     template<>
-    struct MaterialValueOpenGLTraits<Mat4> final {
+    struct MaterialValueOpenGLTraits<Matrix4x4> final {
         static void try_bind_material_value_to_shader_element(
-            std::span<const Mat4> mats,
+            std::span<const Matrix4x4> mats,
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Mat4) == 16*sizeof(GLfloat) and alignof(Mat4) >= alignof(GLfloat));
+            static_assert(sizeof(Matrix4x4) == 16*sizeof(GLfloat) and alignof(Matrix4x4) >= alignof(GLfloat));
             glUniformMatrix4fv(shader_element.location, glsizei(mats), GL_FALSE, value_ptr(at(mats, 0)));
         }
     };
@@ -3822,73 +3822,73 @@ void osc::MaterialPropertyBlock::set<Vec4>(const StringName& property_name, cons
 }
 
 template<>
-std::optional<Mat3> osc::MaterialPropertyBlock::get<Mat3>(std::string_view property_name) const
+std::optional<Matrix3x3> osc::MaterialPropertyBlock::get<Matrix3x3>(std::string_view property_name) const
 {
-    return impl_->get<Mat3>(property_name);
+    return impl_->get<Matrix3x3>(property_name);
 }
 
 template<>
-std::optional<Mat3> osc::MaterialPropertyBlock::get<Mat3>(const StringName& property_name) const
+std::optional<Matrix3x3> osc::MaterialPropertyBlock::get<Matrix3x3>(const StringName& property_name) const
 {
-    return impl_->get<Mat3>(property_name);
+    return impl_->get<Matrix3x3>(property_name);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<Mat3>(std::string_view property_name, const Mat3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Mat3>(const StringName& property_name, const Mat3& value)
+void osc::MaterialPropertyBlock::set<Matrix3x3>(std::string_view property_name, const Matrix3x3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<Mat4> osc::MaterialPropertyBlock::get<Mat4>(std::string_view property_name) const
-{
-    return impl_->get<Mat4>(property_name);
-}
-
-template<>
-std::optional<Mat4> osc::MaterialPropertyBlock::get<Mat4>(const StringName& property_name) const
-{
-    return impl_->get<Mat4>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Mat4>(std::string_view property_name, const Mat4& value)
+void osc::MaterialPropertyBlock::set<Matrix3x3>(const StringName& property_name, const Matrix3x3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<Mat4>(const StringName& property_name, const Mat4& value)
+std::optional<Matrix4x4> osc::MaterialPropertyBlock::get<Matrix4x4>(std::string_view property_name) const
+{
+    return impl_->get<Matrix4x4>(property_name);
+}
+
+template<>
+std::optional<Matrix4x4> osc::MaterialPropertyBlock::get<Matrix4x4>(const StringName& property_name) const
+{
+    return impl_->get<Matrix4x4>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set<Matrix4x4>(std::string_view property_name, const Matrix4x4& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<std::span<const Mat4>> osc::MaterialPropertyBlock::get_array<Mat4>(std::string_view property_name) const
+void osc::MaterialPropertyBlock::set<Matrix4x4>(const StringName& property_name, const Matrix4x4& value)
 {
-    return impl_->get_array<Mat4>(property_name);
+    impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<std::span<const Mat4>> osc::MaterialPropertyBlock::get_array<Mat4>(const StringName& property_name) const
+std::optional<std::span<const Matrix4x4>> osc::MaterialPropertyBlock::get_array<Matrix4x4>(std::string_view property_name) const
 {
-    return impl_->get_array<Mat4>(property_name);
+    return impl_->get_array<Matrix4x4>(property_name);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set_array<Mat4>(std::string_view property_name, std::span<const Mat4> values)
+std::optional<std::span<const Matrix4x4>> osc::MaterialPropertyBlock::get_array<Matrix4x4>(const StringName& property_name) const
+{
+    return impl_->get_array<Matrix4x4>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<Matrix4x4>(std::string_view property_name, std::span<const Matrix4x4> values)
 {
     impl_.upd()->set_array(property_name, values);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set_array<Mat4>(const StringName& property_name, std::span<const Mat4> values)
+void osc::MaterialPropertyBlock::set_array<Matrix4x4>(const StringName& property_name, std::span<const Matrix4x4> values)
 {
     impl_.upd()->set_array(property_name, values);
 }
@@ -4899,11 +4899,11 @@ public:
         version_->reset();
     }
 
-    void transform_vertices(const Mat4& mat4)
+    void transform_vertices(const Matrix4x4& matrix4x4)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&mat4](Vec3 vertex)
+        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&matrix4x4](Vec3 vertex)
         {
-            return transform_point(mat4, vertex);
+            return transform_point(matrix4x4, vertex);
         });
 
         range_check_indices_and_recalculate_bounds();
@@ -5513,9 +5513,9 @@ void osc::Mesh::transform_vertices(const Transform& transform)
     impl_.upd()->transform_vertices(transform);
 }
 
-void osc::Mesh::transform_vertices(const Mat4& mat4)
+void osc::Mesh::transform_vertices(const Matrix4x4& matrix4x4)
 {
-    impl_.upd()->transform_vertices(mat4);
+    impl_.upd()->transform_vertices(matrix4x4);
 }
 
 bool osc::Mesh::has_normals() const
@@ -5847,7 +5847,7 @@ public:
         return rotation_ * Vec3{0.0f, 1.0f, 0.0f};
     }
 
-    Mat4 view_matrix() const
+    Matrix4x4 view_matrix() const
     {
         if (maybe_view_matrix_override_) {
             return *maybe_view_matrix_override_;
@@ -5857,22 +5857,22 @@ public:
         }
     }
 
-    Mat4 inverse_view_matrix() const
+    Matrix4x4 inverse_view_matrix() const
     {
         return inverse(view_matrix());
     }
 
-    std::optional<Mat4> view_matrix_override() const
+    std::optional<Matrix4x4> view_matrix_override() const
     {
         return maybe_view_matrix_override_;
     }
 
-    void set_view_matrix_override(std::optional<Mat4> maybe_view_matrix_override)
+    void set_view_matrix_override(std::optional<Matrix4x4> maybe_view_matrix_override)
     {
         maybe_view_matrix_override_ = maybe_view_matrix_override;
     }
 
-    Mat4 projection_matrix(float aspect_ratio) const
+    Matrix4x4 projection_matrix(float aspect_ratio) const
     {
         if (maybe_projection_matrix_override_) {
             return *maybe_projection_matrix_override_;
@@ -5899,22 +5899,22 @@ public:
         }
     }
 
-    std::optional<Mat4> projection_matrix_override() const
+    std::optional<Matrix4x4> projection_matrix_override() const
     {
         return maybe_projection_matrix_override_;
     }
 
-    void set_projection_matrix_override(std::optional<Mat4> maybe_projection_matrix_override)
+    void set_projection_matrix_override(std::optional<Matrix4x4> maybe_projection_matrix_override)
     {
         maybe_projection_matrix_override_ = maybe_projection_matrix_override;
     }
 
-    Mat4 view_projection_matrix(float aspect_ratio) const
+    Matrix4x4 view_projection_matrix(float aspect_ratio) const
     {
         return projection_matrix(aspect_ratio) * view_matrix();
     }
 
-    Mat4 inverse_view_projection_matrix(float aspect_ratio) const
+    Matrix4x4 inverse_view_projection_matrix(float aspect_ratio) const
     {
         return inverse(view_projection_matrix(aspect_ratio));
     }
@@ -6017,8 +6017,8 @@ private:
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
     Vec3 position_;
     Quat rotation_ = identity<Quat>();
-    std::optional<Mat4> maybe_view_matrix_override_;
-    std::optional<Mat4> maybe_projection_matrix_override_;
+    std::optional<Matrix4x4> maybe_view_matrix_override_;
+    std::optional<Matrix4x4> maybe_projection_matrix_override_;
     std::vector<RenderObject> render_queue_;
 };
 
@@ -6178,47 +6178,47 @@ Vec3 osc::Camera::upwards_direction() const
     return impl_->upwards_direction();
 }
 
-Mat4 osc::Camera::view_matrix() const
+Matrix4x4 osc::Camera::view_matrix() const
 {
     return impl_->view_matrix();
 }
 
-Mat4 osc::Camera::inverse_view_matrix() const
+Matrix4x4 osc::Camera::inverse_view_matrix() const
 {
     return impl_->inverse_view_matrix();
 }
 
-std::optional<Mat4> osc::Camera::view_matrix_override() const
+std::optional<Matrix4x4> osc::Camera::view_matrix_override() const
 {
     return impl_->view_matrix_override();
 }
 
-void osc::Camera::set_view_matrix_override(std::optional<Mat4> maybe_view_matrix_override)
+void osc::Camera::set_view_matrix_override(std::optional<Matrix4x4> maybe_view_matrix_override)
 {
     impl_.upd()->set_view_matrix_override(maybe_view_matrix_override);
 }
 
-Mat4 osc::Camera::projection_matrix(float aspect_ratio) const
+Matrix4x4 osc::Camera::projection_matrix(float aspect_ratio) const
 {
     return impl_->projection_matrix(aspect_ratio);
 }
 
-std::optional<Mat4> osc::Camera::projection_matrix_override() const
+std::optional<Matrix4x4> osc::Camera::projection_matrix_override() const
 {
     return impl_->projection_matrix_override();
 }
 
-void osc::Camera::set_projection_matrix_override(std::optional<Mat4> maybe_projection_matrix_override)
+void osc::Camera::set_projection_matrix_override(std::optional<Matrix4x4> maybe_projection_matrix_override)
 {
     impl_.upd()->set_projection_matrix_override(maybe_projection_matrix_override);
 }
 
-Mat4 osc::Camera::view_projection_matrix(float aspect_ratio) const
+Matrix4x4 osc::Camera::view_projection_matrix(float aspect_ratio) const
 {
     return impl_->view_projection_matrix(aspect_ratio);
 }
 
-Mat4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const
+Matrix4x4 osc::Camera::inverse_view_projection_matrix(float aspect_ratio) const
 {
     return impl_->inverse_view_projection_matrix(aspect_ratio);
 }
@@ -6818,7 +6818,7 @@ namespace osc
 
         static void draw(
             const Mesh&,
-            const Mat4&,
+            const Matrix4x4&,
             const Material&,
             Camera&,
             const std::optional<MaterialPropertyBlock>&,
@@ -6971,7 +6971,7 @@ void osc::graphics::draw(
 
 void osc::graphics::draw(
     const Mesh& mesh,
-    const Mat4& transform,
+    const Matrix4x4& transform,
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
@@ -7134,7 +7134,7 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
         for (const RenderObject& render_object : render_queue) {
             if (shader_impl.maybe_instanced_model_mat_attr_) {
                 if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
-                    const Mat4 m = model_mat4(render_object);
+                    const Matrix4x4 m = model_matrix4x4(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
@@ -7142,13 +7142,13 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
             }
             if (shader_impl.maybe_instanced_normal_mat_attr_) {
                 if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
-                    const Mat4 m = normal_matrix4(render_object);
+                    const Matrix4x4 m = normal_matrix4x4(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
                 }
                 else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
-                    const Mat3 m = normal_matrix(render_object);
+                    const Matrix3x3 m = normal_matrix(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
@@ -7198,7 +7198,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
             if (shader_impl.maybe_model_mat_uniform_) {
                 if (shader_impl.maybe_model_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shader_impl.maybe_model_mat_uniform_->location};
-                    gl::set_uniform(u, model_mat4(render_object));
+                    gl::set_uniform(u, model_matrix4x4(render_object));
                 }
             }
 
@@ -7210,7 +7210,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
                 }
                 else if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
                     gl::UniformMat4 u{shader_impl.maybe_normal_mat_uniform_->location};
-                    gl::set_uniform(u, normal_matrix4(render_object));
+                    gl::set_uniform(u, normal_matrix4x4(render_object));
                 }
             }
 
@@ -7935,7 +7935,7 @@ void osc::GraphicsBackend::draw(
 
 void osc::GraphicsBackend::draw(
     const Mesh& mesh,
-    const Mat4& transform,
+    const Matrix4x4& transform,
     const Material& material,
     Camera& camera,
     const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
@@ -7960,8 +7960,8 @@ void osc::GraphicsBackend::blit(
 {
     Camera camera;
     camera.set_background_color(Color::clear());
-    camera.set_projection_matrix_override(identity<Mat4>());
-    camera.set_view_matrix_override(identity<Mat4>());
+    camera.set_projection_matrix_override(identity<Matrix4x4>());
+    camera.set_view_matrix_override(identity<Matrix4x4>());
 
     Material material = g_graphics_context_impl->quad_material();
     material.set("uTexture", source);
@@ -7990,8 +7990,8 @@ void osc::GraphicsBackend::blit_to_main_window(
     Camera camera;
     camera.set_background_color(Color::clear());
     camera.set_pixel_rect(destination_screen_rect);
-    camera.set_projection_matrix_override(identity<Mat4>());
-    camera.set_view_matrix_override(identity<Mat4>());
+    camera.set_projection_matrix_override(identity<Matrix4x4>());
+    camera.set_view_matrix_override(identity<Matrix4x4>());
     camera.set_clear_flags(CameraClearFlag::None);
 
     Material material_copy{material};
@@ -8010,8 +8010,8 @@ void osc::GraphicsBackend::blit_to_main_window(
     Camera camera;
     camera.set_background_color(Color::clear());
     camera.set_pixel_rect(rect);
-    camera.set_projection_matrix_override(identity<Mat4>());
-    camera.set_view_matrix_override(identity<Mat4>());
+    camera.set_projection_matrix_override(identity<Matrix4x4>());
+    camera.set_view_matrix_override(identity<Matrix4x4>());
     camera.set_clear_flags(CameraClearFlag::None);
 
     Material material_copy{g_graphics_context_impl->quad_material()};

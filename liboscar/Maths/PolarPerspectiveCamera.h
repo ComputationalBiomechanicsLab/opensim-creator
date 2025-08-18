@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
@@ -40,8 +40,8 @@ namespace osc
         // and the scene will look wrong.
         void rescale_znear_and_zfar_based_on_radius();
 
-        Mat4 view_matrix() const;
-        Mat4 projection_matrix(float aspect_ratio) const;
+        Matrix4x4 view_matrix() const;
+        Matrix4x4 projection_matrix(float aspect_ratio) const;
 
         // uses this camera's transform to project a world space point
         // onto the given viewport rectangle.

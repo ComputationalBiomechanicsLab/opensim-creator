@@ -701,6 +701,6 @@ Ellipsoid osc::FitEllipsoid(const Mesh& mesh)
     return Ellipsoid{
         to<Vec3>(ellipsoidOrigin),
         to<Vec3>(SimTK::sqrt(Reciporical(Diag(evals)))),
-        quat_cast(to<Mat3>(evecs)),
+        quat_cast(to<Matrix3x3>(evecs)),
     };
 }

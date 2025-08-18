@@ -19,9 +19,9 @@ public:
 
     void on_draw()
     {
-        const Mat4 view_matrix = scene_camera_.view_matrix();
+        const Matrix4x4 view_matrix = scene_camera_.view_matrix();
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Mat4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
+        const Matrix4x4 projection_matrix = scene_camera_.projection_matrix(aspect_ratio_of(workspace_screen_space_rect));
 
         // Render 3D scene: a grid floor and a cube that has a different color per face
         {
@@ -35,7 +35,7 @@ public:
                 Vec3 v;
                 v[i % 3] = i/3 ? -1.0f : 1.0f;
 
-                const Mat4 xform = model_matrix_ * translate(identity<Mat4>(), 0.5f*v) * mat4_cast(rotation(plane_.normal(), v));
+                const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));
                 const Color color = Color{0.4f}.with_element(i % 3, 0.8f);
                 graphics::draw(
                     plane_,
@@ -79,7 +79,7 @@ private:
     }();
 
     ui::Gizmo gizmo_;
-    Mat4 model_matrix_ = identity<Mat4>();
+    Matrix4x4 model_matrix_ = identity<Matrix4x4>();
     GridGeometry grid_{{.size = 20.0f, .num_divisions = 100}};
     PlaneGeometry plane_;
     MeshBasicMaterial basic_material_;

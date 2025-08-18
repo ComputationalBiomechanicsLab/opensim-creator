@@ -52,7 +52,7 @@ namespace
         }};
 
         // create a 90 degree cube cone projection matrix
-        const Mat4 projection_matrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        const Matrix4x4 projection_matrix = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         // create material that projects all 6 faces onto the output cubemap
         Material material{Shader{
@@ -79,7 +79,7 @@ namespace
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
-        const Mat4 captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        const Matrix4x4 captureProjection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/IrradianceConvolution.vert"),
@@ -108,7 +108,7 @@ namespace
             .color_format = ColorRenderBufferFormat::R16G16B16_SFLOAT,
         }};
 
-        const Mat4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
+        const Matrix4x4 capture_projection = perspective(90_deg, 1.0f, 0.1f, 10.0f);
 
         Material material{Shader{
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular_textured/Prefilter.vert"),
@@ -150,8 +150,8 @@ namespace
     {
         // TODO: `graphics::blit` with material
         Camera camera;
-        camera.set_projection_matrix_override(identity<Mat4>());
-        camera.set_view_matrix_override(identity<Mat4>());
+        camera.set_projection_matrix_override(identity<Matrix4x4>());
+        camera.set_view_matrix_override(identity<Matrix4x4>());
 
         graphics::draw(
             PlaneGeometry{{.dimensions = Vec2{2.0f}}},

@@ -53,8 +53,8 @@
 #include "ImGuizmo.h"
 
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
@@ -2608,11 +2608,11 @@ void ImGuizmo::SetPlaneLimit(float value)
 }
 
 std::optional<Transform> ImGuizmo::Manipulate(
-    const Mat4& view,
-    const Mat4& projection,
+    const Matrix4x4& view,
+    const Matrix4x4& projection,
     Operation operation,
     Mode mode,
-    Mat4& matrix,
+    Matrix4x4& matrix,
     std::optional<OperationSnappingSteps> snap,
     const float* localBounds,
     const float* boundsSnap)
@@ -2643,7 +2643,7 @@ std::optional<Transform> ImGuizmo::Manipulate(
     // --
     int type = MT_NONE;
     bool manipulated = false;
-    Mat4 deltaMatrix;
+    Matrix4x4 deltaMatrix;
     if (context.mbEnable) {
         if (not context.mbUsingBounds) {
             manipulated =

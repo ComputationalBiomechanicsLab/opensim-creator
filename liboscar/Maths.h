@@ -24,10 +24,10 @@
 #include <liboscar/Maths/Functors.h>
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/LineSegment.h>
-#include <liboscar/Maths/Mat.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Negative.h>
 #include <liboscar/Maths/Normalized.h>

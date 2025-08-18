@@ -10,8 +10,8 @@
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Materials/MeshBasicTexturedMaterial.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec2.h>
@@ -309,8 +309,8 @@ public:
         wireframe_material_.set_transparent(true);
         wireframe_material_.set_wireframe(true);
         wireframe_material_.set_depth_tested(false);
-        m_Camera.set_view_matrix_override(identity<Mat4>());
-        m_Camera.set_projection_matrix_override(identity<Mat4>());
+        m_Camera.set_view_matrix_override(identity<Matrix4x4>());
+        m_Camera.set_projection_matrix_override(identity<Matrix4x4>());
         m_Camera.set_background_color(Color::white());
     }
 

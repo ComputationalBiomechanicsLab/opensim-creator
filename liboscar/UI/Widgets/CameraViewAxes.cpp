@@ -46,7 +46,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     const Vec2 origin = bounds.origin();
 
     // figure out rendering order (back-to-front)
-    const Mat4 view_matrix = camera.view_matrix();
+    const Matrix4x4 view_matrix = camera.view_matrix();
     auto axis_indices = std::to_array<Vec4::size_type>({0, 1, 2});
     rgs::sort(axis_indices, rgs::less{}, [&view_matrix](auto axis_index)
     {

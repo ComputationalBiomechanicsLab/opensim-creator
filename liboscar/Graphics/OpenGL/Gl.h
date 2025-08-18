@@ -2,9 +2,9 @@
 
 #include <liboscar/Concepts/BitCastable.h>
 #include <liboscar/Concepts/SameAsAnyOf.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -401,7 +401,7 @@ namespace osc::gl
         [[nodiscard]] constexpr size_t size() const { return N; }
     };
 
-    inline void set_uniform(UniformMat3& uniform, const Mat3& mat)
+    inline void set_uniform(UniformMat3& uniform, const Matrix3x3& mat)
     {
         glUniformMatrix3fv(uniform.geti(), 1, false, value_ptr(mat));
     }
@@ -431,14 +431,14 @@ namespace osc::gl
         glUniform3fv(uniform.geti(), static_cast<GLsizei>(std::ranges::size(range)), ValuePtr(*std::ranges::data(range)));
     }
 
-    inline void set_uniform(UniformMat4& uniform, const Mat4& mat)
+    inline void set_uniform(UniformMat4& uniform, const Matrix4x4& mat)
     {
         glUniformMatrix4fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void set_uniform(UniformMat4& uniform, std::span<const Mat4> matrices)
+    inline void set_uniform(UniformMat4& uniform, std::span<const Matrix4x4> matrices)
     {
-        static_assert(sizeof(Mat4) == 16 * sizeof(GLfloat));
+        static_assert(sizeof(Matrix4x4) == 16 * sizeof(GLfloat));
         glUniformMatrix4fv(uniform.geti(), static_cast<GLsizei>(matrices.size()), false, value_ptr(matrices.front()));
     }
 

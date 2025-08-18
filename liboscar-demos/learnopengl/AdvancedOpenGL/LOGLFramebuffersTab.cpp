@@ -46,8 +46,8 @@ namespace
     Camera create_screen_camera()
     {
         Camera rv;
-        rv.set_view_matrix_override(identity<Mat4>());
-        rv.set_projection_matrix_override(identity<Mat4>());
+        rv.set_view_matrix_override(identity<Matrix4x4>());
+        rv.set_projection_matrix_override(identity<Matrix4x4>());
         return rv;
     }
 }

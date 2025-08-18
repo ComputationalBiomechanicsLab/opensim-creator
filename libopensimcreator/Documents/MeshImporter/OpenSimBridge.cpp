@@ -15,8 +15,8 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec3.h>
@@ -291,7 +291,7 @@ namespace
         auto parentPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
-        Mat4 toParentPofInParent =  inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
+        Matrix4x4 toParentPofInParent =  inverse_matrix4x4_cast(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * matrix4x4_cast(IgnoreScale(joint.getXForm()));
         parentPOF->set_translation(to<SimTK::Vec3>(Vec3{toParentPofInParent[3]}));
         parentPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toParentPofInParent)));
 
@@ -299,7 +299,7 @@ namespace
         auto childPOF = std::make_unique<OpenSim::PhysicalOffsetFrame>();
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
-        const Mat4 toChildPofInChild = inverse_mat4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * mat4_cast(IgnoreScale(joint.getXForm()));
+        const Matrix4x4 toChildPofInChild = inverse_matrix4x4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * matrix4x4_cast(IgnoreScale(joint.getXForm()));
         childPOF->set_translation(to<SimTK::Vec3>(Vec3{toChildPofInChild[3]}));
         childPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toChildPofInChild)));
 

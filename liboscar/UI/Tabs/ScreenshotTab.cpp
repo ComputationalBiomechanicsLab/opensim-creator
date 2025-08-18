@@ -9,7 +9,7 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>

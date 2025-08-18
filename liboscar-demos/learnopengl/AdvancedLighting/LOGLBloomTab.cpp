@@ -29,34 +29,34 @@ namespace
         return s_scene_light_colors;
     }
 
-    std::vector<Mat4> create_cube_transforms()
+    std::vector<Matrix4x4> create_cube_transforms()
     {
-        std::vector<Mat4> rv;
+        std::vector<Matrix4x4> rv;
         rv.reserve(6);
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(0.0f, 1.5f, 0.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(2.0f, 0.0f, 1.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(-1.0f, -1.0f, 2.0));
             m = rotate(m, 60_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(0.0f, 2.7f, 4.0));
             m = rotate(m, 23_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             m = scale(m, Vec3(1.25));
@@ -64,14 +64,14 @@ namespace
         }
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(-2.0f, 1.0f, -3.0));
             m = rotate(m, 124_deg, normalize(Vec3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 
         {
-            Mat4 m = identity<Mat4>();
+            Matrix4x4 m = identity<Matrix4x4>();
             m = translate(m, Vec3(-3.0f, 0.0f, 0.0));
             m = scale(m, Vec3(0.5f));
             rv.push_back(m);
@@ -173,16 +173,16 @@ private:
 
         // draw floor
         {
-            Mat4 floor_mat4 = identity<Mat4>();
-            floor_mat4 = translate(floor_mat4, Vec3(0.0f, -1.0f, 0.0));
-            floor_mat4 = scale(floor_mat4, Vec3(12.5f, 0.5f, 12.5f));
+            Matrix4x4 floor_transform = identity<Matrix4x4>();
+            floor_transform = translate(floor_transform, Vec3(0.0f, -1.0f, 0.0));
+            floor_transform = scale(floor_transform, Vec3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floor_props;
             floor_props.set("uDiffuseTexture", wood_texture_);
 
             graphics::draw(
                 cube_mesh_,
-                floor_mat4,
+                floor_transform,
                 scene_material_,
                 camera_,
                 floor_props
@@ -207,16 +207,16 @@ private:
         const auto& scene_light_colors = get_scene_light_colors();
 
         for (size_t i = 0; i < c_scene_light_positions.size(); ++i) {
-            Mat4 light_mat4 = identity<Mat4>();
-            light_mat4 = translate(light_mat4, Vec3(c_scene_light_positions[i]));
-            light_mat4 = scale(light_mat4, Vec3(0.25f));
+            Matrix4x4 light_transform = identity<Matrix4x4>();
+            light_transform = translate(light_transform, Vec3(c_scene_light_positions[i]));
+            light_transform = scale(light_transform, Vec3(0.25f));
 
             MaterialPropertyBlock light_props;
             light_props.set("uLightColor", scene_light_colors[i]);
 
             graphics::draw(
                 cube_mesh_,
-                light_mat4,
+                light_transform,
                 lightbox_material_,
                 camera_,
                 light_props

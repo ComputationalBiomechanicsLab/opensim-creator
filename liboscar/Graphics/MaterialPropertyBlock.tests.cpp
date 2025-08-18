@@ -2,8 +2,8 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Texture2D.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
 #include <liboscar/testing/TestingHelpers.h>
@@ -135,16 +135,16 @@ TEST(MaterialPropertyBlock, get_Vec4_returns_nullopt_on_default_constructed)
     ASSERT_FALSE(mpb.get<Vec4>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, get_Mat3_returns_nullopt_on_default_constructed)
+TEST(MaterialPropertyBlock, get_Matrix3x3_returns_nullopt_on_default_constructed)
 {
     const MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Mat3>("someKey"));
+    ASSERT_FALSE(mpb.get<Matrix3x3>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, get_Mat4_returns_nullopt_on_default_constructed)
+TEST(MaterialPropertyBlock, get_Matrix4x4_returns_nullopt_on_default_constructed)
 {
     const MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Mat4>("someKey"));
+    ASSERT_FALSE(mpb.get<Matrix4x4>("someKey"));
 }
 
 TEST(MaterialPropertyBlock, get_int_returns_nullopt_on_default_constructed)
@@ -198,17 +198,17 @@ TEST(MaterialPropertyBlock, set_Vec4_causes_get_Vec4_to_return_the_Vec4)
     ASSERT_EQ(mpb.get<Vec4>(key), value);
 }
 
-TEST(MaterialPropertyBlock, set_Mat3_causes_get_Mat3_to_return_the_Mat3)
+TEST(MaterialPropertyBlock, set_Matrix3x3_causes_get_Mat3_to_return_the_Mat3)
 {
     MaterialPropertyBlock mpb;
     const std::string key = "someKey";
-    const Mat3 value = generate<Mat3>();
+    const Matrix3x3 value = generate<Matrix3x3>();
 
     ASSERT_FALSE(mpb.get<Vec4>(key));
 
-    mpb.set<Mat3>(key, value);
-    ASSERT_TRUE(mpb.get<Mat3>(key));
-    ASSERT_EQ(mpb.get<Mat3>(key), value);
+    mpb.set<Matrix3x3>(key, value);
+    ASSERT_TRUE(mpb.get<Matrix3x3>(key));
+    ASSERT_EQ(mpb.get<Matrix3x3>(key), value);
 }
 
 TEST(MaterialPropertyBlock, set_int_causes_get_int_to_return_the_int)

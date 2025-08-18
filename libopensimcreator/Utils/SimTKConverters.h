@@ -2,8 +2,8 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Maths/Vec4.h>
@@ -30,8 +30,8 @@ namespace osc
     };
 
     template<>
-    struct Converter<Mat3, SimTK::Mat33> final {
-        SimTK::Mat33 operator()(const Mat3&) const;
+    struct Converter<Matrix3x3, SimTK::Mat33> final {
+        SimTK::Mat33 operator()(const Matrix3x3&) const;
     };
 
     template<>
@@ -70,18 +70,18 @@ namespace osc
     };
 
     template<>
-    struct Converter<SimTK::Transform, Mat4> final {
-        Mat4 operator()(const SimTK::Transform&) const;
+    struct Converter<SimTK::Transform, Matrix4x4> final {
+        Matrix4x4 operator()(const SimTK::Transform&) const;
     };
 
     template<>
-    struct Converter<SimTK::Mat33, Mat3> final {
-        Mat3 operator()(const SimTK::Mat33&) const;
+    struct Converter<SimTK::Mat33, Matrix3x3> final {
+        Matrix3x3 operator()(const SimTK::Mat33&) const;
     };
 
     template<>
-    struct Converter<SimTK::Rotation, Mat4> final {
-        Mat4 operator()(const SimTK::Rotation&) const;
+    struct Converter<SimTK::Rotation, Matrix4x4> final {
+        Matrix4x4 operator()(const SimTK::Rotation&) const;
     };
 
     template<>

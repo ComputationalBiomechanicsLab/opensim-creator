@@ -12,8 +12,8 @@ namespace
     Camera create_identity_camera()
     {
         Camera camera;
-        camera.set_view_matrix_override(identity<Mat4>());
-        camera.set_projection_matrix_override(identity<Mat4>());
+        camera.set_view_matrix_override(identity<Matrix4x4>());
+        camera.set_projection_matrix_override(identity<Matrix4x4>());
         return camera;
     }
 }

@@ -280,7 +280,7 @@ namespace
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
     });
 
-    Mat4 calc_cubemap_view_matrix(const CubemapFaceDetails& face_details, const Vec3& cube_center)
+    Matrix4x4 calc_cubemap_view_matrix(const CubemapFaceDetails& face_details, const Vec3& cube_center)
     {
         return look_at(cube_center, cube_center + face_details.direction, face_details.up);
     }
@@ -529,12 +529,12 @@ Vec3 osc::EulerPerspectiveCamera::right() const
     return normalize(cross(front(), up()));
 }
 
-Mat4 osc::EulerPerspectiveCamera::view_matrix() const
+Matrix4x4 osc::EulerPerspectiveCamera::view_matrix() const
 {
     return look_at(origin, origin + front(), up());
 }
 
-Mat4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
+Matrix4x4 osc::EulerPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
     return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
 }
@@ -591,10 +591,10 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
     const Vec4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
-    const Mat4 rotation_theta = rotate(identity<Mat4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
+    const Matrix4x4 rotation_theta = rotate(identity<Matrix4x4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
     const Vec3 theta_vec{sin(theta), 0.0f, cos(theta)};
     const Vec3 phi_axis = cross(theta_vec, Vec3{0.0f, 1.0f, 0.0f});
-    const Mat4 rotation_phi = rotate(identity<Mat4>(), phi, phi_axis);
+    const Matrix4x4 rotation_phi = rotate(identity<Matrix4x4>(), phi, phi_axis);
 
     const Vec4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
     focus_point += Vec3{panning_axes};
@@ -615,7 +615,7 @@ void osc::PolarPerspectiveCamera::rescale_znear_and_zfar_based_on_radius()
     zfar = 10.0f * radius;
 }
 
-Mat4 osc::PolarPerspectiveCamera::view_matrix() const
+Matrix4x4 osc::PolarPerspectiveCamera::view_matrix() const
 {
     // camera: at a fixed position pointing at a fixed origin. The "camera"
     // works by translating + rotating all objects around that origin. Rotation
@@ -625,18 +625,18 @@ Mat4 osc::PolarPerspectiveCamera::view_matrix() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's
     // a polar coordinate system that shifts the world based on the camera pan
 
-    const Mat4 theta_rotation = rotate(identity<Mat4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
+    const Matrix4x4 theta_rotation = rotate(identity<Matrix4x4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
     const Vec3 theta_vec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
     const Vec3 phi_axis = cross(theta_vec, Vec3{0.0, 1.0f, 0.0f});
-    const Mat4 phi_rotation = rotate(identity<Mat4>(), -phi, phi_axis);
-    const Mat4 pan_translation = translate(identity<Mat4>(), focus_point);
+    const Matrix4x4 phi_rotation = rotate(identity<Matrix4x4>(), -phi, phi_axis);
+    const Matrix4x4 pan_translation = translate(identity<Matrix4x4>(), focus_point);
     return look_at(
         Vec3(0.0f, 0.0f, radius),
         Vec3(0.0f, 0.0f, 0.0f),
         Vec3{0.0f, 1.0f, 0.0f}) * theta_rotation * phi_rotation * pan_translation;
 }
 
-Mat4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) const
+Matrix4x4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) const
 {
     return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
 }
@@ -824,7 +824,7 @@ float osc::volume_of(const Tetrahedron& tetrahedron)
     // http://forums.cgsociety.org/t/how-to-calculate-center-of-mass-for-triangular-mesh/1309966
     // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
-    const Mat4 mat{
+    const Matrix4x4 mat{
         Vec4{tetrahedron[0], 1.0f},
         Vec4{tetrahedron[1], 1.0f},
         Vec4{tetrahedron[2], 1.0f},
@@ -968,13 +968,13 @@ Radians osc::vertical_to_horizontal_field_of_view(Radians vertical_field_of_view
 }
 
 
-Mat4 osc::mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
+Matrix4x4 osc::matrix4x4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
 {
     const float cos_theta = dot(dir1, dir2);
 
     if (cos_theta >= 1.0f - epsilon_v<float>) {
         // `a` and `b` point in the same direction: return identity transform
-        return identity<Mat4>();
+        return identity<Matrix4x4>();
     }
 
     Radians theta{};
@@ -999,12 +999,12 @@ Mat4 osc::mat4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
         rotation_axis = normalize(cross(dir1, dir2));
     }
 
-    return rotate(identity<Mat4>(), theta, rotation_axis);
+    return rotate(identity<Matrix4x4>(), theta, rotation_axis);
 }
 
 EulerAngles osc::extract_eulers_xyz(const Quat& quaternion)
 {
-    return extract_eulers_xyz(mat4_cast(quaternion));
+    return extract_eulers_xyz(matrix4x4_cast(quaternion));
 }
 
 Vec2 osc::topleft_normalized_point_to_ndc(Vec2 normalized_point)
@@ -1028,8 +1028,8 @@ Vec4 osc::topleft_normalized_point_to_ndc_cube(Vec2 normalized_point)
 Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
     Vec2 normalized_point,
     Vec3 camera_world_space_origin,
-    const Mat4& camera_view_matrix,
-    const Mat4& camera_proj_matrix)
+    const Matrix4x4& camera_view_matrix,
+    const Matrix4x4& camera_proj_matrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
     const Vec4 ray_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
@@ -1080,8 +1080,8 @@ Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& vi
 
 Vec2 osc::project_onto_viewport_rect(
     const Vec3& world_space_position,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
+    const Matrix4x4& view_matrix,
+    const Matrix4x4& projection_matrix,
     const Rect& viewport_rect)
 {
     Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_position, 1.0f};
@@ -1126,7 +1126,7 @@ AABB osc::bounding_aabb_of(const Sphere& sphere)
     return rv;
 }
 
-Ray osc::transform_ray(const Ray& ray, const Mat4& mat)
+Ray osc::transform_ray(const Ray& ray, const Matrix4x4& mat)
 {
     Ray rv{};
     rv.direction = Vec3{mat * Vec4{ray.direction, 0.0f}};
@@ -1142,7 +1142,7 @@ Ray osc::inverse_transform_ray(const Ray& ray, const Transform& transform)
     };
 }
 
-Mat4 osc::mat4_transform_between(const Disc& src_disc, const Disc& dest_disc)
+Matrix4x4 osc::matrix4x4_transform_between(const Disc& src_disc, const Disc& dest_disc)
 {
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
@@ -1159,20 +1159,20 @@ Mat4 osc::mat4_transform_between(const Disc& src_disc, const Disc& dest_disc)
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendicular each axis is
 
     const Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - src_disc.normal));
-    const Mat4 scaler = scale(identity<Mat4>(), scalers);
+    const Matrix4x4 scaler = scale(identity<Matrix4x4>(), scalers);
 
     const float cos_theta = dot(src_disc.normal, dest_disc.normal);
-    Mat4 rotator;
+    Matrix4x4 rotator;
     if (cos_theta > 0.9999f) {
-        rotator = identity<Mat4>();
+        rotator = identity<Matrix4x4>();
     }
     else {
         const Radians theta = acos(cos_theta);
         const Vec3 axis = cross(src_disc.normal, dest_disc.normal);
-        rotator = rotate(identity<Mat4>(), theta, axis);
+        rotator = rotate(identity<Matrix4x4>(), theta, axis);
     }
 
-    const Mat4 translator = translate(identity<Mat4>(), dest_disc.origin-src_disc.origin);
+    const Matrix4x4 translator = translate(identity<Matrix4x4>(), dest_disc.origin-src_disc.origin);
 
     return translator * rotator * scaler;
 }
@@ -1196,7 +1196,7 @@ std::array<Vec3, 8> osc::corner_vertices_of(const AABB& aabb)
     return rv;
 }
 
-AABB osc::transform_aabb(const Mat4& mat, const AABB& aabb)
+AABB osc::transform_aabb(const Matrix4x4& mat, const AABB& aabb)
 {
     return bounding_aabb_of(corner_vertices_of(aabb), [&](const Vec3& vertex)
     {
@@ -1211,7 +1211,7 @@ AABB osc::transform_aabb(const Transform& transform, const AABB& aabb)
     //
     // screenshot: https://twitter.com/Herschel/status/1188613724665335808
 
-    const Mat3 mat = mat3_cast(transform);
+    const Matrix3x3 mat = matrix3x3_cast(transform);
 
     AABB rv = bounding_aabb_of(transform.translation);  // add in the translation
     for (Vec3::size_type i = 0; i < 3; ++i) {
@@ -1236,8 +1236,8 @@ AABB osc::transform_aabb(const Transform& transform, const AABB& aabb)
 
 std::optional<Rect> osc::loosely_project_into_ndc(
     const AABB& aabb,
-    const Mat4& view_mat,
-    const Mat4& proj_mat,
+    const Matrix4x4& view_mat,
+    const Matrix4x4& proj_mat,
     float znear,
     float zfar)
 {
@@ -1268,7 +1268,7 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     return clamp(Rect::from_corners(Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}), Vec2{-1.0f}, Vec2{1.0f});
 }
 
-Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)
+Matrix4x4 osc::matrix4x4_transform_between(const LineSegment& a, const LineSegment& b)
 {
     const Vec3 a1_to_a2 = a.end - a.start;
     const Vec3 b1_to_b2 = b.end - b.start;
@@ -1287,10 +1287,10 @@ Mat4 osc::mat4_transform_between(const LineSegment& a, const LineSegment& b)
     const float s = b_length/a_length;
     const Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*a_direction;
 
-    const Mat4 rotate = mat4_transform_between_directions(a_direction, b_direction);
-    const Mat4 move = translate(identity<Mat4>(), b_center - a_center);
+    const Matrix4x4 rotate = matrix4x4_transform_between_directions(a_direction, b_direction);
+    const Matrix4x4 move = translate(identity<Matrix4x4>(), b_center - a_center);
 
-    return move * rotate * scale(identity<Mat4>(), normalize(scaler));
+    return move * rotate * scale(identity<Matrix4x4>(), normalize(scaler));
 }
 
 Transform osc::transform_between(const LineSegment& a, const LineSegment& b)
@@ -1538,13 +1538,13 @@ float osc::ease_out_elastic(float x)
     return pow(2.0f, -5.0f*normalized) * sin((normalized*10.0f - 0.75f) * c4) + 1.0f;
 }
 
-std::array<Mat4, 6> osc::calc_cubemap_view_proj_matrices(
-    const Mat4& projection_matrix,
+std::array<Matrix4x4, 6> osc::calc_cubemap_view_proj_matrices(
+    const Matrix4x4& projection_matrix,
     Vec3 cube_center)
 {
     static_assert(std::size(c_cubemap_faces_details) == 6);
 
-    std::array<Mat4, 6> rv{};
+    std::array<Matrix4x4, 6> rv{};
     for (size_t i = 0; i < 6; ++i) {
         rv[i] = projection_matrix * calc_cubemap_view_matrix(c_cubemap_faces_details[i], cube_center);
     }

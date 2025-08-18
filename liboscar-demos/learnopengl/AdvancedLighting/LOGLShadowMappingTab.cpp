@@ -159,8 +159,8 @@ private:
     {
         const float znear = 1.0f;
         const float zfar = 7.5f;
-        const Mat4 light_view_matrix = look_at(light_pos_, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
-        const Mat4 light_projection_matrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, znear, zfar);
+        const Matrix4x4 light_view_matrix = look_at(light_pos_, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 light_projection_matrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, znear, zfar);
         latest_light_space_matrix_ = light_projection_matrix * light_view_matrix;
 
         draw_meshes_with_material(depth_material_);
@@ -189,7 +189,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/shadow_mapping/MakeShadowMap.frag"),
     }};
     RenderTexture depth_texture_ = create_depth_texture();
-    Mat4 latest_light_space_matrix_ = identity<Mat4>();
+    Matrix4x4 latest_light_space_matrix_ = identity<Matrix4x4>();
     Vec3 light_pos_ = {-2.0f, 4.0f, -1.0f};
 };
 

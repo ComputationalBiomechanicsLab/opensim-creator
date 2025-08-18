@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec3.h>
 
 namespace osc
@@ -15,8 +15,8 @@ namespace osc
         Vec3 front() const;
         Vec3 up() const;
         Vec3 right() const;
-        Mat4 view_matrix() const;
-        Mat4 projection_matrix(float aspect_ratio) const;
+        Matrix4x4 view_matrix() const;
+        Matrix4x4 projection_matrix(float aspect_ratio) const;
 
         Vec3 origin = {};
         Radians pitch = Degrees{0};

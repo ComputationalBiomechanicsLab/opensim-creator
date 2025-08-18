@@ -327,16 +327,16 @@ TEST_F(MaterialTest, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(material.get<Vec4>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetMat3OnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetMatrix3x3OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get<Mat3>("someKey"));
+    ASSERT_FALSE(material.get<Matrix3x3>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetMat4OnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetMatrix4x4OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get<Mat4>("someKey"));
+    ASSERT_FALSE(material.get<Matrix4x4>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetIntOnNewMaterialReturnsEmptyOptional)
@@ -461,47 +461,47 @@ TEST_F(MaterialTest, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedVa
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Mat3 value = generate<Mat3>();
+    const Matrix3x3 value = generate<Matrix3x3>();
 
-    material.set<Mat3>(key, value);
+    material.set<Matrix3x3>(key, value);
 
-    ASSERT_EQ(*material.get<Mat3>(key), value);
+    ASSERT_EQ(*material.get<Matrix3x3>(key), value);
 }
 
-TEST_F(MaterialTest, MaterialSetMat4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
+TEST_F(MaterialTest, MaterialSetMatrix4x4OnMaterialCausesGetMat4ToReturnTheProvidedValue)
 {
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Mat4 value = generate<Mat4>();
+    const Matrix4x4 value = generate<Matrix4x4>();
 
-    material.set<Mat4>(key, value);
+    material.set<Matrix4x4>(key, value);
 
-    ASSERT_EQ(*material.get<Mat4>(key), value);
+    ASSERT_EQ(*material.get<Matrix4x4>(key), value);
 }
 
-TEST_F(MaterialTest, MaterialGetMat4ArrayInitiallyReturnsNothing)
+TEST_F(MaterialTest, MaterialGetMatrix4x4ArrayInitiallyReturnsNothing)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get_array<Mat4>("someKey").has_value());
+    ASSERT_FALSE(material.get_array<Matrix4x4>("someKey").has_value());
 }
 
-TEST_F(MaterialTest, MaterialSetMat4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
+TEST_F(MaterialTest, MaterialSetMatrix4x4ArrayCausesGetMat4ArrayToReturnSameSequenceOfValues)
 {
-    const auto mat4_array = std::to_array<Mat4>({
-        generate<Mat4>(),
-        generate<Mat4>(),
-        generate<Mat4>(),
-        generate<Mat4>()
+    const auto matrix4x4_array = std::to_array<Matrix4x4>({
+        generate<Matrix4x4>(),
+        generate<Matrix4x4>(),
+        generate<Matrix4x4>(),
+        generate<Matrix4x4>()
     });
 
     Material material = generate_material();
-    material.set_array<Mat4>("someKey", mat4_array);
+    material.set_array<Matrix4x4>("someKey", matrix4x4_array);
 
-    std::optional<std::span<const Mat4>> rv = material.get_array<Mat4>("someKey");
+    std::optional<std::span<const Matrix4x4>> rv = material.get_array<Matrix4x4>("someKey");
     ASSERT_TRUE(rv.has_value());
-    ASSERT_EQ(mat4_array.size(), rv->size());
-    ASSERT_TRUE(std::equal(mat4_array.begin(), mat4_array.end(), rv->begin()));
+    ASSERT_EQ(matrix4x4_array.size(), rv->size());
+    ASSERT_TRUE(std::equal(matrix4x4_array.begin(), matrix4x4_array.end(), rv->begin()));
 }
 
 TEST_F(MaterialTest, MaterialSetIntOnMaterialCausesGetIntToReturnTheProvidedValue)

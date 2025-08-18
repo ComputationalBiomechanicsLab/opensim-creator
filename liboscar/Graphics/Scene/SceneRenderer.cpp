@@ -21,8 +21,8 @@
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
@@ -61,7 +61,7 @@ namespace
 
         RimHighlights(
             Mesh mesh_,
-            const Mat4& transform_,
+            const Matrix4x4& transform_,
             Material material_) :
 
             mesh{std::move(mesh_)},
@@ -70,13 +70,13 @@ namespace
         {}
 
         Mesh mesh;
-        Mat4 transform;
+        Matrix4x4 transform;
         Material material;
     };
 
     struct Shadows final {
         SharedDepthStencilRenderBuffer shadow_map;
-        Mat4 lightspace_mat;
+        Matrix4x4 lightspace_matrix;
     };
 
     struct PolarAngles final {
@@ -105,8 +105,8 @@ namespace
     }
 
     struct ShadowCameraMatrices final {
-        Mat4 view_mat;
-        Mat4 projection_mat;
+        Matrix4x4 view_matrix;
+        Matrix4x4 projection_matrix;
     };
 
     ShadowCameraMatrices calc_shadow_camera_matrices(
@@ -126,8 +126,8 @@ namespace
         camera.znear = 0.0f;
         camera.zfar = 2.0f * shadowcasters_sphere.radius;
 
-        const Mat4 view_mat = camera.view_matrix();
-        const Mat4 projection_mat = ortho(
+        const Matrix4x4 view_matrix = camera.view_matrix();
+        const Matrix4x4 projection_matrix = ortho(
             -shadowcasters_sphere.radius,
             shadowcasters_sphere.radius,
             -shadowcasters_sphere.radius,
@@ -136,7 +136,7 @@ namespace
             2.0f*shadowcasters_sphere.radius
         );
 
-        return ShadowCameraMatrices{view_mat, projection_mat};
+        return ShadowCameraMatrices{view_matrix, projection_matrix};
     }
 
     // the `Material` that's used to shade the main scene (colored `SceneDecoration`s)
@@ -575,7 +575,7 @@ public:
             // supply shadowmap, if applicable
             if (maybe_shadowmap) {
                 scene_main_material_.set("uHasShadowMap", true);
-                scene_main_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                scene_main_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_matrix);
                 scene_main_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
             }
             else {
@@ -656,7 +656,7 @@ public:
                 // supply shadowmap, if applicable
                 if (maybe_shadowmap) {
                     scene_floor_material_.set("uHasShadowMap", true);
-                    scene_floor_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_mat);
+                    scene_floor_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_matrix);
                     scene_floor_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
                 }
                 else {
@@ -810,7 +810,7 @@ private:
         // return necessary information for rendering the rims
         return RimHighlights{
             quad_mesh_,
-            inverse(params.projection_matrix * params.view_matrix) * mat4_cast(quad_mesh_to_rims_quad),
+            inverse(params.projection_matrix * params.view_matrix) * matrix4x4_cast(quad_mesh_to_rims_quad),
             edge_detection_material_,
         };
     }
@@ -847,15 +847,15 @@ private:
         // compute camera matrices for the orthogonal (direction) camera used for lighting
         const ShadowCameraMatrices matrices = calc_shadow_camera_matrices(*shadowcaster_aabbs, params.light_direction);
 
-        camera_.set_view_matrix_override(matrices.view_mat);
-        camera_.set_projection_matrix_override(matrices.projection_mat);
+        camera_.set_view_matrix_override(matrices.view_matrix);
+        camera_.set_projection_matrix_override(matrices.projection_matrix);
         camera_.render_to(RenderTarget{
             RenderTargetDepthStencilAttachment{
                 .buffer = shadowmap_render_buffer_,
             },
         });
 
-        return Shadows{shadowmap_render_buffer_ , matrices.projection_mat * matrices.view_mat};
+        return Shadows{shadowmap_render_buffer_ , matrices.projection_matrix * matrices.view_matrix};
     }
 
     SceneMainMaterial scene_main_material_;

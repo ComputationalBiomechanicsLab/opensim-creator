@@ -2,8 +2,8 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Color32.h>
-#include <liboscar/Maths/Mat3.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix3x3.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/Vec2.h>
@@ -31,8 +31,8 @@ namespace osc::testing
     template<> Vec2 generate();
     template<> Vec3 generate();
     template<> Vec4 generate();
-    template<> Mat3 generate();
-    template<> Mat4 generate();
+    template<> Matrix3x3 generate();
+    template<> Matrix4x4 generate();
     template<> Triangle generate();
 
     std::vector<Vec3> generate_triangle_vertices();

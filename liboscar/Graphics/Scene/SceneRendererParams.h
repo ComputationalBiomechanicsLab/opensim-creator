@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
 
@@ -52,8 +52,8 @@ namespace osc
         // camera parameters
         float near_clipping_plane = 0.1f;
         float far_clipping_plane = 100.0f;
-        Mat4 view_matrix = identity<Mat4>();
-        Mat4 projection_matrix = identity<Mat4>();
+        Matrix4x4 view_matrix = identity<Matrix4x4>();
+        Matrix4x4 projection_matrix = identity<Matrix4x4>();
         Vec3 viewer_position = {0.0f, 0.0f, 0.0f};
 
         // shading parameters

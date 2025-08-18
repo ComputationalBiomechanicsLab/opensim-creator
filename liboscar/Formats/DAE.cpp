@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
-#include <liboscar/Maths/Mat4.h>
+#include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/TransformFunctions.h>
 #include <liboscar/Maths/Vec2.h>
 #include <liboscar/Maths/Vec3.h>
@@ -358,12 +358,12 @@ namespace
 
     void write_matrix_node(std::ostream& out, const Transform& transform)
     {
-        const Mat4 m = mat4_cast(transform);
+        const Matrix4x4 m = matrix4x4_cast(transform);
 
         // row-major
         out << R"(        <matrix sid="transform">)";
         std::string_view delimiter;
-        for (Mat4::size_type row = 0; row < 4; ++row) {
+        for (Matrix4x4::size_type row = 0; row < 4; ++row) {
             out << delimiter << m[0][row];
             delimiter = " ";
             out << delimiter << m[1][row];

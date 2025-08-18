@@ -24,8 +24,8 @@
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Quat.h>
@@ -456,7 +456,7 @@ namespace
         const float T = draw_data.DisplayPos.y;
         const float B = draw_data.DisplayPos.y + draw_data.DisplaySize.y;
 
-        const Mat4 projection_matrix = {
+        const Matrix4x4 projection_matrix = {
             {2.0f/(R-L),  0.0f,         0.0f, 0.0f},
             {0.0f,        2.0f/(T-B),   0.0f, 0.0f},
             {0.0f,        0.0f,        -1.0f, 0.0f},
@@ -514,7 +514,7 @@ namespace
         }
 
         // draw
-        graphics::draw(mesh, identity<Mat4>(), bd.ui_material, bd.camera, std::nullopt, sub_mesh_index);
+        graphics::draw(mesh, identity<Matrix4x4>(), bd.ui_material, bd.camera, std::nullopt, sub_mesh_index);
 
         // flush draw queue to output
         if (maybe_target) {
@@ -3825,9 +3825,9 @@ bool osc::ui::draw_gizmo_operation_selector(
 }
 
 std::optional<Transform> osc::ui::Gizmo::draw(
-    Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
+    Matrix4x4& model_matrix,
+    const Matrix4x4& view_matrix,
+    const Matrix4x4& projection_matrix,
     const Rect& ui_rect)
 {
     return draw_to(
@@ -3840,9 +3840,9 @@ std::optional<Transform> osc::ui::Gizmo::draw(
 }
 
 std::optional<Transform> osc::ui::Gizmo::draw_to_foreground(
-    Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
+    Matrix4x4& model_matrix,
+    const Matrix4x4& view_matrix,
+    const Matrix4x4& projection_matrix,
     const Rect& ui_rect)
 {
     return draw_to(
@@ -3855,9 +3855,9 @@ std::optional<Transform> osc::ui::Gizmo::draw_to_foreground(
 }
 
 std::optional<Transform> osc::ui::Gizmo::draw_to(
-    Mat4& model_matrix,
-    const Mat4& view_matrix,
-    const Mat4& projection_matrix,
+    Matrix4x4& model_matrix,
+    const Matrix4x4& view_matrix,
+    const Matrix4x4& projection_matrix,
     const Rect& ui_rect,
     ImDrawList* draw_list)
 {

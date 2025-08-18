@@ -187,7 +187,7 @@ public:
 
             graphics::draw(
                 circle_mesh_,
-                mat4_transform_between(mesh_disc, scene_disc),
+                matrix4x4_transform_between(mesh_disc, scene_disc),
                 material_,
                 camera_,
                 maybe_collision ? blue_color_material_props_ : red_color_material_props_

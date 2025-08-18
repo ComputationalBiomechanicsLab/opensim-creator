@@ -8,8 +8,8 @@
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Mat4.h>
-#include <liboscar/Maths/MatFunctions.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Quat.h>
 #include <liboscar/Maths/Transform.h>
@@ -397,9 +397,9 @@ TEST(Mesh, transform_vertices_with_identity_transform_causes_transformed_mesh_to
     ASSERT_NE(m, copy);
 }
 
-TEST(Mesh, transform_vertices_with_Mat4_applies_transform_to_vertices)
+TEST(Mesh, transform_vertices_with_Matrix4x4_applies_transform_to_vertices)
 {
-    const Mat4 mat = mat4_cast(Transform{
+    const Matrix4x4 mat = matrix4x4_cast(Transform{
         .scale = Vec3{0.25f},
         .rotation = to_world_space_rotation_quat(EulerAngles{90_deg, 0_deg, 0_deg}),
         .translation = {1.0f, 0.25f, 0.125f},
@@ -422,13 +422,13 @@ TEST(Mesh, transform_vertices_with_Mat4_applies_transform_to_vertices)
     ASSERT_EQ(mesh.vertices(), expected);
 }
 
-TEST(Mesh, transform_vertices_with_identity_Mat4_causes_transformed_mesh_to_compare_not_equal_to_original_mesh)
+TEST(Mesh, transform_vertices_with_identity_Matrix4x4_causes_transformed_mesh_to_compare_not_equal_to_original_mesh)
 {
     const Mesh mesh;
     Mesh copy{mesh};
 
     ASSERT_EQ(mesh, copy);
-    copy.transform_vertices(identity<Mat4>());  // noop
+    copy.transform_vertices(identity<Matrix4x4>());  // noop
     ASSERT_NE(mesh, copy) << "should be non-equal because mesh equality is reference-based (if it becomes value-based, delete this test)";
 }
 
