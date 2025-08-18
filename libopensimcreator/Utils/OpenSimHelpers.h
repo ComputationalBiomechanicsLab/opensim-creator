@@ -2,7 +2,7 @@
 
 #include <liboscar/Concepts/DereferencesTo.h>
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/PointDirection.h>
+#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Vec3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
@@ -740,8 +740,8 @@ namespace osc
     // the reason they return `optional` is to handle edge-cases like the path containing an
     // insufficient number of points (shouldn't happen, but you never know)
     struct LinesOfAction final {
-        PointDirection origin;
-        PointDirection insertion;
+        Ray origin;
+        Ray insertion;
     };
     std::optional<LinesOfAction> GetEffectiveLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);
     std::optional<LinesOfAction> GetAnatomicalLinesOfActionInGround(const OpenSim::Muscle&, const SimTK::State&);

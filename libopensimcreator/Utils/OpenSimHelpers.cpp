@@ -235,8 +235,8 @@ namespace
         const Vec3 insertionDir = normalize(pointAfterInsertionPos - insertionPos);
 
         return LinesOfAction{
-            PointDirection{originPos, originDir},
-            PointDirection{insertionPos, insertionDir},
+            Ray{originPos, originDir},
+            Ray{insertionPos, insertionDir},
         };
     }
 

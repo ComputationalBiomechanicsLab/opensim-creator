@@ -1121,14 +1121,14 @@ namespace
     void DrawLineOfActionArrow(
         RendererState& rs,
         const OpenSim::Muscle& muscle,
-        const PointDirection& loaPointDirection,
+        const Ray& loaPointDirection,
         const Color& color)
     {
         const float fixupScaleFactor = rs.getFixupScaleFactor();
 
         const ArrowProperties arrowProperties = {
-            .start = loaPointDirection.point,
-            .end = loaPointDirection.point + (fixupScaleFactor*0.1f)*loaPointDirection.direction,
+            .start = loaPointDirection.origin,
+            .end = loaPointDirection.origin + (fixupScaleFactor*0.1f)*loaPointDirection.direction,
             .tip_length = (fixupScaleFactor*0.015f),
             .neck_thickness = (fixupScaleFactor*0.006f),
             .head_thickness = (fixupScaleFactor*0.01f),

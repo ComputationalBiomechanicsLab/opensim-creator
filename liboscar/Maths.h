@@ -33,7 +33,6 @@
 #include <liboscar/Maths/Normalized.h>
 #include <liboscar/Maths/Plane.h>
 #include <liboscar/Maths/PlaneFunctions.h>
-#include <liboscar/Maths/PointDirection.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Qua.h>
 #include <liboscar/Maths/Quat.h>
