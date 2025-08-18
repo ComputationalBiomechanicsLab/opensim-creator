@@ -23,7 +23,7 @@ namespace osc
             return {0.89f, 0.89f, 0.89f};
         }
 
-        static constexpr Vec3 default_floor_location()
+        static constexpr Vec3 default_floor_position()
         {
             return {0.0f, -0.001f, 0.0f};
         }
@@ -71,7 +71,7 @@ namespace osc
         Vec2 rim_thickness = {1.0f, 1.0f};  // desired screen-space rim thickness in device-independent pixels.
 
         // scene parameters
-        Vec3 floor_location = default_floor_location();
+        Vec3 floor_position = default_floor_position();
         float fixup_scale_factor = 1.0f;
     };
 }

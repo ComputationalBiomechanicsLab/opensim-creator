@@ -45,7 +45,7 @@ namespace osc
 
         // uses this camera's transform to project a world space point
         // onto the given viewport rectangle.
-        Vec2 project_onto_viewport(const Vec3& world_space_location, const Rect& viewport_rect) const;
+        Vec2 project_onto_viewport(const Vec3& world_space_position, const Rect& viewport_rect) const;
 
         Vec3 position() const;
 

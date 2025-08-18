@@ -4,7 +4,7 @@
 
 namespace osc
 {
-    // a circle positioned at an origin location
+    // a circle positioned at an origin position
     //
     // - see `Disc` for the 3D equivalent of this
     struct Circle final {

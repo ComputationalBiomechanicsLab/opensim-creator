@@ -61,7 +61,7 @@ namespace osc
         return std::distance(first, std::ranges::max_element(first, std::ranges::end(r), std::ref(comp), std::ref(proj)));
     }
 
-    // returns a reference to the element at specified location `pos`, with bounds checking
+    // returns a reference to the element at specified position `pos`, with bounds checking
     template<std::ranges::random_access_range R>
     requires std::ranges::borrowed_range<R>
     constexpr std::ranges::range_reference_t<R> at(R&& r, std::ranges::range_size_t<R> pos)

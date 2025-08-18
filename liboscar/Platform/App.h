@@ -412,7 +412,7 @@ namespace osc
         // native input methods can place a window with word suggestions near the input
         // in the main window, without covering the text that's being inputted, this
         // indicates to the operating system  where the input rectangle is so that it
-        // can place and operating-system-defined overlay in the correct location.
+        // can place and operating-system-defined overlay in the correct position.
         void set_main_window_unicode_input_rect(const Rect& screen_rect);
 
         // start accepting unicode text input events for the given window
@@ -457,7 +457,7 @@ namespace osc
         void set_vsync_enabled(bool);
 
         // add an annotation to the current frame with the given `label`
-        // and location in screen space and device-independent pixels.
+        // and position in screen space and device-independent pixels.
         //
         // the annotation is added to the data returned by `App::request_screenshot_of_main_window`
         void add_main_window_frame_annotation(std::string_view label, const Rect& screen_rect);

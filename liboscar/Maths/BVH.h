@@ -36,7 +36,7 @@ namespace osc
             std::span<const uint32_t> indices
         );
 
-        // returns the location of the closest ray-triangle collision along the ray, if any
+        // returns the position of the closest ray-triangle collision along the ray, if any
         std::optional<BVHCollision> closest_ray_indexed_triangle_collision(
             std::span<const Vec3> vertices,
             std::span<const uint16_t> indices,

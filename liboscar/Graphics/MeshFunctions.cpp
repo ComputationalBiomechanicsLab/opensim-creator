@@ -147,7 +147,7 @@ Vec3 osc::mass_center_of(const Mesh& mesh)
     //
     // - compute the weighted sum: sum(volume * center) / sum(volume)
     //
-    // this yields a 3D location that is a "mass center", *but* the volume
+    // this yields a 3D point that represents a "mass center", *but* the volume
     // calculation is signed based on vertex winding (normal), so if the user
     // submits an invalid mesh, this calculation could potentially produce a
     // volume that's *way* off

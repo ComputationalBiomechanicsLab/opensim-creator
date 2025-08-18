@@ -196,9 +196,9 @@ namespace osc
     inline Transform point_axis_towards(
         const Transform& transform,
         Vec3::size_type axis_index,
-        const Vec3& location)
+        const Vec3& position)
     {
-        return point_axis_along(transform, axis_index, normalize(location - transform.translation));
+        return point_axis_along(transform, axis_index, normalize(position - transform.translation));
     }
 
     // returns the provided transform, but intrinsically rotated along the given axis by

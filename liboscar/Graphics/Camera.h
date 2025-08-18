@@ -146,7 +146,7 @@ namespace osc
         // returns the "up" direction of this camera
         Vec3 upwards_direction() const;
 
-        // returns the matrix that this camera uses to transform world space locations into
+        // returns the matrix that this camera uses to transform world space points into
         // view space
         //
         // world space and view space operate with the same units-of-measure, handedness, etc.
@@ -154,7 +154,7 @@ namespace osc
         Mat4 view_matrix() const;
 
         // returns the equivalent of `inverse(view_matrix())`, i.e. a matrix that transforms
-        // view space locations into world space locations.
+        // view space points into world space points.
         Mat4 inverse_view_matrix() const;
 
         // get/set matrices that override the default view matrix that this `Camera` uses

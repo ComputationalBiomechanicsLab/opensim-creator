@@ -71,7 +71,7 @@ private:
 
     void apply_zoom_to_camera(Vec2, float)
     {
-        // TODO: zoom the mandelbrot viewport into the given ui space location by the given factor
+        // TODO: zoom the mandelbrot viewport into the given ui space position by the given factor
     }
 
     void apply_pan_to_camera([[maybe_unused]] Vec2 screen_space_delta)

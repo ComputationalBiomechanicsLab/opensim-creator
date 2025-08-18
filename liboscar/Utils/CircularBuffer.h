@@ -291,7 +291,7 @@ namespace osc
                 begin_offset_ = (begin_offset_ + 1) % N;
             }
 
-            // construct T in the old "dead" element location
+            // construct T in the old "dead" element position
             object_bytes* const ptr = raw_storage_bytes_.data() + end_offset_;
             T* const constructed_el = new (ptr) T{std::forward<Args>(args)...};
 
@@ -376,8 +376,8 @@ namespace osc
         // - the circular/modulo range `[begin_offset_..end_offset_)` contains
         //   fully-constructed `T`s
         //
-        // - `end_offset_` always points to a "dead", but valid, location
-        //   in storage
+        // - `end_offset_` always points to a "dead", but valid, position
+        //   in memory
         //
         // - the above constraints imply that the number of "live"
         //   elements in storage is N-1, because `end_offset_` will modulo

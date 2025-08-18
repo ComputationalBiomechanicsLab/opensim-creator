@@ -12,7 +12,7 @@ namespace osc
     struct SceneCollision final {
         StringName decoration_id{};
         size_t decoration_index = 0;
-        Vec3 world_space_location{};
+        Vec3 world_position{};
         float world_distance_from_ray_origin = std::numeric_limits<float>::max();
     };
 }

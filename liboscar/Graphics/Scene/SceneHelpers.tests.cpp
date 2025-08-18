@@ -14,7 +14,7 @@ TEST(draw_arrow, generates_nothing_if_length_between_start_and_end_is_zero)
 {
     constexpr ArrowProperties arrow_properties = {
         .start = {1.0f, 0.0f, 0.0f},
-        .end = {1.0f, 0.0f, 0.0f},  // uh oh: same location
+        .end = {1.0f, 0.0f, 0.0f},  // uh oh: same position
         .tip_length = 1.0f,
         .neck_thickness = 0.5f,
         .head_thickness = 0.5f,

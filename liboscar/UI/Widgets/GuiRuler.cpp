@@ -72,7 +72,7 @@ void osc::GuiRuler::on_draw(
 
             if (ui::is_mouse_released(ui::MouseButton::Left)) {
                 state_ = State::WaitingForSecondPoint;
-                start_world_pos_ = maybe_mouseover->world_space_location;
+                start_world_pos_ = maybe_mouseover->world_position;
             }
             return;
         }
@@ -86,7 +86,7 @@ void osc::GuiRuler::on_draw(
             const Vec2 line_ui_direction = normalize(start_ui_pos - end_ui_pos);
             const Vec2 offset_vec = 15.0f * Vec2{line_ui_direction.y, -line_ui_direction.x};
             const Vec2 line_midpoint = (start_ui_pos + end_ui_pos) / 2.0f;
-            const float line_world_length = length(maybe_mouseover->world_space_location - start_world_pos_);
+            const float line_world_length = length(maybe_mouseover->world_position - start_world_pos_);
 
             draw_list.add_circle_filled({start_ui_pos, circle_radius}, circle_color);
             draw_list.add_line(start_ui_pos, end_ui_pos, line_color, line_thickness);

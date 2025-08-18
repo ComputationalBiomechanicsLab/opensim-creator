@@ -71,7 +71,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
     rv.fixup_scale_factor = fixupScaleFactor;
     rv.light_color = renderParams.lightColor;
     rv.background_color = renderParams.backgroundColor;
-    rv.floor_location = renderParams.floorLocation;
+    rv.floor_position = renderParams.floorLocation;
     return rv;
 }
 

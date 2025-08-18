@@ -647,11 +647,11 @@ Vec3 osc::PolarPerspectiveCamera::position() const
 }
 
 Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
-    const Vec3& world_space_location,
+    const Vec3& world_space_position,
     const Rect& viewport_rect) const
 {
     return osc::project_onto_viewport_rect(
-        world_space_location,
+        world_space_position,
         view_matrix(),
         projection_matrix(aspect_ratio_of(viewport_rect)),
         viewport_rect
@@ -1037,10 +1037,10 @@ Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
     Vec4 ray_origin_view = inverse(camera_proj_matrix) * ray_origin_ndc;
     ray_origin_view /= ray_origin_view.w;  // perspective divide
 
-    // location of mouse in world space
+    // position of mouse in world space
     const Vec3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
 
-    // direction vector from camera to mouse location (i.e. the projection)
+    // direction vector from camera position to mouse position (i.e. the projection)
     const Vec3 ray_direction_world = normalize(ray_origin_world - camera_world_space_origin);
 
     return Ray{
@@ -1079,12 +1079,12 @@ Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& vi
 }
 
 Vec2 osc::project_onto_viewport_rect(
-    const Vec3& world_space_location,
+    const Vec3& world_space_position,
     const Mat4& view_matrix,
     const Mat4& projection_matrix,
     const Rect& viewport_rect)
 {
-    Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_location, 1.0f};
+    Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_position, 1.0f};
     ndc /= ndc.w;  // perspective divide (clip space -> NDC)
 
     Vec2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down

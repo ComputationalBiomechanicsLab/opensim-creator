@@ -937,7 +937,7 @@ namespace
         case EventType::MouseMove: {
             const auto& move_event = dynamic_cast<const MouseEvent&>(e);
             io.AddMouseSourceEvent(move_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
-            io.AddMousePosEvent(move_event.location().x, io.DisplaySize.y - move_event.location().y);
+            io.AddMousePosEvent(move_event.position().x, io.DisplaySize.y - move_event.position().y);
             return true;
         }
         case EventType::MouseWheel: {
@@ -4165,9 +4165,9 @@ Rect osc::ui::plot::get_plot_ui_rect()
     return Rect::from_corners(top_left, top_left + Vec2{ImPlot::GetPlotSize()});
 }
 
-void osc::ui::plot::detail::draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)
+void osc::ui::plot::detail::draw_annotation_v(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)
 {
-    ImPlot::AnnotationV(location_dataspace.x, location_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
+    ImPlot::AnnotationV(position_dataspace.x, position_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
 }
 
 bool osc::ui::plot::drag_point(int id, Vec2d* plot_point, const Color& color, float size, DragToolFlags flags)

@@ -132,14 +132,14 @@ namespace osc
             std::swap(a.ptr_, b.ptr_);
         }
 
-        // returns a reference to the character at specified location `pos` if `pos <= size()`. Bounds checking
+        // returns a reference to the character at specified position `pos` if `pos <= size()`. Bounds checking
         // is performed, and an exception of type `std::out_of_range` will be thrown on invalid access
         const_reference at(size_type pos) const
         {
             return std::string_view{*this}.at(pos);
         }
 
-        // returns a reference to the character at the specified location `pos` if `pos < size()`, or a
+        // returns a reference to the character at the specified position `pos` if `pos < size()`, or a
         // reference to `value_type()` if `pos == size()`. No bounds checking is performed. If `pos > size()`
         // the behavior is undefined
         const_reference operator[](size_type pos) const

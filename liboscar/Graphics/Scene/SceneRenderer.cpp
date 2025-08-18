@@ -663,7 +663,7 @@ public:
                     scene_floor_material_.set("uHasShadowMap", false);
                 }
 
-                const Transform t = calc_floor_transform(params.floor_location, params.fixup_scale_factor);
+                const Transform t = calc_floor_transform(params.floor_position, params.fixup_scale_factor);
 
                 graphics::draw(quad_mesh_, t, scene_floor_material_, camera_);
             }

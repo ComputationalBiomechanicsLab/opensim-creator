@@ -6,7 +6,7 @@
 namespace osc
 {
     // a managed, reference-counted, watchable lifetime that's strongly tied
-    // to its location in memory (scope) - to the point that copying, moving,
+    // to its position in memory (scope) - to the point that copying, moving,
     // or assigning it resets the lifetime
     class ScopedLifetime final {
     public:

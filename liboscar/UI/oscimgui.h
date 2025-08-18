@@ -1326,13 +1326,13 @@ namespace osc::ui
         // - annotations are always rendered on top of the plot area
         namespace detail
         {
-            void draw_annotation_v(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args);
+            void draw_annotation_v(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args);
         }
-        inline void draw_annotation(Vec2 location_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, ...)
+        inline void draw_annotation(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
-            detail::draw_annotation_v(location_dataspace, color, pixel_offset, clamp, fmt, args);
+            detail::draw_annotation_v(position_dataspace, color, pixel_offset, clamp, fmt, args);
             va_end(args);
         }
 
@@ -1340,7 +1340,7 @@ namespace osc::ui
         // the plot area
         //
         // - returns `true` if the user has interacted with the point. In this
-        //   case, `plot_point` will be updated with user's interaction location
+        //   case, `plot_point` will be updated with user's interaction position
         //   in plot space.
         bool drag_point(
             int id,

@@ -65,7 +65,7 @@ namespace
 osc::ModelRendererParams::ModelRendererParams() :
     lightColor{SceneRendererParams::default_light_color()},
     backgroundColor{SceneRendererParams::default_background_color()},
-    floorLocation{SceneRendererParams::default_floor_location()},
+    floorLocation{SceneRendererParams::default_floor_position()},
     camera{create_camera_with_radius(5.0f)}
 {}
 

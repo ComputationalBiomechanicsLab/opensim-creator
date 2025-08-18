@@ -65,7 +65,7 @@ namespace osc
     //
     // - input point should have origin in top-left, Y goes down
     // - input point should have normalized range: (0, 0) is top-left, (+1, +1) is bottom-right
-    // - `camera_world_space_origin` is the location of the camera in world space
+    // - `camera_world_space_origin` is the position of the camera in world space
     // - `camera_view_matrix` transforms points from world space to view space
     // - `camera_proj_matrix` transforms points from view space to world space
     Ray perspective_unproject_topleft_normalized_pos_to_world(
@@ -80,10 +80,10 @@ namespace osc
     // by `viewport`.
     Rect ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport);
 
-    // returns the location where `world_space_location` would occur when projected via the
+    // returns the position where `world_space_position` would occur when projected via the
     // given `view_matrix` and `projection_matrix`es onto `viewport_rect`.
     Vec2 project_onto_viewport_rect(
-        const Vec3& world_space_location,
+        const Vec3& world_space_position,
         const Mat4& view_matrix,
         const Mat4& projection_matrix,
         const Rect& viewport_rect

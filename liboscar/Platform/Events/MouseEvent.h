@@ -35,9 +35,9 @@ namespace osc
         // pixels.
         Vec2 delta() const { return relative_delta_; }
 
-        // Returns the location of the mouse cursor in screen space and device-independent
+        // Returns the position of the mouse cursor in screen space and device-independent
         // pixels.
-        Vec2 location() const { return location_in_window_; }
+        Vec2 position() const { return position_in_window_; }
 
     private:
         explicit MouseEvent(
@@ -57,12 +57,12 @@ namespace osc
 
             Event{EventType::MouseMove},
             relative_delta_{relative_delta},
-            location_in_window_{position_in_window},
+            position_in_window_{position_in_window},
             input_source_{input_source}
         {}
 
         Vec2 relative_delta_;
-        Vec2 location_in_window_;
+        Vec2 position_in_window_;
         MouseInputSource input_source_ = MouseInputSource::Mouse;
         MouseButton button_ = MouseButton::None;
     };

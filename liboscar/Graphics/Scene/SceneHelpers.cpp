@@ -255,7 +255,7 @@ void osc::for_each_ray_collision_with_scene(
             out({
                 .decoration_id = decoration.id,
                 .decoration_index = static_cast<size_t>(scene_collision.id),
-                .world_space_location = maybe_triangle_collision->position,
+                .world_position = maybe_triangle_collision->position,
                 .world_distance_from_ray_origin = maybe_triangle_collision->distance,
             });
         }
@@ -296,12 +296,12 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
         // then perform a ray-triangle collision
         if (auto model_space_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(model_space_bvh_collision.id))) {
             // map it back into world space and check if it's closer
-            const Vec3 world_space_location = transform * model_space_triangle_collision->position;
-            const float distance = length(world_space_location - world_space_ray.origin);
+            const Vec3 world_space_position = transform * model_space_triangle_collision->position;
+            const float distance = length(world_space_position - world_space_ray.origin);
 
             if (not rv or rv->distance > distance) {
                 // if it's closer, update the return value
-                rv = RayCollision{distance, world_space_location};
+                rv = RayCollision{distance, world_space_position};
             }
         }
     });
