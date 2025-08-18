@@ -8,7 +8,12 @@
 
 namespace osc
 {
-    // vocabulary type to describe "two fixed endpoints with no 'gaps', including the endpoints themselves"
+    // Represents a 1D, axis-aligned, bounding segment along a single dimension in
+    // a caller-defined coordinate system. The bounding segment includes both the
+    // minimum and maximum endpoints (it is "closed").
+    //
+    // The 2D equivalent to a `ClosedInterval` is a `Rect`. The 3D equivalent is
+    // an `AABB`.
     template<typename T>
     requires std::equality_comparable<T> and std::totally_ordered<T>
     struct ClosedInterval final {

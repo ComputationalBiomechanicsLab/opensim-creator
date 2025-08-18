@@ -9,9 +9,12 @@
 
 namespace osc
 {
-    // Represents a 2D rectangle in a caller-defined coordinate system in which
-    // X always points towards the right, but Y can point either up (methods
-    // prefixed with `ypu_`) or down (methods prefixed with `ypd_`).
+    // Represents a 2D axis-aligned bounding box in a caller-defined coordinate
+    // system in which X always points towards the right, but Y can point either up
+    // (methods prefixed with `ypu_`) or down (methods prefixed with `ypd_`).
+    //
+    // The 1D equivalent to a `Rect` is a `ClosedInterval`. The 3D equivalent is an
+    // `AABB`.
     class Rect final {
     public:
         // Returns a `Rect` with an `origin` of `point` and an area of zero (i.e.

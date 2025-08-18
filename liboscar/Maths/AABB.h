@@ -6,7 +6,11 @@
 
 namespace osc
 {
-    // an axis-aligned bounding box (AABB) in 3D space
+    // Represents a 3D axis-aligned bounding box in a caller-defined
+    // coordinate system.
+    //
+    // The 1D equivalent to an `AABB` is a `ClosedInterval`. The 2D equivalent
+    // is a `Rect`.
     struct AABB final {
 
         friend bool operator==(const AABB&, const AABB&) = default;
