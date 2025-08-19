@@ -22,8 +22,8 @@
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
@@ -52,7 +52,7 @@ public:
         const auto raycastStartTime = PerfClock::now();
 
         const Rect r = ui::get_main_window_workspace_ui_rect();
-        const Vec2 d = r.dimensions();
+        const Vector2 d = r.dimensions();
         m_Ray = m_PolarCamera.unproject_topleft_position_to_world_ray(ui::get_mouse_ui_position() - r.ypd_top_left(), d);
 
         m_IsMousedOver = false;
@@ -165,7 +165,7 @@ private:
     std::chrono::microseconds m_RaycastDuration{0};
     PolarPerspectiveCamera m_PolarCamera;
     bool m_IsMousedOver = false;
-    Vec3 m_HitPos = {0.0f, 0.0f, 0.0f};
+    Vector3 m_HitPos = {0.0f, 0.0f, 0.0f};
     Ray m_Ray{};
 
     PerfPanel m_PerfPanel{&owner()};

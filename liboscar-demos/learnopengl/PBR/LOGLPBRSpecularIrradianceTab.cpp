@@ -12,14 +12,14 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -68,11 +68,11 @@ namespace
         material.set("uEquirectangularMap", hdr_texture);
         material.set_array(
             "uShadowMatrices",
-            calc_cubemap_view_proj_matrices(projection_matrix, Vec3{})
+            calc_cubemap_view_proj_matrices(projection_matrix, Vector3{})
         );
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(cubemap_render_target);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -99,11 +99,11 @@ namespace
         material.set("uEnvironmentMap", skybox);
         material.set_array(
             "uShadowMatrices",
-            calc_cubemap_view_proj_matrices(capture_projection, Vec3{})
+            calc_cubemap_view_proj_matrices(capture_projection, Vector3{})
         );
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `Cubemap` would make sense
@@ -131,7 +131,7 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/Prefilter.frag"),
         }};
         material.set("uEnvironmentMap", environment_map);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Camera camera;
 
@@ -154,7 +154,7 @@ namespace
             const float mip_roughness = static_cast<float>(mip)/static_cast<float>(max_mipmap_level);
             material.set("uRoughness", mip_roughness);
 
-            graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
+            graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
             camera.render_to(capture_render_texture);
             graphics::copy_texture(capture_render_texture, rv, mip);
         }
@@ -180,7 +180,7 @@ namespace
         camera.set_projection_matrix_override(identity<Matrix4x4>());
         camera.set_view_matrix_override(identity<Matrix4x4>());
 
-        graphics::draw(PlaneGeometry{{.dimensions = Vec2{2.0f}}}, identity<Transform>(), material, camera);
+        graphics::draw(PlaneGeometry{{.dimensions = Vector2{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(render_texture);
 
         Texture2D rv{
@@ -235,7 +235,7 @@ public:
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         output_render_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
         output_render_texture_.set_device_pixel_ratio(device_pixel_ratio);
@@ -268,7 +268,7 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
             pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
@@ -287,12 +287,12 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{1.0f, 1.0f, 1.0f});
 
-        for (const Vec3& pos : c_light_positions) {
+        for (const Vector3& pos : c_light_positions) {
             graphics::draw(
                 sphere_mesh_,
-                {.scale = Vec3{0.5f}, .translation = pos},
+                {.scale = Vector3{0.5f}, .translation = pos},
                 pbr_material_,
                 camera_
             );
@@ -338,7 +338,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/PBR/ibl_specular/Skybox.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
 

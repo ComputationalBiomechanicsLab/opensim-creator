@@ -266,11 +266,11 @@ TEST(CoordinateDirection, is_negated_WorksAsExpected)
 
 TEST(CoordinateDirection, vec_returns_expected_results)
 {
-    ASSERT_EQ(CoordinateDirection::x().vec(), Vec3(1.0f, 0.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::y().vec(), Vec3(0.0f, 1.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::z().vec(), Vec3(0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(CoordinateDirection::x().vec(), Vector3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::y().vec(), Vector3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::z().vec(), Vector3(0.0f, 0.0f, 1.0f));
 
-    ASSERT_EQ(CoordinateDirection::minus_x().vec(), Vec3(-1.0f, 0.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::minus_y().vec(), Vec3(0.0f, -1.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::minus_z().vec(), Vec3(0.0f, 0.0f, -1.0f));
+    ASSERT_EQ(CoordinateDirection::minus_x().vec(), Vector3(-1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_y().vec(), Vector3(0.0f, -1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_z().vec(), Vector3(0.0f, 0.0f, -1.0f));
 }

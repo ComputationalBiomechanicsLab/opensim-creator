@@ -15,7 +15,7 @@ namespace osc
     };
 
     template<>
-    struct OutputExtractorDataTypeTraits<OutputExtractorDataType::Vec2> {
+    struct OutputExtractorDataTypeTraits<OutputExtractorDataType::Vector2> {
         static inline constexpr bool is_numeric = true;
     };
 

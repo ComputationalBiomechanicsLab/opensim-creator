@@ -30,9 +30,9 @@ osc::SphereGeometry::SphereGeometry(const Params& p)
     std::vector<std::vector<uint32_t>> grid;
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     // generate vertices, normals, and uvs
     for (size_t iy = 0; iy <= num_height_segments; ++iy) {
@@ -51,7 +51,7 @@ osc::SphereGeometry::SphereGeometry(const Params& p)
         for (size_t ix = 0; ix <= num_width_segments; ++ix) {
             const float u = static_cast<float>(ix) / fnum_width_segments;
 
-            const Vec3& vertex = vertices.emplace_back(
+            const Vector3& vertex = vertices.emplace_back(
                 -p.radius * cos(p.phi_start   + u*p.phi_length)    * sin(p.theta_start + v*p.theta_length),
                  p.radius * cos(p.theta_start + v*p.theta_length),
                  p.radius * sin(p.phi_start   + u*p.phi_length)    * sin(p.theta_start + v*p.theta_length)

@@ -31,8 +31,8 @@ namespace
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.1f, 0.1f};
         const AABB bounds = {{-5.0f, -2.0f, -5.0f}, {5.0f, 2.0f, 5.0f}};
-        const Vec3 dims = dimensions_of(bounds);
-        const Vec3uz num_cells = {10, 3, 10};
+        const Vector3 dims = dimensions_of(bounds);
+        const Vector3uz num_cells = {10, 3, 10};
 
         std::vector<TransformedMesh> rv;
         rv.reserve(num_cells.x * num_cells.y * num_cells.z);
@@ -41,7 +41,7 @@ namespace
             for (size_t y = 0; y < num_cells.y; ++y) {
                 for (size_t z = 0; z < num_cells.z; ++z) {
 
-                    const Vec3 pos = bounds.min + dims * (Vec3{x, y, z} / Vec3{num_cells - 1uz});
+                    const Vector3 pos = bounds.min + dims * (Vector3{x, y, z} / Vector3{num_cells - 1uz});
 
                     Mesh mesh;
                     rgs::sample(geometries, &mesh, 1, rng);
@@ -49,7 +49,7 @@ namespace
                     rv.push_back(TransformedMesh{
                         .mesh = mesh,
                         .transform = {
-                            .scale = Vec3{dist(rng)},
+                            .scale = Vector3{dist(rng)},
                             .translation = pos,
                         }
                     });
@@ -126,7 +126,7 @@ public:
         }
         graphics::draw(
             SphereGeometry{},
-            {.scale = Vec3{0.1f}, .translation = user_camera_.position()},
+            {.scale = Vector3{0.1f}, .translation = user_camera_.position()},
             material_,
             top_down_camera_,
             green_material_props_

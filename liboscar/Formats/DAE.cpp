@@ -6,9 +6,9 @@
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/TransformFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Strings.h>
 
@@ -131,14 +131,14 @@ namespace
         return rv;
     }
 
-    std::span<const float> to_float_span(std::span<const Vec2> vec2_span)
+    std::span<const float> to_float_span(std::span<const Vector2> vector2_span)
     {
-        return {value_ptr(vec2_span[0]), 2 * vec2_span.size()};
+        return {value_ptr(vector2_span[0]), 2 * vector2_span.size()};
     }
 
-    std::span<const float> to_float_span(std::span<const Vec3> vec3_span)
+    std::span<const float> to_float_span(std::span<const Vector3> vector3_span)
     {
-        return {value_ptr(vec3_span[0]), 3 * vec3_span.size()};
+        return {value_ptr(vector3_span[0]), 3 * vector3_span.size()};
     }
 
     std::span<const float> to_float_span(const Color& v)

@@ -8,7 +8,7 @@
 #include <libopensimcreator/UI/Shared/ParamBlockEditorPopup.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
@@ -39,7 +39,7 @@ public:
 
     void onDraw()
     {
-        if (BeginToolbar(name(), Vec2{5.0f, 5.0f})) {
+        if (BeginToolbar(name(), Vector2{5.0f, 5.0f})) {
             drawContent();
         }
         ui::end_panel();

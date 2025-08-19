@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/RayCollision.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 
@@ -12,7 +12,7 @@ namespace osc
 
         BVHCollision(
             float distance_,
-            const Vec3& position_,
+            const Vector3& position_,
             ptrdiff_t id_) :
 
             RayCollision{distance_, position_},

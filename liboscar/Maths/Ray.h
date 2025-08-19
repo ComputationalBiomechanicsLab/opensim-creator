@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <iosfwd>
 
@@ -11,8 +11,8 @@ namespace osc
     // - see `LineSegment` for the finite version of this
     // - sometimes called `Ray` in the literature
     struct Ray final {
-        Vec3 origin{};
-        Vec3 direction = {0.0f, 1.0f, 0.0f};
+        Vector3 origin{};
+        Vector3 direction = {0.0f, 1.0f, 0.0f};
     };
 
     std::ostream& operator<<(std::ostream&, const Ray&);

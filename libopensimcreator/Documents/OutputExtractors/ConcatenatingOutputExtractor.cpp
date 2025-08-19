@@ -28,7 +28,7 @@ namespace
         const OutputExtractorDataType bType = b.getOutputType();
 
         if (aType == OutputExtractorDataType::Float && bType == OutputExtractorDataType::Float) {
-            return OutputExtractorDataType::Vec2;
+            return OutputExtractorDataType::Vector2;
         }
         else {
             return OutputExtractorDataType::String;
@@ -39,7 +39,7 @@ namespace
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
 
-        if (concatenatedType == OutputExtractorDataType::Vec2) {
+        if (concatenatedType == OutputExtractorDataType::Vector2) {
             std::stringstream ss;
             ss << a.getName() << " vs. " << b.getName();
             return std::move(ss).str();
@@ -66,13 +66,13 @@ OutputValueExtractor osc::ConcatenatingOutputExtractor::implGetOutputValueExtrac
 {
     static_assert(num_options<OutputExtractorDataType>() == 3);
 
-    if (m_OutputType == OutputExtractorDataType::Vec2) {
+    if (m_OutputType == OutputExtractorDataType::Vector2) {
         auto extractor = [lhs = m_First.getOutputValueExtractor(comp), rhs = m_Second.getOutputValueExtractor(comp)](const SimulationReport& report)
         {
             const auto lv = to<float>(lhs(report));
             const auto rv = to<float>(rhs(report));
 
-            return Variant{Vec2{lv, rv}};
+            return Variant{Vector2{lv, rv}};
         };
         return OutputValueExtractor{std::move(extractor)};
     }

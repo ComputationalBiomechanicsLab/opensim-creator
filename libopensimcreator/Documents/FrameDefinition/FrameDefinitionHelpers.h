@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/CustomComponents/EdgePoints.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/Transform.h>
@@ -33,7 +33,7 @@ namespace osc::fd
     SimTK::Vec3 CalcLocationInFrame(
         const OpenSim::Frame&,
         const SimTK::State&,
-        const Vec3& locationInGround
+        const Vector3& locationInGround
     );
 
     // sets the appearance of `geometry` (SimTK) from `appearance` (OpenSim)

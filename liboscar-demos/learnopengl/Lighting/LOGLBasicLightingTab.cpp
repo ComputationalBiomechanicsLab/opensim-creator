@@ -71,7 +71,7 @@ public:
 
         // render auxiliary UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("light pos", light_transform_.translation);
+        ui::draw_vector3_input("light pos", light_transform_.translation);
         ui::draw_float_input("ambient strength", &ambient_strength_);
         ui::draw_float_input("diffuse strength", &diffuse_strength_);
         ui::draw_float_input("specular strength", &specular_strength_);
@@ -98,7 +98,7 @@ private:
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
     Transform light_transform_ = {
-        .scale = Vec3{0.2f},
+        .scale = Vector3{0.2f},
         .translation = {1.2f, 1.0f, 2.0f},
     };
     Color object_color_ = {1.0f, 0.5f, 0.31f, 1.0f};

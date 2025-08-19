@@ -11,7 +11,7 @@ using namespace osc;
 namespace
 {
     // world space positions of each cube (step 2)
-    constexpr auto c_cube_positions = std::to_array<Vec3>({
+    constexpr auto c_cube_positions = std::to_array<Vector3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
         {-1.5f, -2.2f, -2.5f },
@@ -89,7 +89,7 @@ public:
     void on_tick()
     {
         const double dt = App::get().frame_delta_since_startup().count();
-        step1_transform_.rotation = angle_axis(50_deg * dt, normalize(Vec3{0.5f, 1.0f, 0.0f}));
+        step1_transform_.rotation = angle_axis(50_deg * dt, normalize(Vector3{0.5f, 1.0f, 0.0f}));
     }
 
     void on_draw()
@@ -110,7 +110,7 @@ private:
             graphics::draw(mesh_, step1_transform_, material_, camera_);
         }
         else {
-            const Vec3 axis = normalize(Vec3{1.0f, 0.3f, 0.5f});
+            const Vector3 axis = normalize(Vector3{1.0f, 0.3f, 0.5f});
 
             for (size_t i = 0; i < c_cube_positions.size(); ++i) {
                 graphics::draw(
@@ -136,7 +136,7 @@ private:
             ui::draw_text("mouse captured (esc to uncapture)");
         }
 
-        const Vec3 camera_position = camera_.position();
+        const Vector3 camera_position = camera_.position();
         ui::draw_text("camera pos = (%f, %f, %f)", camera_position.x, camera_position.y, camera_position.z);
         const EulerAngles camera_eulers = camera_.eulers();
         ui::draw_text("camera eulers = (%f, %f, %f)", camera_eulers.x.count(), camera_eulers.y.count(), camera_eulers.z.count());

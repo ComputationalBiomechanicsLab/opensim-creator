@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <utility>
 
@@ -20,7 +20,7 @@ namespace osc
 
         const Texture2D& texture() const { return texture_; }
 
-        Vec2 dimensions() const { return texture_.dimensions(); }
+        Vector2 dimensions() const { return texture_.dimensions(); }
 
         const Rect& texture_coordinates() const { return texture_coordinates_; }
 

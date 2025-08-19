@@ -10,9 +10,9 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
@@ -139,9 +139,9 @@ namespace
     void DrawColoredDimensionHintVerticalLine(const Color& color)
     {
         ui::DrawListView l = ui::get_panel_draw_list();
-        const Vec2 p = ui::get_cursor_ui_position();
+        const Vector2 p = ui::get_cursor_ui_position();
         const float h = ui::get_text_line_height_in_current_panel() + 2.0f*ui::get_style_frame_padding().y + 2.0f*ui::get_style_frame_border_size();
-        const Vec2 dims = Vec2{4.0f, h};
+        const Vector2 dims = Vector2{4.0f, h};
         l.add_rect_filled(Rect::from_corners(p, p + dims), color);
         ui::set_cursor_ui_position({p.x + 4.0f, p.y});
     }
@@ -294,7 +294,7 @@ namespace
 
     std::string GenerateVecFrameAnnotationLabel(
         const OpenSim::AbstractProperty& backingProperty,
-        Vec3::size_type ithDimension)
+        Vector3::size_type ithDimension)
     {
         std::stringstream ss;
         ss << "ObjectPropertiesEditor::Vec3/";
@@ -740,14 +740,14 @@ namespace
                 m_PropertyToEditedTransform{std::move(propertyToEditedTransform_)}
             {}
 
-            Vec3 propertyValueToEditedValue(const Vec3& propertyValue) const
+            Vector3 propertyValueToEditedValue(const Vector3& propertyValue) const
             {
-                return to<Vec3>(static_cast<double>(m_PropertyToEditedValueScaler) * (m_PropertyToEditedTransform * to<SimTK::Vec3>(propertyValue)));
+                return to<Vector3>(static_cast<double>(m_PropertyToEditedValueScaler) * (m_PropertyToEditedTransform * to<SimTK::Vec3>(propertyValue)));
             }
 
-            Vec3 editedValueToPropertyValue(const Vec3& editedValue) const
+            Vector3 editedValueToPropertyValue(const Vector3& editedValue) const
             {
-                return to<Vec3>(m_PropertyToEditedTransform.invert() * to<SimTK::Vec3>(editedValue/m_PropertyToEditedValueScaler));
+                return to<Vector3>(m_PropertyToEditedTransform.invert() * to<SimTK::Vec3>(editedValue/m_PropertyToEditedValueScaler));
             }
         private:
             float m_PropertyToEditedValueScaler;
@@ -965,12 +965,12 @@ namespace
             // read stored value from edited property
             //
             // care: optional properties have size==0, so perform a range check
-            const Vec3 rawValue = to<Vec3>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
-            const Vec3 editedValue = valueConverter.propertyValueToEditedValue(rawValue);
+            const Vector3 rawValue = to<Vector3>(idx < m_EditedProperty.size() ? m_EditedProperty.getValue(idx) : SimTK::Vec3{0.0});
+            const Vector3 editedValue = valueConverter.propertyValueToEditedValue(rawValue);
 
             // draw an editor for each component of the Vec3
             bool shouldSave = false;
-            for (Vec3::size_type i = 0; i < 3; ++i) {
+            for (Vector3::size_type i = 0; i < 3; ++i) {
                 const ComponentEditorReturn componentEditorRv = drawVec3ComponentEditor(idx, i, editedValue, valueConverter);
                 shouldSave = shouldSave or componentEditorRv == ComponentEditorReturn::ShouldSave;
             }
@@ -988,8 +988,8 @@ namespace
         // draws float input for a single component of the Vec3 (e.g. vec.x)
         ComponentEditorReturn drawVec3ComponentEditor(
             int idx,
-            Vec3::size_type i,
-            Vec3 editedValue,
+            Vector3::size_type i,
+            Vector3 editedValue,
             const ValueConverter& valueConverter)
         {
             ui::push_id(i);
@@ -1003,7 +1003,7 @@ namespace
 
             if (drawRV.wasEdited) {
                 // un-convert the value on save
-                const Vec3 savedValue = valueConverter.editedValueToPropertyValue(editedValue);
+                const Vector3 savedValue = valueConverter.editedValueToPropertyValue(editedValue);
                 m_EditedProperty.setValue(idx, to<SimTK::Vec3>(savedValue));
             }
 

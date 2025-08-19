@@ -9,7 +9,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Station.h>
 
 #include <liboscar/Graphics/MeshFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
 #include <array>
@@ -17,7 +17,7 @@
 
 using osc::mi::MIClass;
 using osc::mi::SceneElVariant;
-using osc::Vec3;
+using osc::Vector3;
 
 bool osc::mi::CanAttachMeshTo(const MIObject& e)
 {
@@ -56,14 +56,14 @@ const std::array<MIClass, std::variant_size_v<SceneElVariant>>& osc::mi::GetScen
     return s_Classes;
 }
 
-Vec3 osc::mi::AverageCenter(const Mesh& el)
+Vector3 osc::mi::AverageCenter(const Mesh& el)
 {
-    const Vec3 centerpointInModelSpace = average_centroid_of(el.getMeshData());
+    const Vector3 centerpointInModelSpace = average_centroid_of(el.getMeshData());
     return el.getXForm() * centerpointInModelSpace;
 }
 
-Vec3 osc::mi::mass_center_of(const Mesh& el)
+Vector3 osc::mi::mass_center_of(const Mesh& el)
 {
-    const Vec3 massCenterInModelSpace = mass_center_of(el.getMeshData());
+    const Vector3 massCenterInModelSpace = mass_center_of(el.getMeshData());
     return el.getXForm() * massCenterInModelSpace;
 }

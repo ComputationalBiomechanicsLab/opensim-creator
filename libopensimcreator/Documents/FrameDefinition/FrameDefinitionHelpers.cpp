@@ -7,7 +7,7 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -28,7 +28,7 @@ using namespace osc;
 SimTK::Vec3 osc::fd::CalcLocationInFrame(
     const OpenSim::Frame& frame,
     const SimTK::State& state,
-    const Vec3& locationInGround)
+    const Vector3& locationInGround)
 {
     const auto translationInGround = to<SimTK::Vec3>(locationInGround);
     return frame.getTransformInGround(state).invert() * translationInGround;

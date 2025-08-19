@@ -6,7 +6,7 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <string_view>
 
@@ -22,7 +22,7 @@ namespace osc
         CustomRenderingOptions renderingOptions;
         Color lightColor;
         Color backgroundColor;
-        Vec3 floorLocation;
+        Vector3 floorLocation;
         PolarPerspectiveCamera camera;
     };
 

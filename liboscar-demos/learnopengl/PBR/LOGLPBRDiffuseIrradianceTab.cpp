@@ -11,14 +11,14 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -65,11 +65,11 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/EquirectangularToCubemap.frag"),
         }};
         material.set("uEquirectangularMap", hdr_texture);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(projection_matrix, Vector3{}));
 
         Camera camera;
         graphics::draw(
-            BoxGeometry{{.dimensions = Vec3{2.0f}}},
+            BoxGeometry{{.dimensions = Vector3{2.0f}}},
             identity<Transform>(),
             material,
             camera
@@ -98,10 +98,10 @@ namespace
             loader.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/Convolution.frag"),
         }};
         material.set("uEnvironmentMap", skybox);
-        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vec3{}));
+        material.set_array("uShadowMatrices", calc_cubemap_view_proj_matrices(capture_projection, Vector3{}));
 
         Camera camera;
-        graphics::draw(BoxGeometry{{.dimensions = Vec3{2.0f}}}, identity<Transform>(), material, camera);
+        graphics::draw(BoxGeometry{{.dimensions = Vector3{2.0f}}}, identity<Transform>(), material, camera);
         camera.render_to(irradiance_cubemap);
 
         // TODO: some way of copying it into an `osc::Cubemap` would make sense
@@ -172,7 +172,7 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
             pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
@@ -191,10 +191,10 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{1.0f, 1.0f, 1.0f});
 
-        for (const Vec3& light_positions : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .translation = light_positions}, pbr_material_, camera_);
+        for (const Vector3& light_positions : c_light_positions) {
+            graphics::draw(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_positions}, pbr_material_, camera_);
         }
     }
 
@@ -235,7 +235,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/PBR/diffuse_irradiance/Background.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Material pbr_material_ = create_material(loader_);
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 64, .num_height_segments = 64}};
     MouseCapturingCamera camera_ = create_camera();

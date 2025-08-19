@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/CoordinateAxis.h>
 #include <liboscar/Maths/Negative.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstdint>
 #include <optional>
@@ -112,7 +112,7 @@ namespace osc
     // writes the `CoordinateDirection` to the ouptut stream in a human-readable form (e.g. "x", "-x")
     std::ostream& operator<<(std::ostream&, CoordinateDirection);
 
-    // returns the equivalent `CoordinateDirection` that `cross(normalize(Vec3{x}), normalize(Vec3{y}))` would point along,
+    // returns the equivalent `CoordinateDirection` that `cross(normalize(Vector3{x}), normalize(Vector3{y}))` would point along,
     // or `x` if both `x` and `y` point along the same axis (i.e. have a zero cross product)
     constexpr CoordinateDirection cross(CoordinateDirection x, CoordinateDirection y)
     {

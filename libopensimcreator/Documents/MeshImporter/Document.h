@@ -179,7 +179,7 @@ namespace osc::mi
             return getByID(id).getXForm(*this);
         }
 
-        Vec3 getPosByID(UID id) const
+        Vector3 getPosByID(UID id) const
         {
             return getByID(id).getPos(*this);
         }

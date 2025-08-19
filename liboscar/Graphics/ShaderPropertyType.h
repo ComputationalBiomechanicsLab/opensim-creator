@@ -8,9 +8,9 @@ namespace osc
     // data type of a material-assignable property parsed from the shader code
     enum class ShaderPropertyType {
         Float,
-        Vec2,
-        Vec3,
-        Vec4,
+        Vector2,
+        Vector3,
+        Vector4,
         Mat3,
         Mat4,
         Int,

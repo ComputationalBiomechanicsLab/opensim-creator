@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Quaternion.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <ostream>
 
@@ -10,7 +10,7 @@ namespace osc
     // packaged-up SQT transform (scale -> rotate -> translate)
     struct Transform final {
 
-        constexpr Transform with_translation(const Vec3& new_translation) const
+        constexpr Transform with_translation(const Vector3& new_translation) const
         {
             return Transform{.scale = scale, .rotation = rotation, .translation = new_translation};
         }
@@ -20,25 +20,25 @@ namespace osc
             return Transform{.scale = scale, .rotation = new_rotation, .translation = translation};
         }
 
-        constexpr Transform with_scale(const Vec3& new_scale) const
+        constexpr Transform with_scale(const Vector3& new_scale) const
         {
             return Transform{.scale = new_scale, .rotation = rotation, .translation = translation};
         }
 
         constexpr Transform with_scale(float new_scale) const
         {
-            return Transform{.scale = Vec3{new_scale}, .rotation = rotation, .translation = translation};
+            return Transform{.scale = Vector3{new_scale}, .rotation = rotation, .translation = translation};
         }
 
         friend bool operator==(const Transform&, const Transform&) = default;
 
-        Vec3 scale{1.0f};
+        Vector3 scale{1.0f};
         Quaternion rotation{};
-        Vec3 translation{};
+        Vector3 translation{};
     };
 
     // applies the transform to a point vector (equivalent to `transform_point`)
-    constexpr Vec3 operator*(const Transform& transform, Vec3 point)
+    constexpr Vector3 operator*(const Transform& transform, Vector3 point)
     {
         point *= transform.scale;
         point  = transform.rotation * point;

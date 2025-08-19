@@ -38,8 +38,8 @@
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Log.h>
@@ -344,15 +344,15 @@ namespace osc::mi
         // UI OVERLAY STUFF
         //
 
-        Vec2 worldPosToScreenPos(const Vec3& worldPos) const
+        Vector2 worldPosToScreenPos(const Vector3& worldPos) const
         {
             return getCamera().project_onto_viewport(worldPos, get3DSceneRect());
         }
 
         void drawConnectionLine(
             const Color& color,
-            const Vec3& parent,
-            const Vec3& child) const
+            const Vector3& parent,
+            const Vector3& child) const
         {
             // the line
             ui::get_panel_draw_list().add_line(worldPosToScreenPos(parent), worldPosToScreenPos(child), color, c_ConnectionLineWidth);
@@ -489,7 +489,7 @@ namespace osc::mi
             return m_3DSceneRect;
         }
 
-        Vec2 get3DSceneDims() const
+        Vector2 get3DSceneDims() const
         {
             return m_3DSceneRect.dimensions();
         }
@@ -509,7 +509,7 @@ namespace osc::mi
             m_3DSceneCamera = CreateDefaultCamera();
         }
 
-        void focusCameraOn(const Vec3& focusPoint)
+        void focusCameraOn(const Vector3& focusPoint)
         {
             m_3DSceneCamera.focus_point = -focusPoint;
         }
@@ -568,8 +568,8 @@ namespace osc::mi
                 .groupId = MIIDs::Empty(),
                 .mesh = App::singleton<SceneCache>(App::resource_loader())->grid_mesh(),
                 .transform = {
-                    .scale = 0.5f * Vec3{m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
-                    .rotation = angle_axis(90_deg, Vec3{-1.0f, 0.0f, 0.0f}),
+                    .scale = 0.5f * Vector3{m_SceneScaleFactor * 100.0f, m_SceneScaleFactor * 100.0f, 1.0f},
+                    .rotation = angle_axis(90_deg, Vector3{-1.0f, 0.0f, 0.0f}),
                 },
                 .shading = std::pair<Material, MaterialPropertyBlock>{m_FloorMaterial, props},
                 .flags = SceneDecorationFlag::AnnotationElement,
@@ -612,7 +612,7 @@ namespace osc::mi
             auto cache = App::singleton<SceneCache>(App::resource_loader());
 
             const Rect sceneRect = get3DSceneRect();
-            const Vec2 mouseUiPosition = ui::get_mouse_ui_position();
+            const Vector2 mouseUiPosition = ui::get_mouse_ui_position();
 
             if (!is_intersecting(sceneRect, mouseUiPosition))
             {
@@ -620,8 +620,8 @@ namespace osc::mi
                 return MeshImporterHover{};
             }
 
-            const Vec2 sceneDims = sceneRect.dimensions();
-            const Vec2 relMousePos = mouseUiPosition - sceneRect.ypd_top_left();
+            const Vector2 sceneDims = sceneRect.dimensions();
+            const Vector2 relMousePos = mouseUiPosition - sceneRect.ypd_top_left();
 
             const Ray ray = getCamera().unproject_topleft_position_to_world_ray(relMousePos, sceneDims);
             const bool hittestMeshes = isMeshesInteractable();
@@ -678,7 +678,7 @@ namespace osc::mi
                 }
             }
 
-            const Vec3 hitPos = closestID != MIIDs::Empty() ? ray.origin + closestDist*ray.direction : Vec3{};
+            const Vector3 hitPos = closestID != MIIDs::Empty() ? ray.origin + closestDist*ray.direction : Vector3{};
 
             return MeshImporterHover{closestID, hitPos};
         }
@@ -957,28 +957,28 @@ namespace osc::mi
 
         void drawConnectionLineTriangleAtMidpoint(
             const Color& color,
-            const Vec3& parent,
-            const Vec3& child) const
+            const Vector3& parent,
+            const Vector3& child) const
         {
             constexpr float triangleWidth = 6.0f * c_ConnectionLineWidth;
             constexpr float triangleWidthSquared = triangleWidth*triangleWidth;
 
-            const Vec2 parentScr = worldPosToScreenPos(parent);
-            const Vec2 childScr = worldPosToScreenPos(child);
-            const Vec2 child2ParentScr = parentScr - childScr;
+            const Vector2 parentScr = worldPosToScreenPos(parent);
+            const Vector2 childScr = worldPosToScreenPos(child);
+            const Vector2 child2ParentScr = parentScr - childScr;
 
             if (dot(child2ParentScr, child2ParentScr) < triangleWidthSquared) {
                 return;
             }
 
-            const Vec3 mp = midpoint(parent, child);
-            const Vec2 midpointScr = worldPosToScreenPos(mp);
-            const Vec2 directionScr = normalize(child2ParentScr);
-            const Vec2 directionNormalScr = {-directionScr.y, directionScr.x};
+            const Vector3 mp = midpoint(parent, child);
+            const Vector2 midpointScr = worldPosToScreenPos(mp);
+            const Vector2 directionScr = normalize(child2ParentScr);
+            const Vector2 directionNormalScr = {-directionScr.y, directionScr.x};
 
-            const Vec2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
-            const Vec2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
-            const Vec2 p3 = midpointScr + triangleWidth*directionScr;
+            const Vector2 p1 = midpointScr + (triangleWidth/2.0f)*directionNormalScr;
+            const Vector2 p2 = midpointScr - (triangleWidth/2.0f)*directionNormalScr;
+            const Vector2 p3 = midpointScr + triangleWidth*directionScr;
 
             ui::get_panel_draw_list().add_triangle_filled(p1, p2, p3, color);
         }
@@ -1005,8 +1005,8 @@ namespace osc::mi
                     continue;
                 }
 
-                Vec3 child = el.getPos(mg);
-                Vec3 parent = other->getPos(mg);
+                Vector3 child = el.getPos(mg);
+                Vector3 parent = other->getPos(mg);
 
                 if (el.getCrossReferenceDirection(i) == CrossrefDirection::ToChild)
                 {
@@ -1029,7 +1029,7 @@ namespace osc::mi
                 return;
             }
 
-            drawConnectionLine(color, Vec3{}, el.getPos(getModelGraph()));
+            drawConnectionLine(color, Vector3{}, el.getPos(getModelGraph()));
         }
 
         bool shouldShowConnectionLines(const MIObject& el) const
@@ -1188,7 +1188,7 @@ namespace osc::mi
             return 0.02f * m_SceneScaleFactor;
         }
 
-        Sphere sphereAtTranslation(const Vec3& translation) const
+        Sphere sphereAtTranslation(const Vector3& translation) const
         {
             return Sphere{translation, getSphereRadius()};
         }
@@ -1200,7 +1200,7 @@ namespace osc::mi
             std::vector<DrawableThing>& appendOut,
             float alpha = 1.0f,
             SceneDecorationFlags flags = SceneDecorationFlag::Default,
-            Vec3 legLen = {1.0f, 1.0f, 1.0f},
+            Vector3 legLen = {1.0f, 1.0f, 1.0f},
             Color coreColor = Color::white()) const
         {
             const float coreRadius = getSphereRadius();
@@ -1215,7 +1215,7 @@ namespace osc::mi
                 .groupId = groupID,
                 .mesh = m_SphereMesh,
                 .transform = {
-                    .scale = Vec3{coreRadius},
+                    .scale = Vector3{coreRadius},
                     .rotation = xform.rotation,
                     .translation = xform.translation,
                 },
@@ -1232,8 +1232,8 @@ namespace osc::mi
                 // - 4.0f * leglen[leg] * radius long
                 // - 0.5f * radius thick
 
-                const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
-                Vec3 cylinderDirection = {};
+                const Vector3 meshDirection = {0.0f, 1.0f, 0.0f};
+                Vector3 cylinderDirection = {};
                 cylinderDirection[i] = 1.0f;
 
                 const float actualLegLen = 4.0f * legLen[i] * coreRadius;
@@ -1281,8 +1281,8 @@ namespace osc::mi
                 // cone mesh has a source height of 2, stretches from -1 to +1 in Y
                 const float coneHeight = 0.75f * halfWidth;
 
-                const Vec3 meshDirection = {0.0f, 1.0f, 0.0f};
-                const Vec3 coneDirection = Vec3{}.with_element(i, 1.0f);
+                const Vector3 meshDirection = {0.0f, 1.0f, 0.0f};
+                const Vector3 coneDirection = Vector3{}.with_element(i, 1.0f);
 
                 const Quaternion rot = xform.rotation * rotation(meshDirection, coneDirection);
 
@@ -1291,7 +1291,7 @@ namespace osc::mi
                     .groupId = groupID,
                     .mesh = App::singleton<SceneCache>(App::resource_loader())->cone_mesh(),
                     .transform = {
-                        .scale = 0.5f * Vec3{halfWidth, coneHeight, halfWidth},
+                        .scale = 0.5f * Vector3{halfWidth, coneHeight, halfWidth},
                         .rotation = rot,
                         .translation = xform.translation + (rot * ((halfWidth + (0.5f * coneHeight)) * meshDirection)),
                     },
@@ -1407,7 +1407,7 @@ namespace osc::mi
         Transform SphereMeshToSceneSphereTransform(const Sphere& sceneSphere) const
         {
             return {
-                .scale = Vec3{sceneSphere.radius},
+                .scale = Vector3{sceneSphere.radius},
                 .translation = sceneSphere.origin,
             };
         }

@@ -1,7 +1,7 @@
 #include "CoordinateAxis.h"
 
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StringHelpers.h>
 
 #include <gtest/gtest.h>

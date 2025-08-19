@@ -29,9 +29,9 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/UI/oscimgui.h>
@@ -69,8 +69,8 @@ namespace osc
         {
             // compute top-level UI variables (render rect, mouse position, etc.)
             const Rect contentRect = ui::get_content_region_available_ui_rect();
-            const Vec2 contentRectDims = contentRect.dimensions();
-            const Vec2 mousePos = ui::get_mouse_ui_position();
+            const Vector2 contentRectDims = contentRect.dimensions();
+            const Vector2 mousePos = ui::get_mouse_ui_position();
 
             // un-project mouse's (2D) location into the 3D scene as a ray
             const Ray cameraRay = m_Camera.unproject_topleft_position_to_world_ray(mousePos - contentRect.ypd_top_left(), contentRectDims);
@@ -152,7 +152,7 @@ namespace osc
             std::optional<MeshWarpingTabHover>& closest,
             const TPSDocumentLandmarkPair& landmark) const
         {
-            const std::optional<Vec3> maybePos = GetLocation(landmark, m_DocumentIdentifier);
+            const std::optional<Vector3> maybePos = GetLocation(landmark, m_DocumentIdentifier);
             if (!maybePos) {
                 return;  // landmark doesn't have a source/destination
             }
@@ -205,7 +205,7 @@ namespace osc
 
         // renders this panel's 3D scene to a texture
         RenderTexture& renderScene(
-            Vec2 dims,
+            Vector2 dims,
             const std::optional<RayCollision>& maybeMeshCollision,
             const std::optional<MeshWarpingTabHover>& maybeLandmarkCollision)
         {
@@ -271,7 +271,7 @@ namespace osc
             const TPSDocumentLandmarkPair& landmarkPair,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
-            const std::optional<Vec3> location = GetLocation(landmarkPair, m_DocumentIdentifier);
+            const std::optional<Vector3> location = GetLocation(landmarkPair, m_DocumentIdentifier);
             if (not location) {
                 return;  // no source/destination location for the landmark
             }
@@ -279,7 +279,7 @@ namespace osc
             const Color color = IsFullyPaired(landmarkPair) ? m_State->getPairedLandmarkColor() : m_State->getUnpairedLandmarkColor();
             SceneDecoration decoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform = {.scale = Vec3{m_LandmarkRadius}, .translation = *location},
+                .transform = {.scale = Vector3{m_LandmarkRadius}, .translation = *location},
                 .shading = color,
             };
 
@@ -315,7 +315,7 @@ namespace osc
             SceneDecoration decoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
                 .transform = {
-                    .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
+                    .scale = Vector3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                     .translation = npl.location,
                 },
                 .shading = color,
@@ -333,7 +333,7 @@ namespace osc
         }
 
         void generateDecorationsForMouseOverMeshHover(
-            const Vec3& meshCollisionPosition,
+            const Vector3& meshCollisionPosition,
             const std::function<void(SceneDecoration&&)>& decorationConsumer) const
         {
             const bool nonParticipating = isUserPlacingNonParticipatingLandmark();
@@ -348,7 +348,7 @@ namespace osc
 
             decorationConsumer(SceneDecoration{
                 .mesh = m_State->getLandmarkSphereMesh(),
-                .transform = {.scale = Vec3{radius}, .translation = meshCollisionPosition},
+                .transform = {.scale = Vector3{radius}, .translation = meshCollisionPosition},
                 .shading = color.with_alpha(0.8f),  // faded
             });
         }

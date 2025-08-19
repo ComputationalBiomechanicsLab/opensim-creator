@@ -97,7 +97,7 @@ private:
     void draw_3d_scene()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Vec2 workspace_screen_space_top_left = workspace_screen_space_rect.ypu_top_left();
+        const Vector2 workspace_screen_space_top_left = workspace_screen_space_rect.ypu_top_left();
         constexpr float depth_overlay_size = 200.0f;
 
         render_shadows_to_depth_texture();
@@ -117,8 +117,8 @@ private:
         graphics::blit_to_main_window(
             depth_texture_,
             Rect::from_corners(
-                workspace_screen_space_top_left - Vec2{0.0f, depth_overlay_size},
-                workspace_screen_space_top_left + Vec2{depth_overlay_size, 0.0f}
+                workspace_screen_space_top_left - Vector2{0.0f, depth_overlay_size},
+                workspace_screen_space_top_left + Vector2{depth_overlay_size, 0.0f}
             )
         );
 
@@ -133,21 +133,21 @@ private:
         // cubes
         graphics::draw(
             cube_mesh_,
-            {.scale = Vec3{0.5f}, .translation = {0.0f, 1.0f, 0.0f}},
+            {.scale = Vector3{0.5f}, .translation = {0.0f, 1.0f, 0.0f}},
             material,
             camera_
         );
         graphics::draw(
             cube_mesh_,
-            {.scale = Vec3{0.5f}, .translation = {2.0f, 0.0f, 1.0f}},
+            {.scale = Vector3{0.5f}, .translation = {2.0f, 0.0f, 1.0f}},
             material,
             camera_
         );
         graphics::draw(
             cube_mesh_,
             Transform{
-                .scale = Vec3{0.25f},
-                .rotation = angle_axis(60_deg, normalize(Vec3{1.0f, 0.0f, 1.0f})),
+                .scale = Vector3{0.25f},
+                .rotation = angle_axis(60_deg, normalize(Vector3{1.0f, 0.0f, 1.0f})),
                 .translation = {-1.0f, 0.0f, 2.0f},
             },
             material,
@@ -159,7 +159,7 @@ private:
     {
         const float znear = 1.0f;
         const float zfar = 7.5f;
-        const Matrix4x4 light_view_matrix = look_at(light_pos_, Vec3{0.0f}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 light_view_matrix = look_at(light_pos_, Vector3{0.0f}, {0.0f, 1.0f, 0.0f});
         const Matrix4x4 light_projection_matrix = ortho(-10.0f, 10.0f, -10.0f, 10.0f, znear, zfar);
         latest_light_space_matrix_ = light_projection_matrix * light_view_matrix;
 
@@ -178,7 +178,7 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Mesh plane_mesh_ = generate_learnopengl_plane_mesh();
     Material scene_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/shadow_mapping/Scene.vert"),
@@ -190,7 +190,7 @@ private:
     }};
     RenderTexture depth_texture_ = create_depth_texture();
     Matrix4x4 latest_light_space_matrix_ = identity<Matrix4x4>();
-    Vec3 light_pos_ = {-2.0f, 4.0f, -1.0f};
+    Vector3 light_pos_ = {-2.0f, 4.0f, -1.0f};
 };
 
 CStringView osc::LOGLShadowMappingTab::id() { return Impl::static_label(); }

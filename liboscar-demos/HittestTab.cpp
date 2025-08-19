@@ -13,7 +13,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_triangle_vertices = std::to_array<Vec3>({
+    constexpr auto c_triangle_vertices = std::to_array<Vector3>({
         {-10.0f, -10.0f, 0.0f},
         {+0.0f, +10.0f, 0.0f},
         {+10.0f, -10.0f, 0.0f},
@@ -21,11 +21,11 @@ namespace
 
     struct SceneSphere final {
 
-        explicit SceneSphere(Vec3 pos_) :
+        explicit SceneSphere(Vector3 pos_) :
             pos{pos_}
         {}
 
-        Vec3 pos;
+        Vector3 pos;
         bool is_hovered = false;
     };
 
@@ -39,7 +39,7 @@ namespace
         for (int32_t x = min; x <= max; x += step) {
             for (int32_t y = min; y <= max; y += step) {
                 for (int32_t z = min; z <= max; z += step) {
-                    rv.emplace_back(Vec3{
+                    rv.emplace_back(Vector3{
                         static_cast<float>(x),
                         50.0f + 2.0f*static_cast<float>(y),
                         static_cast<float>(z),

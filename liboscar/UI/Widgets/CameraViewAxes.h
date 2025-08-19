@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 namespace osc { struct PolarPerspectiveCamera; }
 
@@ -8,7 +8,7 @@ namespace osc
 {
     class CameraViewAxes final {
     public:
-        Vec2 dimensions() const;
+        Vector2 dimensions() const;
         bool draw(PolarPerspectiveCamera&);
     };
 }

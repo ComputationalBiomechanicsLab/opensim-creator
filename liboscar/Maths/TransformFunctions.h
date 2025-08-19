@@ -11,8 +11,8 @@
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <stdexcept>
 
@@ -90,8 +90,8 @@ namespace osc
     // - uses matrix decomposition to break up the provided matrix
     inline bool try_decompose_to_transform(const Matrix4x4& m, Transform& out)
     {
-        Vec3 skew;
-        Vec4 perspective;
+        Vector3 skew;
+        Vector4 perspective;
         return decompose(m, out.scale, out.rotation, out.translation, skew, perspective);
     }
 
@@ -112,7 +112,7 @@ namespace osc
     // returns a unit-length vector that is the equivalent of the provided direction vector after applying the transform
     //
     // effectively, apply the Transform but ignore the `position` (translation) component
-    inline Vec3 transform_direction(const Transform& transform, const Vec3& direction)
+    inline Vector3 transform_direction(const Transform& transform, const Vector3& direction)
     {
         return normalize(transform.rotation * (transform.scale * direction));
     }
@@ -120,19 +120,19 @@ namespace osc
     // returns a unit-length vector that is the equivalent of the provided direction vector after applying the inverse of the transform
     //
     // effectively, apply the inverse transform but ignore the `position` (translation) component
-    inline Vec3 inverse_transform_direction(const Transform& transform, const Vec3& direction)
+    inline Vector3 inverse_transform_direction(const Transform& transform, const Vector3& direction)
     {
         return normalize((conjugate(transform.rotation) * direction) / transform.scale);
     }
 
     // returns a vector that is the equivalent of the provided vector after applying the transform
-    constexpr Vec3 transform_point(const Transform& transform, Vec3 point)
+    constexpr Vector3 transform_point(const Transform& transform, Vector3 point)
     {
         return transform * point;
     }
 
     // returns a vector that is the equivalent of the provided vector after applying the inverse of the transform
-    constexpr Vec3 inverse_transform_point(const Transform& transform, Vec3 point)
+    constexpr Vector3 inverse_transform_point(const Transform& transform, Vector3 point)
     {
         point -= transform.translation;
         point = conjugate(transform.rotation) * point;
@@ -175,10 +175,10 @@ namespace osc
     // in the original transform, will instead point along the new direction
     inline Transform point_axis_along(
         const Transform& transform,
-        Vec3::size_type axis_index,
-        const Vec3& new_direction)
+        Vector3::size_type axis_index,
+        const Vector3& new_direction)
     {
-        Vec3 old_direction{};
+        Vector3 old_direction{};
         old_direction[axis_index] = 1.0f;
         old_direction = transform.rotation * old_direction;
 
@@ -195,8 +195,8 @@ namespace osc
     // transform such that the given axis points towards a point in the same space"
     inline Transform point_axis_towards(
         const Transform& transform,
-        Vec3::size_type axis_index,
-        const Vec3& position)
+        Vector3::size_type axis_index,
+        const Vector3& position)
     {
         return point_axis_along(transform, axis_index, normalize(position - transform.translation));
     }
@@ -205,10 +205,10 @@ namespace osc
     // the given number of radians
     inline Transform rotate_axis(
         const Transform& transform,
-        Vec3::size_type axis_index,
+        Vector3::size_type axis_index,
         Radians angle)
     {
-        Vec3 ax{};
+        Vector3 ax{};
         ax[axis_index] = 1.0f;
         ax = transform.rotation * ax;
 

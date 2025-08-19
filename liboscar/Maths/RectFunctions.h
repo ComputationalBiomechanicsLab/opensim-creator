@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <concepts>
 #include <functional>
@@ -20,13 +20,13 @@ namespace osc
     }
 
     // returns a `Rect` that tightly bounds `x` (i.e. a `Rect` with an area of zero)
-    constexpr Rect bounding_rect_of(const Vec2& x)
+    constexpr Rect bounding_rect_of(const Vector2& x)
     {
         return Rect::from_point(x);
     }
 
     // returns a `Rect` that tightly bounds `x` and `y`
-    inline Rect bounding_rect_of(const Rect& x, const Vec2& y)
+    inline Rect bounding_rect_of(const Rect& x, const Vector2& y)
     {
         const auto corners = x.corners();
         return Rect::from_corners(elementwise_min(corners.min, y), elementwise_max(corners.max, y));
@@ -43,12 +43,12 @@ namespace osc
         );
     }
 
-    // returns a `Rect` that tightly bounds the `Vec2`s projected from `r`
+    // returns a `Rect` that tightly bounds the `Vector2`s projected from `r`
     template<
         std::ranges::input_range R,
         typename Proj = std::identity
     >
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vec2&>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector2&>
     constexpr Rect bounding_rect_of(R&& r, Proj proj = {})
     {
         auto it = std::ranges::begin(r);
@@ -68,5 +68,5 @@ namespace osc
     Rect bounding_rect_of(const Circle& circle);
 
     // returns a `Rect` that has its bounds clamped between `min` and `max` (inclusive)
-    Rect clamp(const Rect&, const Vec2& min, const Vec2& max);
+    Rect clamp(const Rect&, const Vector2& min, const Vector2& max);
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc
 {
@@ -8,12 +8,12 @@ namespace osc
 
         RayCollision() = default;
 
-        RayCollision(float distance_, const Vec3& position_) :
+        RayCollision(float distance_, const Vector3& position_) :
             distance{distance_},
             position{position_}
         {}
 
         float distance{};
-        Vec3 position{};
+        Vector3 position{};
     };
 }

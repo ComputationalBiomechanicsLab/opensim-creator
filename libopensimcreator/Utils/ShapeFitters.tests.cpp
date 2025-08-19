@@ -15,7 +15,7 @@
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <array>
 #include <cstddef>
@@ -33,7 +33,7 @@ TEST(FitSphere, ReturnsUnitSphereWhenGivenAnEmptyMesh)
     const Sphere sphereFit = FitSphere(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(sphereFit.origin, Vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(sphereFit.origin, Vector3(0.0f, 0.0f, 0.0f));
     ASSERT_EQ(sphereFit.radius, 1.0f);
 }
 
@@ -43,7 +43,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenAUnitSphereMesh)
     const Mesh sphereMesh = SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}};
     const Sphere sphereFit = FitSphere(sphereMesh);
 
-    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, Vec3{}, 0.000001f)));
+    ASSERT_TRUE(all_of(equal_within_absdiff(sphereFit.origin, Vector3{}, 0.000001f)));
     ASSERT_TRUE(equal_within_absdiff(sphereFit.radius, 1.0f, 0.000001f));
 }
 
@@ -51,7 +51,7 @@ TEST(FitSphere, ReturnsRoughlyExpectedParametersWhenGivenATransformedSphere)
 {
     const Transform t = {
         .scale = {3.25f, 3.25f, 3.25f},  // keep it spherical
-        .rotation = angle_axis(45_deg, normalize(Vec3{1.0f, 1.0f, 0.0f})),
+        .rotation = angle_axis(45_deg, normalize(Vector3{1.0f, 1.0f, 0.0f})),
         .translation = {7.0f, 3.0f, 1.5f},
     };
 
@@ -103,8 +103,8 @@ TEST(FitPlane, ReturnsUnitPlanePointingUpInYIfGivenAnEmptyMesh)
     const Plane planeFit = FitPlane(emptyMesh);
 
     ASSERT_FALSE(emptyMesh.has_vertices());
-    ASSERT_EQ(planeFit.origin, Vec3(0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(planeFit.normal, Vec3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(planeFit.origin, Vector3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(planeFit.normal, Vector3(0.0f, 1.0f, 0.0f));
 }
 
 // reproduction: ensure the C++ rewrite produces similar results to:
@@ -165,14 +165,14 @@ TEST(FitPlane, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgor
 TEST(FitEllipsoid, ReturnsRoughlyTheSameAnswerForFemoralHeadAsOriginalPublishedAlgorithm)
 {
     // this hard-coded result comes from running the provided `Femoral_head.obj` through the shape fitter script
-    constexpr Vec3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
-    constexpr Vec3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
+    constexpr Vector3 c_ExpectedOrigin = {4.41627617443540f, -28.2484366502307f, 165.041246898544f};
+    constexpr Vector3 c_ExpectedRadii = {9.39508101198322f,   8.71324627349633f,  6.71387132216324f};
     // OSC change: the _signs_ of these direction vectors might be different from the MATLAB script because
     // OSC's implementation also gurantees that the vectors are right-handed
-    constexpr auto c_ExpectedRadiiDirections = std::to_array<Vec3>({
-        Vec3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
-        Vec3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
-        Vec3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
+    constexpr auto c_ExpectedRadiiDirections = std::to_array<Vector3>({
+        Vector3{0.387689357308333f, 0.744763303086706f, -0.543161656052074f},
+        Vector3{0.343850708787853f, 0.429871105312056f, 0.834851796957929},
+        Vector3{0.855256483340491f, -0.510429677030215f, -0.0894309371016929f},
     });
     constexpr float c_MaximumAbsoluteError = 0.0001f;
 
@@ -198,8 +198,8 @@ TEST(FitEllipsoid, ThrowsErrorIfGivenLessThan9Points)
         Radians phi{0.0f};
         const float radius = 1.0f;
 
-        std::vector<Vec3> vertices(n);
-        for (Vec3& vertex : vertices) {
+        std::vector<Vector3> vertices(n);
+        for (Vector3& vertex : vertices) {
             vertex.x = radius * sin(theta) * cos(phi);
             vertex.y = radius * sin(theta);
             vertex.z = radius * cos(theta) * cos(phi);

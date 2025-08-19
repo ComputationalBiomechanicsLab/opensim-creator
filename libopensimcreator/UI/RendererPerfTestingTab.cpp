@@ -15,7 +15,7 @@
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/UI/oscimgui.h>

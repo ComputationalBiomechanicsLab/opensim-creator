@@ -3,8 +3,8 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Ray.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc { struct AABB; }
 namespace osc { class Rect; }
@@ -26,11 +26,11 @@ namespace osc
         //      have a delta.x of 0.5f
 
         // pan: pan along the current view plane
-        void pan(float aspect_ratio, Vec2 mouse_delta);
+        void pan(float aspect_ratio, Vector2 mouse_delta);
 
         // drag: spin the view around the origin, such that the distance between
         //       the camera and the origin remains constant
-        void drag(Vec2 mouse_delta);
+        void drag(Vector2 mouse_delta);
 
         // autoscale znear and zfar based on the camera's distance from what it's looking at
         //
@@ -45,19 +45,19 @@ namespace osc
 
         // uses this camera's transform to project a world space point
         // onto the given viewport rectangle.
-        Vec2 project_onto_viewport(const Vec3& world_space_position, const Rect& viewport_rect) const;
+        Vector2 project_onto_viewport(const Vector3& world_space_position, const Rect& viewport_rect) const;
 
-        Vec3 position() const;
+        Vector3 position() const;
 
         // converts a `pos` (top-left) in the output `dimensions` into a `Ray` in world space by unprojection
-        Ray unproject_topleft_position_to_world_ray(Vec2 pos, Vec2 dimensions) const;
+        Ray unproject_topleft_position_to_world_ray(Vector2 pos, Vector2 dimensions) const;
 
         friend bool operator==(const PolarPerspectiveCamera&, const PolarPerspectiveCamera&) = default;
 
         float radius;
         Radians theta;
         Radians phi;
-        Vec3 focus_point;
+        Vector3 focus_point;
         Radians vertical_field_of_view;
         float znear;
         float zfar;
@@ -65,7 +65,7 @@ namespace osc
 
     PolarPerspectiveCamera create_camera_with_radius(float);
     PolarPerspectiveCamera create_camera_focused_on(const AABB&);
-    Vec3 recommended_light_direction(const PolarPerspectiveCamera&);
+    Vector3 recommended_light_direction(const PolarPerspectiveCamera&);
     void focus_along_axis(PolarPerspectiveCamera&, size_t, bool negate = false);
     void focus_along_x(PolarPerspectiveCamera&);
     void focus_along_minus_x(PolarPerspectiveCamera&);

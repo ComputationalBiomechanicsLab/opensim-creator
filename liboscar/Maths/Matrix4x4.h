@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Matrix.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <cstddef>
 #include <cstdint>

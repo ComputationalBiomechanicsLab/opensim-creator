@@ -22,10 +22,10 @@ namespace osc
             m_Type{OutputExtractorDataType::Float}
         {}
 
-        ConstantOutputExtractor(std::string_view name, Vec2 value) :
+        ConstantOutputExtractor(std::string_view name, Vector2 value) :
             m_Name{name},
             m_Value{value},
-            m_Type{OutputExtractorDataType::Vec2}
+            m_Type{OutputExtractorDataType::Vector2}
         {}
 
         friend bool operator==(const ConstantOutputExtractor&, const ConstantOutputExtractor&) = default;

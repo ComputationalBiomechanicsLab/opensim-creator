@@ -8,7 +8,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 
 #include <iosfwd>
@@ -120,8 +120,8 @@ namespace osc
         void set_scissor_rect(std::optional<Rect>);
 
         // get/set the world space position of this `Camera`
-        Vec3 position() const;
-        void set_position(const Vec3&);
+        Vector3 position() const;
+        void set_position(const Vector3&);
 
         // get/set the orientation of this `Camera`
         //
@@ -140,11 +140,11 @@ namespace osc
         //       Therefore, if you want to "roll" the camera (i.e. where `+Y` isn't "up"), you
         //       should directly manipulate the rotation of this camera, rather than trying to
         //       play with this method.
-        Vec3 direction() const;
-        void set_direction(const Vec3&);
+        Vector3 direction() const;
+        void set_direction(const Vector3&);
 
         // returns the "up" direction of this camera
-        Vec3 upwards_direction() const;
+        Vector3 upwards_direction() const;
 
         // returns the matrix that this camera uses to transform world space points into
         // view space

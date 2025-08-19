@@ -30,7 +30,7 @@ namespace
             ColorSpace::sRGB
         );
 
-        const Vec2i texture_dimensions = face_texture.pixel_dimensions();
+        const Vector2i texture_dimensions = face_texture.pixel_dimensions();
         OSC_ASSERT(texture_dimensions.x == texture_dimensions.y);
 
         // load all face data into the cubemap
@@ -211,7 +211,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Cubemaps/Skybox.frag"),
     }};
-    Mesh skybox_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh skybox_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     Cubemap cubemap_ = load_cubemap(loader_);
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();

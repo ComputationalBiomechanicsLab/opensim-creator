@@ -4,7 +4,7 @@
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <gtest/gtest.h>
 
@@ -23,7 +23,7 @@ TEST(SceneCache, get_bvh_on_empty_mesh_returns_empty_bvh)
 
 TEST(SceneCache, get_bvh_on_nonempty_mesh_returns_expected_root_node)
 {
-    constexpr auto pyramid_vertices = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle

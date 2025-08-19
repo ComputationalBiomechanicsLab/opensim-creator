@@ -5,7 +5,7 @@
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Matrix.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/HashHelpers.h>
 
 #include <cstddef>

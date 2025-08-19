@@ -9,7 +9,7 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>
 
@@ -108,21 +108,21 @@ namespace osc::mi
             implSetXform(lookup, newTransform);
         }
 
-        Vec3 getPos(const IObjectFinder& lookup) const
+        Vector3 getPos(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).translation;
         }
-        void setPos(const IObjectFinder& lookup, const Vec3& newPos)
+        void setPos(const IObjectFinder& lookup, const Vector3& newPos)
         {
             setXform(lookup, getXForm(lookup).with_translation(newPos));
         }
 
-        Vec3 getScale(const IObjectFinder& lookup) const
+        Vector3 getScale(const IObjectFinder& lookup) const
         {
             return getXForm(lookup).scale;
         }
 
-        void setScale(const IObjectFinder& lookup, const Vec3& newScale)
+        void setScale(const IObjectFinder& lookup, const Vector3& newScale)
         {
             setXform(lookup, getXForm(lookup).with_scale(newScale));
         }
@@ -142,7 +142,7 @@ namespace osc::mi
             return implCalcBounds(lookup);
         }
 
-        void applyTranslation(const IObjectFinder& lookup, const Vec3& translation)
+        void applyTranslation(const IObjectFinder& lookup, const Vector3& translation)
         {
             setPos(lookup, getPos(lookup) + translation);
         }
@@ -150,10 +150,10 @@ namespace osc::mi
         void applyRotation(
             const IObjectFinder& lookup,
             const EulerAngles& eulerAngles,
-            const Vec3& rotationCenter
+            const Vector3& rotationCenter
         );
 
-        void applyScale(const IObjectFinder& lookup, const Vec3& scaleFactors)
+        void applyScale(const IObjectFinder& lookup, const Vector3& scaleFactors)
         {
             setScale(lookup, getScale(lookup) * scaleFactors);
         }

@@ -6,7 +6,7 @@
 #include <liboscar/Graphics/TextureFilterMode.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Graphics/TextureWrapMode.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 
 #include <cstdint>
@@ -21,12 +21,12 @@ namespace osc
     public:
         // Constructs a `Texture2D` that contains a single pixel.
         Texture2D() :
-            Texture2D{Vec2i{1, 1}}
+            Texture2D{Vector2i{1, 1}}
         {}
 
         // Constructs a `Texture2D` with the given `pixel_dimensions`.
         explicit Texture2D(
-            Vec2i pixel_dimensions,
+            Vector2i pixel_dimensions,
             TextureFormat = TextureFormat::RGBA32,
             ColorSpace = ColorSpace::sRGB,
             TextureWrapMode = TextureWrapMode::Repeat,
@@ -34,12 +34,12 @@ namespace osc
         );
 
         // Returns the dimensions of the texture in physical pixels.
-        Vec2i pixel_dimensions() const;
+        Vector2i pixel_dimensions() const;
 
         // Returns the dimensions of the texture in device-independent pixels.
         //
         // Effectively, returns the equivalent of `texture.pixel_dimensions() / texture.device_pixel_ratio()`.
-        Vec2 dimensions() const;
+        Vector2 dimensions() const;
 
         // Returns the ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels. This is useful

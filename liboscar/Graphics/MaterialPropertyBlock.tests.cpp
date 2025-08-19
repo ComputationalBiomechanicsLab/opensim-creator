@@ -4,8 +4,8 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/testing/TestingHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 
@@ -25,7 +25,7 @@ namespace
 {
     Texture2D generate_red_texture()
     {
-        Texture2D rv{Vec2i{2, 2}};
+        Texture2D rv{Vector2i{2, 2}};
         rv.set_pixels(std::vector<Color>(4, Color::red()));
         return rv;
     }
@@ -123,16 +123,16 @@ TEST(MaterialPropertyBlock, get_float_returns_nullopt_on_default_constructed)
     ASSERT_FALSE(mpb.get<float>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, get_Vec3_returns_nullopt_on_default_constructed)
+TEST(MaterialPropertyBlock, get_Vector3_returns_nullopt_on_default_constructed)
 {
     const MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Vec3>("someKey"));
+    ASSERT_FALSE(mpb.get<Vector3>("someKey"));
 }
 
-TEST(MaterialPropertyBlock, get_Vec4_returns_nullopt_on_default_constructed)
+TEST(MaterialPropertyBlock, get_Vector4_returns_nullopt_on_default_constructed)
 {
     const MaterialPropertyBlock mpb;
-    ASSERT_FALSE(mpb.get<Vec4>("someKey"));
+    ASSERT_FALSE(mpb.get<Vector4>("someKey"));
 }
 
 TEST(MaterialPropertyBlock, get_Matrix3x3_returns_nullopt_on_default_constructed)
@@ -172,30 +172,30 @@ TEST(MaterialPropertyBlock, set_float_causes_get_float_to_return_the_float)
     ASSERT_EQ(mpb.get<float>(key), value);
 }
 
-TEST(MaterialPropertyBlock, set_Vec3_causes_get_Vec3_to_return_the_Vec3)
+TEST(MaterialPropertyBlock, set_Vector3_causes_get_Vector3_to_return_the_Vector3)
 {
     MaterialPropertyBlock mpb;
     const std::string key = "someKey";
-    const Vec3 value = generate<Vec3>();
+    const Vector3 value = generate<Vector3>();
 
-    ASSERT_FALSE(mpb.get<Vec3>(key));
+    ASSERT_FALSE(mpb.get<Vector3>(key));
 
-    mpb.set<Vec3>(key, value);
-    ASSERT_TRUE(mpb.get<Vec3>(key));
-    ASSERT_EQ(mpb.get<Vec3>(key), value);
+    mpb.set<Vector3>(key, value);
+    ASSERT_TRUE(mpb.get<Vector3>(key));
+    ASSERT_EQ(mpb.get<Vector3>(key), value);
 }
 
-TEST(MaterialPropertyBlock, set_Vec4_causes_get_Vec4_to_return_the_Vec4)
+TEST(MaterialPropertyBlock, set_Vector4_causes_get_Vector4_to_return_the_Vector4)
 {
     MaterialPropertyBlock mpb;
     const std::string key = "someKey";
-    const Vec4 value = generate<Vec4>();
+    const Vector4 value = generate<Vector4>();
 
-    ASSERT_FALSE(mpb.get<Vec4>(key));
+    ASSERT_FALSE(mpb.get<Vector4>(key));
 
-    mpb.set<Vec4>(key, value);
-    ASSERT_TRUE(mpb.get<Vec4>(key));
-    ASSERT_EQ(mpb.get<Vec4>(key), value);
+    mpb.set<Vector4>(key, value);
+    ASSERT_TRUE(mpb.get<Vector4>(key));
+    ASSERT_EQ(mpb.get<Vector4>(key), value);
 }
 
 TEST(MaterialPropertyBlock, set_Matrix3x3_causes_get_Mat3_to_return_the_Mat3)
@@ -204,7 +204,7 @@ TEST(MaterialPropertyBlock, set_Matrix3x3_causes_get_Mat3_to_return_the_Mat3)
     const std::string key = "someKey";
     const Matrix3x3 value = generate<Matrix3x3>();
 
-    ASSERT_FALSE(mpb.get<Vec4>(key));
+    ASSERT_FALSE(mpb.get<Vector4>(key));
 
     mpb.set<Matrix3x3>(key, value);
     ASSERT_TRUE(mpb.get<Matrix3x3>(key));

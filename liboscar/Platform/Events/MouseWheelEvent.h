@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/EventType.h>
 #include <liboscar/Platform/MouseInputSource.h>
@@ -11,7 +11,7 @@ namespace osc
     // on a touch screen) event.
     class MouseWheelEvent final : public Event {
     public:
-        explicit MouseWheelEvent(Vec2 delta, MouseInputSource input_source) :
+        explicit MouseWheelEvent(Vector2 delta, MouseInputSource input_source) :
             Event{EventType::MouseWheel},
             delta_{delta},
             input_source_{input_source}
@@ -22,9 +22,9 @@ namespace osc
         // Returns the "delta" introduced by the wheel event. With typical
         // mouse wheels, this almost always translates to `{0.0f, -1.0f}`
         // when scrolling down and `{0.0f, +1.0f}` when scrolling up.
-        Vec2 delta() const { return delta_; }
+        Vector2 delta() const { return delta_; }
     private:
-        Vec2 delta_;
+        Vector2 delta_;
         MouseInputSource input_source_ = MouseInputSource::TouchScreen;
     };
 }

@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Utils/LandmarkPair3D.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <concepts>
@@ -17,8 +17,8 @@ namespace osc
     public:
         MaybeNamedLandmarkPair(
             std::string name_,
-            std::optional<Vec3> maybeSourcePosition,
-            std::optional<Vec3> maybeDestinationPosition) :
+            std::optional<Vector3> maybeSourcePosition,
+            std::optional<Vector3> maybeDestinationPosition) :
 
             m_Name{std::move(name_)},
             m_MaybeSourcePosition{maybeSourcePosition},
@@ -44,10 +44,10 @@ namespace osc
             }
         }
 
-        void setDestination(std::optional<Vec3> p) { m_MaybeDestinationPosition = p; }
+        void setDestination(std::optional<Vector3> p) { m_MaybeDestinationPosition = p; }
     private:
         std::string m_Name;
-        std::optional<Vec3> m_MaybeSourcePosition;
-        std::optional<Vec3> m_MaybeDestinationPosition;
+        std::optional<Vector3> m_MaybeSourcePosition;
+        std::optional<Vector3> m_MaybeDestinationPosition;
     };
 }

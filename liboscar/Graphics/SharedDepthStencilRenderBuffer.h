@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <memory>
 
@@ -56,7 +56,7 @@ namespace osc
         SharedDepthStencilRenderBuffer clone() const;
 
         // Returns the dimensions of the buffer in physical pixels.
-        Vec2i pixel_dimensions() const;
+        Vector2i pixel_dimensions() const;
         TextureDimensionality dimensionality() const;
         AntiAliasingLevel anti_aliasing_level() const;
         DepthStencilRenderBufferFormat format() const;

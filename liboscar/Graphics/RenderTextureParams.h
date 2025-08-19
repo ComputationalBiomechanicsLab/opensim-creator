@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/ColorRenderBufferFormat.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <iosfwd>
 
@@ -14,7 +14,7 @@ namespace osc
         friend bool operator==(const RenderTextureParams&, const RenderTextureParams&) = default;
 
         // The dimensions of the texture in physical pixels.
-        Vec2i pixel_dimensions = {1, 1};
+        Vector2i pixel_dimensions = {1, 1};
 
         // The ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels.

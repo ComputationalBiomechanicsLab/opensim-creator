@@ -7,8 +7,8 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <memory>
@@ -48,7 +48,7 @@ public:
 
     void onDraw()
     {
-        if (BeginToolbar(m_Label, Vec2{5.0f, 5.0f})) {
+        if (BeginToolbar(m_Label, Vector2{5.0f, 5.0f})) {
             drawContent();
         }
         ui::end_panel();

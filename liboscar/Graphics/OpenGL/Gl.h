@@ -5,10 +5,10 @@
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
+#include <liboscar/Maths/VectorFunctions.h>
 
 #include <glad/glad.h>
 
@@ -406,25 +406,25 @@ namespace osc::gl
         glUniformMatrix3fv(uniform.geti(), 1, false, value_ptr(mat));
     }
 
-    inline void set_uniform(UniformVec4& uniform, const Vec4& vec)
+    inline void set_uniform(UniformVec4& uniform, const Vector4& vec)
     {
         glUniform4fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void set_uniform(UniformVec3& uniform, const Vec3& vec)
+    inline void set_uniform(UniformVec3& uniform, const Vector3& vec)
     {
         glUniform3fv(uniform.geti(), 1, value_ptr(vec));
     }
 
-    inline void set_uniform(UniformVec3& uniform, std::span<const Vec3> vectors)
+    inline void set_uniform(UniformVec3& uniform, std::span<const Vector3> vectors)
     {
-        static_assert(sizeof(Vec3) == 3 * sizeof(GLfloat));
+        static_assert(sizeof(Vector3) == 3 * sizeof(GLfloat));
         glUniform3fv(uniform.geti(), static_cast<GLsizei>(vectors.size()), value_ptr(vectors.front()));
     }
 
-    // set a uniform array of vec3s from a userspace container type (e.g. vector<Vec3>)
+    // set a uniform array of vec3s from a userspace container type (e.g. `std::vector<Vector3>`)
     template<std::ranges::contiguous_range R, size_t N>
-    requires std::same_as<typename R::value_type, Vec3>
+    requires std::same_as<typename R::value_type, Vector3>
     inline void set_uniform(UniformArray<glsl::vec3, N>& uniform, R& range)
     {
         OSC_ASSERT(std::ranges::size(range) == N);
@@ -442,14 +442,14 @@ namespace osc::gl
         glUniformMatrix4fv(uniform.geti(), static_cast<GLsizei>(matrices.size()), false, value_ptr(matrices.front()));
     }
 
-    inline void set_uniform(UniformVec2& u, const Vec2& v)
+    inline void set_uniform(UniformVec2& u, const Vector2& v)
     {
         glUniform2fv(u.geti(), 1, value_ptr(v));
     }
 
-    inline void set_uniform(UniformVec2& uniform, std::span<const Vec2> vectors)
+    inline void set_uniform(UniformVec2& uniform, std::span<const Vector2> vectors)
     {
-        static_assert(sizeof(Vec2) == 2 * sizeof(GLfloat));
+        static_assert(sizeof(Vector2) == 2 * sizeof(GLfloat));
 
         glUniform2fv(
             uniform.geti(),
@@ -459,7 +459,7 @@ namespace osc::gl
     }
 
     template<std::ranges::contiguous_range R, size_t N>
-    requires std::same_as<typename R::value_type, Vec2>
+    requires std::same_as<typename R::value_type, Vector2>
     void set_uniform(UniformArray<glsl::vec2, N>& uniform, const R& range)
     {
         glUniform2fv(
@@ -1054,7 +1054,7 @@ namespace osc::gl
         glClearColor(red, green, blue, alpha);
     }
 
-    inline void clear_color(const Vec4& v)
+    inline void clear_color(const Vector4& v)
     {
         clear_color(v[0], v[1], v[2], v[3]);
     }

@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 #include <libopensimcreator/Documents/MeshImporter/UndoableDocument.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 
 #include <optional>
@@ -42,8 +42,8 @@ namespace osc::mi
         UndoableDocument&,
         UID id,
         int axis,
-        Vec3 p1,
-        Vec3 p2
+        Vector3 p1,
+        Vector3 p2
     );
 
     bool TryOrientObjectAxisAlongTwoObjects(
@@ -57,8 +57,8 @@ namespace osc::mi
     bool TryTranslateObjectBetweenTwoPoints(
         UndoableDocument&,
         UID id,
-        const Vec3&,
-        const Vec3&
+        const Vector3&,
+        const Vector3&
     );
 
     bool TryTranslateBetweenTwoObjects(
@@ -123,7 +123,7 @@ namespace osc::mi
 
     UID AddBody(
         UndoableDocument&,
-        const Vec3&,
+        const Vector3&,
         UID andTryAttach
     );
 
@@ -134,13 +134,13 @@ namespace osc::mi
     bool AddStationAtLocation(
         UndoableDocument&,
         const MIObject& obj,
-        const Vec3&
+        const Vector3&
     );
 
     bool AddStationAtLocation(
         UndoableDocument&,
         UID attachment,
-        const Vec3&
+        const Vector3&
     );
 
     void ActionImportLandmarks(

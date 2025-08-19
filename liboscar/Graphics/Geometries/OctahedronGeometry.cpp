@@ -18,7 +18,7 @@ namespace
         //
         // https://threejs.org/docs/#api/en/geometries/OctahedronGeometry
 
-        constexpr auto vertices = std::to_array<Vec3>({
+        constexpr auto vertices = std::to_array<Vector3>({
             {1.0f,  0.0f, 0.0f}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f,  0.0f},
             {0.0f, -1.0f, 0.0f}, { 0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, -1.0f},
         });

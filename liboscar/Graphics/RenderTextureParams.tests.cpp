@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/ColorRenderBufferFormat.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/StringHelpers.h>
 
 #include <gtest/gtest.h>

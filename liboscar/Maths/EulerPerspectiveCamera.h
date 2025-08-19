@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc
 {
@@ -12,13 +12,13 @@ namespace osc
 
         EulerPerspectiveCamera();
 
-        Vec3 front() const;
-        Vec3 up() const;
-        Vec3 right() const;
+        Vector3 front() const;
+        Vector3 up() const;
+        Vector3 right() const;
         Matrix4x4 view_matrix() const;
         Matrix4x4 projection_matrix(float aspect_ratio) const;
 
-        Vec3 origin = {};
+        Vector3 origin = {};
         Radians pitch = Degrees{0};
         Radians yaw = Degrees{180};
         Radians vertical_field_of_view = Degrees{35};

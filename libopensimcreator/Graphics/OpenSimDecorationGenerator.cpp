@@ -22,7 +22,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/EnumHelpers.h>
@@ -89,14 +89,14 @@ namespace
 
     Color GetGeometryPathDefaultColor(const OpenSim::GeometryPath& gp)
     {
-        return Color{to<Vec3>(gp.getDefaultColor())};
+        return Color{to<Vector3>(gp.getDefaultColor())};
     }
 
     Color GetGeometryPathColor(const OpenSim::GeometryPath& gp, const SimTK::State& st)
     {
         // returns the same color that OpenSim emits (which is usually just activation-based,
         // but might change in future versions of OpenSim)
-        return Color{to<Vec3>(gp.getColor(st))};
+        return Color{to<Vector3>(gp.getColor(st))};
     }
 
     // helper: calculates the radius of a muscle based on isometric force
@@ -467,8 +467,8 @@ namespace
                 const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
                 const SimTK::Vec3 positionInGround = frame.findStationLocationInGround(state, point);
                 const ArrowProperties arrowProperties = {
-                    .start = to<Vec3>(positionInGround),
-                    .end = to<Vec3>(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                    .start = to<Vector3>(positionInGround),
+                    .end = to<Vector3>(positionInGround + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
                     .tip_length = 0.015f * fixupScaleFactor,
                     .neck_thickness = 0.006f * fixupScaleFactor,
                     .head_thickness = 0.01f * fixupScaleFactor,
@@ -511,8 +511,8 @@ namespace
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
             const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
-                .start = to<Vec3>(frame2ground * SimTK::Vec3{0.0}),
-                .end = to<Vec3>(frame2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueInGround)),
+                .start = to<Vector3>(frame2ground * SimTK::Vec3{0.0}),
+                .end = to<Vector3>(frame2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueInGround)),
                 .tip_length = (fixupScaleFactor*0.015f),
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
@@ -541,8 +541,8 @@ namespace
             const float fixupScaleFactor = m_RendererState->getFixupScaleFactor();
             const SimTK::Transform& frame2ground = body.getTransformInGround(state);
             const ArrowProperties arrowProperties = {
-                .start = to<Vec3>(frame2ground.p()),
-                .end =  to<Vec3>(frame2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
+                .start = to<Vector3>(frame2ground.p()),
+                .end =  to<Vector3>(frame2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceInGround)),
                 .tip_length = (fixupScaleFactor*0.015f),
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
@@ -614,8 +614,8 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = to<Vec3>(mobod2ground.p()),
-                    .end = to<Vec3>(mobod2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
+                    .start = to<Vector3>(mobod2ground.p()),
+                    .end = to<Vector3>(mobod2ground.p() + (fixupScaleFactor * c_ForceArrowLengthScale * forceVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -636,8 +636,8 @@ namespace
                 }
 
                 const ArrowProperties arrowProperties = {
-                    .start = to<Vec3>(mobod2ground * SimTK::Vec3{0.0}),
-                    .end = to<Vec3>(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
+                    .start = to<Vector3>(mobod2ground * SimTK::Vec3{0.0}),
+                    .end = to<Vector3>(mobod2ground * (fixupScaleFactor * c_TorqueArrowLengthScale * torqueVec)),
                     .tip_length = (fixupScaleFactor*0.015f),
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
@@ -687,8 +687,8 @@ namespace
             return;
         }
 
-        const Vec3 p1 = TransformInGround(p2p.getBody1(), rs.getState()) * to<Vec3>(p2p.getPoint1());
-        const Vec3 p2 = TransformInGround(p2p.getBody2(), rs.getState()) * to<Vec3>(p2p.getPoint2());
+        const Vector3 p1 = TransformInGround(p2p.getBody1(), rs.getState()) * to<Vector3>(p2p.getPoint1());
+        const Vector3 p2 = TransformInGround(p2p.getBody2(), rs.getState()) * to<Vector3>(p2p.getPoint2());
 
         const float radius = c_GeometryPathBaseRadius * rs.getFixupScaleFactor();
 
@@ -709,8 +709,8 @@ namespace
         rs.consume(s, SceneDecoration{
             .mesh = rs.sphere_mesh(),
             .transform = {
-                .scale = Vec3{radius},
-                .translation = to<Vec3>(s.getLocationInGround(rs.getState())),
+                .scale = Vector3{radius},
+                .translation = to<Vector3>(s.getLocationInGround(rs.getState())),
             },
             .shading = c_StationColor,
         });
@@ -722,7 +722,7 @@ namespace
         const OpenSim::ScapulothoracicJoint& scapuloJoint)
     {
         Transform t = TransformInGround(scapuloJoint.getParentFrame(), rs.getState());
-        t.scale = to<Vec3>(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
+        t.scale = to<Vector3>(scapuloJoint.get_thoracic_ellipsoid_radii_x_y_z());
 
         rs.consume(scapuloJoint, SceneDecoration{
             .mesh = rs.sphere_mesh(),
@@ -749,8 +749,8 @@ namespace
 
         const float radius = rs.getFixupScaleFactor() * 0.0075f;
         Transform t = TransformInGround(b, rs.getState());
-        t.translation = t * to<Vec3>(b.getMassCenter());
-        t.scale = Vec3{radius};
+        t.translation = t * to<Vector3>(b.getMassCenter());
+        t.scale = Vector3{radius};
 
         // draw four octants with the first color
         rs.consume(b, SceneDecoration{
@@ -841,7 +841,7 @@ namespace
 
         const SceneDecoration tendonSpherePrototype = {
             .mesh = rs.sphere_mesh(),
-            .transform = {.scale = Vec3{tendonUiRadius}},
+            .transform = {.scale = Vector3{tendonUiRadius}},
             .shading = tendonColor,
         };
         const SceneDecoration tendonCylinderPrototype = {
@@ -850,7 +850,7 @@ namespace
         };
         const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
-            .transform = {.scale = Vec3{fiberUiRadius}},
+            .transform = {.scale = Vector3{fiberUiRadius}},
             .shading = fiberColor,
         };
         const SceneDecoration fiberCylinderPrototype = {
@@ -866,7 +866,7 @@ namespace
             }
             rs.consume(*c, tendonSpherePrototype.with_translation(p.locationInGround));
         };
-        const auto emitTendonCylinder = [&](const Vec3& p1, const Vec3& p2)
+        const auto emitTendonCylinder = [&](const Vector3& p1, const Vector3& p2)
         {
             const Transform xform = cylinder_to_line_segment_transform({p1, p2}, tendonUiRadius);
             rs.consume(muscle, tendonCylinderPrototype.with_transform(xform));
@@ -879,7 +879,7 @@ namespace
             }
             rs.consume(*c, fiberSpherePrototype.with_translation(p.locationInGround));
         };
-        auto emitFiberCylinder = [&](const Vec3& p1, const Vec3& p2)
+        auto emitFiberCylinder = [&](const Vector3& p1, const Vector3& p2)
         {
             const Transform xform = cylinder_to_line_segment_transform({p1, p2}, fiberUiRadius);
             rs.consume(muscle, fiberCylinderPrototype.with_transform(xform));
@@ -913,14 +913,14 @@ namespace
         while (i < pps.size() && prevTraversalPosition < tendonLen) {
 
             const GeometryPathPoint& point = pps[i];
-            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - tendonLen;
 
             if (excess > 0.0f) {
                 const float scaler = (prevToPosLen - excess)/prevToPosLen;
-                const Vec3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
+                const Vector3 tendonEnd = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitTendonCylinder(prevPoint.locationInGround, tendonEnd);
                 emitTendonSphere(GeometryPathPoint{tendonEnd});
@@ -948,7 +948,7 @@ namespace
         while (i < pps.size() && prevTraversalPosition < fiberEnd) {
 
             const GeometryPathPoint& point = pps[i];
-            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
             const float traversalPos = prevTraversalPosition + prevToPosLen;
             const float excess = traversalPos - fiberEnd;
@@ -956,7 +956,7 @@ namespace
             if (excess > 0.0f) {
                 // emit end point and then exit
                 const float scaler = (prevToPosLen - excess)/prevToPosLen;
-                const Vec3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
+                const Vector3 fiberEndPos = prevPoint.locationInGround + scaler * prevToPos;
 
                 emitFiberCylinder(prevPoint.locationInGround, fiberEndPos);
                 emitFiberSphere(GeometryPathPoint{fiberEndPos});
@@ -983,7 +983,7 @@ namespace
         while (i < pps.size()) {
 
             const GeometryPathPoint& point = pps[i];
-            const Vec3 prevToPos = point.locationInGround - prevPoint.locationInGround;
+            const Vector3 prevToPos = point.locationInGround - prevPoint.locationInGround;
             const float prevToPosLen = length(prevToPos);
             const float traversalPos = prevTraversalPosition + prevToPosLen;
 
@@ -1012,7 +1012,7 @@ namespace
         // helper function: emits a sphere decoration
         const auto emitSphere = [&rs, &hittestTarget, radius, color](
             const GeometryPathPoint& pp,
-            const Vec3& upDirection)
+            const Vector3& upDirection)
         {
             // ensure that user-defined path points are independently selectable (#425)
             const OpenSim::Component& c = pp.maybeUnderlyingUserPathPoint ?
@@ -1024,8 +1024,8 @@ namespace
                 .transform = {
                     // ensure the sphere directionally tries to line up with the cylinders, to make
                     // the "join" between the sphere and cylinders nicer (#593)
-                    .scale = Vec3{radius},
-                    .rotation = normalize(rotation(Vec3{0.0f, 1.0f, 0.0f}, upDirection)),
+                    .scale = Vector3{radius},
+                    .rotation = normalize(rotation(Vector3{0.0f, 1.0f, 0.0f}, upDirection)),
                     .translation = pp.locationInGround
                 },
                 .shading = color,
@@ -1034,8 +1034,8 @@ namespace
 
         // helper function: emits a cylinder decoration between two points
         const auto emitCylinder = [&rs, &hittestTarget, radius, color](
-            const Vec3& p1,
-            const Vec3& p2)
+            const Vector3& p1,
+            const Vector3& p2)
         {
             rs.consume(hittestTarget, SceneDecoration{
                 .mesh = rs.uncapped_cylinder_mesh(),
@@ -1047,9 +1047,9 @@ namespace
         // if required, draw the first path point
         if (rs.getShowPathPoints()) {
             const GeometryPathPoint& firstPoint = points.front();
-            const Vec3& ppPos = firstPoint.locationInGround;
-            const Vec3 direction = points.size() == 1 ?
-                Vec3{0.0f, 1.0f, 0.0f} :
+            const Vector3& ppPos = firstPoint.locationInGround;
+            const Vector3 direction = points.size() == 1 ?
+                Vector3{0.0f, 1.0f, 0.0f} :
                 normalize(points[1].locationInGround - ppPos);
 
             emitSphere(firstPoint, direction);
@@ -1059,14 +1059,14 @@ namespace
         for (size_t i = 1; i < points.size(); ++i) {
             const GeometryPathPoint& point = points[i];
 
-            const Vec3& prevPos = points[i - 1].locationInGround;
-            const Vec3& curPos = point.locationInGround;
+            const Vector3& prevPos = points[i - 1].locationInGround;
+            const Vector3& curPos = point.locationInGround;
 
             emitCylinder(prevPos, curPos);
 
             // if required, draw path points
             if (rs.getShowPathPoints()) {
-                const Vec3 direction = normalize(curPos - prevPos);
+                const Vector3 direction = normalize(curPos - prevPos);
                 emitSphere(point, direction);
             }
         }
@@ -1497,7 +1497,7 @@ Mesh osc::ToOscMeshBakeScaleFactors(
     const OpenSim::Mesh& mesh)
 {
     Mesh rv = ToOscMesh(model, state, mesh);
-    rv.transform_vertices({.scale =  to<Vec3>(mesh.get_scale_factors())});
+    rv.transform_vertices({.scale =  to<Vector3>(mesh.get_scale_factors())});
 
     return rv;
 }

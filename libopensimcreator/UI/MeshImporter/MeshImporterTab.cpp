@@ -34,17 +34,17 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/AABB.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TransformFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/Events/Event.h>
@@ -573,7 +573,7 @@ private:
     void transitionToOrientingElementAlongTwoMeshPoints(MIObject& el, int axis)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID(), axis](Vec3 a, Vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID(), axis](Vector3 a, Vector3 b)
         {
             return TryOrientObjectAxisAlongTwoPoints(shared->updCommittableModelGraph(), id, axis, a, b);
         };
@@ -585,7 +585,7 @@ private:
     void transitionToTranslatingElementAlongTwoMeshPoints(MIObject& el)
     {
         Select2MeshPointsOptions opts;
-        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID()](Vec3 a, Vec3 b)
+        opts.onTwoPointsChosen = [shared = m_Shared, id = el.getID()](Vector3 a, Vector3 b)
         {
             return TryTranslateObjectBetweenTwoPoints(shared->updCommittableModelGraph(), id, a, b);
         };
@@ -885,8 +885,8 @@ private:
         // position editor
         if (e.canChangePosition())
         {
-            Vec3 translation = e.getPos(mg);
-            if (ui::draw_vec3_input("Translation", translation, "%.6f"))
+            Vector3 translation = e.getPos(mg);
+            if (ui::draw_vector3_input("Translation", translation, "%.6f"))
             {
                 mg.updByID(e.getID()).setPos(mg, translation);
             }
@@ -923,8 +923,8 @@ private:
         // scale factor editor
         if (e.canChangeScale())
         {
-            Vec3 scaleFactors = e.getScale(mg);
-            if (ui::draw_vec3_input("Scale", scaleFactors, "%.6f"))
+            Vector3 scaleFactors = e.getScale(mg);
+            if (ui::draw_vector3_input("Scale", scaleFactors, "%.6f"))
             {
                 mg.updByID(e.getID()).setScale(mg, scaleFactors);
             }
@@ -940,7 +940,7 @@ private:
     }
 
     // draw content of "Add" menu for some scene element
-    void drawAddOtherToMIObjectActions(MIObject& el, const Vec3& clickPos)
+    void drawAddOtherToMIObjectActions(MIObject& el, const Vector3& clickPos)
     {
         ui::push_style_var(ui::StyleVar::ItemSpacing, {10.0f, 10.0f});
         const ScopeExit g1{[]{ ui::pop_style_var(); }};
@@ -986,21 +986,21 @@ private:
                 {
                     if (ui::draw_menu_item(OSC_ICON_BORDER_ALL " at bounds center"))
                     {
-                        const Vec3 location = centroid_of(mesh->calcBounds());
+                        const Vector3 location = centroid_of(mesh->calcBounds());
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::draw_menu_item(OSC_ICON_DIVIDE " at mesh average center"))
                     {
-                        const Vec3 location = AverageCenter(*mesh);
+                        const Vector3 location = AverageCenter(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
 
                     if (ui::draw_menu_item(OSC_ICON_WEIGHT " at mesh mass center"))
                     {
-                        const Vec3 location = mass_center_of(*mesh);
+                        const Vector3 location = mass_center_of(*mesh);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add body", MIStrings::c_BodyDescription);
@@ -1051,7 +1051,7 @@ private:
 
                     if (ui::draw_menu_item(OSC_ICON_DOT_CIRCLE " at ground"))
                     {
-                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vec3{});
+                        AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, Vector3{});
                     }
                     ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
 
@@ -1095,7 +1095,7 @@ private:
         }
     }
 
-    void drawMIObjectActions(MIObject& el, const Vec3& clickPos)
+    void drawMIObjectActions(MIObject& el, const Vector3& clickPos)
     {
         if (ui::draw_menu_item(OSC_ICON_CAMERA " Focus camera on this"))
         {
@@ -1462,7 +1462,7 @@ private:
     }
 
     // draw context menu content for a `GroundEl`
-    void drawContextMenuContent(Ground& el, const Vec3& clickPos)
+    void drawContextMenuContent(Ground& el, const Vector3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
         drawContextMenuSpacer();
@@ -1470,7 +1470,7 @@ private:
     }
 
     // draw context menu content for a `BodyEl`
-    void drawContextMenuContent(Body& el, const Vec3& clickPos)
+    void drawContextMenuContent(Body& el, const Vector3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1490,7 +1490,7 @@ private:
     }
 
     // draw context menu content for a `Mesh`
-    void drawContextMenuContent(Mesh& el, const Vec3& clickPos)
+    void drawContextMenuContent(Mesh& el, const Vector3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1510,7 +1510,7 @@ private:
     }
 
     // draw context menu content for a `JointEl`
-    void drawContextMenuContent(Joint& el, const Vec3& clickPos)
+    void drawContextMenuContent(Joint& el, const Vector3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1530,7 +1530,7 @@ private:
     }
 
     // draw context menu content for a `StationEl`
-    void drawContextMenuContent(StationEl& el, const Vec3& clickPos)
+    void drawContextMenuContent(StationEl& el, const Vector3& clickPos)
     {
         drawMIObjectContextMenuContentHeader(el);
 
@@ -1549,7 +1549,7 @@ private:
     }
 
     // draw context menu content for some scene element
-    void drawContextMenuContent(MIObject& el, const Vec3& clickPos)
+    void drawContextMenuContent(MIObject& el, const Vector3& clickPos)
     {
         std::visit(Overload
         {
@@ -1705,7 +1705,7 @@ private:
         if (ui::draw_menu_item(OSC_ICON_MAP_PIN " Station"))
         {
             Document& mg = m_Shared->updModelGraph();
-            auto& e = mg.emplace<StationEl>(UID{}, MIIDs::Ground(), Vec3{}, StationEl::Class().generateName());
+            auto& e = mg.emplace<StationEl>(UID{}, MIIDs::Ground(), Vector3{}, StationEl::Class().generateName());
             mg.selectOnly(e);
         }
         ui::draw_tooltip_if_item_hovered("Add Station", StationEl::Class().getDescription());
@@ -1859,13 +1859,13 @@ private:
         {
             CameraViewAxes axes;
 
-            const Vec2 windowPadding = ui::get_style_panel_padding();
-            const Vec2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{windowPadding.x, -windowPadding.y} - Vec2{0.0f, axes.dimensions().y};
+            const Vector2 windowPadding = ui::get_style_panel_padding();
+            const Vector2 axesTopLeft = m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{windowPadding.x, -windowPadding.y} - Vector2{0.0f, axes.dimensions().y};
             ui::set_cursor_ui_position(axesTopLeft);
             axes.draw(m_Shared->updCamera());
         }
 
-        ui::set_cursor_ui_position(m_Shared->get3DSceneRect().ypd_bottom_left() + Vec2{100.0f, -55.0f});
+        ui::set_cursor_ui_position(m_Shared->get3DSceneRect().ypd_bottom_left() + Vector2{100.0f, -55.0f});
 
         if (ui::draw_button(OSC_ICON_SEARCH_MINUS))
         {
@@ -1951,14 +1951,14 @@ private:
 
         constexpr CStringView mainButtonText = "Convert to OpenSim Model " OSC_ICON_ARROW_RIGHT;
         constexpr CStringView settingButtonText = OSC_ICON_COG;
-        constexpr Vec2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
-        constexpr Vec2 margin = {25.0f, 35.0f};
+        constexpr Vector2 spacingBetweenMainAndSettingsButtons = {1.0f, 0.0f};
+        constexpr Vector2 margin = {25.0f, 35.0f};
 
-        const Vec2 mainButtonDims = ui::calc_button_size(mainButtonText);
-        const Vec2 settingButtonDims = ui::calc_button_size(settingButtonText);
-        const Vec2 viewportBottomRight = m_Shared->get3DSceneRect().ypd_bottom_right();
+        const Vector2 mainButtonDims = ui::calc_button_size(mainButtonText);
+        const Vector2 settingButtonDims = ui::calc_button_size(settingButtonText);
+        const Vector2 viewportBottomRight = m_Shared->get3DSceneRect().ypd_bottom_right();
 
-        const Vec2 buttonTopLeft =
+        const Vector2 buttonTopLeft =
         {
             viewportBottomRight.x - (margin.x + spacingBetweenMainAndSettingsButtons.x + settingButtonDims.x + mainButtonDims.x),
             viewportBottomRight.y - (margin.y + mainButtonDims.y),
@@ -2100,7 +2100,7 @@ private:
             MIObject& el = m_Shared->updModelGraph().updByID(id);
             switch (m_Gizmo.operation()) {
             case ui::GizmoOperation::Rotate:
-                el.applyRotation(m_Shared->getModelGraph(), extract_eulers_xyz(userManipulation->rotation), Vec3{m_GizmoModelMatrix[3]});
+                el.applyRotation(m_Shared->getModelGraph(), extract_eulers_xyz(userManipulation->rotation), Vector3{m_GizmoModelMatrix[3]});
                 break;
             case ui::GizmoOperation::Translate: {
                 el.applyTranslation(m_Shared->getModelGraph(), userManipulation->translation);
@@ -2375,7 +2375,7 @@ private:
             {
                 ui::pop_style_var();
                 draw3DViewer();
-                ui::set_cursor_panel_position(ui::get_cursor_start_panel_position() + Vec2{10.0f, 10.0f});
+                ui::set_cursor_panel_position(ui::get_cursor_start_panel_position() + Vector2{10.0f, 10.0f});
                 draw3DViewerOverlay();
             }
             else

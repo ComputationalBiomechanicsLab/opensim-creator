@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/MouseButton.h>
 #include <liboscar/Platform/MouseInputSource.h>
@@ -22,7 +22,7 @@ namespace osc
             return MouseEvent{EventType::MouseButtonUp, source, button};
         }
 
-        static MouseEvent motion(MouseInputSource source, Vec2 relative_delta, Vec2 position_in_window)
+        static MouseEvent motion(MouseInputSource source, Vector2 relative_delta, Vector2 position_in_window)
         {
             return MouseEvent{source, relative_delta, position_in_window};
         }
@@ -33,11 +33,11 @@ namespace osc
         // Returns the relative delta vector of the mouse motion (i.e. how much the mouse
         // moved since the previous `MouseEvent`) in screen space and device-independent
         // pixels.
-        Vec2 delta() const { return relative_delta_; }
+        Vector2 delta() const { return relative_delta_; }
 
         // Returns the position of the mouse cursor in screen space and device-independent
         // pixels.
-        Vec2 position() const { return position_in_window_; }
+        Vector2 position() const { return position_in_window_; }
 
     private:
         explicit MouseEvent(
@@ -52,8 +52,8 @@ namespace osc
 
         explicit MouseEvent(
             MouseInputSource input_source,
-            Vec2 relative_delta,
-            Vec2 position_in_window) :
+            Vector2 relative_delta,
+            Vector2 position_in_window) :
 
             Event{EventType::MouseMove},
             relative_delta_{relative_delta},
@@ -61,8 +61,8 @@ namespace osc
             input_source_{input_source}
         {}
 
-        Vec2 relative_delta_;
-        Vec2 position_in_window_;
+        Vector2 relative_delta_;
+        Vector2 position_in_window_;
         MouseInputSource input_source_ = MouseInputSource::Mouse;
         MouseButton button_ = MouseButton::None;
     };

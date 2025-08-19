@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <array>
 
@@ -23,7 +23,7 @@ namespace osc
             return {0.89f, 0.89f, 0.89f};
         }
 
-        static constexpr Vec3 default_floor_position()
+        static constexpr Vector3 default_floor_position()
         {
             return {0.0f, -0.001f, 0.0f};
         }
@@ -39,7 +39,7 @@ namespace osc
         friend bool operator==(const SceneRendererParams&, const SceneRendererParams&) = default;
 
         // output parameters
-        Vec2 dimensions = {1.0f, 1.0f};  // desired dimensions in device-independent pixels
+        Vector2 dimensions = {1.0f, 1.0f};  // desired dimensions in device-independent pixels
         float device_pixel_ratio = 1.0f;
         AntiAliasingLevel antialiasing_level = AntiAliasingLevel::none();
 
@@ -54,10 +54,10 @@ namespace osc
         float far_clipping_plane = 100.0f;
         Matrix4x4 view_matrix = identity<Matrix4x4>();
         Matrix4x4 projection_matrix = identity<Matrix4x4>();
-        Vec3 viewer_position = {0.0f, 0.0f, 0.0f};
+        Vector3 viewer_position = {0.0f, 0.0f, 0.0f};
 
         // shading parameters
-        Vec3 light_direction = {-0.34f, -0.25f, 0.05f};
+        Vector3 light_direction = {-0.34f, -0.25f, 0.05f};
         Color light_color = default_light_color();
         float ambient_strength = 0.01f;
         float diffuse_strength = 0.55f;
@@ -68,10 +68,10 @@ namespace osc
             Color{0.95f, 0.4f, 0.0f, 1.0f},
             Color{0.95f, 0.2f, 0.0f, 0.4f},
         });
-        Vec2 rim_thickness = {1.0f, 1.0f};  // desired screen-space rim thickness in device-independent pixels.
+        Vector2 rim_thickness = {1.0f, 1.0f};  // desired screen-space rim thickness in device-independent pixels.
 
         // scene parameters
-        Vec3 floor_position = default_floor_position();
+        Vector3 floor_position = default_floor_position();
         float fixup_scale_factor = 1.0f;
     };
 }

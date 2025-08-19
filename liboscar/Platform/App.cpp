@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/AppClock.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/AppSettings.h>
@@ -61,8 +61,8 @@ template<>
 struct osc::Converter<SDL_Rect, Rect> final {
     Rect operator()(const SDL_Rect& rect) const
     {
-        const Vec2 top_left{rect.x, rect.y};
-        const Vec2 dimensions{rect.w, rect.h};
+        const Vector2 top_left{rect.x, rect.y};
+        const Vector2 dimensions{rect.w, rect.h};
         return Rect::from_corners(top_left, top_left + dimensions);
     }
 };
@@ -498,7 +498,7 @@ namespace
 
     std::unique_ptr<Event> try_parse_into_event(
         const SDL_Event& e,
-        Vec2 main_window_dimensions,
+        Vector2 main_window_dimensions,
         const std::function<float()>& os_to_main_window_device_independent_ratio_getter)
     {
         if (e.type == SDL_EVENT_DROP_FILE and e.drop.data) {
@@ -525,18 +525,18 @@ namespace
             const MouseInputSource source = e.motion.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
             const float os_to_main_window_device_independent_ratio = os_to_main_window_device_independent_ratio_getter();
 
-            Vec2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
+            Vector2 relative_delta = {static_cast<float>(e.motion.xrel), static_cast<float>(e.motion.yrel)};
             relative_delta *= os_to_main_window_device_independent_ratio;            // convert SDL3 units (pixels) to device-independent pixels
             relative_delta.y = main_window_dimensions.y - relative_delta.y;          // convert from SDL3 space (top-left origin, left-handed) to screen space
 
-            Vec2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
+            Vector2 position_in_window = {static_cast<float>(e.motion.x), static_cast<float>(e.motion.y)};
             position_in_window *= os_to_main_window_device_independent_ratio;        // convert SDL3 units (pixels) to device-independent pixels
             position_in_window.y = main_window_dimensions.y - position_in_window.y;  // convert from SDL3 space (top-left origin, left-handed) to screen space
 
             return std::make_unique<MouseEvent>(MouseEvent::motion(source, relative_delta, position_in_window));
         }
         else if (e.type == SDL_EVENT_MOUSE_WHEEL) {
-            Vec2 delta = {e.wheel.x, e.wheel.y};
+            Vector2 delta = {e.wheel.x, e.wheel.y};
             const MouseInputSource source = e.wheel.which == SDL_TOUCH_MOUSEID ? MouseInputSource::TouchScreen : MouseInputSource::Mouse;
             if (source == MouseInputSource::Mouse) {
                 // Normalize mouse inputs such that each "click" of the mouse maps to -1 or +1
@@ -1174,31 +1174,31 @@ public:
         return WindowID{main_window_.get()};
     }
 
-    Vec2 main_window_dimensions() const
+    Vector2 main_window_dimensions() const
     {
         return main_window_pixel_dimensions() / main_window_device_pixel_ratio();
     }
 
-    void try_async_set_main_window_dimensions(Vec2 new_dims)
+    void try_async_set_main_window_dimensions(Vector2 new_dims)
     {
         // mirror `SDL_GetWindowSize` by figuring out the scale factor
         // difference between what the caller provides (virtual coords,
         // as scaled by us) and what `SDL_GetWindowSize` provides (unknown
         // coordinate system).
 
-        Vec2i sdl_size;
+        Vector2i sdl_size;
         SDL_GetWindowSize(main_window_.get(), &sdl_size.x, &sdl_size.y);
-        const Vec2 ratio = new_dims/main_window_dimensions();
-        const Vec2i scaled_dims(ratio * Vec2{sdl_size});
+        const Vector2 ratio = new_dims/main_window_dimensions();
+        const Vector2i scaled_dims(ratio * Vector2{sdl_size});
         SDL_SetWindowSize(main_window_.get(), scaled_dims.x, scaled_dims.y);
     }
 
-    Vec2 main_window_pixel_dimensions() const
+    Vector2 main_window_pixel_dimensions() const
     {
         int w = 0;
         int h = 0;
         SDL_GetWindowSizeInPixels(main_window_.get(), &w, &h);
-        return Vec2{static_cast<float>(w), static_cast<float>(h)};
+        return Vector2{static_cast<float>(w), static_cast<float>(h)};
     }
 
     float main_window_device_pixel_ratio() const
@@ -1264,7 +1264,7 @@ public:
         SDL_SetWindowMouseGrab(main_window_.get(), false);
     }
 
-    std::optional<Vec2> mouse_position_in_main_window() const
+    std::optional<Vector2> mouse_position_in_main_window() const
     {
         if (SDL_GetMouseFocus() != main_window_.get()) {
             return std::nullopt;  // main window is unfocused
@@ -1272,7 +1272,7 @@ public:
 
         // SDL returns position of the mouse relative to the top-left corner
         // of the window in OS units
-        Vec2 p;
+        Vector2 p;
         SDL_GetMouseState(&p.x, &p.y);
 
         // scale OS units to device-independent pixels
@@ -1889,17 +1889,17 @@ WindowID osc::App::main_window_id() const
     return impl_->main_window_id();
 }
 
-Vec2 osc::App::main_window_dimensions() const
+Vector2 osc::App::main_window_dimensions() const
 {
     return impl_->main_window_dimensions();
 }
 
-void osc::App::try_async_set_main_window_dimensions(Vec2 new_dims)
+void osc::App::try_async_set_main_window_dimensions(Vector2 new_dims)
 {
     impl_->try_async_set_main_window_dimensions(new_dims);
 }
 
-Vec2 osc::App::main_window_pixel_dimensions() const
+Vector2 osc::App::main_window_pixel_dimensions() const
 {
     return impl_->main_window_pixel_dimensions();
 }
@@ -1944,7 +1944,7 @@ void osc::App::disable_main_window_grab()
     impl_->disable_main_window_grab();
 }
 
-std::optional<Vec2> osc::App::mouse_position_in_main_window() const
+std::optional<Vector2> osc::App::mouse_position_in_main_window() const
 {
     return impl_->mouse_position_in_main_window();
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <iosfwd>
 
@@ -17,7 +17,7 @@ namespace osc
         friend constexpr bool operator==(const AnalyticPlane&, const AnalyticPlane&) = default;
 
         float distance = 0.0f;
-        Vec3 normal = {0.0f, 1.0f, 0.0f};
+        Vector3 normal = {0.0f, 1.0f, 0.0f};
     };
 
     std::ostream& operator<<(std::ostream&, const AnalyticPlane&);

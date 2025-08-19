@@ -77,7 +77,7 @@ namespace
             stbi_set_flip_vertically_on_load_thread(c_stb_true);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
-        Vec2i dimensions{};
+        Vector2i dimensions{};
         int num_components = 0;
         const std::unique_ptr<float, decltype(&stbi_image_free)> pixel_data = {
             stbi_loadf_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
@@ -125,7 +125,7 @@ namespace
             stbi_set_flip_vertically_on_load_thread(c_stb_true);  // STBI's flag is opposite to `ImageLoadingFlag::FlipVertically`
         }
 
-        Vec2i dimensions{};
+        Vector2i dimensions{};
         int num_components = 0;
         const std::unique_ptr<stbi_uc, decltype(&stbi_image_free)> pixel_data = {
             stbi_load_from_callbacks(&c_stbi_stream_callbacks, &in, &dimensions.x, &dimensions.y, &num_components, 0),
@@ -204,7 +204,7 @@ void osc::PNG::write(
     std::ostream& out,
     const Texture2D& texture)
 {
-    const Vec2i dimensions = texture.pixel_dimensions();
+    const Vector2i dimensions = texture.pixel_dimensions();
     const int row_stride = 4 * dimensions.x;
     const std::vector<Color32> pixels = texture.pixels32();
 
@@ -237,7 +237,7 @@ void osc::PNG::write(
 
 void osc::JPEG::write(std::ostream& out, const Texture2D& texture, float quality)
 {
-    const Vec2i dimensions = texture.pixel_dimensions();
+    const Vector2i dimensions = texture.pixel_dimensions();
     const std::vector<Color32> pixels = texture.pixels32();
 
     const auto guard = lock_stbi_api();

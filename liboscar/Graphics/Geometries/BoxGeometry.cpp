@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/SubMeshDescriptor.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -21,9 +21,9 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
     // https://threejs.org/docs/#api/en/geometries/BoxGeometry
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
     std::vector<SubMeshDescriptor> sub_meshes;  // for multi-material support
 
     // helper variables
@@ -32,12 +32,12 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
 
     // helper function
     const auto build_plane = [&indices, &vertices, &normals, &uvs, &sub_meshes, &num_vertices, &group_start](
-        Vec3::size_type u,
-        Vec3::size_type v,
-        Vec3::size_type w,
+        Vector3::size_type u,
+        Vector3::size_type v,
+        Vector3::size_type w,
         float udir,
         float vdir,
-        Vec3 dims,
+        Vector3 dims,
         size_t grid_x,
         size_t grid_y)
     {
@@ -60,13 +60,13 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
             for (size_t ix = 0; ix < grid_x1; ++ix) {
                 const float x = static_cast<float>(ix)*segment_width - half_width;
 
-                Vec3 vertex{};
+                Vector3 vertex{};
                 vertex[u] = x*udir;
                 vertex[v] = y*vdir;
                 vertex[w] = half_depth;
                 vertices.push_back(vertex);
 
-                Vec3 normal{};
+                Vector3 normal{};
                 normal[u] = 0.0f;
                 normal[v] = 0.0f;
                 normal[w] = dims.z > 0.0f ? 1.0f : -1.0f;

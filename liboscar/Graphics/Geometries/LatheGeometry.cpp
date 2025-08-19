@@ -4,8 +4,8 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -30,28 +30,28 @@ osc::LatheGeometry::LatheGeometry(const Params& p)
     const auto phi_length = clamp(p.phi_length, 0_deg, 360_deg);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec2> uvs;
-    std::vector<Vec3> init_normals;
-    std::vector<Vec3> normals;
+    std::vector<Vector3> vertices;
+    std::vector<Vector2> uvs;
+    std::vector<Vector3> init_normals;
+    std::vector<Vector3> normals;
 
     const auto fnum_segments = static_cast<float>(p.num_segments);
     const auto recip_num_segments = 1.0f/fnum_segments;
-    Vec3 previous_normal{};
+    Vector3 previous_normal{};
 
     // pre-compute normals for initial "meridian"
     {
         // first vertex
-        const Vec2 dv = p.points[1] - p.points[0];
-        const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vector2 dv = p.points[1] - p.points[0];
+        const Vector3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         init_normals.push_back(normalize(normal));
         previous_normal = normal;
     }
     // in-between vertices
     for (size_t i = 1; i < p.points.size()-1; ++i) {
-        const Vec2 dv = p.points[i+1] - p.points[i];
-        const Vec3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
+        const Vector2 dv = p.points[i+1] - p.points[i];
+        const Vector3 normal = {dv.y * 1.0f, -dv.x, dv.y * 0.0f};
 
         init_normals.push_back(normalize(normal + previous_normal));
         previous_normal = normal;

@@ -6,7 +6,7 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Formats/CSV.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
@@ -409,7 +409,7 @@ namespace
         return rv;
     }
 
-    Vec3 CalcReexpressedFrame(
+    Vector3 CalcReexpressedFrame(
         const OpenSim::Model& model,
         const SimTK::State& state,
         const PointInfo& pointInfo,
@@ -421,7 +421,7 @@ namespace
             return pointInfo.location;  // cannot find frame (bug?)
         }
 
-        return to<Vec3>(ground2otherFrame * frame->getTransformInGround(state) * to<SimTK::Vec3>(pointInfo.location));
+        return to<Vector3>(ground2otherFrame * frame->getTransformInGround(state) * to<SimTK::Vec3>(pointInfo.location));
     }
 
     void TryWriteOneCSVDataRow(
@@ -446,7 +446,7 @@ namespace
 
         // else: compute position, name, etc. and emit as a CSV data row
 
-        const Vec3 position = maybeGround2ReexpressedFrame ?
+        const Vector3 position = maybeGround2ReexpressedFrame ?
             CalcReexpressedFrame(model, state, *poi, *maybeGround2ReexpressedFrame) :
             poi->location;
 

@@ -19,7 +19,7 @@
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
@@ -292,7 +292,7 @@ namespace
         parentPOF->setName(parent.physicalFrame->getName() + "_offset");
         parentPOF->setParentFrame(*parent.physicalFrame);
         Matrix4x4 toParentPofInParent =  inverse_matrix4x4_cast(IgnoreScale(doc.getXFormByID(joint.getParentID()))) * matrix4x4_cast(IgnoreScale(joint.getXForm()));
-        parentPOF->set_translation(to<SimTK::Vec3>(Vec3{toParentPofInParent[3]}));
+        parentPOF->set_translation(to<SimTK::Vec3>(Vector3{toParentPofInParent[3]}));
         parentPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toParentPofInParent)));
 
         // create the child OpenSim::PhysicalOffsetFrame
@@ -300,7 +300,7 @@ namespace
         childPOF->setName(child.physicalFrame->getName() + "_offset");
         childPOF->setParentFrame(*child.physicalFrame);
         const Matrix4x4 toChildPofInChild = inverse_matrix4x4_cast(IgnoreScale(doc.getXFormByID(joint.getChildID()))) * matrix4x4_cast(IgnoreScale(joint.getXForm()));
-        childPOF->set_translation(to<SimTK::Vec3>(Vec3{toChildPofInChild[3]}));
+        childPOF->set_translation(to<SimTK::Vec3>(Vector3{toChildPofInChild[3]}));
         childPOF->set_orientation(to<SimTK::Vec3>(extract_eulers_xyz(toChildPofInChild)));
 
         // create a relevant OpenSim::Joint (based on the type index, e.g. could be a FreeJoint)
@@ -602,7 +602,7 @@ namespace
 
             auto& el = rv.emplace<Mesh>(UID{}, attachment, meshData, realLocation);
             auto newTransform = to<Transform>(frame.getTransformInGround(st));
-            newTransform.scale = to<Vec3>(mesh.get_scale_factors());
+            newTransform.scale = to<Vector3>(mesh.get_scale_factors());
 
             el.setXform(newTransform);
             el.setLabel(mesh.getName());
@@ -649,7 +649,7 @@ namespace
                 continue;
             }
 
-            const Vec3 position = to<Vec3>(station.findLocationInFrame(st, m.getGround()));
+            const Vector3 position = to<Vector3>(station.findLocationInFrame(st, m.getGround()));
             const std::string name = station.getName();
 
             rv.emplace<StationEl>(attachment, position, name);
@@ -744,7 +744,7 @@ std::unique_ptr<OpenSim::Model> osc::mi::CreateOpenSimModelFromMeshImporterDocum
     return model;
 }
 
-Vec3 osc::mi::GetJointAxisLengths(const Joint& joint)
+Vector3 osc::mi::GetJointAxisLengths(const Joint& joint)
 {
     const auto& registry = GetComponentRegistry<OpenSim::Joint>();
 
@@ -753,7 +753,7 @@ Vec3 osc::mi::GetJointAxisLengths(const Joint& joint)
         dofs = GetDegreesOfFreedom(registry[*idx].prototype());
     }
 
-    Vec3 rv{};
+    Vector3 rv{};
     for (int i = 0; i < 3; ++i)
     {
         rv[i] = dofs.orientation[static_cast<size_t>(i)] == -1 ? 0.6f : 1.0f;

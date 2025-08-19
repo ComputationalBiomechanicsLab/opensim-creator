@@ -27,8 +27,8 @@ void main()
     class BookOfShadersCommonProperties final : public MaterialPropertyBlock {
     public:
         void set_time(AppClock::time_point p) { set("u_time", std::chrono::duration_cast<std::chrono::duration<float>>(p.time_since_epoch()).count()); }
-        void set_resolution(Vec2 resolution) { set("u_resolution", resolution); }
-        void set_mouse_position(Vec2 mouse_position) { set("u_mouse", mouse_position); }
+        void set_resolution(Vector2 resolution) { set("u_resolution", resolution); }
+        void set_mouse_position(Vector2 mouse_position) { set("u_mouse", mouse_position); }
     };
 
     class BookOfShadersMaterial : public Material {
@@ -149,7 +149,7 @@ private:
     void render_example_to_screen()
     {
         // update properties for this frame
-        const Vec2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
+        const Vector2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
         props_.set_time(App::get().frame_start_time());
         props_.set_resolution(workspace_dimensions * App::get().main_window_device_pixel_ratio());
         props_.set_mouse_position(ui::get_mouse_ui_position());

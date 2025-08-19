@@ -10,9 +10,9 @@
 #include <liboscar/Graphics/TextureDimensionality.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/Assertions.h>
 
 #include <algorithm>
@@ -35,7 +35,7 @@ namespace osc::detail
     template<>
     struct MaterialValueTraits<Color> final {
         static constexpr void constructor_assertions(std::span<const Color>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Color>) { return ShaderPropertyType::Vec4; }
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Color>) { return ShaderPropertyType::Vector4; }
     };
 
     template<>
@@ -46,21 +46,21 @@ namespace osc::detail
     };
 
     template<>
-    struct MaterialValueTraits<Vec2> final {
-        static constexpr void constructor_assertions(std::span<const Vec2>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Vec2>) { return ShaderPropertyType::Vec2; }
+    struct MaterialValueTraits<Vector2> final {
+        static constexpr void constructor_assertions(std::span<const Vector2>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Vector2>) { return ShaderPropertyType::Vector2; }
     };
 
     template<>
-    struct MaterialValueTraits<Vec3> final {
-        static constexpr void constructor_assertions(std::span<const Vec3>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Vec3>) { return ShaderPropertyType::Vec3; }
+    struct MaterialValueTraits<Vector3> final {
+        static constexpr void constructor_assertions(std::span<const Vector3>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Vector3>) { return ShaderPropertyType::Vector3; }
     };
 
     template<>
-    struct MaterialValueTraits<Vec4> final {
-        static constexpr void constructor_assertions(std::span<const Vec4>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Vec4>) { return ShaderPropertyType::Vec4; }
+    struct MaterialValueTraits<Vector4> final {
+        static constexpr void constructor_assertions(std::span<const Vector4>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Vector4>) { return ShaderPropertyType::Vector4; }
     };
 
     template<>

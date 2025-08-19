@@ -25,8 +25,8 @@
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Algorithms.h>
 
 #include <functional>
@@ -46,7 +46,7 @@ namespace
         out(SceneDecoration{
             .mesh = cache.grid_mesh(),
             .transform = {
-                .scale = Vec3{50.0f, 50.0f, 1.0f},
+                .scale = Vector3{50.0f, 50.0f, 1.0f},
                 .rotation = rotation,
             },
             .shading = Color::light_grey().with_alpha(0.15f),
@@ -123,8 +123,8 @@ void osc::draw_xz_floor_lines(
     out(SceneDecoration{
         .mesh = y_line,
         .transform = {
-            .scale = Vec3{scale},
-            .rotation = angle_axis(90_deg, Vec3{0.0f, 0.0f, 1.0f}),
+            .scale = Vector3{scale},
+            .rotation = angle_axis(90_deg, Vector3{0.0f, 0.0f, 1.0f}),
         },
         .shading = Color::red(),
         .flags = SceneDecorationFlag::AnnotationElement,
@@ -134,8 +134,8 @@ void osc::draw_xz_floor_lines(
     out(SceneDecoration{
         .mesh = y_line,
         .transform = {
-            .scale = Vec3{scale},
-            .rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .scale = Vector3{scale},
+            .rotation = angle_axis(90_deg, Vector3{1.0f, 0.0f, 0.0f}),
         },
         .shading = Color::blue(),
         .flags = SceneDecorationFlag::AnnotationElement,
@@ -146,7 +146,7 @@ void osc::draw_xz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Quaternion rotation = angle_axis(90_deg, Vec3{1.0f, 0.0f, 0.0f});
+    const Quaternion rotation = angle_axis(90_deg, Vector3{1.0f, 0.0f, 0.0f});
     draw_grid(cache, rotation, out);
 }
 
@@ -161,7 +161,7 @@ void osc::draw_yz_grid(
     SceneCache& cache,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Quaternion rotation = angle_axis(90_deg, Vec3{0.0f, 1.0f, 0.0f});
+    const Quaternion rotation = angle_axis(90_deg, Vector3{0.0f, 1.0f, 0.0f});
     draw_grid(cache, rotation, out);
 }
 
@@ -170,17 +170,17 @@ void osc::draw_arrow(
     const ArrowProperties& props,
     const std::function<void(SceneDecoration&&)>& out)
 {
-    const Vec3 start_to_end = props.end - props.start;
+    const Vector3 start_to_end = props.end - props.start;
     const float total_length = length(start_to_end);
     if (isnan(total_length) or equal_within_epsilon(total_length, 0.0f)) {
         return;  // edge-case: caller passed junk vectors to this implementation
     }
-    const Vec3 direction = start_to_end/total_length;
+    const Vector3 direction = start_to_end/total_length;
 
     // draw the arrow from tip-to-base, because the neck might be
     // excluded in the case where the total length of the arrow is
     // less than or equal to the desired tip length
-    const Vec3 tip_start = props.end - (direction * min(props.tip_length, total_length));
+    const Vector3 tip_start = props.end - (direction * min(props.tip_length, total_length));
 
     // emit tip cone
     out(SceneDecoration{
@@ -296,7 +296,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
         // then perform a ray-triangle collision
         if (auto model_space_triangle_collision = find_collision(modespace_ray, mesh.get_triangle_at(model_space_bvh_collision.id))) {
             // map it back into world space and check if it's closer
-            const Vec3 world_space_position = transform * model_space_triangle_collision->position;
+            const Vector3 world_space_position = transform * model_space_triangle_collision->position;
             const float distance = length(world_space_position - world_space_ray.origin);
 
             if (not rv or rv->distance > distance) {
@@ -313,7 +313,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
     const Mesh& mesh,
     const BVH& triangle_bvh,
     const Rect& screen_render_rect,
-    Vec2 mouse_screen_position)
+    Vector2 mouse_screen_position)
 {
     const Ray world_ray = camera.unproject_topleft_position_to_world_ray(
         mouse_screen_position - screen_render_rect.ypd_top_left(),
@@ -331,7 +331,7 @@ std::optional<RayCollision> osc::get_closest_world_space_ray_triangle_collision(
 SceneRendererParams osc::calc_standard_dark_scene_render_params(
     const PolarPerspectiveCamera& camera,
     AntiAliasingLevel aa_level,
-    Vec2 dimensions,
+    Vector2 dimensions,
     float device_pixel_ratio)
 {
     return SceneRendererParams{
@@ -374,12 +374,12 @@ FrustumPlanes osc::calc_frustum_planes(const Camera& camera, float aspect_ratio)
     const auto [z_near, z_far] = camera.clipping_planes();
     const float half_v_size = z_far * tan(fov_y * 0.5f);
     const float half_h_size = half_v_size * aspect_ratio;
-    const Vec3 pos = camera.position();
-    const Vec3 front = camera.direction();
-    const Vec3 up = camera.upwards_direction();
-    const Vec3 right = cross(front, up);
-    const Vec3 front_mult_near = z_near * front;
-    const Vec3 front_mult_far = z_far * front;
+    const Vector3 pos = camera.position();
+    const Vector3 front = camera.direction();
+    const Vector3 up = camera.upwards_direction();
+    const Vector3 right = cross(front, up);
+    const Vector3 front_mult_near = z_near * front;
+    const Vector3 front_mult_far = z_far * front;
 
     return {
                           // origin              // normal

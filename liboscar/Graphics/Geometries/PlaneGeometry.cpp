@@ -26,9 +26,9 @@ osc::PlaneGeometry::PlaneGeometry(const Params& p)
     const float segment_height = p.dimensions.y / static_cast<float>(grid_y);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     // generate vertices, normals, and uvs
     for (size_t iy = 0; iy < grid_y1; ++iy) {

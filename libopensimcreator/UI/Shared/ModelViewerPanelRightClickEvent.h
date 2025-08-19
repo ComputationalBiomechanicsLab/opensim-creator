@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <optional>
 #include <string>
@@ -15,7 +15,7 @@ namespace osc
             std::string sourcePanelName_,
             const Rect& viewportScreenRect_,
             std::string componentAbsPathOrEmpty_,
-            std::optional<Vec3> maybeClickPositionInGround_) :
+            std::optional<Vector3> maybeClickPositionInGround_) :
 
             sourcePanelName{std::move(sourcePanelName_)},
             viewportScreenRect{viewportScreenRect_},
@@ -26,6 +26,6 @@ namespace osc
         std::string sourcePanelName;
         Rect viewportScreenRect;
         std::string componentAbsPathOrEmpty;
-        std::optional<Vec3> maybeClickPositionInGround;
+        std::optional<Vector3> maybeClickPositionInGround;
     };
 }

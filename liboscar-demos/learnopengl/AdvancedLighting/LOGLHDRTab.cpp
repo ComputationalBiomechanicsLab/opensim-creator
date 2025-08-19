@@ -10,7 +10,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         { 0.0f,  0.0f, 49.5f},
         {-1.4f, -1.9f, 9.0f},
         { 0.0f, -1.8f, 4.0f},
@@ -108,9 +108,9 @@ private:
     {
         // reformat intermediate HDR texture to match tab dimensions etc.
         {
-            const Vec2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
+            const Vector2 workspace_dimensions = ui::get_main_window_workspace_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-            const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
+            const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
             RenderTextureParams params = {
                 .pixel_dimensions = workspace_pixel_dimensions,
@@ -161,8 +161,8 @@ private:
     Material scene_material_ = create_scene_material(loader_);
     Material tonemap_material_ = create_tonemap_material(loader_);
     MouseCapturingCamera camera_ = create_scene_camera();
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
     Transform corridoor_transform_ = calc_corridoor_transform();
     RenderTexture scene_hdr_texture_;
     float exposure_ = 1.0f;

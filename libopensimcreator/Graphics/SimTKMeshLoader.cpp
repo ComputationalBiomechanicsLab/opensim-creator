@@ -7,7 +7,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Utils/Assertions.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
@@ -74,7 +74,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 {
     const auto metrics = CalcMeshMetrics(mesh);
 
-    std::vector<Vec3> vertices;
+    std::vector<Vector3> vertices;
     vertices.reserve(metrics.numVertices);
 
     std::vector<uint32_t> indices;
@@ -96,7 +96,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
 
     // copy all vertex positions from the source mesh
     for (int i = 0; i < mesh.getNumVertices(); ++i) {
-        vertices.push_back(to<Vec3>(mesh.getVertexPosition(i)));
+        vertices.push_back(to<Vector3>(mesh.getVertexPosition(i)));
     }
 
     // build up the index list while triangulating any n>3 faces
@@ -135,7 +135,7 @@ Mesh osc::ToOscMesh(const SimTK::PolygonalMesh& mesh)
             // polygon: triangulate each edge with a centroid
 
             // compute+add centroid vertex
-            Vec3 centroid_of{};
+            Vector3 centroid_of{};
             for (int vert = 0; vert < numFaceVerts; ++vert) {
                 centroid_of += vertices.at(mesh.getFaceVertex(face, vert));
             }
@@ -182,12 +182,12 @@ Mesh osc::LoadMeshViaSimTK(const std::filesystem::path& p)
     return ToOscMesh(mesh);
 }
 
-void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vec3> vertices, MeshIndicesView indices)
+void osc::AssignIndexedVerts(SimTK::PolygonalMesh& mesh, std::span<const Vector3> vertices, MeshIndicesView indices)
 {
     mesh.clear();
 
     // assign vertices
-    for (const Vec3& vertex : vertices) {
+    for (const Vector3& vertex : vertices) {
         mesh.addVertex(to<SimTK::Vec3>(vertex));
     }
 

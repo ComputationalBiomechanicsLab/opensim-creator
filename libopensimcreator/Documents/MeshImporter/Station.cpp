@@ -6,8 +6,8 @@
 #include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/VecFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Utils/UID.h>
 
 #include <iostream>
@@ -21,7 +21,7 @@ using osc::mi::MIClass;
 osc::mi::StationEl::StationEl(
     UID id,
     UID attachment,
-    const Vec3& position,
+    const Vector3& position,
     const std::string& name) :
 
     m_ID{id},
@@ -33,7 +33,7 @@ osc::mi::StationEl::StationEl(
 
 osc::mi::StationEl::StationEl(
     UID attachment,
-    const Vec3& position,
+    const Vector3& position,
     const std::string& name) :
 
     m_Attachment{attachment},

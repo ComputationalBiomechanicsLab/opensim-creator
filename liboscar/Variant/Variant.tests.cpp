@@ -1,7 +1,7 @@
 #include "Variant.h"
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
@@ -137,28 +137,28 @@ TEST(Variant, can_be_implicitly_constructed_from_a_CStringView)
     static_assert(std::is_convertible_v<CStringView, Variant>);
 }
 
-TEST(Variant, can_be_explicitly_constructed_from_a_Vec2)
+TEST(Variant, can_be_explicitly_constructed_from_a_Vector2)
 {
-    const Variant v{Vec2{1.0f, 2.0f}};
-    ASSERT_EQ(to<Vec2>(v), Vec2(1.0f, 2.0f));
-    ASSERT_EQ(v.type(), VariantType::Vec2);
+    const Variant v{Vector2{1.0f, 2.0f}};
+    ASSERT_EQ(to<Vector2>(v), Vector2(1.0f, 2.0f));
+    ASSERT_EQ(v.type(), VariantType::Vector2);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_Vec2)
+TEST(Variant, can_be_implicitly_constructed_from_a_Vector2)
 {
-    static_assert(std::is_convertible_v<Vec2, Variant>);
+    static_assert(std::is_convertible_v<Vector2, Variant>);
 }
 
-TEST(Variant, can_be_explicitly_constructed_from_a_Vec3)
+TEST(Variant, can_be_explicitly_constructed_from_a_Vector3)
 {
-    const Variant v{Vec3{1.0f, 2.0f, 3.0f}};
-    ASSERT_EQ(to<Vec3>(v), Vec3(1.0f, 2.0f, 3.0f));
-    ASSERT_EQ(v.type(), VariantType::Vec3);
+    const Variant v{Vector3{1.0f, 2.0f, 3.0f}};
+    ASSERT_EQ(to<Vector3>(v), Vector3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(v.type(), VariantType::Vector3);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_Vec3)
+TEST(Variant, can_be_implicitly_constructed_from_a_Vector3)
 {
-    static_assert(std::is_convertible_v<Vec3, Variant>);
+    static_assert(std::is_convertible_v<Vector3, Variant>);
 }
 
 TEST(Variant, default_constructor_constructs_a_Nil)
@@ -196,14 +196,14 @@ TEST(Variant, nil_value_to_StringName_returns_empty_StringName)
     ASSERT_EQ(to<StringName>(Variant{}), StringName{});
 }
 
-TEST(Variant, nil_value_to_Vec2_returns_zeroed_Vec2)
+TEST(Variant, nil_value_to_Vector2_returns_zeroed_Vector2)
 {
-    ASSERT_EQ(to<Vec2>(Variant{}), Vec2{});
+    ASSERT_EQ(to<Vector2>(Variant{}), Vector2{});
 }
 
-TEST(Variant, nil_value_to_Vec3_returns_zeroed_Vec3)
+TEST(Variant, nil_value_to_Vector3_returns_zeroed_Vector3)
 {
-    ASSERT_EQ(to<Vec3>(Variant{}), Vec3{});
+    ASSERT_EQ(to<Vector3>(Variant{}), Vector3{});
 }
 
 TEST(Variant, bool_value_to_bool_returns_same_bool)
@@ -244,16 +244,16 @@ TEST(Variant, bool_value_to_StringName_returns_empty_StringName)
     ASSERT_EQ(to<StringName>(Variant{true}), StringName{});
 }
 
-TEST(Variant, bool_value_to_Vec2_returns_zeroed_or_diagonal_one_Vec2s)
+TEST(Variant, bool_value_to_Vector2_returns_zeroed_or_diagonal_one_Vector2s)
 {
-    ASSERT_EQ(to<Vec2>(Variant(false)), Vec2{});
-    ASSERT_EQ(to<Vec2>(Variant(true)), Vec2(1.0f, 1.0f));
+    ASSERT_EQ(to<Vector2>(Variant(false)), Vector2{});
+    ASSERT_EQ(to<Vector2>(Variant(true)), Vector2(1.0f, 1.0f));
 }
 
-TEST(Variant, bool_value_to_Vec3_returns_zeroed_or_diagonal_Vec3s)
+TEST(Variant, bool_value_to_Vector3_returns_zeroed_or_diagonal_Vector3s)
 {
-    ASSERT_EQ(to<Vec3>(Variant(false)), Vec3{});
-    ASSERT_EQ(to<Vec3>(Variant(true)), Vec3(1.0f, 1.0f, 1.0f));
+    ASSERT_EQ(to<Vector3>(Variant(false)), Vector3{});
+    ASSERT_EQ(to<Vector3>(Variant(true)), Vector3(1.0f, 1.0f, 1.0f));
 }
 
 TEST(Variant, Color_to_bool_returns_false_if_black_or_true_otherwise)
@@ -272,7 +272,7 @@ TEST(Variant, Color_to_Color_returns_the_Color)
 
 TEST(Variant, Color_to_float_extracts_red_component_into_the_float)
 {
-    // should only extract first component, to match `Vec3` behavior for conversion
+    // should only extract first component, to match `Vector3` behavior for conversion
     ASSERT_EQ(to<float>(Variant(Color::black())), 0.0f);
     ASSERT_EQ(to<float>(Variant(Color::white())), 1.0f);
     ASSERT_EQ(to<float>(Variant(Color::blue())), 0.0f);
@@ -280,7 +280,7 @@ TEST(Variant, Color_to_float_extracts_red_component_into_the_float)
 
 TEST(Variant, Color_to_int_extracts_red_component_into_the_int)
 {
-    // should only extract first component, to match `Vec3` behavior for conversion
+    // should only extract first component, to match `Vector3` behavior for conversion
     ASSERT_EQ(to<int>(Variant(Color::black())), 0);
     ASSERT_EQ(to<int>(Variant(Color::white())), 1);
     ASSERT_EQ(to<int>(Variant(Color::cyan())), 0);
@@ -305,16 +305,16 @@ TEST(Variant, Color_to_string_returns_expected_manual_values)
     ASSERT_EQ(to<std::string>(Variant{Color::magenta()}), "#ff00ffff");
 }
 
-TEST(Variant, Color_to_Vec2_extracts_rg_into_the_Vec2)
+TEST(Variant, Color_to_Vector2_extracts_rg_into_the_Vector2)
 {
-    ASSERT_EQ(to<Vec2>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec2(1.0f, 2.0f));
-    ASSERT_EQ(to<Vec2>(Variant(Color::red())), Vec2(1.0f, 0.0f));
+    ASSERT_EQ(to<Vector2>(Variant(Color(1.0f, 2.0f, 3.0f))), Vector2(1.0f, 2.0f));
+    ASSERT_EQ(to<Vector2>(Variant(Color::red())), Vector2(1.0f, 0.0f));
 }
 
-TEST(Variant, Color_to_Vec3_extracts_rgb_into_the_Vec3)
+TEST(Variant, Color_to_Vector3_extracts_rgb_into_the_Vector3)
 {
-    ASSERT_EQ(to<Vec3>(Variant(Color(1.0f, 2.0f, 3.0f))), Vec3(1.0f, 2.0f, 3.0f));
-    ASSERT_EQ(to<Vec3>(Variant(Color::red())), Vec3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(to<Vector3>(Variant(Color(1.0f, 2.0f, 3.0f))), Vector3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(to<Vector3>(Variant(Color::red())), Vector3(1.0f, 0.0f, 0.0f));
 }
 
 TEST(Variant, float_to_bool_returns_false_if_zero_otherwise_true)
@@ -363,19 +363,19 @@ TEST(Variant, float_to_StringName_returns_empty_StringName)
     ASSERT_EQ(to<StringName>(Variant{1.0f}), StringName{});
 }
 
-TEST(Variant, float_to_Vec2_unpacks_the_float_into_all_components_of_the_Vec2)
+TEST(Variant, float_to_Vector2_unpacks_the_float_into_all_components_of_the_Vector2)
 {
     for (const float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
-        const Vec2 expected = {v, v};
-        ASSERT_EQ(to<Vec2>(Variant(v)), expected);
+        const Vector2 expected = {v, v};
+        ASSERT_EQ(to<Vector2>(Variant(v)), expected);
     }
 }
 
-TEST(Variant, float_to_Vec3_unpacks_the_float_into_all_components_of_the_Vec3)
+TEST(Variant, float_to_Vector3_unpacks_the_float_into_all_components_of_the_Vector3)
 {
     for (const float v : std::to_array<float>({-20000.0f, -5.328f, -1.2f, 0.0f, 0.123f, 50.0f, 18000.0f})) {
-        const Vec3 expected = {v, v, v};
-        ASSERT_EQ(to<Vec3>(Variant(v)), expected);
+        const Vector3 expected = {v, v, v};
+        ASSERT_EQ(to<Vector3>(Variant(v)), expected);
     }
 }
 
@@ -427,21 +427,21 @@ TEST(Variant, int_to_StringName_returns_empty_StringName)
     ASSERT_EQ(to<StringName>(Variant{1337}), StringName{});
 }
 
-TEST(Variant, int_to_Vec2_casts_int_to_float_and_then_unpacks_it_into_all_components_of_the_Vec2)
+TEST(Variant, int_to_Vector2_casts_int_to_float_and_then_unpacks_it_into_all_components_of_the_Vector2)
 {
     for (const int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
         const auto vf = static_cast<float>(v);
-        const Vec2 expected = {vf, vf};
-        ASSERT_EQ(to<Vec2>(Variant(v)), expected);
+        const Vector2 expected = {vf, vf};
+        ASSERT_EQ(to<Vector2>(Variant(v)), expected);
     }
 }
 
-TEST(Variant, int_to_Vec3_casts_int_to_float_and_then_unpacks_it_into_all_components_of_the_Vec3)
+TEST(Variant, int_to_Vector3_casts_int_to_float_and_then_unpacks_it_into_all_components_of_the_Vector3)
 {
     for (const int v : std::to_array<int>({ -12193, -1212, -738, -12, -1, 0, 1, 18, 1294, 1209849})) {
         const auto vf = static_cast<float>(v);
-        const Vec3 expected = {vf, vf, vf};
-        ASSERT_EQ(to<Vec3>(Variant(v)), expected);
+        const Vector3 expected = {vf, vf, vf};
+        ASSERT_EQ(to<Vector3>(Variant(v)), expected);
     }
 }
 
@@ -554,7 +554,7 @@ TEST(Variant, string_to_StringName_returns_supplied_string_as_StringName)
     }
 }
 
-TEST(Variant, string_to_Vec2_always_returns_zeroed_Vec2)
+TEST(Variant, string_to_Vector2_always_returns_zeroed_Vector2)
 {
     // i.e. the converter doesn't try to parse the string
     //      in any way (yet)
@@ -569,15 +569,15 @@ TEST(Variant, string_to_Vec2_always_returns_zeroed_Vec2)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(to<Vec2>(Variant{input}), Vec2{});
+        ASSERT_EQ(to<Vector2>(Variant{input}), Vector2{});
     }
 }
 
-TEST(Variant, string_to_Vec3_always_returns_zeroed_Vec3)
+TEST(Variant, string_to_Vector3_always_returns_zeroed_Vector3)
 {
     // i.e. the converter doesn't try to parse the string
     //      in any way (yet)
@@ -592,45 +592,45 @@ TEST(Variant, string_to_Vec3_always_returns_zeroed_Vec3)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(to<Vec3>(Variant{input}), Vec3{});
+        ASSERT_EQ(to<Vector3>(Variant{input}), Vector3{});
     }
 }
 
-TEST(Variant, Vec2_to_bool_returns_false_for_zeroed_Vec2)
+TEST(Variant, Vector2_to_bool_returns_false_for_zeroed_Vector2)
 {
-    ASSERT_EQ(to<bool>(Variant{Vec2{}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2{}}), false);
 }
 
-TEST(Variant, Vec2_to_bool_returns_false_if_x_is_zero_regardless_of_the_value_of_y)
+TEST(Variant, Vector2_to_bool_returns_false_if_x_is_zero_regardless_of_the_value_of_y)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
-    ASSERT_EQ(to<bool>(Variant{Vec2{0.0f}}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 1000.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 7.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 2.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, 1.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec2(0.0f, -1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2{0.0f}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2(0.0f, 1000.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2(0.0f, 7.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2(0.0f, 2.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2(0.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector2(0.0f, -1.0f)}), false);
     static_assert(+0.0f == -0.0f);
-    ASSERT_EQ(to<bool>(Variant{Vec2(-0.0f, 1000.0f)}), false);  // how fun ;)
+    ASSERT_EQ(to<bool>(Variant{Vector2(-0.0f, 1000.0f)}), false);  // how fun ;)
 }
 
-TEST(Variant, Vec2_to_bool_returns_true_if_x_is_nonzero_regardless_of_the_value_of_y)
+TEST(Variant, Vector2_to_bool_returns_true_if_x_is_nonzero_regardless_of_the_value_of_y)
 {
-    ASSERT_EQ(to<bool>(Variant{Vec2{1.0f}}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec2(2.0f, 7.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec2(30.0f, 2.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec2(-40.0f, 1.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec2(std::numeric_limits<float>::quiet_NaN(), -1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector2{1.0f}}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector2(2.0f, 7.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector2(30.0f, 2.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector2(-40.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector2(std::numeric_limits<float>::quiet_NaN(), -1.0f)}), true);
 }
 
-TEST(Variant, Vec2_to_Color_extracts_xy_into_the_Colors_rg_components)
+TEST(Variant, Vector2_to_Color_extracts_xy_into_the_Colors_rg_components)
 {
-    constexpr auto test_cases = std::to_array<Vec2>({
+    constexpr auto test_cases = std::to_array<Vector2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -643,9 +643,9 @@ TEST(Variant, Vec2_to_Color_extracts_xy_into_the_Colors_rg_components)
     }
 }
 
-TEST(Variant, Vec2_to_float_extracts_x_into_the_float)
+TEST(Variant, Vector2_to_float_extracts_x_into_the_float)
 {
-    constexpr auto test_cases = std::to_array<Vec2>({
+    constexpr auto test_cases = std::to_array<Vector2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -658,9 +658,9 @@ TEST(Variant, Vec2_to_float_extracts_x_into_the_float)
     }
 }
 
-TEST(Variant, Vec2_to_int_casts_x_into_an_int)
+TEST(Variant, Vector2_to_int_casts_x_into_an_int)
 {
-    constexpr auto test_cases = std::to_array<Vec2>({
+    constexpr auto test_cases = std::to_array<Vector2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -673,9 +673,9 @@ TEST(Variant, Vec2_to_int_casts_x_into_an_int)
     }
 }
 
-TEST(Variant, Vec2_to_string_returns_the_same_string_as_directly_converting_the_Vec2_into_a_String)
+TEST(Variant, Vector2_to_string_returns_the_same_string_as_directly_converting_the_Vector2_into_a_String)
 {
-    constexpr auto test_cases = std::to_array<Vec2>({
+    constexpr auto test_cases = std::to_array<Vector2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -688,15 +688,15 @@ TEST(Variant, Vec2_to_string_returns_the_same_string_as_directly_converting_the_
     }
 }
 
-TEST(Variant, Vec2_to_StringName_returns_an_empty_StringName)
+TEST(Variant, Vector2_to_StringName_returns_an_empty_StringName)
 {
-    ASSERT_EQ(to<StringName>(Variant{Vec2{}}), StringName{});
-    ASSERT_EQ(to<StringName>(Variant{Vec2(0.0f, -20.0f)}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vector2{}}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vector2(0.0f, -20.0f)}), StringName{});
 }
 
-TEST(Variant, Vec2_to_Vec2_returns_original_value_unmodified)
+TEST(Variant, Vector2_to_Vector2_returns_original_value_unmodified)
 {
-    constexpr auto test_cases = std::to_array<Vec2>({
+    constexpr auto test_cases = std::to_array<Vector2>({
         { 0.0f,   0.0f},
         { 1.0f,   1.0f},
         {-1.0f,   7.5f},
@@ -705,41 +705,41 @@ TEST(Variant, Vec2_to_Vec2_returns_original_value_unmodified)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<Vec2>(Variant{test_case}), test_case);
+        ASSERT_EQ(to<Vector2>(Variant{test_case}), test_case);
     }
 }
 
-TEST(Variant, Vec3_to_bool_returns_false_for_zeroed_Vec3)
+TEST(Variant, Vector3_to_bool_returns_false_for_zeroed_Vector3)
 {
-    ASSERT_EQ(to<bool>(Variant{Vec3{}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3{}}), false);
 }
 
-TEST(Variant, Vec3_to_bool_returns_false_if_X_is_zero_regardless_of_the_value_of_YZ)
+TEST(Variant, Vector3_to_bool_returns_false_if_X_is_zero_regardless_of_the_value_of_YZ)
 {
     // why: because it's consistent with the `toInt()` and `toFloat()` behavior, and
     // one would logically expect `if (v.to<int>())` to behave the same as `if (v.to<bool>())`
-    ASSERT_EQ(to<bool>(Variant{Vec3{0.0f}}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 0.0f, 1000.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 7.0f, -30.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 2.0f, 1.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, 1.0f, 1.0f)}), false);
-    ASSERT_EQ(to<bool>(Variant{Vec3(0.0f, -1.0f, 0.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3{0.0f}}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3(0.0f, 0.0f, 1000.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3(0.0f, 7.0f, -30.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3(0.0f, 2.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3(0.0f, 1.0f, 1.0f)}), false);
+    ASSERT_EQ(to<bool>(Variant{Vector3(0.0f, -1.0f, 0.0f)}), false);
     static_assert(+0.0f == -0.0f);
-    ASSERT_EQ(to<bool>(Variant{Vec3(-0.0f, 0.0f, 1000.0f)}), false);  // how fun ;)
+    ASSERT_EQ(to<bool>(Variant{Vector3(-0.0f, 0.0f, 1000.0f)}), false);  // how fun ;)
 }
 
-TEST(Variant, Vec3_to_bool_returns_true_if_X_is_nonzero_regardless_of_the_value_of_YZ)
+TEST(Variant, Vector3_to_bool_returns_true_if_X_is_nonzero_regardless_of_the_value_of_YZ)
 {
-    ASSERT_EQ(to<bool>(Variant{Vec3{1.0f}}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec3(2.0f, 7.0f, -30.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec3(30.0f, 2.0f, 1.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec3(-40.0f, 1.0f, 1.0f)}), true);
-    ASSERT_EQ(to<bool>(Variant{Vec3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector3{1.0f}}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector3(2.0f, 7.0f, -30.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector3(30.0f, 2.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector3(-40.0f, 1.0f, 1.0f)}), true);
+    ASSERT_EQ(to<bool>(Variant{Vector3(std::numeric_limits<float>::quiet_NaN(), -1.0f, 0.0f)}), true);
 }
 
-TEST(Variant, Vec3_to_Color_extracts_XYZ_into_RGB)
+TEST(Variant, Vector3_to_Color_extracts_XYZ_into_RGB)
 {
-    constexpr auto test_cases = std::to_array<Vec3>({
+    constexpr auto test_cases = std::to_array<Vector3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -752,9 +752,9 @@ TEST(Variant, Vec3_to_Color_extracts_XYZ_into_RGB)
     }
 }
 
-TEST(Variant, Vec3_to_float_extracts_X_into_the_float)
+TEST(Variant, Vector3_to_float_extracts_X_into_the_float)
 {
-    constexpr auto test_cases = std::to_array<Vec3>({
+    constexpr auto test_cases = std::to_array<Vector3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -767,9 +767,9 @@ TEST(Variant, Vec3_to_float_extracts_X_into_the_float)
     }
 }
 
-TEST(Variant, Vec3_to_int_extracts_x_into_the_int)
+TEST(Variant, Vector3_to_int_extracts_x_into_the_int)
 {
-    constexpr auto test_cases = std::to_array<Vec3>({
+    constexpr auto test_cases = std::to_array<Vector3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -782,9 +782,9 @@ TEST(Variant, Vec3_to_int_extracts_x_into_the_int)
     }
 }
 
-TEST(Variant, Vec3_to_string_returns_the_same_string_as_directly_converting_the_Vec3_to_a_string)
+TEST(Variant, Vector3_to_string_returns_the_same_string_as_directly_converting_the_Vector3_to_a_string)
 {
-    constexpr auto test_cases = std::to_array<Vec3>({
+    constexpr auto test_cases = std::to_array<Vector3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -797,15 +797,15 @@ TEST(Variant, Vec3_to_string_returns_the_same_string_as_directly_converting_the_
     }
 }
 
-TEST(Variant, Vec3_to_StringName_returns_an_empty_StringName)
+TEST(Variant, Vector3_to_StringName_returns_an_empty_StringName)
 {
-    ASSERT_EQ(to<StringName>(Variant{Vec3{}}), StringName{});
-    ASSERT_EQ(to<StringName>(Variant{Vec3(0.0f, -20.0f, 0.5f)}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vector3{}}), StringName{});
+    ASSERT_EQ(to<StringName>(Variant{Vector3(0.0f, -20.0f, 0.5f)}), StringName{});
 }
 
-TEST(Variant, Vec3_to_Vec3_returns_original_Vec3)
+TEST(Variant, Vector3_to_Vector3_returns_original_Vector3)
 {
-    constexpr auto test_cases = std::to_array<Vec3>({
+    constexpr auto test_cases = std::to_array<Vector3>({
         {0.0f, 0.0f, 0.0f},
         {1.0f, 0.0f, 1.0f},
         {-1.0f, 0.0f, 1.0f},
@@ -814,7 +814,7 @@ TEST(Variant, Vec3_to_Vec3_returns_original_Vec3)
     });
 
     for (const auto& test_case : test_cases) {
-        ASSERT_EQ(to<Vec3>(Variant{test_case}), test_case);
+        ASSERT_EQ(to<Vector3>(Variant{test_case}), test_case);
     }
 }
 
@@ -844,15 +844,15 @@ TEST(Variant, always_compares_equivalent_to_a_copy_of_itself)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
-        Variant{Vec2{}},
-        Variant{Vec2{-1.0f}},
-        Variant{Vec2{0.5f}},
-        Variant{Vec2{-0.5f}},
-        Variant{Vec3{}},
-        Variant{Vec3{1.0f}},
-        Variant{Vec3{-1.0f}},
-        Variant{Vec3{0.5f}},
-        Variant{Vec3{-0.5f}},
+        Variant{Vector2{}},
+        Variant{Vector2{-1.0f}},
+        Variant{Vector2{0.5f}},
+        Variant{Vector2{-0.5f}},
+        Variant{Vector3{}},
+        Variant{Vector3{1.0f}},
+        Variant{Vector3{-1.0f}},
+        Variant{Vector3{0.5f}},
+        Variant{Vector3{-0.5f}},
     });
 
     for (const auto& test_case : test_cases) {
@@ -896,16 +896,16 @@ TEST(Variant, is_not_equal_to_Variants_of_different_type_even_if_conversion_is_p
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a stringname can be compared to a string, though"}},
-        Variant{Vec2{}},
-        Variant{Vec2{1.0f}},
-        Variant{Vec2{-1.0f}},
-        Variant{Vec2{0.5f}},
-        Variant{Vec2{-0.5f}},
-        Variant{Vec3{}},
-        Variant{Vec3{1.0f}},
-        Variant{Vec3{-1.0f}},
-        Variant{Vec3{0.5f}},
-        Variant{Vec3{-0.5f}},
+        Variant{Vector2{}},
+        Variant{Vector2{1.0f}},
+        Variant{Vector2{-1.0f}},
+        Variant{Vector2{0.5f}},
+        Variant{Vector2{-0.5f}},
+        Variant{Vector3{}},
+        Variant{Vector3{1.0f}},
+        Variant{Vector3{-1.0f}},
+        Variant{Vector3{0.5f}},
+        Variant{Vector3{-0.5f}},
     });
 
     for (size_t i = 0; i < test_cases.size(); ++i) {
@@ -946,16 +946,16 @@ TEST(Variant, can_be_hashed_with_std_hash)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
-        Variant{Vec2{}},
-        Variant{Vec2{1.0f}},
-        Variant{Vec2{-1.0f}},
-        Variant{Vec2{0.5f}},
-        Variant{Vec2{-0.5f}},
-        Variant{Vec3{}},
-        Variant{Vec3{1.0f}},
-        Variant{Vec3{-1.0f}},
-        Variant{Vec3{0.5f}},
-        Variant{Vec3{-0.5f}},
+        Variant{Vector2{}},
+        Variant{Vector2{1.0f}},
+        Variant{Vector2{-1.0f}},
+        Variant{Vector2{0.5f}},
+        Variant{Vector2{-0.5f}},
+        Variant{Vector3{}},
+        Variant{Vector3{1.0f}},
+        Variant{Vector3{-1.0f}},
+        Variant{Vector3{0.5f}},
+        Variant{Vector3{-0.5f}},
     });
 
     for (const auto& test_case : test_cases) {
@@ -991,16 +991,16 @@ TEST(Variant, can_be_used_as_an_argument_to_stream_to_string)
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
-        Variant{Vec2{}},
-        Variant{Vec2{1.0f}},
-        Variant{Vec2{-1.0f}},
-        Variant{Vec2{0.5f}},
-        Variant{Vec2{-0.5f}},
-        Variant{Vec3{}},
-        Variant{Vec3{1.0f}},
-        Variant{Vec3{-1.0f}},
-        Variant{Vec3{0.5f}},
-        Variant{Vec3{-0.5f}},
+        Variant{Vector2{}},
+        Variant{Vector2{1.0f}},
+        Variant{Vector2{-1.0f}},
+        Variant{Vector2{0.5f}},
+        Variant{Vector2{-0.5f}},
+        Variant{Vector3{}},
+        Variant{Vector3{1.0f}},
+        Variant{Vector3{-1.0f}},
+        Variant{Vector3{0.5f}},
+        Variant{Vector3{-0.5f}},
     });
 
     for (const auto& test_case : test_cases) {
@@ -1036,16 +1036,16 @@ TEST(Variant, writing_to_an_ostream_produces_same_output_as_converting_to_a_stri
         Variant{"1"},
         Variant{"a string"},
         Variant{StringName{"a string name"}},
-        Variant{Vec2{}},
-        Variant{Vec2{1.0f}},
-        Variant{Vec2{-1.0f}},
-        Variant{Vec2{0.5f}},
-        Variant{Vec2{-0.5f}},
-        Variant{Vec3{}},
-        Variant{Vec3{1.0f}},
-        Variant{Vec3{-1.0f}},
-        Variant{Vec3{0.5f}},
-        Variant{Vec3{-0.5f}},
+        Variant{Vector2{}},
+        Variant{Vector2{1.0f}},
+        Variant{Vector2{-1.0f}},
+        Variant{Vector2{0.5f}},
+        Variant{Vector2{-0.5f}},
+        Variant{Vector3{}},
+        Variant{Vector3{1.0f}},
+        Variant{Vector3{-1.0f}},
+        Variant{Vector3{0.5f}},
+        Variant{Vector3{-0.5f}},
     });
 
     for (const auto& test_case : test_cases) {
@@ -1199,7 +1199,7 @@ TEST(Variant, StringName_to_StringName_returns_supplied_StringName)
     }
 }
 
-TEST(Variant, StringName_to_Vec3_always_returns_a_zeroed_Vec3)
+TEST(Variant, StringName_to_Vector3_always_returns_a_zeroed_Vector3)
 {
     constexpr auto inputs = std::to_array<std::string_view>({
         "some\tstring",
@@ -1211,11 +1211,11 @@ TEST(Variant, StringName_to_Vec3_always_returns_a_zeroed_Vec3)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {
-        ASSERT_EQ(to<Vec3>(Variant{StringName{input}}), Vec3{});
+        ASSERT_EQ(to<Vector3>(Variant{StringName{input}}), Vector3{});
     }
 }
 
@@ -1231,7 +1231,7 @@ TEST(Variant, std_hash_of_StringName_is_same_as_std_hash_of_string)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {
@@ -1254,7 +1254,7 @@ TEST(Variant, StringName_compares_equivalent_to_string_with_same_content)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {
@@ -1276,7 +1276,7 @@ TEST(Variant, string_compares_equivalent_to_StringName_with_same_content)
         "1, 2, 3",
         "(1, 2, 3)",
         "[1, 2, 3]",
-        "Vec3(1, 2, 3)",
+        "Vector3(1, 2, 3)",
     });
 
     for (const auto& input : inputs) {

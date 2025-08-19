@@ -10,7 +10,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         {-3.0f, 0.0f, 0.0f},
         {-1.0f, 0.0f, 0.0f},
         { 1.0f, 0.0f, 0.0f},

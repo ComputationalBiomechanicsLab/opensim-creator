@@ -37,8 +37,8 @@ namespace
         auto rng = std::default_random_engine{std::random_device{}()};
         auto dist = std::normal_distribution{0.3f, 0.2f};
         const AABB grid_bounds = {{-5.0f,  0.0f, -5.0f}, {5.0f, 0.0f, 5.0f}};
-        const Vec3 grid_dimensions = dimensions_of(grid_bounds);
-        const Vec2uz num_grid_cells = {10, 10};
+        const Vector3 grid_dimensions = dimensions_of(grid_bounds);
+        const Vector2uz num_grid_cells = {10, 10};
 
         std::vector<TransformedMesh> rv;
         rv.reserve(num_grid_cells.x * num_grid_cells.y);
@@ -46,14 +46,14 @@ namespace
         for (size_t x = 0; x < num_grid_cells.x; ++x) {
             for (size_t y = 0; y < num_grid_cells.y; ++y) {
 
-                const Vec3 cell_pos = grid_bounds.min + grid_dimensions * (Vec3{x, 0.0f, y} / Vec3{num_grid_cells.x - 1uz, 1, num_grid_cells.y - 1uz});
+                const Vector3 cell_pos = grid_bounds.min + grid_dimensions * (Vector3{x, 0.0f, y} / Vector3{num_grid_cells.x - 1uz, 1, num_grid_cells.y - 1uz});
                 Mesh mesh;
                 rgs::sample(possible_geometries, &mesh, 1, rng);
 
                 rv.push_back(TransformedMesh{
                     .mesh = mesh,
                     .transform = {
-                        .scale = Vec3{abs(dist(rng))},
+                        .scale = Vector3{abs(dist(rng))},
                         .translation = cell_pos,
                     }
                 });
@@ -77,7 +77,7 @@ namespace
     std::vector<SharedDepthStencilRenderBuffer> generate_blank_cascade_buffers()
     {
         const DepthStencilRenderBufferParams params = {
-            .pixel_dimensions = Vec2i{c_shadowmap_edge_length},
+            .pixel_dimensions = Vector2i{c_shadowmap_edge_length},
             .format = DepthStencilRenderBufferFormat::D32_SFloat,
         };
         return {
@@ -105,14 +105,14 @@ namespace
     std::vector<OrthogonalProjectionParameters> calculate_light_source_orthographic_projections(
         const Camera& camera,
         float aspect_ratio,
-        Vec3 light_world_direction)
+        Vector3 light_world_direction)
     {
         // most of the maths/logic here was ported from an excellently-written ogldev tutorial:
         //
         // - https://ogldev.org/www/tutorial49/tutorial49.html
 
         // precompute transforms
-        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_world_direction}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vector3{light_world_direction}, {0.0f, 1.0f, 0.0f});
         const Matrix4x4 view_to_world = camera.inverse_view_matrix();
         const Matrix4x4 view_to_light = world_to_light * view_to_world;
 
@@ -141,7 +141,7 @@ namespace
 
             // note: Z points opposite to the viewing direction in a right-handed system, so we negate
             // all the Zs here.
-            const auto view_frustum_corners = std::to_array<Vec3>({
+            const auto view_frustum_corners = std::to_array<Vector3>({
                 // near face
                 { view_cascade_xnear,  view_cascade_ynear, -view_cascade_znear},  // top-right
                 {-view_cascade_xnear,  view_cascade_ynear, -view_cascade_znear},  // top-left
@@ -157,7 +157,7 @@ namespace
 
             // compute the bounds of the frustum in light space (the perspective of the light) by
             // projecting each frustum corner into light-space.
-            const AABB light_bounds = bounding_aabb_of(view_frustum_corners, [&view_to_light](const Vec3& frustum_corner)
+            const AABB light_bounds = bounding_aabb_of(view_frustum_corners, [&view_to_light](const Vector3& frustum_corner)
             {
                 return transform_point(view_to_light, frustum_corner);
             });
@@ -245,7 +245,7 @@ private:
 
         // for each of those mappings, render a cascade
         OSC_ASSERT_ALWAYS(cascade_projections.size() == cascade_rasters_.size());
-        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vec3{light_direction_}, {0.0f, 1.0f, 0.0f});
+        const Matrix4x4 world_to_light = look_at({0.0f, 0.0f, 0.0f}, Vector3{light_direction_}, {0.0f, 1.0f, 0.0f});
 
         std::vector<Matrix4x4> rv;
         rv.reserve(cascade_projections.size());
@@ -275,8 +275,8 @@ private:
         csm_material_.set("gDirectionalLight.Base.Color", Color::white());
         csm_material_.set("gDirectionalLight.Base.AmbientIntensity", 0.5f);
         csm_material_.set("gDirectionalLight.Base.DiffuseIntensity", 0.9f);
-        csm_material_.set<Vec3>("gDirectionalLight.Base.Direction", light_direction_);
-        csm_material_.set<Vec3>("gDirectionalLight.Direction", light_direction_);
+        csm_material_.set("gDirectionalLight.Base.Direction", light_direction_);
+        csm_material_.set("gDirectionalLight.Direction", light_direction_);
         csm_material_.set("gObjectColor", Color::dark_grey());
         csm_material_.set_array("gShadowMap", cascade_rasters_);
         csm_material_.set("gEyeWorldPos", user_camera_.position());
@@ -288,9 +288,9 @@ private:
         ends.reserve(c_normalized_cascade_planes.size()-1);
         for (size_t i = 1; i < c_normalized_cascade_planes.size(); ++i) {
             const auto [near, far] = user_camera_.clipping_planes();
-            const Vec4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
+            const Vector4 viewer_position = {0.0f, 0.0f, -lerp(near, far, c_normalized_cascade_planes[i]), 1.0f};
             const Matrix4x4 proj = user_camera_.projection_matrix(ui::get_main_window_workspace_aspect_ratio());
-            const Vec4 proj_pos = (proj * viewer_position);
+            const Vector4 proj_pos = (proj * viewer_position);
             ends.push_back(proj_pos.z);
         }
         csm_material_.set_array("gCascadeEndClipSpace", ends);
@@ -304,9 +304,9 @@ private:
 
     void draw_debug_overlays()
     {
-        const Vec2 overlay_dimensions{256.0f};
+        const Vector2 overlay_dimensions{256.0f};
 
-        Vec2 cursor = {0.0f, 0.0f};
+        Vector2 cursor = {0.0f, 0.0f};
         for ([[maybe_unused]] const auto& cascade_raster : cascade_rasters_) {
             // graphics::blit_to_screen(cascade_raster, Rect{cursor, cursor + overlay_dimensions});  // TODO
             cursor.x += overlay_dimensions.x;
@@ -321,7 +321,7 @@ private:
         resource_loader_.slurp("oscar_demos/learnopengl/shaders/Guest/CSM/lighting.vert"),
         resource_loader_.slurp("oscar_demos/learnopengl/shaders/Guest/CSM/lighting.frag"),
     }};
-    Vec3 light_direction_ = normalize(Vec3{0.5f, -1.0f, 0.0f});
+    Vector3 light_direction_ = normalize(Vector3{0.5f, -1.0f, 0.0f});
     std::vector<SharedDepthStencilRenderBuffer> cascade_rasters_ = generate_blank_cascade_buffers();
 
     // ui

@@ -11,7 +11,7 @@
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
@@ -240,7 +240,7 @@ void osc::mi::point_axis_towards(
     int axis,
     UID other)
 {
-    const Vec3 choicePos = doc.getPosByID(other);
+    const Vector3 choicePos = doc.getPosByID(other);
     const Transform sourceXform = {.translation = doc.getPosByID(id)};
 
     doc.updByID(id).setXform(doc, point_axis_towards(sourceXform, axis, choicePos));

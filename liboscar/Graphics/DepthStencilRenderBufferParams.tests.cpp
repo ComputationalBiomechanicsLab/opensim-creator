@@ -1,6 +1,6 @@
 #include "DepthStencilRenderBufferParams.h"
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <gtest/gtest.h>
 
@@ -14,7 +14,7 @@ TEST(DepthStencilRenderBufferParams, can_default_construct)
 TEST(DepthStencilRenderBufferParams, default_constructed_has_1x1_pixel_dimensions)
 {
     const DepthStencilRenderBufferParams default_constructed;
-    ASSERT_EQ(default_constructed.pixel_dimensions, Vec2i(1, 1));
+    ASSERT_EQ(default_constructed.pixel_dimensions, Vector2i(1, 1));
 }
 
 TEST(DepthStencilRenderBufferParams, has_value_equality)

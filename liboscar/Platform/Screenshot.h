@@ -23,10 +23,10 @@ namespace osc
         const Texture2D& texture() const { return texture_; }
 
         // Returns the dimensions of the screenshot in physical pixels.
-        Vec2i pixel_dimensions() const { return texture_.pixel_dimensions(); }
+        Vector2i pixel_dimensions() const { return texture_.pixel_dimensions(); }
 
         // Returns the dimensions of the screenshot in device-independent pixels.
-        Vec2 dimensions() const { return texture_.dimensions(); }
+        Vector2 dimensions() const { return texture_.dimensions(); }
 
         // Returns a sequence of annotations (metadata) associated with the screenshot.
         std::span<const ScreenshotAnnotation> annotations() const { return annotations_; }

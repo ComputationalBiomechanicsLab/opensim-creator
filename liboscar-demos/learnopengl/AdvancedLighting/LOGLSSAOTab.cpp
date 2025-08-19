@@ -23,20 +23,20 @@ namespace
         return rv;
     }
 
-    std::vector<Vec3> generate_sample_kernel(size_t num_samples)
+    std::vector<Vector3> generate_sample_kernel(size_t num_samples)
     {
         std::default_random_engine rng{std::random_device{}()};
         std::uniform_real_distribution<float> zero_to_one{0.0f, 1.0f};
         std::uniform_real_distribution<float> minus_one_to_one{-1.0f, 1.0f};
 
-        std::vector<Vec3> rv;
+        std::vector<Vector3> rv;
         rv.reserve(num_samples);
         for (size_t i = 0; i < num_samples; ++i) {
             // scale such that they are more aligned to the center of the kernel
             float scale = static_cast<float>(i)/static_cast<float>(num_samples);
             scale = lerp(0.1f, 1.0f, scale*scale);
 
-            Vec3 sample = {minus_one_to_one(rng), minus_one_to_one(rng), minus_one_to_one(rng)};
+            Vector3 sample = {minus_one_to_one(rng), minus_one_to_one(rng), minus_one_to_one(rng)};
             sample = normalize(sample);
             sample *= zero_to_one(rng);
             sample *= scale;
@@ -64,7 +64,7 @@ namespace
         return rv;
     }
 
-    Texture2D generate_noise_texture(Vec2i dimensions)
+    Texture2D generate_noise_texture(Vector2i dimensions)
     {
         const std::vector<Color> pixels =
             generate_noise_texture_pixels(static_cast<size_t>(area_of(dimensions)));
@@ -156,9 +156,9 @@ private:
     void draw_3d_scene()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Vec2 workspace_dimensions = workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_dimensions = workspace_screen_space_rect.dimensions();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
+        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_dimensions;
 
         // ensure textures/buffers have correct dimensions
         {
@@ -185,7 +185,7 @@ private:
             gbuffer_state_.material.set("uInvertedNormals", true);
             graphics::draw(
                 cube_mesh_,
-                {.scale = Vec3{7.5f}, .translation = {0.0f, 7.0f, 0.0f}},
+                {.scale = Vector3{7.5f}, .translation = {0.0f, 7.0f, 0.0f}},
                 gbuffer_state_.material,
                 camera_
             );
@@ -205,7 +205,7 @@ private:
         camera_.render_to(gbuffer_state_.render_target);
     }
 
-    void render_ssao_pass(const Vec2& viewport_dimensions)
+    void render_ssao_pass(const Vector2& viewport_dimensions)
     {
         ssao_state_.material.set("uPositionTex", gbuffer_state_.position);
         ssao_state_.material.set("uNormalTex", gbuffer_state_.normal);
@@ -265,25 +265,25 @@ private:
             &blur_state_.output_texture,
         });
 
-        const Vec2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
+        const Vector2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
         for (size_t i = 0; i < textures.size(); ++i) {
             const float offset = static_cast<float>(i)*overlay_size;
-            const Vec2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
-            const Vec2 overlay_top_right = overlay_bottom_left + Vec2{overlay_size};
+            const Vector2 overlay_bottom_left = {viewport_top_left.x + offset, viewport_top_left.y - overlay_size};
+            const Vector2 overlay_top_right = overlay_bottom_left + Vector2{overlay_size};
             graphics::blit_to_main_window(*textures[i], Rect::from_corners(overlay_bottom_left, overlay_top_right));
         }
     }
 
-    std::vector<Vec3> sample_kernel_ = generate_sample_kernel(64);
+    std::vector<Vector3> sample_kernel_ = generate_sample_kernel(64);
     Texture2D noise_texture_ = generate_noise_texture({4, 4});
-    Vec3 light_position_ = {2.0f, 4.0f, -2.0f};
+    Vector3 light_position_ = {2.0f, 4.0f, -2.0f};
     Color light_color_ = {0.2f, 0.2f, 0.7f, 1.0f};
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 32, .num_height_segments = 32}};
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // rendering state
     struct GBufferRenderingState final {
@@ -317,7 +317,7 @@ private:
             },
         };
 
-        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
@@ -334,7 +334,7 @@ private:
         Material material = load_ssao_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
@@ -346,7 +346,7 @@ private:
         Material material = load_blur_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8_UNORM);
 
-        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);
@@ -358,7 +358,7 @@ private:
         Material material = load_lighting_material(App::resource_loader());
         RenderTexture output_texture = render_texture_with_color_format(ColorRenderBufferFormat::R8G8B8A8_SRGB);
 
-        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             output_texture.set_pixel_dimensions(pixel_dimensions);
             output_texture.set_device_pixel_ratio(device_pixel_ratio);

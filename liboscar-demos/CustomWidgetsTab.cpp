@@ -8,9 +8,9 @@ using namespace osc;
 
 namespace
 {
-    void draw_widget_title(CStringView title, Vec2 pos)
+    void draw_widget_title(CStringView title, Vector2 pos)
     {
-        const Vec2 text_top_left = pos + ui::get_style_frame_padding();
+        const Vector2 text_top_left = pos + ui::get_style_frame_padding();
         ui::get_panel_draw_list().add_text(text_top_left, ui::get_color(ui::ColorVar::Text), title);
     }
 }
@@ -18,7 +18,7 @@ namespace
 // toggle
 namespace
 {
-    void draw_toggler(bool enabled, bool hovered, Vec2 pos, Vec2 size)
+    void draw_toggler(bool enabled, bool hovered, Vector2 pos, Vector2 size)
     {
         const float radius = size.y * 0.5f;
         const float rounding = size.y * 0.25f;
@@ -29,7 +29,7 @@ namespace
             ui::get_color(enabled ? ui::ColorVar::FrameBgActive : ui::ColorVar::FrameBgHovered) :
             ui::get_color(enabled ? ui::ColorVar::CheckMark : ui::ColorVar::FrameBg);
 
-        const Vec2 pmid{
+        const Vector2 pmid{
             pos.x + radius + (enabled ? 1.0f : 0.0f) * (size.x - radius * 2),
             pos.y + size.y / 2.0f,
         };
@@ -45,7 +45,7 @@ namespace
             draw_list.add_circle_filled({pmid, radius * 0.8f}, ui::get_color(ui::ColorVar::SliderGrab));
         }
         else {
-            const Vec2 offs = {radius*0.8f, radius*0.8f};
+            const Vector2 offs = {radius*0.8f, radius*0.8f};
             draw_list.add_rect_filled(Rect::from_origin_and_dimensions(pmid, 2.0f*offs), ui::get_color(ui::ColorVar::SliderGrab), rounding);
         }
     }
@@ -56,8 +56,8 @@ namespace
 
         const float title_height = ui::get_text_line_height_in_current_panel();
 
-        const Vec2 p = ui::get_cursor_ui_position();
-        const Vec2 bb(ui::get_column_width(), ui::get_frame_height());
+        const Vector2 p = ui::get_cursor_ui_position();
+        const Vector2 bb(ui::get_column_width(), ui::get_frame_height());
         ui::push_style_var(ui::StyleVar::ButtonTextAlign, {0.0f, 0.0f});
         ui::push_id(label);
         const bool status = ui::draw_button("###toggle_button", bb);
@@ -68,15 +68,15 @@ namespace
 
         ui::pop_id();
         ui::pop_style_var();
-        const Vec2 button_top_left = ui::get_item_top_left_ui_position();
-        const Vec2 button_bottom_right = ui::get_item_bottom_right_ui_position();
+        const Vector2 button_top_left = ui::get_item_top_left_ui_position();
+        const Vector2 button_bottom_right = ui::get_item_bottom_right_ui_position();
 
         draw_widget_title(label, p);
 
         const float toggle_height = title_height * 0.9f;
-        const Vec2 frame_padding = ui::get_style_frame_padding();
-        const Vec2 toggle_size = {toggle_height * 1.75f, toggle_height};
-        const Vec2 toggle_pos{
+        const Vector2 frame_padding = ui::get_style_frame_padding();
+        const Vector2 toggle_size = {toggle_height * 1.75f, toggle_height};
+        const Vector2 toggle_pos{
             button_bottom_right.x - toggle_size.x - frame_padding.x,
             button_top_left.y + (title_height - toggle_size.y)/2.0f + frame_padding.y,
         };

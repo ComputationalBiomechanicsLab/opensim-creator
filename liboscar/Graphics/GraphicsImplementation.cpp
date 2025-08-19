@@ -72,10 +72,10 @@
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Algorithms.h>
@@ -494,9 +494,9 @@ namespace
 
         switch (e) {
         case GL_FLOAT:        return ShaderPropertyType::Float;
-        case GL_FLOAT_VEC2:   return ShaderPropertyType::Vec2;
-        case GL_FLOAT_VEC3:   return ShaderPropertyType::Vec3;
-        case GL_FLOAT_VEC4:   return ShaderPropertyType::Vec4;
+        case GL_FLOAT_VEC2:   return ShaderPropertyType::Vector2;
+        case GL_FLOAT_VEC3:   return ShaderPropertyType::Vector3;
+        case GL_FLOAT_VEC4:   return ShaderPropertyType::Vector4;
         case GL_FLOAT_MAT3:   return ShaderPropertyType::Mat3;
         case GL_FLOAT_MAT4:   return ShaderPropertyType::Mat4;
         case GL_INT:          return ShaderPropertyType::Int;
@@ -655,7 +655,7 @@ namespace
         Mesh mesh;
         MaybeIndex maybe_submesh_index;
         Matrix4x4 transform;
-        Vec3 world_space_centroid;
+        Vector3 world_space_centroid;
     };
 
     static_assert(std::is_nothrow_destructible_v<RenderObject>);
@@ -685,7 +685,7 @@ namespace
         return normal_matrix4x4(ro.transform);
     }
 
-    const Vec3& world_space_centroid(const RenderObject& ro)
+    const Vector3& world_space_centroid(const RenderObject& ro)
     {
         return ro.world_space_centroid;
     }
@@ -695,18 +695,18 @@ namespace
     // (handy for depth sorting)
     class RenderObjectIsFartherFrom final {
     public:
-        explicit RenderObjectIsFartherFrom(const Vec3& pos) : pos_{pos} {}
+        explicit RenderObjectIsFartherFrom(const Vector3& pos) : pos_{pos} {}
 
         bool operator()(const RenderObject& a, const RenderObject& b) const
         {
-            const Vec3 centroid_a = world_space_centroid(a);
-            const Vec3 centroid_b = world_space_centroid(b);
-            const Vec3 pos_to_a = centroid_a - pos_;
-            const Vec3 pos_to_b = centroid_b - pos_;
+            const Vector3 centroid_a = world_space_centroid(a);
+            const Vector3 centroid_b = world_space_centroid(b);
+            const Vector3 pos_to_a = centroid_a - pos_;
+            const Vector3 pos_to_b = centroid_b - pos_;
             return length2(pos_to_a) > length2(pos_to_b);
         }
     private:
-        Vec3 pos_;
+        Vector3 pos_;
     };
 
     class RenderObjectHasMaterial final {
@@ -774,7 +774,7 @@ namespace
     std::vector<RenderObject>::iterator sort_render_queue(
         std::vector<RenderObject>::iterator queue_begin,
         std::vector<RenderObject>::iterator queue_end,
-        Vec3 camera_pos)
+        Vector3 camera_pos)
     {
         // partition the render queue into `[opaque_objs | transparent_objs]`
         const auto opaque_objs_end = std::partition(queue_begin, queue_end, is_opaque);
@@ -843,7 +843,7 @@ namespace
     struct RenderPassState final {
 
         RenderPassState(
-            const Vec3& camera_pos_,
+            const Vector3& camera_pos_,
             const Matrix4x4& view_matrix_,
             const Matrix4x4& projection_matrix_) :
 
@@ -852,7 +852,7 @@ namespace
             projection_matrix{projection_matrix_}
         {}
 
-        Vec3 camera_pos;
+        Vector3 camera_pos;
         Matrix4x4 view_matrix;
         Matrix4x4 projection_matrix;
         Matrix4x4 view_projection_matrix = projection_matrix * view_matrix;
@@ -1509,7 +1509,7 @@ namespace
 class osc::Texture2D::Impl final {
 public:
     explicit Impl(
-        Vec2i pixel_dimensions,
+        Vector2i pixel_dimensions,
         TextureFormat texture_format,
         ColorSpace color_space,
         TextureWrapMode wrap_mode,
@@ -1526,14 +1526,14 @@ public:
         OSC_ASSERT(pixel_dimensions_.x > 0 and pixel_dimensions_.y > 0);
     }
 
-    Vec2i pixel_dimensions() const
+    Vector2i pixel_dimensions() const
     {
         return pixel_dimensions_;
     }
 
-    Vec2 dimensions() const
+    Vector2 dimensions() const
     {
-        return Vec2{pixel_dimensions()} / device_pixel_ratio();
+        return Vector2{pixel_dimensions()} / device_pixel_ratio();
     }
 
     float device_pixel_ratio() const
@@ -1713,7 +1713,7 @@ private:
 
     friend class GraphicsBackend;
 
-    Vec2i pixel_dimensions_;
+    Vector2i pixel_dimensions_;
     TextureFormat texture_format_;
     ColorSpace color_space_;
     TextureWrapMode wrap_mode_u_ = TextureWrapMode::Repeat;
@@ -1787,7 +1787,7 @@ size_t osc::num_bytes_per_component_in(TextureComponentFormat component_format)
 }
 
 osc::Texture2D::Texture2D(
-    Vec2i pixel_dimensions,
+    Vector2i pixel_dimensions,
     TextureFormat texture_format,
     ColorSpace color_space,
     TextureWrapMode wrap_mode,
@@ -1796,12 +1796,12 @@ osc::Texture2D::Texture2D(
     impl_{make_cow<Impl>(pixel_dimensions, texture_format, color_space, wrap_mode, filter_mode)}
 {}
 
-Vec2i osc::Texture2D::pixel_dimensions() const
+Vector2i osc::Texture2D::pixel_dimensions() const
 {
     return impl_->pixel_dimensions();
 }
 
-Vec2 osc::Texture2D::dimensions() const
+Vector2 osc::Texture2D::dimensions() const
 {
     return impl_->dimensions();
 }
@@ -2053,9 +2053,9 @@ namespace
 
         const RenderBufferParams& parameters() const { return params_; }
 
-        Vec2i pixel_dimensions() const { return params_.pixel_dimensions; }
+        Vector2i pixel_dimensions() const { return params_.pixel_dimensions; }
 
-        void set_pixel_dimensions(Vec2i new_pixel_dimensions)
+        void set_pixel_dimensions(Vector2i new_pixel_dimensions)
         {
             OSC_ASSERT((dimensionality() != TextureDimensionality::Cube or new_pixel_dimensions.x == new_pixel_dimensions.y) && "cannot set a cubemap to have non-square dimensions");
 
@@ -2269,7 +2269,7 @@ SharedColorRenderBuffer osc::SharedColorRenderBuffer::clone() const
     return SharedColorRenderBuffer{*impl_};
 }
 
-Vec2i osc::SharedColorRenderBuffer::pixel_dimensions() const
+Vector2i osc::SharedColorRenderBuffer::pixel_dimensions() const
 {
     return impl_->pixel_dimensions();
 }
@@ -2350,7 +2350,7 @@ SharedDepthStencilRenderBuffer osc::SharedDepthStencilRenderBuffer::clone() cons
     return SharedDepthStencilRenderBuffer{*impl_};
 }
 
-Vec2i osc::SharedDepthStencilRenderBuffer::pixel_dimensions() const
+Vector2i osc::SharedDepthStencilRenderBuffer::pixel_dimensions() const
 {
     return impl_->pixel_dimensions();
 }
@@ -2374,7 +2374,7 @@ class osc::RenderTexture::Impl final {
 public:
     Impl() : Impl{RenderTextureParams{}} {}
 
-    explicit Impl(Vec2i pixel_dimensions) :
+    explicit Impl(Vector2i pixel_dimensions) :
         Impl{RenderTextureParams{.pixel_dimensions = pixel_dimensions}}
     {}
 
@@ -2409,12 +2409,12 @@ public:
 
     ~Impl() noexcept = default;
 
-    Vec2i pixel_dimensions() const
+    Vector2i pixel_dimensions() const
     {
         return color_buffer_.impl_->pixel_dimensions();
     }
 
-    void set_pixel_dimensions(Vec2i new_pixel_dimensions)
+    void set_pixel_dimensions(Vector2i new_pixel_dimensions)
     {
         if (new_pixel_dimensions != pixel_dimensions()) {
             color_buffer_.impl_->set_pixel_dimensions(new_pixel_dimensions);
@@ -2422,9 +2422,9 @@ public:
         }
     }
 
-    Vec2 dimensions() const
+    Vector2 dimensions() const
     {
-        return Vec2{pixel_dimensions()} / device_pixel_ratio_;
+        return Vector2{pixel_dimensions()} / device_pixel_ratio_;
     }
 
     float device_pixel_ratio() const
@@ -2534,17 +2534,17 @@ osc::RenderTexture::RenderTexture(const RenderTextureParams& params) :
     impl_{make_cow<Impl>(params)}
 {}
 
-Vec2i osc::RenderTexture::pixel_dimensions() const
+Vector2i osc::RenderTexture::pixel_dimensions() const
 {
     return impl_->pixel_dimensions();
 }
 
-void osc::RenderTexture::set_pixel_dimensions(Vec2i new_pixel_dimensions)
+void osc::RenderTexture::set_pixel_dimensions(Vector2i new_pixel_dimensions)
 {
     impl_.upd()->set_pixel_dimensions(new_pixel_dimensions);
 }
 
-Vec2 osc::RenderTexture::dimensions() const
+Vector2 osc::RenderTexture::dimensions() const
 {
     return impl_->dimensions();
 }
@@ -2963,10 +2963,10 @@ namespace
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Vec4) == 4*sizeof(GLfloat) and alignof(Vec4) >= alignof(GLfloat));
+            static_assert(sizeof(Vector4) == 4*sizeof(GLfloat) and alignof(Vector4) >= alignof(GLfloat));
 
             if (colors.size() == 1) {
-                const Vec4 linear_color = to_linear_colorspace(colors.front());
+                const Vector4 linear_color = to_linear_colorspace(colors.front());
                 gl::UniformVec4 u{shader_element.location};
                 gl::set_uniform(u, linear_color);
             }
@@ -2984,7 +2984,7 @@ namespace
                 // a shader. OSC's rendering pipeline assumes that all color values in a shader
                 // are linearized
 
-                std::vector<Vec4> linear_colors;
+                std::vector<Vector4> linear_colors;
                 linear_colors.reserve(colors.size());
                 for (const auto& color : colors) {
                     linear_colors.emplace_back(to_linear_colorspace(color));
@@ -3007,37 +3007,37 @@ namespace
     };
 
     template<>
-    struct MaterialValueOpenGLTraits<Vec2> final {
+    struct MaterialValueOpenGLTraits<Vector2> final {
         static void try_bind_material_value_to_shader_element(
-            std::span<const Vec2> vecs,
+            std::span<const Vector2> vecs,
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Vec2) == 2*sizeof(GLfloat) and alignof(Vec2) >= alignof(GLfloat));
+            static_assert(sizeof(Vector2) == 2*sizeof(GLfloat) and alignof(Vector2) >= alignof(GLfloat));
             glUniform2fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
         }
     };
 
     template<>
-    struct MaterialValueOpenGLTraits<Vec3> final {
+    struct MaterialValueOpenGLTraits<Vector3> final {
         static void try_bind_material_value_to_shader_element(
-            std::span<const Vec3> vecs,
+            std::span<const Vector3> vecs,
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Vec3) == 3*sizeof(GLfloat) and alignof(Vec3) >= alignof(GLfloat));
+            static_assert(sizeof(Vector3) == 3*sizeof(GLfloat) and alignof(Vector3) >= alignof(GLfloat));
             glUniform3fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
         }
     };
 
     template<>
-    struct MaterialValueOpenGLTraits<Vec4> final {
+    struct MaterialValueOpenGLTraits<Vector4> final {
         static void try_bind_material_value_to_shader_element(
-            std::span<const Vec4> vecs,
+            std::span<const Vector4> vecs,
             const ShaderElement& shader_element,
             OpenGLDrawBatchState&)
         {
-            static_assert(sizeof(Vec4) == 4*sizeof(GLfloat) and alignof(Vec4) >= alignof(GLfloat));
+            static_assert(sizeof(Vector4) == 4*sizeof(GLfloat) and alignof(Vector4) >= alignof(GLfloat));
             glUniform4fv(shader_element.location, glsizei(vecs), value_ptr(at(vecs, 0)));
         }
     };
@@ -3726,97 +3726,97 @@ void osc::MaterialPropertyBlock::set_array<float>(const StringName& property_nam
 }
 
 template<>
-std::optional<Vec2> osc::MaterialPropertyBlock::get<Vec2>(std::string_view property_name) const
+std::optional<Vector2> osc::MaterialPropertyBlock::get<Vector2>(std::string_view property_name) const
 {
-    return impl_->get<Vec2>(property_name);
+    return impl_->get<Vector2>(property_name);
 }
 
 template<>
-std::optional<Vec2> osc::MaterialPropertyBlock::get<Vec2>(const StringName& property_name) const
+std::optional<Vector2> osc::MaterialPropertyBlock::get<Vector2>(const StringName& property_name) const
 {
-    return impl_->get<Vec2>(property_name);
+    return impl_->get<Vector2>(property_name);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<Vec2>(std::string_view property_name, const Vec2& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vec2>(const StringName& property_name, const Vec2& value)
+void osc::MaterialPropertyBlock::set<Vector2>(std::string_view property_name, const Vector2& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<Vec3> osc::MaterialPropertyBlock::get<Vec3>(std::string_view property_name) const
+void osc::MaterialPropertyBlock::set<Vector2>(const StringName& property_name, const Vector2& value)
 {
-    return impl_->get<Vec3>(property_name);
+    impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<Vec3> osc::MaterialPropertyBlock::get<Vec3>(const StringName& property_name) const
+std::optional<Vector3> osc::MaterialPropertyBlock::get<Vector3>(std::string_view property_name) const
 {
-    return impl_->get<Vec3>(property_name);
+    return impl_->get<Vector3>(property_name);
 }
 
 template<>
-std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_array<Vec3>(std::string_view property_name) const
+std::optional<Vector3> osc::MaterialPropertyBlock::get<Vector3>(const StringName& property_name) const
 {
-    return impl_->get_array<Vec3>(property_name);
+    return impl_->get<Vector3>(property_name);
 }
 
 template<>
-std::optional<std::span<const Vec3>> osc::MaterialPropertyBlock::get_array<Vec3>(const StringName& property_name) const
+std::optional<std::span<const Vector3>> osc::MaterialPropertyBlock::get_array<Vector3>(std::string_view property_name) const
 {
-    return impl_->get_array<Vec3>(property_name);
+    return impl_->get_array<Vector3>(property_name);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set_array<Vec3>(std::string_view property_name, std::span<const Vec3> values)
+std::optional<std::span<const Vector3>> osc::MaterialPropertyBlock::get_array<Vector3>(const StringName& property_name) const
+{
+    return impl_->get_array<Vector3>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set_array<Vector3>(std::string_view property_name, std::span<const Vector3> values)
 {
     impl_.upd()->set_array(property_name, values);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set_array<Vec3>(const StringName& property_name, std::span<const Vec3> values)
+void osc::MaterialPropertyBlock::set_array<Vector3>(const StringName& property_name, std::span<const Vector3> values)
 {
-    impl_.upd()->set_array<Vec3>(property_name, values);
+    impl_.upd()->set_array<Vector3>(property_name, values);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<Vec3>(std::string_view property_name, const Vec3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vec3>(const StringName& property_name, const Vec3& value)
+void osc::MaterialPropertyBlock::set<Vector3>(std::string_view property_name, const Vector3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-std::optional<Vec4> osc::MaterialPropertyBlock::get<Vec4>(std::string_view property_name) const
-{
-    return impl_->get<Vec4>(property_name);
-}
-
-template<>
-std::optional<Vec4> osc::MaterialPropertyBlock::get<Vec4>(const StringName& property_name) const
-{
-    return impl_->get<Vec4>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vec4>(std::string_view property_name, const Vec4& value)
+void osc::MaterialPropertyBlock::set<Vector3>(const StringName& property_name, const Vector3& value)
 {
     impl_.upd()->set(property_name, value);
 }
 
 template<>
-void osc::MaterialPropertyBlock::set<Vec4>(const StringName& property_name, const Vec4& value)
+std::optional<Vector4> osc::MaterialPropertyBlock::get<Vector4>(std::string_view property_name) const
+{
+    return impl_->get<Vector4>(property_name);
+}
+
+template<>
+std::optional<Vector4> osc::MaterialPropertyBlock::get<Vector4>(const StringName& property_name) const
+{
+    return impl_->get<Vector4>(property_name);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set<Vector4>(std::string_view property_name, const Vector4& value)
+{
+    impl_.upd()->set(property_name, value);
+}
+
+template<>
+void osc::MaterialPropertyBlock::set<Vector4>(const StringName& property_name, const Vector4& value)
 {
     impl_.upd()->set(property_name, value);
 }
@@ -4182,7 +4182,7 @@ namespace
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
     template<typename T>
-    concept UserFacingVertexData = SameAsAnyOf<T, Vec2, Vec3, Vec4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
+    concept UserFacingVertexData = SameAsAnyOf<T, Vector2, Vector3, Vector4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
 
     // types that are encode-/decode-able into a vertex buffer
     template<typename T>
@@ -4867,22 +4867,22 @@ public:
         return vertex_buffer_.has_vertices();
     }
 
-    std::vector<Vec3> vertices() const
+    std::vector<Vector3> vertices() const
     {
-        return vertex_buffer_.read<Vec3>(VertexAttribute::Position);
+        return vertex_buffer_.read<Vector3>(VertexAttribute::Position);
     }
 
-    void set_vertices(std::span<const Vec3> vertices)
+    void set_vertices(std::span<const Vector3> vertices)
     {
-        vertex_buffer_.write<Vec3>(VertexAttribute::Position, vertices);
+        vertex_buffer_.write<Vector3>(VertexAttribute::Position, vertices);
 
         range_check_indices_and_recalculate_bounds();
         version_->reset();
     }
 
-    void transform_vertices(const std::function<Vec3(Vec3)>& transformer)
+    void transform_vertices(const std::function<Vector3(Vector3)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, transformer);
+        vertex_buffer_.transform_attribute<Vector3>(VertexAttribute::Position, transformer);
 
         range_check_indices_and_recalculate_bounds();
         version_->reset();
@@ -4890,7 +4890,7 @@ public:
 
     void transform_vertices(const Transform& transform)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&transform](Vec3 vertex)
+        vertex_buffer_.transform_attribute<Vector3>(VertexAttribute::Position, [&transform](Vector3 vertex)
         {
             return transform * vertex;
         });
@@ -4901,7 +4901,7 @@ public:
 
     void transform_vertices(const Matrix4x4& matrix4x4)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Position, [&matrix4x4](Vec3 vertex)
+        vertex_buffer_.transform_attribute<Vector3>(VertexAttribute::Position, [&matrix4x4](Vector3 vertex)
         {
             return transform_point(matrix4x4, vertex);
         });
@@ -4915,21 +4915,21 @@ public:
         return vertex_buffer_.has_attribute(VertexAttribute::Normal);
     }
 
-    std::vector<Vec3> normals() const
+    std::vector<Vector3> normals() const
     {
-        return vertex_buffer_.read<Vec3>(VertexAttribute::Normal);
+        return vertex_buffer_.read<Vector3>(VertexAttribute::Normal);
     }
 
-    void set_normals(std::span<const Vec3> normals)
+    void set_normals(std::span<const Vector3> normals)
     {
-        vertex_buffer_.write<Vec3>(VertexAttribute::Normal, normals);
+        vertex_buffer_.write<Vector3>(VertexAttribute::Normal, normals);
 
         version_->reset();
     }
 
-    void transform_normals(const std::function<Vec3(Vec3)>& transformer)
+    void transform_normals(const std::function<Vector3(Vector3)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec3>(VertexAttribute::Normal, transformer);
+        vertex_buffer_.transform_attribute<Vector3>(VertexAttribute::Normal, transformer);
 
         version_->reset();
     }
@@ -4939,21 +4939,21 @@ public:
         return vertex_buffer_.has_attribute(VertexAttribute::TexCoord0);
     }
 
-    std::vector<Vec2> tex_coords() const
+    std::vector<Vector2> tex_coords() const
     {
-        return vertex_buffer_.read<Vec2>(VertexAttribute::TexCoord0);
+        return vertex_buffer_.read<Vector2>(VertexAttribute::TexCoord0);
     }
 
-    void set_tex_coords(std::span<const Vec2> coords)
+    void set_tex_coords(std::span<const Vector2> coords)
     {
-        vertex_buffer_.write<Vec2>(VertexAttribute::TexCoord0, coords);
+        vertex_buffer_.write<Vector2>(VertexAttribute::TexCoord0, coords);
 
         version_->reset();
     }
 
-    void transform_tex_coords(const std::function<Vec2(Vec2)>& transformer)
+    void transform_tex_coords(const std::function<Vector2(Vector2)>& transformer)
     {
-        vertex_buffer_.transform_attribute<Vec2>(VertexAttribute::TexCoord0, transformer);
+        vertex_buffer_.transform_attribute<Vector2>(VertexAttribute::TexCoord0, transformer);
 
         version_->reset();
     }
@@ -4970,14 +4970,14 @@ public:
         version_.reset();
     }
 
-    std::vector<Vec4> tangents() const
+    std::vector<Vector4> tangents() const
     {
-        return vertex_buffer_.read<Vec4>(VertexAttribute::Tangent);
+        return vertex_buffer_.read<Vector4>(VertexAttribute::Tangent);
     }
 
-    void set_tangents(std::span<const Vec4> tangents)
+    void set_tangents(std::span<const Vector4> tangents)
     {
-        vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
+        vertex_buffer_.write<Vector4>(VertexAttribute::Tangent, tangents);
 
         version_->reset();
     }
@@ -5010,9 +5010,9 @@ public:
         }
     }
 
-    void for_each_indexed_vertex(const std::function<void(Vec3)>& callback) const
+    void for_each_indexed_vertex(const std::function<void(Vector3)>& callback) const
     {
-        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
+        const auto positions = vertex_buffer_.iter<Vector3>(VertexAttribute::Position).begin();
         for (auto index : indices()) {
             callback(positions[index]);
         }
@@ -5027,7 +5027,7 @@ public:
         const MeshIndicesView mesh_indices = indices();
         const size_t steps = (mesh_indices.size() / 3) * 3;
 
-        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position).begin();
+        const auto positions = vertex_buffer_.iter<Vector3>(VertexAttribute::Position).begin();
         for (size_t i = 0; i < steps; i += 3) {
 
             // can use unchecked access here: `mesh_indices` are range-checked on writing
@@ -5051,7 +5051,7 @@ public:
             throw std::runtime_error{"provided first index offset is out-of-bounds"};
         }
 
-        const auto mesh_vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
+        const auto mesh_vertices = vertex_buffer_.iter<Vector3>(VertexAttribute::Position);
 
         // can use unchecked access here: `mesh_indices` are range-checked on writing
         return Triangle{
@@ -5061,11 +5061,11 @@ public:
         };
     }
 
-    std::vector<Vec3> indexed_vertices() const
+    std::vector<Vector3> indexed_vertices() const
     {
-        std::vector<Vec3> rv;
+        std::vector<Vector3> rv;
         rv.reserve(num_indices());
-        for_each_indexed_vertex([&rv](Vec3 v) { rv.push_back(v); });
+        for_each_indexed_vertex([&rv](Vector3 v) { rv.push_back(v); });
         return rv;
     }
 
@@ -5157,13 +5157,13 @@ public:
         // - at the end, if counts[i] > 1, then renormalize that normal (it contains a sum)
 
         const auto mesh_indices = indices();
-        const auto positions = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
-        auto normals = vertex_buffer_.iter<Vec3>(VertexAttribute::Normal);
+        const auto positions = vertex_buffer_.iter<Vector3>(VertexAttribute::Position);
+        auto normals = vertex_buffer_.iter<Vector3>(VertexAttribute::Normal);
         std::vector<uint16_t> counts(normals.size());
 
         for (size_t i = 0, len = 3*(mesh_indices.size()/3); i < len; i+=3) {
             // get triangle indices
-            const Vec3uz idxs = {mesh_indices[i], mesh_indices[i+1], mesh_indices[i+2]};
+            const Vector3uz idxs = {mesh_indices[i], mesh_indices[i+1], mesh_indices[i+2]};
 
             // get triangle
             const Triangle triangle = {positions[idxs[0]], positions[idxs[1]], positions[idxs[2]]};
@@ -5189,7 +5189,7 @@ public:
         // renormalize shared normals
         for (size_t i = 0; i < counts.size(); ++i) {
             if (counts[i] > 1) {
-                normals[i] = normalize(Vec3{normals[i]});
+                normals[i] = normalize(Vector3{normals[i]});
             }
         }
     }
@@ -5218,19 +5218,19 @@ public:
 
         // calculate tangents
 
-        const auto vbverts = vertex_buffer_.iter<Vec3>(VertexAttribute::Position);
-        const auto vbnormals = vertex_buffer_.iter<Vec3>(VertexAttribute::Normal);
-        const auto vbtexcoords = vertex_buffer_.iter<Vec2>(VertexAttribute::TexCoord0);
+        const auto vbverts = vertex_buffer_.iter<Vector3>(VertexAttribute::Position);
+        const auto vbnormals = vertex_buffer_.iter<Vector3>(VertexAttribute::Normal);
+        const auto vbtexcoords = vertex_buffer_.iter<Vector2>(VertexAttribute::TexCoord0);
 
         const auto tangents = calc_tangent_vectors(
             MeshTopology::Triangles,
-            std::vector<Vec3>(vbverts.begin(), vbverts.end()),
-            std::vector<Vec3>(vbnormals.begin(), vbnormals.end()),
-            std::vector<Vec2>(vbtexcoords.begin(), vbtexcoords.end()),
+            std::vector<Vector3>(vbverts.begin(), vbverts.end()),
+            std::vector<Vector3>(vbnormals.begin(), vbnormals.end()),
+            std::vector<Vector2>(vbtexcoords.begin(), vbtexcoords.end()),
             indices()
         );
 
-        vertex_buffer_.write<Vec4>(VertexAttribute::Tangent, tangents);
+        vertex_buffer_.write<Vector4>(VertexAttribute::Tangent, tangents);
     }
 
     // non-PIMPL methods
@@ -5338,7 +5338,7 @@ private:
         const bool should_recalculate_bounds = not (flags & MeshUpdateFlag::DontRecalculateBounds);
 
         if (should_check_indices and should_recalculate_bounds) {
-            aabb_ = bounding_aabb_of(indices(), [vertices = vertex_buffer_.iter<Vec3>(VertexAttribute::Position)](const auto& index)
+            aabb_ = bounding_aabb_of(indices(), [vertices = vertex_buffer_.iter<Vector3>(VertexAttribute::Position)](const auto& index)
             {
                 return vertices.at(index);  // `at` serves the dual-purpose of getting and range-checking
             });
@@ -5493,17 +5493,17 @@ bool osc::Mesh::has_vertices() const
     return impl_->has_vertices();
 }
 
-std::vector<Vec3> osc::Mesh::vertices() const
+std::vector<Vector3> osc::Mesh::vertices() const
 {
     return impl_->vertices();
 }
 
-void osc::Mesh::set_vertices(std::span<const Vec3> vertices)
+void osc::Mesh::set_vertices(std::span<const Vector3> vertices)
 {
     impl_.upd()->set_vertices(vertices);
 }
 
-void osc::Mesh::transform_vertices(const std::function<Vec3(Vec3)>& transformer)
+void osc::Mesh::transform_vertices(const std::function<Vector3(Vector3)>& transformer)
 {
     impl_.upd()->transform_vertices(transformer);
 }
@@ -5523,17 +5523,17 @@ bool osc::Mesh::has_normals() const
     return impl_->has_normals();
 }
 
-std::vector<Vec3> osc::Mesh::normals() const
+std::vector<Vector3> osc::Mesh::normals() const
 {
     return impl_->normals();
 }
 
-void osc::Mesh::set_normals(std::span<const Vec3> normals)
+void osc::Mesh::set_normals(std::span<const Vector3> normals)
 {
     impl_.upd()->set_normals(normals);
 }
 
-void osc::Mesh::transform_normals(const std::function<Vec3(Vec3)>& transformer)
+void osc::Mesh::transform_normals(const std::function<Vector3(Vector3)>& transformer)
 {
     impl_.upd()->transform_normals(transformer);
 }
@@ -5543,17 +5543,17 @@ bool osc::Mesh::has_tex_coords() const
     return impl_->has_tex_coords();
 }
 
-std::vector<Vec2> osc::Mesh::tex_coords() const
+std::vector<Vector2> osc::Mesh::tex_coords() const
 {
     return impl_->tex_coords();
 }
 
-void osc::Mesh::set_tex_coords(std::span<const Vec2> tex_coords)
+void osc::Mesh::set_tex_coords(std::span<const Vector2> tex_coords)
 {
     impl_.upd()->set_tex_coords(tex_coords);
 }
 
-void osc::Mesh::transform_tex_coords(const std::function<Vec2(Vec2)>& transformer)
+void osc::Mesh::transform_tex_coords(const std::function<Vector2(Vector2)>& transformer)
 {
     impl_.upd()->transform_tex_coords(transformer);
 }
@@ -5568,12 +5568,12 @@ void osc::Mesh::set_colors(std::span<const Color> colors)
     impl_.upd()->set_colors(colors);
 }
 
-std::vector<Vec4> osc::Mesh::tangents() const
+std::vector<Vector4> osc::Mesh::tangents() const
 {
     return impl_->tangents();
 }
 
-void osc::Mesh::set_tangents(std::span<const Vec4> tangents)
+void osc::Mesh::set_tangents(std::span<const Vector4> tangents)
 {
     impl_.upd()->set_tangents(tangents);
 }
@@ -5593,7 +5593,7 @@ void osc::Mesh::set_indices(MeshIndicesView indices, MeshUpdateFlags flags)
     impl_.upd()->set_indices(indices, flags);
 }
 
-void osc::Mesh::for_each_indexed_vertex(const std::function<void(Vec3)>& callback) const
+void osc::Mesh::for_each_indexed_vertex(const std::function<void(Vector3)>& callback) const
 {
     impl_->for_each_indexed_vertex(callback);
 }
@@ -5608,7 +5608,7 @@ Triangle osc::Mesh::get_triangle_at(size_t first_index_offset) const
     return impl_->get_triangle_at(first_index_offset);
 }
 
-std::vector<Vec3> osc::Mesh::indexed_vertices() const
+std::vector<Vector3> osc::Mesh::indexed_vertices() const
 {
     return impl_->indexed_vertices();
 }
@@ -5812,12 +5812,12 @@ public:
         maybe_scissor_rect_ = maybe_scissor_rect;
     }
 
-    Vec3 position() const
+    Vector3 position() const
     {
         return position_;
     }
 
-    void set_position(const Vec3& position)
+    void set_position(const Vector3& position)
     {
         position_ = position;
     }
@@ -5832,19 +5832,19 @@ public:
         rotation_ = rotation;
     }
 
-    Vec3 direction() const
+    Vector3 direction() const
     {
-        return rotation_ * Vec3{0.0f, 0.0f, -1.0f};
+        return rotation_ * Vector3{0.0f, 0.0f, -1.0f};
     }
 
-    void set_direction(const Vec3& direction)
+    void set_direction(const Vector3& direction)
     {
-        rotation_ = osc::rotation(Vec3{0.0f, 0.0f, -1.0f}, direction);
+        rotation_ = osc::rotation(Vector3{0.0f, 0.0f, -1.0f}, direction);
     }
 
-    Vec3 upwards_direction() const
+    Vector3 upwards_direction() const
     {
-        return rotation_ * Vec3{0.0f, 1.0f, 0.0f};
+        return rotation_ * Vector3{0.0f, 1.0f, 0.0f};
     }
 
     Matrix4x4 view_matrix() const
@@ -6015,7 +6015,7 @@ private:
     CameraClearFlags clear_flags_ = CameraClearFlag::Default;
     std::optional<Rect> maybe_screen_pixel_rect_ = std::nullopt;
     std::optional<Rect> maybe_scissor_rect_ = std::nullopt;
-    Vec3 position_;
+    Vector3 position_;
     Quaternion rotation_ = identity<Quaternion>();
     std::optional<Matrix4x4> maybe_view_matrix_override_;
     std::optional<Matrix4x4> maybe_projection_matrix_override_;
@@ -6143,12 +6143,12 @@ void osc::Camera::set_scissor_rect(std::optional<Rect> maybe_scissor_rect)
     impl_.upd()->set_scissor_rect(maybe_scissor_rect);
 }
 
-Vec3 osc::Camera::position() const
+Vector3 osc::Camera::position() const
 {
     return impl_->position();
 }
 
-void osc::Camera::set_position(const Vec3& position)
+void osc::Camera::set_position(const Vector3& position)
 {
     impl_.upd()->set_position(position);
 }
@@ -6163,17 +6163,17 @@ void osc::Camera::set_rotation(const Quaternion& rotation)
     impl_.upd()->set_rotation(rotation);
 }
 
-Vec3 osc::Camera::direction() const
+Vector3 osc::Camera::direction() const
 {
     return impl_->direction();
 }
 
-void osc::Camera::set_direction(const Vec3& direction)
+void osc::Camera::set_direction(const Vector3& direction)
 {
     impl_.upd()->set_direction(direction);
 }
 
-Vec3 osc::Camera::upwards_direction() const
+Vector3 osc::Camera::upwards_direction() const
 {
     return impl_->upwards_direction();
 }
@@ -6601,7 +6601,7 @@ public:
         if (not screenshot_request_queue_.empty()) {
 
             // copy GPU-side window framebuffer into response
-            const Vec2i pixel_dimensions = App::get().main_window_pixel_dimensions();
+            const Vector2i pixel_dimensions = App::get().main_window_pixel_dimensions();
             const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
 
             std::vector<uint8_t> pixels(static_cast<size_t>(4*pixel_dimensions.x*pixel_dimensions.y));
@@ -6694,7 +6694,7 @@ private:
     }};
 
     // a generic quad mesh: two triangles covering NDC @ Z=0
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // storage for instance data
     std::vector<float> instance_cpu_buffer_;
@@ -6766,13 +6766,13 @@ namespace osc
 
         struct ViewportGeometry final {
             struct Viewport {
-                Vec2 bottom_left;
-                Vec2 pixel_dimensions;
+                Vector2 bottom_left;
+                Vector2 pixel_dimensions;
             } viewport;
 
             struct Scissor {
-                Vec2 bottom_left;
-                Vec2 pixel_dimensions;
+                Vector2 bottom_left;
+                Vector2 pixel_dimensions;
             };
             std::optional<Scissor> scissor;
         };
@@ -7715,7 +7715,7 @@ std::optional<gl::FrameBuffer> osc::GraphicsBackend::bind_and_clear_render_buffe
                     glClearBufferfv(
                         GL_COLOR,
                         static_cast<GLint>(i),
-                        value_ptr(static_cast<Vec4>(color_attachment.clear_color))
+                        value_ptr(static_cast<Vector4>(color_attachment.clear_color))
                     );
                 }
             }
@@ -7812,7 +7812,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
         }, buffer_opengl_data);
 
         if (can_resolve_buffer) {
-            const Vec2i pixel_dimensions = attachment.buffer.impl_->pixel_dimensions();
+            const Vector2i pixel_dimensions = attachment.buffer.impl_->pixel_dimensions();
             gl::blit_framebuffer(
                 0,
                 0,
@@ -7864,7 +7864,7 @@ void osc::GraphicsBackend::resolve_render_buffers(
 
         if (can_resolve_buffer)
         {
-            const Vec2i pixel_dimensions = render_target.depth_attachment()->buffer.impl_->pixel_dimensions();
+            const Vector2i pixel_dimensions = render_target.depth_attachment()->buffer.impl_->pixel_dimensions();
             gl::blit_framebuffer(
                 0,
                 0,

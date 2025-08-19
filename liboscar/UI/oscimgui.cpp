@@ -32,10 +32,10 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Cursor.h>
@@ -61,14 +61,14 @@
 
 #include <ankerl/unordered_dense.h>
 #define IM_VEC4_CLASS_EXTRA                                                 \
-        ImVec4(const osc::Vec4& v) { x = v.x; y = v.y; z = v.z; w = v.w; }  \
-        operator osc::Vec4() const { return osc::Vec4(x, y, z, w); }        \
+        ImVec4(const osc::Vector4& v) { x = v.x; y = v.y; z = v.z; w = v.w; }  \
+        operator osc::Vector4() const { return osc::Vector4(x, y, z, w); }        \
         ImVec4(const osc::Color& v) { x = v.r; y = v.g; z = v.b; w = v.a; } \
         operator osc::Color() const { return osc::Color{x, y, z, w};        }
 
 #define IM_VEC2_CLASS_EXTRA                                                 \
-         ImVec2(const osc::Vec2& f) { x = f.x; y = f.y; }                   \
-         operator osc::Vec2() const { return osc::Vec2(x,y); }
+         ImVec2(const osc::Vector2& f) { x = f.x; y = f.y; }                   \
+         operator osc::Vector2() const { return osc::Vector2(x,y); }
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>
@@ -409,7 +409,7 @@ namespace
         ImGuiIO& io = ImGui::GetIO();
 
         uint8_t* pixel_data = nullptr;
-        Vec2i pixel_dimensions;
+        Vector2i pixel_dimensions;
         io.Fonts->GetTexDataAsRGBA32(&pixel_data, &pixel_dimensions.x, &pixel_dimensions.y);
         io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
         const size_t num_bytes = static_cast<size_t>(pixel_dimensions.x)*static_cast<size_t>(pixel_dimensions.y)*4uz;
@@ -478,15 +478,15 @@ namespace
 
         // Project scissor/clipping rectangles from ui space, in device-independent
         // pixels, into screenspace, also in device-independent pixels.
-        const Vec2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
-        const Vec2 clip_min(draw_command.ClipRect.x - clip_off.x, draw_command.ClipRect.y - clip_off.y);
-        const Vec2 clip_max(draw_command.ClipRect.z - clip_off.x, draw_command.ClipRect.w - clip_off.y);
+        const Vector2 clip_off = draw_data.DisplayPos;         // (0,0) unless using multi-viewports
+        const Vector2 clip_min(draw_command.ClipRect.x - clip_off.x, draw_command.ClipRect.y - clip_off.y);
+        const Vector2 clip_max(draw_command.ClipRect.z - clip_off.x, draw_command.ClipRect.w - clip_off.y);
 
         if (clip_max.x <= clip_min.x or clip_max.y <= clip_min.y) {
             return;
         }
-        const Vec2 minflip{clip_min.x, (draw_data.DisplaySize.y) - clip_max.y};
-        const Vec2 maxflip{clip_max.x, (draw_data.DisplaySize.y) - clip_min.y};
+        const Vector2 minflip{clip_min.x, (draw_data.DisplaySize.y) - clip_max.y};
+        const Vector2 maxflip{clip_max.x, (draw_data.DisplaySize.y) - clip_min.y};
 
         // setup clipping rectangle
         bd.camera.set_clear_flags(CameraClearFlag::None);
@@ -625,19 +625,19 @@ namespace
         return ::allocate_texture_for_current_frame(texture);
     }
 
-    Vec2 centroid_of(const ImRect& r)
+    Vector2 centroid_of(const ImRect& r)
     {
-        return 0.5f * (Vec2{r.Min} + Vec2{r.Max});
+        return 0.5f * (Vector2{r.Min} + Vector2{r.Max});
     }
 
-    Vec2 dimensions_of(const ImRect& r)
+    Vector2 dimensions_of(const ImRect& r)
     {
-        return Vec2{r.Max} - Vec2{r.Min};
+        return Vector2{r.Max} - Vector2{r.Min};
     }
 
     float shortest_edge_length_of(const ImRect& r)
     {
-        const Vec2 dimensions = dimensions_of(r);
+        const Vector2 dimensions = dimensions_of(r);
         return rgs::min(dimensions);
     }
 
@@ -648,7 +648,7 @@ namespace
 
     Color to_color(ImU32 u32color)
     {
-        return Color{Vec4{ImGui::ColorConvertU32ToFloat4(u32color)}};
+        return Color{Vector4{ImGui::ColorConvertU32ToFloat4(u32color)}};
     }
 
     ImU32 brighten(ImU32 color, float factor)
@@ -909,10 +909,10 @@ namespace
         }
 
         if (ime_data->WantVisible) {
-            const Vec2 input_dimensions = {1.0f, ime_data->InputLineHeight};
-            const Vec2 input_top_left_ui = to<Vec2>(ime_data->InputPos);
-            const Vec2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
-            const Vec2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
+            const Vector2 input_dimensions = {1.0f, ime_data->InputLineHeight};
+            const Vector2 input_top_left_ui = to<Vector2>(ime_data->InputPos);
+            const Vector2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
+            const Vector2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
 
             app.set_main_window_unicode_input_rect(Rect::from_corners(
                 input_bottom_left_screen,
@@ -2005,7 +2005,7 @@ bool osc::ui::draw_float3_input(CStringView label, float* v, const char* format,
     return ImGui::InputFloat3(label.c_str(), v, format, to<ImGuiInputTextFlags>(flags));
 }
 
-bool osc::ui::draw_vec3_input(CStringView label, Vec3& v, const char* format, TextInputFlags flags)
+bool osc::ui::draw_vector3_input(CStringView label, Vector3& v, const char* format, TextInputFlags flags)
 {
     return ImGui::InputFloat3(label.c_str(), &v.x, format, to<ImGuiInputTextFlags>(flags));
 }
@@ -2020,7 +2020,7 @@ bool osc::ui::draw_rgba_color_editor(CStringView label, Color& color)
     return ImGui::ColorEdit4(label.c_str(), value_ptr(color));
 }
 
-bool osc::ui::draw_button(CStringView label, const Vec2& size)
+bool osc::ui::draw_button(CStringView label, const Vector2& size)
 {
     return ImGui::Button(label.c_str(), size);
 }
@@ -2035,7 +2035,7 @@ bool osc::ui::draw_arrow_down_button(CStringView label)
     return ImGui::ArrowButton(label.c_str(), ImGuiDir_Down);
 }
 
-bool osc::ui::draw_invisible_button(CStringView label, Vec2 size)
+bool osc::ui::draw_invisible_button(CStringView label, Vector2 size)
 {
     return ImGui::InvisibleButton(label.c_str(), size);
 }
@@ -2050,7 +2050,7 @@ bool osc::ui::draw_collapsing_header(CStringView label, TreeNodeFlags flags)
     return ImGui::CollapsingHeader(label.c_str(), to<ImGuiTreeNodeFlags>(flags));
 }
 
-void osc::ui::draw_dummy(const Vec2& size)
+void osc::ui::draw_dummy(const Vector2& size)
 {
     ImGui::Dummy(size);
 }
@@ -2095,7 +2095,7 @@ void osc::ui::end_panel()
     ImGui::End();
 }
 
-bool osc::ui::begin_child_panel(CStringView str_id, const Vec2& size, ChildPanelFlags child_flags, PanelFlags panel_flags)
+bool osc::ui::begin_child_panel(CStringView str_id, const Vector2& size, ChildPanelFlags child_flags, PanelFlags panel_flags)
 {
     return ImGui::BeginChild(str_id.c_str(), size, to<ImGuiChildFlags>(child_flags), to<ImGuiWindowFlags>(panel_flags));
 }
@@ -2125,22 +2125,22 @@ float osc::ui::get_frame_height()
     return ImGui::GetFrameHeight();
 }
 
-Vec2 osc::ui::get_content_region_available()
+Vector2 osc::ui::get_content_region_available()
 {
     return ImGui::GetContentRegionAvail();
 }
 
-Vec2 osc::ui::get_cursor_start_panel_position()
+Vector2 osc::ui::get_cursor_start_panel_position()
 {
     return ImGui::GetCursorStartPos();
 }
 
-Vec2 osc::ui::get_cursor_panel_position()
+Vector2 osc::ui::get_cursor_panel_position()
 {
     return ImGui::GetCursorPos();
 }
 
-void osc::ui::set_cursor_panel_position(Vec2 position)
+void osc::ui::set_cursor_panel_position(Vector2 position)
 {
     ImGui::SetCursorPos(position);
 }
@@ -2155,27 +2155,27 @@ void osc::ui::set_cursor_panel_x(float local_x)
     ImGui::SetCursorPosX(local_x);
 }
 
-Vec2 osc::ui::get_cursor_ui_position()
+Vector2 osc::ui::get_cursor_ui_position()
 {
     return ImGui::GetCursorScreenPos();
 }
 
-void osc::ui::set_cursor_ui_position(Vec2 position)
+void osc::ui::set_cursor_ui_position(Vector2 position)
 {
     ImGui::SetCursorScreenPos(position);
 }
 
-void osc::ui::set_next_panel_ui_position(Vec2 position, Conditional conditional, Vec2 pivot)
+void osc::ui::set_next_panel_ui_position(Vector2 position, Conditional conditional, Vector2 pivot)
 {
     ImGui::SetNextWindowPos(position, to<ImGuiCond>(conditional), pivot);
 }
 
-void osc::ui::set_next_panel_size(Vec2 size, Conditional conditional)
+void osc::ui::set_next_panel_size(Vector2 size, Conditional conditional)
 {
     ImGui::SetNextWindowSize(size, to<ImGuiCond>(conditional));
 }
 
-void osc::ui::set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max)
+void osc::ui::set_next_panel_size_constraints(Vector2 size_min, Vector2 size_max)
 {
     ImGui::SetNextWindowSizeConstraints(size_min, size_max);
 }
@@ -2300,7 +2300,7 @@ Color osc::ui::get_style_color(ColorVar color)
     return Color{ImGui::GetStyleColorVec4(to<ImGuiCol>(color))};
 }
 
-Vec2 osc::ui::get_style_frame_padding()
+Vector2 osc::ui::get_style_frame_padding()
 {
     return ImGui::GetStyle().FramePadding;
 }
@@ -2310,17 +2310,17 @@ float osc::ui::get_style_frame_border_size()
     return ImGui::GetStyle().FrameBorderSize;
 }
 
-Vec2 osc::ui::get_style_panel_padding()
+Vector2 osc::ui::get_style_panel_padding()
 {
     return ImGui::GetStyle().WindowPadding;
 }
 
-Vec2 osc::ui::get_style_item_spacing()
+Vector2 osc::ui::get_style_item_spacing()
 {
     return ImGui::GetStyle().ItemSpacing;
 }
 
-Vec2 osc::ui::get_style_item_inner_spacing()
+Vector2 osc::ui::get_style_item_inner_spacing()
 {
     return ImGui::GetStyle().ItemInnerSpacing;
 }
@@ -2340,7 +2340,7 @@ bool osc::ui::wants_keyboard()
     return ImGui::GetIO().WantCaptureKeyboard;
 }
 
-void osc::ui::push_style_var(StyleVar var, Vec2 value)
+void osc::ui::push_style_var(StyleVar var, Vector2 value)
 {
     ImGui::PushStyleVar(to<ImGuiStyleVar>(var), value);
 }
@@ -2380,7 +2380,7 @@ void osc::ui::end_popup()
     ImGui::EndPopup();
 }
 
-Vec2 osc::ui::get_mouse_ui_position()
+Vector2 osc::ui::get_mouse_ui_position()
 {
     return ImGui::GetMousePos();
 }
@@ -2445,17 +2445,17 @@ Rect osc::ui::get_item_ui_rect()
     return Rect::from_corners(get_item_top_left_ui_position(), get_item_bottom_right_ui_position());
 }
 
-Vec2 osc::ui::get_item_top_left_ui_position()
+Vector2 osc::ui::get_item_top_left_ui_position()
 {
     return ImGui::GetItemRectMin();
 }
 
-Vec2 osc::ui::get_item_bottom_right_ui_position()
+Vector2 osc::ui::get_item_bottom_right_ui_position()
 {
     return ImGui::GetItemRectMax();
 }
 
-bool osc::ui::begin_table(CStringView str_id, int column, TableFlags flags, const Vec2& outer_size, float inner_width)
+bool osc::ui::begin_table(CStringView str_id, int column, TableFlags flags, const Vector2& outer_size, float inner_width)
 {
     return ImGui::BeginTable(str_id.c_str(), column, to<ImGuiTableFlags>(flags), outer_size, inner_width);
 }
@@ -2548,12 +2548,12 @@ float osc::ui::get_font_base_size_with_spacing()
     return c_default_base_font_device_independent_pixel_size + ImGui::GetStyle().ItemSpacing.y;
 }
 
-Vec2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)
+Vector2 osc::ui::calc_text_size(CStringView text, bool hide_text_after_double_hash)
 {
     return ImGui::CalcTextSize(text.c_str(), text.c_str() + text.size(), hide_text_after_double_hash);
 }
 
-Vec2 osc::ui::get_panel_size()
+Vector2 osc::ui::get_panel_size()
 {
     return ImGui::GetWindowSize();
 }
@@ -2580,17 +2580,17 @@ void osc::ui::DrawListAPI::add_circle_filled(const Circle& ui_circle, const Colo
     impl_get_drawlist().AddCircleFilled(ui_circle.origin, ui_circle.radius, to_ImU32(color), num_segments);
 }
 
-void osc::ui::DrawListAPI::add_text(const Vec2& ui_position, const Color& color, CStringView text)
+void osc::ui::DrawListAPI::add_text(const Vector2& ui_position, const Color& color, CStringView text)
 {
     impl_get_drawlist().AddText(ui_position, to_ImU32(color), text.c_str(), text.c_str() + text.size());
 }
 
-void osc::ui::DrawListAPI::add_line(const Vec2& ui_start, const Vec2& ui_end, const Color& color, float thickness)
+void osc::ui::DrawListAPI::add_line(const Vector2& ui_start, const Vector2& ui_end, const Color& color, float thickness)
 {
     impl_get_drawlist().AddLine(ui_start, ui_end, to_ImU32(color), thickness);
 }
 
-void osc::ui::DrawListAPI::add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_p1, const Vec2& ui_p2, const Color& color)
+void osc::ui::DrawListAPI::add_triangle_filled(const Vector2 ui_p0, const Vector2& ui_p1, const Vector2& ui_p2, const Color& color)
 {
     impl_get_drawlist().AddTriangleFilled(ui_p0, ui_p1, ui_p2, to_ImU32(color));
 }
@@ -2717,7 +2717,7 @@ void osc::ui::apply_dark_theme()
 
 bool osc::ui::update_polar_camera_from_mouse_inputs(
     PolarPerspectiveCamera& camera,
-    Vec2 viewport_dimensions)
+    Vector2 viewport_dimensions)
 {
     bool modified = false;
 
@@ -2745,9 +2745,9 @@ bool osc::ui::update_polar_camera_from_mouse_inputs(
 
     const bool left_dragging = ui::is_mouse_dragging(MouseButton::Left);
     const bool middle_dragging = ui::is_mouse_dragging(MouseButton::Middle);
-    const Vec2 delta = ImGui::GetIO().MouseDelta;
+    const Vector2 delta = ImGui::GetIO().MouseDelta;
 
-    if (delta != Vec2{} and (left_dragging or middle_dragging)) {
+    if (delta != Vector2{} and (left_dragging or middle_dragging)) {
         if (is_ctrl_down()) {
             camera.pan(aspect_ratio, delta/viewport_dimensions);
             modified = true;
@@ -2918,17 +2918,17 @@ bool osc::ui::update_polar_camera_from_all_inputs(
 
 void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 {
-    const Vec3 front = camera.direction();
-    const Vec3 up = camera.upwards_direction();
-    const Vec3 right = cross(front, up);
-    const Vec2 mouseDelta = ImGui::GetIO().MouseDelta;
+    const Vector3 front = camera.direction();
+    const Vector3 up = camera.upwards_direction();
+    const Vector3 right = cross(front, up);
+    const Vector2 mouseDelta = ImGui::GetIO().MouseDelta;
 
     const float speed = 10.0f;
     const float displacement = speed * ImGui::GetIO().DeltaTime;
     const auto sensitivity = 0.005_rad;
 
     // keyboard: changes camera position
-    Vec3 pos = camera.position();
+    Vector3 pos = camera.position();
     if (ui::is_key_down(Key::W)) {
         pos += displacement * front;
     }
@@ -2959,13 +2959,13 @@ void osc::ui::update_camera_from_all_inputs(Camera& camera, EulerAngles& eulers)
 
 Rect osc::ui::get_content_region_available_ui_rect()
 {
-    const Vec2 top_left = ui::get_cursor_ui_position();
+    const Vector2 top_left = ui::get_cursor_ui_position();
     return Rect::from_corners(top_left, top_left + ui::get_content_region_available());
 }
 
 void osc::ui::draw_image(
     const Texture2D& texture,
-    std::optional<Vec2> dimensions,
+    std::optional<Vector2> dimensions,
     const Rect& region_uv_coordinates)
 {
     if (not dimensions) {
@@ -2980,15 +2980,15 @@ void osc::ui::draw_image(const RenderTexture& texture)
     draw_image(texture, texture.dimensions());
 }
 
-void osc::ui::draw_image(const RenderTexture& texture, Vec2 dimensions)
+void osc::ui::draw_image(const RenderTexture& texture, Vector2 dimensions)
 {
-    const Vec2 uv0 = {0.0f, 1.0f};
-    const Vec2 uv1 = {1.0f, 0.0f};
+    const Vector2 uv0 = {0.0f, 1.0f};
+    const Vector2 uv1 = {1.0f, 0.0f};
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, uv0, uv1);
 }
 
-Vec2 osc::ui::calc_button_size(CStringView content)
+Vector2 osc::ui::calc_button_size(CStringView content)
 {
     return ui::calc_text_size(content) + 2.0f*ui::get_style_frame_padding();
 }
@@ -2998,7 +2998,7 @@ float osc::ui::calc_button_width(CStringView content)
     return calc_button_size(content).x;
 }
 
-bool osc::ui::draw_button_nobg(CStringView label, Vec2 dimensions)
+bool osc::ui::draw_button_nobg(CStringView label, Vector2 dimensions)
 {
     push_style_color(ColorVar::Button, Color::clear());
     push_style_color(ColorVar::ButtonHovered, Color::clear());
@@ -3011,14 +3011,14 @@ bool osc::ui::draw_button_nobg(CStringView label, Vec2 dimensions)
 bool osc::ui::draw_image_button(
     CStringView label,
     const Texture2D& texture,
-    Vec2 dimensions,
+    Vector2 dimensions,
     const Rect& texture_coordinates)
 {
     const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
     return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.ypu_top_left(), texture_coordinates.ypu_bottom_right());
 }
 
-bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vec2 dimensions)
+bool osc::ui::draw_image_button(CStringView label, const Texture2D& texture, Vector2 dimensions)
 {
     return draw_image_button(label, texture, dimensions, Rect::from_corners({0.0f, 1.0f}, {1.0f, 0.0f}));
 }
@@ -3109,7 +3109,7 @@ bool osc::ui::is_mouse_released_without_dragging(MouseButton mouse_button, float
         return false;
     }
 
-    const Vec2 drag_delta = ImGui::GetMouseDragDelta(to<ImGuiMouseButton>(mouse_button));
+    const Vector2 drag_delta = ImGui::GetMouseDragDelta(to<ImGuiMouseButton>(mouse_button));
 
     return length(drag_delta) < threshold;
 }
@@ -3213,7 +3213,7 @@ bool osc::ui::draw_float_meters_input(CStringView label, float& v, float step, f
     return ui::draw_float_input(label, &v, step, step_fast, "%.6f", flags);
 }
 
-bool osc::ui::draw_float3_meters_input(CStringView label, Vec3& vec, TextInputFlags flags)
+bool osc::ui::draw_float3_meters_input(CStringView label, Vector3& vec, TextInputFlags flags)
 {
     return ui::draw_float3_input(label, value_ptr(vec), "%.6f", flags);
 }
@@ -3243,8 +3243,8 @@ bool osc::ui::draw_angle3_input(
     Vec<3, Radians>& angles,
     CStringView format)
 {
-    Vec3 dvs = {Degrees{angles.x}.count(), Degrees{angles.y}.count(), Degrees{angles.z}.count()};
-    if (ui::draw_vec3_input(label, dvs, format.c_str())) {
+    Vector3 dvs = {Degrees{angles.x}.count(), Degrees{angles.y}.count(), Degrees{angles.z}.count()};
+    if (ui::draw_vector3_input(label, dvs, format.c_str())) {
         angles = Vec<3, Radians>{Vec<3, Degrees>{dvs}};
         return true;
     }
@@ -3292,21 +3292,21 @@ Rect osc::ui::get_main_window_workspace_ui_rect()
 
     return Rect::from_corners(
         viewport.WorkPos,
-        Vec2{viewport.WorkPos} + Vec2{viewport.WorkSize}
+        Vector2{viewport.WorkPos} + Vector2{viewport.WorkSize}
     );
 }
 
 Rect osc::ui::get_main_window_workspace_screen_space_rect()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
-    const Vec2 bottom_left_ui_space = Vec2{viewport.WorkPos} + Vec2{0.0f, viewport.WorkSize.y};
-    const Vec2 bottom_left_screen_space = Vec2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
-    const Vec2 top_right_screen_space = bottom_left_screen_space + Vec2{viewport.WorkSize};
+    const Vector2 bottom_left_ui_space = Vector2{viewport.WorkPos} + Vector2{0.0f, viewport.WorkSize.y};
+    const Vector2 bottom_left_screen_space = Vector2{bottom_left_ui_space.x, viewport.Size.y - bottom_left_ui_space.y};
+    const Vector2 top_right_screen_space = bottom_left_screen_space + Vector2{viewport.WorkSize};
 
     return Rect::from_corners(bottom_left_screen_space, top_right_screen_space);
 }
 
-Vec2 osc::ui::get_main_window_workspace_dimensions()
+Vector2 osc::ui::get_main_window_workspace_dimensions()
 {
     return get_main_window_workspace_ui_rect().dimensions();
 }
@@ -3314,7 +3314,7 @@ Vec2 osc::ui::get_main_window_workspace_dimensions()
 float osc::ui::get_main_window_workspace_aspect_ratio()
 {
     const ImGuiViewport& viewport = *ImGui::GetMainViewport();
-    return aspect_ratio_of(Vec2{viewport.WorkSize});
+    return aspect_ratio_of(Vector2{viewport.WorkSize});
 }
 
 bool osc::ui::is_mouse_in_main_window_workspace()
@@ -3528,12 +3528,12 @@ bool osc::ui::draw_float_circular_slider(
     const ImGuiID id = window->GetID(label.c_str());
 
     // calculate top-level item info for early-cull checks etc.
-    const Vec2 label_size = ui::calc_text_size(label, true);
-    const Vec2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
-    const Vec2 cursor_screen_pos = ui::get_cursor_ui_position();
+    const Vector2 label_size = ui::calc_text_size(label, true);
+    const Vector2 frame_dims = {ImGui::CalcItemWidth(), label_size.y + 2.0f*style.FramePadding.y};
+    const Vector2 cursor_screen_pos = ui::get_cursor_ui_position();
     const ImRect frame_bounds = {cursor_screen_pos, cursor_screen_pos + frame_dims};
     const float label_width_with_spacing = label_size.x > 0.0f ? label_size.x + style.ItemInnerSpacing.x : 0.0f;
-    const ImRect total_bounds = {frame_bounds.Min, Vec2{frame_bounds.Max} + Vec2{label_width_with_spacing, 0.0f}};
+    const ImRect total_bounds = {frame_bounds.Min, Vector2{frame_bounds.Max} + Vector2{label_width_with_spacing, 0.0f}};
 
     const bool temporary_text_input_allowed = (to<ImGuiSliderFlags>(flags) & ImGuiSliderFlags_NoInput) == 0;
     ImGui::ItemSize(total_bounds, style.FramePadding.y);
@@ -3612,7 +3612,7 @@ bool osc::ui::draw_float_circular_slider(
     // render
     const bool use_custom_rendering = true;
     if (use_custom_rendering) {
-        const Vec2 slider_nob_center = ::centroid_of(grab_bounding_box);
+        const Vector2 slider_nob_center = ::centroid_of(grab_bounding_box);
         const float slider_nob_radius = 0.75f * shortest_edge_length_of(grab_bounding_box);
         const float slider_rail_thickness = 0.5f * slider_nob_radius;
         const float slider_rail_top_y = slider_nob_center.y - 0.5f*slider_rail_thickness;
@@ -3624,8 +3624,8 @@ bool osc::ui::draw_float_circular_slider(
 
         // render left-hand rail (brighter)
         {
-            const Vec2 lhs_rail_topleft = {frame_bounds.Min.x, slider_rail_top_y};
-            const Vec2 lhs_rail_bottomright = {slider_nob_center.x, slider_rail_bottom_y};
+            const Vector2 lhs_rail_topleft = {frame_bounds.Min.x, slider_rail_top_y};
+            const Vector2 lhs_rail_bottomright = {slider_nob_center.x, slider_rail_bottom_y};
             const ImU32 brightened_rail_color = brighten(rail_color, 2.0f);
 
             window->DrawList->AddRectFilled(
@@ -3638,8 +3638,8 @@ bool osc::ui::draw_float_circular_slider(
 
         // render right-hand rail
         {
-            const Vec2 rhs_rail_topleft = {slider_nob_center.x, slider_rail_top_y};
-            const Vec2 rhs_rail_bottomright = {frame_bounds.Max.x, slider_rail_bottom_y};
+            const Vector2 rhs_rail_topleft = {slider_nob_center.x, slider_rail_top_y};
+            const Vector2 rhs_rail_bottomright = {frame_bounds.Max.x, slider_rail_bottom_y};
 
             window->DrawList->AddRectFilled(
                 rhs_rail_topleft,
@@ -4062,7 +4062,7 @@ void osc::ui::plot::show_demo_panel()
     ImPlot::ShowDemoWindow();
 }
 
-bool osc::ui::plot::begin(CStringView title, Vec2 size, PlotFlags flags)
+bool osc::ui::plot::begin(CStringView title, Vector2 size, PlotFlags flags)
 {
     return ImPlot::BeginPlot(title.c_str(), size, to_ImPlotFlags(flags));
 }
@@ -4077,7 +4077,7 @@ void osc::ui::plot::push_style_var(PlotStyleVar var, float value)
     ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
 
-void osc::ui::plot::push_style_var(PlotStyleVar var, Vec2 value)
+void osc::ui::plot::push_style_var(PlotStyleVar var, Vector2 value)
 {
     ImPlot::PushStyleVar(to_ImPlotStyleVar(var), value);
 }
@@ -4141,7 +4141,7 @@ void osc::ui::plot::set_next_marker_style(
     );
 }
 
-void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points)
+void osc::ui::plot::plot_line(CStringView name, std::span<const Vector2> points)
 {
     ImPlot::PlotLine(
         name.c_str(),
@@ -4150,7 +4150,7 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const Vec2> points)
         static_cast<int>(points.size()),
         0,
         0,
-        sizeof(Vec2)
+        sizeof(Vector2)
     );
 }
 
@@ -4161,16 +4161,16 @@ void osc::ui::plot::plot_line(CStringView name, std::span<const float> points)
 
 Rect osc::ui::plot::get_plot_ui_rect()
 {
-    const Vec2 top_left = ImPlot::GetPlotPos();
-    return Rect::from_corners(top_left, top_left + Vec2{ImPlot::GetPlotSize()});
+    const Vector2 top_left = ImPlot::GetPlotPos();
+    return Rect::from_corners(top_left, top_left + Vector2{ImPlot::GetPlotSize()});
 }
 
-void osc::ui::plot::detail::draw_annotation_v(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args)
+void osc::ui::plot::detail::draw_annotation_v(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, va_list args)
 {
     ImPlot::AnnotationV(position_dataspace.x, position_dataspace.y, color, pixel_offset, clamp, fmt.c_str(), args);
 }
 
-bool osc::ui::plot::drag_point(int id, Vec2d* plot_point, const Color& color, float size, DragToolFlags flags)
+bool osc::ui::plot::drag_point(int id, Vector2d* plot_point, const Color& color, float size, DragToolFlags flags)
 {
     return ImPlot::DragPoint(id, &plot_point->x, &plot_point->y, color, size, to_ImPlotDragToolFlags(flags));
 }
@@ -4195,16 +4195,16 @@ bool osc::ui::plot::is_plot_hovered()
     return ImPlot::IsPlotHovered();
 }
 
-Vec2 osc::ui::plot::get_plot_mouse_position()
+Vector2 osc::ui::plot::get_plot_mouse_position()
 {
     const auto pos = ImPlot::GetPlotMousePos();
-    return Vec2{pos.x, pos.y};
+    return Vector2{pos.x, pos.y};
 }
 
-Vec2 osc::ui::plot::get_plot_mouse_position(Axis x_axis, Axis y_axis)
+Vector2 osc::ui::plot::get_plot_mouse_position(Axis x_axis, Axis y_axis)
 {
     const auto pos = ImPlot::GetPlotMousePos(to_ImAxis(x_axis), to_ImAxis(y_axis));
-    return Vec2{pos.x, pos.y};
+    return Vector2{pos.x, pos.y};
 }
 
 void osc::ui::plot::setup_legend(Location location, LegendFlags flags)

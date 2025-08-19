@@ -22,7 +22,7 @@
 
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Maths/ClosedInterval.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
@@ -225,7 +225,7 @@ namespace
 
         void onDraw()
         {
-            if (BeginToolbar("##PreviewExperimentalDataToolbar", Vec2{5.0f, 5.0f})) {
+            if (BeginToolbar("##PreviewExperimentalDataToolbar", Vector2{5.0f, 5.0f})) {
                 // load/reload etc.
                 {
                     if (ui::draw_button("load model")) {

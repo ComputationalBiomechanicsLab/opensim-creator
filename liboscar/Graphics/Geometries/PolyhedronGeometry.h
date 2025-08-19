@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
@@ -18,7 +18,7 @@ namespace osc
     struct PolyhedronGeometryParams final {
         friend bool operator==(const PolyhedronGeometryParams&, const PolyhedronGeometryParams&);
 
-        std::vector<Vec3> vertices = {
+        std::vector<Vector3> vertices = {
             {1.0f, 1.0f, 1.0f}, {-1.0f, -1.0f, 1.0f}, {-1.0f, 1.0f, -1.0f}, {1.0f, -1.0f, -1.0f},
         };
         std::vector<uint32_t> indices = {
@@ -42,7 +42,7 @@ namespace osc
         // constructs a `PolyhedronGeometry` from existing vertex + index data (rather
         // than requiring `std::vector`s)
         explicit PolyhedronGeometry(
-            std::span<const Vec3> vertices,
+            std::span<const Vector3> vertices,
             std::span<const uint32_t> indices,
             float radius = 1.0f,
             size_t detail_level = 0

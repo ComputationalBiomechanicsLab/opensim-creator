@@ -3,8 +3,8 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 
 #include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <filesystem>
@@ -103,12 +103,12 @@ namespace osc
     void DrawPointTranslationInformationWithRespectTo(
         const OpenSim::Frame&,
         const SimTK::State&,
-        Vec3 locationInGround
+        Vector3 locationInGround
     );
     void DrawDirectionInformationWithRepsectTo(
         const OpenSim::Frame&,
         const SimTK::State&,
-        Vec3 directionInGround
+        Vector3 directionInGround
     );
     void DrawFrameInformationExpressedIn(
         const OpenSim::Frame& parent,
@@ -246,7 +246,7 @@ namespace osc
         const Rect&,
         const std::optional<AABB>& maybeSceneAABB,
         IconCache&,
-        Vec2 desiredTopCentroid
+        Vector2 desiredTopCentroid
     );
     bool DrawViewerImGuiOverlays(
         ModelRendererParams&,
@@ -258,7 +258,7 @@ namespace osc
     );
 
     // toolbar stuff
-    bool BeginToolbar(CStringView label, std::optional<Vec2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
+    bool BeginToolbar(CStringView label, std::optional<Vector2> padding = {});  // behaves the same as `ui::begin_panel` (i.e. you must call `ui::end_panel`)
     void DrawNewModelButton(Widget&);
     void DrawOpenModelButtonWithRecentFilesDropdown(
         const std::function<void(std::optional<std::filesystem::path>)>& onUserClickedOpenOrSelectedFile

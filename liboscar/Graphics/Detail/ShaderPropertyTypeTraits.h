@@ -15,18 +15,18 @@ namespace osc::detail
     };
 
     template<>
-    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vec2> {
-        static constexpr std::string_view name = "Vec2";
+    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vector2> {
+        static constexpr std::string_view name = "Vector2";
     };
 
     template<>
-    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vec3> {
-        static constexpr std::string_view name = "Vec3";
+    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vector3> {
+        static constexpr std::string_view name = "Vector3";
     };
 
     template<>
-    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vec4> {
-        static constexpr std::string_view name = "Vec4";
+    struct ShaderPropertyTypeTraits<ShaderPropertyType::Vector4> {
+        static constexpr std::string_view name = "Vector4";
     };
 
     template<>

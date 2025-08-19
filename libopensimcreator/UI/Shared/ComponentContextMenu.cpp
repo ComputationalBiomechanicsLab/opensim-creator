@@ -412,7 +412,7 @@ private:
             std::vector<std::string> socketNames = GetSocketNames(c);
 
             if (not socketNames.empty()) {
-                ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vec2{0.5f});
+                ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
 
                 if (ui::begin_table("sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
                     ui::table_setup_column("Socket Name");

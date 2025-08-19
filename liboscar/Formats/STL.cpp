@@ -4,7 +4,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
@@ -72,7 +72,7 @@ namespace
         }
     }
 
-    void write_vec3_ieee754(std::ostream& out, const Vec3& vec)
+    void write_vector3_ieee754(std::ostream& out, const Vector3& vec)
     {
         write_float_ieee754(out, vec.x);
         write_float_ieee754(out, vec.y);
@@ -87,10 +87,10 @@ namespace
 
     void write_triangle(std::ostream& out, const Triangle& triangle)
     {
-        write_vec3_ieee754(out, triangle_normal(triangle));
-        write_vec3_ieee754(out, triangle.p0);
-        write_vec3_ieee754(out, triangle.p1);
-        write_vec3_ieee754(out, triangle.p2);
+        write_vector3_ieee754(out, triangle_normal(triangle));
+        write_vector3_ieee754(out, triangle.p0);
+        write_vector3_ieee754(out, triangle.p1);
+        write_vector3_ieee754(out, triangle.p2);
         write_attribute_count(out);
     }
 

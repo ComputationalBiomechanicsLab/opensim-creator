@@ -1168,7 +1168,7 @@ namespace
       }
    }
 
-   void ComputeSnap(vec_t& value, const Vec3& snap)
+   void ComputeSnap(vec_t& value, const Vector3& snap)
    {
       for (int i = 0; i < 3; i++)
       {

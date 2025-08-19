@@ -3,7 +3,7 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/UI/oscimgui.h>
 
 #include <memory>
@@ -64,7 +64,7 @@ namespace osc
             }
         }
 
-        void drawColorCodedXYZ(Vec3 position)
+        void drawColorCodedXYZ(Vector3 position)
         {
             ui::draw_text("(");
             ui::same_line();

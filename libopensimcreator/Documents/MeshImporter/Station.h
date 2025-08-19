@@ -6,7 +6,7 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 
 #include <iosfwd>
@@ -23,13 +23,13 @@ namespace osc::mi
         StationEl(
             UID id,
             UID attachment,  // can be MIIDs::Ground()
-            const Vec3& position,
+            const Vector3& position,
             const std::string& name
         );
 
         StationEl(
             UID attachment,  // can be MIIDs::Ground()
-            const Vec3& position,
+            const Vector3& position,
             const std::string& name
         );
 
@@ -98,7 +98,7 @@ namespace osc::mi
 
         UID m_ID;
         UID m_Attachment;  // can be MIIDs::Ground()
-        Vec3 m_Position{};
+        Vector3 m_Position{};
         std::string m_Name;
     };
 }

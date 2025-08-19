@@ -11,7 +11,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_scene_light_positions = std::to_array<Vec3>({
+    constexpr auto c_scene_light_positions = std::to_array<Vector3>({
         { 0.0f, 0.5f,  1.5f},
         {-4.0f, 0.5f, -3.0f},
         { 3.0f, 0.5f,  1.0f},
@@ -36,44 +36,44 @@ namespace
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(0.0f, 1.5f, 0.0));
-            m = scale(m, Vec3(0.5f));
+            m = translate(m, Vector3(0.0f, 1.5f, 0.0));
+            m = scale(m, Vector3(0.5f));
             rv.push_back(m);
         }
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(2.0f, 0.0f, 1.0));
-            m = scale(m, Vec3(0.5f));
+            m = translate(m, Vector3(2.0f, 0.0f, 1.0));
+            m = scale(m, Vector3(0.5f));
             rv.push_back(m);
         }
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(-1.0f, -1.0f, 2.0));
-            m = rotate(m, 60_deg, normalize(Vec3{1.0, 0.0, 1.0}));
+            m = translate(m, Vector3(-1.0f, -1.0f, 2.0));
+            m = rotate(m, 60_deg, normalize(Vector3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(0.0f, 2.7f, 4.0));
-            m = rotate(m, 23_deg, normalize(Vec3{1.0, 0.0, 1.0}));
-            m = scale(m, Vec3(1.25));
+            m = translate(m, Vector3(0.0f, 2.7f, 4.0));
+            m = rotate(m, 23_deg, normalize(Vector3{1.0, 0.0, 1.0}));
+            m = scale(m, Vector3(1.25));
             rv.push_back(m);
         }
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(-2.0f, 1.0f, -3.0));
-            m = rotate(m, 124_deg, normalize(Vec3{1.0, 0.0, 1.0}));
+            m = translate(m, Vector3(-2.0f, 1.0f, -3.0));
+            m = rotate(m, 124_deg, normalize(Vector3{1.0, 0.0, 1.0}));
             rv.push_back(m);
         }
 
         {
             Matrix4x4 m = identity<Matrix4x4>();
-            m = translate(m, Vec3(-3.0f, 0.0f, 0.0));
-            m = scale(m, Vec3(0.5f));
+            m = translate(m, Vector3(-3.0f, 0.0f, 0.0));
+            m = scale(m, Vector3(0.5f));
             rv.push_back(m);
         }
 
@@ -129,7 +129,7 @@ private:
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         reformat_all_textures(workspace_pixel_dimensions, device_pixel_ratio);
         render_scene_mrt();
@@ -138,7 +138,7 @@ private:
         draw_overlays(workspace_screen_space_rect);
     }
 
-    void reformat_all_textures(const Vec2& viewport_pixel_dimensions, float device_pixel_ratio)
+    void reformat_all_textures(const Vector2& viewport_pixel_dimensions, float device_pixel_ratio)
     {
         const AntiAliasingLevel aa_level = App::get().anti_aliasing_level();
 
@@ -174,8 +174,8 @@ private:
         // draw floor
         {
             Matrix4x4 floor_transform = identity<Matrix4x4>();
-            floor_transform = translate(floor_transform, Vec3(0.0f, -1.0f, 0.0));
-            floor_transform = scale(floor_transform, Vec3(12.5f, 0.5f, 12.5f));
+            floor_transform = translate(floor_transform, Vector3(0.0f, -1.0f, 0.0));
+            floor_transform = scale(floor_transform, Vector3(12.5f, 0.5f, 12.5f));
 
             MaterialPropertyBlock floor_props;
             floor_props.set("uDiffuseTexture", wood_texture_);
@@ -208,8 +208,8 @@ private:
 
         for (size_t i = 0; i < c_scene_light_positions.size(); ++i) {
             Matrix4x4 light_transform = identity<Matrix4x4>();
-            light_transform = translate(light_transform, Vec3(c_scene_light_positions[i]));
-            light_transform = scale(light_transform, Vec3(0.25f));
+            light_transform = translate(light_transform, Vector3(c_scene_light_positions[i]));
+            light_transform = scale(light_transform, Vector3(0.25f));
 
             MaterialPropertyBlock light_props;
             light_props.set("uLightColor", scene_light_colors[i]);
@@ -292,7 +292,7 @@ private:
         });
 
         for (size_t i = 0; i < texture_pointers.size(); ++i) {
-            const Vec2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
+            const Vector2 offset = {static_cast<float>(i)*overlay_width, 0.0f};
             const Rect overlay_rect = Rect::from_corners(
                 viewport_screen_space_rect.ypu_bottom_left() + offset,
                 viewport_screen_space_rect.ypu_bottom_left() + offset + overlay_width
@@ -332,8 +332,8 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     RenderTexture scene_hdr_color_output_;
     RenderTexture scene_hdr_thresholded_output_;

@@ -7,18 +7,18 @@
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Assertions.h>
@@ -209,7 +209,7 @@ namespace
         {
             const SimTK::State& state = getState();
             Matrix4x4 transformInGround = to<Matrix4x4>(station.getParentFrame().getRotationInGround(state));
-            transformInGround[3] = Vec4{to<Vec3>(station.getLocationInGround(state)), 1.0f};
+            transformInGround[3] = Vector4{to<Vector3>(station.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
         }
@@ -222,7 +222,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = to<Vec3>(groundToParentRotation * transformInGround.p());
+            const Vector3 translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -253,7 +253,7 @@ namespace
         {
             const SimTK::State& state = getState();
             Matrix4x4 transformInGround = to<Matrix4x4>(pathPoint.getParentFrame().getRotationInGround(state));
-            transformInGround[3] = Vec4{to<Vec3>(pathPoint.getLocationInGround(state)), 1.0f};
+            transformInGround[3] = Vector4{to<Vector3>(pathPoint.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
         }
@@ -266,7 +266,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vec3 translationInParent = to<Vec3>(groundToParentRotation * transformInGround.p());
+            const Vector3 translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }
@@ -339,7 +339,7 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
-                    to<Vec3>(X.p()),
+                    to<Vector3>(X.p()),
                     to<EulerAngles>(X.R())
                 );
             }
@@ -362,7 +362,7 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     pof,
-                    to<Vec3>(X.p()),
+                    to<Vector3>(X.p()),
                     to<EulerAngles>(X.R())
                 );
             }
@@ -389,9 +389,9 @@ namespace
             std::stringstream ss;
             ss << "Note: this is effectively moving " << pof->getParentFrame().getName() << ", because " << pof->getName() << " is\nconstrained by a joint.";
             const std::string label = std::move(ss).str();
-            const Vec3 worldPos{getCurrentTransformInGround()[3]};
-            const Vec2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
-            const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height_in_current_panel()};
+            const Vector3 worldPos{getCurrentTransformInGround()[3]};
+            const Vector2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vector2 offset = ui::gizmo_annotation_offset() + Vector2{0.0f, ui::get_text_line_height_in_current_panel()};
 
             drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);
             drawList.add_text(screenPos + offset, Color::white(), label);
@@ -445,7 +445,7 @@ namespace
             ActionTransformWrapObject(
                 getUndoableModel(),
                 wrapObj,
-                to<Vec3>(X.p() - M_w.p()),
+                to<Vector3>(X.p() - M_w.p()),
                 to<EulerAngles>(X.R())
             );
         }
@@ -496,7 +496,7 @@ namespace
             ActionTransformContactGeometry(
                 getUndoableModel(),
                 contactGeom,
-                to<Vec3>(X.p() - M_w.p()),
+                to<Vector3>(X.p() - M_w.p()),
                 to<EulerAngles>(X.R())
             );
         }
@@ -597,7 +597,7 @@ namespace
                 ActionTransformPofV2(
                     getUndoableModel(),
                     parentPOF,
-                    to<Vec3>(X.p()),
+                    to<Vector3>(X.p()),
                     to<EulerAngles>(X.R())
                 );
             }
@@ -615,7 +615,7 @@ namespace
             ActionTransformPofV2(
                 getUndoableModel(),
                 childPOF,
-                to<Vec3>(M_cpof2.p()),
+                to<Vector3>(M_cpof2.p()),
                 to<EulerAngles>(M_cpof2.R())
             );
         }
@@ -638,9 +638,9 @@ namespace
             std::stringstream ss;
             ss << "Note: manipulating the joint center moves both the parent (" << joint->getParentFrame().getName() << ") and\nchild (" << joint->getParentFrame().getName() << ") frames.";
             const std::string label = std::move(ss).str();
-            const Vec3 worldPos{getCurrentTransformInGround()[3]};
-            const Vec2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
-            const Vec2 offset = ui::gizmo_annotation_offset() + Vec2{0.0f, ui::get_text_line_height_in_current_panel()};
+            const Vector3 worldPos{getCurrentTransformInGround()[3]};
+            const Vector2 screenPos = project_onto_viewport_rect(worldPos, viewMatrix, projectionMatrix, screenRect);
+            const Vector2 offset = ui::gizmo_annotation_offset() + Vector2{0.0f, ui::get_text_line_height_in_current_panel()};
 
             drawList.add_text(screenPos + offset + 1.0f, Color::black(), label);
             drawList.add_text(screenPos + offset, Color::white(), label);

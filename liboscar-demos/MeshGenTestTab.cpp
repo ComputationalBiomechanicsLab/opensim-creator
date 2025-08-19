@@ -11,9 +11,9 @@ using namespace osc;
 
 namespace
 {
-    std::vector<Vec2> generate_lathe_points()
+    std::vector<Vector2> generate_lathe_points()
     {
-        std::vector<Vec2> rv;
+        std::vector<Vector2> rv;
         rv.reserve(10);
         for (size_t i = 0; i < 10; ++i) {
             const float x = sin(0.2f * static_cast<float>(i)) * 10.0f + 5.0f;
@@ -41,7 +41,7 @@ namespace
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
             {"plane", PlaneGeometry{}},
             {"torus_knot", TorusKnotGeometry{}},
-            {"box", BoxGeometry{{.dimensions = Vec3{2.0f}}}},
+            {"box", BoxGeometry{{.dimensions = Vector3{2.0f}}}},
             {"icosahedron", IcosahedronGeometry{}},
             {"dodecahedron", DodecahedronGeometry{}},
             {"octahedron", OctahedronGeometry{}},
@@ -81,7 +81,7 @@ public:
             ui::start_new_line();
 
             const Rect viewport_ui_rect = ui::get_content_region_available_ui_rect();
-            const Vec2 viewport_dimensions = viewport_ui_rect.dimensions();
+            const Vector2 viewport_dimensions = viewport_ui_rect.dimensions();
             render_params_.dimensions = elementwise_max(viewport_dimensions, {0.0f, 0.0f});
             render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
             render_params_.antialiasing_level = App::get().anti_aliasing_level();
@@ -101,7 +101,7 @@ public:
             }}}, render_params_);
 
             // Draw camera manipulator
-            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vec2{camera_axes_ui_.dimensions().x, 0.0f});
+            ui::set_cursor_ui_position(viewport_ui_rect.ypd_top_right() - Vector2{camera_axes_ui_.dimensions().x, 0.0f});
             camera_axes_ui_.draw(camera_);
         }
         ui::end_panel();

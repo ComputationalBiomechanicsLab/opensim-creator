@@ -6,7 +6,7 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/EnumHelpers.h>
@@ -51,9 +51,9 @@ namespace
     {
         static_assert(num_options<OutputExtractorDataType>() == 3);
         switch (type) {
-        case OutputExtractorDataType::Float: return OutputValueExtractor::constant(quiet_nan_v<float>);
-        case OutputExtractorDataType::Vec2:  return OutputValueExtractor::constant(Vec2{quiet_nan_v<float>});
-        default:                             return OutputValueExtractor::constant(std::string{});
+        case OutputExtractorDataType::Float:   return OutputValueExtractor::constant(quiet_nan_v<float>);
+        case OutputExtractorDataType::Vector2: return OutputValueExtractor::constant(Vector2{quiet_nan_v<float>});
+        default:                               return OutputValueExtractor::constant(std::string{});
         }
     }
 }

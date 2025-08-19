@@ -18,7 +18,7 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
@@ -153,7 +153,7 @@ namespace
             DrawPlotAgainstOtherOutputMenuItem(sim, output);
             DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
-        else if (dataType == OutputExtractorDataType::Vec2) {
+        else if (dataType == OutputExtractorDataType::Vector2) {
             DrawExportToCSVMenuItems(api, output);
             DrawToggleWatchOutputMenuItem(*sim.tryUpdEnvironment(), output);
         }
@@ -191,8 +191,8 @@ public:
         else if (outputType == OutputExtractorDataType::String) {
             drawStringOutputUI();
         }
-        else if (outputType == OutputExtractorDataType::Vec2) {
-            drawVec2OutputUI();
+        else if (outputType == OutputExtractorDataType::Vector2) {
+            drawVector2OutputUI();
         }
         else {
             ui::draw_text("unknown output type");
@@ -274,21 +274,21 @@ private:
         // draw a vertical Y line showing the current scrub time over the plots
         {
             const float plotScrubLineX = plotRect.left() + simScrubPct*plotRect.width();
-            const Vec2 p1 = {plotScrubLineX, plotRect.ypd_top()};
-            const Vec2 p2 = {plotScrubLineX, plotRect.ypd_bottom()};
+            const Vector2 p1 = {plotScrubLineX, plotRect.ypd_top()};
+            const Vector2 p2 = {plotScrubLineX, plotRect.ypd_bottom()};
             drawlist.add_line(p1, p2, currentTimeLineColor);
         }
 
         if (ui::is_item_hovered()) {
-            const Vec2 mp = ui::get_mouse_ui_position();
-            const Vec2 plotLoc = mp - plotRect.ypd_top_left();
+            const Vector2 mp = ui::get_mouse_ui_position();
+            const Vector2 plotLoc = mp - plotRect.ypd_top_left();
             const float relLoc = plotLoc.x / plotRect.width();
             const SimulationClock::time_point timeLoc = simStartTime + relLoc*(simEndTime - simStartTime);
 
             // draw vertical line to show current X of their hover
             {
-                const Vec2 p1 = {mp.x, plotRect.ypd_top()};
-                const Vec2 p2 = {mp.x, plotRect.ypd_bottom()};
+                const Vector2 p1 = {mp.x, plotRect.ypd_top()};
+                const Vector2 p2 = {mp.x, plotRect.ypd_bottom()};
                 drawlist.add_line(p1, p2, hoverTimeLineColor);
             }
 
@@ -323,9 +323,9 @@ private:
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
     }
 
-    void drawVec2OutputUI()
+    void drawVector2OutputUI()
     {
-        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Vec2);
+        OSC_ASSERT(m_OutputExtractor.getOutputType() == OutputExtractorDataType::Vector2);
 
         ISimulation& sim = m_API->updSimulation();
 
@@ -336,11 +336,11 @@ private:
         }
 
         // collect output data from the `OutputExtractor`
-        std::vector<Vec2> buf;
+        std::vector<Vector2> buf;
         {
             OSC_PERF("collect output data");
             std::vector<SimulationReport> reports = sim.getAllSimulationReports();
-            buf = m_OutputExtractor.slurpValuesVec2(*sim.getModel(), reports);
+            buf = m_OutputExtractor.slurpValuesVector2(*sim.getModel(), reports);
         }
 
         // setup drawing area for drawing
@@ -372,7 +372,7 @@ private:
                 // overlays
                 {
                     SimulationReport currentReport = m_API->trySelectReportBasedOnScrubbing().value_or(sim.getSimulationReport(nReports - 1));
-                    Vec2d currentVal = m_OutputExtractor.getValueVec2(*sim.getModel(), currentReport);
+                    Vector2d currentVal = m_OutputExtractor.getValueVector2(*sim.getModel(), currentReport);
                     // ensure the annotation doesn't occlude the line too heavily
                     auto annotationColor = ui::get_style_color(ui::ColorVar::PopupBg).with_alpha(0.5f);
                     plot::draw_annotation(currentVal, annotationColor, {10.0f, 10.0f}, true, "(%f, %f)", currentVal.x, currentVal.y);

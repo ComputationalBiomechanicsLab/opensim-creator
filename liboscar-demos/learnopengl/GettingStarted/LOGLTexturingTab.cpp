@@ -14,7 +14,7 @@ namespace
         Mesh quad = PlaneGeometry{};
 
         // transform default quad texture coordinates to exercise wrap modes
-        quad.transform_tex_coords([](Vec2 uv) { return 2.0f * uv; });
+        quad.transform_tex_coords([](Vector2 uv) { return 2.0f * uv; });
 
         return quad;
     }

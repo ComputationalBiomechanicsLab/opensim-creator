@@ -11,7 +11,7 @@ using namespace osc;
 namespace
 {
     // positions of cubes within the scene
-    constexpr auto c_cube_positions = std::to_array<Vec3>({
+    constexpr auto c_cube_positions = std::to_array<Vector3>({
         { 0.0f,  0.0f,  0.0f },
         { 2.0f,  5.0f, -15.0f},
         {-1.5f, -2.2f, -2.5f },
@@ -25,7 +25,7 @@ namespace
     });
 
     // positions of point lights within the scene (the camera also has a spotlight)
-    constexpr auto c_point_light_positions = std::to_array<Vec3>({
+    constexpr auto c_point_light_positions = std::to_array<Vector3>({
         { 0.7f,  0.2f,  2.0f },
         { 2.3f, -3.3f, -4.0f },
         {-4.0f,  2.0f, -12.0f},
@@ -68,7 +68,7 @@ namespace
 
         rv.set("uMaterialDiffuse", diffuse_map);
         rv.set("uMaterialSpecular", specular_map);
-        rv.set("uDirLightDirection", Vec3{-0.2f, -1.0f, -0.3f});
+        rv.set("uDirLightDirection", Vector3{-0.2f, -1.0f, -0.3f});
         rv.set("uDirLightAmbient", 0.01f);
         rv.set("uDirLightDiffuse", 0.2f);
         rv.set("uDirLightSpecular", 0.4f);
@@ -146,9 +146,9 @@ public:
         multiple_lights_material_.set("uSpotLightDirection", camera_.direction());
 
         // render containers
-        const Vec3 axis = normalize(Vec3{1.0f, 0.3f, 0.5f});
+        const Vector3 axis = normalize(Vector3{1.0f, 0.3f, 0.5f});
         for (size_t i = 0; i < c_cube_positions.size(); ++i) {
-            const Vec3& pos = c_cube_positions[i];
+            const Vector3& pos = c_cube_positions[i];
             const auto angle = i++ * 20_deg;
 
             graphics::draw(
@@ -160,8 +160,8 @@ public:
         }
 
         // render lamps
-        for (const Vec3& light_position : c_point_light_positions) {
-            graphics::draw(mesh_, {.scale = Vec3{0.2f}, .translation = light_position}, light_cube_material_, camera_);
+        for (const Vector3& light_position : c_point_light_positions) {
+            graphics::draw(mesh_, {.scale = Vector3{0.2f}, .translation = light_position}, light_cube_material_, camera_);
         }
 
         // render to output (window)

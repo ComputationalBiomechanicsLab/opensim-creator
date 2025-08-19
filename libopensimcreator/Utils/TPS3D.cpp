@@ -3,8 +3,8 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ParalellizationHelpers.h>
 #include <liboscar/Utils/Perf.h>
@@ -22,7 +22,7 @@ namespace
     // this is effectively the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(const Vec3& controlPoint, const Vec3& p)
+    float RadialBasisFunction3D(const Vector3& controlPoint, const Vector3& p)
     {
         // this implementation uses the U definition from the following (later) source:
         //
@@ -213,8 +213,8 @@ namespace
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.nonAffineTerms.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i) {
-            const Vec3 weight = {Cx[i], Cy[i], Cz[i]};
-            const Vec3 controlPoint = {source_landmarks[i, 0], source_landmarks[i, 1], source_landmarks[i, 2]};
+            const Vector3 weight = {Cx[i], Cy[i], Cz[i]};
+            const Vector3 controlPoint = {source_landmarks[i, 0], source_landmarks[i, 1], source_landmarks[i, 2]};
             rv.nonAffineTerms.emplace_back(weight, controlPoint);
         }
 
@@ -266,10 +266,10 @@ namespace
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
-        // variants of the coefficients together in memory (as `vec3`s)
+        // variants of the coefficients together in memory (as `Vector3`s)
 
         // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        Vec3d rv = Vec3d{coefs.a1} + Vec3d{coefs.a2*p.x} + Vec3d{coefs.a3*p.y} + Vec3d{coefs.a4*p.z};
+        Vector3d rv = Vector3d{coefs.a1} + Vector3d{coefs.a2*p.x} + Vector3d{coefs.a3*p.y} + Vector3d{coefs.a4*p.z};
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (const TPSNonAffineTerm3D<T>& term : coefs.nonAffineTerms) {
@@ -327,38 +327,38 @@ TPSCoefficients3D<double> osc::TPSCalcCoefficients(
     return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks);
 }
 
-Vec3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vec3 p)
+Vector3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vector3 p)
 {
     return ::TPSWarpPoint<float>(coefs, p);
 }
 
-Vec3d osc::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, Vec3d p)
+Vector3d osc::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, Vector3d p)
 {
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-Vec3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vec3 vert, float blendingFactor)
+Vector3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vector3 vert, float blendingFactor)
 {
     return lerp(vert, TPSWarpPoint(coefs, vert), blendingFactor);
 }
 
-std::vector<Vec3> osc::TPSWarpPoints(
+std::vector<Vector3> osc::TPSWarpPoints(
     const TPSCoefficients3D<float>& coefs,
-    std::span<const Vec3> points,
+    std::span<const Vector3> points,
     float blendingFactor)
 {
-    std::vector<Vec3> rv(points.begin(), points.end());
+    std::vector<Vector3> rv(points.begin(), points.end());
     TPSWarpPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }
 
 void osc::TPSWarpPointsInPlace(
     const TPSCoefficients3D<float>& coefs,
-    std::span<Vec3> points,
+    std::span<Vector3> points,
     float blendingFactor)
 {
     OSC_PERF("TPSWarpPointsInPlace");
-    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](Vec3& vert)
+    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](Vector3& vert)
     {
         vert = TPSWarpPoint(coefs, vert, blendingFactor);
     });

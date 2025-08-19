@@ -3,7 +3,7 @@
 #include <libopensimcreator/UI/Shared/ModelViewerPanelFlags.h>
 
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/UI/Panels/Panel.h>
 
 #include <memory>
@@ -30,7 +30,7 @@ namespace osc
         bool isLeftClicked() const;
         bool isRightClicked() const;
         ModelViewerPanelLayer& pushLayer(std::unique_ptr<ModelViewerPanelLayer>);
-        void focusOn(const Vec3&);
+        void focusOn(const Vector3&);
         std::optional<Rect> getScreenRect() const;
         const PolarPerspectiveCamera& getCamera() const;
         void setCamera(const PolarPerspectiveCamera&);

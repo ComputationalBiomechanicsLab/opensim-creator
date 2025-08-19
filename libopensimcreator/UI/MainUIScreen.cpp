@@ -439,7 +439,7 @@ public:
         OSC_PERF("MainUIScreen/drawTabBar");
 
         ui::push_style_var(ui::StyleVar::FramePadding, ui::get_style_frame_padding() + 2.0f);
-        ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vec2{5.0f, 0.0f});
+        ui::push_style_var(ui::StyleVar::ItemInnerSpacing, Vector2{5.0f, 0.0f});
         ui::push_style_var(ui::StyleVar::TabRounding, 10.0f);
         ui::push_style_var(ui::StyleVar::FrameRounding, 10.0f);
         if (ui::begin_main_window_top_bar("##MainWindowTabBarWrapper")) {

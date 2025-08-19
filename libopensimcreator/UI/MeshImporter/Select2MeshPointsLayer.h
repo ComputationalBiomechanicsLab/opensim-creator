@@ -7,8 +7,8 @@
 #include <libopensimcreator/UI/MeshImporter/MeshImporterSharedState.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterUILayer.h>
 
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -29,7 +29,7 @@ namespace osc::mi
         // been clicked
         //
         // the function should return `true` if the points are accepted
-        std::function<bool(Vec3, Vec3)> onTwoPointsChosen = [](Vec3, Vec3)
+        std::function<bool(Vector3, Vector3)> onTwoPointsChosen = [](Vector3, Vector3)
         {
             return true;
         };
@@ -134,7 +134,7 @@ namespace osc::mi
             }
 
             // returns a string representation of a spatial position (e.g. (0.0, 1.0, 3.0))
-            const std::string pos = [](const Vec3& position)
+            const std::string pos = [](const Vector3& position)
             {
                 std::stringstream ss;
                 ss.precision(4);
@@ -156,8 +156,8 @@ namespace osc::mi
                 return;
             }
 
-            Vec3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
-            Vec2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
+            Vector3 clickedWorldPos = m_MaybeFirstLocation ? *m_MaybeFirstLocation : *m_MaybeSecondLocation;
+            Vector2 clickedScrPos = m_Shared->worldPosToScreenPos(clickedWorldPos);
 
             auto color = Color::black();
 
@@ -168,7 +168,7 @@ namespace osc::mi
                 return;
             }
 
-            Vec2 hoverScrPos = m_Shared->worldPosToScreenPos(m_MaybeCurrentHover.Pos);
+            Vector2 hoverScrPos = m_Shared->worldPosToScreenPos(m_MaybeCurrentHover.Pos);
 
             dl.add_circle_filled({hoverScrPos, 5.0f}, color);
             dl.add_line(clickedScrPos, hoverScrPos, color, 5.0f);
@@ -182,8 +182,8 @@ namespace osc::mi
                 return;
             }
 
-            const Vec2 padding{10.0f, 10.0f};
-            const Vec2 position = m_Shared->get3DSceneRect().ypd_top_left() + padding;
+            const Vector2 padding{10.0f, 10.0f};
+            const Vector2 position = m_Shared->get3DSceneRect().ypd_top_left() + padding;
             ui::get_panel_draw_list().add_text(position, Color::white(), m_Options.header);
         }
 
@@ -194,8 +194,8 @@ namespace osc::mi
             ui::push_style_color(ui::ColorVar::Button, Color::dark_grey());
 
             const CStringView text = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
-            const Vec2 margin = {25.0f, 35.0f};
-            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
+            const Vector2 margin = {25.0f, 35.0f};
+            const Vector2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(text))
@@ -254,10 +254,10 @@ namespace osc::mi
         MeshImporterHover m_MaybeCurrentHover;
 
         // (maybe) first mesh location
-        std::optional<Vec3> m_MaybeFirstLocation;
+        std::optional<Vector3> m_MaybeFirstLocation;
 
         // (maybe) second mesh location
-        std::optional<Vec3> m_MaybeSecondLocation;
+        std::optional<Vector3> m_MaybeSecondLocation;
 
         // buffer that's filled with drawable geometry during a drawcall
         std::vector<DrawableThing> m_DrawablesBuffer;

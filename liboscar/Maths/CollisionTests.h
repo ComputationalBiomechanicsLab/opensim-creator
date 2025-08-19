@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/RayCollision.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <optional>
 
@@ -16,7 +16,7 @@ namespace osc { struct Triangle; }
 
 namespace osc
 {
-    bool is_intersecting(const Rect&, const Vec2&);
+    bool is_intersecting(const Rect&, const Vector2&);
     bool is_intersecting(const FrustumPlanes&, const AABB&);
     std::optional<RayCollision> find_collision(const Ray&, const Sphere&);
     std::optional<RayCollision> find_collision(const Ray&, const AABB&);

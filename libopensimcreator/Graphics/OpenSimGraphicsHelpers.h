@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/Scene/SceneCollision.h>
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <functional>
 #include <optional>
@@ -23,7 +23,7 @@ namespace osc
 {
     SceneRendererParams CalcSceneRendererParams(
         const ModelRendererParams&,
-        Vec2 viewportDims,
+        Vector2 viewportDims,
         float viewportDevicePixelRatio,
         AntiAliasingLevel,
         float fixupScaleFactor
@@ -41,7 +41,7 @@ namespace osc
         SceneCache&,
         std::span<const SceneDecoration> taggedDrawlist,
         const PolarPerspectiveCamera&,
-        Vec2 mouseScreenPosition,
+        Vector2 mouseScreenPosition,
         const Rect& viewportScreenRect
     );
 }

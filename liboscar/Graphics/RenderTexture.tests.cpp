@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <liboscar/Graphics/RenderTextureParams.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <gtest/gtest.h>
 
@@ -14,7 +14,7 @@ using namespace osc;
 TEST(RenderTexture, default_constructor_creates_1x1_default_texture)
 {
     const RenderTexture render_texture;
-    ASSERT_EQ(render_texture.dimensions(), Vec2(1.0f, 1.0f));
+    ASSERT_EQ(render_texture.dimensions(), Vector2(1.0f, 1.0f));
     ASSERT_EQ(render_texture.depth_stencil_format(), DepthStencilRenderBufferFormat::Default);
     ASSERT_EQ(render_texture.color_format(), ColorRenderBufferFormat::Default);
     ASSERT_EQ(render_texture.anti_aliasing_level(), AntiAliasingLevel{1});
@@ -123,7 +123,7 @@ TEST(RenderTexture, set_dimension_changes_equality)
 
 TEST(RenderTexture, can_be_constructed_from_pixel_dimensions_vector)
 {
-    const Vec2i pixel_dimensions = {12, 12};
+    const Vector2i pixel_dimensions = {12, 12};
     const RenderTexture render_texture{{.pixel_dimensions = pixel_dimensions}};
     ASSERT_EQ(render_texture.pixel_dimensions(), pixel_dimensions);
 }
@@ -136,7 +136,7 @@ TEST(RenderTexture, can_be_constructed_from_RenderTextureParams)
 
 TEST(RenderTexture, FromDescriptorHasExpectedValues)
 {
-    const Vec2i pixel_dimensions = {8, 8};
+    const Vector2i pixel_dimensions = {8, 8};
     const AntiAliasingLevel aa_level{1};
     const ColorRenderBufferFormat format = ColorRenderBufferFormat::R8_UNORM;
     const TextureDimensionality dimensionality = TextureDimensionality::Cube;
@@ -206,8 +206,8 @@ TEST(RenderTexture, dimensions_equal_pixel_dimensions_on_construction)
     RenderTexture render_texture;
     render_texture.set_pixel_dimensions({7, 7});
 
-    ASSERT_EQ(render_texture.pixel_dimensions(), Vec2i(7, 7));
-    ASSERT_EQ(render_texture.dimensions(), Vec2(render_texture.pixel_dimensions()));
+    ASSERT_EQ(render_texture.pixel_dimensions(), Vector2i(7, 7));
+    ASSERT_EQ(render_texture.dimensions(), Vector2(render_texture.pixel_dimensions()));
 }
 
 TEST(RenderTexture, dimensions_are_scaled_by_device_pixel_ratio)
@@ -215,11 +215,11 @@ TEST(RenderTexture, dimensions_are_scaled_by_device_pixel_ratio)
     RenderTexture render_texture;
     render_texture.set_pixel_dimensions({7, 7});
 
-    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f, 7.0f));
+    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f, 7.0f));
     render_texture.set_device_pixel_ratio(2.0f);
-    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f,7.0f)/2.0f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f,7.0f)/2.0f);
     render_texture.set_device_pixel_ratio(0.5f);
-    ASSERT_EQ(render_texture.dimensions(), Vec2(7.0f,7.0f)/0.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(7.0f,7.0f)/0.5f);
 }
 
 TEST(RenderTexture, device_pixel_ratio_is_initially_1)
@@ -252,7 +252,7 @@ TEST(RenderTexture, device_pixel_ratio_from_params_affects_dimensions)
         .pixel_dimensions = {13, 13},
         .device_pixel_ratio = 2.5f,
     }};
-    ASSERT_EQ(render_texture.pixel_dimensions(), Vec2i(13, 13));
+    ASSERT_EQ(render_texture.pixel_dimensions(), Vector2i(13, 13));
     ASSERT_EQ(render_texture.device_pixel_ratio(), 2.5f);
-    ASSERT_EQ(render_texture.dimensions(), Vec2(13.0f, 13.0f)/2.5f);
+    ASSERT_EQ(render_texture.dimensions(), Vector2(13.0f, 13.0f)/2.5f);
 }

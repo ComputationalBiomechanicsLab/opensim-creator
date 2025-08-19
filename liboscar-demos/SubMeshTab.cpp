@@ -25,13 +25,13 @@ namespace
     Mesh generate_mesh_with_sub_meshes()
     {
         const auto meshes = std::to_array<Mesh>({
-            BoxGeometry{{.dimensions = Vec3{2.0f}}},
+            BoxGeometry{{.dimensions = Vector3{2.0f}}},
             SphereGeometry{{.num_width_segments = 16, .num_height_segments = 16}},
             CircleGeometry{{.radius = 1.0f, .num_segments = 32}},
         });
 
-        std::vector<Vec3> all_vertices;
-        std::vector<Vec3> all_normals;
+        std::vector<Vector3> all_vertices;
+        std::vector<Vector3> all_normals;
         std::vector<uint32_t> all_indices;
         std::vector<SubMeshDescriptor> all_descriptors;
 

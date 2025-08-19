@@ -79,7 +79,7 @@ public:
         // rotate the quad over time
         const AppClock::duration dt = App::get().frame_delta_since_startup();
         const auto angle = Degrees{-10.0 * dt.count()};
-        const auto axis = normalize(Vec3{1.0f, 0.0f, 1.0f});
+        const auto axis = normalize(Vector3{1.0f, 0.0f, 1.0f});
         quad_transform_.rotation = angle_axis(angle, axis);
     }
 
@@ -119,13 +119,13 @@ private:
     Material normal_mapping_material_ = create_normal_mapping_material(loader_);
     Material light_cube_material_ = create_light_cube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();
     Transform quad_transform_;
     Transform light_transform_ = {
-        .scale = Vec3{0.2f},
+        .scale = Vector3{0.2f},
         .translation = {0.5f, 1.0f, 0.3f},
     };
     bool normal_mapping_enabled_ = true;

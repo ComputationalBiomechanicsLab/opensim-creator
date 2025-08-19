@@ -50,7 +50,7 @@ TEST(Image, read_into_texture_can_load_image_from_ResourceStream)
         ColorSpace::sRGB
     );
 
-    ASSERT_EQ(loaded_texture.pixel_dimensions(), Vec2i(512, 512));
+    ASSERT_EQ(loaded_texture.pixel_dimensions(), Vector2i(512, 512));
 }
 
 TEST(Image, read_into_texture_throws_when_called_with_an_invalid_path)
@@ -110,7 +110,7 @@ TEST(JPEG, write_is_compatible_with_reader)
     std::istringstream input_stream{data};
     const Texture2D parsed_texture = Image::read_into_texture(input_stream, "data.jpeg", ColorSpace::sRGB);
 
-    ASSERT_EQ(parsed_texture.pixel_dimensions(), Vec2i(2, 2));
+    ASSERT_EQ(parsed_texture.pixel_dimensions(), Vector2i(2, 2));
     const auto parsed_pixels = parsed_texture.pixels32();
 
     // Ensure the pixels are approximately equal to (lossy compression) the ones that were put in.

@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
@@ -13,7 +13,7 @@ namespace osc
     struct LatheGeometryParams final {
         friend bool operator==(const LatheGeometryParams&, const LatheGeometryParams&) = default;
 
-        std::vector<Vec2> points = {{0.0f, -0.5f}, {0.5f, 0.0f}, {0.0f, 0.5f}};
+        std::vector<Vector2> points = {{0.0f, -0.5f}, {0.5f, 0.0f}, {0.0f, 0.5f}};
         size_t num_segments = 12;
         Radians phi_start = Degrees{0};
         Radians phi_length = Degrees{360};

@@ -15,7 +15,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_object_positions = std::to_array<Vec3>({
+    constexpr auto c_object_positions = std::to_array<Vector3>({
         {-3.0,  -0.5, -3.0},
         { 0.0,  -0.5, -3.0},
         { 3.0,  -0.5, -3.0},
@@ -28,7 +28,7 @@ namespace
     });
     constexpr size_t c_num_lights = 32;
 
-    Vec3 generate_scene_light_position(std::default_random_engine& rng)
+    Vector3 generate_scene_light_position(std::default_random_engine& rng)
     {
         std::uniform_real_distribution<float> dist{-3.0f, 3.0f};
         return {dist(rng), dist(rng), dist(rng)};
@@ -40,29 +40,29 @@ namespace
         return {dist(rng), dist(rng), dist(rng), 1.0f};
     }
 
-    std::vector<Vec3> generate_n_scene_light_positions(size_t n)
+    std::vector<Vector3> generate_n_scene_light_positions(size_t n)
     {
         const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             return generate_scene_light_position(rng);
         };
 
-        std::vector<Vec3> rv;
+        std::vector<Vector3> rv;
         rv.reserve(n);
         std::generate_n(std::back_inserter(rv), n, generator);
         return rv;
     }
 
-    std::vector<Vec3> generate_n_scene_light_colors(size_t n)
+    std::vector<Vector3> generate_n_scene_light_colors(size_t n)
     {
         const auto generator = [rng = std::default_random_engine{std::random_device{}()}]() mutable
         {
             const Color srgb_color = generate_scene_light_color(rng);
             const Color linear_color = to_linear_colorspace(srgb_color);
-            return Vec3{linear_color.r, linear_color.g, linear_color.b};
+            return Vector3{linear_color.r, linear_color.g, linear_color.b};
         };
 
-        std::vector<Vec3> rv;
+        std::vector<Vector3> rv;
         rv.reserve(n);
         std::generate_n(std::back_inserter(rv), n, generator);
         return rv;
@@ -129,7 +129,7 @@ namespace
             },
         };
 
-        void reformat(Vec2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
+        void reformat(Vector2 pixel_dimensions, float device_pixel_ratio, AntiAliasingLevel aa_level)
         {
             for (RenderTexture* texture_ptr : {&albedo, &normal, &position}) {
                 texture_ptr->reformat({
@@ -190,9 +190,9 @@ private:
     void draw_3d_scene()
     {
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
-        const Vec2 workspace_dimensions = workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_dimensions = workspace_screen_space_rect.dimensions();
         const float device_pixel_scale = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_scale * workspace_dimensions;
+        const Vector2 workspace_pixel_dimensions = device_pixel_scale * workspace_dimensions;
         const AntiAliasingLevel anti_aliasing_level = App::get().anti_aliasing_level();
 
         // ensure textures/buffers have correct dimensions
@@ -215,10 +215,10 @@ private:
         gbuffer_.material.set("uSpecularMap", specular_map_);
 
         // render scene cubes
-        for (const Vec3& object_position : c_object_positions) {
+        for (const Vector3& object_position : c_object_positions) {
             graphics::draw(
                 cube_mesh_,
-                {.scale = Vec3{0.5f}, .translation = object_position},
+                {.scale = Vector3{0.5f}, .translation = object_position},
                 gbuffer_.material,
                 camera_
             );
@@ -229,28 +229,28 @@ private:
     void draw_gbuffer_overlays(const Rect& viewport_screen_space_rect) const
     {
         constexpr float overlay_size = 200.0f;
-        const Vec2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
-        const Vec2 overlays_bottom_left = viewport_top_left - Vec2{0.0f, overlay_size};
+        const Vector2 viewport_top_left = viewport_screen_space_rect.ypu_top_left();
+        const Vector2 overlays_bottom_left = viewport_top_left - Vector2{0.0f, overlay_size};
 
         graphics::blit_to_main_window(
             gbuffer_.albedo,
             Rect::from_corners(
-                overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vec2{0.0f*overlay_size, 0.0f} + overlay_size
+                overlays_bottom_left + Vector2{0.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{0.0f*overlay_size, 0.0f} + overlay_size
             )
         );
         graphics::blit_to_main_window(
             gbuffer_.normal,
             Rect::from_corners(
-                overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vec2{1.0f*overlay_size, 0.0f} + overlay_size
+                overlays_bottom_left + Vector2{1.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{1.0f*overlay_size, 0.0f} + overlay_size
             )
         );
         graphics::blit_to_main_window(
             gbuffer_.position,
             Rect::from_corners(
-                overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f},
-                overlays_bottom_left + Vec2{2.0f*overlay_size, 0.0f} + overlay_size
+                overlays_bottom_left + Vector2{2.0f*overlay_size, 0.0f},
+                overlays_bottom_left + Vector2{2.0f*overlay_size, 0.0f} + overlay_size
             )
         );
     }
@@ -281,7 +281,7 @@ private:
 
         for (size_t i = 0; i < light_positions_.size(); ++i) {
             light_box_material_.set("uLightColor", light_colors_[i]);
-            graphics::draw(cube_mesh_, {.scale = Vec3{0.125f}, .translation = light_positions_[i]}, light_box_material_, camera_);
+            graphics::draw(cube_mesh_, {.scale = Vector3{0.125f}, .translation = light_positions_[i]}, light_box_material_, camera_);
         }
 
         const RenderTarget render_target{
@@ -303,11 +303,11 @@ private:
     ResourceLoader loader_ = App::resource_loader();
 
     // scene state
-    std::vector<Vec3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
-    std::vector<Vec3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
+    std::vector<Vector3> light_positions_ = generate_n_scene_light_positions(c_num_lights);
+    std::vector<Vector3> light_colors_ = generate_n_scene_light_colors(c_num_lights);
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
     Texture2D diffuse_map_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container2.jpg"),
         ColorSpace::sRGB

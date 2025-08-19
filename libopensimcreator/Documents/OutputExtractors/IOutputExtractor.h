@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
@@ -59,18 +59,18 @@ namespace osc
             std::span<const SimulationReport>
         ) const;
 
-        Vec2 getValueVec2(
+        Vector2 getValueVector2(
             const OpenSim::Component& component,
             const SimulationReport& report
         ) const;
 
-        void getValuesVec2(
+        void getValuesVector2(
             const OpenSim::Component&,
             std::span<const SimulationReport>,
-            const std::function<void(Vec2)>& consumer
+            const std::function<void(Vector2)>& consumer
         ) const;
 
-        std::vector<Vec2> slurpValuesVec2(
+        std::vector<Vector2> slurpValuesVector2(
             const OpenSim::Component&,
             std::span<const SimulationReport>
         ) const;

@@ -14,7 +14,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Log.h>
@@ -299,7 +299,7 @@ namespace
                     std::string{state.getPanelName()},
                     state.viewportUiRect,
                     state.maybeHoveredComponentAbsPath.toString(),
-                    state.maybeBaseLayerHittest ? std::optional<Vec3>{state.maybeBaseLayerHittest->world_position} : std::nullopt,
+                    state.maybeBaseLayerHittest ? std::optional<Vector3>{state.maybeBaseLayerHittest->world_position} : std::nullopt,
                 };
                 params.callOnRightClickHandler(e);
             }
@@ -363,7 +363,7 @@ public:
         return m_State.pushLayer(std::move(layer));
     }
 
-    void focusOn(const Vec3& position)
+    void focusOn(const Vector3& position)
     {
         m_Parameters.updRenderParams().camera.focus_point = -position;
     }
@@ -588,7 +588,7 @@ ModelViewerPanelLayer& osc::ModelViewerPanel::pushLayer(std::unique_ptr<ModelVie
 {
     return private_data().pushLayer(std::move(layer));
 }
-void osc::ModelViewerPanel::focusOn(const Vec3& position) { private_data().focusOn(position); }
+void osc::ModelViewerPanel::focusOn(const Vector3& position) { private_data().focusOn(position); }
 std::optional<Rect> osc::ModelViewerPanel::getScreenRect() const { return private_data().getScreenRect(); }
 const PolarPerspectiveCamera& osc::ModelViewerPanel::getCamera() const { return private_data().getCamera(); }
 void osc::ModelViewerPanel::setCamera(const PolarPerspectiveCamera& camera) { private_data().setCamera(camera); }

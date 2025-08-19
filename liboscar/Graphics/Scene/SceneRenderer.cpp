@@ -29,8 +29,8 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
@@ -47,12 +47,12 @@ namespace
 {
     const StringName c_diffuse_color_propname{"uDiffuseColor"};
 
-    Transform calc_floor_transform(Vec3 floor_origin, float fixup_scale_factor)
+    Transform calc_floor_transform(Vector3 floor_origin, float fixup_scale_factor)
     {
         return {
             // note: this should be the same as draw_grid
             .scale = {50.0f * fixup_scale_factor, 50.0f * fixup_scale_factor, 1.0f},
-            .rotation = angle_axis(-90_deg, Vec3{1.0f, 0.0f, 0.0f}),
+            .rotation = angle_axis(-90_deg, Vector3{1.0f, 0.0f, 0.0f}),
             .translation = floor_origin,
         };
     }
@@ -84,7 +84,7 @@ namespace
         Radians phi;
     };
 
-    PolarAngles calc_polar_angles(const Vec3& direction_from_origin)
+    PolarAngles calc_polar_angles(const Vector3& direction_from_origin)
     {
         // X is left-to-right
         // Y is bottom-to-top
@@ -111,7 +111,7 @@ namespace
 
     ShadowCameraMatrices calc_shadow_camera_matrices(
         const AABB& shadowcasters_aabb,
-        const Vec3& light_direction)
+        const Vector3& light_direction)
     {
         const Sphere shadowcasters_sphere = bounding_sphere_of(shadowcasters_aabb);
         const PolarAngles camera_polar_angles = calc_polar_angles(-light_direction);
@@ -279,7 +279,7 @@ namespace
             Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {
             set<Texture2D>("uDiffuseTexture", ChequeredTexture{});
-            set("uTextureScale", Vec2{100.0f});
+            set("uTextureScale", Vector2{100.0f});
             set_transparent(true);
         }
 
@@ -730,7 +730,7 @@ private:
         Rect& rim_ndc_rect = *maybe_rim_ndc_rect;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
-        const Vec2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
+        const Vector2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
 
         // expand by the rim thickness, so that the output has space for the rims
         rim_ndc_rect = rim_ndc_rect.with_dimensions(rim_ndc_rect.dimensions() + 2.0f*rim_ndc_thickness);
@@ -747,8 +747,8 @@ private:
 
         // compute where the quad needs to eventually be drawn in the scene
         const Transform quad_mesh_to_rims_quad{
-            .scale = Vec3{rim_ndc_rect.half_extents(), 1.0f},
-            .translation = Vec3{rim_ndc_rect.origin(), 0.0f},
+            .scale = Vector3{rim_ndc_rect.half_extents(), 1.0f},
+            .translation = Vector3{rim_ndc_rect.origin(), 0.0f},
         };
 
         // rendering:

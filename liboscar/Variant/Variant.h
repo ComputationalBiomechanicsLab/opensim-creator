@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
 #include <liboscar/Variant/VariantType.h>
@@ -29,8 +29,8 @@ namespace osc
         Variant(std::nullopt_t) = delete;
         Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
         Variant(const StringName&);
-        Variant(Vec2);
-        Variant(Vec3);
+        Variant(Vector2);
+        Variant(Vector3);
 
         VariantType type() const;
 
@@ -41,8 +41,8 @@ namespace osc
         operator int() const;
         operator std::string() const;
         operator StringName() const;
-        operator Vec2() const;
-        operator Vec3() const;
+        operator Vector2() const;
+        operator Vector3() const;
 
         friend bool operator==(const Variant&, const Variant&);
 
@@ -62,8 +62,8 @@ namespace osc
             int,
             std::string,
             StringName,
-            Vec2,
-            Vec3
+            Vector2,
+            Vector3
         > data_;
     };
 

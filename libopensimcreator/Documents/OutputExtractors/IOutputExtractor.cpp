@@ -47,35 +47,35 @@ std::vector<float> osc::IOutputExtractor::slurpValuesFloat(
     return rv;
 }
 
-Vec2 osc::IOutputExtractor::getValueVec2(
+Vector2 osc::IOutputExtractor::getValueVector2(
     const OpenSim::Component& component,
     const SimulationReport& report) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
-    return to<Vec2>(extractor(report));
+    return to<Vector2>(extractor(report));
 }
 
-void osc::IOutputExtractor::getValuesVec2(
+void osc::IOutputExtractor::getValuesVector2(
     const OpenSim::Component& component,
     std::span<const SimulationReport> reports,
-    const std::function<void(Vec2)>& consumer) const
+    const std::function<void(Vector2)>& consumer) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
     for (const auto& report : reports) {
-        consumer(to<Vec2>(extractor(report)));
+        consumer(to<Vector2>(extractor(report)));
     }
 }
 
-std::vector<Vec2> osc::IOutputExtractor::slurpValuesVec2(
+std::vector<Vector2> osc::IOutputExtractor::slurpValuesVector2(
     const OpenSim::Component& component,
     std::span<const SimulationReport> reports) const
 {
     const OutputValueExtractor extractor = getOutputValueExtractor(component);
 
-    std::vector<Vec2> rv;
+    std::vector<Vector2> rv;
     rv.reserve(reports.size());
     for (const auto& report : reports) {
-        rv.push_back(to<Vec2>(extractor(report)));
+        rv.push_back(to<Vector2>(extractor(report)));
     }
     return rv;
 }

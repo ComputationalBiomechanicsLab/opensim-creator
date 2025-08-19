@@ -11,8 +11,8 @@
 #include <liboscar/Maths/FrustumPlanes.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <functional>
 #include <optional>
@@ -76,8 +76,8 @@ namespace osc
     );
 
     struct ArrowProperties final {
-        Vec3 start{};
-        Vec3 end{};
+        Vector3 start{};
+        Vector3 end{};
         float tip_length{};
         float neck_thickness{};
         float head_thickness{};
@@ -138,14 +138,14 @@ namespace osc
         const Mesh&,
         const BVH& triangle_bvh,
         const Rect& screen_render_rect,
-        Vec2 mouse_screen_position
+        Vector2 mouse_screen_position
     );
 
     // returns scene rendering parameters for an generic panel
     SceneRendererParams calc_standard_dark_scene_render_params(
         const PolarPerspectiveCamera&,
         AntiAliasingLevel,
-        Vec2 dimensions,
+        Vector2 dimensions,
         float device_pixel_ratio
     );
 

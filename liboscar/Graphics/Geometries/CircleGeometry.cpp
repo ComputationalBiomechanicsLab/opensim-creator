@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Assertions.h>
 
 #include <cstddef>
@@ -26,9 +26,9 @@ osc::CircleGeometry::CircleGeometry(const Params& p)
     const auto fnum_segments = static_cast<float>(num_segments);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     // middle vertex
     vertices.emplace_back(0.0f, 0.0f, 0.0f);

@@ -6,7 +6,7 @@
 #include <libopensimcreator/Documents/MeshWarper/UndoableTPSDocument.h>
 
 #include <liboscar/Formats/OBJ.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 
 #include <iosfwd>
@@ -24,19 +24,19 @@ namespace osc { struct TPSDocumentLandmarkPair; }
 namespace osc
 {
     // adds a landmark to an input mesh
-    void ActionAddLandmark(UndoableTPSDocument&, TPSDocumentInputIdentifier, const Vec3&);
+    void ActionAddLandmark(UndoableTPSDocument&, TPSDocumentInputIdentifier, const Vector3&);
 
     // adds a non-participating landmark to the source mesh
-    void ActionAddNonParticipatingLandmark(UndoableTPSDocument&, const Vec3&);
+    void ActionAddNonParticipatingLandmark(UndoableTPSDocument&, const Vector3&);
 
     // adds a source/destination position to an existing landmark
-    void ActionSetLandmarkPosition(UndoableTPSDocument&, UID, TPSDocumentInputIdentifier, const Vec3&);
+    void ActionSetLandmarkPosition(UndoableTPSDocument&, UID, TPSDocumentInputIdentifier, const Vector3&);
 
     // tries to rename the landmark to `newName`, returns the actual new name (even if it hasn't changed)
     void ActionRenameLandmark(UndoableTPSDocument&, UID, std::string_view newName);
 
     // sets the IDed non-participating landmark's location to the given location
-    void ActionSetNonParticipatingLandmarkPosition(UndoableTPSDocument&, UID, const Vec3&);
+    void ActionSetNonParticipatingLandmarkPosition(UndoableTPSDocument&, UID, const Vector3&);
 
     // tries to rename the non-particiapting landmark to `newName`, returns the actual new name (even if it hasn't changed)
     void ActionRenameNonParticipatingLandmark(UndoableTPSDocument&, UID, std::string_view newName);

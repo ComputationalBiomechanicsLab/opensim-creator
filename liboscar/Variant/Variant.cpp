@@ -1,9 +1,9 @@
 #include "Variant.h"
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Maths/VecFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/VectorFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
@@ -75,8 +75,8 @@ osc::Variant::Variant(int v) : data_{v} {}
 osc::Variant::Variant(std::string v) : data_{std::move(v)} {}
 osc::Variant::Variant(std::string_view v) : data_{std::string{v}} {}
 osc::Variant::Variant(const StringName& v) : data_{v} {}
-osc::Variant::Variant(Vec2 v) : data_{v} {}
-osc::Variant::Variant(Vec3 v) : data_{v} {}
+osc::Variant::Variant(Vector2 v) : data_{v} {}
+osc::Variant::Variant(Vector3 v) : data_{v} {}
 
 VariantType osc::Variant::type() const
 {
@@ -88,8 +88,8 @@ VariantType osc::Variant::type() const
         [](const int&)            { return VariantType::Int; },
         [](const std::string&)    { return VariantType::String; },
         [](const StringName&)     { return VariantType::StringName; },
-        [](const Vec2&)           { return VariantType::Vec2; },
-        [](const Vec3&)           { return VariantType::Vec3; },
+        [](const Vector2&)        { return VariantType::Vector2; },
+        [](const Vector3&)        { return VariantType::Vector3; },
     }, data_);
 }
 
@@ -102,8 +102,8 @@ osc::Variant::operator bool() const
         [](const float& v)        { return v != 0.0f; },
         [](const int& v)          { return v != 0; },
         [](std::string_view s)    { return parse_as_bool(s); },
-        [](const Vec2& v)         { return v.x != 0.0f; },
-        [](const Vec3& v)         { return v.x != 0.0f; },
+        [](const Vector2& v)      { return v.x != 0.0f; },
+        [](const Vector3& v)      { return v.x != 0.0f; },
     }, data_);
 }
 
@@ -120,8 +120,8 @@ osc::Variant::operator osc::Color() const
             const auto c = try_parse_html_color_string(str);
             return c ? *c : Color::black();
         },
-        [](const Vec2& v)         { return Color{v.x, v.y, 0.0f}; },
-        [](const Vec3& v)         { return Color{v}; },
+        [](const Vector2& v)      { return Color{v.x, v.y, 0.0f}; },
+        [](const Vector3& v)      { return Color{v}; },
     }, data_);
 }
 
@@ -134,8 +134,8 @@ osc::Variant::operator float() const
         [](const float& v)        { return v; },
         [](const int& v)          { return static_cast<float>(v); },
         [](std::string_view s)    { return parse_as_float_or_zero(s); },
-        [](const Vec2& v)         { return v.x; },
-        [](const Vec3& v)         { return v.x; },
+        [](const Vector2& v)      { return v.x; },
+        [](const Vector3& v)      { return v.x; },
     }, data_);
 }
 
@@ -148,8 +148,8 @@ osc::Variant::operator int() const
         [](const float& v)        { return static_cast<int>(v); },
         [](const int& v)          { return v; },
         [](std::string_view s)    { return parse_as_int_or_zero(s); },
-        [](const Vec2& v)         { return static_cast<int>(v.x); },
-        [](const Vec3& v)         { return static_cast<int>(v.x); },
+        [](const Vector2& v)      { return static_cast<int>(v.x); },
+        [](const Vector3& v)      { return static_cast<int>(v.x); },
     }, data_);
 }
 
@@ -164,8 +164,8 @@ osc::Variant::operator std::string() const
         [](const float& v)        { return std::to_string(v); },
         [](const int& v)          { return std::to_string(v); },
         [](std::string_view s)    { return std::string{s}; },
-        [](const Vec2& v)         { return stream_to_string(v); },
-        [](const Vec3& v)         { return stream_to_string(v); },
+        [](const Vector2& v)      { return stream_to_string(v); },
+        [](const Vector3& v)      { return stream_to_string(v); },
     }, data_);
 }
 
@@ -178,31 +178,31 @@ osc::Variant::operator osc::StringName() const
     }, data_);
 }
 
-osc::Variant::operator osc::Vec2() const
+osc::Variant::operator osc::Vector2() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return Vec2{}; },
-        [](const bool& v)         { return v ? Vec2{1.0f, 1.0f} : Vec2{}; },
-        [](const Color& v)        { return Vec2{v.r, v.g}; },
-        [](const float& v)        { return Vec2{v}; },
-        [](const int& v)          { return Vec2{static_cast<float>(v)}; },
-        [](std::string_view)      { return Vec2{}; },
-        [](const Vec2& v)         { return v; },
-        [](const Vec3& v)         { return Vec2{v}; },
+        [](const std::monostate&) { return Vector2{}; },
+        [](const bool& v)         { return v ? Vector2{1.0f, 1.0f} : Vector2{}; },
+        [](const Color& v)        { return Vector2{v.r, v.g}; },
+        [](const float& v)        { return Vector2{v}; },
+        [](const int& v)          { return Vector2{static_cast<float>(v)}; },
+        [](std::string_view)      { return Vector2{}; },
+        [](const Vector2& v)      { return v; },
+        [](const Vector3& v)      { return Vector2{v}; },
     }, data_);
 }
 
-osc::Variant::operator osc::Vec3() const
+osc::Variant::operator osc::Vector3() const
 {
     return std::visit(Overload{
-        [](const std::monostate&) { return Vec3{}; },
-        [](const bool& v)         { return v ? Vec3{1.0f, 1.0f, 1.0f} : Vec3{}; },
-        [](const Color& v)        { return Vec3{v.r, v.g, v.b}; },
-        [](const float& v)        { return Vec3{v}; },
-        [](const int& v)          { return Vec3{static_cast<float>(v)}; },
-        [](std::string_view)      { return Vec3{}; },
-        [](const Vec2& v)         { return Vec3{v, 0.0f}; },
-        [](const Vec3& v)         { return v; },
+        [](const std::monostate&) { return Vector3{}; },
+        [](const bool& v)         { return v ? Vector3{1.0f, 1.0f, 1.0f} : Vector3{}; },
+        [](const Color& v)        { return Vector3{v.r, v.g, v.b}; },
+        [](const float& v)        { return Vector3{v}; },
+        [](const int& v)          { return Vector3{static_cast<float>(v)}; },
+        [](std::string_view)      { return Vector3{}; },
+        [](const Vector2& v)      { return Vector3{v, 0.0f}; },
+        [](const Vector3& v)      { return v; },
     }, data_);
 }
 

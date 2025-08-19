@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Quaternion.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc
 {
@@ -9,8 +9,8 @@ namespace osc
     struct Ellipsoid final {
         friend bool operator==(const Ellipsoid&, const Ellipsoid&) = default;
 
-        Vec3 origin{};
-        Vec3 radii{1.0f};
+        Vector3 origin{};
+        Vector3 radii{1.0f};
         Quaternion orientation{};
     };
 }

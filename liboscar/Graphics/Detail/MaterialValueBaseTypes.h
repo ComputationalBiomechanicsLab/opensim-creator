@@ -8,9 +8,9 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/Typelist.h>
 
 namespace osc::detail
@@ -28,8 +28,8 @@ namespace osc::detail
         SharedColorRenderBuffer,
         SharedDepthStencilRenderBuffer,
         Texture2D,
-        Vec2,
-        Vec3,
-        Vec4
+        Vector2,
+        Vector3,
+        Vector4
     >;
 }

@@ -44,12 +44,12 @@ namespace osc
     };
 
     template<>
-    struct VariantTypeTraits<VariantType::Vec2> {
-        static inline constexpr CStringView name = "Vec2";
+    struct VariantTypeTraits<VariantType::Vector2> {
+        static inline constexpr CStringView name = "Vector2";
     };
 
     template<>
-    struct VariantTypeTraits<VariantType::Vec3> {
-        static inline constexpr CStringView name = "Vec3";
+    struct VariantTypeTraits<VariantType::Vector3> {
+        static inline constexpr CStringView name = "Vector3";
     };
 }

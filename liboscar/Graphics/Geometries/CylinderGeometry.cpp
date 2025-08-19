@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/SubMeshDescriptor.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -26,9 +26,9 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
     const auto fnum_height_segments = static_cast<float>(p.num_height_segments);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     uint32_t index = 0;
     std::vector<std::vector<uint32_t>> index_array;
@@ -59,7 +59,7 @@ osc::CylinderGeometry::CylinderGeometry(const Params& p)
                     (-v * p.height) + half_height,
                     radius * cos_theta
                 );
-                normals.push_back(normalize(Vec3{sin_theta, slope, cos_theta}));
+                normals.push_back(normalize(Vector3{sin_theta, slope, cos_theta}));
                 uvs.emplace_back(u, 1 - v);
                 row_indices.push_back(index++);
             }

@@ -29,8 +29,8 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/CoordinateDirection.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
@@ -521,7 +521,7 @@ namespace
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        to<Vec3>(edge.getStartLocationInGround(state))
+                        to<Vector3>(edge.getStartLocationInGround(state))
                     );
                 };
                 DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, nullptr);
@@ -535,7 +535,7 @@ namespace
                     DrawPointTranslationInformationWithRespectTo(
                         frame,
                         state,
-                        to<Vec3>(edge.getEndLocationInGround(state))
+                        to<Vector3>(edge.getEndLocationInGround(state))
                     );
                 };
 
@@ -550,7 +550,7 @@ namespace
                     DrawDirectionInformationWithRepsectTo(
                         frame,
                         state,
-                        to<Vec3>(CalcDirection(edge.getLocationsInGround(state)))
+                        to<Vector3>(CalcDirection(edge.getLocationsInGround(state)))
                     );
                 };
 

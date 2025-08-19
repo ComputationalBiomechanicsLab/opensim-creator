@@ -32,7 +32,7 @@ public:
 
             for (size_t i = 0; i < 6; ++i) {
                 // axis-aligned vector
-                Vec3 v;
+                Vector3 v;
                 v[i % 3] = i/3 ? -1.0f : 1.0f;
 
                 const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));

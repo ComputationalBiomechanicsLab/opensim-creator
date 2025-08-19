@@ -6,7 +6,7 @@
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneDecorationShading.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StringName.h>
 
 namespace osc
@@ -17,7 +17,7 @@ namespace osc
         friend bool operator==(const SceneDecoration&, const SceneDecoration&) = default;
 
         // returns a copy of this `SceneDecoration` with `position` set the provided position
-        SceneDecoration with_translation(const Vec3& position_) const
+        SceneDecoration with_translation(const Vector3& position_) const
         {
             SceneDecoration copy{*this};
             copy.transform.translation = position_;

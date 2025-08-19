@@ -14,7 +14,7 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Cursor.h>
 #include <liboscar/Platform/CursorShape.h>

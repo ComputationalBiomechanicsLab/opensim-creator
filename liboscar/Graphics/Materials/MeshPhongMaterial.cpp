@@ -90,11 +90,11 @@ osc::MeshPhongMaterial::MeshPhongMaterial(const Params& p) :
     set_specular_shininess(p.specular_shininess);
 }
 
-Vec3 osc::MeshPhongMaterial::light_position() const { return get<Vec3>(c_light_pos_propname).value(); }
-void osc::MeshPhongMaterial::set_light_position(const Vec3& v) { set(c_light_pos_propname, v); }
+Vector3 osc::MeshPhongMaterial::light_position() const { return get<Vector3>(c_light_pos_propname).value(); }
+void osc::MeshPhongMaterial::set_light_position(const Vector3& v) { set(c_light_pos_propname, v); }
 
-Vec3 osc::MeshPhongMaterial::viewer_position() const { return get<Vec3>(c_view_pos_propname).value(); }
-void osc::MeshPhongMaterial::set_viewer_position(const Vec3& v) { set(c_view_pos_propname, v); }
+Vector3 osc::MeshPhongMaterial::viewer_position() const { return get<Vector3>(c_view_pos_propname).value(); }
+void osc::MeshPhongMaterial::set_viewer_position(const Vector3& v) { set(c_view_pos_propname, v); }
 
 Color osc::MeshPhongMaterial::light_color() const { return get<Color>(c_light_color_propname).value(); }
 void osc::MeshPhongMaterial::set_light_color(const Color& c) { set(c_light_color_propname, c); }

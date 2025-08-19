@@ -3,7 +3,7 @@
 #include <liboscar/Concepts/DereferencesTo.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Ray.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -754,21 +754,21 @@ namespace osc
     // helper functions for pulling path points out of geometry paths (e.g. for rendering)
     struct GeometryPathPoint final {
 
-        explicit GeometryPathPoint(const Vec3& locationInGround_) :
+        explicit GeometryPathPoint(const Vector3& locationInGround_) :
             locationInGround{locationInGround_}
         {
         }
 
         GeometryPathPoint(
             const OpenSim::AbstractPathPoint& underlyingUserPathPoint,
-            const Vec3& locationInGround_) :
+            const Vector3& locationInGround_) :
             maybeUnderlyingUserPathPoint{&underlyingUserPathPoint},
             locationInGround{locationInGround_}
         {
         }
 
         const OpenSim::AbstractPathPoint* maybeUnderlyingUserPathPoint = nullptr;
-        Vec3 locationInGround{};
+        Vector3 locationInGround{};
     };
     std::vector<GeometryPathPoint> GetAllPathPoints(const OpenSim::GeometryPath&, const SimTK::State&);
 
@@ -776,8 +776,8 @@ namespace osc
     //
     // helper functions for pulling contact forces out of the model (e.g. for rendering)
     struct ForcePoint final {
-        Vec3 force;
-        Vec3 point;
+        Vector3 force;
+        Vector3 point;
     };
     std::optional<ForcePoint> TryGetContactForceInGround(
         const OpenSim::Model&,
@@ -798,14 +798,14 @@ namespace osc
     // extract point-like information from generic OpenSim components
     struct PointInfo final {
         PointInfo(
-            Vec3 location_,
+            Vector3 location_,
             OpenSim::ComponentPath frameAbsPath_) :
 
             location{location_},
             frameAbsPath{std::move(frameAbsPath_)}
         {}
 
-        Vec3 location;
+        Vector3 location;
         OpenSim::ComponentPath frameAbsPath;
     };
     bool CanExtractPointInfoFrom(const OpenSim::Component&, const SimTK::State&);

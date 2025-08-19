@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/RenderTargetColorAttachment.h>
 #include <liboscar/Graphics/RenderTargetDepthStencilAttachment.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <optional>
 #include <span>
@@ -50,7 +50,7 @@ namespace osc
 
         std::span<const RenderTargetColorAttachment> color_attachments() const { return colors_; }
         const std::optional<RenderTargetDepthStencilAttachment>& depth_attachment() const { return depth_; }
-        Vec2i pixel_dimensions() const
+        Vector2i pixel_dimensions() const
         {
             return depth_ ? depth_->buffer.pixel_dimensions() : colors_.front().buffer.pixel_dimensions();
         }

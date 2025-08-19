@@ -6,7 +6,7 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/testing/TestingHelpers.h>
 
 #include <gtest/gtest.h>
@@ -212,7 +212,7 @@ TEST(Camera, set_projection_on_copy_makes_it_compare_nonequal_to_original)
 TEST(Camera, position_defaults_to_zero_vector)
 {
     const Camera camera;
-    ASSERT_EQ(camera.position(), Vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(camera.position(), Vector3(0.0f, 0.0f, 0.0f));
 }
 
 TEST(Camera, set_direction_to_standard_direction_causes_direction_to_return_new_direction)
@@ -224,11 +224,11 @@ TEST(Camera, set_direction_to_standard_direction_causes_direction_to_return_new_
 
     Camera camera;
 
-    const Vec3 default_direction = {0.0f, 0.0f, -1.0f};
+    const Vector3 default_direction = {0.0f, 0.0f, -1.0f};
 
     ASSERT_EQ(camera.direction(), default_direction);
 
-    const Vec3 new_direction = normalize(Vec3{1.0f, 2.0f, -0.5f});
+    const Vector3 new_direction = normalize(Vector3{1.0f, 2.0f, -0.5f});
     camera.set_direction(new_direction);
 
     // not guaranteed: the camera stores *rotation*, not *direction*
@@ -249,11 +249,11 @@ TEST(Camera, set_direction_to_different_direction_gives_accurate_enough_results)
 
     Camera camera;
 
-    const Vec3 new_direction = normalize(Vec3{1.0f, 1.0f, 1.0f});
+    const Vector3 new_direction = normalize(Vector3{1.0f, 1.0f, 1.0f});
 
     camera.set_direction(new_direction);
 
-    const Vec3 returned_direction = camera.direction();
+    const Vector3 returned_direction = camera.direction();
 
     ASSERT_GT(dot(new_direction, returned_direction), 0.999f);
 }

@@ -20,7 +20,7 @@
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/UI/oscimgui.h>
@@ -233,7 +233,7 @@ public:
         }
 
         // show header
-        ui::set_cursor_ui_position(panelState.viewportUiRect.ypd_top_left() + Vec2{10.0f, 10.0f});
+        ui::set_cursor_ui_position(panelState.viewportUiRect.ypd_top_left() + Vector2{10.0f, 10.0f});
         ui::draw_text("%s (ESC to cancel)", m_State.popupParams.popupHeaderText.c_str());
 
         // handle completion state (i.e. user selected enough components)
@@ -248,9 +248,9 @@ public:
             ui::push_style_var(ui::StyleVar::FramePadding, {10.0f, 10.0f});
 
             constexpr CStringView cancellationButtonText = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
-            const Vec2 margin = {25.0f, 25.0f};
-            const Vec2 buttonDims = ui::calc_button_size(cancellationButtonText);
-            const Vec2 buttonTopLeft = panelState.viewportUiRect.ypd_bottom_right() - (buttonDims + margin);
+            const Vector2 margin = {25.0f, 25.0f};
+            const Vector2 buttonDims = ui::calc_button_size(cancellationButtonText);
+            const Vector2 buttonTopLeft = panelState.viewportUiRect.ypd_bottom_right() - (buttonDims + margin);
             ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(cancellationButtonText))
             {

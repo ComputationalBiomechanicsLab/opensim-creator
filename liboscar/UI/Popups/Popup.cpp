@@ -3,7 +3,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
@@ -16,7 +16,7 @@ osc::PopupPrivate::PopupPrivate(
     Popup& owner,
     Widget* parent,
     std::string_view name,
-    Vec2 dimensions,
+    Vector2 dimensions,
     ui::PanelFlags panel_flags) :
 
     WidgetPrivate(owner, parent),
@@ -51,7 +51,7 @@ void osc::PopupPrivate::set_modal(bool v)
 osc::Popup::Popup(
     Widget* parent,
     std::string_view name,
-    Vec2 dimensions,
+    Vector2 dimensions,
     ui::PanelFlags panel_flags) :
 
     Popup{std::make_unique<PopupPrivate>(*this, parent, name, dimensions, panel_flags)}
@@ -97,7 +97,7 @@ bool osc::Popup::begin_popup()
         // else, position the modal in the center of the application window
         if (pimpl.maybe_position_) {
             ui::set_next_panel_ui_position(
-                static_cast<Vec2>(*pimpl.maybe_position_),
+                static_cast<Vector2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );
         }
@@ -105,7 +105,7 @@ bool osc::Popup::begin_popup()
             ui::set_next_panel_ui_position(
                 0.5f*App::get().main_window_dimensions(),
                 ui::Conditional::Appearing,
-                Vec2{0.5f, 0.5f}
+                Vector2{0.5f, 0.5f}
             );
         }
 
@@ -116,13 +116,13 @@ bool osc::Popup::begin_popup()
         // will stretch out the modal accordingly
         if (not (pimpl.panel_flags_ & ui::PanelFlag::AlwaysAutoResize)) {
             ui::set_next_panel_size(
-                Vec2{pimpl.dimensions_},
+                Vector2{pimpl.dimensions_},
                 ui::Conditional::Appearing
             );
         }
         else {
             ui::set_next_panel_size(
-                Vec2{pimpl.dimensions_}
+                Vector2{pimpl.dimensions_}
             );
         }
 
@@ -146,7 +146,7 @@ bool osc::Popup::begin_popup()
         // in it)
         if (pimpl.maybe_position_) {
             ui::set_next_panel_ui_position(
-                static_cast<Vec2>(*pimpl.maybe_position_),
+                static_cast<Vector2>(*pimpl.maybe_position_),
                 ui::Conditional::Appearing
             );
         }
@@ -198,12 +198,12 @@ void osc::Popup::set_rect(const Rect& rect)
     pimpl.maybe_position_ = rect.ypd_top_left();
     pimpl.dimensions_ = rect.dimensions();
 }
-void osc::Popup::set_dimensions(Vec2 d)
+void osc::Popup::set_dimensions(Vector2 d)
 {
     PopupPrivate& pimpl = private_data();
     pimpl.dimensions_ = d;
 }
-void osc::Popup::set_position(std::optional<Vec2> p)
+void osc::Popup::set_position(std::optional<Vector2> p)
 {
     PopupPrivate& pimpl = private_data();
     pimpl.maybe_position_ = p;

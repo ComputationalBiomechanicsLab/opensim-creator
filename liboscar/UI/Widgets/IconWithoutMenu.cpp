@@ -20,9 +20,9 @@ osc::IconWithoutMenu::IconWithoutMenu(
     description_{description}
 {}
 
-Vec2 osc::IconWithoutMenu::dimensions() const
+Vector2 osc::IconWithoutMenu::dimensions() const
 {
-    const Vec2 padding = ui::get_style_frame_padding();
+    const Vector2 padding = ui::get_style_frame_padding();
     return icon_.dimensions() + 2.0f*padding;
 }
 

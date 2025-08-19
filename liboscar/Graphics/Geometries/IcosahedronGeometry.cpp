@@ -21,7 +21,7 @@ namespace
 
         const float t = 0.5f * (1.0f + sqrt(5.0f));
 
-        const auto vertices = std::to_array<Vec3>({
+        const auto vertices = std::to_array<Vector3>({
             {-1.0f,  t,     0.0f}, {1.0f, t,    0.0f}, {-1.0f, -t,     0.0f}, { 1.0f, -t,     0.0f},
             { 0.0f, -1.0f,  t   }, {0.0f, 1.0f, t   }, { 0.0f, -1.0f, -t   }, { 0.0f,  1.0f, -t   },
             { t,     0.0f, -1.0f}, {t,    0.0f, 1.0f}, {-t,     0.0f, -1.0f}, {-t,     0.0f,  1.0f},

@@ -11,7 +11,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_window_positions = std::to_array<Vec3>({
+    constexpr auto c_window_positions = std::to_array<Vector3>({
         {-1.5f, 0.0f, -0.48f},
         { 1.5f, 0.0f,  0.51f},
         { 0.0f, 0.0f,  0.7f},
@@ -132,7 +132,7 @@ public:
         // windows
         {
             blending_material_.set("uTexture", window_texture_);
-            for (const Vec3& window_position : c_window_positions) {
+            for (const Vector3& window_position : c_window_positions) {
                 graphics::draw(transparent_mesh_, {.translation = window_position}, blending_material_, camera_);
             }
         }

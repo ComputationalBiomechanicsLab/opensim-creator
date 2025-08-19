@@ -24,7 +24,7 @@
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/AppSettings.h>
@@ -163,13 +163,13 @@ private:
         const auto tabUIRectCorners = ui::get_main_window_workspace_ui_rect().corners();
         const Rect tabUIRectWithoutBar = Rect::from_corners(
             tabUIRectCorners.min,
-            tabUIRectCorners.max - Vec2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y}
+            tabUIRectCorners.max - Vector2{0.0f, max(m_TudLogo.dimensions().y, m_CziLogo.dimensions().y) - 2.0f*ui::get_style_panel_padding().y}
         );
 
-        const Vec2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vec2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
-        const Vec2 menuAndTopLogoTopLeft = tabUIRectWithoutBar.ypd_top_left() + 0.5f*(tabUIRectWithoutBar.dimensions() - menuAndTopLogoDims);
-        const Vec2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
-        const Vec2 menuTopLeft = Vec2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
+        const Vector2 menuAndTopLogoDims = elementwise_min(tabUIRectWithoutBar.dimensions(), Vector2{m_SplashMenuMaxDims.x, m_SplashMenuMaxDims.y + m_MainAppLogoDims.y + m_TopLogoPadding.y});
+        const Vector2 menuAndTopLogoTopLeft = tabUIRectWithoutBar.ypd_top_left() + 0.5f*(tabUIRectWithoutBar.dimensions() - menuAndTopLogoDims);
+        const Vector2 menuDims = {menuAndTopLogoDims.x, menuAndTopLogoDims.y - m_MainAppLogoDims.y - m_TopLogoPadding.y};
+        const Vector2 menuTopLeft = Vector2{menuAndTopLogoTopLeft.x, menuAndTopLogoTopLeft.y + m_MainAppLogoDims.y + m_TopLogoPadding.y};
 
         return Rect::from_corners(menuTopLeft, menuTopLeft + menuDims);
     }
@@ -177,7 +177,7 @@ private:
     Rect calcLogoRect() const
     {
         const Rect mmr = calcMainMenuRect();
-        const Vec2 topLeft{
+        const Vector2 topLeft{
             mmr.left() + 0.5f*mmr.width() - 0.5f*m_MainAppLogoDims.x,
             mmr.ypd_top() - m_TopLogoPadding.y - m_MainAppLogoDims.y,
         };
@@ -226,7 +226,7 @@ private:
     {
         // center the menu window
         const Rect mmr = calcMainMenuRect();
-        const Vec2 dims = mmr.dimensions();
+        const Vector2 dims = mmr.dimensions();
         ui::set_next_panel_ui_position(mmr.ypd_top_left());
         ui::set_next_panel_size({dims.x, -1.0f});
         ui::set_next_panel_size_constraints(dims, dims);
@@ -357,7 +357,7 @@ private:
     void drawAttributationLogos()
     {
         const Rect workspaceUIRect = ui::get_main_window_workspace_ui_rect();
-        Vec2 loc = workspaceUIRect.ypd_bottom_right();
+        Vector2 loc = workspaceUIRect.ypd_bottom_right();
         loc.x = loc.x - 2.0f*ui::get_style_panel_padding().x - m_CziLogo.dimensions().x - 2.0f*ui::get_style_item_spacing().x - m_TudLogo.dimensions().x;
         loc.y = loc.y - 2.0f*ui::get_style_panel_padding().y - max(m_CziLogo.dimensions().y, m_TudLogo.dimensions().y);
 
@@ -379,7 +379,7 @@ private:
         const float h = ui::get_font_base_size_with_spacing();
         const float padding = 5.0f;
 
-        const Vec2 position{tabUIRect.left() + padding, tabUIRect.ypd_bottom() - h - padding};
+        const Vector2 position{tabUIRect.left() + padding, tabUIRect.ypd_bottom() - h - padding};
 
         ui::DrawListView dl = ui::get_foreground_draw_list();
         const std::string text = App::get().application_name_with_version_and_buildid();
@@ -398,9 +398,9 @@ private:
     Texture2D m_TudLogo = SVG::read_into_texture(App::load_resource("OpenSimCreator/textures/tudelft_logo.svg"), 0.5f, App::get().highest_device_pixel_ratio());
 
     // dimensions of stuff
-    Vec2 m_SplashMenuMaxDims = {640.0f, 512.0f};
-    Vec2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
-    Vec2 m_TopLogoPadding = {25.0f, 35.0f};
+    Vector2 m_SplashMenuMaxDims = {640.0f, 512.0f};
+    Vector2 m_MainAppLogoDims =  m_MainAppLogo.dimensions();
+    Vector2 m_TopLogoPadding = {25.0f, 35.0f};
 
     // UI state
     std::unique_ptr<MainMenuFileTab> m_MainMenuFileTab;

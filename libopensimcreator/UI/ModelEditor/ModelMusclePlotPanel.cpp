@@ -12,7 +12,7 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/Log.h>
@@ -357,7 +357,7 @@ namespace
         return (end - start) / max(1, p.getNumRequestedDataPoints() - 1);
     }
 
-    using PlotDataPoint = Vec2;
+    using PlotDataPoint = Vector2;
 
     // virtual interface to a thing that can receive datapoints from a plotter
     class PlotDataPointConsumer {
@@ -704,7 +704,7 @@ namespace
         return (1.0f - t) * a + t * b;
     }
 
-    bool xLessThan(const Vec2& lhs, const Vec2& rhs)
+    bool xLessThan(const Vector2& lhs, const Vector2& rhs)
     {
         return lhs.x < rhs.x;
     }
@@ -2053,7 +2053,7 @@ namespace
             }
 
             const float s = ui::get_frame_height();
-            const Vec2 dims{1.5f * s, s};
+            const Vector2 dims{1.5f * s, s};
 
             ui::push_style_var(ui::StyleVar::ItemSpacing, {2.0f, 2.0f});
             if (ui::draw_button("NW", dims))          { m_LegendLocation = plot::Location::NorthWest; } ui::same_line();

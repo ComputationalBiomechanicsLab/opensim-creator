@@ -49,7 +49,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 
 #include <optional>
@@ -161,9 +161,9 @@ namespace ImGuizmo
     // Represents the step size that the gizmo should stick to when the user is
     // using a gizmo operation.
     struct OperationSnappingSteps final {
-        std::optional<osc::Vec3> scale;
+        std::optional<osc::Vector3> scale;
         std::optional<osc::Radians> rotation;
-        std::optional<osc::Vec3> position;
+        std::optional<osc::Vector3> position;
     };
 
     // call it when you want a gizmo

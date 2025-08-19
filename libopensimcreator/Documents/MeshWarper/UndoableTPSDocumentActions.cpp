@@ -16,7 +16,7 @@
 #include <liboscar/Formats/OBJ.h>
 #include <liboscar/Formats/STL.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 
@@ -29,12 +29,12 @@
 #include <unordered_set>
 #include <vector>
 
-using osc::Vec3;
+using osc::Vector3;
 
 void osc::ActionAddLandmark(
     UndoableTPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    const Vec3& position)
+    const Vector3& position)
 {
     AddLandmarkToInput(doc.upd_scratch(), which, position);
     doc.commit_scratch("added landmark");
@@ -42,7 +42,7 @@ void osc::ActionAddLandmark(
 
 void osc::ActionAddNonParticipatingLandmark(
     UndoableTPSDocument& doc,
-    const Vec3& position)
+    const Vector3& position)
 {
     AddNonParticipatingLandmark(doc.upd_scratch(), position);
     doc.commit_scratch("added non-participating landmark");
@@ -52,7 +52,7 @@ void osc::ActionSetLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
     TPSDocumentInputIdentifier side,
-    const Vec3& newPosition)
+    const Vector3& newPosition)
 {
     TPSDocumentLandmarkPair* p = FindLandmarkPair(doc.upd_scratch(), id);
     if (!p)
@@ -88,7 +88,7 @@ void osc::ActionRenameLandmark(
 void osc::ActionSetNonParticipatingLandmarkPosition(
     UndoableTPSDocument& doc,
     UID id,
-    const Vec3& newPosition)
+    const Vector3& newPosition)
 {
     auto* lm = FindNonParticipatingLandmark(doc.upd_scratch(), id);
     if (!lm)
@@ -439,7 +439,7 @@ void osc::ActionPromptUserToSaveWarpedNonParticipatingLandmarksToCSV(
     const auto span = cache.getWarpedNonParticipatingLandmarkLocations(doc);
 
     App::upd().prompt_user_to_save_file_with_extension_async([
-        warpedNplms = std::vector<Vec3>(span.begin(), span.end()),
+        warpedNplms = std::vector<Vector3>(span.begin(), span.end()),
         nplms = doc.nonParticipatingLandmarks,
         flags](std::optional<std::filesystem::path> p)
     {

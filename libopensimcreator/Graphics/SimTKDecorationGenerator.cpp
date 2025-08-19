@@ -9,7 +9,7 @@
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Maths/LineSegment.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/HashHelpers.h>
 #include <simbody/internal/common.h>
@@ -35,7 +35,7 @@ namespace
     inline constexpr float c_FrameAxisThickness = 0.0025f;
 
     // extracts scale factors from geometry
-    Vec3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
+    Vector3 GetScaleFactors(const SimTK::DecorativeGeometry& geom)
     {
         SimTK::Vec3 sf = geom.getScaleFactors();
 
@@ -45,7 +45,7 @@ namespace
             sf[i] = not std::isnan(sf[i]) ? sf[i] : 0.0;
         }
 
-        return to<Vec3>(sf);
+        return to<Vector3>(sf);
     }
 
     float GetOpacity(const SimTK::DecorativeGeometry& geometry)
@@ -57,7 +57,7 @@ namespace
     // returns the color of `geometry`, with any defaults saturated to `1.0f`
     Color GetColor(const SimTK::DecorativeGeometry& geometry)
     {
-        Vec3 rgb = to<Vec3>(geometry.getColor());
+        Vector3 rgb = to<Vector3>(geometry.getColor());
 
         // Simbody uses `-1` to mean "use default`. We use a default of `1.0f`
         // whenever this, or a NaN, occurs.
@@ -172,8 +172,8 @@ namespace
         void implementLineGeometry(const SimTK::DecorativeLine& d) final
         {
             const Transform t = ToOscTransform(d);
-            const Vec3 p1 = t * to<Vec3>(d.getPoint1());
-            const Vec3 p2 = t * to<Vec3>(d.getPoint2());
+            const Vector3 p1 = t * to<Vector3>(d.getPoint1());
+            const Vector3 p2 = t * to<Vector3>(d.getPoint2());
 
             const float thickness = c_LineThickness * m_FixupScaleFactor;
 
@@ -191,7 +191,7 @@ namespace
         void implementBrickGeometry(const SimTK::DecorativeBrick& d) final
         {
             Transform t = ToOscTransform(d);
-            t.scale *= to<Vec3>(d.getHalfLengths());
+            t.scale *= to<Vector3>(d.getHalfLengths());
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.brick_mesh(),
@@ -207,7 +207,7 @@ namespace
             const auto halfHeight = static_cast<float>(d.getHalfHeight());
 
             Transform t = ToOscTransform(d);
-            t.scale *= Vec3{radius, halfHeight , radius};
+            t.scale *= Vector3{radius, halfHeight , radius};
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.cylinder_mesh(),
@@ -222,7 +222,7 @@ namespace
             const auto radius = static_cast<float>(d.getRadius());
 
             Transform t = ToOscTransform(d);
-            t.scale *= Vec3{radius, radius, 1.0f};
+            t.scale *= Vector3{radius, radius, 1.0f};
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.circle_mesh(),
@@ -248,7 +248,7 @@ namespace
         void implementEllipsoidGeometry(const SimTK::DecorativeEllipsoid& d) final
         {
             Transform t = ToOscTransform(d);
-            t.scale *= to<Vec3>(d.getRadii());
+            t.scale *= to<Vector3>(d.getRadii());
 
             m_Consumer(SceneDecoration{
                 .mesh = m_MeshCache.sphere_mesh(),
@@ -283,12 +283,12 @@ namespace
             }
 
             // emit leg cylinders
-            const Vec3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
+            const Vector3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
             const float legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
             const auto flags = GetFlags(d);
             for (int axis = 0; axis < 3; ++axis) {
-                Vec3 direction = {0.0f, 0.0f, 0.0f};
+                Vector3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
 
                 const LineSegment lineSegment = {
@@ -356,8 +356,8 @@ namespace
         {
             const Transform t = ToOscTransformWithoutScaling(d);
             const ArrowProperties p = {
-                .start = t * to<Vec3>(d.getStartPoint()),
-                .end = t * to<Vec3>(d.getEndPoint()),
+                .start = t * to<Vector3>(d.getStartPoint()),
+                .end = t * to<Vector3>(d.getEndPoint()),
                 .tip_length = static_cast<float>(d.getTipLength()),
                 .neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
                 .head_thickness = 1.75f * m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
@@ -384,11 +384,11 @@ namespace
         {
             const Transform t = ToOscTransform(d);
 
-            const Vec3 posBase = to<Vec3>(d.getOrigin());
-            const Vec3 posDir = to<Vec3>(d.getDirection());
+            const Vector3 posBase = to<Vector3>(d.getOrigin());
+            const Vector3 posDir = to<Vector3>(d.getDirection());
 
-            const Vec3 pos = transform_point(t, posBase);
-            const Vec3 direction = transform_direction(t, posDir);
+            const Vector3 pos = transform_point(t, posBase);
+            const Vector3 direction = transform_direction(t, posDir);
 
             const auto radius = static_cast<float>(d.getBaseRadius());
             const auto height = static_cast<float>(d.getHeight());

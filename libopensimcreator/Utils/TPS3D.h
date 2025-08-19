@@ -4,7 +4,7 @@
 #include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -97,18 +97,18 @@ namespace osc
     );
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vec3);
-    Vec3d TPSWarpPoint(const TPSCoefficients3D<double>&, Vec3d);
+    Vector3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vector3);
+    Vector3d TPSWarpPoint(const TPSCoefficients3D<double>&, Vector3d);
 
     // evaluates the TPS equation with the given coefficients and input point, lerping the result
     // by `blendingFactor` between the input point and the "fully warped" point.
-    Vec3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vec3, float blendingFactor);
+    Vector3 TPSWarpPoint(const TPSCoefficients3D<float>&, Vector3, float blendingFactor);
 
     // returns points that are the equivalent of applying the 3D TPS warp to each input point
-    std::vector<Vec3> TPSWarpPoints(const TPSCoefficients3D<float>&, std::span<const Vec3>, float blendingFactor);
+    std::vector<Vector3> TPSWarpPoints(const TPSCoefficients3D<float>&, std::span<const Vector3>, float blendingFactor);
 
     // applies the 3D TPS warp in-place to each SimTK::Vec3 in the provided span
-    void TPSWarpPointsInPlace(const TPSCoefficients3D<float>&, std::span<Vec3>, float blendingFactor);
+    void TPSWarpPointsInPlace(const TPSCoefficients3D<float>&, std::span<Vector3>, float blendingFactor);
 
     // returns a mesh that is the equivalent of applying the 3D TPS warp to the mesh
     Mesh TPSWarpMesh(const TPSCoefficients3D<float>&, const Mesh&, float blendingFactor);

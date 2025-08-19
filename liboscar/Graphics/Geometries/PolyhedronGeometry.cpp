@@ -4,8 +4,8 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 
@@ -26,7 +26,7 @@ osc::PolyhedronGeometry::PolyhedronGeometry(const Params& p) :
 {}
 
 osc::PolyhedronGeometry::PolyhedronGeometry(
-    std::span<const Vec3> vertices,
+    std::span<const Vector3> vertices,
     std::span<const uint32_t> indices,
     float radius,
     size_t detail_level)
@@ -37,22 +37,22 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     //
     // https://threejs.org/docs/#api/en/geometries/PolyhedronGeometry
 
-    std::vector<Vec3> generated_vertices;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> generated_vertices;
+    std::vector<Vector2> uvs;
 
-    const auto subdivide_face = [&generated_vertices](Vec3 a, Vec3 b, Vec3 c, size_t detail)
+    const auto subdivide_face = [&generated_vertices](Vector3 a, Vector3 b, Vector3 c, size_t detail)
     {
         const auto num_cols = detail + 1;
         const auto fnum_cols = static_cast<float>(num_cols);
 
         // we use this multidimensional array as a data structure for creating the subdivision
-        std::vector<std::vector<Vec3>> v;
+        std::vector<std::vector<Vector3>> v;
         v.reserve(num_cols+1);
 
         for (size_t i = 0; i <= num_cols; ++i) {
             const auto fi = static_cast<float>(i);
-            const Vec3 aj = lerp(a, c, fi/fnum_cols);
-            const Vec3 bj = lerp(b, c, fi/fnum_cols);
+            const Vector3 aj = lerp(a, c, fi/fnum_cols);
+            const Vector3 bj = lerp(b, c, fi/fnum_cols);
 
             const auto num_rows = num_cols - i;
             const auto fnum_rows = static_cast<float>(num_rows);
@@ -98,27 +98,27 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     {
         // subdivide each input triangle by the given detail_level
         for (size_t i = 0; i < 3*(indices.size()/3); i += 3) {
-            const Vec3 a = at(vertices, at(indices, i+0));
-            const Vec3 b = at(vertices, at(indices, i+1));
-            const Vec3 c = at(vertices, at(indices, i+2));
+            const Vector3 a = at(vertices, at(indices, i+0));
+            const Vector3 b = at(vertices, at(indices, i+1));
+            const Vector3 c = at(vertices, at(indices, i+2));
             subdivide_face(a, b, c, detail);
         }
     };
 
     const auto apply_radius = [&generated_vertices](float radius)
     {
-        for (Vec3& vertex : generated_vertices) {
+        for (Vector3& vertex : generated_vertices) {
             vertex = radius * normalize(vertex);
         }
     };
 
     // return the angle around the Y axis, CCW when looking from above
-    const auto azimuth = [](const Vec3& v) -> Radians
+    const auto azimuth = [](const Vector3& v) -> Radians
     {
         return atan2(v.z, -v.x);
     };
 
-    const auto correct_uv = [](Vec2& uv, const Vec3& vector, Radians azimuth)
+    const auto correct_uv = [](Vector2& uv, const Vector3& vector, Radians azimuth)
     {
         if ((azimuth < 0_rad) and (uv.x == 1.0f)) {
             uv.x -= 1.0f;
@@ -134,9 +134,9 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
         OSC_ASSERT(generated_vertices.size() % 3 == 0);
 
         for (size_t i = 0; i < 3*(generated_vertices.size()/3); i += 3) {
-            const Vec3 a = generated_vertices[i+0];
-            const Vec3 b = generated_vertices[i+1];
-            const Vec3 c = generated_vertices[i+2];
+            const Vector3 a = generated_vertices[i+0];
+            const Vector3 b = generated_vertices[i+1];
+            const Vector3 c = generated_vertices[i+2];
 
             const auto azi = azimuth(centroid_of({a, b, c}));
 
@@ -168,12 +168,12 @@ osc::PolyhedronGeometry::PolyhedronGeometry(
     const auto generate_uvs = [&generated_vertices, &uvs, &azimuth, &correct_uvs, &correct_seam]()
     {
         // returns angle above the XZ plane
-        const auto inclination = [](const Vec3& v) -> Radians
+        const auto inclination = [](const Vector3& v) -> Radians
         {
-            return atan2(-v.y, length(Vec2{v.x, v.z}));
+            return atan2(-v.y, length(Vector2{v.x, v.z}));
         };
 
-        for (const Vec3& vertex : generated_vertices) {
+        for (const Vector3& vertex : generated_vertices) {
             uvs.emplace_back(
                 Turns{azimuth(vertex) + 0.5_turn}.count(),
                 Turns{2.0f*inclination(vertex) + 0.5_turn}.count()

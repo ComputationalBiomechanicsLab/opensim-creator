@@ -91,7 +91,7 @@ public:
 
         // render 2D UI
         ui::begin_panel("controls");
-        ui::draw_vec3_input("uLightPos", light_transform_.translation);
+        ui::draw_vector3_input("uLightPos", light_transform_.translation);
         ui::draw_float_input("uLightAmbient", &light_ambient_);
         ui::draw_float_input("uLightDiffuse", &light_diffuse_);
         ui::draw_float_input("uLightSpecular", &light_specular_);
@@ -110,7 +110,7 @@ private:
     MouseCapturingCamera camera_ = create_camera();
 
     Transform light_transform_ = {
-        .scale = Vec3{0.2f},
+        .scale = Vector3{0.2f},
         .translation = {0.4f, 0.4f, 2.0f},
     };
     float light_ambient_ = 0.02f;

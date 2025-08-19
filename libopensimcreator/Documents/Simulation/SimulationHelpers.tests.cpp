@@ -44,14 +44,14 @@ TEST(SimulationHelpers, WriteOutputsAsCSVWritesFloatDataCorrectly)
     ASSERT_EQ(row1, row1Expected);
 }
 
-TEST(SimulationHelpers, WriteOutputsAsCSVWritesVec2DataCorrectly)
+TEST(SimulationHelpers, WriteOutputsAsCSVWritesVector2DataCorrectly)
 {
     OpenSim::Model model;
     InitializeModel(model);
     InitializeState(model);
 
     const auto extractors = std::to_array({
-        make_output_extractor<ConstantOutputExtractor>("dummy", Vec2{3.0f, 2.0f}),
+        make_output_extractor<ConstantOutputExtractor>("dummy", Vector2{3.0f, 2.0f}),
     });
 
     const auto reports = std::to_array({

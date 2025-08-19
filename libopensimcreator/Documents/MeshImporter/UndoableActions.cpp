@@ -14,7 +14,7 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
@@ -80,9 +80,9 @@ bool osc::mi::TryCreateJoint(
 {
     Document& doc = udoc.upd_scratch();
 
-    const Vec3 parentPos = doc.getPosByID(parentID);
-    const Vec3 childPos = doc.getPosByID(childID);
-    const Vec3 midPoint = midpoint(parentPos, childPos);
+    const Vector3 parentPos = doc.getPosByID(parentID);
+    const Vector3 childPos = doc.getPosByID(childID);
+    const Vector3 midPoint = midpoint(parentPos, childPos);
 
     const auto& joint = doc.emplace<Joint>(
         UID{},
@@ -103,8 +103,8 @@ bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
     UndoableDocument& udoc,
     UID id,
     int axis,
-    Vec3 p1,
-    Vec3 p2)
+    Vector3 p1,
+    Vector3 p2)
 {
     Document& doc = udoc.upd_scratch();
 
@@ -114,7 +114,7 @@ bool osc::mi::TryOrientObjectAxisAlongTwoPoints(
         return false;
     }
 
-    const Vec3 direction = normalize(p2 - p1);
+    const Vector3 direction = normalize(p2 - p1);
     const Transform t = obj->getXForm(doc);
 
     obj->setXform(doc, point_axis_along(t, axis, direction));
@@ -142,8 +142,8 @@ bool osc::mi::TryOrientObjectAxisAlongTwoObjects(
 bool osc::mi::TryTranslateObjectBetweenTwoPoints(
     UndoableDocument& udoc,
     UID id,
-    const Vec3& a,
-    const Vec3& b)
+    const Vector3& a,
+    const Vector3& b)
 {
     Document& doc = udoc.upd_scratch();
     MIObject* const obj = doc.tryUpdByID(id);
@@ -259,7 +259,7 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
         return false;
     }
 
-    const Vec3 boundsMidpoint = centroid_of(mesh->calcBounds());
+    const Vector3 boundsMidpoint = centroid_of(mesh->calcBounds());
 
     obj->setPos(doc, boundsMidpoint);
     udoc.commit_scratch("moved " + obj->getLabel());
@@ -394,7 +394,7 @@ bool osc::mi::TryCopyOrientation(
 
 UID osc::mi::AddBody(
     UndoableDocument& udoc,
-    const Vec3& position,
+    const Vector3& position,
     UID andTryAttach)
 {
     Document& doc = udoc.upd_scratch();
@@ -426,7 +426,7 @@ UID osc::mi::AddBody(UndoableDocument& udoc)
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
     const MIObject& obj,
-    const Vec3& loc)
+    const Vector3& loc)
 {
     Document& doc = udoc.upd_scratch();
 
@@ -449,7 +449,7 @@ bool osc::mi::AddStationAtLocation(
 bool osc::mi::AddStationAtLocation(
     UndoableDocument& udoc,
     UID attachment,
-    const Vec3& loc)
+    const Vector3& loc)
 {
     const Document& doc = udoc.upd_scratch();
 

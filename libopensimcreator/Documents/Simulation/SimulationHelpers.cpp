@@ -22,7 +22,7 @@ void osc::WriteOutputsAsCSV(
     out << "time";
     for (const OutputExtractor& o : outputs) {
         static_assert(num_options<OutputExtractorDataType>() == 3);
-        if (o.getOutputType() == OutputExtractorDataType::Vec2) {
+        if (o.getOutputType() == OutputExtractorDataType::Vector2) {
             out << ',' << o.getName() << "/0";
             out << ',' << o.getName() << "/1";
         }
@@ -37,8 +37,8 @@ void osc::WriteOutputsAsCSV(
         out << report.getState().getTime();  // time column
         for (const OutputExtractor& o : outputs) {
             static_assert(num_options<OutputExtractorDataType>() == 3);
-            if (o.getOutputType() == OutputExtractorDataType::Vec2) {
-                const Vec2 v = o.getValueVec2(root, report);
+            if (o.getOutputType() == OutputExtractorDataType::Vector2) {
+                const Vector2 v = o.getValueVector2(root, report);
                 out << ',' << v.x << ',' << v.y;
             }
             else {

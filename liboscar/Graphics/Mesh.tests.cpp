@@ -15,9 +15,9 @@
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/testing/TestingHelpers.h>
 
 #include <gtest/gtest.h>
@@ -153,12 +153,12 @@ TEST(Mesh, set_vertices_can_be_called_with_an_initializer_list_of_vertices)
 {
     Mesh mesh;
 
-    const Vec3 a{};
-    const Vec3 b{};
-    const Vec3 c{};
+    const Vector3 a{};
+    const Vector3 b{};
+    const Vector3 c{};
 
     mesh.set_vertices({a, b, c});
-    const std::vector<Vec3> expected = {a, b, c};
+    const std::vector<Vector3> expected = {a, b, c};
 
     ASSERT_EQ(mesh.vertices(), expected);
 }
@@ -327,7 +327,7 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
     const auto original_vertices = generate_vertices(30);
 
     // create "transformed" version of the vertices
-    const auto new_vertices = project_into_vector(original_vertices, [](const Vec3& v) { return v + 1.0f; });
+    const auto new_vertices = project_into_vector(original_vertices, [](const Vector3& v) { return v + 1.0f; });
 
     // sanity check that `set_vertices` works as expected
     ASSERT_FALSE(mesh.has_vertices());
@@ -335,8 +335,8 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
     ASSERT_EQ(mesh.vertices(), original_vertices);
 
     // the vertices passed to `transform_vertices` should match those returned by `vertices()`
-    std::vector<Vec3> vertices_passed_to_transform_vertices;
-    mesh.transform_vertices([&vertices_passed_to_transform_vertices](Vec3 v)
+    std::vector<Vector3> vertices_passed_to_transform_vertices;
+    mesh.transform_vertices([&vertices_passed_to_transform_vertices](Vector3 v)
     {
         vertices_passed_to_transform_vertices.push_back(v);
         return v;
@@ -344,7 +344,7 @@ TEST(Mesh, transform_certices_makes_vertices_return_transformed_vertices)
     ASSERT_EQ(vertices_passed_to_transform_vertices, original_vertices);
 
     // applying the transformation should return the transformed vertices
-    mesh.transform_vertices([&new_vertices, i = 0](Vec3) mutable
+    mesh.transform_vertices([&new_vertices, i = 0](Vector3) mutable
     {
         return new_vertices.at(i++);
     });
@@ -365,7 +365,7 @@ TEST(Mesh, transform_vertices_with_Transform_applies_Transform_to_each_vertex)
 {
     // create appropriate transform
     const Transform transform = {
-        .scale = Vec3{0.25f},
+        .scale = Vector3{0.25f},
         .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
         .translation = {1.0f, 0.25f, 0.125f},
     };
@@ -400,7 +400,7 @@ TEST(Mesh, transform_vertices_with_identity_transform_causes_transformed_mesh_to
 TEST(Mesh, transform_vertices_with_Matrix4x4_applies_transform_to_vertices)
 {
     const Matrix4x4 mat = matrix4x4_cast(Transform{
-        .scale = Vec3{0.25f},
+        .scale = Vector3{0.25f},
         .rotation = to_world_space_rotation_quaternion(EulerAngles{90_deg, 0_deg, 0_deg}),
         .translation = {1.0f, 0.25f, 0.125f},
     });
@@ -540,7 +540,7 @@ TEST(Mesh, sucessfully_calling_set_normals_changes_mesh_equality)
 
 TEST(Mesh, transform_normals_applies_transform_function_to_each_normal)
 {
-    const auto transform = [](Vec3 n) { return -n; };
+    const auto transform = [](Vector3 n) { return -n; };
     const auto original = generate_normals(16);
     auto expected{original};
     rgs::transform(expected, expected.begin(), transform);
@@ -644,7 +644,7 @@ TEST(Mesh, sucessful_set_tex_coords_causes_copied_Mesh_to_compare_not_equal_to_o
 
 TEST(Mesh, transform_tex_coords_applies_provided_function_to_each_tex_coord)
 {
-    const auto transform = [](Vec2 uv) { return 0.287f * uv; };
+    const auto transform = [](Vector2 uv) { return 0.287f * uv; };
     const auto original = generate_texture_coordinates(3);
     auto expected{original};
     rgs::transform(expected, expected.begin(), transform);
@@ -848,7 +848,7 @@ TEST(Mesh, for_each_indexed_vertex_is_not_called_when_given_empty_Mesh)
 TEST(Mesh, for_each_indexed_vertex_is_not_called_when_only_vertices_with_no_indices_supplied)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     size_t num_function_calls = 0;
     m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
     ASSERT_EQ(num_function_calls, 0);
@@ -857,7 +857,7 @@ TEST(Mesh, for_each_indexed_vertex_is_not_called_when_only_vertices_with_no_indi
 TEST(Mesh, for_each_indexed_vertex_called_as_expected_when_supplied_correctly_indexed_mesh)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2}));
     size_t num_function_calls = 0;
     m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -868,7 +868,7 @@ TEST(Mesh, for_each_indexed_vertex_called_even_when_mesh_is_non_triangular)
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 3}));
     size_t num_function_calls = 0;
     m.for_each_indexed_vertex([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -885,7 +885,7 @@ TEST(Mesh, for_each_indexed_triangle_not_called_when_given_empty_Mesh)
 TEST(Mesh, for_each_indexed_triangle_not_called_when_Mesh_contains_no_indices)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});  // note: no indices
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});  // note: no indices
     size_t num_function_calls = 0;
     m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
     ASSERT_EQ(num_function_calls, 0);
@@ -894,7 +894,7 @@ TEST(Mesh, for_each_indexed_triangle_not_called_when_Mesh_contains_no_indices)
 TEST(Mesh, for_each_indexed_triangle_is_called_if_Mesh_contains_indexed_triangles)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2}));
     size_t num_function_calls = 0;
     m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -904,7 +904,7 @@ TEST(Mesh, for_each_indexed_triangle_is_called_if_Mesh_contains_indexed_triangle
 TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_contains_insufficient_indices)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1}));  // too few
     size_t num_function_calls = 0;
     m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -914,7 +914,7 @@ TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_contains_insufficient_in
 TEST(Mesh, for_each_indexed_triangle_called_multiple_times_when_Mesh_contains_multiple_triangles)
 {
     Mesh m;
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
     size_t num_function_calls = 0;
     m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -925,7 +925,7 @@ TEST(Mesh, for_each_indexed_triangle_not_called_if_Mesh_has_Lines_topology)
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
-    m.set_vertices({Vec3{}, Vec3{}, Vec3{}});
+    m.set_vertices({Vector3{}, Vector3{}, Vector3{}});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 1, 2, 0}));
     size_t num_function_calls = 0;
     m.for_each_indexed_triangle([&num_function_calls](auto&&) { ++num_function_calls; });
@@ -960,7 +960,7 @@ TEST(Mesh, get_triangle_at_throws_exception_if_called_on_non_triangular_mesh_top
 {
     Mesh m;
     m.set_topology(MeshTopology::Lines);
-    m.set_vertices({generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>()});
+    m.set_vertices({generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>()});
     m.set_indices(std::to_array<uint16_t>({0, 1, 2, 3, 4, 5}));
 
     ASSERT_ANY_THROW({ m.get_triangle_at(0); }) << "incorrect topology";
@@ -1016,7 +1016,7 @@ TEST(Mesh, bounds_on_empty_Mesh_returns_empty_AABB)
 
 TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 {
-    constexpr auto pyramid_vertices = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
@@ -1031,7 +1031,7 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 
 TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
 {
-    constexpr auto pyramid_vertices = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
@@ -1079,7 +1079,7 @@ TEST(Mesh, num_submesh_descriptors_on_empty_Mesh_returns_zero)
 
 TEST(Mesh, num_submesh_descriptors_returns_zero_for_Mesh_with_data_but_no_descriptors)
 {
-    constexpr auto pyramid_vertices = std::to_array<Vec3>({
+    constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
         { 1.0f, -1.0f, 0.0f},  // base: bottom-right
         { 0.0f,  1.0f, 0.0f},  // base: top-middle
@@ -1613,7 +1613,7 @@ TEST(Mesh, set_vertex_buffer_params_with_larger_N_expands_positions_with_zeroed_
     });
 
     auto expected_vertices{vertices};
-    expected_vertices.resize(12, Vec3{});
+    expected_vertices.resize(12, Vector3{});
 
     ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
@@ -1644,7 +1644,7 @@ TEST(Mesh, set_vertex_buffer_params_when_dimensionality_of_vertices_is_2_zeroes_
         {VertexAttribute::Position, VertexAttributeFormat::Float32x2},  // 2D storage
     });
 
-    const auto expected_vertices = project_into_vector(vertices, [](const Vec3& v) { return Vec3{v.x, v.y, 0.0f}; });
+    const auto expected_vertices = project_into_vector(vertices, [](const Vector3& v) { return Vector3{v.x, v.y, 0.0f}; });
 
     ASSERT_EQ(mesh.vertices(), expected_vertices);
 }
@@ -1697,7 +1697,7 @@ TEST(Mesh, set_vertex_buffer_params_can_be_used_to_add_a_particular_attribute_as
     ASSERT_EQ(mesh.vertices(), vertices);
     ASSERT_EQ(mesh.tangents(), tangents);
     ASSERT_EQ(mesh.colors(), std::vector<Color>(6));
-    ASSERT_EQ(mesh.tex_coords(), std::vector<Vec2>(6));
+    ASSERT_EQ(mesh.tex_coords(), std::vector<Vector2>(6));
 }
 
 TEST(Mesh, set_vertex_buffer_params_throws_if_it_causes_Mesh_indices_to_go_out_of_bounds)
@@ -1779,9 +1779,9 @@ TEST(Mesh, set_vertex_buffer_data_works_for_simplest_case_of_just_positional_dat
 {
     class Entry final {
     public:
-        const Vec3& vertex() const { return vertex_;  }
+        const Vector3& vertex() const { return vertex_;  }
     private:
-        Vec3 vertex_ = generate<Vec3>();
+        Vector3 vertex_ = generate<Vector3>();
     };
     const std::vector<Entry> data(12);
 
@@ -1799,7 +1799,7 @@ TEST(Mesh, set_vertex_buffer_data_works_for_simplest_case_of_just_positional_dat
 TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_data_mismatche_VertexFormat)
 {
     struct Entry final {
-        Vec3 vert = generate<Vec3>();
+        Vector3 vert = generate<Vector3>();
     };
     const std::vector<Entry> data(12);
 
@@ -1813,7 +1813,7 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_data_mismatche_VertexF
 TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_N_mismatches)
 {
     struct Entry final {
-        Vec3 vert = generate<Vec3>();
+        Vector3 vert = generate<Vector3>();
     };
     const std::vector<Entry> data(12);
 
@@ -1827,7 +1827,7 @@ TEST(Mesh, set_vertex_buffer_data_fails_in_simple_case_if_N_mismatches)
 TEST(Mesh, set_vertex_buffer_data_doesnt_fail_if_caller_luckily_has_same_layout)
 {
     struct Entry final {
-        Vec4 vert = generate<Vec4>();  // note: Vec4
+        Vector4 vert = generate<Vector4>();  // note: Vector4
     };
     const std::vector<Entry> data(12);
 
@@ -1841,7 +1841,7 @@ TEST(Mesh, set_vertex_buffer_data_doesnt_fail_if_caller_luckily_has_same_layout)
 TEST(Mesh, set_vertex_buffer_data_throws_if_no_layout_provided)
 {
     struct Entry final {
-        Vec3 vertices;
+        Vector3 vertices;
     };
     const std::vector<Entry> data(12);
 
@@ -1855,12 +1855,12 @@ TEST(Mesh, set_vertex_buffer_data_works_as_expected_for_ImGui_style_case)
     // this is just testing that it's compatible with `oscar`'s rendering API
 
     struct SimilarToImGuiVert final {
-        Vec2 pos = generate<Vec2>();
+        Vector2 pos = generate<Vector2>();
         Color32 col = generate<Color32>();
-        Vec2 uv = generate<Vec2>();
+        Vector2 uv = generate<Vector2>();
     };
     const std::vector<SimilarToImGuiVert> data(16);
-    const auto expected_vertices = project_into_vector(data, [](const auto& v) { return Vec3{v.pos, 0.0f}; });
+    const auto expected_vertices = project_into_vector(data, [](const auto& v) { return Vector3{v.pos, 0.0f}; });
     const auto expected_colors = project_into_vector(data, [](const auto& v) { return Color(v.col); });
     const auto expected_texture_coordinates = project_into_vector(data, [](const auto& v) { return v.uv; });
 
@@ -1925,8 +1925,8 @@ TEST(Mesh, recalculate_normals_assigns_normals_if_none_exist)
 
     const auto normals = mesh.normals();
     ASSERT_EQ(normals.size(), 3);
-    ASSERT_TRUE(rgs::all_of(normals, [first = normals.front()](const Vec3& normal){ return normal == first; }));
-    ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vec3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
+    ASSERT_TRUE(rgs::all_of(normals, [first = normals.front()](const Vector3& normal){ return normal == first; }));
+    ASSERT_TRUE(all_of(equal_within_absdiff(normals.front(), Vector3(0.0f, 0.0f, 1.0f), epsilon_v<float>)));
 }
 
 TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
@@ -1938,7 +1938,7 @@ TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
     // vertices on the top are calculated by averaging each participating
     // triangle's normals (which point outwards at an angle)
 
-    const auto vertices = std::to_array<Vec3>({
+    const auto vertices = std::to_array<Vector3>({
         {-1.0f, 0.0f,  0.0f},  // bottom-left "pin"
         { 0.0f, 1.0f,  1.0f},  // front of "top"
         { 0.0f, 1.0f, -1.0f},  // back of "top"
@@ -1949,9 +1949,9 @@ TEST(Mesh, recalculate_normals_averages_normals_of_shared_vertices)
     mesh.set_vertices(vertices);
     mesh.set_indices({0, 1, 2,   3, 2, 1});  // shares two vertices per triangle
 
-    const Vec3 lhs_normal = triangle_normal({ vertices[0], vertices[1], vertices[2] });
-    const Vec3 rhs_normal = triangle_normal({ vertices[3], vertices[2], vertices[1] });
-    const Vec3 mixed_normal = normalize(midpoint(lhs_normal, rhs_normal));
+    const Vector3 lhs_normal = triangle_normal({ vertices[0], vertices[1], vertices[2] });
+    const Vector3 rhs_normal = triangle_normal({ vertices[3], vertices[2], vertices[1] });
+    const Vector3 mixed_normal = normalize(midpoint(lhs_normal, rhs_normal));
 
     mesh.recalculate_normals();
 
@@ -1967,7 +1967,7 @@ TEST(Mesh, recalculate_tangents_does_nothing_if_Mesh_topology_is_Lines)
 {
     Mesh mesh;
     mesh.set_topology(MeshTopology::Lines);
-    mesh.set_vertices({ generate<Vec3>(), generate<Vec3>() });
+    mesh.set_vertices({ generate<Vector3>(), generate<Vector3>() });
     mesh.set_normals(generate_normals(2));
     mesh.set_tex_coords(generate_texture_coordinates(2));
 
@@ -2093,7 +2093,7 @@ TEST(Mesh, recalculate_tangents_gives_expected_results_in_basic_case)
     const auto tangents = mesh.tangents();
 
     ASSERT_EQ(tangents.size(), 3);
-    ASSERT_EQ(tangents.at(0), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(tangents.at(1), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
-    ASSERT_EQ(tangents.at(2), Vec4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(0), Vector4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(1), Vector4(1.0f, 0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(tangents.at(2), Vector4(1.0f, 0.0f, 0.0f, 0.0f));
 }

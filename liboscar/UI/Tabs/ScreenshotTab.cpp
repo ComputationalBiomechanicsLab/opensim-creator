@@ -13,9 +13,9 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/os.h>
@@ -50,25 +50,25 @@ namespace
     {
         const float target_aspect_ratio = aspect_ratio_of(target_ui_rect);
         const float ratio = target_aspect_ratio / aspect_ratio;
-        const Vec2 target_dimensions = target_ui_rect.dimensions();
-        const Vec2 target_ui_top_left = target_ui_rect.ypd_top_left();
+        const Vector2 target_dimensions = target_ui_rect.dimensions();
+        const Vector2 target_ui_top_left = target_ui_rect.ypd_top_left();
 
         if (ratio >= 1.0f) {
             // it will touch the top/bottom but may (ratio != 1.0f) fall short of the left/right
-            const Vec2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
-            const Vec2 rv_top_left = {target_ui_top_left.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_ui_top_left.y};
+            const Vector2 rv_dimensions = {target_dimensions.x/ratio, target_dimensions.y};
+            const Vector2 rv_top_left = {target_ui_top_left.x + 0.5f*(target_dimensions.x - rv_dimensions.x), target_ui_top_left.y};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
         else {
             // it will touch the left/right but will not touch the top/bottom
-            const Vec2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
-            const Vec2 rv_top_left = {target_ui_top_left.x, target_ui_top_left.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
+            const Vector2 rv_dimensions = {target_dimensions.x, ratio*target_dimensions.y};
+            const Vector2 rv_top_left = {target_ui_top_left.x, target_ui_top_left.y + 0.5f*(target_dimensions.y - rv_dimensions.y)};
             return Rect::from_corners(rv_top_left, rv_top_left + rv_dimensions);
         }
     }
 
     Rect map_rect(
-        const Vec2& screen_dimensions,
+        const Vector2& screen_dimensions,
         const Rect& annotation_screen_rect,
         const Rect& viewport_ui_rect)
     {
@@ -81,8 +81,8 @@ namespace
         const Rect normalized_ypd_rect = normalized_ypu_rect.with_flipped_y(1.0f);
         const auto normalized_ypd_corners = normalized_ypd_rect.corners();
 
-        const Vec2 ui_dims = viewport_ui_rect.dimensions();
-        const Vec2 ui_top_left = viewport_ui_rect.ypd_top_left();
+        const Vector2 ui_dims = viewport_ui_rect.dimensions();
+        const Vector2 ui_top_left = viewport_ui_rect.ypd_top_left();
         return Rect::from_corners(
             ui_top_left + ui_dims*normalized_ypd_corners.min,
             ui_top_left + ui_dims*normalized_ypd_corners.max
@@ -138,7 +138,7 @@ public:
 
             // show editor for setting window size
             {
-                Vec2 s = App::get().main_window_dimensions();
+                const Vector2 s = App::get().main_window_dimensions();
                 ui::draw_text("%f %f", s.x, s.y);
                 if (ui::draw_button("change")) {
                     App::upd().try_async_set_main_window_dimensions({1920.0f, 1080.0f});
@@ -184,9 +184,9 @@ private:
         const Color& unselected_color,
         const Color& selected_color)
     {
-        const Vec2 mouse_ui_pos = ui::get_mouse_ui_position();
+        const Vector2 mouse_ui_pos = ui::get_mouse_ui_position();
         const bool left_click_released = ui::is_mouse_released(ui::MouseButton::Left);
-        const Vec2 screenshot_dimensions = screenshot_.dimensions();
+        const Vector2 screenshot_dimensions = screenshot_.dimensions();
 
         for (const ScreenshotAnnotation& annotation : screenshot_.annotations()) {
             const Rect annotation_ui_rect = map_rect(screenshot_dimensions, annotation.rect(), image_ui_rect);

@@ -4,8 +4,8 @@
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -27,9 +27,9 @@ osc::RingGeometry::RingGeometry(const Params& p)
     const auto fnum_phi_segments = static_cast<float>(num_phi_segments);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     float radius = p.inner_radius;
     const float radius_step = (p.outer_radius - p.inner_radius)/fnum_phi_segments;
@@ -40,7 +40,7 @@ osc::RingGeometry::RingGeometry(const Params& p)
             const auto fi = static_cast<float>(i);
             const Radians segment = p.theta_start + (fi/fnum_theta_segments * p.theta_length);
 
-            const Vec3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
+            const Vector3& v = vertices.emplace_back(radius * cos(segment), radius * sin(segment), 0.0f);
             normals.emplace_back(0.0f, 0.0f, 1.0f);
             uvs.emplace_back(
                 (v.x/p.outer_radius + 1.0f) / 2.0f,

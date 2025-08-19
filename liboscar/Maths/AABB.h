@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <iosfwd>
 
@@ -15,8 +15,8 @@ namespace osc
 
         friend bool operator==(const AABB&, const AABB&) = default;
 
-        Vec3 min{};
-        Vec3 max{};
+        Vector3 min{};
+        Vector3 max{};
     };
 
     std::ostream& operator<<(std::ostream&, const AABB&);

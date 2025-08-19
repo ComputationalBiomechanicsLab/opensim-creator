@@ -10,8 +10,8 @@
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Key.h>
 #include <liboscar/Platform/KeyCombination.h>
 #include <liboscar/Platform/ResourcePath.h>
@@ -280,19 +280,19 @@ namespace osc::ui
     bool draw_double_input(CStringView label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", TextInputFlags = {});
     bool draw_float_input(CStringView label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", TextInputFlags = {});
     bool draw_float3_input(CStringView label, float v[3], const char* format = "%.3f", TextInputFlags = {});
-    bool draw_vec3_input(CStringView label, Vec3& v, const char* format = "%.3f", TextInputFlags = {});
+    bool draw_vector3_input(CStringView label, Vector3& v, const char* format = "%.3f", TextInputFlags = {});
     bool draw_rgb_color_editor(CStringView label, Color& color);
     bool draw_rgba_color_editor(CStringView label, Color& color);
     // Draws an interactive button with the given label and with a given size in device-independent pixels.
-    bool draw_button(CStringView label, const Vec2& size = {});
+    bool draw_button(CStringView label, const Vector2& size = {});
     bool draw_small_button(CStringView label);
     bool draw_arrow_down_button(CStringView label);
     // Draws an interactive, but invisible, button with the given label and the given size in device-independent pixels.
-    bool draw_invisible_button(CStringView label, Vec2 size = {});
+    bool draw_invisible_button(CStringView label, Vector2 size = {});
     bool draw_radio_button(CStringView label, bool active);
     bool draw_collapsing_header(CStringView label, TreeNodeFlags = {});
     // Draws an invisible, non-interactive "dummy" element in the UI with the given size in device-independent pixels.
-    void draw_dummy(const Vec2& size);
+    void draw_dummy(const Vector2& size);
     // Draws an invisible, non-interactive "dummy" element that is `num_lines` * text line height high.
     void draw_vertical_spacer(float num_lines);
 
@@ -346,7 +346,7 @@ namespace osc::ui
     using ChildPanelFlags = Flags<ChildPanelFlag>;
 
     // Begins a child panel within a parent panel with the given ID, device-independent pixel size, and flags.
-    bool begin_child_panel(CStringView str_id, const Vec2& size = {}, ChildPanelFlags child_flags = {}, PanelFlags panel_flags = {});
+    bool begin_child_panel(CStringView str_id, const Vector2& size = {}, ChildPanelFlags child_flags = {}, PanelFlags panel_flags = {});
     void end_child_panel();
 
     void close_current_popup();
@@ -370,19 +370,19 @@ namespace osc::ui
 
     // Returns the size of the content region that's available from the current
     // cursor position within the current panel in device-independent pixels.
-    Vec2 get_content_region_available();
+    Vector2 get_content_region_available();
 
     // Returns the position that the panel cursor started at relative to the top-left
     // corner of the current panel in device-independent pixels.
-    Vec2 get_cursor_start_panel_position();
+    Vector2 get_cursor_start_panel_position();
 
     // Returns the current position of the panel cursor relative to the top-left corner
     // of the current panel in device-independent pixels.
-    Vec2 get_cursor_panel_position();
+    Vector2 get_cursor_panel_position();
 
     // Sets the current position of the panel cursor relative to the top-left corner
     // of the panel in device-independent pixels.
-    void set_cursor_panel_position(Vec2);
+    void set_cursor_panel_position(Vector2);
 
     // Returns the current x position of the panel cursor relative to the left edge
     // of the current panel in device-independent pixels.
@@ -393,10 +393,10 @@ namespace osc::ui
     void set_cursor_panel_x(float local_x);
 
     // Returns the current position of the panel cursor in ui space in device-independent pixels.
-    Vec2 get_cursor_ui_position();
+    Vector2 get_cursor_ui_position();
 
     // Sets the current position of the panel cursor in ui space in device-independent pixels.
-    void set_cursor_ui_position(Vec2);
+    void set_cursor_ui_position(Vector2);
 
     enum class Conditional {
         Always,
@@ -405,11 +405,11 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void set_next_panel_ui_position(Vec2, Conditional = Conditional::Always, Vec2 pivot = {});
+    void set_next_panel_ui_position(Vector2, Conditional = Conditional::Always, Vector2 pivot = {});
 
-    void set_next_panel_size(Vec2 size, Conditional = Conditional::Always);
+    void set_next_panel_size(Vector2 size, Conditional = Conditional::Always);
 
-    void set_next_panel_size_constraints(Vec2 size_min, Vec2 size_max);
+    void set_next_panel_size_constraints(Vector2 size_min, Vector2 size_max);
 
     void set_next_panel_bg_alpha(float alpha);
 
@@ -485,11 +485,11 @@ namespace osc::ui
     };
 
     Color get_style_color(ColorVar);
-    Vec2 get_style_frame_padding();
+    Vector2 get_style_frame_padding();
     float get_style_frame_border_size();
-    Vec2 get_style_panel_padding();
-    Vec2 get_style_item_spacing();
-    Vec2 get_style_item_inner_spacing();
+    Vector2 get_style_panel_padding();
+    Vector2 get_style_item_spacing();
+    Vector2 get_style_item_inner_spacing();
     float get_style_alpha();
 
     float get_framerate();
@@ -509,7 +509,7 @@ namespace osc::ui
         NUM_OPTIONS,
     };
 
-    void push_style_var(StyleVar, Vec2);
+    void push_style_var(StyleVar, Vector2);
     void push_style_var(StyleVar, float);
     void pop_style_var(int count = 1);
 
@@ -527,7 +527,7 @@ namespace osc::ui
     bool begin_popup_modal(CStringView name, bool* p_open = nullptr, PanelFlags = {});
     void end_popup();
 
-    Vec2 get_mouse_ui_position();
+    Vector2 get_mouse_ui_position();
     float get_mouse_wheel_amount();
 
     bool begin_menu_bar();
@@ -561,9 +561,9 @@ namespace osc::ui
     using TableFlags = Flags<TableFlag>;
 
     Rect get_item_ui_rect();
-    Vec2 get_item_top_left_ui_position();
-    Vec2 get_item_bottom_right_ui_position();
-    bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vec2& outer_size = {}, float inner_width = 0.0f);
+    Vector2 get_item_top_left_ui_position();
+    Vector2 get_item_bottom_right_ui_position();
+    bool begin_table(CStringView str_id, int column, TableFlags = {}, const Vector2& outer_size = {}, float inner_width = 0.0f);
     void table_setup_scroll_freeze(int cols, int rows);
 
     enum class SortDirection {
@@ -607,9 +607,9 @@ namespace osc::ui
     float get_font_base_size();
     float get_font_base_size_with_spacing();
 
-    Vec2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false);
+    Vector2 calc_text_size(CStringView text, bool hide_text_after_double_hash = false);
 
-    Vec2 get_panel_size();
+    Vector2 get_panel_size();
 
     class DrawListAPI {
     protected:
@@ -625,9 +625,9 @@ namespace osc::ui
         void add_rect_filled(const Rect& ui_rect, const Color& color, float rounding = 0.0f);
         void add_circle(const Circle& ui_circle, const Color& color, int num_segments = 0, float thickness = 1.0f);
         void add_circle_filled(const Circle& ui_circle, const Color& color, int num_segments = 0);
-        void add_text(const Vec2& ui_position, const Color& color, CStringView text);
-        void add_line(const Vec2& ui_start, const Vec2& ui_end, const Color& color, float thickness = 1.0f);
-        void add_triangle_filled(const Vec2 ui_p0, const Vec2& ui_p1, const Vec2& ui_p2, const Color& color);
+        void add_text(const Vector2& ui_position, const Color& color, CStringView text);
+        void add_line(const Vector2& ui_start, const Vector2& ui_end, const Color& color, float thickness = 1.0f);
+        void add_triangle_filled(const Vector2 ui_p0, const Vector2& ui_p1, const Vector2& ui_p2, const Color& color);
         void push_clip_rect(const Rect&, bool intersect_with_currect_clip_rect = false);
         void pop_clip_rect();
 
@@ -705,7 +705,7 @@ namespace osc::ui
     //   `texture`.
     void draw_image(
         const Texture2D& texture,
-        std::optional<Vec2> dimensions = std::nullopt,
+        std::optional<Vector2> dimensions = std::nullopt,
         const Rect& region_uv_coordinates = Rect::from_corners({0.0f, 0.0f}, {1.0f, 1.0f})
     );
     void draw_image(
@@ -713,29 +713,29 @@ namespace osc::ui
     );
     void draw_image(
         const RenderTexture&,
-        Vec2 dimensions
+        Vector2 dimensions
     );
 
     // returns the dimensions of a button with the given content
-    Vec2 calc_button_size(CStringView);
+    Vector2 calc_button_size(CStringView);
     float calc_button_width(CStringView);
 
     bool draw_button_nobg(
         CStringView,
-        Vec2 dimensions = {0.0f, 0.0f}
+        Vector2 dimensions = {0.0f, 0.0f}
     );
 
     // draws a texture within the UI as a clickable button
     bool draw_image_button(
         CStringView,
         const Texture2D&,
-        Vec2 dimensions,
+        Vector2 dimensions,
         const Rect& texture_coordinates
     );
     bool draw_image_button(
         CStringView,
         const Texture2D&,
-        Vec2 dimensions
+        Vector2 dimensions
     );
 
     // returns the ui space bounding rectangle of the last-drawn item in
@@ -854,7 +854,7 @@ namespace osc::ui
     // behaves like `ui::draw_float3_input`, but understood to manipulate the scene scale
     bool draw_float3_meters_input(
         CStringView label,
-        Vec3&,
+        Vector3&,
         TextInputFlags = {}
     );
 
@@ -925,7 +925,7 @@ namespace osc::ui
 
     // returns the dimensions of the current workspace area in device-independent pixels in the
     // main application window.
-    Vec2 get_main_window_workspace_dimensions();
+    Vector2 get_main_window_workspace_dimensions();
 
     // returns the aspect ratio (width divided by height) of the device-independent pixel dimensions
     // of the current workspace area in the main application window
@@ -1007,7 +1007,7 @@ namespace osc::ui
     // the viewport it's connected to has the given device-independent pixel dimensions.
     bool update_polar_camera_from_mouse_inputs(
         PolarPerspectiveCamera&,
-        Vec2 viewport_dimensions
+        Vector2 viewport_dimensions
     );
 
     // an operation that a ui `Gizmo` shall perform
@@ -1146,16 +1146,16 @@ namespace osc::ui
         }
 
         enum class PlotStyleVar {
-            // `Vec2`: additional fit padding as a percentage of the fit extents (e.g. Vec2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
+            // `Vector2`: additional fit padding as a percentage of the fit extents (e.g. Vector2{0.1, 0.2} would add 10 % to the X axis and 20 % to the Y axis)
             FitPadding,
 
-            // `Vec2`: padding between the item frame and plot area, labels, or outside legends (i.e. main padding)
+            // `Vector2`: padding between the item frame and plot area, labels, or outside legends (i.e. main padding)
             PlotPadding,
 
             // `float`: thickness of the border around plot area
             PlotBorderSize,
 
-            // `Vec2`: text padding around annotation labels
+            // `Vector2`: text padding around annotation labels
             AnnotationPadding,
 
             NUM_OPTIONS
@@ -1263,7 +1263,7 @@ namespace osc::ui
         // - `size` is the total size of the plot including axis labels, title, etc.
         //   you can call `get_plot_screen_rect` after finishing setup to figure out
         //   the bounds of the plot area (i.e. where the data is)
-        bool begin(CStringView title, Vec2 size, PlotFlags = PlotFlags::Default);
+        bool begin(CStringView title, Vector2 size, PlotFlags = PlotFlags::Default);
 
         // ends a 2D plotting context
         //
@@ -1273,8 +1273,8 @@ namespace osc::ui
         // temporarily modifies a style variable of `float` type. Must be paired with `pop_style_var`
         void push_style_var(PlotStyleVar, float);
 
-        // temporarily modifies a style variable of `Vec2` type. Must be paired with `pop_style_var`
-        void push_style_var(PlotStyleVar, Vec2);
+        // temporarily modifies a style variable of `Vector2` type. Must be paired with `pop_style_var`
+        void push_style_var(PlotStyleVar, Vector2);
 
         // undoes `count` temporary style variable modifications that were enacted by `push_style_var`
         void pop_style_var(int count = 1);
@@ -1312,7 +1312,7 @@ namespace osc::ui
         );
 
         // plots a standard 2D line plot
-        void plot_line(CStringView name, std::span<const Vec2> points);
+        void plot_line(CStringView name, std::span<const Vector2> points);
         void plot_line(CStringView name, std::span<const float> points);
 
         // returns the plot's rectangle in ui space
@@ -1326,9 +1326,9 @@ namespace osc::ui
         // - annotations are always rendered on top of the plot area
         namespace detail
         {
-            void draw_annotation_v(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, va_list args);
+            void draw_annotation_v(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, va_list args);
         }
-        inline void draw_annotation(Vec2 position_dataspace, const Color& color, Vec2 pixel_offset, bool clamp, CStringView fmt, ...)
+        inline void draw_annotation(Vector2 position_dataspace, const Color& color, Vector2 pixel_offset, bool clamp, CStringView fmt, ...)
         {
             va_list args;
             va_start(args, fmt);
@@ -1344,7 +1344,7 @@ namespace osc::ui
         //   in plot space.
         bool drag_point(
             int id,
-            Vec2d* plot_point,
+            Vector2d* plot_point,
             const Color&,
             float size = 4,
             DragToolFlags = DragToolFlag::Default
@@ -1377,10 +1377,10 @@ namespace osc::ui
         bool is_plot_hovered();
 
         // returns the position of the mouse in plot space
-        Vec2 get_plot_mouse_position();
+        Vector2 get_plot_mouse_position();
 
         // returns the mouse position in the coordinate system of the given axes
-        Vec2 get_plot_mouse_position(Axis x_axis, Axis y_axis);
+        Vector2 get_plot_mouse_position(Axis x_axis, Axis y_axis);
 
         // sets up the plot legend
         void setup_legend(Location, LegendFlags = LegendFlags::Default);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
@@ -23,6 +23,6 @@ namespace osc
 
         explicit GridGeometry(const Params& = {});
 
-        Vec3 normal() const { return {0.0f, 0.0f, 1.0f}; }
+        Vector3 normal() const { return {0.0f, 0.0f, 1.0f}; }
     };
 }

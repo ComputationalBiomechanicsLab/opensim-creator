@@ -9,7 +9,7 @@ namespace
         HelloTriangleScreen()
         {
             // setup camera
-            constexpr Vec3 viewer_position = {3.0f, 0.0f, 0.0f};
+            constexpr Vector3 viewer_position = {3.0f, 0.0f, 0.0f};
             camera_.set_position(viewer_position);
             camera_.set_direction({-1.0f, 0.0f, 0.0f});
 
@@ -43,7 +43,7 @@ namespace
 
             update_torus_if_params_changed();
             const auto seconds_since_startup = App::get().frame_delta_since_startup().count();
-            const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vec3{0.0f, 1.0f, 0.0f}));
+            const auto transform = identity<Transform>().with_rotation(angle_axis(Radians{seconds_since_startup}, Vector3{0.0f, 1.0f, 0.0f}));
             graphics::draw(mesh_, transform, material_, camera_);
             camera_.render_to(target_texture_);
             graphics::blit_to_main_window(target_texture_);

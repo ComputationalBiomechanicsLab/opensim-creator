@@ -9,7 +9,7 @@
 #include <libopensimcreator/Utils/LandmarkPair3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/StringName.h>
@@ -42,14 +42,14 @@ namespace osc
     bool ContainsElementWithName(const TPSDocument& doc, const StringName&);
 
     // returns the (mutable) source/destination of the given landmark pair, if available
-    inline std::optional<Vec3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
+    inline std::optional<Vector3>& UpdLocation(TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
         static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
     }
 
     // returns the source/destination of the given landmark pair, if available
-    inline std::optional<Vec3> const& GetLocation(const TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
+    inline std::optional<Vector3> const& GetLocation(const TPSDocumentLandmarkPair& landmarkPair, TPSDocumentInputIdentifier which)
     {
         static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
         return which == TPSDocumentInputIdentifier::Source ? landmarkPair.maybeSourceLocation : landmarkPair.maybeDestinationLocation;
@@ -121,14 +121,14 @@ namespace osc
     void AddLandmarkToInput(
         TPSDocument&,
         TPSDocumentInputIdentifier,
-        const Vec3&,
+        const Vector3&,
         std::optional<std::string_view> suggestedName = std::nullopt
     );
 
     // adds a non-participating landmark to the document
     void AddNonParticipatingLandmark(
         TPSDocument&,
-        const Vec3&,
+        const Vector3&,
         std::optional<std::string_view> suggestedName = std::nullopt
     );
 

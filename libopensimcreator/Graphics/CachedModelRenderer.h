@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Scene/SceneCollision.h>
 #include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <memory>
 #include <optional>
@@ -37,7 +37,7 @@ namespace osc
         RenderTexture& onDraw(
             const IModelStatePair&,
             const ModelRendererParams&,
-            Vec2 dims,
+            Vector2 dims,
             float devicePixelRatio,
             AntiAliasingLevel antiAliasingLevel
         );
@@ -61,7 +61,7 @@ namespace osc
 
         std::optional<SceneCollision> getClosestCollision(
             const ModelRendererParams&,
-            Vec2 mouseScreenPosition,
+            Vector2 mouseScreenPosition,
             const Rect& viewportScreenRect
         ) const;
 

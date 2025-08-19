@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/AppClock.h>
 #include <liboscar/Platform/AppMainLoopStatus.h>
 #include <liboscar/Platform/FileDialogFilter.h>
@@ -351,13 +351,13 @@ namespace osc
         WindowID main_window_id() const;
 
         // Returns the dimensions of the main application window in device-independent pixels.
-        Vec2 main_window_dimensions() const;
+        Vector2 main_window_dimensions() const;
 
         // Requests that the main window dimensions are set to the given dimensions in device-independent pixels.
-        void try_async_set_main_window_dimensions(Vec2);
+        void try_async_set_main_window_dimensions(Vector2);
 
         // Returns the dimensions of the main application window in physical pixels.
-        Vec2 main_window_pixel_dimensions() const;
+        Vector2 main_window_pixel_dimensions() const;
 
         // Returns the ratio of the resolution in physical pixels to the resolution of
         // device-independent pixels.
@@ -396,7 +396,7 @@ namespace osc
         // of the mouse in screen space in device-independent pixels.
         //
         // otherwise, returns `std::nullopt`.
-        std::optional<Vec2> mouse_position_in_main_window() const;
+        std::optional<Vector2> mouse_position_in_main_window() const;
 
         // returns `true` if the given window has input focus
         bool has_input_focus(WindowID) const;

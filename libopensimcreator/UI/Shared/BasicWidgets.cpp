@@ -32,8 +32,8 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/Log.h>
@@ -181,7 +181,7 @@ namespace
         const SimTK::State& state)
     {
         auto rv = to<Transform>(mesh.getFrame().findTransformBetween(state, frame));
-        rv.scale = to<Vec3>(mesh.get_scale_factors());
+        rv.scale = to<Vector3>(mesh.get_scale_factors());
         return rv;
     }
 
@@ -588,31 +588,31 @@ void osc::DrawWithRespectToMenuContainingMenuItemPerFrame(
 void osc::DrawPointTranslationInformationWithRespectTo(
     const OpenSim::Frame& frame,
     const SimTK::State& state,
-    Vec3 locationInGround)
+    Vector3 locationInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 translation = to<Vec3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
+    Vector3 translation = to<Vector3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
 
     ui::draw_text("translation");
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the point expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vector3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 void osc::DrawDirectionInformationWithRepsectTo(
     const OpenSim::Frame& frame,
     const SimTK::State& state,
-    Vec3 directionInGround)
+    Vector3 directionInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vec3 direction = to<Vec3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
+    Vector3 direction = to<Vector3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
 
     ui::draw_text("direction");
     ui::same_line();
     ui::draw_help_marker("direction", "a unit vector expressed in the given frame");
     ui::same_line();
-    ui::draw_vec3_input("##direction", direction, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vector3_input("##direction", direction, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 void osc::DrawFrameInformationExpressedIn(
@@ -621,20 +621,20 @@ void osc::DrawFrameInformationExpressedIn(
     const OpenSim::Frame& otherFrame)
 {
     const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
-    Vec3 translation = to<Vec3>(xform.p());
-    Vec3 rotationEulers = to<Vec3>(xform.R().convertRotationToBodyFixedXYZ());
+    Vector3 translation = to<Vector3>(xform.p());
+    Vector3 rotationEulers = to<Vector3>(xform.R().convertRotationToBodyFixedXYZ());
 
     ui::draw_text("translation");
     ui::same_line();
     ui::draw_help_marker("translation", "Translational offset (in meters) of the frame's origin expressed in the chosen frame");
     ui::same_line();
-    ui::draw_vec3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vector3_input("##translation", translation, "%.6f", ui::TextInputFlag::ReadOnly);
 
     ui::draw_text("orientation");
     ui::same_line();
     ui::draw_help_marker("orientation", "Orientation offset (in radians) of the frame, expressed in the chosen frame as a frame-fixed x-y-z rotation sequence");
     ui::same_line();
-    ui::draw_vec3_input("##orientation", rotationEulers, "%.6f", ui::TextInputFlag::ReadOnly);
+    ui::draw_vector3_input("##orientation", rotationEulers, "%.6f", ui::TextInputFlag::ReadOnly);
 }
 
 bool osc::BeginCalculateMenu(CalculateMenuFlags flags)
@@ -663,7 +663,7 @@ void osc::DrawCalculatePositionMenu(
             DrawPointTranslationInformationWithRespectTo(
                 frame,
                 state,
-                to<Vec3>(point.getLocationInGround(state))
+                to<Vector3>(point.getLocationInGround(state))
             );
         };
 
@@ -722,21 +722,21 @@ void osc::DrawCalculateAxisDirectionsMenu(
     if (ui::begin_menu("Axis Directions")) {
         const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
         {
-            Vec3 x = to<Vec3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vec3 y = to<Vec3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vec3 z = to<Vec3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            Vector3 x = to<Vector3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vector3 y = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vector3 z = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();
-            ui::draw_vec3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("y axis");
             ui::same_line();
-            ui::draw_vec3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("z axis");
             ui::same_line();
-            ui::draw_vec3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::end_menu();
@@ -751,10 +751,10 @@ void osc::DrawCalculateOriginMenu(
     if (ui::begin_menu("Origin")) {
         const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& otherFrame)
         {
-            auto v = to<Vec3>(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
+            auto v = to<Vector3>(frame.findStationLocationInAnotherFrame(state, {0.0f, 0.0f, 0.0f}, otherFrame));
             ui::draw_text("origin");
             ui::same_line();
-            ui::draw_vec3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##origin", v, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(frame));
         ui::end_menu();
@@ -783,7 +783,7 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ui::begin_menu("Origin"))
     {
-        const Vec3 posInGround = to<Vec3>(sphere.getFrame().getPositionInGround(state));
+        const Vector3 posInGround = to<Vector3>(sphere.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -867,7 +867,7 @@ void osc::DrawCalculateOriginMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Origin")) {
-        const Vec3 posInGround = to<Vec3>(ellipsoid.getFrame().getPositionInGround(state));
+        const Vector3 posInGround = to<Vector3>(ellipsoid.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -884,10 +884,10 @@ void osc::DrawCalculateRadiiMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Radii")) {
-        auto v = to<Vec3>(ellipsoid.get_radii());
+        auto v = to<Vector3>(ellipsoid.get_radii());
         ui::draw_text("radii");
         ui::same_line();
-        ui::draw_vec3_input("##radii", v, "%.6f", ui::TextInputFlag::ReadOnly);
+        ui::draw_vector3_input("##radii", v, "%.6f", ui::TextInputFlag::ReadOnly);
         ui::end_menu();
     }
 }
@@ -909,21 +909,21 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
         const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
         {
             const auto& radii = ellipsoid.get_radii();
-            Vec3 x = to<Vec3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vec3 y = to<Vec3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vec3 z = to<Vec3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            Vector3 x = to<Vector3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            Vector3 y = to<Vector3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            Vector3 z = to<Vector3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();
-            ui::draw_vec3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##xdir", x, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("y axis");
             ui::same_line();
-            ui::draw_vec3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##ydir", y, "%.6f", ui::TextInputFlag::ReadOnly);
 
             ui::draw_text("z axis");
             ui::same_line();
-            ui::draw_vec3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
+            ui::draw_vector3_input("##zdir", z, "%.6f", ui::TextInputFlag::ReadOnly);
         };
         DrawWithRespectToMenuContainingMenuPerFrame(root, onFrameMenuOpened, TryGetParentFrame(ellipsoid.getFrame()));
         ui::end_menu();
@@ -1201,7 +1201,7 @@ bool osc::DrawCameraControlButtons(
     const Rect& viewerScreenRect,
     const std::optional<AABB>& maybeSceneAABB,
     IconCache& iconCache,
-    Vec2 desiredTopCentroid)
+    Vector2 desiredTopCentroid)
 {
     IconWithoutMenu zoomOutButton{
         iconCache.find_or_throw("zoomout"),
@@ -1231,7 +1231,7 @@ bool osc::DrawCameraControlButtons(
 
     const float spacing = ui::get_style_item_spacing().x;
     float width = zoomOutButton.dimensions().x + spacing + zoomInButton.dimensions().x + spacing + autoFocusButton.dimensions().x;
-    const Vec2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
+    const Vector2 topleft = {desiredTopCentroid.x - 0.5f*width, desiredTopCentroid.y + 2.0f*ui::get_style_item_spacing().y};
     ui::set_cursor_ui_position(topleft);
 
     bool edited = false;
@@ -1252,7 +1252,7 @@ bool osc::DrawCameraControlButtons(
 
     // next line (centered)
     {
-        const Vec2 tl = {
+        const Vector2 tl = {
             desiredTopCentroid.x - 0.5f*sceneSettingsButton.dimensions().x,
             ui::get_cursor_ui_position().y,
         };
@@ -1278,15 +1278,15 @@ bool osc::DrawViewerImGuiOverlays(
     bool edited = false;
 
     // draw top-left buttons
-    const Vec2 windowPadding = ui::get_style_panel_padding();
+    const Vector2 windowPadding = ui::get_style_panel_padding();
     ui::set_cursor_ui_position(renderRect.ypd_top_left() + windowPadding);
     edited = DrawViewerTopButtonRow(params, drawlist, iconCache, drawExtraElementsInTop) || edited;
 
     // draw top-right camera manipulators
     CameraViewAxes axes;
-    const Vec2 renderDims = renderRect.dimensions();
-    const Vec2 axesDims = axes.dimensions();
-    const Vec2 axesTopLeft = {
+    const Vector2 renderDims = renderRect.dimensions();
+    const Vector2 axesDims = axes.dimensions();
+    const Vector2 axesTopLeft = {
         renderRect.left() + renderDims.x - windowPadding.x - axesDims.x,
         renderRect.ypd_top() + windowPadding.y,
     };
@@ -1295,7 +1295,7 @@ bool osc::DrawViewerImGuiOverlays(
     ui::set_cursor_ui_position(axesTopLeft);
     edited = axes.draw(params.camera) || edited;
 
-    const Vec2 cameraButtonsTopLeft = axesTopLeft + Vec2{0.0f, axesDims.y};
+    const Vector2 cameraButtonsTopLeft = axesTopLeft + Vector2{0.0f, axesDims.y};
     ui::set_cursor_ui_position(cameraButtonsTopLeft);
     edited = DrawCameraControlButtons(
         params,
@@ -1309,7 +1309,7 @@ bool osc::DrawViewerImGuiOverlays(
     return edited;
 }
 
-bool osc::BeginToolbar(CStringView label, std::optional<Vec2> padding)
+bool osc::BeginToolbar(CStringView label, std::optional<Vector2> padding)
 {
     if (padding)
     {

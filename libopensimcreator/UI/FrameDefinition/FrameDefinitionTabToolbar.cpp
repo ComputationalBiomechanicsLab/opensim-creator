@@ -6,7 +6,7 @@
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/UI/oscimgui.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -28,7 +28,7 @@ osc::FrameDefinitionTabToolbar::FrameDefinitionTabToolbar(
 
 void osc::FrameDefinitionTabToolbar::impl_on_draw()
 {
-    if (BeginToolbar(name(), Vec2{5.0f, 5.0f})) {
+    if (BeginToolbar(name(), Vector2{5.0f, 5.0f})) {
         drawContent();
     }
     ui::end_panel();

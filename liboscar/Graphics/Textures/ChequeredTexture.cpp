@@ -5,7 +5,7 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/ObjectRepresentation.h>
 
 #include <vector>
@@ -16,8 +16,8 @@ namespace
 {
     Texture2D generate_chequer_texture()
     {
-        constexpr Vec2i chequer_pixel_dimensions = {1, 1};
-        constexpr Vec2i texture_pixel_dimensions = 2 * chequer_pixel_dimensions;
+        constexpr Vector2i chequer_pixel_dimensions = {1, 1};
+        constexpr Vector2i texture_pixel_dimensions = 2 * chequer_pixel_dimensions;
         constexpr Color32 on_color = Color32::white();
         constexpr Color32 off_color = Color32::lightest_grey();
 

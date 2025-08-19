@@ -26,8 +26,8 @@ namespace
         {VariantType::Int, "int"},
         {VariantType::String, "String"},
         {VariantType::StringName, "StringName"},
-        {VariantType::Vec2, "Vec2"},
-        {VariantType::Vec3, "Vec3"},
+        {VariantType::Vector2, "Vector2"},
+        {VariantType::Vector3, "Vector3"},
     });
     static_assert(num_options<VariantType>() == std::tuple_size<decltype(c_expected_variant_type_strings)>());
 }

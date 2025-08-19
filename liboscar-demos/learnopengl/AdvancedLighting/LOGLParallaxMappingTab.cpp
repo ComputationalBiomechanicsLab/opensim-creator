@@ -115,13 +115,13 @@ private:
     Material parallax_mapping_material_ = create_parallax_mapping_material(loader_);
     Material light_cube_material_ = create_lightcube_material(loader_);
     Mesh cube_mesh_ = BoxGeometry{};
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // scene state
     MouseCapturingCamera camera_ = create_camera();
     Transform quad_transform_;
     Transform light_transform_ = {
-        .scale = Vec3{0.2f},
+        .scale = Vector3{0.2f},
         .translation = {0.5f, 1.0f, 0.3f},
     };
     bool parallax_mapping_enabled_ = true;

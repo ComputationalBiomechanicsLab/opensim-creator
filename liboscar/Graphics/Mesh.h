@@ -8,9 +8,9 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/ObjectRepresentation.h>
 
@@ -45,37 +45,37 @@ namespace osc
         //              coordinates, colors, and tangents) to be resized
         bool has_vertices() const;
         size_t num_vertices() const;
-        std::vector<Vec3> vertices() const;
-        void set_vertices(std::span<const Vec3>);
-        void set_vertices(std::initializer_list<Vec3> il)
+        std::vector<Vector3> vertices() const;
+        void set_vertices(std::span<const Vector3>);
+        void set_vertices(std::initializer_list<Vector3> il)
         {
-            set_vertices(std::span<const Vec3>{il});
+            set_vertices(std::span<const Vector3>{il});
         }
-        void transform_vertices(const std::function<Vec3(Vec3)>&);
+        void transform_vertices(const std::function<Vector3(Vector3)>&);
         void transform_vertices(const Transform&);
         void transform_vertices(const Matrix4x4&);
 
         // attribute: you can only set an equal amount of normals to the number of
         //            vertices (or zero, which means "clear them")
         bool has_normals() const;
-        std::vector<Vec3> normals() const;
-        void set_normals(std::span<const Vec3>);
-        void set_normals(std::initializer_list<Vec3> il)
+        std::vector<Vector3> normals() const;
+        void set_normals(std::span<const Vector3>);
+        void set_normals(std::initializer_list<Vector3> il)
         {
-            set_normals(std::span<const Vec3>{il});
+            set_normals(std::span<const Vector3>{il});
         }
-        void transform_normals(const std::function<Vec3(Vec3)>&);
+        void transform_normals(const std::function<Vector3(Vector3)>&);
 
         // attribute: you can only set an equal amount of texture coordinates to
         //            the number of vertices (or zero, which means "clear them")
         bool has_tex_coords() const;
-        std::vector<Vec2> tex_coords() const;
-        void set_tex_coords(std::span<const Vec2>);
-        void set_tex_coords(std::initializer_list<Vec2> il)
+        std::vector<Vector2> tex_coords() const;
+        void set_tex_coords(std::span<const Vector2>);
+        void set_tex_coords(std::initializer_list<Vector2> il)
         {
-            set_tex_coords(std::span<const Vec2>{il});
+            set_tex_coords(std::span<const Vector2>{il});
         }
-        void transform_tex_coords(const std::function<Vec2(Vec2)>&);
+        void transform_tex_coords(const std::function<Vector2(Vector2)>&);
 
         // attribute: you can only set an equal amount of colors to the number of
         //            vertices (or zero, which means "clear them")
@@ -88,11 +88,11 @@ namespace osc
 
         // attribute: you can only set an equal amount of tangents to the number of
         //            vertices (or zero, which means "clear them")
-        std::vector<Vec4> tangents() const;
-        void set_tangents(std::span<const Vec4>);
-        void set_tangents(std::initializer_list<Vec4> il)
+        std::vector<Vector4> tangents() const;
+        void set_tangents(std::span<const Vector4>);
+        void set_tangents(std::initializer_list<Vector4> il)
         {
-            set_tangents(std::span<const Vec4>{il});
+            set_tangents(std::span<const Vector4>{il});
         }
 
         // indices into the vertex data: tells the backend which primitives
@@ -106,10 +106,10 @@ namespace osc
         {
             set_indices(MeshIndicesView{il});
         }
-        void for_each_indexed_vertex(const std::function<void(Vec3)>&) const;
+        void for_each_indexed_vertex(const std::function<void(Vector3)>&) const;
         void for_each_indexed_triangle(const std::function<void(Triangle)>&) const;
         Triangle get_triangle_at(size_t first_index_offset) const;
-        std::vector<Vec3> indexed_vertices() const;
+        std::vector<Vector3> indexed_vertices() const;
 
         // local-space bounds of the mesh
         //

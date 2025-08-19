@@ -10,14 +10,14 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -137,8 +137,8 @@ private:
 
     void draw_lights()
     {
-        for (const Vec3& light_position : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .translation = light_position}, pbr_material_, camera_);
+        for (const Vector3& light_position : c_light_positions) {
+            graphics::draw(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_position}, pbr_material_, camera_);
         }
     }
 

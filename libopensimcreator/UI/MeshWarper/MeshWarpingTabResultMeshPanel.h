@@ -14,8 +14,8 @@
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
@@ -45,7 +45,7 @@ namespace osc
         void impl_draw_content() final
         {
             // fill the entire available region with the render
-            const Vec2 dims = ui::get_content_region_available();
+            const Vector2 dims = ui::get_content_region_available();
 
             updateCamera();
 
@@ -289,12 +289,12 @@ namespace osc
             }
 
             // draw non-participating landmarks
-            for (const Vec3& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
+            for (const Vector3& nonParticipatingLandmarkPos : m_State->getResultNonParticipatingLandmarkLocations())
             {
                 decorationConsumer(SceneDecoration{
                     .mesh = m_State->getLandmarkSphereMesh(),
                     .transform = {
-                        .scale = Vec3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
+                        .scale = Vector3{GetNonParticipatingLandmarkScaleFactor()*m_LandmarkRadius},
                         .translation = nonParticipatingLandmarkPos,
                     },
                     .shading = m_State->getNonParticipatingLandmarkColor(),
@@ -305,7 +305,7 @@ namespace osc
         }
 
         // renders a panel to a texture via its renderer and returns a reference to the rendered texture
-        RenderTexture& renderScene(Vec2 dims)
+        RenderTexture& renderScene(Vector2 dims)
         {
             const std::vector<SceneDecoration> decorations = generateDecorations();
             SceneRendererParams params = calc_standard_dark_scene_render_params(
@@ -325,7 +325,7 @@ namespace osc
         };
         ui::HittestResult m_LastTextureHittestResult;
         bool m_ShowDestinationMesh = false;
-        Vec2 m_OverlayPadding = {10.0f, 10.0f};
+        Vector2 m_OverlayPadding = {10.0f, 10.0f};
         float m_LandmarkRadius = 0.05f;
         float m_CursorXAtExportButton = 0.0f;
     };

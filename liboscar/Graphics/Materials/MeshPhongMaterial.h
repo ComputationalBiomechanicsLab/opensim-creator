@@ -2,15 +2,15 @@
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Material.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc
 {
     struct MeshPhongMaterialParams final {
         friend bool operator==(const MeshPhongMaterialParams&, const MeshPhongMaterialParams&) = default;
 
-        Vec3 light_position = {1.0f, 1.0f, 1.0f};
-        Vec3 viewer_position = {0.0f, 0.0f, 0.0f};
+        Vector3 light_position = {1.0f, 1.0f, 1.0f};
+        Vector3 viewer_position = {0.0f, 0.0f, 0.0f};
         Color light_color = Color::white();
         Color ambient_color = {0.1f, 0.1f, 0.1f};
         Color diffuse_color = Color::blue();
@@ -28,11 +28,11 @@ namespace osc
 
         explicit MeshPhongMaterial(const Params& = Params{});
 
-        Vec3 light_position() const;
-        void set_light_position(const Vec3&);
+        Vector3 light_position() const;
+        void set_light_position(const Vector3&);
 
-        Vec3 viewer_position() const;
-        void set_viewer_position(const Vec3&);
+        Vector3 viewer_position() const;
+        void set_viewer_position(const Vector3&);
 
         Color light_color() const;
         void set_light_color(const Color&);

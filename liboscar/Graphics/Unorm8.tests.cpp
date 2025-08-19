@@ -1,7 +1,7 @@
 #include "Unorm8.h"
 
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Conversion.h>
 
@@ -39,24 +39,24 @@ TEST(Unorm8, floating_point_NaNs_convert_to_zero)
     static_assert(Unorm8{std::numeric_limits<float>::quiet_NaN()} == Unorm8{0.0f});
 }
 
-TEST(Unorm8, can_construct_a_Vec3_of_Unorm8s_from_a_Vec3_of_floats)
+TEST(Unorm8, can_construct_a_Vector3_of_Unorm8s_from_a_Vector3_of_floats)
 {
     // this is useful for (e.g.) color conversion and quantizing mesh data
 
-    const Vec3 vec3_of_floats{0.25f, 1.0f, 1.5f};
-    const Vec<3, Unorm8> vec3_of_unorm8s{vec3_of_floats};
+    const Vector3 vector3_of_floats{0.25f, 1.0f, 1.5f};
+    const Vec<3, Unorm8> vector3_of_unorm8s{vector3_of_floats};
     const Vec<3, Unorm8> expected_content{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
-    ASSERT_EQ(vec3_of_unorm8s, expected_content);
+    ASSERT_EQ(vector3_of_unorm8s, expected_content);
 }
 
-TEST(Unorm8, can_construct_a_Vec3_of_floats_from_a_Vec3_of_Unorm8s)
+TEST(Unorm8, can_construct_a_Vector3_of_floats_from_a_Vector3_of_Unorm8s)
 {
     // this is useful for (e.g.) color conversion and quantizing mesh data
 
-    const Vec<3, Unorm8> vec3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
-    const Vec3 vec3_of_floats{vec3_of_unorm8s};
-    const Vec3 expected_content{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
-    ASSERT_EQ(vec3_of_floats, expected_content);
+    const Vec<3, Unorm8> vector3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
+    const Vector3 vector3_of_floats{vector3_of_unorm8s};
+    const Vector3 expected_content{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
+    ASSERT_EQ(vector3_of_floats, expected_content);
 }
 
 TEST(Unorm8, converts_midpoint_from_a_std_byte_as_expected)

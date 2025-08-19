@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/oscimgui.h>
@@ -18,7 +18,7 @@ namespace osc
             Popup& owner,
             Widget* parent,
             std::string_view name,
-            Vec2 dimensions = {512.0f, 0.0f},
+            Vector2 dimensions = {512.0f, 0.0f},
             ui::PanelFlags = ui::PanelFlag::AlwaysAutoResize
         );
 
@@ -31,8 +31,8 @@ namespace osc
     private:
         friend class Popup;
 
-        Vec2i dimensions_;
-        std::optional<Vec2i> maybe_position_;
+        Vector2i dimensions_;
+        std::optional<Vector2i> maybe_position_;
         ui::PanelFlags panel_flags_;
         bool should_open_;
         bool should_close_;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <iosfwd>
 
@@ -12,8 +12,8 @@ namespace osc
     struct Disc final {
         friend bool operator==(const Disc&, const Disc&) = default;
 
-        Vec3 origin{};
-        Vec3 normal = {0.0f, 1.0f, 0.0f};
+        Vector3 origin{};
+        Vector3 normal = {0.0f, 1.0f, 0.0f};
         float radius = 1.0f;
     };
 

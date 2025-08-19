@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/CoordinateDirection.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <OpenSim/Common/ComponentPath.h>
 
 #include <memory>
@@ -20,13 +20,13 @@ namespace osc::fd
     void ActionAddSphereInMeshFrame(
         IModelStatePair&,
         const OpenSim::Mesh&,
-        const std::optional<Vec3>& clickPositionInGround
+        const std::optional<Vector3>& clickPositionInGround
     );
 
     void ActionAddOffsetFrameInMeshFrame(
         IModelStatePair&,
         const OpenSim::Mesh&,
-        const std::optional<Vec3>& clickPositionInGround
+        const std::optional<Vector3>& clickPositionInGround
     );
 
     void ActionAddPointToPointEdge(

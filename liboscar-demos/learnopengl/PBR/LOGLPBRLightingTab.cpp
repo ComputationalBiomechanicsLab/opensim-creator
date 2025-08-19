@@ -10,14 +10,14 @@ using namespace osc;
 
 namespace
 {
-    constexpr auto c_light_positions = std::to_array<Vec3>({
+    constexpr auto c_light_positions = std::to_array<Vector3>({
         {-10.0f,  10.0f, 10.0f},
         { 10.0f,  10.0f, 10.0f},
         {-10.0f, -10.0f, 10.0f},
         { 10.0f, -10.0f, 10.0f},
     });
 
-    constexpr std::array<Vec3, c_light_positions.size()> c_light_radiances = std::to_array<Vec3>({
+    constexpr std::array<Vector3, c_light_positions.size()> c_light_radiances = std::to_array<Vector3>({
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
         {300.0f, 300.0f, 300.0f},
@@ -98,7 +98,7 @@ private:
 
     void draw_spheres()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{0.5f, 0.0f, 0.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{0.5f, 0.0f, 0.0f});
 
         for (int row = 0; row < c_num_rows; ++row) {
             pbr_material_.set("uMetallicity", static_cast<float>(row) / static_cast<float>(c_num_rows));
@@ -116,10 +116,10 @@ private:
 
     void draw_lights()
     {
-        pbr_material_.set("uAlbedoColor", Vec3{1.0f, 1.0f, 1.0f});
+        pbr_material_.set("uAlbedoColor", Vector3{1.0f, 1.0f, 1.0f});
 
-        for (const Vec3& light_position : c_light_positions) {
-            graphics::draw(sphere_mesh_, {.scale = Vec3{0.5f}, .translation = light_position}, pbr_material_, camera_);
+        for (const Vector3& light_position : c_light_positions) {
+            graphics::draw(sphere_mesh_, {.scale = Vector3{0.5f}, .translation = light_position}, pbr_material_, camera_);
         }
     }
 

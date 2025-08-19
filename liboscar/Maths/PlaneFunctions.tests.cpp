@@ -12,16 +12,16 @@ TEST(signed_distance_between, produces_expected_answers_in_precalculated_cases)
 {
     struct TestCase final {
         Plane plane;
-        Vec3 point;
+        Vector3 point;
         float expected;
     };
 
     constexpr auto precalculated_cases = std::to_array<TestCase>({
-         // origin    // normal                // point                 // expected signed distance
-        {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f,  0.5f, 0.0f},  0.5f                      },
-        {{Vec3{},     Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f, -0.5f, 0.0f}, -0.5f                      },
-        {{Vec3{1.0f}, Vec3{0.0f, 1.0f, 0.0f}}, Vec3{0.0f, 0.25f, 0.0f}, -0.75f                     },
-        {{Vec3{1.0f}, Vec3{1.0f, 0.0f, 0.0f}}, Vec3{0.0f, 0.25f, 0.0f}, -1.0f                      },
+         // origin       // normal                   // point                    // expected signed distance
+        {{Vector3{},     Vector3{0.0f, 1.0f, 0.0f}}, Vector3{0.0f,  0.5f, 0.0f},  0.5f                      },
+        {{Vector3{},     Vector3{0.0f, 1.0f, 0.0f}}, Vector3{0.0f, -0.5f, 0.0f}, -0.5f                      },
+        {{Vector3{1.0f}, Vector3{0.0f, 1.0f, 0.0f}}, Vector3{0.0f, 0.25f, 0.0f}, -0.75f                     },
+        {{Vector3{1.0f}, Vector3{1.0f, 0.0f, 0.0f}}, Vector3{0.0f, 0.25f, 0.0f}, -1.0f                      },
     });
 
     for (const auto& [plane, point, expected] : precalculated_cases) {
@@ -38,20 +38,20 @@ TEST(is_in_front_of, produces_expected_answers_in_precalculated_cases)
     };
 
     constexpr auto precalculated_cases = std::to_array<TestCase>({
-        // origin                     // normal                  // min                 // max                  // is in front of plane
-        {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{ 1.0f,  1.0f,  1.0f}, { 2.0f,  2.0f,  2.0f}}, true},
-        {{Vec3{},                     Vec3{ 0.0f, 1.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{},                     Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{},                     Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
-        {{Vec3{-1.0f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
-        {{Vec3{-0.991f, 0.0f, 0.0f},  Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
-        {{Vec3{-1.1f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{-1.9f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{-1.99f, 0.0f, 0.0f},   Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{-2.0f, 0.0f, 0.0f},    Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
-        {{Vec3{-2.01f, 0.0f, 0.0f},   Vec3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
-        {{Vec3{-2.01f, 0.0f, 0.0f},   Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
-        {{Vec3{-2.00f, 0.0f, 0.0f},   Vec3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
+        // origin                        // normal                     // min                 // max                  // is in front of plane
+        {{Vector3{},                     Vector3{ 0.0f, 1.0f, 0.0f}}, {{ 1.0f,  1.0f,  1.0f}, { 2.0f,  2.0f,  2.0f}}, true},
+        {{Vector3{},                     Vector3{ 0.0f, 1.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{},                     Vector3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{},                     Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vector3{-1.0f, 0.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
+        {{Vector3{-0.991f, 0.0f, 0.0f},  Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vector3{-1.1f, 0.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{-1.9f, 0.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{-1.99f, 0.0f, 0.0f},   Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{-2.0f, 0.0f, 0.0f},    Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
+        {{Vector3{-2.01f, 0.0f, 0.0f},   Vector3{-1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},
+        {{Vector3{-2.01f, 0.0f, 0.0f},   Vector3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, true},
+        {{Vector3{-2.00f, 0.0f, 0.0f},   Vector3{ 1.0f, 0.0f, 0.0f}}, {{-2.0f, -2.0f, -2.0f}, {-1.0f, -1.0f, -1.0f}}, false},  // coincident
     });
 
     for (const auto& [plane, aabb, expected] : precalculated_cases) {

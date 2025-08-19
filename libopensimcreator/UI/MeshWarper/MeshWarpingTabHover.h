@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <optional>
 
@@ -14,14 +14,14 @@ namespace osc
     public:
         explicit MeshWarpingTabHover(
             TPSDocumentInputIdentifier input_,
-            const Vec3& worldSpaceLocation_) :
+            const Vector3& worldSpaceLocation_) :
             m_Input{input_},
             m_WorldSpaceLocation{worldSpaceLocation_}
         {}
 
         explicit MeshWarpingTabHover(
             TPSDocumentElementID sceneElementID_,
-            const Vec3& worldSpaceLocation_) :
+            const Vector3& worldSpaceLocation_) :
 
             m_MaybeSceneElementID{std::move(sceneElementID_)},
             m_Input{m_MaybeSceneElementID->input},
@@ -49,7 +49,7 @@ namespace osc
             return m_MaybeSceneElementID == el;
         }
 
-        const Vec3& getWorldSpaceLocation() const
+        const Vector3& getWorldSpaceLocation() const
         {
             return m_WorldSpaceLocation;
         }
@@ -57,6 +57,6 @@ namespace osc
     private:
         std::optional<TPSDocumentElementID> m_MaybeSceneElementID;
         TPSDocumentInputIdentifier m_Input;
-        Vec3 m_WorldSpaceLocation;
+        Vector3 m_WorldSpaceLocation;
     };
 }

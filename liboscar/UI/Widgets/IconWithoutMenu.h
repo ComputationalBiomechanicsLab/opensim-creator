@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/UI/Icon.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -20,7 +20,7 @@ namespace osc
 
         CStringView title() const { return title_; }
 
-        Vec2 dimensions() const;
+        Vector2 dimensions() const;
         bool on_draw();
 
     private:

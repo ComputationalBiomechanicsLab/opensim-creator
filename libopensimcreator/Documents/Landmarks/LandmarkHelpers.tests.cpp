@@ -3,7 +3,7 @@
 #include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 
 #include <gtest/gtest.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -191,9 +191,9 @@ TEST(LandmarkHelpers, GenerateNamesGeneratesPrefixedNameForUnnamedInputs)
         {"etc.",       {1.0f, 1.0f, 0.0f}},
     };
     const std::vector<NamedLandmark> expectedOutput = {
-        {"p1", Vec3{}},
-        {"someprefix_0", Vec3{0.0f, 1.0f, 0.0f}},
-        {"etc.", Vec3{1.0f, 1.0f, 0.0f}},
+        {"p1", Vector3{}},
+        {"someprefix_0", Vector3{0.0f, 1.0f, 0.0f}},
+        {"etc.", Vector3{1.0f, 1.0f, 0.0f}},
     };
     const auto output = GenerateNames(input, "someprefix_");
 

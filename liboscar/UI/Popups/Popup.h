@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
@@ -19,7 +19,7 @@ namespace osc
         explicit Popup(
             Widget* parent,
             std::string_view name,
-            Vec2 dimensions = {512.0f, 0.0f},
+            Vector2 dimensions = {512.0f, 0.0f},
             ui::PanelFlags = ui::PanelFlag::AlwaysAutoResize
         );
 
@@ -37,8 +37,8 @@ namespace osc
         bool is_modal() const;
         void set_modal(bool);
         void set_rect(const Rect&);
-        void set_dimensions(Vec2);
-        void set_position(std::optional<Vec2>);
+        void set_dimensions(Vector2);
+        void set_position(std::optional<Vector2>);
 
         OSC_WIDGET_DATA_GETTERS(PopupPrivate);
     private:

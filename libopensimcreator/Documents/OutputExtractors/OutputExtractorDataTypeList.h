@@ -8,7 +8,7 @@ namespace osc
 {
     using OutputExtractorDataTypeList = OptionList<OutputExtractorDataType,
         OutputExtractorDataType::Float,
-        OutputExtractorDataType::Vec2,
+        OutputExtractorDataType::Vector2,
         OutputExtractorDataType::String
     >;
 }

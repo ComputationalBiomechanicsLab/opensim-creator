@@ -28,7 +28,7 @@
 void osc::fd::ActionAddSphereInMeshFrame(
     IModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    const std::optional<Vec3>& clickPositionInGround)
+    const std::optional<Vector3>& clickPositionInGround)
 {
     if (model.isReadonly()) {
         return;
@@ -68,7 +68,7 @@ void osc::fd::ActionAddSphereInMeshFrame(
 void osc::fd::ActionAddOffsetFrameInMeshFrame(
     IModelStatePair& model,
     const OpenSim::Mesh& mesh,
-    const std::optional<Vec3>& clickPositionInGround)
+    const std::optional<Vector3>& clickPositionInGround)
 {
     if (model.isReadonly()) {
         return;

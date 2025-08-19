@@ -7,7 +7,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
 
 #include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/StringName.h>
@@ -217,7 +217,7 @@ StringName osc::NextNonParticipatingLandmarkName(const TPSDocument& doc)
 void osc::AddLandmarkToInput(
     TPSDocument& doc,
     TPSDocumentInputIdentifier which,
-    const Vec3& position,
+    const Vector3& position,
     std::optional<std::string_view> suggestedName)
 {
     if (suggestedName)
@@ -244,7 +244,7 @@ void osc::AddLandmarkToInput(
         bool wasAssignedToExistingEmptySlot = false;
         for (TPSDocumentLandmarkPair& p : doc.landmarkPairs)
         {
-            std::optional<Vec3>& maybeLoc = UpdLocation(p, which);
+            std::optional<Vector3>& maybeLoc = UpdLocation(p, which);
             if (!maybeLoc)
             {
                 maybeLoc = position;
@@ -265,7 +265,7 @@ void osc::AddLandmarkToInput(
 
 void osc::AddNonParticipatingLandmark(
     TPSDocument& doc,
-    const Vec3& location,
+    const Vector3& location,
     std::optional<std::string_view> suggestedName)
 {
     if (suggestedName)

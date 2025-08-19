@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Graphics/Scene/SceneCollision.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <optional>
 
@@ -26,6 +26,6 @@ namespace osc
         enum class State { Inactive, WaitingForFirstPoint, WaitingForSecondPoint };
 
         State state_ = State::Inactive;
-        Vec3 start_world_pos_ = {};
+        Vector3 start_world_pos_ = {};
     };
 }

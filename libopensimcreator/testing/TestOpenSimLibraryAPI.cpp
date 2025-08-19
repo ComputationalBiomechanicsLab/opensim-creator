@@ -333,7 +333,7 @@ TEST(OpenSimModel, CoordinateCouplerConstraintWorksWithMultiVariatePolynomialWit
 // `OpenSim::Coordinate` exposes its `range` as a list property but OpenSim's API doesn't
 // prevent a user from deleting an element from that property
 //
-// the "bug" is that, on deleting an element from the range (already an issue: should be a Vec2)
+// the "bug" is that, on deleting an element from the range (already an issue: should be a `Vector2`)
 // the resulting model will still finalize+build fine, _but_ subsequently requesting the minimum
 // or maximum of the range will _then_ throw
 //

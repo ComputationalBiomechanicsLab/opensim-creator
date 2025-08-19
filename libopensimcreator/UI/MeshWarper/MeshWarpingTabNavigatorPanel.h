@@ -9,7 +9,7 @@
 
 #include <liboscar/Maths/Circle.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/Panel.h>
 
@@ -148,18 +148,18 @@ namespace osc
             const float pad = ui::get_style_item_inner_spacing().x;
 
             // draw connecting line
-            const Vec2 direction = normalize(dest.origin - src.origin);
-            const Vec2 start = src.origin  + (src.radius  + Vec2{pad, 0.0f})*direction;
-            const Vec2 end   = dest.origin - (dest.radius + Vec2{pad, 0.0f})*direction;
+            const Vector2 direction = normalize(dest.origin - src.origin);
+            const Vector2 start = src.origin  + (src.radius  + Vector2{pad, 0.0f})*direction;
+            const Vector2 end   = dest.origin - (dest.radius + Vector2{pad, 0.0f})*direction;
             const Color color = Color::dark_grey();
             ui::get_panel_draw_list().add_line(start, end, color);
 
             // draw triangle on end of connecting line to form an arrow
-            const Vec2 p0 = end;
-            const Vec2 base = p0 - 2.0f*pad*direction;
-            const Vec2 orthogonal = {-direction.y, direction.x};
-            const Vec2 p1 = base + pad*orthogonal;
-            const Vec2 p2 = base - pad*orthogonal;
+            const Vector2 p0 = end;
+            const Vector2 base = p0 - 2.0f*pad*direction;
+            const Vector2 orthogonal = {-direction.y, direction.x};
+            const Vector2 p1 = base + pad*orthogonal;
+            const Vector2 p2 = base - pad*orthogonal;
             ui::get_panel_draw_list().add_triangle_filled(p0, p1, p2, color);
         }
 
@@ -236,9 +236,9 @@ namespace osc
             return 0.4f*ui::get_text_line_height_in_current_panel();
         }
 
-        Vec2 calcColumnMidpointScreenPos() const
+        Vector2 calcColumnMidpointScreenPos() const
         {
-            return ui::get_cursor_ui_position() + 0.5f*Vec2{ui::get_column_width(), ui::get_text_line_height_in_current_panel()};
+            return ui::get_cursor_ui_position() + 0.5f*Vector2{ui::get_column_width(), ui::get_text_line_height_in_current_panel()};
         }
 
         std::shared_ptr<MeshWarpingTabSharedState> m_State;

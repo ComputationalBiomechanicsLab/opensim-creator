@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/MIClass.h>
 #include <libopensimcreator/Documents/MeshImporter/MIVariant.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <array>
 #include <variant>
@@ -21,6 +21,6 @@ namespace osc::mi
 
     const std::array<MIClass, std::variant_size_v<SceneElVariant>>& GetSceneElClasses();
 
-    Vec3 AverageCenter(const Mesh&);
-    Vec3 mass_center_of(const Mesh&);
+    Vector3 AverageCenter(const Mesh&);
+    Vector3 mass_center_of(const Mesh&);
 }

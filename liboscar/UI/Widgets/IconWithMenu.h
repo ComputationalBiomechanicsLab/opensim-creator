@@ -18,7 +18,7 @@ namespace osc
             std::function<bool()> content_renderer
         );
 
-        Vec2 dimensions() const { return icon_without_menu_.dimensions(); }
+        Vector2 dimensions() const { return icon_without_menu_.dimensions(); }
         bool on_draw();
     private:
         IconWithoutMenu icon_without_menu_;

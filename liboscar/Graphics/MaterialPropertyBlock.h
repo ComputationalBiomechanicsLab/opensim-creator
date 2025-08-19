@@ -8,9 +8,9 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 #include <liboscar/Utils/StringName.h>
 
@@ -73,24 +73,24 @@ namespace osc
         template<std::same_as<float>> void set_array(std::string_view property_name, std::span<const float>);
         template<std::same_as<float>> void set_array(const StringName& property_name, std::span<const float>);
 
-        template<std::same_as<Vec2>> std::optional<Vec2> get(std::string_view property_name) const;
-        template<std::same_as<Vec2>> std::optional<Vec2> get(const StringName& property_name) const;
-        template<std::same_as<Vec2>> void set(std::string_view property_name, const Vec2&);
-        template<std::same_as<Vec2>> void set(const StringName& property_name, const Vec2&);
+        template<std::same_as<Vector2>> std::optional<Vector2> get(std::string_view property_name) const;
+        template<std::same_as<Vector2>> std::optional<Vector2> get(const StringName& property_name) const;
+        template<std::same_as<Vector2>> void set(std::string_view property_name, const Vector2&);
+        template<std::same_as<Vector2>> void set(const StringName& property_name, const Vector2&);
 
-        template<std::same_as<Vec3>> std::optional<Vec3> get(std::string_view property_name) const;
-        template<std::same_as<Vec3>> std::optional<Vec3> get(const StringName& property_name) const;
-        template<std::same_as<Vec3>> void set(std::string_view property_name, const Vec3&);
-        template<std::same_as<Vec3>> void set(const StringName& property_name, const Vec3&);
-        template<std::same_as<Vec3>> std::optional<std::span<const Vec3>> get_array(std::string_view property_name) const;
-        template<std::same_as<Vec3>> std::optional<std::span<const Vec3>> get_array(const StringName& property_name) const;
-        template<std::same_as<Vec3>> void set_array(std::string_view property_name, std::span<const Vec3>);
-        template<std::same_as<Vec3>> void set_array(const StringName& property_name, std::span<const Vec3>);
+        template<std::same_as<Vector3>> std::optional<Vector3> get(std::string_view property_name) const;
+        template<std::same_as<Vector3>> std::optional<Vector3> get(const StringName& property_name) const;
+        template<std::same_as<Vector3>> void set(std::string_view property_name, const Vector3&);
+        template<std::same_as<Vector3>> void set(const StringName& property_name, const Vector3&);
+        template<std::same_as<Vector3>> std::optional<std::span<const Vector3>> get_array(std::string_view property_name) const;
+        template<std::same_as<Vector3>> std::optional<std::span<const Vector3>> get_array(const StringName& property_name) const;
+        template<std::same_as<Vector3>> void set_array(std::string_view property_name, std::span<const Vector3>);
+        template<std::same_as<Vector3>> void set_array(const StringName& property_name, std::span<const Vector3>);
 
-        template<std::same_as<Vec4>> std::optional<Vec4> get(std::string_view property_name) const;
-        template<std::same_as<Vec4>> std::optional<Vec4> get(const StringName& property_name) const;
-        template<std::same_as<Vec4>> void set(std::string_view property_name, const Vec4&);
-        template<std::same_as<Vec4>> void set(const StringName& property_name, const Vec4&);
+        template<std::same_as<Vector4>> std::optional<Vector4> get(std::string_view property_name) const;
+        template<std::same_as<Vector4>> std::optional<Vector4> get(const StringName& property_name) const;
+        template<std::same_as<Vector4>> void set(std::string_view property_name, const Vector4&);
+        template<std::same_as<Vector4>> void set(const StringName& property_name, const Vector4&);
 
         template<std::same_as<Matrix3x3>> std::optional<Matrix3x3> get(std::string_view property_name) const;
         template<std::same_as<Matrix3x3>> std::optional<Matrix3x3> get(const StringName& property_name) const;

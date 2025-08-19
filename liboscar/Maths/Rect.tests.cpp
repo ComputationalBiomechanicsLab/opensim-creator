@@ -6,18 +6,18 @@ using namespace osc;
 
 TEST(Rect, from_point_origin_is_the_point)
 {
-    ASSERT_EQ(Rect::from_point(Vec2{3.0f}).origin(), Vec2{3.0f});
+    ASSERT_EQ(Rect::from_point(Vector2{3.0f}).origin(), Vector2{3.0f});
 }
 
 TEST(Rect, from_point_returns_zero_dimension_Rect)
 {
-    ASSERT_EQ(Rect::from_point(Vec2{3.0f}).dimensions(), Vec2{});
+    ASSERT_EQ(Rect::from_point(Vector2{3.0f}).dimensions(), Vector2{});
 }
 
 TEST(Rect, from_origin_and_dimensions)
 {
-    const Vec2 origin = {-5.0f, -10.0f};
-    const Vec2 dimensions = {3.0f, 11.0f};
+    const Vector2 origin = {-5.0f, -10.0f};
+    const Vector2 dimensions = {3.0f, 11.0f};
 
     const Rect result = Rect::from_origin_and_dimensions(origin, dimensions);
 
@@ -27,8 +27,8 @@ TEST(Rect, from_origin_and_dimensions)
 
 TEST(Rect, from_corners)
 {
-    const Vec2 p0 = {-5.0f, -10.0f};
-    const Vec2 p1 = { 3.0f,  11.0f};
+    const Vector2 p0 = {-5.0f, -10.0f};
+    const Vector2 p1 = { 3.0f,  11.0f};
 
     const Rect result = Rect::from_corners(p0, p1);
 
@@ -38,8 +38,8 @@ TEST(Rect, from_corners)
 
 TEST(Rect, from_corners_argument_order_doesnt_matter)
 {
-    const Vec2 p0 = {-5.0f, -10.0f};
-    const Vec2 p1 = { 3.0f,  11.0f};
+    const Vector2 p0 = {-5.0f, -10.0f};
+    const Vector2 p1 = { 3.0f,  11.0f};
 
     const Rect result_a = Rect::from_corners(p0, p1);
     const Rect result_b = Rect::from_corners(p1, p0);
@@ -51,7 +51,7 @@ TEST(Rect, dimensions_returns_expected_dimensions)
 {
     const Rect rect = Rect::from_corners({-9.0f, 3.0f}, {-13.0f, 9.0f});
 
-    ASSERT_EQ(rect.dimensions(), Vec2(4.0f, 6.0f));
+    ASSERT_EQ(rect.dimensions(), Vector2(4.0f, 6.0f));
 }
 
 TEST(Rect, width_returns_expected_width)
@@ -114,7 +114,7 @@ TEST(Rect, half_extents_returns_expected_half_dimensions)
 {
     const Rect rect = Rect::from_corners({9.0f, 3.0f}, {13.0f, 9.0f});
 
-    ASSERT_EQ(rect.half_extents(), Vec2(2.0f, 3.0f));
+    ASSERT_EQ(rect.half_extents(), Vector2(2.0f, 3.0f));
 }
 
 TEST(Rect, area_returns_expected_area)
@@ -126,104 +126,104 @@ TEST(Rect, area_returns_expected_area)
 
 TEST(Rect, corner_to_corner_constructor_works_with_min_max_righthanded_corners)
 {
-    const Rect rect = Rect::from_corners(Vec2{-1.0f}, Vec2{+1.0f});
+    const Rect rect = Rect::from_corners(Vector2{-1.0f}, Vector2{+1.0f});
 
-    ASSERT_EQ(rect.origin(), Vec2{});
-    ASSERT_EQ(rect.dimensions(), Vec2{2.0f});
+    ASSERT_EQ(rect.origin(), Vector2{});
+    ASSERT_EQ(rect.dimensions(), Vector2{2.0f});
 }
 
 TEST(Rect, corners_returns_min_and_max_corners_of_the_rect)
 {
-    const Rect rect = Rect::from_corners(Vec2{-1.0f}, Vec2{+1.0f});
+    const Rect rect = Rect::from_corners(Vector2{-1.0f}, Vector2{+1.0f});
 
     const auto corners = rect.corners();
 
-    ASSERT_EQ(corners.min, Vec2{-1.0f});
-    ASSERT_EQ(corners.max, Vec2{+1.0f});
+    ASSERT_EQ(corners.min, Vector2{-1.0f});
+    ASSERT_EQ(corners.max, Vector2{+1.0f});
 }
 
 TEST(Rect, min_corner_returns_expected_result)
 {
-    const Rect rect = Rect::from_corners(Vec2{-7.0f}, Vec2{+3.0f});
+    const Rect rect = Rect::from_corners(Vector2{-7.0f}, Vector2{+3.0f});
 
-    ASSERT_EQ(rect.min_corner(), Vec2{-7.0f});
+    ASSERT_EQ(rect.min_corner(), Vector2{-7.0f});
 }
 
 TEST(Rect, max_corner_returns_expected_result)
 {
-    const Rect rect = Rect::from_corners(Vec2{-7.0f}, Vec2{+3.0f});
+    const Rect rect = Rect::from_corners(Vector2{-7.0f}, Vector2{+3.0f});
 
-    ASSERT_EQ(rect.max_corner(), Vec2{+3.0f});
+    ASSERT_EQ(rect.max_corner(), Vector2{+3.0f});
 }
 
 TEST(Rect, ypd_top_left_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypd_top_left(), Vec2(5.0f));
+    ASSERT_EQ(rect.ypd_top_left(), Vector2(5.0f));
 }
 
 TEST(Rect, ypd_top_right_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypd_top_right(), Vec2(50.0f, 5.0f));
+    ASSERT_EQ(rect.ypd_top_right(), Vector2(50.0f, 5.0f));
 }
 
 TEST(Rect, ypd_bottom_left_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypd_bottom_left(), Vec2(5.0f, 50.0f));
+    ASSERT_EQ(rect.ypd_bottom_left(), Vector2(5.0f, 50.0f));
 }
 
 TEST(Rect, ypd_bottom_right_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypd_bottom_right(), Vec2(50.0f, 50.0f));
+    ASSERT_EQ(rect.ypd_bottom_right(), Vector2(50.0f, 50.0f));
 }
 
 TEST(Rect, ypu_top_left_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypu_top_left(), Vec2(5.0f, 50.0f));
+    ASSERT_EQ(rect.ypu_top_left(), Vector2(5.0f, 50.0f));
 }
 
 TEST(Rect, ypu_top_right_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypu_top_right(), Vec2(50.0f));
+    ASSERT_EQ(rect.ypu_top_right(), Vector2(50.0f));
 }
 
 TEST(Rect, ypu_bottom_left_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypu_bottom_left(), Vec2(5.0f));
+    ASSERT_EQ(rect.ypu_bottom_left(), Vector2(5.0f));
 }
 
 TEST(Rect, ypu_bottom_right_returns_expected_point)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
-    ASSERT_EQ(rect.ypu_bottom_right(), Vec2(50.0f, 5.0f));
+    ASSERT_EQ(rect.ypu_bottom_right(), Vector2(50.0f, 5.0f));
 }
 
 TEST(Rect, with_dimensions_scaled_by_rescales_dimensions)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
     const Rect result = rect.with_dimensions_scaled_by({0.5f, 2.25f});
 
-    ASSERT_EQ(result.dimensions(), Vec2(0.5f*45.0f, 2.25f*45.0f));
+    ASSERT_EQ(result.dimensions(), Vector2(0.5f*45.0f, 2.25f*45.0f));
 }
 
 TEST(Rect, with_dimensions_scaled_by_doesnt_change_origin)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
     const Rect result = rect.with_dimensions_scaled_by({0.5f, 2.25f});
 
@@ -232,7 +232,7 @@ TEST(Rect, with_dimensions_scaled_by_doesnt_change_origin)
 
 TEST(Rect, with_origin_and_dimensions_scaled_by_rescales_both_origin_and_dimensions)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
     const Rect result = rect.with_origin_and_dimensions_scaled_by(0.5f);
 
@@ -242,7 +242,7 @@ TEST(Rect, with_origin_and_dimensions_scaled_by_rescales_both_origin_and_dimensi
 
 TEST(Rect, with_flipped_y_returns_expected_rect)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
     const Rect result = rect.with_flipped_y(125.0f);
     const auto corners = result.corners();
@@ -255,9 +255,9 @@ TEST(Rect, with_flipped_y_returns_expected_rect)
 
 TEST(Rect, with_dimensions_returns_expected_rect)
 {
-    const Rect rect = Rect::from_corners(Vec2{5.0f}, Vec2{50.0f});
+    const Rect rect = Rect::from_corners(Vector2{5.0f}, Vector2{50.0f});
 
     const Rect result = rect.with_dimensions({1.0f, 1.0f});
 
-    ASSERT_EQ(result.dimensions(), Vec2(1.0f, 1.0f));
+    ASSERT_EQ(result.dimensions(), Vector2(1.0f, 1.0f));
 }

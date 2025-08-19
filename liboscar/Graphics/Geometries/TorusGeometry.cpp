@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -25,9 +25,9 @@ osc::TorusGeometry::TorusGeometry(const Params& p)
     const auto fnum_tubular_segments = static_cast<float>(p.num_tubular_segments);
 
     std::vector<uint32_t> indices;
-    std::vector<Vec3> vertices;
-    std::vector<Vec3> normals;
-    std::vector<Vec2> uvs;
+    std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
+    std::vector<Vector2> uvs;
 
     for (size_t j = 0; j <= p.num_radial_segments; ++j) {
         const auto fj = static_cast<float>(j);
@@ -36,12 +36,12 @@ osc::TorusGeometry::TorusGeometry(const Params& p)
             const Radians u = fi/fnum_tubular_segments * p.arc;
             const Radians v = fj/fnum_radial_segments * 360_deg;
 
-            const Vec3& vertex = vertices.emplace_back(
+            const Vector3& vertex = vertices.emplace_back(
                 (p.tube_center_radius + p.tube_radius * cos(v)) * cos(u),
                 (p.tube_center_radius + p.tube_radius * cos(v)) * sin(u),
                 p.tube_radius * sin(v)
             );
-            normals.push_back(normalize(Vec3{
+            normals.push_back(normalize(Vector3{
                 vertex.x - p.tube_center_radius*cos(u),
                 vertex.y - p.tube_center_radius*sin(u),
                 vertex.z - 0.0f,

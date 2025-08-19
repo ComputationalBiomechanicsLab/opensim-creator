@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferFormat.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 namespace osc
 {
@@ -11,7 +11,7 @@ namespace osc
 
         friend bool operator==(const DepthStencilRenderBufferParams&, const DepthStencilRenderBufferParams&) = default;
 
-        Vec2i pixel_dimensions = {1, 1};
+        Vector2i pixel_dimensions = {1, 1};
         TextureDimensionality dimensionality = TextureDimensionality::Tex2D;
         AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel{1};
         DepthStencilRenderBufferFormat format = DepthStencilRenderBufferFormat::Default;

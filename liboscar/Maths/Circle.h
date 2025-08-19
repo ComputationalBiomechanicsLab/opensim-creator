@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 namespace osc
 {
@@ -12,7 +12,7 @@ namespace osc
 
         Circle expanded_by(float amount) const { return Circle{origin, radius + amount}; }
 
-        Vec2 origin{};
+        Vector2 origin{};
         float radius = 1.0f;
     };
 }

@@ -6,7 +6,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Plane.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
@@ -83,7 +83,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr Vec3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
+    constexpr Vector3 c_ContactHalfSpaceUpwardsNormal = {-1.0f, 0.0f, 0.0f};
 }
 
 // helpers
@@ -193,10 +193,10 @@ namespace
         return {0, pfds.size() - 1};
     }
 
-    Vec3 GetLocationInGround(OpenSim::PointForceDirection& pf, const SimTK::State& st)
+    Vector3 GetLocationInGround(OpenSim::PointForceDirection& pf, const SimTK::State& st)
     {
         const SimTK::Vec3 location = pf.frame().findStationLocationInGround(st, pf.point());
-        return to<Vec3>(location);
+        return to<Vector3>(location);
     }
 
     struct LinesOfActionConfig final {
@@ -226,13 +226,13 @@ namespace
             return std::nullopt;  // not enough *unique* PFDs to compute a line of action
         }
 
-        const Vec3 originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
-        const Vec3 pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
-        const Vec3 originDir = normalize(pointAfterOriginPos - originPos);
+        const Vector3 originPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first), st);
+        const Vector3 pointAfterOriginPos = GetLocationInGround(*pfds.at(attachmentIndexRange.first + 1), st);
+        const Vector3 originDir = normalize(pointAfterOriginPos - originPos);
 
-        const Vec3 insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
-        const Vec3 pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
-        const Vec3 insertionDir = normalize(pointAfterInsertionPos - insertionPos);
+        const Vector3 insertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second), st);
+        const Vector3 pointAfterInsertionPos = GetLocationInGround(*pfds.at(attachmentIndexRange.second - 1), st);
+        const Vector3 insertionDir = normalize(pointAfterInsertionPos - insertionPos);
 
         return LinesOfAction{
             Ray{originPos, originDir},
@@ -1372,12 +1372,12 @@ std::vector<GeometryPathPoint> osc::GetAllPathPoints(const OpenSim::GeometryPath
 
             rv.reserve(rv.size() + size(wrapPath));
             for (size_t j = 0; j < size(wrapPath); ++j) {
-                rv.emplace_back(body2ground * to<Vec3>(At(wrapPath, j)));
+                rv.emplace_back(body2ground * to<Vector3>(At(wrapPath, j)));
             }
         }
         else {
             // typical case: it's a normal/computed point with a single location in ground
-            rv.emplace_back(*ap, to<Vec3>(ap->getLocationInGround(st)));
+            rv.emplace_back(*ap, to<Vector3>(ap->getLocationInGround(st)));
         }
     }
 
@@ -1425,8 +1425,8 @@ namespace
 
     // helper: try to extract the current (state-dependent) force+torque from a HuntCrossleyForce
     struct ForceTorque final {
-        Vec3 force;
-        Vec3 torque;
+        Vector3 force;
+        Vector3 torque;
     };
     std::optional<ForceTorque> CalcHCFForceOnContactHalfSpace(
         const OpenSim::HuntCrossleyForce& hcf,
@@ -1440,12 +1440,12 @@ namespace
             return std::nullopt;  // edge-case: OpenSim didn't report the expected forces
         }
 
-        const Vec3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
+        const Vector3 force(-forces[offset+0], -forces[offset+1], -forces[offset+2]);
         if (length2(force) < epsilon_v<float>) {
             return std::nullopt;  // edge-case: no force is actually being exerted
         }
 
-        const Vec3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
+        const Vector3 torque(-forces[offset+3], -forces[offset+4], -forces[offset+5]);
 
         return ForceTorque{force, torque};
     }
@@ -1472,7 +1472,7 @@ namespace
 
     // helper: returns the location of the center of pressure of a force+torque on a plane, or
     //         std::nullopt if the to-be-drawn force vector is too small
-    std::optional<Vec3> CalcCenterOfPressure(
+    std::optional<Vector3> CalcCenterOfPressure(
         const Plane& plane,
         const ForceTorque& forceTorqueInG)
     {
@@ -1484,7 +1484,7 @@ namespace
         // see also: SCONE/model_tools.cpp:GetPlaneCop
         auto normal_force_scalar = dot(force, plane.normal);
         auto pos0 = cross(plane.normal, torque) / normal_force_scalar;
-        Vec3 delta_pos = pos0 - plane.origin;
+        Vector3 delta_pos = pos0 - plane.origin;
         double p1 = dot(delta_pos, plane.normal);
         double p2 = dot(force, plane.normal);
         auto pos = pos0 - (p1/p2) * force;
@@ -1561,25 +1561,25 @@ std::optional<PointInfo> osc::TryExtractPointInfo(
         }
 
         return PointInfo{
-            to<Vec3>(station->get_location()),
+            to<Vector3>(station->get_location()),
             GetAbsolutePath(station->getParentFrame()),
         };
     }
     else if (const auto* pp = dynamic_cast<const OpenSim::PathPoint*>(&c)) {
         return PointInfo{
-            to<Vec3>(pp->getLocation(st)),
+            to<Vector3>(pp->getLocation(st)),
             GetAbsolutePath(pp->getParentFrame()),
         };
     }
     else if (const auto* point = dynamic_cast<const OpenSim::Point*>(&c)) {
         return PointInfo{
-            to<Vec3>(point->getLocationInGround(st)),
+            to<Vector3>(point->getLocationInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }
     else if (const auto* frame = dynamic_cast<const OpenSim::Frame*>(&c)) {
         return PointInfo{
-            to<Vec3>(frame->getPositionInGround(st)),
+            to<Vector3>(frame->getPositionInGround(st)),
             OpenSim::ComponentPath{"/ground"},
         };
     }

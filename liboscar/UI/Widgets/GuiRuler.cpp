@@ -5,7 +5,7 @@
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -36,7 +36,7 @@ void osc::GuiRuler::on_draw(
         return;
     }
 
-    const Vec2 mouse_ui_pos = ui::get_mouse_ui_position();
+    const Vector2 mouse_ui_pos = ui::get_mouse_ui_position();
     const Color circle_moused_over_nothing_color = Color::red().with_alpha(0.6f);
     const Color circle_color = Color::white().with_alpha(0.8f);
     const Color line_color = circle_color;
@@ -46,9 +46,9 @@ void osc::GuiRuler::on_draw(
     const float line_thickness = 3.0f;
 
     ui::DrawListView draw_list = ui::get_panel_draw_list();
-    const auto draw_tooltip_with_bg = [&draw_list, &text_background_color, &text_color](const Vec2& pos, CStringView tooltip_text)
+    const auto draw_tooltip_with_bg = [&draw_list, &text_background_color, &text_color](const Vector2& pos, CStringView tooltip_text)
     {
-        const Vec2 text_size = ui::calc_text_size(tooltip_text);
+        const Vector2 text_size = ui::calc_text_size(tooltip_text);
         const float background_padding = 5.0f;
         const float edge_rounding = background_padding - 2.0f;
 
@@ -78,14 +78,14 @@ void osc::GuiRuler::on_draw(
         }
     }
     else if (state_ == State::WaitingForSecondPoint) {
-        const Vec2 start_ui_pos = camera.project_onto_viewport(start_world_pos_, render_rect);
+        const Vector2 start_ui_pos = camera.project_onto_viewport(start_world_pos_, render_rect);
 
         if (maybe_mouseover) {
             // user is moused over something, so draw a line + circle between the two hitlocs
-            const Vec2 end_ui_pos = mouse_ui_pos;
-            const Vec2 line_ui_direction = normalize(start_ui_pos - end_ui_pos);
-            const Vec2 offset_vec = 15.0f * Vec2{line_ui_direction.y, -line_ui_direction.x};
-            const Vec2 line_midpoint = (start_ui_pos + end_ui_pos) / 2.0f;
+            const Vector2 end_ui_pos = mouse_ui_pos;
+            const Vector2 line_ui_direction = normalize(start_ui_pos - end_ui_pos);
+            const Vector2 offset_vec = 15.0f * Vector2{line_ui_direction.y, -line_ui_direction.x};
+            const Vector2 line_midpoint = (start_ui_pos + end_ui_pos) / 2.0f;
             const float line_world_length = length(maybe_mouseover->world_position - start_world_pos_);
 
             draw_list.add_circle_filled({start_ui_pos, circle_radius}, circle_color);

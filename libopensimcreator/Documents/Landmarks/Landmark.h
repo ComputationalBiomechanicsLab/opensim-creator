@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <optional>
 #include <string>
@@ -12,7 +12,7 @@ namespace osc::lm
         std::optional<std::string> maybeName;
 
         // The position of the landmark in its caller-specified coordinate system.
-        Vec3 position;
+        Vector3 position;
 
         friend bool operator==(const Landmark&, const Landmark&) = default;
     };

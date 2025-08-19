@@ -36,7 +36,7 @@ public:
 
         // iterate through each T in `root` and give the user the option to click it
         {
-            ui::begin_child_panel("first", Vec2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
+            ui::begin_child_panel("first", Vector2{256.0f, 256.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
             for (const OpenSim::Component& c : m_Model->getModel().getComponentList())
             {
                 if (!m_Filter(c))

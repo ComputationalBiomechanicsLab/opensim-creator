@@ -324,11 +324,11 @@ namespace osc
         return Vec<3, bool>{lhs.x || rhs.x, lhs.y || rhs.y, lhs.z || rhs.z};
     }
 
-    using Vec3  = Vec<3, float>;
-    using Vec3f = Vec<3, float>;
-    using Vec3d = Vec<3, double>;
-    using Vec3i = Vec<3, int>;
-    using Vec3z = Vec<3, ptrdiff_t>;
-    using Vec3uz = Vec<3, size_t>;
-    using Vec3u32 = Vec<3, uint32_t>;
+    using Vector3  = Vec<3, float>;
+    using Vector3f = Vec<3, float>;
+    using Vector3d = Vec<3, double>;
+    using Vector3i = Vec<3, int>;
+    using Vector3z = Vec<3, ptrdiff_t>;
+    using Vector3uz = Vec<3, size_t>;
+    using Vector3u32 = Vec<3, uint32_t>;
 }

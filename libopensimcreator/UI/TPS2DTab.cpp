@@ -14,8 +14,8 @@
 #include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/LogViewerPanel.h>
@@ -51,16 +51,16 @@ namespace
     //
     // this is typically what the user/caller defines
     struct LandmarkPair2D final {
-        Vec2 src;
-        Vec2 dest;
+        Vector2 src;
+        Vector2 dest;
     };
 
     // this is effectviely the "U" term in the TPS algorithm literature (which is usually U(r) = r^2 * log(r^2))
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction2D(pi, p)` here
-    float RadialBasisFunction2D(Vec2 controlPoint, Vec2 p)
+    float RadialBasisFunction2D(Vector2 controlPoint, Vector2 p)
     {
-        const Vec2 diff = controlPoint - p;
+        const Vector2 diff = controlPoint - p;
         const float r2 = dot(diff, diff);
 
         if (r2 == 0.0f) {
@@ -79,34 +79,34 @@ namespace
     //      the `wi` and `controlPoint` parts of that equation
     struct TPSNonAffineTerm2D final {
 
-        TPSNonAffineTerm2D(Vec2 weight_, Vec2 controlPoint_) :
+        TPSNonAffineTerm2D(Vector2 weight_, Vector2 controlPoint_) :
             weight{weight_},
             controlPoint{controlPoint_}
         {}
 
-        Vec2 weight;
-        Vec2 controlPoint;
+        Vector2 weight;
+        Vector2 controlPoint;
     };
 
     // all coefficients in the 2D TPS equation
     //
     // i.e. these are the a1, a2, a3, and w's (+ control points) terms of the equation
     struct TPSCoefficients2D final {
-        Vec2 a1 = {0.0f, 0.0f};
-        Vec2 a2 = {1.0f, 0.0f};
-        Vec2 a3 = {0.0f, 1.0f};
+        Vector2 a1 = {0.0f, 0.0f};
+        Vector2 a2 = {1.0f, 0.0f};
+        Vector2 a3 = {0.0f, 1.0f};
         std::vector<TPSNonAffineTerm2D> weights;
     };
 
     // evaluates the TPS equation with the given coefficients and input point
-    Vec2 Evaluate(const TPSCoefficients2D& coefs, Vec2 p)
+    Vector2 Evaluate(const TPSCoefficients2D& coefs, Vector2 p)
     {
         // this implementation effectively evaluates both `fx(x, y)` and `fy(x, y)` at
         // the same time, because `TPSCoefficients2D` stores the X and Y variants of the
-        // coefficients together in memory (as `vec2`s)
+        // coefficients together in memory (as `Vector2`s)
 
         // compute affine terms (a1 + a2*x + a3*y)
-        Vec2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
+        Vector2 rv = coefs.a1 + coefs.a2*p.x + coefs.a3*p.y;
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (const TPSNonAffineTerm2D& wt : coefs.weights) {
@@ -179,8 +179,8 @@ namespace
         for (int row = 0; row < numPairs; ++row)
         {
             for (int col = 0; col < numPairs; ++col) {
-                const Vec2& pi_ = landmarkPairs[row].src;
-                const Vec2& pj = landmarkPairs[col].src;
+                const Vector2& pi_ = landmarkPairs[row].src;
+                const Vector2& pj = landmarkPairs[col].src;
 
                 L(row, col) = RadialBasisFunction2D(pi_, pj);
             }
@@ -251,8 +251,8 @@ namespace
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.weights.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i) {
-            const Vec2 weight = {Cx[i], Cy[i]};
-            const Vec2 controlPoint = landmarkPairs[i].src;
+            const Vector2 weight = {Cx[i], Cy[i]};
+            const Vector2 controlPoint = landmarkPairs[i].src;
             rv.weights.emplace_back(weight, controlPoint);
         }
 
@@ -267,7 +267,7 @@ namespace
             m_Coefficients{TPSCalcCoefficients(landmarkPairs)}
         {}
 
-        Vec2 transform(Vec2 p) const
+        Vector2 transform(Vector2 p) const
         {
             return Evaluate(m_Coefficients, p);
         }
@@ -281,7 +281,7 @@ namespace
     Mesh TPSWarpMesh(const ThinPlateWarper2D& t, const Mesh& mesh)
     {
         Mesh rv = mesh;
-        rv.transform_vertices([&t](Vec3 v) { return Vec3{t.transform(Vec2{v}), v.z}; });
+        rv.transform_vertices([&t](Vector3 v) { return Vector3{t.transform(Vector2{v}), v.z}; });
         return rv;
     }
 }
@@ -294,7 +294,7 @@ namespace
     // - initial (the user did nothing with their mouse yet)
     // - first click (the user clicked the source of a landmark pair and the UI is waiting for the destination)
     struct GUIInitialMouseState final {};
-    struct GUIFirstClickMouseState final { Vec2 srcNDCPos; };
+    struct GUIFirstClickMouseState final { Vector2 srcNDCPos; };
     using GUIMouseState = std::variant<GUIInitialMouseState, GUIFirstClickMouseState>;
 }
 
@@ -320,9 +320,9 @@ public:
 
         ui::begin_panel("Input");
         {
-            const Vec2 windowDims = ui::get_content_region_available();
+            const Vector2 windowDims = ui::get_content_region_available();
             const float minDim = min(windowDims.x, windowDims.y);
-            const Vec2 texDims = {minDim, minDim};
+            const Vector2 texDims = {minDim, minDim};
 
             renderMesh(m_InputGrid, texDims, m_InputRender);
 
@@ -339,14 +339,14 @@ public:
 
         ui::end_panel();
 
-        Vec2 outputWindowPos;
-        Vec2 outputWindowDims;
+        Vector2 outputWindowPos;
+        Vector2 outputWindowDims;
         ui::begin_panel("Output");
         {
             outputWindowPos = ui::get_cursor_ui_position();
             outputWindowDims = ui::get_content_region_available();
             const float minDim = min(outputWindowDims.x, outputWindowDims.y);
-            const Vec2i texDims = Vec2i{minDim, minDim};
+            const Vector2i texDims = Vector2i{minDim, minDim};
 
             {
                 // apply blending factor, compute warp, apply to grid
@@ -387,7 +387,7 @@ public:
 private:
 
     // render the given mesh as-is to the given output render texture
-    void renderMesh(const Mesh& mesh, Vec2 dimensions, std::optional<RenderTexture>& out)
+    void renderMesh(const Mesh& mesh, Vector2 dimensions, std::optional<RenderTexture>& out)
     {
         const RenderTextureParams textureParameters = {
             .pixel_dimensions = App::get().main_window_device_pixel_ratio() * dimensions,
@@ -411,8 +411,8 @@ private:
 
         // render all fully-established landmark pairs
         for (const LandmarkPair2D& p : m_LandmarkPairs) {
-            const Vec2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.src));
-            const Vec2 p2 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.dest));
+            const Vector2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.src));
+            const Vector2 p2 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(p.dest));
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist.add_rect_filled(Rect::from_corners(p1 - 12.0f, p1 + 12.0f), m_SrcSquareColor);
@@ -423,8 +423,8 @@ private:
         if (ht.is_hovered and std::holds_alternative<GUIFirstClickMouseState>(m_MouseState)) {
             const GUIFirstClickMouseState& st = std::get<GUIFirstClickMouseState>(m_MouseState);
 
-            const Vec2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(st.srcNDCPos));
-            const Vec2 p2 = ui::get_mouse_ui_position();
+            const Vector2 p1 = ht.item_ui_rect.ypd_top_left() + (ht.item_ui_rect.dimensions() * ndc_point_to_topleft_normalized(st.srcNDCPos));
+            const Vector2 p2 = ui::get_mouse_ui_position();
 
             drawlist.add_line(p1, p2, m_ConnectionLineColor, 5.0f);
             drawlist.add_rect_filled(Rect::from_corners(p1 - 12.0f, p1 + 12.0f), m_SrcSquareColor);
@@ -443,10 +443,10 @@ private:
     // render any mouse-related overlays for when the user hasn't clicked yet
     void renderMouseUIElements(const ui::HittestResult& ht, GUIInitialMouseState)
     {
-        const Vec2 mouseScreenPos = ui::get_mouse_ui_position();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
-        const Vec2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
-        const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
+        const Vector2 mouseScreenPos = ui::get_mouse_ui_position();
+        const Vector2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
+        const Vector2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
+        const Vector2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos));
 
@@ -458,10 +458,10 @@ private:
     // render any mouse-related overlays for when the user has clicked once
     void renderMouseUIElements(const ui::HittestResult& ht, GUIFirstClickMouseState st)
     {
-        const Vec2 mouseScreenPos = ui::get_mouse_ui_position();
-        const Vec2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
-        const Vec2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
-        const Vec2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
+        const Vector2 mouseScreenPos = ui::get_mouse_ui_position();
+        const Vector2 mouseImagePos = mouseScreenPos - ht.item_ui_rect.ypd_top_left();
+        const Vector2 mouseImageRelPos = mouseImagePos / ht.item_ui_rect.dimensions();
+        const Vector2 mouseImageNDCPos = topleft_normalized_point_to_ndc(mouseImageRelPos);
 
         ui::draw_tooltip_body_only(stream_to_string(mouseImageNDCPos) + "*");
 
@@ -480,7 +480,7 @@ private:
     Texture2D m_BoxTexture = SVG::read_into_texture(
         App::resource_loader().open("OpenSimCreator/textures/uv_checker.svg")
     );
-    Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vec2{2.0f}, .num_segments = Vec2{50}}};
+    Mesh m_InputGrid = PlaneGeometry{{.dimensions = Vector2{2.0f}, .num_segments = Vector2{50}}};
     Mesh m_OutputGrid = m_InputGrid;
     MeshBasicTexturedMaterial m_TexturedMaterial;
     MeshBasicMaterial wireframe_material_;

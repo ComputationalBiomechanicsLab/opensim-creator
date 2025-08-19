@@ -6,9 +6,9 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Triangle.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -28,19 +28,19 @@ namespace osc::testing
     template<> uint8_t generate();
     template<> Color generate();
     template<> Color32 generate();
-    template<> Vec2 generate();
-    template<> Vec3 generate();
-    template<> Vec4 generate();
+    template<> Vector2 generate();
+    template<> Vector3 generate();
+    template<> Vector4 generate();
     template<> Matrix3x3 generate();
     template<> Matrix4x4 generate();
     template<> Triangle generate();
 
-    std::vector<Vec3> generate_triangle_vertices();
-    std::vector<Vec3> generate_vertices(size_t);
-    std::vector<Vec3> generate_normals(size_t);
-    std::vector<Vec2> generate_texture_coordinates(size_t);
+    std::vector<Vector3> generate_triangle_vertices();
+    std::vector<Vector3> generate_vertices(size_t);
+    std::vector<Vector3> generate_normals(size_t);
+    std::vector<Vector2> generate_texture_coordinates(size_t);
     std::vector<Color> generate_colors(size_t);
-    std::vector<Vec4> generate_tangent_vectors(size_t);
+    std::vector<Vector4> generate_tangent_vectors(size_t);
 
     std::vector<uint16_t> iota_index_range(size_t start, size_t end);
 

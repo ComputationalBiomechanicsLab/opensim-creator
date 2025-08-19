@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
 
 #include <liboscar/Maths/EulerAngles.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <filesystem>
@@ -252,8 +252,8 @@ namespace osc
 
         BodyDetails();
 
-        Vec3 centerOfMass;
-        Vec3 inertia;
+        Vector3 centerOfMass;
+        Vector3 inertia;
         float mass;
         std::string parentFrameAbsPath;
         std::string bodyName;
@@ -366,7 +366,7 @@ namespace osc
     bool ActionTranslateStation(
         IModelStatePair&,
         const OpenSim::Station&,
-        const Vec3& deltaPosition
+        const Vector3& deltaPosition
     );
 
     // sets the location of the given station in its parent frame to its old location plus the provided vector
@@ -375,7 +375,7 @@ namespace osc
     bool ActionTranslateStationAndSave(
         IModelStatePair&,
         const OpenSim::Station&,
-        const Vec3& deltaPosition
+        const Vector3& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -384,7 +384,7 @@ namespace osc
     bool ActionTranslatePathPoint(
         IModelStatePair&,
         const OpenSim::PathPoint&,
-        const Vec3& deltaPosition
+        const Vector3& deltaPosition
     );
 
     // sets the location of the given path point in its parent frame to its old location plus the provided delta
@@ -393,25 +393,25 @@ namespace osc
     bool ActionTranslatePathPointAndSave(
         IModelStatePair&,
         const OpenSim::PathPoint&,
-        const Vec3& deltaPosition
+        const Vector3& deltaPosition
     );
 
     bool ActionTransformPofV2(
         IModelStatePair&,
         const OpenSim::PhysicalOffsetFrame&,
-        const Vec3& newTranslation,
+        const Vector3& newTranslation,
         const EulerAngles& newEulers
     );
     bool ActionTransformWrapObject(
         IModelStatePair&,
         const OpenSim::WrapObject&,
-        const Vec3& deltaPosition,
+        const Vector3& deltaPosition,
         const EulerAngles& newEulers
     );
     bool ActionTransformContactGeometry(
         IModelStatePair&,
         const OpenSim::ContactGeometry&,
-        const Vec3& deltaPosition,
+        const Vector3& deltaPosition,
         const EulerAngles& newEulers
     );
     bool ActionFitSphereToMesh(IModelStatePair&, const OpenSim::Mesh&);

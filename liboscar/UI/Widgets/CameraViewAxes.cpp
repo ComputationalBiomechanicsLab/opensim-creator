@@ -7,8 +7,8 @@
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/CStringView.h>
 
@@ -26,11 +26,11 @@ namespace
         float line_length = 2.0f * font_size;
         float circle_radius = 0.6f * font_size;
         float max_edge_length = 2.0f * (line_length + sqrt(2.0f * circle_radius * circle_radius));
-        Vec2 dimensions = {max_edge_length, max_edge_length};
+        Vector2 dimensions = {max_edge_length, max_edge_length};
     };
 }
 
-Vec2 osc::CameraViewAxes::dimensions() const
+Vector2 osc::CameraViewAxes::dimensions() const
 {
     return AxesMetrics{}.dimensions;
 }
@@ -41,16 +41,16 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     const auto metrics = AxesMetrics{};
 
     // calculate widget ui space metrics
-    const Vec2 top_left = ui::get_cursor_ui_position();
+    const Vector2 top_left = ui::get_cursor_ui_position();
     const Rect bounds = Rect::from_corners(top_left, top_left + metrics.dimensions);
-    const Vec2 origin = bounds.origin();
+    const Vector2 origin = bounds.origin();
 
     // figure out rendering order (back-to-front)
     const Matrix4x4 view_matrix = camera.view_matrix();
-    auto axis_indices = std::to_array<Vec4::size_type>({0, 1, 2});
+    auto axis_indices = std::to_array<Vector4::size_type>({0, 1, 2});
     rgs::sort(axis_indices, rgs::less{}, [&view_matrix](auto axis_index)
     {
-        return (view_matrix * Vec4{}.with_element(axis_index, 1.0f)).z;
+        return (view_matrix * Vector4{}.with_element(axis_index, 1.0f)).z;
     });
 
     // draw each edge back-to-front
@@ -58,7 +58,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
     ui::DrawListView draw_list = ui::get_panel_draw_list();
     for (auto axis_index : axis_indices) {
         // calc direction vector in ui space
-        Vec2 view_space_pos = Vec2{view_matrix * Vec4{}.with_element(axis_index, 1.0f)};
+        Vector2 view_space_pos = Vector2{view_matrix * Vector4{}.with_element(axis_index, 1.0f)};
         view_space_pos.y = -view_space_pos.y;  // y goes down in ui space
 
         Color base_color = {0.15f, 0.15f, 0.15f, 1.0f};
@@ -66,7 +66,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // draw line from origin to end with a labelled (clickable) circle ending
         {
-            const Vec2 end = origin + metrics.line_length*view_space_pos;
+            const Vector2 end = origin + metrics.line_length*view_space_pos;
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 
@@ -75,7 +75,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
             ui::set_cursor_ui_position(circle_bounds.ypd_top_left());
             ui::set_next_item_size(circle_bounds);
             if (ui::add_item(circle_bounds, id)) {
-                const Vec2 label_size = ui::calc_text_size(labels[axis_index]);
+                const Vector2 label_size = ui::calc_text_size(labels[axis_index]);
 
                 const bool hovered = ui::is_item_hoverable(circle_bounds, id);
                 const Color color = hovered ? Color::white() : base_color;
@@ -94,7 +94,7 @@ bool osc::CameraViewAxes::draw(PolarPerspectiveCamera& camera)
 
         // negative axes: draw a faded (clickable) circle ending - no line
         {
-            const Vec2 end = origin - metrics.line_length*view_space_pos;
+            const Vector2 end = origin - metrics.line_length*view_space_pos;
             const Circle circ = {.origin = end, .radius = metrics.circle_radius};
             const Rect circle_bounds = bounding_rect_of(circ);
 

@@ -5,7 +5,7 @@
 #include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <algorithm>
 #include <ranges>
@@ -29,7 +29,7 @@ namespace osc
             return m_CachedResultMesh;
         }
 
-        std::span<const Vec3> getWarpedNonParticipatingLandmarkLocations(const TPSDocument& doc)
+        std::span<const Vector3> getWarpedNonParticipatingLandmarkLocations(const TPSDocument& doc)
         {
             updateAll(doc);
             return m_CachedResultNonParticipatingLandmarks;
@@ -106,7 +106,7 @@ namespace osc
             const bool samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
-                [](const TPSDocumentNonParticipatingLandmark& lm, const Vec3& position)
+                [](const TPSDocumentNonParticipatingLandmark& lm, const Vector3& position)
                 {
                     return lm.location == position;
                 }
@@ -170,7 +170,7 @@ namespace osc
         float m_CachedBlendingFactor = 1.0f;
         bool m_CachedRecalculateNormalsState = false;
         Mesh m_CachedResultMesh;
-        std::vector<Vec3> m_CachedSourceNonParticipatingLandmarks;
-        std::vector<Vec3> m_CachedResultNonParticipatingLandmarks;
+        std::vector<Vector3> m_CachedSourceNonParticipatingLandmarks;
+        std::vector<Vector3> m_CachedResultNonParticipatingLandmarks;
     };
 }

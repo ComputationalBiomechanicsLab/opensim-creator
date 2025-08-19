@@ -368,11 +368,11 @@ namespace osc
         return Vec<4, bool>{lhs.x || rhs.x, lhs.y || rhs.y, lhs.z || rhs.z, lhs.w || rhs.w};
     }
 
-    using Vec4  = Vec<4, float>;
-    using Vec4f = Vec<4, float>;
-    using Vec4d = Vec<4, double>;
-    using Vec4i = Vec<4, int>;
-    using Vec4z = Vec<4, ptrdiff_t>;
-    using Vec4uz = Vec<4, size_t>;
-    using Vec4u32 = Vec<4, uint32_t>;
+    using Vector4  = Vec<4, float>;
+    using Vector4f = Vec<4, float>;
+    using Vector4d = Vec<4, double>;
+    using Vector4i = Vec<4, int>;
+    using Vector4z = Vec<4, ptrdiff_t>;
+    using Vector4uz = Vec<4, size_t>;
+    using Vector4u32 = Vec<4, uint32_t>;
 }

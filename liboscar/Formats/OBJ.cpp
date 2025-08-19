@@ -1,7 +1,7 @@
 #include "OBJ.h"
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Strings.h>
 
@@ -20,25 +20,25 @@ namespace
         out << "# created: " << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
-    std::ostream& write_vec3(std::ostream& out, const Vec3& vec)
+    std::ostream& write_vector3(std::ostream& out, const Vector3& vec)
     {
         return out << vec.x << ' ' << vec.y << ' ' << vec.z;
     }
 
     void write_vertices(std::ostream& out, const Mesh& mesh)
     {
-        for (const Vec3& vertex : mesh.vertices()) {
+        for (const Vector3& vertex : mesh.vertices()) {
             out << "v ";
-            write_vec3(out, vertex);
+            write_vector3(out, vertex);
             out << '\n';
         }
     }
 
     void write_normals(std::ostream& out, const Mesh& mesh)
     {
-        for (const Vec3& vertex : mesh.normals()) {
+        for (const Vector3& vertex : mesh.normals()) {
             out << "vn ";
-            write_vec3(out, vertex);
+            write_vector3(out, vertex);
             out << '\n';
         }
     }

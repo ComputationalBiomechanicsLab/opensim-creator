@@ -11,8 +11,8 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Maths/EasingFunctions.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
@@ -282,8 +282,8 @@ namespace osc::mi
             // draw strong connection line between the things being attached to and the hover
             for (UID elAttachingTo : m_Options.maybeElsAttachingTo)
             {
-                Vec3 parentPos = m_Shared->getModelGraph().getPosByID(elAttachingTo);
-                Vec3 childPos = m_Shared->getModelGraph().getPosByID(m_MaybeHover.ID);
+                Vector3 parentPos = m_Shared->getModelGraph().getPosByID(elAttachingTo);
+                Vector3 childPos = m_Shared->getModelGraph().getPosByID(m_MaybeHover.ID);
 
                 if (!m_Options.isAttachingTowardEl)
                 {
@@ -302,8 +302,8 @@ namespace osc::mi
                 return;
             }
 
-            const Vec2 padding = Vec2{10.0f, 10.0f};
-            const Vec2 pos = m_Shared->get3DSceneRect().ypd_top_left() + padding;
+            const Vector2 padding = Vector2{10.0f, 10.0f};
+            const Vector2 pos = m_Shared->get3DSceneRect().ypd_top_left() + padding;
             ui::get_panel_draw_list().add_text(pos, Color::white(), m_Options.header);
         }
 
@@ -314,8 +314,8 @@ namespace osc::mi
             ui::push_style_color(ui::ColorVar::Button, Color::dark_grey());
 
             const CStringView text = OSC_ICON_ARROW_LEFT " Cancel (ESC)";
-            const Vec2 margin = {25.0f, 35.0f};
-            const Vec2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
+            const Vector2 margin = {25.0f, 35.0f};
+            const Vector2 buttonTopLeft = m_Shared->get3DSceneRect().ypd_bottom_right() - (ui::calc_button_size(text) + margin);
 
             ui::set_cursor_ui_position(buttonTopLeft);
             if (ui::draw_button(text))

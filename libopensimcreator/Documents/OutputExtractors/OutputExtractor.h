@@ -60,26 +60,26 @@ namespace osc
             return m_Output->slurpValuesFloat(component, reports);
         }
 
-        Vec2 getValueVec2(
+        Vector2 getValueVector2(
             const OpenSim::Component& component,
             const SimulationReport& report) const
         {
-            return m_Output->getValueVec2(component, report);
+            return m_Output->getValueVector2(component, report);
         }
 
-        void getValuesVec2(
+        void getValuesVector2(
             const OpenSim::Component& component,
             std::span<const SimulationReport> report,
-            const std::function<void(Vec2)>& consumer) const
+            const std::function<void(Vector2)>& consumer) const
         {
-            m_Output->getValuesVec2(component, report, consumer);
+            m_Output->getValuesVector2(component, report, consumer);
         }
 
-        std::vector<Vec2> slurpValuesVec2(
+        std::vector<Vector2> slurpValuesVector2(
             const OpenSim::Component& component,
             std::span<const SimulationReport> report) const
         {
-            return m_Output->slurpValuesVec2(component, report);
+            return m_Output->slurpValuesVector2(component, report);
         }
 
         std::string getValueString(const OpenSim::Component& component, const SimulationReport& report) const

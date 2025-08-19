@@ -17,7 +17,7 @@
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/Perf.h>
 
 #include <cstdint>
@@ -157,7 +157,7 @@ public:
     RenderTexture& onDraw(
         const IModelStatePair& modelState,
         const ModelRendererParams& renderParams,
-        Vec2 dims,
+        Vector2 dims,
         float devicePixelRatio,
         AntiAliasingLevel antiAliasingLevel)
     {
@@ -206,7 +206,7 @@ public:
 
     std::optional<SceneCollision> getClosestCollision(
         const ModelRendererParams& params,
-        Vec2 mouseScreenPosition,
+        Vector2 mouseScreenPosition,
         const Rect& viewportScreenRect) const
     {
         return GetClosestCollision(
@@ -236,7 +236,7 @@ osc::CachedModelRenderer::~CachedModelRenderer() noexcept = default;
 RenderTexture& osc::CachedModelRenderer::onDraw(
     const IModelStatePair& modelState,
     const ModelRendererParams& renderParams,
-    Vec2 dims,
+    Vector2 dims,
     float devicePixelRatio,
     AntiAliasingLevel antiAliasingLevel)
 {
@@ -279,7 +279,7 @@ std::optional<AABB> osc::CachedModelRenderer::visibleBounds() const
 
 std::optional<SceneCollision> osc::CachedModelRenderer::getClosestCollision(
     const ModelRendererParams& params,
-    Vec2 mouseScreenPosition,
+    Vector2 mouseScreenPosition,
     const Rect& viewportScreenRect) const
 {
     return m_Impl->getClosestCollision(params, mouseScreenPosition, viewportScreenRect);

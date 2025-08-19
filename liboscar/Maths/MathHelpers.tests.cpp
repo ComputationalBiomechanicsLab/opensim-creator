@@ -1,7 +1,7 @@
 #include "MathHelpers.h"
 
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <gtest/gtest.h>
 
@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(ndc_rect_to_topleft_viewport_rect, works_with_basic_example)
 {
-    const Rect ndc_rect = Rect::from_corners(Vec2{-0.5}, Vec2{+0.5});
+    const Rect ndc_rect = Rect::from_corners(Vector2{-0.5}, Vector2{+0.5});
     const Rect viewport_rect = Rect::from_corners({10.0f, 100.0f}, {1034.0f, 1200.0f});
 
     const Rect result = ndc_rect_to_topleft_viewport_rect(ndc_rect, viewport_rect);

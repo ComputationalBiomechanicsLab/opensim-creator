@@ -5,8 +5,8 @@
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Quaternion.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/Conversion.h>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
@@ -20,8 +20,8 @@ namespace osc { struct Transform; }
 namespace osc
 {
     template<>
-    struct Converter<Vec3, SimTK::Vec3> final {
-        SimTK::Vec3 operator()(const Vec3&) const;
+    struct Converter<Vector3, SimTK::Vec3> final {
+        SimTK::Vec3 operator()(const Vector3&) const;
     };
 
     template<>
@@ -35,8 +35,8 @@ namespace osc
     };
 
     template<>
-    struct Converter<Vec3, SimTK::Inertia> final {
-        SimTK::Inertia operator()(const Vec3&) const;
+    struct Converter<Vector3, SimTK::Inertia> final {
+        SimTK::Inertia operator()(const Vector3&) const;
     };
 
     template<>
@@ -60,13 +60,13 @@ namespace osc
     };
 
     template<>
-    struct Converter<SimTK::Vec3, Vec3> final {
-        Vec3 operator()(const SimTK::Vec3&) const;
+    struct Converter<SimTK::Vec3, Vector3> final {
+        Vector3 operator()(const SimTK::Vec3&) const;
     };
 
     template<>
-    struct Converter<SimTK::UnitVec3, Vec3> final {
-        Vec3 operator()(const SimTK::UnitVec3&) const;
+    struct Converter<SimTK::UnitVec3, Vector3> final {
+        Vector3 operator()(const SimTK::UnitVec3&) const;
     };
 
     template<>

@@ -10,7 +10,7 @@
 
 namespace osc
 {
-    // specialized by `Vec2`, `Vec3`, etc.
+    // specialized by `Vector2`, `Vector3`, etc.
     template<size_t L, Scalar T>
     struct Vec;
 

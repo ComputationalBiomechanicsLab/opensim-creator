@@ -2,7 +2,7 @@
 
 #include <libopensimcreator/Documents/MeshImporter/MIIDs.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
 
 namespace osc::mi
@@ -15,7 +15,7 @@ namespace osc::mi
         {
         }
 
-        MeshImporterHover(UID id_, Vec3 pos_) :
+        MeshImporterHover(UID id_, Vector3 pos_) :
             ID{id_},
             Pos{pos_}
         {
@@ -32,6 +32,6 @@ namespace osc::mi
         }
 
         UID ID;
-        Vec3 Pos;
+        Vector3 Pos;
     };
 }

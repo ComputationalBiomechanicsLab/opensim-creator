@@ -66,7 +66,7 @@ private:
 
     class PlotPoints final {
     public:
-        using value_type = Vec2;
+        using value_type = Vector2;
         using size_type = std::vector<value_type>::size_type;
         using const_reference = std::vector<value_type>::const_reference;
 
@@ -82,10 +82,10 @@ private:
         void reserve(size_type new_cap) { m_Data.reserve(new_cap); }
 
         template<typename... Args>
-        requires std::constructible_from<Vec2, Args&&...>
+        requires std::constructible_from<Vector2, Args&&...>
         void emplace_back(Args&&... args)
         {
-            const Vec2& v = m_Data.emplace_back(std::forward<Args>(args)...);
+            const Vector2& v = m_Data.emplace_back(std::forward<Args>(args)...);
 
             // update X-/Y-range
             m_XRange.lower = min(v.x, m_XRange.lower);
@@ -136,7 +136,7 @@ private:
             return;  // don't try to plot null data etc.
         }
 
-        const Vec2 dimensions = Vec2{ui::get_content_region_available().x};
+        const Vector2 dimensions = Vector2{ui::get_content_region_available().x};
         const plot::PlotFlags flags = plot::PlotFlags::NoMenus | plot::PlotFlags::NoBoxSelect | plot::PlotFlags::NoFrame | plot::PlotFlags::NoTitle;
         if (plot::begin(name(), dimensions, flags)) {
 

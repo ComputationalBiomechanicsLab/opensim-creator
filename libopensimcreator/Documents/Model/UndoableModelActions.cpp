@@ -28,7 +28,7 @@
 #include <liboscar/Maths/Plane.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Sphere.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
@@ -1909,7 +1909,7 @@ bool osc::ActionSetComponentAndAllChildrenWithGivenConcreteClassNameIsVisibleTo(
 bool osc::ActionTranslateStation(
     IModelStatePair& model,
     const OpenSim::Station& station,
-    const Vec3& deltaPosition)
+    const Vector3& deltaPosition)
 {
     if (model.isReadonly()) {
         return false;
@@ -1949,7 +1949,7 @@ bool osc::ActionTranslateStation(
 bool osc::ActionTranslateStationAndSave(
     IModelStatePair& model,
     const OpenSim::Station& station,
-    const Vec3& deltaPosition)
+    const Vector3& deltaPosition)
 {
     if (model.isReadonly()) {
         return false;
@@ -1974,7 +1974,7 @@ bool osc::ActionTranslateStationAndSave(
 bool osc::ActionTranslatePathPoint(
     IModelStatePair& model,
     const OpenSim::PathPoint& pathPoint,
-    const Vec3& deltaPosition)
+    const Vector3& deltaPosition)
 {
     if (model.isReadonly()) {
         return false;
@@ -2009,7 +2009,7 @@ bool osc::ActionTranslatePathPoint(
 bool osc::ActionTranslatePathPointAndSave(
     IModelStatePair& model,
     const OpenSim::PathPoint& pathPoint,
-    const Vec3& deltaPosition)
+    const Vector3& deltaPosition)
 {
     if (model.isReadonly()) {
         return false;
@@ -2034,7 +2034,7 @@ bool osc::ActionTranslatePathPointAndSave(
 bool osc::ActionTransformPofV2(
     IModelStatePair& model,
     const OpenSim::PhysicalOffsetFrame& pof,
-    const Vec3& newTranslation,
+    const Vector3& newTranslation,
     const EulerAngles& newEulers)
 {
     if (model.isReadonly()) {
@@ -2070,7 +2070,7 @@ bool osc::ActionTransformPofV2(
 bool osc::ActionTransformWrapObject(
     IModelStatePair& model,
     const OpenSim::WrapObject& wo,
-    const Vec3& deltaPosition,
+    const Vector3& deltaPosition,
     const EulerAngles& newEulers)
 {
     if (model.isReadonly()) {
@@ -2109,7 +2109,7 @@ bool osc::ActionTransformWrapObject(
 bool osc::ActionTransformContactGeometry(
     IModelStatePair& model,
     const OpenSim::ContactGeometry& contactGeom,
-    const Vec3& deltaPosition,
+    const Vector3& deltaPosition,
     const EulerAngles& newEulers)
 {
     if (model.isReadonly()) {

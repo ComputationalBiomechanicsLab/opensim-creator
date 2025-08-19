@@ -93,7 +93,7 @@ namespace osc
             {
                 if (ui::draw_button("add source"))
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vec3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Source, Vector3{});
                 }
             }
 
@@ -114,7 +114,7 @@ namespace osc
             {
                 if (ui::draw_button_centered("add destination"))
                 {
-                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vec3{});
+                    ActionSetLandmarkPosition(m_State->updUndoable(), lm.uid, TPSDocumentInputIdentifier::Destination, Vector3{});
                 }
             }
 
@@ -168,7 +168,7 @@ namespace osc
         std::shared_ptr<MeshWarpingTabSharedState> m_State;
         TPSDocumentElementID m_ElementID;
         std::optional<std::string> m_ActiveNameEdit;
-        std::optional<Vec3> m_ActivePositionEdit;
-        std::optional<Vec3> m_ActiveDestinationPositionEdit;
+        std::optional<Vector3> m_ActivePositionEdit;
+        std::optional<Vector3> m_ActiveDestinationPositionEdit;
     };
 }

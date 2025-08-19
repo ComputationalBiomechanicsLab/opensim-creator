@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
 
 #include <cstddef>
@@ -32,7 +32,7 @@ osc::TorusKnotGeometry::TorusKnotGeometry(const Params& p)
         const Radians qu_over_p = fq/fp * u;
         const float cs = cos(qu_over_p);
 
-        return Vec3{
+        return Vector3{
             p.torus_radius * (2.0f + cs) * 0.5f * cos(u),
             p.torus_radius * (2.0f + cs) * 0.5f * sin(u),
             p.torus_radius * sin(qu_over_p) * 0.5f,
@@ -44,11 +44,11 @@ osc::TorusKnotGeometry::TorusKnotGeometry(const Params& p)
 
     std::vector<uint32_t> indices;
     indices.reserve(num_indices);
-    std::vector<Vec3> vertices;
+    std::vector<Vector3> vertices;
     vertices.reserve(num_vertices);
-    std::vector<Vec3> normals;
+    std::vector<Vector3> normals;
     normals.reserve(num_vertices);
-    std::vector<Vec2> uvs;
+    std::vector<Vector2> uvs;
     uvs.reserve(num_vertices);
 
     // generate vertices, normals, and uvs
@@ -61,13 +61,13 @@ osc::TorusKnotGeometry::TorusKnotGeometry(const Params& p)
         // now we calculate two points. p1 is our current position on the curve, p2 is a little farther ahead.
         // these points are used to create a special "coordinate space", which is necessary to calculate the
         // correct vertex positions
-        const Vec3 p1 = calc_position_on_curve(u);
-        const Vec3 p2 = calc_position_on_curve(u + 0.01_rad);
+        const Vector3 p1 = calc_position_on_curve(u);
+        const Vector3 p2 = calc_position_on_curve(u + 0.01_rad);
 
         // calculate orthonormal basis
-        const Vec3 T = p2 - p1;
-        Vec3 N = p2 + p1;
-        Vec3 B = cross(T, N);
+        const Vector3 T = p2 - p1;
+        Vector3 N = p2 + p1;
+        Vector3 B = cross(T, N);
         N = cross(B, T);
 
         // normalize B, N. T can be ignored, we don't use it
@@ -86,7 +86,7 @@ osc::TorusKnotGeometry::TorusKnotGeometry(const Params& p)
 
             // now calculate the final vertex position.
             // first we orient the extrusion with our basis vectors, then we add it to the current position on the curve
-            const Vec3 vertex = {
+            const Vector3 vertex = {
                 p1.x + (cx * N.x + cy * B.x),
                 p1.y + (cx * N.y + cy * B.y),
                 p1.z + (cx * N.z + cy * B.z),

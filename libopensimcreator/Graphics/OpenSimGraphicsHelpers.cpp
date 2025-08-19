@@ -13,7 +13,7 @@
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/Perf.h>
 
 #include <algorithm>
@@ -49,7 +49,7 @@ namespace
 
 SceneRendererParams osc::CalcSceneRendererParams(
     const ModelRendererParams& renderParams,
-    Vec2 viewportDims,
+    Vector2 viewportDims,
     float viewportDevicePixelRatio,
     AntiAliasingLevel antiAliasingLevel,
     float fixupScaleFactor)
@@ -106,13 +106,13 @@ std::optional<SceneCollision> osc::GetClosestCollision(
     SceneCache& sceneCache,
     std::span<const SceneDecoration> taggedDrawlist,
     const PolarPerspectiveCamera& camera,
-    Vec2 mouseScreenPosition,
+    Vector2 mouseScreenPosition,
     const Rect& viewportScreenRect)
 {
     OSC_PERF("osc::GetClosestCollision");
 
     // un-project 2D mouse cursor into 3D scene as a ray
-    const Vec2 mouseRenderPosition = mouseScreenPosition - viewportScreenRect.ypd_top_left();
+    const Vector2 mouseRenderPosition = mouseScreenPosition - viewportScreenRect.ypd_top_left();
     const Ray worldSpaceCameraRay = camera.unproject_topleft_position_to_world_ray(
         mouseRenderPosition,
         viewportScreenRect.dimensions()

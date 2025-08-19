@@ -84,7 +84,7 @@ public:
         // setup render texture
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
         const float device_pixel_ratio = App::get().main_window_device_pixel_ratio();
-        const Vec2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
+        const Vector2 workspace_pixel_dimensions = device_pixel_ratio * workspace_screen_space_rect.dimensions();
 
         render_texture_.set_pixel_dimensions(workspace_pixel_dimensions);
         render_texture_.set_device_pixel_ratio(device_pixel_ratio);
@@ -132,7 +132,7 @@ private:
 
     Mesh cube_mesh_ = BoxGeometry{};
     Mesh plane_mesh_ = generate_plane();
-    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vec2{2.0f}}};
+    Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     RenderTexture render_texture_;
     Camera screen_camera_ = create_screen_camera();

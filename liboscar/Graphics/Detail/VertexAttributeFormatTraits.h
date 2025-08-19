@@ -4,9 +4,9 @@
 #include <liboscar/Graphics/Unorm8.h>
 #include <liboscar/Graphics/VertexAttributeFormat.h>
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <cstddef>
 #include <tuple>
@@ -18,7 +18,7 @@ namespace osc::detail
 
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Float32x2> final {
-        using type = Vec2;
+        using type = Vector2;
         using component_type = type::value_type;
         static constexpr size_t num_components = std::tuple_size_v<type>;
         static constexpr size_t component_size = sizeof(component_type);
@@ -27,7 +27,7 @@ namespace osc::detail
 
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Float32x3> final {
-        using type = Vec3;
+        using type = Vector3;
         using component_type = type::value_type;
         static constexpr size_t num_components = std::tuple_size_v<type>;
         static constexpr size_t component_size = sizeof(component_type);
@@ -36,7 +36,7 @@ namespace osc::detail
 
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Float32x4> final {
-        using type = Vec4;
+        using type = Vector4;
         using component_type = type::value_type;
         static constexpr size_t num_components = std::tuple_size_v<type>;
         static constexpr size_t component_size = sizeof(component_type);

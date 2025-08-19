@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <sstream>
 #include <string>
@@ -17,7 +17,7 @@ namespace
           <circle r="45" cx="50" cy="50" fill="red" />
         </svg>
     )";
-    constexpr Vec2i c_minimal_svg_dimensions = {100, 100};
+    constexpr Vector2i c_minimal_svg_dimensions = {100, 100};
 }
 
 TEST(SVG, read_into_texture_returns_expected_texture_dimensions_for_basic_case)

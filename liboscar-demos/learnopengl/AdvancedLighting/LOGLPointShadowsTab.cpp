@@ -12,13 +12,13 @@ using namespace osc;
 
 namespace
 {
-    constexpr Vec2i c_shadowmap_pixel_dimensions = {1024, 1024};
+    constexpr Vector2i c_shadowmap_pixel_dimensions = {1024, 1024};
 
     Transform make_rotated_transform()
     {
         return {
-            .scale = Vec3(0.75f),
-            .rotation = angle_axis(60_deg, normalize(Vec3{1.0f, 0.0f, 1.0f})),
+            .scale = Vector3(0.75f),
+            .rotation = angle_axis(60_deg, normalize(Vector3{1.0f, 0.0f, 1.0f})),
             .translation = {-1.5f, 2.0f, -3.0f},
         };
     }
@@ -40,11 +40,11 @@ namespace
     auto make_scene_cubes()
     {
         return std::to_array<SceneCube>({
-            SceneCube{{.scale = Vec3{5.0f}}, true},
-            SceneCube{{.scale = Vec3{0.50f}, .translation = {4.0f, -3.5f, 0.0f}}},
-            SceneCube{{.scale = Vec3{0.75f}, .translation = {2.0f, 3.0f, 1.0f}}},
-            SceneCube{{.scale = Vec3{0.50f}, .translation = {-3.0f, -1.0f, 0.0f}}},
-            SceneCube{{.scale = Vec3{0.50f}, .translation = {-1.5f, 1.0f, 1.5f}}},
+            SceneCube{{.scale = Vector3{5.0f}}, true},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {4.0f, -3.5f, 0.0f}}},
+            SceneCube{{.scale = Vector3{0.75f}, .translation = {2.0f, 3.0f, 1.0f}}},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {-3.0f, -1.0f, 0.0f}}},
+            SceneCube{{.scale = Vector3{0.50f}, .translation = {-1.5f, 1.0f, 1.5f}}},
             SceneCube{make_rotated_transform()},
         });
     }
@@ -167,7 +167,7 @@ private:
 
         // also, draw the light as a little cube
         material.set("uShadows", soft_shadows_);
-        graphics::draw(cube_mesh_, {.scale = Vec3{0.1f}, .translation = light_pos_}, material, scene_camera_);
+        graphics::draw(cube_mesh_, {.scale = Vector3{0.1f}, .translation = light_pos_}, material, scene_camera_);
 
         scene_camera_.set_pixel_rect(viewport_screen_space_rect);
         scene_camera_.render_to_main_window();
@@ -207,10 +207,10 @@ private:
         loader_.open("oscar_demos/learnopengl/textures/wood.jpg"),
         ColorSpace::sRGB
     );
-    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vec3{2.0f}}};
+    Mesh cube_mesh_ = BoxGeometry{{.dimensions = Vector3{2.0f}}};
     std::array<SceneCube, 6> scene_cubes_ = make_scene_cubes();
     RenderTexture depth_texture_ = create_depth_texture();
-    Vec3 light_pos_;
+    Vector3 light_pos_;
     bool soft_shadows_ = true;
     bool use_soft_shadows_ = false;
 

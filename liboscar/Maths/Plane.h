@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <iosfwd>
 
@@ -14,8 +14,8 @@ namespace osc
     // - see `AnalyticPlane` for a struct that's better in maths functions, because
     //   it represents the general equation of a plane (i.e. ax + by + cz + d = 0)
     struct Plane final {
-        Vec3 origin{};
-        Vec3 normal{0.0f, 1.0f, 0.0f};
+        Vector3 origin{};
+        Vector3 normal{0.0f, 1.0f, 0.0f};
     };
 
     std::ostream& operator<<(std::ostream&, const Plane&);

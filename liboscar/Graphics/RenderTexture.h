@@ -7,7 +7,7 @@
 #include <liboscar/Graphics/SharedColorRenderBuffer.h>
 #include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
 
 #include <iosfwd>
@@ -21,15 +21,15 @@ namespace osc
         explicit RenderTexture(const RenderTextureParams&);
 
         // Returns the dimensions of the texture in physical pixels.
-        Vec2i pixel_dimensions() const;
+        Vector2i pixel_dimensions() const;
 
         // Sets the dimensions of the texture in physical pixels.
-        void set_pixel_dimensions(Vec2i);
+        void set_pixel_dimensions(Vector2i);
 
         // Returns the dimensions of the texture in device-independent pixels.
         //
         // The return value is equivalent to `texture.pixel_dimensions() / texture.device_pixel_ratio()`.
-        Vec2 dimensions() const;
+        Vector2 dimensions() const;
 
         // Returns the ratio of the resolution of the texture in physical pixels
         // to the resolution of it in device-independent pixels.

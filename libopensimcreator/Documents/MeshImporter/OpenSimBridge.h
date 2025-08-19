@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/MeshImporter/Document.h>
 #include <libopensimcreator/Documents/MeshImporter/OpenSimExportFlags.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <filesystem>
 #include <memory>
@@ -27,5 +27,5 @@ namespace osc::mi
         std::vector<std::string>& issuesOut
     );
 
-    Vec3 GetJointAxisLengths(const Joint&);
+    Vector3 GetJointAxisLengths(const Joint&);
 }

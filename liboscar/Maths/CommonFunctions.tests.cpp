@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <gtest/gtest.h>
 
@@ -18,17 +18,17 @@ TEST(abs, works_on_signed_integers)
     ASSERT_EQ(abs(-5), 5);
 }
 
-TEST(abs, works_on_Vec3)
+TEST(abs, works_on_Vector3)
 {
-    ASSERT_EQ(abs(Vec3(-1.0f, -2.0f, 3.0f)), Vec3(1.0f, 2.0f, 3.0f));
+    ASSERT_EQ(abs(Vector3(-1.0f, -2.0f, 3.0f)), Vector3(1.0f, 2.0f, 3.0f));
 }
 
-TEST(abs, works_on_Vec3i)
+TEST(abs, works_on_Vector3i)
 {
-    ASSERT_EQ(abs(Vec3i(-3, -2, 0)), Vec3i(3, 2, 0));
+    ASSERT_EQ(abs(Vector3i(-3, -2, 0)), Vector3i(3, 2, 0));
 }
 
-TEST(mod, works_on_Vec3_of_Angles)
+TEST(mod, works_on_Vector3_of_Angles)
 {
     constexpr Vec<3, Degrees> x{10.0f, 3.0f, 4.0f};
     constexpr Vec<3, Degrees> y{8.0f, 2.0f, 1.0f};

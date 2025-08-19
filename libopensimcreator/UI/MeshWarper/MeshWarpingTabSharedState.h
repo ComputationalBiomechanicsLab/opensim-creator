@@ -17,8 +17,8 @@
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
@@ -109,7 +109,7 @@ namespace osc
             return m_WarpingCache.getWarpedMesh(m_UndoableTPSDocument->scratch());
         }
 
-        std::span<const Vec3> getResultNonParticipatingLandmarkLocations()
+        std::span<const Vector3> getResultNonParticipatingLandmarkLocations()
         {
             return m_WarpingCache.getWarpedNonParticipatingLandmarkLocations(m_UndoableTPSDocument->scratch());
         }
@@ -134,7 +134,7 @@ namespace osc
             m_CurrentHover = newHover;
         }
 
-        void setHover(TPSDocumentInputIdentifier id, const Vec3& position)
+        void setHover(TPSDocumentInputIdentifier id, const Vector3& position)
         {
             m_CurrentHover.emplace(id, position);
         }
@@ -220,7 +220,7 @@ namespace osc
         const Mesh& getLandmarkSphereMesh() const { return m_LandmarkSphere; }
         SceneCache& updSceneCache() { return *m_SceneCache; }
 
-        Vec2 getOverlayPadding() const { return {10.0f, 10.0f}; }
+        Vector2 getOverlayPadding() const { return {10.0f, 10.0f}; }
         Color getPairedLandmarkColor() const { return Color::green(); }
         Color getUnpairedLandmarkColor() const { return Color::red(); }
         Color getNonParticipatingLandmarkColor() const { return Color::purple(); }

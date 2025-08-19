@@ -3,7 +3,7 @@
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 
 #include <liboscar/Formats/CSV.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 
@@ -92,7 +92,7 @@ namespace
             }
         }
 
-        return Landmark{std::move(maybeName), Vec3{*x, *y, *z}};
+        return Landmark{std::move(maybeName), Vector3{*x, *y, *z}};
     }
 
     bool SameNameOrBothUnnamed(const Landmark& a, const Landmark& b)

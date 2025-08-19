@@ -51,7 +51,7 @@
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Vec.h>
-#include <liboscar/Maths/Vec2.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
-#include <liboscar/Maths/VecFunctions.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
+#include <liboscar/Maths/VectorFunctions.h>

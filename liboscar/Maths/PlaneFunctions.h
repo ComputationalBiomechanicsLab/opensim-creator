@@ -6,12 +6,12 @@
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/Plane.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 namespace osc
 {
     // returns an `AnalyticPlane` converted from a point on a plane's surface, plus the plane's normal direction
-    constexpr AnalyticPlane to_analytic_plane(const Vec3& point, const Vec3& normal)
+    constexpr AnalyticPlane to_analytic_plane(const Vector3& point, const Vector3& normal)
     {
         return AnalyticPlane{.distance = dot(point, normal), .normal = normal };
     }
@@ -23,13 +23,13 @@ namespace osc
     }
 
     // returns the signed distance between the (normal-oriented) surface of `plane` and `vec`
-    constexpr float signed_distance_between(const AnalyticPlane& plane, const Vec3& vec)
+    constexpr float signed_distance_between(const AnalyticPlane& plane, const Vector3& vec)
     {
         return dot(vec, plane.normal) - plane.distance;
     }
 
     // returns the signed distance between the (normal-oriented) surface of `plane` and `vec`
-    constexpr float signed_distance_between(const Plane& plane, const Vec3& vec)
+    constexpr float signed_distance_between(const Plane& plane, const Vector3& vec)
     {
         return dot(vec, plane.normal) - dot(plane.origin, plane.normal);
     }

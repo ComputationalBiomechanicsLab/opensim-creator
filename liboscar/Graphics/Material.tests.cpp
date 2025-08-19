@@ -163,7 +163,7 @@ namespace
 
     Texture2D generate_red_texture()
     {
-        Texture2D rv{Vec2i{2, 2}};
+        Texture2D rv{Vector2i{2, 2}};
         rv.set_pixels(std::to_array({ Color::red(), Color::red(), Color::red(), Color::red() }));
         return rv;
     }
@@ -303,28 +303,28 @@ TEST_F(MaterialTest, MaterialGetFloatArrayOnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(material.get_array<float>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetVec2OnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetVector2OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get<Vec2>("someKey"));
+    ASSERT_FALSE(material.get<Vector2>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetVec3OnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetVector3OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get<Vec3>("someKey"));
+    ASSERT_FALSE(material.get<Vector3>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetVec3ArrayOnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetVector3ArrayOnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get_array<Vec3>("someKey"));
+    ASSERT_FALSE(material.get_array<Vector3>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
-    ASSERT_FALSE(material.get<Vec4>("someKey"));
+    ASSERT_FALSE(material.get<Vector4>("someKey"));
 }
 
 TEST_F(MaterialTest, MaterialGetMatrix3x3OnNewMaterialReturnsEmptyOptional)
@@ -377,70 +377,70 @@ TEST_F(MaterialTest, MaterialSetFloatArrayOnMaterialCausesGetFloatArrayToReturnT
     ASSERT_TRUE(rgs::equal(rv, values));
 }
 
-TEST_F(MaterialTest, MaterialSetVec2OnMaterialCausesGetVec2ToReturnTheProvidedValue)
+TEST_F(MaterialTest, MaterialSetVector2OnMaterialCausesGetVector2ToReturnTheProvidedValue)
 {
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Vec2 value = generate<Vec2>();
+    const Vector2 value = generate<Vector2>();
 
-    material.set<Vec2>(key, value);
+    material.set<Vector2>(key, value);
 
-    ASSERT_EQ(*material.get<Vec2>(key), value);
+    ASSERT_EQ(*material.get<Vector2>(key), value);
 }
 
-TEST_F(MaterialTest, MaterialSetVec2AndThenSetVec3CausesGetVec2ToReturnEmpty)
+TEST_F(MaterialTest, MaterialSetVector2AndThenSetVector3CausesGetVector2ToReturnEmpty)
 {
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Vec2 value = generate<Vec2>();
+    const Vector2 value = generate<Vector2>();
 
-    ASSERT_FALSE(material.get<Vec2>(key).has_value());
+    ASSERT_FALSE(material.get<Vector2>(key).has_value());
 
-    material.set<Vec2>(key, value);
+    material.set<Vector2>(key, value);
 
-    ASSERT_TRUE(material.get<Vec2>(key).has_value());
+    ASSERT_TRUE(material.get<Vector2>(key).has_value());
 
-    material.set<Vec3>(key, {});
+    material.set<Vector3>(key, {});
 
-    ASSERT_TRUE(material.get<Vec3>(key));
-    ASSERT_FALSE(material.get<Vec2>(key));
+    ASSERT_TRUE(material.get<Vector3>(key));
+    ASSERT_FALSE(material.get<Vector2>(key));
 }
 
-TEST_F(MaterialTest, MaterialSetVec2CausesMaterialToCompareNotEqualToCopy)
+TEST_F(MaterialTest, MaterialSetVector2CausesMaterialToCompareNotEqualToCopy)
 {
     Material material = generate_material();
     const Material copy{material};
 
-    material.set<Vec2>("someKey", generate<Vec2>());
+    material.set<Vector2>("someKey", generate<Vector2>());
 
     ASSERT_NE(material, copy);
 }
 
-TEST_F(MaterialTest, MaterialSetVec3OnMaterialCausesGetVec3ToReturnTheProvidedValue)
+TEST_F(MaterialTest, MaterialSetVector3OnMaterialCausesGetVector3ToReturnTheProvidedValue)
 {
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Vec3 value = generate<Vec3>();
+    const Vector3 value = generate<Vector3>();
 
-    material.set<Vec3>(key, value);
+    material.set<Vector3>(key, value);
 
-    ASSERT_EQ(*material.get<Vec3>(key), value);
+    ASSERT_EQ(*material.get<Vector3>(key), value);
 }
 
-TEST_F(MaterialTest, MaterialSetVec3ArrayOnMaterialCausesGetVec3ArrayToReutrnTheProvidedValues)
+TEST_F(MaterialTest, MaterialSetVector3ArrayOnMaterialCausesGetVector3ArrayToReutrnTheProvidedValues)
 {
     Material material = generate_material();
     const std::string key = "someKey";
-    const auto values = std::to_array({ generate<Vec3>(), generate<Vec3>(), generate<Vec3>(), generate<Vec3>() });
+    const auto values = std::to_array({ generate<Vector3>(), generate<Vector3>(), generate<Vector3>(), generate<Vector3>() });
 
-    ASSERT_FALSE(material.get_array<Vec3>(key));
+    ASSERT_FALSE(material.get_array<Vector3>(key));
 
-    material.set_array<Vec3>(key, values);
+    material.set_array<Vector3>(key, values);
 
-    const std::span<const Vec3> rv = material.get_array<Vec3>(key).value();
+    const std::span<const Vector3> rv = material.get_array<Vector3>(key).value();
     ASSERT_TRUE(rgs::equal(rv, values));
 }
 
@@ -449,11 +449,11 @@ TEST_F(MaterialTest, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedVa
     Material material = generate_material();
 
     const std::string key = "someKey";
-    const Vec4 value = generate<Vec4>();
+    const Vector4 value = generate<Vector4>();
 
-    material.set<Vec4>(key, value);
+    material.set<Vector4>(key, value);
 
-    ASSERT_EQ(*material.get<Vec4>(key), value);
+    ASSERT_EQ(*material.get<Vector4>(key), value);
 }
 
 TEST_F(MaterialTest, MaterialSetMat3OnMaterialCausesGetMat3ToReturnTheProvidedValue)
@@ -838,21 +838,21 @@ TEST_F(MaterialTest, MaterialOutputStringContainsUsefulInformation)
     // TODO: should print more useful info, such as number of props etc.
 }
 
-TEST_F(MaterialTest, MaterialSetFloatAndThenSetVec3CausesGetFloatToReturnEmpty)
+TEST_F(MaterialTest, MaterialSetFloatAndThenSetVector3CausesGetFloatToReturnEmpty)
 {
-    // compound test: when the caller sets a Vec3 then calling get_int with the same key should return empty
+    // compound test: when the caller sets a `Vector3` then calling get_int with the same key should return empty
     Material material = generate_material();
 
     const std::string key = "someKey";
     const float float_value = generate<float>();
-    const Vec3 vec3_value = generate<Vec3>();
+    const Vector3 vector3_value = generate<Vector3>();
 
     material.set<float>(key, float_value);
 
     ASSERT_TRUE(material.get<float>(key));
 
-    material.set<Vec3>(key, vec3_value);
+    material.set<Vector3>(key, vector3_value);
 
-    ASSERT_TRUE(material.get<Vec3>(key));
+    ASSERT_TRUE(material.get<Vector3>(key));
     ASSERT_FALSE(material.get<float>(key));
 }

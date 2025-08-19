@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/HashHelpers.h>
 
 #include <cstddef>
@@ -14,8 +14,8 @@ namespace osc
 
         constexpr friend bool operator==(const LineSegment&, const LineSegment&) = default;
 
-        Vec3 start{};
-        Vec3 end{};
+        Vector3 start{};
+        Vector3 end{};
     };
 
     std::ostream& operator<<(std::ostream&, const LineSegment&);

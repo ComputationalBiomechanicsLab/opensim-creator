@@ -5,7 +5,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentInputIdentifier.h>
 
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StringName.h>
 #include <liboscar/Utils/UID.h>
 
@@ -26,8 +26,8 @@ namespace osc
         requires std::constructible_from<StringName, StringLike&&>
         explicit TPSDocumentLandmarkPair(
             StringLike&& name_,
-            std::optional<Vec3> maybeSourceLocation_,
-            std::optional<Vec3> maybeDestinationLocation_) :
+            std::optional<Vector3> maybeSourceLocation_,
+            std::optional<Vector3> maybeDestinationLocation_) :
 
             name{std::forward<StringLike>(name_)},
             maybeSourceLocation{std::move(maybeSourceLocation_)},
@@ -46,8 +46,8 @@ namespace osc
 
         UID uid;
         StringName name;
-        std::optional<Vec3> maybeSourceLocation;
-        std::optional<Vec3> maybeDestinationLocation;
+        std::optional<Vector3> maybeSourceLocation;
+        std::optional<Vector3> maybeDestinationLocation;
 
     private:
         CStringView implGetName() const final

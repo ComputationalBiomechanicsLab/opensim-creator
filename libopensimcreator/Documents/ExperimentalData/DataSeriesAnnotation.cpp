@@ -92,7 +92,7 @@ namespace
         });
         out.push_back(SimTK::DecorativeArrow{
             SimTK::Vec3(0.0),
-            to<SimTK::Vec3>(q * Vec3{0.0f, 1.0f, 0.0f}),
+            to<SimTK::Vec3>(q * Vector3{0.0f, 1.0f, 0.0f}),
         });
     }
 }

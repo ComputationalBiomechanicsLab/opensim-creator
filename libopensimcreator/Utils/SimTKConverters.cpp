@@ -5,8 +5,8 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/Conversion.h>
 #include <SimTKcommon/internal/MassProperties.h>
 #include <SimTKcommon/internal/Rotation.h>
@@ -15,7 +15,7 @@
 
 using namespace osc;
 
-SimTK::Vec3 osc::Converter<Vec3, SimTK::Vec3>::operator()(const Vec3& v) const
+SimTK::Vec3 osc::Converter<Vector3, SimTK::Vec3>::operator()(const Vector3& v) const
 {
     return {
         static_cast<double>(v.x),
@@ -42,7 +42,7 @@ SimTK::Mat33 osc::Converter<Matrix3x3, SimTK::Mat33>::operator()(const Matrix3x3
     };
 }
 
-SimTK::Inertia osc::Converter<Vec3, SimTK::Inertia>::operator()(const Vec3& v) const
+SimTK::Inertia osc::Converter<Vector3, SimTK::Inertia>::operator()(const Vector3& v) const
 {
     return {
         static_cast<double>(v[0]),
@@ -71,18 +71,18 @@ SimTK::Vec3 osc::Converter<Color, SimTK::Vec3>::operator()(const Color& color) c
     return {color.r, color.g, color.b};
 }
 
-Vec3 osc::Converter<SimTK::Vec3, Vec3>::operator()(const SimTK::Vec3& v) const
+Vector3 osc::Converter<SimTK::Vec3, Vector3>::operator()(const SimTK::Vec3& v) const
 {
-    return Vec3{
+    return Vector3{
         static_cast<float>(v[0]),
         static_cast<float>(v[1]),
         static_cast<float>(v[2]),
     };
 }
 
-Vec3 osc::Converter<SimTK::UnitVec3, Vec3>::operator()(const SimTK::UnitVec3& v) const
+Vector3 osc::Converter<SimTK::UnitVec3, Vector3>::operator()(const SimTK::UnitVec3& v) const
 {
-    return to<Vec3>(SimTK::Vec3{v});
+    return to<Vector3>(SimTK::Vec3{v});
 }
 
 Matrix4x4 osc::Converter<SimTK::Transform, Matrix4x4>::operator()(const SimTK::Transform& t) const
@@ -158,7 +158,7 @@ Quaternion osc::Converter<SimTK::Rotation, Quaternion>::operator()(const SimTK::
 
 EulerAngles osc::Converter<SimTK::Rotation, EulerAngles>::operator()(const SimTK::Rotation& r) const
 {
-    return EulerAngles{to<Vec3>(r.convertRotationToBodyFixedXYZ())};
+    return EulerAngles{to<Vector3>(r.convertRotationToBodyFixedXYZ())};
 }
 
 std::array<float, 6> osc::Converter<SimTK::Vec6, std::array<float, 6>>::operator()(const SimTK::Vec6& v) const
@@ -175,5 +175,5 @@ std::array<float, 6> osc::Converter<SimTK::Vec6, std::array<float, 6>>::operator
 
 Transform osc::Converter<SimTK::Transform, Transform>::operator()(const SimTK::Transform& t) const
 {
-    return Transform{.rotation = to<Quaternion>(t.R()), .translation = to<Vec3>(t.p())};
+    return Transform{.rotation = to<Quaternion>(t.R()), .translation = to<Vector3>(t.p())};
 }

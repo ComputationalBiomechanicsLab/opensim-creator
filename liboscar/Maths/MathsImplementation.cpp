@@ -153,7 +153,7 @@ namespace
     std::optional<BVHCollision> bvh_get_closest_ray_indexed_triangle_collision_recursive(
         std::span<const BVHNode> nodes,
         std::span<const BVHPrim> prims,
-        std::span<const Vec3> vertices,
+        std::span<const Vector3> vertices,
         std::span<const TIndex> indices,
         const Ray& ray,
         float& closest,
@@ -219,7 +219,7 @@ namespace
     void bvh_build_from_indexed_triangles(
         std::vector<BVHNode>& nodes,
         std::vector<BVHPrim>& prims,
-        std::span<const Vec3> vertices,
+        std::span<const Vector3> vertices,
         std::span<const TIndex> indices)
     {
         // clear out any old data
@@ -253,7 +253,7 @@ namespace
     std::optional<BVHCollision> bvh_get_closest_ray_indexed_triangle_collision(
         std::span<const BVHNode> nodes,
         std::span<const BVHPrim> prims,
-        std::span<const Vec3> vertices,
+        std::span<const Vector3> vertices,
         std::span<const TIndex> indices,
         const Ray& ray)
     {
@@ -268,8 +268,8 @@ namespace
     // describes the direction of each cube face and which direction is "up"
     // from the perspective of looking at that face from the center of the cube
     struct CubemapFaceDetails final {
-        Vec3 direction;
-        Vec3 up;
+        Vector3 direction;
+        Vector3 up;
     };
     constexpr auto c_cubemap_faces_details = std::to_array<CubemapFaceDetails>({
         {{ 1.0f,  0.0f,  0.0f}, {0.0f, -1.0f,  0.0f}},
@@ -280,7 +280,7 @@ namespace
         {{ 0.0f,  0.0f, -1.0f}, {0.0f, -1.0f,  0.0f}},
     });
 
-    Matrix4x4 calc_cubemap_view_matrix(const CubemapFaceDetails& face_details, const Vec3& cube_center)
+    Matrix4x4 calc_cubemap_view_matrix(const CubemapFaceDetails& face_details, const Vector3& cube_center)
     {
         return look_at(cube_center, cube_center + face_details.direction, face_details.up);
     }
@@ -292,7 +292,7 @@ void osc::BVH::clear()
     prims_.clear();
 }
 
-void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std::span<const uint16_t> indices)
+void osc::BVH::build_from_indexed_triangles(std::span<const Vector3> vertices, std::span<const uint16_t> indices)
 {
     bvh_build_from_indexed_triangles<uint16_t>(
         nodes_,
@@ -302,7 +302,7 @@ void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std:
     );
 }
 
-void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std::span<const uint32_t> indices)
+void osc::BVH::build_from_indexed_triangles(std::span<const Vector3> vertices, std::span<const uint32_t> indices)
 {
     bvh_build_from_indexed_triangles<uint32_t>(
         nodes_,
@@ -313,7 +313,7 @@ void osc::BVH::build_from_indexed_triangles(std::span<const Vec3> vertices, std:
 }
 
 std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
-    std::span<const Vec3> vertices,
+    std::span<const Vector3> vertices,
     std::span<const uint16_t> indices,
     const Ray& ray) const
 {
@@ -327,7 +327,7 @@ std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
 }
 
 std::optional<BVHCollision> osc::BVH::closest_ray_indexed_triangle_collision(
-    std::span<const Vec3> vertices,
+    std::span<const Vector3> vertices,
     std::span<const uint32_t> indices,
     const Ray& ray) const
 {
@@ -510,21 +510,21 @@ std::ostream& osc::operator<<(std::ostream& out, const Disc& disc)
 }
 
 
-Vec3 osc::EulerPerspectiveCamera::front() const
+Vector3 osc::EulerPerspectiveCamera::front() const
 {
-    return normalize(Vec3{
+    return normalize(Vector3{
         cos(yaw) * cos(pitch),
         sin(pitch),
         sin(yaw) * cos(pitch),
     });
 }
 
-Vec3 osc::EulerPerspectiveCamera::up() const
+Vector3 osc::EulerPerspectiveCamera::up() const
 {
-    return Vec3{0.0f, 1.0f, 0.0f};
+    return Vector3{0.0f, 1.0f, 0.0f};
 }
 
-Vec3 osc::EulerPerspectiveCamera::right() const
+Vector3 osc::EulerPerspectiveCamera::right() const
 {
     return normalize(cross(front(), up()));
 }
@@ -554,13 +554,13 @@ std::ostream& osc::operator<<(std::ostream& out, const Plane& plane)
 
 namespace
 {
-    Vec3 PolarToCartesian(Vec3 focus, float radius, Radians theta, Radians phi)
+    Vector3 PolarToCartesian(Vector3 focus, float radius, Radians theta, Radians phi)
     {
         const float x = radius * sin(theta) * cos(phi);
         const float y = radius * sin(phi);
         const float z = radius * cos(theta) * cos(phi);
 
-        return -focus + Vec3{x, y, z};
+        return -focus + Vector3{x, y, z};
     }
 }
 
@@ -579,7 +579,7 @@ void osc::PolarPerspectiveCamera::reset()
     *this = {};
 }
 
-void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
+void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vector2 delta)
 {
     const auto horizontal_field_of_view = vertical_to_horizontal_field_of_view(vertical_field_of_view, aspect_ratio);
 
@@ -590,17 +590,17 @@ void osc::PolarPerspectiveCamera::pan(float aspect_ratio, Vec2 delta)
 
     // this assumes the scene is not rotated, so we need to rotate these
     // axes to match the scene's rotation
-    const Vec4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
-    const Matrix4x4 rotation_theta = rotate(identity<Matrix4x4>(), theta, Vec3{0.0f, 1.0f, 0.0f});
-    const Vec3 theta_vec{sin(theta), 0.0f, cos(theta)};
-    const Vec3 phi_axis = cross(theta_vec, Vec3{0.0f, 1.0f, 0.0f});
+    const Vector4 default_panning_axis = {x_amount, y_amount, 0.0f, 1.0f};
+    const Matrix4x4 rotation_theta = rotate(identity<Matrix4x4>(), theta, Vector3{0.0f, 1.0f, 0.0f});
+    const Vector3 theta_vec{sin(theta), 0.0f, cos(theta)};
+    const Vector3 phi_axis = cross(theta_vec, Vector3{0.0f, 1.0f, 0.0f});
     const Matrix4x4 rotation_phi = rotate(identity<Matrix4x4>(), phi, phi_axis);
 
-    const Vec4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
-    focus_point += Vec3{panning_axes};
+    const Vector4 panning_axes = rotation_phi * rotation_theta * default_panning_axis;
+    focus_point += Vector3{panning_axes};
 }
 
-void osc::PolarPerspectiveCamera::drag(Vec2 delta)
+void osc::PolarPerspectiveCamera::drag(Vector2 delta)
 {
     theta += 360_deg * -delta.x;
     phi += 360_deg * delta.y;
@@ -625,15 +625,15 @@ Matrix4x4 osc::PolarPerspectiveCamera::view_matrix() const
     // this maths is a complete shitshow and I apologize. It just happens to work for now. It's
     // a polar coordinate system that shifts the world based on the camera pan
 
-    const Matrix4x4 theta_rotation = rotate(identity<Matrix4x4>(), -theta, Vec3{0.0f, 1.0f, 0.0f});
-    const Vec3 theta_vec = normalize(Vec3{sin(theta), 0.0f, cos(theta)});
-    const Vec3 phi_axis = cross(theta_vec, Vec3{0.0, 1.0f, 0.0f});
+    const Matrix4x4 theta_rotation = rotate(identity<Matrix4x4>(), -theta, Vector3{0.0f, 1.0f, 0.0f});
+    const Vector3 theta_vec = normalize(Vector3{sin(theta), 0.0f, cos(theta)});
+    const Vector3 phi_axis = cross(theta_vec, Vector3{0.0, 1.0f, 0.0f});
     const Matrix4x4 phi_rotation = rotate(identity<Matrix4x4>(), -phi, phi_axis);
     const Matrix4x4 pan_translation = translate(identity<Matrix4x4>(), focus_point);
     return look_at(
-        Vec3(0.0f, 0.0f, radius),
-        Vec3(0.0f, 0.0f, 0.0f),
-        Vec3{0.0f, 1.0f, 0.0f}) * theta_rotation * phi_rotation * pan_translation;
+        Vector3(0.0f, 0.0f, radius),
+        Vector3(0.0f, 0.0f, 0.0f),
+        Vector3{0.0f, 1.0f, 0.0f}) * theta_rotation * phi_rotation * pan_translation;
 }
 
 Matrix4x4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) const
@@ -641,13 +641,13 @@ Matrix4x4 osc::PolarPerspectiveCamera::projection_matrix(float aspect_ratio) con
     return perspective(vertical_field_of_view, aspect_ratio, znear, zfar);
 }
 
-Vec3 osc::PolarPerspectiveCamera::position() const
+Vector3 osc::PolarPerspectiveCamera::position() const
 {
     return PolarToCartesian(focus_point, radius, theta, phi);
 }
 
-Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
-    const Vec3& world_space_position,
+Vector2 osc::PolarPerspectiveCamera::project_onto_viewport(
+    const Vector3& world_space_position,
     const Rect& viewport_rect) const
 {
     return osc::project_onto_viewport_rect(
@@ -658,7 +658,7 @@ Vec2 osc::PolarPerspectiveCamera::project_onto_viewport(
     );
 }
 
-Ray osc::PolarPerspectiveCamera::unproject_topleft_position_to_world_ray(Vec2 position, Vec2 dimensions) const
+Ray osc::PolarPerspectiveCamera::unproject_topleft_position_to_world_ray(Vector2 position, Vector2 dimensions) const
 {
     return perspective_unproject_topleft_normalized_pos_to_world(
         position / dimensions,
@@ -682,7 +682,7 @@ PolarPerspectiveCamera osc::create_camera_focused_on(const AABB& aabb)
     return rv;
 }
 
-Vec3 osc::recommended_light_direction(const PolarPerspectiveCamera& camera)
+Vector3 osc::recommended_light_direction(const PolarPerspectiveCamera& camera)
 {
     // theta should track with the camera, so that the scene is always
     // illuminated from the viewer's perspective (#275)
@@ -700,7 +700,7 @@ Vec3 osc::recommended_light_direction(const PolarPerspectiveCamera& camera)
     // of the camera with shadow rendering (#10) looks bizarre
     const Radians phi = 45_deg;
 
-    const Vec3 p = PolarToCartesian(camera.focus_point, camera.radius, theta, phi);
+    const Vector3 p = PolarToCartesian(camera.focus_point, camera.radius, theta, phi);
 
     return normalize(-camera.focus_point - p);
 }
@@ -825,10 +825,10 @@ float osc::volume_of(const Tetrahedron& tetrahedron)
     // https://stackoverflow.com/questions/9866452/calculate-volume-of-any-tetrahedron-given-4-points
 
     const Matrix4x4 mat{
-        Vec4{tetrahedron[0], 1.0f},
-        Vec4{tetrahedron[1], 1.0f},
-        Vec4{tetrahedron[2], 1.0f},
-        Vec4{tetrahedron[3], 1.0f},
+        Vector4{tetrahedron[0], 1.0f},
+        Vector4{tetrahedron[1], 1.0f},
+        Vector4{tetrahedron[2], 1.0f},
+        Vector4{tetrahedron[3], 1.0f},
     };
 
     return determinant_of(mat) / 6.0f;
@@ -912,7 +912,7 @@ namespace
     {
         // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 
-        const Vec3 L = ray.origin - sphere.origin;
+        const Vector3 L = ray.origin - sphere.origin;
 
         // coefficients of the quadratic implicit:
         //
@@ -968,7 +968,7 @@ Radians osc::vertical_to_horizontal_field_of_view(Radians vertical_field_of_view
 }
 
 
-Matrix4x4 osc::matrix4x4_transform_between_directions(const Vec3& dir1, const Vec3& dir2)
+Matrix4x4 osc::matrix4x4_transform_between_directions(const Vector3& dir1, const Vector3& dir2)
 {
     const float cos_theta = dot(dir1, dir2);
 
@@ -978,17 +978,17 @@ Matrix4x4 osc::matrix4x4_transform_between_directions(const Vec3& dir1, const Ve
     }
 
     Radians theta{};
-    Vec3 rotation_axis{};
+    Vector3 rotation_axis{};
     if (cos_theta < -1.0f + epsilon_v<float>) {
         // `a` and `b` point in opposite directions
         //
         // - there is no "ideal" rotation axis
         // - so we try "guessing" one and hope it's good (then try another if it isn't)
 
-        rotation_axis = cross(Vec3{0.0f, 0.0f, 1.0f}, dir1);
+        rotation_axis = cross(Vector3{0.0f, 0.0f, 1.0f}, dir1);
         if (length2(rotation_axis) < epsilon_v<float>) {
             // bad luck: they were parallel - use a different axis
-            rotation_axis = cross(Vec3{1.0f, 0.0f, 0.0f}, dir1);
+            rotation_axis = cross(Vector3{1.0f, 0.0f, 0.0f}, dir1);
         }
 
         theta = 180_deg;
@@ -1007,41 +1007,41 @@ EulerAngles osc::extract_eulers_xyz(const Quaternion& quaternion)
     return extract_eulers_xyz(matrix4x4_cast(quaternion));
 }
 
-Vec2 osc::topleft_normalized_point_to_ndc(Vec2 normalized_point)
+Vector2 osc::topleft_normalized_point_to_ndc(Vector2 normalized_point)
 {
     normalized_point.y = 1.0f - normalized_point.y;
     return 2.0f*normalized_point - 1.0f;
 }
 
-Vec2 osc::ndc_point_to_topleft_normalized(Vec2 ndc_point)
+Vector2 osc::ndc_point_to_topleft_normalized(Vector2 ndc_point)
 {
     ndc_point = (ndc_point + 1.0f) * 0.5f;
     ndc_point.y = 1.0f - ndc_point.y;
     return ndc_point;
 }
 
-Vec4 osc::topleft_normalized_point_to_ndc_cube(Vec2 normalized_point)
+Vector4 osc::topleft_normalized_point_to_ndc_cube(Vector2 normalized_point)
 {
     return {topleft_normalized_point_to_ndc(normalized_point), -1.0f, 1.0f};
 }
 
 Ray osc::perspective_unproject_topleft_normalized_pos_to_world(
-    Vec2 normalized_point,
-    Vec3 camera_world_space_origin,
+    Vector2 normalized_point,
+    Vector3 camera_world_space_origin,
     const Matrix4x4& camera_view_matrix,
     const Matrix4x4& camera_proj_matrix)
 {
     // position of point, as if it were on the front of the 3D NDC cube
-    const Vec4 ray_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
+    const Vector4 ray_origin_ndc = topleft_normalized_point_to_ndc_cube(normalized_point);
 
-    Vec4 ray_origin_view = inverse(camera_proj_matrix) * ray_origin_ndc;
+    Vector4 ray_origin_view = inverse(camera_proj_matrix) * ray_origin_ndc;
     ray_origin_view /= ray_origin_view.w;  // perspective divide
 
     // position of mouse in world space
-    const Vec3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
+    const Vector3 ray_origin_world{inverse(camera_view_matrix) * ray_origin_view};
 
     // direction vector from camera position to mouse position (i.e. the projection)
-    const Vec3 ray_direction_world = normalize(ray_origin_world - camera_world_space_origin);
+    const Vector3 ray_direction_world = normalize(ray_origin_world - camera_world_space_origin);
 
     return Ray{
         .origin = ray_origin_world,
@@ -1055,7 +1055,7 @@ Rect osc::bounding_rect_of(const Circle& circle)
     return Rect::from_corners(circle.origin - hypotenuse, circle.origin + hypotenuse);
 }
 
-Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
+Rect osc::clamp(const Rect& r, const Vector2& min, const Vector2& max)
 {
     const auto corners = r.corners();
     return Rect::from_corners(
@@ -1066,7 +1066,7 @@ Rect osc::clamp(const Rect& r, const Vec2& min, const Vec2& max)
 
 Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& viewport)
 {
-    const Vec2 viewport_dimensions = viewport.dimensions();
+    const Vector2 viewport_dimensions = viewport.dimensions();
     const auto ndc_corners = ndc_rect.corners();
     const auto viewport_top_left = viewport.ypd_top_left();
 
@@ -1078,16 +1078,16 @@ Rect osc::ndc_rect_to_topleft_viewport_rect(const Rect& ndc_rect, const Rect& vi
     );
 }
 
-Vec2 osc::project_onto_viewport_rect(
-    const Vec3& world_space_position,
+Vector2 osc::project_onto_viewport_rect(
+    const Vector3& world_space_position,
     const Matrix4x4& view_matrix,
     const Matrix4x4& projection_matrix,
     const Rect& viewport_rect)
 {
-    Vec4 ndc = projection_matrix * view_matrix * Vec4{world_space_position, 1.0f};
+    Vector4 ndc = projection_matrix * view_matrix * Vector4{world_space_position, 1.0f};
     ndc /= ndc.w;  // perspective divide (clip space -> NDC)
 
-    Vec2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
+    Vector2 ndc2D = {ndc.x, -ndc.y};        // [-1, 1], Y points down
     ndc2D += 1.0f;                       // [0, 2]
     ndc2D *= 0.5f;                       // [0, 1]
     ndc2D *= viewport_rect.dimensions(); // [0, w]
@@ -1096,17 +1096,17 @@ Vec2 osc::project_onto_viewport_rect(
     return ndc2D;
 }
 
-Sphere osc::bounding_sphere_of(std::span<const Vec3> points)
+Sphere osc::bounding_sphere_of(std::span<const Vector3> points)
 {
     // edge-case: no points provided
     if (points.empty()) {
         return Sphere{.radius = 0.0f};
     }
 
-    const Vec3 origin = centroid_of(bounding_aabb_of(points));
+    const Vector3 origin = centroid_of(bounding_aabb_of(points));
 
     float r2 = 0.0f;
-    for (const Vec3& point : points) {
+    for (const Vector3& point : points) {
         r2 = max(r2, length2(point - origin));
     }
 
@@ -1129,8 +1129,8 @@ AABB osc::bounding_aabb_of(const Sphere& sphere)
 Ray osc::transform_ray(const Ray& ray, const Matrix4x4& mat)
 {
     Ray rv{};
-    rv.direction = Vec3{mat * Vec4{ray.direction, 0.0f}};
-    rv.origin = Vec3{mat * Vec4{ray.origin, 1.0f}};
+    rv.direction = Vector3{mat * Vector4{ray.direction, 0.0f}};
+    rv.origin = Vector3{mat * Vector4{ray.origin, 1.0f}};
     return rv;
 }
 
@@ -1158,7 +1158,7 @@ Matrix4x4 osc::matrix4x4_transform_between(const Disc& src_disc, const Disc& des
     // - 1-N is sin(theta) of each axis to the normal
     // - LERP is 1.0f + (s - 1.0f)*V, where V is how perpendicular each axis is
 
-    const Vec3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - src_disc.normal));
+    const Vector3 scalers = 1.0f + ((s - 1.0f) * abs(1.0f - src_disc.normal));
     const Matrix4x4 scaler = scale(identity<Matrix4x4>(), scalers);
 
     const float cos_theta = dot(src_disc.normal, dest_disc.normal);
@@ -1168,7 +1168,7 @@ Matrix4x4 osc::matrix4x4_transform_between(const Disc& src_disc, const Disc& des
     }
     else {
         const Radians theta = acos(cos_theta);
-        const Vec3 axis = cross(src_disc.normal, dest_disc.normal);
+        const Vector3 axis = cross(src_disc.normal, dest_disc.normal);
         rotator = rotate(identity<Matrix4x4>(), theta, axis);
     }
 
@@ -1177,18 +1177,18 @@ Matrix4x4 osc::matrix4x4_transform_between(const Disc& src_disc, const Disc& des
     return translator * rotator * scaler;
 }
 
-std::array<Vec3, 8> osc::corner_vertices_of(const AABB& aabb)
+std::array<Vector3, 8> osc::corner_vertices_of(const AABB& aabb)
 {
-    Vec3 dims = dimensions_of(aabb);
+    Vector3 dims = dimensions_of(aabb);
 
-    std::array<Vec3, 8> rv{};
+    std::array<Vector3, 8> rv{};
     rv[0] = aabb.min;
     rv[1] = aabb.max;
     size_t pos = 2;
-    for (Vec3::size_type i = 0; i < 3; ++i) {
-        Vec3 min = aabb.min;
+    for (Vector3::size_type i = 0; i < 3; ++i) {
+        Vector3 min = aabb.min;
         min[i] += dims[i];
-        Vec3 max = aabb.max;
+        Vector3 max = aabb.max;
         max[i] -= dims[i];
         rv[pos++] = min;
         rv[pos++] = max;
@@ -1198,10 +1198,10 @@ std::array<Vec3, 8> osc::corner_vertices_of(const AABB& aabb)
 
 AABB osc::transform_aabb(const Matrix4x4& mat, const AABB& aabb)
 {
-    return bounding_aabb_of(corner_vertices_of(aabb), [&](const Vec3& vertex)
+    return bounding_aabb_of(corner_vertices_of(aabb), [&](const Vector3& vertex)
     {
-        const Vec4 p = mat * Vec4{vertex, 1.0f};
-        return Vec3{p / p.w};  // perspective divide
+        const Vector4 p = mat * Vector4{vertex, 1.0f};
+        return Vector3{p / p.w};  // perspective divide
     });
 }
 
@@ -1214,10 +1214,10 @@ AABB osc::transform_aabb(const Transform& transform, const AABB& aabb)
     const Matrix3x3 mat = matrix3x3_cast(transform);
 
     AABB rv = bounding_aabb_of(transform.translation);  // add in the translation
-    for (Vec3::size_type i = 0; i < 3; ++i) {
+    for (Vector3::size_type i = 0; i < 3; ++i) {
 
         // form extent by summing smaller and larger terms respectively
-        for (Vec3::size_type j = 0; j < 3; ++j) {
+        for (Vector3::size_type j = 0; j < 3; ++j) {
             const float e = mat[j][i] * aabb.min[j];
             const float f = mat[j][i] * aabb.max[j];
 
@@ -1265,27 +1265,27 @@ std::optional<Rect> osc::loosely_project_into_ndc(
     const AABB ndc_aabb = transform_aabb(proj_mat, view_space_aabb);
 
     // take the X and Y coordinates of that AABB and ensure they are clamped to within bounds
-    return clamp(Rect::from_corners(Vec2{ndc_aabb.min}, Vec2{ndc_aabb.max}), Vec2{-1.0f}, Vec2{1.0f});
+    return clamp(Rect::from_corners(Vector2{ndc_aabb.min}, Vector2{ndc_aabb.max}), Vector2{-1.0f}, Vector2{1.0f});
 }
 
 Matrix4x4 osc::matrix4x4_transform_between(const LineSegment& a, const LineSegment& b)
 {
-    const Vec3 a1_to_a2 = a.end - a.start;
-    const Vec3 b1_to_b2 = b.end - b.start;
+    const Vector3 a1_to_a2 = a.end - a.start;
+    const Vector3 b1_to_b2 = b.end - b.start;
 
     const float a_length = length(a1_to_a2);
     const float b_length = length(b1_to_b2);
 
-    const Vec3 a_direction = a1_to_a2 / a_length;
-    const Vec3 b_direction = b1_to_b2 / b_length;
+    const Vector3 a_direction = a1_to_a2 / a_length;
+    const Vector3 b_direction = b1_to_b2 / b_length;
 
-    const Vec3 a_center = (a.start + a.end)/2.0f;
-    const Vec3 b_center = (b.start + b.end)/2.0f;
+    const Vector3 a_center = (a.start + a.end)/2.0f;
+    const Vector3 b_center = (b.start + b.end)/2.0f;
 
     // this is essentially LERPing [0,1] onto [1, l] to rescale only
     // along the line's original direction
     const float s = b_length/a_length;
-    const Vec3 scaler = Vec3{1.0f, 1.0f, 1.0f} + (s-1.0f)*a_direction;
+    const Vector3 scaler = Vector3{1.0f, 1.0f, 1.0f} + (s-1.0f)*a_direction;
 
     const Matrix4x4 rotate = matrix4x4_transform_between_directions(a_direction, b_direction);
     const Matrix4x4 move = translate(identity<Matrix4x4>(), b_center - a_center);
@@ -1295,21 +1295,21 @@ Matrix4x4 osc::matrix4x4_transform_between(const LineSegment& a, const LineSegme
 
 Transform osc::transform_between(const LineSegment& a, const LineSegment& b)
 {
-    const Vec3 a1_to_a2 = a.end - a.start;
-    const Vec3 b1_to_b2 = b.end - b.start;
+    const Vector3 a1_to_a2 = a.end - a.start;
+    const Vector3 b1_to_b2 = b.end - b.start;
 
     const float a_length = length(a1_to_a2);
     const float b_length = length(b1_to_b2);
 
-    const Vec3 a_direction = a1_to_a2 / a_length;
-    const Vec3 b_direction = b1_to_b2 / b_length;
+    const Vector3 a_direction = a1_to_a2 / a_length;
+    const Vector3 b_direction = b1_to_b2 / b_length;
 
-    const Vec3 a_center = (a.start + a.end)/2.0f;
-    const Vec3 b_center = (b.start + b.end)/2.0f;
+    const Vector3 a_center = (a.start + a.end)/2.0f;
+    const Vector3 b_center = (b.start + b.end)/2.0f;
 
     // for scale: LERP [0,1] onto [1,l] along original direction
     return Transform{
-        .scale = Vec3{1.0f, 1.0f, 1.0f} + ((b_length/a_length - 1.0f)*a_direction),
+        .scale = Vector3{1.0f, 1.0f, 1.0f} + ((b_length/a_length - 1.0f)*a_direction),
         .rotation = rotation(a_direction, b_direction),
         .translation = b_center - a_center,
     };
@@ -1337,14 +1337,14 @@ Quaternion osc::to_world_space_rotation_quaternion(const EulerAngles& eulers)
 void osc::apply_world_space_rotation(
     Transform& application_target,
     const EulerAngles& euler_angles,
-    const Vec3& rotation_center)
+    const Vector3& rotation_center)
 {
     const Quaternion q = to_world_space_rotation_quaternion(euler_angles);
     application_target.translation = q*(application_target.translation - rotation_center) + rotation_center;
     application_target.rotation = normalize(q*application_target.rotation);
 }
 
-bool osc::is_intersecting(const Rect& rect, const Vec2& point)
+bool osc::is_intersecting(const Rect& rect, const Vector2& point)
 {
     return all_of(equal_within_absdiff(rect.origin(), point, rect.half_extents()));
 }
@@ -1370,7 +1370,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const AABB& aabb
 
     float t0 = std::numeric_limits<float>::lowest();
     float t1 = std::numeric_limits<float>::max();
-    for (Vec3::size_type i = 0; i < 3; ++i) {
+    for (Vector3::size_type i = 0; i < 3; ++i) {
         const float inv_dir = 1.0f / ray.direction[i];
         float t_near = (aabb.min[i] - ray.origin[i]) * inv_dir;
         float t_far = (aabb.max[i] - ray.origin[i]) * inv_dir;
@@ -1442,7 +1442,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Disc& disc
     }
 
     // figure out whether the plane hit is within the disc's radius
-    const Vec3 v = plane_collision->position - disc.origin;
+    const Vector3 v = plane_collision->position - disc.origin;
     const float d2 = dot(v, v);
     const float r2 = dot(disc.radius, disc.radius);
 
@@ -1458,7 +1458,7 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     // see: https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
 
     // compute triangle normal
-    const Vec3 N = triangle_normal(triangle);
+    const Vector3 N = triangle_normal(triangle);
 
     // compute dot product between normal and ray
     const float NdotR = dot(N, ray.direction);
@@ -1496,27 +1496,27 @@ std::optional<RayCollision> osc::find_collision(const Ray& ray, const Triangle& 
     }
 
     // intersection point on triangle plane, computed from ray equation
-    const Vec3 P = ray.origin + t*ray.direction;
+    const Vector3 P = ray.origin + t*ray.direction;
 
     // figure out if that point is inside the triangle's bounds using the
     // "inside-outside" test
 
     // test each triangle edge: {0, 1}, {1, 2}, {2, 0}
     for (size_t i = 0; i < 3; ++i) {
-        const Vec3& start = triangle[i];
-        const Vec3& end = triangle[(i+1)%3];
+        const Vector3& start = triangle[i];
+        const Vector3& end = triangle[(i+1)%3];
 
         // corner[n] to corner[n+1]
-        const Vec3 e = end - start;
+        const Vector3 e = end - start;
 
         // corner[n] to P
-        const Vec3 c = P - start;
+        const Vector3 c = P - start;
 
         // cross product of the above indicates whether the vectors are
         // clockwise or anti-clockwise with respect to each over. It's a
         // right-handed coordinate system, so anti-clockwise produces a
         // vector that points in same direction as normal
-        const Vec3 ax = cross(e, c);
+        const Vector3 ax = cross(e, c);
 
         // if the dot product of that axis with the normal is <0.0f then
         // the point was "outside"
@@ -1540,7 +1540,7 @@ float osc::ease_out_elastic(float x)
 
 std::array<Matrix4x4, 6> osc::calc_cubemap_view_proj_matrices(
     const Matrix4x4& projection_matrix,
-    Vec3 cube_center)
+    Vector3 cube_center)
 {
     static_assert(std::size(c_cubemap_faces_details) == 6);
 

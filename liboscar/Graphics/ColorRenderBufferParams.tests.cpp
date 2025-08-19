@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/ColorRenderBufferFormat.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 
 #include <gtest/gtest.h>
 
@@ -16,7 +16,7 @@ TEST(ColorRenderBufferParams, can_default_construct)
 TEST(ColorRenderBufferParams, default_constructed_has_1x1_pixel_dimensions)
 {
     const ColorRenderBufferParams default_constructed;
-    ASSERT_EQ(default_constructed.pixel_dimensions, Vec2i(1, 1));
+    ASSERT_EQ(default_constructed.pixel_dimensions, Vector2i(1, 1));
 }
 
 TEST(ColorRenderBufferParams, default_constructed_has_1x_AntiAliasingLevel)
@@ -46,6 +46,6 @@ TEST(ColorRenderBufferParams, can_be_initialized_with_designated_initializer)
         .format = ColorRenderBufferFormat::R8G8B8A8_UNORM,
     };
 
-    ASSERT_EQ(params.pixel_dimensions, Vec2i(2, 2));
+    ASSERT_EQ(params.pixel_dimensions, Vector2i(2, 2));
     ASSERT_EQ(params.format, ColorRenderBufferFormat::R8G8B8A8_UNORM);
 }

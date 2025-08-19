@@ -1,7 +1,7 @@
 #include "Rgba.h"
 
 #include <liboscar/Graphics/Unorm8.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <gtest/gtest.h>
 
@@ -114,7 +114,7 @@ TEST(Rgba, can_implicitly_construct_Rgba_from_different_components_if_components
 
 TEST(Rgba, can_explicitly_construct_from_Vec4_of_different_type)
 {
-    const Rgba<Unorm8> unorm8_val{Vec4{0.0f, 0.5f, 1.0f, 1.0f}};
+    const Rgba<Unorm8> unorm8_val{Vector4{0.0f, 0.5f, 1.0f, 1.0f}};
 
     ASSERT_EQ(unorm8_val.r, 0.0f);
     ASSERT_EQ(unorm8_val.g, Unorm8{127});

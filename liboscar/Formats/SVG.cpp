@@ -1,7 +1,7 @@
 #include "SVG.h"
 
 #include <liboscar/Graphics/ColorSpace.h>
-#include <liboscar/Maths/Vec2.h>
+#include <liboscar/Maths/Vector2.h>
 #include <liboscar/Utils/Assertions.h>
 
 #include <lunasvg.h>

@@ -5,7 +5,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <array>
 #include <concepts>
@@ -16,19 +16,19 @@
 namespace osc
 {
     // returns the average centroid of `aabb`
-    constexpr Vec3 centroid_of(const AABB& aabb)
+    constexpr Vector3 centroid_of(const AABB& aabb)
     {
         return 0.5f * (aabb.min + aabb.max);
     }
 
     // returns the widths of the edges of `aabb`
-    constexpr Vec3 dimensions_of(const AABB& aabb)
+    constexpr Vector3 dimensions_of(const AABB& aabb)
     {
         return aabb.max - aabb.min;
     }
 
     // returns the half-widths of the edges of `aabb`
-    constexpr Vec3 half_widths_of(const AABB& aabb)
+    constexpr Vector3 half_widths_of(const AABB& aabb)
     {
         return 0.5f * dimensions_of(aabb);
     }
@@ -36,7 +36,7 @@ namespace osc
     // returns the volume of `aabb`
     constexpr float volume_of(const AABB& aabb)
     {
-        Vec3 const dims = dimensions_of(aabb);
+        Vector3 const dims = dimensions_of(aabb);
         return dims.x * dims.y * dims.z;
     }
 
@@ -53,7 +53,7 @@ namespace osc
     }
 
     // returns the eight corner vertices of `aabb`
-    std::array<Vec3, 8> corner_vertices_of(const AABB& aabb);
+    std::array<Vector3, 8> corner_vertices_of(const AABB& aabb);
 
     // returns an `AABB` computed by transforming `aabb` with `m`
     AABB transform_aabb(const Matrix4x4& m, const AABB& aabb);
@@ -62,13 +62,13 @@ namespace osc
     AABB transform_aabb(const Transform& t, const AABB& aabb);
 
     // returns an `AABB` that tightly bounds `x`
-    constexpr AABB bounding_aabb_of(const Vec3& x)
+    constexpr AABB bounding_aabb_of(const Vector3& x)
     {
         return AABB{.min = x, .max = x};
     }
 
     // returns an `AABB` that tightly bounds both `x` and `y`
-    constexpr AABB bounding_aabb_of(const AABB& x, const Vec3& y)
+    constexpr AABB bounding_aabb_of(const AABB& x, const Vector3& y)
     {
         return AABB{elementwise_min(x.min, y), elementwise_max(x.max, y)};
     }
@@ -85,9 +85,9 @@ namespace osc
         return x ? bounding_aabb_of(*x, y) : y;
     }
 
-    // returns an `AABB` that tightly bounds the `Vec3`s projected from `r`
+    // returns an `AABB` that tightly bounds the `Vector3`s projected from `r`
     template<std::ranges::input_range R, class Proj = std::identity>
-    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vec3&>
+    requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
     constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
     {
         auto it = std::ranges::begin(r);

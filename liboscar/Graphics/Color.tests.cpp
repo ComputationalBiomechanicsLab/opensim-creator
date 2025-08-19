@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/Color32.h>
 #include <liboscar/Graphics/ColorHSLA.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Vec3.h>
-#include <liboscar/Maths/Vec4.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Maths/Vector4.h>
 
 #include <gtest/gtest.h>
 
@@ -54,9 +54,9 @@ TEST(Color, constructed_from_two_values_fills_RGB_components_with_first_and_alph
     static_assert(Color{0.83f, 0.4f} == Color{0.83f, 0.83f, 0.83f, 0.4f});
 }
 
-TEST(Color, constructed_with_Vec3_and_float_fills_RGB_components_with_Vec3_and_alpha_with_float)
+TEST(Color, constructed_with_Vector3_and_float_fills_RGB_components_with_Vector3_and_alpha_with_float)
 {
-    static_assert(Color{Vec3{0.1f, 0.2f, 0.3f}, 0.7f} == Color{0.1f, 0.2f, 0.3f, 0.7f});
+    static_assert(Color{Vector3{0.1f, 0.2f, 0.3f}, 0.7f} == Color{0.1f, 0.2f, 0.3f, 0.7f});
 }
 TEST(Color, can_construct_from_RGBA_floats)
 {
@@ -89,12 +89,12 @@ TEST(Color, RGB_float_constructor_is_constexpr)
     [[maybe_unused]] constexpr Color color{0.0f, 0.0f, 0.0f};
 }
 
-TEST(Color, can_explicitly_construct_from_Vec3)
+TEST(Color, can_explicitly_construct_from_Vector3)
 {
-    const Vec3 v = {0.25f, 0.387f, 0.1f};
+    const Vector3 v = {0.25f, 0.387f, 0.1f};
     const Color color{v};
 
-    // ensure vec3 ctor creates a solid hdr_color with a == 1.0f
+    // ensure `Vector3` ctor creates a solid hdr_color with a == 1.0f
     ASSERT_EQ(color.r, v.x);
     ASSERT_EQ(color.g, v.y);
     ASSERT_EQ(color.b, v.z);
@@ -103,12 +103,12 @@ TEST(Color, can_explicitly_construct_from_Vec3)
 
 TEST(Color, can_explicitly_construct_from_Vec4)
 {
-    [[maybe_unused]] const Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] const Color color{Vector4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, implicitly_converts_into_a_Vec4)
 {
-    [[maybe_unused]] constexpr Vec4 v = Color{0.0f, 0.0f, 1.0f, 0.0f};
+    [[maybe_unused]] constexpr Vector4 v = Color{0.0f, 0.0f, 1.0f, 0.0f};
 }
 
 TEST(Color, bracket_operator_accesses_each_component)
@@ -124,7 +124,7 @@ TEST(Color, bracket_operator_accesses_each_component)
 TEST(Color, Vec4_constructor_is_constexpr)
 {
     // must compile
-    [[maybe_unused]] constexpr Color color{Vec4{0.0f, 1.0f, 0.0f, 1.0f}};
+    [[maybe_unused]] constexpr Color color{Vector4{0.0f, 1.0f, 0.0f, 1.0f}};
 }
 
 TEST(Color, operator_equals_returns_true_for_equivalent_colors)

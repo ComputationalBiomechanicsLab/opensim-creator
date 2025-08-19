@@ -193,7 +193,7 @@ namespace
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
             const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state).invert() * parentFrame.getTransformInGround(state);
             const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
-            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(TPSWarpPoint(coefficients, to<Vec3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
+            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(TPSWarpPoint(coefficients, to<Vector3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
             const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
             return warpedLocationInStationParentFrame;
         }
@@ -205,9 +205,9 @@ namespace
             OSC_ASSERT_ALWAYS(tpsInputs.applyAffineTranslation && "affine translation must be requested in order to figure out the transform");
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
 
-            const Vec3d x{normalize(coefficients.a2)};
-            const Vec3d y{normalize(coefficients.a3)};
-            const Vec3d z{normalize(coefficients.a4)};
+            const Vector3d x{normalize(coefficients.a2)};
+            const Vector3d y{normalize(coefficients.a3)};
+            const Vector3d z{normalize(coefficients.a4)};
             const SimTK::Mat33 rotationMatrix{
                 x[0], y[0], z[0],
                 x[1], y[1], z[1],
@@ -2474,10 +2474,10 @@ namespace
 
                 ui::same_line();
 
-                const Vec2 oldCursorPos = ui::get_cursor_panel_position();
+                const Vector2 oldCursorPos = ui::get_cursor_panel_position();
                 const float endX = oldCursorPos.x + ui::get_content_region_available().x;
 
-                const Vec2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x, oldCursorPos.y};
+                const Vector2 newCursorPos = {endX - ui::calc_button_size(deletionButtonIcon).x, oldCursorPos.y};
                 ui::set_cursor_panel_position(newCursorPos);
                 if (ui::draw_small_button(deletionButtonIcon)) {
                     m_State->eraseScalingStepDeferred(step);

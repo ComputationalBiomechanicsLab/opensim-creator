@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshTopology.h>
-#include <liboscar/Maths/Vec3.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -19,15 +19,15 @@ osc::GridGeometry::GridGeometry(const Params& p)
 
     const size_t num_lines = p.num_divisions + 1;
 
-    std::vector<Vec3> vertices;
+    std::vector<Vector3> vertices;
     vertices.reserve(4 * num_lines);
     std::vector<uint32_t> indices;
     indices.reserve(4 * num_lines);
-    std::vector<Vec3> normals;
+    std::vector<Vector3> normals;
     normals.reserve(4 * num_lines);
     uint32_t index = 0;
 
-    auto push = [&index, &vertices, &indices, &normals](const Vec3& vertex)
+    auto push = [&index, &vertices, &indices, &normals](const Vector3& vertex)
     {
         vertices.push_back(vertex);
         indices.push_back(index++);
