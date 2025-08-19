@@ -66,13 +66,13 @@ namespace osc::detail
     template<>
     struct MaterialValueTraits<Matrix3x3> final {
         static constexpr void constructor_assertions(std::span<const Matrix3x3>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix3x3>) { return ShaderPropertyType::Mat3; }
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix3x3>) { return ShaderPropertyType::Matrix3x3; }
     };
 
     template<>
     struct MaterialValueTraits<Matrix4x4> final {
         static constexpr void constructor_assertions(std::span<const Matrix4x4>) {}
-        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix4x4>) { return ShaderPropertyType::Mat4; }
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Matrix4x4>) { return ShaderPropertyType::Matrix4x4; }
     };
 
     template<>

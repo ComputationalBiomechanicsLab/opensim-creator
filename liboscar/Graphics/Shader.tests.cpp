@@ -180,8 +180,8 @@ namespace
 
     constexpr std::array<ShaderPropertyType, 14> c_expected_property_types = std::to_array(
     {
-        ShaderPropertyType::Mat4,
-        ShaderPropertyType::Mat4,
+        ShaderPropertyType::Matrix4x4,
+        ShaderPropertyType::Matrix4x4,
         ShaderPropertyType::Vector3,
         ShaderPropertyType::Vector3,
         ShaderPropertyType::Float,

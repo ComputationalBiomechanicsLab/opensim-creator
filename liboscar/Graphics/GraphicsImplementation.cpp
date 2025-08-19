@@ -497,8 +497,8 @@ namespace
         case GL_FLOAT_VEC2:   return ShaderPropertyType::Vector2;
         case GL_FLOAT_VEC3:   return ShaderPropertyType::Vector3;
         case GL_FLOAT_VEC4:   return ShaderPropertyType::Vector4;
-        case GL_FLOAT_MAT3:   return ShaderPropertyType::Mat3;
-        case GL_FLOAT_MAT4:   return ShaderPropertyType::Mat4;
+        case GL_FLOAT_MAT3:   return ShaderPropertyType::Matrix3x3;
+        case GL_FLOAT_MAT4:   return ShaderPropertyType::Matrix4x4;
         case GL_INT:          return ShaderPropertyType::Int;
         case GL_BOOL:         return ShaderPropertyType::Bool;
         case GL_SAMPLER_2D:   return ShaderPropertyType::Sampler2D;
@@ -7048,7 +7048,7 @@ void osc::GraphicsBackend::bind_to_instanced_attributes(
 
     size_t byte_offset = 0;
     if (shader_impl.maybe_instanced_model_mat_attr_) {
-        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
             const gl::AttributeMat4 model_matrix_attr{shader_impl.maybe_instanced_model_mat_attr_->location};
             gl::vertex_attrib_pointer(model_matrix_attr, false, instancing_state.stride, instancing_state.base_offset + byte_offset);
             gl::vertex_attrib_divisor(model_matrix_attr, 1);
@@ -7057,14 +7057,14 @@ void osc::GraphicsBackend::bind_to_instanced_attributes(
         }
     }
     if (shader_impl.maybe_instanced_normal_mat_attr_) {
-        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
             const gl::AttributeMat4 normal_matrix_attr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::vertex_attrib_pointer(normal_matrix_attr, false, instancing_state.stride, instancing_state.base_offset + byte_offset);
             gl::vertex_attrib_divisor(normal_matrix_attr, 1);
             gl::enable_vertex_attrib_array(normal_matrix_attr);
             // unused: byteOffset += sizeof(float) * 16;
         }
-        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix3x3) {
             const gl::AttributeMat3 normal_matrix_attr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::vertex_attrib_pointer(normal_matrix_attr, false, instancing_state.stride, instancing_state.base_offset + byte_offset);
             gl::vertex_attrib_divisor(normal_matrix_attr, 1);
@@ -7080,17 +7080,17 @@ void osc::GraphicsBackend::unbind_from_instanced_attributes(
     InstancingState&)
 {
     if (shader_impl.maybe_instanced_model_mat_attr_) {
-        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
             const gl::AttributeMat4 model_matrix_attr{shader_impl.maybe_instanced_model_mat_attr_->location};
             gl::disable_vertex_attrib_array(model_matrix_attr);
         }
     }
     if (shader_impl.maybe_instanced_normal_mat_attr_) {
-        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+        if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
             const gl::AttributeMat4 normal_matrix_attr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::disable_vertex_attrib_array(normal_matrix_attr);
         }
-        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+        else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix3x3) {
             const gl::AttributeMat3 normal_matrix_attr{shader_impl.maybe_instanced_normal_mat_attr_->location};
             gl::disable_vertex_attrib_array(normal_matrix_attr);
         }
@@ -7110,15 +7110,15 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
         // compute the stride between each instance
         size_t byte_stride = 0;
         if (shader_impl.maybe_instanced_model_mat_attr_) {
-            if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
                 byte_stride += sizeof(float) * 16;
             }
         }
         if (shader_impl.maybe_instanced_normal_mat_attr_) {
-            if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
                 byte_stride += sizeof(float) * 16;
             }
-            else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+            else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix3x3) {
                 byte_stride += sizeof(float) * 9;
             }
         }
@@ -7133,7 +7133,7 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
         size_t float_offset = 0;
         for (const RenderObject& render_object : render_queue) {
             if (shader_impl.maybe_instanced_model_mat_attr_) {
-                if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+                if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
                     const Matrix4x4 m = model_matrix4x4(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
@@ -7141,13 +7141,13 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
                 }
             }
             if (shader_impl.maybe_instanced_normal_mat_attr_) {
-                if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat4) {
+                if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
                     const Matrix4x4 m = normal_matrix4x4(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
                 }
-                else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Mat3) {
+                else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix3x3) {
                     const Matrix3x3 m = normal_matrix(render_object);
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
@@ -7196,7 +7196,7 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
 
             // try binding to uModel (standard)
             if (shader_impl.maybe_model_mat_uniform_) {
-                if (shader_impl.maybe_model_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+                if (shader_impl.maybe_model_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                     gl::UniformMat4 u{shader_impl.maybe_model_mat_uniform_->location};
                     gl::set_uniform(u, model_matrix4x4(render_object));
                 }
@@ -7204,11 +7204,11 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
 
             // try binding to uNormalMat (standard)
             if (shader_impl.maybe_normal_mat_uniform_) {
-                if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Mat3) {
+                if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Matrix3x3) {
                     gl::UniformMat3 u{shader_impl.maybe_normal_mat_uniform_->location};
                     gl::set_uniform(u, normal_matrix(render_object));
                 }
-                else if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+                else if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                     gl::UniformMat4 u{shader_impl.maybe_normal_mat_uniform_->location};
                     gl::set_uniform(u, normal_matrix4x4(render_object));
                 }
@@ -7349,7 +7349,7 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     {
         // try binding to uView (standard)
         if (shader_impl.maybe_view_mat_uniform_) {
-            if (shader_impl.maybe_view_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_view_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                 gl::UniformMat4 u{shader_impl.maybe_view_mat_uniform_->location};
                 gl::set_uniform(u, render_pass_state.view_matrix);
             }
@@ -7357,14 +7357,14 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
         // try binding to uProjection (standard)
         if (shader_impl.maybe_proj_mat_uniform_) {
-            if (shader_impl.maybe_proj_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_proj_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                 gl::UniformMat4 u{shader_impl.maybe_proj_mat_uniform_->location};
                 gl::set_uniform(u, render_pass_state.projection_matrix);
             }
         }
 
         if (shader_impl.maybe_view_proj_mat_uniform_) {
-            if (shader_impl.maybe_view_proj_mat_uniform_->shader_type == ShaderPropertyType::Mat4) {
+            if (shader_impl.maybe_view_proj_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                 gl::UniformMat4 u{shader_impl.maybe_view_proj_mat_uniform_->location};
                 gl::set_uniform(u, render_pass_state.view_projection_matrix);
             }

@@ -30,13 +30,13 @@ namespace osc::detail
     };
 
     template<>
-    struct ShaderPropertyTypeTraits<ShaderPropertyType::Mat3> {
-        static constexpr std::string_view name = "Mat3";
+    struct ShaderPropertyTypeTraits<ShaderPropertyType::Matrix3x3> {
+        static constexpr std::string_view name = "Matrix3x3";
     };
 
     template<>
-    struct ShaderPropertyTypeTraits<ShaderPropertyType::Mat4> {
-        static constexpr std::string_view name = "Mat4";
+    struct ShaderPropertyTypeTraits<ShaderPropertyType::Matrix4x4> {
+        static constexpr std::string_view name = "Matrix4x4";
     };
 
     template<>
