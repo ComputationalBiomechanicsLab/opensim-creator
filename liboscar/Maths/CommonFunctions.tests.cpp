@@ -1,7 +1,7 @@
 #include "CommonFunctions.h"
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector3.h>
 
 #include <gtest/gtest.h>
@@ -30,9 +30,9 @@ TEST(abs, works_on_Vector3i)
 
 TEST(mod, works_on_Vector3_of_Angles)
 {
-    constexpr Vec<3, Degrees> x{10.0f, 3.0f, 4.0f};
-    constexpr Vec<3, Degrees> y{8.0f, 2.0f, 1.0f};
-    constexpr Vec<3, Degrees> expected{2.0f, 1.0f, 0.0f};
+    constexpr Vector<3, Degrees> x{10.0f, 3.0f, 4.0f};
+    constexpr Vector<3, Degrees> y{8.0f, 2.0f, 1.0f};
+    constexpr Vector<3, Degrees> expected{2.0f, 1.0f, 0.0f};
 
     ASSERT_EQ(mod(x, y), expected);
 }

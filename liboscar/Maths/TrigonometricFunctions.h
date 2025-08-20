@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Functors.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 
 #include <cmath>
 #include <concepts>
@@ -22,13 +22,13 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> sin(const Vec<L, T>& v)
+    Vector<L, T> sin(const Vector<L, T>& v)
     {
         return map(v, sin<T>);
     }
 
     template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vec<L, Rep> sin(const Vec<L, Angle<Rep, Units>>& v)
+    Vector<L, Rep> sin(const Vector<L, Angle<Rep, Units>>& v)
     {
         return map(v, sin<Rep, Units>);
     }
@@ -46,13 +46,13 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> cos(const Vec<L, T>& v)
+    Vector<L, T> cos(const Vector<L, T>& v)
     {
         return map(v, cos<T>);
     }
 
     template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vec<L, Rep> cos(const Vec<L, Angle<Rep, Units>>& v)
+    Vector<L, Rep> cos(const Vector<L, Angle<Rep, Units>>& v)
     {
         return map(v, cos<Rep, Units>);
     }
@@ -70,13 +70,13 @@ namespace osc
     }
 
     template<size_t L, std::floating_point T>
-    Vec<L, T> tan(const Vec<L, T>& v)
+    Vector<L, T> tan(const Vector<L, T>& v)
     {
         return map(v, tan<T>);
     }
 
     template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vec<L, Rep> tan(const Vec<L, Angle<Rep, Units>>& v)
+    Vector<L, Rep> tan(const Vector<L, Angle<Rep, Units>>& v)
     {
         return map(v, tan<Rep, Units>);
     }

@@ -19,7 +19,7 @@ namespace osc
 {
     // returns a vector containing `isnan(qv)` for each `qv` in `q`
     template<std::floating_point T>
-    Vec<4, bool> isnan(const Qua<T>& q)
+    Vector<4, bool> isnan(const Qua<T>& q)
     {
         return {isnan(q.w), isnan(q.x), isnan(q.y), isnan(q.z)};
     }
@@ -166,12 +166,12 @@ namespace osc
     template<
         std::floating_point T,
         AngularUnitTraits Units,
-        std::convertible_to<const Vec<3, T>&> Veclike
+        std::convertible_to<const Vector<3, T>&> VectorLike
     >
-    Qua<T> angle_axis(Angle<T, Units> angle, Veclike&& axis)
+    Qua<T> angle_axis(Angle<T, Units> angle, VectorLike&& axis)
     {
         const T s = sin(angle * static_cast<T>(0.5));
-        return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<const Vec<3, T>&>(axis) * s);
+        return Qua<T>(cos(angle * static_cast<T>(0.5)), static_cast<const Vector<3, T>&>(axis) * s);
     }
 
     template<
@@ -180,12 +180,12 @@ namespace osc
     >
     Qua<T> angle_axis(Angle<T, Units> angle, CoordinateDirection direction)
     {
-        return angle_axis(angle, direction.vec<T>());
+        return angle_axis(angle, direction.direction_vector<T>());
     }
 
     // computes the rotation from `origin` to `destination`
     template<typename T>
-    Qua<T> rotation(const Vec<3, T>& origin, const Vec<3, T>& destination)
+    Qua<T> rotation(const Vector<3, T>& origin, const Vector<3, T>& destination)
     {
         const T cos_theta = dot(origin, destination);
         if (cos_theta >= static_cast<T>(1) - epsilon_v<T>) {
@@ -193,16 +193,16 @@ namespace osc
             return quaternion_identity<T>();
         }
 
-        Vec<3, T> rotation_axis;
+        Vector<3, T> rotation_axis;
         if (cos_theta < static_cast<T>(-1) + epsilon_v<T>) {
             // special case when vectors in opposite directions :
             // there is no "ideal" rotation axis
             // So guess one; any will do as long as it's perpendicular to start
             // This implementation favors a rotation around the Up axis (Y),
             // since it's often what you want to do.
-            rotation_axis = cross(Vec<3, T>(0, 0, 1), origin);
+            rotation_axis = cross(Vector<3, T>(0, 0, 1), origin);
             if (length2(rotation_axis) < epsilon_v<T>) { // bad luck, they were parallel, try again!
-                rotation_axis = cross(Vec<3, T>(1, 0, 0), origin);
+                rotation_axis = cross(Vector<3, T>(1, 0, 0), origin);
             }
 
             rotation_axis = normalize(rotation_axis);
@@ -229,7 +229,7 @@ namespace osc
         const T y = static_cast<T>(2) * (q.y * q.z + q.w * q.x);
         const T x = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
 
-        if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
+        if (all_of(equal_within_epsilon(Vector<2, T>(x, y), Vector<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return static_cast<T>(2) * atan2(q.x, q.w);
         }
@@ -249,7 +249,7 @@ namespace osc
         const T y = static_cast<T>(2) * (q.x * q.y + q.w * q.z);
         const T x = q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z;
 
-        if (all_of(equal_within_epsilon(Vec<2, T>(x, y), Vec<2, T>(0)))) {
+        if (all_of(equal_within_epsilon(Vector<2, T>(x, y), Vector<2, T>(0)))) {
             //avoid atan2(0,0) - handle singularity - Matiis
             return RadiansT<T>{0};
         }
@@ -258,8 +258,8 @@ namespace osc
     }
 
     template<typename T>
-    Vec<3, RadiansT<T>> to_euler_angles(const Qua<T>& x)
+    Vector<3, RadiansT<T>> to_euler_angles(const Qua<T>& x)
     {
-        return Vec<3, RadiansT<T>>(pitch(x), yaw(x), roll(x));
+        return Vector<3, RadiansT<T>>(pitch(x), yaw(x), roll(x));
     }
 }

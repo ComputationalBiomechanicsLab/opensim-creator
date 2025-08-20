@@ -13,7 +13,7 @@ TEST(Quaternion_isnan, returns_expected_results)
 {
     struct TestCase {
         Quaternion input;
-        Vec<4, bool> expected_output;
+        Vector<4, bool> expected_output;
     };
 
     constexpr float nan = quiet_nan_v<float>;

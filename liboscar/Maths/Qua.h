@@ -37,7 +37,7 @@ namespace osc
         constexpr Qua() = default;
 
         // constructs a `Qua` with `w = s` and the xyz of `v`
-        constexpr Qua(T s, const Vec<3, T>& v) :
+        constexpr Qua(T s, const Vector<3, T>& v) :
             w{s}, x{v.x}, y{v.y}, z{v.z}
         {}
 
@@ -61,18 +61,18 @@ namespace osc
         /// @param v A second normalized axis
         /// @see gtc_Quaternion
         /// @see http://lolengine.net/blog/2013/09/18/beautiful-maths-Quaternion-from-Vectors
-        Qua(const Vec<3, T>& u, const Vec<3, T>& v)
+        Qua(const Vector<3, T>& u, const Vector<3, T>& v)
         {
             T norm_u_norm_v = sqrt(dot(u, u) * dot(v, v));
             T real_part = norm_u_norm_v + dot(u, v);
-            Vec<3, T> t;
+            Vector<3, T> t;
 
             if(real_part < static_cast<T>(1.e-6f) * norm_u_norm_v) {
                 // If u and v are exactly opposite, rotate 180 degrees
                 // around an arbitrary orthogonal axis. Axis normalisation
                 // can happen later, when we normalise the quaternion.
                 real_part = static_cast<T>(0);
-                t = abs(u.x) > abs(u.z) ? Vec<3, T>(-u.y, u.x, static_cast<T>(0)) : Vec<3, T>(static_cast<T>(0), -u.z, u.y);
+                t = abs(u.x) > abs(u.z) ? Vector<3, T>(-u.y, u.x, static_cast<T>(0)) : Vector<3, T>(static_cast<T>(0), -u.z, u.y);
             }
             else {
                 // Otherwise, build quaternion the standard way.
@@ -86,8 +86,8 @@ namespace osc
         // intrinsic, step-by-step, rotation about X, Y, and then Z
         explicit Qua(const EulerAngles& euler_angles)
         {
-            Vec<3, T> c = cos(euler_angles * T(0.5));
-            Vec<3, T> s = sin(euler_angles * T(0.5));
+            Vector<3, T> c = cos(euler_angles * T(0.5));
+            Vector<3, T> s = sin(euler_angles * T(0.5));
 
             this->w = c.x * c.y * c.z + s.x * s.y * s.z;
             this->x = s.x * c.y * c.z - c.x * s.y * s.z;
@@ -218,29 +218,29 @@ namespace osc
     }
 
     template<typename T>
-    constexpr Vec<3, T> operator*(const Qua<T>& q, const Vec<3, T>& v)
+    constexpr Vector<3, T> operator*(const Qua<T>& q, const Vector<3, T>& v)
     {
-        const Vec<3, T> qvector(q.x, q.y, q.z);
-        const Vec<3, T> uv(cross(qvector, v));
-        const Vec<3, T> uuv(cross(qvector, uv));
+        const Vector<3, T> qvector(q.x, q.y, q.z);
+        const Vector<3, T> uv(cross(qvector, v));
+        const Vector<3, T> uuv(cross(qvector, uv));
 
         return v + ((uv * q.w) + uuv) * static_cast<T>(2);
     }
 
     template<typename T>
-    constexpr Vec<3, T> operator*(const Vec<3, T>& v, const Qua<T>& q)
+    constexpr Vector<3, T> operator*(const Vector<3, T>& v, const Qua<T>& q)
     {
         return inverse(q) * v;
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(const Qua<T>& q, const Vec<4, T>& v)
+    constexpr Vector<4, T> operator*(const Qua<T>& q, const Vector<4, T>& v)
     {
-        return Vec<4, T>(q * Vec<3, T>(v), v.w);
+        return Vector<4, T>(q * Vector<3, T>(v), v.w);
     }
 
     template<typename T>
-    constexpr Vec<4, T> operator*(const Vec<4, T>& v, const Qua<T>& q)
+    constexpr Vector<4, T> operator*(const Vector<4, T>& v, const Qua<T>& q)
     {
         return inverse(q) * v;
     }

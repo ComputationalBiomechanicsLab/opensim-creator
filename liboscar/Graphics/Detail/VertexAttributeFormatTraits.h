@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/Snorm8.h>
 #include <liboscar/Graphics/Unorm8.h>
 #include <liboscar/Graphics/VertexAttributeFormat.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
@@ -45,7 +45,7 @@ namespace osc::detail
 
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Unorm8x4> final {
-        using type = Vec<4, Unorm8>;
+        using type = Vector<4, Unorm8>;
         using component_type = type::value_type;
         static constexpr size_t num_components = std::tuple_size_v<type>;
         static constexpr size_t component_size = sizeof(component_type);
@@ -54,7 +54,7 @@ namespace osc::detail
 
     template<>
     struct VertexAttributeFormatTraits<VertexAttributeFormat::Snorm8x4> final {
-        using type = Vec<4, Snorm8>;
+        using type = Vector<4, Snorm8>;
         using component_type = type::value_type;
         static constexpr size_t num_components = std::tuple_size_v<type>;
         static constexpr size_t component_size = sizeof(component_type);

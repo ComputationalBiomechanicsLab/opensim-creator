@@ -67,9 +67,9 @@ TEST(Snorm8, implicit_conversion_to_int8_is_equivalent_to_calling_raw_value)
     static_assert(static_cast<int8_t>(Snorm8{-47}) == Snorm8{-47}.raw_value());
 }
 
-TEST(Snorm8, can_be_placed_into_vec)
+TEST(Snorm8, can_be_placed_into_Vector)
 {
-    [[maybe_unused]] const Vec<3, Snorm8> should_compile;
+    [[maybe_unused]] const Vector<3, Snorm8> should_compile;
 }
 
 TEST(Snorm8, value_type_returns_int8_t)

@@ -264,13 +264,13 @@ TEST(CoordinateDirection, is_negated_WorksAsExpected)
     static_assert(CoordinateDirection::minus_z().is_negated());
 }
 
-TEST(CoordinateDirection, vec_returns_expected_results)
+TEST(CoordinateDirection, direction_vector_returns_expected_results)
 {
-    ASSERT_EQ(CoordinateDirection::x().vec(), Vector3(1.0f, 0.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::y().vec(), Vector3(0.0f, 1.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::z().vec(), Vector3(0.0f, 0.0f, 1.0f));
+    ASSERT_EQ(CoordinateDirection::x().direction_vector(), Vector3(1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::y().direction_vector(), Vector3(0.0f, 1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::z().direction_vector(), Vector3(0.0f, 0.0f, 1.0f));
 
-    ASSERT_EQ(CoordinateDirection::minus_x().vec(), Vector3(-1.0f, 0.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::minus_y().vec(), Vector3(0.0f, -1.0f, 0.0f));
-    ASSERT_EQ(CoordinateDirection::minus_z().vec(), Vector3(0.0f, 0.0f, -1.0f));
+    ASSERT_EQ(CoordinateDirection::minus_x().direction_vector(), Vector3(-1.0f, 0.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_y().direction_vector(), Vector3(0.0f, -1.0f, 0.0f));
+    ASSERT_EQ(CoordinateDirection::minus_z().direction_vector(), Vector3(0.0f, 0.0f, -1.0f));
 }

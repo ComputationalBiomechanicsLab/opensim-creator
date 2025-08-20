@@ -3240,12 +3240,12 @@ bool osc::ui::draw_angle_input(CStringView label, Radians& v)
 
 bool osc::ui::draw_angle3_input(
     CStringView label,
-    Vec<3, Radians>& angles,
+    Vector<3, Radians>& angles,
     CStringView format)
 {
     Vector3 dvs = {Degrees{angles.x}.count(), Degrees{angles.y}.count(), Degrees{angles.z}.count()};
     if (ui::draw_vector3_input(label, dvs, format.c_str())) {
-        angles = Vec<3, Radians>{Vec<3, Degrees>{dvs}};
+        angles = Vector<3, Radians>{Vector<3, Degrees>{dvs}};
         return true;
     }
     return false;

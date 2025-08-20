@@ -4182,7 +4182,16 @@ namespace
     // types that can be read/written to/from a vertex buffer by higher
     // levels of the API
     template<typename T>
-    concept UserFacingVertexData = SameAsAnyOf<T, Vector2, Vector3, Vector4, Vec<4, Unorm8>, Vec<4, Snorm8>, Color, Color32>;
+    concept UserFacingVertexData = SameAsAnyOf<
+        T,
+        Vector2,
+        Vector3,
+        Vector4,
+        Vector<4, Unorm8>,
+        Vector<4, Snorm8>,
+        Color,
+        Color32
+    >;
 
     // types that are encode-/decode-able into a vertex buffer
     template<typename T>

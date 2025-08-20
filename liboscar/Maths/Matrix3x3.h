@@ -11,8 +11,8 @@ namespace osc
     // a 3x3 column-major matrix
     template<typename T>
     struct Matrix<3, 3, T> {
-        using col_type = Vec<3, T>;
-        using row_type = Vec<3, T>;
+        using col_type = Vector<3, T>;
+        using row_type = Vector<3, T>;
         using transpose_type = Matrix<3, 3, T>;
         using type = Matrix<3, 3, T>;
         using value_type = col_type;
@@ -74,9 +74,9 @@ namespace osc
 
         template<typename V1, typename V2, typename V3>
         constexpr Matrix(
-            const Vec<3, V1>& v1,
-            const Vec<3, V2>& v2,
-            const Vec<3, V3>& v3) :
+            const Vector<3, V1>& v1,
+            const Vector<3, V2>& v2,
+            const Vector<3, V3>& v3) :
 
             value{
                 col_type{v1},

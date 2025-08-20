@@ -22,16 +22,16 @@ namespace osc
         return AnalyticPlane{.distance = dot(plane.origin, plane.normal), .normal = plane.normal};
     }
 
-    // returns the signed distance between the (normal-oriented) surface of `plane` and `vec`
-    constexpr float signed_distance_between(const AnalyticPlane& plane, const Vector3& vec)
+    // returns the signed distance between the (normal-oriented) surface of `plane` and `vector`
+    constexpr float signed_distance_between(const AnalyticPlane& plane, const Vector3& vector)
     {
-        return dot(vec, plane.normal) - plane.distance;
+        return dot(vector, plane.normal) - plane.distance;
     }
 
-    // returns the signed distance between the (normal-oriented) surface of `plane` and `vec`
-    constexpr float signed_distance_between(const Plane& plane, const Vector3& vec)
+    // returns the signed distance between the (normal-oriented) surface of `plane` and `vector`
+    constexpr float signed_distance_between(const Plane& plane, const Vector3& vector)
     {
-        return dot(vec, plane.normal) - dot(plane.origin, plane.normal);
+        return dot(vector, plane.normal) - dot(plane.origin, plane.normal);
     }
 
     // tests if `aabb` is entirely in front of `plane`

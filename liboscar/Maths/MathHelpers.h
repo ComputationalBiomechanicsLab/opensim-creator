@@ -11,7 +11,7 @@
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TransformFunctions.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
@@ -131,7 +131,7 @@ namespace osc
     // returns a `Transform` that maps a Y-to-Y (bottom-to-top) cone to a segment with the given radius
     Transform y_to_y_cone_to_segment_transform(const LineSegment&, float radius);
 
-    // ----- VecX/MatX helpers -----
+    // ----- Vector/Matrix helpers -----
 
     // returns a transform matrix that rotates `dir1` to point in the same direction as `dir2`
     Matrix4x4 matrix4x4_transform_between_directions(const Vector3& dir1, const Vector3& dir2);

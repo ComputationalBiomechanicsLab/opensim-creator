@@ -321,7 +321,7 @@ TEST_F(MaterialTest, MaterialGetVector3ArrayOnNewMaterialReturnsEmptyOptional)
     ASSERT_FALSE(material.get_array<Vector3>("someKey"));
 }
 
-TEST_F(MaterialTest, MaterialGetVec4OnNewMaterialReturnsEmptyOptional)
+TEST_F(MaterialTest, MaterialGetVector4OnNewMaterialReturnsEmptyOptional)
 {
     const Material material = generate_material();
     ASSERT_FALSE(material.get<Vector4>("someKey"));
@@ -444,7 +444,7 @@ TEST_F(MaterialTest, MaterialSetVector3ArrayOnMaterialCausesGetVector3ArrayToReu
     ASSERT_TRUE(rgs::equal(rv, values));
 }
 
-TEST_F(MaterialTest, MaterialSetVec4OnMaterialCausesGetVec4ToReturnTheProvidedValue)
+TEST_F(MaterialTest, MaterialSetVector4OnMaterialCausesGetVector4ToReturnTheProvidedValue)
 {
     Material material = generate_material();
 

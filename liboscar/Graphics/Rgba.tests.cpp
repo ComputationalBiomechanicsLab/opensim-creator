@@ -112,7 +112,7 @@ TEST(Rgba, can_implicitly_construct_Rgba_from_different_components_if_components
     ASSERT_EQ(unorm8_val.a, Unorm8{0xff});
 }
 
-TEST(Rgba, can_explicitly_construct_from_Vec4_of_different_type)
+TEST(Rgba, can_explicitly_construct_from_Vector4_of_different_type)
 {
     const Rgba<Unorm8> unorm8_val{Vector4{0.0f, 0.5f, 1.0f, 1.0f}};
 

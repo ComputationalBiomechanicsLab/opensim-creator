@@ -9,7 +9,7 @@
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Key.h>
@@ -885,7 +885,7 @@ namespace osc::ui
     // behaves like `ui::draw_float3_input`, but edits the given angular value in degrees
     bool draw_angle3_input(
         CStringView label,
-        Vec<3, Radians>&,
+        Vector<3, Radians>&,
         CStringView format = "%.3f"
     );
 

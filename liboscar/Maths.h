@@ -50,7 +50,7 @@
 #include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>

@@ -15,7 +15,7 @@
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
 #include <liboscar/Maths/VectorFunctions.h>

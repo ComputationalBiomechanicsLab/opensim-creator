@@ -20,9 +20,9 @@ namespace
         out << "# created: " << std::put_time(&metadata.creation_time, "%Y-%m-%d %H:%M:%S") << '\n';
     }
 
-    std::ostream& write_vector3(std::ostream& out, const Vector3& vec)
+    std::ostream& write_vector3(std::ostream& out, const Vector3& v)
     {
-        return out << vec.x << ' ' << vec.y << ' ' << vec.z;
+        return out << v.x << ' ' << v.y << ' ' << v.z;
     }
 
     void write_vertices(std::ostream& out, const Mesh& mesh)

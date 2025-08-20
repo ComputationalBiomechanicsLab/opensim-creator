@@ -2,7 +2,7 @@
 
 #include <liboscar/Graphics/ColorComponent.h>
 #include <liboscar/Maths/CommonFunctions.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 #include <liboscar/Utils/HashHelpers.h>
 
 #include <concepts>
@@ -144,21 +144,21 @@ namespace osc
             r{v}, g{v}, b{v}, a{alpha}
         {}
 
-        explicit constexpr Rgba(const Vec<3, value_type>& v) :
+        explicit constexpr Rgba(const Vector<3, value_type>& v) :
             r{v.x}, g{v.y}, b{v.z}, a(1.0f)
         {}
 
-        constexpr Rgba(const Vec<3, value_type>& v, value_type alpha) :
+        constexpr Rgba(const Vector<3, value_type>& v, value_type alpha) :
             r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {}
 
-        explicit constexpr Rgba(const Vec<4, value_type>& v) :
+        explicit constexpr Rgba(const Vector<4, value_type>& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {}
 
         template<ColorComponent U>
         requires std::constructible_from<T, const U&>
-        explicit constexpr Rgba(const Vec<4, U>& v) :
+        explicit constexpr Rgba(const Vector<4, U>& v) :
             r{static_cast<T>(v.x)},
             g{static_cast<T>(v.y)},
             b{static_cast<T>(v.z)},
@@ -220,9 +220,9 @@ namespace osc
             return &r + size();
         }
 
-        constexpr operator Vec<4, value_type> () const
+        constexpr operator Vector<4, value_type> () const
         {
-            return Vec<4, value_type>{r, g, b, a};
+            return Vector<4, value_type>{r, g, b, a};
         }
 
         friend bool operator==(const Rgba&, const Rgba&) = default;
@@ -343,7 +343,7 @@ namespace osc
     }
 }
 
-// define compile-time size for `Rgba<T>` (same as `std::array`, `std::tuple`, `osc::Vec`, etc.)
+// define compile-time size for `Rgba<T>`
 template<osc::ColorComponent T>
 struct std::tuple_size<osc::Rgba<T>> {
     static inline constexpr size_t value = 4;

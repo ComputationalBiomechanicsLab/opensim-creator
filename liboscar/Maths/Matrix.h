@@ -36,7 +36,7 @@ namespace osc
         return std::move(ss).str();
     }
 
-    // when handled as a tuple-like object, a `Mat` decomposes into its column `Vec`s
+    // when handled as a tuple-like object, a `Matrix` decomposes into its column `Vector`s
 
     template<size_t I, size_t C, size_t R, typename T>
     constexpr const typename Matrix<C, R, T>::value_type& get(const Matrix<C, R, T>& m) { return m[I]; }

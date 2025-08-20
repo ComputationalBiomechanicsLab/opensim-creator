@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/Vec.h>
+#include <liboscar/Maths/Vector.h>
 
 namespace osc
 {
@@ -9,7 +9,7 @@ namespace osc
     // the X, then Y, then Z axes
 
     template<typename Units>
-    using EulerAnglesIn = Vec<3, Units>;  // useful for writing `EulerAnglesIn<Degrees>(vec)`
+    using EulerAnglesIn = Vector<3, Units>;  // useful for writing `EulerAnglesIn<Degrees>(vec)`
 
     using EulerAngles = EulerAnglesIn<Radians>;
 }

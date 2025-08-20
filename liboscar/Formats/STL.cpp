@@ -72,11 +72,11 @@ namespace
         }
     }
 
-    void write_vector3_ieee754(std::ostream& out, const Vector3& vec)
+    void write_vector3_ieee754(std::ostream& out, const Vector3& v)
     {
-        write_float_ieee754(out, vec.x);
-        write_float_ieee754(out, vec.y);
-        write_float_ieee754(out, vec.z);
+        write_float_ieee754(out, v.x);
+        write_float_ieee754(out, v.y);
+        write_float_ieee754(out, v.z);
     }
 
     void write_attribute_count(std::ostream& out)
