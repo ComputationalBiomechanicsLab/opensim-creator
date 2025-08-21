@@ -107,8 +107,10 @@ LINK: `Practical Session, Model Building`_
 version to files.opensimcreator.com, put a screenshot of the first slide here
 and link to the download.
 
-**TODO**: download links for any supplamentary data that attendants might need
-during this session (e.g. meshes).
+The materials for making the model are available as a zip file (:download:`download here <_static/the-model-warper/walkthrough-model.zip>`). The
+zip includes a pre-made version of the model (``.osim``) that we'll be making
+in this practical section, so that you have something for the model warping
+practical.
 
 
 3. Break
