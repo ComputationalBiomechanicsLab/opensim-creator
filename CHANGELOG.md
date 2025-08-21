@@ -20,6 +20,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed incorrect icon DPI scaling on MacOS. The algorithm that figures out the
   correct DPI scaling for icons now also takes the main window's current scaling
   mode into account.
+- Cancelling out of a file dialog in Ubuntu 22.04 should now just cancel the
+  dialog (usual behavior), rather than sending a blank path to the application
+  (resulting in an error, #1037).
 
 ## [0.5.25] - 2025/07/14
 

@@ -719,7 +719,10 @@ namespace
 
         // This free function is what SDL calls with `SDL3CallbackState` when the user is
         // finished with the dialog.
-        static void sdl3_compatible_callback(void* userdata, const char* const* filelist, int)
+        static void sdl3_compatible_callback(
+            void* userdata,
+            const char* const* filelist,
+            [[maybe_unused]] int selected_filter_index)
         {
             // Unpack callback state.
             const std::unique_ptr<SDL3DialogCallbackState> state{static_cast<SDL3DialogCallbackState*>(userdata)};
@@ -733,12 +736,19 @@ namespace
                 return;
             }
 
-            // Convert SDL's file list to an oscar `FileDialogResponse`
-            std::vector<std::filesystem::path> files;
-            while (*filelist) {
-                files.emplace_back(*filelist);
-                ++filelist;
+            // Figure out how many non-nullptr file paths were submitted by the user.
+            //
+            // Additionally, filter out blank paths (std::strlen) as an Ubuntu 22.04
+            // hotfix (#1037): for some reason, when the user cancels out of a dialog,
+            // the SDL3 backend will emit a blank filepath, rather than no filepaths
+            // (expected). Appears to be fixed in Ubuntu 24.04.
+            size_t num_files = 0;
+            for (const char* const* it = filelist; *it and std::strlen(*it) > 0; ++it) {
+                ++num_files;
             }
+
+            // Convert SDL's file list to an oscar `FileDialogResponse`.
+            std::vector<std::filesystem::path> files(filelist, filelist + num_files);
 
             // Marshal the call to the user's callback onto the main thread by packing it
             // into an `AppMarshalledCallbackEvent`.
