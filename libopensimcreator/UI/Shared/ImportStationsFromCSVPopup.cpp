@@ -13,6 +13,8 @@
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 #include <filesystem>
 #include <fstream>
@@ -30,10 +32,12 @@ public:
         ImportStationsFromCSVPopup& owner,
         Widget* parent,
         std::string_view popupName_,
-        std::function<void(ImportedData)> onImport_) :
+        std::function<void(ImportedData)> onImport_,
+        std::shared_ptr<const IModelStatePair> maybeAssociatedModel_) :
 
         PopupPrivate{owner, parent, popupName_},
-        m_OnImportCallback{std::move(onImport_)}
+        m_OnImportCallback{std::move(onImport_)},
+        m_MaybeAssociatedModel{std::move(maybeAssociatedModel_)}
     {
         set_modal(true);
     }
@@ -57,6 +61,21 @@ public:
             ui::draw_vertical_spacer(0.5f);
 
         }
+
+        if (m_MaybeAssociatedModel) {
+            ui::draw_separator();
+            ui::draw_text("Associate landmarks with a frame in the model");
+            if (ui::begin_combobox("Model frame", m_TargetComponentAbsPath)) {
+                for (const auto& frame : m_MaybeAssociatedModel->getModel().getComponentList<OpenSim::PhysicalFrame>()) {
+                    const std::string absPath = frame.getAbsolutePathString();
+                    if (ui::draw_selectable(absPath, absPath == m_TargetComponentAbsPath)) {
+                        m_TargetComponentAbsPath = absPath;
+                    }
+                }
+                ui::end_combobox();
+            }
+        }
+
         drawPossiblyDisabledOkOrCancelButtons();
         ui::draw_vertical_spacer(0.5f);
     }
@@ -255,6 +274,7 @@ private:
         m_OnImportCallback({
             .maybeLabel = m_MaybeImportPath ? m_MaybeImportPath->string() : std::optional<std::string>{},
             .landmarks = m_ImportedLandmarks,
+            .maybeTargetComponentAbsPath = m_TargetComponentAbsPath == "/ground" ? std::optional<std::string>{} : m_TargetComponentAbsPath,
         });
     }
 
@@ -262,12 +282,15 @@ private:
     std::optional<std::filesystem::path> m_MaybeImportPath;
     std::vector<lm::NamedLandmark> m_ImportedLandmarks;
     std::vector<std::string> m_ImportWarnings;
+    std::shared_ptr<const IModelStatePair> m_MaybeAssociatedModel;
+    std::string m_TargetComponentAbsPath = "/ground";
 };
 
 osc::ImportStationsFromCSVPopup::ImportStationsFromCSVPopup(
     Widget* parent,
     std::string_view popupName_,
-    std::function<void(ImportedData)> onImport) :
-    Popup{std::make_unique<Impl>(*this, parent, popupName_, std::move(onImport))}
+    std::function<void(ImportedData)> onImport,
+    std::shared_ptr<const IModelStatePair> maybeAssociatedModel) :
+    Popup{std::make_unique<Impl>(*this, parent, popupName_, std::move(onImport), std::move(maybeAssociatedModel))}
 {}
 void osc::ImportStationsFromCSVPopup::impl_draw_content() { private_data().draw_content(); }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Landmarks/NamedLandmark.h>
+#include <libopensimcreator/Documents/Model/IModelStatePair.h>
 
 #include <liboscar/UI/Popups/Popup.h>
 
@@ -18,12 +19,14 @@ namespace osc
         struct ImportedData final {
             std::optional<std::string> maybeLabel;
             std::vector<lm::NamedLandmark> landmarks;
+            std::optional<std::string> maybeTargetComponentAbsPath;
         };
 
         explicit ImportStationsFromCSVPopup(
             Widget* parent,
             std::string_view,
-            std::function<void(ImportedData)> onImport
+            std::function<void(ImportedData)> onImport,
+            std::shared_ptr<const IModelStatePair> maybeAssociatedModel = {}
         );
 
     private:

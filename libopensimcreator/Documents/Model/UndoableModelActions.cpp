@@ -2355,7 +2355,8 @@ bool osc::ActionFitPlaneToMesh(IModelStatePair& model, const OpenSim::Mesh& open
 bool osc::ActionImportLandmarks(
     IModelStatePair& model,
     std::span<const lm::NamedLandmark> landmarks,
-    std::optional<std::string> maybeName)
+    std::optional<std::string> maybeName,
+    [[maybe_unused]] std::optional<std::string> maybeTargetFrameAbsPath)
 {
     if (model.isReadonly()) {
         return false;
@@ -2363,8 +2364,23 @@ bool osc::ActionImportLandmarks(
 
     try {
         OpenSim::Model& mutModel = model.updModel();
+
+        const OpenSim::PhysicalFrame* targetFrame = &mutModel.getGround();
+        if (maybeTargetFrameAbsPath) {
+            const auto* f = FindComponent<OpenSim::PhysicalFrame>(mutModel, *maybeTargetFrameAbsPath);
+            if (f) {
+                targetFrame = f;
+            }
+            else {
+                std::stringstream msg;
+                msg << "Could not find the specified frame in the model: " << *maybeTargetFrameAbsPath;
+                throw std::runtime_error(std::move(msg).str());
+            }
+        }
+        OSC_ASSERT(targetFrame != nullptr && "the target frame should be known at this point (developer error)");
+
         for (const auto& landmark : landmarks) {
-            AddMarker(mutModel, landmark.name, mutModel.getGround(), to<SimTK::Vec3>(landmark.position));
+            AddMarker(mutModel, landmark.name, *targetFrame, to<SimTK::Vec3>(landmark.position));
         }
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);

@@ -417,7 +417,12 @@ namespace osc
     bool ActionFitSphereToMesh(IModelStatePair&, const OpenSim::Mesh&);
     bool ActionFitEllipsoidToMesh(IModelStatePair&, const OpenSim::Mesh&);
     bool ActionFitPlaneToMesh(IModelStatePair&, const OpenSim::Mesh&);
-    bool ActionImportLandmarks(IModelStatePair&, std::span<const lm::NamedLandmark>, std::optional<std::string> maybeName);
+    bool ActionImportLandmarks(
+        IModelStatePair&,
+        std::span<const lm::NamedLandmark>,
+        std::optional<std::string> maybeName,
+        std::optional<std::string> maybeTargetFrameAbsPath
+    );
     void ActionExportModelGraphToDotviz(const std::shared_ptr<IModelStatePair>&);
     bool ActionExportModelGraphToDotvizClipboard(const OpenSim::Model&);
     bool ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model&);

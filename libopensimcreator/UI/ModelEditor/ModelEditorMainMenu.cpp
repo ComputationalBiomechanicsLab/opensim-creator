@@ -127,8 +127,14 @@ private:
                         "Import Points",
                         [model = m_Model](auto lms)
                         {
-                            ActionImportLandmarks(*model, lms.landmarks, lms.maybeLabel);
-                        }
+                            ActionImportLandmarks(
+                                *model,
+                                lms.landmarks,
+                                lms.maybeLabel,
+                                lms.maybeTargetComponentAbsPath
+                            );
+                        },
+                        m_Model
                     );
                     App::post_event<OpenPopupEvent>(*parent(), std::move(popup));
                 }

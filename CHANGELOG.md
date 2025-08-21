@@ -23,6 +23,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Cancelling out of a file dialog in Ubuntu 22.04 should now just cancel the
   dialog (usual behavior), rather than sending a blank path to the application
   (resulting in an error, #1037).
+- When using the "Import Points" tool from the model editor there is now the option
+  to select an existing frame in the model that the points should be expressed in (#791).
 
 ## [0.5.25] - 2025/07/14
 
