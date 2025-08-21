@@ -34,6 +34,7 @@ Table of Contents
    the-mesh-warper
    preview-experimental-data
    station-defined-frames
+   make-a-knee
    the-model-warper
 
 .. toctree::
