@@ -21,6 +21,12 @@
 // TPS document helper functions
 namespace osc
 {
+    // if it exists in the document, returns the position of the given landmark in its mesh coordinate system.
+    std::optional<Vector3> FindLandmarkLocation(const TPSDocument&, UID, TPSDocumentInputIdentifier, TPSDocumentElementType);
+
+    // if it exists in the document, translates the given landmark by the given translation vector in the mesh's coordinate system.
+    bool TranslateLandmarkByID(TPSDocument&, UID, TPSDocumentInputIdentifier, TPSDocumentElementType, const Vector3& translation);
+
     // if it exists in the document, returns a pointer to the identified landmark pair; otherwise, returns `nullptr`
     const TPSDocumentLandmarkPair* FindLandmarkPair(const TPSDocument&, UID);
     TPSDocumentLandmarkPair* FindLandmarkPair(TPSDocument&, UID);

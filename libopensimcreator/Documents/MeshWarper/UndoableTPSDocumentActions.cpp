@@ -25,6 +25,7 @@
 #include <fstream>
 #include <optional>
 #include <span>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -476,4 +477,22 @@ void osc::ActionSwapSourceDestination(UndoableTPSDocument& doc)
     }
 
     doc.commit_scratch("Swapped source <--> destination");
+}
+
+void osc::ActionTranslateLandmarksDontSave(
+    UndoableTPSDocument& doc,
+    const std::unordered_set<TPSDocumentElementID>& landmarkIDs,
+    const Vector3& translation)
+{
+    TPSDocument& scratch = doc.upd_scratch();
+    for (const TPSDocumentElementID& id : landmarkIDs) {
+        TranslateLandmarkByID(scratch, id.uid, id.input, id.type, translation);
+    }
+}
+
+void osc::ActionSaveLandmarkTranslation(UndoableTPSDocument& doc, const std::unordered_set<TPSDocumentElementID>& landmarkIDs)
+{
+    std::stringstream ss;
+    ss << "Translated " << landmarkIDs.size() << " landmarks";
+    doc.commit_scratch(std::move(ss).str());
 }

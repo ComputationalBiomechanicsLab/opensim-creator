@@ -78,7 +78,7 @@ namespace osc
             // mesh hittest: compute whether the user is hovering over the mesh (affects rendering)
             const Mesh& inputMesh = m_State->getScratchMesh(m_DocumentIdentifier);
             const BVH& inputMeshBVH = m_State->getScratchMeshBVH(m_DocumentIdentifier);
-            const std::optional<RayCollision> meshCollision = m_LastTextureHittestResult.is_hovered ?
+            std::optional<RayCollision> meshCollision = m_LastTextureHittestResult.is_hovered ?
                 get_closest_world_space_ray_triangle_collision(inputMesh, inputMeshBVH, Transform{}, cameraRay) :
                 std::nullopt;
 
@@ -87,18 +87,23 @@ namespace osc
                 getMouseLandmarkCollisions(cameraRay) :
                 std::nullopt;
 
+            if (m_ManipulatorGizmo.is_over() or m_ManipulatorGizmo.is_over()) {
+                landmarkCollision.reset();
+                meshCollision.reset();
+            }
+
             // state update: tell central state if something's being hovered in this panel
-            if (landmarkCollision)
-            {
+            if (landmarkCollision) {
                 m_State->setHover(landmarkCollision);
             }
-            else if (meshCollision)
-            {
+            else if (meshCollision) {
                 m_State->setHover(m_DocumentIdentifier, meshCollision->position);
             }
 
             // update camera: NOTE: make sure it's updated *before* rendering; otherwise, it'll be one frame late
-            updateCamera();
+            if (not m_ManipulatorGizmo.is_using()) {
+                updateCamera();
+            }
 
             // render 3D: draw the scene into the content rect and 2D-hittest it
             RenderTexture& renderTexture = renderScene(contentRectDims, meshCollision, landmarkCollision);
@@ -415,6 +420,11 @@ namespace osc
         // draws 2D ImGui overlays over the scene render
         void draw2DOverlayUI(const Rect& renderRect)
         {
+            ui::push_id(std::to_underlying(m_DocumentIdentifier));
+
+            // Draw the manipulation gizmo before anything else
+            drawManipulationGizmo(renderRect);
+
             ui::set_cursor_ui_position(renderRect.ypd_top_left() + m_State->getOverlayPadding());
 
             drawInformationIcon();
@@ -426,6 +436,41 @@ namespace osc
             drawAutoFitCameraButton();
             ui::same_line();
             drawLandmarkRadiusSlider();
+
+            ui::pop_id();
+        }
+
+        void drawManipulationGizmo(const Rect& renderRect)
+        {
+            const auto locations = m_State->getSelectionLandmarkLocations(m_DocumentIdentifier);
+            if (locations.empty()) {
+                return;  // Only draw the gizmo if something's selected
+            }
+
+            // Calculate mean centroid of the selection
+            Vector3d mean = locations.front();
+            size_t i = 1;
+            for (auto it = locations.begin() + 1; it != locations.end(); ++it) {
+                mean += *it;
+                ++i;
+            }
+            mean /= static_cast<double>(i);
+
+            // Draw a gizmo that manipulates the mean centroid
+            m_ManipulatorGizmo.set_operation(ui::GizmoOperation::Translate);
+            Matrix4x4 modelMatrix = translate(identity<Matrix4x4>(), Vector3{mean});
+            const auto userTransform = m_ManipulatorGizmo.draw(
+                modelMatrix,
+                m_Camera.view_matrix(),
+                m_Camera.projection_matrix(aspect_ratio_of(renderRect)),
+                renderRect
+            );
+            if (userTransform) {
+                ActionTranslateLandmarksDontSave(m_State->updUndoable(), m_State->getSelected(m_DocumentIdentifier), userTransform->translation);
+            }
+            if (m_ManipulatorGizmo.was_using() and not m_ManipulatorGizmo.is_using()) {
+                ActionSaveLandmarkTranslation(m_State->updUndoable(), m_State->getSelected(m_DocumentIdentifier));
+            }
         }
 
         // draws a information icon that shows basic mesh info when hovered
@@ -593,6 +638,7 @@ namespace osc
             *App::singleton<SceneCache>(App::resource_loader()),
         };
         ui::HittestResult m_LastTextureHittestResult;
+        ui::Gizmo m_ManipulatorGizmo;
         float m_LandmarkRadius = 0.05f;
     };
 }

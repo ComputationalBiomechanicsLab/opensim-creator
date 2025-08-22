@@ -30,6 +30,7 @@
 #include <concepts>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <span>
 #include <utility>
 
@@ -147,12 +148,34 @@ namespace osc
         bool hasSelection() const
         {
             // TODO: should probably gc the selection
-            for (const auto& el : m_UserSelection.getUnderlyingSet()) {
-                if (FindElement(getScratch(), el)) {
-                    return true;
+            return std::ranges::any_of(m_UserSelection, [this](const TPSDocumentElementID& el)
+            {
+                return FindElement(getScratch(), el);
+            });
+        }
+
+        std::vector<Vector3> getSelectionLandmarkLocations(TPSDocumentInputIdentifier input) const
+        {
+            std::vector<Vector3> rv;
+            for (const auto& el : m_UserSelection) {
+                if (el.input == input) {
+                    if (auto loc = FindLandmarkLocation(getScratch(), el.uid, el.input, el.type)) {
+                        rv.push_back(*loc);
+                    }
                 }
             }
-            return false;
+            return rv;
+        }
+
+        std::unordered_set<TPSDocumentElementID> getSelected(TPSDocumentInputIdentifier input) const
+        {
+            std::unordered_set<TPSDocumentElementID> rv;
+            for (const auto& el : m_UserSelection) {
+                if (el.input == input) {
+                    rv.insert(el);
+                }
+            }
+            return rv;
         }
 
         bool isSelected(const TPSDocumentElementID& id) const
@@ -177,9 +200,9 @@ namespace osc
             }
         }
 
-        const std::unordered_set<TPSDocumentElementID>& getUnderlyingSelectionSet() const
+        std::unordered_set<TPSDocumentElementID> getUnderlyingSelectionSet() const
         {
-            return m_UserSelection.getUnderlyingSet();
+            return {m_UserSelection.begin(), m_UserSelection.end()};
         }
 
         void closeTab()

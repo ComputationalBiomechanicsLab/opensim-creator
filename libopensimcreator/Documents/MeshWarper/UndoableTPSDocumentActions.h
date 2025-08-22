@@ -108,4 +108,10 @@ namespace osc
 
     // swaps the source and destination (incl. premultiply, etc.)
     void ActionSwapSourceDestination(UndoableTPSDocument&);
+
+    // translate the chosen landmarks by a translation vector, but don't save the the undoable output
+    void ActionTranslateLandmarksDontSave(UndoableTPSDocument&, const std::unordered_set<TPSDocumentElementID>& landmarkIDs, const Vector3& translation);
+
+    // commit/save the scratch space with a "translated landmarks" message (pair this with `ActionTranslateLandmarksDontSave`)
+    void ActionSaveLandmarkTranslation(UndoableTPSDocument&, const std::unordered_set<TPSDocumentElementID>& landmarkIDs);
 }

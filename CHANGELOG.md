@@ -27,6 +27,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to select an existing frame in the model that the points should be expressed in (#791).
 - Fixed an out-of-bounds error when manually navigating the undo/redo history in the
   history panel or undo/redo dropdown menus (#1083).
+- The mesh warping UI now supports manually moving landmarks around using a UI gizmo,
+  similar to how things can be moved in the mesh importer and model editor workflows
+  (#1084).
 
 ## [0.5.25] - 2025/07/14
 

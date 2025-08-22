@@ -92,6 +92,52 @@ namespace
     }
 }
 
+std::optional<Vector3> osc::FindLandmarkLocation(const TPSDocument& doc, UID uid, TPSDocumentInputIdentifier input, TPSDocumentElementType elementType)
+{
+    static_assert(num_options<TPSDocumentElementType>() == 2);
+    switch (elementType) {
+    case TPSDocumentElementType::Landmark: {
+        if (const TPSDocumentLandmarkPair* p = FindLandmarkPair(doc, uid)) {
+            static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
+            return input == TPSDocumentInputIdentifier::Source ? p->maybeSourceLocation : p->maybeDestinationLocation;
+        }
+        break;
+    }
+    case TPSDocumentElementType::NonParticipatingLandmark: {
+        if (const auto* npl = FindNonParticipatingLandmark(doc, uid)) {
+            return npl->location;
+        }
+        break;
+    }
+    }
+    return std::nullopt;
+}
+
+bool osc::TranslateLandmarkByID(TPSDocument& doc, UID uid, TPSDocumentInputIdentifier input, TPSDocumentElementType elementType, const Vector3& translation)
+{
+    static_assert(num_options<TPSDocumentElementType>() == 2);
+    switch (elementType) {
+    case TPSDocumentElementType::Landmark: {
+        if (TPSDocumentLandmarkPair* p = FindLandmarkPair(doc, uid)) {
+            static_assert(num_options<TPSDocumentInputIdentifier>() == 2);
+            if (auto& pos = input == TPSDocumentInputIdentifier::Source ? p->maybeSourceLocation : p->maybeDestinationLocation) {
+                *pos += translation;
+                return true;
+            }
+        }
+        break;
+    }
+    case TPSDocumentElementType::NonParticipatingLandmark: {
+        if (auto* npl = FindNonParticipatingLandmark(doc, uid)) {
+            npl->location += translation;
+            return true;
+        }
+        break;
+    }
+    }
+    return false;
+}
+
 const TPSDocumentLandmarkPair* osc::FindLandmarkPair(const TPSDocument& doc, UID uid)
 {
     return FindLandmarkPairImpl(doc, uid);
