@@ -26,6 +26,7 @@ Topics Covered by this Tutorial
 * How forces are used in OpenSim models. An example of how they can be used.
 * Why constraints are sometimes necessary in OpenSim models.
 
+.. _create-the-foot:
 
 Create the Foot
 ---------------
