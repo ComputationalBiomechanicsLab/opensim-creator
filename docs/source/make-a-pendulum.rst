@@ -24,6 +24,8 @@ Topics Covered by this Tutorial
 * (optional) Decorating the model to resemble what it's modelling
 
 
+.. _create-new-model:
+
 Create a New Model
 ------------------
 
