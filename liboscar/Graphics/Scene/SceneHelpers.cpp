@@ -340,6 +340,8 @@ SceneRendererParams osc::calc_standard_dark_scene_render_params(
         .antialiasing_level = aa_level,
         .draw_mesh_normals = false,
         .draw_floor = false,
+        .near_clipping_plane = camera.znear,
+        .far_clipping_plane = camera.zfar,
         .view_matrix = camera.view_matrix(),
         .projection_matrix = camera.projection_matrix(aspect_ratio_of(dimensions)),
         .viewer_position = camera.position(),
