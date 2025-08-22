@@ -3,7 +3,9 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/UndoRedo.h>
 
+#include <cstddef>
 #include <memory>
+#include <optional>
 
 void osc::RedoButton::impl_on_draw()
 {
@@ -30,12 +32,16 @@ void osc::RedoButton::impl_on_draw()
 
     if (ui::begin_popup_context_menu("##OpenRedoMenu", ui::PopupFlag::MouseButtonLeft)) {
         int ui_id = 0;
+        std::optional<size_t> desired_redo;
         for (size_t i = 0; i < undo_redo_->num_redo_entries(); ++i) {
             ui::push_id(ui_id++);
             if (ui::draw_selectable(undo_redo_->redo_entry_at(i).message())) {
-                undo_redo_->redo_to(i);
+                desired_redo = i;
             }
             ui::pop_id();
+        }
+        if (desired_redo) {
+            undo_redo_->redo_to(*desired_redo);
         }
         ui::end_popup();
     }

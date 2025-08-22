@@ -25,6 +25,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (resulting in an error, #1037).
 - When using the "Import Points" tool from the model editor there is now the option
   to select an existing frame in the model that the points should be expressed in (#791).
+- Fixed an out-of-bounds error when manually navigating the undo/redo history in the
+  history panel or undo/redo dropdown menus (#1083).
 
 ## [0.5.25] - 2025/07/14
 

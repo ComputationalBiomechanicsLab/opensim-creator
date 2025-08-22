@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 
@@ -48,12 +49,16 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
     int ui_id = 0;
 
     // draw undo entries oldest (highest index) to newest (lowest index)
+    std::optional<ptrdiff_t> user_enacted_undo;
     for (auto i = static_cast<ptrdiff_t>(storage.num_undo_entries())-1; i >= 0; --i) {
         ui::push_id(ui_id++);
         if (ui::draw_selectable(storage.undo_entry_at(i).message())) {
-            storage.undo_to(i);
+            user_enacted_undo = i;
         }
         ui::pop_id();
+    }
+    if (user_enacted_undo) {
+        storage.undo_to(*user_enacted_undo);
     }
 
     ui::push_id(ui_id++);
@@ -61,12 +66,16 @@ void osc::UndoRedoPanel::draw_content(UndoRedoBase& storage)
     ui::pop_id();
 
     // draw redo entries oldest (lowest index) to newest (highest index)
+    std::optional<ptrdiff_t> user_enacted_redo;
     for (size_t i = 0; i < storage.num_redo_entries(); ++i) {
         ui::push_id(ui_id++);
         if (ui::draw_selectable(storage.redo_entry_at(i).message())) {
-            storage.redo_to(i);
+            user_enacted_redo = i;
         }
         ui::pop_id();
+    }
+    if (user_enacted_redo) {
+        storage.redo_to(*user_enacted_redo);
     }
 }
 

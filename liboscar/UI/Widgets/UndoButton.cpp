@@ -4,6 +4,9 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/UndoRedo.h>
 
+#include <cstddef>
+#include <optional>
+
 void osc::UndoButton::impl_on_draw()
 {
     ui::push_style_var(ui::StyleVar::ItemSpacing, {0.0f, 0.0f});
@@ -29,12 +32,17 @@ void osc::UndoButton::impl_on_draw()
 
     if (ui::begin_popup_context_menu("##OpenUndoMenu", ui::PopupFlag::MouseButtonLeft)) {
         int ui_id = 0;
+
+        std::optional<size_t> desired_undo;
         for (size_t i = 0; i < undo_redo_->num_undo_entries(); ++i) {
             ui::push_id(ui_id++);
             if (ui::draw_selectable(undo_redo_->undo_entry_at(i).message())) {
-                undo_redo_->undo_to(i);
+                desired_undo = i;
             }
             ui::pop_id();
+        }
+        if (desired_undo) {
+            undo_redo_->undo_to(*desired_undo);
         }
         ui::end_popup();
     }
