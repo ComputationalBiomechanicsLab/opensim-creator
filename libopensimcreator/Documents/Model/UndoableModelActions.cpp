@@ -2365,11 +2365,11 @@ bool osc::ActionImportLandmarks(
     try {
         OpenSim::Model& mutModel = model.updModel();
 
-        const OpenSim::PhysicalFrame* targetFrame = &mutModel.getGround();
+        OpenSim::PhysicalFrame* maybeTargetFrame = nullptr;
         if (maybeTargetFrameAbsPath) {
-            const auto* f = FindComponent<OpenSim::PhysicalFrame>(mutModel, *maybeTargetFrameAbsPath);
+            auto* f = FindComponentMut<OpenSim::PhysicalFrame>(mutModel, *maybeTargetFrameAbsPath);
             if (f) {
-                targetFrame = f;
+                maybeTargetFrame = f;
             }
             else {
                 std::stringstream msg;
@@ -2377,10 +2377,16 @@ bool osc::ActionImportLandmarks(
                 throw std::runtime_error(std::move(msg).str());
             }
         }
-        OSC_ASSERT(targetFrame != nullptr && "the target frame should be known at this point (developer error)");
 
         for (const auto& landmark : landmarks) {
-            AddMarker(mutModel, landmark.name, *targetFrame, to<SimTK::Vec3>(landmark.position));
+            if (maybeTargetFrame) {
+                // If the caller specified a target frame then the markers should be imported
+                // as direct children of the target frame, rather than being dumped into the
+                // generic markerset.
+                AddComponent<OpenSim::Marker>(*maybeTargetFrame, landmark.name, *maybeTargetFrame, to<SimTK::Vec3>(landmark.position));
+            } else {
+                AddMarker(mutModel, landmark.name, mutModel.getGround(), to<SimTK::Vec3>(landmark.position));
+            }
         }
         FinalizeConnections(mutModel);
         InitializeModel(mutModel);
