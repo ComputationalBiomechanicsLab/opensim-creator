@@ -108,6 +108,7 @@ std::optional<Vector3> osc::FindLandmarkLocation(const TPSDocument& doc, UID uid
             return npl->location;
         }
         break;
+    default: return std::nullopt;
     }
     }
     return std::nullopt;
@@ -134,6 +135,7 @@ bool osc::TranslateLandmarkByID(TPSDocument& doc, UID uid, TPSDocumentInputIdent
         }
         break;
     }
+    default: return false;
     }
     return false;
 }
