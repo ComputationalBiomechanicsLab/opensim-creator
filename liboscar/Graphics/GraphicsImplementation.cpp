@@ -3167,6 +3167,7 @@ namespace
             // TODO: should upload texture ints as a single array call
             for (size_t i = 0; i < render_textures.size(); ++i) {
                 const RenderTexture& render_texture = render_textures[i];
+                OSC_ASSERT(render_texture.impl().has_been_rendered_to() && "cannot sample a RenderTexture that hasn't been rendered to");
                 bind_to_render_buffer_ogl_data(
                     shader_element,
                     i,
@@ -5948,7 +5949,7 @@ public:
             not render_texture.upd_depth_buffer().has_been_rendered_to() or
             (clear_flags() & CameraClearFlag::Depth);
 
-        const RenderTarget render_target{
+        RenderTarget render_target{
             {
                 RenderTargetColorAttachment{
                     // attach to render texture's color buffer
@@ -5975,6 +5976,7 @@ public:
                 .store_action = RenderBufferStoreAction::DontCare,
             },
         };
+        render_target.set_device_pixel_ratio(render_texture.device_pixel_ratio());
 
         render_to(render_target);
     }
@@ -7535,13 +7537,15 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     const RenderTarget* maybe_custom_render_target)
 {
     ViewportGeometry rv;
-    const float scaler = maybe_custom_render_target ? 1.0f : App::get().main_window_device_pixel_ratio();
+    const float device_pixel_ratio = maybe_custom_render_target ?
+        maybe_custom_render_target->device_pixel_ratio() :
+        App::get().main_window_device_pixel_ratio();
 
     // handle viewport (which should be in raw pixels for low-level graphics API calls)
     if (auto pixel_rect = camera.pixel_rect()) {
         rv.viewport = {
-            .bottom_left = scaler * pixel_rect->ypu_bottom_left(),
-            .pixel_dimensions = scaler * pixel_rect->dimensions()
+            .bottom_left = device_pixel_ratio * pixel_rect->ypu_bottom_left(),
+            .pixel_dimensions = device_pixel_ratio * pixel_rect->dimensions()
         };
     }
     else if (maybe_custom_render_target) {
@@ -7553,14 +7557,14 @@ osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geome
     else {
         rv.viewport = {
             .bottom_left = {},
-            .pixel_dimensions = scaler * App::get().main_window_dimensions(),
+            .pixel_dimensions = device_pixel_ratio * App::get().main_window_dimensions(),
         };
     }
 
     if (camera.maybe_scissor_rect_) {
         rv.scissor = {
-            .bottom_left = scaler * camera.maybe_scissor_rect_->ypu_bottom_left(),
-            .pixel_dimensions = scaler * camera.maybe_scissor_rect_->dimensions(),
+            .bottom_left = device_pixel_ratio * camera.maybe_scissor_rect_->ypu_bottom_left(),
+            .pixel_dimensions = device_pixel_ratio * camera.maybe_scissor_rect_->dimensions(),
         };
     }
 

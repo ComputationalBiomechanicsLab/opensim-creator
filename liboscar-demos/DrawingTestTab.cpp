@@ -22,16 +22,19 @@ public:
     void on_draw()
     {
         RenderTexture tex{{
-            .pixel_dimensions = {256, 256},
+            .pixel_dimensions = App::get().main_window_device_pixel_ratio()*Vector2i{256},
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
         }};
+        OSC_ASSERT(tex.dimensions() == Vector2{256.0f});
 
         ui::begin_panel("p");
         ui::DrawList dl;
+        dl.push_clip_rect(Rect::from_corners(Vector2{}, tex.dimensions()));
         dl.add_circle({.origin = {}, .radius = 50.0f}, Color::red());
-        dl.add_circle_filled({.origin = Vector2{125.0f}, .radius = 100.0f}, Color::red());
-        dl.add_rect_filled(Rect::from_corners({}, {100.0f, 100.0f}), Color::blue(), 3.0f);
+        dl.add_circle_filled({.origin = Vector2{128.0f}, .radius = 64.0f}, Color::purple());
+        dl.add_rect_filled(Rect::from_corners(Vector2{128.0f}, Vector2{200.0f}), Color::blue(), 3.0f);
         dl.render_to(tex);
+        dl.pop_clip_rect();
         ui::draw_image(tex);
         ui::end_panel();
     }

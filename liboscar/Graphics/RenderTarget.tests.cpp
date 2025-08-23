@@ -96,3 +96,29 @@ TEST(RenderTarget, validate_or_throw_doesnt_throw_when_given_buffers_with_same_d
     const RenderTarget render_target{color_attachment, depth_attachment};
     ASSERT_NO_THROW({ render_target.validate_or_throw(); });
 }
+
+TEST(RenderTarget, default_constructed_has_device_pixel_ratio_of_1)
+{
+    ASSERT_EQ(RenderTarget{}.device_pixel_ratio(), 1.0f);
+}
+
+TEST(RenderTarget, set_device_pixel_ratio_sets_the_device_pixel_ratio)
+{
+    RenderTarget render_target;
+    ASSERT_EQ(render_target.device_pixel_ratio(), 1.0f);
+    render_target.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(render_target.device_pixel_ratio(), 2.0f);
+}
+
+TEST(RenderTarget, default_constructed_as_1x1_dimensions)
+{
+    ASSERT_EQ(RenderTarget{}.dimensions(), Vector2(1.0f));
+}
+
+TEST(RenderTarget, setting_device_pixel_ratio_scales_dimensions)
+{
+    RenderTarget render_target;
+    ASSERT_EQ(render_target.dimensions(), Vector2(1.0f));
+    render_target.set_device_pixel_ratio(2.0f);
+    ASSERT_EQ(render_target.dimensions(), Vector2(0.5f));
+}
