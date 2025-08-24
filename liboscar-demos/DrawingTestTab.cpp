@@ -22,7 +22,7 @@ public:
     void on_draw()
     {
         RenderTexture tex{{
-            .pixel_dimensions = App::get().main_window_device_pixel_ratio()*Vector2i{256},
+            .pixel_dimensions = Vector2i{static_cast<int>(App::get().main_window_device_pixel_ratio()*256.0f)},
             .device_pixel_ratio = App::get().main_window_device_pixel_ratio(),
         }};
         OSC_ASSERT(tex.dimensions() == Vector2{256.0f});
