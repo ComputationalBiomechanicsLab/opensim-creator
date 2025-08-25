@@ -164,23 +164,48 @@ To add a muscle to a model, the model must contain at least two pre-existing loc
 can be used as muscle points. These can either be added manually (via the ``Add`` menu) or
 imported (as in :ref:`import-femur-landmarks`). We'll combine both approaches here.
 
-To add a ``Marker`` manually, you can right-click the ``femur`` and add a ``Marker`` component,
-followed by manually placing it on the femur mesh:
+To add a ``Marker`` manually, you can right-click the ``femur`` and use the ``Add`` menu to
+add a ``Marker`` component, followed by manually placing it on the femur mesh:
 
-TODO: describe adding and moving a marker in the femur
+.. figure:: _static/make-a-knee/add-femur-muscle-origin-marker.jpeg
+    :width: 60%
 
-To import muscle points from an external source, follow the same procedure as :ref:`import-femur-landmarks`. Ensure
-the marker is attached to the ``femur``:
+    One way to define muscle points is to manually add a ``Marker`` component to the model
+    attached to the appropriate body (here, ``femur``) and then manually move the marker to
+    the correct location.
 
-TODO: describe importing a landmark on the tibia
+.. figure:: _static/make-a-knee/manually-place-femur-muscle-origin-marker.jpeg
+    :width: 60%
 
-Once you have two locations in the model they can be used to create a muscle (see also: :ref:`mesh-importer-add-muscle-paths`). Use the
-``Add`` menu to add a ``Millard2012EquilibriumMuscle`` to the model that uses the two points:
+    Once a ``Marker`` has been added, it can be manually moved around with the mouse, or
+    you can edit its ``location`` property (if necessary, with respect to a different frame).
 
-TODO: describe creating a muscle from the landmarks
+To add a ``Marker`` from an external data source (CSV), follow the same procedure as
+:ref:`import-femur-landmarks`, but import ``tibia_r_muscle-point.landmarks.csv`` instead
+and ensure the marker is attached to the ``tibia`` body:
 
-TODO: mention that the muscle is clipping between the two points because we haven't described
-how the muscle needs to wrap around the knee
+.. figure:: _static/make-a-knee/import-tibia-muscle-point.jpeg
+    :width: 60%
+
+    Another way to define muscle points is to use the ``Import Points`` tool to import
+    external data from a CSV as ``Marker``\s. Remember to specify ``tibia`` as the associated
+    frame.
+
+Once you have two locations in the model they can be used to create a muscle (see
+also: :ref:`mesh-importer-add-muscle-paths`). Use the ``Add`` menu to add a
+``Millard2012EquilibriumMuscle`` to the model that uses the two points:
+
+.. figure:: _static/make-a-knee/create-muscle-that-crosses-knee.jpeg
+    :width: 60%
+
+    TODO: explain inputs etc.
+
+.. figure:: _static/make-a-knee/after-adding-muscle.jpeg
+    :width: 60%
+
+    TODO: explain why the muscle is clipping etc. - will be resolved by adding wrap surfaces.
+
+TODO: explain that the ``Marker``\s can now be deleted: they've served their purpose.
 
 
 Add a Knee Wrap Cylinder Wrap Surface
