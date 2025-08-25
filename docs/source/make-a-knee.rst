@@ -198,29 +198,65 @@ also: :ref:`mesh-importer-add-muscle-paths`). Use the ``Add`` menu to add a
 .. figure:: _static/make-a-knee/create-muscle-that-crosses-knee.jpeg
     :width: 60%
 
-    TODO: explain inputs etc.
+    When adding a ``Millard2012EquilibriumMuscle``, pick the two markers as its path points. This
+    choice can be edited later, if necessary.
 
 .. figure:: _static/make-a-knee/after-adding-muscle.jpeg
     :width: 60%
 
-    TODO: explain why the muscle is clipping etc. - will be resolved by adding wrap surfaces.
+    The muscle will then be added to the model but, because it isn't associated with any ``WrapGeometry``,
+    it will clip through the bone meshes. This will be fixed in the next section.
 
-TODO: explain that the ``Marker``\s can now be deleted: they've served their purpose.
+**Note**: With the muscle created, you can now delete the ``Marker``\s that were used to initialize it: they
+have served their purpose. The resulting muscle isn't connected or related to the ``Marker``\s from which
+it was created.
 
 
 Add a Knee Wrap Cylinder Wrap Surface
 -------------------------------------
 
-TODO: describe adding a knee wrap surface to the relevant body (accessible via the UI by
-right-clicking the relevant body -> Add -> WrapSurface or similar).
+Now that a muscle has been added to the model, you'll see a problem: the muscle clips through
+the bone meshes! This is because we haven't told OpenSim how the muscle should wrap around things.
+
+To set up a wrapping cylinder that approximates the shape of the bones around the knee, you can
+right-click the body that the wrapping cylinder should be added to and then add it:
+
+.. figure:: _static/make-a-knee/add-wrapcylinder-to-femur.jpeg
+    :width: 60%
+
+    You can use ``femur``'s context menu to add a ``WrapCylinder`` to it.
+
+.. figure:: _static/make-a-knee/knee-wrap-cylinder-added.jpeg
+    :width: 60%
+
+    The ``translation``, ``quadrant``, ``radius``, and ``length`` of the ``WrapCylinder``
+    should be edited to match the underlying femur geometry, so that the muscle wrapping
+    over the knee is more realistic.
+
+    The muscle won't wrap over the cylinder yet. That's handled in the next step.
 
 
 Associate the Muscle with the Wrap Surface
 ------------------------------------------
 
-TODO: describe why wrap surfaces are separate from their interaction set (it makes logical sense
-but users routinely are confused by this extra step). Associated by right-clicking muscle
-and following the relevant menu option.
+Once the ``WrapCylinder`` has been added, you'll notice that the muscle isn't wrapping over the
+cylinder yet. This is because OpenSim uses "Path Wrap"s to describe how a muscle is associated
+with ``WrapGeometry`` in the model. To create this association, you can right-click a muscle and
+add a path wrap:
+
+.. figure:: _static/make-a-knee/add-muscle-path-wrap-for-cylinder.jpeg
+    :width: 60%
+
+    Add a path wrap to the muscle in order to associate the muscle with the ``knee_wrap``
+    ``WrapCylinder``.
+
+.. figure:: _static/make-a-knee/after-adding-path-wrap-to-muscle.jpeg
+    :width: 60%
+
+    After adding the path wrap, the muscle should now correctly wrap over the X quadrant
+    of the ``WrapCylinder``, which more closely mimics how an anatomically-correct muscle
+    would wrap over the knee.
+
 
 Summary
 -------
