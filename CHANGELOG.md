@@ -34,6 +34,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   meshes (#1085).
 - The mesh warper UI now logs an error message when it fails to import a mesh file,
   rather than allowing the exception to bubble up and crash osc (#1088).
+- Pressing F while mousing over an input mesh in the mesh warper now causes the camera
+  to focus on that point, making it easier to focus on that part of the mesh (#1089).
 
 ## [0.5.25] - 2025/07/14
 
