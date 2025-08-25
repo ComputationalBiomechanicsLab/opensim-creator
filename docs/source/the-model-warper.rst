@@ -178,7 +178,7 @@ walkthrough, we will use the Thin-Plate Spline technique, as described in
     orientation. Destination data was pre-scaled by 0.001 to account for a difference in
     units between the mesh files (meters vs. millimeters).
 
-  For the pruposes of model warping, all you need to know is that the TPS warping technique
+  For the purposes of model warping, all you need to know is that the TPS warping technique
   requires a ``.landmarks.csv`` for the "source" and a ``.landmarks.csv`` for the destination.
   Where the landmarks in those files come from is up to you (:doc:`the-mesh-warper` is one way).
   The model warping implementation uses pairs of landmarks from those files to warp, scale, reorient,
@@ -332,7 +332,7 @@ However, the knee's wrap cylinder still needs to be scaled.
 
 It makes sense to use the TPS technique to warp the wrap cylinder---we've used it for
 all previous scaling steps, after all---but using the TPS technique on a wrap cylinder
-is tricky because its parameterized with a position, orientation, radius, and length. Only
+is tricky because it's parameterized with a position, orientation, radius, and length. Only
 one of those (position) is a point that can be simply passed into the transform yielded
 by the TPS technique. The others require special handling.
 
@@ -370,8 +370,8 @@ Once the step has been added, you won't be able to see the result model until th
 parameters are provided. For this step---and similarly to the previous step where we warped the
 frame stations---we will use the parameters that were used to scale the mesh, which are listed
 in :numref:`model-warper-mesh-scaling-properties`. The only difference is that the wrap cylinder
-scaling step has a ``wrap_cylinders`` property, which you should list the (OpenSim) path to the
-knee's wrap cylinder (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`):
+scaling step has a ``wrap_cylinders`` property, where you should list the (OpenSim) path to the
+knee's wrap cylinder ``/bodyset/femur_r/wrapobjectset/femur_r_condyl_wrap`` (:numref:`model-warper-after-applying-tps-wrapcylinder-warp`):
 
 .. _model-warper-after-applying-tps-wrapcylinder-warp:
 .. figure:: _static/the-model-warper/after-applying-tps-wrapcylinder-warp.jpeg
@@ -420,9 +420,9 @@ the (OpenSim) path to the relevant muscle points (:numref:`model-warper-after-ap
 .. figure:: _static/the-model-warper/after-applying-tps-path-points-warp.jpeg
     :width: 60%
 
-    The model after applying the path point scaling step. Compared to :numref:`model-warper-after-applying-tps-wrapcylinder-warp`,
-    it can be seen that the path point at the top of the femur was slightly adjusted by
-    the TPS warp.
+    The model after applying the path point scaling step to ``/forceset/Millard2012EquilibriumMuscle/path/Millard2012EquilibriumMuscle-P1``,
+    which is the only path point defined on the warped bodies in our model. Compared to :numref:`model-warper-after-applying-tps-wrapcylinder-warp`,
+    it can be seen that the path point at the top of the femur was slightly adjusted by the TPS warp.
 
 With that, the muscle path points have been scaled/warped by the same TPS technique that was used
 on the mesh, so the muscle points should now more closely represent the subject's morphology. Given
