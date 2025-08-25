@@ -264,7 +264,24 @@ add a path wrap:
 Summary
 -------
 
-TODO: short summary that summarizes the various steps taken to build the model, what the model's
-simplications/shortcomings are, and suggestions for future improvements/steps.
+This tutorial was a brief overview of some of the available techniques for building a
+biological model using OpenSim Creator's model editor workflow. The key points are:
+
+- It's possible to import/export 3D point data from/to CSV files, which can be handy when using
+  external scripts/tools.
+- You can use ``StationDefinedFrame``\s to define frames based on anatomical landmarks. How
+  they work is explained in more detail in :doc:`station-defined-frames`. ``StationDefinedFrame``\same
+  have the advantage that they are usable with warping algorithms that operate on points (see
+  :doc:`the-mesh-warper` and :doc:`the-model-warper`).
+- There's a few ways to add muscles to a model. Muscles can be created from at least two other
+  locations in the model. This means that you can import/place those points before creating the
+  muscle. Alternatively, you can create a dummy muscle and edit the path later on.
+- Wrap geometry is crucial when designing muscle paths that wrap over geometry like bones. Wrapping
+  is usually a two-step process (add the wrap geometry, associate the geometry with a path).
+
+Next Steps
+----------
+
+TODO: model warper, mesh warper, mesh importer.
 
 .. _Grood et. al.:  https://doi.org/10.1115/1.3138397
