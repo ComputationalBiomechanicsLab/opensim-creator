@@ -32,6 +32,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (#1084).
 - The mesh warper UI now correctly rim-highlights selected landmarks on large
   meshes (#1085).
+- The mesh warper UI now logs an error message when it fails to import a mesh file,
+  rather than allowing the exception to bubble up and crash osc (#1088).
 
 ## [0.5.25] - 2025/07/14
 

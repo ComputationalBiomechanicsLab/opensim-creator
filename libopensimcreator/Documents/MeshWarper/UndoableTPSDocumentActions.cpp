@@ -19,6 +19,7 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/FileDialogFilter.h>
+#include <liboscar/Platform/Log.h>
 
 #include <array>
 #include <filesystem>
@@ -216,7 +217,13 @@ void osc::ActionPromptUserToLoadMeshFile(
             if (response.size() != 1) {
                 return;  // Error or user somehow selected multiple options
             }
-            ActionLoadMesh(*doc, LoadMeshViaSimTK(response.front()), which);
+            try {
+                const auto mesh = LoadMeshViaSimTK(response.front());
+                ActionLoadMesh(*doc, mesh, which);
+            }
+            catch (const std::exception& ex) {
+                log_error("Error importing %s: %s", response.front().c_str(), ex.what());
+            }
         },
         GetSupportedSimTKMeshFormatsAsFilters()
     );
