@@ -10,10 +10,13 @@ Make a Knee
 
 In this tutorial, we will be making a basic model of a knee using OpenSim Creator:
 
-.. figure:: _static/make-a-bouncing-block/constraints-added.jpg
+.. figure:: _static/make-a-knee/after-adding-path-wrap-to-muscle.jpeg
     :width: 60%
 
-    TODO: screenshot of the final knee model
+    The model created by this tutorial. It contains two bodies, one joint, one muscle,
+    and a wrap surface. This covers the basics of using OpenSim Creator's model editor
+    to build a model with biological components (see :doc:`make-a-bouncing-block` for
+    a more mechanical example).
 
 This tutorial will primarily use the model editor workflow to build a new model that
 contains some of the steps/components necessary to build a human model. In essence, the
