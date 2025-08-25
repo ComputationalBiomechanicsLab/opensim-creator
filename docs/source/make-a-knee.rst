@@ -63,8 +63,8 @@ Create a blank model from the home screen (explained in :ref:`create-new-model`)
 Add a Femur Body
 ----------------
 
-Add a femur body with the femur mesh attached to it to the model. For this model,
-use the following parameters:
+Add a femur body with the femur mesh (``femur_r.vtp``) attached to it to the
+model. For this model, use the following parameters:
 
 .. figure:: _static/make-a-knee/add-femur-body.jpeg
     :width: 60%
@@ -83,7 +83,10 @@ Import Femur Landmarks
 
 This model will use a landmark-defined approach to defining the knee frame (explained
 in :doc:`station-defined-frames`). To do that, we'll need landmarks on the femur that
-correspond to the points that the ISB REF TODO use to define the knee coordinate system.
+correspond to the points that can be used to define the knee's parent frame. The landmarks
+we will use roughly correspond to those explained in `Grood et. al.`_, but our definition
+will use the Z axis to define knee extension/flexion (Grood et. al. use the X axis) because
+OpenSim's ``PinJoint`` always uses the Z axis for rotation.
 
 You can use the point importer in the model editor from the top menu bar, located at ``Tools`` ->
 ``Import Points``. It will show a popup that you can use to import the source femur knee
@@ -121,69 +124,38 @@ markers:
 
     When creating the ``StationDefinedFrame``, make the ``femur_r_condyl_centroid`` the frame
     ``origin_point`` and ``point_a``, ``femur_r_head`` the ``point_b``, ``femur_r_lateral_condyl``
-    the ``point_c``. These are the 4 input landmarks. You can then specify that ``ab_axis`` is ``+y``
-    and ``ab_x_ac_axis`` is ``+x``.
+    the ``point_c``. Addtionally, specify that ``ab_axis`` is ``+y`` and ``ab_x_ac_axis`` is ``+x``.
+    The relationship between these landmarks specifies the knee's coordinate system.
+
+.. figure:: _static/make-a-knee/after-femur-sdf-added.jpeg
+    :width: 60%
+
+    Once added, you should be able to see the ``StationDefinedFrame`` in the model. This is the "parent"
+    half of a joint definition in OpenSim.
 
 
 Add a Tibia Body
 ----------------
 
-Similar to :ref:`add-femur-body`, add a tibia body with the tibia mesh
+Similar to :ref:`add-femur-body`, add a tibia body with the tibia mesh (``tibia_r.vtp``)
 attached to it to the model. For this model, use the following parameters:
 
-.. figure:: _static/make-a-bouncing-block/constraints-added.jpg
+.. figure:: _static/make-a-knee/add-tibia-body.jpeg
     :width: 60%
 
-    TODO: image and short explanation of body properties.
+    Add the ``tibia`` body to the model with these properties. Make sure to attach the
+    ``tibia_r.vtp`` mesh to the body.
 
-
-Add Tibia Landmarks
--------------------
-
-Similar to :ref:`import-femur-landmarks`, use the point importer to import the source
-tibia knee landmarks file (``femur_r_knee-frame.landmarks.csv``). Ensure they are
-attached to the ``tibia`` body:
-
-.. figure:: _static/make-a-bouncing-block/constraints-added.jpg
-    :width: 60%
-
-    TODO: picture of the import points dialog, short explanation that points out that
-    they should be attached to the ``femur`` body etc.
-
-
-Add a StationDefinedFrame to the Tibia Head
--------------------------------------------
-
-Similar to :ref:`add-sdfs-to-femur-condyls`, add a ``StationDefinedFrame`` to the ``tibia``
-body to define the tibia side of the knee joint:
-
-.. figure:: _static/make-a-bouncing-block/constraints-added.jpg
-    :width: 60%
-
-    TODO: screenshot of the "Add Component" dialog for a ``StationDefinedFrame`` showing
-    what the various sockets need to be to define the frame.
-
-
-Join the Tibia head SDF to the Femur Condyl SDF
------------------------------------------------
-
-Now that the model contains both bodies and they each have the necessary body frame, we can
-modify the joint between ``tibia`` and ground to instead join the two ``StationDefinedFrame``s
-we have created.
-
-To do that, right-click the tibia-to-ground joint that was added when the ``tibia`` body was
-created, go to ``sockets`` and change the ``parent_frame`` to the femur's ``StationDefinedFrame``
-then do the same for ``child_frame``, but have it point at the ``tibia`` ``StationDefinedFrame``.
-
-.. figure:: _static/make-a-bouncing-block/constraints-added.jpg
-    :width: 60%
-
-    TODO: screenshot of the socket menu showing both sockets of the appropriate joint pointing
-    to the SDFs rather than the default offset frames that were added during joint creation.
+To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined with
+respect to the knee origin, which means that we do not need to define a ``StationDefinedFrame``
+for the tibia.
 
 
 Add a Muscle Between the Femur and the Tibia
 --------------------------------------------
+
+Now that both bodies have been added and joined with a ``PinJoint``, we can define muscles
+that connect the two bodies.
 
 TODO: describe adding relevant landmarks/stations or whatever is necessary in order to
 create a muscle that has one point on the femur and one point on the tibia. Point out that
@@ -210,3 +182,5 @@ Summary
 
 TODO: short summary that summarizes the various steps taken to build the model, what the model's
 simplications/shortcomings are, and suggestions for future improvements/steps.
+
+.. _Grood et. al.:  https://doi.org/10.1115/1.3138397
