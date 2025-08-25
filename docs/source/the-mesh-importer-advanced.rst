@@ -246,6 +246,7 @@ You should be able to see the meshes, see that the joints are rotating (somewhat
 
    The ``osim`` model created from the mesh importer. Editing joint coordinates and simulating the model is a quick way to check if joint centers are correctly oriented. Here, you can see that the finger-to-wrist joint is off. This was fixed by returning to the mesh importer and reorienting that joint center. (:download:`download model <_static/the-mesh-importer-advanced/after-marking-stations.osim>`)
 
+.. _mesh-importer-add-muscle-paths:
 
 Add Muscle Paths
 ----------------

@@ -146,9 +146,12 @@ attached to it to the model. For this model, use the following parameters:
     Add the ``tibia`` body to the model with these properties. Make sure to attach the
     ``tibia_r.vtp`` mesh to the body.
 
-To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined with
-respect to the knee origin, which means that we do not need to define a ``StationDefinedFrame``
-for the tibia.
+.. figure:: _static/make-a-knee/after-add-tibia-body.jpeg
+    :width: 60%
+
+    To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined
+    with respect to the knee origin, which means that we do not need to define a
+    ``StationDefinedFrame`` for the tibia.
 
 
 Add a Muscle Between the Femur and the Tibia
@@ -157,10 +160,27 @@ Add a Muscle Between the Femur and the Tibia
 Now that both bodies have been added and joined with a ``PinJoint``, we can define muscles
 that connect the two bodies.
 
-TODO: describe adding relevant landmarks/stations or whatever is necessary in order to
-create a muscle that has one point on the femur and one point on the tibia. Point out that
-it's going to look kind of shit initially because it will take the shortest path between the
-two (i.e. it'll clip through the meshes etc.)
+To add a muscle to a model, the model must contain at least two pre-existing locations that
+can be used as muscle points. These can either be added manually (via the ``Add`` menu) or
+imported (as in :ref:`import-femur-landmarks`). We'll combine both approaches here.
+
+To add a ``Marker`` manually, you can right-click the ``femur`` and add a ``Marker`` component,
+followed by manually placing it on the femur mesh:
+
+TODO: describe adding and moving a marker in the femur
+
+To import muscle points from an external source, follow the same procedure as :ref:`import-femur-landmarks`. Ensure
+the marker is attached to the ``femur``:
+
+TODO: describe importing a landmark on the tibia
+
+Once you have two locations in the model they can be used to create a muscle (see also: :ref:`mesh-importer-add-muscle-paths`). Use the
+``Add`` menu to add a ``Millard2012EquilibriumMuscle`` to the model that uses the two points:
+
+TODO: describe creating a muscle from the landmarks
+
+TODO: mention that the muscle is clipping between the two points because we haven't described
+how the muscle needs to wrap around the knee
 
 
 Add a Knee Wrap Cylinder Wrap Surface
