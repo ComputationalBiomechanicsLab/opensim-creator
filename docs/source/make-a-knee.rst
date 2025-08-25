@@ -17,7 +17,7 @@ In this tutorial, we will be making a basic model of a knee using OpenSim Creato
 
 This tutorial will primarily use the model editor workflow to build a new model that
 contains some of the steps/components necessary to build a human model. In essence, the
-content here will be familar to that in :doc:`make-a-bouncing-block`, but with a focus
+content here will be similar to that in :doc:`make-a-bouncing-block`, but with a focus
 on using landmark data, :doc:`station-defined-frames`, and wrap surfaces to build a
 model of a biological system.
 
@@ -90,13 +90,13 @@ OpenSim's ``PinJoint`` always uses the Z axis for rotation.
 
 You can use the point importer in the model editor from the top menu bar, located at ``Tools`` ->
 ``Import Points``. It will show a popup that you can use to import the source femur knee
-landmarks file (``femur_r_knee-frame.landmarks.csv``) as markers that are attached to
+landmarks file (``femur_r.landmarks.csv``) as markers that are attached to
 the ``femur`` body:
 
 .. figure:: _static/make-a-knee/import-femur-landmarks.jpeg
     :width: 60%
 
-    The ``Import Points`` dialog, with ``femur_r_knee-frame.landmarks.csv``. Make sure to
+    The ``Import Points`` dialog, with ``femur_r.landmarks.csv``. Make sure to
     select ``femur`` as the body to attach the landmarks to. Otherwise, they will end up
     attached to ``ground``.
 
