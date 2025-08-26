@@ -21,14 +21,14 @@ namespace osc
         return sin(RadiansT<Rep>{v}.count());
     }
 
-    template<size_t L, std::floating_point T>
-    Vector<L, T> sin(const Vector<L, T>& v)
+    template<std::floating_point T, size_t N>
+    Vector<T, N> sin(const Vector<T, N>& v)
     {
         return map(v, sin<T>);
     }
 
-    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vector<L, Rep> sin(const Vector<L, Angle<Rep, Units>>& v)
+    template<std::floating_point Rep, AngularUnitTraits Units, size_t N>
+    Vector<Rep, N> sin(const Vector<Angle<Rep, Units>, N>& v)
     {
         return map(v, sin<Rep, Units>);
     }
@@ -45,14 +45,14 @@ namespace osc
         return cos(RadiansT<Rep>{v}.count());
     }
 
-    template<size_t L, std::floating_point T>
-    Vector<L, T> cos(const Vector<L, T>& v)
+    template<std::floating_point T, size_t N>
+    Vector<T, N> cos(const Vector<T, N>& v)
     {
         return map(v, cos<T>);
     }
 
-    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vector<L, Rep> cos(const Vector<L, Angle<Rep, Units>>& v)
+    template<std::floating_point Rep, AngularUnitTraits Units, size_t N>
+    Vector<Rep, N> cos(const Vector<Angle<Rep, Units>, N>& v)
     {
         return map(v, cos<Rep, Units>);
     }
@@ -69,14 +69,14 @@ namespace osc
         return tan(RadiansT<Rep>{v}.count());
     }
 
-    template<size_t L, std::floating_point T>
-    Vector<L, T> tan(const Vector<L, T>& v)
+    template<std::floating_point T, size_t N>
+    Vector<T, N> tan(const Vector<T, N>& v)
     {
         return map(v, tan<T>);
     }
 
-    template<size_t L, std::floating_point Rep, AngularUnitTraits Units>
-    Vector<L, Rep> tan(const Vector<L, Angle<Rep, Units>>& v)
+    template<std::floating_point Rep, AngularUnitTraits Units, size_t N>
+    Vector<Rep, N> tan(const Vector<Angle<Rep, Units>, N>& v)
     {
         return map(v, tan<Rep, Units>);
     }

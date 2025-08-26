@@ -54,8 +54,8 @@ namespace osc
     struct TPSNonAffineTerm3D final {
 
         TPSNonAffineTerm3D(
-            const Vector<3, T>& weight_,
-            const Vector<3, T>& controlPoint_) :
+            const Vector<T, 3>& weight_,
+            const Vector<T, 3>& controlPoint_) :
 
             weight{weight_},
             controlPoint{controlPoint_}
@@ -63,8 +63,8 @@ namespace osc
 
         friend bool operator==(const TPSNonAffineTerm3D&, const TPSNonAffineTerm3D&) = default;
 
-        Vector<3, T> weight;
-        Vector<3, T> controlPoint;
+        Vector<T, 3> weight;
+        Vector<T, 3> controlPoint;
     };
 
     std::ostream& operator<<(std::ostream&, const TPSNonAffineTerm3D<float>&);
@@ -78,10 +78,10 @@ namespace osc
         friend bool operator==(const TPSCoefficients3D&, const TPSCoefficients3D&) = default;
 
         // default the coefficients to an "identity" warp
-        Vector<3, T> a1 = {T{0.0}, T{0.0}, T{0.0}};
-        Vector<3, T> a2 = {T{1.0}, T{0.0}, T{0.0}};
-        Vector<3, T> a3 = {T{0.0}, T{1.0}, T{0.0}};
-        Vector<3, T> a4 = {T{0.0}, T{0.0}, T{1.0}};
+        Vector<T, 3> a1 = {T{0.0}, T{0.0}, T{0.0}};
+        Vector<T, 3> a2 = {T{1.0}, T{0.0}, T{0.0}};
+        Vector<T, 3> a3 = {T{0.0}, T{1.0}, T{0.0}};
+        Vector<T, 3> a4 = {T{0.0}, T{0.0}, T{1.0}};
         std::vector<TPSNonAffineTerm3D<T>> nonAffineTerms;
     };
 

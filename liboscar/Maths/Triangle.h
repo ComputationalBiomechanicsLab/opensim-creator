@@ -8,7 +8,7 @@ namespace osc
 {
     struct Triangle final {
         using element_type = float;
-        using value_type = Vector<3, element_type>;
+        using value_type = Vector<element_type, 3>;
         using size_type = size_t;
         using difference_type = ptrdiff_t;
         using reference = value_type&;

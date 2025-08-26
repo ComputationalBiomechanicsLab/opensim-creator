@@ -134,8 +134,8 @@ namespace
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < numPairs; ++row) {
             for (int col = 0; col < numPairs; ++col) {
-                const Vector<3, T> pis = {source_landmarks[row, 0], source_landmarks[row, 1], source_landmarks[row, 2]};
-                const Vector<3, T> pj = {source_landmarks[col, 0], source_landmarks[col, 1], source_landmarks[col, 2]};
+                const Vector<T, 3> pis = {source_landmarks[row, 0], source_landmarks[row, 1], source_landmarks[row, 2]};
+                const Vector<T, 3> pj = {source_landmarks[col, 0], source_landmarks[col, 1], source_landmarks[col, 2]};
 
                 L(row, col) = RadialBasisFunction3D(pis, pj);
             }
@@ -262,7 +262,7 @@ namespace
     }
 
     template<std::floating_point T>
-    Vector<3, T> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, Vector<3, T> p)
+    Vector<T, 3> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, Vector<T, 3> p)
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z

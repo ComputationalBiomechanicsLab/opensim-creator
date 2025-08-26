@@ -9,7 +9,7 @@ namespace osc
     // the X, then Y, then Z axes
 
     template<typename Units>
-    using EulerAnglesIn = Vector<3, Units>;  // useful for writing `EulerAnglesIn<Degrees>(vec)`
+    using EulerAnglesIn = Vector<Units, 3>;  // useful for writing `EulerAnglesIn<Degrees>(vec)`
 
     using EulerAngles = EulerAnglesIn<Radians>;
 }

@@ -44,8 +44,8 @@ TEST(Unorm8, can_construct_a_Vector3_of_Unorm8s_from_a_Vector3_of_floats)
     // this is useful for (e.g.) color conversion and quantizing mesh data
 
     const Vector3 vector3_of_floats{0.25f, 1.0f, 1.5f};
-    const Vector<3, Unorm8> vector3_of_unorm8s{vector3_of_floats};
-    const Vector<3, Unorm8> expected_content{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
+    const Vector<Unorm8, 3> vector3_of_unorm8s{vector3_of_floats};
+    const Vector<Unorm8, 3> expected_content{Unorm8{0.25f}, Unorm8{1.0f}, Unorm8{1.5f}};
     ASSERT_EQ(vector3_of_unorm8s, expected_content);
 }
 
@@ -53,7 +53,7 @@ TEST(Unorm8, can_construct_a_Vector3_of_floats_from_a_Vector3_of_Unorm8s)
 {
     // this is useful for (e.g.) color conversion and quantizing mesh data
 
-    const Vector<3, Unorm8> vector3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
+    const Vector<Unorm8, 3> vector3_of_unorm8s{Unorm8{0.1f}, Unorm8{0.2f}, Unorm8{0.3f}};
     const Vector3 vector3_of_floats{vector3_of_unorm8s};
     const Vector3 expected_content{Unorm8{0.1f}.normalized_value(), Unorm8{0.2f}.normalized_value(), Unorm8{0.3f}.normalized_value()};
     ASSERT_EQ(vector3_of_floats, expected_content);

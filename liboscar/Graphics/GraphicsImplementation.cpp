@@ -4188,8 +4188,8 @@ namespace
         Vector2,
         Vector3,
         Vector4,
-        Vector<4, Unorm8>,
-        Vector<4, Snorm8>,
+        Vector<Unorm8, 4>,
+        Vector<Snorm8, 4>,
         Color,
         Color32
     >;

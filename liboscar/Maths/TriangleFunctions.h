@@ -12,20 +12,20 @@ namespace osc
     // returns `true` if the given three `Vector3`s could be used to form a triangle
     template<typename T>
     requires std::is_arithmetic_v<T>
-    constexpr bool can_form_triangle(const Vector<3, T>& a, const Vector<3, T>& b, const Vector<3, T>& c)
+    constexpr bool can_form_triangle(const Vector<T, 3>& a, const Vector<T, 3>& b, const Vector<T, 3>& c)
     {
         return a != b and a != c and b != c;  // (this also handles NaNs)
     }
 
     template<std::floating_point T>
-    Vector<3, T> triangle_normal(const Vector<3, T>& a, const Vector<3, T>& b, const Vector<3, T>& c)
+    Vector<T, 3> triangle_normal(const Vector<T, 3>& a, const Vector<T, 3>& b, const Vector<T, 3>& c)
     {
-        const Vector<3, T> ab = b - a;
-        const Vector<3, T> ac = c - a;
-        return Vector<3, T>(normalize(cross(ab, ac)));
+        const Vector<T, 3> ab = b - a;
+        const Vector<T, 3> ac = c - a;
+        return Vector<T, 3>(normalize(cross(ab, ac)));
     }
 
-    inline Vector<3, float> triangle_normal(const Triangle& t)
+    inline Vector<float, 3> triangle_normal(const Triangle& t)
     {
         return triangle_normal(t.p0, t.p1, t.p2);
     }

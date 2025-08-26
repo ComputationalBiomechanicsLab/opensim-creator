@@ -144,21 +144,21 @@ namespace osc
             r{v}, g{v}, b{v}, a{alpha}
         {}
 
-        explicit constexpr Rgba(const Vector<3, value_type>& v) :
+        explicit constexpr Rgba(const Vector<value_type, 3>& v) :
             r{v.x}, g{v.y}, b{v.z}, a(1.0f)
         {}
 
-        constexpr Rgba(const Vector<3, value_type>& v, value_type alpha) :
+        constexpr Rgba(const Vector<value_type, 3>& v, value_type alpha) :
             r{v.x}, g{v.y}, b{v.z}, a{alpha}
         {}
 
-        explicit constexpr Rgba(const Vector<4, value_type>& v) :
+        explicit constexpr Rgba(const Vector<value_type, 4>& v) :
             r{v.x}, g{v.y}, b{v.z}, a{v.w}
         {}
 
         template<ColorComponent U>
         requires std::constructible_from<T, const U&>
-        explicit constexpr Rgba(const Vector<4, U>& v) :
+        explicit constexpr Rgba(const Vector<U, 4>& v) :
             r{static_cast<T>(v.x)},
             g{static_cast<T>(v.y)},
             b{static_cast<T>(v.z)},
@@ -220,9 +220,9 @@ namespace osc
             return &r + size();
         }
 
-        constexpr operator Vector<4, value_type> () const
+        constexpr operator Vector<value_type, 4> () const
         {
-            return Vector<4, value_type>{r, g, b, a};
+            return Vector<value_type, 4>{r, g, b, a};
         }
 
         friend bool operator==(const Rgba&, const Rgba&) = default;

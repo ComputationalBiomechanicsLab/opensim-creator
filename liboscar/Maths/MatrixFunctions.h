@@ -16,13 +16,13 @@ namespace osc
 {
     template<std::floating_point T>
     Matrix<4, 4, T> look_at(
-        const Vector<3, T>& eye,
-        const Vector<3, T>& center,
-        const Vector<3, T>& up)
+        const Vector<T, 3>& eye,
+        const Vector<T, 3>& center,
+        const Vector<T, 3>& up)
     {
-        const Vector<3, T> f(normalize(center - eye));
-        const Vector<3, T> s(normalize(cross(f, up)));
-        const Vector<3, T> u(cross(s, f));
+        const Vector<T, 3> f(normalize(center - eye));
+        const Vector<T, 3> s(normalize(cross(f, up)));
+        const Vector<T, 3> u(cross(s, f));
 
         Matrix<4, 4, T> rv(1);
         rv[0][0] =  s.x;
@@ -75,7 +75,7 @@ namespace osc
     }
 
     template<typename T>
-    Matrix<4, 4, T> scale(const Matrix<4, 4, T>& m, const Vector<3, T>& v)
+    Matrix<4, 4, T> scale(const Matrix<4, 4, T>& m, const Vector<T, 3>& v)
     {
         Matrix<4, 4, T> rv;
         rv[0] = m[0] * v[0];
@@ -86,12 +86,12 @@ namespace osc
     }
 
     template<std::floating_point T, AngularUnitTraits Units>
-    Matrix<4, 4, T> rotate(const Matrix<4, 4, T>& m, Angle<T, Units> angle, Vector<3, T> axis)
+    Matrix<4, 4, T> rotate(const Matrix<4, 4, T>& m, Angle<T, Units> angle, Vector<T, 3> axis)
     {
         const T c = cos(angle);
         const T s = sin(angle);
 
-        const Vector<3, T> temp((T(1) - c) * axis);
+        const Vector<T, 3> temp((T(1) - c) * axis);
 
         Matrix<4, 4, T> rotate;
         rotate[0][0] = c + temp[0] * axis[0];
@@ -115,7 +115,7 @@ namespace osc
     }
 
     template<typename T>
-    Matrix<4, 4, T> translate(const Matrix<4, 4, T>& m, const Vector<3, T>& v)
+    Matrix<4, 4, T> translate(const Matrix<4, 4, T>& m, const Vector<T, 3>& v)
     {
         Matrix<4, 4, T> rv(m);
         rv[3] = m[0] * v[0] + m[1] * v[1] + m[2] * v[2] + m[3];
@@ -142,7 +142,7 @@ namespace osc
         const T subfactor_04 = m[2][0] * m[3][2] - m[3][0] * m[2][2];
         const T subfactor_05 = m[2][0] * m[3][1] - m[3][0] * m[2][1];
 
-        const Vector<4, T> determinant_coef(
+        const Vector<T, 4> determinant_coef(
             + (m[1][1] * subfactor_00 - m[1][2] * subfactor_01 + m[1][3] * subfactor_02),
             - (m[1][0] * subfactor_00 - m[1][2] * subfactor_03 + m[1][3] * subfactor_04),
             + (m[1][0] * subfactor_01 - m[1][1] * subfactor_03 + m[1][3] * subfactor_05),
@@ -199,30 +199,30 @@ namespace osc
         const T coef_22 = m[1][0] * m[3][1] - m[3][0] * m[1][1];
         const T coef_23 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
 
-        const Vector<4, T> fac_0(coef_00, coef_00, coef_02, coef_03);
-        const Vector<4, T> fac_1(coef_04, coef_04, coef_06, coef_07);
-        const Vector<4, T> fac_2(coef_08, coef_08, coef_10, coef_11);
-        const Vector<4, T> fac_3(coef_12, coef_12, coef_14, coef_15);
-        const Vector<4, T> fac_4(coef_16, coef_16, coef_18, coef_19);
-        const Vector<4, T> fac_5(coef_20, coef_20, coef_22, coef_23);
+        const Vector<T, 4> fac_0(coef_00, coef_00, coef_02, coef_03);
+        const Vector<T, 4> fac_1(coef_04, coef_04, coef_06, coef_07);
+        const Vector<T, 4> fac_2(coef_08, coef_08, coef_10, coef_11);
+        const Vector<T, 4> fac_3(coef_12, coef_12, coef_14, coef_15);
+        const Vector<T, 4> fac_4(coef_16, coef_16, coef_18, coef_19);
+        const Vector<T, 4> fac_5(coef_20, coef_20, coef_22, coef_23);
 
-        const Vector<4, T> vec_0(m[1][0], m[0][0], m[0][0], m[0][0]);
-        const Vector<4, T> vec_1(m[1][1], m[0][1], m[0][1], m[0][1]);
-        const Vector<4, T> vec_2(m[1][2], m[0][2], m[0][2], m[0][2]);
-        const Vector<4, T> vec_3(m[1][3], m[0][3], m[0][3], m[0][3]);
+        const Vector<T, 4> vec_0(m[1][0], m[0][0], m[0][0], m[0][0]);
+        const Vector<T, 4> vec_1(m[1][1], m[0][1], m[0][1], m[0][1]);
+        const Vector<T, 4> vec_2(m[1][2], m[0][2], m[0][2], m[0][2]);
+        const Vector<T, 4> vec_3(m[1][3], m[0][3], m[0][3], m[0][3]);
 
-        const Vector<4, T> inv_0(vec_1 * fac_0 - vec_2 * fac_1 + vec_3 * fac_2);
-        const Vector<4, T> inv_1(vec_0 * fac_0 - vec_2 * fac_3 + vec_3 * fac_4);
-        const Vector<4, T> inv_2(vec_0 * fac_1 - vec_1 * fac_3 + vec_3 * fac_5);
-        const Vector<4, T> inv_3(vec_0 * fac_2 - vec_1 * fac_4 + vec_2 * fac_5);
+        const Vector<T, 4> inv_0(vec_1 * fac_0 - vec_2 * fac_1 + vec_3 * fac_2);
+        const Vector<T, 4> inv_1(vec_0 * fac_0 - vec_2 * fac_3 + vec_3 * fac_4);
+        const Vector<T, 4> inv_2(vec_0 * fac_1 - vec_1 * fac_3 + vec_3 * fac_5);
+        const Vector<T, 4> inv_3(vec_0 * fac_2 - vec_1 * fac_4 + vec_2 * fac_5);
 
-        const Vector<4, T> sign_a(+1, -1, +1, -1);
-        const Vector<4, T> sign_b(-1, +1, -1, +1);
+        const Vector<T, 4> sign_a(+1, -1, +1, -1);
+        const Vector<T, 4> sign_b(-1, +1, -1, +1);
         const Matrix<4, 4, T> inverted(inv_0 * sign_a, inv_1 * sign_b, inv_2 * sign_a, inv_3 * sign_b);
 
-        const Vector<4, T> row_0(inverted[0][0], inverted[1][0], inverted[2][0], inverted[3][0]);
+        const Vector<T, 4> row_0(inverted[0][0], inverted[1][0], inverted[2][0], inverted[3][0]);
 
-        const Vector<4, T> dot_0(m[0] * row_0);
+        const Vector<T, 4> dot_0(m[0] * row_0);
         const T dot_1 = (dot_0.x + dot_0.y) + (dot_0.z + dot_0.w);
 
         const T one_over_determinant = static_cast<T>(1) / dot_1;
@@ -276,7 +276,7 @@ namespace osc
 
     // returns euler angles for performing an intrinsic, step-by-step, rotation about X, Y, and then Z
     template<std::floating_point T>
-    Vector<3, RadiansT<T>> extract_eulers_xyz(const Matrix<4, 4, T>& m)
+    Vector<RadiansT<T>, 3> extract_eulers_xyz(const Matrix<4, 4, T>& m)
     {
         const RadiansT<T> t1 = atan2(m[2][1], m[2][2]);
         const T c2 = sqrt(m[0][0]*m[0][0] + m[1][0]*m[1][0]);
@@ -285,20 +285,20 @@ namespace osc
         const T c1 = cos(t1);
         const RadiansT<T> t3 = atan2(s1*m[0][2] - c1*m[0][1], c1*m[1][1] - s1*m[1][2  ]);
 
-        return Vector<3, RadiansT<T>>{-t1, -t2, -t3};
+        return Vector<RadiansT<T>, 3>{-t1, -t2, -t3};
     }
 
     namespace detail
     {
         /// Make a linear combination of two vectors and return the result.
         template<typename T>
-        Vector<3, T> combine(const Vector<3, T>& a, const Vector<3, T>& b, T ascl, T bscl)
+        Vector<T, 3> combine(const Vector<T, 3>& a, const Vector<T, 3>& b, T ascl, T bscl)
         {
             return (a * ascl) + (b * bscl);
         }
 
         template<typename T>
-        Vector<3, T> scale(const Vector<3, T>& v, T desiredLength)
+        Vector<T, 3> scale(const Vector<T, 3>& v, T desiredLength)
         {
             return v * desiredLength / length(v);
         }
@@ -307,11 +307,11 @@ namespace osc
     template<typename T>
     bool decompose(
         const Matrix<4, 4, T>& model_matrix,
-        Vector<3, T>& r_scale,
+        Vector<T, 3>& r_scale,
         Qua<T>& r_orientation,
-        Vector<3, T>& r_translation,
-        Vector<3, T>& r_skew,
-        Vector<4, T>& r_perspective)
+        Vector<T, 3>& r_translation,
+        Vector<T, 3>& r_skew,
+        Vector<T, 4>& r_perspective)
     {
         // Matrix decompose
         // http://www.opensource.apple.com/source/WebCore/WebCore-514/platform/graphics/transforms/TransformationMatrix.cpp
@@ -349,7 +349,7 @@ namespace osc
             not equal_within_epsilon(local_matrix[2][3], static_cast<T>(0)))
         {
             // `right_hand_side` is the right hand side of the equation
-            const Vector<4, T> right_hand_side = {
+            const Vector<T, 4> right_hand_side = {
                 local_matrix[0][3],
                 local_matrix[1][3],
                 local_matrix[2][3],
@@ -370,16 +370,16 @@ namespace osc
         }
         else {
             // no perspective
-            r_perspective = Vector<4, T>(0, 0, 0, 1);
+            r_perspective = Vector<T, 4>(0, 0, 0, 1);
         }
 
         // second, take care of translation (easy).
-        r_translation = Vector<3, T>(local_matrix[3]);
-        local_matrix[3] = Vector<4, T>(0, 0, 0, local_matrix[3].w);
+        r_translation = Vector<T, 3>(local_matrix[3]);
+        local_matrix[3] = Vector<T, 4>(0, 0, 0, local_matrix[3].w);
 
         // third/fourth, calculate the scale and shear
-        Vector<3, T> Row[3];
-        Vector<3, T> Pdum3;
+        Vector<T, 3> Row[3];
+        Vector<T, 3> Pdum3;
         for (size_t i = 0; i < 3; ++i) {
             for(size_t j = 0; j < 3; ++j) {
                 Row[i][j] = local_matrix[i][j];

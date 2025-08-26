@@ -87,9 +87,9 @@ namespace osc
         // returns a unit-length direction vector that points in the direction stored by this `CoordinateDirection`
         template<typename T = float>
         requires std::is_arithmetic_v<T>
-        constexpr Vector<3, T> direction_vector() const
+        constexpr Vector<T, 3> direction_vector() const
         {
-            return Vector<3, T>{}.with_element(axis().index(), direction<T>());
+            return Vector<T, 3>{}.with_element(axis().index(), direction<T>());
         }
 
         // returns a `CoordinateDirection` that points along the same `CoordinateAxis`, but with its direction negated
