@@ -1,3 +1,12 @@
+// This file was originally copied from a third-party source:
+//
+// - https://github.com/CedricGuillemet/ImGuizmo
+// - commit: 6d588209f99b1324a608783d1f52faa518886c29
+// - Licensed under the MIT license
+// - Copyright(c) 2021 Cedric Guillemet
+//
+// Subsequent modifications to this file (see VCS) are copyright (c) 2024 Adam Kewley.
+//
 // ORIGINAL LICENSE TEXT:
 //
 // https://github.com/CedricGuillemet/ImGuizmo
@@ -24,24 +33,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-//
-// LIBOSCAR CHANGES:
-//
-// This header was originally copied from a third-party source:
-//
-// - https://github.com/CedricGuillemet/ImGuizmo
-// - commit: 6d588209f99b1324a608783d1f52faa518886c29
-// - Licensed under the MIT license
-// - Copyright(c) 2021 Cedric Guillemet
-//
-// Subsequent modifications to this file are licensed under liboscar's
-// license (see LICENSE/NOTICE.txt) and have the following copyright:
-//
-// - Copyright (c) 2024 Adam Kewley
-//
-// Individual lines are not tagged with copyright/license notices, because
-// that would be insanely impractical. The project's vcs (i.e. git) can be
-// used to track each change.
 
 // NOLINTBEGIN
 
@@ -66,8 +57,8 @@
 #include <optional>
 #include <vector>
 
-using namespace ImGuizmo;
 using namespace osc;
+using namespace osc::ui::gizmo::detail;
 
 namespace
 {
@@ -2450,24 +2441,24 @@ namespace
    }
 }
 
-void ImGuizmo::CreateContext()
+void osc::ui::gizmo::detail::CreateContext()
 {
     g_CurrentContext = IM_NEW(Context)();
 }
 
-void ImGuizmo::DestroyContext()
+void osc::ui::gizmo::detail::DestroyContext()
 {
     IM_DELETE(g_CurrentContext);
 }
 
-void ImGuizmo::SetDrawlist(ImDrawList* drawlist)
+void osc::ui::gizmo::detail::SetDrawlist(ImDrawList* drawlist)
 {
     Context& context = *g_CurrentContext;
 
     context.mDrawList = drawlist ? drawlist : ImGui::GetWindowDrawList();
 }
 
-void ImGuizmo::BeginFrame()
+void osc::ui::gizmo::detail::BeginFrame()
 {
     Context& context = *g_CurrentContext;
 
@@ -2501,14 +2492,14 @@ void ImGuizmo::BeginFrame()
     ImGui::PopStyleColor(2);
 }
 
-bool ImGuizmo::IsOver()
+bool osc::ui::gizmo::detail::IsOver()
 {
     Context& context = *g_CurrentContext;
 
-    return ImGuizmo::IsOver(context.mOperation);
+    return IsOver(context.mOperation);
 }
 
-bool ImGuizmo::IsOver(Operation op)
+bool osc::ui::gizmo::detail::IsOver(Operation op)
 {
     Context& context = *g_CurrentContext;
 
@@ -2518,21 +2509,21 @@ bool ImGuizmo::IsOver(Operation op)
            or ((op & Operation::Translate) and GetMoveType(context, op, NULL) != MT_NONE);
 }
 
-bool ImGuizmo::IsUsing()
+bool osc::ui::gizmo::detail::IsUsing()
 {
     Context& context = *g_CurrentContext;
 
     return (context.mbUsing and (context.GetCurrentID() == context.mEditingID)) or context.mbUsingBounds;
 }
 
-bool ImGuizmo::IsUsingAny()
+bool osc::ui::gizmo::detail::IsUsingAny()
 {
     Context& context = *g_CurrentContext;
 
     return context.mbUsing or context.mbUsingBounds;
 }
 
-void ImGuizmo::Enable(bool enable)
+void osc::ui::gizmo::detail::Enable(bool enable)
 {
     Context& context = *g_CurrentContext;
 
@@ -2543,7 +2534,7 @@ void ImGuizmo::Enable(bool enable)
     }
 }
 
-void ImGuizmo::SetRect(const Rect& ui_rect)
+void osc::ui::gizmo::detail::SetRect(const Rect& ui_rect)
 {
     Context& context = *g_CurrentContext;
 
@@ -2556,14 +2547,14 @@ void ImGuizmo::SetRect(const Rect& ui_rect)
     context.mDisplayRatio = aspect_ratio_of(ui_rect);
 }
 
-void ImGuizmo::SetOrthographic(bool isOrthographic)
+void osc::ui::gizmo::detail::SetOrthographic(bool isOrthographic)
 {
     Context& context = *g_CurrentContext;
 
     context.mIsOrthographic = isOrthographic;
 }
 
-void ImGuizmo::PushID(UID uid)
+void osc::ui::gizmo::detail::PushID(UID uid)
 {
     Context& context = *g_CurrentContext;
 
@@ -2571,7 +2562,7 @@ void ImGuizmo::PushID(UID uid)
     context.mIDStack.push_back(id);
 }
 
-void ImGuizmo::PopID()
+void osc::ui::gizmo::detail::PopID()
 {
     Context& context = *g_CurrentContext;
 
@@ -2579,35 +2570,35 @@ void ImGuizmo::PopID()
     context.mIDStack.pop_back();
 }
 
-void ImGuizmo::SetGizmoSizeClipSpace(float value)
+void osc::ui::gizmo::detail::SetGizmoSizeClipSpace(float value)
 {
     Context& context = *g_CurrentContext;
 
     context.mGizmoSizeClipSpace = value;
 }
 
-void ImGuizmo::SetAxisLimit(float value)
+void osc::ui::gizmo::detail::SetAxisLimit(float value)
 {
     Context& context = *g_CurrentContext;
 
     context.mAxisLimit=value;
 }
 
-void ImGuizmo::SetAxisMask(bool x, bool y, bool z)
+void osc::ui::gizmo::detail::SetAxisMask(bool x, bool y, bool z)
 {
     Context& context = *g_CurrentContext;
 
     context.mAxisMask = (x ? 1 : 0) + (y ? 2 : 0) + (z ? 4 : 0);
 }
 
-void ImGuizmo::SetPlaneLimit(float value)
+void osc::ui::gizmo::detail::SetPlaneLimit(float value)
 {
     Context& context = *g_CurrentContext;
 
     context.mPlaneLimit = value;
 }
 
-std::optional<Transform> ImGuizmo::Manipulate(
+std::optional<Transform> osc::ui::gizmo::detail::Manipulate(
     const Matrix4x4& view,
     const Matrix4x4& projection,
     Operation operation,

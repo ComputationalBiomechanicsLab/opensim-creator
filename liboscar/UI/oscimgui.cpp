@@ -255,7 +255,7 @@ struct osc::Converter<Key, ImGuiKey> final {
     }
 };
 
-static_assert(osc::ui::gizmo_annotation_offset() == ImGuizmo::AnnotationOffset());
+static_assert(osc::ui::gizmo_annotation_offset() == osc::ui::gizmo::detail::AnnotationOffset());
 
 template<>
 struct osc::Converter<Rect, ImRect> final {
@@ -1339,28 +1339,28 @@ namespace
 }
 
 template<>
-struct osc::Converter<ui::GizmoOperation, ImGuizmo::Operation> final {
-    ImGuizmo::Operation operator()(ui::GizmoOperation op) const
+struct osc::Converter<ui::GizmoOperation, ui::gizmo::detail::Operation> final {
+    ui::gizmo::detail::Operation operator()(ui::GizmoOperation op) const
     {
         static_assert(num_flags<ui::GizmoOperation>() == 3);
         switch (op) {
-        case ui::GizmoOperation::Scale:     return ImGuizmo::Operation::Scale;
-        case ui::GizmoOperation::Rotate:    return ImGuizmo::Operation::Rotate;
-        case ui::GizmoOperation::Translate: return ImGuizmo::Operation::Translate;
-        default:                            return ImGuizmo::Operation::Translate;
+        case ui::GizmoOperation::Scale:     return ui::gizmo::detail::Operation::Scale;
+        case ui::GizmoOperation::Rotate:    return ui::gizmo::detail::Operation::Rotate;
+        case ui::GizmoOperation::Translate: return ui::gizmo::detail::Operation::Translate;
+        default:                            return ui::gizmo::detail::Operation::Translate;
         }
     }
 };
 
 template<>
-struct osc::Converter<ui::GizmoMode, ImGuizmo::Mode> final {
-    ImGuizmo::Mode operator()(ui::GizmoMode mode) const
+struct osc::Converter<ui::GizmoMode, ui::gizmo::detail::Mode> final {
+    ui::gizmo::detail::Mode operator()(ui::GizmoMode mode) const
     {
         static_assert(num_options<ui::GizmoMode>() == 2);
         switch (mode) {
-        case ui::GizmoMode::Local: return ImGuizmo::Mode::Local;
-        case ui::GizmoMode::World: return ImGuizmo::Mode::World;
-        default:                   return ImGuizmo::Mode::World;
+        case ui::GizmoMode::Local: return ui::gizmo::detail::Mode::Local;
+        case ui::GizmoMode::World: return ui::gizmo::detail::Mode::World;
+        default:                   return ui::gizmo::detail::Mode::World;
         }
     }
 };
@@ -1723,7 +1723,7 @@ void osc::ui::Context::on_start_new_frame()
     ImGui::NewFrame();
 
     // extra parts
-    ImGuizmo::BeginFrame();
+    gizmo::detail::BeginFrame();
 }
 
 void osc::ui::Context::render()
@@ -1774,12 +1774,12 @@ void osc::ui::Context::init(
 
     // init extra parts (plotting, gizmos, etc.)
     ImPlot::CreateContext();
-    ImGuizmo::CreateContext();
+    gizmo::detail::CreateContext();
 }
 
 void osc::ui::Context::shutdown(App& app)
 {
-    ImGuizmo::DestroyContext();
+    gizmo::detail::DestroyContext();
     ImPlot::DestroyContext();
 
     auto bd = ImGui_ImplOscar_Shutdown(app);
@@ -3867,36 +3867,36 @@ std::optional<Transform> osc::ui::Gizmo::draw_to(
 
     // important: necessary when showing multiple gizmos in one frame
     // also important: don't use ui::get_id(), because it uses an ID stack and we might want to know if "isover" etc. is true outside of a window
-    ImGuizmo::PushID(id_);
-    const ScopeExit g{[]{ ImGuizmo::PopID(); }};
+    gizmo::detail::PushID(id_);
+    const ScopeExit g{[]{ gizmo::detail::PopID(); }};
 
     // update last-frame cache
-    was_using_last_frame_ = ImGuizmo::IsUsing();
+    was_using_last_frame_ = gizmo::detail::IsUsing();
 
-    ImGuizmo::SetRect(ui_rect);
-    ImGuizmo::SetDrawlist(draw_list);
-    return ImGuizmo::Manipulate(
+    gizmo::detail::SetRect(ui_rect);
+    gizmo::detail::SetDrawlist(draw_list);
+    return gizmo::detail::Manipulate(
         view_matrix,
         projection_matrix,
-        to<ImGuizmo::Operation>(operation_),
-        to<ImGuizmo::Mode>(mode_),
+        to<gizmo::detail::Operation>(operation_),
+        to<gizmo::detail::Mode>(mode_),
         model_matrix
     );
 }
 
 bool osc::ui::Gizmo::is_using() const
 {
-    ImGuizmo::PushID(id_);
-    const bool rv = ImGuizmo::IsUsing();
-    ImGuizmo::PopID();
+    gizmo::detail::PushID(id_);
+    const bool rv = ui::gizmo::detail::IsUsing();
+    gizmo::detail::PopID();
     return rv;
 }
 
 bool osc::ui::Gizmo::is_over() const
 {
-    ImGuizmo::PushID(id_);
-    const bool rv = ImGuizmo::IsOver();
-    ImGuizmo::PopID();
+    gizmo::detail::PushID(id_);
+    const bool rv = ui::gizmo::detail::IsOver();
+    gizmo::detail::PopID();
     return rv;
 }
 
