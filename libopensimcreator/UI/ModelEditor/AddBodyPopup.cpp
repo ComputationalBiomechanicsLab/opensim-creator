@@ -6,6 +6,7 @@
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
@@ -15,6 +16,7 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
+#include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
@@ -117,8 +119,16 @@ public:
             ui::draw_help_marker("What the added body will be joined to. All bodies in an OpenSim model are connected to other bodies, or the ground, by joints. This is true even if the joint is unconstrained and does nothing (e.g. an OpenSim::FreeJoint) or if the joint constrains motion in all direcctions (e.g. an OpenSim::WeldJoint).");
             ui::next_column();
 
+            // show a search bar that the user can type into in order to filter through
+            // the available frame list (can contain many items in large models, #21).
+            ui::set_next_item_width(ui::get_content_region_available().x);
+            DrawSearchBar(m_JoinToSearchFilter);
+
             ui::begin_child_panel("join targets", Vector2{0, 128.0f}, ui::ChildPanelFlag::Border, ui::PanelFlag::HorizontalScrollbar);
             for (const auto& pf : model.getComponentList<OpenSim::PhysicalFrame>()) {
+                if (not contains_case_insensitive(pf.getName(), m_JoinToSearchFilter)) {
+                    continue;
+                }
                 if (ui::draw_selectable(pf.getName(), &pf == selectedPf)) {
                     selectedPf = &pf;
                     m_BodyDetails.parentFrameAbsPath = GetAbsolutePathString(*selectedPf);
@@ -225,6 +235,10 @@ private:
 
     // the model that the body will be added to
     std::shared_ptr<IModelStatePair> m_Model;
+
+    // a user-enacted search string that should be used to filter through available
+    // frames that can be joined to (#21).
+    std::string m_JoinToSearchFilter;
 
     // details of the to-be-added body
     BodyDetails m_BodyDetails;

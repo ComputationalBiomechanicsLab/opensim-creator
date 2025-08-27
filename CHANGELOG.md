@@ -36,6 +36,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   rather than allowing the exception to bubble up and crash osc (#1088).
 - Pressing F while mousing over an input mesh in the mesh warper now causes the camera
   to focus on that point, making it easier to focus on that part of the mesh (#1089).
+- The "join to" input in the "Add Body" popup now includes a search bar that can be used
+  to filter through available frames in the model (#21).
 
 ## [0.5.25] - 2025/07/14
 
