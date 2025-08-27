@@ -96,13 +96,13 @@ namespace osc
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Matrix<3, 3, T>& m)
+        explicit Qua(const Matrix<T, 3, 3>& m)
         {
             *this = quaternion_cast(m);
         }
 
         // constructs a `Qua` by decomposing an orthogonal matrix
-        explicit Qua(const Matrix<4, 4, T>& m)
+        explicit Qua(const Matrix<T, 4, 4>& m)
         {
             *this = quaternion_cast(m);
         }

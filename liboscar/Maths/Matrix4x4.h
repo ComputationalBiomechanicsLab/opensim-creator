@@ -10,11 +10,11 @@ namespace osc
 {
     // a 4x4 column-major matrix
     template<typename T>
-    struct Matrix<4, 4, T> {
+    struct Matrix<T, 4, 4> {
         using col_type = Vector<T, 4>;
         using row_type = Vector<T, 4>;
-        using transpose_type = Matrix<4, 4, T>;
-        using type = Matrix<4, 4, T>;
+        using transpose_type = Matrix<T, 4, 4>;
+        using type = Matrix<T, 4, 4>;
         using value_type = col_type;
         using element_type = T;
         using size_type = size_t;
@@ -94,7 +94,7 @@ namespace osc
             }
         {}
 
-        constexpr Matrix(const Matrix<3, 3, T>& m) :
+        constexpr Matrix(const Matrix<T, 3, 3>& m) :
             value{
                 col_type{m[0], T{}},
                 col_type{m[1], T{}},
@@ -104,7 +104,7 @@ namespace osc
         {}
 
         template<typename U>
-        Matrix& operator=(const Matrix<4, 4, U>& m)
+        Matrix& operator=(const Matrix<U, 4, 4>& m)
         {
             this->value[0] = m[0];
             this->value[1] = m[1];
@@ -136,7 +136,7 @@ namespace osc
         }
 
         template<typename U>
-        Matrix& operator+=(const Matrix<4, 4, U>& m)
+        Matrix& operator+=(const Matrix<U, 4, 4>& m)
         {
             this->value[0] += m[0];
             this->value[1] += m[1];
@@ -156,7 +156,7 @@ namespace osc
         }
 
         template<typename U>
-        Matrix& operator-=(const Matrix<4, 4, U>& m)
+        Matrix& operator-=(const Matrix<U, 4, 4>& m)
         {
             this->value[0] -= m[0];
             this->value[1] -= m[1];
@@ -176,7 +176,7 @@ namespace osc
         }
 
         template<typename U>
-        Matrix& operator*=(const Matrix<4, 4, U>& m)
+        Matrix& operator*=(const Matrix<U, 4, 4>& m)
         {
             return (*this = *this * m);
         }
@@ -192,7 +192,7 @@ namespace osc
         }
 
         template<typename U>
-        Matrix& operator/=(const Matrix<4, 4, U>& m)
+        Matrix& operator/=(const Matrix<U, 4, 4>& m)
         {
             return *this *= inverse(m);
         }
@@ -234,69 +234,69 @@ namespace osc
     };
 
     template<typename T>
-    Matrix<4, 4, T> operator+(const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator+(const Matrix<T, 4, 4>& m)
     {
         return m;
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator-(const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator-(const Matrix<T, 4, 4>& m)
     {
-        return Matrix<4, 4, T>(-m[0], -m[1], -m[2], -m[3]);
+        return Matrix<T, 4, 4>(-m[0], -m[1], -m[2], -m[3]);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator+(const Matrix<4, 4, T>& m, T scalar)
+    Matrix<T, 4, 4> operator+(const Matrix<T, 4, 4>& m, T scalar)
     {
-        return Matrix<4, 4, T>(m[0] + scalar, m[1] + scalar, m[2] + scalar, m[3] + scalar);
+        return Matrix<T, 4, 4>(m[0] + scalar, m[1] + scalar, m[2] + scalar, m[3] + scalar);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator+(T scalar, const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator+(T scalar, const Matrix<T, 4, 4>& m)
     {
-        return Matrix<4, 4, T>(scalar + m[0], scalar + m[1], scalar + m[2], scalar + m[3]);
+        return Matrix<T, 4, 4>(scalar + m[0], scalar + m[1], scalar + m[2], scalar + m[3]);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator+(const Matrix<4, 4, T>& m1, const Matrix<4, 4, T>& m2)
+    Matrix<T, 4, 4> operator+(const Matrix<T, 4, 4>& m1, const Matrix<T, 4, 4>& m2)
     {
-        return Matrix<4, 4, T>(m1[0] + m2[0], m1[1] + m2[1], m1[2] + m2[2], m1[3] + m2[3]);
+        return Matrix<T, 4, 4>(m1[0] + m2[0], m1[1] + m2[1], m1[2] + m2[2], m1[3] + m2[3]);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator-(const Matrix<4, 4, T>& m, T scalar)
+    Matrix<T, 4, 4> operator-(const Matrix<T, 4, 4>& m, T scalar)
     {
-        return Matrix<4, 4, T>(m[0] - scalar, m[1] - scalar, m[2] - scalar, m[3] - scalar);
+        return Matrix<T, 4, 4>(m[0] - scalar, m[1] - scalar, m[2] - scalar, m[3] - scalar);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator-(T scalar, const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator-(T scalar, const Matrix<T, 4, 4>& m)
     {
-        return Matrix<4, 4, T>(scalar - m[0], scalar - m[1], scalar - m[2], scalar - m[3]);
+        return Matrix<T, 4, 4>(scalar - m[0], scalar - m[1], scalar - m[2], scalar - m[3]);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator-(const Matrix<4, 4, T>& m1, const Matrix<4, 4, T>& m2)
+    Matrix<T, 4, 4> operator-(const Matrix<T, 4, 4>& m1, const Matrix<T, 4, 4>& m2)
     {
-        return Matrix<4, 4, T>(m1[0] - m2[0], m1[1] - m2[1], m1[2] - m2[2], m1[3] - m2[3]);
+        return Matrix<T, 4, 4>(m1[0] - m2[0], m1[1] - m2[1], m1[2] - m2[2], m1[3] - m2[3]);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator*(const Matrix<4, 4, T>& m, T scalar)
+    Matrix<T, 4, 4> operator*(const Matrix<T, 4, 4>& m, T scalar)
     {
-        return Matrix<4, 4, T>(m[0] * scalar, m[1] * scalar, m[2] * scalar, m[3] * scalar);
+        return Matrix<T, 4, 4>(m[0] * scalar, m[1] * scalar, m[2] * scalar, m[3] * scalar);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator*(T scalar, const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator*(T scalar, const Matrix<T, 4, 4>& m)
     {
-        return Matrix<4, 4, T>(scalar * m[0], scalar * m[1], scalar * m[2], scalar * m[3]);
+        return Matrix<T, 4, 4>(scalar * m[0], scalar * m[1], scalar * m[2], scalar * m[3]);
     }
 
     template<typename T>
-    typename Matrix<4, 4, T>::col_type operator*(const Matrix<4, 4, T>& m, const typename Matrix<4, 4, T>::row_type& v)
+    typename Matrix<T, 4, 4>::col_type operator*(const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
     {
-        using col_type = typename Matrix<4, 4, T>::col_type;
+        using col_type = typename Matrix<T, 4, 4>::col_type;
 
         const col_type mov0(v[0]);
         const col_type mov1(v[1]);
@@ -313,9 +313,9 @@ namespace osc
     }
 
     template<typename T>
-    typename Matrix<4, 4, T>::row_type operator*(const typename Matrix<4, 4, T>::col_type& v, const Matrix<4, 4, T>& m)
+    typename Matrix<T, 4, 4>::row_type operator*(const typename Matrix<T, 4, 4>::col_type& v, const Matrix<T, 4, 4>& m)
     {
-        return typename Matrix<4, 4, T>::row_type(
+        return typename Matrix<T, 4, 4>::row_type(
             m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2] + m[0][3] * v[3],
             m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2] + m[1][3] * v[3],
             m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2] + m[2][3] * v[3],
@@ -324,9 +324,9 @@ namespace osc
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator*(const Matrix<4, 4, T>& a, const Matrix<4, 4, T>& b)
+    Matrix<T, 4, 4> operator*(const Matrix<T, 4, 4>& a, const Matrix<T, 4, 4>& b)
     {
-        using col_type = typename Matrix<4, 4, T>::col_type;
+        using col_type = typename Matrix<T, 4, 4>::col_type;
 
         const col_type& a0 = a[0];
         const col_type& a1 = a[1];
@@ -338,7 +338,7 @@ namespace osc
         const col_type& b2 = b[2];
         const col_type& b3 = b[3];
 
-        Matrix<4, 4, T> rv;
+        Matrix<T, 4, 4> rv;
         rv[0] = a0 * b0[0] + a1 * b0[1] + a2 * b0[2] + a3 * b0[3];
         rv[1] = a0 * b1[0] + a1 * b1[1] + a2 * b1[2] + a3 * b1[3];
         rv[2] = a0 * b2[0] + a1 * b2[1] + a2 * b2[2] + a3 * b2[3];
@@ -347,43 +347,43 @@ namespace osc
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator/(const Matrix<4, 4, T>& m, T scalar)
+    Matrix<T, 4, 4> operator/(const Matrix<T, 4, 4>& m, T scalar)
     {
-        return Matrix<4, 4, T>(m[0] / scalar, m[1] / scalar, m[2] / scalar, m[3] / scalar);
+        return Matrix<T, 4, 4>(m[0] / scalar, m[1] / scalar, m[2] / scalar, m[3] / scalar);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator/(T scalar, const Matrix<4, 4, T>& m)
+    Matrix<T, 4, 4> operator/(T scalar, const Matrix<T, 4, 4>& m)
     {
-        return Matrix<4, 4, T>(scalar / m[0], scalar / m[1], scalar / m[2], scalar / m[3]);
+        return Matrix<T, 4, 4>(scalar / m[0], scalar / m[1], scalar / m[2], scalar / m[3]);
     }
 
     template<typename T>
-    typename Matrix<4, 4, T>::col_type operator/(const Matrix<4, 4, T>& m, const typename Matrix<4, 4, T>::row_type& v)
+    typename Matrix<T, 4, 4>::col_type operator/(const Matrix<T, 4, 4>& m, const typename Matrix<T, 4, 4>::row_type& v)
     {
         return inverse(m) * v;
     }
 
     template<typename T>
-    typename Matrix<4, 4, T>::row_type operator/(const typename Matrix<4, 4, T>::col_type& v, const Matrix<4, 4, T>& m)
+    typename Matrix<T, 4, 4>::row_type operator/(const typename Matrix<T, 4, 4>::col_type& v, const Matrix<T, 4, 4>& m)
     {
         return v * inverse(m);
     }
 
     template<typename T>
-    Matrix<4, 4, T> operator/(const Matrix<4, 4, T>& m1, const Matrix<4, 4, T>& m2)
+    Matrix<T, 4, 4> operator/(const Matrix<T, 4, 4>& m1, const Matrix<T, 4, 4>& m2)
     {
-        Matrix<4, 4, T> m1_copy{m1};
+        Matrix<T, 4, 4> m1_copy{m1};
         return m1_copy /= m2;
     }
 
-    using Matrix4x4 = Matrix<4, 4, float>;
-    using Matrix4x4f = Matrix<4, 4, float>;
-    using Matrix4x4d = Matrix<4, 4, double>;
-    using Matrix4x4i = Matrix<4, 4, int>;
-    using Matrix4x4z = Matrix<4, 4, ptrdiff_t>;
-    using Matrix4x4zu = Matrix<4, 4, size_t>;
-    using Matrix4x4u32 = Matrix<4, 4, uint32_t>;
+    using Matrix4x4 = Matrix<float, 4, 4>;
+    using Matrix4x4f = Matrix<float, 4, 4>;
+    using Matrix4x4d = Matrix<double, 4, 4>;
+    using Matrix4x4i = Matrix<int, 4, 4>;
+    using Matrix4x4z = Matrix<ptrdiff_t, 4, 4>;
+    using Matrix4x4zu = Matrix<size_t, 4, 4>;
+    using Matrix4x4u32 = Matrix<uint32_t, 4, 4>;
 
     template<typename T>
     constexpr T identity();

@@ -71,7 +71,7 @@ namespace osc
     }
 
     template<typename T>
-    Qua<T> quaternion_cast(const Matrix<3, 3, T>& m)
+    Qua<T> quaternion_cast(const Matrix<T, 3, 3>& m)
     {
         const T four_x_squared_minus_1 = m[0][0] - m[1][1] - m[2][2];
         const T four_y_squared_minus_1 = m[1][1] - m[0][0] - m[2][2];
@@ -111,13 +111,13 @@ namespace osc
     }
 
     template<typename T>
-    Qua<T> quaternion_cast(const Matrix<4, 4, T>& m)
+    Qua<T> quaternion_cast(const Matrix<T, 4, 4>& m)
     {
-        return quaternion_cast(Matrix<3, 3, T>(m));
+        return quaternion_cast(Matrix<T, 3, 3>(m));
     }
 
     template<typename T>
-    constexpr Matrix<3, 3, T> matrix3x3_cast(const Qua<T>& q)
+    constexpr Matrix<T, 3, 3> matrix3x3_cast(const Qua<T>& q)
     {
         const T qxx(q.x * q.x);
         const T qyy(q.y * q.y);
@@ -129,7 +129,7 @@ namespace osc
         const T qwy(q.w * q.y);
         const T qwz(q.w * q.z);
 
-        Matrix<3, 3, T> rv(T(1));
+        Matrix<T, 3, 3> rv(T(1));
 
         rv[0][0] = T(1) - T(2) * (qyy +  qzz);
         rv[0][1] = T(2) * (qxy + qwz);
@@ -147,9 +147,9 @@ namespace osc
     }
 
     template<typename T>
-    constexpr Matrix<4, 4, T> matrix4x4_cast(const Qua<T>& q)
+    constexpr Matrix<T, 4, 4> matrix4x4_cast(const Qua<T>& q)
     {
-        return Matrix<4, 4, T>(matrix3x3_cast(q));
+        return Matrix<T, 4, 4>(matrix3x3_cast(q));
     }
 
     template<typename T>
