@@ -1104,20 +1104,61 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
     };
 
     // A `ScalingStep` that scales the masses of bodies in the model.
-    class BodyMassesScalingStep final : public ScalingStep {
-        OpenSim_DECLARE_CONCRETE_OBJECT(BodyMassesScalingStep, ScalingStep)
+    class ModelMassToSubjectMassScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ModelMassToSubjectMassScalingStep, ScalingStep)
     public:
-        explicit BodyMassesScalingStep() :
-            ScalingStep{"TODO: Scale Body Masses to Subject Mass"}
+        explicit ModelMassToSubjectMassScalingStep() :
+            ScalingStep{"Scale Model Mass to Subject Mass"}
         {
-            setDescription("Scales the masses of bodies in the model to match the subject's mass");
+            setDescription("Scales the masses of bodies in the model to match the subject mass, while preserving the overall mass disribution of each body in the model.");
         }
 
     private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters& parameters,
+            const OpenSim::Model& model) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+
+            if (parameters.lookup<double>("subject_mass").value_or(0.0) <= 0.0) {
+                std::stringstream msg;
+                msg << "The subject_mass scaling parameter must be greater than zero";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            if (model.getTotalMass(model.getWorkingState()) <= 0.0) {
+                std::stringstream msg;
+                msg << "Cannot scale the model's mass to the subject's mass because the model itself has a mass of zero";
+                messages.emplace_back(ScalingStepValidationState::Error, std::move(msg).str());
+            }
+
+            return messages;
+        }
+
         void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
         {
             callback(ScalingParameterDeclaration{"blending_factor", 1.0});
             callback(ScalingParameterDeclaration{"subject_mass", 75.0});
+        }
+
+        void implApplyScalingStep(
+            ScalingCache&,
+            const ScalingParameters& parameters,
+            const OpenSim::Model&,
+            OpenSim::Model& resultModel) const final
+        {
+            const auto subjectMass = parameters.lookup<double>("subject_mass").value_or(0.0);
+            OSC_ASSERT_ALWAYS(subjectMass > 0.0 && "Subject mass must be greater than zero");
+
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+
+            const auto effectiveTargetMass = lerp(resultModel.getTotalMass(resultModel.getWorkingState()), subjectMass, *blendingFactor);
+
+            ScaleModelMassPreserveMassDistribution(resultModel, resultModel.getWorkingState(), effectiveTargetMass);
+            InitializeModel(resultModel);
+            InitializeState(resultModel);
         }
     };
 
@@ -1283,7 +1324,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
         ThinPlateSplineOffsetFrameTranslationScalingStep,
         ThinPlateSplineMeshSubstitutionScalingStep,
         ThinPlateSplineWrapCylinderScalingStep,
-        BodyMassesScalingStep,
+        ModelMassToSubjectMassScalingStep,
         RecalculateWrapCylinderRadiusFromStationScalingStep,
         RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep
     >;
@@ -1818,36 +1859,38 @@ namespace
             {
                 // TODO/FIXME/HACK: this code was thrown together to solve an immediate problem
                 // of being able to export warped models, but it isn't very clean or robust (#1003).
-
-                const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
-                if (not warpedGeometryDir) {
-                    log_error("cannot export scaled model: can't figure out where to save the warped meshes");
-                    return;
-                }
-
-                // If the warped geometry directory doesn't exist yet, create it.
-                if (not std::filesystem::exists(*warpedGeometryDir)) {
-                    std::filesystem::create_directories(*warpedGeometryDir);
-                }
-
-                // Export `InMemoryMesh`es to disk (#1003)
-                for (const InMemoryMesh& mesh : scaled->getModel().getComponentList<InMemoryMesh>()) {
-                    // Figure out output file name.
-                    const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
-                    const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(*warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
-
-                    // Write warped mesh data to disk in an OBJ format.
-                    {
-                        std::ofstream objStream{warpedMeshAbsPath, std::ios::trunc};
-                        objStream.exceptions(std::ios::badbit | std::ios::failbit);
-                        OBJ::write(objStream, mesh.getOscMesh(), OBJMetadata{"osc-model-warper"});
+                auto inMemoryMeshes = scaled->getModel().getComponentList<InMemoryMesh>();
+                if (inMemoryMeshes.begin() != inMemoryMeshes.end()) {
+                    const auto warpedGeometryDir = tryGetWarpedGeometryDirectory();
+                    if (not warpedGeometryDir) {
+                        log_error("cannot export scaled model: can't figure out where to save the warped meshes");
+                        return;
                     }
 
-                    // Overwrite the `InMemoryMesh` in `copy`
-                    auto& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
-                    auto newMesh = std::make_unique<OpenSim::Mesh>();
-                    newMesh->set_mesh_file(warpedMeshAbsPath.string());
-                    OverwriteGeometry(*copy, copyMesh, std::move(newMesh));
+                    // If the warped geometry directory doesn't exist yet, create it.
+                    if (not std::filesystem::exists(*warpedGeometryDir)) {
+                        std::filesystem::create_directories(*warpedGeometryDir);
+                    }
+
+                    // Export `InMemoryMesh`es to disk (#1003)
+                    for (const InMemoryMesh& mesh : inMemoryMeshes) {
+                        // Figure out output file name.
+                        const auto& inputMesh = sourceModel.getComponent<OpenSim::Mesh>(mesh.getAbsolutePath());
+                        const auto warpedMeshAbsPath = std::filesystem::weakly_canonical(*warpedGeometryDir / std::filesystem::path{inputMesh.get_mesh_file()}.filename().replace_extension(".obj"));
+
+                        // Write warped mesh data to disk in an OBJ format.
+                        {
+                            std::ofstream objStream{warpedMeshAbsPath, std::ios::trunc};
+                            objStream.exceptions(std::ios::badbit | std::ios::failbit);
+                            OBJ::write(objStream, mesh.getOscMesh(), OBJMetadata{"osc-model-warper"});
+                        }
+
+                        // Overwrite the `InMemoryMesh` in `copy`
+                        auto& copyMesh = copy->updComponent<InMemoryMesh>(mesh.getAbsolutePath());
+                        auto newMesh = std::make_unique<OpenSim::Mesh>();
+                        newMesh->set_mesh_file(warpedMeshAbsPath.string());
+                        OverwriteGeometry(*copy, copyMesh, std::move(newMesh));
+                    }
                 }
             }
 

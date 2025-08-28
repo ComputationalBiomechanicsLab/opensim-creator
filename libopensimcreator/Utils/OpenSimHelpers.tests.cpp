@@ -533,3 +533,43 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
         ASSERT_EQ(got, expected);
     }
 }
+
+TEST(OpenSimHelpers, ScaleModelMassPreserveMassDistribution_WorksOnBasicExample)
+{
+    // Build a 3 kg model:
+    //
+    //           ground
+    //             |
+    //       body1 (1.5 kg)
+    //       |            |
+    // body2a (1 kg)   body2b (0.5 kg)
+
+    OpenSim::Model model;
+    const auto& ground = model.getGround();
+    const auto& body1  = AddBody(model, "body1",  1.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2a = AddBody(model, "body2a", 1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2b = AddBody(model, "body2b", 0.5, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    AddJoint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
+    AddJoint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
+    AddJoint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
+
+    FinalizeConnections(model);
+    InitializeModel(model);
+    SimTK::State state = InitializeState(model);
+
+    const double originalTotalMass = 3.0;
+    const double tolerance = 0.000001;  // 1 microgram
+    ASSERT_NEAR(model.getTotalMass(state), originalTotalMass, tolerance);
+
+    const double newTotalMass = 5.0;
+    ScaleModelMassPreserveMassDistribution(model, state, newTotalMass);
+    InitializeModel(model);
+    state = InitializeState(model);
+
+    const double massScalingFactor = newTotalMass / originalTotalMass;
+
+    ASSERT_NEAR(model.getTotalMass(state), newTotalMass, tolerance);
+    ASSERT_NEAR(body1.getMass(), massScalingFactor * 1.5, tolerance);
+    ASSERT_NEAR(body2a.getMass(), massScalingFactor * 1.0, tolerance);
+    ASSERT_NEAR(body2b.getMass(), massScalingFactor * 0.5, tolerance);
+}

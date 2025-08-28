@@ -1972,3 +1972,19 @@ std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
         return {};
     }
 }
+
+void osc::ScaleModelMassPreserveMassDistribution(
+    OpenSim::Model& model,
+    const SimTK::State& state,
+    double newMass)
+{
+    // This is a simplified version of part of `OpenSim::Model::scale`
+
+    const double modelMass = model.getTotalMass(state);
+    OSC_ASSERT_ALWAYS(modelMass != 0.0 && "Cannot scale the mass of a model that has a mass of zero");
+
+    const double factor = newMass / modelMass;
+    for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>()) {
+        body.scaleMass(factor);
+    }
+}

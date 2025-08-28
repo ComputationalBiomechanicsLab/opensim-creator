@@ -1147,4 +1147,16 @@ namespace osc
     );
 
     std::string WriteObjectXMLToString(const OpenSim::Object&);
+
+    // Scales the masses of all bodies in `model` such that its total mass
+    // becomes equal to `newMass`, while preserving the relative distribution
+    // of masses of the model.
+    //
+    // Note: this edits the body mass (properties), but doesn't re-initialize
+    // `model` or `state`.
+    void ScaleModelMassPreserveMassDistribution(
+        OpenSim::Model& model,
+        const SimTK::State& state,
+        double newMass
+    );
 }

@@ -41,6 +41,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - When right-clicking a component in the model editor/simulator, the "Sockets" menu now
   shows both outbound sockets (previous behavior) and inbound connections from other
   components in the model (#1090).
+- The model warping workflow now has a "Scale Model Mass to Subject Mass" scaling step,
+  which scales the model's total mass to the subject's mass while maintaining the same
+  overall mass distribution (#1093).
 
 ## [0.5.25] - 2025/07/14
 
