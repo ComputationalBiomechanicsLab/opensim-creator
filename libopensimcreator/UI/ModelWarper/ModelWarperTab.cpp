@@ -1217,6 +1217,12 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
             OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
 
+            const SimTK::Vec3 scaleFactors = {
+                lerp(1.0, get_scale_factors()[0], *blendingFactor),
+                lerp(1.0, get_scale_factors()[1], *blendingFactor),
+                lerp(1.0, get_scale_factors()[2], *blendingFactor),
+            };
+
             OpenSim::ScaleSet scaleSet;
             for (int i = 0; i < getProperty_bodies().size(); ++i) {
                 const auto* body = FindComponent<OpenSim::Body>(model, get_bodies(i));
@@ -1228,7 +1234,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
 
                 OpenSim::Scale scale;
                 scale.setSegmentName(body->getName());
-                scale.setScaleFactors(get_scale_factors());
+                scale.setScaleFactors(scaleFactors);
                 scale.setApply(true);
                 scaleSet.cloneAndAppend(scale);
             }
