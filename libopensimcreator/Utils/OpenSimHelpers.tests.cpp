@@ -452,8 +452,8 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
     //          ground
     //            |
     //          body1
-    //           / \
-    //     body2a body2b
+    //          |   |
+    //     body2a   body2b
     //       |
     //     body3a
     OpenSim::Model model;
