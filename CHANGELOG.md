@@ -44,6 +44,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The model warping workflow now has a "Scale Model Mass to Subject Mass" scaling step,
   which scales the model's total mass to the subject's mass while maintaining the same
   overall mass distribution (#1093).
+- The model warping workflow now has a "Manually Scale Body Segments" scaling step, which
+  scales the specified body segments (incl. attached elements) by the given, manually-specified,
+  scale factors (#1094).
 
 ## [0.5.25] - 2025/07/14
 
