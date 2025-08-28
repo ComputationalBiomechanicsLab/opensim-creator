@@ -38,6 +38,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   to focus on that point, making it easier to focus on that part of the mesh (#1089).
 - The "join to" input in the "Add Body" popup now includes a search bar that can be used
   to filter through available frames in the model (#21).
+- When right-clicking a component in the model editor/simulator, the "Sockets" menu now
+  shows both outbound sockets (previous behavior) and inbound connections from other
+  components in the model (#1090).
 
 ## [0.5.25] - 2025/07/14
 

@@ -409,69 +409,173 @@ private:
     void drawSocketMenu(const OpenSim::Component& c)
     {
         if (ui::begin_menu("Sockets", m_Model->canUpdModel())) {
-            std::vector<std::string> socketNames = GetSocketNames(c);
 
-            if (not socketNames.empty()) {
-                ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
+            ui::draw_text_centered("Outbound Sockets");
+            ui::draw_separator();
+            drawOutboundSocketsInfo(c);
 
-                if (ui::begin_table("sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
-                    ui::table_setup_column("Socket Name");
-                    ui::table_setup_column("Connectee Type");
-                    ui::table_setup_column("Connectee");
-                    ui::table_setup_column("Actions");
+            ui::start_new_line();
 
-                    ui::table_headers_row();
-
-                    int id = 0;
-                    for (const std::string& socketName : socketNames) {
-                        const OpenSim::AbstractSocket& socket = c.getSocket(socketName);
-
-                        int column = 0;
-                        ui::push_id(id++);
-                        ui::table_next_row();
-
-                        ui::table_set_column_index(column++);
-                        ui::draw_text_disabled(socketName);
-
-                        ui::table_set_column_index(column++);
-                        ui::draw_text(socket.getConnecteeTypeName());
-
-                        ui::table_set_column_index(column++);
-                        if (ui::draw_small_button(socket.getConnecteeAsObject().getName())) {
-                            m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
-                            request_close();
-                        }
-                        if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject());
-                            connectee && ui::is_item_hovered()) {
-
-                            DrawComponentHoverTooltip(*connectee);
-                        }
-
-                        ui::table_set_column_index(column++);
-                        if (ui::draw_small_button("change")) {
-                            auto popup = std::make_unique<ReassignSocketPopup>(
-                                &owner(),
-                                "Reassign " + socket.getName(),
-                                m_Model,
-                                GetAbsolutePathString(c),
-                                socketName
-                            );
-                            App::post_event<OpenPopupEvent>(owner(), std::move(popup));
-                        }
-
-                        ui::pop_id();
-                    }
-
-                    ui::end_table();
-                }
-                ui::pop_style_var();
-            }
-            else {
-                ui::draw_text_disabled("%s has no sockets", c.getName().c_str());
-            }
+            ui::draw_text_centered("Inbound Connections");
+            ui::draw_separator();
+            drawInboundConnectionsInfo(c);
 
             ui::end_menu();
         }
+    }
+
+    void drawOutboundSocketsInfo(const OpenSim::Component& c)
+    {
+        if (c.getNumSockets() != 0) {
+            drawOutboundSocketsTable(c);
+        } else {
+            ui::draw_dummy({256.0f, 0.0f});
+            ui::draw_text_disabled_and_centered(c.getName() + " has no outbound sockets.");
+        }
+    }
+
+    void drawOutboundSocketsTable(const OpenSim::Component& c)
+    {
+        const std::vector<std::string> socketNames = GetSocketNames(c);
+        ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
+
+        if (ui::begin_table("outbound sockets table", 4, {ui::TableFlag::SizingStretchProp, ui::TableFlag::BordersInner, ui::TableFlag::PadOuterX})) {
+            ui::table_setup_column("Socket Name");
+            ui::table_setup_column("Connectee Type");
+            ui::table_setup_column("Connectee");
+            ui::table_setup_column("Actions");
+
+            ui::table_headers_row();
+
+            int id = 0;
+            for (const std::string& socketName : socketNames) {
+                const OpenSim::AbstractSocket& socket = c.getSocket(socketName);
+
+                int column = 0;
+                ui::push_id(id++);
+                ui::table_next_row();
+
+                ui::table_set_column_index(column++);
+                ui::draw_text_disabled(socketName);
+
+                ui::table_set_column_index(column++);
+                ui::draw_text(socket.getConnecteeTypeName());
+
+                ui::table_set_column_index(column++);
+                if (ui::draw_small_button(socket.getConnecteeAsObject().getName())) {
+                    m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject()));
+                    request_close();
+                }
+                if (const auto* connectee = dynamic_cast<const OpenSim::Component*>(&socket.getConnecteeAsObject());
+                    connectee && ui::is_item_hovered()) {
+
+                    DrawComponentHoverTooltip(*connectee);
+                }
+
+                ui::table_set_column_index(column++);
+                if (ui::draw_small_button("change")) {
+                    auto popup = std::make_unique<ReassignSocketPopup>(
+                        &owner(),
+                        "Reassign " + socket.getName(),
+                        m_Model,
+                        GetAbsolutePathString(c),
+                        socketName
+                    );
+                    App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+                }
+
+                ui::pop_id();
+            }
+
+            ui::end_table();
+        }
+        ui::pop_style_var();
+    }
+
+    void drawInboundConnectionsInfo(const OpenSim::Component& c)
+    {
+        const auto filter = m_ShouldFilterInboundConnections ?
+            [](const OpenSim::Component& c) { return ShouldShowInUI(c) and not dynamic_cast<const OpenSim::FrameGeometry*>(&c); } :
+            [](const OpenSim::Component&) { return true; };
+
+        auto els = ForEachInboundConnection(*m_Model, c, filter);
+        auto it = els.begin();
+        const auto end = els.end();
+
+        if (it != end) {
+            drawInboundConnectionsTable(it, end);
+        }
+        else {
+            ui::draw_dummy({256.0f, 0.0f});
+            ui::draw_text_disabled_and_centered(c.getName() + " has no inbound sockets.");
+        }
+
+        ui::indent();
+        ui::draw_checkbox("Hide Junk", &m_ShouldFilterInboundConnections);
+        ui::unindent();
+    }
+
+    void drawInboundConnectionsTable(
+        cpp23::generator<ComponentConnectionView>::iterator& it,
+        std::default_sentinel_t end)
+    {
+        ui::push_style_var(ui::StyleVar::CellPadding, ui::get_text_line_height_in_current_panel() * Vector2{0.5f});
+        const ui::TableFlags flags = {
+            ui::TableFlag::SizingStretchProp,
+            ui::TableFlag::BordersInner,
+            ui::TableFlag::PadOuterX,
+            ui::TableFlag::ScrollY
+        };
+        const Vector2 dimensions = Vector2{0.0f, 10.0f*ui::get_text_line_height_with_spacing_in_current_panel()};
+        if (ui::begin_table("inbound connections table", 3, flags, dimensions)) {
+            ui::table_setup_column("Source Component");
+            ui::table_setup_column("Socket Name");
+            ui::table_setup_column("Actions");
+
+            ui::table_headers_row();
+
+            // draw data rows
+            int id = 0;
+            for (; it != end; ++it) {
+                const ComponentConnectionView view{*it};
+
+                int column = 0;
+                ui::push_id(id++);
+                ui::table_next_row();
+
+                // column: Source Component
+                ui::table_set_column_index(column++);
+                if (ui::draw_small_button(view.source().getName())) {
+                    m_Model->setSelected(dynamic_cast<const OpenSim::Component*>(&view.source()));
+                    request_close();
+                }
+                if (ui::is_item_hovered()) {
+                    DrawComponentHoverTooltip(view.source());
+                }
+
+                // column: Socket Name
+                ui::table_set_column_index(column++);
+                ui::draw_text_disabled(view.socketName());
+
+                // column: actions
+                ui::table_set_column_index(column++);
+                if (ui::draw_small_button("change")) {
+                    auto popup = std::make_unique<ReassignSocketPopup>(
+                        &owner(),
+                        "Reassign " + view.socketName(),
+                        m_Model,
+                        GetAbsolutePathString(view.source()),
+                        view.socketName()
+                    );
+                    App::post_event<OpenPopupEvent>(owner(), std::move(popup));
+                }
+
+                ui::pop_id();
+            }
+
+            ui::end_table();
+        }
+        ui::pop_style_var();
     }
 
     void drawPlotVsCoordinateMenu(const OpenSim::Muscle& m)
@@ -494,6 +598,7 @@ private:
     OpenSim::ComponentPath m_Path;
     ModelAddMenuItems m_ModelAddMenuItems{&owner(), m_Model};
     ComponentContextMenuFlags m_Flags;
+    bool m_ShouldFilterInboundConnections = true;
     std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
         App::resource_loader().with_prefix("OpenSimCreator/icons/"),
         ui::get_font_base_size()/128.0f,

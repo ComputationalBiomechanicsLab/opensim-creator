@@ -14,9 +14,11 @@
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/Ground.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 
 #include <filesystem>
@@ -441,4 +443,93 @@ TEST(OpenSimHelpers, WriteObjectXMLToStringWorksOnBasicRootObject)
 
     ASSERT_TRUE(dump.contains("somebody"));
     ASSERT_TRUE(dump.contains("<mass>"));
+}
+
+TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
+{
+    // Build a model:
+    //
+    //          ground
+    //            |
+    //          body1
+    //           / \
+    //     body2a body2b
+    //       |
+    //     body3a
+    OpenSim::Model model;
+    const auto& ground = model.getGround();
+    const auto& body1  = AddBody(model, "body1",  1.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2a = AddBody(model, "body2a", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body2b = AddBody(model, "body2b", 2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& body3a = AddBody(model, "body3",  2.0, SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const auto& b1_to_g    = AddJoint<OpenSim::FreeJoint>(model, "body1_to_ground",  ground, body1);
+    const auto& b2a_to_b1  = AddJoint<OpenSim::FreeJoint>(model, "body2a_to_body1",  body1,  body2a);
+    const auto& b2b_to_b1  = AddJoint<OpenSim::FreeJoint>(model, "body2b_to_body1",  body1,  body2b);
+    const auto& b3a_to_b2a = AddJoint<OpenSim::FreeJoint>(model, "body3a_to_body2a", body2a, body3a);
+    FinalizeConnections(model);
+    InitializeModel(model);
+
+    // helper: makes testing easier
+    const auto slurp = []<typename T>(cpp23::generator<T> g)
+    {
+        std::vector<T> rv;
+        for (T&& el : g) {
+            rv.push_back(std::move(el));
+        }
+        return rv;
+    };
+
+    // the filter should filter out `FrameGeometry` (junk from OpenSim)
+    const auto filter = [](const OpenSim::Component& c)
+    {
+        return not dynamic_cast<const OpenSim::FrameGeometry*>(&c);
+    };
+
+    // test ground
+    {
+        const auto got = slurp(ForEachInboundConnection(model, model.getGround(), filter));
+        std::vector<ComponentConnectionView> expected = {
+            ComponentConnectionView{b1_to_g,   ground, "parent_frame"},
+        };
+        ASSERT_EQ(got, expected);
+    }
+
+    // test body1
+    {
+        const auto got = slurp(ForEachInboundConnection(model, body1, filter));
+        std::vector<ComponentConnectionView> expected = {
+            ComponentConnectionView{b1_to_g,   body1, "child_frame"},
+            ComponentConnectionView{b2a_to_b1, body1, "parent_frame"},
+            ComponentConnectionView{b2b_to_b1, body1, "parent_frame"},
+        };
+        ASSERT_EQ(got, expected);
+    }
+
+    // test body2a
+    {
+        const auto got = slurp(ForEachInboundConnection(model, body2a, filter));
+        std::vector<ComponentConnectionView> expected = {
+            ComponentConnectionView{b2a_to_b1,  body2a, "child_frame"},
+            ComponentConnectionView{b3a_to_b2a, body2a, "parent_frame"},
+        };
+        ASSERT_EQ(got, expected);
+    }
+
+    // test body2b
+    {
+        const auto got = slurp(ForEachInboundConnection(model, body2b, filter));
+        std::vector<ComponentConnectionView> expected = {
+            ComponentConnectionView{b2b_to_b1,  body2b, "child_frame"},
+        };
+        ASSERT_EQ(got, expected);
+    }
+
+    // test body3a
+    {
+        const auto got = slurp(ForEachInboundConnection(model, body3a, filter));
+        std::vector<ComponentConnectionView> expected = {
+            ComponentConnectionView{b3a_to_b2a,  body3a, "child_frame"},
+        };
+        ASSERT_EQ(got, expected);
+    }
 }

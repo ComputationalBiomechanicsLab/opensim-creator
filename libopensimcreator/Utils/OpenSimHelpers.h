@@ -4,6 +4,7 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/Vector3.h>
+#include <liboscar/Shims/Cpp23/generator.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/StringName.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -547,6 +548,38 @@ namespace osc
         OpenSim::Component& root,
         const OpenSim::Component& from,
         const OpenSim::Component& to
+    );
+
+    class ComponentConnectionView final {
+    public:
+        explicit ComponentConnectionView(
+            const OpenSim::Component& source,
+            const OpenSim::Component& target,
+            std::string socketName) :
+
+            m_Source{&source},
+            m_Target{&target},
+            m_SocketName{std::move(socketName)}
+        {}
+
+        friend bool operator==(const ComponentConnectionView&, const ComponentConnectionView&) = default;
+
+        const OpenSim::Component& source() const { return *m_Source; }
+        const OpenSim::Component& target() const { return *m_Target; }
+        CStringView socketName() const { return m_SocketName; }
+    private:
+        const OpenSim::Component* m_Source;
+        const OpenSim::Component* m_Target;
+        std::string m_SocketName;
+    };
+    std::ostream& operator<<(std::ostream&, const ComponentConnectionView&);
+
+    // Returns a generator that yields `ComponentConnectionView` for each socket of each component
+    // in `root` that points to `c`.
+    cpp23::generator<ComponentConnectionView> ForEachInboundConnection(
+        const OpenSim::Component& root,
+        const OpenSim::Component& c,
+        std::function<bool(const OpenSim::Component&)> filter = [](const OpenSim::Component&){ return true; }
     );
 
     // returns a pointer to the property if the component has a property with the given name
