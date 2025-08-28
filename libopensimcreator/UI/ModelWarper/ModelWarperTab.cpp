@@ -1244,6 +1244,64 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
         }
     };
 
+    class NamedLandmarkPair final : public OpenSim::Object {
+        OpenSim_DECLARE_CONCRETE_OBJECT(NamedLandmarkPair, OpenSim::Object);
+
+        OpenSim_DECLARE_PROPERTY(first, std::string, "Name of the first landmark in the pair");
+        OpenSim_DECLARE_PROPERTY(second, std::string, "Name of the second landmark in the pair");
+    public:
+        explicit NamedLandmarkPair()
+        {
+            constructProperty_first("");
+            constructProperty_second("");
+        }
+    };
+
+    // A `ScalingStep` that scales body segments by the chosen (potentially, non-uniform) scale factors
+    class ScaleBodySegmentsWithLandmarkPairLengthsScalingStep final : public ScalingStep {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ScaleBodySegmentsWithLandmarkPairLengthsScalingStep, ScalingStep)
+
+        OpenSim_DECLARE_LIST_PROPERTY(bodies, std::string, "Absolute paths (e.g. `/bodyset/femur`) to `Body` components in the model");
+        OpenSim_DECLARE_LIST_PROPERTY(measurements, NamedLandmarkPair, "A sequence of landmark pairs that each define a measurement (from 'first' to 'second')");
+        OpenSim_DECLARE_PROPERTY(preserve_masses, bool, "If enabled, the masses of the bodies will not be scaled (inertial properties will still be scaled)");
+    public:
+        explicit ScaleBodySegmentsWithLandmarkPairLengthsScalingStep() :
+            ScalingStep{"Scale Body Segments Using "}
+        {
+            setDescription("Applies a manually-specified scaling factor to the given body segments in the model.");
+            constructProperty_bodies();
+            constructProperty_measurements();
+            constructProperty_preserve_masses(false);
+        }
+
+    private:
+        std::vector<ScalingStepValidationMessage> implValidate(
+            ScalingCache&,
+            const ScalingParameters& parameters,
+            const OpenSim::Model&) const final
+        {
+            std::vector<ScalingStepValidationMessage> messages;
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+            return messages;
+        }
+
+        void implForEachScalingParameterDeclaration(const std::function<void(const ScalingParameterDeclaration&)>& callback) const final
+        {
+            callback(ScalingParameterDeclaration{"blending_factor", 1.0});
+        }
+
+        void implApplyScalingStep(
+            ScalingCache&,
+            const ScalingParameters& parameters,
+            const OpenSim::Model&,
+            OpenSim::Model&) const final
+        {
+            const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
+            OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
+        }
+    };
+
     class RecalculateWrapCylinderRadiusFromStationScalingStep final : public ScalingStep {
         OpenSim_DECLARE_CONCRETE_OBJECT(RecalculateWrapCylinderRadiusFromStationScalingStep, ScalingStep)
     public:
@@ -1408,6 +1466,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
         ThinPlateSplineWrapCylinderScalingStep,
         ModelMassToSubjectMassScalingStep,
         ManuallyScaleBodySegmentsScalingStep,
+        ScaleBodySegmentsWithLandmarkPairLengthsScalingStep,
         RecalculateWrapCylinderRadiusFromStationScalingStep,
         RecalculateWrapCylinderXYZBodyRotationFromStationScalingStep
     >;
@@ -2686,6 +2745,7 @@ public:
         [[maybe_unused]] static const bool s_TypesRegistered = []<typename... TScalingStep>(Typelist<TScalingStep...>)
         {
             OpenSim::Object::registerType(ScalingParameterOverride{});
+            OpenSim::Object::registerType(NamedLandmarkPair{});
             (OpenSim::Object::registerType(TScalingStep{}), ...);
             OpenSim::Object::registerType(ModelWarperV3Document{});
             return true;
