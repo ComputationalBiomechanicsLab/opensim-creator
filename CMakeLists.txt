@@ -16,7 +16,7 @@ set(OSC_BUILD_DOCS OFF
 #
 # This is similar to `include(CTest)`, but doesn't create all of the extra testing
 # targets (e.g. `Continuous`, `NightlyConfigure`).
-option(BUILD_TESTING, "enable/disable building test suites" ON)
+option(BUILD_TESTING "enable/disable building test suites" ON)
 if (BUILD_TESTING)
     enable_testing()
 endif()
