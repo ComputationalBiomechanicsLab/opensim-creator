@@ -5,7 +5,7 @@ set(
     CACHE BOOL
     "Enable/disable building osim as part of building OpenSimCreator (via `add_subdirectory`) rather\
      than acquiring it externally (via `find_package`). This is useful for developing/testing\
-     Simbody/OpenSim as part of OpenSim Creator's integration"
+     Simbody/OpenSim while working on OpenSim Creator"
 )
 
 if(${OSC_BUILD_OSIM_INLINED})
@@ -37,20 +37,7 @@ set_target_properties(OpenSimCreator PROPERTIES
 target_compile_features(OpenSimCreator PUBLIC
     cxx_std_23
 )
-target_compile_options(OpenSimCreator
-PUBLIC
-    # gcc/clang
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        # disable extra-semicolon detection: broken by OpenSim_DECLARE_ macros (see: opensim-core/3496)
-        -Wno-extra-semi
-    >
-
-    # gcc
-    $<$<CXX_COMPILER_ID:GNU>:
-        # gcc-12 finds (possibly legit) bounds issues in simbody - requires investigation
-        -Wno-array-bounds
-    >
-PRIVATE
+target_compile_options(OpenSimCreator PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )
 target_include_directories(OpenSimCreator PUBLIC

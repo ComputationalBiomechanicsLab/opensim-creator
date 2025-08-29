@@ -116,6 +116,9 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # disabled: requires newer gcc
         # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
         # -Wlogical-op
+
+        # disable extra-semicolon detection: broken by macro definitions that already contain semicolons
+        -Wno-extra-semi
     >
 
     # clang flags

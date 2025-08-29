@@ -31,6 +31,12 @@ find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
 
+# generate `oscarconfig.h`
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/oscarconfig.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/liboscar/oscarconfig.h"
+)
+
 # gather source code, exclude tests
 file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES
     LIST_DIRECTORIES FALSE
@@ -40,6 +46,7 @@ list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "testing")
 list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "\.tests\.cpp")
 
 add_library(oscar STATIC
+    "${CMAKE_CURRENT_BINARY_DIR}/liboscar/oscarconfig.h"
     ${OSC_SOURCE_AND_HEADER_FILES}
 )
 set_target_properties(oscar PROPERTIES
@@ -51,14 +58,9 @@ target_compile_features(oscar PUBLIC
 target_compile_options(oscar PRIVATE
     ${OSC_STRICT_COMPILER_OPTIONS}
 )
-target_compile_definitions(oscar
-PUBLIC
-    $<$<BOOL:${OSC_FORCE_ASSERTS_ENABLED}>:OSC_FORCE_ASSERTS_ENABLED>
-    $<$<BOOL:${OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED}>:OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED>
-)
-target_include_directories(oscar
-PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <liboscar/HEADER.h>` works
+target_include_directories(oscar PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."  # so that `#include <liboscar/HEADER.h>` works
+    "${CMAKE_CURRENT_BINARY_DIR}/"    # so that #include <liboscar/oscarconfig.h> works
 )
 target_link_libraries(oscar
 PRIVATE
