@@ -11,9 +11,15 @@ set(OSC_BUILD_DOCS OFF
     "enable/disable building the documentation (requires that sphinx-build is available on the PATH)"
 )
 
-# note: this has to be done at the top-level, so that `ctest --show-only` works for
-#       all test suites, which is how IDEs typically detect tests
-include(CTest)  # declares `BUILD_TESTING` and calls `enable_testing` if it's set
+# This has to be done at the top-level, so that `ctest --show-only` works for
+# all test suites, which is how IDEs typically detect tests.
+#
+# This is similar to `include(CTest)`, but doesn't create all of the extra testing
+# targets (e.g. `Continuous`, `NightlyConfigure`).
+option(BUILD_TESTING, "enable/disable building test suites" ON)
+if (BUILD_TESTING)
+    enable_testing()
+endif()
 
 add_subdirectory(liboscar)
 add_subdirectory(liboscar-demos)
