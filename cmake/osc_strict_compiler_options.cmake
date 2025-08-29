@@ -141,6 +141,12 @@ set(OSC_STRICT_COMPILER_OPTIONS
         -Wno-dangling-reference
     >
 
+    # gcc-12 flags
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,13>>:
+        # gcc-12 finds spurious OOB accesses in simbody
+        -Wno-array-bounds
+    >
+
     $<$<CXX_COMPILER_ID:AppleClang>:
         # ensure AppleClang produces an error when targeting earlier versions of MacOS
         # with a newer SDK
