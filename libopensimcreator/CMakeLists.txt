@@ -7,7 +7,6 @@ set(
      than acquiring it externally (via `find_package`). This is useful for developing/testing\
      Simbody/OpenSim as part of OpenSim Creator's integration"
 )
-mark_as_advanced(OSC_BUILD_OSIM_INLINED)
 
 if(${OSC_BUILD_OSIM_INLINED})
     add_subdirectory(
