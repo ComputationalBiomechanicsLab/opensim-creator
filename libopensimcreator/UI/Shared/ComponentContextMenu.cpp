@@ -495,10 +495,10 @@ private:
     void drawInboundConnectionsInfo(const OpenSim::Component& c)
     {
         const auto filter = m_ShouldFilterInboundConnections ?
-            [](const OpenSim::Component& c) { return ShouldShowInUI(c) and not dynamic_cast<const OpenSim::FrameGeometry*>(&c); } :
-            [](const OpenSim::Component&) { return true; };
+            [](const OpenSim::Component& c) { return ShouldShowInUI(c) and dynamic_cast<const OpenSim::FrameGeometry*>(&c) == nullptr; } :
+            [](const OpenSim::Component&)   { return true; };
 
-        auto els = ForEachInboundConnection(*m_Model, c, filter);
+        auto els = ForEachInboundConnection(&m_Model->getModel(), &c, filter);
         auto it = els.begin();
         const auto end = els.end();
 

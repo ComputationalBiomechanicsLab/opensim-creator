@@ -752,20 +752,20 @@ std::ostream& osc::operator<<(std::ostream& os, const ComponentConnectionView& v
 }
 
 cpp23::generator<ComponentConnectionView> osc::ForEachInboundConnection(
-    const OpenSim::Component& root,
-    const OpenSim::Component& c,
+    const OpenSim::Component* root,
+    const OpenSim::Component* c,
     std::function<bool(const OpenSim::Component&)> filter)
 {
-    for (const OpenSim::Component& subcomponent : root.getComponentList()) {
+    for (const OpenSim::Component& subcomponent : root->getComponentList()) {
         if (not filter(subcomponent)) {
             continue;  // caller-provided filter stops emission
         }
         for (const auto& socketName : subcomponent.getSocketNames()) {
             if (const auto* socket = subcomponent.tryGetSocket(socketName)) {
-                if (&socket->getConnecteeAsObject() == &c) {
+                if (&socket->getConnecteeAsObject() == c) {
                     co_yield ComponentConnectionView{
                         subcomponent,  // source
-                        c,             // target
+                        *c,            // target
                         socketName,    // connection name
                     };
                 }

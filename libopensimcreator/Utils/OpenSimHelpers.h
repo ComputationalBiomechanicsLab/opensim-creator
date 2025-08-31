@@ -577,8 +577,8 @@ namespace osc
     // Returns a generator that yields `ComponentConnectionView` for each socket of each component
     // in `root` that points to `c`.
     cpp23::generator<ComponentConnectionView> ForEachInboundConnection(
-        const OpenSim::Component& root,
-        const OpenSim::Component& c,
+        const OpenSim::Component* root,
+        const OpenSim::Component* c,
         std::function<bool(const OpenSim::Component&)> filter = [](const OpenSim::Component&){ return true; }
     );
 

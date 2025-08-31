@@ -1304,7 +1304,7 @@ public:
     {
         // Convert to SDL3 units and ensure it's in the left-handed origin-is-top-left
         // coordinate system that SDL3 wants, then convert it into an `SDL_Rect`
-        const SDL_Rect r = to<SDL_Rect>(
+        const auto r = to<SDL_Rect>(
             screen_rect
             .with_flipped_y(main_window_dimensions().y)
             .with_origin_and_dimensions_scaled_by(1.0f/os_to_main_window_device_independent_ratio())

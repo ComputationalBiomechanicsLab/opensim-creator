@@ -649,7 +649,7 @@ namespace
                 continue;
             }
 
-            const Vector3 position = to<Vector3>(station.findLocationInFrame(st, m.getGround()));
+            const auto position = to<Vector3>(station.findLocationInFrame(st, m.getGround()));
             const std::string name = station.getName();
 
             rv.emplace<StationEl>(attachment, position, name);

@@ -208,7 +208,7 @@ namespace
             const OpenSim::Station& station) const final
         {
             const SimTK::State& state = getState();
-            Matrix4x4 transformInGround = to<Matrix4x4>(station.getParentFrame().getRotationInGround(state));
+            auto transformInGround = to<Matrix4x4>(station.getParentFrame().getRotationInGround(state));
             transformInGround[3] = Vector4{to<Vector3>(station.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
@@ -222,7 +222,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = station.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vector3 translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
+            const auto translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslateStation(getUndoableModel(), station, translationInParent);
         }
@@ -252,7 +252,7 @@ namespace
             const OpenSim::PathPoint& pathPoint) const final
         {
             const SimTK::State& state = getState();
-            Matrix4x4 transformInGround = to<Matrix4x4>(pathPoint.getParentFrame().getRotationInGround(state));
+            auto transformInGround = to<Matrix4x4>(pathPoint.getParentFrame().getRotationInGround(state));
             transformInGround[3] = Vector4{to<Vector3>(pathPoint.getLocationInGround(state)), 1.0f};
 
             return transformInGround;
@@ -266,7 +266,7 @@ namespace
 
             const SimTK::Rotation parentToGroundRotation = pathPoint.getParentFrame().getRotationInGround(getState());
             const SimTK::InverseRotation& groundToParentRotation = parentToGroundRotation.invert();
-            const Vector3 translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
+            const auto translationInParent = to<Vector3>(groundToParentRotation * transformInGround.p());
 
             ActionTranslatePathPoint(getUndoableModel(), pathPoint, translationInParent);
         }

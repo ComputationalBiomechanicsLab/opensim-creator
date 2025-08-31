@@ -910,7 +910,7 @@ namespace
 
         if (ime_data->WantVisible) {
             const Vector2 input_dimensions = {1.0f, ime_data->InputLineHeight};
-            const Vector2 input_top_left_ui = to<Vector2>(ime_data->InputPos);
+            const auto input_top_left_ui = to<Vector2>(ime_data->InputPos);
             const Vector2 input_bottom_left_ui = {input_top_left_ui.x, input_top_left_ui.y + input_dimensions.y};
             const Vector2 input_bottom_left_screen = {input_top_left_ui.x, viewport->Size.y - input_bottom_left_ui.y};
 

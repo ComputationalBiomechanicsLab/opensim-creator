@@ -1232,11 +1232,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                     throw std::runtime_error{std::move(msg).str()};
                 }
 
-                OpenSim::Scale scale;
-                scale.setSegmentName(body->getName());
-                scale.setScaleFactors(scaleFactors);
-                scale.setApply(true);
-                scaleSet.cloneAndAppend(scale);
+                auto scale = std::make_unique<OpenSim::Scale>();
+                scale->setSegmentName(body->getName());
+                scale->setScaleFactors(scaleFactors);
+                scale->setApply(true);
+                scaleSet.adoptAndAppend(scale.release());
             }
             model.scale(model.updWorkingState(), scaleSet, get_preserve_masses());
             InitializeModel(model);

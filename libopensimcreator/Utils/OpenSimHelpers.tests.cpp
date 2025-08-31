@@ -482,12 +482,12 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
     // the filter should filter out `FrameGeometry` (junk from OpenSim)
     const auto filter = [](const OpenSim::Component& c)
     {
-        return not dynamic_cast<const OpenSim::FrameGeometry*>(&c);
+        return dynamic_cast<const OpenSim::FrameGeometry*>(&c) == nullptr;
     };
 
     // test ground
     {
-        const auto got = slurp(ForEachInboundConnection(model, model.getGround(), filter));
+        const auto got = slurp(ForEachInboundConnection(&model, &model.getGround(), filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b1_to_g,   ground, "parent_frame"},
         };
@@ -496,7 +496,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body1
     {
-        const auto got = slurp(ForEachInboundConnection(model, body1, filter));
+        const auto got = slurp(ForEachInboundConnection(&model, &body1, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b1_to_g,   body1, "child_frame"},
             ComponentConnectionView{b2a_to_b1, body1, "parent_frame"},
@@ -507,7 +507,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body2a
     {
-        const auto got = slurp(ForEachInboundConnection(model, body2a, filter));
+        const auto got = slurp(ForEachInboundConnection(&model, &body2a, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b2a_to_b1,  body2a, "child_frame"},
             ComponentConnectionView{b3a_to_b2a, body2a, "parent_frame"},
@@ -517,7 +517,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body2b
     {
-        const auto got = slurp(ForEachInboundConnection(model, body2b, filter));
+        const auto got = slurp(ForEachInboundConnection(&model, &body2b, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b2b_to_b1,  body2b, "child_frame"},
         };
@@ -526,7 +526,7 @@ TEST(OpenSimHelpers, ForEachInboundConnectionWorksAsExpected)
 
     // test body3a
     {
-        const auto got = slurp(ForEachInboundConnection(model, body3a, filter));
+        const auto got = slurp(ForEachInboundConnection(&model, &body3a, filter));
         std::vector<ComponentConnectionView> expected = {
             ComponentConnectionView{b3a_to_b2a,  body3a, "child_frame"},
         };
