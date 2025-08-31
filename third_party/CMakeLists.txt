@@ -138,14 +138,16 @@ if(${OSCDEPS_BUILD_GLAD})
 endif()
 
 if (${OSCDEPS_BUILD_IMGUI})
+    file(GLOB OSCDEPS_IMGUI_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/*.patch")
     ExternalProject_Add(imgui
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/0001-revert-dockspace-ids.patch
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_IMGUI_PATCHES}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
         SOURCE_SUBDIR ../cmake/imgui/
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
     )
+    unset(OSCDEPS_IMGUI_PATCHES)
 endif()
 
 if(${OSCDEPS_BUILD_IMPLOT})
@@ -200,16 +202,18 @@ if(${OSCDEPS_BUILD_LIBOSIM})
         list(APPEND OSCDEPS_LIBOSIM_DEPS spdlog)
     endif()
 
+    file(GLOB OSCDEPS_LIBOSIM_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/*.patch")
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0001_add-static-library-define.patch ${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/0002_add-removecomponent.patch
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_LIBOSIM_PATCHES}
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DOSIM_INSTALL_OPENSIM_HEADERS:BOOL=1
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
     )
+    unset(OSCDEPS_LIBOSIM_PATCHES)
 endif()
 
 if (${OSCDEPS_BUILD_STB})
