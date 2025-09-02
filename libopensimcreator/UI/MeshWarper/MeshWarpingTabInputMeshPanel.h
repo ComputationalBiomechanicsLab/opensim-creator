@@ -413,6 +413,13 @@ namespace osc
                 );
                 m_State->clearSelection();
             }
+
+            // event: if the user is hovering the mesh and they press F then they would like to
+            // focus the camera on that point
+            if (meshCollision and ui::any_of_keys_pressed({Key::F})) {
+                m_Camera.focus_point = -meshCollision->position;
+                m_State->setLinkedBaseCamera(m_Camera);
+            }
         }
 
         // 2D UI stuff (buttons, sliders, tables, etc.):

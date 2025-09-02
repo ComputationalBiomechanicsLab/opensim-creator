@@ -11,7 +11,7 @@
 namespace osc
 {
     template<ScalarOrBoolean T>
-    struct Vector<3, T> {
+    struct Vector<T, 3> {
         using value_type = T;
         using element_type = T;
         using size_type = size_t;
@@ -45,7 +45,7 @@ namespace osc
         template<ScalarOrBoolean A, typename B>
         requires std::constructible_from<T, A> and std::constructible_from<T, B>
         explicit (not (std::convertible_to<T, A> and std::convertible_to<T, B>))
-        constexpr Vector(const Vector<2, A>& xy_, B z_) :
+        constexpr Vector(const Vector<A, 2>& xy_, B z_) :
             x{static_cast<T>(xy_.x)},
             y{static_cast<T>(xy_.y)},
             z{static_cast<T>(z_)}
@@ -53,14 +53,14 @@ namespace osc
         template<typename A, ScalarOrBoolean B>
         requires std::constructible_from<T, A> and std::constructible_from<T, B>
         explicit (not (std::convertible_to<T, A> and std::convertible_to<T, B>))
-        constexpr Vector(A x_, const Vector<2, B>& yz_) :
+        constexpr Vector(A x_, const Vector<B, 2>& yz_) :
             x{static_cast<T>(x_)},
             y{static_cast<T>(yz_.y)},
             z{static_cast<T>(yz_.z)}
         {}
         template<ScalarOrBoolean U>
         requires std::constructible_from<T, U>
-        explicit constexpr Vector(const Vector<4, U>& v) :
+        explicit constexpr Vector(const Vector<U, 4>& v) :
             x{static_cast<T>(v.x)},
             y{static_cast<T>(v.y)},
             z{static_cast<T>(v.z)}
@@ -68,7 +68,7 @@ namespace osc
         template<ScalarOrBoolean U>
         requires std::constructible_from<T, U>
         explicit (not (std::convertible_to<T, U>))
-        constexpr Vector(const Vector<3, U>& v) :
+        constexpr Vector(const Vector<U, 3>& v) :
             x{static_cast<T>(v.x)},
             y{static_cast<T>(v.y)},
             z{static_cast<T>(v.z)}
@@ -76,7 +76,7 @@ namespace osc
 
         template<ScalarOrBoolean U>
         requires std::assignable_from<T, U>
-        constexpr Vector& operator=(const Vector<3, U>& v)
+        constexpr Vector& operator=(const Vector<U, 3>& v)
         {
             this->x = v.x;
             this->y = v.y;
@@ -111,7 +111,7 @@ namespace osc
 
         template<Scalar U>
         requires (not std::same_as<T, bool>)
-        constexpr Vector& operator+=(const Vector<3, U>& rhs)
+        constexpr Vector& operator+=(const Vector<U, 3>& rhs)
         {
             this->x += rhs.x;
             this->y += rhs.y;
@@ -131,7 +131,7 @@ namespace osc
 
         template<Scalar U>
         requires (not std::same_as<T, bool>)
-        constexpr Vector& operator-=(const Vector<3, U>& rhs)
+        constexpr Vector& operator-=(const Vector<U, 3>& rhs)
         {
             this->x -= rhs.x;
             this->y -= rhs.y;
@@ -151,7 +151,7 @@ namespace osc
 
         template<Scalar U>
         requires (not std::same_as<T, bool>)
-        constexpr Vector& operator*=(const Vector<3, U>& rhs)
+        constexpr Vector& operator*=(const Vector<U, 3>& rhs)
         {
             this->x *= rhs.x;
             this->y *= rhs.y;
@@ -171,7 +171,7 @@ namespace osc
 
         template<Scalar U>
         requires (not std::same_as<T, bool>)
-        constexpr Vector& operator/=(const Vector<3, U>& rhs)
+        constexpr Vector& operator/=(const Vector<U, 3>& rhs)
         {
             this->x /= rhs.x;
             this->y /= rhs.y;
@@ -228,107 +228,107 @@ namespace osc
     };
 
     template<Scalar T>
-    constexpr Vector<3, T> operator+(const Vector<3, T>& vec)
+    constexpr Vector<T, 3> operator+(const Vector<T, 3>& vec)
     {
         return {+vec.x, +vec.y, +vec.z};
     }
 
     template<Scalar T>
-    constexpr Vector<3, T> operator-(const Vector<3, T>& vec)
+    constexpr Vector<T, 3> operator-(const Vector<T, 3>& vec)
     {
         return {-vec.x, -vec.y, -vec.z};
     }
 
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} + U{})> operator+(const Vector<3, T>& vec, U scalar)
+    constexpr Vector<decltype(T{} + U{}), 3> operator+(const Vector<T, 3>& vec, U scalar)
     {
         return {vec.x + scalar, vec.y + scalar, vec.z + scalar};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} + U{})> operator+(T scalar, const Vector<3, U>& vec)
+    constexpr Vector<decltype(T{} + U{}), 3> operator+(T scalar, const Vector<U, 3>& vec)
     {
         return {scalar + vec.x, scalar + vec.y, scalar + vec.z};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} + U{})> operator+(const Vector<3, T>& lhs, const Vector<3, U>& rhs)
+    constexpr Vector<decltype(T{} + U{}), 3> operator+(const Vector<T, 3>& lhs, const Vector<U, 3>& rhs)
     {
         return {lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z};
     }
 
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} - U{})> operator-(const Vector<3, T>& vec, U scalar)
+    constexpr Vector<decltype(T{} - U{}), 3> operator-(const Vector<T, 3>& vec, U scalar)
     {
         return {vec.x - scalar, vec.y - scalar, vec.z - scalar};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} - U{})> operator-(T scalar, const Vector<3, U>& vec)
+    constexpr Vector<decltype(T{} - U{}), 3> operator-(T scalar, const Vector<U, 3>& vec)
     {
         return {scalar - vec.x, scalar - vec.y, scalar - vec.z};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} - U{})> operator-(const Vector<3, T>& lhs, const Vector<3, U>& rhs)
+    constexpr Vector<decltype(T{} - U{}), 3> operator-(const Vector<T, 3>& lhs, const Vector<U, 3>& rhs)
     {
         return {lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z};
     }
 
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} * U{})> operator*(const Vector<3, T>& vec, U scalar)
+    constexpr Vector<decltype(T{} * U{}), 3> operator*(const Vector<T, 3>& vec, U scalar)
     {
         return {vec.x * scalar, vec.y * scalar, vec.z * scalar};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} * U{})> operator*(T scalar, const Vector<3, U>& vec)
+    constexpr Vector<decltype(T{} * U{}), 3> operator*(T scalar, const Vector<U, 3>& vec)
     {
         return {scalar * vec.x, scalar * vec.y, scalar * vec.z};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} * U{})> operator*(const Vector<3, T>& lhs, const Vector<3, U>& rhs)
+    constexpr Vector<decltype(T{} * U{}), 3> operator*(const Vector<T, 3>& lhs, const Vector<U, 3>& rhs)
     {
         return {lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} / U{})> operator/(const Vector<3, T>& vec, U scalar)
+    constexpr Vector<decltype(T{} / U{}), 3> operator/(const Vector<T, 3>& vec, U scalar)
     {
         return {vec.x / scalar, vec.y / scalar, vec.z / scalar};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} / U{})> operator/(T scalar, const Vector<3, U>& vec)
+    constexpr Vector<decltype(T{} / U{}), 3> operator/(T scalar, const Vector<U, 3>& vec)
     {
         return {scalar / vec.x, scalar / vec.y, scalar / vec.z};
     }
 
     template<Scalar T, Scalar U>
-    constexpr Vector<3, decltype(T{} / U{})> operator/(const Vector<3, T>& lhs, const Vector<3, U>& rhs)
+    constexpr Vector<decltype(T{} / U{}), 3> operator/(const Vector<T, 3>& lhs, const Vector<U, 3>& rhs)
     {
         return {lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z};
     }
 
-    constexpr Vector<3, bool> operator&&(const Vector<3, bool>& lhs, const Vector<3, bool>& rhs)
+    constexpr Vector<bool, 3> operator&&(const Vector<bool, 3>& lhs, const Vector<bool, 3>& rhs)
     {
-        return Vector<3, bool>{lhs.x && rhs.x, lhs.y && rhs.y, lhs.z && rhs.z};
+        return Vector<bool, 3>{lhs.x && rhs.x, lhs.y && rhs.y, lhs.z && rhs.z};
     }
 
-    constexpr Vector<3, bool> operator||(const Vector<3, bool>& lhs, const Vector<3, bool>& rhs)
+    constexpr Vector<bool, 3> operator||(const Vector<bool, 3>& lhs, const Vector<bool, 3>& rhs)
     {
-        return Vector<3, bool>{lhs.x || rhs.x, lhs.y || rhs.y, lhs.z || rhs.z};
+        return Vector<bool, 3>{lhs.x || rhs.x, lhs.y || rhs.y, lhs.z || rhs.z};
     }
 
-    using Vector3  = Vector<3, float>;
-    using Vector3f = Vector<3, float>;
-    using Vector3d = Vector<3, double>;
-    using Vector3i = Vector<3, int>;
-    using Vector3z = Vector<3, ptrdiff_t>;
-    using Vector3uz = Vector<3, size_t>;
-    using Vector3u32 = Vector<3, uint32_t>;
+    using Vector3  = Vector<float, 3>;
+    using Vector3f = Vector<float, 3>;
+    using Vector3d = Vector<double, 3>;
+    using Vector3i = Vector<int, 3>;
+    using Vector3z = Vector<ptrdiff_t, 3>;
+    using Vector3uz = Vector<size_t, 3>;
+    using Vector3u32 = Vector<uint32_t, 3>;
 }

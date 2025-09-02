@@ -591,7 +591,7 @@ void osc::DrawPointTranslationInformationWithRespectTo(
     Vector3 locationInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vector3 translation = to<Vector3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
+    auto translation = to<Vector3>(groundToFrame * to<SimTK::Vec3>(locationInGround));
 
     ui::draw_text("translation");
     ui::same_line();
@@ -606,7 +606,7 @@ void osc::DrawDirectionInformationWithRepsectTo(
     Vector3 directionInGround)
 {
     const SimTK::Transform groundToFrame = frame.getTransformInGround(state).invert();
-    Vector3 direction = to<Vector3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
+    auto direction = to<Vector3>(groundToFrame.xformBaseVecToFrame(to<SimTK::Vec3>(directionInGround)));
 
     ui::draw_text("direction");
     ui::same_line();
@@ -621,8 +621,8 @@ void osc::DrawFrameInformationExpressedIn(
     const OpenSim::Frame& otherFrame)
 {
     const SimTK::Transform xform = parent.findTransformBetween(state, otherFrame);
-    Vector3 translation = to<Vector3>(xform.p());
-    Vector3 rotationEulers = to<Vector3>(xform.R().convertRotationToBodyFixedXYZ());
+    auto translation = to<Vector3>(xform.p());
+    auto rotationEulers = to<Vector3>(xform.R().convertRotationToBodyFixedXYZ());
 
     ui::draw_text("translation");
     ui::same_line();
@@ -722,9 +722,9 @@ void osc::DrawCalculateAxisDirectionsMenu(
     if (ui::begin_menu("Axis Directions")) {
         const auto onFrameMenuOpened = [&state, &frame](const OpenSim::Frame& other)
         {
-            Vector3 x = to<Vector3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vector3 y = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vector3 z = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            auto x = to<Vector3>(frame.expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            auto y = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            auto z = to<Vector3>(frame.expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();
@@ -783,7 +783,7 @@ void osc::DrawCalculateOriginMenu(
 {
     if (ui::begin_menu("Origin"))
     {
-        const Vector3 posInGround = to<Vector3>(sphere.getFrame().getPositionInGround(state));
+        auto posInGround = to<Vector3>(sphere.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -867,7 +867,7 @@ void osc::DrawCalculateOriginMenu(
     const OpenSim::Ellipsoid& ellipsoid)
 {
     if (ui::begin_menu("Origin")) {
-        const Vector3 posInGround = to<Vector3>(ellipsoid.getFrame().getPositionInGround(state));
+        auto posInGround = to<Vector3>(ellipsoid.getFrame().getPositionInGround(state));
         const auto onFrameMenuOpened = [&state, posInGround](const OpenSim::Frame& otherFrame)
         {
             DrawPointTranslationInformationWithRespectTo(otherFrame, state, posInGround);
@@ -909,9 +909,9 @@ void osc::DrawCalculateScaledRadiiDirectionsMenu(
         const auto onFrameMenuOpened = [&state, &ellipsoid](const OpenSim::Frame& other)
         {
             const auto& radii = ellipsoid.get_radii();
-            Vector3 x = to<Vector3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
-            Vector3 y = to<Vector3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
-            Vector3 z = to<Vector3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
+            auto x = to<Vector3>(radii[0] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {1.0, 0.0, 0.0}, other));
+            auto y = to<Vector3>(radii[1] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 1.0, 0.0}, other));
+            auto z = to<Vector3>(radii[2] * ellipsoid.getFrame().expressVectorInAnotherFrame(state, {0.0, 0.0, 1.0}, other));
 
             ui::draw_text("x axis");
             ui::same_line();

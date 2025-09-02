@@ -3,6 +3,7 @@
 #include <liboscar/Utils/FilenameExtractor.h>
 #include <liboscar/Utils/PerfClock.h>
 #include <liboscar/Utils/PerfMeasurement.h>
+#include <liboscar/oscarconfig.h>
 
 #include <string_view>
 #include <vector>
@@ -45,12 +46,12 @@ namespace osc
     }
 }
 
-#ifdef OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED
-#define OSC_PERF_TOKENPASTE(x, y) x##y
-#define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
-#define OSC_PERF(label) \
-    static const size_t OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::allocate_perf_mesurement_id(label, osc::extract_filename(__FILE__), __LINE__); \
-    const osc::detail::PerfTimer OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));
+#if OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED
+    #define OSC_PERF_TOKENPASTE(x, y) x##y
+    #define OSC_PERF_TOKENPASTE2(x, y) OSC_PERF_TOKENPASTE(x, y)
+    #define OSC_PERF(label) \
+        static const size_t OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__) = osc::detail::allocate_perf_mesurement_id(label, osc::extract_filename(__FILE__), __LINE__); \
+        const osc::detail::PerfTimer OSC_PERF_TOKENPASTE2(timer, __LINE__) (OSC_PERF_TOKENPASTE2(s_TimerID, __LINE__));
 #else
-#define OSC_PERF(label)
+    #define OSC_PERF(label)
 #endif

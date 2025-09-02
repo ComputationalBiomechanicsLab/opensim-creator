@@ -1,6 +1,15 @@
 #pragma once
 
-// ORIGINAL LICENSE TEXT:
+// This file was originally copied from a third-party source:
+//
+// - https://github.com/CedricGuillemet/ImGuizmo
+// - commit: 6d588209f99b1324a608783d1f52faa518886c29
+// - Licensed under the MIT license
+// - Copyright(c) 2021 Cedric Guillemet
+//
+// Subsequent modifications to this file (see VCS) are copyright (c) 2024 Adam Kewley.
+//
+// ORIGINAL LICENSE TEXT (6d588209f99b1324a608783d1f52faa518886c29):
 //
 // https://github.com/CedricGuillemet/ImGuizmo
 // v1.91.3 WIP
@@ -26,24 +35,6 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-//
-// LIBOSCAR CHANGES:
-//
-// This header was originally copied from a third-party source:
-//
-// - https://github.com/CedricGuillemet/ImGuizmo
-// - commit: 6d588209f99b1324a608783d1f52faa518886c29
-// - Licensed under the MIT license
-// - Copyright(c) 2021 Cedric Guillemet
-//
-// Subsequent modifications to this file are licensed under liboscar's
-// license (see LICENSE/NOTICE.txt) and have the following copyright:
-//
-// - Copyright (c) 2024 Adam Kewley
-//
-// Individual lines are not tagged with copyright/license notices, because
-// that would be insanely impractical. The project's vcs (i.e. git) can be
-// used to track each change.
 
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/Matrix4x4.h>
@@ -57,7 +48,7 @@
 
 struct ImDrawList;
 
-namespace ImGuizmo
+namespace osc::ui::gizmo::detail
 {
     enum class Operation {
         None           =  0,
@@ -140,13 +131,13 @@ namespace ImGuizmo
 
     // Set the viewport rectangle in the ui coordinate system (device-independent pixels)
     // where the gizmo shall be drawn.
-    void SetRect(const osc::Rect& ui_rect);
+    void SetRect(const Rect& ui_rect);
 
     // default is false
     void SetOrthographic(bool isOrthographic);
 
-    // Push/Pop IDs from ImGuizmo's local ID stack
-    void          PushID(osc::UID);
+    // Push/Pop IDs from the current gizmo context's local ID stack
+    void          PushID(UID);
     void          PopID();                                                        // pop from the ID stack.
 
     void SetGizmoSizeClipSpace(float value);
@@ -161,21 +152,21 @@ namespace ImGuizmo
     // Represents the step size that the gizmo should stick to when the user is
     // using a gizmo operation.
     struct OperationSnappingSteps final {
-        std::optional<osc::Vector3> scale;
-        std::optional<osc::Radians> rotation;
-        std::optional<osc::Vector3> position;
+        std::optional<Vector3> scale;
+        std::optional<Radians> rotation;
+        std::optional<Vector3> position;
     };
 
     // call it when you want a gizmo
     // Needs view and projection matrices.
     // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function.
     // translation is applied in world space
-    std::optional<osc::Transform> Manipulate(
-        const osc::Matrix4x4& view,
-        const osc::Matrix4x4& projection,
+    std::optional<Transform> Manipulate(
+        const Matrix4x4& view,
+        const Matrix4x4& projection,
         Operation operation,
         Mode mode,
-        osc::Matrix4x4& matrix,
+        Matrix4x4& matrix,
         std::optional<OperationSnappingSteps> snap = std::nullopt,
         const float* localBounds = nullptr,
         const float* boundsSnap = nullptr

@@ -11,11 +11,11 @@
 namespace osc
 {
     // a column-major matrix containing `C` columns and `R` rows of type-`T` values
-    template<size_t C, size_t R, typename T>
+    template<typename T, size_t C, size_t R>
     struct Matrix;
 
-    template<size_t C, size_t R, typename T>
-    std::ostream& operator<<(std::ostream& o, const Matrix<C, R, T>& m)
+    template<typename T, size_t C, size_t R>
+    std::ostream& operator<<(std::ostream& o, const Matrix<T, C, R>& m)
     {
         for (size_t row = 0; row < R; ++row) {
             std::string_view delimiter;
@@ -28,8 +28,8 @@ namespace osc
         return o;
     }
 
-    template<size_t C, size_t R, typename T>
-    std::string to_string(const Matrix<C, R, T>& m)
+    template<typename T, size_t C, size_t R>
+    std::string to_string(const Matrix<T, C, R>& m)
     {
         std::stringstream ss;
         ss << m;
@@ -38,25 +38,25 @@ namespace osc
 
     // when handled as a tuple-like object, a `Matrix` decomposes into its column `Vector`s
 
-    template<size_t I, size_t C, size_t R, typename T>
-    constexpr const typename Matrix<C, R, T>::value_type& get(const Matrix<C, R, T>& m) { return m[I]; }
+    template<size_t I, typename T, size_t C, size_t R>
+    constexpr const typename Matrix<T, C, R>::value_type& get(const Matrix<T, C, R>& m) { return m[I]; }
 
-    template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Matrix<C, R, T>::value_type& get(Matrix<C, R, T>& m) { return m[I]; }
+    template<size_t I, typename T, size_t C, size_t R>
+    constexpr typename Matrix<T, C, R>::value_type& get(Matrix<T, C, R>& m) { return m[I]; }
 
-    template<size_t I, size_t C, size_t R, typename T>
-    constexpr typename Matrix<C, R, T>::value_type&& get(Matrix<C, R, T>&& m) { return std::move(m[I]); }
+    template<size_t I, typename T, size_t C, size_t R>
+    constexpr typename Matrix<T, C, R>::value_type&& get(Matrix<T, C, R>&& m) { return std::move(m[I]); }
 
-    template<size_t I, size_t C, size_t R, typename T>
-    constexpr const typename Matrix<C, R, T>::value_type&& get(const Matrix<C, R, T>&& m) { return std::move(m[I]); }
+    template<size_t I, typename T, size_t C, size_t R>
+    constexpr const typename Matrix<T, C, R>::value_type&& get(const Matrix<T, C, R>&& m) { return std::move(m[I]); }
 }
 
-template<size_t C, size_t R, typename T>
-struct std::tuple_size<osc::Matrix<C, R, T>> {
+template<typename T, size_t C, size_t R>
+struct std::tuple_size<osc::Matrix<T, C, R>> {
     static constexpr size_t value = C;
 };
 
-template<size_t I, size_t C, size_t R, typename T>
-struct std::tuple_element<I, osc::Matrix<C, R, T>> {
-    using type = typename osc::Matrix<C, R, T>::value_type;
+template<size_t I, typename T, size_t C, size_t R>
+struct std::tuple_element<I, osc::Matrix<T, C, R>> {
+    using type = typename osc::Matrix<T, C, R>::value_type;
 };

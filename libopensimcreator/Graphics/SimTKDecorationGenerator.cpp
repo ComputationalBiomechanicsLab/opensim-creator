@@ -57,7 +57,7 @@ namespace
     // returns the color of `geometry`, with any defaults saturated to `1.0f`
     Color GetColor(const SimTK::DecorativeGeometry& geometry)
     {
-        Vector3 rgb = to<Vector3>(geometry.getColor());
+        auto rgb = to<Vector3>(geometry.getColor());
 
         // Simbody uses `-1` to mean "use default`. We use a default of `1.0f`
         // whenever this, or a NaN, occurs.
@@ -384,8 +384,8 @@ namespace
         {
             const Transform t = ToOscTransform(d);
 
-            const Vector3 posBase = to<Vector3>(d.getOrigin());
-            const Vector3 posDir = to<Vector3>(d.getDirection());
+            auto posBase = to<Vector3>(d.getOrigin());
+            auto posDir = to<Vector3>(d.getDirection());
 
             const Vector3 pos = transform_point(t, posBase);
             const Vector3 direction = transform_direction(t, posDir);

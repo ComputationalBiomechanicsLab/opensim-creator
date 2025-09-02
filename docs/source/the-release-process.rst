@@ -95,7 +95,7 @@ with these combinations:
      - XCode 15.4
    * - amd64
      - Ubuntu 22.04
-     - gcc 12.3.0 (``gcc-12``, installed via ``apt``)
+     - gcc 12.3.0 (``gcc-12``, installed via ``apt``). For development, ``clang-18`` also works.
 
 Notably, these toolchains **do not** have 100 % coverage of the C++20/23 language or
 library specifications. So check `C++ Compiler Support`_ if you plan on using a newer C++

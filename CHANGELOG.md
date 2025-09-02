@@ -32,6 +32,24 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (#1084).
 - The mesh warper UI now correctly rim-highlights selected landmarks on large
   meshes (#1085).
+- The mesh warper UI now logs an error message when it fails to import a mesh file,
+  rather than allowing the exception to bubble up and crash osc (#1088).
+- Pressing F while mousing over an input mesh in the mesh warper now causes the camera
+  to focus on that point, making it easier to focus on that part of the mesh (#1089).
+- The "join to" input in the "Add Body" popup now includes a search bar that can be used
+  to filter through available frames in the model (#21).
+- When right-clicking a component in the model editor/simulator, the "Sockets" menu now
+  shows both outbound sockets (previous behavior) and inbound connections from other
+  components in the model (#1090).
+- The model warping workflow now has a "Scale Model Mass to Subject Mass" scaling step,
+  which scales the model's total mass to the subject's mass while maintaining the same
+  overall mass distribution (#1093).
+- The model warping workflow now has a "Manually Scale Body Segments" scaling step, which
+  scales the specified body segments (incl. attached elements) by the given, manually-specified,
+  scale factors (#1094).
+- Fixed a styling bug in the `Export Points` popup that shows a styling error message
+  rather than the appropriate tooltip (#1097).
+- Fixed the `Export Points` popup not writing the exported CSV file (#1098).
 
 ## [0.5.25] - 2025/07/14
 

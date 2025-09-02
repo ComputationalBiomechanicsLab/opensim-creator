@@ -617,9 +617,9 @@ Plane osc::FitPlane(const Mesh& mesh)
 
     // eigen analysis to yield [N, B1, B2]
     const SimTK::Mat33 eigenVectors = EigSorted(covarianceMatrix).first;
-    const Vector3 normal = to<Vector3>(eigenVectors.col(0));
-    const Vector3 basis1 = to<Vector3>(eigenVectors.col(1));
-    const Vector3 basis2 = to<Vector3>(eigenVectors.col(2));
+    const auto normal = to<Vector3>(eigenVectors.col(0));
+    const auto basis1 = to<Vector3>(eigenVectors.col(1));
+    const auto basis2 = to<Vector3>(eigenVectors.col(2));
 
     // project points onto B1 and B2 (plane-space) and calculate the 2D bounding box
     // of them in plane-spae

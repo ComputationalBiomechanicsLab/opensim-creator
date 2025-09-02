@@ -90,14 +90,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # warn if insecure string formatting (e.g. for printf) is detected
         -Wformat-security
 
-        # disabled: requires newer gcc
-        # warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
-        # -Walloc-zero
-
-        # disabled: requires newer gcc
-        # warn if using trampoline functions (requires executable stack)
-        # -Wtrampolines
-
         # warn if a pointer is cast in a C-style cast in such a way that it removes qualifiers (e.g. char const* -> char*)
         -Wcast-qual
 
@@ -113,9 +105,8 @@ set(OSC_STRICT_COMPILER_OPTIONS
         #           be dropped once the codebase is upgraded to C++23
         -Wno-unknown-pragmas
 
-        # disabled: requires newer gcc
-        # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
-        # -Wlogical-op
+        # disable extra-semicolon detection: broken by macro definitions that already contain semicolons
+        -Wno-extra-semi
     >
 
     # clang flags
@@ -136,6 +127,17 @@ set(OSC_STRICT_COMPILER_OPTIONS
 
         # false-positives (e.g. https://github.com/fmtlib/fmt/issues/3415)
         -Wno-dangling-reference
+
+        # disabled: stb headers currently trigger it
+        #
+        # warn if trying to allocate 0 bytes of memory using an allocation function (could be undef behavior)
+        # -Walloc-zero
+
+        # warn if using trampoline functions (requires executable stack)
+        -Wtrampolines
+
+        # warn if a suspicous use of a logical operator is detected (e.g. i < 0 && i < 0)
+        -Wlogical-op
     >
 
     $<$<CXX_COMPILER_ID:AppleClang>:

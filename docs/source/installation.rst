@@ -10,7 +10,10 @@ from the `GitHub Releases Page`_.
 Installing on Windows (10 or newer)
 -----------------------------------
 
-- Download an installer ``exe`` from the `GitHub Releases Page`_
+- Download an installer ``exe`` from the `GitHub Releases Page`_. **Note**: As of mid-2025,
+  Microsoft Edge may now prevent you from running the installer. This is because OpenSim
+  Creator hasn't arranged binary signing yet (sorry). The solution to this issue is to download
+  OpenSim Creator via another browser (e.g. Firefox, Google Chrome).
 - Run the ``.exe``, continue past any security warnings
 - Follow the familiar ``next``, ``next``, ``finish`` installation wizard
 - Run OpenSim Creator by typing ``OpenSim Creator`` in your start menu, or browse to

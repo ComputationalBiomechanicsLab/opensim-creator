@@ -885,7 +885,7 @@ namespace osc::ui
     // behaves like `ui::draw_float3_input`, but edits the given angular value in degrees
     bool draw_angle3_input(
         CStringView label,
-        Vector<3, Radians>&,
+        Vector<Radians, 3>&,
         CStringView format = "%.3f"
     );
 

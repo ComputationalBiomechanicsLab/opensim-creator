@@ -22,8 +22,9 @@ int dlclose(void *handle) {
 EOF
 ${CC} -shared -o build/libdlclose.so -fPIC build/dlclose.c
 
-# Create suppressions file for OpenSim Creator, which contains a leak from OpenSim
-cat << EOF > build/opensim_suppressions.supp
+# Create suppressions file for known leaks
+cat << EOF > build/libasan_suppressions.supp
+leak:/lib/x86_64-linux-gnu/libnvidia-glcore.so
 leak:OpenSim::Coordinate
 EOF
 
@@ -53,6 +54,7 @@ cmake --build build/ --verbose -j${OSC_BUILD_CONCURRENCY}
 export ASAN_OPTIONS="abort_on_error=1:strict_string_checks=true:malloc_context_size=30:check_initialization_order=true:detect_stack_use_after_return=true:strict_init_order=true"
 export LIBGL_ALWAYS_SOFTWARE=1  # minimize driver leaks
 export LD_PRELOAD=build/libdlclose.so  # minimize library unloading leaks (issue in graphics drivers, sometimes)
+export LSAN_OPTIONS="suppressions=build/libasan_suppressions.supp"
 ./build/liboscar/testing/testoscar
 ./build/liboscar-demos/testing/testoscar_demos
-LSAN_OPTIONS="suppressions=build/opensim_suppressions.supp" ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./build/libopensimcreator/testing/TestOpenSimCreator
+ASAN_OPTIONS="${ASAN_OPTIONS}:check_initialization_order=false:strict_init_order=false" ./build/libopensimcreator/testing/TestOpenSimCreator

@@ -746,6 +746,34 @@ void osc::RecursivelyReassignAllSockets(
     }
 }
 
+std::ostream& osc::operator<<(std::ostream& os, const ComponentConnectionView& view)
+{
+    return os << "ComponentConnectionView{source = " << view.source().getName() << ", target = " << view.target().getName() << ", socketName = " << view.socketName() << '}';
+}
+
+cpp23::generator<ComponentConnectionView> osc::ForEachInboundConnection(
+    const OpenSim::Component* root,
+    const OpenSim::Component* c,
+    std::function<bool(const OpenSim::Component&)> filter)
+{
+    for (const OpenSim::Component& subcomponent : root->getComponentList()) {
+        if (not filter(subcomponent)) {
+            continue;  // caller-provided filter stops emission
+        }
+        for (const auto& socketName : subcomponent.getSocketNames()) {
+            if (const auto* socket = subcomponent.tryGetSocket(socketName)) {
+                if (&socket->getConnecteeAsObject() == c) {
+                    co_yield ComponentConnectionView{
+                        subcomponent,  // source
+                        *c,            // target
+                        socketName,    // connection name
+                    };
+                }
+            }
+        }
+    }
+}
+
 OpenSim::AbstractProperty* osc::FindPropertyMut(
     OpenSim::Component& c,
     const std::string& name)
@@ -1942,5 +1970,21 @@ std::string osc::WriteObjectXMLToString(const OpenSim::Object& obj)
     }
     else {
         return {};
+    }
+}
+
+void osc::ScaleModelMassPreserveMassDistribution(
+    OpenSim::Model& model,
+    const SimTK::State& state,
+    double newMass)
+{
+    // This is a simplified version of part of `OpenSim::Model::scale`
+
+    const double modelMass = model.getTotalMass(state);
+    OSC_ASSERT_ALWAYS(modelMass != 0.0 && "Cannot scale the mass of a model that has a mass of zero");
+
+    const double factor = newMass / modelMass;
+    for (OpenSim::Body& body : model.updComponentList<OpenSim::Body>()) {
+        body.scaleMass(factor);
     }
 }

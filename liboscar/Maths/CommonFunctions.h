@@ -40,8 +40,8 @@ namespace osc
     };
 
     // returns a vector containing `abs(xv)` for each `xv` in `x`
-    template<size_t L, HasAbsFunction T>
-    Vector<L, T> abs(const Vector<L, T>& x)
+    template<HasAbsFunction T, size_t N>
+    Vector<T, N> abs(const Vector<T, N>& x)
     {
         return map(x, [](const T& xv) { return abs(xv); });
     }
@@ -60,8 +60,8 @@ namespace osc
     };
 
     // returns a vector containing `floor(xv)` for each `xv` in `x`
-    template<size_t L, HasFloorFunction T>
-    Vector<L, T> floor(const Vector<L, T>& x)
+    template<HasFloorFunction T, size_t N>
+    Vector<T, N> floor(const Vector<T, N>& x)
     {
         return map(x, [](const T& xv) { return floor(xv); });
     }
@@ -94,8 +94,8 @@ namespace osc
     };
 
     // returns a vector containing `mod(xv, yv)` for each pair `(xv, yv)` in `x` and `y`
-    template<size_t L, HasModFunction T>
-    constexpr Vector<L, T> mod(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<HasModFunction T, size_t N>
+    constexpr Vector<T, N> mod(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, [](const T& xv, const T& yv) { return mod(xv, yv); });
     }
@@ -107,8 +107,8 @@ namespace osc
     };
 
     // returns a vector containing `min(xv, yv)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, HasMinFunction T>
-    constexpr Vector<L, T> elementwise_min(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<HasMinFunction T, size_t N>
+    constexpr Vector<T, N> elementwise_min(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, [](const T& xv, const T& yv) { return min(xv, yv); });
     }
@@ -120,9 +120,9 @@ namespace osc
     };
 
     // returns a vector containing `max(xv, yv)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, HasMaxFunction T>
+    template<HasMaxFunction T, size_t N>
     requires std::is_arithmetic_v<T>
-    constexpr Vector<L, T> elementwise_max(const Vector<L, T>& x, const Vector<L, T>& y)
+    constexpr Vector<T, N> elementwise_max(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, [](const T& xv, const T& yv) { return max(xv, yv); });
     }
@@ -134,15 +134,15 @@ namespace osc
     };
 
     // returns a vector containing `clamp(vv, lowv, hiv)` for each `(vv, lowv, hiv)` in `v`, `low`, and `hi`
-    template<size_t L, HasClampFunction T>
-    constexpr Vector<L, T> elementwise_clamp(const Vector<L, T>& v, const Vector<L, T>& lo, const Vector<L, T>& hi)
+    template<HasClampFunction T, size_t N>
+    constexpr Vector<T, N> elementwise_clamp(const Vector<T, N>& v, const Vector<T, N>& lo, const Vector<T, N>& hi)
     {
         return map(v, lo, hi, [](const T& vv, const T& lov, const T& hiv) { return clamp(vv, lov, hiv); });
     }
 
     // returns a vector containing `clamp(vv, lo, hi)` for each `vv` in `v`
-    template<size_t L, HasClampFunction T>
-    constexpr Vector<L, T> elementwise_clamp(const Vector<L, T>& v, const T& lo, const T& hi)
+    template<HasClampFunction T, size_t N>
+    constexpr Vector<T, N> elementwise_clamp(const Vector<T, N>& v, const T& lo, const T& hi)
     {
         return map(v, [&lo, &hi](const T& vv) { return clamp(vv, lo, hi); });
     }
@@ -161,8 +161,8 @@ namespace osc
     };
 
     // returns a vector containing `saturate(xv)` for each `xv` in `x`
-    template<size_t L, HasSaturateFunction T>
-    constexpr Vector<L, T> saturate(const Vector<L, T>& x)
+    template<HasSaturateFunction T, size_t N>
+    constexpr Vector<T, N> saturate(const Vector<T, N>& x)
     {
         return map(x, [](const T& xv) { return saturate(xv); });
     }
@@ -189,16 +189,16 @@ namespace osc
     };
 
     // returns a vector containing `lerp(xv, yv, t)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, typename T, typename TInterpolant>
+    template<typename T, size_t N, typename TInterpolant>
     requires HasLerpFunction<T, TInterpolant>
-    constexpr auto lerp(const Vector<L, T>& x, const Vector<L, T>& y, const TInterpolant& t) -> Vector<L, decltype(lerp(x[0], y[0], t))>
+    constexpr auto lerp(const Vector<T, N>& x, const Vector<T, N>& y, const TInterpolant& t) -> Vector<decltype(lerp(x[0], y[0], t)), N>
     {
         return map(x, y, [&t](const T& xv, const T& yv) { return lerp(xv, yv, t); });
     }
 
     // returns a vector containing `xv == yv` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, std::equality_comparable T>
-    constexpr Vector<L, bool> elementwise_equal(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<std::equality_comparable T, size_t N>
+    constexpr Vector<bool, N> elementwise_equal(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, std::equal_to<T>{});
     }
@@ -210,15 +210,15 @@ namespace osc
     };
 
     // returns a vector containing `xv < yv` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, LessThanComparable T>
-    constexpr Vector<L, bool> elementwise_less(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<LessThanComparable T, size_t N>
+    constexpr Vector<bool, N> elementwise_less(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, std::less<T>{});
     }
 
     // returns a vector containing `xv < v` for each `xv` in `x`
-    template<size_t L, LessThanComparable T>
-    constexpr Vector<L, bool> elementwise_less(const Vector<L, T>& x, const T& v)
+    template<LessThanComparable T, size_t N>
+    constexpr Vector<bool, N> elementwise_less(const Vector<T, N>& x, const T& v)
     {
         return map(x, [&v](const T& el) { return std::less<T>{}(el, v); });
     }
@@ -230,8 +230,8 @@ namespace osc
     };
 
     // returns a vector containing `xv <= yv` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, LessThanOrEqualToComparable T>
-    constexpr Vector<L, bool> elementwise_less_equal(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<LessThanOrEqualToComparable T, size_t N>
+    constexpr Vector<bool, N> elementwise_less_equal(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, std::less_equal<T>{});
     }
@@ -245,17 +245,17 @@ namespace osc
     }
 
     // returns a vector containing `equal_within_absdiff(xv, yv, absdiffv)` for each `(xv, yv, absdiffv)` in `x`, `y`, and `absdiff`
-    template<size_t L, typename T>
+    template<typename T, size_t N>
     requires HasAbsFunction<T> and LessThanComparable<T>
-    Vector<L, bool> equal_within_absdiff(const Vector<L, T>& x, const Vector<L, T>& y, const Vector<L, T>& absdiff)
+    Vector<bool, N> equal_within_absdiff(const Vector<T, N>& x, const Vector<T, N>& y, const Vector<T, N>& absdiff)
     {
         return map(x, y, absdiff, equal_within_absdiff<T>);
     }
 
     // returns a vector containing `equal_within_absdiff(xv, yv, absdiff)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, typename T>
+    template<typename T, size_t N>
     requires HasAbsFunction<T> and LessThanComparable<T>
-    Vector<L, bool> equal_within_absdiff(const Vector<L, T>& x, const Vector<L, T>& y, const T& absdiff)
+    Vector<bool, N> equal_within_absdiff(const Vector<T, N>& x, const Vector<T, N>& y, const T& absdiff)
     {
         return elementwise_less(abs(x - y), absdiff);
     }
@@ -268,8 +268,8 @@ namespace osc
     }
 
     // returns a vector containing `equal_within_epsilon(xv, yv)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, std::floating_point T>
-    Vector<L, bool> equal_within_epsilon(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<std::floating_point T, size_t N>
+    Vector<bool, N> equal_within_epsilon(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return equal_within_absdiff(x, y, epsilon_v<T>);
     }
@@ -308,10 +308,10 @@ namespace osc
     }
 
     // returns a vector containing `equal_within_reldiff(xv, yv, reldiff)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, std::floating_point T>
-    Vector<L, bool> equal_within_reldiff(const Vector<L, T>& x, const Vector<L, T>& y, T reldiff)
+    template<std::floating_point T, size_t N>
+    Vector<bool, N> equal_within_reldiff(const Vector<T, N>& x, const Vector<T, N>& y, T reldiff)
     {
-        return map(x, y, Vector<L, T>(reldiff), equal_within_reldiff<T>);
+        return map(x, y, Vector<T, N>(reldiff), equal_within_reldiff<T>);
     }
 
     // tests if `num` is NaN
@@ -322,8 +322,8 @@ namespace osc
     }
 
     // returns a vector containing `isnan(xv)` for each `xv` in `x`
-    template<size_t L, std::floating_point T>
-    Vector<L, bool> isnan(const Vector<L, T>& x)
+    template<std::floating_point T, size_t N>
+    Vector<bool, N> isnan(const Vector<T, N>& x)
     {
         return map(x, isnan<T>);
     }
@@ -357,29 +357,29 @@ namespace osc
     };
 
     // returns a vector containing `midpoint(xv, yv)` for each `(xv, yv)` in `x` and `y`
-    template<size_t L, typename T>
-    Vector<L, T> midpoint(const Vector<L, T>& x, const Vector<L, T>& y)
+    template<typename T, size_t N>
+    Vector<T, N> midpoint(const Vector<T, N>& x, const Vector<T, N>& y)
     {
         return map(x, y, [](const T& xv, const T& yv) { return midpoint(xv, yv); });
     }
 
-    // returns the arithmetic mean of the provided vectors, or `Vector<L, T>{}/T{0}` if provided no vectors
+    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no vectors
     template<
         std::ranges::range R,
-        size_t L = std::tuple_size_v<typename std::ranges::range_value_t<R>>,
-        typename T = typename std::ranges::range_value_t<R>::value_type
+        typename T = typename std::ranges::range_value_t<R>::value_type,
+        size_t N = std::tuple_size_v<typename std::ranges::range_value_t<R>>
     >
     requires std::is_arithmetic_v<T>
-    constexpr Vector<L, T> centroid_of(const R& r)
+    constexpr Vector<T, N> centroid_of(const R& r)
     {
         return std::reduce(std::ranges::begin(r), std::ranges::end(r)) / static_cast<T>(std::ranges::size(r));
     }
 
-    // returns the arithmetic mean of the provided vectors, or `Vector<L, T>{}/T{0}` if provided no vectors
-    template<size_t L, typename T>
+    // returns the arithmetic mean of the provided vectors, or `Vector<T, N>{}/T{0}` if provided no vectors
+    template<typename T, size_t N>
     requires std::is_arithmetic_v<T>
-    constexpr Vector<L, T> centroid_of(const std::initializer_list<Vector<L, T>>& vs)
+    constexpr Vector<T, N> centroid_of(const std::initializer_list<Vector<T, N>>& vs)
     {
-        return centroid_of(std::span<const Vector<L, T>>{vs});
+        return centroid_of(std::span<const Vector<T, N>>{vs});
     }
 }
