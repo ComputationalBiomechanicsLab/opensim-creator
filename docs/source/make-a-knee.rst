@@ -3,10 +3,10 @@ Make a Knee
 
 .. warning::
 
-    This tutorial is new ⭐, and ``StationDefinedFrame`` s require OpenSim >= v4.5.1. The content
-    of this tutorial should be valid long-term, but we are waiting for OpenSim GUI v4.6 to be
-    released before we remove any "experimental" labelling. We also anticipate adding some handy
-    tooling around re-socketing existing joints and defining ``StationDefinedFrame`` s.
+    This tutorial is new ⭐, and uses ``StationDefinedFrame``\s, which require OpenSim >= v4.5.1.
+    The content of this tutorial should be valid long-term, but we are waiting for OpenSim GUI
+    v4.6 to be released before we remove any "experimental" labelling. We also anticipate
+    adding some handy tooling around re-socketing existing joints and defining ``StationDefinedFrame``\s.
 
 In this tutorial, we will be making a basic model of a knee using OpenSim Creator:
 
@@ -18,7 +18,7 @@ In this tutorial, we will be making a basic model of a knee using OpenSim Creato
     to build a model with biological components (see :doc:`make-a-bouncing-block` for
     a more mechanical example).
 
-This tutorial will primarily use the model editor workflow to build a new model that
+This tutorial will primarily use the model editor workflow to build a model that
 contains some of the steps/components necessary to build a human model. In essence, the
 content here will be similar to that in :doc:`make-a-bouncing-block`, but with a focus
 on using landmark data, :doc:`station-defined-frames`, and wrap surfaces to build a
@@ -42,10 +42,10 @@ This tutorial assumes you:
 Topics Covered by this Tutorial
 -------------------------------
 
-* Creating an OpenSim model by adding bodies and joints
+* Creating an OpenSim model by adding bodies and joints.
 * Adding a ``StationDefinedFrame`` to the model in order to define anatomically
   representative joint frames.
-* Adding a muscle to the model
+* Adding a muscle to the model.
 * Adding a wrap surface to the model and associating muscles to that surface.
 
 
@@ -53,14 +53,16 @@ Download Resources
 ------------------
 
 In order to follow this tutorial, you will need to download the associated
-resources :download:`download here <_static/the-model-warper/walkthrough-model.zip>`.
+resources (:download:`download here <_static/the-model-warper/walkthrough-model.zip>`)
+and unzip them on your computer.
 
 
 Open Pelvis Model
 ------------------
 
 In OpenSim Creator open the pelvis model by clicking ``File`` ->
-``Open``. Select the file ``model_building_leg.osim``.
+``Open``. Select the file ``model_building_leg.osim`` in the resources directory (see
+above).
 
 .. _add-femur-body:
 
@@ -74,7 +76,7 @@ model. For this model, use the following parameters:
     :width: 60%
 
     Create a body called ``femur_r`` and attach the ``femur_r.vtp`` geometry to it. The
-    mass and intertia can be handled later. The ``femur_r`` should initially be joined
+    mass and intertia can be handled later. ``femur_r`` should initially be joined
     to ``hip_r_frame`` (the knee joint comes later in the process).
 
 Adding bodies is explained in more detail in :ref:`add-body-with-weldjoint` and
@@ -87,7 +89,7 @@ Import Femur Landmarks
 
 This model will use a landmark-defined approach to defining the hip and knee frame (explained
 in :doc:`station-defined-frames`). To do that, we'll need landmarks on the femur that
-correspond to the points that can be used to define the parent frames. The landmarks
+correspond can be used to define the joints' parent frames. The landmarks
 we will use roughly correspond to those explained in `Grood et. al.`_. For the knee joint our definition
 will use the Z axis to define knee extension/flexion (Grood et. al. use the X axis) because
 OpenSim's ``PinJoint`` always uses the Z axis for rotation.
@@ -97,7 +99,7 @@ You can use the point importer in the model editor from the top menu bar, locate
 landmarks file (``femur_r.landmarks.csv``) as markers that are attached to
 the ``femur_r`` body:
 
-.. figure:: _static/make-a-knee/import-femur-landmarks_SH.jpeg
+.. figure:: _static/make-a-knee/import-femur-landmarks.jpeg
     :width: 60%
 
     The ``Import Points`` dialog, with ``femur_r.landmarks.csv``. Make sure to
@@ -111,14 +113,14 @@ Add a StationDefinedFrame for the Hip Joint
 
 Now that the appropriate landmarks are imported into the model, you can now add a
 ``StationDefinedFrame`` to ``femur_r`` that computes the hip's and knee's coordinate system
-(frame) from those landmarks. First we want to change the current hip joint child frame on the femur
-to a ``StationDefinedFrame``.
+(frame) from those landmarks.
 
-To do that, you'll need to right-click the ``femur_r`` body and then ``Add`` a
-``StationDefinedFrame`` component to it that connects to the appropriate (imported)
-markers:
+First, we want to change the current hip joint child frame on the femur to a
+``StationDefinedFrame``. To do that, you'll need to right-click the ``femur_r`` body
+and then ``Add`` a ``StationDefinedFrame`` component to it that connects to the
+appropriate (imported) markers:
 
-.. figure:: _static/make-a-knee/add-station-defined-frame-menu_SH.jpeg
+.. figure:: _static/make-a-knee/add-station-defined-frame-menu.jpeg
     :width: 60%
 
     The ``StationDefinedFrame`` can be added as a child of ``femur_r`` by right-clicking
@@ -134,28 +136,31 @@ markers:
 
 .. _change-hip-child-frame:
 
-Change hip child frame to SDF
------------------------------
+Reassign the Hip's Child Frame to the StationDefinedFrame
+---------------------------------------------------------
 
-    Although you have already added the SDF frame to the model, you still have to change the hip joint definition by changing the child
-    frame from ``femur_r_offset`` to ``hip_r_frame``.
+With a ``StationDefinedFrame`` created on ``femur_r``, you can now reassign the
+hip joint (``hip_r``) to use that frame definition instead of the existing default
+one (``femur_r_offset``). To do that, right-click the appropriate joint in the
+``Navigator`` panel and use the ``Sockets`` menu to reassign its ``child_frame``:
 
 .. figure:: _static/make-a-knee/change-hip-child-frame.jpeg
     :width: 60%
 
-    Navigate in ``jointset\hip_r`` to the menu point ``Sockets``. Then click on ``change`` to adapt the ``child_frame``.
-    Select as the new child frame ``hip_r_frame`` (``/bodyset/femur_r/hip_r_frame``).
+    Use the ``Navigator`` panel to find and right-click the hip joint (``jointset/hip_r``),
+    then use the ``Sockets`` menu to reassign its ``child_frame`` to the ``StationDefinedFrame``
+    created in the previous step (``/bodyset/femur_r/hip_r_frame``).
 
 .. _add-sdf-knee:
 
 Add a StationDefinedFrame for the Knee Joint
 --------------------------------------------
 
-    For the knee joint, another SDF in the epicondyle centroid has to be added. Follow similar steps as in
-    :ref:`add-sdf-hip`. This time define as the ``origin_point`` the ``femur_r_epicondyle_centroid``
-    landmark instead of the ``femur_r_head_centre``.
+For the knee joint, we can create another ``StationDefinedFrame`` at the epicondyle centroid.
+The steps are similar to :ref:`add-sdf-hip` but, this time, we define the ``origin_point``
+as the ``femur_r_epicondyle_centroid`` landmark instead of the ``femur_r_head_centre``.
 
-.. figure:: _static/make-a-knee/add-femur-sdf_SH.jpeg
+.. figure:: _static/make-a-knee/add-femur-sdf.jpeg
     :width: 60%
 
     When creating the ``StationDefinedFrame`` for the knee, make the ``femur_r_epicondyle_centroid`` the frame
@@ -163,7 +168,7 @@ Add a StationDefinedFrame for the Knee Joint
     the ``point_c``. Addtionally, specify that ``ab_axis`` is ``+y`` and ``ab_x_ac_axis`` is ``+x``.
     The relationship between these landmarks specifies the knee's coordinate system.
 
-.. figure:: _static/make-a-knee/after-femur-sdf-added_SH.jpeg
+.. figure:: _static/make-a-knee/after-femur-sdf-added.jpeg
     :width: 60%
 
     Once added, you should be able to see the ``StationDefinedFrame`` in the model. This is the "parent"
@@ -176,13 +181,13 @@ Add a Tibia Body
 Similar to :ref:`add-femur-body`, add a tibia body with the tibia mesh (``tibia_r.vtp``)
 attached to it to the model. For this model, use the following parameters:
 
-.. figure:: _static/make-a-knee/add-tibia-body_SH.jpeg
+.. figure:: _static/make-a-knee/add-tibia-body.jpeg
     :width: 60%
 
     Add the ``tibia`` body to the model with these properties. Make sure to attach the
     ``tibia_r.vtp`` mesh to the body.
 
-.. figure:: _static/make-a-knee/after-add-tibia-body_SH.jpeg
+.. figure:: _static/make-a-knee/after-add-tibia-body.jpeg
     :width: 60%
 
     To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined
