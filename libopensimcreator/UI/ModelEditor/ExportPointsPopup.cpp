@@ -78,7 +78,6 @@ namespace
         ui::begin_disabled();
         ui::draw_text_wrapped(c_ExplanationText);
         ui::end_disabled();
-        ui::pop_style_color();
     }
 
     void DrawPointListElementHoverTooltip(

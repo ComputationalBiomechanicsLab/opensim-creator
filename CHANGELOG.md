@@ -47,6 +47,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The model warping workflow now has a "Manually Scale Body Segments" scaling step, which
   scales the specified body segments (incl. attached elements) by the given, manually-specified,
   scale factors (#1094).
+- Fixed a styling bug in the `Export Points` popup that shows a styling error message
+  rather than the appropriate tooltip (#1097).
 
 ## [0.5.25] - 2025/07/14
 
