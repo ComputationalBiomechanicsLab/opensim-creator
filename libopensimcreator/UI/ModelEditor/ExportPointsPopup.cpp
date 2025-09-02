@@ -528,7 +528,7 @@ namespace
                 return;  // user cancelled out of the prompt
             }
 
-            std::ofstream ofs;
+            std::ofstream ofs{*p};
             if (not ofs) {
                 log_error("%s: error opening file for writing", p->string().c_str());
                 return;

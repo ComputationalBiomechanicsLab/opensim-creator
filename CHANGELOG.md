@@ -49,6 +49,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   scale factors (#1094).
 - Fixed a styling bug in the `Export Points` popup that shows a styling error message
   rather than the appropriate tooltip (#1097).
+- Fixed the `Export Points` popup not writing the exported CSV file (#1098).
 
 ## [0.5.25] - 2025/07/14
 
