@@ -277,7 +277,7 @@ attached to it to the model. For this model, use the following parameters:
 
     To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined
     with respect to the knee origin, which means that we do not need to define a
-    ``StationDefinedFrame`` for the tibia.
+    ``StationDefinedFrame`` for the tibia. (:download:`download model <_static/the-model-warper/walkthrough-model/make-a-knee_after-adding-bodies-and-joints.osim>`)
 
 
 Add a Muscle Between the Femur and the Tibia

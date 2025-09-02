@@ -90,13 +90,13 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\pelvis_l.vtp</mesh_file>
+							<mesh_file>pelvis_l.vtp</mesh_file>
 						</Mesh>
 						<Mesh name="pelvis_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\pelvis_r.vtp</mesh_file>
+							<mesh_file>pelvis_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -189,7 +189,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\femur_r.vtp</mesh_file>
+							<mesh_file>femur_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -213,7 +213,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\tibia_r.vtp</mesh_file>
+							<mesh_file>tibia_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
