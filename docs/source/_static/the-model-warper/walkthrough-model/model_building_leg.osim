@@ -92,7 +92,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>U:\LoaD Project\documents\workshopESMAC\walkthrough-model\Geometry\pelvis_r.vtp</mesh_file>
+							<mesh_file>pelvis_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -116,7 +116,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>U:\LoaD Project\documents\workshopESMAC\walkthrough-model\Geometry\pelvis_l.vtp</mesh_file>
+							<mesh_file>pelvis_l.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
