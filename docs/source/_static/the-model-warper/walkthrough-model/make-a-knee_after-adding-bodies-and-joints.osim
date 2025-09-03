@@ -21,44 +21,81 @@
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.0096169998869299889 -0.0067389998584985733 -0.1196260005235672</location>
+							<location>0.0075260000303387642 -0.0090140001848340034 -0.1196260005235672</location>
 						</Marker>
 						<Marker name="ASIS_midpoint">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.0085739996284246445 -0.0077729998156428337 -0.00037900000461377203</location>
+							<location>0.0084680002182722092 -0.0078870002180337906 -0.00037900000461377203</location>
 						</Marker>
 						<Marker name="ASIS_r">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.0075300000607967377 -0.0088060004636645317 0.11886899918317795</location>
+							<location>0.0094100004062056541 -0.0067599997855722904 0.11886899918317795</location>
 						</Marker>
 						<Marker name="Acetabulum_centre">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.056276001036167145 -0.078489996492862701 0.077260002493858337</location>
+							<location>0.082958996295928955 -0.049451999366283417 0.077260002493858337</location>
 						</Marker>
 						<Marker name="PSIS_l">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.12900400161743164 0.016827000305056572 -0.036860000342130661</location>
+							<location>-0.0058820000849664211 -0.12996399402618408 -0.036860000342130661</location>
 						</Marker>
 						<Marker name="PSIS_midpoint">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.12895800173282623 0.019044000655412674 -0.00041199999395757914</location>
+							<location>-0.0080949999392032623 -0.13010500371456146 -0.00041199999395757914</location>
 						</Marker>
 						<Marker name="PSIS_r">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>-0.12891200184822083 0.021261999383568764 0.036035999655723572</location>
+							<location>-0.010308999568223953 -0.13024599850177765 0.036035999655723572</location>
 						</Marker>
+						<Marker name="glmed2_r">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>-0.024314999580383301 -0.087362997233867645 0.067500002682209015</location>
+						</Marker>
+						<Marker name="recfem_r">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.040686998516321182 -0.02064099907875061 0.093299999833106995</location>
+						</Marker>
+						<Marker name="semimem_r">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.12192200124263763 -0.088729001581668854 0.061400000005960464</location>
+						</Marker>
+						<StationDefinedFrame name="pelvis_frame">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame>..</socket_frame>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'point_a' of type Station (description: Point `a` of a triangle that defines the frame's orientation. Must not coincide with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+							<socket_point_a>/bodyset/pelvis/ASIS_midpoint</socket_point_a>
+							<!--Path to a Component that satisfies the Socket 'point_b' of type Station (description: Point `b` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+							<socket_point_b>/bodyset/pelvis/PSIS_midpoint</socket_point_b>
+							<!--Path to a Component that satisfies the Socket 'point_c' of type Station (description: Point `c` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+							<socket_point_c>/bodyset/pelvis/ASIS_r</socket_point_c>
+							<!--Path to a Component that satisfies the Socket 'origin_point' of type Station (description: Point that defines the frame's origin point. Also permitted to be `point_a`, `point_b`, or `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
+							<socket_origin_point>/bodyset/pelvis/ASIS_midpoint</socket_origin_point>
+							<!--The frame axis that points in the direction of `point_b - point_a`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_x_ac_axis`.-->
+							<ab_axis>-x</ab_axis>
+						</StationDefinedFrame>
 						<StationDefinedFrame name="hip_r_frame">
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
@@ -90,13 +127,13 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>pelvis_l.vtp</mesh_file>
+							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\pelvis_l.obj</mesh_file>
 						</Mesh>
 						<Mesh name="pelvis_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>pelvis_r.vtp</mesh_file>
+							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\pelvis_r.obj</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -109,29 +146,35 @@
 				<Body name="femur_r">
 					<!--List of components that this component owns and serializes.-->
 					<components>
-						<Marker name="femur_r_head_centre">
+						<Marker name="femur_r_epicondyle_centroid">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>0 0 0</location>
+							<location>0.48392400145530701 -0.019068000838160515 0.11741799861192703</location>
 						</Marker>
 						<Marker name="femur_r_epicondyle_lat">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>0.010816000401973724 -0.40456101298332214 0.033564001321792603</location>
+							<location>0.48267701268196106 -0.034081000834703445 0.14727699756622314</location>
 						</Marker>
 						<Marker name="femur_r_epicondyle_med">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>0.013309000059962273 -0.40330898761749268 -0.033264998346567154</location>
+							<location>0.48517099022865295 -0.0040549999102950096 0.087559998035430908</location>
 						</Marker>
-						<Marker name="femur_r_epicondyle_centroid">
+						<Marker name="femur_r_head_center">
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>0.012062500230967999 -0.40393498539924622 0.00014950000331737101</location>
+							<location>0.082958996295928955 -0.049451999366283417 0.077260002493858337</location>
+						</Marker>
+						<Marker name="glmed2_r">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.087684996426105499 -0.094538003206253052 0.11496300250291824</location>
 						</Marker>
 						<StationDefinedFrame name="hip_r_child_frame">
 							<!--The geometry used to display the axes of this Frame.-->
@@ -144,11 +187,11 @@
 							<!--Path to a Component that satisfies the Socket 'point_a' of type Station (description: Point `a` of a triangle that defines the frame's orientation. Must not coincide with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_point_a>/bodyset/femur_r/femur_r_epicondyle_centroid</socket_point_a>
 							<!--Path to a Component that satisfies the Socket 'point_b' of type Station (description: Point `b` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
-							<socket_point_b>/bodyset/femur_r/femur_r_head_centre</socket_point_b>
+							<socket_point_b>/bodyset/femur_r/femur_r_head_center</socket_point_b>
 							<!--Path to a Component that satisfies the Socket 'point_c' of type Station (description: Point `c` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_point_c>/bodyset/femur_r/femur_r_epicondyle_lat</socket_point_c>
 							<!--Path to a Component that satisfies the Socket 'origin_point' of type Station (description: Point that defines the frame's origin point. Also permitted to be `point_a`, `point_b`, or `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
-							<socket_origin_point>/bodyset/femur_r/femur_r_head_centre</socket_origin_point>
+							<socket_origin_point>/bodyset/femur_r/femur_r_head_center</socket_origin_point>
 							<!--The frame axis that points in the direction of `point_b - point_a`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_x_ac_axis`.-->
 							<ab_axis>+y</ab_axis>
 							<!--The frame axis that points in the direction of `(point_b - point_a) x (point_c - point_a)`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_axis`.-->
@@ -165,7 +208,7 @@
 							<!--Path to a Component that satisfies the Socket 'point_a' of type Station (description: Point `a` of a triangle that defines the frame's orientation. Must not coincide with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_point_a>/bodyset/femur_r/femur_r_epicondyle_centroid</socket_point_a>
 							<!--Path to a Component that satisfies the Socket 'point_b' of type Station (description: Point `b` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
-							<socket_point_b>/bodyset/femur_r/femur_r_head_centre</socket_point_b>
+							<socket_point_b>/bodyset/femur_r/femur_r_head_center</socket_point_b>
 							<!--Path to a Component that satisfies the Socket 'point_c' of type Station (description: Point `c` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_point_c>/bodyset/femur_r/femur_r_epicondyle_lat</socket_point_c>
 							<!--Path to a Component that satisfies the Socket 'origin_point' of type Station (description: Point that defines the frame's origin point. Also permitted to be `point_a`, `point_b`, or `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
@@ -189,7 +232,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>femur_r.vtp</mesh_file>
+							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\femur_r.obj</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -213,7 +256,7 @@
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
 							<socket_frame>..</socket_frame>
 							<!--Name of geometry file.-->
-							<mesh_file>tibia_r.vtp</mesh_file>
+							<mesh_file>C:\Users\adamk\Desktop\opensim-creator\docs\source\_static\the-model-warper\walkthrough-model\Geometry\tibia_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -233,7 +276,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame>ground_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame>pelvis_offset</socket_child_frame>
+					<socket_child_frame>/bodyset/pelvis/pelvis_frame</socket_child_frame>
 					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
