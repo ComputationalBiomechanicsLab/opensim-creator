@@ -352,12 +352,9 @@ namespace
             // being called during `generateDecorations`, but they do not have an API-visible socket
             "WrapCylinder",
             "WrapEllipsoid",
-            "WrapCylinderObst",
-            "WrapDoubleCylinderObst",
             "WrapEllipsoid",
             "WrapObjectSet",
             "WrapSphere",
-            "WrapSphereObst",
             "WrapTorus",
 
             // it's deprecated (#521)

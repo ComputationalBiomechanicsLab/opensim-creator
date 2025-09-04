@@ -16,6 +16,40 @@ set(OSIM_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/simbody")
 add_library(osim STATIC
 
     # Simbody sources
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_band.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_dense.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_direct.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_iterative.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_lapack.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_math.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_nvector.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spbcgs.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spgmr.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_sptfqmr.c
+
+
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/fnvector_serial.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/nvector_serial.c
+
+
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_band.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bandpre.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bbdpre.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_dense.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_direct.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_ic.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_io.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_lapack.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_nls.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_proj.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_root.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spbcgs.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spgmr.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spils.c
+    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_sptfqmr.c
+
+
     ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaMersonIntegrator.cpp
     ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/ExplicitEulerIntegrator.cpp
     ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/SimTKcpodes.cpp
@@ -190,6 +224,8 @@ add_library(osim STATIC
     ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/PolynomialRootFinder.cpp
     ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/cpoly.cpp
     ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/rpoly.cpp
+    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableSpan.cpp
+    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableSpan_SubsystemTestHelper_Impl.cpp
     ${OSIM_SIMBODY_BASEDIR}/Simbody/src/GeneralForceSubsystem.cpp
     ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode.cpp
     ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode_LoneParticle.cpp
