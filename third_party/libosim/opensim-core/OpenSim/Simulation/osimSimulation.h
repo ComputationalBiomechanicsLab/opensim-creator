@@ -42,7 +42,6 @@
 #include "Model/ContactGeometrySet.h"
 #include "Model/ContactHalfSpace.h"
 #include "Model/ContactMesh.h"
-#include "Model/ContactSphere.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
@@ -95,9 +94,6 @@
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
-#include "Wrap/WrapCylinderObst.h"
-#include "Wrap/WrapSphereObst.h"
-#include "Wrap/WrapDoubleCylinderObst.h"
 
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"
