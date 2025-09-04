@@ -369,7 +369,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinear.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinearNode.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectory.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactSphere.cpp
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactSphere.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Analysis.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractPathPoint.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Blankevoort1991Ligament.cpp
@@ -396,6 +396,7 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ModelVisualizer.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Point.cpp
+    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExponentialContactForce.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExternalForce.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MarkerSet.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CoordinateSet.cpp
@@ -446,14 +447,14 @@ add_library(osim STATIC
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/RegisterTypes_osimSimulation.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapEllipsoid.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapObject.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.cpp
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapResult.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapSphereObst.cpp
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapSphereObst.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrap.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapSet.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapPoint.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapMath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapCylinderObst.cpp
+    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapCylinderObst.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapTorus.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapCylinder.cpp
     ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapSphere.cpp
@@ -621,7 +622,7 @@ PRIVATE
     SIMBODY_VISUALIZER_INSTALL_DIR="${CMAKE_INSTALL_FULL_BINDIR}"     # shuts the compiler up
     SIMBODY_VISUALIZER_REL_INSTALL_DIR="${CMAKE_INSTALL_BINDIR}"      # shuts the compiler up
     SIMBODY_PATH_FROM_LIBDIR_TO_VIZ_DIR="../${CMAKE_INSTALL_BINDIR}"  # shuts the compiler up
-
+    
     # OpenSim defines
     OPENSIM_ACTUATORS_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
     OPENSIM_ACTUATORS_MINOR_VERSION=${PROJECT_VERSION_MINOR}
@@ -646,9 +647,10 @@ PUBLIC
     LEPTON_BUILDING_STATIC_LIBRARY=1
     OPENSIM_USE_STATIC_LIBRARIES=1
     OPENSIM_DISABLE_STATIC_TYPE_REGISTRATION=1  # disable objects being registered during static init time
-
-    # OpenSim's `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-    $<$<CXX_COMPILER_ID:MSVC>:_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING>
+    
+    # This disables the operators from SimTK that newer compilers have problems with
+    # see https://github.com/simbody/simbody/pull/815 for details
+    SWIG_PYTHON
 )
 target_compile_features(osim PUBLIC cxx_std_17)
 
@@ -657,7 +659,7 @@ PUBLIC
     ${CMAKE_DL_LIBS}            # used by simbody
     BLAS::BLAS                  # used by simbody
     LAPACK::LAPACK              # used by simbody
-    spdlog::spdlog_header_only  # used by OpenSim
+    spdlog::spdlog  # used by OpenSim
 )
 
 # make an installation directory that's mostly OpenSim-compatible (primarily, for OpenSim Creator)

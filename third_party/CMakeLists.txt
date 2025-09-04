@@ -140,7 +140,7 @@ endif()
 if (${OSCDEPS_BUILD_IMGUI})
     file(GLOB OSCDEPS_IMGUI_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/*.patch")
     ExternalProject_Add(imgui
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_IMGUI_PATCHES}
+        # PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_IMGUI_PATCHES}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
         SOURCE_SUBDIR ../cmake/imgui/
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -174,12 +174,6 @@ if(${OSCDEPS_BUILD_OPENBLAS})
 endif()
 
 if(${OSCDEPS_BUILD_SPDLOG})
-    if(MSVC)
-        # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-    else()
-        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    endif()
 
     ExternalProject_Add(spdlog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
@@ -206,7 +200,7 @@ if(${OSCDEPS_BUILD_LIBOSIM})
     ExternalProject_Add(libosim
         DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_LIBOSIM_PATCHES}
+        # PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_LIBOSIM_PATCHES}
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}

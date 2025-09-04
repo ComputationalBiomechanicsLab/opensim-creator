@@ -19,7 +19,6 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>

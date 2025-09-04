@@ -43,6 +43,11 @@ target_compile_options(OpenSimCreator PRIVATE
 target_include_directories(OpenSimCreator PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <libopensimcreator/HEADER.h>` works
 )
+target_compile_definitions(OpenSimCreator PUBLIC
+    # This disables the operators from SimTK that newer compilers have problems with
+    # see https://github.com/simbody/simbody/pull/815 for details
+    SWIG_PYTHON
+)
 target_link_libraries(OpenSimCreator PUBLIC
     oscar
     osim
