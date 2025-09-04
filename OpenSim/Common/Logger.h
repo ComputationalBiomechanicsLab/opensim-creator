@@ -22,12 +22,26 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimCommonDLL.h"
-#include <set>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <string>
-#include <spdlog/fmt/ostr.h> 
+#include "osimCommonDLL.h"              // for OSIMCOMMON_API
+#include <memory>                       // for shared_ptr
+#include <spdlog/common.h>              // for string_view_t
+#include <spdlog/fmt/bundled/base.h>    // for formatter
+#include <spdlog/fmt/bundled/ostream.h> // for ostream_formatter
+#include <spdlog/logger.h>              // for logger
+#include <string>                       // for basic_string, string
+
+#ifndef SWIG
+#include <SimTKcommon/SmallMatrix.h>             // for Vec3
+#include <SimTKcommon/internal/BigMatrix.h>      // for Vector
+#include <SimTKcommon/internal/MassProperties.h> // for Inertia
+#include <SimTKcommon/internal/Rotation.h>       // for Rotation
+
+// fmt library serializers for custom SimTK objects
+template <> struct fmt::formatter<SimTK::Vec3> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Vector> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Rotation> : ostream_formatter {};
+template <> struct fmt::formatter<SimTK::Inertia> : ostream_formatter {};
+#endif
 
 namespace OpenSim {
 
@@ -35,6 +49,12 @@ class LogSink;
 
 /// This is a singleton class (single instance) for logging messages and
 /// controlling how those messages are presented to the user.
+///
+/// @note Do not use this class (or any of the free functions) from the
+/// destructor of any object with static storage duration. It accesses static
+/// objects that are destructed in an undetermined order during static
+/// de-initialization.
+///
 class OSIMCOMMON_API Logger {
 public:
     ///  This is a static singleton class: there is no way of constructing it
