@@ -25,6 +25,7 @@
 // INCLUDES
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
+#include "OpenSim/Common/Logger.h"
 #include "XMLDocument.h"
 
 #include <regex>
@@ -157,6 +158,28 @@ void Component::addComponent(Component* subcomponent)
     // allow the derived Component to perform secondary operations
     // in response to the inclusion of the subcomponent
     extendAddComponent(subcomponent);
+}
+
+bool Component::removeComponent(Component* subcomponent)
+{
+    auto& componentsProp = updProperty_components();
+
+    // Try to find `subcomponent` in the `components` property.
+    int idx = -1;
+    for (int i = 0; i < componentsProp.size(); ++i) {
+        if (&componentsProp[i] == subcomponent) {
+            idx = i;
+            break;
+        }
+    }
+    if (idx == -1) {
+        return false;  // Not found.
+    }
+
+    // Perform removal
+    componentsProp.removeValueAtIndex(idx);
+    finalizeFromProperties();
+    return true;
 }
 
 void Component::prependComponentPathToConnecteePath(

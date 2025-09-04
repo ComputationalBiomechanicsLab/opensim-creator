@@ -45,7 +45,6 @@
 // INCLUDES
 #include "ComponentList.h"
 #include "ComponentPath.h"
-#include "Logger.h"
 #include "OpenSim/Common/Array.h"
 #include "OpenSim/Common/ComponentOutput.h"
 #include "OpenSim/Common/ComponentSocket.h"
@@ -669,6 +668,16 @@ public:
     * @throws ComponentAlreadyPartOfOwnershipTree
     * @param subcomponent is the Component to be added. */
     void addComponent(Component* subcomponent);
+
+    /**
+     * Returns `true` if `subcomponent`, which should be a direct subcomponent
+     * of this component, was sucessfully removed from this component.
+     *
+     * Specifically, this tries to remove a direct component that was
+     * previously added via `addComponent`, or existed in the `<components>`
+     * list XML for this component.
+     */
+    bool removeComponent(Component* subcomponent);
 
     /**
      * Get an iterator through the underlying subcomponents that this component is
@@ -2748,7 +2757,6 @@ public:
         }
 
         if (numSubcomponents == 0) {
-            log_cout("Component '{}' has no subcomponents.", getName());
             return;
         }
         maxlen += 6; //padding
@@ -2759,25 +2767,6 @@ public:
         if (colonPos != std::string::npos)
             className = className.substr(colonPos+1,
                                          className.length()-colonPos);
-
-        log_cout("Class name and absolute path name for descendants of '{}'"
-                 "that are of type {}:\n", getName(), className);
-
-        log_cout("{:>{}}  {}", concreteClassName, maxlen,
-                getAbsolutePathString());
-
-        // Step through compList again to print.
-        for (const C& thisComp : compList) {
-            const std::string thisClass = thisComp.getConcreteClassName();
-            auto path = thisComp.getAbsolutePath();
-            log_cout(fmt::format(
-                    "{:>{}}  {}/{}",
-                    fmt::format("[{}]", thisClass),
-                    maxlen,
-                    std::string((path.getNumPathLevels() - 1) * 4, ' '),
-                    path.getComponentName()));
-        }
-        log_cout("");
     }
 
     /** Print outputs of this component and optionally, those of all
@@ -3516,21 +3505,6 @@ public:
                 break;
             }
 
-            // otherwise, we just have a type and name match
-            // which we may need to support for compatibility with older models
-            // where only names were used (not path or type)
-            // TODO replace with an exception -aseth
-            std::string compName = comp.getName();
-            if (compName == subname) {
-                foundCs.push_back(&comp);
-                // TODO Revisit why the exact match isn't found when
-                // when what appears to be the complete path.
-                log_debug("{} Found '{}' as a match for: Component '{}' of "
-                          "type {}, but it is not on the specified path.",
-                          msg, compAbsPath.toString(),
-                          comp.getConcreteClassName());
-                //throw Exception(details, __FILE__, __LINE__);
-            }
         }
 
         if (foundCs.size() == 1) {
