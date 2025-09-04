@@ -1,0 +1,29 @@
+Fixes a bug in OpenSim::Marker where it'll emit decorations under
+the assumption that its location (`get_location()`) is always
+expressed with respect to the body it's attached to, but it can
+actually be expressed with respect to an intermediate frame
+(e.g. `PhysicalOffsetFrame`, `StationDefinedFrame`)
+
+---
+
+diff --git a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Marker.cpp b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Marker.cpp
+index 2eb511178..584e10d7c 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Marker.cpp
++++ b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Marker.cpp
+@@ -170,13 +170,12 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
+     // @TODO default color, size, shape should be obtained from hints
+     const Vec3 color = hints.get_marker_color();
+     const OpenSim::PhysicalFrame& frame = getParentFrame();
+-    //const Frame& bf = frame.findBaseFrame();
+-    //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
+-    //const Vec3& p_BM = bTrans*get_location();
++    const SimTK::Vec3 locationInBody = findLocationInFrame(state, frame.findBaseFrame());
++
+     appendToThis.push_back(
+         SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
+         .setColor(color).setOpacity(1.0)
+-        .setTransform(get_location())
++        .setTransform(locationInBody)
+         .setScaleFactors(Vec3(1)));
+     
+ }
