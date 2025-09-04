@@ -15,7 +15,7 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/ContactSphere.h>
+#include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/Model.h>
