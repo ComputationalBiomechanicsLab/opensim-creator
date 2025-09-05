@@ -22,6 +22,7 @@ namespace OpenSim { class Coordinate; }
 namespace OpenSim { class Geometry; }
 namespace OpenSim { class GeometryPath; }
 namespace OpenSim { class Joint; }
+namespace OpenSim { class Marker; }
 namespace OpenSim { class Mesh; }
 namespace OpenSim { class Model; }
 namespace OpenSim { class Object; }
@@ -427,4 +428,5 @@ namespace osc
     bool ActionExportModelGraphToDotvizClipboard(const OpenSim::Model&);
     bool ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model&);
     bool ActionBakeStationDefinedFrames(IModelStatePair&);
+    bool ActionMoveMarkerToModelMarkerSet(IModelStatePair&, const OpenSim::Marker&);
 }

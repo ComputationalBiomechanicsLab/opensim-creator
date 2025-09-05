@@ -1,17 +1,16 @@
-This adds `OpenSim::Component::removeComponent`, which OpenSim Creator uses
-for some UI functionality.
+This adds `OpenSim::Component::removeComponent` and `OpenSim::Component::extractComponent`,
+which are used by OpenSim Creator to provide UI features, like moving/deleting components.
 
 ---
-
 diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
-index 578aee767..dade8f748 100644
+index 578aee767..5d1a85e40 100644
 --- a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
 +++ b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
-@@ -159,6 +159,28 @@ void Component::addComponent(Component* subcomponent)
+@@ -159,6 +159,33 @@ void Component::addComponent(Component* subcomponent)
      extendAddComponent(subcomponent);
  }
  
-+bool Component::removeComponent(Component* subcomponent)
++std::unique_ptr<Component> Component::extractComponent(Component* subcomponent)
 +{
 +    auto& componentsProp = updProperty_components();
 +
@@ -28,25 +27,62 @@ index 578aee767..dade8f748 100644
 +    }
 +
 +    // Perform removal
-+    componentsProp.removeValueAtIndex(idx);
++    std::unique_ptr<Component> rv = componentsProp.extractValueAtIndex(idx);
 +    finalizeFromProperties();
-+    return true;
++    return rv;
++}
++
++bool Component::removeComponent(Component* subcomponent)
++{
++    return extractComponent(subcomponent) != nullptr;  // `std::unique_ptr<Component>` handles destruction
 +}
 +
  void Component::prependComponentPathToConnecteePath(
          Component& subcomponent) {
      const std::string compPath = subcomponent.getAbsolutePathString();
 diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Component.h b/third_party/libosim/opensim-core/OpenSim/Common/Component.h
-index 652848467..c601204d5 100644
+index 652848467..d89a51465 100644
 --- a/third_party/libosim/opensim-core/OpenSim/Common/Component.h
 +++ b/third_party/libosim/opensim-core/OpenSim/Common/Component.h
-@@ -670,6 +670,16 @@ public:
+@@ -55,6 +55,8 @@
+ #include <OpenSim/Common/osimCommonDLL.h>
+ 
+ #include <functional>
++#include <memory>
++#include <type_traits>
+ #include <unordered_map>
+ #include <utility>
+ 
+@@ -670,6 +672,39 @@ public:
      * @param subcomponent is the Component to be added. */
      void addComponent(Component* subcomponent);
  
 +    /**
++     * Returns `subcomponent` if `subcomponent` was successfully extracted from
++     * this `Component`.
++     *
++     * Specifically, this tries to extract a direct sub-`Component` that was
++     * previously added via `addComponent`, or existed in the `<components>` list
++     * XML of this `Component`.
++     */
++    std::unique_ptr<Component> extractComponent(Component* subcomponent);
++
++    template<
++        typename T,
++        std::enable_if_t<std::is_base_of_v<Component, T>, bool> = true
++    >
++    std::unique_ptr<T> extractComponent(T* subcomponent)
++    {
++        // If the type of `subcomponent` is known at compile-time then it is also
++        // known that the return value will be `subcomponent`, which will have the
++        // same type.
++        std::unique_ptr<Component> typeErased = extractComponent(static_cast<Component*>(subcomponent));
++        return std::unique_ptr<T>{static_cast<T*>(typeErased.release())};
++    }
++
++    /**
 +     * Returns `true` if `subcomponent`, which should be a direct subcomponent
-+     * of this component, was sucessfully removed from this component.
++     * of this component, was successfully removed from this component.
 +     *
 +     * Specifically, this tries to remove a direct component that was
 +     * previously added via `addComponent`, or existed in the `<components>`
@@ -57,3 +93,70 @@ index 652848467..c601204d5 100644
      /**
       * Get an iterator through the underlying subcomponents that this component is
       * composed of. The hierarchy of Components/subComponents forms a tree.
+diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Property.h b/third_party/libosim/opensim-core/OpenSim/Common/Property.h
+index f14cbe4e8..d74c6af82 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Common/Property.h
++++ b/third_party/libosim/opensim-core/OpenSim/Common/Property.h
+@@ -35,6 +35,7 @@
+ #include "SimTKcommon/internal/Array.h"
+ #include "SimTKcommon/internal/ClonePtr.h"
+ 
++#include <memory>
+ #include <iomanip>
+ #include <set>
+ 
+@@ -528,6 +529,17 @@ public:
+                 + "resulting list has improper size, ignored.");
+         removeValueAtIndexVirtual(index);
+     }
++    /** Extract a specific entry of the list at index **/
++    std::unique_ptr<T> extractValueAtIndex(int index)
++    {
++        if (index > getNumValues() || index < 0)
++            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
++                + "invalid index, out of range, ignored.");
++        if (getNumValues() - 1 < this->getMinListSize() || getNumValues() - 1 > this->getMaxListSize())
++            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
++                + "resulting list has improper size, ignored.");
++        return extractValueAtIndexVirtual(index);
++    }
+     /** Search the value list for an element that has the given \a value and
+     return its index if found, otherwise -1. This requires only that the 
+     template type T supports operator==(). This is a linear search so will 
+@@ -601,6 +613,7 @@ protected:
+     virtual int appendValueVirtual(const T& value) = 0;
+     virtual int adoptAndAppendValueVirtual(T* value) = 0;
+     virtual void removeValueAtIndexVirtual(int index) = 0;
++    virtual std::unique_ptr<T> extractValueAtIndexVirtual(int index) = 0;
+     /** @endcond **/
+ #endif
+ };
+@@ -1019,6 +1032,13 @@ private:
+         return values.size()-1; }
+     void removeValueAtIndexVirtual(int index) override final
+     {   values.erase(&values[index]);  }
++    std::unique_ptr<T> extractValueAtIndexVirtual(int index) override final
++    {
++        T* p = &values.at(index);
++        auto extracted = std::make_unique<T>(*p);
++        values.erase(p);
++        return extracted;
++    }
+     // This is the default implementation; specialization is required if
+     // the Simbody default behavior is different than OpenSim's; e.g. for
+     // Transform serialization.
+@@ -1199,6 +1219,14 @@ public:
+     void removeValueAtIndexVirtual(int index) override {
+         objects.erase(&objects.at(index));
+     }
++
++    std::unique_ptr<T> extractValueAtIndexVirtual(int index) override
++    {
++        SimTK::ClonePtr<T>* p = &objects.at(index);
++        std::unique_ptr<T> extracted{p->release()};
++        objects.erase(p);
++        return extracted;
++    }
+ private:
+     // Base class checks the index.
+     const T& getValueVirtual(int index) const override final 
