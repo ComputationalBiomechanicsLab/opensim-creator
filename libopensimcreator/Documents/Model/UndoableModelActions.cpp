@@ -2495,3 +2495,46 @@ bool osc::ActionBakeStationDefinedFrames(IModelStatePair& model)
 
     return true;
 }
+
+bool osc::ActionMoveMarkerToModelMarkerSet(IModelStatePair& model, const OpenSim::Marker& marker)
+{
+    if (model.isReadonly()) {
+        return false;
+    }
+
+    const auto* owner = GetOwner(marker);
+    if (not owner) {
+        return false;  // The marker is either the root (uhh) or disowned
+    }
+
+    if (dynamic_cast<const OpenSim::MarkerSet*>(owner) and GetOwner<OpenSim::Model>(*owner) == &model.getModel()) {
+        return false;  // The marker is already in the model's `MarkerSet`
+    }
+
+    // else: perform model mutation
+
+    OpenSim::Model& mutModel = model.updModel();
+    OpenSim::Component* mutOwner = UpdOwner(mutModel, marker);
+    if (not mutOwner) {
+        return false;  // Something went wrong trying to unlock/mutate the owner
+    }
+    OpenSim::Marker* mutMarker = FindComponentMut<OpenSim::Marker>(mutModel, marker.getAbsolutePath());
+    if (not mutMarker) {
+        return false;  // Something went wrong trying to unlock/mutate the original `Marker`
+    }
+    std::unique_ptr<OpenSim::Marker> extracted = mutOwner->extractComponent(mutMarker);
+    if (not extracted) {
+        return false;  // Something went wrong extracting the marker from its current owner
+    }
+    const auto* extractedPtr = extracted.get();
+    mutModel.addMarker(extracted.release());
+    FinalizeConnections(mutModel);
+    model.setSelected(extractedPtr);
+    InitializeModel(mutModel);
+    InitializeState(mutModel);
+    std::stringstream msg;
+    msg << "Moved " << extractedPtr->getName() << " to /markerset";
+    model.commit(std::move(msg).str());
+
+    return true;
+}

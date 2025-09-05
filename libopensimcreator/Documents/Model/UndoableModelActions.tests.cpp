@@ -656,3 +656,42 @@ TEST(OpenSimActions, ActionAddPathPointToGeometryPathWorksAsExpected)
     ASSERT_TRUE(ActionAddPathPointToGeometryPath(model, gpPath, groundPath)) << "should work";
     ASSERT_EQ(gp.getPathPointSet().getSize(), 3);
 }
+
+TEST(OpenSimActions, ActionMoveMarkerToModelMarkerSet_MovesMarker)
+{
+    // Create a model with a marker defined somewhere else in the
+    // model (using generic `ComponentSet`s):
+    //
+    //  model
+    //    |
+    // bodyset
+    //    |
+    //  body
+    //    |
+    //   pof
+    //    |
+    //  marker
+    //
+    // And then move it into the `markerset` and ensure it's still attached to the
+    // original pof, with the correct location, etc.
+
+    UndoableModelStatePair model;
+    auto& body = AddBody(model.updModel(), "body", 1.0,  SimTK::Vec3{0.0}, SimTK::Inertia{SimTK::Vec3{1.0}});
+    const SimTK::Vec3 pofOffset{0.25};
+    auto& pof = AddComponent<OpenSim::PhysicalOffsetFrame>(body, "pof", body, SimTK::Transform{pofOffset});
+    const SimTK::Vec3 markerOffset{0.3};
+    auto& marker = AddComponent<OpenSim::Marker>(pof, "marker", pof, markerOffset);
+    FinalizeConnections(model.updModel());
+    InitializeModel(model.updModel());
+    const SimTK::State& state = InitializeState(model.updModel());
+
+    ASSERT_EQ(marker.getLocationInGround(state), pofOffset + markerOffset);
+    ASSERT_EQ(&marker.getParentFrame(), &pof);
+    ASSERT_EQ(&marker.getOwner(), &pof);
+
+    ActionMoveMarkerToModelMarkerSet(model, marker);
+
+    ASSERT_EQ(marker.getLocationInGround(state), pofOffset + markerOffset);
+    ASSERT_EQ(&marker.getParentFrame(), &pof);
+    ASSERT_EQ(&marker.getOwner(), &model.getModel().getMarkerSet());
+}

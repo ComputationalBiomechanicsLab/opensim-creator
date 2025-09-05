@@ -52,6 +52,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed the `Export Points` popup not writing the exported CSV file (#1098).
 - Patched a bug in OpenSim that causes `OpenSim::Marker`s to emit incorrect 3D decorations
   when they are attached to custom frames (#1101).
+- The context menu for an `OpenSim::Marker` in the model editor now has a `Move To > /markerset`
+  option, which is useful for compatiblity with OpenSim GUI (#1102).
 
 ## [0.5.25] - 2025/07/14
 

@@ -131,6 +131,38 @@ namespace
         );
     }
 
+    void DrawMarkerContextualActions(
+        IModelStatePair& modelState,
+        const OpenSim::Marker& marker)
+    {
+        DrawCalculateMenu(
+            modelState.getModel(),
+            modelState.getState(),
+            marker,
+            CalculateMenuFlags::NoCalculatorIcon
+        );
+
+        // Show a specialized `Move To` menu that lets users move the marker to
+        // the model's `MarkerSet`, which can be required for backwards compatibility
+        // with OpenSim GUI (#1102).
+        if (ui::begin_menu("Move To", not modelState.isReadonly())) {
+
+            // Only enable this option if the marker isn't already part of the model's `MarkerSet`
+            // (otherwise, we assume it's remove-able from its current owner).
+            const OpenSim::Component* owner = GetOwner<OpenSim::MarkerSet>(marker);
+            bool disabled = owner and GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
+
+            if (ui::draw_menu_item("/markerset", std::nullopt, nullptr, not disabled)) {
+                ActionMoveMarkerToModelMarkerSet(modelState, marker);
+            }
+            if (disabled and ui::is_item_hovered(ui::HoveredFlag::AllowWhenDisabled)) {
+                ui::draw_tooltip_body_only("This marker is already part of /markerset");
+            }
+
+            ui::end_menu();
+        }
+    }
+
     void DrawPointContextualActions(
         const IModelStatePair& modelState,
         const OpenSim::Point& point)
@@ -319,6 +351,10 @@ public:
         else if (const auto* musclePtr = dynamic_cast<const OpenSim::Muscle*>(c)) {
             ui::draw_separator();
             drawPlotVsCoordinateMenu(*musclePtr);
+        }
+        else if (const auto* markerPtr = dynamic_cast<const OpenSim::Marker*>(c)) {
+            ui::draw_separator();
+            DrawMarkerContextualActions(*m_Model, *markerPtr);
         }
         else if (const auto* stationPtr = dynamic_cast<const OpenSim::Station*>(c)) {
             ui::draw_separator();
