@@ -54,6 +54,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   when they are attached to custom frames (#1101).
 - The context menu for an `OpenSim::Marker` in the model editor now has a `Move To > /markerset`
   option, which is useful for compatiblity with OpenSim GUI (#1102).
+- The `Control Panel`, `Source Model`, and `Result Model` panels in the model warper workflow
+  are now opened by default (#1103).
 
 ## [0.5.25] - 2025/07/14
 
