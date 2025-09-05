@@ -6,6 +6,8 @@
 #include <libopensimcreator/Documents/Landmarks/MaybeNamedLandmarkPair.h>
 #include <libopensimcreator/Documents/Model/BasicModelStatePair.h>
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
+#include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
@@ -1977,7 +1979,15 @@ namespace
                 }
             }
 
-            auto editor = std::make_unique<ModelEditorTab>(parent_, std::move(copy));
+            // Make the model undo-able
+            auto undoableModel = std::make_unique<UndoableModelStatePair>(std::move(copy));
+
+            // If the user requests it, bake the SDFs after finishing everything else
+            if (getBakeSDFs()) {
+                ActionBakeStationDefinedFrames(*undoableModel);
+            }
+
+            auto editor = std::make_unique<ModelEditorTab>(parent_, std::move(undoableModel));
             App::post_event<OpenTabEvent>(*parent_, std::move(editor));
         }
 
@@ -2009,6 +2019,10 @@ namespace
 
             return std::nullopt;  // can't figure out where to save it :(
         }
+
+        // SDF baking stuff
+        bool getBakeSDFs() const { return m_BakeStationDefinedFrames; }
+        void setBakeSDFs(bool v) { m_BakeStationDefinedFrames = v; }
 
         // actions
         void actionCreateNewSourceModel()
@@ -2185,6 +2199,7 @@ namespace
         PolarPerspectiveCamera m_LinkedCamera;
 
         std::optional<std::filesystem::path> m_MaybeCustomWarpedGeometryDirectory;
+        bool m_BakeStationDefinedFrames = false;
     };
 }
 
@@ -2463,6 +2478,8 @@ namespace
 
 
                 if (ui::begin_popup("##WarpedModelExportModifiers")) {
+
+                    // UI for warped geometry directory toggle
                     const auto geomDir = m_State->tryGetWarpedGeometryDirectory();
                     if (geomDir) {
                         ui::draw_text("Warped Geometry Directory: %s", geomDir->string().c_str());
@@ -2470,11 +2487,20 @@ namespace
                     else {
                         ui::draw_text("Warped Geometry Directory: UNKNOWN");
                     }
-
                     ui::same_line();
                     if (ui::draw_small_button("change")) {
                         m_State->actionPromptUserToSelectWarpedGeometryDirectory();
                     }
+
+
+                    // UI for baking `StationDefinedFrame`s during warping
+                    {
+                        bool bakeSDFs = m_State->getBakeSDFs();
+                        if (ui::draw_checkbox("Bake StationDefinedFrames", &bakeSDFs)) {
+                            m_State->setBakeSDFs(bakeSDFs);
+                        }
+                    }
+
                     ui::end_popup();
                 }
                 if (disabled) {
