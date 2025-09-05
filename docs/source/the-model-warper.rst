@@ -431,6 +431,22 @@ warping the muscle points is going to be very subtle, but on larger, more compli
 more dramatic warping requirements, the effect of warping the muscle points will be much bigger.
 
 
+Manually Scale Not-Warped Geometry
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO: explain that we haven't TPS warped all elements of the model, but that shouldn't mean
+that we should just leave them as-is. Those body segments can still be scaled using a manual
+scaling step with the following scale factors:
+
+============ ======== ======== ========
+Body Segment X        Y        Z
+============ ======== ======== ========
+pelvis       0.75828  0.73484  0.771248
+femur_r      0.853983 0.826068 0.839395
+tibia_r      0.776503 0.849965 0.890335
+============ ======== ======== ========
+
+
 Export Result Model
 ^^^^^^^^^^^^^^^^^^^
 
