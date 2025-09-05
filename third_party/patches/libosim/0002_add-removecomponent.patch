@@ -2,8 +2,9 @@ This adds `OpenSim::Component::removeComponent` and `OpenSim::Component::extract
 which are used by OpenSim Creator to provide UI features, like moving/deleting components.
 
 ---
+
 diff --git a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
-index 578aee767..5d1a85e40 100644
+index 578aee767..b784f0307 100644
 --- a/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
 +++ b/third_party/libosim/opensim-core/OpenSim/Common/Component.cpp
 @@ -159,6 +159,33 @@ void Component::addComponent(Component* subcomponent)
@@ -23,7 +24,7 @@ index 578aee767..5d1a85e40 100644
 +        }
 +    }
 +    if (idx == -1) {
-+        return false;  // Not found.
++        return nullptr;  // Not found.
 +    }
 +
 +    // Perform removal
