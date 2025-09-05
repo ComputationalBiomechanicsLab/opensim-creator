@@ -38,19 +38,32 @@ namespace
 
     constexpr auto c_default_panel_states = std::to_array<std::pair<const char*, bool>>({
         {"panels/Actions/enabled", true},
-        {"panels/Navigator/enabled", true},
-        {"panels/Log/enabled", true},
-        {"panels/Properties/enabled", true},
-        {"panels/Selection Details/enabled", true},
-        {"panels/Simulation Details/enabled", false},  // replaced by `Properties` around v0.5.15
-        {"panels/Coordinates/enabled", true},
+
+        // Many workflows
         {"panels/Performance/enabled", false},
+        {"panels/Log/enabled", true},
+        {"panels/Navigator/enabled", true},
+
+        // Model editor OR simulation workflows
+        {"panels/Coordinates/enabled", true},
         {"panels/Muscle Plot/enabled", false},
         {"panels/Output Watches/enabled", false},
         {"panels/Output Plots/enabled", false},        // merged with `Output Watches` around v0.5.15
+        {"panels/Properties/enabled", true},
+        {"panels/Selection Details/enabled", true},
+
+        // Simulation workflow
+        {"panels/Simulation Details/enabled", false},  // replaced by `Properties` around v0.5.15
+
+        // Mesh warper workflow
         {"panels/Source Mesh/enabled", true},
         {"panels/Destination Mesh/enabled", true},
         {"panels/Result/enabled", true},
+
+        // Model warper workflow
+        {"panels/Control Panel/enabled", true},
+        {"panels/Source Model/enabled", true},
+        {"panels/Result Model/enabled", true},
     });
 
     // an OpenSim log sink that sinks into OSC's main log
