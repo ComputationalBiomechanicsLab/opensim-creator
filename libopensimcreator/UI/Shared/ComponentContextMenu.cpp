@@ -150,7 +150,7 @@ namespace
             // Only enable this option if the marker isn't already part of the model's `MarkerSet`
             // (otherwise, we assume it's remove-able from its current owner).
             const OpenSim::Component* owner = GetOwner<OpenSim::MarkerSet>(marker);
-            bool disabled = owner and GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
+            bool disabled = (owner != nullptr) and GetOwner<OpenSim::Model>(*owner) == &modelState.getModel();
 
             if (ui::draw_menu_item("/markerset", std::nullopt, nullptr, not disabled)) {
                 ActionMoveMarkerToModelMarkerSet(modelState, marker);

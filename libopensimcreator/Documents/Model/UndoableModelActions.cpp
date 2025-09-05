@@ -2518,7 +2518,7 @@ bool osc::ActionMoveMarkerToModelMarkerSet(IModelStatePair& model, const OpenSim
     if (not mutOwner) {
         return false;  // Something went wrong trying to unlock/mutate the owner
     }
-    OpenSim::Marker* mutMarker = FindComponentMut<OpenSim::Marker>(mutModel, marker.getAbsolutePath());
+    auto* mutMarker = FindComponentMut<OpenSim::Marker>(mutModel, marker.getAbsolutePath());
     if (not mutMarker) {
         return false;  // Something went wrong trying to unlock/mutate the original `Marker`
     }
