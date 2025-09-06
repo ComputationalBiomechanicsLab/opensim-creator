@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(osc VERSION 0.5.25 LANGUAGES CXX C)
+project(osc VERSION 0.6.0 LANGUAGES CXX C)
 
 set(OSC_BUILD_OPENSIMCREATOR ON
     CACHE BOOL
