@@ -1135,7 +1135,7 @@ std::optional<size_t> osc::FindJointInParentJointSet(const OpenSim::Joint& joint
 std::string osc::GetDisplayName(const OpenSim::Geometry& g)
 {
     if (const auto* mesh = dynamic_cast<const OpenSim::Mesh*>(&g); mesh) {
-        return mesh->getGeometryFilename();
+        return std::filesystem::path{mesh->getGeometryFilename()}.filename().string();
     }
     else {
         return g.getConcreteClassName();
