@@ -8,9 +8,9 @@ Make a Lower Leg
     v4.6 to be released before we remove any "experimental" labelling. We also anticipate
     adding some handy tooling around re-socketing existing joints and defining ``StationDefinedFrame``\s.
 
-In this tutorial, we will be making a basic model of a lower leg using OpenSim Creator:
+In this tutorial, we will be making a model of a lower leg using OpenSim Creator:
 
-.. figure:: _static/make-a-lower-leg/after-adding-path-wrap-to-muscle.jpeg
+.. figure:: _static/make-a-lower-leg/final-model-screenshot.jpeg
     :width: 60%
 
     The model created by this tutorial. It contains three bodies, two joints, three muscles,
@@ -73,7 +73,7 @@ Add a pelvis body. For this model, use the following parameters:
 .. figure:: _static/make-a-lower-leg/add-pelvis-body.jpeg
     :width: 60%
 
-    Create a body called ``pelvis``. The mass and intertia can be handled later.
+    Create a body called ``pelvis``. The mass and inertia can be handled later.
     ``pelvis`` should directly (no offset frames) be joined to ``ground`` with
     a ``FreeJoint`` called ``pelvis_to_ground``. Pelvis meshes are attached in
     the next step.
@@ -86,7 +86,7 @@ Attach Pelvis Meshes to the ``pelvis`` Body
 -------------------------------------------
 
 The resources zip described in :ref:`make-a-lower-leg-resources-link` contain two
-separate pelvis meshes for the left- and right-side. For this model, we are simplifiying
+separate pelvis meshes for the left- and right-side. For this model, we are simplifying
 the pelvis to a single rigid body (``pelvis``). Both meshes need to be attached to it.
 
 To attach meshes to ``pelvis``, right-click it in the ``Navigator`` panel and use
@@ -156,8 +156,8 @@ Adding a ``pelvis_frame`` is described in the following two figures:
 
     When creating the ``StationDefinedFrame``, call it ``pelvis_frame``, make ``ASIS_midpoint``
     the frame ``origin_point`` and ``point_a``, ``PSIS_midpoint`` ``point_b``, and ``ASIS_r`` ``point_c``
-    Addtionally, ensure that ``ab_axis`` is ``-x`` and ``ab_x_ac_axis`` is ``+y``. The :doc:`station-defined-frames`
-    page explains ``StationDefinedFrame``\s in more detail.
+    Additionally, ensure that ``ab_axis`` is ``-x`` and ``ab_x_ac_axis`` is ``+y``. The
+    :doc:`station-defined-frames` page explains ``StationDefinedFrame``\s in more detail.
 
 .. _reassign-pelvis-root-joint:
 
@@ -196,7 +196,7 @@ define a ``StationDefinedFrame`` on ``pelvis`` called ``hip_r_frame`` as follows
     Right-click the ``pelvis`` body and add a ``StationDefinedFrame``. Call it
     ``hip_r_frame``, make ``Acetabulum_centre`` the frame ``origin_point``,
     ``PSIS_midpoint`` ``point_a``, ``ASIS_midpoint`` ``point_b``, and ``ASIS_l``
-    ``point_c``. Addtionally, ensure that ``ab_axis`` is ``+x`` and ``ab_x_ac_axis``
+    ``point_c``. Additionally, ensure that ``ab_axis`` is ``+x`` and ``ab_x_ac_axis``
     is ``+y``.
 
 .. figure:: _static/make-a-lower-leg/after-adding-hip-sdf.jpeg
@@ -255,7 +255,7 @@ the landmarks attached to it:
     Right-click the ``femur_r`` body and add a ``StationDefinedFrame``. Call it
     ``hip_r_child_frame``, make  ``femur_r_head_centre`` the ``origin_point`` and
     ``point_b``, ``femur_r_epicondyle_centroid`` ``point_a``, and ``femur_r_epicondyle_lat``
-    ``point_c``. Addtionally, specify that ``ab_axis`` is ``+y`` and
+    ``point_c``. Additionally, specify that ``ab_axis`` is ``+y`` and
     ``ab_x_ac_axis`` is ``+x``.
 
 .. figure:: _static/make-a-lower-leg/after-adding-hip-child-sdf.jpeg
@@ -304,7 +304,7 @@ the ``femur_r_head_centre``.
     Right-click the ``femur_r`` body and add a ``StationDefinedFrame``. Call it
     ``knee_r_frame``, make the ``femur_r_epicondyle_centroid`` the frame
     ``origin_point`` and ``point_a``, ``femur_r_head_centre`` ``point_b``, and
-    ``femur_r_epicondyle_lat`` ``point_c``. Addtionally, specify that ``ab_axis``
+    ``femur_r_epicondyle_lat`` ``point_c``. Additionally, specify that ``ab_axis``
     is ``+y`` and ``ab_x_ac_axis`` is ``+x``.
 
 .. figure:: _static/make-a-lower-leg/after-femur-sdf-added.jpeg
@@ -320,7 +320,7 @@ Add a Tibia Body
 
 .. note::
     
-    To reduce repitition, we have provided ``tibia_r.vtp`` and ``tibia_r.landmarks.csv`` in an
+    To reduce repetition, we have provided ``tibia_r.vtp`` and ``tibia_r.landmarks.csv`` in an
     already-knee-joint-centered coordinate system. If they were in the same coordinate
     system as the femur and pelvis, we would similarly need to define a ``StationDefinedFrame``
     for the knee on the tibia.
@@ -472,35 +472,111 @@ The cleanup steps are described below.
 Delete Markers Used to Define Muscles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Note**: With the muscle created, you can now delete the ``Marker``\s that were used to initialize it: they
-have served their purpose. The resulting muscle isn't connected or related to the ``Marker``\s from which
-it was created.
+When we imported points (above), it included muscle attachment points. The muscles
+created from those attachment point ``Marker``\s are independent of them, so we can
+safely delete them.
+
+To delete the markers, select each of the following markers in the model and press ``Delete`` or
+``Backspace`` (you can search for them by name in the navigator panel): ``recfem_r_p1``,
+``recfem_r_p2``, ``semimem_r_p1``, ``semimem_r_p2``, ``glmed_r_p1``, ``glmed_r_p2``. 
 
 
 Rename and Define Correct Ranges for the Joint Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO
+The ``pelvis_to_ground``, ``hip_r``, and ``knee_r`` joints we added are controlled by
+coordinates, but those coordinates have generic default names like ``rx`` and ``tx``. Additionally,
+they have unrealistic ranges, which allows (e.g.) the knee to flex >360 degrees.
 
-Move Experimental Markers into ``/markerset``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To make the model's joint coordinates more realistic, rename and re-range them. This
+can be done by finding the coordinate under the applicable joint in the navigator panel,
+left-clicking it, and then editing it via the properties panel. Here are the names
+and ranges we used:
 
-TODO
+==================== ======================== =================== ===========
+Joint                Original Coordinate Name New Coordinate Name New Range
+==================== ======================== =================== ===========
+``pelvis_to_ground`` ``rx``                   ``pelvis_list``     (unchanged)
+``pelvis_to_ground`` ``ry``                   ``pelvis_rotation`` (unchanged)
+``pelvis_to_ground`` ``rz``                   ``pelvis_tilt``     (unchanged)
+``pelvis_to_ground`` ``tx``                   ``pelvis_tx``       (unchanged)
+``pelvis_to_ground`` ``ty``                   ``pelvis_ty``       (unchanged)
+``pelvis_to_ground`` ``tz``                   ``pelvis_tz``       (unchanged)
+``hip_r``            ``rx``                   ``hip_adduction_r`` -0.9 to 0.5
+``hip_r``            ``ry``                   ``hip_rotation_r``  -0.7 to 0.7
+``hip_r``            ``rz``                   ``hip_flexion_r``   -0.6 to 2.1
+``knee_r``           ``rz``                   ``knee_angle_r``     0   to 2.1
+==================== ======================== =================== ===========
+
 
 Make Mesh Paths Relative
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO: quickly explain that ``StationDefinedFrame``\s are a newer feature that require
-the latest OpenSim. Direct users to the ``Tools > WIP: Bake Station Defined Frames``
-tool to replace ``StationDefinedFrame``\s with traditional ``PhysicalOffsetFrame``\s.
+When OpenSim Creator attaches meshes to frames/bodies, it uses an absolute filepath
+(e.g. ``C:\Data\project\mesh.obj``). It does this because the model may not have an
+on-disk location during editing (e.g. it's in memory and not saved yet), or it may be
+saved somewhere else.
+
+To fix this, once you know where your model will be saved, ensure all meshes are in
+a directory next to the model file called ``Geometry``. Then you can click on each
+mesh in the model and use the properties panel to change the ``mesh_file`` property to
+just be the filename (e.g. ``C:\Data\model\Geometry\mesh.obj`` becomes ``mesh.obj``).
+OpenSim knows to check for mesh files in the ``Geometry`` subdirectory.
+
+
+Move Experimental Markers into ``/markerset``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When we imported points (above), it included experimental markers for use in IK. These
+should remain in the model, but be moved into the model's ``/markerset``, because while
+it's technically valid for them to be anywhere in the model, other tools
+in the OpenSim ecosystem (e.g. OpenSim GUI's scale tool) will only
+recognize markers that are specifically in the ``/markerset`` collection.
+
+To move a marker's data (not it's location or attachment) to ``/markerset``, right-click
+the marker and then use ``Move To > /markerset``. Perform this procedure on the following
+markers:
+
+- ``pelvis`` markers: ``T10``, ``RASI``, ``LASI``, ``SACR``
+- ``femur_r`` markers: ``RT1``, ``RT2``, ``RT3``, ``RKNE``
+- ``tibia_r`` markers: ``RANK``, ``RS1``, ``RS2``, ``RS3``
+
 
 Bake ``StationDefinedFrame``\s
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Note**: this is only necessary if your model needs to be compatible
-with OpenSim <4.6.
+.. warning::
 
-TODO: describe baking frames.
+    This is only necessary if the model needs to be compatible with
+    OpenSim <4.6, because earlier versions of OpenSim do not natively
+    support ``StationDefinedFrame`` components.
+
+    The final model download does **not** include the application of
+    this step, because ``StationDefinedFrame``\s are crucial when
+    performing non-linear scaling steps (as in :doc:`the-model-warper`).
+
+If backwards compatibility is required, then there is an experimental one-off
+operation for converting all ``StationDefinedFrame``\s in a model into traditional
+``PhysicalOffsetFrame``\s. In the main menu of the model editor, go to
+``Tools > Experimental Tools > WIP: Bake Station Defined Frames``. This should
+replace all ``StationDefinedFrame``\s in the model with an equivalent
+``PhysicalOffsetFrame``.
+
+
+Final Model
+-----------
+
+Here is a picture and of the final model with the clean-ups applied (apart from baking ``StationDefinedFrame``\s),
+it is available in the supplied resources (see :ref:`make-a-lower-leg-resources-link`) as
+``make-a-knee_final.osim``:
+
+.. figure:: _static/make-a-lower-leg/final-model-screenshot.jpeg
+    :width: 60%
+
+    The final model, with various clean-ups applied to ensure that it has
+    easy-to-understand coordinate names and good compatibility with other
+    tools in the ecosystem. Available as ``make-a-knee_final.osim`` in the
+    available resources (see: :ref:`make-a-lower-leg-resources-link`).
 
 
 Summary
