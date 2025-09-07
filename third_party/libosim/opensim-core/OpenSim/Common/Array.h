@@ -23,21 +23,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
+ * Author: Frank C. Anderson
  */
 
 #include "Assertion.h"
 #include "Exception.h"
 #include "osimCommonDLL.h"
-#include "Logger.h"
-
 #include <algorithm>
-#include <cstddef>
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
-#include <sstream>
+#include <spdlog/fmt/bundled/ostream.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -71,7 +68,7 @@ template<class T>
 class Array {
 
 public:
-    Array(Array const&) = default;;
+    Array(Array const&) = default;
     Array(Array&&) noexcept = default;
     Array& operator=(Array const&) = default;
     Array& operator=(Array&&) noexcept = default;
@@ -340,7 +337,7 @@ public:
      */
     int remove(int aIndex)
     {
-        OPENSIM_ASSERT(0 < aIndex && aIndex <= size() && "Array::remove received an out-of-bounds index");
+        OPENSIM_ASSERT(0 <= aIndex && aIndex < size() && "Array::remove received an out-of-bounds index");
         _storage.erase(_storage.begin() + aIndex);
         return size();
     }
@@ -601,5 +598,11 @@ private:
 };
 
 }; //namespace
+
+#ifndef SWIG
+// fmt library serializers for OpenSim Array objects
+template <>
+struct fmt::formatter<OpenSim::Array<double>> : ostream_formatter {};
+#endif
 
 #endif // OPENSIM_ARRAY_H_

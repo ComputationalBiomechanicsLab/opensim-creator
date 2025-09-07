@@ -25,6 +25,7 @@
 #include "Smith2018ContactMesh.h"
 
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/Model.h>
