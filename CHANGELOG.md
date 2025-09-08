@@ -6,6 +6,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+
+## [0.6.0] - 2025/09/08
+
 - The search term "OpenSim Creator" should now find OpenSim Creator in the start
   menu (previously, it was 'opensimcreator'; reported by @clairehammond; #1079).
 - The "load raw data file" button in the preview experimental data workflow was
@@ -59,7 +62,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The model warper workflow settings cog now contains a "Bake StationDefinedFrames" checkbox,
   which will "bake" any `StationDefinedFrame`s in the source model to `PhysicalOffsetFrame`s,
   so that the resultant model is compatible with OpenSim <4.6 (#1104).
-- The `attach` button in the Add body popup now only shows the name of the attached mesh, rather than the full path to it.
+- The `attach` button in the Add body popup now only shows the name of the attached mesh, rather
+  than the full path to it.
 
 ## [0.5.25] - 2025/07/14
 
