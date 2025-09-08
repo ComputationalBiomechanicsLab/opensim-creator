@@ -194,7 +194,7 @@ If you try simulating this model, you will find that it falls vertically and rem
 
 To make the simulation more interesting, we are going to angle the whole model and also change the initial joint angle of ``foot_to_knee`` to give the knee a "kink". To do this:
 
-* Angle the whole model by selecting ``ground_to_foot``'s ``rz`` coordinate (``/jointset/ground_to_foot/rz``). Use the properties panel to change the coordinate's ``default_value`` property to ``0.698``. 
+* Angle the whole model by selecting ``ground_to_foot``'s ``rz`` coordinate (``/jointset/ground_to_foot/rz``). Use the properties panel to change the coordinate's ``default_value`` property to ``0.698``.
 * Give the knee a "kink" by selecting ``foot_to_knee``'s ``rz`` coordinate (``/jointset/foot_to_knee/rz``). Use the properties panel to change the coordinate's ``default_value`` property to ``-1.396``.
 
 These steps should put the model into a more interesting arrangement:
@@ -237,7 +237,7 @@ If you simulate the model after adding the spring, you should see that the model
 Constrain ``foot`` and ``head`` to stay along Y
 -----------------------------------------------
 
-The model is now *logically* complete--in the sense that it contains all of the mechanical components we want--but it isn't particularly *stable*. If you simulate the model, you will find that it bounces a little bit and then starts to roll around on its foot, rather than continuing to bounce up and down. 
+The model is now *logically* complete--in the sense that it contains all of the mechanical components we want--but it isn't particularly *stable*. If you simulate the model, you will find that it bounces a little bit and then starts to roll around on its foot, rather than continuing to bounce up and down.
 
 The reason this happens is because the model isn't perfectly balanced. It is slightly heavier on knee-side, which causes the whole model to start leaning and, ultimately, roll around. One way to prevent this from happening is to add **constraints** into the model that prevent it from rolling.
 

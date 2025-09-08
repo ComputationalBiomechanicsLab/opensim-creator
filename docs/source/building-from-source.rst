@@ -5,7 +5,7 @@ Building From Source
 ====================
 
 .. note::
-    
+
     The build instructions here are for general users who just want to build OSC.
 
     Because everyone's C++ build environment is *slightly* different, there are
@@ -90,7 +90,7 @@ Building on MacOS (Sonoma or newer)
 
 1. Get ``brew``:
     1. Go to https://brew.sh/ and follow installation instructions
-2. Get ``git``: 
+2. Get ``git``:
     1. Can be installed via ``brew``: ``brew install git``
 3. Get C++23-compatible compiler (e.g. ``clang`` via brew, or newer XCodes):
     1. OpenSim Creator is a C++23 project, so you'll have to use a more recent XCode (>=15), or

@@ -173,7 +173,7 @@ To do that, right-click the appropriate joint in the ``Navigator`` panel and use
     :width: 60%
 
     Use the ``Navigator`` panel to find and right-click ``pelvis_to_ground``, then
-    find ``child_frame`` in the ``Sockets`` menu and ``change`` it to 
+    find ``child_frame`` in the ``Sockets`` menu and ``change`` it to
     ``pelvis_frame``.
 
 .. figure:: _static/make-a-lower-leg/after-reassigning-pelvis-to-ground.jpeg
@@ -319,7 +319,7 @@ Add a Tibia Body
 ----------------
 
 .. note::
-    
+
     To reduce repetition, we have provided ``tibia_r.vtp`` and ``tibia_r.landmarks.csv`` in an
     already-knee-joint-centered coordinate system. If they were in the same coordinate
     system as the femur and pelvis, we would similarly need to define a ``StationDefinedFrame``
@@ -478,7 +478,7 @@ safely delete them.
 
 To delete the markers, select each of the following markers in the model and press ``Delete`` or
 ``Backspace`` (you can search for them by name in the navigator panel): ``recfem_r_p1``,
-``recfem_r_p2``, ``semimem_r_p1``, ``semimem_r_p2``, ``glmed_r_p1``, ``glmed_r_p2``. 
+``recfem_r_p2``, ``semimem_r_p1``, ``semimem_r_p2``, ``glmed_r_p1``, ``glmed_r_p2``.
 
 
 Rename and Define Correct Ranges for the Joint Coordinates

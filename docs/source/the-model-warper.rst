@@ -47,7 +47,7 @@ Prerequisites
   recommended that you have already gone through :doc:`the-mesh-warper`, which outlines
   pairing landmarks between two corresponding meshes as inputs for the TPS technique.
 
-* **Familiarity with StationDefinedFrames**. The walkthrough in this tutorial uses 
+* **Familiarity with StationDefinedFrames**. The walkthrough in this tutorial uses
   a model that contains ``StationDefinedFrame``\s so that non-linear TPS scaling steps
   correctly recompute the model's joint frames. The :doc:`station-defined-frames`
   documentation outlines what ``StationDefinedFrame``\s are and how to add them to
@@ -300,7 +300,7 @@ the appropriate values. This time, from :numref:`stations-to-warp-for-knee-defin
    * - ``stations``
      - ``/bodyset/femur_r/femur_r_epicondyle_centroid``, ``/bodyset/femur_r/femur_r_epicondyle_lat``, ``/bodyset/femur_r/femur_r_epicondyle_med``, ``/bodyset/femur_r/femur_r_head_center``, ``/markerset/RT1``, ``/markerset/RT2``, ``/markerset/RT3``, and ``/markerset/RKNE``
      - Path within the OpenSim model to the ``Station``\s that should be warped by this scaling step.
-     
+
 After warping the stations, the femur should now be correctly joined to the pelvis and knee, but
 some further adjustments are still necessary:
 
@@ -372,7 +372,7 @@ will be manually scaled with a scale factor. This is equivalent to the scaling t
 available in OpenSim.
 
 .. note::
-  
+
   The scale factors used in this section were approximated using the scale and inverse
   kinematics tools in OpenSim on experimental marker data collected from the subject. This
   is a common way to scale models in OpenSim. However, we have omitted scaling ``femur_r``
@@ -410,7 +410,7 @@ Scale Wrap Cylinder
 ^^^^^^^^^^^^^^^^^^^
 
 .. error::
-  
+
   TODO: there are appropriate wrap-cylinder-scaling steps available but the markers that
   were supplied don't include a knee surface marker and it might be better to supply a
   "manually scale wrap objects" scaling step to match the previous manual scaling step -

@@ -61,7 +61,7 @@ To add the various bodies + joints into the model, you will need to complete the
 Create the body of the top pendulum
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Add a body into the scene. 
+* Add a body into the scene.
 * Name it ``pendulum_head``.
 * Translate it to where the top pendulum head should be (recommended: ``(0.0, 0.5, 0.0)``).
 

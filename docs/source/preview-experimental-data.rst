@@ -402,7 +402,7 @@ we are trying to encourage are:
   through the file - they don't bite, much 🧛.
 
 If you follow those steps, we believe you'll find it easier to integrate
-experimental data with OpenSim models. 
+experimental data with OpenSim models.
 
 
 (Optional) Extra Exercises

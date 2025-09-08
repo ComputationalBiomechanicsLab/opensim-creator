@@ -69,7 +69,7 @@ The next step is to place bodies in the model. As described previous tutorials, 
 To keep things short, we will initially only assign bodies to the model's index finger. To do that:
 
 * For each of the four bone meshes in the index finger (``arm_r_2distph``, ``arm_r_2midph``, ``arm_r_2proxph``, and ``arm_r_2mc``):
-  
+
   * Right-click the mesh then navigate to ``Add > Body`` and click ``At Bounds Center`` to add a mesh at the center of the mesh's bounds. Alternatively, hover the mesh and press the ``B`` (add body) hotkey, which places a body where the mouse is currently hovered.
   * Right-click the added body, rename it to the mesh name followed by ``_b`` (to indicate body). E.g. ``arm_r_2distph_b``
 

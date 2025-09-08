@@ -31,7 +31,7 @@ or user-defined (e.g. ``PhysicalOffsetFrame``). User-defined ``Frame`` s are the
 way that modellers define spatial relationships in an OpenSim model.
 
 .. admonition:: ``PhysicalOffsetFrame`` Example
-    
+
     An OpenSim model might contain a ``PinJoint`` definition that attaches to
     a ``PhysicalOffsetFrame`` in order to customize the joint center. The offset frame's
     osim XML may look something like this:
