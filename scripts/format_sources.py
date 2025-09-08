@@ -13,8 +13,8 @@ import argparse
 import os
 import re
 
-_blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows', '__pycache__'}
-_default_directories = ['hellooscar', 'libopensimcreator', 'liboscar', 'liboscar-demos', 'osc', 'scripts']
+_blacklisted_directories = {'resources', 'MacOS', 'Debian', 'Windows', '__pycache__', '_static'}
+_default_directories = ['hellooscar', 'libopensimcreator', 'liboscar', 'liboscar-demos', 'osc', 'scripts', 'docs/source']
 
 def num_leading_tabs(s):
     rv = 0
