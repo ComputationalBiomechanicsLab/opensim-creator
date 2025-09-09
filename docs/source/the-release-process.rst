@@ -36,7 +36,7 @@ Creator, it's usually copied into a GitHub issue:
           roughly matches something release-ey).
     - [ ] Rebase any currently-active feature branches onto the release commit (discourage stale branches)
     - [ ] Download release artifacts from the tagged commit CI build
-      - [ ] Also, create a source tarball with `git archive --format=tar.xz --prefix=opensimcreator-${VERSION}/ -o opensimcreator-${VERSION}-src.tar.xz $VERSION`
+      - [ ] Also, create a source tarball with `git archive --format=tar.xz --prefix=opensimcreator-${VERSION}/ -o opensimcreator-${VERSION}-src.tar.xz $VERSION` (or, on MacOS: git archive --format=tar --prefix=opensimcreator-${VERSION}/ $VERSION | xz > opensimcreator-${VERSION}-src.tar.xz)
       - [ ] You might need to configure `.tar.xz` support with `git config tar.tar.xz.command "xz -c"`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
