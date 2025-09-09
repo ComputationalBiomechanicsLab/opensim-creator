@@ -6,6 +6,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The MacOS DMG installers should now be signed and notarized by Adam Kewley, which should make
+  installing OpenSim Creator considerably easier on MacOS (#1106).
 
 ## [0.6.0] - 2025/09/08
 

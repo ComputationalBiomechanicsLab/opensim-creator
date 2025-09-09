@@ -1,7 +1,7 @@
 # a filesystem path relative to this configuration file to the root
 # of OpenSim Creator's runtime resources directory (i.e. where it
 # loads its fonts, shaders, example models, etc. from)
-resources = "resources"
+resources = "@OSC_CONFIG_RESOURCES_DIR@"
 
 # change this if you need OSC to print more information to the log
 # log_level = "trace"  # trace < debug < info < warn < err < critical
@@ -17,4 +17,4 @@ resources = "resources"
 #
 # # tells the OpenSim model editor interface to enable/disable auto-reloading osim
 # # files if the associated .osim file changes (#1000)
-# monitor_osim_changes = true
+# monitor_osim_changes = false

@@ -30,11 +30,12 @@ Installing on MacOS (Sonoma 14.5 or newer)
 
 .. warning::
 
-  OpenSim Creator's build process does not sign (notarize) its binaries, because
-  we'd have to organize and pay a subscription for that service.
+  **>= v0.6.0**: OpenSim Creator now codesigns and notarizes its binaries, so
+  installation should be as easy as dragging and dropping the application.
 
-  For you, this means that OpenSim Creator requires extra steps that depend on
-  your version of MacOS (Apple changes the procedure regularly - $$$).
+  **< 0.6.0**, OpenSim Creator's build process did not sign (notarize) its
+  binaries, because it requires organizing and paying for an Apple Developer
+  account. Unsigned binaries can require additional installation steps:
 
   **On Sequoia**: open a terminal and run ``xattr -cr /path/to/opensimcreator.dmg`` to
   clear any quarantine flags that MacOS added when the dmg was downloaded. Mount the

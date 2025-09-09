@@ -1,0 +1,35 @@
+# Send the DMG off for notarization by Apple
+execute_process(
+        COMMAND xcrun
+        notarytool
+        submit "${CPACK_PACKAGE_FILES}"
+        --apple-id "@OSC_NOTARIZATION_APPLE_ID@"
+        --team-id "@OSC_NOTARIZATION_TEAM_ID@"
+        --password "@OSC_NOTARIZATION_PASSWORD@"
+        --wait
+        RESULT_VARIABLE res
+        COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "`xcrun notarytool` failed!")
+endif()
+
+# If notarization succeeded, staple the DMG with the signature
+execute_process(
+        COMMAND xcrun stapler staple "${CPACK_PACKAGE_FILES}"
+        RESULT_VARIABLE res
+        COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "`xcrun stapler staple` failed!")
+endif()
+
+# Validate that the DMG is notarized
+execute_process(
+        COMMAND xcrun stapler validate "${CPACK_PACKAGE_FILES}"
+        RESULT_VARIABLE res
+        COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "`xcrun stapler validate` failed! You can use `xcrun notarytool log` to investigate")
+endif()

@@ -471,6 +471,13 @@ namespace
         return rv;
     }
 
+    std::filesystem::path get_current_resources_path_and_log_it(const AppSettings& settings)
+    {
+        auto rv = get_resource_dir_from_settings(settings);
+        log_info("resource directory: %s", rv.string().c_str());
+        return rv;
+    }
+
     // computes the user's data directory and also logs it to the console for user-facing feedback
     std::filesystem::path get_current_user_dir_and_log_it(
         std::string_view organization_name,
@@ -1619,7 +1626,7 @@ private:
 
     // initialization-time resources dir (so that it doesn't have to be fetched
     // from the settings over-and-over)
-    std::filesystem::path resources_dir_ = get_resource_dir_from_settings(config_);
+    std::filesystem::path resources_dir_ = get_current_resources_path_and_log_it(config_);
 
     // path to the directory that the application's executable is contained within
     std::filesystem::path executable_dir_ = get_current_exe_dir_and_log_it();

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>osc</string>
+
+  <key>CFBundleDisplayName</key>
+  <string>OpenSim Creator (osc)</string>
+
+  <key>CFBundleIdentifier</key>
+  <string>com.opensimcreator.gui</string>
+
+  <!-- version/build number: should be unique and monotonically increase -->
+  <key>CFBundleVersion</key>
+  <string>@PROJECT_VERSION@</string>
+
+  <!-- What the user sees: can be duplicated -->
+  <key>CFBundleShortVersionString</key>
+  <string>@PROJECT_VERSION@</string>
+
+  <key>CFBundleExecutable</key>
+  <string>osc</string>
+
+  <key>CFBundleIconFile</key>
+  <string>osc</string>
+
+  <!-- liboscar natively supports HighDPI -->
+  <key>NSHighResolutionCapable</key>
+  <true/>
+
+  <!-- Rarely changes -->
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <!-- Rarely changes -->
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <!-- Rarely changes -->
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.utilities</string>
+</dict>
+</plist>

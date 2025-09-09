@@ -113,32 +113,18 @@ R"(# configuration options
     std::optional<std::filesystem::path>  try_get_system_config_path(
         std::string_view application_config_file_name)
     {
-        // copied from the legacy `AppConfig` implementation for backwards
-        // compatibility with existing settings files
-
-        std::filesystem::path p = current_executable_directory();
-        bool exists = false;
-
-        while (p.has_filename()) {
-            const std::filesystem::path maybe_config = p / application_config_file_name;
-            if (std::filesystem::exists(maybe_config)) {
-                p = maybe_config;
-                exists = true;
-                break;
+        for (std::filesystem::path p = current_executable_directory(); p != p.root_path(); p = p.parent_path()) {
+            if (auto dir_path = p / application_config_file_name; std::filesystem::exists(dir_path)) {
+                return dir_path;  // e.g. `C:/Program Files/App/config.toml`
             }
-
-            // HACK: there is a file at "MacOS/$configName", which is where the settings
-            // is relative to `current_executable_directory`.
-            const std::filesystem::path maybe_macos_config = p / "MacOS" / application_config_file_name;
-            if (std::filesystem::exists(maybe_macos_config)) {
-                p = maybe_macos_config;
-                exists = true;
-                break;
+            else if (auto resources_path_capped = p / "Resources" / application_config_file_name; std::filesystem::exists(resources_path_capped)) {
+                return resources_path_capped;  // e.g. `/Applications/App.app/Resources/config.toml`
             }
-            p = p.parent_path();
+            else if (auto resources_path = p / "resources" / application_config_file_name; std::filesystem::exists(resources_path)) {
+                return resources_path;  // e.g. `/opt/app/resources/config.toml`
+            }
         }
-
-        return exists ? p : std::optional<std::filesystem::path>{};
+        return std::nullopt;
     }
 
     // if available, returns the path to the user-level configuration file

@@ -1,0 +1,22 @@
+execute_process(
+        COMMAND codesign
+        --force
+        --deep
+        --verbose
+        --options runtime
+        --sign "@OSC_CODESIGN_DEVELOPER_ID@"
+        "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/osc.app"
+        RESULT_VARIABLE res
+        COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "codesign failed!")
+endif()
+execute_process(
+    COMMAND codesign --verify --verbose=4 "${CPACK_TEMPORARY_INSTALL_DIRECTORY}/osc.app"
+    RESULT_VARIABLE res
+    COMMAND_ECHO STDERR
+)
+if(NOT res EQUAL 0)
+    message(FATAL_ERROR "codesign --verify failed!")
+endif()

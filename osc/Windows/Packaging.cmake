@@ -23,11 +23,21 @@ install(
 #
 #     - in contrast to the dev-centric one, this loads resources from the installation dir,
 #       which has a known path relative to the osc executable (../resources)
-install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/osc_installed_config.toml.in"
-    RENAME "osc.toml"
-    DESTINATION "."
-)
+if(TRUE)
+    set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
+        @ONLY
+    )
+    unset(OSC_CONFIG_RESOURCES_DIR)
+
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
+        RENAME "osc.toml"
+        DESTINATION "."
+    )
+endif()
 
 # install the runtime `resources/` (assets) dir
 install(

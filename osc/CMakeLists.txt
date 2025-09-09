@@ -186,7 +186,15 @@ include(${OSC_PACKAGING_DIR}/Packaging.cmake)
 #
 #     - this config is switched out at install-time to a configuration that loads
 #       resources from the (copied) resource directory
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/osc_dev_config.toml.in" "${CMAKE_BINARY_DIR}/osc.toml")
+if(TRUE)
+    set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_BINARY_DIR}/osc.toml"  # CARE: this MUST be CMAKE_BINARY_DIR: multiple executables depend on it
+        @ONLY
+    )
+    unset(OSC_CONFIG_RESOURCES_DIR)
+endif()
 
 # for development on Windows, copy all runtime dlls to the exe directory
 # (because Windows doesn't have an RPATH)

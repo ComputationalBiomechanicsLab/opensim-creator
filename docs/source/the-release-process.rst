@@ -38,6 +38,9 @@ Creator, it's usually copied into a GitHub issue:
     - [ ] Download release artifacts from the tagged commit CI build
       - [ ] Also, create a source tarball with `git archive --format=tar.xz --prefix=opensimcreator-${VERSION}/ -o opensimcreator-${VERSION}-src.tar.xz $VERSION` (or, on MacOS: git archive --format=tar --prefix=opensimcreator-${VERSION}/ $VERSION | xz > opensimcreator-${VERSION}-src.tar.xz)
       - [ ] You might need to configure `.tar.xz` support with `git config tar.tar.xz.command "xz -c"`
+      - [ ] For MacOS, the release must be built on a developer's machine, and the developer should configure the build with codesigning+notarization and upload
+            the signed+notarized binaries instead. See OSC_CODESIGN_ENABLED and OSC_NOTARIZATION_ENABLED flags in the
+            MacOS packaging. Adam Kewley specifically has the CMake flags, password, keys etc. necessary to do this.
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
