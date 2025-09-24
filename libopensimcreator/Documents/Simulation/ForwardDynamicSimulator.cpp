@@ -20,7 +20,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <simmath/Integrator.h>
 #include <simmath/TimeStepper.h>
-#include <SimTKsimbody.h>
 
 #include <atomic>
 #include <chrono>
