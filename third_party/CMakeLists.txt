@@ -12,7 +12,7 @@ set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
 set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
 set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
 set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
-set(OSCDEPS_BUILD_OPENBLAS OFF CACHE BOOL "enable building OpenBLAS from source")  # default OFF because it's a big build and only necessary on Windows
+set(OSCDEPS_BUILD_OPENBLAS ${WIN32} CACHE BOOL "enable building OpenBLAS from source")
 set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
 set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
 set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
