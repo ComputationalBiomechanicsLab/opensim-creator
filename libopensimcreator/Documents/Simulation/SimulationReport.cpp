@@ -1,6 +1,6 @@
 #include "SimulationReport.h"
 
-#include <SimTKcommon.h>
+#include <SimTKcommon/internal/State.h>
 
 #include <liboscar/Utils/Algorithms.h>
 
