@@ -45,7 +45,6 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
-#include <SimTKcommon.h>
 
 #include <algorithm>
 #include <cmath>

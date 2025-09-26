@@ -59,7 +59,6 @@
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-#include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <cmath>

@@ -16,7 +16,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <SimTKcommon.h>
 
 #include <algorithm>
 #include <concepts>

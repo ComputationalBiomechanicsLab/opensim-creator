@@ -41,7 +41,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <SimTKcommon.h>
 #include <SimTKcommon/SmallMatrix.h>
 
 #include <array>

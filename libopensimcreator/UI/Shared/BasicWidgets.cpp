@@ -49,7 +49,6 @@
 #include <OpenSim/Simulation/Model/Geometry.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <SimTKcommon/basics.h>
 
 #include <algorithm>
 #include <array>
