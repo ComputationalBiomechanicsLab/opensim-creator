@@ -8,6 +8,7 @@
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ParalellizationHelpers.h>
 #include <liboscar/Utils/Perf.h>
+#include <simmath/LinearAlgebra.h>
 #include <Simbody.h>
 
 #include <ostream>

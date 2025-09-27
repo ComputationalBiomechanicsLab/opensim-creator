@@ -12,6 +12,7 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Shims/Cpp23/numeric.h>
 #include <liboscar/Utils/Assertions.h>
+#include <simmath/LinearAlgebra.h>
 #include <Simbody.h>
 
 #include <algorithm>
