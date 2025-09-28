@@ -13,7 +13,7 @@
 #include <liboscar/Shims/Cpp23/numeric.h>
 #include <liboscar/Utils/Assertions.h>
 #include <simmath/LinearAlgebra.h>
-#include <Simbody.h>
+#include <SimTKcommon/internal/VectorMath.h>
 
 #include <algorithm>
 #include <array>

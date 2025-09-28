@@ -6,7 +6,6 @@
 #include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <Simbody.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Model/Muscle.h>

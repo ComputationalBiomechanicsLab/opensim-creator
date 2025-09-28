@@ -11,7 +11,6 @@
 #include <liboscar/Utils/LifetimedPtr.h>
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <Simbody.h>
 
 #include <memory>
 #include <string_view>

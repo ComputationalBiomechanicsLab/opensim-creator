@@ -20,7 +20,6 @@
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <Simbody.h>
 
 #include <algorithm>
 #include <array>

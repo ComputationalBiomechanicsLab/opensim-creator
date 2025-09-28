@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
-#include <Simbody.h>
+#include <SimTKcommon/internal/State.h>
 
 #include <filesystem>
 

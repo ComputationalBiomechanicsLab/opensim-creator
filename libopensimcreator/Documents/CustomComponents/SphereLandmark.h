@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Simbody.h>  // TODO: OpenSim's Appearance header doesn't include simbody properly
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Station.h>
 

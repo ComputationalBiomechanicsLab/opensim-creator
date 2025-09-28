@@ -8,7 +8,7 @@
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Utils/Assertions.h>
 #include <OpenSim/Common/Storage.h>
-#include <Simbody.h>
+#include <SimTKcommon/internal/DecorativeGeometry.h>
 
 #include <span>
 #include <vector>

@@ -11,7 +11,6 @@
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <Simbody.h>
 
 #include <array>
 #include <atomic>

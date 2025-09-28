@@ -3,7 +3,6 @@
 #include <libopensimcreator/Documents/FrameDefinition/FrameDefinitionHelpers.h>
 
 #include <OpenSim/Simulation/Model/Appearance.h>
-#include <Simbody.h>
 
 using osc::fd::EdgePoints;
 

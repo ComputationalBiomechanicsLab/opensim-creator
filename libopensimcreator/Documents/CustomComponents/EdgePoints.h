@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Simbody.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 namespace osc::fd
 {

@@ -4,7 +4,6 @@
 
 #include <OpenSim/Simulation/Model/Appearance.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <Simbody.h>
 
 osc::fd::MidpointLandmark::MidpointLandmark()
 {

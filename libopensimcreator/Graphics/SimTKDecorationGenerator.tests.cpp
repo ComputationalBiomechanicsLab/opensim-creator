@@ -4,7 +4,8 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/oscar.h>
-#include <Simbody.h>
+#include <simbody/internal/MultibodySystem.h>
+#include <simbody/internal/SimbodyMatterSubsystem.h>
 
 using namespace osc;
 

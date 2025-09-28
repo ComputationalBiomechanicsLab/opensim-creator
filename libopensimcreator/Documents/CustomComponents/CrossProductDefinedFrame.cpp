@@ -9,7 +9,6 @@
 #include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/Point.h>
-#include <Simbody.h>
 
 #include <array>
 #include <optional>

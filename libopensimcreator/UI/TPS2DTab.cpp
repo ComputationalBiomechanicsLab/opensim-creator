@@ -25,7 +25,6 @@
 #include <liboscar/Utils/StdVariantHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <simmath/LinearAlgebra.h>
-#include <Simbody.h>
 
 #include <cmath>
 #include <algorithm>

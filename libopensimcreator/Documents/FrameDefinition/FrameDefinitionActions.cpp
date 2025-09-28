@@ -16,7 +16,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <Simbody.h>
 
 #include <memory>
 #include <optional>

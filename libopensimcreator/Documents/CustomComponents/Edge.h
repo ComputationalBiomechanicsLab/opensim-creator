@@ -3,7 +3,6 @@
 #include <libopensimcreator/Documents/CustomComponents/EdgePoints.h>
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <Simbody.h>
 
 #include <utility>
 

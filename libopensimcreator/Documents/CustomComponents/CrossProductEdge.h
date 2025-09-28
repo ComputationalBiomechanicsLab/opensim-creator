@@ -3,7 +3,6 @@
 #include <libopensimcreator/Documents/CustomComponents/Edge.h>
 #include <libopensimcreator/Documents/CustomComponents/EdgePoints.h>
 
-#include <Simbody.h>  // TODO: OpenSim's Appearance header doesn't include simbody properly
 #include <OpenSim/Simulation/Model/Appearance.h>
 
 #include <utility>
