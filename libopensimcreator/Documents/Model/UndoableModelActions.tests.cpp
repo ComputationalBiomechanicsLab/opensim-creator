@@ -468,8 +468,8 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
     {
         auto lst = model->getComponentList<OpenSim::StationDefinedFrame>();
         ASSERT_EQ(std::distance(lst.begin(), lst.end()), 1) << "The model should only contain one `StationDefinedFrame`";
-        auto lst2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
-        ASSERT_EQ(std::distance(lst2.begin(), lst2.end()), 0) << "The model should contain no `PhysicalOffsetFrame`s (hasn't been baked yet)";
+        auto lst_2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+        ASSERT_EQ(std::distance(lst_2.begin(), lst_2.end()), 0) << "The model should contain no `PhysicalOffsetFrame`s (hasn't been baked yet)";
     }
 
     // Bake the frames
@@ -479,8 +479,8 @@ TEST(OpenSimActions, ActionBakeStationDefinedFramesWorksInTrivialCase)
     {
         auto lst = model->getComponentList<OpenSim::StationDefinedFrame>();
         ASSERT_EQ(std::distance(lst.begin(), lst.end()), 0) << "The model shouldn't contain any `StationDefinedFrame`s (baking should delete them)";
-        auto lst2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
-        ASSERT_EQ(std::distance(lst2.begin(), lst2.end()), 1) << "The model should contain one `PhysicalOffsetFrame` (from baking)";
+        auto lst_2 = model->getComponentList<OpenSim::PhysicalOffsetFrame>();
+        ASSERT_EQ(std::distance(lst_2.begin(), lst_2.end()), 1) << "The model should contain one `PhysicalOffsetFrame` (from baking)";
     }
 
     // Ensure transform after baking is equivalent to `StationDefinedFrame`'s original transform

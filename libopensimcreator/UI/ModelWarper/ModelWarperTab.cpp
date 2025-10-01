@@ -22,7 +22,9 @@
 #include <libopensimcreator/Utils/TPS3D.h>
 
 #include <liboscar/oscar.h>
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 
 #include <algorithm>
 #include <filesystem>
