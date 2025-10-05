@@ -8,6 +8,8 @@ set(
      Simbody/OpenSim while working on OpenSim Creator"
 )
 
+find_package(mdspan REQUIRED CONFIG)
+
 if(${OSC_BUILD_OSIM_INLINED})
     add_subdirectory(
         ${PROJECT_SOURCE_DIR}/third_party/libosim
@@ -46,6 +48,7 @@ target_include_directories(OpenSimCreator PUBLIC
 target_link_libraries(OpenSimCreator PUBLIC
     oscar
     osim
+    std::mdspan
 )
 
 if(BUILD_TESTING)
