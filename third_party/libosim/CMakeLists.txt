@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(libosim VERSION 0.5.20 LANGUAGES CXX C)
 
-set(OSIM_INSTALL_OPENSIM_HEADERS OFF CACHE BOOL "enable/disable installing libosim.a with Simbody/OpenSim headers (used by OpenSim Creator)")
+option(OSIM_INSTALL_OPENSIM_HEADERS "Install libosim.a with Simbody/OpenSim headers (used by OpenSim Creator)" OFF)
 
 include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
 include(CMakePackageConfigHelpers)  # configure_package_config_file

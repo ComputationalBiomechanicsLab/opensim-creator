@@ -1,10 +1,7 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
 include(GoogleTest)  # gtest_discover_tests
 
-set(OSC_DISCOVER_TESTS ON
-    CACHE BOOL
-    "enable/disable automatically running test discovery (IDE integration)"
-)
+option(OSC_DISCOVER_TESTS "Automatically run test discovery (IDE integration)" ON)
 
 find_package(GTest REQUIRED CONFIG)
 
