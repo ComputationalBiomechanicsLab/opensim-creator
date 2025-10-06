@@ -60,10 +60,10 @@ class BuildConfiguration:
         return pprint.pformat(vars(self))
 
     def get_dependencies_build_dir(self):
-        return os.path.join(self.build_dir, "third_party-build")
+        return os.path.join(self.build_dir, f"third_party-build-{self.osc_deps_build_type}")
 
     def get_dependencies_install_dir(self):
-        return os.path.join(self.build_dir, "third_party-install")
+        return os.path.join(self.build_dir, f"third_party-install-{self.osc_deps_build_type}")
 
     def get_osc_build_dir(self):
         # note: clangd usually expects that the build directory is located at `build/`
@@ -93,7 +93,6 @@ def build_osc_dependencies(conf: BuildConfiguration):
         cache_variables = {
             'CMAKE_BUILD_TYPE': conf.get_osc_deps_build_type(),
             'CMAKE_INSTALL_PREFIX': conf.get_dependencies_install_dir(),
-            'OSCDEPS_BUILD_OPENBLAS': 'ON'
         }
         if conf.system_version:
             cache_variables['CMAKE_SYSTEM_VERSION'] = conf.system_version

@@ -67,19 +67,19 @@ python3 --version
 echo "----- building OSC's dependencies -----"
 cmake \
     -S third_party \
-    -B third_party-build \
+    -B third_party-build-${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
-    -DCMAKE_INSTALL_PREFIX=third_party-install \
+    -DCMAKE_INSTALL_PREFIX=third_party-install-${OSC_DEPS_BUILD_TYPE} \
     -DOSCDEPS_BUILD_ALWAYS=${OSC_DEPS_BUILD_ALWAYS} \
     ${OSC_CMAKE_CONFIG_EXTRA}
-cmake --build third_party-build --verbose -j${OSC_BUILD_CONCURRENCY}
+cmake --build third_party-build-${OSC_DEPS_BUILD_TYPE} --verbose -j${OSC_BUILD_CONCURRENCY}
 
 echo "----- building OSC -----"
 cmake \
     -S . \
     -B "build/" \
     -DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE} \
-    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-${OSC_DEPS_BUILD_TYPE}" \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build "build/" --verbose -j${OSC_BUILD_CONCURRENCY}
 

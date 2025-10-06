@@ -24,18 +24,18 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE-`echo ${OSC_BASE_BUILD_TYPE}`}
 # - this is a custom build for now because I can't build all dependencies
 #   with emsdk yet
 
-CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B third_party-build \
+CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B third_party-build-Debug \
     -DOSCDEPS_BUILD_SDL=OFF \
     -DOSCDEPS_BUILD_OPENSIM=OFF \
-    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install" \
-    -DCMAKE_INSTALL_LIBDIR="${PWD}/third_party-install/lib"
-emmake cmake --build third_party-build -j$(nproc) -v
+    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install-Debug" \
+    -DCMAKE_INSTALL_LIBDIR="${PWD}/third_party-install-Debug/lib"
+emmake cmake --build third_party-build-Debug -j$(nproc) -v
 
 LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B build/ \
     -DOSC_BUILD_OPENSIMCREATOR=OFF \
     -DOSC_DISCOVER_TESTS=OFF \
     -DOSC_EMSCRIPTEN=ON \
-    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-Debug" \
     -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
     -DCMAKE_BUILD_TYPE=-DCMAKE_BUILD_TYPE=${OSC_BUILD_TYPE}
 emmake cmake --build build/ --target testoscar -v -j$(nproc)

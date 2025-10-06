@@ -31,10 +31,10 @@ EOF
 # configure+build dependencies
 CCFLAGS=-fsanitize=address CXXFLAGS=-fsanitize=address cmake \
     -S third_party/ \
-    -B third_party-build \
+    -B third_party-build-RelWithDebInfo \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install"
-cmake --build third_party-build/ --verbose -j${OSC_BUILD_CONCURRENCY}
+    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install-RelWithDebInfo"
+cmake --build third_party-build-RelWithDebInfo/ --verbose -j${OSC_BUILD_CONCURRENCY}
 
 # configure+build OpenSimCreator
 # also: `-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use;-Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;"`
@@ -45,7 +45,7 @@ CCFLAGS="-fsanitize=address -fno-sanitize-recover=all" CXXFLAGS="-fsanitize=addr
     -B build/ \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DOSC_FORCE_ASSERTS_ENABLED=ON \
-    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install" \
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-RelWithDebInfo" \
     -DCMAKE_CXX_CLANG_TIDY=${CLANG_TIDY}
 cmake --build build/ --verbose -j${OSC_BUILD_CONCURRENCY}
 

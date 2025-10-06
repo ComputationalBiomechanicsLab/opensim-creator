@@ -8,15 +8,15 @@ set -xeuo pipefail
 
 cmake \
     -S third_party/ \
-    -B third_party-build \
+    -B third_party-build-RelWithDebInfo \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install"
-cmake --build third_party-build --verbose -j$(nproc)
+    -DCMAKE_INSTALL_PREFIX="${PWD}/third_party-install-RelWithDebInfo"
+cmake --build third_party-build-RelWithDebInfo --verbose -j$(nproc)
 cmake \
     -S . \
     -B build/ \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install"
+    -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-RelWithDebInfo"
 cmake --build build/ --verbose -j$(nproc)
 
 export LIBGL_ALWAYS_SOFTWARE=1

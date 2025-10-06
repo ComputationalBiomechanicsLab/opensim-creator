@@ -2,8 +2,8 @@
 build/
 docs/build
 docs/venv
-third_party-build/
-third_party-install/
+third_party-build*
+third_party-install*
 
 # build: intermediate/output files
 *.slo
@@ -40,4 +40,3 @@ out/
 
 # editor: CLion
 .idea/
-
