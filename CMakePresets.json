@@ -2,32 +2,8 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "OpenSimCreator-Debug",
-            "displayName": "OPynSim Debug",
-            "description": "Default configuration preset for IDE users",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Debug"
-            },
-            "hidden": false
-        },
-        {
-            "name": "OpenSimCreator-Release",
-            "displayName": "OPynSim Release",
-            "description": "Default configuration preset for IDE users",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Release",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Release"
-            },
-            "hidden": false
-        },
-        {
             "name": "OpenSimCreator-RelWithDebInfo",
-            "displayName": "OPynSim RelWithDebInfo",
+            "displayName": "OpenSimCreator RelWithDebInfo",
             "description": "Default configure preset for IDE users",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
@@ -38,8 +14,32 @@
             "hidden": false
         },
         {
+            "name": "OpenSimCreator-Release",
+            "displayName": "OpenSimCreator Release",
+            "description": "Default configuration preset for IDE users",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Release"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OpenSimCreator-Debug",
+            "displayName": "OpenSimCreator Debug",
+            "description": "Default configuration preset for IDE users",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Debug"
+            },
+            "hidden": false
+        },
+        {
             "name": "OpenSimCreator-MinSizeRel",
-            "displayName": "OPynSim MinSizeRel",
+            "displayName": "OpenSimCreator MinSizeRel",
             "description": "Default configure preset for IDE users",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/MinSizeRel",
@@ -52,16 +52,16 @@
     ],
     "buildPresets": [
         {
-            "name": "OpenSimCreator-Debug",
-            "configurePreset": "OpenSimCreator-Debug"
+            "name": "OpenSimCreator-RelWithDebInfo",
+            "configurePreset": "OpenSimCreator-RelWithDebInfo"
         },
         {
             "name": "OpenSimCreator-Release",
             "configurePreset": "OpenSimCreator-Release"
         },
         {
-            "name": "OpenSimCreator-RelWithDebInfo",
-            "configurePreset": "OpenSimCreator-RelWithDebInfo"
+            "name": "OpenSimCreator-Debug",
+            "configurePreset": "OpenSimCreator-Debug"
         },
         {
             "name": "OpenSimCreator-MinSizeRel",
