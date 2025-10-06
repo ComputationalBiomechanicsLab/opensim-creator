@@ -3,7 +3,7 @@
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <ranges>
+#include <iterator>
 #include <utility>
 
 namespace osc
