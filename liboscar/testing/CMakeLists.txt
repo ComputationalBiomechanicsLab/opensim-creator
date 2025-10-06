@@ -9,26 +9,16 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/testoscarconfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/testing/testoscarconfig.h"
 )
-file(GLOB_RECURSE OSC_OSCAR_TEST_SOURCES
-    LIST_DIRECTORIES FALSE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp"
-)
+file(GLOB_RECURSE OSC_OSCAR_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
 
 add_executable(testoscar
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/liboscar/testing/testoscarconfig.h"
     ${OSC_OSCAR_TEST_SOURCES}
     TestingHelpers.cpp
     TestingHelpers.h
 )
-set_target_properties(testoscar PROPERTIES
-    CXX_EXTENSIONS OFF
-)
-target_compile_features(testoscar PUBLIC
-    cxx_std_23
-)
-target_compile_options(testoscar PRIVATE
-    ${OSC_STRICT_COMPILER_OPTIONS}
-)
+set_target_properties(testoscar PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(testoscar PUBLIC cxx_std_23)
+target_compile_options(testoscar PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_include_directories(testoscar PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated"  # so that `#include <liboscar/testing/testoscarconfig.h>` works
 )

@@ -5,22 +5,11 @@ option(OSC_DISCOVER_TESTS "Automatically run test discovery (IDE integration)" O
 
 find_package(GTest REQUIRED CONFIG)
 
-file(GLOB_RECURSE OSC_OSCAR_DEMO_TEST_SOURCES
-    LIST_DIRECTORIES FALSE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp"
-)
-add_executable(testoscar_demos
-    ${OSC_OSCAR_DEMO_TEST_SOURCES}
-)
-set_target_properties(testoscar_demos PROPERTIES
-    CXX_EXTENSIONS OFF
-)
-target_compile_features(testoscar_demos PUBLIC
-    cxx_std_23
-)
-target_compile_options(testoscar_demos PRIVATE
-    ${OSC_STRICT_COMPILER_OPTIONS}
-)
+file(GLOB_RECURSE OSC_OSCAR_DEMO_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
+add_executable(testoscar_demos ${OSC_OSCAR_DEMO_TEST_SOURCES})
+set_target_properties(testoscar_demos PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(testoscar_demos PUBLIC cxx_std_23)
+target_compile_options(testoscar_demos PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_include_directories(testoscar_demos PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <testoscar_demos/HEADER.h>` works
 )

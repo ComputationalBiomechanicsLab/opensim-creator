@@ -9,26 +9,15 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/TestOpenSimCreatorConfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/libopensimcreator/testing/TestOpenSimCreatorConfig.h"
 )
-file(GLOB_RECURSE OSC_OPENSIMCREATOR_TEST_SOURCES
-    LIST_DIRECTORIES FALSE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp"
-)
+file(GLOB_RECURSE OSC_OPENSIMCREATOR_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/../*.tests.cpp")
 add_executable(TestOpenSimCreator
-
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/libopensimcreator/testing/TestOpenSimCreatorConfig.h"
     ${OSC_OPENSIMCREATOR_TEST_SOURCES}
     TestDocumentationModels.cpp
     TestOpenSimLibraryAPI.cpp
 )
-set_target_properties(TestOpenSimCreator PROPERTIES
-    CXX_EXTENSIONS OFF
-)
-target_compile_features(TestOpenSimCreator PUBLIC
-    cxx_std_23
-)
-target_compile_options(TestOpenSimCreator PRIVATE
-    ${OSC_STRICT_COMPILER_OPTIONS}
-)
+set_target_properties(TestOpenSimCreator PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(TestOpenSimCreator PUBLIC cxx_std_23)
+target_compile_options(TestOpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_include_directories(TestOpenSimCreator PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>` works
 )
