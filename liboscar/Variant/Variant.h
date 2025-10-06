@@ -19,6 +19,8 @@ namespace osc
     class Variant final {
     public:
         Variant();
+        Variant(const Variant&);
+        Variant(Variant&&) noexcept;
         Variant(bool);
         Variant(Color);
         Variant(float);
@@ -31,6 +33,11 @@ namespace osc
         Variant(const StringName&);
         Variant(Vector2);
         Variant(Vector3);
+
+        ~Variant() noexcept;
+
+        Variant& operator=(const Variant&);
+        Variant& operator=(Variant&&) noexcept;
 
         VariantType type() const;
 
@@ -45,11 +52,7 @@ namespace osc
         operator Vector3() const;
 
         friend bool operator==(const Variant&, const Variant&);
-
-        friend void swap(Variant& a, Variant& b) noexcept
-        {
-            std::swap(a.data_, b.data_);
-        }
+        friend void swap(Variant&, Variant&) noexcept;
 
     private:
         friend struct std::hash<Variant>;
@@ -68,6 +71,7 @@ namespace osc
     };
 
     bool operator==(const Variant&, const Variant&);
+    void swap(Variant&, Variant&) noexcept;
     std::ostream& operator<<(std::ostream&, const Variant&);
 }
 

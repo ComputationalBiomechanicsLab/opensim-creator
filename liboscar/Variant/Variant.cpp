@@ -68,6 +68,8 @@ osc::Variant::Variant() : data_{std::monostate{}}
 {
     static_assert(std::variant_size_v<decltype(data_)> == num_options<VariantType>());
 }
+osc::Variant::Variant(const Variant&) = default;
+osc::Variant::Variant(Variant&&) noexcept = default;
 osc::Variant::Variant(bool v) : data_{v} {}
 osc::Variant::Variant(Color v) : data_{v} {}
 osc::Variant::Variant(float v) : data_{v} {}
@@ -77,6 +79,11 @@ osc::Variant::Variant(std::string_view v) : data_{std::string{v}} {}
 osc::Variant::Variant(const StringName& v) : data_{v} {}
 osc::Variant::Variant(Vector2 v) : data_{v} {}
 osc::Variant::Variant(Vector3 v) : data_{v} {}
+
+osc::Variant::~Variant() noexcept = default;
+
+Variant& osc::Variant::operator=(const Variant&) = default;
+Variant& osc::Variant::operator=(Variant&&) noexcept = default;
 
 VariantType osc::Variant::type() const
 {
@@ -227,6 +234,11 @@ bool osc::operator==(const Variant& lhs, const Variant& rhs)
     }
 
     return false;  // different type and non-interconvertible
+}
+
+void osc::swap(Variant& a, Variant& b) noexcept
+{
+    std::swap(a.data_, b.data_);
 }
 
 std::ostream& osc::operator<<(std::ostream& out, const Variant& variant)
