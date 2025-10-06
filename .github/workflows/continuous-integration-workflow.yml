@@ -11,7 +11,6 @@ jobs:
     name: Windows (amd64)
     runs-on: windows-2022
     steps:
-
     - uses: actions/checkout@v4
 
     - name: build
@@ -27,7 +26,6 @@ jobs:
     name: MacOS (amd64)
     runs-on: macos-14
     steps:
-
     - uses: actions/checkout@v4
 
     - name: run build script

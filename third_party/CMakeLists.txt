@@ -5,19 +5,19 @@ include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
 find_package(Git REQUIRED)  # GIT_EXECUTABLE
 
-set(OSCDEPS_BUILD_GLAD ON CACHE BOOL "enable building glad from source")
-set(OSCDEPS_BUILD_GOOGLETEST ON CACHE BOOL "enable building googletest from source")
-set(OSCDEPS_BUILD_IMGUI ON CACHE BOOL "enable building imgui from source")
-set(OSCDEPS_BUILD_IMPLOT ON CACHE BOOL "enable building implot from source")
-set(OSCDEPS_BUILD_LIBOSIM ON CACHE BOOL "enable building libosim from source")
-set(OSCDEPS_BUILD_LUNASVG ON CACHE BOOL "enable building lunasvg from source")
-set(OSCDEPS_BUILD_MDSPAN ON CACHE BOOL "enable building mdspan shim")
-set(OSCDEPS_BUILD_OPENBLAS ${WIN32} CACHE BOOL "enable building OpenBLAS from source")
-set(OSCDEPS_BUILD_SDL ON CACHE BOOL "enable building SDL from source")
-set(OSCDEPS_BUILD_SPDLOG ON CACHE BOOL "enable building spdlog from source")
-set(OSCDEPS_BUILD_STB ON CACHE BOOL "enable building stb (headers)")
-set(OSCDEPS_BUILD_TOMLPLUSPLUS ON CACHE BOOL "enable building tomlplusplus from source")
-set(OSCDEPS_BUILD_UNORDERED_DENSE ON CACHE BOOL "enable building unordered-dense from source")
+option(OSCDEPS_BUILD_GLAD            "Build glad"            ON)
+option(OSCDEPS_BUILD_GOOGLETEST      "Build googletest"      ON)
+option(OSCDEPS_BUILD_IMGUI           "Build imgui"           ON)
+option(OSCDEPS_BUILD_IMPLOT          "Build implot"          ON)
+option(OSCDEPS_BUILD_LIBOSIM         "Build libosim"         ON)
+option(OSCDEPS_BUILD_LUNASVG         "Build lunasvg"         ON)
+option(OSCDEPS_BUILD_MDSPAN          "Build mdspan"          ON)
+option(OSCDEPS_BUILD_OPENBLAS        "Build OpenBLAS"        ${WIN32})  # MacOS/Linux systems can provide it
+option(OSCDEPS_BUILD_SDL             "Build SDL"             ON)
+option(OSCDEPS_BUILD_SPDLOG          "Build spdlog"          ON)
+option(OSCDEPS_BUILD_STB             "Build stb"             ON)
+option(OSCDEPS_BUILD_TOMLPLUSPLUS    "Build tomlplusplus"    ON)
+option(OSCDEPS_BUILD_UNORDERED_DENSE "Build unordered-dense" ON)
 
 # set OSCDEPS_BUILD_ALWAYS
 if(TRUE)

@@ -60,10 +60,7 @@ set(
     "the user-facing email of the author (appears in 'email support', installer, etc.)"
 )
 mark_as_advanced(OSC_AUTHOR_EMAIL)
-set(OSC_BUNDLE_OSCAR_DEMOS OFF
-    CACHE BOOL
-    "enable/disable bundling oscar demos with the `osc` application"
-)
+option(OSC_BUNDLE_OSCAR_DEMOS "enable/disable bundling oscar demos with the `osc` application" OFF)
 
 # set OSC_BUILD_ID
 if(DEFINED ENV{OSC_BUILD_ID})

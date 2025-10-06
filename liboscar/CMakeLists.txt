@@ -1,19 +1,9 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
 
-set(
-    OSC_FORCE_ASSERTS_ENABLED ON
-    CACHE BOOL
-    "force-enable/-disable OSC's runtime assertions - even if building a release build"
-)
-set(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED ON
-    CACHE BOOL
-    "enable/disable whether performance counters are collected at runtime whenever the `OSC_PERF` macro is used in the source code"
-)
-set(OSC_EMSCRIPTEN OFF
-    CACHE BOOL
-    "enable special build parameters for emscripten (emsdk) - don't try this unless you know what you're doing ;)"
-)
-mark_as_advanced(OSC_EMSCRIPTEN)
+option(OSC_FORCE_ASSERTS_ENABLED             "Enable OSC's runtime assertions - even if building a release build" ON)
+option(OSC_RUNTIME_PERF_MEASUREMENTS_ENABLED "Enable whether the `OSC_PERF` macro records performance or not"     ON)
+option(OSC_EMSCRIPTEN                        "Enable special build parameters for emscripten (emsdk)"             OFF)
+mark_as_advanced(OSC_EMSCRIPTEN)  # don't try the option this unless you know what you're doing ;)
 
 # find library packages
 if (NOT ${OSC_EMSCRIPTEN})
@@ -35,29 +25,16 @@ find_package(Threads REQUIRED)  # implicitly required by SDL3
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/oscarconfig.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/liboscar/oscarconfig.h"
+    @ONLY
 )
 
 # gather source code, exclude tests
-file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES
-    LIST_DIRECTORIES FALSE
-    "*.cpp"
-)
-list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "testing")
-list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "\.tests\.cpp")
-
-add_library(oscar STATIC
-    "${CMAKE_CURRENT_BINARY_DIR}/liboscar/oscarconfig.h"
-    ${OSC_SOURCE_AND_HEADER_FILES}
-)
-set_target_properties(oscar PROPERTIES
-    CXX_EXTENSIONS OFF
-)
-target_compile_features(oscar PUBLIC
-    cxx_std_23
-)
-target_compile_options(oscar PRIVATE
-    ${OSC_STRICT_COMPILER_OPTIONS}
-)
+file(GLOB_RECURSE OSC_SOURCE_AND_HEADER_FILES "*.cpp")
+list(FILTER OSC_SOURCE_AND_HEADER_FILES EXCLUDE REGEX "(testing|\.tests\.cpp)")
+add_library(oscar STATIC ${OSC_SOURCE_AND_HEADER_FILES})
+set_target_properties(oscar PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(oscar PUBLIC cxx_std_23)
+target_compile_options(oscar PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_include_directories(oscar PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/.."  # so that `#include <liboscar/HEADER.h>` works
     "${CMAKE_CURRENT_BINARY_DIR}/"    # so that #include <liboscar/oscarconfig.h> works
