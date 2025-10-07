@@ -1475,11 +1475,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 return false;
             }
 
-            auto& componentsProp = updProperty_components();
-            if (int idx = componentsProp.findIndex(step); idx != -1) {
-                componentsProp.removeValueAtIndex(idx);
-            }
-
+            removeComponent(&step);
             clearConnections();
             finalizeConnections(*this);
             finalizeFromProperties();
@@ -2570,7 +2566,8 @@ namespace
                         ui::draw_text(name);
                         ui::table_set_column_index(1);
                         auto valueCopy{value};
-                        if (ui::draw_double_input("##valueeditor", &valueCopy, 0.0, 0.0, "%.6f", ui::TextInputFlag::EnterReturnsTrue)) {
+                        ui::draw_double_input("##valueeditor", &valueCopy, 0.0, 0.0, "%.6f");
+                        if (ui::is_item_deactivated_after_edit()) {
                             m_State->setScalingParameterValueDeferred(name, valueCopy);
                         }
                         ui::pop_id();
