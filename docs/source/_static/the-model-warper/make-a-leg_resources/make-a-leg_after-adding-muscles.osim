@@ -253,32 +253,18 @@
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
-							<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
-							<WrapObjectSet name="wrapobjectset">
-								<objects>
-									<WrapCylinder name="knee_wrap">
-										<!--The name of quadrant over which the wrap object is active. For example, '+x' or '-y' to set the sidedness of the wrapping.-->
-										<quadrant>+x</quadrant>
-										<!--The radius of the cylinder.-->
-										<radius>0.022500000894069672</radius>
-										<!--The length of the cylinder.-->
-										<length>0.10000000149011612</length>
-									</WrapCylinder>
-								</objects>
-								<groups />
-							</WrapObjectSet>
 							<!--Path to a Component that satisfies the Socket 'point_a' of type Station (description: Point `a` of a triangle that defines the frame's orientation. Must not coincide with `point_b` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_point_a>/bodyset/femur_r/femur_r_epicondyle_centroid</socket_point_a>
 							<!--Path to a Component that satisfies the Socket 'point_b' of type Station (description: Point `b` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
-							<socket_point_b>/bodyset/femur_r/femur_r_head_center</socket_point_b>
+							<socket_point_b>/bodyset/femur_r/femur_r_epicondyle_lat</socket_point_b>
 							<!--Path to a Component that satisfies the Socket 'point_c' of type Station (description: Point `c` of a triangle that defines the frame's orientation. Must not coincide with `point_a` and `point_b`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
-							<socket_point_c>/bodyset/femur_r/femur_r_epicondyle_lat</socket_point_c>
+							<socket_point_c>/bodyset/femur_r/femur_r_head_center</socket_point_c>
 							<!--Path to a Component that satisfies the Socket 'origin_point' of type Station (description: Point that defines the frame's origin point. Also permitted to be `point_a`, `point_b`, or `point_c`. Note: `point_a`, `point_b`, `point_c`, and `frame_origin` must all share the same base frame.).-->
 							<socket_origin_point>/bodyset/femur_r/femur_r_epicondyle_centroid</socket_origin_point>
 							<!--The frame axis that points in the direction of `point_b - point_a`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_x_ac_axis`.-->
-							<ab_axis>+y</ab_axis>
+							<ab_axis>+z</ab_axis>
 							<!--The frame axis that points in the direction of `(point_b - point_a) x (point_c - point_a)`. Can be `-x`, `+x`, `-y`, `+y`, `-z`, or `+z`. Must be orthogonal to `ab_axis`.-->
-							<ab_x_ac_axis>+x</ab_x_ac_axis>
+							<ab_x_ac_axis>-x</ab_x_ac_axis>
 						</StationDefinedFrame>
 					</components>
 					<!--The geometry used to display the axes of this Frame.-->
@@ -381,28 +367,22 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="rx">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="ry">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="rz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="tx">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="ty">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="tz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 					</coordinates>
 				</FreeJoint>
@@ -414,16 +394,13 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="rx">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="ry">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="rz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 					</coordinates>
 				</BallJoint>
@@ -435,8 +412,7 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="rz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>-0.97560411691665649</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 					</coordinates>
 				</PinJoint>
@@ -601,18 +577,6 @@
 							</objects>
 							<groups />
 						</PathPointSet>
-						<!--The wrap objects that are associated with this path-->
-						<PathWrapSet>
-							<objects>
-								<PathWrap name="pathwrap">
-									<!--A WrapObject that this PathWrap interacts with.-->
-									<wrap_object>knee_wrap</wrap_object>
-									<!--The wrapping method used to solve the path around the wrap object.-->
-									<method>hybrid</method>
-								</PathWrap>
-							</objects>
-							<groups />
-						</PathWrapSet>
 					</GeometryPath>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve name="recfem_r_ActiveForceLengthCurve">

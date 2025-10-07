@@ -210,8 +210,8 @@ define a ``StationDefinedFrame`` on ``pelvis`` called ``hip_r_frame`` as follows
 Add a Femur Body
 ----------------
 
-Add a femur body with the femur mesh (``femur_r.obj``) attached to the ``hip_r_frame``
-we just defined. For this model, use the following parameters:
+Add a femur body joined to the ``hip_r_frame`` we just defined and attach the femur mesh
+(``femur_r.obj``) to it. For this model, use the following parameters:
 
 .. figure:: _static/make-a-leg/add-femur-body-to-pelvis-model.jpeg
     :width: 60%
@@ -473,8 +473,8 @@ Delete Markers Used to Define Muscles
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When we imported points (above), it included muscle attachment points. The muscles
-created from those attachment point ``Marker``\s are independent of them, so we can
-safely delete them.
+created from those attachment point markers are now independent of them, so we can
+safely delete the markers.
 
 To delete the markers, select each of the following markers in the model and press ``Delete`` or
 ``Backspace`` (you can search for them by name in the navigator panel): ``recfem_r_p1``,
@@ -514,21 +514,22 @@ Make Mesh Paths Relative
 
 When OpenSim Creator attaches meshes to frames/bodies, it uses an absolute filepath
 (e.g. ``C:\Data\project\mesh.obj``). It does this because the model may not have an
-on-disk location during editing (e.g. it's in memory and not saved yet), or it may be
-saved somewhere else.
+on-disk location during editing (e.g. it's in memory and not saved yet), or it may later
+be saved somewhere else (e.g. away from the ``Geometry/`` directory).
 
 To fix this, once you know where your model will be saved, ensure all meshes are in
 a directory next to the model file called ``Geometry``. Then you can click on each
 mesh in the model and use the properties panel to change the ``mesh_file`` property to
 just be the filename (e.g. ``C:\Data\model\Geometry\mesh.obj`` becomes ``mesh.obj``).
-OpenSim knows to check for mesh files in the ``Geometry`` subdirectory.
+OpenSim automatically searches for mesh files in an adjacent ``Geometry`` subdirectory
+when it loads an ``osim`` file.
 
 
 Move Experimental Markers into ``/markerset``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When we imported points (above), it included experimental markers for use in IK. These
-should remain in the model, but be moved into the model's ``/markerset``, because while
+should remain in the model, but be moved into the model's ``/markerset`` because, while
 it's technically valid for them to be anywhere in the model, other tools
 in the OpenSim ecosystem (e.g. OpenSim GUI's scale tool) will only
 recognize markers that are specifically in the ``/markerset`` collection.
