@@ -3,7 +3,7 @@ Make a Leg
 
 .. warning::
 
-    This tutorial is new ⭐, and uses ``StationDefinedFrame``\s, which require OpenSim >= v4.5.1.
+    This tutorial is new ⭐, and uses ``StationDefinedFrame``\s, which requires OpenSim 4.5.1 or later.
     The content of this tutorial should be valid long-term, but we are waiting for OpenSim GUI
     v4.6 to be released before we remove any "experimental" labelling. We also anticipate
     adding some handy tooling around re-socketing existing joints and defining ``StationDefinedFrame``\s.
@@ -120,7 +120,7 @@ that, we'll initially import landmarks on the ``pelvis`` body and (later) on the
 femur body. The landmarks we will use roughly correspond to those explained
 in `Grood et. al.`_; however, our knee joint definition will use the Z axis to
 define knee extension/flexion (Grood et. al. use the X axis) because OpenSim's
-``PinJoint`` always uses the Z axis for rotation.
+``PinJoint`` uses the Z axis as its default rotation axis.
 
 To import the landmarks, you can use the point importer in the model editor from
 the top menu bar, located at ``Tools > Import Points``. It will show a popup
@@ -528,10 +528,10 @@ when it loads an ``osim`` file.
 Move Experimental Markers into ``/markerset``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When we imported points (above), it included experimental markers for use in IK. These
-should remain in the model, but be moved into the model's ``/markerset`` because, while
-it's technically valid for them to be anywhere in the model, other tools
-in the OpenSim ecosystem (e.g. OpenSim GUI's scale tool) will only
+When we imported points earlier, that included experimental markers for use in inverse
+kinematics (IK). These should remain in the model, but be moved into the model's
+``/markerset`` because, while it's technically valid for them to be anywhere in the
+model, other tools in the OpenSim ecosystem (e.g. OpenSim GUI's scale tool) will only
 recognize markers that are specifically in the ``/markerset`` collection.
 
 To move a marker's data (not it's location or attachment) to ``/markerset``, right-click
@@ -541,6 +541,22 @@ markers:
 - ``pelvis`` markers: ``T10``, ``RASI``, ``LASI``, ``SACR``
 - ``femur_r`` markers: ``RT1``, ``RT2``, ``RT3``, ``RKNE``
 - ``tibia_r`` markers: ``RANK``, ``RS1``, ``RS2``, ``RS3``
+
+
+Fix Non-Cluster Markers
+^^^^^^^^^^^^^^^^^^^^^^^
+
+When using markers in OpenSim, it is important to specify which markers are permitted to move
+when OpenSim performs the marker placement step of scaling. Model designers typically allow
+cluster markers to move whereas non-cluster markers should be fixed with respect to their
+parent frame. This is controlled with the ``fixed`` option on each ``Marker`` in the model,
+which is disabled by default.
+
+In this model, the markers prefixed with ``RT*`` and ``RS*`` are cluster markers. To enable
+``fixed`` on a marker, click it and then use the ``Properties`` window to toggle it. Enable
+``fixed`` on the following markers:
+
+- ``T10``, ``RASI``, ``LASI``, ``SACR``, ``RKNE``, ``RANK``
 
 
 Bake ``StationDefinedFrame``\s
@@ -567,7 +583,7 @@ replace all ``StationDefinedFrame``\s in the model with an equivalent
 Final Model
 -----------
 
-Here is a picture and of the final model with the clean-ups applied (apart from baking ``StationDefinedFrame``\s),
+Here is a picture of the final model with the clean-ups applied (apart from baking ``StationDefinedFrame``\s),
 it is available in the supplied resources (see :ref:`make-a-leg-resources-link`) as
 ``make-a-leg_final.osim``:
 
@@ -589,7 +605,7 @@ biological model using OpenSim Creator's model editor workflow. The key points a
 - It's possible to import/export 3D point data from/to CSV files, which can be handy when using
   external scripts/tools.
 - You can use ``StationDefinedFrame``\s to define frames based on anatomical landmarks. How
-  they work is explained in more detail in :doc:`station-defined-frames`. ``StationDefinedFrame``\same
+  they work is explained in more detail in :doc:`station-defined-frames`. ``StationDefinedFrame``\s
   have the advantage that they are usable with warping algorithms that operate on points (see
   :doc:`the-mesh-warper` and :doc:`the-model-warper`).
 - There's a few ways to add muscles to a model. Muscles can be created from at least two other
