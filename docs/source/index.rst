@@ -34,7 +34,7 @@ Table of Contents
    the-mesh-warper
    preview-experimental-data
    station-defined-frames
-   make-a-lower-leg
+   make-a-leg
    the-model-warper
 
 .. toctree::

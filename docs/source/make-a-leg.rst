@@ -1,5 +1,5 @@
-Make a Lower Leg
-================
+Make a Leg
+==========
 
 .. warning::
 
@@ -8,9 +8,9 @@ Make a Lower Leg
     v4.6 to be released before we remove any "experimental" labelling. We also anticipate
     adding some handy tooling around re-socketing existing joints and defining ``StationDefinedFrame``\s.
 
-In this tutorial, we will be making a model of a lower leg using OpenSim Creator:
+In this tutorial, we will be making a model of a leg using OpenSim Creator:
 
-.. figure:: _static/make-a-lower-leg/final-model-screenshot.jpeg
+.. figure:: _static/make-a-leg/final-model-screenshot.jpeg
     :width: 60%
 
     The model created by this tutorial. It contains three bodies, two joints, three muscles,
@@ -49,13 +49,13 @@ Topics Covered by this Tutorial
 * Adding a wrap surface to the model and associating muscles to that surface.
 
 
-.. _make-a-lower-leg-resources-link:
+.. _make-a-leg-resources-link:
 
 Download Resources
 ------------------
 
 In order to follow this tutorial, you will need to download the associated
-resources (:download:`download here <_static/the-model-warper/make-a-lower-leg_resources.zip>`)
+resources (:download:`download here <_static/the-model-warper/make-a-leg_resources.zip>`)
 and unzip them on your computer.
 
 
@@ -70,7 +70,7 @@ Add a ``pelvis`` Body
 
 Add a pelvis body. For this model, use the following parameters:
 
-.. figure:: _static/make-a-lower-leg/add-pelvis-body.jpeg
+.. figure:: _static/make-a-leg/add-pelvis-body.jpeg
     :width: 60%
 
     Create a body called ``pelvis``. The mass and inertia can be handled later.
@@ -85,21 +85,21 @@ Adding bodies is explained in more detail in :ref:`add-body-with-weldjoint` and
 Attach Pelvis Meshes to the ``pelvis`` Body
 -------------------------------------------
 
-The resources zip described in :ref:`make-a-lower-leg-resources-link` contain two
+The resources zip described in :ref:`make-a-leg-resources-link` contain two
 separate pelvis meshes for the left- and right-side. For this model, we are simplifying
 the pelvis to a single rigid body (``pelvis``). Both meshes need to be attached to it.
 
 To attach meshes to ``pelvis``, right-click it in the ``Navigator`` panel and use
 the ``Add > Geometry`` context menu to attach each pelvis mesh:
 
-.. figure:: _static/make-a-lower-leg/add-geometry-to-pelvis-context-menu.jpeg
+.. figure:: _static/make-a-leg/add-geometry-to-pelvis-context-menu.jpeg
     :width: 60%
 
     Use ``pelvis``'s context menu to ``Add > Geometry`` to it, then select one
     of the pelvis meshes (``pelvis_l.obj`` or ``pelvis_r.obj``). Repeat this process
     for the other pelvis mesh.
 
-.. figure:: _static/make-a-lower-leg/after-attaching-both-pelvis-meshes-to-pelvis.jpeg
+.. figure:: _static/make-a-leg/after-attaching-both-pelvis-meshes-to-pelvis.jpeg
     :width: 60%
 
     The model after attaching both ``pelvis_l.obj`` and ``pelvis_r.obj`` to the
@@ -127,7 +127,7 @@ the top menu bar, located at ``Tools > Import Points``. It will show a popup
 that you can use to import the pelvis landmarks file (``pelvis.landmarks.csv``) as
 markers that are attached to the ``pelvis`` body:
 
-.. figure:: _static/make-a-lower-leg/import-points-dialog-for-pelvis-landmarks.jpeg
+.. figure:: _static/make-a-leg/import-points-dialog-for-pelvis-landmarks.jpeg
     :width: 60%
 
     The ``Import Points`` dialog, after selecting ``pelvis.landmarks.csv``. Make sure to
@@ -144,14 +144,14 @@ now define a ``StationDefinedFrame`` on the ``pelvis`` that describes the model'
 transform. OpenSim models tend to be oriented such that Y points up and X points forwards.
 Adding a ``pelvis_frame`` is described in the following two figures:
 
-.. figure:: _static/make-a-lower-leg/add-station-defined-frame-menu-for-pelvis.jpeg
+.. figure:: _static/make-a-leg/add-station-defined-frame-menu-for-pelvis.jpeg
     :width: 60%
 
     A ``StationDefinedFrame`` can be added as a child of ``pelvis`` by right-clicking
     the ``pelvis`` component in the ``Navigator`` panel and using the ``Add`` menu to
     add a ``StationDefinedFrame``.
 
-.. figure:: _static/make-a-lower-leg/add-pelvis-root-sdf.jpeg
+.. figure:: _static/make-a-leg/add-pelvis-root-sdf.jpeg
     :width: 60%
 
     When creating the ``StationDefinedFrame``, call it ``pelvis_frame``, make ``ASIS_midpoint``
@@ -169,14 +169,14 @@ pelvis-to-ground joint (``pelvis_to_ground``) to use ``pelvis_frame`` instead of
 To do that, right-click the appropriate joint in the ``Navigator`` panel and use the
 ``Sockets`` menu to reassign its ``child_frame``:
 
-.. figure:: _static/make-a-lower-leg/reassign-pelvis-to-ground.jpeg
+.. figure:: _static/make-a-leg/reassign-pelvis-to-ground.jpeg
     :width: 60%
 
     Use the ``Navigator`` panel to find and right-click ``pelvis_to_ground``, then
     find ``child_frame`` in the ``Sockets`` menu and ``change`` it to
     ``pelvis_frame``.
 
-.. figure:: _static/make-a-lower-leg/after-reassigning-pelvis-to-ground.jpeg
+.. figure:: _static/make-a-leg/after-reassigning-pelvis-to-ground.jpeg
     :width: 60%
 
     Reassigning the joint this way causes the pelvis to be located and oriented
@@ -190,7 +190,7 @@ The next step is to describe where the right hip joint should be placed on the
 pelvis. This process is the same as :ref:`add-pelvis-root-sdf`, but we instead
 define a ``StationDefinedFrame`` on ``pelvis`` called ``hip_r_frame`` as follows:
 
-.. figure:: _static/make-a-lower-leg/add-pelvis-sdf.jpeg
+.. figure:: _static/make-a-leg/add-pelvis-sdf.jpeg
     :width: 60%
 
     Right-click the ``pelvis`` body and add a ``StationDefinedFrame``. Call it
@@ -199,7 +199,7 @@ define a ``StationDefinedFrame`` on ``pelvis`` called ``hip_r_frame`` as follows
     ``point_c``. Additionally, ensure that ``ab_axis`` is ``+x`` and ``ab_x_ac_axis``
     is ``+y``.
 
-.. figure:: _static/make-a-lower-leg/after-adding-hip-sdf.jpeg
+.. figure:: _static/make-a-leg/after-adding-hip-sdf.jpeg
     :width: 60%
 
     The relationship between the landmarks defines the ``hip_r_frame`` (highlighted).
@@ -213,7 +213,7 @@ Add a Femur Body
 Add a femur body with the femur mesh (``femur_r.obj``) attached to the ``hip_r_frame``
 we just defined. For this model, use the following parameters:
 
-.. figure:: _static/make-a-lower-leg/add-femur-body-to-pelvis-model.jpeg
+.. figure:: _static/make-a-leg/add-femur-body-to-pelvis-model.jpeg
     :width: 60%
 
     Create a body called ``femur_r`` and join it directly (no offset frames) to
@@ -232,7 +232,7 @@ Import Femur Landmarks
 This process is exactly the same as :ref:`import-pelvis-landmarks`, but we are now
 importing ``femur_r.landmarks.csv`` and attaching them to the ``femur_r`` body:
 
-.. figure:: _static/make-a-lower-leg/import-femur-landmarks.jpeg
+.. figure:: _static/make-a-leg/import-femur-landmarks.jpeg
     :width: 60%
 
     The ``Import Points`` dialog, with ``femur_r.landmarks.csv``. Make sure to
@@ -249,7 +249,7 @@ This process is exactly the same as :ref:`add-pelvis-root-sdf`, but we are now d
 how the femur attaches to the hip by defining a frame on ``femur_r`` based on
 the landmarks attached to it:
 
-.. figure:: _static/make-a-lower-leg/add-femur-sdf-hip.jpeg
+.. figure:: _static/make-a-leg/add-femur-sdf-hip.jpeg
     :width: 60%
 
     Right-click the ``femur_r`` body and add a ``StationDefinedFrame``. Call it
@@ -258,7 +258,7 @@ the landmarks attached to it:
     ``point_c``. Additionally, specify that ``ab_axis`` is ``+y`` and
     ``ab_x_ac_axis`` is ``+x``.
 
-.. figure:: _static/make-a-lower-leg/after-adding-hip-child-sdf.jpeg
+.. figure:: _static/make-a-leg/after-adding-hip-child-sdf.jpeg
     :width: 60%
 
     The relationship between the landmarks defines the hip joint's child frame
@@ -274,14 +274,14 @@ This process is exactly the same as :ref:`reassign-pelvis-root-joint`, but we
 now make the hip joint join ``hip_r_frame`` (parent) to the ``hip_r_child_frame``
 (child) we just created:
 
-.. figure:: _static/make-a-lower-leg/change-hip-child-frame.jpeg
+.. figure:: _static/make-a-leg/change-hip-child-frame.jpeg
     :width: 60%
 
     Use the ``Navigator`` panel to find and right-click the hip joint (``jointset/hip_r``),
     then find ``child_frame`` in the ``Sockets`` menu and ``change`` it to the
     ``StationDefinedFrame`` created in the previous step (``/bodyset/femur_r/hip_r_child_frame``).
 
-.. figure:: _static/make-a-lower-leg/after-reassigning-hip-child.jpeg
+.. figure:: _static/make-a-leg/after-reassigning-hip-child.jpeg
     :width: 60%
 
     After reassigning the hip joint to the ``StationDefinedFrame``\s, the femur should
@@ -298,7 +298,7 @@ epicondyle centroid. The steps are similar to :ref:`add-sdf-hip` but, this time,
 the ``origin_point`` as the ``femur_r_epicondyle_centroid`` landmark instead of
 the ``femur_r_head_centre``.
 
-.. figure:: _static/make-a-lower-leg/add-femur-sdf.jpeg
+.. figure:: _static/make-a-leg/add-femur-sdf.jpeg
     :width: 60%
 
     Right-click the ``femur_r`` body and add a ``StationDefinedFrame``. Call it
@@ -307,7 +307,7 @@ the ``femur_r_head_centre``.
     ``femur_r_epicondyle_lat`` ``point_c``. Additionally, specify that ``ab_axis``
     is ``+y`` and ``ab_x_ac_axis`` is ``+x``.
 
-.. figure:: _static/make-a-lower-leg/after-femur-sdf-added.jpeg
+.. figure:: _static/make-a-leg/after-femur-sdf-added.jpeg
     :width: 60%
 
     The relationship between these landmarks specifies the knee's coordinate system. Once added, you
@@ -328,19 +328,19 @@ Add a Tibia Body
 Similar to :ref:`add-femur-body`, add a tibia body with the tibia mesh (``tibia_r.vtp``)
 attached to it to the model. For this model, use the following parameters:
 
-.. figure:: _static/make-a-lower-leg/add-tibia-body.jpeg
+.. figure:: _static/make-a-leg/add-tibia-body.jpeg
     :width: 60%
 
     Add the ``tibia`` body to the model with these properties. Make sure to attach the
     ``tibia_r.vtp`` mesh to the body.
 
-.. figure:: _static/make-a-lower-leg/after-add-tibia-body.jpeg
+.. figure:: _static/make-a-leg/after-add-tibia-body.jpeg
     :width: 60%
 
     To save some time, the provided tibia mesh data (``tibia_r.vtp``) is already defined
     with respect to the knee origin, which means that we do not need to define a
     ``StationDefinedFrame`` for the tibia. (available in supplied resources as
-    ``make-a-lower-leg_after-adding-bodies-and-joints.osim``).
+    ``make-a-leg_after-adding-bodies-and-joints.osim``).
 
 
 Import Tibia Landmarks
@@ -350,7 +350,7 @@ This process is exactly the same as :ref:`import-pelvis-landmarks`, but we are n
 importing ``tibia_r.landmarks.csv`` and attaching them to the ``tibia_r`` in preparation
 for using them as muscle points and markers later on:
 
-.. figure:: _static/make-a-lower-leg/import-tibia-landmarks.jpeg
+.. figure:: _static/make-a-leg/import-tibia-landmarks.jpeg
     :width: 60%
 
     The ``Import Points`` dialog, with ``tibia_r.landmarks.csv``. Make sure to
@@ -369,19 +369,19 @@ we can use to define three muscles. Right-click somewhere in the scene and use t
 (or alternatively, use the ``Add`` menu at the top) to add ``Millard2012EquilibriumMuscle``\s with
 the following names and muscle points:
 
-.. figure:: _static/make-a-lower-leg/create-glmed_r.jpeg
+.. figure:: _static/make-a-leg/create-glmed_r.jpeg
     :width: 60%
 
     Create a ``Millard2012EquilibriumMuscle`` called ``glmed_r`` with ``glmed_r_p1``
     and ``glmed_r_p2`` as path points.
 
-.. figure:: _static/make-a-lower-leg/create-semimem_r.jpeg
+.. figure:: _static/make-a-leg/create-semimem_r.jpeg
     :width: 60%
 
     Create a ``Millard2012EquilibriumMuscle`` called ``semimem_r`` with ``semimem_r_p1``
     and ``semimem_r_p2`` as path points.
 
-.. figure:: _static/make-a-lower-leg/create-recfem_r.jpeg
+.. figure:: _static/make-a-leg/create-recfem_r.jpeg
     :width: 60%
 
     Create a ``Millard2012EquilibriumMuscle`` called ``recfem_r`` with ``recfem_r_p1``
@@ -389,7 +389,7 @@ the following names and muscle points:
 
 .. _model-after-adding-muscles:
 
-.. figure:: _static/make-a-lower-leg/after-adding-muscle.jpeg
+.. figure:: _static/make-a-leg/after-adding-muscle.jpeg
     :width: 60%
 
     The model after adding the muscles and flexing by approximately 90
@@ -405,14 +405,14 @@ through the femur (:numref:`model-after-adding-muscles`)! This is because
 we haven't told OpenSim how the muscle should wrap around things. To do that,
 we need to add a wrapping cylinder that approximates the shape of the knee:
 
-.. figure:: _static/make-a-lower-leg/add-wrapcylinder-to-femur.jpeg
+.. figure:: _static/make-a-leg/add-wrapcylinder-to-femur.jpeg
     :width: 60%
 
     Right-click the ``knee_frame`` ``StationDefinedFrame`` and then ``Add > Wrap Object > WrapCylinder``
     to add a wrap cylinder to the knee. **Warning**: it will initially be very
     large (1 m radius).
 
-.. figure:: _static/make-a-lower-leg/knee-wrap-cylinder-added.jpeg
+.. figure:: _static/make-a-leg/knee-wrap-cylinder-added.jpeg
     :width: 60%
 
     Using the properties panel, rename the wrap cylinder to ``knee_wrap``, give
@@ -431,13 +431,13 @@ are associated with each muscle in the model.
 
 To create this association, you can right-click a muscle and add a path wrap:
 
-.. figure:: _static/make-a-lower-leg/add-muscle-path-wrap-for-cylinder.jpeg
+.. figure:: _static/make-a-leg/add-muscle-path-wrap-for-cylinder.jpeg
     :width: 60%
 
     Use ``recfem_r``'s context menu to ``Add`` a ``Path Wrap`` association with the
     ``knee_wrap`` ``WrapCylinder``.
 
-.. figure:: _static/make-a-lower-leg/after-adding-path-wrap-to-muscle.jpeg
+.. figure:: _static/make-a-leg/after-adding-path-wrap-to-muscle.jpeg
     :width: 60%
 
     After adding the path wrap, the muscle should now correctly wrap over the X quadrant
@@ -454,11 +454,11 @@ mean the model is production ready---for example, we still have to handle body
 masses, body centers of mass, inertia, and muscle parameters---but these initial
 components act as a suitable canvas that can be refined into the final model:
 
-.. figure:: _static/make-a-lower-leg/model-with-muscles-before-clean-ups.jpeg
+.. figure:: _static/make-a-leg/model-with-muscles-before-clean-ups.jpeg
     :width: 60%
 
     The model after adding bodies, joints, and muscle paths (available in supplied
-    resources as ``make-a-lower-leg_after-adding-muscles.osim``).
+    resources as ``make-a-leg_after-adding-muscles.osim``).
 
 
 *Optional*: Clean up the Model
@@ -567,16 +567,16 @@ Final Model
 -----------
 
 Here is a picture and of the final model with the clean-ups applied (apart from baking ``StationDefinedFrame``\s),
-it is available in the supplied resources (see :ref:`make-a-lower-leg-resources-link`) as
-``make-a-lower-leg_final.osim``:
+it is available in the supplied resources (see :ref:`make-a-leg-resources-link`) as
+``make-a-leg_final.osim``:
 
-.. figure:: _static/make-a-lower-leg/final-model-screenshot.jpeg
+.. figure:: _static/make-a-leg/final-model-screenshot.jpeg
     :width: 60%
 
     The final model, with various clean-ups applied to ensure that it has
     easy-to-understand coordinate names and good compatibility with other
-    tools in the ecosystem. Available as ``make-a-lower-leg_final.osim`` in the
-    available resources (see: :ref:`make-a-lower-leg-resources-link`).
+    tools in the ecosystem. Available as ``make-a-leg_final.osim`` in the
+    available resources (see: :ref:`make-a-leg-resources-link`).
 
 
 Summary

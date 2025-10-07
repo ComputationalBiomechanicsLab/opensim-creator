@@ -53,7 +53,7 @@ Prerequisites
   documentation outlines what ``StationDefinedFrame``\s are and how to add them to
   models.
 
-* **Familiarity with the previous tutorial**: The model created in :doc:`make-a-lower-leg`
+* **Familiarity with the previous tutorial**: The model created in :doc:`make-a-leg`
   is the source model in this one, so going through it will provide valuable context about
   the source model's design.
 
@@ -62,7 +62,7 @@ Topics Covered by this Tutorial
 -------------------------------
 
 * A technical overview of how the model warper works
-* A concrete walkthrough of warping the model from :doc:`make-a-lower-leg`
+* A concrete walkthrough of warping the model from :doc:`make-a-leg`
 * An explanation of how model warping behavior can be customized
 
 
@@ -99,7 +99,7 @@ Walkthrough
 -----------
 
 This walkthrough goes through the process of building a model warping procedure for the
-model made in :doc:`make-a-lower-leg` from scratch. The aim is to show how the model
+model made in :doc:`make-a-leg` from scratch. The aim is to show how the model
 warping workflow can be used to build a multi-step model warping pipeline containing
 non-linear scaling steps.
 
@@ -133,9 +133,9 @@ Load the Source Model
 
 .. note::
 
-  The source model for this workflow is the final (cleaned up) model made in :doc:`make-a-lower-leg`. You
+  The source model for this workflow is the final (cleaned up) model made in :doc:`make-a-leg`. You
   can access it by downloading `Walkthrough Model ZIP`_, which contains the final model built in
-  that tutorial, named ``make-a-lower-leg_final.osim``.
+  that tutorial, named ``make-a-leg_final.osim``.
 
   Briefly, if you're unfamiliar with the model:
 
@@ -147,14 +147,14 @@ Load the Source Model
     by warping their associated ``Station``\s (crucial).
 
 
-Use the ``Source Model`` entry in the model warper's toolbar to load ``make-a-lower-leg_final.osim``
+Use the ``Source Model`` entry in the model warper's toolbar to load ``make-a-leg_final.osim``
 as the source model. This should load the model and show it in the ``Source Model`` UI panel:
 
 .. _model-warper-after-loading-model:
 .. figure:: _static/the-model-warper/model-warper-after-loading-source-model.jpeg
     :width: 60%
 
-    The model warper after loading ``make-a-lower-leg_final.osim`` from `Walkthrough Model ZIP`_. For
+    The model warper after loading ``make-a-leg_final.osim`` from `Walkthrough Model ZIP`_. For
     clarity, the visual aids of the scene (grid button, top left of a visualizer panel) were
     adjusted to disable the floor and enale axis lines.
 
@@ -267,7 +267,7 @@ Add a Station Warping Step
 The next components we recommend scaling are ``Station``\s. The reason why is because, in
 this model, ``StationDefinedFrame``\s were used to define frames on the femur. So if we
 warp the stations, we also recompute the femur's joint frame definitions. See :doc:`station-defined-frames`
-for more information on ``StationDefinedFrame``\s, and :doc:`make-a-lower-leg` for more
+for more information on ``StationDefinedFrame``\s, and :doc:`make-a-leg` for more
 context about how they were added into this model.
 
 To warp the stations, add a "Apply Thin-Plate Spline (TPS) to Stations" scaling step:
@@ -498,4 +498,4 @@ Next Steps
   length, tendon slack length, and contraction velocity—which are available in OpenSim’s muscle
   components.
 
-.. _Walkthrough Model ZIP: _static/the-model-warper/make-a-lower-leg_resources.zip
+.. _Walkthrough Model ZIP: _static/the-model-warper/make-a-leg_resources.zip

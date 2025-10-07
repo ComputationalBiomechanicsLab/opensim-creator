@@ -8,6 +8,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - The MacOS DMG installers should now be signed and notarized by Adam Kewley, which should make
   installing OpenSim Creator considerably easier on MacOS (#1106).
+- The "Make a Lower Leg" tutorial was renamed to "Make a Leg" (#1108).
 
 ## [0.6.0] - 2025/09/08
 
