@@ -6,10 +6,10 @@
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/os.h>
+#include <liboscar/Platform/Strings.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/ObjectRepresentation.h>
-#include <liboscar/Strings.h>
 
 #include <algorithm>
 #include <cstddef>

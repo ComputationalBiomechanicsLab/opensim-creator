@@ -1,5 +1,10 @@
 #pragma once
 
+// Includes every other header in `liboscar`
+//
+// It's recommended that you only use this to prototype. Once something is
+// ready for production, each translation unit should only `#include` it uses.
+
 #include <liboscar/Concepts/AssociativeContainer.h>
 #include <liboscar/Concepts/AssociativeContainerKey.h>
 #include <liboscar/Concepts/BitCastable.h>
@@ -207,13 +212,13 @@
 #include <liboscar/Platform/ResourceStream.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/ScreenshotAnnotation.h>
+#include <liboscar/Platform/Strings.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WindowID.h>
 #include <liboscar/Shims/Cpp20/stop_token.h>
 #include <liboscar/Shims/Cpp20/thread.h>
 #include <liboscar/Shims/Cpp23/numeric.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Strings.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenNamedPanelEvent.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>

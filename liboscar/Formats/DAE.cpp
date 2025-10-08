@@ -10,7 +10,7 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/Strings.h>
+#include <liboscar/Platform/Strings.h>
 
 #include <array>
 #include <cstddef>

@@ -3,7 +3,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/Strings.h>
+#include <liboscar/Platform/Strings.h>
 
 #include <cstddef>
 #include <iomanip>
