@@ -1,6 +1,14 @@
 #include "LOGLHelloTriangleTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/Camera.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/Platform/ResourceLoader.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <memory>
 

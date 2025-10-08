@@ -22,7 +22,6 @@
 #include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Rect.h>
-#include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Vector2.h>

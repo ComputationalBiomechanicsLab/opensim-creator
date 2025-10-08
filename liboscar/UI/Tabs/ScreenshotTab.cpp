@@ -9,7 +9,6 @@
 #include <liboscar/Graphics/Texture2D.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Maths/CollisionTests.h>
-#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
@@ -17,10 +16,10 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/Platform/Screenshot.h>
 #include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 

@@ -28,7 +28,6 @@
 #include <cstdint>
 #include <functional>
 #include <iterator>
-#include <ranges>
 #include <span>
 #include <sstream>
 #include <utility>

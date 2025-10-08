@@ -9,7 +9,7 @@ using namespace osc;
 
 TEST(Typelist, can_be_empty)
 {
-    [[maybe_unused]] const Typelist should_compile;
+    [[maybe_unused]] constexpr Typelist should_compile;
 }
 
 TEST(Typelist, head_returns_first_element)

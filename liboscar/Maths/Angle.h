@@ -4,10 +4,10 @@
 
 #include <algorithm>
 #include <cmath>
-#include <concepts>
 #include <compare>
-#include <ostream>
+#include <concepts>
 #include <numbers>
+#include <ostream>
 #include <string_view>
 #include <type_traits>
 

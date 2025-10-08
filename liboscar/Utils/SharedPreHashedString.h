@@ -9,7 +9,6 @@
 #include <memory>
 #include <new>
 #include <ostream>
-#include <span>
 #include <string_view>
 #include <utility>
 
@@ -87,7 +86,7 @@ namespace osc
             static_assert(alignof(Metadata) >= alignof(value_type));
             static_assert(std::is_nothrow_copy_constructible_v<value_type>);
             auto* character_data_ptr = std::launder(reinterpret_cast<value_type*>(static_cast<std::byte*>(ptr_) + sizeof(Metadata)));
-            std::uninitialized_copy(str.data(), str.data() + str.size(), character_data_ptr);
+            std::uninitialized_copy_n(str.data(), str.size(), character_data_ptr);
 
             // initialize NUL terminator at `sizeof(Metadata) + str.size()`
             character_data_ptr[str.size()] = value_type{};

@@ -2,9 +2,9 @@
 
 #include <compare>
 #include <cstddef>
-#include <string>
-#include <string_view>
 #include <iosfwd>
+#include <string_view>
+#include <string>
 
 namespace osc
 {

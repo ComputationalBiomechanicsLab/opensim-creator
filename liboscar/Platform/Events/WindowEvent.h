@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/Platform/Events/WindowEventType.h>
 #include <liboscar/Platform/Events/Event.h>
+#include <liboscar/Platform/Events/WindowEventType.h>
 #include <liboscar/Platform/WindowID.h>
 
 #include <cstdint>

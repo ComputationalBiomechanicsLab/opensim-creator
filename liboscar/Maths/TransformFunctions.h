@@ -5,9 +5,9 @@
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/Functors.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Transform.h>

@@ -1,7 +1,7 @@
 #include "ExceptionHelpers.h"
 
 #include <ostream>
-#include <stdexcept>
+#include <exception>
 #include <sstream>
 #include <string>
 #include <utility>

@@ -29,8 +29,9 @@
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/UI/Events.h>
 #include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Events/OpenNamedPanelEvent.h>
+#include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/Panels/LogViewerPanel.h>
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Panels/PerfPanel.h>

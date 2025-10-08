@@ -1,6 +1,20 @@
 #include "LOGLPointShadowsTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/RenderTexture.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/MatrixFunctions.h>
+#include <liboscar/Maths/QuaternionFunctions.h>
+#include <liboscar/Maths/Transform.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Panels/PerfPanel.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <array>
 #include <chrono>

@@ -26,7 +26,7 @@ namespace osc
         // If on MacOS, a command key on the keyboard is pressed.
         // Otherwise,   a ctrl key on the keyboard is pressed.
         //
-        // The difference betweeen MacOS and the others is to normalize
+        // The difference between MacOS and the others is to normalize
         // how the modifier key is actually used on those OSes. E.g.
         // `Ctrl+V` on Windows usually has the same intent as `Command+V`
         // on MacOS. With this in mind, you should write your keybinds
@@ -36,7 +36,7 @@ namespace osc
         // If on MacOS, a ctrl key on the keyboard is pressed.
         // Otherwise,   a meta (e.g. Windows) key on the keyboard is pressed.
         //
-        // The difference betweeen MacOS and the others is to normalize
+        // The difference between MacOS and the others is to normalize
         // how a key is actually used between OSes. E.g. `Ctrl+V` on
         // Windows usually has the same intent as `Command+V` on MacOS.
         // With this in mind, you should write your keybinds as-if

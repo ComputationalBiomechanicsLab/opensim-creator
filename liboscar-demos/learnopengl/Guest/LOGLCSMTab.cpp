@@ -1,6 +1,27 @@
 #include "LOGLCSMTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/Camera.h>
+#include <liboscar/Graphics/DepthStencilRenderBufferParams.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/IcosahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusKnotGeometry.h>
+#include <liboscar/Graphics/Materials/MeshDepthWritingMaterial.h>
+#include <liboscar/Maths/AABBFunctions.h>
+#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/MatrixFunctions.h>
+#include <liboscar/Maths/QuaternionFunctions.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Panels/LogViewerPanel.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/Utils/Assertions.h>
 
 #include <array>
 #include <cstddef>

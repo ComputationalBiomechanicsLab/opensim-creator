@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/VertexAttributeDescriptor.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 
+#include <algorithm>
 #include <cstddef>
-#include <ranges>
 #include <span>
 #include <stdexcept>
 #include <vector>

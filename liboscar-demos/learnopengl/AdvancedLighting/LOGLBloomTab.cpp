@@ -1,6 +1,24 @@
 #include "LOGLBloomTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Color.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/MaterialPropertyBlock.h>
+#include <liboscar/Graphics/RenderTarget.h>
+#include <liboscar/Graphics/RenderTargetColorAttachment.h>
+#include <liboscar/Graphics/RenderTargetDepthStencilAttachment.h>
+#include <liboscar/Graphics/RenderTexture.h>
+#include <liboscar/Graphics/RenderTextureParams.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Maths/Matrix4x4.h>
+#include <liboscar/Maths/MatrixFunctions.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <array>
 #include <memory>

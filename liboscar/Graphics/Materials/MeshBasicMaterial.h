@@ -1,8 +1,8 @@
 #pragma once
 
+#include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/MaterialPropertyBlock.h>
-#include <liboscar/Graphics/Color.h>
 
 #include <optional>
 

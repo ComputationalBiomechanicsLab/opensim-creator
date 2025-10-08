@@ -1,7 +1,6 @@
 #pragma once
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneDecorationShading.h>

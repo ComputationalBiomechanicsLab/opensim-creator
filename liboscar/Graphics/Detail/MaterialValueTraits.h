@@ -16,7 +16,6 @@
 #include <liboscar/Utils/Assertions.h>
 
 #include <algorithm>
-#include <ranges>
 #include <span>
 
 namespace osc::detail

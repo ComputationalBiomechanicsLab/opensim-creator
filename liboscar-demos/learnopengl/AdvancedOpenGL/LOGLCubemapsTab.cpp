@@ -1,6 +1,19 @@
 #include "LOGLCubemapsTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Cubemap.h>
+#include <liboscar/Graphics/CubemapFace.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Texture2D.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/ResourceLoader.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/Utils/Assertions.h>
+#include <liboscar/Utils/EnumHelpers.h>
 
 #include <array>
 #include <memory>

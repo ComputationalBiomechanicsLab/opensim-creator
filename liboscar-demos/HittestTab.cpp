@@ -1,6 +1,26 @@
 #include "HittestTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/Camera.h>
+#include <liboscar/Graphics/Geometries/AABBGeometry.h>
+#include <liboscar/Graphics/Geometries/CircleGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Graphics/MeshFunctions.h>
+#include <liboscar/Maths/AABBFunctions.h>
+#include <liboscar/Maths/CollisionTests.h>
+#include <liboscar/Maths/Disc.h>
+#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/Ray.h>
+#include <liboscar/Maths/RayCollision.h>
+#include <liboscar/Maths/RectFunctions.h>
+#include <liboscar/Maths/Sphere.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <array>
 #include <cstdint>

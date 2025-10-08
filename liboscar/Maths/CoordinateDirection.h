@@ -5,8 +5,8 @@
 #include <liboscar/Maths/Vector3.h>
 
 #include <cstdint>
-#include <optional>
 #include <iosfwd>
+#include <optional>
 #include <string_view>
 #include <type_traits>
 

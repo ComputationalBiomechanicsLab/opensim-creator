@@ -21,7 +21,21 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 #include <libopensimcreator/Utils/TPS3D.h>
 
-#include <liboscar/oscar.h>
+#include <liboscar/Formats/OBJ.h>
+#include <liboscar/Maths/TransformFunctions.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/Log.h>
+#include <liboscar/UI/Events/OpenTabEvent.h>
+#include <liboscar/UI/Events/ResetUIContextEvent.h>
+#include <liboscar/UI/Panels/LogViewerPanel.h>
+#include <liboscar/UI/Panels/PanelManager.h>
+#include <liboscar/UI/Panels/PerfPanel.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/UI/Widgets/RedoButton.h>
+#include <liboscar/UI/Widgets/UndoButton.h>
+#include <liboscar/UI/Widgets/WindowMenu.h>
+#include <liboscar/Utils/Typelist.h>
+#include <liboscar/Utils/UndoRedo.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>

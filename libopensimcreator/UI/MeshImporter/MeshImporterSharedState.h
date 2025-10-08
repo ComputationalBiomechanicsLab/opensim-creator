@@ -19,8 +19,10 @@
 #include <libopensimcreator/UI/MeshImporter/MeshLoader.h>
 
 #include <liboscar/Graphics/Color.h>
-#include <liboscar/Graphics/Geometries.h>
 #include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Geometries/ConeGeometry.h>
+#include <liboscar/Graphics/Geometries/CylinderGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
@@ -43,12 +45,10 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PerfPanel.h>
 #include <liboscar/UI/Tabs/TabSaveResult.h>
 #include <liboscar/UI/Widgets/LogViewer.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/StdVariantHelpers.h>

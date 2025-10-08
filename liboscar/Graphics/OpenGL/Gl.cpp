@@ -5,8 +5,8 @@
 #include <liboscar/Utils/Assertions.h>
 
 #include <sstream>
-#include <string_view>
 #include <stdexcept>
+#include <string_view>
 #include <vector>
 
 void osc::gl::compile_from_source(const ShaderHandle& shader_handle, std::string_view shader_src)

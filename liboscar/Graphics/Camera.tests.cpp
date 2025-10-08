@@ -4,8 +4,8 @@
 #include <liboscar/Graphics/CameraProjection.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/Angle.h>
-#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/testing/TestingHelpers.h>
 

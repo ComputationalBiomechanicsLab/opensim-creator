@@ -8,14 +8,11 @@ namespace osc
     template<size_t N>
     consteval std::string_view extract_filename(const char(&p)[N])
     {
-        // note: C++20's `std::source_location` makes this _a lot_ less useful
-
-        std::string_view sv{p};
-        for (auto it = sv.rbegin(); it != sv.rend(); ++it) {
-            if (*it == '/' or *it == '\\') {
-                return std::string_view{it.base(), sv.end()};
+        for (auto i = static_cast<ptrdiff_t>(N) - 2; i > 0; --i) {
+            if (p[i] == '/' or p[i] == '\\') {
+                return std::string_view{p + i + 1, static_cast<size_t>((static_cast<ptrdiff_t>(N) - 2) - i)};
             }
         }
-        return sv;
+        return {p, N-1};  // else: no slashes, return as-is
     }
 }

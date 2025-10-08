@@ -1,10 +1,26 @@
 #include "FrustumCullingTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/IcosahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusKnotGeometry.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Graphics/Scene/SceneHelpers.h>
+#include <liboscar/Maths/AABB.h>
+#include <liboscar/Maths/AABBFunctions.h>
+#include <liboscar/Maths/CollisionTests.h>
+#include <liboscar/Maths/FrustumPlanes.h>
+#include <liboscar/Maths/RectFunctions.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
-#include <ranges>
 #include <memory>
 #include <random>
 #include <vector>

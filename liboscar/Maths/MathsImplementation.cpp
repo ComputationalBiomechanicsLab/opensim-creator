@@ -1,5 +1,30 @@
-#include <liboscar/Maths.h>
-
+#include <liboscar/Maths/AABB.h>
+#include <liboscar/Maths/AABBFunctions.h>
+#include <liboscar/Maths/AnalyticPlane.h>
+#include <liboscar/Maths/BVH.h>
+#include <liboscar/Maths/BVHCollision.h>
+#include <liboscar/Maths/BVHNode.h>
+#include <liboscar/Maths/BVHPrim.h>
+#include <liboscar/Maths/Circle.h>
+#include <liboscar/Maths/CollisionTests.h>
+#include <liboscar/Maths/CoordinateAxis.h>
+#include <liboscar/Maths/CoordinateDirection.h>
+#include <liboscar/Maths/Disc.h>
+#include <liboscar/Maths/EasingFunctions.h>
+#include <liboscar/Maths/EulerPerspectiveCamera.h>
+#include <liboscar/Maths/FrustumPlanes.h>
+#include <liboscar/Maths/LineSegment.h>
+#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/MatrixFunctions.h>
+#include <liboscar/Maths/Plane.h>
+#include <liboscar/Maths/PlaneFunctions.h>
+#include <liboscar/Maths/PolarPerspectiveCamera.h>
+#include <liboscar/Maths/Ray.h>
+#include <liboscar/Maths/RectFunctions.h>
+#include <liboscar/Maths/Tetrahedron.h>
+#include <liboscar/Maths/Triangle.h>
+#include <liboscar/Maths/TriangleFunctions.h>
+#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 
 #include <cmath>
@@ -11,12 +36,10 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <memory>
 #include <numeric>
 #include <optional>
 #include <ranges>
 #include <span>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <stack>

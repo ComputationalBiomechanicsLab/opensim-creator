@@ -22,7 +22,7 @@ TEST(UndoRedo, rollback_rolls_back_to_value_initialized_head)
 
 TEST(UndoRedo, calling_undo_when_can_undo_is_false_is_a_noop)
 {
-    // The implementation should't throw an error or segfault if downstream
+    // The implementation shouldn't throw an error or segfault if downstream
     // code calls `undo` without first checking whether `can_undo` is `true`.
     //
     // This is mostly a quality-of-life thing.

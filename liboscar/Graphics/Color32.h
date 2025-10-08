@@ -1,7 +1,7 @@
 #pragma once
 
-#include <liboscar/Graphics/Unorm8.h>
 #include <liboscar/Graphics/Rgba.h>
+#include <liboscar/Graphics/Unorm8.h>
 
 #include <bit>
 #include <concepts>

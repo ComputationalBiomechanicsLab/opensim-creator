@@ -1,6 +1,26 @@
 #include "MeshGenTestTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/DodecahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/IcosahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/LatheGeometry.h>
+#include <liboscar/Graphics/Geometries/OctahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/RingGeometry.h>
+#include <liboscar/Graphics/Geometries/TetrahedronGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusKnotGeometry.h>
+#include <liboscar/Graphics/Scene/SceneCache.h>
+#include <liboscar/Graphics/Scene/SceneDecoration.h>
+#include <liboscar/Graphics/Scene/SceneRendererParams.h>
+#include <liboscar/Maths/PolarPerspectiveCamera.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/AppSettings.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/UI/Widgets/CameraViewAxes.h>
+#include <liboscar/UI/Widgets/SceneViewer.h>
 
 #include <map>
 #include <memory>

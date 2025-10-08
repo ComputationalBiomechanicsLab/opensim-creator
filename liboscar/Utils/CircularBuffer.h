@@ -5,11 +5,11 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <new>
 #include <optional>
 #include <stdexcept>
-#include <utility>
-#include <new>
 #include <type_traits>
+#include <utility>
 
 namespace osc
 {

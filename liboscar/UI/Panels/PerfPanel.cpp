@@ -8,8 +8,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
+#include <functional>
 #include <memory>
-#include <ranges>
 #include <string_view>
 #include <vector>
 

@@ -1,10 +1,9 @@
 #include "Angle.h"
 
+#include <liboscar/Maths/Constants.h>
 #include <liboscar/Maths/MathHelpers.h>
 
 #include <gtest/gtest.h>
-
-#include <numbers>
 
 using namespace osc;
 using namespace osc::literals;

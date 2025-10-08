@@ -1,7 +1,5 @@
 #include "PlaneFunctions.h"
 
-#include <liboscar/Maths.h>
-
 #include <gtest/gtest.h>
 
 #include <array>

@@ -4,8 +4,8 @@
 
 #include <algorithm>
 #include <array>
-#include <cstddef>
 #include <concepts>
+#include <cstddef>
 #include <sstream>
 
 using namespace osc;

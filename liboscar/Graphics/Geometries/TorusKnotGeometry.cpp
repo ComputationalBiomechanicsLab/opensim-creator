@@ -3,8 +3,8 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/TrigonometricFunctions.h>
+#include <liboscar/Maths/Vector3.h>
 
 #include <cstddef>
 #include <cstdint>

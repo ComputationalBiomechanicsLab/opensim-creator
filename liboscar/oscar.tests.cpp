@@ -4,6 +4,6 @@
 
 TEST(OscarHeader, compiles)
 {
-    // quite meta, but this is just a way to ensure that `#include <liboscar.h>`
+    // quite meta, but this is just a way to ensure that `#include <oscar.h>`
     // compiles, and is handy for benchmarking how quickly it compiles
 }

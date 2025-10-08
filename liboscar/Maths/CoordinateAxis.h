@@ -1,9 +1,9 @@
 #pragma once
 
-#include <cstdint>
 #include <compare>
-#include <optional>
+#include <cstdint>
 #include <iosfwd>
+#include <optional>
 #include <stdexcept>
 #include <string_view>
 

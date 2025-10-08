@@ -1,6 +1,23 @@
 #include "LOGLSSAOTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Graphics/ColorRenderBufferFormat.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/RenderTarget.h>
+#include <liboscar/Graphics/RenderTargetColorAttachment.h>
+#include <liboscar/Graphics/RenderTargetDepthStencilAttachment.h>
+#include <liboscar/Graphics/Shader.h>
+#include <liboscar/Graphics/Texture2D.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Panels/PerfPanel.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
+#include <liboscar/Utils/ObjectRepresentation.h>
 
 #include <array>
 #include <cstddef>

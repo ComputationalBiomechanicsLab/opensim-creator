@@ -37,10 +37,8 @@
 #include <liboscar/Maths/Vector4.h>
 #include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppSettings.h>
 #include <liboscar/Platform/Cursor.h>
 #include <liboscar/Platform/CursorShape.h>
-#include <liboscar/Platform/Events.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/PhysicalKeyModifier.h>
 #include <liboscar/Platform/ResourceLoader.h>
@@ -69,6 +67,13 @@
 #define IM_VEC2_CLASS_EXTRA                                                 \
          ImVec2(const osc::Vector2& f) { x = f.x; y = f.y; }                   \
          operator osc::Vector2() const { return osc::Vector2(x,y); }
+#include <liboscar/Platform/Events/EventType.h>
+#include <liboscar/Platform/Events/KeyEvent.h>
+#include <liboscar/Platform/Events/MouseEvent.h>
+#include <liboscar/Platform/Events/MouseWheelEvent.h>
+#include <liboscar/Platform/Events/TextInputEvent.h>
+#include <liboscar/Platform/Events/WindowEvent.h>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <imgui/misc/cpp/imgui_stdlib.h>

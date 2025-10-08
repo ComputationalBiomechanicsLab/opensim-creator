@@ -9,8 +9,8 @@
 #include <liboscar/Utils/CircularBuffer.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
-#include <string>
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <utility>
 

@@ -1,6 +1,5 @@
 #include "UndoButton.h"
 
-#include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/UndoRedo.h>
 

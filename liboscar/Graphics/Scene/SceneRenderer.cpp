@@ -5,7 +5,6 @@
 #include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Graphics/Textures/ChequeredTexture.h>
-#include <liboscar/Graphics/AntiAliasingLevel.h>
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferParams.h>

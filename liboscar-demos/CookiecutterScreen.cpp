@@ -1,6 +1,10 @@
 #include "CookiecutterScreen.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/WidgetPrivate.h>
+#include <liboscar/Platform/Events/Event.h>
+#include <liboscar/Platform/Events/EventType.h>
+#include <liboscar/UI/oscimgui.h>
 
 #include <memory>
 

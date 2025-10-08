@@ -9,7 +9,6 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/FrustumPlanes.h>
-#include <liboscar/Maths/Ray.h>
 #include <liboscar/Maths/RayCollision.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
@@ -26,6 +25,7 @@ namespace osc { class SceneCache; }
 namespace osc { struct AABB; }
 namespace osc { struct LineSegment; }
 namespace osc { struct PolarPerspectiveCamera; }
+namespace osc { struct Ray; }
 namespace osc { struct Transform; }
 
 namespace osc

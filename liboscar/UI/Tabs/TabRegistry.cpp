@@ -3,8 +3,8 @@
 #include <liboscar/Utils/Algorithms.h>
 
 #include <algorithm>
+#include <functional>
 #include <memory>
-#include <ranges>
 #include <string_view>
 #include <vector>
 

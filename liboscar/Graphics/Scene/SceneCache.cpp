@@ -1,10 +1,18 @@
 #include "SceneCache.h"
 
-#include <liboscar/Graphics/Geometries.h>
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Graphics/Shader.h>
+#include <liboscar/Graphics/Geometries/AABBGeometry.h>
+#include <liboscar/Graphics/Geometries/BoxGeometry.h>
+#include <liboscar/Graphics/Geometries/CircleGeometry.h>
+#include <liboscar/Graphics/Geometries/ConeGeometry.h>
+#include <liboscar/Graphics/Geometries/CylinderGeometry.h>
+#include <liboscar/Graphics/Geometries/GridGeometry.h>
+#include <liboscar/Graphics/Geometries/PlaneGeometry.h>
+#include <liboscar/Graphics/Geometries/SphereGeometry.h>
+#include <liboscar/Graphics/Geometries/TorusGeometry.h>
 #include <liboscar/Maths/BVH.h>
 #include <liboscar/Platform/FilesystemResourceLoader.h>
 #include <liboscar/Platform/Log.h>

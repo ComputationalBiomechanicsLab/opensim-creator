@@ -1,7 +1,7 @@
 #include "MeshPhongMaterial.h"
 
-#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Utils/StringName.h>
 
 #include <string_view>

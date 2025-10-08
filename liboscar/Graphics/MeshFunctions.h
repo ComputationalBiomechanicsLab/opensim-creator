@@ -1,8 +1,8 @@
 #pragma once
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/MeshIndicesView.h>
+#include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>

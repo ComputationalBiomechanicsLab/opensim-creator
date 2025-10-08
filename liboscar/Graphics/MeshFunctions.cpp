@@ -1,8 +1,8 @@
 #include "MeshFunctions.h"
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Graphics/MeshIndicesView.h>
+#include <liboscar/Graphics/MeshTopology.h>
 #include <liboscar/Maths/GeometricFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Sphere.h>
@@ -13,9 +13,9 @@
 #include <liboscar/Maths/Vector4.h>
 #include <liboscar/Utils/Assertions.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <ranges>
 #include <vector>
 
 using namespace osc;

@@ -3,10 +3,10 @@
 #include <liboscar/Maths/Vector.h>
 #include <liboscar/Utils/Algorithms.h>
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
-#include <ranges>
 
 namespace osc
 {

@@ -5,7 +5,6 @@
 #include <liboscar/Maths/Vector2.h>
 
 #include <iosfwd>
-#include <utility>
 
 namespace osc
 {

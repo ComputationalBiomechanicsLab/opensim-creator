@@ -1,6 +1,8 @@
 #include "CustomWidgetsTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Maths/Vector2.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <memory>
 

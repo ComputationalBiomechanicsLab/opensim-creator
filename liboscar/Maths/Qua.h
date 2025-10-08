@@ -3,8 +3,8 @@
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/GeometricFunctions.h>
-#include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Matrix.h>
+#include <liboscar/Maths/TrigonometricFunctions.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/HashHelpers.h>
 

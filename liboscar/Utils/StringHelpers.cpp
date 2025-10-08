@@ -1,6 +1,5 @@
 #include "StringHelpers.h"
 
-#include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Utils/Algorithms.h>
 
 #include <algorithm>

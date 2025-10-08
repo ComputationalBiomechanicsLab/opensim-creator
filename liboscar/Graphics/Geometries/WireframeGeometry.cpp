@@ -11,7 +11,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <ranges>
 #include <unordered_set>
 #include <vector>
 

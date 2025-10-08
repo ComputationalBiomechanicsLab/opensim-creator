@@ -9,7 +9,6 @@
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/Shader.h>
 #include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/MathHelpers.h>
@@ -18,8 +17,8 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Cursor.h>
 #include <liboscar/Platform/CursorShape.h>
-#include <liboscar/Platform/Events.h>
 #include <liboscar/Platform/Events/Event.h>
+#include <liboscar/Platform/Events/KeyEvent.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 

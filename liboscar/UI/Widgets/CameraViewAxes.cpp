@@ -14,7 +14,7 @@
 
 #include <algorithm>
 #include <array>
-#include <ranges>
+#include <functional>
 
 using namespace osc;
 namespace rgs = std::ranges;

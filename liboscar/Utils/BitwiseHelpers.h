@@ -1,6 +1,5 @@
 #pragma once
 
-#include <bit>
 #include <concepts>
 
 namespace osc

@@ -1,6 +1,16 @@
 #include "LOGLGammaTab.h"
 
-#include <liboscar/oscar.h>
+#include <liboscar/Formats/Image.h>
+#include <liboscar/Graphics/Color.h>
+#include <liboscar/Graphics/Graphics.h>
+#include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Maths/Vector3.h>
+#include <liboscar/Platform/App.h>
+#include <liboscar/Platform/IResourceLoader.h>
+#include <liboscar/UI/MouseCapturingCamera.h>
+#include <liboscar/UI/oscimgui.h>
+#include <liboscar/UI/Tabs/TabPrivate.h>
 
 #include <array>
 #include <memory>

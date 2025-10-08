@@ -4,8 +4,8 @@
 #include <liboscar/UI/Tabs/TabSaveResult.h>
 #include <liboscar/Utils/UID.h>
 
-#include <memory>
 #include <future>
+#include <memory>
 
 namespace osc { class TabPrivate; }
 
