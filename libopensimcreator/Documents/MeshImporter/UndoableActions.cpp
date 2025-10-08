@@ -419,7 +419,7 @@ UID osc::mi::AddBody(
 
 UID osc::mi::AddBody(UndoableDocument& udoc)
 {
-    return AddBody(udoc, {}, MIIDs::Empty());
+    return mi::AddBody(udoc, {}, MIIDs::Empty());
 }
 
 bool osc::mi::AddStationAtLocation(
