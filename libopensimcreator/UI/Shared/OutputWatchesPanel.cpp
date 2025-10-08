@@ -8,7 +8,6 @@
 
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Simulation/Model/Model.h>
 

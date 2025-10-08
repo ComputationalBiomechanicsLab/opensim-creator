@@ -1,7 +1,5 @@
 #include "LandmarkPair3D.h"
 
-#include <liboscar/Maths/VectorFunctions.h>
-
 #include <iostream>
 
 using namespace osc;

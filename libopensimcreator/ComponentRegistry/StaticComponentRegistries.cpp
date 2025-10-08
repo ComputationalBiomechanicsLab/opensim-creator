@@ -45,9 +45,9 @@
 
 #include <algorithm>
 #include <concepts>
+#include <functional>
 #include <initializer_list>
 #include <memory>
-#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>

@@ -29,7 +29,7 @@ namespace osc
         CStringView getName() const { return name(); }
 
         template<std::convertible_to<std::string_view> StringLike>
-        void setName(StringLike&& newName) { m_Name = std::forward(newName); }
+        void setName(StringLike&& newName) { m_Name = std::forward<StringLike>(newName); }
 
         bool hasSource() const { return m_MaybeSourcePosition.has_value(); }
         bool hasDestination() const { return m_MaybeDestinationPosition.has_value(); }

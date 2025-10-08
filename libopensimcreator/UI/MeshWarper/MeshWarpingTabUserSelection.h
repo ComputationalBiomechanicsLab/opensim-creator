@@ -2,8 +2,8 @@
 
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementID.h>
 
-#include <utility>
 #include <unordered_set>
+#include <utility>
 
 namespace osc
 {

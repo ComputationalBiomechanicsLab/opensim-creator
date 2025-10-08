@@ -16,7 +16,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>
 

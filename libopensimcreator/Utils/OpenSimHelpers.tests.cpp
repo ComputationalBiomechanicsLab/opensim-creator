@@ -9,9 +9,7 @@
 #include <gtest/gtest.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Shims/Cpp23/ranges.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Model/Ground.h>

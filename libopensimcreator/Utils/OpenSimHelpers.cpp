@@ -61,8 +61,8 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 #include <SimTKcommon/SmallMatrix.h>
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <compare>
 #include <cstddef>
 #include <cstdlib>

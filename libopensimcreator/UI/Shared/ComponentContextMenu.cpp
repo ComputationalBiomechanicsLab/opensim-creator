@@ -9,9 +9,6 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 #include <libopensimcreator/UI/Events/AddMusclePlotEvent.h>
 #include <libopensimcreator/UI/ModelEditor/ReassignSocketPopup.h>
-#include <libopensimcreator/UI/ModelEditor/Select1PFPopup.h>
-#include <libopensimcreator/UI/ModelEditor/SelectComponentPopup.h>
-#include <libopensimcreator/UI/ModelEditor/SelectGeometryPopup.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ModelAddMenuItems.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -19,17 +16,13 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
-#include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/Events/OpenNamedPanelEvent.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentSocket.h>

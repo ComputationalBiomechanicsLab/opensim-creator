@@ -13,7 +13,6 @@
 #include <liboscar/UI/Widgets/UndoButton.h>
 
 #include <memory>
-#include <string>
 #include <string_view>
 #include <utility>
 

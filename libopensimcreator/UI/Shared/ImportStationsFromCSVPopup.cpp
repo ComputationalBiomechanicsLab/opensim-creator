@@ -6,8 +6,8 @@
 #include <libopensimcreator/Documents/MeshImporter/UndoableActions.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
 
-#include <liboscar/Graphics/Color.h>
 #include <liboscar/Formats/CSV.h>
+#include <liboscar/Graphics/Color.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/os.h>

@@ -17,13 +17,12 @@
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/PolygonalMesh.h>
-#include <SimTKcommon/internal/State.h>
 
-#include <algorithm>
-#include <cmath>
 #include <cstddef>
 #include <filesystem>
-#include <ranges>
+#include <functional>
+#include <optional>
+#include <string>
 
 using namespace osc;
 

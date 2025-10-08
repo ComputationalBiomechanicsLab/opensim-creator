@@ -8,7 +8,6 @@
 #include <liboscar/Maths/Vector3.h>
 
 #include <algorithm>
-#include <ranges>
 #include <span>
 #include <utility>
 #include <vector>

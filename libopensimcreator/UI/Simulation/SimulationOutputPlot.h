@@ -2,9 +2,7 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractor.h>
 
-#include <filesystem>
 #include <memory>
-#include <span>
 
 namespace osc { class ISimulatorUIAPI; }
 

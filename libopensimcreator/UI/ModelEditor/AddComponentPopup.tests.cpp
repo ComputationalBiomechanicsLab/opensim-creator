@@ -9,7 +9,6 @@
 #include <gtest/gtest.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/ScopeExit.h>
 #include <OpenSim/Common/Component.h>
 
 #include <exception>

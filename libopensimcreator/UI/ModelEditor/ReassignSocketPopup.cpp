@@ -8,7 +8,6 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentList.h>
 #include <OpenSim/Common/ComponentPath.h>
@@ -19,7 +18,6 @@
 #include <compare>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>

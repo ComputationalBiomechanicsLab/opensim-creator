@@ -10,7 +10,6 @@
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
 

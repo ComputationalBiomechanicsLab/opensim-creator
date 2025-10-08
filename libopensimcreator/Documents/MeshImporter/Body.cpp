@@ -6,10 +6,9 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/TransformFunctions.h>
 #include <liboscar/Utils/UID.h>
 
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <string_view>
 

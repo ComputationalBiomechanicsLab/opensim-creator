@@ -15,7 +15,7 @@ namespace osc::mi { class MIObject; }
 
 // undoable action support
 //
-// functions that mutate the undoable datastructure and commit changes at the
+// functions that mutate the undoable data structure and commit changes at the
 // correct time
 namespace osc::mi
 {

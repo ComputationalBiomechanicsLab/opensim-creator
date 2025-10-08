@@ -14,8 +14,6 @@
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
-#include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
@@ -24,7 +22,6 @@
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Popups/PopupManager.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 #include <liboscar/Utils/UID.h>
 
 #include <concepts>

@@ -8,7 +8,6 @@
 #include <libopensimcreator/UI/MeshWarper/MeshWarpingTabSharedState.h>
 
 #include <liboscar/Maths/Circle.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/Panel.h>

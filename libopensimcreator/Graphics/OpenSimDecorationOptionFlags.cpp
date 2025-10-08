@@ -5,7 +5,6 @@
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/EnumHelpers.h>
 
-#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <optional>

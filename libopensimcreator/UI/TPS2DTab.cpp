@@ -4,7 +4,6 @@
 
 #include <liboscar/Formats/SVG.h>
 #include <liboscar/Graphics/Camera.h>
-#include <liboscar/Graphics/ColorSpace.h>
 #include <liboscar/Graphics/Geometries/PlaneGeometry.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
@@ -27,7 +26,6 @@
 #include <simmath/LinearAlgebra.h>
 
 #include <cmath>
-#include <algorithm>
 #include <limits>
 #include <optional>
 #include <span>

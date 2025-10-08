@@ -8,7 +8,6 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelManager.h>
 #include <liboscar/UI/Widgets/WindowMenu.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <utility>

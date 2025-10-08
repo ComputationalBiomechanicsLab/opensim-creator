@@ -6,7 +6,6 @@
 #include <liboscar/Utils/HashHelpers.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-
 #include <liboscar/Platform/Log.h>
 
 using namespace osc;

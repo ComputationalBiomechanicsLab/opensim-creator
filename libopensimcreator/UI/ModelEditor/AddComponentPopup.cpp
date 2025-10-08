@@ -14,7 +14,6 @@
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/ExceptionHelpers.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Common/Component.h>
@@ -29,11 +28,11 @@
 #include <OpenSim/Simulation/Model/Station.h>
 #include <SimTKcommon/SmallMatrix.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <sstream>
 #include <string>
 #include <utility>

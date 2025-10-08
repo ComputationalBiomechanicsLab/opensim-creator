@@ -1,7 +1,5 @@
 #pragma once
 
-#include <liboscar/Utils/UID.h>
-
 #include <stdexcept>
 
 namespace OpenSim { class Component; }

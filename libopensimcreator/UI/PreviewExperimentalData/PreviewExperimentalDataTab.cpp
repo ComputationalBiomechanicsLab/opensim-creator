@@ -25,7 +25,6 @@
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Events/OpenNamedPanelEvent.h>
@@ -44,7 +43,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
-#include <stdexcept>
+#include <exception>
 #include <string_view>
 #include <span>
 #include <vector>

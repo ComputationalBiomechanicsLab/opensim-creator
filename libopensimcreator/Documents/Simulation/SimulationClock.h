@@ -1,7 +1,5 @@
 #pragma once
 
-#include <liboscar/Maths/CommonFunctions.h>
-
 #include <chrono>
 #include <ratio>
 

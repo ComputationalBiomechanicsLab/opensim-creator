@@ -3,14 +3,12 @@
 #include <libopensimcreator/Documents/OutputExtractors/OutputValueExtractor.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
-#include <liboscar/Maths/Constants.h>
 #include <liboscar/Utils/Conversion.h>
 
-#include <array>
+#include <functional>
 #include <span>
-#include <sstream>
 #include <string>
-#include <utility>
+#include <vector>
 
 using namespace osc;
 

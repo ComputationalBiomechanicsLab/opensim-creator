@@ -23,8 +23,6 @@
 #include <liboscar/UI/Panels/PanelPrivate.h>
 #include <liboscar/UI/Widgets/GuiRuler.h>
 #include <liboscar/UI/Widgets/IconWithoutMenu.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <memory>

@@ -10,7 +10,6 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/oscimgui.h>
@@ -25,8 +24,8 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 #include <memory>
-#include <span>
 #include <string>
+#include <string_view>
 #include <utility>
 
 

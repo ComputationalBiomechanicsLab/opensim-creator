@@ -6,16 +6,15 @@
 #include <libopensimcreator/testing/TestOpenSimCreatorConfig.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/Model/Geometry.h>
-#include <OpenSim/Simulation/Model/ExternalLoads.h>
-#include <OpenSim/Common/ComponentPath.h>
-#include <liboscar/Maths/CommonFunctions.h>
 #include <gtest/gtest.h>
+#include <OpenSim/Common/ComponentPath.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
+#include <OpenSim/Simulation/Model/Geometry.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 #include <array>
 #include <filesystem>

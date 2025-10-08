@@ -1,8 +1,8 @@
 #pragma once
 
 #include <libopensimcreator/Graphics/CustomRenderingOptions.h>
-#include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 #include <libopensimcreator/Graphics/OpenSimDecorationOptions.h>
+#include <libopensimcreator/Graphics/OverlayDecorationOptions.h>
 
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>

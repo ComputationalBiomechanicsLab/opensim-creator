@@ -3,13 +3,10 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/HashHelpers.h>
 #include <simbody/internal/MultibodySystem.h>
 
-#include <cmath>
 #include <optional>
-#include <span>
 #include <vector>
 
 using namespace osc;
@@ -59,7 +56,7 @@ OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtr
     }};
 }
 
-std::size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
+size_t osc::MultiBodySystemOutputExtractor::implGetHash() const
 {
     return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }

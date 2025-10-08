@@ -13,7 +13,7 @@
 #include <ctime>
 #include <filesystem>
 #include <fstream>
-#include <ranges>
+#include <functional>
 #include <sstream>
 #include <string>
 #include <utility>

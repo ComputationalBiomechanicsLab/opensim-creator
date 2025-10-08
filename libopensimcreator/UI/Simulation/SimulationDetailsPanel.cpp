@@ -13,9 +13,9 @@
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Perf.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <memory>
-#include <ranges>
 #include <string_view>
 #include <utility>
 

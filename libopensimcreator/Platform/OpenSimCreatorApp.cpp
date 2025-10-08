@@ -12,7 +12,6 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/Tabs/TabRegistry.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/Conversion.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <OpenSim/Common/Logger.h>
@@ -21,9 +20,7 @@
 #include <osim/osim.h>
 
 #include <array>
-#include <clocale>
 #include <filesystem>
-#include <locale>
 #include <memory>
 #include <string>
 #include <string_view>

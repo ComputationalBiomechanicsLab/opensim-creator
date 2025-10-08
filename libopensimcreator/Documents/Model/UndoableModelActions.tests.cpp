@@ -11,7 +11,6 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <OpenSim/Common/AbstractProperty.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>

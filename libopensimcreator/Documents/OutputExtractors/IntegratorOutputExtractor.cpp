@@ -5,15 +5,12 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 
 #include <liboscar/Maths/Constants.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/HashHelpers.h>
 #include <liboscar/Utils/UID.h>
 #include <simmath/Integrator.h>
 
-#include <cmath>
+#include <cstddef>
 #include <optional>
-#include <span>
-#include <string_view>
 #include <vector>
 
 using namespace osc;
@@ -121,7 +118,7 @@ OutputValueExtractor osc::IntegratorOutputExtractor::implGetOutputValueExtractor
     }};
 }
 
-std::size_t osc::IntegratorOutputExtractor::implGetHash() const
+size_t osc::IntegratorOutputExtractor::implGetHash() const
 {
     return hash_of(m_AuxiliaryDataID, m_Name, m_Description, m_Extractor);
 }

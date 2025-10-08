@@ -2,6 +2,8 @@
 
 #include <libopensimcreator/Documents/Model/IComponentAccessor.h>
 
+#include <liboscar/Utils/UID.h>
+
 namespace osc
 {
     class IVersionedComponentAccessor : public IComponentAccessor {

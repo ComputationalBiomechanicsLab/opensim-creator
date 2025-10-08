@@ -1,7 +1,5 @@
 #pragma once
 
-#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
-
 #include <memory>
 #include <string_view>
 

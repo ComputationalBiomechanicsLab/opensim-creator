@@ -5,7 +5,6 @@
 
 #include <filesystem>
 #include <memory>
-#include <optional>
 #include <vector>
 
 namespace osc { class IModelStatePair; }

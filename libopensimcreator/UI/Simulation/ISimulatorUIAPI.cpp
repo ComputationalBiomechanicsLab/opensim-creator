@@ -7,7 +7,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
-#include <liboscar/Utils/Assertions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <filesystem>
@@ -15,7 +14,6 @@
 #include <optional>
 #include <span>
 #include <sstream>
-#include <string_view>
 #include <string>
 #include <utility>
 

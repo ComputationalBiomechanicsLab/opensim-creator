@@ -13,7 +13,6 @@
 #include <libopensimcreator/Utils/ParamValue.h>
 
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
@@ -24,8 +23,6 @@
 #include <filesystem>
 #include <optional>
 #include <ostream>
-#include <ranges>
-#include <span>
 #include <string_view>
 #include <utility>
 #include <vector>

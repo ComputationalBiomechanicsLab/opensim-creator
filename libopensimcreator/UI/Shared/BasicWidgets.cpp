@@ -35,9 +35,7 @@
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppMetadata.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Widgets/CameraViewAxes.h>

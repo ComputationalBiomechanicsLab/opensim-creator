@@ -13,23 +13,22 @@
 #include <liboscar/Platform/Events/Event.h>
 #include <liboscar/Platform/Events/KeyEvent.h>
 #include <liboscar/Platform/Log.h>
+#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Screenshot.h>
 #include <liboscar/Platform/WidgetPrivate.h>
-#include <liboscar/Platform/os.h>
-#include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/Events/ResetUIContextEvent.h>
+#include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/SaveChangesPopup.h>
 #include <liboscar/UI/Popups/SaveChangesPopupConfig.h>
 #include <liboscar/UI/Tabs/ErrorTab.h>
 #include <liboscar/UI/Tabs/ScreenshotTab.h>
 #include <liboscar/UI/Tabs/Tab.h>
 #include <liboscar/UI/Tabs/TabRegistry.h>
-#include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Conversion.h>
+#include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/UID.h>
 

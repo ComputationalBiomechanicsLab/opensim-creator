@@ -4,7 +4,6 @@
 #include <liboscar/Utils/SynchronizedValueGuard.h>
 #include <liboscar/Utils/UID.h>
 
-#include <chrono>
 #include <memory>
 #include <string_view>
 

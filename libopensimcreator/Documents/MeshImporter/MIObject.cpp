@@ -2,7 +2,7 @@
 
 #include <liboscar/Maths/MathHelpers.h>
 
-#include <ranges>
+#include <algorithm>
 
 namespace rgs = std::ranges;
 

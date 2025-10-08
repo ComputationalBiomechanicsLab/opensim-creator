@@ -5,24 +5,19 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
-#include <liboscar/Maths/Angle.h>
 #include <liboscar/Maths/EulerAngles.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/MatrixFunctions.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Quaternion.h>
-#include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
 #include <liboscar/Maths/Vector.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
-#include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/Utils/Assertions.h>
-#include <liboscar/Utils/ScopeExit.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/Typelist.h>
 #include <OpenSim/Common/ComponentPath.h>

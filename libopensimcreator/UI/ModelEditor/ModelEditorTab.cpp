@@ -9,7 +9,6 @@
 #include <libopensimcreator/UI/ModelEditor/ModelEditorMainMenu.h>
 #include <libopensimcreator/UI/ModelEditor/ModelEditorToolbar.h>
 #include <libopensimcreator/UI/ModelEditor/ModelMusclePlotPanel.h>
-#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 #include <libopensimcreator/UI/Shared/CoordinateEditorPanel.h>
 #include <libopensimcreator/UI/Shared/ModelStatusBar.h>
@@ -41,17 +40,11 @@
 #include <liboscar/UI/Popups/PopupManager.h>
 #include <liboscar/UI/Tabs/ErrorTab.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/ExceptionHelpers.h>
 #include <liboscar/Utils/FileChangePoller.h>
-#include <liboscar/Utils/LifetimedPtr.h>
-#include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/UID.h>
-#include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 #include <chrono>
 #include <exception>

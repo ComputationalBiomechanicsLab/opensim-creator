@@ -8,7 +8,6 @@
 #include <liboscar/Utils/UID.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include <chrono>
 #include <memory>
 #include <mutex>
 #include <string>

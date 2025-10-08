@@ -7,22 +7,14 @@
 
 #include <liboscar/Maths/Constants.h>
 #include <liboscar/Maths/Vector2.h>
-#include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/HashHelpers.h>
-#include <liboscar/Utils/Perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentOutput.h>
 #include <OpenSim/Common/ComponentPath.h>
-#include <SimTKcommon/SmallMatrix.h>
 
-#include <cmath>
 #include <algorithm>
-#include <array>
-#include <concepts>
 #include <memory>
-#include <span>
 #include <sstream>
 #include <typeinfo>
 #include <utility>

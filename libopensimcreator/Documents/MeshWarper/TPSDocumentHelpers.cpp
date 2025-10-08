@@ -15,11 +15,9 @@
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
-#include <functional>
 #include <limits>
 #include <optional>
 #include <ranges>
-#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <utility>

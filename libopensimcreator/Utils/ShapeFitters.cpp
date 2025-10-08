@@ -18,7 +18,7 @@
 #include <algorithm>
 #include <array>
 #include <complex>
-#include <ranges>
+#include <functional>
 #include <span>
 #include <vector>
 

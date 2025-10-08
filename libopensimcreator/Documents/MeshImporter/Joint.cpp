@@ -7,12 +7,11 @@
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
 
 #include <liboscar/Maths/Transform.h>
-#include <liboscar/Maths/TransformFunctions.h>
 #include <liboscar/Utils/CStringView.h>
 #include <liboscar/Utils/UID.h>
 
 #include <cstddef>
-#include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 

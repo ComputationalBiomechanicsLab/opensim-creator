@@ -4,7 +4,6 @@
 
 #include <liboscar/Maths/ClosedInterval.h>
 #include <liboscar/Maths/Normalized.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/ChronoHelpers.h>
 
 namespace osc

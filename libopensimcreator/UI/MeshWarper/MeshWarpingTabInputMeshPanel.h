@@ -14,13 +14,11 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Geometries/SolidGeometries.h>
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/RenderTexture.h>
 #include <liboscar/Graphics/Scene/CachedSceneRenderer.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
-#include <liboscar/Maths/BVH.h>
 #include <liboscar/Maths/CollisionTests.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>

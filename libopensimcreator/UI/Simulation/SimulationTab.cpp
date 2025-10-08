@@ -9,7 +9,6 @@
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/UI/Events/OpenComponentContextMenuEvent.h>
-#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/UI/Shared/ComponentContextMenu.h>
 #include <libopensimcreator/UI/Shared/CoordinateEditorPanel.h>
 #include <libopensimcreator/UI/Shared/ModelStatusBar.h>
@@ -38,7 +37,6 @@
 #include <liboscar/UI/Popups/PopupManager.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/Utils/EnumHelpers.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 #include <liboscar/Utils/Perf.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Simulation/Model/Model.h>

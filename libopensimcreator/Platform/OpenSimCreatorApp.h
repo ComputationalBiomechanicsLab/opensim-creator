@@ -3,7 +3,6 @@
 #include <liboscar/Platform/App.h>
 
 #include <filesystem>
-#include <string>
 
 namespace osc { class AppMetdata; }
 namespace osc { class TabRegistry; }

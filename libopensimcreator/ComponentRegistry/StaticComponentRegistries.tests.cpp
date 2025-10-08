@@ -6,7 +6,6 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/Utils/CStringView.h>
-#include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/Force.h>

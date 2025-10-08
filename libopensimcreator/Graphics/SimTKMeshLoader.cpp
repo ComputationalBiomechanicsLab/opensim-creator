@@ -3,9 +3,7 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
-#include <liboscar/Graphics/VertexFormat.h>
 #include <liboscar/Maths/MathHelpers.h>
-#include <liboscar/Maths/Triangle.h>
 #include <liboscar/Maths/TriangleFunctions.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/FileDialogFilter.h>

@@ -3,7 +3,6 @@
 #include <liboscar/Utils/ClonePtr.h>
 
 #include <filesystem>
-#include <memory>
 #include <unordered_map>
 
 namespace OpenSim { class Model; }

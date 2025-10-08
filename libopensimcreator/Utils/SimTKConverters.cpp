@@ -1,9 +1,9 @@
 #include "SimTKConverters.h"
 
 #include <liboscar/Graphics/Color.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>

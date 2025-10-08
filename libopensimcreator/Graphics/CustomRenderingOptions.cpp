@@ -11,7 +11,6 @@
 #include <liboscar/Variant/VariantType.h>
 
 #include <cstddef>
-#include <cstdint>
 
 using namespace osc;
 

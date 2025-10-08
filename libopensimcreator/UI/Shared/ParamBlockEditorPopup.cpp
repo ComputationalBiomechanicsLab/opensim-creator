@@ -2,15 +2,13 @@
 
 #include <libopensimcreator/Documents/Simulation/IntegratorMethod.h>
 #include <libopensimcreator/Utils/ParamBlock.h>
-#include <libopensimcreator/Utils/ParamValue.h>
 
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Popups/Popup.h>
 #include <liboscar/UI/Popups/PopupPrivate.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
 
-#include <span>
-#include <string>
+#include <string_view>
 #include <variant>
 
 using namespace osc;

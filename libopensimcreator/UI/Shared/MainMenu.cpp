@@ -6,7 +6,6 @@
 #include <libopensimcreator/Documents/Simulation/Simulation.h>
 #include <libopensimcreator/Documents/Simulation/StoFileSimulation.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
-#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/MeshImporter/MeshImporterTab.h>
 #include <libopensimcreator/UI/PreviewExperimentalData/PreviewExperimentalDataTab.h>
@@ -33,7 +32,6 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
-#include <ranges>
 #include <string>
 #include <typeinfo>
 #include <utility>

@@ -7,12 +7,12 @@
 
 #include <gtest/gtest.h>
 #include <liboscar/Formats/CSV.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 #include <array>
 #include <sstream>
+#include <string>
 
 using namespace osc;
 

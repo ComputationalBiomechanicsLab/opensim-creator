@@ -2,7 +2,6 @@
 
 #include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Platform/IconCodepoints.h>
-#include <libopensimcreator/Platform/OpenSimCreatorApp.h>
 #include <libopensimcreator/Platform/RecentFile.h>
 #include <libopensimcreator/Platform/RecentFiles.h>
 #include <libopensimcreator/UI/LoadingTab.h>
@@ -37,7 +36,6 @@
 #include <liboscar/UI/Widgets/LogViewer.h>
 #include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/CStringView.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <filesystem>
 #include <memory>

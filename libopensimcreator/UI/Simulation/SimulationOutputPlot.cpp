@@ -22,7 +22,6 @@
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/EnumHelpers.h>
 #include <liboscar/Utils/Perf.h>
@@ -34,7 +33,6 @@
 #include <cstdint>
 #include <functional>
 #include <optional>
-#include <ostream>
 #include <span>
 #include <string>
 #include <string_view>

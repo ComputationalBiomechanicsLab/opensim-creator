@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libopensimcreator/Documents/Simulation/ISimulation.h>
-#include <libopensimcreator/Documents/Simulation/SimulationClock.h>
+#include <libopensimcreator/Documents/Simulation/SimulationClocks.h>
 #include <libopensimcreator/Documents/Simulation/SimulationReport.h>
 #include <libopensimcreator/Documents/Simulation/SimulationStatus.h>
 

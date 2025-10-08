@@ -2,8 +2,6 @@
 
 #include <libopensimcreator/Documents/OutputExtractors/OutputExtractorDataType.h>
 
-#include <liboscar/Variant/VariantType.h>
-
 namespace osc
 {
     template<OutputExtractorDataType>

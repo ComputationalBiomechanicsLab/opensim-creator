@@ -46,9 +46,6 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/VectorFunctions.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/AppMetadata.h>
-#include <liboscar/Platform/Events/Event.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/UI/Events/CloseTabEvent.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
 #include <liboscar/UI/oscimgui.h>

@@ -6,11 +6,9 @@
 #include <libopensimcreator/UI/Simulation/SimulationUILoopingState.h>
 #include <libopensimcreator/UI/Simulation/SimulationUIPlaybackState.h>
 
-#include <filesystem>
 #include <initializer_list>
 #include <optional>
 #include <span>
-#include <vector>
 
 namespace osc { class OutputExtractor; }
 namespace osc { class SimulationModelStatePair; }

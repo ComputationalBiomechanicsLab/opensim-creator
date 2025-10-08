@@ -16,7 +16,6 @@
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 #include <liboscar/Platform/Log.h>
-#include <liboscar/Platform/os.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Shims/Cpp20/stop_token.h>
 #include <liboscar/Shims/Cpp20/thread.h>
@@ -39,12 +38,10 @@
 #include <algorithm>
 #include <array>
 #include <atomic>
-#include <chrono>
 #include <compare>
 #include <functional>
 #include <future>
 #include <memory>
-#include <ranges>
 #include <span>
 #include <sstream>
 #include <string>

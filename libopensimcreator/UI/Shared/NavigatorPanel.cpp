@@ -1,7 +1,6 @@
 #include "NavigatorPanel.h"
 
 #include <libopensimcreator/Documents/Model/IModelStatePair.h>
-#include <libopensimcreator/Platform/IconCodepoints.h>
 #include <libopensimcreator/Platform/OSCColors.h>
 #include <libopensimcreator/UI/Shared/BasicWidgets.h>
 #include <libopensimcreator/Utils/OpenSimHelpers.h>
@@ -10,7 +9,6 @@
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
-#include <liboscar/Utils/Algorithms.h>
 #include <liboscar/Utils/Assertions.h>
 #include <liboscar/Utils/StringHelpers.h>
 #include <liboscar/Utils/VariableLengthArray.h>
@@ -22,11 +20,8 @@
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 #include <algorithm>
-#include <array>
 #include <cstddef>
-#include <limits>
 #include <memory>
-#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>

@@ -30,8 +30,8 @@
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/Utils/PerfClock.h>
 
-#include <cinttypes>
 #include <chrono>
+#include <cinttypes>
 
 using namespace osc;
 

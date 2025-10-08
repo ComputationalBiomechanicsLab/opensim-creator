@@ -4,7 +4,6 @@
 #include <liboscar/Graphics/MeshIndicesView.h>
 #include <liboscar/Platform/FileDialogFilter.h>
 
-#include <cstdint>
 #include <filesystem>
 #include <span>
 #include <string_view>

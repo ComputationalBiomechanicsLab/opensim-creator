@@ -16,7 +16,6 @@
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/UID.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 
 #include <cstddef>
 #include <sstream>

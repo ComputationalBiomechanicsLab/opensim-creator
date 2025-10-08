@@ -15,11 +15,9 @@
 #include <liboscar/UI/Events/OpenPopupEvent.h>
 #include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <algorithm>
 #include <memory>
-#include <string>
 #include <string_view>
 #include <utility>
 

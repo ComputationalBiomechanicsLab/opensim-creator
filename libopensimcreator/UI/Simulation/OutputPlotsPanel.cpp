@@ -8,11 +8,9 @@
 #include <libopensimcreator/UI/Simulation/ISimulatorUIAPI.h>
 #include <libopensimcreator/UI/Simulation/SimulationOutputPlot.h>
 
-#include <liboscar/Platform/os.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Panels/PanelPrivate.h>
 #include <liboscar/Utils/Algorithms.h>
-#include <liboscar/Utils/LifetimedPtr.h>
 
 #include <memory>
 #include <string_view>

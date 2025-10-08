@@ -15,9 +15,9 @@
 #include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Graphics/Mesh.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Platform/Log.h>

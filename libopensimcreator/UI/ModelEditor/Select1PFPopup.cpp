@@ -12,7 +12,7 @@
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 #include <algorithm>
-#include <string>
+#include <string_view>
 
 class osc::Select1PFPopup::Impl final : public PopupPrivate {
 public:

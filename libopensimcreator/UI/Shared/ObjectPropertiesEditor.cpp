@@ -14,7 +14,6 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
 #include <liboscar/Platform/App.h>
-#include <liboscar/Platform/Log.h>
 #include <liboscar/Platform/Widget.h>
 #include <liboscar/Platform/WidgetPrivate.h>
 #include <liboscar/UI/Events/OpenPanelEvent.h>
@@ -41,7 +40,6 @@
 #include <concepts>
 #include <cstddef>
 #include <memory>
-#include <ranges>
 #include <string>
 #include <type_traits>
 #include <typeinfo>

@@ -7,7 +7,7 @@
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneDecorationShading.h>
 #include <liboscar/Maths/AABB.h>
-#include <liboscar/Maths/MathHelpers.h>
+#include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Utils/UID.h>
 

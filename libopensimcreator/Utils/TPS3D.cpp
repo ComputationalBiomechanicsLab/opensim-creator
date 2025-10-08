@@ -11,7 +11,6 @@
 #include <simmath/LinearAlgebra.h>
 
 #include <ostream>
-#include <ranges>
 #include <span>
 #include <vector>
 

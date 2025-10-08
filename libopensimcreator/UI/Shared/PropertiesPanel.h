@@ -2,8 +2,8 @@
 
 #include <liboscar/UI/Panels/Panel.h>
 
-#include <string_view>
 #include <memory>
+#include <string_view>
 
 namespace osc { class IModelStatePair; }
 namespace osc { class Widget; }
