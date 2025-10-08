@@ -152,6 +152,12 @@
 							<!--The fixed location of the station expressed in its parent frame.-->
 							<location>0.082958996295928955 -0.049451999366283417 0.077260002493858337</location>
 						</Marker>
+						<Marker name="knee_wrap_surface_point">
+							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+							<socket_parent_frame>..</socket_parent_frame>
+							<!--The fixed location of the station expressed in its parent frame.-->
+							<location>0.48492398858070374 -0.0028490000404417515 0.12586300075054169</location>
+						</Marker>
 						<StationDefinedFrame name="hip_r_child_frame">
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
@@ -272,28 +278,22 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="pelvis_list">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="pelvis_rotation">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="pelvis_tilt">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="pelvis_tx">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="pelvis_ty">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 						<Coordinate name="pelvis_tz">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
+							<!--All properties of this object have their default values.-->
 						</Coordinate>
 					</coordinates>
 				</FreeJoint>
@@ -305,20 +305,14 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="hip_adduction_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-0.89999997615814209 0.5</range>
 						</Coordinate>
 						<Coordinate name="hip_rotation_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-0.69999998807907104 0.69999998807907104</range>
 						</Coordinate>
 						<Coordinate name="hip_flexion_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>0</default_value>
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-0.60000002384185791 2.0999999046325684</range>
 						</Coordinate>
@@ -332,8 +326,6 @@
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="knee_angle_r">
-							<!--The value of this coordinate before any value has been set. Rotational coordinate value is in radians and Translational in meters.-->
-							<default_value>-0.97708767652511597</default_value>
 							<!--The minimum and maximum values that the coordinate can range between. Rotational coordinate range in radians and Translational in meters.-->
 							<range>-2.0999999046325684 0</range>
 						</Coordinate>
