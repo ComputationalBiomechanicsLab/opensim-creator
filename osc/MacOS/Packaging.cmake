@@ -9,7 +9,7 @@ option(OSC_NOTARIZATION_ENABLED "Enable notarizing (xcrun notarytool) the result
 # Package the software into a DMG file with a "Drag it to the Applications folder" installer.
 set(CPACK_GENERATOR DragNDrop)
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
-set(CPACK_DMG_VOLUME_NAME "${OSC_LONG_APPNAME} ${OSC_VERSION}")
+set(CPACK_DMG_VOLUME_NAME "${OSC_LONG_APPNAME} ${PROJECT_VERSION}")
 
 # Clarify that the `osc` target is part of a MacOS bundle (enables using BUNDLE variables).
 set_target_properties(osc PROPERTIES MACOSX_BUNDLE TRUE)
