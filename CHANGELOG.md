@@ -16,6 +16,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   with OpenSim's IK solver (#1109).
 - Fixed a crash that could occur when deleting a scaling step from a model warping
   pipeline in the model warper workflow (#1115).
+- A knee wrap cylinder surface marker was added to the "Make a Leg" tutorial, and
+  a knee wrap cylinder radius recalculation step was added to "The Model Warper"
+  tutorial, to demonstrate how to partially scale wrapping geometry in a model
+  (#1110).
 
 ## [0.6.0] - 2025/09/08
 

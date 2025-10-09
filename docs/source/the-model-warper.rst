@@ -176,8 +176,8 @@ to warp the source bone mesh using paired landmarks on the femur meshes.
 .. note::
 
   In preparation for the non-linear warping steps, we have already established paired
-  landmarks *from* the source femur mesh in the model *to* a subject-specific femur
-  in :doc:`the-mesh-warper`. Here's a screenshot of how that looked:
+  warping landmarks *from* the source femur mesh in the model *to* a subject-specific
+  femur in :doc:`the-mesh-warper`. Here's a screenshot of how that looked:
 
   .. figure:: _static/the-model-warper/mesh-warper-showing-basic-TPS-warp-of-femur.jpeg
     :width: 40%
@@ -213,7 +213,7 @@ scaling step to the source model:
 
     After adding the "Apply Thin-Plate Spline (TPS) to Meshes" scaling step, the UI stops showing
     the resultant (output) model because the warping procedure is missing the information it needs
-    to apply the step.
+    to execute the step.
 
 The model warper's TPS-based mesh scaling step requires two sequences of landmarks. The
 `Walkthrough Model ZIP`_ includes a ``Geometry/`` directory that contains ``femur_r_warp.landmarks.csv``
@@ -298,8 +298,8 @@ the appropriate values. This time, from :numref:`stations-to-warp-for-knee-defin
      - ``/bodyset/femur_r``
      - The coordinate frame that the two landmark files are defined in.
    * - ``stations``
-     - ``/bodyset/femur_r/femur_r_epicondyle_centroid``, ``/bodyset/femur_r/femur_r_epicondyle_lat``, ``/bodyset/femur_r/femur_r_epicondyle_med``, ``/bodyset/femur_r/femur_r_head_center``, ``/markerset/RT1``, ``/markerset/RT2``, ``/markerset/RT3``, and ``/markerset/RKNE``
-     - Path within the OpenSim model to the ``Station``\s that should be warped by this scaling step.
+     - ``/bodyset/femur_r/femur_r_epicondyle_centroid``, ``/bodyset/femur_r/femur_r_epicondyle_lat``, ``/bodyset/femur_r/femur_r_epicondyle_med``, ``/bodyset/femur_r/femur_r_head_center``, ``/markerset/RT1``, ``/markerset/RT2``, ``/markerset/RT3``, ``/markerset/RKNE``, and ``/bodyset/femur_r/knee_wrap_surface_point``.
+     - Paths within the OpenSim model to the ``Station``\s that should be warped by this scaling step.
 
 After warping the stations, the femur should now be correctly joined to the pelvis and knee, but
 some further adjustments are still necessary:
@@ -392,10 +392,11 @@ To manually scale ``pelvis``, add a "Manually Scale Body Segments" scaling step:
     Use the "Add Scaling Step" menu to add a "Manually Scale Body Segments" scaling step.
 
 And add ``/bodyset/pelvis`` to ``bodies``, followed by setting the ``scale_factors`` to
-``(0.75828, 0.73484, 0.771248)``. Next, add a second "Manually Scale Body Segments" scaling
-step with ``/bodyset/tibia_r`` in ``bodies`` and ``scale_factors`` of ``(0.776503, 0.849965, 0.890335)``.
+``(0.75828, 0.73484, 0.771248)``.
 
-You should end up with two manual scaling steps for the other two body segments, which
+Next, add a second "Manually Scale Body Segments" scaling step with ``/bodyset/tibia_r``
+in ``bodies`` and ``scale_factors`` of ``(0.776503, 0.849965, 0.890335)``. You should
+end up with two manual scaling steps for the other two body segments, which
 should scale the rest of the model to roughly match the femur:
 
 .. figure:: _static/the-model-warper/after-applying-manual-scaling-steps.jpeg
@@ -409,12 +410,34 @@ should scale the rest of the model to roughly match the femur:
 Scale Wrap Cylinder
 ^^^^^^^^^^^^^^^^^^^
 
-.. error::
+The model contains a ``WrapCylinder`` called ``knee_wrap``, which should also be scaled to
+account for the femur warp.
 
-  TODO: there are appropriate wrap-cylinder-scaling steps available but the markers that
-  were supplied don't include a knee surface marker and it might be better to supply a
-  "manually scale wrap objects" scaling step to match the previous manual scaling step -
-  depends if everything should be point-driven!
+The TPS technique can only be used on points, not shapes like cylinders. Therefore, we will use
+a heuristic scaling step that recomputes the radius of the cylinder as the distance between
+the cylinder's axis (midline) and a station in the model. That way, we can TPS-warp a station
+and use its warped location to compute a cylinder radius that more closely matches the warped
+geometry.
+
+To scale ``knee_wrap``'s radius, add a "Recalculate WrapCylinder `radius` from Station
+Projection onto its Midline" scaling step:
+
+.. figure:: _static/the-model-warper/apply-recalculate-wrapcylinder-radius-scaling-step-button.jpeg
+  :width: 60%
+
+  Use the "Add Scaling Step" menu to add a "Recalculate WrapCylinder `radius` from Station Projection
+  onto its Midline" scaling step.
+
+And then choose ``/bodyset/femur_r/knee_wrap_surface_point`` as the ``station_path`` and ``/bodyset/femur_r/knee_r_frame/wrapobjectset/knee_wrap``
+as the ``wrap_cylinder_path``, which should rescale the cylinder to more closely match
+the warped femur geometry:
+
+.. figure:: _static/the-model-warper/after-recalculating-wrapcylinder-radius.jpeg
+  :width: 60%
+
+  The model after recalculting the knee wrap's radius. Without this scaling step, the knee wrap
+  is larger than it should be. *Note*: ``recfem_r`` clips through the femur bone because the mesh
+  warp, in this case, is rather extreme (choosing warp landmarks is, itself, an art).
 
 
 Export Result Model
@@ -437,16 +460,16 @@ located in the toolbar:
 
 .. warning::
 
-  If your warped model needs to be compatible with OpenSim <4.6, you should also enable the
-  "Bake StationDefinedFrames" option using the gear icon (⚙️) next to the "Export Warped Model"
-  button:
+  If your warped model needs to be compatible with OpenSim 4.5 and earlier, you should also
+  enable the "Bake StationDefinedFrames" option using the gear icon (⚙️) next to the "Export
+  Warped Model" button:
 
   .. figure:: _static/the-model-warper/bake-station-defined-frames-option.jpeg
     :width: 40%
 
     The "Bake StationDefinedFrames" checkbox causes the model warper to also convert all
     ``StationDefinedFrame``\s in the source model into ``PhysicalOffsetFrame``\s, which are
-    compatible with OpenSim <4.6.
+    compatible with OpenSim 4.5 and earlier.
 
 This will then open a standard OpenSim model editor tab (:numref:`model-editor-after-exporting-model`, the
 same workflow that's used to edit an ``.osim`` file). You can then save the ``.osim`` file, if you'd
