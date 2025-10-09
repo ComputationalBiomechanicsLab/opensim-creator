@@ -28,5 +28,5 @@ export OSC_CMAKE_CONFIG_EXTRA="-DCMAKE_OSX_ARCHITECTURES=${OSC_OSX_ARCHITECTURES
 ./scripts/build_mac.sh
 
 # run after-build OS-specific test scripts
-./scripts/macos_check-dependencies.py build/osc/osc
-./scripts/macos_check-sdk.py "${OSC_TARGET_OSX_VERSION}" build/osc/osc
+./scripts/macos_check-dependencies.py build/osc/osc.app/Contents/MacOS/osc
+./scripts/macos_check-sdk.py "${OSC_TARGET_OSX_VERSION}" build/osc/osc.app/Contents/MacOS/osc
