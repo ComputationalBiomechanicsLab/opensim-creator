@@ -14,6 +14,8 @@ if "%~1"=="" (
 REM Use `vswhere` to assign `VSPATH` to the caller's Visual Studio install location.
 REM This is necessary because the user may have installed their Visual Studio elsewhere,
 REM or might be using a different version.
+REM
+REM this is effectveily a hardened version of: call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
 if not exist "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" (
     echo vswhere.exe not found in default location, you might want to set VSPATH in this script instead
     exit /b 1
