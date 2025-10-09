@@ -6,6 +6,8 @@
 #
 #     - packaging: uses NSIS.exe : get it from https://nsis.sourceforge.io/Download
 
+option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer" OFF)
+
 # package any required system libraries (C/C++ runtimes)
 include(InstallRequiredSystemLibraries)
 
@@ -44,8 +46,7 @@ install(
     DIRECTORY
         "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator"
         "$<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:${PROJECT_SOURCE_DIR}/resources/oscar_demos>"
-    DESTINATION
-        "resources/"
+    DESTINATION "resources"
 )
 
 # use the naming convention `opensimcreator-$version-windows-$arch.exe` (#975)
@@ -75,6 +76,32 @@ set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
 #
 # it boots the app with admin privs if the installer is ran with admin privs
 # see opensim-creator/#95 (or inkscape's CMake file)
+
+# Handle code signing
+if(OSC_CODESIGN_ENABLED)
+    # see: https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool
+    # and: https://www.files.certum.eu/documents/manual_en/Code-Signing-signing-the-code-using-tools-like-Singtool-and-Jarsigner_v2.3.pdf
+    set(OSC_CERTIFICATE_SUBJECT          "Open Source Developer, Adam Kewley" CACHE STRING "The name of the subject of the signing certificate")
+    set(OSC_CERTIFICATE_TIMESTAMP_SERVER "http://time.certum.pl"              CACHE STRING "Specifies the URL of the RFC 3161 time stamp serve")
+    set(OSC_CERTIFICATE_TIMESTAMP_DIGEST "SHA256"                             CACHE STRING "Digest algorithm used by the RFC 3161 time stamp server (e.g. SHA256)")
+    set(OSC_CODESIGN_DIGEST_ALGORITHM    "SHA256"                             CACHE STRING "File digest algorithm to use for creating file signature (e.g. SHA256)")
+
+    # Specify a script that signs the built binaries (`exe`s, `dll`s) just before CPack creates the installer.
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/Windows/codesign_binaries.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_binaries.cmake"
+        @ONLY
+    )
+    set(CPACK_PRE_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_binaries.cmake")
+
+    # Specify a script that signs the installer that CPack builds.
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/Windows/codesign_installer.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_installer.cmake"
+        @ONLY
+    )
+    set(CPACK_POST_BUILD_SCRIPTS "${CMAKE_CURRENT_BINARY_DIR}/generated/codesign_installer.cmake")
+endif()
 
 # CPack vars etc. now fully configured, so include it
 include(CPack)

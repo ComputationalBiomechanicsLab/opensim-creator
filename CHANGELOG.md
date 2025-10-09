@@ -20,6 +20,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   a knee wrap cylinder radius recalculation step was added to "The Model Warper"
   tutorial, to demonstrate how to partially scale wrapping geometry in a model
   (#1110).
+- Windows installers should now be signed by Adam Kewley, which should make installing
+  OpenSim Creator on restricted Windows machines easier (#1117).
 
 ## [0.6.0] - 2025/09/08
 
