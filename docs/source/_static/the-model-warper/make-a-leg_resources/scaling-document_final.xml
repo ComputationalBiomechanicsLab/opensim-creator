@@ -4,6 +4,8 @@
 		<!--List of components that this component owns and serializes.-->
 		<components>
 			<ThinPlateSplineMeshesScalingStep name="thinplatesplinemeshesscalingstep">
+				<!--toggles applying this scaling step when scaling the model-->
+				<enabled>true</enabled>
 				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
 				<source_landmarks_file>Geometry/femur_r_warp.landmarks.csv</source_landmarks_file>
 				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)-->
@@ -24,8 +26,7 @@ The engine uses this to figure out how to transform the input to/from the coordi
 
 The engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.-->
 				<landmarks_frame>/bodyset/femur_r</landmarks_frame>
-				<!--Query paths (e.g. `/forceset/*`) that the engine should use to find stations in the source model that should be warped by this scaling step.-->
-				<stations>/bodyset/femur_r/femur_r_epicondyle_centroid /bodyset/femur_r/femur_r_epicondyle_lat /bodyset/femur_r/femur_r_epicondyle_med /bodyset/femur_r/femur_r_head_center /markerset/RT1 /markerset/RT2 /markerset/RT3 /markerset/RKNE</stations>
+				<stations>/bodyset/femur_r/femur_r_epicondyle_centroid /bodyset/femur_r/femur_r_epicondyle_lat /bodyset/femur_r/femur_r_epicondyle_med /bodyset/femur_r/femur_r_head_center /markerset/RT1 /markerset/RT2 /markerset/RT3 /markerset/RKNE /bodyset/femur_r/knee_wrap_surface_point</stations>
 			</ThinPlateSplineStationsScalingStep>
 			<ThinPlateSplinePathPointsScalingStep name="thinplatesplinepathpointsscalingstep">
 				<!--Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)-->
@@ -51,6 +52,12 @@ The engine uses this to figure out how to transform the input to/from the coordi
 				<!--The manual scale factors that should be applied to the specified bodies-->
 				<scale_factors>0.77650302648544312 0.84996497631072998 0.89033502340316772</scale_factors>
 			</ManuallyScaleBodySegmentsScalingStep>
+			<RecalculateWrapCylinderRadiusFromStationScalingStep name="recalculatewrapcylinderradiusfromstationscalingstep">
+				<!--Absolute path (e.g. `/componentset/some_station`) to a `Station` component in the model-->
+				<station_path>/bodyset/femur_r/knee_wrap_surface_point</station_path>
+				<!--Absolute path (e.g. `/bodyset/body/wrap_cylinder_2`) to a `WrapCylinder` component in the model-->
+				<wrap_cylinder_path>/bodyset/femur_r/knee_r_frame/wrapobjectset/knee_wrap</wrap_cylinder_path>
+			</RecalculateWrapCylinderRadiusFromStationScalingStep>
 		</components>
 	</ModelWarperV3Document>
 </OpenSimDocument>

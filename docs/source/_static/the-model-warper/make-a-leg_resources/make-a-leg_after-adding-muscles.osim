@@ -228,7 +228,7 @@
 							<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 							<socket_parent_frame>..</socket_parent_frame>
 							<!--The fixed location of the station expressed in its parent frame.-->
-							<location>0.48492398858070374 -0.0028490000404417515 0.12586300075054169</location>
+							<location>0.48497501015663147 0.0016990000149235129 0.12745800614356995</location>
 						</Marker>
 						<StationDefinedFrame name="hip_r_child_frame">
 							<!--The geometry used to display the axes of this Frame.-->
