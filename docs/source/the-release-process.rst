@@ -72,7 +72,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Bluesky
       - [ ] SimTK
       - [ ] Reddit (occasionally)
-      - [ ] https://research-software-directory.org/ (usually this is automatic)
+      - [ ] https://research-software-directory.org/software/opensim-creator (usually this is automatic)
 
 Release Build Matrix
 --------------------
