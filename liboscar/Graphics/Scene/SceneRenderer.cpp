@@ -614,7 +614,7 @@ public:
                             previous_color = color;
                         }
 
-                        if (color.a > 0.99f) {
+                        if (color.a > 254.0f/255.0f) {
                             graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
                         }
                         else {
