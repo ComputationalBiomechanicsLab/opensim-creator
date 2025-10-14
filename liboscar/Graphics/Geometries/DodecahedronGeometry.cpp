@@ -58,5 +58,5 @@ namespace
 }
 
 osc::DodecahedronGeometry::DodecahedronGeometry(const Params& p) :
-    Mesh{as_polyhedron_geometry(p)}
+    mesh_{as_polyhedron_geometry(p)}
 {}

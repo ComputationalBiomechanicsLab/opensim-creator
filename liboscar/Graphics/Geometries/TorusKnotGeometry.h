@@ -4,6 +4,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -21,12 +22,19 @@ namespace osc
     // generates a torus knot, the particular shape of which is defined by a pair
     // of coprime integers `p` and `q`. If `p` and `q` are not coprime, the result
     // will be a torus link
-    class TorusKnotGeometry final : public Mesh {
+    class TorusKnotGeometry final {
     public:
         using Params = TorusKnotGeometryParams;
 
         static constexpr CStringView name() { return "Torus Knot"; }
 
         explicit TorusKnotGeometry(const Params& = {});
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

@@ -50,8 +50,8 @@ osc::GridGeometry::GridGeometry(const Params& p)
         push({x, max, 0.0f});
     }
 
-    set_topology(MeshTopology::Lines);
-    set_vertices(vertices);
-    set_normals(normals);
-    set_indices(indices);
+    mesh_.set_topology(MeshTopology::Lines);
+    mesh_.set_vertices(vertices);
+    mesh_.set_normals(normals);
+    mesh_.set_indices(indices);
 }

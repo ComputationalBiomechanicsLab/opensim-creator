@@ -5,6 +5,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -15,7 +16,7 @@ namespace osc
         size_t num_divisions = 10;
     };
 
-    class GridGeometry final : public Mesh {
+    class GridGeometry final {
     public:
         using Params = GridGeometryParams;
 
@@ -24,5 +25,12 @@ namespace osc
         explicit GridGeometry(const Params& = {});
 
         Vector3 normal() const { return {0.0f, 0.0f, 1.0f}; }
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

@@ -6,6 +6,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 #include <vector>
 
 namespace osc
@@ -22,12 +23,19 @@ namespace osc
     // returns a mesh with axial symmetry like vases. The lathe rotates around the Y axis.
     //
     // (ported from three.js:LatheGeometry)
-    class LatheGeometry final : public Mesh {
+    class LatheGeometry final {
     public:
         using Params = LatheGeometryParams;
 
         static constexpr CStringView name() { return "Lathe"; }
 
         explicit LatheGeometry(const Params& = {});
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

@@ -32,7 +32,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
     static_assert(num_options<MeshTopology>() == 2);
 
     if (mesh.topology() == MeshTopology::Lines) {
-        static_cast<Mesh&>(*this) = mesh;
+        mesh_ = mesh;
         return;
     }
 
@@ -70,7 +70,7 @@ osc::WireframeGeometry::WireframeGeometry(const Mesh& mesh)
         indices.push_back(static_cast<uint32_t>(i));
     }
 
-    set_topology(MeshTopology::Lines);
-    set_vertices(vertices);
-    set_indices(indices);
+    mesh_.set_topology(MeshTopology::Lines);
+    mesh_.set_vertices(vertices);
+    mesh_.set_indices(indices);
 }

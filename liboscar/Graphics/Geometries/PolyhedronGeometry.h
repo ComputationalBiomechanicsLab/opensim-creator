@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <utility>
 #include <vector>
 
 namespace osc
@@ -31,7 +32,7 @@ namespace osc
     // generates a 3D solid with flat faces by projecting triangle faces (`indices`
     // indexes into `vertices` for each triangle) onto a sphere of `radius`, followed
     // by dividing them up to the desired `detail_level`
-    class PolyhedronGeometry final : public Mesh {
+    class PolyhedronGeometry final {
     public:
         using Params = PolyhedronGeometryParams;
 
@@ -47,5 +48,12 @@ namespace osc
             float radius = 1.0f,
             size_t detail_level = 0
         );
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

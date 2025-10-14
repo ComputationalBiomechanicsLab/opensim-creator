@@ -56,8 +56,8 @@ osc::PlaneGeometry::PlaneGeometry(const Params& p)
         }
     }
 
-    set_vertices(vertices);
-    set_normals(normals);
-    set_tex_coords(uvs);
-    set_indices(indices);
+    mesh_.set_vertices(vertices);
+    mesh_.set_normals(normals);
+    mesh_.set_tex_coords(uvs);
+    mesh_.set_indices(indices);
 }

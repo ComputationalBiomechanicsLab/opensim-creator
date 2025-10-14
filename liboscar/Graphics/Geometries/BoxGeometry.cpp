@@ -113,9 +113,9 @@ osc::BoxGeometry::BoxGeometry(const Params& p)
     sub_meshes.insert(sub_meshes.begin(), SubMeshDescriptor{0, group_start, MeshTopology::Triangles});
 
     // build geometry
-    set_vertices(vertices);
-    set_normals(normals);
-    set_tex_coords(uvs);
-    set_indices(indices);
-    set_submesh_descriptors(sub_meshes);
+    mesh_.set_vertices(vertices);
+    mesh_.set_normals(normals);
+    mesh_.set_tex_coords(uvs);
+    mesh_.set_indices(indices);
+    mesh_.set_submesh_descriptors(sub_meshes);
 }

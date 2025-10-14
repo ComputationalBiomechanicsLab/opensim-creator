@@ -31,5 +31,5 @@ namespace
 }
 
 osc::TetrahedronGeometry::TetrahedronGeometry(const Params& p) :
-    Mesh{as_polyhedron_geometry(p)}
+    mesh_{as_polyhedron_geometry(p)}
 {}

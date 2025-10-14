@@ -7,7 +7,7 @@ using namespace osc;
 
 osc::ConeGeometry::ConeGeometry(const Params& p) :
 
-    Mesh{CylinderGeometry{{
+    mesh_{CylinderGeometry{{
         .radius_top = 0.0f,
         .radius_bottom = p.radius,
         .height = p.height,

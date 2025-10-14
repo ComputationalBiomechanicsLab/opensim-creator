@@ -165,7 +165,7 @@ public:
                 .num_radial_segments = 12,
                 .num_tubular_segments = 12,
                 .arc = Degrees{360},
-            }};
+            }}.mesh();
         }
 
         return it->second;

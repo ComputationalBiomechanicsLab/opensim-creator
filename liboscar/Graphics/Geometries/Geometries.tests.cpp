@@ -70,7 +70,7 @@ TEST(BoxGeometry, works_with_non_default_args)
 
 TEST(PolyhedronGeometry, can_default_construct_with_params)
 {
-    const PolyhedronGeometry mesh;
+    const Mesh mesh = PolyhedronGeometry{};
 
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_TRUE(mesh.has_normals());
@@ -382,14 +382,14 @@ TEST(SphereGeometry, works_with_non_default_args)
 
 TEST(WireframeGeometry, can_default_construct)
 {
-    const WireframeGeometry mesh;
+    const Mesh mesh = WireframeGeometry{};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_FALSE(mesh.indices().empty());
 }
 
 TEST(WireframeGeometry, can_construct_from_some_other_geometry)
 {
-    const WireframeGeometry mesh{TorusKnotGeometry{}};
+    const Mesh mesh = WireframeGeometry{TorusKnotGeometry{}};
     ASSERT_TRUE(mesh.has_vertices());
     ASSERT_FALSE(mesh.indices().empty());
 }

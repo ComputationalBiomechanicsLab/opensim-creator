@@ -5,6 +5,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -19,12 +20,19 @@ namespace osc
         Radians theta_length = Degrees{360};
     };
 
-    class RingGeometry final : public Mesh {
+    class RingGeometry final {
     public:
         using Params = RingGeometryParams;
 
         static constexpr CStringView name() { return "Ring"; }
 
         explicit RingGeometry(const Params& = {});
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

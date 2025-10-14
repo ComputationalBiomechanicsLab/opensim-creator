@@ -6,6 +6,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -16,7 +17,7 @@ namespace osc
         Vector2uz num_segments = {1, 1};
     };
 
-    class PlaneGeometry final : public Mesh {
+    class PlaneGeometry final {
     public:
         using Params = PlaneGeometryParams;
 
@@ -25,5 +26,12 @@ namespace osc
         explicit PlaneGeometry(const Params& = {});
 
         Vector3 normal() const { return {0.0f, 0.0f, 1.0f}; }
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }

@@ -5,6 +5,7 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
+#include <utility>
 
 namespace osc
 {
@@ -21,12 +22,19 @@ namespace osc
         Radians theta_length = Degrees{360};
     };
 
-    class CylinderGeometry final : public Mesh {
+    class CylinderGeometry final {
     public:
         using Params = CylinderGeometryParams;
 
         static constexpr CStringView name() { return "Cylinder"; }
 
         explicit CylinderGeometry(const Params& = {});
+
+        const Mesh& mesh() const & { return mesh_; }
+        Mesh&& mesh() && { return std::move(mesh_); }
+        operator const Mesh& () const & { return mesh_; }
+        operator Mesh () && { return std::move(mesh_); }
+    private:
+        Mesh mesh_;
     };
 }
