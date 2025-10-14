@@ -1,6 +1,5 @@
 #pragma once
 
-#include <liboscar/Graphics/Detail/ShaderLocations.h>
 #include <liboscar/Graphics/VertexAttribute.h>
 #include <liboscar/Graphics/VertexAttributeFormat.h>
 
@@ -12,30 +11,30 @@ namespace osc::detail
     template<>
     struct VertexAttributeTraits<VertexAttribute::Position> final {
         static constexpr VertexAttributeFormat default_format = VertexAttributeFormat::Float32x3;
-        static constexpr int shader_location = shader_locations::aPos;
+        static constexpr int shader_location = 0;
     };
 
     template<>
     struct VertexAttributeTraits<VertexAttribute::Normal> final {
         static constexpr VertexAttributeFormat default_format = VertexAttributeFormat::Float32x3;
-        static constexpr int shader_location = shader_locations::aNormal;
+        static constexpr int shader_location = 2;
     };
 
     template<>
     struct VertexAttributeTraits<VertexAttribute::Tangent> final {
         static constexpr VertexAttributeFormat default_format = VertexAttributeFormat::Float32x4;
-        static constexpr int shader_location = shader_locations::aTangent;
+        static constexpr int shader_location = 4;
     };
 
     template<>
     struct VertexAttributeTraits<VertexAttribute::Color> final {
         static constexpr VertexAttributeFormat default_format = VertexAttributeFormat::Float32x4;
-        static constexpr int shader_location = shader_locations::aColor;
+        static constexpr int shader_location = 3;
     };
 
     template<>
     struct VertexAttributeTraits<VertexAttribute::TexCoord0> final {
         static constexpr VertexAttributeFormat default_format = VertexAttributeFormat::Float32x2;
-        static constexpr int shader_location = shader_locations::aTexCoord;
+        static constexpr int shader_location = 1;
     };
 }
