@@ -1,9 +1,11 @@
 #include "RendererPerfTestingTab.h"
 
-#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
-#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
-#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Documents/Model/UndoableModelActions.h>
 #include <libopensimcreator/Documents/Model/UndoableModelStatePair.h>
+#include <libopensimcreator/Graphics/ModelRendererParams.h>
+#include <libopensimcreator/Graphics/OpenSimDecorationGenerator.h>
+#include <libopensimcreator/Graphics/OpenSimGraphicsHelpers.h>
+#include <libopensimcreator/UI/Shared/BasicWidgets.h>
 
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
@@ -18,6 +20,7 @@
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/AppSettings.h>
+#include <liboscar/UI/IconCache.h>
 #include <liboscar/UI/oscimgui.h>
 #include <liboscar/UI/Tabs/TabPrivate.h>
 #include <liboscar/Utils/CStringView.h>
@@ -43,6 +46,8 @@ namespace
         }
 
         float fps() const { return 1.0f/static_cast<float>(mean.count()); }
+
+        void reset() { *this = {}; }
     };
 }
 
@@ -50,7 +55,9 @@ class osc::RendererPerfTestingTab::Impl final : public TabPrivate {
 public:
     Impl(RendererPerfTestingTab& owner, Widget* parent) :
         TabPrivate{owner, parent, "RendererPerfTesting"}
-    {}
+    {
+        generateDecorations();
+    }
 
     void on_mount()
     {
@@ -75,7 +82,7 @@ public:
     void on_draw()
     {
         if (m_RegenerateDecorationsEachFrame) {
-            m_Decorations = GenerateModelDecorations(m_SceneCache, m_Model);
+            generateDecorations();
         }
         if (std::exchange(m_FirstFrame, false)) {
             const AABB sceneAABB = bounding_aabb_of(m_Decorations, world_space_bounds_of);
@@ -83,13 +90,7 @@ public:
         }
 
         const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();
-        const SceneRendererParams params = CalcSceneRendererParams(
-            m_ModelRendererParams,
-            workspaceScreenRect.dimensions(),
-            App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
-            App::get().anti_aliasing_level(),
-            1.0f
-        );
+        const SceneRendererParams params = calcParams(workspaceScreenRect);
         m_Renderer.render(m_Decorations, params);
         RenderTexture& sceneTexture = m_Renderer.upd_render_texture();
         graphics::blit_to_main_window(sceneTexture, workspaceScreenRect);
@@ -98,10 +99,37 @@ public:
         ui::draw_checkbox("paused", &m_Paused);
         ui::draw_checkbox("regenerate decorations each frame", &m_RegenerateDecorationsEachFrame);
         ui::draw_text("%f", m_FrameTimeAccumulator.fps());
+        ui::same_line();
+        if (ui::draw_small_button("reset")) {
+            m_FrameTimeAccumulator.reset();
+        }
+        if (DrawViewerTopButtonRow(m_ModelRendererParams, m_Decorations, *m_IconCache)) {
+            generateDecorations();
+        }
         ui::end_panel();
     }
 
 private:
+    SceneRendererParams calcParams(const Rect& workspaceScreenRect) const
+    {
+        return CalcSceneRendererParams(
+            m_ModelRendererParams,
+            workspaceScreenRect.dimensions(),
+            App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
+            App::get().anti_aliasing_level(),
+            1.0f
+        );
+    }
+
+    void generateDecorations()
+    {
+        m_Decorations = GenerateModelDecorations(
+            m_SceneCache,
+            m_Model,
+            m_ModelRendererParams.decorationOptions
+        );
+    }
+
     bool m_FirstFrame = true;
     bool m_WasVSyncEnabled = false;
     FrameTimeAccumulator m_FrameTimeAccumulator;
@@ -111,9 +139,20 @@ private:
     SceneCache m_SceneCache{App::resource_loader()};
     SceneRenderer m_Renderer{m_SceneCache};
     ModelRendererParams m_ModelRendererParams;
+    std::vector<SceneDecoration> m_Decorations;
 
-    UndoableModelStatePair m_Model{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2015.osim")};
-    std::vector<SceneDecoration> m_Decorations = GenerateModelDecorations(m_SceneCache, m_Model);
+    UndoableModelStatePair m_Model = []()
+    {
+        UndoableModelStatePair msp{App::resource_filepath("OpenSimCreator/models/RajagopalModel/Rajagopal2015.osim")};
+        ActionEnableAllWrappingSurfaces(msp);
+        return msp;
+    }();
+
+    std::shared_ptr<IconCache> m_IconCache = App::singleton<IconCache>(
+        App::resource_loader().with_prefix("OpenSimCreator/icons/"),
+        ui::get_font_base_size()/128.0f,
+        App::get().highest_device_pixel_ratio()
+    );
 };
 
 CStringView osc::RendererPerfTestingTab::id() { return "OpenSimCreator/RendererPerfTesting"; }
