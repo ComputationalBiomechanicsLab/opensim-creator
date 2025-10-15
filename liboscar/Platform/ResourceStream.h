@@ -1,7 +1,7 @@
 #pragma once
 
 #include <filesystem>
-#include <iosfwd>
+#include <istream>
 #include <memory>
 #include <string>
 #include <string_view>
