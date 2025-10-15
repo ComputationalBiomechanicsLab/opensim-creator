@@ -74,6 +74,16 @@ void osc::CustomRenderingOptions::setDrawSelectionRims(bool v)
     SetOption(m_Flags, CustomRenderingOptionFlags::DrawSelectionRims, v);
 }
 
+bool osc::CustomRenderingOptions::getOrderIndependentTransparency() const
+{
+    return m_Flags & CustomRenderingOptionFlags::OrderIndependentTransparency;
+}
+
+void osc::CustomRenderingOptions::setOrderIndependentTransparency(bool v)
+{
+    SetOption(m_Flags, CustomRenderingOptionFlags::OrderIndependentTransparency, v);
+}
+
 void osc::CustomRenderingOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
     for (const auto& metadata : GetAllCustomRenderingOptionFlagsMetadata()) {
@@ -98,4 +108,5 @@ void osc::CustomRenderingOptions::applyTo(SceneRendererParams& params) const
     params.draw_rims = getDrawSelectionRims();
     params.draw_mesh_normals = getDrawMeshNormals();
     params.draw_shadows = getDrawShadows();
+    params.order_independent_transparency = getOrderIndependentTransparency();
 }

@@ -6,6 +6,11 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
+- The model scene renderer now has an option (currently, default-disabled) to enable
+  "Order-Independent Transparency", which fixes the rendering of models containing
+  a lot of intersecting geometry (e.g. Rajagopal2015.osim, when its wrap surfaces are
+  displayed, #1130).
+
 ## [0.6.1] - 2025/10/09
 
 - The MacOS DMG installers should now be signed and notarized by Adam Kewley, which should make

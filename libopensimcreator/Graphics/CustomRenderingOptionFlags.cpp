@@ -33,6 +33,12 @@ namespace
             "Selection Rims",
             CustomRenderingOptionFlags::DrawSelectionRims,
         },
+        CustomRenderingOptionFlagsMetadata
+        {
+            "order_independent_transparency",
+            "Order-Independent Transparency",
+            CustomRenderingOptionFlags::OrderIndependentTransparency,
+        },
     });
 }
 

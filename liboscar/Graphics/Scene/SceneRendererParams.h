@@ -48,6 +48,7 @@ namespace osc
         bool draw_rims = true;
         bool draw_shadows = true;
         bool draw_floor = true;
+        bool order_independent_transparency = true;
 
         // camera parameters
         float near_clipping_plane = 0.1f;

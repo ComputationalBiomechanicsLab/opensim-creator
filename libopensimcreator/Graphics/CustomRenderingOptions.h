@@ -33,6 +33,9 @@ namespace osc
         bool getDrawSelectionRims() const;
         void setDrawSelectionRims(bool);
 
+        bool getOrderIndependentTransparency() const;
+        void setOrderIndependentTransparency(bool);
+
         void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;
         void tryUpdFromValues(std::string_view keyPrefix, const std::unordered_map<std::string, Variant>&);
 

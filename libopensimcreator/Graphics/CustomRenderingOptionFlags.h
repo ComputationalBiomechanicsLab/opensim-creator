@@ -10,12 +10,13 @@
 namespace osc
 {
     enum class CustomRenderingOptionFlags : uint32_t {
-        None              = 0,
-        DrawFloor         = 1<<0,
-        MeshNormals       = 1<<1,
-        Shadows           = 1<<2,
-        DrawSelectionRims = 1<<3,
-        NUM_FLAGS         =    4,
+        None                         = 0,
+        DrawFloor                    = 1<<0,
+        MeshNormals                  = 1<<1,
+        Shadows                      = 1<<2,
+        DrawSelectionRims            = 1<<3,
+        OrderIndependentTransparency = 1<<4,
+        NUM_FLAGS                    =    5,
 
         Default = DrawFloor | Shadows | DrawSelectionRims,
     };

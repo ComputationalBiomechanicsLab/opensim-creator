@@ -7,6 +7,7 @@
 #include <liboscar/Graphics/Textures/ChequeredTexture.h>
 #include <liboscar/Graphics/Camera.h>
 #include <liboscar/Graphics/Color.h>
+#include <liboscar/Graphics/ColorRenderBufferParams.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
@@ -192,6 +193,7 @@ namespace
             #version 330 core
 
             uniform bool uHasShadowMap = false;
+            uniform bool uIsOITPass = false;
             uniform vec3 uLightDir;
             uniform sampler2D uShadowMapTexture;
             uniform float uAmbientStrength = 0.15f;
@@ -250,7 +252,57 @@ namespace
             {
                 float brightness = uAmbientStrength + (NonAmbientBrightness * (1.0 - CalculateShadowAmount()));
                 vec4 fragColor = vec4(brightness * vec3(uLightColor), 1.0) * uDiffuseColor;
-                Color0Out = fragColor;
+
+                if (uIsOITPass) {
+                    float weight = fragColor.a; // simple
+                    // float weight = fragColor.a * (1.0 - 0.5 * gl_FragCoord.z); // some attenuation
+                    // float weight = clamp(pow(fragColor.a + 0.01, 4.0) * 1e3 * pow(1.0 - gl_FragCoord.z, 3.0), 1e-2, 3e3);  // published
+                    Color0Out = vec4(fragColor.rgb * fragColor.a * weight, fragColor.a * weight);  // OIT accumulator
+                } else {
+                    Color0Out = fragColor;
+                }
+            }
+        )";
+    };
+
+    // A material that composites OIT output into a scene overlay
+    class SceneOITCompositor final : public Material {
+    public:
+        explicit SceneOITCompositor() :
+            Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
+        {}
+    private:
+        static constexpr std::string_view c_vertex_shader_src = R"(
+            #version 330 core
+
+            uniform mat4 uModelMat;
+            uniform mat4 uViewProjMat;
+            uniform vec2 uTextureOffset = vec2(0.0, 0.0);
+            uniform vec2 uTextureScale = vec2(1.0, 1.0);
+
+            layout (location = 0) in vec3 aPos;
+            layout (location = 1) in vec2 aTexCoord;
+
+            out vec2 TexCoords;
+
+            void main()
+            {
+                TexCoords = uTextureOffset + (uTextureScale * aTexCoord);
+                gl_Position = uViewProjMat * uModelMat * vec4(aPos, 1.0);
+            }
+        )";
+        static constexpr std::string_view c_fragment_shader_src = R"(
+            #version 330 core
+
+            uniform sampler2D uOITAccumulator;
+
+            in vec2 TexCoords;
+            out vec4 FragColor;
+
+            void main()
+            {
+                vec4 sample = texture(uOITAccumulator, TexCoords);
+                FragColor = vec4(sample.rgb / max(sample.a, 1e-5), clamp(sample.a, 0.0, 1.0));
             }
         )";
     };
@@ -517,6 +569,7 @@ public:
 
         scene_main_material_{cache.get<SceneMainMaterial>()},
         scene_floor_material_{cache.get<SceneFloorMaterial>()},
+        scene_oit_compositor_{cache.get<SceneOITCompositor>()},
         rim_filler_material_{cache},
         wireframe_material_{cache.wireframe_material()},
         edge_detection_material_{cache.get<EdgeDetectionMaterial>()},
@@ -547,6 +600,19 @@ public:
         output_render_texture_.set_anti_aliasing_level(params.anti_aliasing_level);
 
         render_objects_to_output_render(decorations, params, maybe_shadow_map);
+        if (params.order_independent_transparency) {
+            // If rendering with order-independent transparency (OIT) is desired, render transparent
+            // objects to OIT accumulators and then composite the accumulators using OIT maths over
+            // the output render
+            if (render_transparent_objects_to_oit_accumulators(decorations, params)) {
+                scene_oit_compositor_.set("uOITAccumulator", oit_render_buffer_);
+                scene_oit_compositor_.set_depth_tested(false);
+                scene_oit_compositor_.set_transparent(true);
+                graphics::draw(quad_mesh_, camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)), scene_oit_compositor_, camera_);
+                camera_.set_clear_flags(CameraClearFlag::None);
+                camera_.render_to(output_render_texture_);
+            }
+        }
 
         // Composite rim highlights over the top of the final render
         if (maybe_rims) {
@@ -559,6 +625,7 @@ public:
         edge_detection_material_.unset("uScreenTexture");
         scene_floor_material_.unset("uShadowMapTexture");
         scene_main_material_.unset("uShadowMapTexture");
+        scene_oit_compositor_.unset("uOITAccumulator");
     }
 
     RenderTexture& upd_render_texture()
@@ -582,6 +649,7 @@ private:
         scene_main_material_.set("uShininess", params.specular_shininess);
         scene_main_material_.set("uNear", camera_.near_clipping_plane());
         scene_main_material_.set("uFar", camera_.far_clipping_plane());
+        scene_main_material_.set("uIsOITPass", false);
 
         // Supply shadow map (if available)
         if (maybe_shadow_map) {
@@ -592,6 +660,7 @@ private:
         else {
             scene_main_material_.set("uHasShadowMap", false);
         }
+
         Material transparent_material = scene_main_material_;
         transparent_material.set_transparent(true);
         MaterialPropertyBlock prop_block;
@@ -618,17 +687,16 @@ private:
             }
 
             std::visit(Overload{
-                [this, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
+                [this, &params, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
                 {
                     if (color != previous_color) {
                         prop_block.set(c_diffuse_color_propname, color);
                         previous_color = color;
                     }
-
                     if (color.a > 254.0f/255.0f) {
                         graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
                     }
-                    else {
+                    else if (not params.order_independent_transparency) {
                         graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
                     }
                 },
@@ -640,7 +708,7 @@ private:
                 {
                     graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
                 }
-                }, dec.shading);
+            }, dec.shading);
 
             // if normals are requested, render the scene element via a normals geometry shader
             //
@@ -683,6 +751,81 @@ private:
 
         camera_.set_clear_flags(CameraClearFlag::Default);
         camera_.render_to(output_render_texture_);
+    }
+
+    bool render_transparent_objects_to_oit_accumulators(
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params)
+    {
+        // Render transparent objects to OIT accumulators (use ADD blending, use opaque depth test but no depth writing).
+        SceneMainMaterial oit_material{scene_main_material_};
+        oit_material.set_transparent(true);
+        oit_material.set_source_blending_factor(SourceBlendingFactor::One);
+        oit_material.set_destination_blending_factor(DestinationBlendingFactor::One);
+        oit_material.set_blending_equation(BlendingEquation::Add);
+        oit_material.set_writes_to_depth_buffer(false);
+        oit_material.set("uIsOITPass", true);
+
+        MaterialPropertyBlock prop_block;
+        std::optional<Color> previous_color;
+
+        // Draw transparent colored scene elements.
+        for (const SceneDecoration& decoration : decorations) {
+
+            if (decoration.flags & SceneDecorationFlag::NoDrawInScene) {
+                continue;  // Skip drawing the decoration (and, potentially, its normals)
+            }
+
+            // Draw opaque/custom decoration
+            std::visit(Overload{
+                [this, &decoration, &previous_color, &oit_material, &prop_block](const Color& color)
+                {
+                    if (color.a > 254.0f/255.0f) {
+                        return;  // Skip opaque objects (already drawn)
+                    }
+                    if (color != previous_color) {
+                        prop_block.set(c_diffuse_color_propname, color);
+                        previous_color = color;
+                    }
+                    graphics::draw(decoration.mesh, decoration.transform, oit_material, camera_, prop_block);
+                },
+                [](const auto&) {},  // Skip custom decorations (already done)
+            }, decoration.shading);
+        }
+
+        if (not previous_color) {
+            return false;  // No transparent objects in the scene
+        }
+
+        // Ensure OIT buffer is correctly formatted
+        const Vector2i pixel_dimensions = params.device_pixel_ratio * params.dimensions;
+        if (oit_render_buffer_.pixel_dimensions() != pixel_dimensions or
+            oit_render_buffer_.anti_aliasing_level() != params.anti_aliasing_level) {
+
+            oit_render_buffer_ = SharedColorRenderBuffer{{
+                .pixel_dimensions = pixel_dimensions,
+                .dimensionality = TextureDimensionality::Tex2D,
+                .anti_aliasing_level = params.anti_aliasing_level,
+                .format = ColorRenderBufferFormat::R16G16B16A16_SFLOAT,
+            }};
+        }
+
+        // Render to OIT floating-point buffer
+        camera_.render_to(RenderTarget{
+            RenderTargetColorAttachment{
+                .buffer = oit_render_buffer_,
+                .load_action = RenderBufferLoadAction::Clear,
+                .store_action = RenderBufferStoreAction::Resolve,
+                .clear_color = Color::clear(),
+            },
+            RenderTargetDepthStencilAttachment{
+                .buffer = output_render_texture_.upd_depth_buffer(),
+                .load_action = RenderBufferLoadAction::Load,        // Don't clear opaque depth
+                .store_action = RenderBufferStoreAction::DontCare,  // Depth writing is disabled
+            }
+        });
+
+        return true;
     }
 
     std::optional<RimHighlights> try_generate_rims(
@@ -845,6 +988,7 @@ private:
 
     SceneMainMaterial scene_main_material_;
     SceneFloorMaterial scene_floor_material_;
+    SceneOITCompositor scene_oit_compositor_;
     RimFillerMaterial rim_filler_material_;
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
@@ -857,6 +1001,7 @@ private:
     SharedDepthStencilRenderBuffer shadow_map_render_buffer_{DepthStencilRenderBufferParams{
         .pixel_dimensions = {1024, 1024},
     }};
+    SharedColorRenderBuffer oit_render_buffer_;
     RenderTexture output_render_texture_;
 };
 
