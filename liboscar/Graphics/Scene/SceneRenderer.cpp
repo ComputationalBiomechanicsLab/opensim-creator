@@ -673,10 +673,10 @@ public:
             graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
         }
 
-        output_rendertexture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
-        output_rendertexture_.set_device_pixel_ratio(params.device_pixel_ratio);
-        output_rendertexture_.set_anti_aliasing_level(params.anti_aliasing_level);
-        camera_.render_to(output_rendertexture_);
+        output_render_texture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
+        output_render_texture_.set_device_pixel_ratio(params.device_pixel_ratio);
+        output_render_texture_.set_anti_aliasing_level(params.anti_aliasing_level);
+        camera_.render_to(output_render_texture_);
 
         // prevents copies on next frame
         edge_detection_material_.unset("uScreenTexture");
@@ -686,7 +686,7 @@ public:
 
     RenderTexture& upd_render_texture()
     {
-        return output_rendertexture_;
+        return output_render_texture_;
     }
 
 private:
@@ -781,7 +781,7 @@ private:
         }
 
         // configure the off-screen solid-colored texture
-        rims_rendertexture_.reformat({
+        rims_render_texture_.reformat({
             .pixel_dimensions = params.device_pixel_ratio * params.dimensions,
             .device_pixel_ratio = params.device_pixel_ratio,
             .anti_aliasing_level = params.anti_aliasing_level,
@@ -790,7 +790,7 @@ private:
         // render to the off-screen solid-colored texture
         camera_.render_to(RenderTarget{
             RenderTargetColorAttachment{
-                .buffer = rims_rendertexture_.upd_color_buffer(),
+                .buffer = rims_render_texture_.upd_color_buffer(),
             },
         });
 
@@ -798,7 +798,7 @@ private:
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
-        edge_detection_material_.set("uScreenTexture", rims_rendertexture_.upd_color_buffer());
+        edge_detection_material_.set("uScreenTexture", rims_render_texture_.upd_color_buffer());
         static_assert(SceneRendererParams::num_rim_groups() == 2);
         edge_detection_material_.set("uRim0Color", params.rim_group_colors[0]);
         edge_detection_material_.set("uRim1Color", params.rim_group_colors[1]);
@@ -867,11 +867,11 @@ private:
 
     Mesh quad_mesh_;
     Camera camera_;
-    RenderTexture rims_rendertexture_;
+    RenderTexture rims_render_texture_;
     SharedDepthStencilRenderBuffer shadow_map_render_buffer_{DepthStencilRenderBufferParams{
         .pixel_dimensions = {1024, 1024},
     }};
-    RenderTexture output_rendertexture_;
+    RenderTexture output_render_texture_;
 };
 
 

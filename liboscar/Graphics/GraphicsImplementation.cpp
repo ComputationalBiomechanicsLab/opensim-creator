@@ -8074,7 +8074,7 @@ void osc::GraphicsBackend::copy_texture(
     // create a source (read) framebuffer for blitting from the source render texture
     gl::FrameBuffer read_fbo;
     gl::bind_framebuffer(GL_READ_FRAMEBUFFER, read_fbo);
-    std::visit(Overload{  // attach source texture depending on rendertexture's type
+    std::visit(Overload{  // attach source texture depending on render texture's type
         [](SingleSampledTexture& t)
         {
             gl::framebuffer_texture2D(
