@@ -46,16 +46,6 @@ namespace
 {
     const StringName c_diffuse_color_propname{"uDiffuseColor"};
 
-    Transform calc_floor_transform(Vector3 floor_origin, float fixup_scale_factor)
-    {
-        return {
-            // note: this should be the same as draw_grid
-            .scale = {50.0f * fixup_scale_factor, 50.0f * fixup_scale_factor, 1.0f},
-            .rotation = angle_axis(-90_deg, Vector3{1.0f, 0.0f, 0.0f}),
-            .translation = floor_origin,
-        };
-    }
-
     struct RimHighlights final {
 
         RimHighlights(
@@ -83,6 +73,21 @@ namespace
         Radians phi;
     };
 
+    struct ShadowCameraMatrices final {
+        Matrix4x4 view_matrix;
+        Matrix4x4 projection_matrix;
+    };
+
+    Transform calc_floor_transform(Vector3 floor_origin, float fixup_scale_factor)
+    {
+        return {
+            // note: this should be the same as draw_grid
+            .scale = {50.0f * fixup_scale_factor, 50.0f * fixup_scale_factor, 1.0f},
+            .rotation = angle_axis(-90_deg, Vector3{1.0f, 0.0f, 0.0f}),
+            .translation = floor_origin,
+        };
+    }
+
     PolarAngles calc_polar_angles(const Vector3& direction_from_origin)
     {
         // X is left-to-right
@@ -103,11 +108,6 @@ namespace
         };
     }
 
-    struct ShadowCameraMatrices final {
-        Matrix4x4 view_matrix;
-        Matrix4x4 projection_matrix;
-    };
-
     ShadowCameraMatrices calc_shadow_camera_matrices(
         const AABB& shadowcasters_aabb,
         const Vector3& light_direction)
@@ -122,8 +122,6 @@ namespace
         camera.phi = camera_polar_angles.phi;
         camera.theta = camera_polar_angles.theta;
         camera.radius = shadowcasters_sphere.radius;
-        camera.znear = 0.0f;
-        camera.zfar = 2.0f * shadowcasters_sphere.radius;
 
         const Matrix4x4 view_matrix = camera.view_matrix();
         const Matrix4x4 projection_matrix = ortho(
@@ -136,6 +134,15 @@ namespace
         );
 
         return ShadowCameraMatrices{view_matrix, projection_matrix};
+    }
+
+    // compute the world space bounds union of all rim-highlighted geometry
+    std::optional<AABB> rim_aabb_of(const SceneDecoration& decoration)
+    {
+        if (decoration.is_rim_highlighted()) {
+            return world_space_bounds_of(decoration);
+        }
+        return std::nullopt;
     }
 
     // the `Material` that's used to shade the main scene (colored `SceneDecoration`s)
@@ -697,15 +704,6 @@ private:
         if (not params.draw_rims) {
             return std::nullopt;
         }
-
-        // compute the world space bounds union of all rim-highlighted geometry
-        const auto rim_aabb_of = [](const SceneDecoration& decoration) -> std::optional<AABB>
-        {
-            if (decoration.is_rim_highlighted()) {
-                return world_space_bounds_of(decoration);
-            }
-            return std::nullopt;
-        };
 
         const std::optional<AABB> maybe_rim_world_space_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
         if (not maybe_rim_world_space_aabb) {
