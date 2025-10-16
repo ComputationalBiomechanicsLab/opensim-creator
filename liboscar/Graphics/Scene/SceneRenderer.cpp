@@ -47,17 +47,6 @@ namespace
     const StringName c_diffuse_color_propname{"uDiffuseColor"};
 
     struct RimHighlights final {
-
-        RimHighlights(
-            Mesh mesh_,
-            const Matrix4x4& transform_,
-            Material material_) :
-
-            mesh{std::move(mesh_)},
-            transform{transform_},
-            material{std::move(material_)}
-        {}
-
         Mesh mesh;
         Matrix4x4 transform;
         Material material;
@@ -806,9 +795,9 @@ private:
 
         // return necessary information for rendering the rims
         return RimHighlights{
-            quad_mesh_,
-            inverse(params.projection_matrix * params.view_matrix) * matrix4x4_cast(quad_mesh_to_rims_quad),
-            edge_detection_material_,
+            .mesh = quad_mesh_,
+            .transform = inverse(params.projection_matrix * params.view_matrix) * matrix4x4_cast(quad_mesh_to_rims_quad),
+            .material = edge_detection_material_,
         };
     }
 
