@@ -176,7 +176,7 @@ TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copi
     //
     //     std::vector<RenderTexture> shadow_maps(num_cascades, RenderTexture{common_params});
     //
-    // that pattern wasn't creating independent shadow_maps because the underlying `RenderBuffer`s
+    // that pattern wasn't creating independent shadow maps because the underlying `RenderBuffer`s
     // were being reference-copied, rather than value-copied
 
     RenderTexture render_texture;
@@ -192,7 +192,7 @@ TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copi
     //
     //     std::vector<RenderTexture> shadow_maps(num_cascades, RenderTexture{common_params});
     //
-    // that pattern wasn't creating independent shadow_maps because the underlying `RenderBuffer`s
+    // that pattern wasn't creating independent shadow maps because the underlying `RenderBuffer`s
     // were being reference-copied, rather than value-copied
 
     RenderTexture rt;
