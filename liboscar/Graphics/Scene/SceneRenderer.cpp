@@ -539,127 +539,21 @@ public:
         camera_.set_view_matrix_override(params.view_matrix);
         camera_.set_projection_matrix_override(params.projection_matrix);
         camera_.set_background_color(params.background_color);
+        camera_.set_clear_flags(CameraClearFlag::Default);
 
-        // draw the the scene
-        {
-            // setup state (materials, shadow maps, etc.)
-
-            scene_main_material_.set("uViewPos", camera_.position());
-            scene_main_material_.set("uLightDir", params.light_direction);
-            scene_main_material_.set("uLightColor", params.light_color);
-            scene_main_material_.set("uAmbientStrength", params.ambient_strength);
-            scene_main_material_.set("uDiffuseStrength", params.diffuse_strength);
-            scene_main_material_.set("uSpecularStrength", params.specular_strength);
-            scene_main_material_.set("uShininess", params.specular_shininess);
-            scene_main_material_.set("uNear", camera_.near_clipping_plane());
-            scene_main_material_.set("uFar", camera_.far_clipping_plane());
-
-            // supply shadow map, if applicable
-            if (maybe_shadow_map) {
-                scene_main_material_.set("uHasShadowMap", true);
-                scene_main_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
-                scene_main_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
-            }
-            else {
-                scene_main_material_.set("uHasShadowMap", false);
-            }
-
-            Material transparent_material = scene_main_material_;
-            transparent_material.set_transparent(true);
-            MaterialPropertyBlock prop_block;
-            MaterialPropertyBlock wireframe_prop_block;
-            Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
-
-            // draw scene decorations
-            for (const SceneDecoration& dec : decorations) {
-
-                // if a wireframe overlay is requested for the decoration then draw it over the top in
-                // a solid color - even if `NoDrawInScene` is requested (#952).
-                if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
-                    const Color wireframe_color = std::visit(Overload{
-                        [](const Color& color) { return color; },
-                        [](const auto&) { return Color::white(); },
-                    }, dec.shading);
-
-                    wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.25f));
-                    graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
-                }
-
-                if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
-                    continue;  // skip drawing the decoration (and, potentially, its normals)
-                }
-
-                std::visit(Overload{
-                    [this, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
-                    {
-                        if (color != previous_color) {
-                            prop_block.set(c_diffuse_color_propname, color);
-                            previous_color = color;
-                        }
-
-                        if (color.a > 254.0f/255.0f) {
-                            graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
-                        }
-                        else {
-                            graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
-                        }
-                    },
-                    [this, &dec](const Material& material)
-                    {
-                        graphics::draw(dec.mesh, dec.transform, material, camera_);
-                    },
-                    [this, &dec](const std::pair<Material, MaterialPropertyBlock>& material_props_pair)
-                    {
-                        graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
-                    }
-                }, dec.shading);
-
-                // if normals are requested, render the scene element via a normals geometry shader
-                //
-                // care: this only works for triangles, because normals-drawing material uses a geometry
-                //       shader that assumes triangular input (#792)
-                if (params.draw_mesh_normals and dec.mesh.topology() == MeshTopology::Triangles) {
-                    graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
-                }
-            }
-
-            // if a floor is requested, draw a textured floor
-            if (params.draw_floor) {
-                scene_floor_material_.set("uViewPos", camera_.position());
-                scene_floor_material_.set("uLightDir", params.light_direction);
-                scene_floor_material_.set("uLightColor", params.light_color);
-                scene_floor_material_.set("uAmbientStrength", 0.7f);
-                scene_floor_material_.set("uDiffuseStrength", 0.4f);
-                scene_floor_material_.set("uSpecularStrength", 0.4f);
-                scene_floor_material_.set("uShininess", 8.0f);
-                scene_floor_material_.set("uNear", camera_.near_clipping_plane());
-                scene_floor_material_.set("uFar", camera_.far_clipping_plane());
-
-                // supply shadow map, if applicable
-                if (maybe_shadow_map) {
-                    scene_floor_material_.set("uHasShadowMap", true);
-                    scene_floor_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
-                    scene_floor_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
-                }
-                else {
-                    scene_floor_material_.set("uHasShadowMap", false);
-                }
-
-                const Transform t = calc_floor_transform(params.floor_position, params.fixup_scale_factor);
-
-                graphics::draw(quad_mesh_, t, scene_floor_material_, camera_);
-            }
-        }
-
-        // add the rim highlights over the top of the scene texture
-        if (maybe_rims) {
-            graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
-        }
-
+        // Setup final output texture params (doesn't change during passes)
         output_render_texture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
         output_render_texture_.set_device_pixel_ratio(params.device_pixel_ratio);
         output_render_texture_.set_anti_aliasing_level(params.anti_aliasing_level);
-        camera_.render_to(output_render_texture_);
+
+        render_objects_to_output_render(decorations, params, maybe_shadow_map);
+
+        // Composite rim highlights over the top of the final render
+        if (maybe_rims) {
+            graphics::draw(maybe_rims->mesh, maybe_rims->transform, maybe_rims->material, camera_);
+            camera_.set_clear_flags(CameraClearFlag::None);
+            camera_.render_to(output_render_texture_);
+        }
 
         // prevents copies on next frame
         edge_detection_material_.unset("uScreenTexture");
@@ -673,6 +567,124 @@ public:
     }
 
 private:
+    void render_objects_to_output_render(
+        std::span<const SceneDecoration> decorations,
+        const SceneRendererParams& params,
+        const std::optional<Shadows>& maybe_shadow_map)
+    {
+        // Setup opaque object material parameters
+        scene_main_material_.set("uViewPos", camera_.position());
+        scene_main_material_.set("uLightDir", params.light_direction);
+        scene_main_material_.set("uLightColor", params.light_color);
+        scene_main_material_.set("uAmbientStrength", params.ambient_strength);
+        scene_main_material_.set("uDiffuseStrength", params.diffuse_strength);
+        scene_main_material_.set("uSpecularStrength", params.specular_strength);
+        scene_main_material_.set("uShininess", params.specular_shininess);
+        scene_main_material_.set("uNear", camera_.near_clipping_plane());
+        scene_main_material_.set("uFar", camera_.far_clipping_plane());
+
+        // Supply shadow map (if available)
+        if (maybe_shadow_map) {
+            scene_main_material_.set("uHasShadowMap", true);
+            scene_main_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
+            scene_main_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
+        }
+        else {
+            scene_main_material_.set("uHasShadowMap", false);
+        }
+        Material transparent_material = scene_main_material_;
+        transparent_material.set_transparent(true);
+        MaterialPropertyBlock prop_block;
+        MaterialPropertyBlock wireframe_prop_block;
+        Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
+
+        // draw scene decorations
+        for (const SceneDecoration& dec : decorations) {
+
+            // if a wireframe overlay is requested for the decoration then draw it over the top in
+            // a solid color - even if `NoDrawInScene` is requested (#952).
+            if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
+                const Color wireframe_color = std::visit(Overload{
+                    [](const Color& color) { return color; },
+                    [](const auto&) { return Color::white(); },
+                    }, dec.shading);
+
+                wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.25f));
+                graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
+            }
+
+            if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
+                continue;  // skip drawing the decoration (and, potentially, its normals)
+            }
+
+            std::visit(Overload{
+                [this, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
+                {
+                    if (color != previous_color) {
+                        prop_block.set(c_diffuse_color_propname, color);
+                        previous_color = color;
+                    }
+
+                    if (color.a > 254.0f/255.0f) {
+                        graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
+                    }
+                    else {
+                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
+                    }
+                },
+                [this, &dec](const Material& material)
+                {
+                    graphics::draw(dec.mesh, dec.transform, material, camera_);
+                },
+                [this, &dec](const std::pair<Material, MaterialPropertyBlock>& material_props_pair)
+                {
+                    graphics::draw(dec.mesh, dec.transform, material_props_pair.first, camera_, material_props_pair.second);
+                }
+                }, dec.shading);
+
+            // if normals are requested, render the scene element via a normals geometry shader
+            //
+            // care: this only works for triangles, because normals-drawing material uses a geometry
+            //       shader that assumes triangular input (#792)
+            if (params.draw_mesh_normals and dec.mesh.topology() == MeshTopology::Triangles) {
+                graphics::draw(dec.mesh, dec.transform, normals_material_, camera_);
+            }
+        }
+
+        // If a floor is requested, draw an opaque textured floor
+        if (params.draw_floor) {
+            scene_floor_material_.set("uViewPos", camera_.position());
+            scene_floor_material_.set("uLightDir", params.light_direction);
+            scene_floor_material_.set("uLightColor", params.light_color);
+            scene_floor_material_.set("uAmbientStrength", 0.7f);
+            scene_floor_material_.set("uDiffuseStrength", 0.4f);
+            scene_floor_material_.set("uSpecularStrength", 0.4f);
+            scene_floor_material_.set("uShininess", 8.0f);
+            scene_floor_material_.set("uNear", camera_.near_clipping_plane());
+            scene_floor_material_.set("uFar", camera_.far_clipping_plane());
+
+            // supply shadow map, if applicable
+            if (maybe_shadow_map) {
+                scene_floor_material_.set("uHasShadowMap", true);
+                scene_floor_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
+                scene_floor_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
+            }
+            else {
+                scene_floor_material_.set("uHasShadowMap", false);
+            }
+
+            graphics::draw(
+                quad_mesh_,
+                calc_floor_transform(params.floor_position, params.fixup_scale_factor),
+                scene_floor_material_,
+                camera_
+            );
+        }
+
+        camera_.set_clear_flags(CameraClearFlag::Default);
+        camera_.render_to(output_render_texture_);
+    }
+
     std::optional<RimHighlights> try_generate_rims(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
