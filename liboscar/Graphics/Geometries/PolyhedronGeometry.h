@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <span>
-#include <utility>
 #include <vector>
 
 namespace osc
@@ -49,10 +48,8 @@ namespace osc
             size_t detail_level = 0
         );
 
-        const Mesh& mesh() const & { return mesh_; }
-        Mesh&& mesh() && { return std::move(mesh_); }
-        operator const Mesh& () const & { return mesh_; }
-        operator Mesh () && { return std::move(mesh_); }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
         Mesh mesh_;
     };

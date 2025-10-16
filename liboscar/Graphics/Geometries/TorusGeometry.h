@@ -5,7 +5,6 @@
 #include <liboscar/Utils/CStringView.h>
 
 #include <cstddef>
-#include <utility>
 
 namespace osc
 {
@@ -27,10 +26,8 @@ namespace osc
 
         explicit TorusGeometry(const Params& = {});
 
-        const Mesh& mesh() const & { return mesh_; }
-        Mesh&& mesh() && { return std::move(mesh_); }
-        operator const Mesh& () const & { return mesh_; }
-        operator Mesh () && { return std::move(mesh_); }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
         Mesh mesh_;
     };

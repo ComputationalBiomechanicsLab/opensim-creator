@@ -4,9 +4,6 @@
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
 
-#include <cstddef>
-#include <utility>
-
 namespace osc
 {
     struct BoxGeometryParams final {
@@ -24,10 +21,8 @@ namespace osc
 
         explicit BoxGeometry(const Params& = Params{});
 
-        const Mesh& mesh() const & { return mesh_; }
-        Mesh&& mesh() && { return std::move(mesh_); }
-        operator const Mesh& () const & { return mesh_; }
-        operator Mesh () && { return std::move(mesh_); }
+        const Mesh& mesh() const { return mesh_; }
+        operator const Mesh& () const { return mesh_; }
     private:
         Mesh mesh_;
     };
