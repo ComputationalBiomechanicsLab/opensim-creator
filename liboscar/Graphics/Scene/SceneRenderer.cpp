@@ -209,6 +209,10 @@ namespace
 
             float CalculateShadowAmount()
             {
+                if (!uHasShadowMap) {
+                    return 0.0;
+                }
+
                 // perspective divide
                 vec3 projCoords = FragLightSpacePos.xyz / FragLightSpacePos.w;
 
@@ -229,40 +233,24 @@ namespace
                 // PCF
                 float shadow = 0.0;
                 vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
-                for(int x = -1; x <= 1; ++x)
-                {
-                    for(int y = -1; y <= 1; ++y)
-                    {
+                for (int x = -1; x <= 1; ++x) {
+                    for (int y = -1; y <= 1; ++y) {
                         float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r;
-                        if (pcfDepth < 1.0)
-                        {
+                        if (pcfDepth < 1.0) {
                             shadow += (currentDepth - bias) > pcfDepth  ? 1.0 : 0.0;
                         }
                     }
                 }
                 shadow /= 9.0;
 
-                return shadow;
-            }
-
-            float LinearizeDepth(float depth)
-            {
-                // from: https://learnopengl.com/Advanced-OpenGL/Depth-testing
-                //
-                // only really works with perspective cameras: orthogonal cameras
-                // don't need this unprojection math trick
-
-                float z = depth * 2.0 - 1.0;
-                return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+                return 0.5*shadow;
             }
 
             void main()
             {
-                float shadowAmt = uHasShadowMap ? 0.5*CalculateShadowAmount() : 0.0f;
-                float brightness = uAmbientStrength + ((1.0 - shadowAmt) * NonAmbientBrightness);
-                Color0Out = vec4(brightness * vec3(uLightColor), 1.0) * uDiffuseColor;
-                Color0Out.a *= 1.0 - (LinearizeDepth(gl_FragCoord.z) / uFar);  // fade into background at high distances
-                Color0Out.a = clamp(Color0Out.a, 0.0, 1.0);
+                float brightness = uAmbientStrength + (NonAmbientBrightness * (1.0 - CalculateShadowAmount()));
+                vec4 fragColor = vec4(brightness * vec3(uLightColor), 1.0) * uDiffuseColor;
+                Color0Out = fragColor;
             }
         )";
     };
@@ -541,11 +529,10 @@ public:
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
-        // render any other perspectives on the scene (shadows, rim highlights, etc.)
         const std::optional<RimHighlights> maybe_rims = try_generate_rims(decorations, params);
         const std::optional<Shadows> maybe_shadow_map = try_generate_shadow_map(decorations, params);
 
-        // setup camera for this render
+        // Setup camera (parameters are the same for all scene render passes)
         camera_.reset();
         camera_.set_position(params.viewer_position);
         camera_.set_clipping_planes({params.near_clipping_plane, params.far_clipping_plane});
