@@ -181,9 +181,9 @@ public:
 
     //TODO This function must be overriden for because this component is
     //derived from OpenSim::ContactGeometry.
-    SimTK::ContactGeometry createSimTKContactGeometry() const override {
+    SimTK::ContactGeometry createSimTKContactGeometryImpl() const override {
         return SimTK::ContactGeometry();
-    };
+    }
 
     const SimTK::PolygonalMesh& getPolygonalMesh() const {
         return _mesh;

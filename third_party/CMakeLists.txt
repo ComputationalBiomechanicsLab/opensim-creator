@@ -174,13 +174,6 @@ if(${OSCDEPS_BUILD_OPENBLAS})
 endif()
 
 if(${OSCDEPS_BUILD_SPDLOG})
-    if(MSVC)
-        # `spdlog` transitively uses a deprecated `stdext::checked_array_iterator`
-        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING")
-    else()
-        set(SPDLOG_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    endif()
-
     ExternalProject_Add(spdlog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}

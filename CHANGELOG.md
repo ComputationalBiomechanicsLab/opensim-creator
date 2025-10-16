@@ -10,6 +10,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   "Order-Independent Transparency", which fixes the rendering of models containing
   a lot of intersecting geometry (e.g. Rajagopal2015.osim, when its wrap surfaces are
   displayed, #1130).
+- OpenSim and Simbody were updated to the latest upstream version (2f3d0e1, 15th Oct)
+  so that new features such as exponential path springs and Scholz wrapping paths are
+  supported (big thanks to @alexbeattie42 for doing the legwork, #1099, #1100).
 
 ## [0.6.1] - 2025/10/09
 
