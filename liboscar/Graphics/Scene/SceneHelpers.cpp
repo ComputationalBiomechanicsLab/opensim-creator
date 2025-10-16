@@ -336,7 +336,7 @@ SceneRendererParams osc::calc_standard_dark_scene_render_params(
     return SceneRendererParams{
         .dimensions = dimensions,
         .device_pixel_ratio = device_pixel_ratio,
-        .antialiasing_level = aa_level,
+        .anti_aliasing_level = aa_level,
         .draw_mesh_normals = false,
         .draw_floor = false,
         .near_clipping_plane = camera.znear,

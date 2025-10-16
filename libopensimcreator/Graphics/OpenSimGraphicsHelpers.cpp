@@ -60,7 +60,7 @@ SceneRendererParams osc::CalcSceneRendererParams(
         rv.dimensions = viewportDims;
     }
     rv.device_pixel_ratio = viewportDevicePixelRatio;
-    rv.antialiasing_level = antiAliasingLevel;
+    rv.anti_aliasing_level = antiAliasingLevel;
     rv.light_direction = recommended_light_direction(renderParams.camera);
     renderParams.renderingOptions.applyTo(rv);
     rv.view_matrix = renderParams.camera.view_matrix();

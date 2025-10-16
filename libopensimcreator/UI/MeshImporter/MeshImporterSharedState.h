@@ -444,7 +444,7 @@ namespace osc::mi
             SceneRendererParams p;
             p.dimensions = get3DSceneDims();
             p.device_pixel_ratio = app.settings().get_value<float>("graphics/render_scale", 1.0f) * app.main_window_device_pixel_ratio();
-            p.antialiasing_level = app.anti_aliasing_level();
+            p.anti_aliasing_level = app.anti_aliasing_level();
             p.draw_rims = true;
             p.draw_floor = false;
             p.near_clipping_plane = m_3DSceneCamera.znear;

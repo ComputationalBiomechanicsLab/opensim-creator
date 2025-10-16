@@ -675,7 +675,7 @@ public:
 
         output_rendertexture_.set_pixel_dimensions(params.device_pixel_ratio * params.dimensions);
         output_rendertexture_.set_device_pixel_ratio(params.device_pixel_ratio);
-        output_rendertexture_.set_anti_aliasing_level(params.antialiasing_level);
+        output_rendertexture_.set_anti_aliasing_level(params.anti_aliasing_level);
         camera_.render_to(output_rendertexture_);
 
         // prevents copies on next frame
@@ -784,7 +784,7 @@ private:
         rims_rendertexture_.reformat({
             .pixel_dimensions = params.device_pixel_ratio * params.dimensions,
             .device_pixel_ratio = params.device_pixel_ratio,
-            .anti_aliasing_level = params.antialiasing_level,
+            .anti_aliasing_level = params.anti_aliasing_level,
         });
 
         // render to the off-screen solid-colored texture

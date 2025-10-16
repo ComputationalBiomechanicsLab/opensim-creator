@@ -41,7 +41,7 @@ namespace osc
         // output parameters
         Vector2 dimensions = {1.0f, 1.0f};  // desired dimensions in device-independent pixels
         float device_pixel_ratio = 1.0f;
-        AntiAliasingLevel antialiasing_level = AntiAliasingLevel::none();
+        AntiAliasingLevel anti_aliasing_level = AntiAliasingLevel::none();
 
         // flags
         bool draw_mesh_normals = false;

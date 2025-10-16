@@ -2023,7 +2023,7 @@ std::ostream& osc::operator<<(std::ostream& o, const RenderTextureParams& params
         "RenderTextureParams(width = " << params.pixel_dimensions.x
         << ", height = " << params.pixel_dimensions.y
         << ", device_pixel_ratio = " << params.device_pixel_ratio
-        << ", antialiasing_level = " << params.anti_aliasing_level
+        << ", anti_aliasing_level = " << params.anti_aliasing_level
         << ", color_format = " << params.color_format
         << ", depth_stencil_format = " << params.depth_stencil_format
         << ")";

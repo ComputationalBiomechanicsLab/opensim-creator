@@ -197,7 +197,7 @@ private:
         SceneRendererParams params{m_LastSceneRendererParams};
         params.dimensions = workspaceUIRect.dimensions();
         params.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
-        params.antialiasing_level = App::get().anti_aliasing_level();
+        params.anti_aliasing_level = App::get().anti_aliasing_level();
         params.projection_matrix = m_Camera.projection_matrix(aspect_ratio_of(workspaceUIRect));
 
         if (params != m_LastSceneRendererParams) {

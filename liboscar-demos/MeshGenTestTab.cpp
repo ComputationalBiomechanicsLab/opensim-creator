@@ -104,7 +104,7 @@ public:
             const Vector2 viewport_dimensions = viewport_ui_rect.dimensions();
             render_params_.dimensions = elementwise_max(viewport_dimensions, {0.0f, 0.0f});
             render_params_.device_pixel_ratio = App::settings().get_value<float>("graphics/render_scale", 1.0f) * App::get().main_window_device_pixel_ratio(),
-            render_params_.antialiasing_level = App::get().anti_aliasing_level();
+            render_params_.anti_aliasing_level = App::get().anti_aliasing_level();
             render_params_.light_direction = recommended_light_direction(camera_);
             render_params_.projection_matrix = camera_.projection_matrix(aspect_ratio_of(render_params_.dimensions));
             render_params_.view_matrix = camera_.view_matrix();
