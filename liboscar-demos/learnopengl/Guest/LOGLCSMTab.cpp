@@ -37,7 +37,7 @@ namespace rgs = std::ranges;
 
 namespace
 {
-    constexpr int c_shadowmap_edge_length = 256;
+    constexpr int c_shadow_map_edge_length = 256;
 
     // represents a single transformed mesh in the scene
     struct TransformedMesh {
@@ -94,11 +94,11 @@ namespace
         return rv;
     }
 
-    // returns blank depth buffers that the cascade (shadowmaps) are written to
+    // returns blank depth buffers that the cascade (shadow maps) are written to
     std::vector<SharedDepthStencilRenderBuffer> generate_blank_cascade_buffers()
     {
         const DepthStencilRenderBufferParams params = {
-            .pixel_dimensions = Vector2i{c_shadowmap_edge_length},
+            .pixel_dimensions = Vector2i{c_shadow_map_edge_length},
             .format = DepthStencilRenderBufferFormat::D32_SFloat,
         };
         return {

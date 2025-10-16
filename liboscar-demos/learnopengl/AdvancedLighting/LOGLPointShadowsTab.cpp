@@ -26,7 +26,7 @@ using namespace osc;
 
 namespace
 {
-    constexpr Vector2i c_shadowmap_pixel_dimensions = {1024, 1024};
+    constexpr Vector2i c_shadow_map_pixel_dimensions = {1024, 1024};
 
     Transform make_rotated_transform()
     {
@@ -66,7 +66,7 @@ namespace
     RenderTexture create_depth_texture()
     {
         return RenderTexture{{
-            .pixel_dimensions = c_shadowmap_pixel_dimensions,
+            .pixel_dimensions = c_shadow_map_pixel_dimensions,
             .dimensionality = TextureDimensionality::Cube,
             .color_format = ColorRenderBufferFormat::R32_SFLOAT,
         }};
@@ -128,7 +128,7 @@ private:
         const Rect workspace_screen_space_rect = ui::get_main_window_workspace_screen_space_rect();
 
         draw_shadow_pass_to_cubemap();
-        draw_shadowmapped_scene_to_screen(workspace_screen_space_rect);
+        draw_shadow_mapped_scene_to_screen(workspace_screen_space_rect);
     }
 
     void draw_shadow_pass_to_cubemap()
@@ -138,7 +138,7 @@ private:
         const float zfar = 25.0f;
         const Matrix4x4 projection_matrix = perspective(
             90_deg,
-            aspect_ratio_of(c_shadowmap_pixel_dimensions),
+            aspect_ratio_of(c_shadow_map_pixel_dimensions),
             znear,
             zfar
         );
@@ -148,19 +148,19 @@ private:
             calc_cubemap_view_proj_matrices(projection_matrix, light_pos_);
 
         // pass data to material
-        shadowmapping_material_.set_array("uShadowMatrices", shadow_matrices);
-        shadowmapping_material_.set("uLightPos", light_pos_);
-        shadowmapping_material_.set("uFarPlane", zfar);
+        shadow_mapping_material_.set_array("uShadowMatrices", shadow_matrices);
+        shadow_mapping_material_.set("uLightPos", light_pos_);
+        shadow_mapping_material_.set("uFarPlane", zfar);
 
-        // render (shadowmapping does not use the camera's view/projection matrices)
+        // render (shadow mapping does not use the camera's view/projection matrices)
         Camera camera;
         for (const SceneCube& cube : scene_cubes_) {
-            graphics::draw(cube_mesh_, cube.transform, shadowmapping_material_, camera);
+            graphics::draw(cube_mesh_, cube.transform, shadow_mapping_material_, camera);
         }
         camera.render_to(depth_texture_);
     }
 
-    void draw_shadowmapped_scene_to_screen(const Rect& viewport_screen_space_rect)
+    void draw_shadow_mapped_scene_to_screen(const Rect& viewport_screen_space_rect)
     {
         Material material = use_soft_shadows_ ? soft_scene_material_ : scene_material_;
 
@@ -200,7 +200,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
 
-    Material shadowmapping_material_{Shader{
+    Material shadow_mapping_material_{Shader{
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.geom"),
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedLighting/point_shadows/MakeShadowMap.frag"),

@@ -174,9 +174,9 @@ TEST(RenderTexture, upd_color_buffer_returns_independent_RenderBuffers_from_copi
     // this popped up while developing the `LearnOpenGL/CSM` tab implementation, where
     // it was using a pattern like:
     //
-    //     std::vector<RenderTexture> shadowmaps(num_cascades, RenderTexture{common_params});
+    //     std::vector<RenderTexture> shadow_maps(num_cascades, RenderTexture{common_params});
     //
-    // that pattern wasn't creating independent shadowmaps because the underlying `RenderBuffer`s
+    // that pattern wasn't creating independent shadow_maps because the underlying `RenderBuffer`s
     // were being reference-copied, rather than value-copied
 
     RenderTexture render_texture;
@@ -190,9 +190,9 @@ TEST(RenderTexture, upd_depth_buffer_returns_independent_RenderBuffers_from_copi
     // this popped up while developing the `LearnOpenGL/CSM` tab implementation, where
     // it was using a pattern like:
     //
-    //     std::vector<RenderTexture> shadowmaps(num_cascades, RenderTexture{common_params});
+    //     std::vector<RenderTexture> shadow_maps(num_cascades, RenderTexture{common_params});
     //
-    // that pattern wasn't creating independent shadowmaps because the underlying `RenderBuffer`s
+    // that pattern wasn't creating independent shadow_maps because the underlying `RenderBuffer`s
     // were being reference-copied, rather than value-copied
 
     RenderTexture rt;

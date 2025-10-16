@@ -547,7 +547,7 @@ public:
     {
         // render any other perspectives on the scene (shadows, rim highlights, etc.)
         const std::optional<RimHighlights> maybe_rims = try_generate_rims(decorations, params);
-        const std::optional<Shadows> maybe_shadowmap = try_generate_shadowmap(decorations, params);
+        const std::optional<Shadows> maybe_shadow_map = try_generate_shadow_map(decorations, params);
 
         // setup camera for this render
         camera_.reset();
@@ -559,7 +559,7 @@ public:
 
         // draw the the scene
         {
-            // setup state (materials, shadowmaps, etc.)
+            // setup state (materials, shadow maps, etc.)
 
             scene_main_material_.set("uViewPos", camera_.position());
             scene_main_material_.set("uLightDir", params.light_direction);
@@ -571,11 +571,11 @@ public:
             scene_main_material_.set("uNear", camera_.near_clipping_plane());
             scene_main_material_.set("uFar", camera_.far_clipping_plane());
 
-            // supply shadowmap, if applicable
-            if (maybe_shadowmap) {
+            // supply shadow map, if applicable
+            if (maybe_shadow_map) {
                 scene_main_material_.set("uHasShadowMap", true);
-                scene_main_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_matrix);
-                scene_main_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                scene_main_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
+                scene_main_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
             }
             else {
                 scene_main_material_.set("uHasShadowMap", false);
@@ -652,11 +652,11 @@ public:
                 scene_floor_material_.set("uNear", camera_.near_clipping_plane());
                 scene_floor_material_.set("uFar", camera_.far_clipping_plane());
 
-                // supply shadowmap, if applicable
-                if (maybe_shadowmap) {
+                // supply shadow map, if applicable
+                if (maybe_shadow_map) {
                     scene_floor_material_.set("uHasShadowMap", true);
-                    scene_floor_material_.set("uLightSpaceMat", maybe_shadowmap->lightspace_matrix);
-                    scene_floor_material_.set("uShadowMapTexture", maybe_shadowmap->shadow_map);
+                    scene_floor_material_.set("uLightSpaceMat", maybe_shadow_map->lightspace_matrix);
+                    scene_floor_material_.set("uShadowMapTexture", maybe_shadow_map->shadow_map);
                 }
                 else {
                     scene_floor_material_.set("uHasShadowMap", false);
@@ -814,7 +814,7 @@ private:
         };
     }
 
-    std::optional<Shadows> try_generate_shadowmap(
+    std::optional<Shadows> try_generate_shadow_map(
         std::span<const SceneDecoration> decorations,
         const SceneRendererParams& params)
     {
@@ -850,11 +850,11 @@ private:
         camera_.set_projection_matrix_override(matrices.projection_matrix);
         camera_.render_to(RenderTarget{
             RenderTargetDepthStencilAttachment{
-                .buffer = shadowmap_render_buffer_,
+                .buffer = shadow_map_render_buffer_,
             },
         });
 
-        return Shadows{shadowmap_render_buffer_ , matrices.projection_matrix * matrices.view_matrix};
+        return Shadows{shadow_map_render_buffer_ , matrices.projection_matrix * matrices.view_matrix};
     }
 
     SceneMainMaterial scene_main_material_;
@@ -868,7 +868,7 @@ private:
     Mesh quad_mesh_;
     Camera camera_;
     RenderTexture rims_rendertexture_;
-    SharedDepthStencilRenderBuffer shadowmap_render_buffer_{DepthStencilRenderBufferParams{
+    SharedDepthStencilRenderBuffer shadow_map_render_buffer_{DepthStencilRenderBufferParams{
         .pixel_dimensions = {1024, 1024},
     }};
     RenderTexture output_rendertexture_;
