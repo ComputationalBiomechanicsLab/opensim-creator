@@ -3428,6 +3428,9 @@ public:
     DepthFunction depth_function() const { return depth_function_; }
     void set_depth_function(DepthFunction depth_function) { depth_function_ = depth_function; }
 
+    bool writes_to_depth_buffer() const { return writes_to_depth_buffer_; }
+    void set_writes_to_depth_buffer(bool value) { writes_to_depth_buffer_ = value; }
+
     bool is_wireframe() const { return is_wireframe_mode_; }
     void set_wireframe(bool value) { is_wireframe_mode_ = value; }
 
@@ -3446,6 +3449,7 @@ private:
     BlendingEquation blending_equation_ = BlendingEquation::Default;
     bool is_transparent_ = false;
     bool is_depth_tested_ = true;
+    bool writes_to_depth_buffer_ = true;
     bool is_wireframe_mode_ = false;
 };
 
@@ -3516,6 +3520,16 @@ DepthFunction osc::Material::depth_function() const
 void osc::Material::set_depth_function(DepthFunction depth_function)
 {
     impl_.upd()->set_depth_function(depth_function);
+}
+
+bool osc::Material::writes_to_depth_buffer() const
+{
+    return impl_->writes_to_depth_buffer();
+}
+
+void osc::Material::set_writes_to_depth_buffer(bool value)
+{
+    impl_.upd()->set_writes_to_depth_buffer(value);
 }
 
 bool osc::Material::is_wireframe() const
@@ -7346,6 +7360,10 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
         glDepthFunc(to_opengl_depth_function_enum(material_impl.depth_function()));
     }
 
+    if (not material_impl.writes_to_depth_buffer()) {
+        glDepthMask(GL_FALSE);
+    }
+
     if (material_impl.cull_mode() != CullMode::Off) {
         glEnable(GL_CULL_FACE);
         glCullFace(to_opengl_cull_face_enum(material_impl.cull_mode()));
@@ -7401,6 +7419,10 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     if (material_impl.cull_mode() != CullMode::Off) {
         glCullFace(GL_BACK);  // default from Khronos docs
         glDisable(GL_CULL_FACE);
+    }
+
+    if (not material_impl.writes_to_depth_buffer()) {
+        glDepthMask(GL_TRUE);  // Khronos: "Initially, depth buffer writing is enabled"
     }
 
     if (material_impl.depth_function() != DepthFunction::Default) {

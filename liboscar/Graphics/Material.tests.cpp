@@ -730,6 +730,22 @@ TEST_F(MaterialTest, MaterialGetDepthFunctionIsInitiallyDefault)
     ASSERT_EQ(material.depth_function(), DepthFunction::Default);
 }
 
+TEST_F(MaterialTest, MaterialWritesToDepthBufferIsInitiallyTrue)
+{
+    const Material material = generate_material();
+    ASSERT_TRUE(material.writes_to_depth_buffer());
+}
+
+TEST_F(MaterialTest, MaterialSetWritesToDepthBufferChangesWritesToDepthBuffer)
+{
+    Material material = generate_material();
+    ASSERT_TRUE(material.writes_to_depth_buffer());
+    material.set_writes_to_depth_buffer(false);
+    ASSERT_FALSE(material.writes_to_depth_buffer());
+    material.set_writes_to_depth_buffer(true);
+    ASSERT_TRUE(material.writes_to_depth_buffer());
+}
+
 TEST_F(MaterialTest, MaterialSetDepthFunctionBehavesAsExpected)
 {
     Material material = generate_material();

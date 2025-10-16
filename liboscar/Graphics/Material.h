@@ -80,6 +80,9 @@ namespace osc
         DepthFunction depth_function() const;
         void set_depth_function(DepthFunction);
 
+        bool writes_to_depth_buffer() const;
+        void set_writes_to_depth_buffer(bool);
+
         bool is_wireframe() const;
         void set_wireframe(bool);
 
