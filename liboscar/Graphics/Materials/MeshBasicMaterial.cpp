@@ -35,7 +35,7 @@ void main()
 }
 )";
 
-    const StringName& color_property_name()
+    const StringName& get_color_property_name()
     {
         static const StringName s_color_property_name{"uDiffuseColor"};
         return s_color_property_name;
@@ -45,6 +45,11 @@ void main()
 osc::MeshBasicMaterial::PropertyBlock::PropertyBlock(const Color& color)
 {
     set_color(color);
+}
+
+const StringName& osc::MeshBasicMaterial::PropertyBlock::color_property_name()
+{
+    return get_color_property_name();
 }
 
 std::optional<Color> osc::MeshBasicMaterial::PropertyBlock::color() const
@@ -66,6 +71,8 @@ osc::MeshBasicMaterial::MeshBasicMaterial(const Params& p) :
 osc::MeshBasicMaterial::MeshBasicMaterial(const Color& color) :
     MeshBasicMaterial{Params{.color = color}}
 {}
+
+const StringName& osc::MeshBasicMaterial::color_property_name() { return get_color_property_name(); }
 
 Color osc::MeshBasicMaterial::color() const { return get<Color>(color_property_name()).value(); }
 

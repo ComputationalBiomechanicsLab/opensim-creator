@@ -38,6 +38,12 @@ namespace osc::detail
     };
 
     template<>
+    struct MaterialValueTraits<Color32> final {
+        static constexpr void constructor_assertions(std::span<const Color32>) {}
+        static constexpr ShaderPropertyType shader_property_type(std::span<const Color32>) { return ShaderPropertyType::Vector4; }
+    };
+
+    template<>
     struct MaterialValueTraits<float> final {
         static constexpr void constructor_assertions(std::span<const float>) {}
         static constexpr ShaderPropertyType shader_property_type(std::span<const float>) { return ShaderPropertyType::Float; }

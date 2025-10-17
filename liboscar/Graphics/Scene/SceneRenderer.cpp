@@ -31,8 +31,9 @@
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
-#include <liboscar/Utils/Perf.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
+
+#include <ankerl/unordered_dense.h>
 
 #include <algorithm>
 #include <memory>
@@ -266,9 +267,9 @@ namespace
     };
 
     // A material that composites OIT output into a scene overlay
-    class SceneOITCompositor final : public Material {
+    class SceneOITCompositorMaterial final : public Material {
     public:
-        explicit SceneOITCompositor() :
+        explicit SceneOITCompositorMaterial() :
             Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {}
     private:
@@ -569,7 +570,7 @@ public:
 
         scene_main_material_{cache.get<SceneMainMaterial>()},
         scene_floor_material_{cache.get<SceneFloorMaterial>()},
-        scene_oit_compositor_{cache.get<SceneOITCompositor>()},
+        scene_oit_compositor_material_{cache.get<SceneOITCompositorMaterial>()},
         rim_filler_material_{cache},
         wireframe_material_{cache.wireframe_material()},
         edge_detection_material_{cache.get<EdgeDetectionMaterial>()},
@@ -605,10 +606,10 @@ public:
             // objects to OIT accumulators and then composite the accumulators using OIT maths over
             // the output render
             if (render_transparent_objects_to_oit_accumulators(decorations, params)) {
-                scene_oit_compositor_.set("uOITAccumulator", oit_render_buffer_);
-                scene_oit_compositor_.set_depth_tested(false);
-                scene_oit_compositor_.set_transparent(true);
-                graphics::draw(quad_mesh_, camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)), scene_oit_compositor_, camera_);
+                scene_oit_compositor_material_.set("uOITAccumulator", oit_render_buffer_);
+                scene_oit_compositor_material_.set_depth_tested(false);
+                scene_oit_compositor_material_.set_transparent(true);
+                graphics::draw(quad_mesh_, camera_.inverse_view_projection_matrix(aspect_ratio_of(params.dimensions)), scene_oit_compositor_material_, camera_);
                 camera_.set_clear_flags(CameraClearFlag::None);
                 camera_.render_to(output_render_texture_);
             }
@@ -625,7 +626,7 @@ public:
         edge_detection_material_.unset("uScreenTexture");
         scene_floor_material_.unset("uShadowMapTexture");
         scene_main_material_.unset("uShadowMapTexture");
-        scene_oit_compositor_.unset("uOITAccumulator");
+        scene_oit_compositor_material_.unset("uOITAccumulator");
     }
 
     RenderTexture& upd_render_texture()
@@ -663,9 +664,8 @@ private:
 
         Material transparent_material = scene_main_material_;
         transparent_material.set_transparent(true);
-        MaterialPropertyBlock prop_block;
+        color_cache_.clear();
         MaterialPropertyBlock wireframe_prop_block;
-        Color previous_color = {-1.0f, -1.0f, -1.0f, 0.0f};
 
         // draw scene decorations
         for (const SceneDecoration& dec : decorations) {
@@ -676,7 +676,7 @@ private:
                 const Color wireframe_color = std::visit(Overload{
                     [](const Color& color) { return color; },
                     [](const auto&) { return Color::white(); },
-                    }, dec.shading);
+                }, dec.shading);
 
                 wireframe_prop_block.set(c_diffuse_color_propname, multiply_luminance(wireframe_color, 0.25f));
                 graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
@@ -687,17 +687,18 @@ private:
             }
 
             std::visit(Overload{
-                [this, &params, &transparent_material, &dec, &previous_color, &prop_block](const Color& color)
+                [this, &params, &transparent_material, &dec](const Color& color)
                 {
-                    if (color != previous_color) {
-                        prop_block.set(c_diffuse_color_propname, color);
-                        previous_color = color;
+                    const Color32 color32{color};  // Renderer doesn't need HDR colors
+                    const auto& [it, inserted] = color_cache_.try_emplace(color32);
+                    if (inserted) {
+                        it->second.set(c_diffuse_color_propname, color32);
                     }
-                    if (color.a > 254.0f/255.0f) {
-                        graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, prop_block);
+                    if (color32.a == 0xff) {
+                        graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, it->second);
                     }
                     else if (not params.order_independent_transparency) {
-                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, prop_block);
+                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, it->second);
                     }
                 },
                 [this, &dec](const Material& material)
@@ -766,10 +767,8 @@ private:
         oit_material.set_writes_to_depth_buffer(false);
         oit_material.set("uIsOITPass", true);
 
-        MaterialPropertyBlock prop_block;
-        std::optional<Color> previous_color;
-
         // Draw transparent colored scene elements.
+        color_cache_.clear();
         for (const SceneDecoration& decoration : decorations) {
 
             if (decoration.flags & SceneDecorationFlag::NoDrawInScene) {
@@ -778,22 +777,24 @@ private:
 
             // Draw opaque/custom decoration
             std::visit(Overload{
-                [this, &decoration, &previous_color, &oit_material, &prop_block](const Color& color)
+                [this, &decoration, &oit_material](const Color& color)
                 {
-                    if (color.a > 254.0f/255.0f) {
+                    const Color32 color32{color};  // Renderer doesn't need HDR colors
+                    if (color32.a == 0xff) {
                         return;  // Skip opaque objects (already drawn)
                     }
-                    if (color != previous_color) {
-                        prop_block.set(c_diffuse_color_propname, color);
-                        previous_color = color;
+
+                    const auto& [it, inserted] = color_cache_.try_emplace(color32);
+                    if (inserted) {
+                        it->second.set(c_diffuse_color_propname, color);
                     }
-                    graphics::draw(decoration.mesh, decoration.transform, oit_material, camera_, prop_block);
+                    graphics::draw(decoration.mesh, decoration.transform, oit_material, camera_, it->second);
                 },
                 [](const auto&) {},  // Skip custom decorations (already done)
             }, decoration.shading);
         }
 
-        if (not previous_color) {
+        if (color_cache_.empty()) {
             return false;  // No transparent objects in the scene
         }
 
@@ -879,8 +880,6 @@ private:
             .translation = Vector3{rim_ndc_rect.origin(), 0.0f},
         };
 
-        // rendering:
-
         // setup scene camera
         camera_.reset();
         camera_.set_position(params.viewer_position);
@@ -890,10 +889,9 @@ private:
         camera_.set_background_color(Color::clear());
 
         // draw all selected geometry in a solid color
-        std::unordered_map<Color, MeshBasicMaterial::PropertyBlock> block_cache;
-        block_cache.reserve(3);  // guess
+        color_cache_.clear();
         for (const SceneDecoration& decoration : decorations) {
-            Color color = Color::black();
+            Color32 color = Color32::black();
 
             static_assert(SceneRendererParams::num_rim_groups() == 2);
             if (decoration.flags & SceneDecorationFlag::RimHighlight0) {
@@ -903,9 +901,12 @@ private:
                 color.g = 1.0f;
             }
 
-            if (color != Color::black()) {
-                const auto& prop_block = block_cache.try_emplace(color, color).first->second;
-                graphics::draw(decoration.mesh, decoration.transform, rim_filler_material_, camera_, prop_block);
+            if (color != Color32::black()) {
+                const auto& [it, inserted] = color_cache_.try_emplace(color);
+                if (inserted) {
+                    it->second.set(MeshBasicMaterial::color_property_name(), color);
+                }
+                graphics::draw(decoration.mesh, decoration.transform, rim_filler_material_, camera_, it->second);
             }
         }
 
@@ -988,12 +989,14 @@ private:
 
     SceneMainMaterial scene_main_material_;
     SceneFloorMaterial scene_floor_material_;
-    SceneOITCompositor scene_oit_compositor_;
+    SceneOITCompositorMaterial scene_oit_compositor_material_;
     RimFillerMaterial rim_filler_material_;
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
     MeshNormalVectorsMaterial normals_material_;
     MeshDepthWritingMaterial depth_writer_material_;
+
+    ankerl::unordered_dense::map<Color32, MaterialPropertyBlock> color_cache_;
 
     Mesh quad_mesh_;
     Camera camera_;

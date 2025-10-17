@@ -20,6 +20,7 @@
 #define OSC_FOR_EACH_MATERIAL_PROPERTY_VALUE_TYPE(X)  \
     X(bool)                                     \
     X(osc::Color)                               \
+    X(osc::Color32)                             \
     X(osc::Cubemap)                             \
     X(float)                                    \
     X(int)                                      \
@@ -38,6 +39,7 @@ namespace osc
     using MaterialPropertyValueTypes = Typelist<
         bool,
         Color,
+        Color32,
         Cubemap,
         float,
         int,

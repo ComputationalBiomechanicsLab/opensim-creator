@@ -22,13 +22,16 @@ namespace osc
         // a `MaterialPropertyBlock` that's specialized for the `MeshBasicMaterial`'s shader
         class PropertyBlock final : public MaterialPropertyBlock {
         public:
-            explicit PropertyBlock() = default;
+            static const StringName& color_property_name();
 
+            explicit PropertyBlock() = default;
             explicit PropertyBlock(const Color&);
 
             std::optional<Color> color() const;
             void set_color(const Color&);
         };
+
+        static const StringName& color_property_name();
 
         explicit MeshBasicMaterial(const Params& = {});
         explicit MeshBasicMaterial(const Color&);

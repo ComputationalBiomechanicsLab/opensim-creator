@@ -2996,6 +2996,44 @@ namespace
     };
 
     template<>
+    struct MaterialValueOpenGLTraits<Color32> final {
+        static void try_bind_material_value_to_shader_element(
+            std::span<const Color32> colors,
+            const ShaderElement& shader_element,
+            OpenGLDrawBatchState&)
+        {
+            static_assert(sizeof(Vector4) == 4*sizeof(GLfloat) and alignof(Vector4) >= alignof(GLfloat));
+
+            if (colors.size() == 1) {
+                const Vector4 linear_color = to_linear_colorspace(Color{colors.front()});
+                gl::UniformVec4 u{shader_element.location};
+                gl::set_uniform(u, linear_color);
+            }
+            else {  // Array of `Color`s.
+                // CARE: assigning to uniform arrays should be done in one `glUniform` call
+                //
+                // although many guides on the internet say it's valid to assign each array
+                // element one-at-a-time by just calling the one-element version with `location + i`
+                // I (AK) have encountered situations where some backends (e.g. MacOS) will behave
+                // unusually if assigning this way
+                //
+                // so, for safety's sake, always upload arrays in one `glUniform*` call
+
+                // CARE #2: colors should always be converted from sRGB-to-linear when passed to
+                // a shader. OSC's rendering pipeline assumes that all color values in a shader
+                // are linearized
+
+                std::vector<Vector4> linear_colors;
+                linear_colors.reserve(colors.size());
+                for (const auto& color : colors) {
+                    linear_colors.emplace_back(to_linear_colorspace(Color{color}));
+                }
+                glUniform4fv(shader_element.location, glsizei(colors), value_ptr(linear_colors.front()));
+            }
+        }
+    };
+
+    template<>
     struct MaterialValueOpenGLTraits<float> final {
         static void try_bind_material_value_to_shader_element(
             std::span<const float> vals,

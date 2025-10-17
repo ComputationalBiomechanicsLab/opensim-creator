@@ -26,13 +26,7 @@ namespace osc
         template<std::integral U>
         constexpr Unorm(U integral_value) :
             value_{static_cast<T>(integral_value)}
-        {
-            if (integral_value < std::numeric_limits<T>::min() or
-                integral_value > std::numeric_limits<T>::max()) {
-
-                throw std::runtime_error{"provided value is out of range"};
-            }
-        }
+        {}
 
         constexpr Unorm(T raw_value) :
             value_{raw_value}
