@@ -14,7 +14,6 @@
 #include <liboscar/Graphics/Detail/CPUDataType.h>
 #include <liboscar/Graphics/Detail/CPUImageFormat.h>
 #include <liboscar/Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h>
-#include <liboscar/Graphics/Detail/MaterialValueBaseTypes.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraits.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraitsLike.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeList.h>
@@ -30,6 +29,8 @@
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/GraphicsContext.h>
 #include <liboscar/Graphics/Material.h>
+#include <liboscar/Graphics/MaterialPropertyBlock.h>
+#include <liboscar/Graphics/MaterialPropertyValueType.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshFunctions.h>
 #include <liboscar/Graphics/MeshTopology.h>
@@ -62,10 +63,10 @@
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Angle.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix3x3.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Quaternion.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
@@ -2937,13 +2938,13 @@ std::ostream& osc::operator<<(std::ostream& o, const Shader& shader)
 namespace
 {
     // Returns `true` if `MaterialValueTraits<T>` is defined for all material base types.
-    template<typename... MaterialValueBaseType>
-    constexpr bool material_value_traits_defined_for_all_base_material_types(Typelist<MaterialValueBaseType...>)
+    template<typename... MaterialPropertyValueType>
+    constexpr bool material_value_traits_defined_for_all_base_material_types(Typelist<MaterialPropertyValueType...>)
     {
-        return (MaterialValueTraitsLike<MaterialValueTraits<MaterialValueBaseType>, MaterialValueBaseType> && ...);
+        return (MaterialValueTraitsLike<MaterialValueTraits<MaterialPropertyValueType>, MaterialPropertyValueType> && ...);
     }
 
-    static_assert(material_value_traits_defined_for_all_base_material_types(MaterialValueBaseTypes{}));
+    static_assert(material_value_traits_defined_for_all_base_material_types(MaterialPropertyValueTypes{}));
 
     template<rgs::sized_range R>
     GLsizei glsizei(const R& r)
@@ -3164,6 +3165,10 @@ namespace
             const ShaderElement& shader_element,
             OpenGLDrawBatchState& batch_state)
         {
+            OSC_ASSERT_ALWAYS(not render_textures.empty() && "A RenderTexture array cannot be empty");
+            const TextureDimensionality dimensionality = render_textures.front().dimensionality();
+            OSC_ASSERT_ALWAYS(rgs::all_of(render_textures, [dimensionality](const TextureDimensionality d) { return d == dimensionality; }, &RenderTexture::dimensionality));
+
             // TODO: should upload texture ints as a single array call
             for (size_t i = 0; i < render_textures.size(); ++i) {
                 const RenderTexture& render_texture = render_textures[i];
@@ -3265,7 +3270,7 @@ namespace
         std::vector<stored_type> data_;
     };
 
-    // Concrete storage for a `MaterialValueBaseType` that uses `MaterialValueTraits`
+    // Concrete storage for a `MaterialPropertyValueType` that uses `MaterialValueTraits`
     // to specialize parts of its implementation.
     template<typename MaterialValueDataType>
     class MaterialValueStorage {
@@ -3310,7 +3315,7 @@ namespace
 
     class MaterialValue {
     private:
-        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::detail::MaterialValueBaseTypes{}));
+        using MaterialValueVariant = decltype(detail::to_variant_of_material_value_storage(osc::MaterialPropertyValueTypes{}));
     public:
         template<typename Value>
         requires (not std::same_as<MaterialValue, std::remove_cvref_t<Value>> and std::constructible_from<MaterialValueStorage<std::remove_cvref_t<Value>>, Value&&>)
@@ -3462,6 +3467,67 @@ const Shader& osc::Material::shader() const
     return impl_->shader();
 }
 
+void osc::Material::clear() { impl_.upd()->upd_properties().clear(); }
+bool osc::Material::empty() const { return impl_->properties().empty(); }
+
+template<MaterialPropertyValue T>
+std::optional<T> osc::Material::get(std::string_view property_name) const
+{
+    return impl_->properties().get<T>(property_name);
+}
+template<MaterialPropertyValue T>
+std::optional<T> osc::Material::get(const StringName& property_name) const
+{
+    return impl_->properties().get<T>(property_name);
+}
+template<MaterialPropertyValue T>
+void osc::Material::set(std::string_view property_name, const T& value)
+{
+    impl_.upd()->upd_properties().set(property_name, value);
+}
+template<MaterialPropertyValue T>
+void osc::Material::set(const StringName& property_name, const T& value)
+{
+    impl_.upd()->upd_properties().set(property_name, value);
+}
+template<MaterialPropertyValue T>
+std::optional<std::span<const T>> osc::Material::get_array(std::string_view property_name) const
+{
+    return impl_->properties().get_array<T>(property_name);
+}
+template<MaterialPropertyValue T>
+std::optional<std::span<const T>> osc::Material::get_array(const StringName& property_name) const
+{
+    return impl_->properties().get_array<T>(property_name);
+}
+template<MaterialPropertyValue T>
+void osc::Material::set_array(std::string_view property_name, std::span<const T> values)
+{
+    impl_.upd()->upd_properties().set_array(property_name, values);
+}
+template<MaterialPropertyValue T>
+void osc::Material::set_array(const StringName& property_name, std::span<const T> values)
+{
+    impl_.upd()->upd_properties().set_array(property_name, values);
+}
+
+void osc::Material::unset(std::string_view property_name) { impl_.upd()->upd_properties().unset(property_name); }
+void osc::Material::unset(const StringName& property_name) { impl_.upd()->upd_properties().unset(property_name); }
+
+// Instantiates all necessary `Material` getters/setters for a given type.
+#define OSC_INSTANTIATE_MATERIAL_PROP_FOR_TYPE(T)                                                                                       \
+    template std::optional<T> osc::Material::get(std::string_view property_name) const;                          \
+    template std::optional<T> osc::Material::get(const StringName& property_name) const;                         \
+    template void osc::Material::set(std::string_view property_name, const T& value);                            \
+    template void osc::Material::set(const StringName& property_name, const T& value);                           \
+    template std::optional<std::span<const T>> osc::Material::get_array(std::string_view property_name) const;   \
+    template std::optional<std::span<const T>> osc::Material::get_array(const StringName& property_name) const;  \
+    template void osc::Material::set_array(std::string_view property_name, std::span<const T> values);           \
+    template void osc::Material::set_array(const StringName& property_name, std::span<const T> values);
+
+// Instantiate `Material` getters/setters for all supported `MaterialPropertyType`s.
+OSC_FOR_EACH_MATERIAL_PROPERTY_VALUE_TYPE(OSC_INSTANTIATE_MATERIAL_PROP_FOR_TYPE);
+
 bool osc::Material::is_transparent() const
 {
     return impl_->is_transparent();
@@ -3552,16 +3618,6 @@ void osc::Material::set_cull_mode(CullMode cull_mode)
     impl_.upd()->set_cull_mode(cull_mode);
 }
 
-const MaterialPropertyBlock& osc::Material::properties() const
-{
-    return impl_->properties();
-}
-
-MaterialPropertyBlock& osc::Material::upd_properties()
-{
-    return impl_.upd()->upd_properties();
-}
-
 std::ostream& osc::operator<<(std::ostream& o, const Material&)
 {
     return o << "Material()";
@@ -3634,497 +3690,63 @@ osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     }()}
 {}
 
-void osc::MaterialPropertyBlock::clear()
-{
-    impl_.upd()->clear();
-}
+void osc::MaterialPropertyBlock::clear() { impl_.upd()->clear(); }
+bool osc::MaterialPropertyBlock::empty() const { return impl_->empty(); }
 
-bool osc::MaterialPropertyBlock::empty() const
+template<MaterialPropertyValue T>
+std::optional<T> osc::MaterialPropertyBlock::get(std::string_view property_name) const
 {
-    return impl_->empty();
+    return impl_->get<T>(property_name);
 }
-
-template<>
-std::optional<Color> osc::MaterialPropertyBlock::get<Color>(std::string_view property_name) const
+template<MaterialPropertyValue T>
+std::optional<T> osc::MaterialPropertyBlock::get(const StringName& property_name) const
 {
-    return impl_->get<Color>(property_name);
+    return impl_->get<T>(property_name);
 }
-
-template<>
-std::optional<Color> osc::MaterialPropertyBlock::get<Color>(const StringName& property_name) const
-{
-    return impl_->get<Color>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Color>(std::string_view property_name, const Color& color)
-{
-    impl_.upd()->set(property_name, color);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Color>(const StringName& property_name, const Color& color)
-{
-    impl_.upd()->set(property_name, color);
-}
-
-template<>
-std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_array<Color>(std::string_view property_name) const
-{
-    return impl_->get_array<Color>(property_name);
-}
-
-template<>
-std::optional<std::span<const Color>> osc::MaterialPropertyBlock::get_array<Color>(const StringName& property_name) const
-{
-    return impl_->get_array<Color>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Color>(std::string_view property_name, std::span<const Color> colors)
-{
-    impl_.upd()->set_array<Color>(property_name, colors);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Color>(const StringName& property_name, std::span<const Color> colors)
-{
-    impl_.upd()->set_array<Color>(property_name, colors);
-}
-
-template<>
-std::optional<float> osc::MaterialPropertyBlock::get<float>(std::string_view property_name) const
-{
-    return impl_->get<float>(property_name);
-}
-
-template<>
-std::optional<float> osc::MaterialPropertyBlock::get<float>(const StringName& property_name) const
-{
-    return impl_->get<float>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<float>(std::string_view property_name, const float& value)
+template<MaterialPropertyValue T>
+void osc::MaterialPropertyBlock::set(std::string_view property_name, const T& value)
 {
     impl_.upd()->set(property_name, value);
 }
-
-template<>
-void osc::MaterialPropertyBlock::set<float>(const StringName& property_name, const float& value)
+template<MaterialPropertyValue T>
+void osc::MaterialPropertyBlock::set(const StringName& property_name, const T& value)
 {
     impl_.upd()->set(property_name, value);
 }
-
-template<>
-std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_array<float>(std::string_view property_name) const
-{
-    return impl_->get_array<float>(property_name);
-}
-
-template<>
-std::optional<std::span<const float>> osc::MaterialPropertyBlock::get_array<float>(const StringName& property_name) const
-{
-    return impl_->get_array<float>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<float>(std::string_view property_name, std::span<const float> values)
-{
-    impl_.upd()->set_array<float>(property_name, values);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<float>(const StringName& property_name, std::span<const float> values)
-{
-    impl_.upd()->set_array<float>(property_name, values);
-}
-
-template<>
-std::optional<Vector2> osc::MaterialPropertyBlock::get<Vector2>(std::string_view property_name) const
-{
-    return impl_->get<Vector2>(property_name);
-}
-
-template<>
-std::optional<Vector2> osc::MaterialPropertyBlock::get<Vector2>(const StringName& property_name) const
-{
-    return impl_->get<Vector2>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector2>(std::string_view property_name, const Vector2& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector2>(const StringName& property_name, const Vector2& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<Vector3> osc::MaterialPropertyBlock::get<Vector3>(std::string_view property_name) const
-{
-    return impl_->get<Vector3>(property_name);
-}
-
-template<>
-std::optional<Vector3> osc::MaterialPropertyBlock::get<Vector3>(const StringName& property_name) const
-{
-    return impl_->get<Vector3>(property_name);
-}
-
-template<>
-std::optional<std::span<const Vector3>> osc::MaterialPropertyBlock::get_array<Vector3>(std::string_view property_name) const
-{
-    return impl_->get_array<Vector3>(property_name);
-}
-
-template<>
-std::optional<std::span<const Vector3>> osc::MaterialPropertyBlock::get_array<Vector3>(const StringName& property_name) const
-{
-    return impl_->get_array<Vector3>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Vector3>(std::string_view property_name, std::span<const Vector3> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Vector3>(const StringName& property_name, std::span<const Vector3> values)
-{
-    impl_.upd()->set_array<Vector3>(property_name, values);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector3>(std::string_view property_name, const Vector3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector3>(const StringName& property_name, const Vector3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<Vector4> osc::MaterialPropertyBlock::get<Vector4>(std::string_view property_name) const
-{
-    return impl_->get<Vector4>(property_name);
-}
-
-template<>
-std::optional<Vector4> osc::MaterialPropertyBlock::get<Vector4>(const StringName& property_name) const
-{
-    return impl_->get<Vector4>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector4>(std::string_view property_name, const Vector4& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Vector4>(const StringName& property_name, const Vector4& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<Matrix3x3> osc::MaterialPropertyBlock::get<Matrix3x3>(std::string_view property_name) const
-{
-    return impl_->get<Matrix3x3>(property_name);
-}
-
-template<>
-std::optional<Matrix3x3> osc::MaterialPropertyBlock::get<Matrix3x3>(const StringName& property_name) const
-{
-    return impl_->get<Matrix3x3>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Matrix3x3>(std::string_view property_name, const Matrix3x3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Matrix3x3>(const StringName& property_name, const Matrix3x3& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<Matrix4x4> osc::MaterialPropertyBlock::get<Matrix4x4>(std::string_view property_name) const
-{
-    return impl_->get<Matrix4x4>(property_name);
-}
-
-template<>
-std::optional<Matrix4x4> osc::MaterialPropertyBlock::get<Matrix4x4>(const StringName& property_name) const
-{
-    return impl_->get<Matrix4x4>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Matrix4x4>(std::string_view property_name, const Matrix4x4& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Matrix4x4>(const StringName& property_name, const Matrix4x4& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<std::span<const Matrix4x4>> osc::MaterialPropertyBlock::get_array<Matrix4x4>(std::string_view property_name) const
-{
-    return impl_->get_array<Matrix4x4>(property_name);
-}
-
-template<>
-std::optional<std::span<const Matrix4x4>> osc::MaterialPropertyBlock::get_array<Matrix4x4>(const StringName& property_name) const
-{
-    return impl_->get_array<Matrix4x4>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Matrix4x4>(std::string_view property_name, std::span<const Matrix4x4> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<Matrix4x4>(const StringName& property_name, std::span<const Matrix4x4> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
-
-template<>
-std::optional<int> osc::MaterialPropertyBlock::get<int>(std::string_view property_name) const
-{
-    return impl_->get<int>(property_name);
-}
-
-template<>
-std::optional<int> osc::MaterialPropertyBlock::get<int>(const StringName& property_name) const
-{
-    return impl_->get<int>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<int>(std::string_view property_name, const int& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<int>(const StringName& property_name, const int& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<bool> osc::MaterialPropertyBlock::get<bool>(std::string_view property_name) const
-{
-    return impl_->get<bool>(property_name);
-}
-
-template<>
-std::optional<bool> osc::MaterialPropertyBlock::get<bool>(const StringName& property_name) const
-{
-    return impl_->get<bool>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<bool>(std::string_view property_name, bool value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<bool>(const StringName& property_name, bool value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<Texture2D> osc::MaterialPropertyBlock::get<Texture2D>(std::string_view property_name) const
-{
-    return impl_->get<Texture2D>(property_name);
-}
-
-template<>
-std::optional<Texture2D> osc::MaterialPropertyBlock::get<Texture2D>(const StringName& property_name) const
-{
-    return impl_->get<Texture2D>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Texture2D>(std::string_view property_name, const Texture2D& texture)
-{
-    impl_.upd()->set(property_name, texture);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Texture2D>(const StringName& property_name, const Texture2D& texture)
-{
-    impl_.upd()->set(property_name, texture);
-}
-
-template<>
-std::optional<RenderTexture> osc::MaterialPropertyBlock::get<RenderTexture>(std::string_view property_name) const
-{
-    return impl_->get<RenderTexture>(property_name);
-}
-
-template<>
-std::optional<RenderTexture> osc::MaterialPropertyBlock::get<RenderTexture>(const StringName& property_name) const
-{
-    return impl_->get<RenderTexture>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<RenderTexture>(std::string_view property_name, const RenderTexture& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<RenderTexture>(const StringName& property_name, const RenderTexture& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<std::span<const RenderTexture>> osc::MaterialPropertyBlock::get_array<RenderTexture>(std::string_view property_name) const
-{
-    return impl_->get_array<RenderTexture>(property_name);
-}
-
-template<>
-std::optional<std::span<const RenderTexture>> osc::MaterialPropertyBlock::get_array<RenderTexture>(const StringName& property_name) const
-{
-    return impl_->get_array<RenderTexture>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<RenderTexture>(std::string_view property_name, std::span<const RenderTexture> values)
-{
-    OSC_ASSERT_ALWAYS(not values.empty() && "A RenderTexture array cannot be empty");
-    const TextureDimensionality dimensionality = values.front().dimensionality();
-    OSC_ASSERT_ALWAYS(rgs::all_of(values, [dimensionality](const TextureDimensionality d) { return d == dimensionality; }, &RenderTexture::dimensionality));
-    impl_.upd()->set_array(property_name, values);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set_array<RenderTexture>(const StringName& property_name, std::span<const RenderTexture> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
-
-template<>
-std::optional<Cubemap> osc::MaterialPropertyBlock::get<Cubemap>(std::string_view property_name) const
-{
-    return impl_->get<Cubemap>(property_name);
-}
-
-template<>
-std::optional<Cubemap> osc::MaterialPropertyBlock::get<Cubemap>(const StringName& property_name) const
-{
-    return impl_->get<Cubemap>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Cubemap>(std::string_view property_name, const Cubemap& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<Cubemap>(const StringName& property_name, const Cubemap& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<SharedColorRenderBuffer> osc::MaterialPropertyBlock::get<SharedColorRenderBuffer>(std::string_view property_name) const
-{
-    return impl_->get<SharedColorRenderBuffer>(property_name);
-}
-
-template<>
-std::optional<SharedColorRenderBuffer> osc::MaterialPropertyBlock::get<SharedColorRenderBuffer>(const StringName& property_name) const
-{
-    return impl_->get<SharedColorRenderBuffer>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<SharedColorRenderBuffer>(std::string_view property_name, const SharedColorRenderBuffer& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<SharedColorRenderBuffer>(const StringName& property_name, const SharedColorRenderBuffer& value)
-{
-    impl_.upd()->set(property_name, value);
-}
-
-template<>
-std::optional<SharedDepthStencilRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthStencilRenderBuffer>(std::string_view property_name) const
-{
-    return impl_->get<SharedDepthStencilRenderBuffer>(property_name);
-}
-
-template<>
-std::optional<SharedDepthStencilRenderBuffer> osc::MaterialPropertyBlock::get<SharedDepthStencilRenderBuffer>(const StringName& property_name) const
-{
-    return impl_->get<SharedDepthStencilRenderBuffer>(property_name);
-}
-
-template<>
-void osc::MaterialPropertyBlock::set<SharedDepthStencilRenderBuffer>(std::string_view property_name, const SharedDepthStencilRenderBuffer& value)
+template<MaterialPropertyValue T>
+std::optional<std::span<const T>> osc::MaterialPropertyBlock::get_array(std::string_view property_name) const
 {
-    impl_.upd()->set(property_name, value);
+    return impl_->get_array<T>(property_name);
 }
-
-template<>
-void osc::MaterialPropertyBlock::set<SharedDepthStencilRenderBuffer>(const StringName& property_name, const SharedDepthStencilRenderBuffer& value)
+template<MaterialPropertyValue T>
+std::optional<std::span<const T>> osc::MaterialPropertyBlock::get_array(const StringName& property_name) const
 {
-    impl_.upd()->set(property_name, value);
+    return impl_->get_array<T>(property_name);
 }
-
-template<>
-std::optional<std::span<const SharedDepthStencilRenderBuffer>> osc::MaterialPropertyBlock::get_array<SharedDepthStencilRenderBuffer>(std::string_view property_name) const
+template<MaterialPropertyValue T>
+void osc::MaterialPropertyBlock::set_array(std::string_view property_name, std::span<const T> values)
 {
-    return impl_->get_array<SharedDepthStencilRenderBuffer>(property_name);
+    impl_.upd()->set_array<T>(property_name, values);
 }
-template<>
-std::optional<std::span<const SharedDepthStencilRenderBuffer>> osc::MaterialPropertyBlock::get_array<SharedDepthStencilRenderBuffer>(const StringName& property_name) const
+template<MaterialPropertyValue T>
+void osc::MaterialPropertyBlock::set_array(const StringName& property_name, std::span<const T> values)
 {
-    return impl_->get_array<SharedDepthStencilRenderBuffer>(property_name);
+    impl_.upd()->set_array<T>(property_name, values);
 }
 
-template<>
-void osc::MaterialPropertyBlock::set_array<SharedDepthStencilRenderBuffer>(std::string_view property_name, std::span<const SharedDepthStencilRenderBuffer> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
+// Instantiates all necessary `MaterialPropertyBlock` getters/setters for a given type.
+#define OSC_INSTANTIATE_MPB_FOR_TYPE(T)                                                                                       \
+    template std::optional<T> osc::MaterialPropertyBlock::get(std::string_view property_name) const;                          \
+    template std::optional<T> osc::MaterialPropertyBlock::get(const StringName& property_name) const;                         \
+    template void osc::MaterialPropertyBlock::set(std::string_view property_name, const T& value);                            \
+    template void osc::MaterialPropertyBlock::set(const StringName& property_name, const T& value);                           \
+    template std::optional<std::span<const T>> osc::MaterialPropertyBlock::get_array(std::string_view property_name) const;   \
+    template std::optional<std::span<const T>> osc::MaterialPropertyBlock::get_array(const StringName& property_name) const;  \
+    template void osc::MaterialPropertyBlock::set_array(std::string_view property_name, std::span<const T> values);           \
+    template void osc::MaterialPropertyBlock::set_array(const StringName& property_name, std::span<const T> values);
 
-template<>
-void osc::MaterialPropertyBlock::set_array<SharedDepthStencilRenderBuffer>(const StringName& property_name, std::span<const SharedDepthStencilRenderBuffer> values)
-{
-    impl_.upd()->set_array(property_name, values);
-}
+// Instantiate `MaterialPropertyBlock` getters/setters for all supported `MaterialPropertyType`s.
+OSC_FOR_EACH_MATERIAL_PROPERTY_VALUE_TYPE(OSC_INSTANTIATE_MPB_FOR_TYPE);
 
 void osc::MaterialPropertyBlock::unset(std::string_view property_name)
 {

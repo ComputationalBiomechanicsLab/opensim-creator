@@ -4,10 +4,11 @@
 #include <liboscar/Graphics/CullMode.h>
 #include <liboscar/Graphics/DepthFunction.h>
 #include <liboscar/Graphics/DestinationBlendingFactor.h>
-#include <liboscar/Graphics/MaterialPropertyBlock.h>
+#include <liboscar/Graphics/MaterialPropertyValue.h>
 #include <liboscar/Graphics/Shader.h>
 #include <liboscar/Graphics/SourceBlendingFactor.h>
 #include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/StringName.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -23,44 +24,31 @@ namespace osc
 
         const Shader& shader() const;
 
-        template<typename T, std::convertible_to<std::string_view> StringLike>
-        std::optional<T> get(StringLike&& property_name) const
-        {
-            return properties().get<T>(std::forward<StringLike>(property_name));
-        }
+        void clear();
+        [[nodiscard]] bool empty() const;
 
-        template<typename T, std::convertible_to<std::string_view> StringLike>
-        void set(StringLike&& property_name, const T& value)
-        {
-            upd_properties().set<T>(std::forward<StringLike>(property_name), value);
-        }
+        template<MaterialPropertyValue T> std::optional<T> get(std::string_view property_name) const;
+        template<MaterialPropertyValue T> std::optional<T> get(const StringName& property_name) const;
+        template<MaterialPropertyValue T> void set(std::string_view property_name, const T& value);
+        template<MaterialPropertyValue T> void set(const StringName& property_name, const T& value);
+        template<MaterialPropertyValue T> std::optional<std::span<const T>> get_array(std::string_view property_name) const;
+        template<MaterialPropertyValue T> std::optional<std::span<const T>> get_array(const StringName& property_name) const;
+        template<MaterialPropertyValue T> void set_array(std::string_view property_name, std::span<const T> values);
+        template<MaterialPropertyValue T> void set_array(const StringName& property_name, std::span<const T> values);
 
-        template<typename T, std::convertible_to<std::string_view> StringLike>
-        std::optional<std::span<const T>> get_array(StringLike&& property_name) const
-        {
-            return properties().get_array<T>(std::forward<StringLike>(property_name));
-        }
-
-        template<typename T, std::convertible_to<std::string_view> StringLike>
-        void set_array(StringLike&& property_name, std::span<const T> values)
-        {
-            upd_properties().set_array<T>(std::forward<StringLike>(property_name), values);
-        }
-
+        // calling `set_array` without a type argument (e.g. `set_array(prop, some_range)`) deduces
+        // the type from the range in order to call `set_array<T>(prop, some_range)`
         template<
             std::convertible_to<std::string_view> StringLike,
             std::ranges::contiguous_range Range
         >
         void set_array(StringLike&& property_name, Range&& values)
         {
-            upd_properties().set_array(std::forward<StringLike>(property_name), std::forward<Range>(values));
+            set_array<std::ranges::range_value_t<Range>>(std::forward<StringLike>(property_name), std::forward<Range>(values));
         }
 
-        template<std::convertible_to<std::string_view> StringLike>
-        void unset(StringLike&& property_name)
-        {
-            upd_properties().unset(std::forward<StringLike>(property_name));
-        }
+        void unset(std::string_view property_name);
+        void unset(const StringName& property_name);
 
         bool is_transparent() const;
         void set_transparent(bool);
@@ -92,9 +80,6 @@ namespace osc
         friend bool operator==(const Material&, const Material&) = default;
 
     private:
-        const MaterialPropertyBlock& properties() const;
-        MaterialPropertyBlock& upd_properties();
-
         friend std::ostream& operator<<(std::ostream&, const Material&);
         friend class GraphicsBackend;
 

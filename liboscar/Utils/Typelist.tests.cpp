@@ -22,6 +22,16 @@ TEST(Typelist, tails_returns_last_element)
     static_assert(std::is_same_v<Typelist<int, float>::tails::head, float>);
 }
 
+TEST(Typelist, contains_returns_true_when_type_is_in_list)
+{
+    static_assert(Typelist<int, float>::contains<float>());
+}
+
+TEST(Typelist, contains_returns_false_when_type_is_not_in_list)
+{
+    static_assert(not Typelist<int, float>::contains<double>());
+}
+
 TEST(TypelistSizeV, returns_expected_values)
 {
     static_assert(TypelistSizeV<Typelist<>> == 0);

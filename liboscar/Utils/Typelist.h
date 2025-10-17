@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstddef>
 #include <utility>
 #include <variant>
@@ -9,8 +10,6 @@ namespace osc
     // inspired by: https://codereview.stackexchange.com/questions/269320/c17-typelist-manipulation
     //
     // ... which was inspired by the book: "Modern C++ Design" (A. Alexandrescu, 2002)
-
-    // Typelist: definition
 
     template<typename...>
     struct Typelist;
@@ -22,6 +21,16 @@ namespace osc
     struct Typelist<Head, Tails...> {
         using head = Head;
         using tails = Typelist<Tails...>;
+
+        template<typename T>
+        static constexpr bool contains() noexcept
+        {
+            const auto f = []<typename... Ts>(Typelist<Ts...>)
+            {
+                return (std::same_as<T, Ts> or ...);
+            };
+            return f(Typelist{});
+        }
     };
 
     // Typelist: size (the number of types held within)
