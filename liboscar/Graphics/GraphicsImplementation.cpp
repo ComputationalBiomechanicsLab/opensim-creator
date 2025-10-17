@@ -30,7 +30,7 @@
 #include <liboscar/Graphics/GraphicsContext.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/MaterialPropertyBlock.h>
-#include <liboscar/Graphics/MaterialPropertyValueType.h>
+#include <liboscar/Graphics/MaterialPropertyValue.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/MeshFunctions.h>
 #include <liboscar/Graphics/MeshTopology.h>
