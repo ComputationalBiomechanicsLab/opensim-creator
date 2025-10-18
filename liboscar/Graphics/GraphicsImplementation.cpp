@@ -16,6 +16,7 @@
 #include <liboscar/Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraits.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraitsLike.h>
+#include <liboscar/Graphics/Detail/MaybeIndex.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeList.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
 #include <liboscar/Graphics/Detail/TextureFormatList.h>
@@ -582,28 +583,6 @@ namespace
 
 namespace
 {
-    class MaybeIndex final {
-    public:
-        constexpr MaybeIndex() = default;
-        explicit constexpr MaybeIndex(std::optional<size_t> tagged)
-        {
-            if (tagged) {
-                if (tagged.value() == c_senteniel_index_value) {
-                    throw std::invalid_argument{"the provided index value is out of range"};
-                }
-                value_ = *tagged;
-            }
-        }
-
-        friend bool operator==(MaybeIndex, MaybeIndex) = default;
-
-        explicit operator bool () const { return value_ != c_senteniel_index_value; }
-        size_t operator*() const { return value_; }
-    private:
-        static constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
-        size_t value_ = c_senteniel_index_value;
-    };
-
     // this is what is stored in the renderer's render queue
     struct RenderObject final {
 
