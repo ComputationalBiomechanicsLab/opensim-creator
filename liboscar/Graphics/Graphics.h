@@ -28,28 +28,20 @@ namespace osc::graphics
     //
     // Once everything is queued against the `Camera`, the caller should call
     // `Camera::render()` or `Camera::render_to()` to flush the queue.
-    void draw(
-        const Mesh&,
-        const Transform&,
-        const Material&,
-        Camera&,
-        const std::optional<MaterialPropertyBlock>& = std::nullopt,
-        std::optional<size_t> maybe_submesh_index = std::nullopt
-    );
+    void draw(const Mesh&, const Transform&, const Material&, Camera&);
+    void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&);
+    void draw(const Mesh&, const Transform&, const Material&, Camera&, size_t submesh_index);
+    void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
 
     // Queues the given `Mesh` + `Matrix4x4` + `Material` + extras against
     // the `Camera`.
     //
     // Once everything is queued against the `Camera`, the caller should call
     // `Camera::render()` or `Camera::render_to()` to flush the queue.
-    void draw(
-        const Mesh&,
-        const Matrix4x4&,
-        const Material&,
-        Camera&,
-        const std::optional<MaterialPropertyBlock>& = std::nullopt,
-        std::optional<size_t> maybe_submesh_index = std::nullopt
-    );
+    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&);
+    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&);
+    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, size_t submesh_index);
+    void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
 
     // Blits the `Texture` to the `RenderTexture`.
     void blit(

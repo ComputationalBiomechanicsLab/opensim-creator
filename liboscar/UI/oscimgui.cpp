@@ -519,7 +519,7 @@ namespace
         }
 
         // draw
-        graphics::draw(mesh, identity<Matrix4x4>(), bd.ui_material, bd.camera, std::nullopt, sub_mesh_index);
+        graphics::draw(mesh, identity<Matrix4x4>(), bd.ui_material, bd.camera, sub_mesh_index);
 
         // flush draw queue to output
         if (maybe_target) {

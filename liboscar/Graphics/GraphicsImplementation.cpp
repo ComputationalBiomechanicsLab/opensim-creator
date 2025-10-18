@@ -16,6 +16,8 @@
 #include <liboscar/Graphics/Detail/DepthStencilRenderBufferFormatHelpers.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraits.h>
 #include <liboscar/Graphics/Detail/MaterialValueTraitsLike.h>
+#include <liboscar/Graphics/Detail/MaybeIndex.h>
+#include <liboscar/Graphics/Detail/RenderQueue.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeList.h>
 #include <liboscar/Graphics/Detail/ShaderPropertyTypeTraits.h>
 #include <liboscar/Graphics/Detail/TextureFormatList.h>
@@ -582,217 +584,100 @@ namespace
 
 namespace
 {
-    class MaybeIndex final {
-    public:
-        constexpr MaybeIndex() = default;
-        explicit constexpr MaybeIndex(std::optional<size_t> tagged)
-        {
-            if (tagged) {
-                if (tagged.value() == c_senteniel_index_value) {
-                    throw std::invalid_argument{"the provided index value is out of range"};
-                }
-                value_ = *tagged;
-            }
-        }
-
-        friend bool operator==(MaybeIndex, MaybeIndex) = default;
-
-        explicit operator bool () const { return value_ != c_senteniel_index_value; }
-        size_t operator*() const { return value_; }
-    private:
-        static constexpr size_t c_senteniel_index_value = std::numeric_limits<size_t>::max();
-        size_t value_ = c_senteniel_index_value;
-    };
-
-    // this is what is stored in the renderer's render queue
-    struct RenderObject final {
-
-        RenderObject(
-            Mesh mesh_,
-            const Transform& transform_,
-            Material material_,
-            std::optional<MaterialPropertyBlock> maybe_prop_block_,
-            std::optional<size_t> maybe_submesh_index_) :
-
-            material{std::move(material_)},
-            property_block{maybe_prop_block_ ? std::move(maybe_prop_block_).value() : MaterialPropertyBlock{}},
-            mesh{std::move(mesh_)},
-            maybe_submesh_index{maybe_submesh_index_},
-            transform{matrix4x4_cast(transform_)},
-            world_space_centroid{transform_point(transform, centroid_of(mesh.bounds()))}
-        {}
-
-        RenderObject(
-            Mesh mesh_,
-            const Matrix4x4& transform_,
-            Material material_,
-            std::optional<MaterialPropertyBlock> maybe_prop_block_,
-            std::optional<size_t> maybe_submesh_index_) :
-
-            material{std::move(material_)},
-            property_block{maybe_prop_block_ ? std::move(maybe_prop_block_).value() : MaterialPropertyBlock{}},
-            mesh{std::move(mesh_)},
-            maybe_submesh_index{maybe_submesh_index_},
-            transform{transform_},
-            world_space_centroid{transform_point(transform_, centroid_of(mesh.bounds()))}
-        {}
-
-        friend void swap(RenderObject& a, RenderObject& b) noexcept
-        {
-            using std::swap;
-
-            swap(a.material, b.material);
-            swap(a.property_block, b.property_block);
-            swap(a.mesh, b.mesh);
-            swap(a.transform, b.transform);
-            swap(a.maybe_submesh_index, b.maybe_submesh_index);
-            swap(a.world_space_centroid, b.world_space_centroid);
-        }
-
-        friend bool operator==(const RenderObject&, const RenderObject&) = default;
-
-        Material material;
-        MaterialPropertyBlock property_block;
-        Mesh mesh;
-        MaybeIndex maybe_submesh_index;
-        Matrix4x4 transform;
-        Vector3 world_space_centroid;
-    };
-
-    static_assert(std::is_nothrow_destructible_v<RenderObject>);
-
-    bool is_opaque(const RenderObject& ro)
-    {
-        return not ro.material.is_transparent();
-    }
-
-    bool is_depth_tested(const RenderObject& ro)
-    {
-        return ro.material.is_depth_tested();
-    }
-
-    const Matrix4x4& model_matrix4x4(const RenderObject& ro)
-    {
-        return ro.transform;
-    }
-
-    Matrix3x3 normal_matrix(const RenderObject& ro)
-    {
-        return normal_matrix(ro.transform);
-    }
-
-    Matrix4x4 normal_matrix4x4(const RenderObject& ro)
-    {
-        return normal_matrix4x4(ro.transform);
-    }
-
-    const Vector3& world_space_centroid(const RenderObject& ro)
-    {
-        return ro.world_space_centroid;
-    }
-
     // function object that returns true if the first argument is farther from the second
     //
     // (handy for depth sorting)
-    class RenderObjectIsFartherFrom final {
+    class RenderQueueEntryIsFatherFrom final {
     public:
-        explicit RenderObjectIsFartherFrom(const Vector3& pos) : pos_{pos} {}
+        explicit RenderQueueEntryIsFatherFrom(const Vector3& pos) : pos_{pos} {}
 
-        bool operator()(const RenderObject& a, const RenderObject& b) const
+        bool operator()(RenderQueue::const_reference a, RenderQueue::const_reference b) const
         {
-            const Vector3 centroid_a = world_space_centroid(a);
-            const Vector3 centroid_b = world_space_centroid(b);
-            const Vector3 pos_to_a = centroid_a - pos_;
-            const Vector3 pos_to_b = centroid_b - pos_;
-            return length2(pos_to_a) > length2(pos_to_b);
+            return length2(a.world_space_centroid() - pos_) > length2(b.world_space_centroid() - pos_);
         }
     private:
         Vector3 pos_;
     };
 
-    class RenderObjectHasMaterial final {
+    class RenderQueueEntryHasMaterial final {
     public:
-        explicit RenderObjectHasMaterial(const Material* material) :
+        explicit RenderQueueEntryHasMaterial(const Material& material) :
             material_{material}
-        {
-            OSC_ASSERT(material_ != nullptr);
-        }
-
-        bool operator()(const RenderObject& ro) const
-        {
-            return ro.material == *material_;
-        }
-    private:
-        const Material* material_;
-    };
-
-    class RenderObjectHasMaterialPropertyBlock final {
-    public:
-        explicit RenderObjectHasMaterialPropertyBlock(const MaterialPropertyBlock& mpb) :
-            mpb_{&mpb}
         {}
 
-        bool operator()(const RenderObject& ro) const
+        bool operator()(RenderQueue::const_reference el) const
         {
-            return ro.property_block == *mpb_;
+            return el.material() == material_;
+        }
+    private:
+        Material material_;
+    };
+
+    class RenderQueueEntryHasMaterialPropertyBlock final {
+    public:
+        explicit RenderQueueEntryHasMaterialPropertyBlock(const MaterialPropertyBlock& mpb) :
+            mpb_{mpb}
+        {}
+
+        bool operator()(RenderQueue::const_reference el) const
+        {
+            return el.material_property_block() == mpb_;
         }
 
     private:
-        const MaterialPropertyBlock* mpb_;
+        MaterialPropertyBlock mpb_;
     };
 
-    class RenderObjectHasMesh final {
+    class RenderQueueEntryHasMesh final {
     public:
-        explicit RenderObjectHasMesh(const Mesh* mesh) :
+        explicit RenderQueueEntryHasMesh(const Mesh& mesh) :
             mesh_{mesh}
-        {
-            OSC_ASSERT(mesh_ != nullptr);
-        }
+        {}
 
-        bool operator()(const RenderObject& ro) const
+        bool operator()(RenderQueue::const_reference el) const
         {
-            return ro.mesh == *mesh_;
+            return el.mesh() == mesh_;
         }
     private:
-        const Mesh* mesh_;
+        Mesh mesh_;
     };
 
-    class RenderObjectHasSubMeshIndex final {
+    class RenderQueueEntryHasSubMeshIndex final {
     public:
-        explicit RenderObjectHasSubMeshIndex(MaybeIndex maybe_submesh_index) :
+        explicit RenderQueueEntryHasSubMeshIndex(MaybeIndex maybe_submesh_index) :
             maybe_submesh_index_{maybe_submesh_index}
         {}
 
-        bool operator()(const RenderObject& ro) const
+        bool operator()(RenderQueue::const_reference el) const
         {
-            return ro.maybe_submesh_index == maybe_submesh_index_;
+            return el.maybe_submesh_index() == maybe_submesh_index_;
         }
     private:
         MaybeIndex maybe_submesh_index_;
     };
 
-    // sort a sequence of `RenderObject`s for optimal drawing
-    std::vector<RenderObject>::iterator sort_render_queue(
-        std::vector<RenderObject>::iterator queue_begin,
-        std::vector<RenderObject>::iterator queue_end,
+    // sort a sequence of `RenderQueue` elements for optimal drawing
+    RenderQueue::iterator sort_render_queue(
+        RenderQueue::iterator queue_begin,
+        RenderQueue::iterator queue_end,
         Vector3 camera_pos)
     {
-        // partition the render queue into `[opaque_objs | transparent_objs]`
-        const auto opaque_objs_end = std::partition(queue_begin, queue_end, is_opaque);
+        // partition the render queue into `[opaque_obj | transparent_objs]`
+        const auto opaque_objs_end = rgs::partition(queue_begin, queue_end, &RenderQueue::reference::is_opaque).end();
 
         // optimize the `opaque_objs` partition (it can be reordered safely)
         //
-        // first, batch `opaque_objs` into `RenderObject`s that have the same `Material`
+        // first, batch `opaque_objs` into elements that have the same `Material`
         auto material_batch_start = queue_begin;
         while (material_batch_start != opaque_objs_end) {
 
             const auto material_batch_end = std::partition(
                 material_batch_start,
                 opaque_objs_end,
-                RenderObjectHasMaterial{&material_batch_start->material}
+                RenderQueueEntryHasMaterial{material_batch_start->material()}
             );
 
-            // second, batch `RenderObject`s with the same `Material` into sub-batches
+            // second, batch elements with the same `Material` into sub-batches
             // with the same `MaterialPropertyBlock`
             auto props_batch_start = material_batch_start;
             while (props_batch_start != material_batch_end) {
@@ -800,10 +685,10 @@ namespace
                 const auto props_batch_end = std::partition(
                     props_batch_start,
                     material_batch_end,
-                    RenderObjectHasMaterialPropertyBlock{props_batch_start->property_block}
+                    RenderQueueEntryHasMaterialPropertyBlock{props_batch_start->material_property_block()}
                 );
 
-                // third, batch `RenderObject`s with the same `Material` and `MaterialPropertyBlock`s
+                // third, batch elements with the same `Material` and `MaterialPropertyBlock`s
                 // into sub-batches with the same `Mesh`
                 auto mesh_batch_start = props_batch_start;
                 while (mesh_batch_start != props_batch_end) {
@@ -811,10 +696,10 @@ namespace
                     const auto mesh_batch_end = std::partition(
                         mesh_batch_start,
                         props_batch_end,
-                        RenderObjectHasMesh{&mesh_batch_start->mesh}
+                        RenderQueueEntryHasMesh{mesh_batch_start->mesh()}
                     );
 
-                    // fourth, batch `RenderObject`s with the same `Material`, `MaterialPropertyBlock`,
+                    // fourth, batch elements with the same `Material`, `MaterialPropertyBlock`,
                     // and `Mesh` into sub-batches with the same sub-mesh index
                     auto submesh_batch_start = mesh_batch_start;
                     while (submesh_batch_start != mesh_batch_end) {
@@ -822,7 +707,7 @@ namespace
                         const auto submesh_batch_end = std::partition(
                             submesh_batch_start,
                             mesh_batch_end,
-                            RenderObjectHasSubMeshIndex{submesh_batch_start->maybe_submesh_index}
+                            RenderQueueEntryHasSubMeshIndex{submesh_batch_start->maybe_submesh_index()}
                         );
 
                         submesh_batch_start = submesh_batch_end;
@@ -835,24 +720,13 @@ namespace
         }
 
         // sort the transparent partition by distance from camera (back-to-front)
-        std::sort(opaque_objs_end, queue_end, RenderObjectIsFartherFrom{camera_pos});
+        std::sort(opaque_objs_end, queue_end, RenderQueueEntryIsFatherFrom{camera_pos});
 
         return opaque_objs_end;
     }
 
     // top-level state for a single call to `render`
     struct RenderPassState final {
-
-        RenderPassState(
-            const Vector3& camera_pos_,
-            const Matrix4x4& view_matrix_,
-            const Matrix4x4& projection_matrix_) :
-
-            camera_pos{camera_pos_},
-            view_matrix{view_matrix_},
-            projection_matrix{projection_matrix_}
-        {}
-
         Vector3 camera_pos;
         Matrix4x4 view_matrix;
         Matrix4x4 projection_matrix;
@@ -5704,7 +5578,7 @@ private:
     Quaternion rotation_ = identity<Quaternion>();
     std::optional<Matrix4x4> maybe_view_matrix_override_;
     std::optional<Matrix4x4> maybe_projection_matrix_override_;
-    std::vector<RenderObject> render_queue_;
+    RenderQueue render_queue_;
 };
 
 
@@ -6408,7 +6282,7 @@ namespace osc
         );
 
         static std::optional<InstancingState> upload_instance_data(
-            std::span<const RenderObject>,
+            RenderQueue::subrange,
             const Shader::Impl&
         );
 
@@ -6419,34 +6293,39 @@ namespace osc
         );
 
         static void handle_batch_with_same_submesh(
-            std::span<const RenderObject>,
+            RenderQueue::subrange,
             std::optional<InstancingState>& instancing_state
         );
 
         static void handle_batch_with_same_mesh(
-            std::span<const RenderObject>,
+            RenderQueue::subrange,
             std::optional<InstancingState>& instancing_state
         );
 
         static void handle_batch_with_same_material_property_block(
-            std::span<const RenderObject>,
+            RenderQueue::subrange,
             OpenGLDrawBatchState&,
             std::optional<InstancingState>& instancing_state
         );
 
         static void handle_batch_with_same_material(
             const RenderPassState&,
-            std::span<const RenderObject>
+            RenderQueue::subrange
         );
 
         static void draw_render_objects(
             const RenderPassState&,
-            std::span<const RenderObject>
+            RenderQueue::subrange
         );
 
         static void draw_batched_by_opaqueness(
             const RenderPassState&,
-            std::span<const RenderObject>
+            RenderQueue::subrange
+        );
+
+        static void draw_batched_by_depth_testing(
+            RenderPassState&,
+            RenderQueue::subrange
         );
 
         struct ViewportGeometry final {
@@ -6492,23 +6371,14 @@ namespace osc
 
         // public (forwarded) API
 
-        static void draw(
-            const Mesh&,
-            const Transform&,
-            const Material&,
-            Camera&,
-            const std::optional<MaterialPropertyBlock>&,
-            std::optional<size_t>
-        );
-
-        static void draw(
-            const Mesh&,
-            const Matrix4x4&,
-            const Material&,
-            Camera&,
-            const std::optional<MaterialPropertyBlock>&,
-            std::optional<size_t>
-        );
+        static void draw(const Mesh&, const Transform&, const Material&, Camera&);
+        static void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&);
+        static void draw(const Mesh&, const Transform&, const Material&, Camera&, size_t submesh_index);
+        static void draw(const Mesh&, const Transform&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
+        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&);
+        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&);
+        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, size_t submesh_index);
+        static void draw(const Mesh&, const Matrix4x4&, const Material&, Camera&, const MaterialPropertyBlock&, size_t submesh_index);
 
         static void blit(
             const Texture2D&,
@@ -6636,40 +6506,37 @@ std::string osc::GraphicsContext::backend_shading_language_version_string() cons
     return g_graphics_context_impl->backend_shading_language_version_string();
 }
 
-void osc::graphics::draw(
-    const Mesh& mesh,
-    const Transform& transform,
-    const Material& material,
-    Camera& camera,
-    const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
-    std::optional<size_t> maybe_submesh_index)
+void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera)
 {
-    GraphicsBackend::draw(
-        mesh,
-        transform,
-        material,
-        camera,
-        maybe_material_property_block,
-        maybe_submesh_index
-    );
+    GraphicsBackend::draw(mesh, transform, material, camera);
 }
-
-void osc::graphics::draw(
-    const Mesh& mesh,
-    const Matrix4x4& transform,
-    const Material& material,
-    Camera& camera,
-    const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
-    std::optional<size_t> maybe_submesh_index)
+void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
 {
-    GraphicsBackend::draw(
-        mesh,
-        transform,
-        material,
-        camera,
-        maybe_material_property_block,
-        maybe_submesh_index
-    );
+    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block);
+}
+void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, size_t submesh_index)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera, submesh_index);
+}
+void osc::graphics::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block, submesh_index);
+}
+void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera);
+}
+void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block);
+}
+void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, size_t submesh_index)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera, submesh_index);
+}
+void osc::graphics::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
+{
+    GraphicsBackend::draw(mesh, transform, material, camera, material_prop_block, submesh_index);
 }
 
 void osc::graphics::blit(const Texture2D& source, RenderTexture& destination)
@@ -6784,7 +6651,7 @@ void osc::GraphicsBackend::unbind_from_instanced_attributes(
 
 // helper: upload instancing data for a batch
 std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
-    std::span<const RenderObject> render_queue,
+    RenderQueue::subrange render_queue,
     const Shader::Impl& shader_impl)
 {
     // preemptively upload instancing data
@@ -6816,10 +6683,10 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
         buf.reserve(render_queue.size() * (byte_stride/sizeof(float)));
 
         size_t float_offset = 0;
-        for (const RenderObject& render_object : render_queue) {
+        for (const auto&& render_object : render_queue) {
             if (shader_impl.maybe_instanced_model_mat_attr_) {
                 if (shader_impl.maybe_instanced_model_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
-                    const Matrix4x4 m = model_matrix4x4(render_object);
+                    const Matrix4x4& m = render_object.model_matrix();
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
@@ -6827,13 +6694,13 @@ std::optional<InstancingState> osc::GraphicsBackend::upload_instance_data(
             }
             if (shader_impl.maybe_instanced_normal_mat_attr_) {
                 if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix4x4) {
-                    const Matrix4x4 m = normal_matrix4x4(render_object);
+                    const Matrix4x4 m = render_object.normal_matrix4x4();
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
                 }
                 else if (shader_impl.maybe_instanced_normal_mat_attr_->shader_type == ShaderPropertyType::Matrix3x3) {
-                    const Matrix3x3 m = normal_matrix(render_object);
+                    const Matrix3x3 m = render_object.normal_matrix3x3();
                     const std::span<const float> els = to_float_span(m);
                     buf.insert(buf.end(), els.begin(), els.end());
                     float_offset += els.size();
@@ -6856,20 +6723,20 @@ void osc::GraphicsBackend::try_bind_material_value_to_shader_element(
     material_value.bind_value_to_shader_element(shader_element, batch_state);
 }
 
-// helper: draw a batch of `RenderObject`s that have the same:
+// helper: draw a batch of `RenderQueue` elements that have the same:
 //
 //   - Material
 //   - MaterialPropertyBlock
 //   - Mesh
 //   - sub-Mesh index (can be std::nullopt, to mean 'the entire mesh')
 void osc::GraphicsBackend::handle_batch_with_same_submesh(
-    std::span<const RenderObject> batch,
+    RenderQueue::subrange batch,
     std::optional<InstancingState>& instancing_state)
 {
     OSC_ASSERT(not batch.empty());
-    auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh.impl_);
-    const Shader::Impl& shader_impl = *batch.front().material.impl_->shader_.impl_;
-    const MaybeIndex maybe_submesh_index = batch.front().maybe_submesh_index;
+    auto& mesh_impl = const_cast<Mesh::Impl&>(*batch.front().mesh().impl_);
+    const Shader::Impl& shader_impl = *batch.front().material().impl_->shader_.impl_;
+    const MaybeIndex maybe_submesh_index = batch.front().maybe_submesh_index();
 
     gl::bind_vertex_array(mesh_impl.upd_vertex_array());
 
@@ -6877,13 +6744,13 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
         // if the shader requires per-instance uniforms, then we *have* to render one
         // instance at a time
 
-        for (const RenderObject& render_object : batch) {
+        for (const auto&& render_object : batch) {
 
             // try binding to uModel (standard)
             if (shader_impl.maybe_model_mat_uniform_) {
                 if (shader_impl.maybe_model_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                     gl::UniformMat4 u{shader_impl.maybe_model_mat_uniform_->location};
-                    gl::set_uniform(u, model_matrix4x4(render_object));
+                    gl::set_uniform(u, render_object.model_matrix());
                 }
             }
 
@@ -6891,11 +6758,11 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
             if (shader_impl.maybe_normal_mat_uniform_) {
                 if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Matrix3x3) {
                     gl::UniformMat3 u{shader_impl.maybe_normal_mat_uniform_->location};
-                    gl::set_uniform(u, normal_matrix(render_object));
+                    gl::set_uniform(u, render_object.normal_matrix3x3());
                 }
                 else if (shader_impl.maybe_normal_mat_uniform_->shader_type == ShaderPropertyType::Matrix4x4) {
                     gl::UniformMat4 u{shader_impl.maybe_normal_mat_uniform_->location};
-                    gl::set_uniform(u, normal_matrix4x4(render_object));
+                    gl::set_uniform(u, render_object.normal_matrix4x4());
                 }
             }
 
@@ -6925,42 +6792,42 @@ void osc::GraphicsBackend::handle_batch_with_same_submesh(
     gl::bind_vertex_array();
 }
 
-// helper: draw a batch of `RenderObject`s that have the same:
+// helper: draw a batch of `RenderQueue` elements that have the same:
 //
 //   - Material
 //   - MaterialPropertyBlock
 //   - Mesh
 void osc::GraphicsBackend::handle_batch_with_same_mesh(
-    std::span<const RenderObject> batch,
+    RenderQueue::subrange batch,
     std::optional<InstancingState>& instancing_state)
 {
     // batch by sub-Mesh index
     auto subbatch_begin = batch.begin();
     while (subbatch_begin != batch.end()) {
-        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasSubMeshIndex{subbatch_begin->maybe_submesh_index});
+        const auto subbatch_end = std::find_if_not(subbatch_begin, batch.end(), RenderQueueEntryHasSubMeshIndex{subbatch_begin->maybe_submesh_index()});
         handle_batch_with_same_submesh({subbatch_begin, subbatch_end}, instancing_state);
         subbatch_begin = subbatch_end;
     }
 }
 
-// helper: draw a batch of `RenderObject`s that have the same:
+// helper: draw a batch of `RenderQueue` elements that have the same:
 //
 //   - Material
 //   - MaterialPropertyBlock
 void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
-    std::span<const RenderObject> batch,
+    RenderQueue::subrange batch,
     OpenGLDrawBatchState& batch_state,
     std::optional<InstancingState>& instancing_state)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material_property_block");
     OSC_ASSERT(not batch.empty());
 
-    const Material::Impl& material_impl = *batch.front().material.impl_;
+    const Material::Impl& material_impl = *batch.front().material().impl_;
     const Shader::Impl& shader_impl = *material_impl.shader_.impl_;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
     // bind property block variables (if applicable)
-    for (const auto& [name, value] : batch.front().property_block.impl_->values_) {
+    for (const auto& [name, value] : batch.front().material_property_block().impl_->values_) {
         if (const auto* uniform = lookup_or_nullptr(uniforms, name)) {
             try_bind_material_value_to_shader_element(*uniform, value, batch_state);
         }
@@ -6969,23 +6836,23 @@ void osc::GraphicsBackend::handle_batch_with_same_material_property_block(
     // batch by mesh
     auto subbatch_begin = batch.begin();
     while (subbatch_begin != batch.end()) {
-        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMesh{&subbatch_begin->mesh});
+        const auto subbatch_end = std::find_if_not(subbatch_begin, batch.end(), RenderQueueEntryHasMesh{subbatch_begin->mesh()});
         handle_batch_with_same_mesh({subbatch_begin, subbatch_end}, instancing_state);
         subbatch_begin = subbatch_end;
     }
 }
 
-// helper: draw a batch of `RenderObject`s that have the same:
+// helper: draw a batch of `RenderQueue` elements that have the same:
 //
 //   - Material
 void osc::GraphicsBackend::handle_batch_with_same_material(
     const RenderPassState& render_pass_state,
-    std::span<const RenderObject> batch)
+    RenderQueue::subrange batch)
 {
     OSC_PERF("GraphicsBackend::handle_batch_with_same_material");
     OSC_ASSERT(not batch.empty());
 
-    const auto& material_impl = *batch.front().material.impl_;
+    const auto& material_impl = *batch.front().material().impl_;
     const auto& shader_impl = *material_impl.shader_.impl_;
     const FastStringHashtable<ShaderElement>& uniforms = shader_impl.uniforms();
 
@@ -7069,9 +6936,8 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
 
     // batch by material property block
     auto subbatch_begin = batch.begin();
-    while (subbatch_begin != batch.end())
-    {
-        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMaterialPropertyBlock{subbatch_begin->property_block});
+    while (subbatch_begin != batch.end()) {
+        const auto subbatch_end = std::find_if_not(subbatch_begin, batch.end(), RenderQueueEntryHasMaterialPropertyBlock{subbatch_begin->material_property_block()});
         handle_batch_with_same_material_property_block({subbatch_begin, subbatch_end}, batch_state, maybe_instances);
         subbatch_begin = subbatch_end;
     }
@@ -7109,17 +6975,17 @@ void osc::GraphicsBackend::handle_batch_with_same_material(
     }
 }
 
-// helper: draw a sequence of `RenderObject`s
+// helper: draw a sequence of `RenderQueue` elements
 void osc::GraphicsBackend::draw_render_objects(
     const RenderPassState& render_pass_state,
-    std::span<const RenderObject> batch)
+    RenderQueue::subrange batch)
 {
     OSC_PERF("GraphicsBackend::draw_render_objects");
 
     // batch by material
     auto subbatch_begin = batch.begin();
     while (subbatch_begin != batch.end()) {
-        const auto subbatch_end = find_if_not(subbatch_begin, batch.end(), RenderObjectHasMaterial{&subbatch_begin->material});
+        const auto subbatch_end = std::find_if_not(subbatch_begin, batch.end(), RenderQueueEntryHasMaterial{subbatch_begin->material()});
         handle_batch_with_same_material(render_pass_state, {subbatch_begin, subbatch_end});
         subbatch_begin = subbatch_end;
     }
@@ -7127,13 +6993,13 @@ void osc::GraphicsBackend::draw_render_objects(
 
 void osc::GraphicsBackend::draw_batched_by_opaqueness(
     const RenderPassState& render_pass_state,
-    std::span<const RenderObject> batch)
+    RenderQueue::subrange batch)
 {
     OSC_PERF("GraphicsBackend::draw_batched_by_opaqueness");
 
     auto batch_iterator = batch.begin();
     while (batch_iterator != batch.end()) {
-        const auto opaque_end = find_if_not(batch_iterator, batch.end(), is_opaque);
+        const auto opaque_end = rgs::find_if_not(batch_iterator, batch.end(), &RenderQueue::reference::is_opaque);
 
         if (opaque_end != batch_iterator) {
             // [batchIt..opaqueEnd] contains opaque elements
@@ -7145,7 +7011,7 @@ void osc::GraphicsBackend::draw_batched_by_opaqueness(
 
         if (opaque_end != batch.end()) {
             // [opaqueEnd..els.end()] contains transparent elements
-            const auto transparent_end = find_if(opaque_end, batch.end(), is_opaque);
+            const auto transparent_end = rgs::find_if(opaque_end, batch.end(), &RenderQueue::reference::is_opaque);
             gl::enable(GL_BLEND);
             draw_render_objects(render_pass_state, {opaque_end, transparent_end});
 
@@ -7154,64 +7020,61 @@ void osc::GraphicsBackend::draw_batched_by_opaqueness(
     }
 }
 
-void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect_ratio)
+void osc::GraphicsBackend::draw_batched_by_depth_testing(
+    RenderPassState& render_pass_state,
+    RenderQueue::subrange batch)
 {
-    OSC_PERF("GraphicsBackend::flush_render_queue");
-
-    // flush the render queue in batches based on what's being rendered:
-    //
-    // - not-depth-tested elements (can't be reordered)
-    // - depth-tested elements (can be reordered):
-    //   - opaqueness (opaque first, then transparent back-to-front)
-    //   - material
-    //   - material property block
-    //   - mesh
-
-    std::vector<RenderObject>& queue = camera.render_queue_;
-
-    if (queue.empty()) {
-        return;
-    }
-
-    // precompute any render pass state used by the rendering algs
-    const RenderPassState renderPassState{
-        camera.position(),
-        camera.view_matrix(),
-        camera.projection_matrix(aspect_ratio),
-    };
-
-    gl::enable(GL_DEPTH_TEST);
+    OSC_PERF("GraphicsBackend::draw_backed_by_depth_testing");
 
     // draw by reordering depth-tested elements around the not-depth-tested elements
-    auto batch_iterator = queue.begin();
-    while (batch_iterator != queue.end()) {
-        const auto depth_tested_end = find_if_not(batch_iterator, queue.end(), is_depth_tested);
+    auto batch_iterator = batch.begin();
+    while (batch_iterator != batch.end()) {
+        const auto depth_tested_end = rgs::find_if_not(batch_iterator, batch.end(), &RenderQueue::reference::is_depth_tested);
 
         if (depth_tested_end != batch_iterator) {
             // there are >0 depth-tested elements that are elegible for reordering
 
-            sort_render_queue(batch_iterator, depth_tested_end, renderPassState.camera_pos);
-            draw_batched_by_opaqueness(renderPassState, {batch_iterator, depth_tested_end});
+            sort_render_queue(batch_iterator, depth_tested_end, render_pass_state.camera_pos);
+            draw_batched_by_opaqueness(render_pass_state, {batch_iterator, depth_tested_end});
 
             batch_iterator = depth_tested_end;
         }
 
-        if (depth_tested_end != queue.end()) {
+        if (depth_tested_end != batch.end()) {
             // there are >0 not-depth-tested elements that cannot be reordered
 
-            const auto ignore_depth_test_end = find_if(depth_tested_end, queue.end(), is_depth_tested);
+            const auto ignore_depth_test_end = rgs::find_if(depth_tested_end, batch.end(), &RenderQueue::reference::is_depth_tested);
 
             // these elements aren't depth-tested and should just be drawn as-is
             gl::disable(GL_DEPTH_TEST);
-            draw_batched_by_opaqueness(renderPassState, {depth_tested_end, ignore_depth_test_end});
+            draw_batched_by_opaqueness(render_pass_state, {depth_tested_end, ignore_depth_test_end});
             gl::enable(GL_DEPTH_TEST);
 
             batch_iterator = ignore_depth_test_end;
         }
     }
+}
 
-    // queue flushed: clear it
-    queue.clear();
+void osc::GraphicsBackend::flush_render_queue(Camera::Impl& camera, float aspect_ratio)
+{
+    OSC_PERF("GraphicsBackend::flush_render_queue");
+
+    RenderQueue& render_queue = camera.render_queue_;
+    if (render_queue.empty()) {
+        return;  // Nothing to flush
+    }
+
+    // Construct a `RenderPassState`, shared by all sub-passes (drawcalls)
+    RenderPassState render_pass_state{
+        .camera_pos = camera.position(),
+        .view_matrix = camera.view_matrix(),
+        .projection_matrix = camera.projection_matrix(aspect_ratio),
+    };
+
+    draw_batched_by_depth_testing(render_pass_state, render_queue);
+
+    // `RenderQueue` flushed: clear it
+    render_queue.clear();
 }
 
 osc::GraphicsBackend::ViewportGeometry osc::GraphicsBackend::calc_viewport_geometry(
@@ -7607,46 +7470,49 @@ void osc::GraphicsBackend::render_camera_queue(
     );
 }
 
-void osc::GraphicsBackend::draw(
-    const Mesh& mesh,
-    const Transform& transform,
-    const Material& material,
-    Camera& camera,
-    const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
-    std::optional<size_t> maybe_submesh_index)
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera)
 {
-    if (maybe_submesh_index and *maybe_submesh_index >= mesh.num_submesh_descriptors()) {
-        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
-    }
-
-    camera.impl_.upd()->render_queue_.emplace_back(
-        mesh,
-        transform,
-        material,
-        maybe_material_property_block,
-        maybe_submesh_index
-    );
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material);
 }
-
-void osc::GraphicsBackend::draw(
-    const Mesh& mesh,
-    const Matrix4x4& transform,
-    const Material& material,
-    Camera& camera,
-    const std::optional<MaterialPropertyBlock>& maybe_material_property_block,
-    std::optional<size_t> maybe_submesh_index)
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
 {
-    if (maybe_submesh_index and *maybe_submesh_index >= mesh.num_submesh_descriptors()) {
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, size_t submesh_index)
+{
+    if (submesh_index >= mesh.num_submesh_descriptors()) {
         throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
     }
-
-    camera.impl_.upd()->render_queue_.emplace_back(
-        mesh,
-        transform,
-        material,
-        maybe_material_property_block,
-        maybe_submesh_index
-    );
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, submesh_index);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Transform& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
+{
+    if (submesh_index >= mesh.num_submesh_descriptors()) {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block, submesh_index);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera)
+{
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block)
+{
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, size_t submesh_index)
+{
+    if (submesh_index >= mesh.num_submesh_descriptors()) {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, submesh_index);
+}
+void osc::GraphicsBackend::draw(const Mesh& mesh, const Matrix4x4& transform, const Material& material, Camera& camera, const MaterialPropertyBlock& material_prop_block, size_t submesh_index)
+{
+    if (submesh_index >= mesh.num_submesh_descriptors()) {
+        throw std::out_of_range{"the given sub-mesh index was out of range (i.e. the given mesh does not have that many sub-meshes)"};
+    }
+    camera.impl_.upd()->render_queue_.emplace(mesh, transform, material, material_prop_block, submesh_index);
 }
 
 void osc::GraphicsBackend::blit(

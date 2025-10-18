@@ -13,6 +13,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - OpenSim and Simbody were updated to the latest upstream version (2f3d0e1, 15th Oct)
   so that new features such as exponential path springs and Scholz wrapping paths are
   supported (big thanks to @alexbeattie42 for doing the legwork, #1099, #1100).
+- The internal render queue used by OpenSim Creator's graphics engine was reworked,
+  which should improve rendering performance by 5-10 %.
 
 ## [0.6.1] - 2025/10/09
 

@@ -172,7 +172,7 @@ TEST_F(Graphics, graphics_draw_throws_if_given_out_of_bounds_sub_mesh_index)
     const Material material{Shader{c_vertex_shader_src, c_fragment_shader_src}};
     Camera camera;
 
-    ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_ANY_THROW({ graphics::draw(mesh, transform, material, camera, 0); });
 }
 
 TEST_F(Graphics, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
@@ -183,5 +183,5 @@ TEST_F(Graphics, graphics_draw_does_not_throw_if_given_in_bounds_sub_mesh_index)
     const Material material{Shader{c_vertex_shader_src, c_fragment_shader_src}};
     Camera camera;
 
-    ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, std::nullopt, 0); });
+    ASSERT_NO_THROW({ graphics::draw(mesh, transform, material, camera, 0); });
 }

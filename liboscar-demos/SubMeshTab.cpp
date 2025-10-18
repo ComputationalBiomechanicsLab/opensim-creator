@@ -94,7 +94,6 @@ public:
                 identity<Transform>(),
                 material_,
                 camera_,
-                std::nullopt,
                 sub_mesh_index
             );
         }
