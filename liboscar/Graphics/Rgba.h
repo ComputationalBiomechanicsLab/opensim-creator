@@ -5,6 +5,7 @@
 #include <liboscar/Maths/Vector.h>
 #include <liboscar/Utils/HashHelpers.h>
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <functional>
@@ -15,7 +16,7 @@
 namespace osc
 {
     template<ColorComponent T>
-    struct Rgba final {
+    struct alignas(std::max(alignof(T), alignof(uint32_t))) Rgba final {
 
         using value_type = T;
         using reference = value_type&;
