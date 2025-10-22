@@ -5,6 +5,7 @@
 
 #include <bit>
 #include <concepts>
+#include <cstdint>
 
 namespace osc
 {
@@ -17,3 +18,11 @@ namespace osc
     }
 }
 
+// specialized hashing function for `Color32`
+template<>
+struct std::hash<osc::Color32> final {
+    size_t operator()(const osc::Color32& color32) const noexcept
+    {
+        return std::hash<uint32_t>{}(std::bit_cast<uint32_t>(color32));
+    }
+};
