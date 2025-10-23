@@ -39,8 +39,6 @@ namespace
     };
 
     struct RenderQueueEmplaceArgs final {
-        friend bool operator==(const RenderQueueEmplaceArgs&, const RenderQueueEmplaceArgs&) = default;
-
         Mesh mesh = ConeGeometry{};
         Matrix4x4 transform{3.7f};
         Material material = MeshBasicMaterial{};
