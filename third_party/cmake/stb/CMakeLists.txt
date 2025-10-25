@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 project(stb)
 
-# https://stackoverflow.com/questions/54271925/how-to-configure-cmakelists-txt-to-install-public-headers-of-a-shared-library
-file(GLOB STB_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+set(OSCDEPS_IMGUI_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../stb")
+
+file(GLOB STB_HEADERS ${OSCDEPS_IMGUI_ROOT}/*.h)
 
 add_library(stb INTERFACE)
 target_include_directories(stb
@@ -26,7 +27,7 @@ install(
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/stbConfig.cmake.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/stbConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/stbConfig.cmake"
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/stb
 )

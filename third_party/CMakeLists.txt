@@ -212,6 +212,7 @@ endif()
 if (${OSCDEPS_BUILD_STB})
     ExternalProject_Add(stb
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+        SOURCE_SUBDIR ../cmake/stb/
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
