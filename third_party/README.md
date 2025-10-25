@@ -26,5 +26,11 @@ git subtree pull --squash --prefix=third_party/libosim/simbody/ https://github.c
 git subtree pull --squash --prefix=third_party/libosim/opensim-core/ https://github.com/opensim-org/opensim-core 2f3d0e13c7beeb5c75dc701afb5b3cd8626864de
 ```
 
+You can list all subtrees with:
+
+```bash
+for d in $(find third_party/ -mindepth 1 -maxdepth 1 -type d); do v=$(git log --grep "git-subtree-dir: $d" -1 --pretty=format:"%b" | grep git-subtree-split); if [ -n "$v" ]; then echo "$d $v"; fi; done
+```
+
 **Note**: the build procedure also applies patches so some of the upstream code so
 that it works better in OpenSim Creator. See `patches/`.
