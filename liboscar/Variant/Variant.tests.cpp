@@ -60,9 +60,9 @@ TEST(Variant, can_be_explicitly_constructed_from_bool)
     ASSERT_EQ(true_variant.type(), VariantType::Bool);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_bool)
+TEST(Variant, can_be_constructed_from_bool)
 {
-    static_assert(std::is_convertible_v<bool, Variant>);
+    static_assert(std::is_constructible_v<Variant, bool>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_Color)
@@ -72,9 +72,9 @@ TEST(Variant, can_be_explicitly_constructed_from_Color)
     ASSERT_EQ(variant.type(), VariantType::Color);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_Color)
+TEST(Variant, can_be_constructed_from_Color)
 {
-    static_assert(std::is_convertible_v<Color, Variant>);
+    static_assert(std::is_constructible_v<Variant, Color>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_float)
@@ -84,9 +84,9 @@ TEST(Variant, can_be_explicitly_constructed_from_float)
     ASSERT_EQ(variant.type(), VariantType::Float);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_float)
+TEST(Variant, can_be_constructed_from_float)
 {
-    static_assert(std::is_convertible_v<float, Variant>);
+    static_assert(std::is_constructible_v<Variant, float>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_int)
@@ -96,9 +96,9 @@ TEST(Variant, can_be_explicitly_constructed_from_int)
     ASSERT_EQ(variant.type(), VariantType::Int);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_int)
+TEST(Variant, can_be_constructed_from_int)
 {
-    static_assert(std::is_convertible_v<int, Variant>);
+    static_assert(std::is_constructible_v<Variant, int>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_a_std_string)
@@ -108,9 +108,9 @@ TEST(Variant, can_be_explicitly_constructed_from_a_std_string)
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_std_string_rvalue)
+TEST(Variant, can_be_constructed_from_a_std_string_rvalue)
 {
-    static_assert(std::is_convertible_v<std::string&&, Variant>);
+    static_assert(std::is_constructible_v<Variant, std::string&&>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_a_string_literal)
@@ -120,9 +120,9 @@ TEST(Variant, can_be_explicitly_constructed_from_a_string_literal)
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_string_literal)
+TEST(Variant, can_be_constructed_from_a_string_literal)
 {
-    static_assert(std::is_convertible_v<decltype(""), Variant>);
+    static_assert(std::is_constructible_v<Variant, decltype("")>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_a_CStringView)
@@ -132,9 +132,9 @@ TEST(Variant, can_be_explicitly_constructed_from_a_CStringView)
     ASSERT_EQ(v.type(), VariantType::String);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_CStringView)
+TEST(Variant, can_be_constructed_from_a_CStringView)
 {
-    static_assert(std::is_convertible_v<CStringView, Variant>);
+    static_assert(std::is_constructible_v<Variant, CStringView>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_a_Vector2)
@@ -144,9 +144,9 @@ TEST(Variant, can_be_explicitly_constructed_from_a_Vector2)
     ASSERT_EQ(v.type(), VariantType::Vector2);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_Vector2)
+TEST(Variant, can_be_constructed_from_a_Vector2)
 {
-    static_assert(std::is_convertible_v<Vector2, Variant>);
+    static_assert(std::is_constructible_v<Variant, Vector2>);
 }
 
 TEST(Variant, can_be_explicitly_constructed_from_a_Vector3)
@@ -156,9 +156,9 @@ TEST(Variant, can_be_explicitly_constructed_from_a_Vector3)
     ASSERT_EQ(v.type(), VariantType::Vector3);
 }
 
-TEST(Variant, can_be_implicitly_constructed_from_a_Vector3)
+TEST(Variant, can_be_constructed_from_a_Vector3)
 {
-    static_assert(std::is_convertible_v<Vector3, Variant>);
+    static_assert(std::is_constructible_v<Variant, Vector3>);
 }
 
 TEST(Variant, default_constructor_constructs_a_Nil)

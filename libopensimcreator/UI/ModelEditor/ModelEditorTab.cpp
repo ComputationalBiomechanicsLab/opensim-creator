@@ -277,7 +277,7 @@ public:
     {
         // If the user has defined auto-reload behavior, obey it. Otherwise, default-enable
         // auto-reloading (#1000)
-        if (App::settings().find_value("model_editor/monitor_osim_changes").value_or(true)) {
+        if (App::settings().find_value<bool>("model_editor/monitor_osim_changes").value_or(true)) {
             if (m_FileChangePoller.change_detected(m_Model->getModel().getInputFileName())) {
                 ActionUpdateModelFromBackingFile(*m_Model);
             }

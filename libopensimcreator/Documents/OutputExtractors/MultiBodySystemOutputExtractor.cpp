@@ -52,7 +52,7 @@ OutputValueExtractor osc::MultiBodySystemOutputExtractor::implGetOutputValueExtr
 {
     return OutputValueExtractor{[id = m_AuxiliaryDataID](const SimulationReport& report)
     {
-        return report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>);
+        return Variant{report.getAuxiliaryValue(id).value_or(quiet_nan_v<float>)};
     }};
 }
 

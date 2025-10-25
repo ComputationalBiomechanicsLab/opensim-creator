@@ -4,6 +4,7 @@
 
 #include <liboscar/Variant/Variant.h>
 
+#include <concepts>
 #include <functional>
 #include <utility>
 
@@ -19,6 +20,13 @@ namespace osc
         static OutputValueExtractor constant(Variant value)
         {
             return OutputValueExtractor{std::move(value)};
+        }
+
+        template<typename T>
+        requires std::constructible_from<Variant, T&&>
+        static OutputValueExtractor constant(T&& value)
+        {
+            return OutputValueExtractor{Variant{std::forward<T>(value)}};
         }
 
         explicit OutputValueExtractor(std::function<Variant(const SimulationReport&)> callback_) :

@@ -213,10 +213,10 @@ void osc::OpenSimDecorationOptions::setShouldShowEverything(bool v)
 
 void osc::OpenSimDecorationOptions::forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>& callback) const
 {
-    callback("muscle_decoration_style", GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id);
-    callback("muscle_coloring_style", GetMuscleColoringStyleMetadata(m_MuscleColorSource).id);
-    callback("muscle_sizing_style", GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id);
-    callback("muscle_color_scaling", GetMuscleColorSourceScalingMetadata(m_MuscleColourSourceScaling).id);
+    callback("muscle_decoration_style", Variant{GetMuscleDecorationStyleMetadata(m_MuscleDecorationStyle).id});
+    callback("muscle_coloring_style", Variant{GetMuscleColoringStyleMetadata(m_MuscleColorSource).id});
+    callback("muscle_sizing_style", Variant{GetMuscleSizingStyleMetadata(m_MuscleSizingStyle).id});
+    callback("muscle_color_scaling", Variant{GetMuscleColorSourceScalingMetadata(m_MuscleColourSourceScaling).id});
     for (size_t i = 0; i < num_flags<OpenSimDecorationOptionFlag>(); ++i) {
         const auto& meta = GetIthOptionMetadata(i);
         callback(meta.id, Variant{m_Flags.get(GetIthOption(i))});

@@ -29,7 +29,7 @@ TEST(OpenSimDecorationOptions, RemembersColorScaling)
 TEST(OpenSimDecorationOptions, ReadsColorScalingFromDict)
 {
     const std::unordered_map<std::string, Variant> lookup = {
-        {"muscle_color_scaling", "model_wide"},
+        {"muscle_color_scaling", Variant{"model_wide"}},
     };
 
     OpenSimDecorationOptions opts;

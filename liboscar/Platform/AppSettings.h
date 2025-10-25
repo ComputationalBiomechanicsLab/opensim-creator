@@ -31,22 +31,53 @@ namespace osc
         std::optional<std::filesystem::path> system_configuration_file_location() const;
 
         std::optional<Variant> find_value(std::string_view key) const;
+
+        template<typename T>
+        requires std::constructible_from<T, Variant>
+        std::optional<T> find_value(std::string_view key) const
+        {
+            if (auto variant_value = find_value(key)) {
+                return T{*std::move(variant_value)};
+            }
+            else {
+                return std::nullopt;
+            }
+        }
+
         Variant get_value(std::string_view key, Variant fallback = Variant{}) const
         {
             return find_value(key).value_or(std::move(fallback));
         }
-        template<std::convertible_to<Variant> T>
-        T get_value(std::string_view key, T fallback = T{}) const
+
+        template<typename T>
+        requires std::constructible_from<Variant, T&&> and std::constructible_from<T, Variant>
+        T get_value(std::string_view key, T&& fallback = T{}) const
         {
             if (auto v = find_value(key)) {
-                return v->operator T();
+                return static_cast<T>(*v);
             }
             else {
-                return std::move(fallback);
+                return T{std::forward<T>(fallback)};
             }
         }
+
         void set_value(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
+
+        template<typename T>
+        requires std::constructible_from<Variant, T&&>
+        void set_value(std::string_view key, T&& value, AppSettingScope scope = AppSettingScope::User)
+        {
+            set_value(key, Variant{std::forward<T>(value)}, scope);
+        }
+
         void set_value_if_not_found(std::string_view key, Variant, AppSettingScope = AppSettingScope::User);
+
+        template<typename T>
+        requires std::constructible_from<Variant, T&&>
+        void set_value_if_not_found(std::string_view key, T&& value, AppSettingScope scope = AppSettingScope::User)
+        {
+            set_value_if_not_found(key, Variant{std::forward<T>(value)}, scope);
+        }
 
         // if available, returns the filesystem path of the configuration file that
         // provided the given setting value

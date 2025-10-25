@@ -37,8 +37,8 @@ namespace
         params.overlayOptions.forEachOptionAsAppSettingValue(callback);
         subPrefix = std::string{prefix} + std::string{"graphics/"};
         params.renderingOptions.forEachOptionAsAppSettingValue(callback);
-        rv.insert_or_assign(std::string{prefix} + "light_color", params.lightColor);
-        rv.insert_or_assign(std::string{prefix} + "background_color", params.backgroundColor);
+        rv.insert_or_assign(std::string{prefix} + "light_color", Variant{params.lightColor});
+        rv.insert_or_assign(std::string{prefix} + "background_color", Variant{params.backgroundColor});
         // TODO: floorLocation
 
         return rv;

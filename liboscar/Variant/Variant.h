@@ -20,18 +20,18 @@ namespace osc
         Variant();
         Variant(const Variant&);
         Variant(Variant&&) noexcept;
-        Variant(bool);
-        Variant(Color);
-        Variant(float);
-        Variant(int);
-        Variant(std::string);
-        Variant(std::string_view);
-        Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
-        Variant(std::nullopt_t) = delete;
-        Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
-        Variant(const StringName&);
-        Variant(Vector2);
-        Variant(Vector3);
+        explicit Variant(bool);
+        explicit Variant(Color);
+        explicit Variant(float);
+        explicit Variant(int);
+        explicit Variant(std::string);
+        explicit Variant(std::string_view);
+        explicit Variant(const char* ptr) : Variant{std::string_view{ptr}} {}
+        explicit Variant(std::nullopt_t) = delete;
+        explicit Variant(CStringView cstring_view) : Variant{std::string_view{cstring_view}} {}
+        explicit Variant(const StringName&);
+        explicit Variant(Vector2);
+        explicit Variant(Vector3);
 
         ~Variant() noexcept;
 
@@ -42,13 +42,13 @@ namespace osc
 
         // implicit conversions
         explicit operator bool() const;
-        operator Color() const;
-        operator float() const;
-        operator int() const;
-        operator std::string() const;
-        operator StringName() const;
-        operator Vector2() const;
-        operator Vector3() const;
+        explicit operator Color() const;
+        explicit operator float() const;
+        explicit operator int() const;
+        explicit operator std::string() const;
+        explicit operator StringName() const;
+        explicit operator Vector2() const;
+        explicit operator Vector3() const;
 
         friend bool operator==(const Variant&, const Variant&);
         friend void swap(Variant&, Variant&) noexcept;
