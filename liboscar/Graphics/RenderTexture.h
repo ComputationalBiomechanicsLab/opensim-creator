@@ -8,7 +8,7 @@
 #include <liboscar/Graphics/SharedDepthStencilRenderBuffer.h>
 #include <liboscar/Graphics/TextureDimensionality.h>
 #include <liboscar/Maths/Vector2.h>
-#include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/CopyOnUpdSharedValue.h>
 
 #include <iosfwd>
 
@@ -65,7 +65,7 @@ namespace osc
     private:
         friend class GraphicsBackend;
 
-        CopyOnUpdPtr<Impl> impl_;
+        CopyOnUpdSharedValue<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const RenderTexture&);

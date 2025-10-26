@@ -11,7 +11,7 @@
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Maths/Vector4.h>
-#include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/CopyOnUpdSharedValue.h>
 #include <liboscar/Utils/ObjectRepresentation.h>
 
 #include <cstddef>
@@ -181,7 +181,7 @@ namespace osc
         friend struct std::hash<Mesh>;
 
         class Impl;
-        CopyOnUpdPtr<Impl> impl_;
+        CopyOnUpdSharedValue<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Mesh&);
@@ -191,6 +191,6 @@ template<>
 struct std::hash<osc::Mesh> final {
     size_t operator()(const osc::Mesh& mesh) const noexcept
     {
-        return std::hash<osc::CopyOnUpdPtr<osc::Mesh::Impl>>{}(mesh.impl_);
+        return std::hash<const osc::Mesh::Impl*>{}(mesh.impl_.get());
     }
 };

@@ -4,7 +4,7 @@
 #include <liboscar/Graphics/TextureFilterMode.h>
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Graphics/TextureWrapMode.h>
-#include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/CopyOnUpdSharedValue.h>
 
 #include <span>
 
@@ -58,6 +58,6 @@ namespace osc
     private:
         friend class GraphicsBackend;
 
-        CopyOnUpdPtr<Impl> impl_;
+        CopyOnUpdSharedValue<Impl> impl_;
     };
 }

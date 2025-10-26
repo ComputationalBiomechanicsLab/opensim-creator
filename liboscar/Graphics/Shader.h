@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Graphics/ShaderPropertyType.h>
-#include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/CopyOnUpdSharedValue.h>
 
 #include <cstddef>
 #include <iosfwd>
@@ -38,7 +38,7 @@ namespace osc
         friend class GraphicsBackend;
 
         class Impl;
-        CopyOnUpdPtr<Impl> impl_;
+        CopyOnUpdSharedValue<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Shader&);

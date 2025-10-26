@@ -1124,7 +1124,7 @@ private:
 };
 
 osc::Cubemap::Cubemap(int32_t width, TextureFormat format) :
-    impl_{make_cow<Impl>(width, format)}
+    impl_{make_cowv<Impl>(width, format)}
 {}
 
 int32_t osc::Cubemap::width() const
@@ -1668,7 +1668,7 @@ osc::Texture2D::Texture2D(
     TextureWrapMode wrap_mode,
     TextureFilterMode filter_mode) :
 
-    impl_{make_cow<Impl>(pixel_dimensions, texture_format, color_space, wrap_mode, filter_mode)}
+    impl_{make_cowv<Impl>(pixel_dimensions, texture_format, color_space, wrap_mode, filter_mode)}
 {}
 
 Vector2i osc::Texture2D::pixel_dimensions() const
@@ -2402,11 +2402,11 @@ private:
 };
 
 osc::RenderTexture::RenderTexture() :
-    impl_{make_cow<Impl>()}
+    impl_{make_cowv<Impl>()}
 {}
 
 osc::RenderTexture::RenderTexture(const RenderTextureParams& params) :
-    impl_{make_cow<Impl>(params)}
+    impl_{make_cowv<Impl>(params)}
 {}
 
 Vector2i osc::RenderTexture::pixel_dimensions() const
@@ -2742,7 +2742,7 @@ osc::Shader::Shader(
     std::string_view vertex_shader_src,
     std::string_view fragment_shader_src) :
 
-    impl_{make_cow<Impl>(vertex_shader_src, fragment_shader_src)}
+    impl_{make_cowv<Impl>(vertex_shader_src, fragment_shader_src)}
 {}
 
 osc::Shader::Shader(
@@ -2750,7 +2750,7 @@ osc::Shader::Shader(
     std::string_view geometry_shader_src,
     std::string_view fragment_shader_src) :
 
-    impl_{make_cow<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
+    impl_{make_cowv<Impl>(vertex_shader_src, geometry_shader_src, fragment_shader_src)}
 {}
 
 size_t osc::Shader::num_properties() const
@@ -3371,7 +3371,7 @@ private:
 };
 
 osc::Material::Material(Shader shader) :
-    impl_{make_cow<Impl>(std::move(shader))}
+    impl_{make_cowv<Impl>(std::move(shader))}
 {}
 
 const Shader& osc::Material::shader() const
@@ -3597,7 +3597,7 @@ private:
 osc::MaterialPropertyBlock::MaterialPropertyBlock() :
     impl_{[]()
     {
-        static const CopyOnUpdPtr<Impl> s_empty_property_block_impl = make_cow<Impl>();
+        static auto s_empty_property_block_impl = make_cowv<Impl>();
         return s_empty_property_block_impl;
     }()}
 {}
@@ -5028,7 +5028,7 @@ std::ostream& osc::operator<<(std::ostream& o, MeshTopology topology)
 }
 
 osc::Mesh::Mesh() :
-    impl_{make_cow<Impl>()}
+    impl_{make_cowv<Impl>()}
 {}
 
 MeshTopology osc::Mesh::topology() const
@@ -5589,7 +5589,7 @@ std::ostream& osc::operator<<(std::ostream& o, CameraProjection camera_projectio
 }
 
 osc::Camera::Camera() :
-    impl_{make_cow<Impl>()}
+    impl_{make_cowv<Impl>()}
 {}
 
 void osc::Camera::reset()

@@ -7,7 +7,7 @@
 #include <liboscar/Graphics/TextureFormat.h>
 #include <liboscar/Graphics/TextureWrapMode.h>
 #include <liboscar/Maths/Vector2.h>
-#include <liboscar/Utils/CopyOnUpdPtr.h>
+#include <liboscar/Utils/CopyOnUpdSharedValue.h>
 
 #include <cstdint>
 #include <iosfwd>
@@ -137,7 +137,7 @@ namespace osc
         friend std::ostream& operator<<(std::ostream&, const Texture2D&);
         friend class GraphicsBackend;
 
-        CopyOnUpdPtr<Impl> impl_;
+        CopyOnUpdSharedValue<Impl> impl_;
     };
 
     std::ostream& operator<<(std::ostream&, const Texture2D&);
