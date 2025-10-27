@@ -11,6 +11,8 @@
 #include <gtest/gtest.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
+#include <liboscar/Graphics/Scene/SceneHelpers.h>
+#include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/Utils/StringHelpers.h>
@@ -534,7 +536,6 @@ namespace
     };
 }
 
-
 // This was found when simulating `arm26.osim`. A forward-dynamic simulation of it exploded
 // for some probably-physics-related internal reason, and that resulted in the backend emitting
 // geometry containing NaNed transforms. That geometry then propagated through the UI and caused
@@ -552,4 +553,42 @@ TEST(GenerateModelDecorations, FiltersOutSpheresWithNaNTranslation)
     const auto decorations = GenerateModelDecorations(cache, model, state);
 
     ASSERT_EQ(decorations.size(), 0);
+}
+
+// Test for a regression found during `Scholz2015GeometryPath` integration (#1131)
+//
+// Upstream `opensim-core`, around v4.6, added a `SimTK::ContactGeometry` cache to
+// `OpenSim::ContactGeometry`, which created invalid behavior in which changing an
+// `OpenSim::ContactGeometry` derived property (e.g. `radius` on `ContactSphere`)
+// wouldn't update the associated decoration because an intermediate cached pointer
+// wasn't being invalidated.
+TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
+{
+    OpenSim::Model model;
+    auto& sphere = osc::AddComponent<OpenSim::ContactSphere>(model);
+    sphere.setRadius(0.1);
+    sphere.setFrame(model.getGround());
+    model.buildSystem();
+    const SimTK::State& state = model.initializeState();
+
+    SceneCache cache;
+    OpenSimDecorationOptions opts;
+
+    // Before changing radius: it should be as-set
+    {
+        const auto decorations = GenerateModelDecorations(cache, model, state);
+        const float volume = volume_of(bounding_aabb_of(decorations, world_space_bounds_of));
+        ASSERT_NEAR(volume, 0.2f*0.2f*0.2f, 0.001f);
+    }
+
+    sphere.setRadius(0.5);
+    model.buildSystem();
+    model.initializeState();
+
+    // After changing radius: should update it
+    {
+        const auto decorations = GenerateModelDecorations(cache, model, state);
+        const float volume = volume_of(bounding_aabb_of(decorations, world_space_bounds_of));
+        ASSERT_NEAR(volume, 1.0f*1.0f*1.0f, 0.001f);
+    }
 }

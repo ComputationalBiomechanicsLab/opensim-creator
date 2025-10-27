@@ -1,3 +1,7 @@
+Adds connection cylinders between the path elements of an `OpenSim::Scholz2015GeometryPath` (#1131)
+
+---
+
 diff --git a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
 index e196614cf0..556efa2b08 100644
 --- a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp

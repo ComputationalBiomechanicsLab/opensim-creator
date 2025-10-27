@@ -1,0 +1,35 @@
+Fixes a bug in `OpenSim::ContactGeometry` where it dishes out an intermediate cached pointer
+even if there's a cache invalidation (e.g. from changing a derived property - see #1131).
+
+---
+
+diff --git a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.cpp b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.cpp
+index 8c06972454..7e6d60e925 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.cpp
++++ b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.cpp
+@@ -94,11 +94,7 @@ SimTK::ContactGeometry ContactGeometry::createSimTKContactGeometry() const
+ std::shared_ptr<const SimTK::ContactGeometry>
+ ContactGeometry::getSimTKContactGeometryPtr() const
+ {
+-    if (!_simTKContactGeometry) {
+-        _simTKContactGeometry = std::make_shared<SimTK::ContactGeometry>(
+-            createSimTKContactGeometry());
+-    }
+-    return _simTKContactGeometry;
++    return std::make_shared<SimTK::ContactGeometry>(createSimTKContactGeometry());
+ }
+ 
+ //=============================================================================
+diff --git a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.h b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.h
+index e6233a7cf8..2c231cae1a 100644
+--- a/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.h
++++ b/third_party/libosim/opensim-core/OpenSim/Simulation/Model/ContactGeometry.h
+@@ -160,8 +160,6 @@ protected:
+         override;
+ 
+ private:
+-    mutable std::shared_ptr<const SimTK::ContactGeometry> _simTKContactGeometry;
+-
+     /**
+      * Get a shared pointer to a SimTK::ContactGeometry based on this object.
+      */
