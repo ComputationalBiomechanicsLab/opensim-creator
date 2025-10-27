@@ -25,6 +25,8 @@ namespace osc
             ptr_->owners.fetch_add(1, std::memory_order::relaxed);
         }
 
+        CopyOnUpdSharedValue(CopyOnUpdSharedValue&&) noexcept = delete;
+
         ~CopyOnUpdSharedValue() noexcept
         {
             if (ptr_->owners.fetch_sub(1, std::memory_order_acq_rel) == 1) {
@@ -39,6 +41,8 @@ namespace osc
             return *this;
         }
 
+        CopyOnUpdSharedValue& operator=(CopyOnUpdSharedValue&&) noexcept = delete;
+
         friend void swap(CopyOnUpdSharedValue& a, CopyOnUpdSharedValue& b) noexcept
         {
             std::swap(a.ptr_, b.ptr_);
@@ -49,18 +53,18 @@ namespace osc
         template<typename U>
         friend auto operator<=>(const CopyOnUpdSharedValue& lhs, const CopyOnUpdSharedValue<U>& rhs) { return lhs.ptr_ <=> rhs.ptr_; }
 
-        const_pointer get() const noexcept { return std::launder(static_cast<const T*>(ptr_->data)); }
+        const_pointer get() const noexcept { return static_cast<const T*>(ptr_->data); }
         const_pointer operator->() const noexcept { return get(); }
         const_reference operator*() const { return *get(); }
 
         pointer upd()
         {
             if (ptr_->owners.load(std::memory_order_acquire) == 1) {
-                return std::launder(static_cast<T*>(ptr_->data));
+                return static_cast<T*>(ptr_->data);
             }
             CopyOnUpdSharedValue copy = make_cowv<T>(*get());
             swap(copy, *this);
-            return std::launder(static_cast<T*>(ptr_->data));
+            return static_cast<T*>(ptr_->data);
         }
 
     private:
@@ -86,37 +90,32 @@ namespace osc
         requires std::constructible_from<T, Args&&...>
         static ControlBlock* allocate_representation(Args&&... args)
         {
-            constexpr size_t allocation_alignment_size = std::max(alignof(ControlBlock), alignof(T));
-            constexpr size_t allocation_size = sizeof(ControlBlock) + sizeof(T) + allocation_alignment_size - 1;
+            // Calculate memory allocation layout, size, and alignment
+            constexpr size_t data_offset = (sizeof(ControlBlock) + (alignof(T) - 1)) & ~(alignof(T) - 1);
+            constexpr size_t allocation_size = data_offset + sizeof(T);
+            constexpr std::align_val_t allocation_alignment{std::max(alignof(ControlBlock), alignof(T))};
+
+            // Generate a type-erased and stateless destructor for `T`
+            auto deleter = [](ControlBlock* cb) noexcept -> void
+            {
+                std::destroy_at(static_cast<T*>(cb->data));
+                std::destroy_at(cb);
+                ::operator delete(static_cast<void*>(cb), allocation_alignment);
+            };
 
             // Allocate a memory block containing both the control block and data
             std::unique_ptr<void, void(*)(void*)> allocation{
-                ::operator new(allocation_size, std::align_val_t{allocation_alignment_size}),
-                [](void* p) { ::operator delete(p, std::align_val_t{allocation_alignment_size}); }
+                ::operator new(allocation_size, allocation_alignment),
+                [](void* p) { ::operator delete(p, allocation_alignment); },
             };
 
-            // Calculate where the data should go within the allocation (accounting for alignment)
-            void* control_block_end = static_cast<std::byte*>(allocation.get()) + sizeof(ControlBlock);
-            size_t available_space = allocation_size - sizeof(ControlBlock);
-            void* data_start = std::align(alignof(T), sizeof(T), control_block_end, available_space);
-            if (not data_start) {
-                throw std::bad_alloc{};
-            }
+            // Construct `ControlBlock` and `T` representations in the memory block
+            std::byte* data_ptr = static_cast<std::byte*>(allocation.get()) + data_offset;
+            new (data_ptr) T(std::forward<Args>(args)...);
+            static_assert(std::is_nothrow_constructible_v<ControlBlock, decltype(deleter), decltype(data_ptr)>);
+            new (allocation.get()) ControlBlock(deleter, data_ptr);
 
-            // Generate a runtime destructor for this type
-            void (*deleter)(ControlBlock*) noexcept = [](ControlBlock* cb) noexcept
-            {
-                std::launder(static_cast<T*>(cb->data))->~T();
-                cb->~ControlBlock();
-                ::operator delete(static_cast<void*>(cb), std::align_val_t{allocation_alignment_size});
-            };
-
-            // Construct representations
-            new (data_start) T(std::forward<Args>(args)...);  // can throw - do it first
-            static_assert(std::is_nothrow_constructible_v<ControlBlock, decltype(deleter), decltype(data_start)>);
-            new (allocation.get()) ControlBlock(deleter, data_start);
-
-            return std::launder(static_cast<ControlBlock*>(allocation.release()));
+            return static_cast<ControlBlock*>(allocation.release());
         }
 
         ControlBlock* ptr_;
