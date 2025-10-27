@@ -62,7 +62,7 @@ namespace osc
             if (ptr_->owners.load(std::memory_order_acquire) == 1) {
                 return static_cast<T*>(ptr_->data);
             }
-            CopyOnUpdSharedValue copy = make_cowv<T>(*get());
+            CopyOnUpdSharedValue copy{allocate_representation(*get())};
             swap(copy, *this);
             return static_cast<T*>(ptr_->data);
         }
