@@ -45,4 +45,14 @@ ifndef ZGEMM_BETA
 ZGEMM_BETA = ../generic/zgemm_beta.c
 endif
 
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
 
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif

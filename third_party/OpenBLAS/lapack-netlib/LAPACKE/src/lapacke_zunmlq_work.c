@@ -90,7 +90,7 @@ lapack_int LAPACKE_zunmlq_work( int matrix_layout, char side, char trans,
             goto exit_level_1;
         }
         /* Transpose input matrices */
-        LAPACKE_zge_trans( matrix_layout, k, m, a, lda, a_t, lda_t );
+        LAPACKE_zge_trans( matrix_layout, k, r, a, lda, a_t, lda_t );
         LAPACKE_zge_trans( matrix_layout, m, n, c, ldc, c_t, ldc_t );
         /* Call LAPACK function and adjust info */
         LAPACK_zunmlq( &side, &trans, &m, &n, &k, a_t, &lda_t, tau, c_t, &ldc_t,

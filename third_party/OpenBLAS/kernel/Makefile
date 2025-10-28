@@ -24,7 +24,11 @@ ifdef NO_AVX2
  AVX2OPT=
 endif
 
+
 ifdef TARGET_CORE
+ifeq ($(TARGET_CORE), ARMV9SME)
+ override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE) -DHAVE_SME -march=armv9-a+sve2+sme
+endif
 ifeq ($(TARGET_CORE), SAPPHIRERAPIDS)
  override CFLAGS += -DBUILD_KERNEL -DTABLE_NAME=gotoblas_$(TARGET_CORE)
  ifeq (1, $(filter 1,$(GCCVERSIONGTEQ11) $(CLANGVERSIONGTEQ12)))

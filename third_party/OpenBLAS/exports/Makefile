@@ -197,7 +197,7 @@ ifeq ($(F_COMPILER), INTEL)
 	-Wl,--whole-archive $< -Wl,--no-whole-archive \
 	-Wl,-soname,$(INTERNALNAME) $(EXTRALIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -w -o linktest linktest.c ../$(LIBSONAME) $(FEXTRALIB) && echo OK.
-else ifeq ($(F_COMPILER), FLANG)
+else ifeq ($(F_COMPILER), $(filter $(F_COMPILER),FLANG FLANGNEW))
 	$(FC) $(FFLAGS) $(LDFLAGS) -shared -o ../$(LIBSONAME) \
 	-Wl,--whole-archive $< -Wl,--no-whole-archive \
 	-Wl,-soname,$(INTERNALNAME) $(EXTRALIB)

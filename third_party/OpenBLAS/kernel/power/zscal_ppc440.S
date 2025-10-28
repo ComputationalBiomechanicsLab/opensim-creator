@@ -64,6 +64,7 @@
 #endif
 
 #define INC1	r11
+#define FLAG	r12
 
 #define FZERO	f0
 #define ALPHA_R	f1
@@ -96,6 +97,10 @@
 
 	fcmpu	cr0, FZERO, ALPHA_I
 	bne-	cr0, LL(A1I1)
+
+	lwz	FLAG, FRAMESLOT(0)(SP)
+	cmpwi	cr0, FLAG, 1
+	beq-	cr0, LL(A1I1)
 
 LL(A0IN):
 	srawi.	r0, N, 3

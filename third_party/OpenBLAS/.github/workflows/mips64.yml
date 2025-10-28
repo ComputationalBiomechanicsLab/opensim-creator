@@ -41,14 +41,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install autoconf automake autotools-dev ninja-build make ccache \
-          gcc-${{ matrix.triple }} gfortran-${{ matrix.triple }} libgomp1-mips64el-cross
+          gcc-${{ matrix.triple }} gfortran-${{ matrix.triple }} libgomp1-mips64el-cross libglib2.0-dev
 
       - name: checkout qemu
         uses: actions/checkout@v3
         with:
           repository: qemu/qemu
           path: qemu
-          ref: 79dfa177ae348bb5ab5f97c0915359b13d6186e2
+          ref: ae35f033b874c627d81d51070187fbf55f0bf1a7
 
       - name: build qemu
         run: |

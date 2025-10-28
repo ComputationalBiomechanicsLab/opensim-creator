@@ -114,7 +114,15 @@ static inline int blas_quickdivide(blasint x, blasint y){
 	OPENBLAS_ARM_TYPE_FUNCTION \
 REALNAME:
 
-#define EPILOGUE
+#if defined(__ELF__) && defined(__linux__)
+# define GNUSTACK .section        .note.GNU-stack,"",%progbits
+#else
+# define GNUSTACK
+#endif
+
+#define EPILOGUE \
+        GNUSTACK
+
 
 #define PROFCODE
 

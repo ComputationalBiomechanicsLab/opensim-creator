@@ -70,6 +70,11 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
     FLOAT_VX2_T vx2;
 
     if(inc_x == 1) {
+	if (dummy2 == 0 && da_r==0. && da_i == 0.) {
+		BLASLONG i;
+		for (i=0; i < n*2; i++) x[i]=0.;
+		return(0);
+	} else {
 
         for (size_t vl; n > 0; n -= vl, x += vl*2) {
             vl = VSETVL(n);
@@ -80,6 +85,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
 
             vt = VFMULVF_FLOAT(vr, da_r, vl);
             vt = VFNMSACVF_FLOAT(vt, da_i, vi, vl);
+
             vi = VFMULVF_FLOAT(vi, da_r, vl);
             vi = VFMACCVF_FLOAT(vi, da_i, vr, vl);
 
@@ -87,9 +93,14 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
             vx2 = VSET_VX2(vx2, 1, vi);
             VSSEG_FLOAT(x, vx2, vl);
         }
+        }
 
     } else {
-
+	if (dummy2 == 0 && da_r==0. && da_i == 0.) {
+		BLASLONG i,ix=0,inc_x2=2*inc_x;
+		for (i=0; i < n; i++) {x[ix]=0.;x[ix+1]=0.;ix+=inc_x2;};
+		return(0);
+	} else {
         for (size_t vl; n > 0; n -= vl, x += vl*inc_x*2) {
             vl = VSETVL(n);
 
@@ -105,6 +116,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
             vx2 = VSET_VX2(vx2, 0, vt);
             vx2 = VSET_VX2(vx2, 1, vi);
             VSSSEG_FLOAT(x, stride_x, vx2, vl);
+	    }
         }
     }
 

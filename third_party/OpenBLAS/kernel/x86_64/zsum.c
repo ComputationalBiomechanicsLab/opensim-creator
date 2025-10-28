@@ -54,7 +54,7 @@ static FLOAT sum_compute(BLASLONG n, FLOAT *x, BLASLONG inc_x)
 
     if (n <= 0 || inc_x <= 0) return(sumf);
     if (inc_x == 1) {
-        sumf = zsum_kernel(n, x);
+        sumf = zasum_kernel(n, x);
     }
     else {
         inc_x2 = 2 * inc_x;

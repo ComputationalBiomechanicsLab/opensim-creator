@@ -272,7 +272,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     //Acc U2
     GACC   xvf, d, U4, U2
-    fmov.d $f2, $f4
+    xvreplve0.d U2, U4
 
 .L03:  /* &4 */
     andi      T0,     J,   4

@@ -480,13 +480,13 @@ the LLVM toolchain enables native compilation of the Fortran sources of LAPACK a
 
 4. Navigate to the OpenBLAS source code directory and start building OpenBLAS
    by invoking Ninja:
-   
+
        ```cmd
        cd OpenBLAS
        mkdir build
        cd build
-       
-       cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DTARGET=ARMV8 -DBINARY=64 -DCMAKE_C_COMPILER=clang-cl -DCMAKE_C_COMPILER=arm64-pc-windows-msvc -DCMAKE_ASM_COMPILER=arm64-pc-windows-msvc -DCMAKE_Fortran_COMPILER=flang-new
+
+       cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release -DTARGET=ARMV8 -DBINARY=64 -DCMAKE_C_COMPILER=clang-cl -DCMAKE_Fortran_COMPILER=flang-new
 
        ninja -j16
        ```

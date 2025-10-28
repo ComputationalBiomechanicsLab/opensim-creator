@@ -290,6 +290,18 @@ ifndef QROTKERNEL
 QROTKERNEL = rot.S
 endif
 
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif
+
 ifndef CROTKERNEL
 CROTKERNEL = zrot_sse.S
 endif
@@ -311,11 +323,11 @@ DSCALKERNEL =  scal_sse2.S
 endif
 
 ifndef CSCALKERNEL
-CSCALKERNEL = zscal_sse.S
+CSCALKERNEL = ../arm/zscal.c
 endif
 
 ifndef ZSCALKERNEL
-ZSCALKERNEL = zscal_sse2.S
+ZSCALKERNEL = ../arm/zscal.c
 endif
 
 ifndef ASCALKERNEL

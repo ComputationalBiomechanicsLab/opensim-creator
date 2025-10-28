@@ -222,7 +222,7 @@ CNAME(BLASLONG M,
   const BLASLONG n8 = N & -8;
   const BLASLONG n4 = N & -4;
 
-  const int pack_a = M >= v_size2 && N >= 8 && K >= 8 ? 1 : 0;
+  const int pack_a = M >= v_size2 && N >= 8 ? 1 : 0;
   FLOAT* packed_a =
     (pack_a) ? packed_a = (FLOAT*)malloc(K * v_size2 * sizeof(FLOAT)) : NULL;
 

@@ -2146,7 +2146,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define GEMM_DEFAULT_OFFSET_A 512
 #define GEMM_DEFAULT_OFFSET_B 512
-#define GEMM_DEFAULT_ALIGN (BLASLONG)0x0ffffUL
+#define GEMM_DEFAULT_ALIGN 0x0ffffUL
 
 #define SGEMM_DEFAULT_UNROLL_M 4
 #define SGEMM_DEFAULT_UNROLL_N 4
@@ -2214,7 +2214,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define GEMM_DEFAULT_OFFSET_A 0
 #define GEMM_DEFAULT_OFFSET_B 8192
-#define GEMM_DEFAULT_ALIGN (BLASLONG)0x0ffffUL
+#define GEMM_DEFAULT_ALIGN 0x0ffffUL
 
 #define SGEMM_DEFAULT_UNROLL_M 16
 #define SGEMM_DEFAULT_UNROLL_N 4
@@ -3303,6 +3303,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define GEMM_DEFAULT_OFFSET_A 0
 #define GEMM_DEFAULT_OFFSET_B 0
+
+
 #ifdef _WIN64
 /* Use explicit casting for win64 as LLP64 datamodel is used */
 #define GEMM_DEFAULT_ALIGN (BLASULONG)0x03fffUL
@@ -3554,6 +3556,13 @@ is a big desktop or server with abundant cache rather than a phone or embedded d
 #define GEMM_PREFERED_SIZE      8
 #endif
 
+#undef SBGEMM_ALIGN_K
+#undef SBGEMM_DEFAULT_UNROLL_M
+#undef SBGEMM_DEFAULT_UNROLL_N
+#define SBGEMM_ALIGN_K 8
+#define SBGEMM_DEFAULT_UNROLL_M 4
+#define SBGEMM_DEFAULT_UNROLL_N 4
+
 #define SGEMM_DEFAULT_UNROLL_M  16
 #define SGEMM_DEFAULT_UNROLL_N  8
 
@@ -3667,7 +3676,7 @@ Until then, just keep it different than DGEMM_DEFAULT_UNROLL_N to keep copy rout
 #define CGEMM_DEFAULT_R 4096
 #define ZGEMM_DEFAULT_R 4096
 
-#elif defined(ARMV8SVE) || defined(ARMV9) || defined(CORTEXA510)|| defined(CORTEXA710) || defined(CORTEXX2) // 128-bit SVE
+#elif defined(ARMV8SVE) || defined(ARMV9SME) || defined(ARMV9) || defined(CORTEXA510)|| defined(CORTEXA710) || defined(CORTEXX2) // 128-bit SVE
 
 #if defined(XDOUBLE) || defined(DOUBLE)
 #define SWITCH_RATIO            8
@@ -3737,6 +3746,10 @@ Until then, just keep it different than DGEMM_DEFAULT_UNROLL_N to keep copy rout
 
 
 #endif /* ARMv8 */
+
+#if defined(ARMV9SME) /* ARMv9 SME */
+#define USE_SGEMM_KERNEL_DIRECT 1
+#endif /* ARMv9 SME */
 
 #if defined(ARMV5)
 #define SNUMOPT		2

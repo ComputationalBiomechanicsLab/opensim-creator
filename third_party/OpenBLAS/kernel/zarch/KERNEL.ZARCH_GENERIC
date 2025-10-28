@@ -135,5 +135,14 @@ ZTRSMKERNEL_LT	= ../generic/trsm_kernel_LT.c
 ZTRSMKERNEL_RN	= ../generic/trsm_kernel_RN.c
 ZTRSMKERNEL_RT	= ../generic/trsm_kernel_RT.c
 
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
 
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
 
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif

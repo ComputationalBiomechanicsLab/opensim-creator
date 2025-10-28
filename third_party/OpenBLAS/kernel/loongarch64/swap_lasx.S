@@ -318,62 +318,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     move XX, X
 
 .L222:
-    LD    a1, X, 0
-    add.d X, X, INCX
-    LD    a2, X, 0
-    add.d X, X, INCX
-    LD    a3, X, 0
-    add.d X, X, INCX
-    LD    a4, X, 0
-    add.d X, X, INCX
-    LD    b1, Y, 0
-    ST    a1, Y, 0
-    add.d Y, Y, INCY
-    LD    b2, Y, 0
-    ST    a2, Y, 0
-    add.d Y, Y, INCY
-    LD    b3, Y, 0
-    ST    a3, Y, 0
-    add.d Y, Y, INCY
-    LD    b4, Y, 0
-    ST    a4, Y, 0
-    add.d Y, Y, INCY
-    LD    a1, X, 0
-    add.d X, X, INCX
-    ST    b1, XX, 0
-    add.d XX, XX, INCX
-    LD    b1, Y, 0
-    ST    a1, Y, 0
-    add.d Y, Y, INCY
-    LD    a2, X, 0
-    add.d X, X, INCX
-    ST    b2, XX, 0
-    add.d XX, XX, INCX
-    LD    b2, Y, 0
-    ST    a2, Y, 0
-    add.d Y, Y, INCY
-    LD    a3, X, 0
-    add.d X, X, INCX
-    ST    b3, XX, 0
-    add.d XX, XX, INCX
-    LD    b3, Y, 0
-    ST    a3, Y, 0
-    LD    a4, X, 0
-    add.d X, X, INCX
-    ST    b4, XX, 0
-    add.d XX, XX, INCX
-    LD    b4, Y, 0
-    ST    a4, Y, 0
-    add.d Y, Y, INCY
-    ST    b1, XX, 0
-    add.d XX, XX, INCX
-    ST    b2, XX, 0
-    add.d XX, XX, INCX
-    ST    b3, XX, 0
-    add.d XX, XX, INCX
-    ST    b4, XX, 0
-    add.d XX, XX, INCX
-    addi.d  I, I, -1
+.rept 8
+    LD  $f12, X, 0
+    LD  $f14, Y, 0
+    ST  $f12, Y, 0
+    ST  $f14, X, 0
+    add.d  X, X, INCX
+    add.d  Y, Y, INCY
+.endr
+    addi.d I, I, -1
     blt $r0, I, .L222
     .align 3
 

@@ -231,7 +231,7 @@ static int sbgemv_kernel_32xN_lda_direct(BLASLONG m, BLASLONG n, float alpha, bf
         accum512_8  = _mm512_permutex2var_ps(accum512_0, idx_base_0, accum512_1);
         accum512_9  = _mm512_permutex2var_ps(accum512_0, idx_base_1, accum512_1);
 
-        if ((m-tag_m_32x) > 16) {
+        if ((m-tag_m_32x) >= 16) {
             STORE16_COMPLETE_RESULT(accum512_8, y+tag_m_32x+0)
             STORE16_MASK_COMPLETE_RESULT(accum512_9, y+tag_m_32x+16, store_tail_mask)
         } else {

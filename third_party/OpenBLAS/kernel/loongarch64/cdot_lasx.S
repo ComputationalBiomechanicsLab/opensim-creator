@@ -288,7 +288,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvinsgr2vr.w x2, t2, 6
     xvinsgr2vr.w x1, t3, 7
     xvinsgr2vr.w x2, t4, 7
-    addi.d Y, Y, 8 * SIZE
+    addi.d Y, Y, 16 * SIZE
     xvpickev.w x3, VX3, VX2
     xvpickod.w x4, VX3, VX2
     xvfmadd.s res1, x1, x3, res1

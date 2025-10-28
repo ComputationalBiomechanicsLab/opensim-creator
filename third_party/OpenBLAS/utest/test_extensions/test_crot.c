@@ -166,7 +166,7 @@ static float c_api_check_csrot(blasint n, blasint inc_x, blasint inc_y, float *c
     norm += cblas_scnrm2(n, data_crot.y_test, inc_y_abs);
     return (norm / 2);
 }
-
+#if 0
 /**
  * Fortran API specific test
  * Test crot by comparing it with caxpby.
@@ -192,7 +192,7 @@ CTEST(crot, inc_x_0_inc_y_0)
     float norm = check_csrot(n, inc_x, inc_y, c, s);
     ASSERT_DBL_NEAR_TOL(0.0f, norm, SINGLE_EPS);
 }
-
+#endif
 /**
  * Fortran API specific test
  * Test crot by comparing it with caxpby.
@@ -478,7 +478,7 @@ CTEST(crot, check_n_zero)
     float norm = check_csrot(n, inc_x, inc_y, c, s);
     ASSERT_DBL_NEAR_TOL(0.0f, norm, SINGLE_EPS);
 }
-
+#if 0
 /**
  * C API specific test 
  * Test crot by comparing it with caxpby.
@@ -504,7 +504,7 @@ CTEST(crot, c_api_inc_x_0_inc_y_0)
     float norm = c_api_check_csrot(n, inc_x, inc_y, c, s);
     ASSERT_DBL_NEAR_TOL(0.0f, norm, SINGLE_EPS);
 }
-
+#endif
 /**
  * C API specific test
  * Test crot by comparing it with caxpby.

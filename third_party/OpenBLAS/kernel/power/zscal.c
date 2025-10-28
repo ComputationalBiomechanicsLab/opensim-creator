@@ -136,7 +136,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
 	if ( inc_x <= 0 )
 		return(0);
 
-	if (da_r == ZERO && da_i == ZERO) {
+	if (da_r == ZERO && da_i == ZERO && dummy2 == 0) {
 	  //clear the vector and return
 	  if (inc_x == 1) {
 	    memset(x, 0, n*COMPSIZE*SIZE);

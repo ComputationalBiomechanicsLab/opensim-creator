@@ -30,17 +30,17 @@ set(BLAS2_SOURCES
   gemv.c ger.c
   trsv.c trmv.c 
   syr2.c gbmv.c
-  sbmv.c 
+  sbmv.c spmv.c
   spr2.c
   tbsv.c tbmv.c
   tpsv.c tpmv.c
 )
 
 set(BLAS2_REAL_ONLY_SOURCES
-  symv.c syr.c spmv.c spr.c
+  symv.c syr.c spr.c
 )
 set(BLAS2_COMPLEX_LAPACK_SOURCES
-  symv.c syr.c spmv.c spr.c
+  symv.c syr.c spr.c
 )
 
 set(BLAS2_COMPLEX_ONLY_MANGLED_SOURCES
@@ -109,7 +109,7 @@ endif ()
   GenerateNamedObjects("trsm.c" "TRMM" "trmm" ${CBLAS_FLAG})
   
   # gemmtr is gemmt under the name adopted by the Reference BLAS
-  GenerateNamedObjects("gemm.c" "" "gemmtr" ${CBLAS_FLAG})
+  GenerateNamedObjects("gemm.c" "RNAME" "gemmtr" ${CBLAS_FLAG})
 
   # max and imax are compiled 4 times
   GenerateNamedObjects("max.c" "" "" ${CBLAS_FLAG})
@@ -125,8 +125,8 @@ endif ()
 if (BUILD_BFLOAT16)
 	GenerateNamedObjects("bf16dot.c" "" "sbdot" ${CBLAS_FLAG} "" "" true "BFLOAT16")
 	GenerateNamedObjects("gemm.c" "" "sbgemm" ${CBLAS_FLAG} "" "" true "BFLOAT16")
-	GenerateNamedObjects("gemmt.c" "" "sbgemmt" ${CBLAS_FLAG} "" "" true "BFLOAT16")
-	GenerateNamedObjects("gemmt.c" "" "sbgemmtr" ${CBLAS_FLAG} "" "" true "BFLOAT16")
+	GenerateNamedObjects("sbgemmt.c" "" "sbgemmt" ${CBLAS_FLAG} "" "" true "BFLOAT16")
+	GenerateNamedObjects("sbgemmt.c" "RNAME" "sbgemmtr" ${CBLAS_FLAG} "" "" true "BFLOAT16")
 	GenerateNamedObjects("sbgemv.c" "" "sbgemv" ${CBLAS_FLAG} "" "" true "BFLOAT16")
 	GenerateNamedObjects("tobf16.c" "SINGLE_PREC" "sbstobf16" ${CBLAS_FLAG} "" "" true "BFLOAT16")
 	GenerateNamedObjects("tobf16.c" "DOUBLE_PREC" "sbdtobf16" ${CBLAS_FLAG} "" "" true "BFLOAT16")
@@ -195,7 +195,7 @@ if (NOT DEFINED NO_CBLAS)
   endforeach ()
 endif()
 
-if (NOT DEFINED NO_LAPACK)
+if (NOT NO_LAPACK)
   set(LAPACK_SOURCES
     lapack/gesv.c
   )
@@ -250,3 +250,7 @@ if ( BUILD_COMPLEX16 AND NOT  BUILD_DOUBLE)
 endif ()
 
 add_library(interface OBJECT ${OPENBLAS_SRC})
+
+if (USE_OPENMP)
+  target_link_libraries(interface OpenMP::OpenMP_C)
+endif()

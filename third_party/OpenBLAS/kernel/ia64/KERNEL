@@ -142,3 +142,15 @@ ZTRSMKERNEL_RT	=  ztrsm_kernel_RT.S
 
 CGEMM3MKERNEL    =  zgemm3m_kernel.S
 ZGEMM3MKERNEL    =  zgemm3m_kernel.S
+
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif

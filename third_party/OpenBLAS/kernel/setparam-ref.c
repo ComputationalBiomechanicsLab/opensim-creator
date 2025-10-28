@@ -72,9 +72,9 @@ gotoblas_t TABLE_NAME = {
 
   samax_kTS,  samin_kTS,  smax_kTS,  smin_kTS,
   isamax_kTS, isamin_kTS, ismax_kTS, ismin_kTS,
-  snrm2_kTS,  sasum_kTS, ssum_kTS, scopy_kTS, sbdot_kTS,
+  snrm2_kTS,  sasum_kTS,  ssum_kTS, scopy_kTS, sbdot_kTS,
   dsdot_kTS,
-  srot_kTS,   saxpy_kTS,  sscal_kTS, sswap_kTS,
+  srot_kTS,   srotm_kTS,  saxpy_kTS,  sscal_kTS, sswap_kTS,
   sbgemv_nTS, sbgemv_tTS, sger_kTS,
   ssymv_LTS, ssymv_UTS,
 
@@ -158,7 +158,7 @@ gotoblas_t TABLE_NAME = {
 #if (BUILD_SINGLE==1) || (BUILD_DOUBLE==1) || (BUILD_COMPLEX==1)
   scopy_kTS, sdot_kTS,
 //  dsdot_kTS,
-  srot_kTS,   saxpy_kTS,  
+  srot_kTS,  srotm_kTS,  saxpy_kTS,
 #endif
 #if (BUILD_SINGLE==1) || (BUILD_DOUBLE==1) || (BUILD_COMPLEX==1) || (BUILD_COMPLEX16==1)
   sscal_kTS,
@@ -178,6 +178,9 @@ gotoblas_t TABLE_NAME = {
 #ifdef ARCH_X86_64
   sgemm_directTS,
   sgemm_direct_performantTS,	
+#endif
+#ifdef ARCH_ARM64
+  sgemm_directTS,
 #endif
 
   sgemm_kernelTS, sgemm_betaTS,
@@ -260,6 +263,7 @@ gotoblas_t TABLE_NAME = {
 #endif
 #if  (BUILD_DOUBLE==1) || (BUILD_COMPLEX16==1)  
   drot_kTS,
+  drotm_kTS,
   daxpy_kTS,
   dscal_kTS, 
   dswap_kTS,
@@ -331,10 +335,9 @@ gotoblas_t TABLE_NAME = {
   qamax_kTS,  qamin_kTS,  qmax_kTS,  qmin_kTS,
   iqamax_kTS, iqamin_kTS, iqmax_kTS, iqmin_kTS,
   qnrm2_kTS,  qasum_kTS,  qsum_kTS, qcopy_kTS, qdot_kTS,
-  qrot_kTS,   qaxpy_kTS,  qscal_kTS, qswap_kTS,
+  qrot_kTS,   qrotm_kTS,  qaxpy_kTS,  qscal_kTS, qswap_kTS,
   qgemv_nTS,  qgemv_tTS,  qger_kTS,
   qsymv_LTS,  qsymv_UTS,
-
   qgemm_kernelTS, qgemm_betaTS,
 #if QGEMM_DEFAULT_UNROLL_M != QGEMM_DEFAULT_UNROLL_N
   qgemm_incopyTS, qgemm_itcopyTS,

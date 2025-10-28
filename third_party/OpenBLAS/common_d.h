@@ -22,6 +22,7 @@
 #define	DSUM_K			dsum_k
 #define	DSWAP_K			dswap_k
 #define	DROT_K			drot_k
+#define DROTM_K         drotm_k
 
 #define	DGEMV_N			dgemv_n
 #define	DGEMV_T			dgemv_t
@@ -180,6 +181,7 @@
 #define	DSUM_K			gotoblas -> dsum_k
 #define	DSWAP_K			gotoblas -> dswap_k
 #define	DROT_K			gotoblas -> drot_k
+#define	DROTM_K			gotoblas -> drotm_k
 
 #define	DGEMV_N			gotoblas -> dgemv_n
 #define	DGEMV_T			gotoblas -> dgemv_t

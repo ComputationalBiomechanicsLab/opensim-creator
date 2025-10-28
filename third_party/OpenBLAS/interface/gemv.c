@@ -63,6 +63,70 @@ static int (*gemv_thread[])(BLASLONG, BLASLONG, FLOAT, FLOAT *, BLASLONG,  FLOAT
 };
 #endif
 
+#ifdef SMP
+#ifdef DYNAMIC_ARCH
+ extern char* gotoblas_corename(void);
+#endif
+
+#if defined(DYNAMIC_ARCH) || defined(NEOVERSEV1)
+static inline int get_gemv_optimal_nthreads_neoversev1(BLASLONG MN, int ncpu) {
+  #ifdef DOUBLE
+      return (MN < 8100L)      ? 1
+          : (MN < 12100L)     ? MIN(ncpu, 2)
+          : (MN < 36100L)     ? MIN(ncpu, 4)
+          : (MN < 84100L)     ? MIN(ncpu, 8)
+          : (MN < 348100L)    ? MIN(ncpu, 16)
+          : (MN < 435600L)    ? MIN(ncpu, 24)
+          : (MN < 810000L)    ? MIN(ncpu, 32)
+          : (MN < 1050625L)   ? MIN(ncpu, 40)
+          : ncpu;
+  #else
+      return (MN < 25600L)     ? 1
+          : (MN < 63001L)     ? MIN(ncpu, 4)
+          : (MN < 459684L)    ? MIN(ncpu, 16)
+          : ncpu;
+  #endif
+}
+#endif
+
+#if defined(DYNAMIC_ARCH) || defined(NEOVERSEV2)
+static inline int get_gemv_optimal_nthreads_neoversev2(BLASLONG MN, int ncpu) {
+  return
+      MN < 24964L    ? 1
+    : MN < 65536L    ? MIN(ncpu, 8)
+    : MN < 262144L   ? MIN(ncpu, 32)
+    : MN < 1638400L  ? MIN(ncpu, 64)
+    : ncpu;
+}
+#endif
+
+static inline int get_gemv_optimal_nthreads(BLASLONG MN) {
+  int ncpu = num_cpu_avail(3);
+#if defined(_WIN64) && defined(_M_ARM64)
+  if (MN > 100000000L)
+    return num_cpu_avail(4);
+  return 1;
+#endif
+#if defined(NEOVERSEV1) && !defined(COMPLEX) && !defined(BFLOAT16)
+  return get_gemv_optimal_nthreads_neoversev1(MN, ncpu);
+#elif defined(NEOVERSEV2) && !defined(COMPLEX) && !defined(DOUBLE) && !defined(BFLOAT16)
+  return get_gemv_optimal_nthreads_neoversev2(MN, ncpu);
+#elif defined(DYNAMIC_ARCH) && !defined(COMPLEX) && !defined(BFLOAT16)
+  if (strcmp(gotoblas_corename(), "neoversev1") == 0) {
+    return get_gemv_optimal_nthreads_neoversev1(MN, ncpu);
+  }
+  if (strcmp(gotoblas_corename(), "neoversev2") == 0) {
+    return get_gemv_optimal_nthreads_neoversev2(MN, ncpu);
+  }
+#endif
+
+  if ( MN < 115200L * GEMM_MULTITHREAD_THRESHOLD )
+    return 1;
+  else
+    return num_cpu_avail(2);
+}
+#endif
+
 #ifndef CBLAS
 
 void NAME(char *TRANS, blasint *M, blasint *N,
@@ -202,13 +266,6 @@ void CNAME(enum CBLAS_ORDER order,
 
   if (alpha == ZERO) return;
 	
-#if 0
-/* this optimization causes stack corruption on x86_64 under OSX, Windows and FreeBSD */	
-  if (trans == 0 && incx == 1 && incy == 1 && m*n < 2304 *GEMM_MULTITHREAD_THRESHOLD) {
-    GEMV_N(m, n, 0, alpha, a, lda, x, incx, y, incy, NULL);
-    return;
-  }    
-#endif
   IDEBUG_START;
 
   FUNCTION_PROFILE_START();
@@ -225,11 +282,7 @@ void CNAME(enum CBLAS_ORDER order,
   STACK_ALLOC(buffer_size, FLOAT, buffer);
 
 #ifdef SMP
-
-  if ( 1L * m * n < 115200L * GEMM_MULTITHREAD_THRESHOLD )
-    nthreads = 1;
-  else
-    nthreads = num_cpu_avail(2);
+  nthreads = get_gemv_optimal_nthreads(1L * m * n);
 
   if (nthreads == 1) {
 #endif

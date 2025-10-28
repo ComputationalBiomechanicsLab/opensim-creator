@@ -64,6 +64,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     slli.d  TEMP, TEMP, BASE_SHIFT
     slli.d  INCX, INCX, BASE_SHIFT
     slli.d  INCY, INCY, BASE_SHIFT
+    move    XX,   X
+    move    YY,   Y
 #ifdef DOUBLE
     movfr2gr.d t1, C
     xvreplgr2vr.d VXC, t1
@@ -80,27 +82,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvreplgr2vr.w VXZ, t3
 #endif
     srai.d I, N, 3
-    bne INCX, TEMP, .L20
-    bne INCY, TEMP, .L12 // INCX==1 and INCY!=1
-    b .L11  // INCX==1 and INCY==1
-.L20:
-    bne INCY, TEMP, .L22 // INCX!=1 and INCY!=1
-    b .L21 // INCX!=1 and INCY==1
-
-.L11:
     bge $r0, I, .L997
-    CMPEQ $fcc0, C, a1
-    bcnez $fcc0, .L110
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L112 // C!=0 S==0
-    b .L111 // C!=0 S!=0
-    .align 3
-
-.L110:
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L114 // C==0 S==0
-    b .L113 // C==0 S!=0
-    .align 3
+    bne INCX, TEMP, .L20
+    bne INCY, TEMP, .L121    // INCX==1 and INCY!=1
+    b .L111                  // INCX==1 and INCY==1
+.L20:
+    bne INCY, TEMP, .L221    // INCX!=1 and INCY!=1
+    b .L211                  // INCX!=1 and INCY==1
 
 .L111: // C!=0 S!=0
     xvld VX0, X, 0 * SIZE
@@ -130,90 +118,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     b .L997
     .align 3
 
-.L112: // C!=0 S==0
-    xvld VX0, X, 0 * SIZE
-    xvld VX2, Y, 0 * SIZE
-#ifdef DOUBLE
-    xvld VX1, X, 4 * SIZE
-    xvld VX3, Y, 4 * SIZE
-#endif
-    XVMUL VT0, VX0, VXC
-    XVMUL VT1, VX2, VXC
-    xvst VT0, X, 0 * SIZE
-    xvst VT1, Y, 0 * SIZE
-#ifdef DOUBLE
-    XVMUL VT0, VX1, VXC
-    XVMUL VT1, VX3, VXC
-    xvst VT0, X, 4 * SIZE
-    xvst VT1, Y, 4 * SIZE
-#endif
-    addi.d X, X, 8 * SIZE
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L112
-    b .L997
-    .align 3
-
-.L113: // C==0 S!=0
-    xvld VX0, X, 0 * SIZE
-    xvld VX2, Y, 0 * SIZE
-#ifdef DOUBLE
-    xvld VX1, X, 4 * SIZE
-    xvld VX3, Y, 4 * SIZE
-#endif
-    XVMUL VT0, VX2, VXS
-    XVMUL VT1, VX0, VXS
-    XVFSUB VT1, VXZ, VT1
-    xvst VT0, X, 0 * SIZE
-    xvst VT1, Y, 0 * SIZE
-#ifdef DOUBLE
-    XVMUL VT0, VX3, VXS
-    XVMUL VT1, VX1, VXS
-    xvfsub.d VT1, VXZ, VT1
-    xvst VT0, X, 4 * SIZE
-    xvst VT1, Y, 4 * SIZE
-#endif
-    addi.d X, X, 8 * SIZE
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L113
-    b .L997
-    .align 3
-
-.L114: // C==0 S==0
-    xvst VXZ, X, 0 * SIZE
-    xvst VXZ, Y, 0 * SIZE
-#ifdef DOUBLE
-    xvst VXZ, X, 4 * SIZE
-    xvst VXZ, Y, 4 * SIZE
-#endif
-    addi.d X, X, 8 * SIZE
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L114
-    b .L997
-    .align 3
-
-.L12: // INCX==1 and INCY!=1
-    bge $r0, I, .L997
-    move YY, Y
-    move XX, X
-    CMPEQ $fcc0, C, a1
-    bcnez $fcc0, .L120
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L122 // C!=0 S==0
-    b .L121 // C!=0 S!=0
-    .align 3
-
-.L120:
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L124 // C==0 S==0
-    b .L123 // C==0 S!=0
-    .align 3
-
 .L121: // C!=0 S!=0
-    xvld VX0, X, 0 * SIZE
 #ifdef DOUBLE
+    xvld VX0, X, 0 * SIZE
     ld.d  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
     ld.d  t2, Y, 0 * SIZE
@@ -221,12 +128,13 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ld.d  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
     ld.d  t4, Y, 0 * SIZE
+    add.d Y, Y, INCY
     xvinsgr2vr.d VX2, t1, 0
     xvinsgr2vr.d VX2, t2, 1
     xvinsgr2vr.d VX2, t3, 2
     xvinsgr2vr.d VX2, t4, 3
-    add.d Y, Y, INCY
 #else
+    xvld VX0, X, 0 * SIZE
     ld.w  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
     ld.w  t2, Y, 0 * SIZE
@@ -234,32 +142,30 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ld.w  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
     ld.w  t4, Y, 0 * SIZE
+    add.d Y, Y, INCY
     xvinsgr2vr.w VX2, t1, 0
     xvinsgr2vr.w VX2, t2, 1
     xvinsgr2vr.w VX2, t3, 2
     xvinsgr2vr.w VX2, t4, 3
+    ld.w  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.w t1, Y, 0 * SIZE
+    ld.w  t2, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
+    ld.w  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
+    ld.w  t4, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
     xvinsgr2vr.w VX2, t1, 4
     xvinsgr2vr.w VX2, t2, 5
     xvinsgr2vr.w VX2, t3, 6
     xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
 #endif
     XVMUL VT0, VX0, VXC
     XVFMADD VT0, VX2, VXS, VT0
     XVMUL VT1, VX0, VXS
     XVMSUB VT1, VX2, VXC, VT1
-
-#ifdef DOUBLE
-    xvld VX1, X, 4 * SIZE
     xvst VT0, X, 0 * SIZE
+#ifdef DOUBLE
     xvstelm.d VT1, YY, 0, 0
     add.d YY, YY, INCY
     xvstelm.d VT1, YY, 0, 1
@@ -268,22 +174,26 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d YY, YY, INCY
     xvstelm.d VT1, YY, 0, 3
     add.d YY, YY, INCY
-    ld.d t1, Y, 0 * SIZE
+
+    xvld VX0, X, 4 * SIZE
+    ld.d  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
+    ld.d  t2, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
+    ld.d  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
+    ld.d  t4, Y, 0 * SIZE
     add.d Y, Y, INCY
-    XVMUL VT0, VX1, VXC
-    XVFMADD VT0, VX3, VXS, VT0
-    XVMUL VT1, VX1, VXS
-    XVMSUB VT1, VX3, VXC, VT1
+    xvinsgr2vr.d VX2, t1, 0
+    xvinsgr2vr.d VX2, t2, 1
+    xvinsgr2vr.d VX2, t3, 2
+    xvinsgr2vr.d VX2, t4, 3
+
+    XVMUL VT0, VX0, VXC
+    XVFMADD VT0, VX2, VXS, VT0
+    XVMUL VT1, VX0, VXS
+    XVMSUB VT1, VX2, VXC, VT1
+
     xvst VT0, X, 4 * SIZE
     xvstelm.d VT1, YY, 0, 0
     add.d YY, YY, INCY
@@ -292,8 +202,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvstelm.d VT1, YY, 0, 2
     add.d YY, YY, INCY
     xvstelm.d VT1, YY, 0, 3
+    add.d YY, YY, INCY
 #else
-    xvst VT0, X, 0 * SIZE
     xvstelm.w VT1, YY, 0, 0
     add.d YY, YY, INCY
     xvstelm.w VT1, YY, 0, 1
@@ -309,303 +219,61 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvstelm.w VT1, YY, 0, 6
     add.d YY, YY, INCY
     xvstelm.w VT1, YY, 0, 7
-
-#endif
     add.d YY, YY, INCY
+#endif
     addi.d X, X, 8 * SIZE
     addi.d  I, I, -1
     blt $r0, I, .L121
     b .L997
     .align 3
 
-.L122: // C!=0 S==0
-#ifdef DOUBLE
-    xvld VX0, X, 0 * SIZE
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX2, t1, 0
-    xvinsgr2vr.d VX2, t2, 1
-    xvinsgr2vr.d VX2, t3, 2
-    xvinsgr2vr.d VX2, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX0, VXC
-    xvfmul.d VT1, VX2, VXC
-    xvld VX1, X, 4 * SIZE
-    xvst VT0, X, 0 * SIZE
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX1, VXC
-    xvfmul.d VT1, VX3, VXC
-    addi.d  I, I, -1
-    xvst VT0, X, 4 * SIZE
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-#else
-    xvld VX0, X, 0 * SIZE
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    xvinsgr2vr.w VX2, t1, 0
-    xvinsgr2vr.w VX2, t2, 1
-    xvinsgr2vr.w VX2, t3, 2
-    xvinsgr2vr.w VX2, t4, 3
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    xvinsgr2vr.w VX2, t1, 4
-    xvinsgr2vr.w VX2, t2, 5
-    xvinsgr2vr.w VX2, t3, 6
-    xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
-    xvfmul.s VT0, VX0, VXC
-    xvfmul.s VT1, VX2, VXC
-    xvst VT0, X, 0 * SIZE
-    xvstelm.w VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 7
-#endif
-    add.d YY, YY, INCY
-    addi.d X, X, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L122
-    b .L997
-    .align 3
-
-.L123: // C==0 S!=0
-#ifdef DOUBLE
-    xvld VX0, X, 0 * SIZE
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX2, t1, 0
-    xvinsgr2vr.d VX2, t2, 1
-    xvinsgr2vr.d VX2, t3, 2
-    xvinsgr2vr.d VX2, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX2, VXS
-    xvfmul.d VT1, VX0, VXS
-    xvfsub.d VT1, VXZ, VT1
-    xvst VT0, X, 0 * SIZE
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    xvld VX1, X, 4 * SIZE
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX3, VXS
-    xvfmul.d VT1, VX1, VXS
-    xvfsub.d VT1, VXZ, VT1
-    addi.d  I, I, -1
-    xvst VT0, X, 4 * SIZE
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-#else
-    xvld VX0, X, 0 * SIZE
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    xvinsgr2vr.w VX2, t1, 0
-    xvinsgr2vr.w VX2, t2, 1
-    xvinsgr2vr.w VX2, t3, 2
-    xvinsgr2vr.w VX2, t4, 3
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    xvinsgr2vr.w VX2, t1, 4
-    xvinsgr2vr.w VX2, t2, 5
-    xvinsgr2vr.w VX2, t3, 6
-    xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
-    xvfmul.s VT0, VX2, VXS
-    xvfmul.s VT1, VX0, VXS
-    xvfsub.s VT1, VXZ, VT1
-    xvst VT0, X, 0 * SIZE
-    xvstelm.w VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 7
-#endif
-    add.d YY, YY, INCY
-    addi.d X, X, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L123
-    b .L997
-    .align 3
-
-.L124: // C==0 S==0
-    xvst VXZ, X, 0 * SIZE
-#ifdef DOUBLE
-    xvst VXZ, X, 0 * SIZE
-    xvst VXZ, X, 4 * SIZE
-    xvstelm.d VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 3
-#else
-    xvst VXZ, X, 0 * SIZE
-    xvstelm.w VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 7
-#endif
-    add.d YY, YY, INCY
-    addi.d  I, I, -1
-    addi.d X, X, 8 * SIZE
-    blt $r0, I, .L124
-    move Y, YY
-    b .L997
-    .align 3
-
-.L21:// INCX!=1 and INCY==1
-    bge $r0, I, .L997
-    move XX, X
-    CMPEQ $fcc0, C, a1
-    bcnez $fcc0, .L210
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L212 // C!=0 S==0
-    b .L211 // C!=0 S!=0
-    .align 3
-
-.L210:
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L214 // C==0 S==0
-    b .L213 // C==0 S!=0
-    .align 3
-
 .L211: // C!=0 S!=0
 #ifdef DOUBLE
     xvld VX2, Y, 0 * SIZE
-    ld.d t1, X, 0 * SIZE
+    ld.d  t1, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
+    ld.d  t2, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
+    ld.d  t3, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
+    ld.d  t4, X, 0 * SIZE
+    add.d X, X, INCX
     xvinsgr2vr.d VX0, t1, 0
     xvinsgr2vr.d VX0, t2, 1
     xvinsgr2vr.d VX0, t3, 2
     xvinsgr2vr.d VX0, t4, 3
+#else
+    xvld VX2, Y, 0 * SIZE
+    ld.w  t1, X, 0 * SIZE
     add.d X, X, INCX
-    xvfmul.d VT0, VXC, VX0
-    xvfmadd.d VT0, VX2, VXS, VT0
-    xvfmul.d VT1, VXS, VX0
-    xvfmsub.d VT1, VX2, VXC, VT1
+    ld.w  t2, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w t3, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w t4, X, 0 * SIZE
+    add.d X, X, INCX
+    xvinsgr2vr.w VX0, t1, 0
+    xvinsgr2vr.w VX0, t2, 1
+    xvinsgr2vr.w VX0, t3, 2
+    xvinsgr2vr.w VX0, t4, 3
+    ld.w  t1, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t2, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w t3, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w t4, X, 0 * SIZE
+    add.d X, X, INCX
+    xvinsgr2vr.w VX0, t1, 4
+    xvinsgr2vr.w VX0, t2, 5
+    xvinsgr2vr.w VX0, t3, 6
+    xvinsgr2vr.w VX0, t4, 7
+#endif
+    XVMUL VT0, VXC, VX0
+    XVFMADD VT0, VX2, VXS, VT0
+    XVMUL VT1, VXS, VX0
+    XVMSUB VT1, VX2, VXC, VT1
+#ifdef DOUBLE
     xvstelm.d VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.d VT0, XX, 0, 1
@@ -615,7 +283,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvstelm.d VT0, XX, 0, 3
     add.d XX, XX, INCX
     xvst VT1, Y, 0 * SIZE
-    xvld VX3, Y, 4 * SIZE
+
+    xvld VX2, Y, 4 * SIZE
     ld.d t1, X, 0 * SIZE
     add.d X, X, INCX
     ld.d t2, X, 0 * SIZE
@@ -623,15 +292,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     ld.d t3, X, 0 * SIZE
     add.d X, X, INCX
     ld.d t4, X, 0 * SIZE
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
     add.d X, X, INCX
-    xvfmul.d VT0, VX1, VXC
-    xvfmadd.d VT0, VX3, VXS, VT0
-    xvfmul.d VT1, VX1, VXS
-    xvfmsub.d VT1, VX3, VXC, VT1
+    xvinsgr2vr.d VX0, t1, 0
+    xvinsgr2vr.d VX0, t2, 1
+    xvinsgr2vr.d VX0, t3, 2
+    xvinsgr2vr.d VX0, t4, 3
+
+    XVMUL VT0, VXC, VX0
+    XVFMADD VT0, VX2, VXS, VT0
+    XVMUL VT1, VXS, VX0
+    XVMSUB VT1, VX2, VXC, VT1
     xvstelm.d VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.d VT0, XX, 0, 1
@@ -642,35 +312,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d XX, XX, INCX
     xvst VT1, Y, 4 * SIZE
 #else
-    xvld VX2, Y, 0 * SIZE
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    add.d X, X, INCX
-    xvfmul.s VT0, VXC, VX0
-    xvfmadd.s VT0, VX2, VXS, VT0
-    xvfmul.s VT1, VX0, VXS
-    xvfmsub.s VT1, VX2, VXC, VT1
     xvstelm.w VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.w VT0, XX, 0, 1
@@ -693,307 +334,90 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     addi.d  I, I, -1
     blt $r0, I, .L211
     b .L997
-    .align 3
-
-.L212: // C!=0 S==0
-#ifdef DOUBLE
-    xvld VX2, Y, 0 * SIZE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    xvinsgr2vr.d VX0, t1, 0
-    xvinsgr2vr.d VX0, t2, 1
-    xvinsgr2vr.d VX0, t3, 2
-    xvinsgr2vr.d VX0, t4, 3
-    add.d X, X, INCX
-    xvfmul.d VT0, VXC, VX0
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvfmul.d VT1, VX2, VXC
-    xvst VT1, Y, 0 * SIZE
-    xvld VX3, Y, 4 * SIZE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
-    add.d X, X, INCX
-    xvfmul.d VT0, VX1, VXC
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvfmul.d VT1, VX3, VXS
-    xvst VT1, Y, 4 * SIZE
-#else
-    xvld VX2, Y, 0 * SIZE
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    add.d X, X, INCX
-    xvfmul.s VT0, VXC, VX0
-    xvfmul.s VT1, VX2, VXC
-    xvstelm.w VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 7
-    add.d XX, XX, INCX
-    xvst VT1, Y, 0 * SIZE
-#endif
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L212
-    b .L997
-    .align 3
-
-.L213: // C==0 S!=0
-#ifdef DOUBLE
-    xvld VX2, Y, 0 * SIZE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    xvinsgr2vr.d VX0, t1, 0
-    xvinsgr2vr.d VX0, t2, 1
-    xvinsgr2vr.d VX0, t3, 2
-    xvinsgr2vr.d VX0, t4, 3
-    add.d X, X, INCX
-    xvfmul.d VT0, VXS, VX2
-    xvfmul.d VT1, VXS, VX0
-    xvfsub.d VT1, VXZ, VT1
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvst VT1, Y, 0 * SIZE
-    xvld VX3, Y, 4 * SIZE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
-    add.d X, X, INCX
-    xvfmul.d VT0, VX3, VXS
-    xvfmul.d VT1, VX1, VXS
-    xvfsub.d VT1, VXZ, VT1
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvst VT1, Y, 4 * SIZE
-#else
-    xvld VX2, Y, 0 * SIZE
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    add.d X, X, INCX
-    xvfmul.s VT0, VXS, VX2
-    xvfmul.s VT1, VXS, VX0
-    xvfsub.s VT1, VXZ, VT1
-    xvstelm.w VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 7
-    add.d XX, XX, INCX
-    xvst VT1, Y, 0 * SIZE
-#endif
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L213
-    b .L997
-    .align 3
-
-.L214: // C==0 S==0
-#ifdef DOUBLE
-    xvstelm.d VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvst VT1, Y, 0 * SIZE
-    xvstelm.d VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvst VT1, Y, 4 * SIZE
-#else
-    xvstelm.w VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvst VT1, Y, 0 * SIZE
-    xvstelm.w VXZ, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 7
-    add.d XX, XX, INCX
-#endif
-    addi.d Y, Y, 8 * SIZE
-    addi.d  I, I, -1
-    blt $r0, I, .L211
-    b .L997
-    .align 3
-
-.L22:
-    bge $r0, I, .L997
-    move YY, Y
-    move XX, X
-    CMPEQ $fcc0, C, a1
-    bcnez $fcc0, .L220
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L222 // C!=0 S==0
-    b .L221 // C!=0 S!=0
-    .align 3
-
-.L220:
-    CMPEQ $fcc0, S, a1
-    bcnez $fcc0, .L224 // C==0 S==0
-    b .L223 // C==0 S!=0
     .align 3
 
 .L221: // C!=0 S!=0
 #ifdef DOUBLE
-    ld.d t1, X, 0 * SIZE
+    ld.d  t1, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
+    ld.d  t2, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
+    ld.d  t3, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
+    ld.d  t4, X, 0 * SIZE
     add.d X, X, INCX
     xvinsgr2vr.d VX0, t1, 0
     xvinsgr2vr.d VX0, t2, 1
     xvinsgr2vr.d VX0, t3, 2
     xvinsgr2vr.d VX0, t4, 3
-    ld.d t1, Y, 0 * SIZE
+    ld.d  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
+    ld.d  t2, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
+    ld.d  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
+    ld.d  t4, Y, 0 * SIZE
+    add.d Y, Y, INCY
     xvinsgr2vr.d VX2, t1, 0
     xvinsgr2vr.d VX2, t2, 1
     xvinsgr2vr.d VX2, t3, 2
     xvinsgr2vr.d VX2, t4, 3
+#else
+    ld.w  t1, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t2, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t3, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t4, X, 0 * SIZE
+    add.d X, X, INCX
+    xvinsgr2vr.w VX0, t1, 0
+    xvinsgr2vr.w VX0, t2, 1
+    xvinsgr2vr.w VX0, t3, 2
+    xvinsgr2vr.w VX0, t4, 3
+    ld.w  t1, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t2, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t3, X, 0 * SIZE
+    add.d X, X, INCX
+    ld.w  t4, X, 0 * SIZE
+    add.d X, X, INCX
+    xvinsgr2vr.w VX0, t1, 4
+    xvinsgr2vr.w VX0, t2, 5
+    xvinsgr2vr.w VX0, t3, 6
+    xvinsgr2vr.w VX0, t4, 7
+
+    ld.w  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
-    xvfmul.d VT0, VX0, VXC
-    xvfmadd.d VT0, VX2, VXS, VT0
-    xvfmul.d VT1, VX0, VXS
-    xvfmsub.d VT1, VX2, VXC, VT1
+    ld.w  t2, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    ld.w  t3, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    ld.w  t4, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    xvinsgr2vr.w VX2, t1, 0
+    xvinsgr2vr.w VX2, t2, 1
+    xvinsgr2vr.w VX2, t3, 2
+    xvinsgr2vr.w VX2, t4, 3
+    ld.w  t1, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    ld.w  t2, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    ld.w  t3, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    ld.w  t4, Y, 0 * SIZE
+    add.d Y, Y, INCY
+    xvinsgr2vr.w VX2, t1, 4
+    xvinsgr2vr.w VX2, t2, 5
+    xvinsgr2vr.w VX2, t3, 6
+    xvinsgr2vr.w VX2, t4, 7
+#endif
+    XVMUL VT0, VX0, VXC
+    XVFMADD VT0, VX2, VXS, VT0
+    XVMUL VT1, VX0, VXS
+    XVMSUB VT1, VX2, VXC, VT1
+#ifdef DOUBLE
     xvstelm.d VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.d VT0, XX, 0, 1
@@ -1010,34 +434,36 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d YY, YY, INCY
     xvstelm.d VT1, YY, 0, 3
     add.d YY, YY, INCY
-    ld.d t1, X, 0 * SIZE
+
+    ld.d  t1, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
+    ld.d  t2, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
+    ld.d  t3, X, 0 * SIZE
     add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
+    ld.d  t4, X, 0 * SIZE
     add.d X, X, INCX
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
-    ld.d t1, Y, 0 * SIZE
+    xvinsgr2vr.d VX0, t1, 0
+    xvinsgr2vr.d VX0, t2, 1
+    xvinsgr2vr.d VX0, t3, 2
+    xvinsgr2vr.d VX0, t4, 3
+    ld.d  t1, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
+    ld.d  t2, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
+    ld.d  t3, Y, 0 * SIZE
     add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
+    ld.d  t4, Y, 0 * SIZE
     add.d Y, Y, INCY
-    xvfmul.d VT0, VX1, VXC
-    xvfmadd.d VT0, VX3, VXS, VT0
-    xvfmul.d VT1, VX1, VXS
-    xvfmsub.d VT1, VX3, VXC, VT1
+    xvinsgr2vr.d VX2, t1, 0
+    xvinsgr2vr.d VX2, t2, 1
+    xvinsgr2vr.d VX2, t3, 2
+    xvinsgr2vr.d VX2, t4, 3
+
+    XVMUL VT0, VX0, VXC
+    XVFMADD VT0, VX2, VXS, VT0
+    XVMUL VT1, VX0, VXS
+    XVMSUB VT1, VX2, VXC, VT1
     xvstelm.d VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.d VT0, XX, 0, 1
@@ -1055,58 +481,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvstelm.d VT1, YY, 0, 3
     add.d YY, YY, INCY
 #else
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    xvinsgr2vr.w VX2, t1, 0
-    xvinsgr2vr.w VX2, t2, 1
-    xvinsgr2vr.w VX2, t3, 2
-    xvinsgr2vr.w VX2, t4, 3
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    xvinsgr2vr.w VX2, t1, 4
-    xvinsgr2vr.w VX2, t2, 5
-    xvinsgr2vr.w VX2, t3, 6
-    xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
-    xvfmul.s  VT0, VX0, VXC
-    xvfmadd.s VT0, VX2, VXS, VT0
-    xvfmul.s  VT1, VX0, VXS
-    xvfmsub.s VT1, VX2, VXC, VT1
     xvstelm.w VT0, XX, 0, 0
     add.d XX, XX, INCX
     xvstelm.w VT0, XX, 0, 1
@@ -1123,6 +497,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d XX, XX, INCX
     xvstelm.w VT0, XX, 0, 7
     add.d XX, XX, INCX
+
     xvstelm.w VT1, YY, 0, 0
     add.d YY, YY, INCY
     xvstelm.w VT1, YY, 0, 1
@@ -1142,435 +517,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
     addi.d  I, I, -1
     blt $r0, I, .L221
-    b .L997
-    .align 3
-
-.L222: // C!=0 S==0
-#ifdef DOUBLE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.d VX0, t1, 0
-    xvinsgr2vr.d VX0, t2, 1
-    xvinsgr2vr.d VX0, t3, 2
-    xvinsgr2vr.d VX0, t4, 3
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX2, t1, 0
-    xvinsgr2vr.d VX2, t2, 1
-    xvinsgr2vr.d VX2, t3, 2
-    xvinsgr2vr.d VX2, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX0, VXC
-    xvfmul.d VT1, VX2, VXC
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX1, VXC
-    xvfmul.d VT1, VX3, VXC
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-#else
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    xvinsgr2vr.w VX2, t1, 0
-    xvinsgr2vr.w VX2, t2, 1
-    xvinsgr2vr.w VX2, t3, 2
-    xvinsgr2vr.w VX2, t4, 3
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    xvinsgr2vr.w VX2, t1, 4
-    xvinsgr2vr.w VX2, t2, 5
-    xvinsgr2vr.w VX2, t3, 6
-    xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
-    xvfmul.s VT0, VX0, VXC
-    xvfmul.s VT1, VX2, VXC
-    xvstelm.w VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 7
-    add.d XX, XX, INCX
-    xvstelm.w VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 7
-    add.d YY, YY, INCY
-#endif
-    addi.d  I, I, -1
-    blt $r0, I, .L222
-    b .L997
-    .align 3
-
-.L223: // C==0 S!=0
-#ifdef DOUBLE
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.d VX0, t1, 0
-    xvinsgr2vr.d VX0, t2, 1
-    xvinsgr2vr.d VX0, t3, 2
-    xvinsgr2vr.d VX0, t4, 3
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX2, t1, 0
-    xvinsgr2vr.d VX2, t2, 1
-    xvinsgr2vr.d VX2, t3, 2
-    xvinsgr2vr.d VX2, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX2, VXS
-    xvfmul.d VT1, VX0, VXS
-    xvfsub.d VT1, VXZ, VT1
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    ld.d t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.d t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.d VX1, t1, 0
-    xvinsgr2vr.d VX1, t2, 1
-    xvinsgr2vr.d VX1, t3, 2
-    xvinsgr2vr.d VX1, t4, 3
-    ld.d t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.d t4, Y, 0 * SIZE
-    xvinsgr2vr.d VX3, t1, 0
-    xvinsgr2vr.d VX3, t2, 1
-    xvinsgr2vr.d VX3, t3, 2
-    xvinsgr2vr.d VX3, t4, 3
-    add.d Y, Y, INCY
-    xvfmul.d VT0, VX3, VXS
-    xvfmul.d VT1, VX0, VXS
-    xvfsub.d VT1, VXZ, VT1
-    xvstelm.d VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VT1, YY, 0, 3
-    add.d YY, YY, INCY
-#else
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 0
-    xvinsgr2vr.w VX0, t2, 1
-    xvinsgr2vr.w VX0, t3, 2
-    xvinsgr2vr.w VX0, t4, 3
-    ld.w t1, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t2, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t3, X, 0 * SIZE
-    add.d X, X, INCX
-    ld.w t4, X, 0 * SIZE
-    add.d X, X, INCX
-    xvinsgr2vr.w VX0, t1, 4
-    xvinsgr2vr.w VX0, t2, 5
-    xvinsgr2vr.w VX0, t3, 6
-    xvinsgr2vr.w VX0, t4, 7
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    xvinsgr2vr.w VX2, t1, 0
-    xvinsgr2vr.w VX2, t2, 1
-    xvinsgr2vr.w VX2, t3, 2
-    xvinsgr2vr.w VX2, t4, 3
-    ld.w t1, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t2, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t3, Y, 0 * SIZE
-    add.d Y, Y, INCY
-    ld.w t4, Y, 0 * SIZE
-    xvinsgr2vr.w VX2, t1, 4
-    xvinsgr2vr.w VX2, t2, 5
-    xvinsgr2vr.w VX2, t3, 6
-    xvinsgr2vr.w VX2, t4, 7
-    add.d Y, Y, INCY
-    xvfmul.s VT0, VX2, VXS
-    xvfmul.s VT1, VX0, VXS
-    xvfsub.s VT1, VXZ, VT1
-    xvstelm.w VT0, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VT0, XX, 0, 7
-    add.d XX, XX, INCX
-    xvstelm.w VT1, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VT1, YY, 0, 7
-    add.d YY, YY, INCY
-#endif
-    addi.d  I, I, -1
-    blt $r0, I, .L223
-    b .L997
-    .align 3
-
-.L224: // C==0 S==0
-#ifdef DOUBLE
-    xvstelm.d VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.d VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.d VXZ, YY, 0, 3
-#else
-    xvstelm.w VXZ, XX, 0, 0
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 1
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 2
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 3
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, YY, 0, 0
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 1
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 2
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 3
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, XX, 0, 4
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 5
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 6
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, XX, 0, 7
-    add.d XX, XX, INCX
-    xvstelm.w VXZ, YY, 0, 4
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 5
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 6
-    add.d YY, YY, INCY
-    xvstelm.w VXZ, YY, 0, 7
-#endif
-    add.d YY, YY, INCY
-    addi.d  I, I, -1
-    blt $r0, I, .L224
-#ifdef DOUBLE
-    move X, XX
-    move Y, YY
-#endif
     b .L997
     .align 3
 

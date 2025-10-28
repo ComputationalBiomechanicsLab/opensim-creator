@@ -48,4 +48,6 @@ lapack_complex_float lapack_make_complex_float( float re, float im ) {
 #endif
    return z;
 }
+#else
+lapack_complex_float lapack_make_complex_float( float re, float im ) {}
 #endif

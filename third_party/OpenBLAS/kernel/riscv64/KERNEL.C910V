@@ -71,6 +71,10 @@ DROTKERNEL   = rot_vector.c
 CROTKERNEL   = zrot_vector.c
 ZROTKERNEL   = zrot_vector.c
 
+SROTMKERNEL  = ../generic/rotm.c
+DROTMKERNEL  = ../generic/rotm.c
+QROTMKERNEL = ../generic/rotm.c
+
 SSCALKERNEL  = scal_vector.c
 DSCALKERNEL  = scal_vector.c
 CSCALKERNEL  = zscal_vector.c

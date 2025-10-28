@@ -270,9 +270,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d Y, Y, INCY
     ST    a2, Y, 0
     add.d Y, Y, INCY
-    ST    a3, X, 0
+    ST    a3, Y, 0
     add.d Y, Y, INCY
-    ST    a4, X, 0
+    ST    a4, Y, 0
     add.d Y, Y, INCY
     LD    a1, X, 0
     add.d X, X, INCX
@@ -286,9 +286,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     add.d Y, Y, INCY
     ST    a2, Y, 0
     add.d Y, Y, INCY
-    ST    a3, X, 0
+    ST    a3, Y, 0
     add.d Y, Y, INCY
-    ST    a4, X, 0
+    ST    a4, Y, 0
     add.d Y, Y, INCY
     addi.d  I, I, -1
     blt $r0, I, .L222

@@ -440,7 +440,7 @@ static real c_b43 = (float)1.;
     extern /* Subroutine */ int ctest_(integer*, complex*, complex*, complex*, real*);
     static complex mwpcs[5], mwpct[5];
     extern /* Subroutine */ int itest1_(integer*, integer*), stest1_(real*,real*,real*,real*);
-    extern /* Subroutine */ int cscaltest_(), itest1_(), stest1_();
+    extern /* Subroutine */ int cscaltest_(integer*, complex*, complex*, integer*);
     static complex cx[8];
     extern real scnrm2test_(integer*, complex*, integer*);
     static integer np1;

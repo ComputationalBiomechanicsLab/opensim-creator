@@ -1578,6 +1578,7 @@ int get_cpuname(void){
       case 12: //family 6 exmodel 12
 	switch (model) {
 	  case 15:
+	  case 6: // Arrow Lake
 	    if(support_avx512())
               return CPUTYPE_SAPPHIRERAPIDS;
             if(support_avx2())
@@ -2420,6 +2421,22 @@ int get_coretype(void){
 	    return CORE_SANDYBRIDGE;
 	  else
 	  return CORE_NEHALEM;
+	}
+      case 12:
+	switch (model) {
+	  case 6: // Arrow Lake
+	  if(support_amx_bf16())
+	    return CORE_SAPPHIRERAPIDS;
+	  if(support_avx512_bf16())
+            return CORE_COOPERLAKE;
+          if(support_avx512())
+            return CORE_SKYLAKEX;
+          if(support_avx2())
+            return CORE_HASWELL;
+          if(support_avx())
+	    return CORE_SANDYBRIDGE;
+	  else
+	    return CORE_NEHALEM;
 	}
       }
     case 15:

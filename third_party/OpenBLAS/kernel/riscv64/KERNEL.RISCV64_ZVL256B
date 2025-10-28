@@ -66,6 +66,10 @@ DROTKERNEL   = rot_vector.c
 CROTKERNEL   = zrot_vector.c
 ZROTKERNEL   = zrot_vector.c
 
+SROTMKERNEL  = ../generic/rotm.c
+DROTMKERNEL  = ../generic/rotm.c
+QROTMKERNEL = ../generic/rotm.c
+
 SSCALKERNEL  = scal_vector.c
 DSCALKERNEL  = scal_vector.c
 CSCALKERNEL  = zscal_vector.c
@@ -165,6 +169,7 @@ SSYMV_U_KERNEL =  symv_U_vector.c
 SSYMV_L_KERNEL =  symv_L_vector.c
 DSYMV_U_KERNEL =  symv_U_vector.c
 DSYMV_L_KERNEL =  symv_L_vector.c
+
 CSYMV_U_KERNEL =  ../generic/zsymv_k.c
 CSYMV_L_KERNEL =  ../generic/zsymv_k.c
 ZSYMV_U_KERNEL =  ../generic/zsymv_k.c
@@ -197,3 +202,12 @@ endif
 ifndef ZGEMM_BETA
 ZGEMM_BETA = ../generic/zgemm_beta.c
 endif
+
+ZOMATCOPY_CN = zomatcopy_cn_vector.c
+COMATCOPY_CN = zomatcopy_cn_vector.c
+
+DOMATCOPY_CN = omatcopy_cn_vector.c
+SOMATCOPY_CN = omatcopy_cn_vector.c
+
+SAXPBYKERNEL  = axpby_vector_v2.c
+DAXPBYKERNEL  = axpby_vector_v2.c

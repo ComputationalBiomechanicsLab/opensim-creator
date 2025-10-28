@@ -56,17 +56,12 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     LDINT   INCX,  0(INCX)
 #endif
 
+    vxor.v VM0, VM0, VM0
     bge $r0, N, .L999
     bge $r0, INCX, .L999
     li.d TEMP, 1
     slli.d TEMP, TEMP, BASE_SHIFT
     slli.d INCX, INCX, BASE_SHIFT
-#ifdef DOUBLE
-    vldrepl.d VM0, X, 0
-#else
-    vldrepl.w VM0, X, 0
-#endif
-    VFSUB VM0, VM0, VM0
     bne INCX, TEMP, .L20
 
     srai.d I, N, 3

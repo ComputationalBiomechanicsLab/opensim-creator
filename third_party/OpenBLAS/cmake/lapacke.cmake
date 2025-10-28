@@ -98,6 +98,8 @@ set(CSRC
   lapacke_cgesv_work.c
   lapacke_cgesvd.c
   lapacke_cgesvd_work.c
+  lapacke_cgesvdq.c
+  lapacke_cgesvdq_work.c
   lapacke_cgesvdx.c
   lapacke_cgesvdx_work.c
   lapacke_cgesvj.c
@@ -1766,8 +1768,8 @@ set(SSRC
   lapacke_strsna_work.c
   lapacke_strsyl.c
   lapacke_strsyl_work.c
-  lapacke_ctrsyl3.c
-  lapacke_ctrsyl3_work.c
+  lapacke_strsyl3.c
+  lapacke_strsyl3_work.c
   lapacke_strtri.c
   lapacke_strtri_work.c
   lapacke_strtrs.c
@@ -2410,10 +2412,10 @@ set(ZSRC
   lapacke_ilaver.c
 )
 if (BUILD_LAPACK_DEPRECATED)
-set(SRCS $SRCS lapacke_sgeqpf.c lapacke_sgeqpf_work.c lapacke_sggsvd.c lapacke_sggsvd_work.c lapacke_sggsvp.c lapacke_sggsvp_work.c)
-set(SRCD $SRCD lapacke_dgeqpf.c lapacke_dgeqpf_work.c lapacke_dggsvd.c lapacke_dggsvd_work.c lapacke_dggsvp.c lapacke_dggsvp_work.c)
-set(SRCC $SRCC lapacke_cgeqpf.c lapacke_cgeqpf_work.c lapacke_cggsvd.c lapacke_cggsvd_work.c lapacke_cggsvp.c lapacke_cggsvp_work.c)
-set(SRCZ $SRCZ lapacke_zgeqpf.c lapacke_zgeqpf_work.c lapacke_zggsvd.c lapacke_zggsvd_work.c lapacke_zggsvp.c lapacke_zggsvp_work.c)
+	list(APPEND SSRC lapacke_sgeqpf.c lapacke_sgeqpf_work.c lapacke_sggsvd.c lapacke_sggsvd_work.c lapacke_sggsvp.c lapacke_sggsvp_work.c)
+	list(APPEND DSRC lapacke_dgeqpf.c lapacke_dgeqpf_work.c lapacke_dggsvd.c lapacke_dggsvd_work.c lapacke_dggsvp.c lapacke_dggsvp_work.c)
+	list(APPEND CSRC lapacke_cgeqpf.c lapacke_cgeqpf_work.c lapacke_cggsvd.c lapacke_cggsvd_work.c lapacke_cggsvp.c lapacke_cggsvp_work.c)
+	list(APPEND ZSRC lapacke_zgeqpf.c lapacke_zgeqpf_work.c lapacke_zggsvd.c lapacke_zggsvd_work.c lapacke_zggsvp.c lapacke_zggsvp_work.c)
 endif()
 
 set(SRCX

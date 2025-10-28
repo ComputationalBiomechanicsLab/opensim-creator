@@ -103,21 +103,20 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvfadd.d res1, VX2, res1
     xvfadd.d res1, VX3, res1
 #else
-    xvfadd.s res2, res1, res2
     xvpickve.w VX1, res1, 1
     xvpickve.w VX2, res1, 2
     xvpickve.w VX3, res1, 3
     xvfadd.s res1, VX1, res1
     xvfadd.s res1, VX2, res1
     xvfadd.s res1, VX3, res1
-    xvpickve.w VX0, res2, 4
-    xvpickve.w VX1, res2, 5
-    xvpickve.w VX2, res2, 6
-    xvpickve.w VX3, res2, 7
+    xvpickve.w VX0, res1, 4
+    xvpickve.w VX1, res1, 5
+    xvpickve.w VX2, res1, 6
+    xvpickve.w VX3, res1, 7
     xvfadd.s res1, VX0, res1
     xvfadd.s res1, VX1, res1
     xvfadd.s res1, VX2, res1
-    xvfadd.s res1, VX2, res1
+    xvfadd.s res1, VX3, res1
 #endif
     .align 3
 
@@ -217,21 +216,20 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvfadd.d res1, VX2, res1
     xvfadd.d res1, VX3, res1
 #else
-    xvfadd.s res2, res1, res2
     xvpickve.w VX1, res1, 1
     xvpickve.w VX2, res1, 2
     xvpickve.w VX3, res1, 3
     xvfadd.s res1, VX1, res1
     xvfadd.s res1, VX2, res1
     xvfadd.s res1, VX3, res1
-    xvpickve.w VX0, res2, 4
-    xvpickve.w VX1, res2, 5
-    xvpickve.w VX2, res2, 6
-    xvpickve.w VX3, res2, 7
+    xvpickve.w VX0, res1, 4
+    xvpickve.w VX1, res1, 5
+    xvpickve.w VX2, res1, 6
+    xvpickve.w VX3, res1, 7
     xvfadd.s res1, VX0, res1
     xvfadd.s res1, VX1, res1
     xvfadd.s res1, VX2, res1
-    xvfadd.s res1, VX2, res1
+    xvfadd.s res1, VX3, res1
 #endif
     .align 3
 

@@ -146,4 +146,14 @@ DGEMM_BETA = ../generic/gemm_beta.c
 CGEMM_BETA = ../generic/zgemm_beta.c
 ZGEMM_BETA = ../generic/zgemm_beta.c
 
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
 
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif

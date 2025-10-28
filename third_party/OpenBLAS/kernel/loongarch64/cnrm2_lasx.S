@@ -47,6 +47,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VX4    $xr21
 #define res1   $xr19
 #define res2   $xr20
+#define RCP    $f2
+#define VALPHA $xr3
 
    PROLOGUE
 
@@ -55,10 +57,33 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    LDINT   INCX,  0(INCX)
 #endif
 
-   xvxor.v res1, res1, res1
-   xvxor.v res2, res2, res2
    bge $r0, N, .L999
    beq $r0, INCX, .L999
+
+   addi.d  $sp,     $sp,     -32
+   st.d    $ra,     $sp,     0
+   st.d    N,       $sp,     8
+   st.d    X,       $sp,     16
+   st.d    INCX,    $sp,     24
+#ifdef DYNAMIC_ARCH
+   bl camax_k_LA264
+#else
+   bl camax_k
+#endif
+   ld.d    $ra,     $sp,     0
+   ld.d    N,       $sp,     8
+   ld.d    X,       $sp,     16
+   ld.d    INCX,    $sp,     24
+   addi.d  $sp,     $sp,     32
+
+   frecip.s RCP, $f0
+   vreplvei.w   $vr3, $vr2, 0
+   xvpermi.d    VALPHA, $xr3,0x00
+   xvxor.v res1, res1, res1
+   xvxor.v res2, res2, res2
+   fcmp.ceq.s  $fcc0, $f0,  $f19
+   bcnez  $fcc0, .L999
+
    li.d  TEMP, SIZE
    slli.d INCX, INCX, ZBASE_SHIFT
    srai.d I, N, 2
@@ -67,13 +92,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    .align 3
 
 .L10:
-   xvld VX0, X, 0 * SIZE
-   xvfcvtl.d.s VX1, VX0
-   xvfcvth.d.s VX2, VX0
-   xvfmadd.d res1, VX1, VX1, res1
-   xvfmadd.d res2, VX2, VX2, res2
    addi.d I, I, -1
-   addi.d X, X, 8 * SIZE
+
+   xvld VX0, X, 0 * SIZE
+   xvld VX1, X, 8 * SIZE
+   xvfmul.s  VX0,  VX0,  VALPHA
+   xvfmul.s  VX1,  VX1,  VALPHA
+   xvfmadd.s res1, VX0, VX0, res1
+   xvfmadd.s res2, VX1, VX1, res2
+
+   addi.d X, X, 16 * SIZE
    blt $r0, I, .L10
    .align 3
    b .L996
@@ -103,22 +131,22 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    xvinsgr2vr.w VX0, t3, 6
    xvinsgr2vr.w VX0, t4, 7
    add.d X, X, INCX
-   xvfcvtl.d.s VX1, VX0
-   xvfcvth.d.s VX2, VX0
-   xvfmadd.d res1, VX1, VX1, res1
-   xvfmadd.d res2, VX2, VX2, res2
+   xvfmul.s  VX0,  VX0,  VALPHA
+   xvfmadd.s res2, VX0, VX0, res2
    addi.d  I, I, -1
    blt $r0, I, .L21
    b .L996
 
 .L996:
-   xvfadd.d res1, res1, res2
-   xvpickve.d VX1, res1, 1
-   xvpickve.d VX2, res1, 2
-   xvpickve.d VX3, res1, 3
-   xvfadd.d res1, VX1, res1
-   xvfadd.d res1, VX2, res1
-   xvfadd.d res1, VX3, res1
+   xvfadd.s res1, res1, res2
+   xvpermi.d  VX1, res1, 0x4e
+   xvfadd.s res1, res1, VX1
+   vreplvei.w $vr17, $vr19, 1
+   vreplvei.w $vr18, $vr19, 2
+   vreplvei.w $vr21, $vr19, 3
+   xvfadd.s res1, VX2, res1
+   xvfadd.s res1, VX3, res1
+   xvfadd.s res1, VX4, res1
    .align 3
 
 .L997:
@@ -130,18 +158,18 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    fld.s a1, X, 0 * SIZE
    fld.s a2, X, 1 * SIZE
    addi.d I, I, -1
-   fcvt.d.s a1, a1
-   fcvt.d.s a2, a2
-   fmadd.d res, a1, a1, res
-   fmadd.d res, a2, a2, res
+   fmul.s a1, a1, RCP
+   fmul.s a2, a2, RCP
+   fmadd.s res, a1, a1, res
+   fmadd.s res, a2, a2, res
    add.d X, X, INCX
    blt $r0, I, .L998
    .align 3
 
 .L999:
-   fsqrt.d res, res
+   fsqrt.s res, res
+   fmul.s $f0, res, $f0
    move $r4, $r17
-   fcvt.s.d $f0, res
    jirl $r0, $r1, 0x0
 
    EPILOGUE

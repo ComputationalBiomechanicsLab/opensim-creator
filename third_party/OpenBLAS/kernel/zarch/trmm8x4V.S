@@ -864,6 +864,8 @@ ALIGN_2
     lmg %r6,%r12,48(%r15) 
 #endif
 br %r14
+
+EPILOGUE
 .end
 
 

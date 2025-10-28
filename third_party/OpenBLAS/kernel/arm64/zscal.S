@@ -33,7 +33,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define	INC_X	x4	/* X stride */
 #define I	x5	/* loop variable */
 #define X_COPY	x6	/* Copy of X */
-
+#define FLAG	x7
 /*******************************************************************************
 * Macro definitions
 *******************************************************************************/
@@ -216,6 +216,9 @@ zscal_begin:
 
 	cmp	N, xzr
 	ble	.Lzscal_kernel_L999
+ldr FLAG, [sp]
+cmp FLAG, #1
+beq .Lzscal_kernel_RI_non_zero
 
 	fcmp	DA_R, #0.0
 	bne	.Lzscal_kernel_R_non_zero
@@ -228,7 +231,7 @@ zscal_begin:
 .Lzscal_kernel_R_non_zero:
 
 	fcmp	DA_I, #0.0
-	beq	.Lzscal_kernel_I_zero
+//QUAK	beq	.Lzscal_kernel_I_zero
 
 /*******************************************************************************
 * A_R != 0 && A_I != 0

@@ -52,6 +52,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Don't change following FR unless you know the effects. */
 #define res1   $vr19
 #define res2   $vr20
+#define RCP    $f2
+#define VALPHA $vr3
+
+// The optimization for snrm2 cannot simply involve
+// extending the data type from float to double and
+// then summing the squares of the data. LAPACK tests
+// have shown that this approach can still lead to data overflow.
+// Instead, we need to find the maximum absolute value in the entire
+// array and divide each data element by this maximum value before
+// performing the calculation. This approach can avoid overflow (and does not require extending the data type).
 
    PROLOGUE
 
@@ -59,10 +69,31 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    LDINT   N,     0(N)
    LDINT   INCX,  0(INCX)
 #endif
-   vxor.v res1, res1, res1
-   vxor.v res2, res2, res2
    bge $r0,    N, .L999
    beq $r0, INCX, .L999
+
+   addi.d  $sp,     $sp,     -32
+   st.d    $ra,     $sp,     0
+   st.d    N,       $sp,     8
+   st.d    X,       $sp,     16
+   st.d    INCX,    $sp,     24
+#ifdef DYNAMIC_ARCH
+   bl samax_k_LA264
+#else
+   bl samax_k
+#endif
+   ld.d    $ra,     $sp,     0
+   ld.d    N,       $sp,     8
+   ld.d    X,       $sp,     16
+   ld.d    INCX,    $sp,     24
+   addi.d  $sp,     $sp,     32
+
+   frecip.s RCP, $f0
+   vreplvei.w   VALPHA, $vr2, 0
+   vxor.v res1, res1, res1
+   vxor.v res2, res2, res2
+   fcmp.ceq.s  $fcc0, $f0,  $f19
+   bcnez  $fcc0, .L999
    li.d  TEMP, SIZE
    slli.d INCX, INCX, BASE_SHIFT
    srai.d I, N, 3
@@ -75,14 +106,12 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    vld  VX5, X, 4 * SIZE
    addi.d I, I, -1
    addi.d X, X, 8 * SIZE
-   vfcvtl.d.s VX1, VX0
-   vfcvth.d.s VX2, VX0
-   vfcvtl.d.s VX3, VX5
-   vfcvth.d.s VX4, VX5
-   vfmadd.d  res1, VX1, VX1, res1
-   vfmadd.d  res2, VX2, VX2, res2
-   vfmadd.d  res1, VX3, VX3, res1
-   vfmadd.d  res2, VX4, VX4, res2
+
+   vfmul.s  VX0,  VX0,  VALPHA
+   vfmul.s  VX5,  VX5,  VALPHA
+
+   vfmadd.s res1, VX0, VX0, res1
+   vfmadd.s res2, VX5, VX5, res2
    blt $r0, I, .L10
    b .L996
    .align 3
@@ -104,10 +133,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    vinsgr2vr.w VX0, t2, 1
    vinsgr2vr.w VX0, t3, 2
    vinsgr2vr.w VX0, t4, 3
-   vfcvtl.d.s VX1, VX0
-   vfcvth.d.s VX2, VX0
-   vfmadd.d res1, VX1, VX1, res1
-   vfmadd.d res2, VX2, VX2, res2
+   vfmul.s  VX0,  VX0,  VALPHA
+   vfmadd.s res1, VX0, VX0, res1
+
    ld.w t1, X, 0
    add.d X, X, INCX
    ld.w t2, X, 0
@@ -120,19 +148,20 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    vinsgr2vr.w VX0, t2, 1
    vinsgr2vr.w VX0, t3, 2
    vinsgr2vr.w VX0, t4, 3
-   vfcvtl.d.s VX3, VX0
-   vfcvth.d.s VX4, VX0
-   vfmadd.d res1, VX3, VX3, res1
-   vfmadd.d res2, VX4, VX4, res2
+   vfmul.s  VX0,  VX0,  VALPHA
+   vfmadd.s res2, VX0, VX0, res2
    addi.d  I, I, -1
    blt $r0, I, .L21
-   b .L996
    .align 3
 
 .L996:
-   vfadd.d res1, res1, res2
-   vreplvei.d VX1, res1, 1
-   vfadd.d res1, VX1, res1
+   vfadd.s res1, res1, res2
+   vreplvei.w VX1, res1, 1
+   vreplvei.w VX2, res1, 2
+   vreplvei.w VX3, res1, 3
+   vfadd.s res1, VX1, res1
+   vfadd.s res1, VX2, res1
+   vfadd.s res1, VX3, res1
    .align 3
 
 .L997:
@@ -143,16 +172,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .L998:
    fld.s $f15, X, 0
    addi.d I, I, -1
-   fcvt.d.s $f15, $f15
-   fmadd.d $f19, $f15, $f15, $f19
+   fmul.s  $f15, $f15, RCP
+   fmadd.s $f19, $f15, $f15, $f19
    add.d X, X, INCX
    blt $r0, I, .L998
    .align 3
 
 .L999:
-   fsqrt.d $f19, $f19
+   fsqrt.s $f19, $f19
+   fmul.s  $f0, $f19, $f0
    move $r4, $r17
-   fcvt.s.d $f0, $f19
    jirl $r0, $r1, 0x0
    .align 3
 
