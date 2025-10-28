@@ -3,7 +3,14 @@
 #include <ankerl/unordered_dense.h>
 #include <app/counter.h>
 
+#if defined(__clang__)
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-W#warnings"
+#endif
 #include <doctest.h>
+#if defined(__clang__)
+#    pragma clang diagnostic pop
+#endif
 
 #if defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
 #    undef DOCTEST_REQUIRE
@@ -51,7 +58,7 @@ class deque_set : public ankerl::unordered_dense::detail::
     using base_t::base_t;
 };
 
-// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage,misc-use-anonymous-namespace)
 #define TEST_CASE_MAP(name, ...)                                            \
     TEST_CASE_TEMPLATE(name,                                                \
                        map_t,                                               \

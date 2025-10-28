@@ -7,15 +7,17 @@ test_sources = [
     'app/ui/progress_bar.cpp',
     'app/unordered_dense.cpp',
 
-    'bench/swap.cpp',
-    'bench/show_allocations.cpp',
-    'bench/quick_overall_map.cpp',
-    'bench/game_of_life.cpp',
-    'bench/find_random.cpp',
     'bench/copy.cpp',
+    'bench/find_random.cpp',
+    'bench/game_of_life.cpp',
+    'bench/quick_overall_map.cpp',
+    'bench/replace_key.cpp',
+    'bench/show_allocations.cpp',
+    'bench/swap.cpp',
 
     'fuzz/run.cpp',
 
+    'unit/array_of_maps.cpp',
     'unit/assign_to_move.cpp',
     'unit/assignment_combinations.cpp',
     'unit/at.cpp',
@@ -64,6 +66,7 @@ test_sources = [
     'unit/pmr.cpp',
     'unit/reentrant.cpp',
     'unit/rehash.cpp',
+    'unit/replace_key.cpp',
     'unit/replace.cpp',
     'unit/reserve_and_assign.cpp',
     'unit/reserve.cpp',
@@ -171,7 +174,7 @@ test_exe = executable(
 
         # see what's in the [provide] sections for the dependency names
         dependency('doctest'),
-        dependency('fmt', method: fmt_method),
+        dependency('fmt', method: fmt_method, fallback: ['fmt', 'fmt_dep']),
 
         # disable these two if you don't want them
         #dependency('boost'),
