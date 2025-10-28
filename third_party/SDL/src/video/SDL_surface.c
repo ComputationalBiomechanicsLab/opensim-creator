@@ -49,7 +49,7 @@ bool SDL_SurfaceValid(SDL_Surface *surface)
 
 void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 {
-    if (SDL_SurfaceHasRLE(surface)) {
+    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
     } else {
         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
@@ -611,7 +611,6 @@ bool SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
     if (surface->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->map);
     }
-    SDL_UpdateSurfaceLockFlag(surface);
     return true;
 }
 
@@ -1247,7 +1246,7 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
     // Clip again
     SDL_GetRectIntersection(clip_rect, &final_dst, &final_dst);
 
-    if (final_dst.w == 0 || final_dst.h == 0 ||
+    if (final_dst.w <= 0 || final_dst.h <= 0 ||
         final_src.w < 0 || final_src.h < 0) {
         // No-op.
         return true;
@@ -1751,6 +1750,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, true);
             surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
+            SDL_UpdateSurfaceLockFlag(surface);
         }
 #endif
     }
