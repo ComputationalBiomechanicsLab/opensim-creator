@@ -20,7 +20,7 @@ function(mdspan_add_test name)
     set_source_files_properties(${name} PROPERTIES LANGUAGE ${MDSPAN_TEST_LANGUAGE})
   endif()
   add_executable(${name} ${ARGUMENT_SOURCE})
-  target_link_libraries(${name} mdspan gtest_main)
+  target_link_libraries(${name} mdspan GTest::gtest_main)
   add_test(${name} ${name})
   set_property(TARGET ${name} PROPERTY COMPILE_WARNING_AS_ERROR ON)
   target_compile_definitions(${name}
@@ -31,35 +31,26 @@ endfunction()
 
 if(MDSPAN_USE_SYSTEM_GTEST)
   find_package(GTest CONFIG REQUIRED)
-  add_library(gtest_main ALIAS GTest::gtest_main)
 else()
-  # adapted from https://github.com/google/googletest/blob/master/googletest/README.md
-  configure_file(${PROJECT_SOURCE_DIR}/cmake/googletest/CMakeLists.txt.in googletest-download/CMakeLists.txt)
-  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
-  )
-  if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+  include(FetchContent)
+  
+  if (MSVC)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download
+  fetchcontent_declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG v1.17.0
   )
-  if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+  
+  # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable
+  fetchcontent_getproperties(googletest)
+  if (NOT googletest_POPULATED)
+    fetchcontent_populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
-
-  # Prevent overriding the parent project's compiler/linker
-  # settings on Windows
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-  # Add googletest directly to our build. This defines
-  # the gtest and gtest_main targets.
-  add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-    EXCLUDE_FROM_ALL
-  )
+  
+  add_library(GTest::gtest_main ALIAS gtest_main)
 endif()
 
 # FIXME_MSVC
@@ -88,6 +79,7 @@ mdspan_add_test(test_layout_preconditions ENABLE_PRECONDITIONS)
 
 mdspan_add_test(test_dims)
 mdspan_add_test(test_extents)
+mdspan_add_test(test_mdspan_at)
 mdspan_add_test(test_mdspan_ctors)
 mdspan_add_test(test_mdspan_swap)
 mdspan_add_test(test_mdspan_conversion)
@@ -99,8 +91,8 @@ mdspan_add_test(test_layout_stride)
 if(NOT CMAKE_CXX_STANDARD STREQUAL "14")
   mdspan_add_test(test_submdspan)
   mdspan_add_test(test_submdspan_static_slice)
-  mdspan_add_test(test_layout_padded_left)
-  mdspan_add_test(test_layout_padded_right)
+  mdspan_add_test(test_layout_padded_left ENABLE_PRECONDITIONS)
+  mdspan_add_test(test_layout_padded_right ENABLE_PRECONDITIONS)
 endif()
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)
