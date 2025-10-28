@@ -657,8 +657,9 @@ namespace
             const OpenSim::Scholz2015GeometryPathObstacle& obstacle) const final
         {
             const OpenSim::ContactGeometry& geom = obstacle.getContactGeometry();
+            const SimTK::Rotation rotationInGround = geom.getFrame().getTransformInGround(getState()).R() * geom.getTransform().R();
             const SimTK::Vec3 translationInGround = geom.getFrame().getTransformInGround(getState()) * geom.getTransform() * obstacle.getContactHint();
-            return matrix4x4_cast({.translation = to<Vector3>(translationInGround)});
+            return matrix4x4_cast({.rotation = to<Quaternion>(rotationInGround), .translation = to<Vector3>(translationInGround)});
         }
 
         void implOnApplyTransform(
