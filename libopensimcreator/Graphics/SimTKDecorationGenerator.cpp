@@ -6,6 +6,7 @@
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
+#include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneHelpers.h>
 #include <liboscar/Maths/LineSegment.h>
 #include <liboscar/Maths/MathHelpers.h>
@@ -183,7 +184,7 @@ namespace
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = cylinderXform,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -196,7 +197,7 @@ namespace
                 .mesh = m_MeshCache.brick_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -212,7 +213,7 @@ namespace
                 .mesh = m_MeshCache.cylinder_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -227,7 +228,7 @@ namespace
                 .mesh = m_MeshCache.circle_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -240,7 +241,7 @@ namespace
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -253,7 +254,7 @@ namespace
                 .mesh = m_MeshCache.sphere_mesh(),
                 .transform = t,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -277,7 +278,7 @@ namespace
                     .mesh = m_MeshCache.sphere_mesh(),
                     .transform = sphereXform,
                     .shading = colorOverride ? *colorOverride : Color::white(),
-                    .flags = GetFlags(d),
+                    .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
                 });
             }
 
@@ -285,7 +286,7 @@ namespace
             const Vector3 axisLengths = t.scale * static_cast<float>(d.getAxisLength());
             const float legLen = c_FrameAxisLengthRescale * m_FixupScaleFactor;
             const float legThickness = c_FrameAxisThickness * m_FixupScaleFactor;
-            const auto flags = GetFlags(d);
+            const auto flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull;
             for (int axis = 0; axis < 3; ++axis) {
                 Vector3 direction = {0.0f, 0.0f, 0.0f};
                 direction[axis] = 1.0f;
@@ -334,7 +335,7 @@ namespace
                 .mesh = m_MeshCache.get_mesh(id, meshLoaderFunc),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d),  // no `SceneDecorationFlag::CanBackfaceCull`, because mesh data might be invalid (#318, #168)
             });
         }
 
@@ -347,7 +348,7 @@ namespace
                 .mesh = m_MeshCache.get_mesh(path, meshLoader),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d),  // no `SceneDecorationFlag::CanBackfaceCull`, because mesh data might be invalid (#318, #168)
             });
         }
 
@@ -361,7 +362,7 @@ namespace
                 .neck_thickness = m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
                 .head_thickness = 1.75f * m_FixupScaleFactor * static_cast<float>(d.getLineThickness()),
                 .color = GetColor(d),
-                .decoration_flags = GetFlags(d),
+                .decoration_flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             };
             draw_arrow(m_MeshCache, p, m_Consumer);
         }
@@ -375,7 +376,7 @@ namespace
                 .mesh = m_MeshCache.torus_mesh(tube_center_radius, tube_radius),
                 .transform = ToOscTransform(d),
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 
@@ -399,7 +400,7 @@ namespace
                 .mesh = m_MeshCache.cone_mesh(),
                 .transform = coneXform,
                 .shading = GetColor(d),
-                .flags = GetFlags(d),
+                .flags = GetFlags(d) | SceneDecorationFlag::CanBackfaceCull,
             });
         }
 

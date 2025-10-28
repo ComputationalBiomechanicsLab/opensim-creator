@@ -20,6 +20,8 @@ namespace osc
         // big the scene is in order to auto-focus a camera or similar (#1071).
         NoSceneVolumeContribution = 1<<5,
 
+        CanBackfaceCull           = 1<<6,  // the decoration can be backface-culled (e.g. because it's using a "trusted" mesh)
+
         // helpful combinations
         Default = None,
         WireframeOverlayedDefault = Default | DrawWireframeOverlay,

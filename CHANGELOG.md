@@ -6,18 +6,21 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The model scene renderer now has an option (currently, default-disabled) to enable
-  "Order-Independent Transparency", which fixes the rendering of models containing
-  a lot of intersecting geometry (e.g. Rajagopal2015.osim, when its wrap surfaces are
-  displayed, #1130).
+- The model scene renderer now has an "Order-Independent Transparency" option
+  (default-disabled), which fixes the rendering of models containing a lot of
+  intersecting transparent geometry (e.g. Rajagopal2015.osim, when all of its
+  wrap surfaces are displayed, #1130).
 - OpenSim and Simbody were updated to the latest upstream version (2f3d0e1, 15th Oct)
   so that new features such as exponential path springs and Scholz wrapping paths are
   supported (big thanks to @alexbeattie42 for doing the legwork, #1099, #1100).
 - A new example, `Scholz2015GeometryPath.osim`, was added to OpenSim Creator's
   pre-installed example models, so that developers and modellers can experiment with
-  the new wrapping algorithm (#
+  the new wrapping algorithm (#1131).
 - The internal render queue used by OpenSim Creator's graphics engine was reworked,
   which should improve rendering performance by 5-10 %.
+- Scene decorations that are known to be "safe" to backface cull (e.g. generated geometry,
+  not-user-supplied mesh data) are now rendered with backface culling enabled, which
+  improves rendering performance by another 5-10 % (GPU-dependent, #1133).
 
 ## [0.6.1] - 2025/10/09
 

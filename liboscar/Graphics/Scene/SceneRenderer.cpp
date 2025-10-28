@@ -580,6 +580,8 @@ public:
         quad_mesh_{cache.quad_mesh()}
     {
         wireframe_material_.set_color(Color::black());
+        backface_culled_rim_filler_material_.set_cull_mode(CullMode::Back);
+        backface_culled_depth_writer_material_.set_cull_mode(CullMode::Back);
     }
 
     void render(
@@ -665,8 +667,14 @@ private:
             scene_main_material_.set("uHasShadowMap", false);
         }
 
-        Material transparent_material = scene_main_material_;
+        const Material& opaque_material{scene_main_material_};
+        Material backface_culled_opaque_material{opaque_material};
+        backface_culled_opaque_material.set_cull_mode(CullMode::Back);
+        Material transparent_material{opaque_material};
         transparent_material.set_transparent(true);
+        Material backface_culled_transparent_material{transparent_material};
+        backface_culled_transparent_material.set_cull_mode(CullMode::Back);
+
         color_cache_.clear();
         MaterialPropertyBlock wireframe_prop_block;
 
@@ -690,19 +698,22 @@ private:
             }
 
             std::visit(Overload{
-                [this, &params, &transparent_material, &dec](const Color& color)
+                [this, &params, &opaque_material, &backface_culled_opaque_material, &transparent_material, &backface_culled_transparent_material, &dec](const Color& color)
                 {
                     const Color32 color32{color};  // Renderer doesn't need HDR colors
+                    if (color32.a != 0xff and params.order_independent_transparency) {
+                        return;  // OIT is handled in a seperate pass
+                    }
+
                     const auto& [it, inserted] = color_cache_.try_emplace(color32);
                     if (inserted) {
                         it->second.set(c_diffuse_color_propname, color32);
                     }
-                    if (color32.a == 0xff) {
-                        graphics::draw(dec.mesh, dec.transform, scene_main_material_, camera_, it->second);
-                    }
-                    else if (not params.order_independent_transparency) {
-                        graphics::draw(dec.mesh, dec.transform, transparent_material, camera_, it->second);
-                    }
+                    const bool backface_culled = dec.has_flag(SceneDecorationFlag::CanBackfaceCull);
+                    const Material& material = color32.a == 0xff ?
+                            (backface_culled ? backface_culled_opaque_material : opaque_material) :
+                            (backface_culled ? backface_culled_transparent_material : transparent_material);
+                    graphics::draw(dec.mesh, dec.transform, material, camera_, it->second);
                 },
                 [this, &dec](const Material& material)
                 {
@@ -789,7 +800,7 @@ private:
 
                     const auto& [it, inserted] = color_cache_.try_emplace(color32);
                     if (inserted) {
-                        it->second.set(c_diffuse_color_propname, color);
+                        it->second.set(c_diffuse_color_propname, color32);
                     }
                     graphics::draw(decoration.mesh, decoration.transform, oit_material, camera_, it->second);
                 },
@@ -904,7 +915,10 @@ private:
                 if (inserted) {
                     it->second.set(MeshBasicMaterial::color_property_name(), color);
                 }
-                graphics::draw(decoration.mesh, decoration.transform, rim_filler_material_, camera_, it->second);
+                const Material& material = decoration.has_flag(SceneDecorationFlag::CanBackfaceCull) ?
+                    backface_culled_rim_filler_material_ :
+                    rim_filler_material_;
+                graphics::draw(decoration.mesh, decoration.transform, material, camera_, it->second);
             }
         }
 
@@ -959,7 +973,10 @@ private:
                 continue;  // this decoration shouldn't cast shadows
             }
             shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, decoration.world_space_bounds());
-            graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
+            const Material& material = decoration.has_flag(SceneDecorationFlag::CanBackfaceCull) ?
+                backface_culled_depth_writer_material_ :
+                depth_writer_material_;
+            graphics::draw(decoration.mesh, decoration.transform, material, camera_);
         }
 
         if (not shadowcaster_aabbs) {
@@ -988,10 +1005,12 @@ private:
     SceneFloorMaterial scene_floor_material_;
     SceneOITCompositorMaterial scene_oit_compositor_material_;
     RimFillerMaterial rim_filler_material_;
+    RimFillerMaterial backface_culled_rim_filler_material_{rim_filler_material_};
     MeshBasicMaterial wireframe_material_;
     EdgeDetectionMaterial edge_detection_material_;
     MeshNormalVectorsMaterial normals_material_;
     MeshDepthWritingMaterial depth_writer_material_;
+    MeshDepthWritingMaterial backface_culled_depth_writer_material_{depth_writer_material_};
 
     ankerl::unordered_dense::map<Color32, MaterialPropertyBlock> color_cache_;
 

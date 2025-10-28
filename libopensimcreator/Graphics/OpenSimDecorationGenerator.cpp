@@ -470,7 +470,7 @@ namespace
                     .neck_thickness = 0.006f * fixupScaleFactor,
                     .head_thickness = 0.01f * fixupScaleFactor,
                     .color = c_PointForceArrowColor,
-                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                    .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
                 };
 
                 draw_arrow(m_RendererState->updSceneCache(), arrowProperties, [this](SceneDecoration&& decoration)
@@ -514,7 +514,7 @@ namespace
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
                 .color = c_BodyTorqueArrowColor,
-                .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
             };
             draw_arrow(m_RendererState->updSceneCache(), arrowProperties, [this](SceneDecoration&& decoration)
             {
@@ -544,7 +544,7 @@ namespace
                 .neck_thickness = (fixupScaleFactor*0.006f),
                 .head_thickness = (fixupScaleFactor*0.01f),
                 .color = c_BodyForceArrowColor,
-                .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
             };
             draw_arrow(m_RendererState->updSceneCache(), arrowProperties, [this](SceneDecoration&& decoration)
             {
@@ -617,7 +617,7 @@ namespace
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyForceArrowColor,
-                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                    .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
                 };
                 draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -639,7 +639,7 @@ namespace
                     .neck_thickness = (fixupScaleFactor*0.006f),
                     .head_thickness = (fixupScaleFactor*0.01f),
                     .color = c_BodyTorqueArrowColor,
-                    .decoration_flags = SceneDecorationFlag::AnnotationElement,
+                    .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
                 };
                 draw_arrow(rs.updSceneCache(), arrowProperties, [&force, &rs](SceneDecoration&& decoration)
                 {
@@ -693,6 +693,7 @@ namespace
             .mesh = rs.updSceneCache().cylinder_mesh(),
             .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
             .shading = Color::light_grey(),
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         });
     }
 
@@ -710,6 +711,7 @@ namespace
                 .translation = to<Vector3>(s.getLocationInGround(rs.getState())),
             },
             .shading = c_StationColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         });
     }
 
@@ -725,6 +727,7 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = t,
             .shading = c_ScapulothoracicJointColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         });
     }
 
@@ -754,25 +757,25 @@ namespace
             .mesh = rs.sphere_octant_mesh(),
             .transform = t,
             .shading = c_CenterOfMassFirstColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
             .shading = c_CenterOfMassFirstColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
             .shading = c_CenterOfMassFirstColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
             .shading = c_CenterOfMassFirstColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
 
         // draw four octants with the second color
@@ -781,25 +784,25 @@ namespace
             .mesh = rs.sphere_octant_mesh(),
             .transform = t,
             .shading = c_CenterOfMassSecondColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::x())),
             .shading = c_CenterOfMassSecondColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::y())),
             .shading = c_CenterOfMassSecondColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
         rs.consume(b, SceneDecoration{
             .mesh = rs.sphere_octant_mesh(),
             .transform = t.with_rotation(t.rotation * angle_axis(180_deg, CoordinateDirection::z())),
             .shading = c_CenterOfMassSecondColor,
-            .flags = SceneDecorationFlag::AnnotationElement,
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         });
     }
 
@@ -840,19 +843,23 @@ namespace
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vector3{tendonUiRadius}},
             .shading = tendonColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         };
         const SceneDecoration tendonCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .shading = tendonColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         };
         const SceneDecoration fiberSpherePrototype = {
             .mesh = rs.sphere_mesh(),
             .transform = {.scale = Vector3{fiberUiRadius}},
             .shading = fiberColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         };
         const SceneDecoration fiberCylinderPrototype = {
             .mesh = rs.uncapped_cylinder_mesh(),
             .shading = fiberColor,
+            .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
         };
 
         const auto emitTendonSphere = [&](const GeometryPathPoint& p)
@@ -1026,6 +1033,7 @@ namespace
                     .translation = pp.locationInGround
                 },
                 .shading = color,
+                .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
             });
         };
 
@@ -1038,6 +1046,7 @@ namespace
                 .mesh = rs.uncapped_cylinder_mesh(),
                 .transform = cylinder_to_line_segment_transform({p1, p2}, radius),
                 .shading  = color,
+                .flags = {SceneDecorationFlag::Default, SceneDecorationFlag::CanBackfaceCull},
             });
         };
 
@@ -1130,7 +1139,7 @@ namespace
             .neck_thickness = (fixupScaleFactor*0.006f),
             .head_thickness = (fixupScaleFactor*0.01f),
             .color = color,
-            .decoration_flags = SceneDecorationFlag::AnnotationElement,
+            .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         };
         draw_arrow(rs.updSceneCache(), arrowProperties, [&muscle, &rs](SceneDecoration&& d)
         {
@@ -1284,7 +1293,7 @@ namespace
             .neck_thickness = fixupScaleFactor*baseRadius*0.6f,
             .head_thickness = fixupScaleFactor*baseRadius,
             .color = c_PointForceArrowColor,
-            .decoration_flags = SceneDecorationFlag::AnnotationElement,
+            .decoration_flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
         };
         draw_arrow(rs.updSceneCache(), arrowProperties, [&hcf, &rs](SceneDecoration&& d)
         {
