@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 
@@ -40,7 +41,7 @@ using namespace osc;
 // common/virtual manipulator data/APIs
 namespace
 {
-    // type-erased interface to an object that manipulates something in a model
+    // Abstract interface to an object that manipulates something in a model.
     class ISelectionManipulator {
     protected:
         ISelectionManipulator() = default;
@@ -51,25 +52,10 @@ namespace
     public:
         virtual ~ISelectionManipulator() noexcept = default;
 
-        ui::GizmoOperations getSupportedManipulationOps() const
-        {
-            return implGetSupportedManipulationOps();
-        }
-
-        Matrix4x4 getCurrentTransformInGround() const
-        {
-            return implGetCurrentTransformInGround();
-        }
-
-        void onApplyTransform(const SimTK::Transform& transformInGround)
-        {
-            implOnApplyTransform(transformInGround);
-        }
-
-        void onSave()
-        {
-            implOnSave();
-        }
+        ui::GizmoOperations getSupportedManipulationOps() const { return implGetSupportedManipulationOps(); }
+        Matrix4x4 getCurrentTransformInGround() const { return implGetCurrentTransformInGround(); }
+        void onApplyTransform(const SimTK::Transform& transformInGround) { implOnApplyTransform(transformInGround); }
+        void onSave() { implOnSave(); }
 
         void drawExtraOnUsingOverlays(
             ui::DrawListView drawList,
@@ -80,10 +66,20 @@ namespace
             implDrawExtraOnUsingOverlays(std::move(drawList), viewMatrix, projectionMatrix, screenRect);
         }
     private:
+        // Implementors must return which operations are supported by this `ISelectionManipulator`.
         virtual ui::GizmoOperations implGetSupportedManipulationOps() const = 0;
+
+        // Implementors must return a transform matrix that describes the edited transform with respect to ground.
         virtual Matrix4x4 implGetCurrentTransformInGround() const = 0;
-        virtual void implOnApplyTransform(const SimTK::Transform&) = 0;
+
+        // Implementors must apply the provided delta transform (i.e. the _change_ made by the user) to
+        // the appropriate component.
+        virtual void implOnApplyTransform(const SimTK::Transform& deltaTransform) = 0;
+
+        // Implementors must commit/finalize any edits to the model.
         virtual void implOnSave() = 0;
+
+        // Implementors may override this to draw extra overlays in the 2D UI during manipulation
         virtual void implDrawExtraOnUsingOverlays(
             ui::DrawListView,  // NOLINT(performance-unnecessary-value-param)
             const Matrix4x4&,
@@ -642,6 +638,45 @@ namespace
         }
     };
 
+    // an `ISelectionManipulator` that manipulates an `OpenSim::Scholz2015GeometryPathObstacle`
+    class Scholz2015GeometryPathObstacleManipulator final : public SelectionManipulator<OpenSim::Scholz2015GeometryPathObstacle> {
+    public:
+        Scholz2015GeometryPathObstacleManipulator(
+            std::shared_ptr<IModelStatePair> model_,
+            const OpenSim::Scholz2015GeometryPathObstacle& obstacle) :
+            SelectionManipulator{std::move(model_), obstacle}
+        {}
+
+    private:
+        ui::GizmoOperations implGetSupportedManipulationOps() const final
+        {
+            return ui::GizmoOperation::Translate;
+        }
+
+        Matrix4x4 implGetCurrentTransformInGround(
+            const OpenSim::Scholz2015GeometryPathObstacle& obstacle) const final
+        {
+            const OpenSim::ContactGeometry& geom = obstacle.getContactGeometry();
+            const SimTK::Vec3 translationInGround = geom.getFrame().getTransformInGround(getState()) * geom.getTransform() * obstacle.getContactHint();
+            return matrix4x4_cast({.translation = to<Vector3>(translationInGround)});
+        }
+
+        void implOnApplyTransform(
+            const OpenSim::Scholz2015GeometryPathObstacle& obstacle,
+            const SimTK::Transform& transformInGround) final
+        {
+            // ignores `rotation`
+            const OpenSim::ContactGeometry& geom = obstacle.getContactGeometry();
+            const SimTK::Vec3 translationInContactGeom = (geom.getFrame().getTransformInGround(getState()) * geom.getTransform()).R().invert() * transformInGround.p();
+            ActionTranslateContactHint(getUndoableModel(), obstacle, to<Vector3>(translationInContactGeom));
+        }
+
+        void implOnSave([[maybe_unused]]const OpenSim::Scholz2015GeometryPathObstacle& obstacle) final
+        {
+            ActionTranslateContactHintAndSave(getUndoableModel(), obstacle, {});
+        }
+    };
+
     // a compile-time `Typelist` containing all concrete implementations of
     // `ISelectionManipulator`
     using ManipulatorList = Typelist<
@@ -650,7 +685,8 @@ namespace
         PhysicalOffsetFrameManipulator,
         WrapObjectManipulator,
         ContactGeometryManipulator,
-        JointManipulator
+        JointManipulator,
+        Scholz2015GeometryPathObstacleManipulator
     >;
 }
 

@@ -56,6 +56,7 @@
 #include <OpenSim/Simulation/Model/PathPointSet.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/Model/StationDefinedFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
@@ -2537,4 +2538,51 @@ bool osc::ActionMoveMarkerToModelMarkerSet(IModelStatePair& model, const OpenSim
     model.commit(std::move(msg).str());
 
     return true;
+}
+
+bool osc::ActionTranslateContactHint(
+    IModelStatePair& model,
+    const OpenSim::Scholz2015GeometryPathObstacle& obstacle,
+    const Vector3& deltaPosition)
+{
+    if (model.isReadonly()) {
+        return false;
+    }
+
+    try {
+        OpenSim::Model& mutModel = model.updModel();
+        auto* mutObstacle = FindComponentMut<OpenSim::Scholz2015GeometryPathObstacle>(mutModel, obstacle.getAbsolutePath());
+        if (not mutObstacle) {
+            return false;  // Something went wrong trying to unlock/mutate the obstacle
+        }
+        mutObstacle->set_contact_hint(mutObstacle->get_contact_hint() + to<SimTK::Vec3>(deltaPosition));
+        // Don't update state or reinitialize model: the wrapping requires a full rebuild, which happens
+        // during `ActionSetContactHintAndSave`
+        return true;
+    }
+    catch (const std::exception&) {
+        std::throw_with_nested(std::runtime_error{"error detected while moving a contact hint"});
+        return false;
+    }
+}
+
+bool osc::ActionTranslateContactHintAndSave(
+    IModelStatePair& model,
+    const OpenSim::Scholz2015GeometryPathObstacle& obstacle,
+    const Vector3& deltaPosition)
+{
+    if (ActionTranslateContactHint(model, obstacle, deltaPosition)) {
+        OpenSim::Model& mutModel = model.updModel();
+        InitializeModel(mutModel);
+        InitializeState(mutModel);
+
+        std::stringstream ss;
+        ss << "translated " << obstacle.getName();
+        model.commit(std::move(ss).str());
+
+        return true;
+    }
+    else {
+        return false;  // edit wasn't made
+    }
 }

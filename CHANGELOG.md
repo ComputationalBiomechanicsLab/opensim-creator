@@ -24,6 +24,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The scene renderer now has a "Scholz Obstacle Contact Hints" option (default-enabled),
   which renders spheres at the locations of `contact_hint`s for
   `Scholz2015GeometryPathObstacle`s (#1131).
+- The model editor 3D viewport now supports 3D manipulation gizmos for the contact hint
+  property of a `Scholz2015GeometryPathObstacle` (#1131).
 
 ## [0.6.1] - 2025/10/09
 

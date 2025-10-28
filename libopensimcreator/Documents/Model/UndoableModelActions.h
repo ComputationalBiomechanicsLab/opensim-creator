@@ -29,6 +29,7 @@ namespace OpenSim { class Object; }
 namespace OpenSim { class PathPoint; }
 namespace OpenSim { class PhysicalFrame; }
 namespace OpenSim { class PhysicalOffsetFrame; }
+namespace OpenSim { class Scholz2015GeometryPathObstacle; }
 namespace OpenSim { class Station; }
 namespace OpenSim { class WrapObject; }
 namespace osc { class IModelStatePair; }
@@ -429,4 +430,7 @@ namespace osc
     bool ActionExportModelMultibodySystemAsDotviz(const OpenSim::Model&);
     bool ActionBakeStationDefinedFrames(IModelStatePair&);
     bool ActionMoveMarkerToModelMarkerSet(IModelStatePair&, const OpenSim::Marker&);
+
+    bool ActionTranslateContactHint(IModelStatePair&, const OpenSim::Scholz2015GeometryPathObstacle&, const Vector3& deltaPosition);
+    bool ActionTranslateContactHintAndSave(IModelStatePair&, const OpenSim::Scholz2015GeometryPathObstacle&, const Vector3& deltaPosition);
 }
