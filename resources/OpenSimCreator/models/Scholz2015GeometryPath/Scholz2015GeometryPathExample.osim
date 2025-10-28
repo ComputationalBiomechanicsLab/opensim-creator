@@ -172,37 +172,37 @@
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/cylinder1</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>1 0 0</contact_hint>
+								<contact_hint>0.10125963389873505 0 0</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathObstacle name="scholz2015geometrypathobstacle_0">
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/ellipsoid1</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>-0.10000000000000001 0.29999999999999999 -1</contact_hint>
+								<contact_hint>-0.068739306334666406 0.011541354656219471 -0.1699626240821912</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathObstacle name="scholz2015geometrypathobstacle_1">
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/ellipsoid2</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>1 0 1</contact_hint>
+								<contact_hint>0.099055499734862162 0 0.15617597947794615</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathObstacle name="scholz2015geometrypathobstacle_1_0">
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/torus1</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>0 0.01 0.10000000000000001</contact_hint>
+								<contact_hint>0.04272334550790724 0.010000000142542787 0.054606570876131327</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathObstacle name="scholz2015geometrypathobstacle_1_0_0">
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/torus2</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>0 1 0</contact_hint>
+								<contact_hint>0.14162606013463758 0.057788035689856354 0.0098957505729592166</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathObstacle name="scholz2015geometrypathobstacle_1_0_0_0">
 								<!--Path to a Component that satisfies the Socket 'contact_geometry' of type ContactGeometry (description: The contact geometry representing the obstacle.).-->
 								<socket_contact_geometry>/contactgeometryset/sphere1</socket_contact_geometry>
 								<!--The contact hint for the obstacle.-->
-								<contact_hint>-0.10000000000000001 0.10000000000000001 -0.10000000000000001</contact_hint>
+								<contact_hint>-0.08162884265184403 0.041571608185768133 -0.07021468728780747</contact_hint>
 							</Scholz2015GeometryPathObstacle>
 							<Scholz2015GeometryPathPoint name="scholz_muscle-P2">
 								<!--A point fixed to a PhysicalFrame that the path must pass through.-->
@@ -274,7 +274,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this contact geometry is attached.).-->
 					<socket_frame>/bodyset/top</socket_frame>
 					<!--The location of the contact geometry center in the PhysicalFrame.-->
-					<location>-0.21471759676933289 -0.21280777454376221 0</location>
+					<location>-0.21471759676933289 -0.21643924713134766 0</location>
 					<!--The orientation of the contact geometry in the PhysicalFrame in body-fixed XYZ Euler angles.-->
 					<orientation>-0 0.78539812564849854 -0</orientation>
 					<!--The default appearance for this Geometry-->
@@ -314,7 +314,7 @@
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this contact geometry is attached.).-->
 					<socket_frame>/bodyset/top</socket_frame>
 					<!--The location of the contact geometry center in the PhysicalFrame.-->
-					<location>-0.2051338255405426 -0.55331653356552124 0</location>
+					<location>-0.20456393827349029 -0.55274664623932246 -4.3025294324580389e-11</location>
 					<!--The orientation of the contact geometry in the PhysicalFrame in body-fixed XYZ Euler angles.-->
 					<orientation>1.5707962512969971 -0.78539812564849854 -0</orientation>
 					<!--The default appearance for this Geometry-->
