@@ -278,6 +278,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
     MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only)
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
+    MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
 };
 static SDL_vidpid_list blacklist_devices = {
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES, 0, 0, NULL,
@@ -1190,9 +1191,35 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
 
     // If this joystick is known to have all zero centered axes, skip the auto-centering code
     if (SDL_JoystickAxesCenteredAtZero(joystick)) {
-        int i;
+        for (int i = 0; i < joystick->naxes; ++i) {
+            joystick->axes[i].has_initial_value = true;
+        }
+    }
 
-        for (i = 0; i < joystick->naxes; ++i) {
+    // We know the initial values for HIDAPI and XInput joysticks
+    if ((SDL_IsJoystickHIDAPI(joystick->guid) ||
+         SDL_IsJoystickXInput(joystick->guid) ||
+         SDL_IsJoystickRAWINPUT(joystick->guid) ||
+         SDL_IsJoystickWGI(joystick->guid)) &&
+        joystick->naxes >= SDL_GAMEPAD_AXIS_COUNT) {
+        int left_trigger, right_trigger;
+        if (SDL_IsJoystickXInput(joystick->guid)) {
+            left_trigger = 2;
+            right_trigger = 5;
+        } else {
+            left_trigger = SDL_GAMEPAD_AXIS_LEFT_TRIGGER;
+            right_trigger = SDL_GAMEPAD_AXIS_RIGHT_TRIGGER;
+        }
+        for (int i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
+            int initial_value;
+            if (i == left_trigger || i == right_trigger) {
+                initial_value = SDL_MIN_SINT16;
+            } else {
+                initial_value = 0;
+            }
+            joystick->axes[i].value = initial_value;
+            joystick->axes[i].zero = initial_value;
+            joystick->axes[i].initial_value = initial_value;
             joystick->axes[i].has_initial_value = true;
         }
     }
@@ -2117,6 +2144,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
     SDL_JoystickDriver *driver;
     int device_index;
     int player_index = -1;
+    bool is_gamepad;
 
     SDL_AssertJoysticksLocked();
 
@@ -2151,9 +2179,12 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
         }
     }
 
+    // This might create an automatic gamepad mapping, so wait to send the event
+    is_gamepad = SDL_IsGamepad(instance_id);
+
     SDL_joystick_being_added = false;
 
-    if (SDL_IsGamepad(instance_id)) {
+    if (is_gamepad) {
         SDL_PrivateGamepadAdded(instance_id);
     }
 }

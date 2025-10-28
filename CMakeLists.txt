@@ -5,7 +5,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 # See docs/release_checklist.md
-project(SDL3 LANGUAGES C VERSION "3.2.14")
+project(SDL3 LANGUAGES C VERSION "3.2.24")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_MAINPROJECT ON)
@@ -79,6 +79,12 @@ include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
 
 SDL_DetectCompiler()
 SDL_DetectTargetCPUArchitectures(SDL_CPUS)
+if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+  list(LENGTH CMAKE_OSX_ARCHITECTURES _num_arches)
+  if(_num_arches GREATER 1)
+    set(APPLE_MULTIARCH TRUE)
+  endif()
+endif()
 
 # Increment this if there is an incompatible change - but if that happens,
 # we should rename the library from SDL3 to SDL4, at which point this would
@@ -181,26 +187,6 @@ endif()
 set(SDL_RELOCATABLE_DEFAULT OFF)
 if(MSVC)
   set(SDL_RELOCATABLE_DEFAULT ON)
-endif()
-
-if(MSVC)
-  if(NOT SDL_LIBC)
-    # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
-    endforeach(flag_var)
-  endif()
-
-  if(MSVC_CLANG)
-    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
-    endforeach(flag_var)
-  endif()
 endif()
 
 set(SDL_SHARED_DEFAULT ON)
@@ -370,7 +356,7 @@ dep_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ON "WIN
 dep_option(SDL_RENDER_D3D          "Enable the Direct3D 9 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D11        "Enable the Direct3D 11 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
-dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;${APPLE}" OFF)
+dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;APPLE" OFF)
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" ON "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR WINDOWS" OFF)
@@ -419,6 +405,29 @@ endif()
 
 if(SDL_PRESEED)
   SDL_Preseed_CMakeCache()
+endif()
+
+if(MSVC)
+  if(NOT SDL_LIBC)
+    # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+    set(CMAKE_MSVC_RUNTIME_CHECKS "")
+  endif()
+
+  if(MSVC_CLANG)
+    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+  endif()
 endif()
 
 if(SDL_SHARED)
@@ -634,6 +643,11 @@ if(MSVC)
     # Mark SDL3.dll as compatible with Control-flow Enforcement Technology (CET)
     sdl_shared_link_options("-CETCOMPAT")
   endif()
+
+  # for VS >= 17.14 targeting ARM64: inline the Interlocked funcs
+  if(MSVC_VERSION GREATER 1943 AND SDL_CPU_ARM64 AND NOT SDL_LIBC)
+    sdl_compile_options(PRIVATE "/forceInterlockedFunctions-")
+  endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
@@ -650,7 +664,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mmmx")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <mmintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
@@ -660,7 +674,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char *argv[]) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_MMX)
+      }]==] COMPILER_SUPPORTS_MMX)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_MMX)
       set(HAVE_MMX TRUE)
@@ -671,7 +685,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <xmmintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -681,7 +695,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE)
+      }]==] COMPILER_SUPPORTS_SSE)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE)
       set(HAVE_SSE TRUE)
@@ -692,7 +706,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <emmintrin.h>
       void doubles_add(double *dest, double *a, double *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -702,7 +716,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         doubles_add((double*)0, (double*)0, (double*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE2)
+      }]==] COMPILER_SUPPORTS_SSE2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE2)
       set(HAVE_SSE2 TRUE)
@@ -713,7 +727,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse3")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <pmmintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -723,7 +737,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE3)
+      }]==] COMPILER_SUPPORTS_SSE3)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE3)
       set(HAVE_SSE3 TRUE)
@@ -734,7 +748,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.1")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <smmintrin.h>
       void ints_mul(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -744,7 +758,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_mul((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE4_1)
+      }]==] COMPILER_SUPPORTS_SSE4_1)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE4_1)
       set(HAVE_SSE4_1 TRUE)
@@ -753,21 +767,16 @@ if(SDL_ASSEMBLY)
   if(SDL_SSE4_2)
     cmake_push_check_state()
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
-      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2 -mcrc32")
+      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <nmmintrin.h>
-      unsigned calc_crc32c(const char *text, unsigned len) {
-          unsigned crc32c = ~0;
-          for (; len >= 4; len -= 4, text += 4) {
-            crc32c = (unsigned)_mm_crc32_u32(crc32c, *(unsigned*)text);
-          }
-          return crc32c;
-      }
+      __m128i bitmask;
+      char data[16];
       int main(int argc, char **argv) {
-        calc_crc32c(\"SDL_SSE4\",8);
+        bitmask = _mm_cmpgt_epi64(_mm_set1_epi64x(0), _mm_loadu_si128((void*)data));
         return 0;
-      }" COMPILER_SUPPORTS_SSE4_2)
+      }]==] COMPILER_SUPPORTS_SSE4_2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE4_2)
       set(HAVE_SSE4_2 TRUE)
@@ -778,7 +787,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
@@ -788,7 +797,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX)
+      }]==] COMPILER_SUPPORTS_AVX)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX)
       set(HAVE_AVX TRUE)
@@ -799,7 +808,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
@@ -809,7 +818,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX2)
+      }]==] COMPILER_SUPPORTS_AVX2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX2)
       set(HAVE_AVX2 TRUE)
@@ -820,7 +829,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx512f")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 16; size -= 16, dest += 16, a += 16, b += 16) {
@@ -830,7 +839,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX512F)
+      }]==] COMPILER_SUPPORTS_AVX512F)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX512F)
       set(HAVE_AVX512F TRUE)
@@ -838,18 +847,17 @@ if(SDL_ASSEMBLY)
   endif()
 
   if(SDL_ARMNEON)
-    check_c_source_compiles("
-        #include <arm_neon.h>
-        void floats_add(float *dest, float *a, float *b, unsigned size) {
-          for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
-            vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
-          }
+    check_arm_source_compiles([==[
+      #include <arm_neon.h>
+      void floats_add(float *dest, float *a, float *b, unsigned size) {
+        for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+          vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
         }
-        int main(int argc, char *argv[]) {
-          floats_add((float*)0, (float*)0, (float*)0, 0);
-          return 0;
-         }" COMPILER_SUPPORTS_ARMNEON)
-
+      }
+      int main(int argc, char *argv[]) {
+        floats_add((float*)0, (float*)0, (float*)0, 0);
+        return 0;
+      }]==] COMPILER_SUPPORTS_ARMNEON)
     if(COMPILER_SUPPORTS_ARMNEON)
       set(HAVE_ARMNEON TRUE)
     endif()
@@ -1052,8 +1060,10 @@ if(SDL_LIBC)
   cmake_push_check_state()
   if(MSVC)
     string(APPEND CMAKE_REQUIRED_FLAGS " -we4244 -WX")  # 'conversion' conversion from 'type1' to 'type2', possible loss of data
-  else()
+  elseif(HAVE_GCC_WFLOAT_CONVERSION)
     string(APPEND CMAKE_REQUIRED_FLAGS " -Wfloat-conversion -Werror")
+  else()
+    string(APPEND CMAKE_REQUIRED_FLAGS " -Wconversion -Werror")
   endif()
   foreach(math_fn isinf isnan)
     string(TOUPPER "${math_fn}" MATH_FN)
@@ -1091,6 +1101,7 @@ if(SDL_LIBC)
     check_symbol_exists(gethostname "unistd.h" HAVE_GETHOSTNAME)
     check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
+    check_symbol_exists(sigtimedwait "signal.h" HAVE_SIGTIMEDWAIT)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
     check_symbol_exists(nanosleep "time.h" HAVE_NANOSLEEP)
     check_symbol_exists(gmtime_r "time.h" HAVE_GMTIME_R)
@@ -1336,9 +1347,7 @@ if(ANDROID)
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
 
-  if(SDL_HIDAPI)
-    CheckHIDAPI()
-  endif()
+  CheckHIDAPI()
 
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
@@ -2954,7 +2963,7 @@ if(WINDOWS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/process/windows/*.c")
   set(SDL_PROCESS_WINDOWS 1)
   set(HAVE_SDL_PROCESS TRUE)
-else()
+elseif(NOT ANDROID)
   check_c_source_compiles("
 #include <spawn.h>
 #include <unistd.h>
@@ -3144,14 +3153,15 @@ endforeach()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt")
   file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/REVISION.txt" revisions)
   list(GET revisions 0 revisions_0)
-  string(STRIP "${revisions_0}" SDL_REVISION)
+  string(STRIP "${revisions_0}" revisions_0_stripped)
+  set(SDL_REVISION "SDL-${revisions_0_stripped}")
 else()
   set(SDL_REVISION "" CACHE STRING "Custom SDL revision (only used when REVISION.txt does not exist)")
 endif()
 if(NOT SDL_REVISION)
   # If SDL_REVISION is not overrided, use git to describe
   git_describe(SDL_REVISION_GIT)
-  set(SDL_REVISION "SDL3-${SDL3_VERSION}-${SDL_REVISION_GIT}")
+  set(SDL_REVISION "SDL-${SDL3_VERSION}-${SDL_REVISION_GIT}")
 endif()
 
 execute_process(COMMAND "${CMAKE_COMMAND}" -E make_directory "${SDL3_BINARY_DIR}/include-revision/SDL3")

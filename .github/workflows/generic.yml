@@ -76,7 +76,7 @@ jobs:
         id: setup-ndk
         with:
           local-cache: true
-          ndk-version: r21e
+          ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
         shell: sh
@@ -201,7 +201,7 @@ jobs:
         #shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
-          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -GNinja \
+          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -G "${{ matrix.platform.cmake-generator }}" \
             -Wdeprecated -Wdev -Werror \
             ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
             -DSDL_WERROR=${{ matrix.platform.werror }} \
@@ -232,9 +232,9 @@ jobs:
         run: |
           echo "This should show us the SDL_REVISION"
           echo "Shared library:"
-          ${{ (matrix.platform.shared-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
+          ${{ (matrix.platform.shared-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
           echo "Static library:"
-          ${{ (matrix.platform.static-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
+          ${{ (matrix.platform.static-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
       - name: 'Run build-time tests (CMake)'
         id: tests
         if: ${{ !matrix.platform.no-cmake && matrix.platform.run-tests }}
@@ -406,6 +406,14 @@ jobs:
           build-scripts/test-versioning.sh
           python build-scripts/check_android_jni.py
           python build-scripts/check_stdlib_usage.py
+      - name: 'Verify alignment of Android test apks'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.apk' | xargs -L1 ./build-scripts/check_elf_alignment.sh
+      - name: 'Verify alignment of Android .so files'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}

@@ -75,7 +75,6 @@ struct SDL_WindowData
     Window xdnd_source;
     bool flashing_window;
     Uint64 flash_cancel_time;
-    SDL_Window *keyboard_focus;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
@@ -129,7 +128,7 @@ struct SDL_WindowData
 };
 
 extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags);
-extern Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
+extern SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow);
 
 extern bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern char *X11_GetWindowTitle(SDL_VideoDevice *_this, Window xwindow);
