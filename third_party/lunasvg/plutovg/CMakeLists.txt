@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(PLUTOVG_VERSION_MAJOR 1)
-set(PLUTOVG_VERSION_MINOR 1)
-set(PLUTOVG_VERSION_MICRO 0)
+set(PLUTOVG_VERSION_MINOR 3)
+set(PLUTOVG_VERSION_MICRO 1)
 
 project(plutovg LANGUAGES C VERSION ${PLUTOVG_VERSION_MAJOR}.${PLUTOVG_VERSION_MINOR}.${PLUTOVG_VERSION_MICRO})
 
@@ -36,11 +36,15 @@ set(plutovg_headers
 add_library(plutovg ${plutovg_sources} ${plutovg_headers})
 add_library(plutovg::plutovg ALIAS plutovg)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+include(CheckIncludeFile)
+
 set_target_properties(plutovg PROPERTIES
     SOVERSION ${PLUTOVG_VERSION_MAJOR}
     C_VISIBILITY_PRESET hidden
     C_STANDARD_REQUIRED ON
-    C_STANDARD 99
+    C_STANDARD 11
 )
 
 target_include_directories(plutovg PRIVATE
@@ -50,7 +54,7 @@ target_include_directories(plutovg PRIVATE
 
 target_include_directories(plutovg PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include/plutovg>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/plutovg>
 )
 
 find_library(MATH_LIBRARY m)
@@ -58,14 +62,29 @@ if(MATH_LIBRARY)
     target_link_libraries(plutovg PRIVATE m)
 endif()
 
+check_include_file("threads.h" HAVE_THREADS_H)
+if(HAVE_THREADS_H)
+    target_compile_definitions(plutovg PRIVATE HAVE_THREADS_H)
+endif()
+find_package(Threads)
+if(Threads_FOUND)
+    target_link_libraries(plutovg PRIVATE Threads::Threads)
+endif()
+find_library(STDTHREADS_LIBRARY stdthreads)
+if(STDTHREADS_LIBRARY)
+    target_link_libraries(plutovg PRIVATE stdthreads)
+endif()
+
 target_compile_definitions(plutovg PRIVATE PLUTOVG_BUILD)
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(plutovg PUBLIC PLUTOVG_BUILD_STATIC)
 endif()
 
-include(GNUInstallDirs)
+option(PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD "Disable loading font face cache from files and directories" OFF)
+if(PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD)
+    target_compile_definitions(plutovg PRIVATE PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD)
+endif()
 
-include(CMakePackageConfigHelpers)
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/plutovgConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/plutovgConfig.cmake"
@@ -116,6 +135,10 @@ set(plutovg_pc_libs_private "")
 
 if(MATH_LIBRARY)
     string(APPEND plutovg_pc_libs_private " -lm")
+endif()
+
+if(Threads_FOUND AND CMAKE_THREAD_LIBS_INIT)
+    string(APPEND plutovg_pc_libs_private " ${CMAKE_THREAD_LIBS_INIT}")
 endif()
 
 if(NOT BUILD_SHARED_LIBS)
