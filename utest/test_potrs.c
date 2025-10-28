@@ -32,7 +32,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **********************************************************************************/
 
 #include "openblas_utest.h"
+#if defined(ARCH_LOONGARCH64)
 #pragma GCC optimize("no-gcse")
+#endif
 /*
 void BLASFUNC(cpotrf)(char*, BLASINT*, complex float*, BLASINT*, BLASINT*);
 void BLASFUNC(zpotrs_(char*, BLASINT*, BLASINT*, complex double*,

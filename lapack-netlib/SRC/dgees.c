@@ -729,7 +729,7 @@ or GE matrices</b> */
 /* > \ingroup doubleGEeigen */
 
 /*  ===================================================================== */
-/* Subroutine */ void dgees_(char *jobvs, char *sort, L_fp select, integer *n, 
+/* Subroutine */ void dgees_(char *jobvs, char *sort, logical(*select)(doublereal*,doublereal*), integer *n, 
 	doublereal *a, integer *lda, integer *sdim, doublereal *wr, 
 	doublereal *wi, doublereal *vs, integer *ldvs, doublereal *work, 
 	integer *lwork, logical *bwork, integer *info)

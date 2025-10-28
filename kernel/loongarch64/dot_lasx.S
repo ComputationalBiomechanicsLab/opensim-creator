@@ -53,8 +53,8 @@ PROLOGUE
 #endif
 
     /* init $f8 and $f9 to zero */
-    SUB       s1,     s1,      s1
-    SUB       s2,     s2,      s2
+    xvxor.v   $xr8,   $xr8,    $xr8
+    xvxor.v   $xr9,   $xr9,    $xr9
     slli.d    INCX,   INCX,    BASE_SHIFT
     li.d      TEMP,   SIZE
     slli.d    INCY,   INCY,    BASE_SHIFT
@@ -64,20 +64,6 @@ PROLOGUE
 
     /* !((inc_x == 1) && (inc_y == 1)) */
 
-    /* init $xr8 and $xr9 to zero */
-#ifdef DOUBLE
-    xvldrepl.d $xr0,  X,       0
-#else
-    xvldrepl.w $xr0,  X,       0
-#endif
-#ifdef DSDOT
-    xvfcvtl.d.s       $xr0,    $xr0
-    xvfsub.d  $xr8,   $xr0,    $xr0
-    xvfsub.d  $xr9,   $xr0,    $xr0
-#else
-    XVFSUB    $xr8,   $xr0,    $xr0
-    XVFSUB    $xr9,   $xr0,    $xr0
-#endif
 
 #ifdef DOUBLE
     srai.d    I,      N,       4
@@ -99,31 +85,31 @@ PROLOGUE
     addi.w    I,      I,       -1
     addi.d    X,      X,       128
     addi.d    Y,      Y,       128
-#ifdef DSDOT
+#ifndef DOUBLE
     xvfcvtl.d.s       $xr10,   $xr0
     xvfcvtl.d.s       $xr11,   $xr4
     xvfcvth.d.s       $xr12,   $xr0
     xvfcvth.d.s       $xr13,   $xr4
-    xvfmadd.d $xr8,   $xr10,   $xr12,  $xr8
-    xvfmadd.d $xr9,   $xr11,   $xr13,  $xr9
+    xvfmadd.d $xr8,   $xr10,   $xr11,  $xr8
+    xvfmadd.d $xr9,   $xr12,   $xr13,  $xr9
     xvfcvtl.d.s       $xr10,   $xr1
     xvfcvtl.d.s       $xr11,   $xr5
     xvfcvth.d.s       $xr12,   $xr1
     xvfcvth.d.s       $xr13,   $xr5
-    xvfmadd.d $xr8,   $xr10,   $xr12,  $xr8
-    xvfmadd.d $xr9,   $xr11,   $xr13,  $xr9
+    xvfmadd.d $xr8,   $xr10,   $xr11,  $xr8
+    xvfmadd.d $xr9,   $xr12,   $xr13,  $xr9
     xvfcvtl.d.s       $xr10,   $xr2
     xvfcvtl.d.s       $xr11,   $xr6
     xvfcvth.d.s       $xr12,   $xr2
     xvfcvth.d.s       $xr13,   $xr6
-    xvfmadd.d $xr8,   $xr10,   $xr12,  $xr8
-    xvfmadd.d $xr9,   $xr11,   $xr13,  $xr9
+    xvfmadd.d $xr8,   $xr10,   $xr11,  $xr8
+    xvfmadd.d $xr9,   $xr12,   $xr13,  $xr9
     xvfcvtl.d.s       $xr10,   $xr3
     xvfcvtl.d.s       $xr11,   $xr7
     xvfcvth.d.s       $xr12,   $xr3
     xvfcvth.d.s       $xr13,   $xr7
-    xvfmadd.d $xr8,   $xr10,   $xr12,  $xr8
-    xvfmadd.d $xr9,   $xr11,   $xr13,  $xr9
+    xvfmadd.d $xr8,   $xr10,   $xr11,  $xr8
+    xvfmadd.d $xr9,   $xr12,   $xr13,  $xr9
 #else
     XVFMADD   $xr8,   $xr0,    $xr4,   $xr8
     XVFMADD   $xr9,   $xr1,    $xr5,   $xr9
@@ -149,13 +135,13 @@ PROLOGUE
     addi.w    I,      I,       -1
     addi.d    X,      X,       32
     addi.d    Y,      Y,       32
-#ifdef DSDOT
+#ifndef DOUBLE
     xvfcvtl.d.s       $xr10,   $xr0
     xvfcvtl.d.s       $xr11,   $xr4
     xvfcvth.d.s       $xr12,   $xr0
     xvfcvth.d.s       $xr13,   $xr4
-    xvfmadd.d $xr8,   $xr10,   $xr12,  $xr8
-    xvfmadd.d $xr9,   $xr11,   $xr13,  $xr9
+    xvfmadd.d $xr8,   $xr10,   $xr11,  $xr8
+    xvfmadd.d $xr9,   $xr12,   $xr13,  $xr9
 #else
     XVFMADD   $xr8,   $xr0,    $xr4,   $xr8
 #endif
@@ -163,27 +149,12 @@ PROLOGUE
     .align  3
 .L14:
     /* store dot in s1 $f8 */
-#ifdef DSDOT
     xvfadd.d  $xr8,   $xr8,    $xr9
-    fsub.s    s2,     s2,      s2  /* set s2 to 0.0 */
+    fsub.d    s2,     s2,      s2  /* set s2 to 0.0 */
     xvpermi.q $xr0,   $xr8,    0x1
     vfadd.d   $vr8,   $vr8,    $vr0
     vpackod.d $vr0,   $vr8,    $vr8
     vfadd.d   $vr8,   $vr8,    $vr0
-#else
-    XVFADD    $xr8,   $xr8,    $xr9
-    SUB       s2,     s2,      s2   /* set s2 to 0.0 */
-    xvpermi.q $xr0,   $xr8,    0x1
-    VFADD     $vr8,   $vr8,    $vr0
-    vpackod.d $vr0,   $vr8,    $vr8
-#ifdef DOUBLE
-    VFADD     $vr8,   $vr8,    $vr0
-#else
-    VFADD     $vr8,   $vr8,    $vr0
-    vpackod.w $vr0,   $vr8,    $vr8
-    VFADD     $vr8,   $vr8,    $vr0
-#endif /* defined DOUBLE */
-#endif /* defined DSDOT */
     .align  3
 .L15:
 #ifdef DOUBLE
@@ -197,7 +168,7 @@ PROLOGUE
     /* FLOAT: 1~7 ; DOUBLE: 1~3 */
     LD        a1,     X,       0
     LD        b1,     Y,       0
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1,     a1
     fcvt.d.s  b1,     b1
     fmadd.d   s1,     b1,      a1,     s1
@@ -240,7 +211,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s1, b1, a1, s1
@@ -252,7 +223,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s2, b1, a1, s2
@@ -264,7 +235,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s1, b1, a1, s1
@@ -276,7 +247,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s2, b1, a1, s2
@@ -288,7 +259,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s1, b1, a1, s1
@@ -300,7 +271,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s2, b1, a1, s2
@@ -312,7 +283,7 @@ PROLOGUE
     add.d   X, X, INCX
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s1, b1, a1, s1
@@ -325,7 +296,7 @@ PROLOGUE
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
     addi.d  I, I, -1
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s2, b1, a1, s2
@@ -346,7 +317,7 @@ PROLOGUE
     LD b1,  Y,   0 * SIZE
     add.d   Y, Y, INCY
     addi.d  I, I, -1
-#ifdef DSDOT
+#ifndef DOUBLE
     fcvt.d.s  a1, a1
     fcvt.d.s  b1, b1
     fmadd.d  s1, b1, a1, s1
@@ -357,12 +328,13 @@ PROLOGUE
     .align 3
 
 .L999:
-#ifdef DSDOT
     fadd.d    $f0,    s1,      s2
-#else
-    ADD       $f0,    s1,      s2
-#endif
     move      $r4,    $r17
+#if defined(DOUBLE)
+#elif defined(DSDOT)
+#else
+    fcvt.s.d  $f0,    $f0
+#endif
     jirl      $r0,    $r1,     0x0
 
 EPILOGUE

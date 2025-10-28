@@ -24,6 +24,7 @@
 #define	SSCAL_K			sscal_k
 #define	SSWAP_K			sswap_k
 #define	SROT_K			srot_k
+#define	SROTM_K			srotm_k
 
 #define	SGEMV_N			sgemv_n
 #define	SGEMV_T			sgemv_t
@@ -189,6 +190,7 @@
 #define	SSCAL_K			gotoblas -> sscal_k
 #define	SSWAP_K			gotoblas -> sswap_k
 #define	SROT_K			gotoblas -> srot_k
+#define	SROTM_K			gotoblas -> srotm_k
 
 #define	SGEMV_N			gotoblas -> sgemv_n
 #define	SGEMV_T			gotoblas -> sgemv_t
@@ -213,9 +215,9 @@
 #ifdef ARCH_X86_64
 #define SGEMM_DIRECT_PERFORMANT gotoblas -> sgemm_direct_performant
 #define  SGEMM_DIRECT		gotoblas -> sgemm_direct
-#else
+#elif ARCH_ARM64
 #define SGEMM_DIRECT_PERFORMANT    sgemm_direct_performant
-#define  SGEMM_DIRECT		sgemm_direct
+#define  SGEMM_DIRECT		gotoblas -> sgemm_direct
 #endif
 
 #define	SGEMM_ONCOPY		gotoblas -> sgemm_oncopy

@@ -63,6 +63,37 @@ FLOATRET NAME(blasint *N, FLOAT *x, blasint *INCX){
 #endif
 #endif
 
+  if (incx == 0)
+#ifndef COMPLEX
+#ifdef DOUBLE
+  return (sqrt((double)n)*fabs(x[0]));
+#else
+  return (sqrt((float)n)*fabsf(x[0]));
+#endif
+#else
+#ifdef DOUBLE
+  {
+  double fr=fabs(x[0]);
+  double fi=fabs(x[1]);
+  double fmin=MIN(fr,fi);
+  double fmax=MAX(fr,fi);
+  if (fmax==0.) return(fmax);
+  if (fmax==fmin) return(sqrt((double)n)*sqrt(2.)*fmax);
+  return (sqrt((double)n) * fmax * sqrt (1. + (fmin/fmax)*(fmin/fmax)));
+  }
+#else
+  {
+  float fr=fabs(x[0]);
+  float fi=fabs(x[1]);
+  float fmin=MIN(fr,fi);
+  float fmax=MAX(fr,fi);
+  if (fmax==0.) return(fmax);
+  if (fmax==fmin) return(sqrt((float)n)*sqrt(2.)*fmax);
+  return (sqrt((float)n) * fmax * sqrt (1. + (fmin/fmax)*(fmin/fmax)));
+  }
+#endif
+#endif
+
   if (incx < 0) 
 #ifdef COMPLEX    
     x -= (n - 1) * incx * 2;
@@ -97,12 +128,43 @@ FLOAT CNAME(blasint n, FLOAT *x, blasint incx){
 
   if (n <= 0) return 0.;
 
-  #ifndef COMPLEX
+#ifndef COMPLEX
   if (n == 1)
 #ifdef DOUBLE
     return fabs(x[0]);
 #else
     return fabsf(x[0]);
+#endif
+#endif
+
+  if (incx == 0)
+#ifndef COMPLEX
+#ifdef DOUBLE
+  return (sqrt((double)n)*fabs(x[0]));
+#else
+  return (sqrt((float)n)*fabsf(x[0]));
+#endif
+#else
+#ifdef DOUBLE
+  {
+  double fr=fabs(x[0]);
+  double fi=fabs(x[1]);
+  double fmin=MIN(fr,fi);
+  double fmax=MAX(fr,fi);
+  if (fmax==0.) return(fmax);
+  if (fmax==fmin) return(sqrt((double)n)*sqrt(2.)*fmax);
+  return (sqrt((double)n) * fmax * sqrt (1. + (fmin/fmax)*(fmin/fmax)));
+  }
+#else
+  {
+  float fr=fabs(x[0]);
+  float fi=fabs(x[1]);
+  float fmin=MIN(fr,fi);
+  float fmax=MAX(fr,fi);
+  if (fmax==0.) return(fmax);
+  if (fmax==fmin) return(sqrt((float)n)*sqrt(2.)*fmax);
+  return (sqrt((float)n) * fmax * sqrt (1. + (fmin/fmax)*(fmin/fmax)));
+  }
 #endif
 #endif
 

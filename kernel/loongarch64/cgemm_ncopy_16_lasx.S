@@ -45,18 +45,17 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define S6     $r17
 #define S7     $r18
 #define S8     $r19
-#define S9     $r20
-#define S10    $r23
-#define S11    $r24
-#define S12    $r25
-#define S13    $r26
-#define S14    $r27
-#define S15    $r28
-#define S16    $r29
-#define TD     $r30
-#define TS     $r31
+#define S9     $r23
+#define S10    $r24
+#define S11    $r25
+#define S12    $r26
+#define S13    $r27
+#define S14    $r28
+#define S15    $r29
+#define S16    $r30
+#define TD     $r20
+#define TS     $r11
 #define TL     $r7
-#define T0     $r6
 #define ZERO   $r0
 
 #define F0     $f0
@@ -67,6 +66,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define F5     $f5
 #define F6     $f6
 #define F7     $f7
+#define F8     $f8
+#define F9     $f9
+#define F10    $f10
+#define F11    $f11
+#define F12    $f12
+#define F13    $f13
+#define F14    $f14
+#define F15    $f15
 /* LASX vectors */
 #define U0     $xr0
 #define U1     $xr1
@@ -103,589 +110,232 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     PROLOGUE
 
-    addi.d     $sp,  $sp,  -0x90
-    SDARG      $r23, $sp,  0x00
-    SDARG      $r24, $sp,  0x08
-    SDARG      $r25, $sp,  0x10
-    SDARG      $r26, $sp,  0x18
-    SDARG      $r27, $sp,  0x20
-    SDARG      $r28, $sp,  0x28
-    SDARG      $r29, $sp,  0x30
-    SDARG      $r30, $sp,  0x38
-    SDARG      $r31, $sp,  0x40
-    ST         $f23, $sp,  0x48
-    ST         $f24, $sp,  0x50
-    ST         $f25, $sp,  0x58
-    ST         $f26, $sp,  0x60
-    ST         $f27, $sp,  0x68
-    ST         $f28, $sp,  0x70
-    ST         $f29, $sp,  0x78
-    ST         $f30, $sp,  0x80
-    ST         $f31, $sp,  0x88
+    addi.d     $sp,  $sp,  -64
+    SDARG      $r23, $sp,  0
+    SDARG      $r24, $sp,  8
+    SDARG      $r25, $sp,  16
+    SDARG      $r26, $sp,  24
+    SDARG      $r27, $sp,  32
+    SDARG      $r28, $sp,  40
+    SDARG      $r29, $sp,  48
+    SDARG      $r30, $sp,  56
 
-    move       TD,   DST
-    move       TS,   SRC
-    slli.d     TL,   LDA,  0x03
-    slli.d     T0,   TL,   0x01
-    srai.d     J,    N,    0x04
+    move       TD,   DST  //boffset
+    move       TS,   SRC  //aoffset
+    slli.d     TL,   LDA,  0x03  //lda
+    srai.d     J,    N,    0x04  //j
     beq        J,    ZERO, .L_N8
 
-.L_J1: /* J-- */
+.L_J1:  /* if(j>0) j--*/
     move       S1,   TS
     add.d      S2,   TS,   TL
-    srai.d     I,    M,    0x03
+    move       I,    M
     add.d      S3,   S2,   TL
-    addi.d     J,    J,    -1
     add.d      S4,   S3,   TL
-    add.d      S5,   S3,   T0
-    add.d      S6,   S4,   T0
-    add.d      S7,   S5,   T0
-    add.d      S8,   S6,   T0
-    add.d      S9,   S7,   T0
-    add.d      S10,  S8,   T0
-    add.d      S11,  S9,   T0
-    add.d      S12,  S10,  T0
-    add.d      S13,  S11,  T0
-    add.d      S14,  S12,  T0
-    add.d      S15,  S13,  T0
-    add.d      S16,  S14,  T0
-    add.d      TS,   S15,  T0
-    beq        I,    ZERO, .L_I7
+    add.d      S5,   S4,   TL
+    add.d      S6,   S5,   TL
+    add.d      S7,   S6,   TL
+    add.d      S8,   S7,   TL
+    add.d      S9,   S8,   TL
+    add.d      S10,  S9,   TL
+    add.d      S11,  S10,  TL
+    add.d      S12,  S11,  TL
+    add.d      S13,  S12,  TL
+    add.d      S14,  S13,  TL
+    add.d      S15,  S14,  TL
+    add.d      S16,  S15,  TL
+    add.d      TS,   S16,  TL
+    beq        I,    ZERO, .L_J11
 
-.L_I1: /* I-- */
-    xvld       U0,   S1,   0x00
-    xvld       U1,   S2,   0x00
-    xvld       U2,   S3,   0x00
-    xvld       U3,   S4,   0x00
-    xvld       U4,   S5,   0x00
-    xvld       U5,   S6,   0x00
-    xvld       U6,   S7,   0x00
-    xvld       U7,   S8,   0x00
-    xvld       U8,   S9,   0x00
-    xvld       U9,   S10,  0x00
-    xvld       U10,  S11,  0x00
-    xvld       U11,  S12,  0x00
-    xvld       U12,  S13,  0x00
-    xvld       U13,  S14,  0x00
-    xvld       U14,  S15,  0x00
-    xvld       U15,  S16,  0x00
+.L_I1:  /* if(i>0) i--*/
+    fld.d      F0,   S1,   0x00
+    fld.d      F1,   S2,   0x00
+    fld.d      F2,   S3,   0x00
+    fld.d      F3,   S4,   0x00
+    fld.d      F4,   S5,   0x00
+    fld.d      F5,   S6,   0x00
+    fld.d      F6,   S7,   0x00
+    fld.d      F7,   S8,   0x00
 
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-    xvpackev.d D2,   U3,   U2
-    xvpackod.d D3,   U3,   U2
-    xvpackev.d D4,   U5,   U4
-    xvpackod.d D5,   U5,   U4
-    xvpackev.d D6,   U7,   U6
-    xvpackod.d D7,   U7,   U6
+    fst.d      F0,   TD,   0x00
+    fst.d      F1,   TD,   0x08
+    fst.d      F2,   TD,   0x10
+    fst.d      F3,   TD,   0x18
+    fst.d      F4,   TD,   0x20
+    fst.d      F5,   TD,   0x28
+    fst.d      F6,   TD,   0x30
+    fst.d      F7,   TD,   0x38
 
-    xvpackev.d D8,   U9,   U8
-    xvpackod.d D9,   U9,   U8
-    xvpackev.d D10,  U11,  U10
-    xvpackod.d D11,  U11,  U10
-    xvpackev.d D12,  U13,  U12
-    xvpackod.d D13,  U13,  U12
-    xvpackev.d D14,  U15,  U14
-    xvpackod.d D15,  U15,  U14
+    fld.d      F0,   S9,   0x00
+    fld.d      F1,   S10,  0x00
+    fld.d      F2,   S11,  0x00
+    fld.d      F3,   S12,  0x00
+    fld.d      F4,   S13,  0x00
+    fld.d      F5,   S14,  0x00
+    fld.d      F6,   S15,  0x00
+    fld.d      F7,   S16,  0x00
 
-    xvand.v    U0,   D0,   D0
-    xvpermi.q  D0,   D2,   0x02  // 0
-    xvand.v    U4,   D4,   D4
-    xvpermi.q  D4,   D6,   0x02  // 1
-    xvand.v    U1,   D1,   D1
-    xvpermi.q  D1,   D3,   0x02  // 4
-    xvand.v    U5,   D5,   D5
-    xvpermi.q  D5,   D7,   0x02  // 5
-    xvpermi.q  D2,   U0,   0x31  // 8
-    xvpermi.q  D6,   U4,   0x31  // 9
-    xvpermi.q  D3,   U1,   0x31  // 12
-    xvpermi.q  D7,   U5,   0x31  // 13
+    fst.d      F0,   TD,   0x40
+    fst.d      F1,   TD,   0x48
+    fst.d      F2,   TD,   0x50
+    fst.d      F3,   TD,   0x58
+    fst.d      F4,   TD,   0x60
+    fst.d      F5,   TD,   0x68
+    fst.d      F6,   TD,   0x70
+    fst.d      F7,   TD,   0x78
 
-    xvand.v    U8,   D8,   D8
-    xvpermi.q  D8,   D10,  0x02  // 2
-    xvand.v    U12,  D12,  D12
-    xvpermi.q  D12,  D14,  0x02  // 3
-    xvand.v    U9,   D9,   D9
-    xvpermi.q  D9,   D11,  0x02  // 6
-    xvand.v    U13,  D13,  D13
-    xvpermi.q  D13,  D15,  0x02  // 7
-    xvpermi.q  D10,  U8,   0x31  // 10
-    xvpermi.q  D14,  U12,  0x31  // 11
-    xvpermi.q  D11,  U9,   0x31  // 14
-    xvpermi.q  D15,  U13,  0x31  // 15
-
-    xvst       D0,   TD,   0x00  // 0
-    xvst       D4,   TD,   0x20  // 1
-    xvst       D8,   TD,   0x40  // 2
-    xvst       D12,  TD,   0x60  // 3
-    xvst       D1,   TD,   0x80  // 4
-    xvst       D5,   TD,   0xA0  // 5
-    xvst       D9,   TD,   0xC0  // 6
-    xvst       D13,  TD,   0xE0  // 7
-    addi.d     TD,   TD,   0x100
-    xvst       D2,   TD,   0x00  // 8
-    xvst       D6,   TD,   0x20  // 9
-    xvst       D10,  TD,   0x40  // 10
-    xvst       D14,  TD,   0x60  // 11
-    xvst       D3,   TD,   0x80  // 12
-    xvst       D7,   TD,   0xA0  // 13
-    xvst       D11,  TD,   0xC0  // 14
-    xvst       D15,  TD,   0xE0  // 15
-    addi.d     TD,   TD,   0x100
-
-    xvld       U0,   S1,   0x20
-    xvld       U1,   S2,   0x20
-    xvld       U2,   S3,   0x20
-    xvld       U3,   S4,   0x20
-    xvld       U4,   S5,   0x20
-    xvld       U5,   S6,   0x20
-    xvld       U6,   S7,   0x20
-    xvld       U7,   S8,   0x20
-    xvld       U8,   S9,   0x20
-    xvld       U9,   S10,  0x20
-    xvld       U10,  S11,  0x20
-    xvld       U11,  S12,  0x20
-    xvld       U12,  S13,  0x20
-    xvld       U13,  S14,  0x20
-    xvld       U14,  S15,  0x20
-    xvld       U15,  S16,  0x20
-
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-    xvpackev.d D2,   U3,   U2
-    xvpackod.d D3,   U3,   U2
-    xvpackev.d D4,   U5,   U4
-    xvpackod.d D5,   U5,   U4
-    xvpackev.d D6,   U7,   U6
-    xvpackod.d D7,   U7,   U6
-
-    xvpackev.d D8,   U9,   U8
-    xvpackod.d D9,   U9,   U8
-    xvpackev.d D10,  U11,  U10
-    xvpackod.d D11,  U11,  U10
-    xvpackev.d D12,  U13,  U12
-    xvpackod.d D13,  U13,  U12
-    xvpackev.d D14,  U15,  U14
-    xvpackod.d D15,  U15,  U14
-
-    xvand.v    U0,   D0,   D0
-    xvpermi.q  D0,   D2,   0x02  // 0
-    xvand.v    U4,   D4,   D4
-    xvpermi.q  D4,   D6,   0x02  // 1
-    xvand.v    U1,   D1,   D1
-    xvpermi.q  D1,   D3,   0x02  // 4
-    xvand.v    U5,   D5,   D5
-    xvpermi.q  D5,   D7,   0x02  // 5
-    xvpermi.q  D2,   U0,   0x31  // 8
-    xvpermi.q  D6,   U4,   0x31  // 9
-    xvpermi.q  D3,   U1,   0x31  // 12
-    xvpermi.q  D7,   U5,   0x31  // 13
-
-    xvand.v    U8,   D8,   D8
-    xvpermi.q  D8,   D10,  0x02  // 2
-    xvand.v    U12,  D12,  D12
-    xvpermi.q  D12,  D14,  0x02  // 3
-    xvand.v    U9,   D9,   D9
-    xvpermi.q  D9,   D11,  0x02  // 6
-    xvand.v    U13,  D13,  D13
-    xvpermi.q  D13,  D15,  0x02  // 7
-    xvpermi.q  D10,  U8,   0x31  // 10
-    xvpermi.q  D14,  U12,  0x31  // 11
-    xvpermi.q  D11,  U9,   0x31  // 14
-    xvpermi.q  D15,  U13,  0x31  // 15
-
-    xvst       D0,   TD,   0x00  // 0
-    xvst       D4,   TD,   0x20  // 1
-    xvst       D8,   TD,   0x40  // 2
-    xvst       D12,  TD,   0x60  // 3
-    xvst       D1,   TD,   0x80  // 4
-    xvst       D5,   TD,   0xA0  // 5
-    xvst       D9,   TD,   0xC0  // 6
-    xvst       D13,  TD,   0xE0  // 7
-    addi.d     TD,   TD,   0x100
-    xvst       D2,   TD,   0x00  // 8
-    xvst       D6,   TD,   0x20  // 9
-    xvst       D10,  TD,   0x40  // 10
-    xvst       D14,  TD,   0x60  // 11
-    xvst       D3,   TD,   0x80  // 12
-    xvst       D7,   TD,   0xA0  // 13
-    xvst       D11,  TD,   0xC0  // 14
-    xvst       D15,  TD,   0xE0  // 15
-    addi.d     TD,   TD,   0x100
-
-
-    addi.d     S1,   S1,   0x40
-    addi.d     S2,   S2,   0x40
-    addi.d     S3,   S3,   0x40
-    addi.d     S4,   S4,   0x40
-    addi.d     S5,   S5,   0x40
-    addi.d     S6,   S6,   0x40
-    addi.d     S7,   S7,   0x40
-    addi.d     S8,   S8,   0x40
-    addi.d     S9,   S9,   0x40
-    addi.d     S10,  S10,  0x40
-    addi.d     S11,  S11,  0x40
-    addi.d     S12,  S12,  0x40
-    addi.d     S13,  S13,  0x40
-    addi.d     S14,  S14,  0x40
-    addi.d     S15,  S15,  0x40
-    addi.d     S16,  S16,  0x40
-
+    addi.d     S1,   S1,   0x08
+    addi.d     S2,   S2,   0x08
+    addi.d     S3,   S3,   0x08
+    addi.d     S4,   S4,   0x08
+    addi.d     S5,   S5,   0x08
+    addi.d     S6,   S6,   0x08
+    addi.d     S7,   S7,   0x08
+    addi.d     S8,   S8,   0x08
+    addi.d     S9,   S9,   0x08
+    addi.d     S10,  S10,  0x08
+    addi.d     S11,  S11,  0x08
+    addi.d     S12,  S12,  0x08
+    addi.d     S13,  S13,  0x08
+    addi.d     S14,  S14,  0x08
+    addi.d     S15,  S15,  0x08
+    addi.d     S16,  S16,  0x08
+    addi.d     TD,   TD,   0x80
     addi.d     I,    I,    -1
     blt        ZERO, I,    .L_I1
 
-.L_I7:
-    andi      I,     M,    0x07
-    beq       I,     ZERO, .L_I0
+.L_J11: /* j--*/
+    addi.d     J,    J,    -1
+    blt        ZERO, J,    .L_J1
 
-.L_II1: /* I-- */
-    fld.d     F0,    S1,  0x00
-    fld.d     F1,    S2,  0x00
-    fld.d     F2,    S3,  0x00
-    fld.d     F3,    S4,  0x00
-    fld.d     F4,    S5,  0x00
-    fld.d     F5,    S6,  0x00
-    fld.d     F6,    S7,  0x00
-    fld.d     F7,    S8,  0x00
-
-    fst.d     F0,    TD,  0x00
-    addi.d    S1,    S1,  0x08
-    fst.d     F1,    TD,  0x08
-    addi.d    S2,    S2,  0x08
-    fst.d     F2,    TD,  0x10
-    addi.d    S3,    S3,  0x08
-    fst.d     F3,    TD,  0x18
-    addi.d    S4,    S4,  0x08
-    fst.d     F4,    TD,  0x20
-    addi.d    S5,    S5,  0x08
-    fst.d     F5,    TD,  0x28
-    addi.d    S6,    S6,  0x08
-    fst.d     F6,    TD,  0x30
-    addi.d    S7,    S7,  0x08
-    fst.d     F7,    TD,  0x38
-    addi.d    S8,    S8,  0x08
-    addi.d    TD,    TD,  0x40
-
-    fld.d     F0,    S9,  0x00
-    fld.d     F1,    S10, 0x00
-    fld.d     F2,    S11, 0x00
-    fld.d     F3,    S12, 0x00
-    fld.d     F4,    S13, 0x00
-    fld.d     F5,    S14, 0x00
-    fld.d     F6,    S15, 0x00
-    fld.d     F7,    S16, 0x00
-
-    fst.d     F0,    TD,  0x00
-    addi.d    S9,    S9,  0x08
-    fst.d     F1,    TD,  0x08
-    addi.d    S10,   S10, 0x08
-    fst.d     F2,    TD,  0x10
-    addi.d    S11,   S11, 0x08
-    fst.d     F3,    TD,  0x18
-    addi.d    S12,   S12, 0x08
-    fst.d     F4,    TD,  0x20
-    addi.d    S13,   S13, 0x08
-    fst.d     F5,    TD,  0x28
-    addi.d    S14,   S14, 0x08
-    fst.d     F6,    TD,  0x30
-    addi.d    S15,   S15, 0x08
-    fst.d     F7,    TD,  0x38
-    addi.d    S16,   S16, 0x08
-    addi.d    TD,    TD,  0x40
-
-    addi.d    I,     I,   -1
-    blt       ZERO,  I,   .L_II1
-
-.L_I0:
-    blt       ZERO,  J,   .L_J1
-
-.L_N8:
-    andi      J,     N,   0x08
-    beq       ZERO,  J,   .L_N4
+.L_N8:  /* if(n&8)*/
+    andi       I,     N,    0x08
+    beq        I,     ZERO, .L_N4
 
     move       S1,   TS
     add.d      S2,   TS,   TL
-    srai.d     I,    M,    0x03
+    move       I,    M
     add.d      S3,   S2,   TL
-    add.d      S4,   S2,   T0
-    add.d      S5,   S3,   T0
-    add.d      S6,   S4,   T0
-    add.d      S7,   S5,   T0
-    add.d      S8,   S6,   T0
-    add.d      TS,   S7,   T0
-    beq        I,    ZERO, .L_8I3
+    add.d      S4,   S3,   TL
+    add.d      S5,   S4,   TL
+    add.d      S6,   S5,   TL
+    add.d      S7,   S6,   TL
+    add.d      S8,   S7,   TL
+    add.d      TS,   S8,   TL
+    beq        I,     ZERO, .L_N4
 
-.L_8I1:  /* I-- */
-    xvld       U0,   S1,   0x00
-    xvld       U1,   S2,   0x00
-    xvld       U2,   S3,   0x00
-    xvld       U3,   S4,   0x00
-    xvld       U4,   S5,   0x00
-    xvld       U5,   S6,   0x00
-    xvld       U6,   S7,   0x00
-    xvld       U7,   S8,   0x00
+.L_N81:  /* if(i>0) i--*/
+    fld.d      F0,   S1,   0x00
+    fld.d      F1,   S2,   0x00
+    fld.d      F2,   S3,   0x00
+    fld.d      F3,   S4,   0x00
+    fld.d      F4,   S5,   0x00
+    fld.d      F5,   S6,   0x00
+    fld.d      F6,   S7,   0x00
+    fld.d      F7,   S8,   0x00
 
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-    xvpackev.d D2,   U3,   U2
-    xvpackod.d D3,   U3,   U2
-    xvpackev.d D4,   U5,   U4
-    xvpackod.d D5,   U5,   U4
-    xvpackev.d D6,   U7,   U6
-    xvpackod.d D7,   U7,   U6
+    fst.d      F0,   TD,   0x00
+    fst.d      F1,   TD,   0x08
+    fst.d      F2,   TD,   0x10
+    fst.d      F3,   TD,   0x18
+    fst.d      F4,   TD,   0x20
+    fst.d      F5,   TD,   0x28
+    fst.d      F6,   TD,   0x30
+    fst.d      F7,   TD,   0x38
 
-    xvand.v    U0,   D0,   D0
-    xvpermi.q  D0,   D2,   0x02  // 0
-    xvand.v    U4,   D4,   D4
-    xvpermi.q  D4,   D6,   0x02  // 1
-    xvand.v    U1,   D1,   D1
-    xvpermi.q  D1,   D3,   0x02  // 2
-    xvand.v    U5,   D5,   D5
-    xvpermi.q  D5,   D7,   0x02  // 3
-    xvpermi.q  D2,   U0,   0x31  // 4
-    xvpermi.q  D6,   U4,   0x31  // 5
-    xvpermi.q  D3,   U1,   0x31  // 6
-    xvpermi.q  D7,   U5,   0x31  // 7
-
-    xvst       D0,   TD,   0x00
-    xvst       D4,   TD,   0x20
-    xvst       D1,   TD,   0x40
-    xvst       D5,   TD,   0x60
-    xvst       D2,   TD,   0x80
-    xvst       D6,   TD,   0xA0
-    xvst       D3,   TD,   0xC0
-    xvst       D7,   TD,   0xE0
-    addi.d     TD,   TD,   0x100
-
-    xvld       U0,   S1,   0x20
-    xvld       U1,   S2,   0x20
-    xvld       U2,   S3,   0x20
-    xvld       U3,   S4,   0x20
-    xvld       U4,   S5,   0x20
-    xvld       U5,   S6,   0x20
-    xvld       U6,   S7,   0x20
-    xvld       U7,   S8,   0x20
-
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-    xvpackev.d D2,   U3,   U2
-    xvpackod.d D3,   U3,   U2
-    xvpackev.d D4,   U5,   U4
-    xvpackod.d D5,   U5,   U4
-    xvpackev.d D6,   U7,   U6
-    xvpackod.d D7,   U7,   U6
-
-    xvand.v    U0,   D0,   D0
-    xvpermi.q  D0,   D2,   0x02  // 0
-    xvand.v    U4,   D4,   D4
-    xvpermi.q  D4,   D6,   0x02  // 1
-    xvand.v    U1,   D1,   D1
-    xvpermi.q  D1,   D3,   0x02  // 2
-    xvand.v    U5,   D5,   D5
-    xvpermi.q  D5,   D7,   0x02  // 3
-    xvpermi.q  D2,   U0,   0x31  // 4
-    xvpermi.q  D6,   U4,   0x31  // 5
-    xvpermi.q  D3,   U1,   0x31  // 6
-    xvpermi.q  D7,   U5,   0x31  // 7
-
-    xvst       D0,   TD,   0x00
-    xvst       D4,   TD,   0x20
-    xvst       D1,   TD,   0x40
-    xvst       D5,   TD,   0x60
-    xvst       D2,   TD,   0x80
-    xvst       D6,   TD,   0xA0
-    xvst       D3,   TD,   0xC0
-    xvst       D7,   TD,   0xE0
-    addi.d     TD,   TD,   0x100
-
-    addi.d     S1,   S1,   0x40
-    addi.d     S2,   S2,   0x40
-    addi.d     S3,   S3,   0x40
-    addi.d     S4,   S4,   0x40
-    addi.d     S5,   S5,   0x40
-    addi.d     S6,   S6,   0x40
-    addi.d     S7,   S7,   0x40
-    addi.d     S8,   S8,   0x40
-
+    addi.d     S1,   S1,   0x08
+    addi.d     S2,   S2,   0x08
+    addi.d     S3,   S3,   0x08
+    addi.d     S4,   S4,   0x08
+    addi.d     S5,   S5,   0x08
+    addi.d     S6,   S6,   0x08
+    addi.d     S7,   S7,   0x08
+    addi.d     S8,   S8,   0x08
+    addi.d     TD,   TD,   0x40
     addi.d     I,    I,    -1
-    blt        ZERO, I,    .L_8I1
+    blt        ZERO, I,    .L_N81
 
-.L_8I3:
-    andi      I,     M,    0x07
-    beq       I,     ZERO, .L_N4
-
-.L_8I11:
-    fld.d     F0,    S1,  0x00
-    fld.d     F1,    S2,  0x00
-    fld.d     F2,    S3,  0x00
-    fld.d     F3,    S4,  0x00
-    fld.d     F4,    S5,  0x00
-    fld.d     F5,    S6,  0x00
-    fld.d     F6,    S7,  0x00
-    fld.d     F7,    S8,  0x00
-
-    fst.d     F0,    TD,  0x00
-    addi.d    S1,    S1,  0x08
-    fst.d     F1,    TD,  0x08
-    addi.d    S2,    S2,  0x08
-    fst.d     F2,    TD,  0x10
-    addi.d    S3,    S3,  0x08
-    fst.d     F3,    TD,  0x18
-    addi.d    S4,    S4,  0x08
-    fst.d     F4,    TD,  0x20
-    addi.d    S5,    S5,  0x08
-    fst.d     F5,    TD,  0x28
-    addi.d    S6,    S6,  0x08
-    fst.d     F6,    TD,  0x30
-    addi.d    S7,    S7,  0x08
-    fst.d     F7,    TD,  0x38
-    addi.d    S8,    S8,  0x08
-
-    addi.d    TD,    TD,  0x40
-    addi.d    I,     I,   -1
-    blt       ZERO,  I,   .L_8I11
-
-.L_N4:
-    andi      J,     N,   0x04
-    beq       ZERO,  J,   .L_N2
+.L_N4:  /* if(n&4)*/
+    andi       I,     N,    0x04
+    beq        I,     ZERO, .L_N2
 
     move       S1,   TS
     add.d      S2,   TS,   TL
-    srai.d     I,    M,    0x02
+    move       I,    M
     add.d      S3,   S2,   TL
-    add.d      S4,   S2,   T0
-    add.d      TS,   S3,   T0
-    beq        I,    ZERO, .L_I3
+    add.d      S4,   S3,   TL
+    add.d      TS,   S4,   TL
+    beq        I,     ZERO, .L_N2
 
-.L_4I1: /* I-- */
-    xvld       U0,   S1,   0x00
-    xvld       U1,   S2,   0x00
-    xvld       U2,   S3,   0x00
-    xvld       U3,   S4,   0x00
+.L_N41:  /* if(i>0)*/
+    fld.d      F0,   S1,   0x00
+    fld.d      F1,   S2,   0x00
+    fld.d      F2,   S3,   0x00
+    fld.d      F3,   S4,   0x00
 
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-    xvpackev.d D2,   U3,   U2
-    xvpackod.d D3,   U3,   U2
+    fst.d      F0,   TD,   0x00
+    fst.d      F1,   TD,   0x08
+    fst.d      F2,   TD,   0x10
+    fst.d      F3,   TD,   0x18
 
-    xvand.v    U0,   D0,   D0
-    xvpermi.q  D0,   D2,   0x02  // 0
-    xvand.v    U1,   D1,   D1
-    xvpermi.q  D1,   D3,   0x02  // 1
-    xvpermi.q  D2,   U0,   0x31  // 2
-    xvpermi.q  D3,   U1,   0x31  // 3
-
-    xvst       D0,   TD,   0x00
-    xvst       D1,   TD,   0x20
-    xvst       D2,   TD,   0x40
-    xvst       D3,   TD,   0x60
-
-    addi.d     S1,   S1,   0x20
-    addi.d     S2,   S2,   0x20
-    addi.d     S3,   S3,   0x20
-    addi.d     S4,   S4,   0x20
-    addi.d     TD,   TD,   0x80
-
-    addi.d     I,    I,    -1
-    blt        ZERO, I,    .L_4I1
-
-.L_I3:
-    andi      I,     M,    0x03
-    beq       I,     ZERO, .L_N2
-
-.L_4II1:
-    fld.d     F0,    S1,  0x00
-    fld.d     F1,    S2,  0x00
-    fld.d     F2,    S3,  0x00
-    fld.d     F3,    S4,  0x00
-
-    fst.d     F0,    TD,  0x00
-    addi.d    S1,    S1,  0x08
-    fst.d     F1,    TD,  0x08
-    addi.d    S2,    S2,  0x08
-    fst.d     F2,    TD,  0x10
-    addi.d    S3,    S3,  0x08
-    fst.d     F3,    TD,  0x18
-    addi.d    S4,    S4,  0x08
-
-    addi.d    TD,    TD,  0x20
-    addi.d    I,     I,   -1
-    blt       ZERO,  I,   .L_4II1
-
-.L_N2:
-    andi      J,     N,   0x02
-    beq       ZERO,  J,   .L_N1
-
-    move       S1,   TS
-    add.d      S2,   TS,   TL
-    srai.d     I,    M,    0x01
-    add.d      TS,   S2,   TL
-    beq        I,    ZERO, .L_NI1
-
-.L_2I1: /* I-- */
-    xvld       U0,   S1,   0x00
-    xvld       U1,   S2,   0x00
-
-    xvpackev.d D0,   U1,   U0
-    xvpackod.d D1,   U1,   U0
-
-    xvpermi.q  D0,   D1,   0x02  // 0
-
-    xvst       D0,   TD,   0x00
-
-    addi.d     S1,   S1,   0x10
-    addi.d     S2,   S2,   0x10
+    addi.d     S1,   S1,   0x08
+    addi.d     S2,   S2,   0x08
+    addi.d     S3,   S3,   0x08
+    addi.d     S4,   S4,   0x08
     addi.d     TD,   TD,   0x20
-
     addi.d     I,    I,    -1
-    blt        ZERO, I,    .L_2I1
+    blt        ZERO, I,    .L_N41
 
-.L_NI1:
-    andi      I,     M,    0x01
-    beq       I,     ZERO, .L_N1
+.L_N2:  /* if(n&2)*/
+    andi       I,     N,    0x02
+    beq        I,     ZERO, .L_N1
 
+    move       S1,   TS
+    add.d      S2,   TS,   TL
+    move       I,    M
+    add.d      TS,   S2,   TL
+    beq        I,    ZERO, .L_N1
 
-    fld.d     F0,    S1,  0x00
-    fld.d     F1,    S2,  0x00
+.L_N21:  /* if(i>0)*/
+    fld.d      F0,   S1,   0x00
+    fld.d      F1,   S2,   0x00
 
-    fst.d     F0,    TD,  0x00
-    addi.d    S1,    S1,  0x08
-    fst.d     F1,    TD,  0x08
-    addi.d    S2,    S2,  0x08
-    addi.d    TD,    TD,  0x10
+    fst.d      F0,   TD,   0x00
+    fst.d      F1,   TD,   0x08
 
-.L_N1:
-    move      S1,    TS
-    beq       ZERO,  M,   .L_N0
+    addi.d     S1,   S1,   0x08
+    addi.d     S2,   S2,   0x08
+    addi.d     TD,   TD,   0x10
+    addi.d     I,    I,    -1
+    blt        ZERO, I,    .L_N21
 
-.L_M1:
-    fld.d     F0,    S1,  0x00
-    addi.d    S1,    S1,  0x08
-    fst.d     F0,    TD,  0x00
-    addi.d    TD,    TD,  0x08
-    addi.d    M,     M,   -1
-    blt       ZERO,  M,   .L_M1
+.L_N1:  /* if(n&2)*/
+    andi       I,    N,    0x01
+    beq        I,    ZERO, .L_N0
+
+    move       S1,   TS
+    move       I,    M
+    beq        I,    ZERO, .L_N0
+
+.L_N11:  /* if(i>0)*/
+    fld.d      F0,   S1,   0x00
+    fst.d      F0,   TD,   0x00
+
+    addi.d     S1,   S1,   0x08
+    addi.d     TD,   TD,   0x08
+    addi.d     I,    I,    -1
+    blt        ZERO, I,    .L_N11
 
 .L_N0:
-    LDARG      $r23, $sp,  0x00
-    LDARG      $r24, $sp,  0x08
-    LDARG      $r25, $sp,  0x10
-    LDARG      $r26, $sp,  0x18
-    LDARG      $r27, $sp,  0x20
-    LDARG      $r28, $sp,  0x28
-    LDARG      $r29, $sp,  0x30
-    LDARG      $r30, $sp,  0x38
-    LDARG      $r31, $sp,  0x40
-    LD         $f23, $sp,  0x48
-    LD         $f24, $sp,  0x50
-    LD         $f25, $sp,  0x58
-    LD         $f26, $sp,  0x60
-    LD         $f27, $sp,  0x68
-    LD         $f28, $sp,  0x70
-    LD         $f29, $sp,  0x78
-    LD         $f30, $sp,  0x80
-    LD         $f31, $sp,  0x88
-    addi.d     $sp,  $sp,  0x90
-    jirl       $r0,  $r1,  0x00
+    LDARG     $r23,  $sp, 0
+    LDARG     $r24,  $sp, 8
+    LDARG     $r25,  $sp, 16
+    LDARG     $r26,  $sp, 24
+    LDARG     $r27,  $sp, 32
+    LDARG     $r28,  $sp, 40
+    LDARG     $r29,  $sp, 48
+    LDARG     $r30,  $sp, 56
+    addi.d    $sp,   $sp, 64
+    jirl      $r0,   $r1, 0x00
 
     EPILOGUE

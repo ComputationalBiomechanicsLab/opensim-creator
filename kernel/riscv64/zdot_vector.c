@@ -68,8 +68,60 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VFNMSACVV_FLOAT RISCV_RVV(vfnmsac_vv_f64m4)
 #endif
 
+#if !defined(DOUBLE)
+ inline OPENBLAS_COMPLEX_FLOAT small_cdot_kernel(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y)
+#else
+inline OPENBLAS_COMPLEX_FLOAT small_zdot_kernel(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y)
+#endif
+{
+	BLASLONG i=0;
+	BLASLONG ix=0,iy=0;
+	FLOAT dot[2];
+	OPENBLAS_COMPLEX_FLOAT result;
+	BLASLONG inc_x2;
+	BLASLONG inc_y2;
+
+	dot[0]=0.0;
+	dot[1]=0.0;
+
+	CREAL(result) = 0.0 ;
+	CIMAG(result) = 0.0 ;
+
+	if ( n < 1 )  return(result);
+
+	inc_x2 = 2 * inc_x ;
+	inc_y2 = 2 * inc_y ;
+
+	while(i < n)
+	{
+#if !defined(CONJ)
+		dot[0] += ( x[ix]   * y[iy] - x[ix+1] * y[iy+1] ) ;
+		dot[1] += ( x[ix+1] * y[iy] + x[ix]   * y[iy+1] ) ;
+#else
+		dot[0] += ( x[ix]   * y[iy] + x[ix+1] * y[iy+1] ) ;
+		dot[1] -= ( x[ix+1] * y[iy] - x[ix]   * y[iy+1] ) ;
+#endif
+		ix  += inc_x2 ;
+		iy  += inc_y2 ;
+		i++ ;
+
+	}
+	CREAL(result) = dot[0];
+	CIMAG(result) = dot[1];
+	return(result);
+
+}
 OPENBLAS_COMPLEX_FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y)
 {
+#if !defined(DOUBLE)
+if(n < 16) {
+        return small_cdot_kernel(n, x, inc_x, y, inc_y);
+}
+#else
+if(n < 8) {
+        return small_zdot_kernel(n, x, inc_x, y, inc_y);
+}
+#endif
         BLASLONG i=0, j=0;
         BLASLONG ix=0,iy=0;
         FLOAT dot[2];

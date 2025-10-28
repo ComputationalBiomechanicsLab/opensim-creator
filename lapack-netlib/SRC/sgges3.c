@@ -553,8 +553,8 @@ f"> */
 /* > \ingroup realGEeigen */
 
 /*  ===================================================================== */
-/* Subroutine */ void sgges3_(char *jobvsl, char *jobvsr, char *sort, L_fp 
-	selctg, integer *n, real *a, integer *lda, real *b, integer *ldb, 
+/* Subroutine */ void sgges3_(char *jobvsl, char *jobvsr, char *sort, logical 
+	(*selctg)(real*,real*,real*), integer *n, real *a, integer *lda, real *b, integer *ldb, 
 	integer *sdim, real *alphar, real *alphai, real *beta, real *vsl, 
 	integer *ldvsl, real *vsr, integer *ldvsr, real *work, integer *lwork,
 	 logical *bwork, integer *info)

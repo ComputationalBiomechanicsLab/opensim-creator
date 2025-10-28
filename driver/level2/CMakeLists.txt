@@ -223,3 +223,7 @@ if (USE_THREAD)
 endif ()
 
 add_library(driver_level2 OBJECT ${OPENBLAS_SRC})
+
+if (USE_OPENMP)
+  target_link_libraries(driver_level2 OpenMP::OpenMP_C)
+endif()

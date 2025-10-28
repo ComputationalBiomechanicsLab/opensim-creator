@@ -171,3 +171,7 @@ endforeach ()
 #
 
 add_library(driver_level3 OBJECT ${OPENBLAS_SRC})
+
+if (USE_OPENMP)
+  target_link_libraries(driver_level3 OpenMP::OpenMP_C)
+endif()

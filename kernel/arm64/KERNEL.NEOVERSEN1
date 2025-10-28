@@ -60,7 +60,7 @@ DSCALKERNEL  = scal.S
 CSCALKERNEL  = zscal.S
 ZSCALKERNEL  = zscal.S
 
-SGEMVNKERNEL = gemv_n.S
+SGEMVNKERNEL = sgemv_n_neon.c
 DGEMVNKERNEL = gemv_n.S
 CGEMVNKERNEL = zgemv_n.S
 ZGEMVNKERNEL = zgemv_n.S
@@ -70,6 +70,10 @@ DGEMVTKERNEL = gemv_t.S
 CGEMVTKERNEL = zgemv_t.S
 ZGEMVTKERNEL = zgemv_t.S
 
+SSYMV_L_KERNEL = symv_L_asimd_4x4.c
+SSYMV_U_KERNEL = symv_U_asimd_4x4.c
+DSYMV_L_KERNEL = symv_L_asimd_4x4.c
+DSYMV_U_KERNEL = symv_U_asimd_4x4.c
 
 SASUMKERNEL    = sasum_thunderx2t99.c
 DASUMKERNEL    = dasum_thunderx2t99.c
@@ -98,8 +102,18 @@ ZNRM2KERNEL    = znrm2.S
 
 DDOTKERNEL     = dot.c
 SDOTKERNEL     = dot.c
+ifeq ($(OSNAME), WINNT)
+ifeq ($(C_COMPILER), CLANG)
+CDOTKERNEL     = zdot.S
+ZDOTKERNEL     = zdot.S
+else
 CDOTKERNEL     = zdot_thunderx2t99.c
 ZDOTKERNEL     = zdot_thunderx2t99.c
+endif
+else
+CDOTKERNEL     = zdot_thunderx2t99.c
+ZDOTKERNEL     = zdot_thunderx2t99.c
+endif
 DSDOTKERNEL    = dot.S
 
 DGEMM_BETA     = dgemm_beta.S

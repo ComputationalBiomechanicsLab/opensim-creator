@@ -43,8 +43,55 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VFNMSACVF_FLOAT RISCV_RVV(vfnmsac_vf_f64m4)
 #endif
 
+#if !defined(DOUBLE)
+inline int  small_caxpy_kernel(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
+#else
+inline int  small_zaxpy_kernel(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
+#endif
+{
+	BLASLONG i=0;
+	BLASLONG ix,iy;
+	BLASLONG inc_x2;
+	BLASLONG inc_y2;
+
+	if ( n <= 0     )  return(0);
+	if ( da_r == 0.0 && da_i == 0.0 ) return(0);
+
+	ix = 0;
+	iy = 0;
+
+	inc_x2 = 2 * inc_x;
+	inc_y2 = 2 * inc_y;
+
+	while(i < n)
+	{
+#if !defined(CONJ)
+		y[iy]   += ( da_r * x[ix]   - da_i * x[ix+1] ) ;
+		y[iy+1] += ( da_r * x[ix+1] + da_i * x[ix]   ) ;
+#else
+		y[iy]   += ( da_r * x[ix]   + da_i * x[ix+1] ) ;
+		y[iy+1] -= ( da_r * x[ix+1] - da_i * x[ix]   ) ;
+#endif
+		ix += inc_x2 ;
+		iy += inc_y2 ;
+		i++ ;
+
+	}
+	return(0);
+
+}
+
 int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
 {
+#if !defined(DOUBLE)
+        if(n < 16) {
+                return small_caxpy_kernel(n, dummy0, dummy1, da_r, da_i, x, inc_x, y, inc_y, dummy, dummy2);
+        }
+#else
+        if(n < 8) {
+                return small_zaxpy_kernel(n, dummy0, dummy1, da_r, da_i, x, inc_x, y, inc_y, dummy, dummy2);
+        }
+#endif
         BLASLONG i = 0, j = 0;
         BLASLONG ix = 0,iy = 0;
         if(n <= 0) return(0);

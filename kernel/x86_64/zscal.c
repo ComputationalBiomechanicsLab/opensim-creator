@@ -222,13 +222,14 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 
 		if ( da_r == 0.0 )
 		{
+
 			BLASLONG n1 = n & -2;
 
 			if ( da_i == 0.0 )
 			{
+			    if (!dummy2) {
 				while(j < n1)
 				{
-
 					x[i]=0.0;
 					x[i+1]=0.0;
 					x[i+inc_x]=0.0;
@@ -245,9 +246,40 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 					x[i+1]=0.0;
 					i += inc_x ;
 					j++;
+				}
+			    } else {
+				float temp;
+				while(j < n1)
+				{
+					if (isnan(x[i])|| isnan(x[i+1]))
+						temp=NAN;
+				        else
+						temp=0.0;
+					x[i]=temp;
+					x[i+1]=temp;
+					if (isnan(x[i+inc_x])|| isnan(x[i+inc_x+1]))
+						temp=NAN;
+				        else
+						temp=0.0;
+					x[i+inc_x]= temp;
+					x[i+inc_x+1]= temp;
+					i += 2*inc_x;
+					j+=2;
 
 				}
+				while(j < n)
+				{
+					if (isnan(x[i])|| isnan(x[i+1]))
+						temp=NAN;
+				        else
+						temp=0.0;
+					x[i]=temp;
+					x[i+1]=temp;
+					i += inc_x;
+					j++;
 
+				}
+			    }
 			}
 			else
 			{
@@ -260,7 +292,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 						temp0   = -da_i * x[i+1];
 					if (!isinf(x[i+1]))
 						x[i+1]  = da_i * x[i];
-					else    x[i+1]	= NAN;     
+					else    x[i+1]	= NAN;
 					x[i]         =  temp0;
 					if (isnan(x[i+inc_x]) || isinf(x[i+inc_x]))
 						temp1	= NAN;
@@ -291,16 +323,13 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 
 				}
 
-
-
 			}
 
 		}
 		else
 		{
 
-
-			if ( da_i == 0.0 )
+			if ( da_i == 0.0 && dummy2)
 			{
 				BLASLONG n1 = n & -2;
 
@@ -370,26 +399,27 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 		alpha[1] = da_i;
 
 		if ( da_r == 0.0 )
-			if ( da_i == 0 )
+			if ( da_i == 0 && !dummy2 )
 				zscal_kernel_8_zero(n1 , alpha , x);
 			else
-//				zscal_kernel_8_zero_r(n1 , alpha , x);
 				zscal_kernel_8(n1 , alpha , x);
 		else
-			if ( da_i == 0 && da_r == da_r)
+		/*	if ( da_i == 0 && da_r == da_r )
 				zscal_kernel_8_zero_i(n1 , alpha , x);
-			else
+			else*/
 				zscal_kernel_8(n1 , alpha , x);
-		}
+
 		i = n1 << 1;
 		j = n1;
-
-	if ( da_r == 0.0 || da_r != da_r )
+	}
+	if ( da_r == 0.0 || isnan(da_r) )
 	{
 		if ( da_i == 0.0 )
 		{
-		FLOAT res=0.0;
-		if (da_r != da_r) res= da_r;
+			FLOAT res=0.0;
+			if (isnan(da_r)) res= da_r;
+			if (dummy2)
+				if (isnan(x[i])||isnan(x[i+1])) res= NAN;
 			while(j < n)
 			{
 					x[i]=res;
@@ -412,7 +442,6 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 
 		} else
 		{
-
 			while(j < n)
 			{
 				temp0        = -da_i * x[i+1];
@@ -421,7 +450,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 				if (!isinf(x[i+1]))
 					x[i+1]       =  da_i * x[i];
 				else x[i+1] = NAN;
-				if ( x[i] == x[i]) //preserve NaN
+				if ( !isnan(x[i])) //preserve NaN
 				  x[i]         =  temp0;
 				i += 2 ;
 				j++;
@@ -437,8 +466,9 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 		{
 				while(j < n)
 				{
-
 					temp0        =  da_r * x[i];
+					if (isnan(x[i]))x[i+1]=NAN;
+					else
 					x[i+1]       =  da_r * x[i+1];
 					x[i]         =  temp0;
 					i += 2 ;
@@ -453,7 +483,7 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r, FLOAT da_i, 
 			{
 				temp0        =  da_r * x[i]   - da_i * x[i+1];
 				x[i+1]       =  da_r * x[i+1] + da_i * x[i];
-				x[i]         =  temp0;
+				if(!isnan(x[i]))x[i]         =  temp0;
 				i += 2 ;
 				j++;
 

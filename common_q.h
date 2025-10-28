@@ -22,6 +22,7 @@
 #define	QSUM_K			qsum_k
 #define	QSWAP_K			qswap_k
 #define	QROT_K			qrot_k
+#define	QROTM_K			qrotm_k
 
 #define	QGEMV_N			qgemv_n
 #define	QGEMV_T			qgemv_t
@@ -165,6 +166,7 @@
 #define	QSUM_K			gotoblas -> qsum_k
 #define	QSWAP_K			gotoblas -> qswap_k
 #define	QROT_K			gotoblas -> qrot_k
+#define	QROTM_K			gotoblas -> qrotm_k
 
 #define	QGEMV_N			gotoblas -> qgemv_n
 #define	QGEMV_T			gotoblas -> qgemv_t

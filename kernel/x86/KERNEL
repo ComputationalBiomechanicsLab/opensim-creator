@@ -189,3 +189,19 @@ ZGEMM_BETA = ../generic/zgemm_beta.c
 QGEMM_BETA = ../generic/gemm_beta.c
 XGEMM_BETA = ../generic/zgemm_beta.c
 
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif
+
+CSCALKERNEL = ../arm/zscal.c
+ZSCALKERNEL = ../arm/zscal.c
+CDOTKERNEL = ../arm/zdot.c
+ZDOTKERNEL = ../arm/zdot.c

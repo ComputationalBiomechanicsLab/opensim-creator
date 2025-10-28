@@ -25,14 +25,28 @@ jobs:
       echo "FROM quay.io/pypa/manylinux1_x86_64
         COPY . /tmp/openblas
         RUN cd /tmp/openblas                                      &&  \
-            COMMON_FLAGS='DYNAMIC_ARCH=1 TARGET=NEHALEM NUM_THREADS=32' && \
-            BTYPE='BINARY=64' CC=gcc && \
-            make QUIET_MAKE=1 $COMMON_FLAGS $BTYPE && \
-            make -C test $COMMON_FLAGS $BTYPE && \
-            make -C ctest $COMMON_FLAGS $BTYPE && \
-            make -C utest $COMMON_FLAGS $BTYPE" > Dockerfile
+            CC=gcc && \
+            make QUIET_MAKE=1 BINARY=64 DYNAMIC_ARCH=1 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C test BINARY=64 DYNAMIC_ARCH=1 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C ctest BINARY=64 DYNAMIC_ARCH=1 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C utest BINARY=64 DYNAMIC_ARCH=1 TARGET=NEHALEM NUM_THREADS=32" > Dockerfile
       docker build .
     displayName: Run manylinux1 docker build
+- job: manylinux_32bit
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: |
+      echo "FROM quay.io/pypa/manylinux2014_i686
+        COPY . /tmp/openblas
+        RUN cd /tmp/openblas                                      &&  \
+            CC=gcc && \
+            make QUIET_MAKE=1 BINARY=32 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C test BINARY=32 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C ctest BINARY=32 TARGET=NEHALEM NUM_THREADS=32 && \
+            make -C utest BINARY=32 TARGET=NEHALEM NUM_THREADS=32" > Dockerfile
+      docker build .
+    displayName: Run manylinux 32bit docker build
 - job: Intel_SDE_skx
   pool:
     vmImage: 'ubuntu-latest'
@@ -141,7 +155,7 @@ jobs:
 
 - job: OSX_OpenMP
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   steps:   
   - script: |
       brew update
@@ -151,7 +165,7 @@ jobs:
      
 - job: OSX_GCC_Nothreads
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   steps:   
   - script: |
       brew update
@@ -164,7 +178,19 @@ jobs:
   - script: |
       brew update
       make CC=gcc-12 FC=gfortran-12
-     
+
+- job: OSX_LLVM_flangnew
+  pool:
+     vmImage: 'macOS-latest'
+  variables:
+     LD_LIBRARY_PATH: /usr/local/opt/llvm/lib
+     LIBRARY_PATH: /usr/local/opt/llvm/lib
+  steps:   
+  - script: |
+      brew update
+      brew install llvm flang
+      make TARGET=NEHALEM CC=/usr/local/opt/llvm/bin/clang FC=/usr/local/opt/flang/bin/flang NO_SHARED=1
+
 - job: OSX_OpenMP_Clang
   pool:
      vmImage: 'macOS-latest'
@@ -195,7 +221,7 @@ jobs:
       
 - job: OSX_dynarch_cmake
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   variables:
      LD_LIBRARY_PATH: /usr/local/opt/llvm/lib
      LIBRARY_PATH: /usr/local/opt/llvm/lib
@@ -242,7 +268,7 @@ jobs:
  
 - job: OSX_NDK_ARMV7
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   steps:   
   - script: | 
       brew update
@@ -252,7 +278,7 @@ jobs:
 
 - job: OSX_IOS_ARMV8
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   variables:
      CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
      CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk -arch arm64 -miphoneos-version-min=10.0
@@ -262,7 +288,7 @@ jobs:
 
 - job: OSX_IOS_ARMV7
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   variables:
      CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
      CFLAGS: -O2 -mno-thumb -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS16.2.sdk -arch armv7 -miphoneos-version-min=5.1
@@ -272,7 +298,7 @@ jobs:
 
 - job: OSX_xbuild_DYNAMIC_ARM64
   pool:
-     vmImage: 'macOS-12'
+     vmImage: 'macOS-13'
   variables:
      CC: /Applications/Xcode_14.2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
      CFLAGS: -O2 -Wno-macro-redefined -isysroot /Applications/Xcode_14.2.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk -arch arm64

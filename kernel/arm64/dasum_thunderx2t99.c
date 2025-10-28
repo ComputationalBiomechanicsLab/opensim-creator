@@ -152,7 +152,9 @@ static FLOAT dasum_compute(BLASLONG n, FLOAT *x, BLASLONG inc_x)
 	"	cmp	"J", xzr			\n"
 	"	beq	3f //asum_kernel_F1		\n"
 
+#if !(defined(__clang__) && defined(OS_WINDOWS))
 	".align 5					\n"
+#endif
 	"2: //asum_kernel_F32:				\n"
 	"	"KERNEL_F32"				\n"
 	"	subs	"J", "J", #1			\n"

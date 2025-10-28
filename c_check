@@ -334,6 +334,24 @@ if [ "$architecture" = "arm64" ]; then
     rm -rf "$tmpd"
 fi
 
+no_sme=0
+if [ "$architecture" = "arm64" ]; then
+    tmpd=$(mktemp -d 2>/dev/null || mktemp -d -t 'OBC')
+    tmpf="$tmpd/a.S"
+    printf ".text \n.global sme_test\n\nsme_test:\nsmstart\nsmstop\nret\n">> "$tmpf"
+    args=" -march=armv9-a+sve2+sme -c -o $tmpf.o $tmpf"
+    no_sme=0
+    {
+        $compiler_name $flags $args >/dev/null 2>&1
+    } || {
+        args=" -march=armv9-a+sme -c -o $tmpf.o $tmpf"
+        $compiler_name $flags $args >/dev/null 2>&1
+    } || {
+        no_sme=1
+    }
+    rm -rf "$tmpd"
+fi
+
 c11_atomics=0
 case "$data" in
     *HAVE_C11*)
@@ -475,6 +493,7 @@ done
     printf "CEXTRALIB=%s %s %s\n" "$linker_L" "$linker_l" "$linker_a"
     [ "$no_msa" -eq 1 ] &&  printf "NO_MSA=1\n"
     [ "$no_sve" -eq 1 ] && printf "NO_SVE=1\n"
+    [ "$no_sme" -eq 1 ] && printf "NO_SME=1\n"
     [ "$no_rv64gv" -eq 1 ] && printf "NO_RV64GV=1\n"
     [ "$no_avx512" -eq 1 ] && printf "NO_AVX512=1\n"
     [ "$no_avx512bf" -eq 1 ] && printf "NO_AVX512BF16=1\n"

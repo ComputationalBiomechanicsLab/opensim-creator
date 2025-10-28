@@ -53,6 +53,8 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    PROLOGUE
 
    li.d  TEMP, 2 * SIZE
+   ld.d XX, $sp, 0 // Load dummy2
+   slli.d XX, XX, ZBASE_SHIFT
    MTC  a1, $r0
    slli.d INCX, INCX, ZBASE_SHIFT
    bge $r0,    N, .L999
@@ -60,6 +62,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    CMPEQ   $fcc1, ALPHA_I, a1
    bceqz   $fcc0, .L50
    bceqz   $fcc1, .L50
+   beq     XX,    TEMP,  .L50  // if dummp2 == 1, do not directly copy 0
    srai.d I, N, 2
    bne INCX, TEMP, .L20
    bge $r0,    I, .L15

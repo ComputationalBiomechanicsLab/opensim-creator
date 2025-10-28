@@ -1006,15 +1006,15 @@ endif ()
       "#define HAVE_SVE\n"
       "#define ARMV8\n")
     set(SGEMM_UNROLL_M 16)
-    set(SGEMM_UNROLL_N 4)
-    set(DGEMM_UNROLL_M 8)
-    set(DGEMM_UNROLL_N 4)
-    set(CGEMM_UNROLL_M 8)
+    set(SGEMM_UNROLL_N 8)
+    set(DGEMM_UNROLL_M 4)
+    set(DGEMM_UNROLL_N 8)
+    set(CGEMM_UNROLL_M 2)
     set(CGEMM_UNROLL_N 4)
-    set(ZGEMM_UNROLL_M 4)
+    set(ZGEMM_UNROLL_M 2)
     set(ZGEMM_UNROLL_N 4)
     set(SYMV_P 16)
-  elseif ("${TCORE}" STREQUAL "NEOVERSEN2")
+  elseif ("${TCORE}" STREQUAL "NEOVERSEN2" OR "${TCORE}" STREQUAL "ARMV9SME")
     file(APPEND ${TARGET_CONF_TEMP}
       "#define L1_CODE_SIZE\t65536\n"
       "#define L1_CODE_LINESIZE\t64\n"
@@ -1249,6 +1249,25 @@ endif ()
     set(ZGEMM_UNROLL_M 2)
     set(ZGEMM_UNROLL_N 4)
     set(SYMV_P 16)
+  elseif ("${TCORE}" STREQUAL "ARMV8SVE" OR "${TCORE}" STREQUAL "CORTEXA510" OR "${TCORE}" STREQUAL "CORTEXX2" OR "${TCORE}" STREQUAL "ARMV9")
+    file(APPEND ${TARGET_CONF_TEMP}
+      "#define L1_DATA_SIZE\t32768\n"
+      "#define L1_DATA_LINESIZE\t64\n"
+      "#define L2_SIZE\t262144\n"
+      "#define L2_LINESIZE\t64\n"
+      "#define DTB_DEFAULT_ENTRIES\t64\n"
+      "#define DTB_SIZE\t4096\n"
+      "#define L2_ASSOCIATIVE\t32\n"
+      "#define ARMV8\n")
+    set(SGEMM_UNROLL_M 4)
+    set(SGEMM_UNROLL_N 8)
+    set(DGEMM_UNROLL_M 4)
+    set(DGEMM_UNROLL_N 8)
+    set(CGEMM_UNROLL_M 2)
+    set(CGEMM_UNROLL_N 4)
+    set(ZGEMM_UNROLL_M 2)
+    set(ZGEMM_UNROLL_N 4)
+    set(SYMV_P 16)
   elseif ("${TCORE}" STREQUAL "P5600")
     file(APPEND ${TARGET_CONF_TEMP}
       "#define L2_SIZE 1048576\n"
@@ -1409,9 +1428,11 @@ endif ()
   # GetArch_2nd
   foreach(float_char S;D;Q;C;Z;X)
     if (NOT DEFINED ${float_char}GEMM_UNROLL_M)
+	    message(STATUS "setting unrollm=2")
       set(${float_char}GEMM_UNROLL_M 2)
     endif()
     if (NOT DEFINED ${float_char}GEMM_UNROLL_N)
+	    message(STATUS "setting unrolln=2")
       set(${float_char}GEMM_UNROLL_N 2)
     endif()
   endforeach()

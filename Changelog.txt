@@ -1,5 +1,139 @@
 OpenBLAS ChangeLog
 ====================================================================
+Version 0.3.30
+19-Jun-2025
+
+general:
+ - fixed an installation problem with the thread safety test in gmake builds
+ - fixed spurious overwriting of an input array in complex GEMMT/GEMMTR
+ - fixed naming of GEMMTR in error messages from XERBLA
+ - fixed compilation of SBGEMMT/SBGEMMTR in CMake builds
+ - fixed the implementation of ?NRM2 to handle INCX=0 correctly
+ - removed tests for CSROT and ZDROT that relied on unspecified behavior
+ - fixed a performance regression in multithreaded GEMM that was particularly
+   serious on POWER targets
+ - fixed linking issues when using LLVM's flang-new with gmake
+ - fixed a potential thread safety problem with C11 atomic operations
+ - further improved the workload partitioning in parallel GEMM
+ - fixed omission of LAPACKE interfaces for CGESVDQ,CTRSYL3 and ?GEQPF in 
+   CMake builds
+ - fixed mishandling of setting NO_LAPACK to FALSE, and incorrect dependencies
+   for LAPACK function SPMV in CMake builds
+ - added explicit CMake options for building LAPACKE and shared libraries
+ - simplified and improved handling of OpenMP options in CMake builds
+ - reworked Windows DLL generation in CMake builds to ensure correct symbol
+   renaming (pre/postfixing) and optional generation of PDB files for debugging
+ - updated the Perl script version of the gensymbol utility for use with 
+   Windows-on-Arm
+ - Fixed building with (Mingw) gmake on Windows to ensure completeness of the
+   LAPACK included in the static library (potential race condition due to the
+   Windows version of the "ln" utility creating snapshot copies rather than links)
+ - fixed unwanted deletion of the lapacke_mangling.h file by "make clean"
+ - fixed potential duplication of a _64 suffix on library names in CMake builds
+ - fixed compilation of the C fallback copies of the LAPACK code with GCC 15
+ - included fixed from the Reference-LAPACK project:
+   - fixed a truncated error message in the EIG part of the testsuite
+     (Reference-LAPACK PR 1119)
+   - fixed too strict check in LAPACKE_?gesdd_work (PR #1126)
+   - fixed memory corruption when calling ?GEEV with non-finite data (PR #1128)
+   - fixed missing initialization of a variable in C/GEQP3RK (PR #1131)
+   - fixed 2nd dimension chosen in C/ZUNMLQ transposition operation (PR #1135)
+
+x86_64:
+ - fixed an error in the SBGEMV kernel for Cooper Lake/Sapphire Rapids
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - improved the compiler identification code for flang-new
+ - fixed a potential build issue in the ZSUM kernel
+ - fixed "argument list too long" errors when building on MacOS
+ - added cpu autodetection support for several new Arrow Lake models
+ - fixed conditional inclusion of the fast path SGEMM kernel in DYNAMIC_ARCH
+ - fixed compilation with the MinGW build of GCC 15
+
+arm64:
+ - fixed cpu type detection of A64FX and some ThunderX models (broken in 0.3.29)
+ - added support for the AmpereOne/1A cpus in DYNAMIC_ ARCH builds
+ - added an optimized SBGEMM kernel for NEOVERSEV1
+ - improved 1xN SBGEMM performance by forwarding to SBGEMV 
+ - introduced a stepwise increase of the thread count used for
+   SGEMM and SGEMV on NEOVERSEV1/V2 in relation to problem size
+ - introduced a stepwise increase of the thread count used for
+   DGEMV on NEOVERSEV1 in relation to problem size
+ - introduced a stepwise increase of the thread count used for
+   SDOT and DDOT on NEOVERSEV1 in relation to problem size
+ - worked around assembler limitations in LLVM for Windows-on-Arm
+ - enabled cpu type autodetection from the registry on Windows-on-Arm
+ - improved multithreading threshold for GEMV and GESV on Windows-on-Arm
+ - fixed overoptimization issues with LLVM's flang in Windows-on-Arm
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - added a fast path SGEMM kernel for small workloads on SME capable targets
+ - improved performance of SGEMM and DGEMM kernels for small workloads
+ - improved performance of SGEMV and DGEMV on SVE-capable targets
+ - improved performance of SGEMV on NEOVERSEN1 and Apple M
+ - added optimized SSYMV and DSYMV kernels for NEOVERSEN1, Apple M and all
+   SVE capable targets
+ - added optimized SBGEMV kernels for NEOVERSEV1/V2/N2
+ - improved performance of SGEMM through faster NCOPY kernels
+ - added compiler options for the NVIDIA HPC Compiler Suite
+ - fixed compilation on OSX with XCode 16.3 and later
+ - fixed cpu core type and cache size detection on Apple M4
+ - updated GEMM parameter settings for Neoverse cpus in cross-builds with CMake
+ - fixed default compiler options for NEOVERSEN1 and CORTEXX2 in CMake builds
+ - fixed conditional inclusion of the fast path SGEMM kernel in DYNAMIC_ARCH
+ - fixed potential miscompilation of the non-SVE SDOT kernel
+
+riscv64:
+ - added optimized SROTM and DROTM kernels for x280
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - improved performance of GEMM_TCOPY on RVV1.0 targets with 
+   VLEN of 128 or 256
+ - improved performance of OMATCOPY on targets with VLEN 256
+ - greatly improved performance of SGEMV/DGEMV
+ - improved performance of CGEMV and ZGEMV on C910V and all RVV targets 
+   with VLEN 256
+ - improved performance of SAXPBY and DAXPBY on C910V and all RVV targets 
+   with VLEN 256
+ - improved performance of AXPY and DOT on C910V and ZVL256B targets by
+   falling back to non-vectorized code for very small N. (Thereby fixing
+   poor performance of CHBMV/ZHBMV for very small K)
+ - fixed CMake build failures of the TRMM kernels 
+
+loongarch64:
+ - improved performance of the LSX versions of SSYMV/DSYMV
+ - made the LASX versions of the DSYMV and SSYMV kernels 
+   compatible with hardware changes in LA664 and future targets
+ - fixed inaccuracies in several LASX kernels
+ - improved compatibility of LSX kernels with LA264 targets
+ - fixed handling of deprecated target names in CMake builds
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+
+power:
+ - fixed building for PPCG4 with CMake
+ - fixed SSCAL/DSCAL on PPC970 running FreeBSD
+ - fixed a potential alignment issue in the POWER8 SGEMV kernel
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+
+zarch:
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - fixed unwanted generation of object files with a writable stack
+
+x86:
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - worked around potential miscompilation of CDOT with very old binutils
+
+arm:
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+ - fixed unwanted generation of object files with a writable stack
+
+sparc:
+ - fixed corner cases of NAN and INF input handling in CSCAL and ZSCAL
+
+alpha:
+ - fixed build failure caused by spurious Windows-only typecasts
+
+cell:
+ - fixed probable build issue caused by spurious Windows-only typecasts
+ 
+====================================================================
 Version 0.3.29
 12-Jan-2025
 

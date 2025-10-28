@@ -103,9 +103,16 @@ static inline int blas_quickdivide(blasint x, blasint y){
 	.global	REALNAME ;\
 	.type	REALNAME, %function ;\
 REALNAME:
- 
 
-#define EPILOGUE
+#if defined(__ELF__) && defined(__linux__)
+# define GNUSTACK .section        .note.GNU-stack,"",@progbits
+#else
+# define GNUSTACK
+#endif
+
+#define EPILOGUE \
+        .size    REALNAME, .-REALNAME;	\
+        GNUSTACK
 
 #define PROFCODE
 

@@ -43,6 +43,14 @@
 #include <sys/auxv.h>
 #endif
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+int32_t value;
+size_t length=sizeof(value);
+int64_t value64;
+size_t length64=sizeof(value64);
+#endif
+
 extern gotoblas_t  gotoblas_ARMV8;
 #ifdef DYNAMIC_LIST
 #ifdef DYN_CORTEXA53
@@ -115,7 +123,12 @@ extern gotoblas_t gotoblas_ARMV8SVE;
 #else
 #define gotoblas_ARMV8SVE gotoblas_ARMV8
 #endif
-#ifdef DYN_CORTEX_A55
+#ifdef DYN_ARMV9SME
+extern gotoblas_t gotoblas_ARMV9SME;
+#else
+#define gotoblas_ARMV9SME gotoblas_ARMV8
+#endif
+#ifdef DYN_CORTEXA55
 extern gotoblas_t  gotoblas_CORTEXA55;
 #else
 #define gotoblas_CORTEXA55 gotoblas_ARMV8
@@ -142,21 +155,28 @@ extern gotoblas_t  gotoblas_NEOVERSEV1;
 extern gotoblas_t  gotoblas_NEOVERSEN2;
 extern gotoblas_t  gotoblas_ARMV8SVE;
 extern gotoblas_t  gotoblas_A64FX;
+#ifndef NO_SME
+extern gotoblas_t  gotoblas_ARMV9SME;
+#else
+#define gotoblas_ARMV9SME gotoblas_ARMV8SVE
+#endif
 #else
 #define gotoblas_NEOVERSEV1 gotoblas_ARMV8
 #define gotoblas_NEOVERSEN2 gotoblas_ARMV8
 #define gotoblas_ARMV8SVE   gotoblas_ARMV8
 #define gotoblas_A64FX      gotoblas_ARMV8
+#define gotoblas_ARMV9SME   gotoblas_ARMV8
 #endif
+
 extern gotoblas_t  gotoblas_THUNDERX3T110;
 #endif
-#define gotoblas_NEOVERSEV2 gotoblas_NEOVERSEV1
+#define gotoblas_NEOVERSEV2 gotoblas_NEOVERSEN2
 
 extern void openblas_warning(int verbose, const char * msg);
 #define FALLBACK_VERBOSE 1
 #define NEOVERSEN1_FALLBACK "OpenBLAS : Your OS does not support SVE instructions. OpenBLAS is using Neoverse N1 kernels as a fallback, which may give poorer performance.\n"
 
-#define NUM_CORETYPES   18
+#define NUM_CORETYPES   19
 
 /*
  * In case asm/hwcap.h is outdated on the build system, make sure
@@ -167,6 +187,9 @@ extern void openblas_warning(int verbose, const char * msg);
 #endif
 #ifndef HWCAP_SVE
 #define HWCAP_SVE (1 << 22)
+#endif
+#ifndef HWCAP2_SME
+#define HWCAP2_SME 1<<23
 #endif
 
 #define get_cpu_ftr(id, var) ({					\
@@ -192,6 +215,7 @@ static char *corename[] = {
   "cortexa55",
   "armv8sve",
   "a64fx",
+  "armv9sme",
   "unknown"
 };
 
@@ -214,6 +238,7 @@ char *gotoblas_corename(void) {
   if (gotoblas == &gotoblas_CORTEXA55)    return corename[15];
   if (gotoblas == &gotoblas_ARMV8SVE)     return corename[16];
   if (gotoblas == &gotoblas_A64FX)        return corename[17];
+  if (gotoblas == &gotoblas_ARMV9SME)     return corename[18];
   return corename[NUM_CORETYPES];
 }
 
@@ -251,6 +276,7 @@ static gotoblas_t *force_coretype(char *coretype) {
     case 15: return (&gotoblas_CORTEXA55);
     case 16: return (&gotoblas_ARMV8SVE);
     case 17: return (&gotoblas_A64FX);
+    case 18: return (&gotoblas_ARMV9SME);
   }
   snprintf(message, 128, "Core not found: %s\n", coretype);
   openblas_warning(1, message);
@@ -262,6 +288,11 @@ static gotoblas_t *get_coretype(void) {
   char coremsg[128];
 
 #if defined (OS_DARWIN)
+//future	#if !defined(NO_SME)
+//  		if (support_sme1()) {
+//    			return &gotoblas_ARMV9SME;
+//		  }
+//		#endif
   return &gotoblas_NEOVERSEN1;
 #endif
 	
@@ -409,11 +440,19 @@ static gotoblas_t *get_coretype(void) {
           return &gotoblas_TSV110;
       }
       break;
-    case 0x50: // Ampere
+    case 0x50: // Ampere/AppliedMicro
       switch (part)
       {
         case 0x000: // Skylark/EMAG8180
           return &gotoblas_EMAG8180;
+      }
+      break;
+    case 0xc0: // Ampere
+      switch(part)
+      {
+	case 0xac3:
+	case 0xac4:
+	  return &gotoblas_NEOVERSEN1;
       }
       break;
     case 0x51: // Qualcomm
@@ -424,12 +463,20 @@ static gotoblas_t *get_coretype(void) {
       }
       break;
     case 0x61: // Apple
+//future	if (support_sme1()) return &gotoblas_ARMV9SME;
 	return &gotoblas_NEOVERSEN1;
       break;
     default:
       snprintf(coremsg, 128, "Unknown CPU model - implementer %x part %x\n",implementer,part);
       openblas_warning(1, coremsg);
   }
+
+#if !defined(NO_SME)
+  if (support_sme1()) {
+    return &gotoblas_ARMV9SME;
+  }
+#endif
+
 #ifndef NO_SVE
   if ((getauxval(AT_HWCAP) & HWCAP_SVE)) {
     return &gotoblas_ARMV8SVE;
@@ -479,4 +526,20 @@ void gotoblas_dynamic_init(void) {
 
 void gotoblas_dynamic_quit(void) {
   gotoblas = NULL;
+}
+
+int support_sme1(void) {
+        int ret = 0;
+
+#if (defined OS_LINUX || defined OS_ANDROID)
+        ret = getauxval(AT_HWCAP2) & HWCAP2_SME;
+        if(getauxval(AT_HWCAP2) & HWCAP2_SME){
+                ret = 1;
+        }
+#endif
+#if defined(__APPLE__)
+	sysctlbyname("hw.optional.arm.FEAT_SME",&value64,&length64,NULL,0);
+	ret = value64;
+#endif
+       return ret;
 }

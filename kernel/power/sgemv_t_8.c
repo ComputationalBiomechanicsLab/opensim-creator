@@ -99,7 +99,17 @@ static void sgemv_kernel_8x8(BLASLONG n, BLASLONG lda, FLOAT *ap, FLOAT *x, FLOA
             temp7 += vx1* va7_1 + vx2 * va7_2;  
         }
     
-  
+  #if defined(POWER8)
+    y[0] += alpha * (temp0[0] + temp0[1]+temp0[2] + temp0[3]);
+    y[1] += alpha * (temp1[0] + temp1[1]+temp1[2] + temp1[3]);
+    y[2] += alpha * (temp2[0] + temp2[1]+temp2[2] + temp2[3]);
+    y[3] += alpha * (temp3[0] + temp3[1]+temp3[2] + temp3[3]);
+
+    y[4] += alpha * (temp4[0] + temp4[1]+temp4[2] + temp4[3]);
+    y[5] += alpha * (temp5[0] + temp5[1]+temp5[2] + temp5[3]);
+    y[6] += alpha * (temp6[0] + temp6[1]+temp6[2] + temp6[3]);
+    y[7] += alpha * (temp7[0] + temp7[1]+temp7[2] + temp7[3]);
+ #else
     register __vector float t0, t1, t2, t3;
     register __vector float a = { alpha, alpha, alpha, alpha };
      __vector float *v_y = (__vector float*) y;
@@ -126,7 +136,7 @@ static void sgemv_kernel_8x8(BLASLONG n, BLASLONG lda, FLOAT *ap, FLOAT *x, FLOA
 
     v_y[0] += a * temp0;
     v_y[1] += a * temp4;
-
+#endif
 }
  
 
@@ -153,7 +163,13 @@ static void sgemv_kernel_8x4(BLASLONG n, BLASLONG lda, FLOAT *ap, FLOAT *x, FLOA
         temp2 += v_x[i] * va2[i] + v_x[i+1] * va2[i+1];
         temp3 += v_x[i] * va3[i] + v_x[i+1] * va3[i+1]; 
     }
- 
+
+ #if defined(POWER8)
+    y[0] += alpha * (temp0[0] + temp0[1]+temp0[2] + temp0[3]);
+    y[1] += alpha * (temp1[0] + temp1[1]+temp1[2] + temp1[3]);
+    y[2] += alpha * (temp2[0] + temp2[1]+temp2[2] + temp2[3]);
+    y[3] += alpha * (temp3[0] + temp3[1]+temp3[2] + temp3[3]);
+ #else
     register __vector float t0, t1, t2, t3;
     register __vector float a = { alpha, alpha, alpha, alpha };
      __vector float *v_y = (__vector float*) y;
@@ -169,7 +185,7 @@ static void sgemv_kernel_8x4(BLASLONG n, BLASLONG lda, FLOAT *ap, FLOAT *x, FLOA
     temp0 += temp1 + temp2 + temp3;
 
     v_y[0] += a * temp0;
-
+#endif
 }
  
 

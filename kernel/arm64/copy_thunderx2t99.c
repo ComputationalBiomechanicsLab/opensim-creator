@@ -101,8 +101,9 @@ static int do_copy(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_
 	"	asr	"J", "N", #"N_DIV_SHIFT"	\n"
 	"	cmp	"J", xzr			\n"
 	"	beq	2f //copy_kernel_F1		\n"
+#if !(defined(__clang__) && defined(OS_WINDOWS))
 	"	.align 5				\n"
-
+#endif
 	"1: //copy_kernel_F:				\n"
 	"	"KERNEL_F"				\n"
 	"	subs	"J", "J", #1			\n"

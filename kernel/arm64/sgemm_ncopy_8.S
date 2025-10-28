@@ -86,47 +86,33 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY4x8
 	ldr	q0, [A01], #16
 	ldr	q1, [A02], #16
-	ins	v8.s[0], v0.s[0]
-	ins	v10.s[0], v0.s[1]
-	ins	v12.s[0], v0.s[2]
-	ins	v14.s[0], v0.s[3]
-	ins	v8.s[1], v1.s[0]
-	ins	v10.s[1], v1.s[1]
-	ins	v12.s[1], v1.s[2]
-	ins	v14.s[1], v1.s[3]
-
 	ldr	q2, [A03], #16
 	ldr	q3, [A04], #16
-	ins	v8.s[2], v2.s[0]
-	ins	v10.s[2], v2.s[1]
-	ins	v12.s[2], v2.s[2]
-	ins	v14.s[2], v2.s[3]
-	ins	v8.s[3], v3.s[0]
-	ins	v10.s[3], v3.s[1]
-	ins	v12.s[3], v3.s[2]
-	ins	v14.s[3], v3.s[3]
+
+	zip1    v16.4s, v0.4s, v1.4s
+	zip1    v17.4s, v2.4s, v3.4s
+	zip2    v18.4s, v0.4s, v1.4s
+	zip2    v19.4s, v2.4s, v3.4s
+
+	zip1    v8.2d, v16.2d, v17.2d
+	zip2    v10.2d, v16.2d, v17.2d
+	zip1    v12.2d, v18.2d, v19.2d
+	zip2    v14.2d, v18.2d, v19.2d
 
 	ldr	q4, [A05], #16
 	ldr	q5, [A06], #16
-	ins	v9.s[0], v4.s[0]
-	ins	v11.s[0], v4.s[1]
-	ins	v13.s[0], v4.s[2]
-	ins	v15.s[0], v4.s[3]
-	ins	v9.s[1], v5.s[0]
-	ins	v11.s[1], v5.s[1]
-	ins	v13.s[1], v5.s[2]
-	ins	v15.s[1], v5.s[3]
-
 	ldr	q6, [A07], #16
 	ldr	q7, [A08], #16
-	ins	v9.s[2], v6.s[0]
-	ins	v11.s[2], v6.s[1]
-	ins	v13.s[2], v6.s[2]
-	ins	v15.s[2], v6.s[3]
-	ins	v9.s[3], v7.s[0]
-	ins	v11.s[3], v7.s[1]
-	ins	v13.s[3], v7.s[2]
-	ins	v15.s[3], v7.s[3]
+
+	zip1    v16.4s, v4.4s, v5.4s
+	zip1    v17.4s, v6.4s, v7.4s
+	zip2    v18.4s, v4.4s, v5.4s
+	zip2    v19.4s, v6.4s, v7.4s
+
+	zip1    v9.2d, v16.2d, v17.2d
+	zip2    v11.2d, v16.2d, v17.2d
+	zip1    v13.2d, v18.2d, v19.2d
+	zip2    v15.2d, v18.2d, v19.2d
 
 	st1	{v8.4s, v9.4s, v10.4s, v11.4s}, [B00], #64
 	st1	{v12.4s, v13.4s, v14.4s, v15.4s}, [B00], #64
@@ -135,31 +121,25 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY2x8
 	ldr	d0, [A01], #8
 	ldr	d1, [A02], #8
-	ins	v8.s[0], v0.s[0]
-	ins	v10.s[0], v0.s[1]
-	ins	v8.s[1], v1.s[0]
-	ins	v10.s[1], v1.s[1]
-
 	ldr	d2, [A03], #8
 	ldr	d3, [A04], #8
-	ins	v8.s[2], v2.s[0]
-	ins	v10.s[2], v2.s[1]
-	ins	v8.s[3], v3.s[0]
-	ins	v10.s[3], v3.s[1]
+
+	zip1    v12.4s, v0.4s, v1.4s
+	zip1    v13.4s, v2.4s, v3.4s
+
+	zip1    v8.2d, v12.2d, v13.2d
+	zip2    v10.2d, v12.2d, v13.2d
 
 	ldr	d4, [A05], #8
 	ldr	d5, [A06], #8
-	ins	v9.s[0], v4.s[0]
-	ins	v11.s[0], v4.s[1]
-	ins	v9.s[1], v5.s[0]
-	ins	v11.s[1], v5.s[1]
-
 	ldr	d6, [A07], #8
 	ldr	d7, [A08], #8
-	ins	v9.s[2], v6.s[0]
-	ins	v11.s[2], v6.s[1]
-	ins	v9.s[3], v7.s[0]
-	ins	v11.s[3], v7.s[1]
+
+	zip1    v12.4s, v4.4s, v5.4s
+	zip1    v13.4s, v6.4s, v7.4s
+
+	zip1    v9.2d, v12.2d, v13.2d
+	zip2    v11.2d, v12.2d, v13.2d
 
 	st1	{v8.4s, v9.4s, v10.4s, v11.4s}, [B00], #64
 .endm
@@ -191,25 +171,18 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY4x4
 	ldr	q0, [A01], #16
 	ldr	q1, [A02], #16
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v10.s[0], v0.s[2]
-	ins	v11.s[0], v0.s[3]
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
-	ins	v10.s[1], v1.s[2]
-	ins	v11.s[1], v1.s[3]
-
 	ldr	q2, [A03], #16
 	ldr	q3, [A04], #16
-	ins	v8.s[2], v2.s[0]
-	ins	v9.s[2], v2.s[1]
-	ins	v10.s[2], v2.s[2]
-	ins	v11.s[2], v2.s[3]
-	ins	v8.s[3], v3.s[0]
-	ins	v9.s[3], v3.s[1]
-	ins	v10.s[3], v3.s[2]
-	ins	v11.s[3], v3.s[3]
+
+	zip1    v12.4s, v0.4s, v1.4s
+	zip1    v13.4s, v2.4s, v3.4s
+	zip2    v14.4s, v0.4s, v1.4s
+	zip2    v15.4s, v2.4s, v3.4s
+
+	zip1    v8.2d, v12.2d, v13.2d
+	zip2    v9.2d, v12.2d, v13.2d
+	zip1    v10.2d, v14.2d, v15.2d
+	zip2    v11.2d, v14.2d, v15.2d
 
 	st1	{v8.4s, v9.4s, v10.4s, v11.4s}, [B00], #64
 .endm
@@ -217,17 +190,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY2x4
 	ldr	d0, [A01], #8
 	ldr	d1, [A02], #8
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
-
 	ldr	d2, [A03], #8
 	ldr	d3, [A04], #8
-	ins	v8.s[2], v2.s[0]
-	ins	v9.s[2], v2.s[1]
-	ins	v8.s[3], v3.s[0]
-	ins	v9.s[3], v3.s[1]
+
+	zip1    v10.4s, v0.4s, v1.4s
+	zip1    v11.4s, v2.4s, v3.4s
+
+	zip1    v8.2d, v10.2d, v11.2d
+	zip2    v9.2d, v10.2d, v11.2d
 
 	st1	{v8.4s, v9.4s}, [B00], #32
 .endm
@@ -249,14 +219,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY4x2
 	ldr	q0, [A01], #16
 	ldr	q1, [A02], #16
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v10.s[0], v0.s[2]
-	ins	v11.s[0], v0.s[3]
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
-	ins	v10.s[1], v1.s[2]
-	ins	v11.s[1], v1.s[3]
+
+	zip1    v12.4s, v0.4s, v1.4s
+	zip2    v13.4s, v0.4s, v1.4s
+
+	dup     v8.2d, v12.d[0]
+	dup     v9.2d, v12.d[1]
+	dup     v10.2d, v13.d[0]
+	dup     v11.2d , v13.d[1]
 
 	st1	{v8.2s, v9.2s, v10.2s, v11.2s}, [B00], #32
 .endm
@@ -264,10 +234,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .macro COPY2x2
 	ldr	d0, [A01], #8
 	ldr	d1, [A02], #8
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
+
+	zip1    v8.2s, v0.2s, v1.2s
+	zip2    v9.2s, v0.2s, v1.2s
 
 	st1	{v8.2s, v9.2s}, [B00], #16
 .endm

@@ -26,6 +26,9 @@
 * Chris Sidebottom <chris.sidebottom@arm.com>
   * Optimizations and other improvements targeting AArch64
 
+* Annop Wongwathanarat <annop.wongwathanarat@arm.com>
+  * Optimizations and other improvements targeting AArch64
+
 ## Previous Developers
 
 * Zaheer Chothia <zaheer.chothia@gmail.com>
@@ -231,4 +234,23 @@ In chronological order:
   * [2024-01-24] Optimize GEMV forwarding on ARM64 systems
 
 * Aniket P. Garade <https://github.com/garadeaniket>   Sushil Pratap Singh <https://github.com/SushilPratap04>  Juliya James <https://github.com/Juliya32> 
-  *  [2024-12-13] Optimized swap and rot  Level-1 BLAS routines with ARM SVE  
+  *  [2024-12-13] Optimized swap and rot  Level-1 BLAS routines with ARM SVE
+
+* Annop Wongwathanarat <annop.wongwathanarat@arm.com>
+  * [2025-01-10] Add thread throttling profile for SGEMM on NEOVERSEV1
+  * [2025-01-21] Optimize gemv_t_sve_v1x3 kernel
+  * [2025-02-26] Add sbgemv_t_bfdot kernel
+  * [2025-03-12] Fix aarch64 sbgemv_t compilation error for GCC < 13
+  * [2025-03-12] Optimize aarch64 sgemm_ncopy
+
+* Marek Michalowski <marek.michalowski@arm.com>
+  * [2025-01-21] Add thread throttling profile for SGEMV on `NEOVERSEV1`
+  * [2025-02-18] Add thread throttling profile for SGEMM on `NEOVERSEV2`
+  * [2025-02-19] Add thread throttling profile for SGEMV on `NEOVERSEV2`
+
+* Ye Tao <ye.tao@arm.com>
+  * [2025-02-03] Optimize SBGEMM kernel on NEOVERSEV1
+  * [2025-02-27] Add sbgemv_n_neon kernel
+
+* Abhishek Kumar <https://github.com/abhishek-iitmadras>
+  * [2025-04-22] Optimise dot kernel for NEOVERSE V1

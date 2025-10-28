@@ -122,3 +122,15 @@ ZTRSMKERNEL_LN	=  ztrsm_kernel_2x2_LN.S
 ZTRSMKERNEL_LT	=  ztrsm_kernel_2x2_LT.S
 ZTRSMKERNEL_RN	=  ztrsm_kernel_2x2_LT.S
 ZTRSMKERNEL_RT	=  ztrsm_kernel_2x2_RT.S
+
+ifndef SROTMKERNEL
+SROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef DROTMKERNEL
+DROTMKERNEL = ../generic/rotm.c
+endif
+
+ifndef QROTMKERNEL
+QROTMKERNEL = ../generic/rotm.c
+endif

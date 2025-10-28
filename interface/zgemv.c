@@ -252,24 +252,29 @@ void CNAME(enum CBLAS_ORDER order,
 
 #ifdef SMP
 
-  if ( 1L * m * n < 1024L * GEMM_MULTITHREAD_THRESHOLD )
+#if defined(_WIN64) && defined(_M_ARM64)
+  if (m*n > 25000000L) 
+    nthreads = num_cpu_avail(4);
+  else
+    nthreads = 1;
+#else
+  if (1L * m * n < 1024L * GEMM_MULTITHREAD_THRESHOLD)
     nthreads = 1;
   else
     nthreads = num_cpu_avail(2);
+#endif  
 
   if (nthreads == 1) {
-#endif
+#endif  
 
     (gemv[(int)trans])(m, n, 0, alpha_r, alpha_i, a, lda, x, incx, y, incy, buffer);
 
 #ifdef SMP
-
   } else {
-
     (gemv_thread[(int)trans])(m, n, ALPHA, a, lda, x, incx, y, incy, buffer, nthreads);
-
   }
 #endif
+
 
   STACK_FREE(buffer);
 

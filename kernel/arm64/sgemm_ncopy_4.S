@@ -88,28 +88,19 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	prfm	PLDL1KEEP, [A04, #A_PREFETCH]
 
 	ldr	q0, [A01], #16
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v10.s[0], v0.s[2]
-	ins	v11.s[0], v0.s[3]
-
 	ldr	q1, [A02], #16
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
-	ins	v10.s[1], v1.s[2]
-	ins	v11.s[1], v1.s[3]
-
 	ldr	q2, [A03], #16
-	ins	v8.s[2], v2.s[0]
-	ins	v9.s[2], v2.s[1]
-	ins	v10.s[2], v2.s[2]
-	ins	v11.s[2], v2.s[3]
-
 	ldr	q3, [A04], #16
-	ins	v8.s[3], v3.s[0]
-	ins	v9.s[3], v3.s[1]
-	ins	v10.s[3], v3.s[2]
-	ins	v11.s[3], v3.s[3]
+
+	zip1    v12.4s, v0.4s, v1.4s
+	zip1    v13.4s, v2.4s, v3.4s
+	zip2    v14.4s, v0.4s, v1.4s
+	zip2    v15.4s, v2.4s, v3.4s
+
+	zip1    v8.2d, v12.2d, v13.2d
+	zip2    v9.2d, v12.2d, v13.2d
+	zip1    v10.2d, v14.2d, v15.2d
+	zip2    v11.2d, v14.2d, v15.2d
 
 	st1	{v8.4s, v9.4s, v10.4s, v11.4s}, [B00]
 	add	B00, B00, #64
@@ -138,16 +129,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	prfm	PLDL1KEEP, [A02, #A_PREFETCH]
 
 	ldr	q0, [A01], #16
-	ins	v8.s[0], v0.s[0]
-	ins	v9.s[0], v0.s[1]
-	ins	v10.s[0], v0.s[2]
-	ins	v11.s[0], v0.s[3]
-
 	ldr	q1, [A02], #16
-	ins	v8.s[1], v1.s[0]
-	ins	v9.s[1], v1.s[1]
-	ins	v10.s[1], v1.s[2]
-	ins	v11.s[1], v1.s[3]
+
+	zip1    v12.4s, v0.4s, v1.4s
+	zip2    v13.4s, v0.4s, v1.4s
+
+	dup     v8.2d, v12.d[0]
+	dup     v9.2d, v12.d[1]
+	dup     v10.2d, v13.d[0]
+	dup     v11.2d , v13.d[1]
 
 	st1	{v8.2s, v9.2s, v10.2s, v11.2s}, [B00]
 	add	B00, B00, #32
@@ -330,4 +320,3 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	ret
 
 	EPILOGUE
-

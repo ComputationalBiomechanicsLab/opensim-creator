@@ -793,7 +793,7 @@ f"> */
 /* > \ingroup doubleGEeigen */
 
 /*  ===================================================================== */
-/* Subroutine */ void dgeesx_(char *jobvs, char *sort, L_fp select, char *
+/* Subroutine */ void dgeesx_(char *jobvs, char *sort, logical(*select)(doublereal*,doublereal*), char *
 	sense, integer *n, doublereal *a, integer *lda, integer *sdim, 
 	doublereal *wr, doublereal *wi, doublereal *vs, integer *ldvs, 
 	doublereal *rconde, doublereal *rcondv, doublereal *work, integer *

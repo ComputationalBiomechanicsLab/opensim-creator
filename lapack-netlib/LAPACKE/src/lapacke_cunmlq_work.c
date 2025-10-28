@@ -90,7 +90,7 @@ lapack_int LAPACKE_cunmlq_work( int matrix_layout, char side, char trans,
             goto exit_level_1;
         }
         /* Transpose input matrices */
-        LAPACKE_cge_trans( matrix_layout, k, m, a, lda, a_t, lda_t );
+        LAPACKE_cge_trans( matrix_layout, k, r, a, lda, a_t, lda_t );
         LAPACKE_cge_trans( matrix_layout, m, n, c, ldc, c_t, ldc_t );
         /* Call LAPACK function and adjust info */
         LAPACK_cunmlq( &side, &trans, &m, &n, &k, a_t, &lda_t, tau, c_t, &ldc_t,

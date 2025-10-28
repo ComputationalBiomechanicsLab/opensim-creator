@@ -75,7 +75,16 @@ extern "C" {
 
 #ifndef LAPACK_COMPLEX_CUSTOM
 #if defined(_MSC_VER) && !defined(__INTEL_CLANG_COMPILER)
+#if defined(LAPACK_COMPLEX_CPP)
+    #include <complex>
+    #define lapack_complex_float std::complex<float>
+    #define lapack_complex_double std::complex<double>
+    #define lapack_complex_float_real(z)       ((z).real())
+    #define lapack_complex_float_imag(z)       ((z).imag())
+    #define lapack_complex_double_real(z)       ((z).real())
+    #define lapack_complex_double_imag(z)       ((z).imag())
     #define _CRT_USE_C_COMPLEX_H
+#else
     #include <complex.h>
     #define LAPACK_COMPLEX_CUSTOM
     #define lapack_complex_float _Fcomplex
@@ -84,6 +93,7 @@ extern "C" {
     #define lapack_complex_float_imag(z)       (cimag(z))
     #define lapack_complex_double_real(z)       (creal(z))
     #define lapack_complex_double_imag(z)       (cimag(z))
+#endif
 #else
 
 #if defined(LAPACK_COMPLEX_STRUCTURE)

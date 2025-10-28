@@ -315,8 +315,8 @@ endif
 
 endif
 ifeq ($(CPP_THREAD_SAFETY_TEST), 1)
-@install -m 666 cpp_thread_test/dgemm_tester $(DESTDIR)$(OPENBLAS_BINARY_DIR)
-@install -m 666 cpp_thread_test/dgemv_tester $(DESTDIR)$(OPENBLAS_BINARY_DIR)
+	@install -m 666 cpp_thread_test/dgemm_tester $(DESTDIR)$(OPENBLAS_BINARY_DIR)
+	@install -m 666 cpp_thread_test/dgemv_tester $(DESTDIR)$(OPENBLAS_BINARY_DIR)
 endif
 endif
 

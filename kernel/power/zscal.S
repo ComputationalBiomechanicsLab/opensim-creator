@@ -51,6 +51,7 @@
 #define X r8
 #define INCX r9
 #endif
+#define FLAG r11
 #endif
 
 #if defined(_AIX) || defined(__APPLE__)
@@ -61,6 +62,7 @@
 #define X r8
 #define INCX r9
 #endif
+#define FLAG r11
 #endif
 
 #define FZERO	f0
@@ -93,6 +95,10 @@
 
 	fcmpu	cr0, FZERO, ALPHA_I
 	bne-	cr0, LL(A1I1)
+
+	LDLONG	FLAG, 104(SP)
+	cmpwi	cr0, FLAG, 1
+	beq-	cr0, LL(A1I1)
 
 	cmpwi	cr0, INCX, 2 * SIZE
 	bne-	cr0, LL(A0IN)

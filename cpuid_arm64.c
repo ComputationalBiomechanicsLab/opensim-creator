@@ -43,6 +43,9 @@ size_t length64=sizeof(value64);
 #ifndef HWCAP_SVE
 #define HWCAP_SVE (1 << 22)
 #endif
+#if (defined OS_WINDOWS)
+#include <winreg.h>
+#endif
 
 #define get_cpu_ftr(id, var) ({                                 \
                 __asm__ __volatile__ ("mrs %0, "#id : "=r" (var));              \
@@ -273,11 +276,11 @@ int detect(void)
         		fclose(infile);
 			}
 		}
-		sprintf(cpuimpl,"0x%2x",implementer);
+		sprintf(cpuimpl,"0x%02x",implementer);
 		cpu_implementer=strdup(cpuimpl);
 	}
 	qsort(cpucores,1024,sizeof(int),cpusort);
-	sprintf(cpupart,"0x%3x",cpucores[0]);
+	sprintf(cpupart,"0x%03x",cpucores[0]);
 	cpu_part=strdup(cpupart);
 	if(cpu_part != NULL && cpu_implementer != NULL) {
     // Arm
@@ -371,20 +374,47 @@ int detect(void)
 	}
 #else
 #ifdef __APPLE__
+	length64 = sizeof(value64);
 	sysctlbyname("hw.ncpu",&value64,&length64,NULL,0);
 	cpulowperf=value64;
+	length64 = sizeof(value64);
 	sysctlbyname("hw.nperflevels",&value64,&length64,NULL,0);
 	if (value64 > 1) {
-	sysctlbyname("hw.perflevel0.cpusperl",&value64,&length64,NULL,0);
+	length64 = sizeof(value64);
+	sysctlbyname("hw.perflevel0.cpusperl2",&value64,&length64,NULL,0);
 	cpuhiperf=value64;
-	sysctlbyname("hw.perflevel1.cpusperl",&value64,&length64,NULL,0);
+	length64 = sizeof(value64);
+	sysctlbyname("hw.perflevel1.cpusperl2",&value64,&length64,NULL,0);
 	cpulowperf=value64;
 	}
+	length64 = sizeof(value64);
 	sysctlbyname("hw.cpufamily",&value64,&length64,NULL,0);
 	if (value64 ==131287967|| value64 == 458787763 ) return CPU_VORTEX; //A12/M1
 	if (value64 == 3660830781) return CPU_VORTEX; //A15/M2
         if (value64 == 2271604202) return CPU_VORTEX; //A16/M3
         if (value64 == 1867590060) return CPU_VORTEX; //M4
+#else
+#ifdef OS_WINDOWS
+	HKEY reghandle;
+	HKEY hklm = HKEY_LOCAL_MACHINE;
+	WCHAR valstring[512];
+	PVOID pvalstring=valstring;
+	DWORD size=sizeof (valstring);
+	DWORD type=RRF_RT_ANY;
+	DWORD flags=0;
+	LPCWSTR subkey= L"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0";
+        LPCWSTR field=L"ProcessorNameString"; 
+	LONG errcode=RegOpenKeyEx(HKEY_LOCAL_MACHINE,TEXT("Hardware\\Description\\System\\CentralProcessor\\0"), 0, KEY_READ, &reghandle);
+	if (errcode != NO_ERROR) wprintf(L"Could not open registry key for proc0: %x\n",errcode);
+        errcode=RegQueryValueEx(reghandle, "ProcessorNameString", NULL,NULL ,pvalstring,&size);
+	if (errcode != ERROR_SUCCESS) wprintf(L"Error reading cpuname from registry:%x\n",errcode);
+//wprintf(stderr,L"%s\n",(PWSTR)valstring);
+	RegCloseKey(reghandle);
+	if (strstr(valstring, "Snapdragon(R) X Elite")) return CPU_NEOVERSEN1;
+	if (strstr(valstring, "Ampere(R) Altra")) return CPU_NEOVERSEN1;
+	if (strstr(valstring, "Snapdragon (TM) 8cx Gen 3")) return CPU_CORTEXX1;
+	if (strstr(valstring, "Snapdragon Compute Platform")) return CPU_CORTEXX1;
+#endif
 #endif
 	return CPU_ARMV8;	
 #endif
@@ -442,6 +472,7 @@ int n=0;
 	printf("#define NUM_CORES_HP %d\n",cpuhiperf);
 #endif
 #ifdef __APPLE__
+	length64 = sizeof(value64);
 	sysctlbyname("hw.physicalcpu_max",&value,&length,NULL,0);
 	printf("#define NUM_CORES %d\n",value);
 	if (cpulowperf >0)
@@ -673,12 +704,17 @@ void get_cpuconfig(void)
 	    case CPU_VORTEX:
 		printf("#define VORTEX			      \n");
 #ifdef __APPLE__
+		length64 = sizeof(value64);
 		sysctlbyname("hw.l1icachesize",&value64,&length64,NULL,0);
 		printf("#define L1_CODE_SIZE	     %lld       \n",value64);
+		length64 = sizeof(value64);
 		sysctlbyname("hw.cachelinesize",&value64,&length64,NULL,0);
 		printf("#define L1_CODE_LINESIZE     %lld       \n",value64);
+		printf("#define L1_DATA_LINESIZE     %lld       \n",value64);
+		length64 = sizeof(value64);
 		sysctlbyname("hw.l1dcachesize",&value64,&length64,NULL,0);
 		printf("#define L1_DATA_SIZE	     %lld       \n",value64);
+		length64 = sizeof(value64);
 		sysctlbyname("hw.l2cachesize",&value64,&length64,NULL,0);
 		printf("#define L2_SIZE	     %lld       \n",value64);
 #endif	

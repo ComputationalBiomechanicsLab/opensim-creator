@@ -48,4 +48,6 @@ lapack_complex_double lapack_make_complex_double( double re, double im ) {
 #endif
    return z;
 }
+#else
+lapack_complex_double lapack_make_complex_double( double re, double im ) {}
 #endif

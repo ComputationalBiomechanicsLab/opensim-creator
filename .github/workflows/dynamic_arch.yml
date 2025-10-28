@@ -43,7 +43,9 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt-get update
-            sudo apt-get install -y gfortran cmake ccache libtinfo5
+            sudo apt-get install -y gfortran cmake ccache
+            wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.3-2ubuntu0.1_amd64.deb
+            sudo apt install ./libtinfo5_6.3-2ubuntu0.1_amd64.deb
           elif [ "$RUNNER_OS" == "macOS" ]; then
             # It looks like "gfortran" isn't working correctly unless "gcc" is re-installed.
             brew reinstall gcc
@@ -354,3 +356,23 @@ jobs:
       - name: Build OpenBLAS
         run: |
           make -j$(nproc) HOSTCC="ccache gcc" CC="ccache ${{ matrix.triple }}-gcc" FC="ccache ${{ matrix.triple }}-gfortran" ARCH=${{ matrix.target }} ${{ matrix.opts }}
+
+  neoverse_build:
+    if: "github.repository == 'OpenMathLib/OpenBLAS'"
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc gfortran make
+          
+      - name: Build OpenBLAS
+        run: |
+          make -j${nproc} 
+          make -j${nproc} lapack-test
+    
+          

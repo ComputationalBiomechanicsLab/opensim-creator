@@ -27,65 +27,56 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**************************************************************************************
 * 2013/09/14 Saar
-*	 BLASTEST float		: OK
-* 	 BLASTEST double	: OK
-* 	 CTEST			: OK
-* 	 TEST			: OK
+*    BLASTEST float     : OK
+*    BLASTEST double    : OK
+*    CTEST          : OK
+*    TEST           : OK
 *
 **************************************************************************************/
 
 #include "common.h"
 
+// The c/zscal_k function is called not only by cblas_c/zscal but also by other upper-level interfaces.
+// In certain cases, the expected return values for cblas_s/zscal differ from those of other upper-level interfaces.
+// To handle this, we use the dummy2 parameter to differentiate between them.
 int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
 {
-	BLASLONG i=0;
-	BLASLONG inc_x2;
-	BLASLONG ip = 0;
-	FLOAT temp;
+    BLASLONG i = 0;
+    BLASLONG inc_x2;
+    BLASLONG ip = 0;
+    FLOAT temp;
 
-        if ( (n <= 0) || (inc_x <= 0))
-                return(0);
+    if ((n <= 0) || (inc_x <= 0))
+        return(0);
 
+    inc_x2 = 2 * inc_x;
+    if (dummy2 == 0) {
+        for (i = 0; i < n; i++)
+        {
+            if (da_r == 0.0 && da_i == 0.0)
+            {
+                x[ip] = 0.0;
+                x[ip+1] = 0.0;
+            }
+            else
+            {
+                temp    = da_r * x[ip]   - da_i * x[ip+1];
+                x[ip+1] = da_r * x[ip+1] + da_i * x[ip]  ;
+                x[ip] = temp;
+            }
 
-	inc_x2 = 2 * inc_x;
-	for ( i=0; i<n; i++ )
-	{
-		if ( da_r == 0.0 )
-		{
-			if ( da_i == 0.0 )
-			{
-				temp = 0.0;
-				x[ip+1] = 0.0 ;
-			}
-			else
-			{
-				temp = - da_i * x[ip+1] ;
-				if (isnan(x[ip]) || isinf(x[ip])) temp = NAN;
-				if (!isinf(x[ip+1])) 
-					x[ip+1] = da_i * x[ip]  ;
-				else 	x[ip+1] = NAN;
-			}
-		}
-		else
-		{
-			if ( da_i == 0.0 )
-			{
-				temp    = da_r * x[ip]  ;
-				x[ip+1] = da_r * x[ip+1];
-			}
-			else
-			{
-				temp    = da_r * x[ip]   - da_i * x[ip+1] ;
-				x[ip+1] = da_r * x[ip+1] + da_i * x[ip]   ;
-			}
-		}
-		x[ip]   = temp;
+            ip += inc_x2;
+        }
+        return(0);
+    }
+    for (i = 0; i < n; i++)
+    {
+        temp    = da_r * x[ip]   - da_i * x[ip+1];
+        x[ip+1] = da_r * x[ip+1] + da_i * x[ip]  ;
 
-		ip += inc_x2;
-	}
+        x[ip]   = temp;
+        ip += inc_x2;
+    }
 
-	return(0);
-
+    return(0);
 }
-
-

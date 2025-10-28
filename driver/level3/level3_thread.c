@@ -547,7 +547,7 @@ static int gemm_driver(blas_arg_t *args, BLASLONG *range_m, BLASLONG
 
 #ifdef USE_OPENMP
   static omp_lock_t level3_lock, critical_section_lock;
-  static volatile BLASLONG init_lock = 0, omp_lock_initialized = 0,
+  static volatile BLASULONG init_lock = 0, omp_lock_initialized = 0,
                   parallel_section_left = MAX_PARALLEL_NUMBER;
 
   // Lock initialization; Todo : Maybe this part can be moved to blas_init() in blas_server_omp.c
@@ -591,7 +591,7 @@ static int gemm_driver(blas_arg_t *args, BLASLONG *range_m, BLASLONG
 
   BLASLONG nthreads = args -> nthreads;
 
-  BLASLONG width, i, j, k, js;
+  BLASLONG width, width_n, i, j, k, js;
   BLASLONG m, n, n_from, n_to;
   int mode;
 #if defined(DYNAMIC_ARCH)
@@ -740,18 +740,25 @@ static int gemm_driver(blas_arg_t *args, BLASLONG *range_m, BLASLONG
     /* Partition (a step of) n into nthreads regions */
     range_N[0] = js;
     num_parts  = 0;
-    while (n > 0){
-      width = blas_quickdivide(n + nthreads - num_parts - 1, nthreads - num_parts);
-      if (width < switch_ratio && width > 1) {
-        width = switch_ratio;
+    for(j = 0; j < nthreads_n; j++){
+      width_n = blas_quickdivide(n + nthreads_n - j - 1, nthreads_n - j);
+      n -= width_n;
+      for(i = 0; i < nthreads_m; i++){
+        width = blas_quickdivide(width_n + nthreads_m - i - 1, nthreads_m - i);
+        if (width < switch_ratio) {
+          width = switch_ratio;
+        }
+        width = round_up(width_n, width, GEMM_PREFERED_SIZE);
+
+        width_n -= width;
+        if (width_n < 0) {
+          width = width + width_n;
+          width_n = 0;
+        }
+        range_N[num_parts + 1] = range_N[num_parts] + width;
+
+        num_parts ++;
       }
-      width = round_up(n, width, GEMM_PREFERED_SIZE);
-
-      n -= width;
-      if (n < 0) width = width + n;
-      range_N[num_parts + 1] = range_N[num_parts] + width;
-
-      num_parts ++;
     }
     for (j = num_parts; j < MAX_CPU_NUMBER; j++) {
       range_N[j + 1] = range_N[num_parts];
@@ -844,9 +851,20 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n, IFLOAT *sa, IF
     /* Objective function come from sum of partitions in m and n.             */
     /* (n / nthreads_n) + (m / nthreads_m)                                    */
     /* = (n * nthreads_m + m * nthreads_n) / (nthreads_n * nthreads_m)        */
-    while (nthreads_m % 2 == 0 && n * nthreads_m + m * nthreads_n > n * (nthreads_m / 2) + m * (nthreads_n * 2)) {
-      nthreads_m /= 2;
-      nthreads_n *= 2;
+    BLASLONG cost = 0, div = 0;
+    BLASLONG i;
+    for (i = 1; i <= sqrt(nthreads_m); i++) {
+      if (nthreads_m % i) continue;
+      BLASLONG j = nthreads_m / i;
+      BLASLONG cost_i = n * j + m * nthreads_n * i;
+      BLASLONG cost_j = n * i + m * nthreads_n * j;
+      if (cost == 0 ||
+          cost_i < cost) {cost = cost_i; div = i;}
+      if (cost_j < cost) {cost = cost_j; div = j;}
+    }
+    if (div > 1) {
+      nthreads_m /= div;
+      nthreads_n *= div;
     }
   }
 

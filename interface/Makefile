@@ -1304,9 +1304,9 @@ ifeq ($(BUILD_BFLOAT16),1)
 sbgemm.$(SUFFIX) sbgemm.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -c $(CFLAGS) $< -o $(@F)
 sbgemmt.$(SUFFIX) sbgemmt.$(PSUFFIX) : sbgemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 sbgemmtr.$(SUFFIX) sbgemmtr.$(PSUFFIX) : sbgemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 endif
 
 sgemm.$(SUFFIX) sgemm.$(PSUFFIX) : gemm.c ../param.h
@@ -1328,34 +1328,34 @@ xgemm.$(SUFFIX) xgemm.$(PSUFFIX) : gemm.c ../param.h
 	$(CC) -c $(CFLAGS) $< -o $(@F)
 
 sgemmt.$(SUFFIX) sgemmt.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 
 dgemmt.$(SUFFIX) dgemmt.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 
 qgemmt.$(SUFFIX) qgemmt.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 
 cgemmt.$(SUFFIX) cgemmt.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 
 zgemmt.$(SUFFIX) zgemmt.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -URNAME $< -o $(@F)
 
 sgemmtr.$(SUFFIX) sgemmtr.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 
 dgemmtr.$(SUFFIX) dgemmtr.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 
 qgemmtr.$(SUFFIX) qgemmtr.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 
 cgemmtr.$(SUFFIX) cgemmtr.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 
 zgemmtr.$(SUFFIX) zgemmtr.$(PSUFFIX) : gemmt.c ../param.h
-	$(CC) -c $(CFLAGS) $< -o $(@F)
+	$(CC) -c $(CFLAGS) -DRNAME $< -o $(@F)
 
 ssymm.$(SUFFIX) ssymm.$(PSUFFIX) : symm.c
 	$(CC) -c $(CFLAGS) $< -o $(@F)
