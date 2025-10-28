@@ -196,6 +196,16 @@ void osc::OpenSimDecorationOptions::setShouldShowPointForces(bool v)
     m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowPointForces, v);
 }
 
+bool osc::OpenSimDecorationOptions::getShouldShowScholz2015ObstacleContactHints() const
+{
+    return m_Flags.get(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints);
+}
+
+void osc::OpenSimDecorationOptions::setShouldShowScholz2015ObstacleContactHints(bool v)
+{
+    m_Flags.set(OpenSimDecorationOptionFlag::ShouldShowScholz2015ObstacleContactHints, v);
+}
+
 void osc::OpenSimDecorationOptions::setShouldShowEverything(bool v)
 {
     setShouldShowScapulo(v);

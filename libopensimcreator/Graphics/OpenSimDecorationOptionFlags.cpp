@@ -60,26 +60,32 @@ namespace
         OpenSimDecorationOptionMetadata
         {
             "show_contact_forces",
-            OSC_ICON_MAGIC " Plane Contact Forces",
+            "Plane Contact Forces (experimental)",
             "Tries to draw the direction of contact forces on planes in the scene.\n\nEXPERIMENTAL: the implementation of this visualization is work-in-progress and written by someone with a highschool-log_level_ understanding of Torque. Report any bugs or implementation opinions on GitHub.\n\nOpenSim Creator's implementation of this algorithm is very roughly based on Thomas Geijtenbeek's (better) implementation in scone-studio, here:\n\n    - https://github.com/tgeijten/scone-studio \n\nThanks to @tgeijten for writing an awesome project (that OSC has probably mis-implemented ;) - again, report any bugs, folks)",
         },
         OpenSimDecorationOptionMetadata
         {
             "show_force_linear_component",
-            OSC_ICON_MAGIC " Forces on Bodies",
+            "Forces on Bodies (experimental)",
             "Tries to draw the linear component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their linear component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
         },
         OpenSimDecorationOptionMetadata
         {
             "show_force_angular_component",
-            OSC_ICON_MAGIC " Torques on Bodies",
+            "Torques on Bodies (experimental)",
             "Tries to draw the angular component applied by each `OpenSim::Force` in the model.\n\nEXPERIMENTAL: this currently iterates through all the forces and extracts their angular component w.r.t. the body frame, it's probably slow, and probably noisy, but also probably still useful to know (e.g. if you're debugging weird model behavior)",
         },
         OpenSimDecorationOptionMetadata
         {
             "show_point_forces",
-            OSC_ICON_MAGIC " Point Forces",
+            "Point Forces (experimental)",
             "Tries to draw the an arrow to the point where point-based linear force component(s) are applied. This only applies to `OpenSim::Force`s that support applying forces to points.\n\nEXPERIMENTAL: for technical reasons, this implementation is ad-hoc: it currently only works for `ExternalForce`s and `GeometryPath`s",
+        },
+        OpenSimDecorationOptionMetadata
+        {
+            "show_scholz_2015_obstacle_contact_hints",
+            "Scholz Obstacle Contact Hints",
+            "Draws a sphere where at the `contact_hint` location for each `OpenSim::Scholz2015GeometryPathObstacle` in the model",
         },
     });
 

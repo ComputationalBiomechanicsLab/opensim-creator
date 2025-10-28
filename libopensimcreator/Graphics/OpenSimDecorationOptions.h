@@ -76,6 +76,9 @@ namespace osc
         bool getShouldShowPointForces() const;
         void setShouldShowPointForces(bool);
 
+        bool getShouldShowScholz2015ObstacleContactHints() const;
+        void setShouldShowScholz2015ObstacleContactHints(bool);
+
         void setShouldShowEverything(bool);
 
         void forEachOptionAsAppSettingValue(const std::function<void(std::string_view, const Variant&)>&) const;

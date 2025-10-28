@@ -41,6 +41,7 @@
 #include <OpenSim/Simulation/Model/PathSpring.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Simulation/Model/Scholz2015GeometryPath.h>
 #include <OpenSim/Simulation/Model/Station.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
@@ -1300,6 +1301,20 @@ namespace
             rs.consume(hcf, std::move(d));
         });
     }
+
+    void HandleScholzGeometryPathObstacle(
+        RendererState& rs,
+        const OpenSim::Scholz2015GeometryPathObstacle& obstacle)
+    {
+        const SimTK::Vec3& contactHint = obstacle.getContactHint();
+        const SimTK::Vec3 contactHintInGround = obstacle.getContactGeometry().getFrame().getTransformInGround(rs.getState()) * obstacle.getContactGeometry().getTransform() * contactHint;
+        rs.consume(obstacle, SceneDecoration{
+            .mesh = rs.sphere_mesh(),
+            .transform = {.scale = rs.getFixupScaleFactor() * Vector3{0.01f}, .translation = to<Vector3>(contactHintInGround)},
+            .shading = Color::green(),
+            .flags = {SceneDecorationFlag::AnnotationElement, SceneDecorationFlag::CanBackfaceCull},
+        });
+    }
 }
 
 void osc::GenerateModelDecorations(
@@ -1438,6 +1453,9 @@ void osc::GenerateSubcomponentDecorations(
         else if (const auto* const force = dynamic_cast<const OpenSim::Force*>(&c)) {
             GenerateBodySpatialVectorArrowDecorationsForForcesThatOnlyHaveComputeForceMethod(rendererState, *force);
             rendererState.emitGenericDecorations(c, c);
+        }
+        else if (const auto* obstacle = dynamic_cast<const OpenSim::Scholz2015GeometryPathObstacle*>(&c); obstacle and opts.getShouldShowScholz2015ObstacleContactHints()) {
+            HandleScholzGeometryPathObstacle(rendererState, *obstacle);
         }
         else {
             rendererState.emitGenericDecorations(c, c);
