@@ -4,6 +4,7 @@
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneDecorationShading.h>
+#include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StringName.h>
@@ -39,11 +40,11 @@ namespace osc
             return copy;
         }
 
-        // returns `true` if this `SceneDecoration` is rim highlighted (any group)
-        bool is_rim_highlighted() const
-        {
-            return flags.get(SceneDecorationFlag::AllRimHighlightGroups);
-        }
+        // Returns `true` if this `SceneDecoration` has the given flag set in its `flags` field.
+        bool has_flag(SceneDecorationFlag flag) const { return flags.get(flag); }
+
+        // Returns the world-space bounds of this `SceneDecoration`
+        AABB world_space_bounds() const;
 
         Mesh mesh{};
         Transform transform{};

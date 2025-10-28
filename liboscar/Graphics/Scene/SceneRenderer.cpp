@@ -1,17 +1,16 @@
 #include "SceneRenderer.h"
 
-#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
-#include <liboscar/Graphics/Materials/MeshDepthWritingMaterial.h>
-#include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
-#include <liboscar/Graphics/Scene/SceneHelpers.h>
-#include <liboscar/Graphics/Textures/ChequeredTexture.h>
 #include <liboscar/Graphics/Camera.h>
+#include <liboscar/Graphics/CameraClearFlags.h>
 #include <liboscar/Graphics/Color.h>
 #include <liboscar/Graphics/ColorRenderBufferParams.h>
 #include <liboscar/Graphics/DepthStencilRenderBufferParams.h>
 #include <liboscar/Graphics/Graphics.h>
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/MaterialPropertyBlock.h>
+#include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
+#include <liboscar/Graphics/Materials/MeshDepthWritingMaterial.h>
+#include <liboscar/Graphics/Materials/MeshNormalVectorsMaterial.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Graphics/RenderTarget.h>
 #include <liboscar/Graphics/RenderTexture.h>
@@ -19,19 +18,24 @@
 #include <liboscar/Graphics/Scene/SceneDecoration.h>
 #include <liboscar/Graphics/Scene/SceneDecorationFlags.h>
 #include <liboscar/Graphics/Scene/SceneRendererParams.h>
+#include <liboscar/Graphics/Textures/ChequeredTexture.h>
+#include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/AABBFunctions.h>
 #include <liboscar/Maths/Angle.h>
+#include <liboscar/Maths/CoordinateDirection.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/Matrix4x4.h>
 #include <liboscar/Maths/MatrixFunctions.h>
-#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/QuaternionFunctions.h>
 #include <liboscar/Maths/Rect.h>
 #include <liboscar/Maths/RectFunctions.h>
+#include <liboscar/Maths/Sphere.h>
 #include <liboscar/Maths/Transform.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/StdVariantHelpers.h>
+#include <liboscar/Utils/StringName.h>
 
 #include <ankerl/unordered_dense.h>
 
@@ -71,10 +75,10 @@ namespace
 
     Transform calc_floor_transform(Vector3 floor_origin, float fixup_scale_factor)
     {
+        // note: this should be the same as `osc::draw_grid`
         return {
-            // note: this should be the same as draw_grid
             .scale = {50.0f * fixup_scale_factor, 50.0f * fixup_scale_factor, 1.0f},
-            .rotation = angle_axis(-90_deg, Vector3{1.0f, 0.0f, 0.0f}),
+            .rotation = angle_axis(-90_deg, CoordinateDirection::x()),
             .translation = floor_origin,
         };
     }
@@ -130,10 +134,9 @@ namespace
     // compute the world space bounds union of all rim-highlighted geometry
     std::optional<AABB> rim_aabb_of(const SceneDecoration& decoration)
     {
-        if (decoration.is_rim_highlighted()) {
-            return world_space_bounds_of(decoration);
-        }
-        return std::nullopt;
+        return decoration.has_flag(SceneDecorationFlag::AllRimHighlightGroups) ?
+            std::optional(decoration.world_space_bounds()) :
+            std::nullopt;
     }
 
     // the `Material` that's used to shade the main scene (colored `SceneDecoration`s)
@@ -456,7 +459,7 @@ namespace
         explicit EdgeDetectionMaterial() :
             Material{Shader{c_vertex_shader_src, c_fragment_shader_src}}
         {
-            set_transparent(true);    // so that anti-aliased edged alpha-blend correctly
+            set_transparent(true);    // so that anti-aliased edges alpha-blend correctly
             set_depth_tested(false);  // not required: it's handling a single quad
         }
 
@@ -624,8 +627,8 @@ public:
 
         // prevents copies on next frame
         edge_detection_material_.unset("uScreenTexture");
-        scene_floor_material_.unset("uShadowMapTexture");
         scene_main_material_.unset("uShadowMapTexture");
+        scene_floor_material_.unset("uShadowMapTexture");
         scene_oit_compositor_material_.unset("uOITAccumulator");
     }
 
@@ -672,7 +675,7 @@ private:
 
             // if a wireframe overlay is requested for the decoration then draw it over the top in
             // a solid color - even if `NoDrawInScene` is requested (#952).
-            if (dec.flags & SceneDecorationFlag::DrawWireframeOverlay) {
+            if (dec.has_flag(SceneDecorationFlag::DrawWireframeOverlay)) {
                 const Color wireframe_color = std::visit(Overload{
                     [](const Color& color) { return color; },
                     [](const auto&) { return Color::white(); },
@@ -682,7 +685,7 @@ private:
                 graphics::draw(dec.mesh, dec.transform, wireframe_material_, camera_, wireframe_prop_block);
             }
 
-            if (dec.flags & SceneDecorationFlag::NoDrawInScene) {
+            if (dec.has_flag(SceneDecorationFlag::NoDrawInScene)) {
                 continue;  // skip drawing the decoration (and, potentially, its normals)
             }
 
@@ -771,7 +774,7 @@ private:
         color_cache_.clear();
         for (const SceneDecoration& decoration : decorations) {
 
-            if (decoration.flags & SceneDecorationFlag::NoDrawInScene) {
+            if (decoration.has_flag(SceneDecorationFlag::NoDrawInScene)) {
                 continue;  // Skip drawing the decoration (and, potentially, its normals)
             }
 
@@ -853,23 +856,18 @@ private:
         if (not maybe_rim_ndc_rect) {
             return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
         }
-        // else: the scene contains rim-highlighted geometry that may appear on screen
 
-        // the rims appear on the screen and are loosely bounded (in NDC) by the returned rect
+        // else: the rims appear on the screen and are loosely bounded (in NDC) by the returned rect
         Rect& rim_ndc_rect = *maybe_rim_ndc_rect;
 
         // compute rim thickness in each direction (aspect ratio might not be 1:1)
         const Vector2 rim_ndc_thickness = 2.0f * params.rim_thickness/params.dimensions;
 
-        // expand by the rim thickness, so that the output has space for the rims
+        // expand by 2x the rim thickness, so that the output has space on both sides for the rims
         rim_ndc_rect = rim_ndc_rect.with_dimensions(rim_ndc_rect.dimensions() + 2.0f*rim_ndc_thickness);
 
-        // constrain the result of the above to within clip space
+        // constrain the result to within clip space
         rim_ndc_rect = clamp(rim_ndc_rect, {-1.0f, -1.0f}, {1.0f, 1.0f});
-
-        if (rim_ndc_rect.area() <= 0.0f) {
-            return std::nullopt;  // the scene contains rim-highlighted geometry, but it isn't on-screen
-        }
 
         // compute rim rectangle in texture coordinates
         const Rect rim_rect_uv = ndc_rect_to_topleft_viewport_rect(rim_ndc_rect, Rect::from_corners({}, {1.0f, 1.0f}));
@@ -894,10 +892,10 @@ private:
             Color32 color = Color32::black();
 
             static_assert(SceneRendererParams::num_rim_groups() == 2);
-            if (decoration.flags & SceneDecorationFlag::RimHighlight0) {
+            if (decoration.has_flag(SceneDecorationFlag::RimHighlight0)) {
                 color.r = 1.0f;
             }
-            if (decoration.flags & SceneDecorationFlag::RimHighlight1) {
+            if (decoration.has_flag(SceneDecorationFlag::RimHighlight1)) {
                 color.g = 1.0f;
             }
 
@@ -928,8 +926,8 @@ private:
         //
         // the off-screen texture is rendered as a quad via an edge-detection kernel
         // that transforms the solid shapes into "rims"
+        static_assert(SceneRendererParams::num_rim_groups() == 2, "Check below if the number of groups changed");
         edge_detection_material_.set("uScreenTexture", rims_render_texture_.upd_color_buffer());
-        static_assert(SceneRendererParams::num_rim_groups() == 2);
         edge_detection_material_.set("uRim0Color", params.rim_group_colors[0]);
         edge_detection_material_.set("uRim1Color", params.rim_group_colors[1]);
         edge_detection_material_.set("uRimThickness", 0.5f*rim_ndc_thickness);
@@ -949,28 +947,24 @@ private:
         const SceneRendererParams& params)
     {
         if (not params.draw_shadows) {
-            return std::nullopt;  // the caller doesn't actually want shadows
+            return std::nullopt;
         }
 
-        // setup scene camera
         camera_.reset();
 
-        // compute the bounds of everything that casts a shadow
-        //
-        // (also, while doing that, draw each mesh - to prevent multipass)
+        // compute the bounds of, and draw, everything that casts a shadow
         std::optional<AABB> shadowcaster_aabbs;
         for (const SceneDecoration& decoration : decorations) {
-            if (decoration.flags & SceneDecorationFlag::NoCastsShadows) {
+            if (decoration.has_flag(SceneDecorationFlag::NoCastsShadows)) {
                 continue;  // this decoration shouldn't cast shadows
             }
-            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, world_space_bounds_of(decoration));
+            shadowcaster_aabbs = bounding_aabb_of(shadowcaster_aabbs, decoration.world_space_bounds());
             graphics::draw(decoration.mesh, decoration.transform, depth_writer_material_, camera_);
         }
 
         if (not shadowcaster_aabbs) {
-            // there are no shadow casters, so there will be no shadows
             camera_.reset();
-            return std::nullopt;
+            return std::nullopt;  // no shadow casters (therefore, no shadows)
         }
 
         // compute camera matrices for the orthogonal (direction) camera used for lighting
@@ -984,7 +978,10 @@ private:
             },
         });
 
-        return Shadows{shadow_map_render_buffer_ , matrices.projection_matrix * matrices.view_matrix};
+        return Shadows{
+            .shadow_map = shadow_map_render_buffer_ ,
+            .lightspace_matrix = matrices.projection_matrix * matrices.view_matrix,
+        };
     }
 
     SceneMainMaterial scene_main_material_;
@@ -1007,7 +1004,6 @@ private:
     SharedColorRenderBuffer oit_render_buffer_;
     RenderTexture output_render_texture_;
 };
-
 
 osc::SceneRenderer::SceneRenderer(SceneCache& scene_cache) :
     impl_{std::make_unique<Impl>(scene_cache)}

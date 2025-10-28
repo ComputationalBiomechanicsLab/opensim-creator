@@ -85,7 +85,7 @@ public:
             generateDecorations();
         }
         if (std::exchange(m_FirstFrame, false)) {
-            const AABB sceneAABB = bounding_aabb_of(m_Decorations, world_space_bounds_of);
+            const AABB sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds);
             auto_focus(m_ModelRendererParams.camera, sceneAABB);
         }
 

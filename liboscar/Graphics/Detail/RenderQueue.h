@@ -64,7 +64,7 @@ namespace osc::detail
             auto& mesh() const { return render_queue_pointer_->meshes_[*handle_pointer_]; }
             auto& maybe_submesh_index() const { return render_queue_pointer_->maybe_submesh_indices_[*handle_pointer_]; }
             auto& model_matrix() const { return render_queue_pointer_->model_matrices_[*handle_pointer_]; }
-            Vector3 world_space_centroid() const { return transform_point(model_matrix(), centroid_of(mesh().bounds())); }
+            Vector3 world_space_centroid() const { return transform_point(model_matrix(), mesh().centroid()); }
 
             bool is_opaque() const { return not material().is_transparent(); }
             bool is_depth_tested() const { return material().is_depth_tested(); }

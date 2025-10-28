@@ -4627,10 +4627,8 @@ public:
         return rv;
     }
 
-    const AABB& bounds() const
-    {
-        return aabb_;
-    }
+    const AABB& bounds() const { return aabb_; }
+    Vector3 centroid() const { return centroid_of(bounds()); }
 
     void clear()
     {
@@ -5174,6 +5172,11 @@ std::vector<Vector3> osc::Mesh::indexed_vertices() const
 const AABB& osc::Mesh::bounds() const
 {
     return impl_->bounds();
+}
+
+Vector3 osc::Mesh::centroid() const
+{
+    return impl_->centroid();
 }
 
 void osc::Mesh::clear()

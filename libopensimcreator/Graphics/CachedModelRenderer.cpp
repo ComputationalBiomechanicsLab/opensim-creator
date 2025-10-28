@@ -74,7 +74,7 @@ namespace
                 const auto onComponentDecoration = [this](const OpenSim::Component&, SceneDecoration&& dec)
                 {
                     if (IsContributorToSceneVolume(dec)) {
-                        m_SceneVolume = bounding_aabb_of(m_SceneVolume, world_space_bounds_of(dec));
+                        m_SceneVolume = bounding_aabb_of(m_SceneVolume, dec.world_space_bounds());
                     }
                     m_Drawlist.push_back(std::move(dec));
                 };

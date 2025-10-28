@@ -214,28 +214,23 @@ void osc::draw_line_segment(
     });
 }
 
-AABB osc::world_space_bounds_of(const SceneDecoration& decoration)
-{
-    return transform_aabb(decoration.transform, decoration.mesh.bounds());
-}
-
 void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bvh)
 {
     std::vector<AABB> aabbs;
     aabbs.reserve(decorations.size());
     for (const SceneDecoration& decoration : decorations) {
-        aabbs.push_back(world_space_bounds_of(decoration));
+        aabbs.push_back(decoration.world_space_bounds());
     }
 
     bvh.build_from_aabbs(aabbs);
 }
 
 void osc::for_each_ray_collision_with_scene(
-        const BVH& scene_bvh,
-        SceneCache& cache,
-        std::span<const SceneDecoration> decorations,
-        const Ray& world_space_ray,
-        const std::function<void(SceneCollision&&)>& out)
+    const BVH& scene_bvh,
+    SceneCache& cache,
+    std::span<const SceneDecoration> decorations,
+    const Ray& world_space_ray,
+    const std::function<void(SceneCollision&&)>& out)
 {
     scene_bvh.for_each_ray_aabb_collision(world_space_ray, [&cache, &decorations, &world_space_ray, &out](const BVHCollision& scene_collision)
     {

@@ -1030,17 +1030,77 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 
 TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
 {
-    constexpr auto pyramid_vertices = std::to_array<Vector3>({
-        {-1.0f, -1.0f, 0.0f},  // base: bottom-left
-        { 1.0f, -1.0f, 0.0f},  // base: bottom-right
-        { 0.0f,  1.0f, 0.0f},  // base: top-middle
+    constexpr auto triangle_vertices = std::to_array<Vector3>({
+        {-1.0f, -1.0f, 0.0f},  // bottom-left
+        { 1.0f, -1.0f, 0.0f},  // bottom-right
+        { 0.0f,  1.0f, 0.0f},  // top-middle
     });
-    constexpr auto pyramid_indices = std::to_array<uint16_t>({0, 1, 2});
+    constexpr auto triangle_indices = std::to_array<uint16_t>({0, 1, 2});
 
     Mesh mesh;
-    mesh.set_vertices(pyramid_vertices);
-    mesh.set_indices(pyramid_indices);
-    ASSERT_EQ(mesh.bounds(), bounding_aabb_of(pyramid_vertices));
+    mesh.set_vertices(triangle_vertices);
+    mesh.set_indices(triangle_indices);
+    ASSERT_EQ(mesh.bounds(), bounding_aabb_of(triangle_vertices));
+}
+
+TEST(Mesh, centroid_of_empty_Mesh_returns_zero_vector)
+{
+    ASSERT_EQ(Mesh{}.centroid(), Vector3{});
+}
+
+TEST(Mesh, centroid_of_Mesh_without_indicies_returns_zero_vector)
+{
+    constexpr auto square_vertices = std::to_array<Vector3>({
+        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, -1.0f, 0.0f},  // bottom-left
+        { 1.0f, -1.0f, 0.0f},  // bottom-right
+        { 1.0f,  1.0f, 0.0f},  // top-right
+    });
+
+    Mesh m;
+    m.set_vertices(square_vertices);
+    ASSERT_EQ(m.centroid(), Vector3{}) << "should be empty, because the caller forgot to provide indices";
+}
+
+TEST(Mesh, centroid_of_correctly_initialized_Mesh_returns_centroid_of_bounds)
+{
+    constexpr auto square_vertices = std::to_array<Vector3>({
+        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, -1.0f, 0.0f},  // bottom-left
+        { 1.0f, -1.0f, 0.0f},  // bottom-right
+        { 1.0f,  1.0f, 0.0f},  // top-right
+    });
+    constexpr auto square_indices = std::to_array<uint16_t>({
+        0, 1, 3,  // bottom-left triangle
+        1, 2, 3,  // bottom-right triangle
+    });
+
+    Mesh m;
+    m.set_vertices(square_vertices);
+    m.set_indices(square_indices);
+    ASSERT_EQ(m.centroid(), centroid_of(bounding_aabb_of(square_vertices)));
+}
+
+TEST(Mesh, centroid_of_works_with_line_topology_Mesh)
+{
+    constexpr auto square_vertices = std::to_array<Vector3>({
+        {-1.0f,  1.0f, 0.0f},  // top-left
+        {-1.0f, -1.0f, 0.0f},  // bottom-left
+        { 1.0f, -1.0f, 0.0f},  // bottom-right
+        { 1.0f,  1.0f, 0.0f},  // top-right
+    });
+    constexpr auto square_edge_indices = std::to_array<uint16_t>({
+        0, 1,
+        1, 2,
+        2, 3,
+        3, 0
+    });
+
+    Mesh m;
+    m.set_topology(MeshTopology::Lines);
+    m.set_vertices(square_vertices);
+    m.set_indices(square_edge_indices);
+    ASSERT_EQ(m.centroid(), centroid_of(bounding_aabb_of(square_vertices)));
 }
 
 TEST(Mesh, can_be_compared_for_equality)

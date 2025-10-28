@@ -98,8 +98,6 @@ namespace osc
         const std::function<void(SceneDecoration&&)>& out
     );
 
-    AABB world_space_bounds_of(const SceneDecoration&);
-
     // updates the given BVH with the given component decorations
     void update_scene_bvh(
         std::span<const SceneDecoration>,

@@ -117,6 +117,11 @@ namespace osc
         // `set_indices`, or `set_vertex_buffer_data` is called
         const AABB& bounds() const;
 
+        // Returns the local-space centroid of the bounds of this mesh.
+        //
+        // Equivalent to `centroid_of(mesh.bounds())`
+        Vector3 centroid() const;
+
         // clear all data in the mesh, such that the mesh then behaves as-if it were
         // just default-initialized
         void clear();
