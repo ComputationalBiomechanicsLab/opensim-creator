@@ -33,7 +33,7 @@ target_compile_options(OpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_include_directories(OpenSimCreator PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/..  # so that `#include <libopensimcreator/HEADER.h>` works
 )
-target_link_libraries(OpenSimCreator PUBLIC oscar osim std::mdspan)
+target_link_libraries(OpenSimCreator PUBLIC oscar osim mdspan::mdspan)
 
 if(BUILD_TESTING)
     add_subdirectory(testing)
