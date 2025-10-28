@@ -9,7 +9,25 @@ function(mdspan_add_benchmark EXENAME)
   target_compile_definitions(${EXENAME} PRIVATE MDSPAN_USE_PAREN_OPERATOR=1)
 endfunction()
 
-find_package(benchmark REQUIRED)
+if(MDSPAN_USE_SYSTEM_BENCHMARK)
+  find_package(benchmark REQUIRED)
+else()
+  set(BENCHMARK_ENABLE_TESTING OFF)
+  include(FetchContent)
+  
+  fetchcontent_declare(
+      benchmark
+      GIT_REPOSITORY https://github.com/google/benchmark.git
+      GIT_TAG v1.9.1
+  )
+
+  # TODO CMake 3.28, we can pass EXCLUDE_FROM_ALL directly to fetchcontent_makeavailable(benchmark)
+  fetchcontent_getproperties(benchmarkgoogletest)
+  if (NOT benchmark_POPULATED)
+    fetchcontent_populate(benchmark)
+    add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
+endif()
 
 function(mdspan_add_cuda_benchmark EXENAME)
   add_executable(${EXENAME} ${EXENAME}.cu)

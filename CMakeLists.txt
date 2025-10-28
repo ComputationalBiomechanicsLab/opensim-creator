@@ -22,7 +22,9 @@ option(MDSPAN_ENABLE_SYCL "Enable SYCL tests/benchmarks/examples if tests/benchm
 option(MDSPAN_ENABLE_HIP "Enable HIP tests/benchmarks/examples if tests/benchmarks/examples are enabled." Off)
 option(MDSPAN_ENABLE_OPENMP "Enable OpenMP benchmarks if benchmarks are enabled." On)
 option(MDSPAN_USE_SYSTEM_GTEST "Use system-installed GoogleTest library for tests." Off)
+option(MDSPAN_USE_SYSTEM_BENCHMARK "Use system-installed Google Benchmark library for benchmarks." On)
 option(MDSPAN_INSTALL_STDMODE_HEADERS "Whether to install headers to emulate standard library headers and namespaces" Off)
+option(MDSPAN_GENERATE_STD_NAMESPACE_TARGETS "Whether to generate and install targets with the std:: namespace instead of the mdspan:: namespace" Off)
 
 # Option to override which C++ standard to use
 set(MDSPAN_CXX_STANDARD DETECT CACHE STRING "Override the default CXX_STANDARD to compile with.")
@@ -81,27 +83,6 @@ endif()
 
 ################################################################################
 
-if(MDSPAN_ENABLE_CONCEPTS)
-  if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag("-fconcepts" COMPILER_SUPPORTS_FCONCEPTS)
-    if(COMPILER_SUPPORTS_FCONCEPTS)
-      message(STATUS "Using \"-fconcepts\" to enable concepts support")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
-    else()
-      check_cxx_compiler_flag("-fconcepts-ts" COMPILER_SUPPORTS_FCONCEPTS_TS)
-      if(COMPILER_SUPPORTS_FCONCEPTS)
-        message(STATUS "Using \"-fconcepts-ts\" to enable concepts support")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-ts")
-      endif()
-    endif()
-    # Otherwise, it's possible that the compiler supports concepts without flags,
-    # but if it doesn't, they just won't be used, which is fine
-  endif()
-endif()
-
-################################################################################
-
 if(MDSPAN_ENABLE_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
@@ -137,7 +118,10 @@ endif()
 ################################################################################
 
 add_library(mdspan INTERFACE)
-add_library(std::mdspan ALIAS mdspan)
+add_library(mdspan::mdspan ALIAS mdspan)
+if (MDSPAN_GENERATE_STD_NAMESPACE_TARGETS)
+  add_library(std::mdspan ALIAS mdspan)
+endif()
 
 if(MDSPAN_ENABLE_SYCL)
   target_compile_options(mdspan INTERFACE "-fsycl")
@@ -157,14 +141,31 @@ install(TARGETS mdspan EXPORT mdspanTargets
 
 install(EXPORT mdspanTargets
     FILE mdspanTargets.cmake
-    NAMESPACE std::
+    NAMESPACE mdspan::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
 )
 
 export(TARGETS mdspan
-    NAMESPACE std::
+    NAMESPACE mdspan::
     FILE mdspanTargets.cmake
 )
+
+if (MDSPAN_GENERATE_STD_NAMESPACE_TARGETS)
+  install(TARGETS mdspan EXPORT mdspanStdTargets
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+
+  install(EXPORT mdspanStdTargets
+      FILE mdspanStdTargets.cmake
+      NAMESPACE std::
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mdspan
+  )
+
+  export(TARGETS mdspan
+      NAMESPACE std::
+      FILE mdspanStdTargets.cmake
+  )
+endif()
 
 install(DIRECTORY include/mdspan DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if (MDSPAN_INSTALL_STDMODE_HEADERS)
