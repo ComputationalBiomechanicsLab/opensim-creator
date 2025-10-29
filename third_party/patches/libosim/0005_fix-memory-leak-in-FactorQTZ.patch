@@ -1,0 +1,12 @@
+diff --git a/third_party/libosim/simbody/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp b/third_party/libosim/simbody/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp
+index 7728fa8c1..54aab9815 100644
+--- a/third_party/libosim/simbody/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp
++++ b/third_party/libosim/simbody/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp
+@@ -71,6 +71,7 @@ FactorQTZ::FactorQTZ( const FactorQTZ& c ) {
+ }
+ // copy assignment operator
+ FactorQTZ& FactorQTZ::operator=(const FactorQTZ& rhs) {
++    delete rep;
+     rep = rhs.rep->clone();
+     return *this;
+ }
