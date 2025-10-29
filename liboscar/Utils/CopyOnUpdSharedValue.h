@@ -25,7 +25,9 @@ namespace osc
             ptr_->owners.fetch_add(1, std::memory_order::relaxed);
         }
 
-        CopyOnUpdSharedValue(CopyOnUpdSharedValue&&) noexcept = delete;
+        CopyOnUpdSharedValue(CopyOnUpdSharedValue&& tmp) noexcept :
+            CopyOnUpdSharedValue{static_cast<const CopyOnUpdSharedValue&>(tmp)}
+        {}
 
         ~CopyOnUpdSharedValue() noexcept
         {
@@ -41,7 +43,10 @@ namespace osc
             return *this;
         }
 
-        CopyOnUpdSharedValue& operator=(CopyOnUpdSharedValue&&) noexcept = delete;
+        CopyOnUpdSharedValue& operator=(CopyOnUpdSharedValue&& rhs) noexcept
+        {
+            return *this = static_cast<const CopyOnUpdSharedValue&>(rhs);
+        }
 
         friend void swap(CopyOnUpdSharedValue& a, CopyOnUpdSharedValue& b) noexcept
         {

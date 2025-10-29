@@ -29,6 +29,7 @@ Checks: >
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-avoid-const-or-ref-data-members,
   -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-macro-usage,
   performance-*,
   -performance-avoid-endl,
   -performance-enum-size,
@@ -63,3 +64,6 @@ CheckOptions:
     value: true
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
+
+WarningsAsErrors: '*'
+

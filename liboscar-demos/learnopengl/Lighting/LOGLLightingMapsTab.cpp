@@ -115,7 +115,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/LightCube.vert"),
         loader_.slurp("oscar_demos/learnopengl/shaders/LightCube.frag"),
     }};
-    Mesh mesh_ = BoxGeometry{};
+    Mesh mesh_ = BoxGeometry{}.mesh();
     MouseCapturingCamera camera_ = create_camera();
 
     Transform light_transform_ = {

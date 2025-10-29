@@ -251,7 +251,7 @@ private:
     MouseCapturingCamera camera_;
     MeshBasicMaterial material_;
     Mesh sphere_mesh_ = SphereGeometry{{.num_width_segments = 12, .num_height_segments = 12}};
-    Mesh wireframe_mesh_ = AABBGeometry{};
+    Mesh wireframe_mesh_ = AABBGeometry{}.mesh();
     Mesh circle_mesh_ = CircleGeometry{{.radius = 1.0f, .num_segments = 36}};
     Mesh crosshair_mesh_ = generate_crosshair_mesh();
     Mesh triangle_mesh_ = generate_triangle_mesh();

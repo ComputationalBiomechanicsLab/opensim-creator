@@ -100,7 +100,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/LightCube.frag"),
     }};
 
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
 
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
 

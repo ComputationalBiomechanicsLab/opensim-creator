@@ -123,7 +123,7 @@ private:
     // rendering state
     Material parallax_mapping_material_ = create_parallax_mapping_material(loader_);
     Material light_cube_material_ = create_lightcube_material(loader_);
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // scene state

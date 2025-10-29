@@ -601,8 +601,8 @@ namespace
 
     class RenderQueueEntryHasMaterial final {
     public:
-        explicit RenderQueueEntryHasMaterial(const Material& material) :
-            material_{material}
+        explicit RenderQueueEntryHasMaterial(Material material) :
+            material_{std::move(material)}
         {}
 
         bool operator()(RenderQueue::const_reference el) const
@@ -615,8 +615,8 @@ namespace
 
     class RenderQueueEntryHasMaterialPropertyBlock final {
     public:
-        explicit RenderQueueEntryHasMaterialPropertyBlock(const MaterialPropertyBlock& mpb) :
-            mpb_{mpb}
+        explicit RenderQueueEntryHasMaterialPropertyBlock(MaterialPropertyBlock mpb) :
+            mpb_{std::move(mpb)}
         {}
 
         bool operator()(RenderQueue::const_reference el) const
@@ -630,8 +630,8 @@ namespace
 
     class RenderQueueEntryHasMesh final {
     public:
-        explicit RenderQueueEntryHasMesh(const Mesh& mesh) :
-            mesh_{mesh}
+        explicit RenderQueueEntryHasMesh(Mesh mesh) :
+            mesh_{std::move(mesh)}
         {}
 
         bool operator()(RenderQueue::const_reference el) const

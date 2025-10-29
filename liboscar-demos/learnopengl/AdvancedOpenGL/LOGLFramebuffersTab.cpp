@@ -142,7 +142,7 @@ private:
         ColorSpace::sRGB
     );
 
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh plane_mesh_ = generate_plane();
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 

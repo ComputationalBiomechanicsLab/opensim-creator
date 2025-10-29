@@ -158,7 +158,7 @@ private:
 
     ResourceLoader loader_ = App::resource_loader();
     Material material_ = make_box_material(loader_);
-    Mesh mesh_ = BoxGeometry{};
+    Mesh mesh_ = BoxGeometry{}.mesh();
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();
     bool show_step1_ = false;
     Transform step1_transform_;

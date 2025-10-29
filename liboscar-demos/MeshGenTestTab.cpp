@@ -59,15 +59,15 @@ namespace
             {"y-line", cache.yline_mesh()},
             {"quad", cache.quad_mesh()},
             {"torus", cache.torus_mesh(0.9f, 0.1f)},
-            {"plane", PlaneGeometry{}},
-            {"torus_knot", TorusKnotGeometry{}},
+            {"plane", PlaneGeometry{}.mesh()},
+            {"torus_knot", TorusKnotGeometry{}.mesh()},
             {"box", BoxGeometry{{.dimensions = Vector3{2.0f}}}},
-            {"icosahedron", IcosahedronGeometry{}},
-            {"dodecahedron", DodecahedronGeometry{}},
-            {"octahedron", OctahedronGeometry{}},
-            {"tetrahedron", TetrahedronGeometry{}},
-            {"lathe", LatheGeometry{{.points = generate_lathe_points(), .num_segments = 3}}},
-            {"ring", RingGeometry{{.num_phi_segments = 3, .theta_length = Degrees{180}}}},
+            {"icosahedron", IcosahedronGeometry{}.mesh()},
+            {"dodecahedron", DodecahedronGeometry{}.mesh()},
+            {"octahedron", OctahedronGeometry{}.mesh()},
+            {"tetrahedron", TetrahedronGeometry{}.mesh()},
+            {"lathe", LatheGeometry{{.points = generate_lathe_points(), .num_segments = 3}}.mesh()},
+            {"ring", RingGeometry{{.num_phi_segments = 3, .theta_length = Degrees{180}}}.mesh()},
         };
     }
 }

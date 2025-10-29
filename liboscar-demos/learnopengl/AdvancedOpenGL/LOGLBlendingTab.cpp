@@ -162,7 +162,7 @@ private:
         loader_.slurp("oscar_demos/learnopengl/shaders/AdvancedOpenGL/Blending.frag"),
     }};
     Material blending_material_ = opaque_material_;
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh plane_mesh_ = generate_plane();
     Mesh transparent_mesh_ = generate_transparent();
     MouseCapturingCamera camera_ = create_camera_that_matches_learnopengl();

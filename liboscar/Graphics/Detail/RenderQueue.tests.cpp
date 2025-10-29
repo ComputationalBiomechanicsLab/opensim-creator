@@ -39,7 +39,7 @@ namespace
     };
 
     struct RenderQueueEmplaceArgs final {
-        Mesh mesh = ConeGeometry{};
+        Mesh mesh = ConeGeometry{}.mesh();
         Matrix4x4 transform{3.7f};
         Material material = MeshBasicMaterial{};
         MaterialPropertyBlock material_property_block;

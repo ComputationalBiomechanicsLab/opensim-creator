@@ -194,7 +194,7 @@ private:
 
     Material multiple_lights_material_ = create_multiple_lights_material(loader_);
     Material light_cube_material_ = create_light_cube_material(loader_);
-    Mesh mesh_ = BoxGeometry{};
+    Mesh mesh_ = BoxGeometry{}.mesh();
 
     MouseCapturingCamera camera_ = create_camera();
 

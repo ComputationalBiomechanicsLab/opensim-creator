@@ -129,7 +129,7 @@ private:
     // rendering state
     Material normal_mapping_material_ = create_normal_mapping_material(loader_);
     Material light_cube_material_ = create_light_cube_material(loader_);
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Mesh quad_mesh_ = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
 
     // scene state

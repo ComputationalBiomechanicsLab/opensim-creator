@@ -268,7 +268,7 @@ private:
     Mesh cone = ConeGeometry{{.radius = 1.0f, .height = 2.0f, .num_radial_segments = 16}};
     Mesh floor = PlaneGeometry{{.dimensions = Vector2{2.0f}}};
     Mesh grid100x100 = GridGeometry{{.num_divisions = 1000}};
-    Mesh cube_wireframe = AABBGeometry{};
+    Mesh cube_wireframe = AABBGeometry{}.mesh();
     Mesh y_line = generate_y_to_y_line_mesh();
     Mesh textured_quad = floor;
 

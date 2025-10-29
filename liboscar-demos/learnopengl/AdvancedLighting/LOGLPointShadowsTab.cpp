@@ -175,7 +175,7 @@ private:
         for (const SceneCube& cube : scene_cubes_) {
             MaterialPropertyBlock material_props;
             material_props.set("uReverseNormals", cube.invert_normals);
-            graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, std::move(material_props));
+            graphics::draw(cube_mesh_, cube.transform, material, scene_camera_, material_props);
         }
         material.unset("uDepthMap");
 

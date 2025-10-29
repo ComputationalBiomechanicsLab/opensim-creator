@@ -213,7 +213,7 @@ private:
     std::array<CubeMaterial, 3> cube_materials_ = create_cube_materials(loader_);
     size_t cube_material_index_ = 0;
     MaterialPropertyBlock cube_properties_;
-    Mesh cube_mesh_ = BoxGeometry{};
+    Mesh cube_mesh_ = BoxGeometry{}.mesh();
     Texture2D container_texture_ = Image::read_into_texture(
         loader_.open("oscar_demos/learnopengl/textures/container.jpg"),
         ColorSpace::sRGB

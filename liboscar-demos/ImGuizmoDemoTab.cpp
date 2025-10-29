@@ -50,7 +50,7 @@ public:
                 const Matrix4x4 xform = model_matrix_ * translate(identity<Matrix4x4>(), 0.5f*v) * matrix4x4_cast(rotation(plane_.normal(), v));
                 const Color color = Color{0.4f}.with_element(i % 3, 0.8f);
                 graphics::draw(
-                    plane_,
+                    plane_.mesh(),
                     xform,
                     basic_material_,
                     render_camera,
