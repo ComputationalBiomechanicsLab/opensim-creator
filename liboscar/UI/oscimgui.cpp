@@ -330,6 +330,11 @@ namespace
         return rv;
     }
 
+    UID to_uid(ImTextureID id)
+    {
+        return UID::from_int_unchecked(static_cast<UID::element_type>(id));
+    }
+
     // The internal backend data associated with one UI context.
     //
     // Must be constructed BEFORE the ImGui context is initialized and
@@ -356,7 +361,6 @@ namespace
         WindowID                                         Window;
         WindowID                                         ImeWindow;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
         std::string                                      ClipboardText;
-        bool                                             WantChangeDisplayScale = false;
         std::optional<AppClock::time_point>              LastFrameTime;
 
         // Mouse handling
@@ -373,12 +377,47 @@ namespace
 
         // Graphics
         std::array<uint8_t, 256> srgb_to_linear_lut = create_srgb_to_linear_lut();
-        UID font_texture_id;
-        std::optional<Texture2D> font_texture;
         Material ui_material{Shader{c_ui_vertex_shader_src, c_ui_fragment_shader_src}};
         Camera camera;
         Mesh mesh;
-        ankerl::unordered_dense::map<UID, std::variant<Texture2D, RenderTexture>> textures_allocated_this_frame;
+
+        using texture_type = std::variant<Texture2D, RenderTexture>;
+
+        template<typename Texture>
+        requires (std::constructible_from<texture_type, Texture>)
+        ImTextureID allocate_imgui_texture(Texture&& texture) { return allocate_texture(textures_allocated_by_imgui, std::forward<Texture>(texture)); }
+
+        void deallocate_imgui_texture(ImTextureID id) { textures_allocated_by_imgui.erase(to_uid(id)); }
+
+        template<typename Texture>
+        requires (std::constructible_from<texture_type, Texture>)
+        ImTextureID allocate_texture_for_this_frame(Texture&& texture) { return allocate_texture(textures_allocated_this_frame, std::forward<Texture>(texture)); }
+
+        void clear_textures_allocated_this_frame() { textures_allocated_this_frame.clear(); }
+
+        texture_type* lookup_texture(ImTextureID id)
+        {
+            static_assert(sizeof(decltype(UID{}.get())) <= sizeof(ImTextureID));
+            if (auto* t = lookup_or_nullptr(textures_allocated_this_frame, to_uid(id))) {
+                return t;
+            }
+            else {
+                return lookup_or_nullptr(textures_allocated_by_imgui, to_uid(id));
+            }
+        }
+    private:
+        template<typename Texture>
+        requires (std::constructible_from<texture_type, Texture>)
+        ImTextureID allocate_texture(ankerl::unordered_dense::map<UID, texture_type>& storage, Texture&& texture)
+        {
+            UID id;
+            storage.insert_or_assign(id, std::forward<Texture>(texture));
+            static_assert(sizeof(decltype(id.get())) <= sizeof(ImTextureID));
+            return static_cast<ImTextureID>(id.get());
+        }
+
+        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_this_frame;
+        ankerl::unordered_dense::map<UID, texture_type> textures_allocated_by_imgui;
     };
 
     OscarUIBackendData* try_get_ui_backend_data(ImGuiContext* context)
@@ -396,39 +435,6 @@ namespace
         OscarUIBackendData* bd = try_get_ui_backend_data();
         IM_ASSERT(bd != nullptr && "Did you call ImGui_ImplOscar_Init()?");
         return *bd;
-    }
-
-    ImTextureID to_imgui_texture_id(UID id)
-    {
-        static_assert(sizeof(decltype(id.get())) <= sizeof(ImTextureID));
-        return static_cast<ImTextureID>(id.get());
-    }
-
-    UID to_uid(ImTextureID id)
-    {
-        return UID::from_int_unchecked(static_cast<UID::element_type>(id));
-    }
-
-    Texture2D create_font_texture(UID texture_id)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-
-        uint8_t* pixel_data = nullptr;
-        Vector2i pixel_dimensions;
-        io.Fonts->GetTexDataAsRGBA32(&pixel_data, &pixel_dimensions.x, &pixel_dimensions.y);
-        io.Fonts->SetTexID(to_imgui_texture_id(texture_id));
-        const size_t num_bytes = static_cast<size_t>(pixel_dimensions.x)*static_cast<size_t>(pixel_dimensions.y)*4uz;
-
-        Texture2D rv{
-            pixel_dimensions,
-            TextureFormat::RGBA32,
-            ColorSpace::Linear,
-        };
-        rv.set_pixel_data({pixel_data, num_bytes});
-        rv.set_filter_mode(TextureFilterMode::Linear);
-        io.Fonts->ClearTexData();  // it's not needed by ImGui: it'll use the GPU texture
-
-        return rv;
     }
 
     void convert_draw_data_from_srgb_to_linear(const OscarUIBackendData& bd, ImDrawList& draw_list)
@@ -507,15 +513,10 @@ namespace
         });
 
         // setup texture binding (it's almost always the font texture)
-        if (const auto* texture = lookup_or_nullptr(bd.textures_allocated_this_frame, to_uid(draw_command.GetTexID()))) {
+        if (const auto* texture = bd.lookup_texture(draw_command.GetTexID())) {
             std::visit(Overload{
                 [&bd](const auto& texture) { bd.ui_material.set("uTexture", texture); },
             }, *texture);
-        }
-        else if (bd.font_texture) {
-            // this is a sane fallback for custom drawlists, which might not have set
-            // a texture ID (imgui always sets it).
-            bd.ui_material.set("uTexture", *bd.font_texture);
         }
 
         // draw
@@ -569,13 +570,13 @@ namespace
         mesh.clear();
     }
 
-    template<SameAsAnyOf<Texture2D, RenderTexture> Texture>
+    template<typename Texture>
+    requires (std::constructible_from<OscarUIBackendData::texture_type, Texture>)
     ImTextureID allocate_texture_for_current_frame(const Texture& texture)
     {
         OscarUIBackendData * bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
-        const UID texture_uid = bd->textures_allocated_this_frame.try_emplace(UID{}, texture).first->first;
-        return to_imgui_texture_id(texture_uid);
+        return bd->allocate_texture_for_this_frame(texture);
     }
 
     template<typename>
@@ -595,17 +596,65 @@ namespace
 
         OscarUIBackendData* bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available - this is a developer error");
-        bd->textures_allocated_this_frame.clear();
-        if (not bd->font_texture) {
-            bd->font_texture = create_font_texture(bd->font_texture_id);
-        }
-        bd->textures_allocated_this_frame.try_emplace(bd->font_texture_id, *bd->font_texture);  // (so that all lookups can hit the same LUT)
+        bd->clear_textures_allocated_this_frame();
     }
 
-    void graphics_backend_mark_fonts_for_reupload()
+    void graphics_backend_handle_texture_data(OscarUIBackendData& bd, ImTextureData& texture_data)
     {
-        if (OscarUIBackendData* bd = try_get_ui_backend_data()) {
-            bd->font_texture.reset();
+        if (texture_data.Status == ImTextureStatus_OK) {
+            return;  // nothing to do
+        }
+
+        if (texture_data.Status == ImTextureStatus_Destroyed) {}  // nothing to do (no callback-style behavior in this backend)
+        else if (texture_data.Status == ImTextureStatus_WantCreate) {
+            // TODO: Requesting backend to create the texture. Set status OK when done.
+            // ImGui: Create and upload a new texture to the graphics system
+            OSC_ASSERT(texture_data.TexID == 0 and texture_data.BackendUserData == nullptr);
+            OSC_ASSERT(texture_data.Format == ImTextureFormat_RGBA32);
+
+            // Allocate the texture in oscar's backend
+            const Vector2i dimensions{texture_data.Width, texture_data.Height};
+            const size_t bytes_in_texture = area_of(dimensions) * num_bytes_per_pixel_in(TextureFormat::RGBA32);
+            Texture2D texture{
+                dimensions,
+                TextureFormat::RGBA32,
+                ColorSpace::Linear,
+                TextureWrapMode::Clamp,
+                TextureFilterMode::Linear,
+            };
+            texture.set_pixel_data({static_cast<const uint8_t*>(texture_data.GetPixels()), bytes_in_texture});
+
+            // Update ImGui with texture details
+            texture_data.SetTexID(bd.allocate_imgui_texture(texture));
+            texture_data.SetStatus(ImTextureStatus_OK);
+        }
+        else if (texture_data.Status == ImTextureStatus_WantUpdates) {
+            // Fetch the texture handle from the liboscar backend data
+            auto* t = bd.lookup_texture(texture_data.GetTexID());
+            OSC_ASSERT(t and std::holds_alternative<Texture2D>(*t) && "the texture should've been created by ImTextureStatus_WantCreate");
+            Texture2D& texture = std::get<Texture2D>(*t);
+
+            // Update pixel data
+            std::vector<uint8_t> pixel_data_copy(texture.pixel_data().begin(), texture.pixel_data().end());
+            for (const ImTextureRect& source_rect : texture_data.Updates) {
+                uint8_t* source_first_pixel = static_cast<uint8_t*>(texture_data.GetPixelsAt(source_rect.x, source_rect.y));
+                uint8_t* destination_first_pixel = pixel_data_copy.data() + ((source_rect.x + source_rect.y*texture_data.Width) * texture_data.BytesPerPixel);
+                for (int row = 0; row < source_rect.h; ++row) {
+                    uint8_t* source_row_begin = source_first_pixel + (row * texture_data.GetPitch());
+                    uint8_t* source_row_end = source_row_begin + (source_rect.w * texture_data.BytesPerPixel);
+                    uint8_t* destination_row_begin = destination_first_pixel + (row * texture_data.GetPitch());
+                    std::copy(source_row_begin, source_row_end, destination_row_begin);
+                }
+            }
+            texture.set_pixel_data(pixel_data_copy);
+            texture_data.SetStatus(ImTextureStatus_OK);
+        }
+        else if (texture_data.Status == ImTextureStatus_WantDestroy) {
+            // Requesting backend to destroy the texture. Set status to Destroyed when done.
+            bd.deallocate_imgui_texture(texture_data.GetTexID());
+            // Clear identifiers and mark as destroyed (in order to allow e.g. calling InvalidateDeviceObjects while running)
+            texture_data.SetTexID(ImTextureID_Invalid);
+            texture_data.SetStatus(ImTextureStatus_Destroyed);
         }
     }
 
@@ -617,6 +666,17 @@ namespace
         setup_camera_view_matrix(*draw_data, bd->camera);
         for (int n = 0; n < draw_data->CmdListsCount; ++n) {
             render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n], maybe_target);
+        }
+
+        // Catch up with texture updates. Most of the times, the list will have 1 element with an OK
+        // status, aka nothing to do.
+        //
+        // (This almost always points to ImGui::GetPlatformIO().Textures[] but is part of ImDrawData to
+        // allow overriding or disabling texture updates).
+        if (draw_data->Textures != nullptr) {
+            for (ImTextureData* texture_data : *draw_data->Textures) {
+                graphics_backend_handle_texture_data(*bd, *texture_data);
+            }
         }
     }
 
@@ -836,39 +896,32 @@ namespace
         }
     }
 
-    void setup_scaling_dependent_rendering_fonts_and_styling(
-        App& app,
+    void configure_fonts(
+        ResourceLoader loader,
         const ui::ContextConfiguration::Impl& config,
         OscarUIBackendData& bd)
     {
         ImGuiIO& io = ImGui::GetIO();
-        const float scale = app.main_window_device_pixel_ratio();
-
-        // Setup ImGui-to-renderer scaling for HighDPI support.
-        io.DisplayFramebufferScale = {scale, scale};
 
         // Setup fonts: ensure they have the correct pixel scaling for HighDPI.
         {
             ImFontConfig base_font_config;
             base_font_config.SizePixels = c_default_base_font_device_independent_pixel_size;
-            base_font_config.RasterizerDensity = scale;
             base_font_config.PixelSnapH = true;
             base_font_config.FontDataOwnedByAtlas = true;
 
-            ResourceLoader loader = app.upd_resource_loader();
-            bool should_build_and_reupload = false;
-
             // Main font support
+            bool main_font_added = false;
             if (const auto* main_font = config.main_font_config(); main_font and loader.resource_exists(main_font->path)) {
                 io.Fonts->Clear();
                 io.FontDefault = nullptr;
 
                 add_resource_as_font(loader, base_font_config, *io.Fonts, main_font->path);
-                should_build_and_reupload = true;
+                main_font_added = true;
             }
 
             // Add icon support
-            if (const auto* icon_font = config.icon_font_config(); should_build_and_reupload and icon_font and loader.resource_exists(icon_font->path)) {
+            if (const auto* icon_font = config.icon_font_config(); main_font_added and icon_font and loader.resource_exists(icon_font->path)) {
                 ImFontConfig icon_font_config = base_font_config;
                 icon_font_config.MergeMode = true;
                 icon_font_config.GlyphMinAdvanceX = floor(1.5f * icon_font_config.SizePixels);
@@ -878,19 +931,7 @@ namespace
                 bd.IconFontGlyphRanges = std::to_array<ImWchar>({icon_font->codepoint_range.lower, icon_font->codepoint_range.upper, 0 });
 
                 add_resource_as_font(loader, icon_font_config, *io.Fonts, icon_font->path, bd.IconFontGlyphRanges.data());
-                should_build_and_reupload = true;
             }
-
-            if (should_build_and_reupload) {
-                io.Fonts->Build();
-                graphics_backend_mark_fonts_for_reupload();
-            }
-        }
-
-        // Setup visual styling/theme.
-        {
-            ImGui::GetStyle() = ImGuiStyle{};
-            ui::apply_dark_theme();
         }
     }
 
@@ -1050,7 +1091,8 @@ namespace
                 return true;
             }
             case WindowEventType::WindowDisplayScaleChanged: {
-                bd->WantChangeDisplayScale = true;
+                // This doesn't matter in modern ImGui anymore, because it now natively
+                // handles rescaling textures etc.
                 return true;
             }
             default: {
@@ -1079,6 +1121,7 @@ namespace
         io.ConfigDebugHighlightIdConflicts = false;            // Disable this highlight (annoying for users, #964)
         io.BackendRendererName = "imgui_impl_osc";
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+        io.BackendFlags |= ImGuiBackendFlags_RendererHasTextures;  // Support dynamic font scaling etc.
 
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         platform_io.Platform_SetClipboardTextFn = ui_set_clipboard_text;
@@ -1109,6 +1152,14 @@ namespace
 
         // take ownership back from ImGui
         std::unique_ptr<OscarUIBackendData> bd{static_cast<OscarUIBackendData*>(std::exchange(io.BackendPlatformUserData, nullptr))};
+
+        // destroy all textures created/handled by ImGui
+        for (ImTextureData* texture_data : ImGui::GetPlatformIO().Textures) {
+            if (texture_data->RefCount == 1) {
+                texture_data->SetStatus(ImTextureStatus_WantDestroy);
+                graphics_backend_handle_texture_data(*bd, *texture_data);
+            }
+        }
 
         // clear/reset any other state
         if (std::exchange(bd->CurrentCustomCursor, std::nullopt)) {
@@ -1156,12 +1207,9 @@ namespace
                 window_dimensions = {};
             }
             io.DisplaySize = to<ImVec2>(window_dimensions);
-        }
 
-        // Update display scale (e.g. when user changes DPI settings or moves the
-        // application window to a display that has a different DPI)
-        if (std::exchange(bd.WantChangeDisplayScale, false)) {
-            setup_scaling_dependent_rendering_fonts_and_styling(app, *bd.CallerConfig, bd);
+            const float scale = app.main_window_device_pixel_ratio();
+            io.DisplayFramebufferScale = {scale, scale};
         }
 
         // Update `DeltaTime`
@@ -1769,8 +1817,12 @@ void osc::ui::Context::init(
         // load `imgui.ini`
         load_imgui_config(app.user_data_directory(), app.upd_resource_loader(), *config, *context_data);
 
-        // setup fonts + styling
-        setup_scaling_dependent_rendering_fonts_and_styling(app, *config, *context_data);
+        // setup (custom) fonts
+        configure_fonts(app.resource_loader(), *config, *context_data);
+
+        // Setup visual styling/theme.
+        ImGui::GetStyle() = ImGuiStyle{};
+        ui::apply_dark_theme();
 
         // init ImGui for oscar
         ImGui_ImplOscar_Init(

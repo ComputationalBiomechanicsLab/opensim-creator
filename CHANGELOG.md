@@ -20,7 +20,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   which should improve rendering performance by 5-10 %.
 - Scene decorations that are known to be "safe" to backface cull (e.g. generated geometry,
   not-user-supplied mesh data) are now rendered with backface culling enabled, which
-  improves rendering performance by another 5-10 % (GPU-dependent, #1133).
+  improves rendering performance by 5-10 % (GPU-dependent, #1133).
 - The scene renderer now has a "Scholz Obstacle Contact Hints" option (default-enabled),
   which renders spheres at the locations of `contact_hint`s for
   `Scholz2015GeometryPathObstacle`s (#1131).
@@ -28,6 +28,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   property of a `Scholz2015GeometryPathObstacle` (#1131).
 - The navigator panel now draws vertical lines from each internal node in the model tree
   to make it easier to visually count how deep the tree is.
+- Third-party libraries `imgui`, `implot`, `lunasvg`, `mdspan`, `OpenBLAS`, `SDL`,
+  `stb`, and `unordered_dense` were updated to their latest versions.
+- `liboscar`'s ImGui backend was updated to support ImGui v1.92.0's dynamic font
+  scaling API (`ImGuiBackendFlags_RendererHasTextures`).
 
 ## [0.6.1] - 2025/10/09
 
