@@ -632,21 +632,21 @@ namespace
             // Fetch the texture handle from the liboscar backend data
             auto* t = bd.lookup_texture(texture_data.GetTexID());
             OSC_ASSERT(t and std::holds_alternative<Texture2D>(*t) && "the texture should've been created by ImTextureStatus_WantCreate");
-            Texture2D& texture = std::get<Texture2D>(*t);
 
             // Update pixel data
-            std::vector<uint8_t> pixel_data_copy(texture.pixel_data().begin(), texture.pixel_data().end());
-            for (const ImTextureRect& source_rect : texture_data.Updates) {
-                uint8_t* source_first_pixel = static_cast<uint8_t*>(texture_data.GetPixelsAt(source_rect.x, source_rect.y));
-                uint8_t* destination_first_pixel = pixel_data_copy.data() + ((source_rect.x + source_rect.y*texture_data.Width) * texture_data.BytesPerPixel);
-                for (int row = 0; row < source_rect.h; ++row) {
-                    uint8_t* source_row_begin = source_first_pixel + (row * texture_data.GetPitch());
-                    uint8_t* source_row_end = source_row_begin + (source_rect.w * texture_data.BytesPerPixel);
-                    uint8_t* destination_row_begin = destination_first_pixel + (row * texture_data.GetPitch());
-                    std::copy(source_row_begin, source_row_end, destination_row_begin);
+            std::get<Texture2D>(*t).update_pixel_data([&texture_data](std::span<uint8_t> pixel_data)
+            {
+                for (const ImTextureRect& source_rect : texture_data.Updates) {
+                    uint8_t* source_first_pixel = static_cast<uint8_t*>(texture_data.GetPixelsAt(source_rect.x, source_rect.y));
+                    uint8_t* destination_first_pixel = pixel_data.data() + ((source_rect.x + source_rect.y*texture_data.Width) * texture_data.BytesPerPixel);
+                    for (int row = 0; row < source_rect.h; ++row) {
+                        uint8_t* source_row_begin = source_first_pixel + (row * texture_data.GetPitch());
+                        uint8_t* source_row_end = source_row_begin + (source_rect.w * texture_data.BytesPerPixel);
+                        uint8_t* destination_row_begin = destination_first_pixel + (row * texture_data.GetPitch());
+                        std::copy(source_row_begin, source_row_end, destination_row_begin);
+                    }
                 }
-            }
-            texture.set_pixel_data(pixel_data_copy);
+            });
             texture_data.SetStatus(ImTextureStatus_OK);
         }
         else if (texture_data.Status == ImTextureStatus_WantDestroy) {

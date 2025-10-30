@@ -200,6 +200,35 @@ TEST(Texture2D, set_pixel_data_on_8bit_component_format_clamps_hdr_color_values)
     ASSERT_NE(texture_2d.pixels(), hdr_pixels);  // because the impl had to convert them
 }
 
+TEST(Texture2D, update_pixel_data_calls_callback_with_span_that_is_identical_to_the_one_returned_from_get_pixel_data)
+{
+    Texture2D texture = generate_2x2_texture();
+    const std::vector<uint8_t> copy(texture.pixel_data().begin(), texture.pixel_data().end());
+    bool called = false;
+    texture.update_pixel_data([&copy, &called](std::span<uint8_t> pixels)
+    {
+        ASSERT_TRUE(rgs::equal(pixels, copy));
+        called = true;
+    });
+    ASSERT_TRUE(called);
+}
+
+TEST(Texture2D, update_pixel_data_makes_subsequent_pixel_data_show_mutated_version)
+{
+    static constexpr uint8_t fill_value = 0x00;
+
+    Texture2D texture = generate_2x2_texture();
+    ASSERT_FALSE(rgs::all_of(texture.pixel_data(), [](uint8_t byte) { return byte == fill_value; }));
+
+    bool called = false;
+    texture.update_pixel_data([&called](std::span<uint8_t> pixels)
+    {
+        rgs::fill(pixels, fill_value);
+        called = true;
+    });
+    ASSERT_TRUE(rgs::all_of(texture.pixel_data(), [](uint8_t byte) { return byte == fill_value; }));
+}
+
 TEST(Texture2D, set_pixels32_on_an_8bit_texture_performs_no_conversion)
 {
     const Color32 color32 = {0x77, 0x63, 0x24, 0x76};

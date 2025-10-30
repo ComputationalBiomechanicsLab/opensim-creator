@@ -10,6 +10,7 @@
 #include <liboscar/Utils/CopyOnUpdSharedValue.h>
 
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <span>
 #include <vector>
@@ -126,6 +127,10 @@ namespace osc
         // - will not perform any internal conversion of the data (it's a memcpy)
         std::span<const uint8_t> pixel_data() const;
         void set_pixel_data(std::span<const uint8_t>);
+
+        // Updates this texture's pixel data in-place. Equivalent to calling `pixel_data`, mutating
+        // it, and then passing that to `set_pixel_data`.
+        void update_pixel_data(const std::function<void(std::span<uint8_t>)>& updater);
 
         friend bool operator==(const Texture2D&, const Texture2D&) = default;
 

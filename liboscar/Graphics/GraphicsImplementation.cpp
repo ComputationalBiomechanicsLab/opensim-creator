@@ -1523,6 +1523,11 @@ public:
         rgs::copy(pixel_components_row_by_row, pixel_data_.begin());
     }
 
+    void update_pixel_data(const std::function<void(std::span<uint8_t>)>& updater)
+    {
+        updater(pixel_data_);
+    }
+
     // non PIMPL method
 
     gl::Texture2D& updTexture()
@@ -1779,6 +1784,11 @@ std::span<const uint8_t> osc::Texture2D::pixel_data() const
 void osc::Texture2D::set_pixel_data(std::span<const uint8_t> pixel_components_row_by_row)
 {
     impl_.upd()->set_pixel_data(pixel_components_row_by_row);
+}
+
+void osc::Texture2D::update_pixel_data(const std::function<void(std::span<uint8_t>)>& updater)
+{
+    impl_.upd()->update_pixel_data(updater);
 }
 
 std::ostream& osc::operator<<(std::ostream& o, const Texture2D&)
