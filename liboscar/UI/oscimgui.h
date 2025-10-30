@@ -165,12 +165,14 @@ namespace osc::ui
     void draw_bullet_point();
 
     enum class TreeNodeFlag : unsigned {
-        None        = 0,
-        DefaultOpen = 1<<0,
-        OpenOnArrow = 1<<1,  // only open when clicking on the arrow part
-        Leaf        = 1<<2,  // no collapsing, no arrow (use as a convenience for leaf nodes)
-        Bullet      = 1<<3,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
-        NUM_FLAGS   = 4,
+        None             = 0,
+        DefaultOpen      = 1<<0,
+        OpenOnArrow      = 1<<1,  // only open when clicking on the arrow part
+        Leaf             = 1<<2,  // no collapsing, no arrow (use as a convenience for leaf nodes)
+        Bullet           = 1<<3,  // display a bullet instead of arrow. IMPORTANT: node can still be marked open/close if you don't also set the `Leaf` flag!
+        DrawLinesToNodes = 1<<4,
+        DrawLinesFull    = 1<<5,
+        NUM_FLAGS        =    6,
     };
     using TreeNodeFlags = Flags<TreeNodeFlag>;
 

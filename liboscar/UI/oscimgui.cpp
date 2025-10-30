@@ -1375,10 +1375,12 @@ struct osc::Converter<ui::TreeNodeFlags, ImGuiTreeNodeFlags> final {
     ImGuiTreeNodeFlags operator()(ui::TreeNodeFlags flags) const { return c_mappings_(flags); }
 private:
     static constexpr FlagMapper<ui::TreeNodeFlag, ImGuiTreeNodeFlags> c_mappings_ = {
-        {ui::TreeNodeFlag::DefaultOpen, ImGuiTreeNodeFlags_DefaultOpen},
-        {ui::TreeNodeFlag::OpenOnArrow, ImGuiTreeNodeFlags_OpenOnArrow},
-        {ui::TreeNodeFlag::Leaf,        ImGuiTreeNodeFlags_Leaf},
-        {ui::TreeNodeFlag::Bullet,      ImGuiTreeNodeFlags_Bullet},
+        {ui::TreeNodeFlag::DefaultOpen,      ImGuiTreeNodeFlags_DefaultOpen},
+        {ui::TreeNodeFlag::OpenOnArrow,      ImGuiTreeNodeFlags_OpenOnArrow},
+        {ui::TreeNodeFlag::Leaf,             ImGuiTreeNodeFlags_Leaf},
+        {ui::TreeNodeFlag::Bullet,           ImGuiTreeNodeFlags_Bullet},
+        {ui::TreeNodeFlag::DrawLinesToNodes, ImGuiTreeNodeFlags_DrawLinesToNodes},
+        {ui::TreeNodeFlag::DrawLinesFull,    ImGuiTreeNodeFlags_DrawLinesFull},
     };
 };
 

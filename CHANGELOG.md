@@ -26,6 +26,8 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `Scholz2015GeometryPathObstacle`s (#1131).
 - The model editor 3D viewport now supports 3D manipulation gizmos for the contact hint
   property of a `Scholz2015GeometryPathObstacle` (#1131).
+- The navigator panel now draws vertical lines from each internal node in the model tree
+  to make it easier to visually count how deep the tree is.
 
 ## [0.6.1] - 2025/10/09
 

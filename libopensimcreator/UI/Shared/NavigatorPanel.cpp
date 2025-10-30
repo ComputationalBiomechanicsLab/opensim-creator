@@ -231,7 +231,8 @@ private:
 
             // handle display mode (node vs leaf)
             const bool isInternalNode = currentPath.size() < 2 || lookaheadPath.size() > currentPath.size();
-            const ui::TreeNodeFlags nodeFlags = isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlags{ui::TreeNodeFlag::Leaf};
+            ui::TreeNodeFlags nodeFlags = ui::TreeNodeFlag::DrawLinesFull;
+            nodeFlags |= isInternalNode ? ui::TreeNodeFlag::OpenOnArrow : ui::TreeNodeFlag::Leaf;
 
             // handle alternating background colors
             if (row++ % 2) {
