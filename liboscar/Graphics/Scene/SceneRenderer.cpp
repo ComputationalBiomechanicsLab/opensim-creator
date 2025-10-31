@@ -817,7 +817,7 @@ private:
         if (oit_render_buffer_.pixel_dimensions() != pixel_dimensions or
             oit_render_buffer_.anti_aliasing_level() != params.anti_aliasing_level) {
 
-            oit_render_buffer_ = SharedColorRenderBuffer{{
+            oit_render_buffer_ = SharedColorRenderBuffer{ColorRenderBufferParams{
                 .pixel_dimensions = pixel_dimensions,
                 .dimensionality = TextureDimensionality::Tex2D,
                 .anti_aliasing_level = params.anti_aliasing_level,
