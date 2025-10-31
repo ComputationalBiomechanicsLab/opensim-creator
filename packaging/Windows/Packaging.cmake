@@ -93,8 +93,6 @@ if(OSC_PACKAGE_WITH_WIX)
 
     set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
 
-    set(CPACK_WIX_VERSION 4)  # use the more modern WiX .NET tools
-
     # set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
     if(TRUE)
         string(MD5 OSC_VERSION_MD5_HASH "${PROJECT_NAME}-${PROJECT_VERSION}")

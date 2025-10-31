@@ -50,7 +50,8 @@ is a step-by-step guide for setting up a typical development environment:
     1. Download and install it from https://nsis.sourceforge.io/Download
 
 5. Get ``WiX`` (can be disabled with -DOSC_PACKAGE_WITH_WIX=OFF, builds the ``.msi`` installer):
-    1. Download and install ``wix-cli-x64.msi`` from https://github.com/wixtoolset/wix/releases
+    1. Download and install WiX3 (e.g. ``wix314.exe``) from https://github.com/wixtoolset/wix3/releases
+    2. Avoid using newer WiX versions because GitHub runner images etc. currently still use WiX3 (see: https://github.com/actions/runner-images/tree/main/images/windows)
 
 6. Get ``python`` and ``pip``:
     1. Download from https://www.python.org/downloads/
