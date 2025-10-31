@@ -317,23 +317,40 @@ namespace
         }
     )";
 
-    // Returns a lookup table that maps sRGB color bytes to linear-space color bytes
-    std::array<uint8_t, 256> create_srgb_to_linear_lut()
-    {
-        std::array<uint8_t, 256> rv{};
-        for (size_t i = 0; i < 256; ++i) {
-            const auto ldr_color = Unorm8{static_cast<uint8_t>(i)};
-            const float hdr_color = ldr_color.normalized_value();
-            const float linear_hdr_color = to_linear_colorspace(hdr_color);
-            rv[i] = Unorm8{linear_hdr_color}.raw_value();
-        }
-        return rv;
-    }
+    class SRGBToLinearConverter final {
+    public:
+        ImU32 operator()(ImU32 color) const
+        {
+            const auto r_srgb = static_cast<uint8_t>((color >> IM_COL32_R_SHIFT) & 0xFF);
+            const auto g_srgb = static_cast<uint8_t>((color >> IM_COL32_G_SHIFT) & 0xFF);
+            const auto b_srgb = static_cast<uint8_t>((color >> IM_COL32_B_SHIFT) & 0xFF);
+            const auto alpha  = static_cast<uint8_t>((color >> IM_COL32_A_SHIFT) & 0xFF);
 
-    UID to_uid(ImTextureID id)
-    {
-        return UID::from_int_unchecked(static_cast<UID::element_type>(id));
-    }
+            const uint8_t r_linear = lut_[r_srgb];
+            const uint8_t g_linear = lut_[g_srgb];
+            const uint8_t b_linear = lut_[b_srgb];
+
+            return
+                static_cast<ImU32>(r_linear) << IM_COL32_R_SHIFT |
+                static_cast<ImU32>(g_linear) << IM_COL32_G_SHIFT |
+                static_cast<ImU32>(b_linear) << IM_COL32_B_SHIFT |
+                static_cast<ImU32>(alpha)    << IM_COL32_A_SHIFT;
+        }
+    private:
+        static std::array<uint8_t, 256> create_srgb_to_linear_lut()
+        {
+            std::array<uint8_t, 256> rv{};
+            for (size_t i = 0; i < 256; ++i) {
+                const auto ldr_color = Unorm8{static_cast<uint8_t>(i)};
+                const float hdr_color = ldr_color.normalized_value();
+                const float linear_hdr_color = to_linear_colorspace(hdr_color);
+                rv[i] = Unorm8{linear_hdr_color}.raw_value();
+            }
+            return rv;
+        }
+
+        std::array<uint8_t, 256> lut_ = create_srgb_to_linear_lut();
+    };
 
     // Represents oscar-side storage for textures that ImGui is also managing
     class OscarUITextureStorage final {
@@ -348,7 +365,7 @@ namespace
         }
         void deallocate_imgui_texture(ImTextureID id)
         {
-            textures_allocated_by_imgui.erase(to_uid(id));
+            textures_allocated_by_imgui.erase(UID::from_int_unchecked(id));
         }
 
         template<typename Texture>
@@ -365,11 +382,11 @@ namespace
         texture_type* lookup_texture(ImTextureID id)
         {
             static_assert(sizeof(decltype(UID{}.get())) <= sizeof(ImTextureID));
-            if (auto* t = lookup_or_nullptr(textures_allocated_this_frame, to_uid(id))) {
+            if (auto* t = lookup_or_nullptr(textures_allocated_this_frame, UID::from_int_unchecked(id))) {
                 return t;
             }
             else {
-                return lookup_or_nullptr(textures_allocated_by_imgui, to_uid(id));
+                return lookup_or_nullptr(textures_allocated_by_imgui, UID::from_int_unchecked(id));
             }
         }
     private:
@@ -428,7 +445,7 @@ namespace
         std::string                                  imgui_ini_file_path;
 
         // Graphics
-        std::array<uint8_t, 256>                     srgb_to_linear_lut = create_srgb_to_linear_lut();
+        SRGBToLinearConverter                        srgb_to_linear_converter;
         Material                                     ui_material{Shader{c_ui_vertex_shader_src, c_ui_fragment_shader_src}};
         Camera                                       camera;
         Mesh                                         mesh;
@@ -454,27 +471,12 @@ namespace
 
     void convert_draw_data_from_srgb_to_linear(const OscarUIBackendData& bd, ImDrawList& draw_list)
     {
-        const std::array<uint8_t, 256>& lut = bd.srgb_to_linear_lut;
-
         for (ImDrawVert& v : draw_list.VtxBuffer) {
-            const auto r_srgb = static_cast<uint8_t>((v.col >> IM_COL32_R_SHIFT) & 0xFF);
-            const auto g_srgb = static_cast<uint8_t>((v.col >> IM_COL32_G_SHIFT) & 0xFF);
-            const auto b_srgb = static_cast<uint8_t>((v.col >> IM_COL32_B_SHIFT) & 0xFF);
-            const auto alpha = static_cast<uint8_t>((v.col >> IM_COL32_A_SHIFT) & 0xFF);
-
-            const uint8_t r_linear = lut[r_srgb];
-            const uint8_t g_linear = lut[g_srgb];
-            const uint8_t b_linear = lut[b_srgb];
-
-            v.col =
-                static_cast<ImU32>(r_linear) << IM_COL32_R_SHIFT |
-                static_cast<ImU32>(g_linear) << IM_COL32_G_SHIFT |
-                static_cast<ImU32>(b_linear) << IM_COL32_B_SHIFT |
-                static_cast<ImU32>(alpha) << IM_COL32_A_SHIFT;
+            v.col = bd.srgb_to_linear_converter(v.col);
         }
     }
 
-    void setup_camera_view_matrix(const ImDrawData& draw_data, Camera& camera)
+    Matrix4x4 display_projection_matrix(const ImDrawData& draw_data)
     {
         // Our visible imgui space lies from draw_data->DisplayPos (top left) to draw_data->DisplayPos+data_data->DisplaySize (bottom right). DisplayPos is (0,0) for single viewport apps.
         const float L = draw_data.DisplayPos.x;
@@ -482,14 +484,12 @@ namespace
         const float T = draw_data.DisplayPos.y;
         const float B = draw_data.DisplayPos.y + draw_data.DisplaySize.y;
 
-        const Matrix4x4 projection_matrix = {
+        return {
             {2.0f/(R-L),  0.0f,         0.0f, 0.0f},
             {0.0f,        2.0f/(T-B),   0.0f, 0.0f},
             {0.0f,        0.0f,        -1.0f, 0.0f},
             {(R+L)/(L-R), (T+B)/(B-T),  0.0f, 1.0f},
         };
-
-        camera.set_projection_matrix_override(projection_matrix);
     }
 
     void render_draw_command(
@@ -688,7 +688,7 @@ namespace
         OscarUIBackendData* bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
-        setup_camera_view_matrix(*draw_data, bd->camera);
+        bd->camera.set_projection_matrix_override(display_projection_matrix(*draw_data));
         for (int n = 0; n < draw_data->CmdListsCount; ++n) {
             render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n], maybe_target);
         }
@@ -696,23 +696,13 @@ namespace
         // Catch up with texture updates. Most of the times, the list will have 1 element with an OK
         // status, aka nothing to do.
         //
-        // (This almost always points to ImGui::GetPlatformIO().Textures[] but is part of ImDrawData to
-        // allow overriding or disabling texture updates).
+        // (This almost always points to `ImGui::GetPlatformIO().Textures[]` but is part of `ImDrawData` to
+        //  allow overriding or disabling texture updates).
         if (draw_data->Textures != nullptr) {
             for (ImTextureData* texture_data : *draw_data->Textures) {
                 graphics_backend_handle_texture_data(*bd, *texture_data);
             }
         }
-    }
-
-    ImTextureID graphics_backend_allocate_texture_for_current_frame(const Texture2D& texture)
-    {
-        return ::allocate_texture_for_current_frame(texture);
-    }
-
-    ImTextureID graphics_backend_allocate_texture_for_current_frame(const RenderTexture& texture)
-    {
-        return ::allocate_texture_for_current_frame(texture);
     }
 
     Vector2 centroid_of(const ImRect& r)
@@ -3055,7 +3045,7 @@ void osc::ui::draw_image(
     if (not dimensions) {
         dimensions = texture.dimensions();
     }
-    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
+    const auto handle = allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, *dimensions, region_uv_coordinates.ypu_top_left(), region_uv_coordinates.ypu_bottom_right());
 }
 
@@ -3068,7 +3058,7 @@ void osc::ui::draw_image(const RenderTexture& texture, Vector2 dimensions)
 {
     const Vector2 uv0 = {0.0f, 1.0f};
     const Vector2 uv1 = {1.0f, 0.0f};
-    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
+    const auto handle = allocate_texture_for_current_frame(texture);
     ImGui::Image(handle, dimensions, uv0, uv1);
 }
 
@@ -3098,7 +3088,7 @@ bool osc::ui::draw_image_button(
     Vector2 dimensions,
     const Rect& texture_coordinates)
 {
-    const auto handle = graphics_backend_allocate_texture_for_current_frame(texture);
+    const auto handle = allocate_texture_for_current_frame(texture);
     return ImGui::ImageButton(label.c_str(), handle, dimensions, texture_coordinates.ypu_top_left(), texture_coordinates.ypu_bottom_right());
 }
 

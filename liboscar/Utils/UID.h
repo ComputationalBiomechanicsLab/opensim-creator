@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <concepts>
 #include <cstddef>
 #include <functional>
 #include <iosfwd>
@@ -24,9 +25,11 @@ namespace osc
             return UID{0};
         }
 
-        static constexpr UID from_int_unchecked(element_type i)
+        template<std::integral T>
+        requires (sizeof(T) <= sizeof(element_type))
+        static constexpr UID from_int_unchecked(T i)
         {
-            return UID{i};
+            return UID{static_cast<element_type>(i)};
         }
 
         UID() : value_{allocate_next_id()}
