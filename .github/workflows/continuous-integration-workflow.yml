@@ -18,8 +18,14 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator-windows-amd64.zip
+        name: opensimcreator-windows-amd64-exe
         path: build/*windows-amd64.exe
+        if-no-files-found: error
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: opensimcreator-windows-amd64-zip
+        path: build/*windows-amd64.zip
         if-no-files-found: error
 
   macos_amd64:
@@ -33,7 +39,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator-macos-amd64.zip
+        name: opensimcreator-macos-amd64-dmg
         path: build/*.dmg
         if-no-files-found: error
 
@@ -48,7 +54,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator-macos-arm64.zip
+        name: opensimcreator-macos-arm64-dmg
         path: build/*.dmg
         if-no-files-found: error
 
@@ -66,6 +72,6 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator-ubuntu22-amd64.zip
+        name: opensimcreator-ubuntu22-amd64-deb
         path: build/*.deb
         if-no-files-found: error

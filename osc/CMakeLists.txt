@@ -90,35 +90,25 @@ if(TRUE)
 
     set(OSC_PACKAGING_DIR "${OSC_PACKAGING_DIR_DEFAULT}"
         CACHE PATH
-        "a path to a directory containing a `Packaging.cmake` script that package's the application for the target platform"
+        "a path to a directory containing a `Packaging.cmake` script that configures packaging the application for the target platform"
     )
 endif()
 
-# OpenSimCreatorConfig.h
-#
-# a configured header file that contains values that are accessible in the source
-# code at compile-time
+# generate `osc_config.h`
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
 )
 
 add_executable(osc
-
-    # configured by `configure_file`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
-
-    # entrypoint (main)
-    osc.cpp
+    osc.cpp  # entrypoint (main)
 
     # Windows: also link a resources file (rc)
     #
     # the resources file tells MSVC compiler how to compile non-source resources
     # into the output exe. Specifically, it's used to embed the application icon
     # into the `osc` exe
-    $<$<CXX_COMPILER_ID:MSVC>:
-        ${CMAKE_CURRENT_SOURCE_DIR}/Windows/resources.rc
-    >
+    $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/resources.rc>
 )
 set_target_properties(osc PROPERTIES
     CXX_EXTENSIONS OFF
@@ -134,16 +124,12 @@ target_link_libraries(osc PRIVATE
     $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>
 )
 target_include_directories(osc PRIVATE
+    # so that `#include <osc/osc_config.h>` works
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
 
     # Windows: `resources.rc` uses the include path to find resources
-    $<$<CXX_COMPILER_ID:MSVC>:
-        ${CMAKE_CURRENT_SOURCE_DIR}/../..
-    >
-
-    # so that source code can `#include <osc/osc_config.h>`
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+    $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/../..>
 )
-
 target_link_options(osc PRIVATE
 
     # MSVC (Windows)

@@ -1,26 +1,32 @@
-# Sign the installer
-execute_process(
-    COMMAND
-        signtool sign
-        /n  "@OSC_CERTIFICATE_SUBJECT@"
-        /tr "@OSC_CERTIFICATE_TIMESTAMP_SERVER@"
-        /td "@OSC_CERTIFICATE_TIMESTAMP_DIGEST@"
-        /fd "@OSC_CODESIGN_DIGEST_ALGORITHM@"
-        /v
-        "${CPACK_PACKAGE_FILES}"
-    RESULT_VARIABLE res
-    COMMAND_ECHO STDERR
-)
-if(NOT res EQUAL 0)
-    message(FATAL_ERROR "signtool sign of ${CPACK_PACKAGE_FILES} failed!")
-endif()
+# Sign the installer(s)
+foreach(package ${CPACK_PACKAGE_FILES})
+    if (package MATCHES "\\.zip$")
+        message(STATUS "Skipping signing ${package} because it is a zip (portable installer) that cannot be signed")
+        continue()
+    endif()
+    execute_process(
+        COMMAND
+            signtool sign
+            /n  "@OSC_CERTIFICATE_SUBJECT@"
+            /tr "@OSC_CERTIFICATE_TIMESTAMP_SERVER@"
+            /td "@OSC_CERTIFICATE_TIMESTAMP_DIGEST@"
+            /fd "@OSC_CODESIGN_DIGEST_ALGORITHM@"
+            /v
+            "${package}"
+        RESULT_VARIABLE res
+        COMMAND_ECHO STDERR
+    )
+    if(NOT res EQUAL 0)
+        message(FATAL_ERROR "signtool sign of ${package} failed!")
+    endif()
 
-# Validate that the installer was signed
-execute_process(
-    COMMAND signtool verify /pa /v "${CPACK_PACKAGE_FILES}"
-    RESULT_VARIABLE verify_res
-    COMMAND_ECHO STDERR
-)
-if(NOT verify_res EQUAL 0)
-    message(FATAL_ERROR "Signature verification failed for ${OSC_SIGNED_BINARY_FILE}")
-endif()
+    # Validate that the installer was signed
+    execute_process(
+        COMMAND signtool verify /pa /v "${package}"
+        RESULT_VARIABLE verify_res
+        COMMAND_ECHO STDERR
+    )
+    if(NOT verify_res EQUAL 0)
+        message(FATAL_ERROR "Signature verification failed for ${package}")
+    endif()
+endforeach()

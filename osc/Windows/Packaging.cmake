@@ -1,10 +1,7 @@
-# Windows install/packaging:
+# Windows packaging
 #
-#     - copy `osc.exe` and all of its RUNTIME_DEPENDENCIES into the `bin/` dir
-#
-#     - this creates a "fat" install, see: https://stackoverflow.com/questions/44909846/cmake-exe-cant-find-dll
-#
-#     - packaging: uses NSIS.exe : get it from https://nsis.sourceforge.io/Download
+# Creates a self-extracting (.exe) installer with NSIS and a portable ZIP
+# installer. Requires NSIS.exe, from: https://nsis.sourceforge.io/Download
 
 option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer" OFF)
 
@@ -54,9 +51,11 @@ string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
 set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
 unset(OSC_ARCH_LOWERCASE)
 
-# use NSIS to package everything into a self-extracting installer
+
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
-set(CPACK_GENERATOR NSIS)
+set(CPACK_GENERATOR "NSIS;ZIP")  # generate both a self-extracting and portable installer
+
+# set NSIS variables so that the self-extracting installer behaves as expected
 set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
 set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/OpenSimCreator/textures/logo.ico")
 set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
