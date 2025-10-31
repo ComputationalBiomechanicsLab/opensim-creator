@@ -11,19 +11,6 @@ set(CPACK_GENERATOR DragNDrop)
 set(CPACK_DMG_CREATE_APPLICATIONS_LINK ON)
 set(CPACK_DMG_VOLUME_NAME "${OSC_LONG_APPNAME} ${PROJECT_VERSION}")
 
-# Clarify that the `osc` target is part of a MacOS bundle (enables using BUNDLE variables).
-set_target_properties(osc PROPERTIES MACOSX_BUNDLE TRUE)
-
-# Generate + specify an `Info.plist` file in the bundle.
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/Info.plist.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
-    @ONLY
-)
-set_target_properties(osc PROPERTIES
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
-)
-
 # Install the `osc` bundle target (includes executable and plist).
 install(TARGETS osc BUNDLE DESTINATION .)
 
@@ -33,7 +20,7 @@ install(TARGETS osc BUNDLE DESTINATION .)
 # which has a known path relative to the osc executable (../Resources/osc.toml).
 set(OSC_CONFIG_RESOURCES_DIR ".")  # relative to `osc.toml`
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+    "${PROJECT_SOURCE_DIR}/build_resources/osc.toml.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_macos.toml"
     @ONLY
 )
@@ -55,7 +42,8 @@ install(
 
 # Install the Mac-specific desktop icon (.icns).
 install(
-    FILES       "${CMAKE_CURRENT_SOURCE_DIR}/MacOS/osc.icns"
+    FILES       "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.icns"
+    RENAME      "osc.icns"  # must match `CFBundleIconFile` in `Info.plist
     DESTINATION "osc.app/Contents/Resources"
 )
 

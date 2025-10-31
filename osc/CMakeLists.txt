@@ -37,12 +37,6 @@ set(
 )
 mark_as_advanced(OSC_LONG_APPNAME)
 set(
-    OSC_PACKAGE_NAME "opensimcreator"
-    CACHE STRING
-    "a prefix for the name of the built package (e.g. OSC_PACKAGE_NAME-version.exe)"
-)
-mark_as_advanced(OSC_PACKAGE_NAME)
-set(
     OSC_SOFTWARE_DESCRIPTION "A standalone GUI for building OpenSim models"
     CACHE STRING
     "a desription of what the software does (shows in package installers on Debian, for example)"
@@ -76,91 +70,80 @@ else()
     )
 endif()
 
-# set OSC_PACKAGING_DIR
-if(TRUE)
-    if(WIN32)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Windows")
-    elseif(UNIX AND NOT APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/Debian")
-    elseif(APPLE)
-        set(OSC_PACKAGING_DIR_DEFAULT "${CMAKE_CURRENT_SOURCE_DIR}/MacOS")
-    else()
-        set(OSC_PACKAGING_DIR_DEFAULT "UNKNOWN_PACKAGING_METHOD")
-    endif()
-
-    set(OSC_PACKAGING_DIR "${OSC_PACKAGING_DIR_DEFAULT}"
-        CACHE PATH
-        "a path to a directory containing a `Packaging.cmake` script that configures packaging the application for the target platform"
-    )
-endif()
-
 # generate `osc_config.h`
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/osc_config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/osc/osc_config.h"
+    @ONLY
 )
 
-add_executable(osc
-    osc.cpp  # entrypoint (main)
-
-    # Windows: also link a resources file (rc)
-    #
-    # the resources file tells MSVC compiler how to compile non-source resources
-    # into the output exe. Specifically, it's used to embed the application icon
-    # into the `osc` exe
-    $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/resources.rc>
-)
-set_target_properties(osc PROPERTIES
-    CXX_EXTENSIONS OFF
-)
-target_compile_features(osc PUBLIC
-    cxx_std_23
-)
-target_compile_options(osc PRIVATE
-    ${OSC_STRICT_COMPILER_OPTIONS}
-)
+# setup generic (OS-independent) `osc` executable target
+add_executable(osc osc.cpp)
+set_target_properties(osc PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(osc PUBLIC cxx_std_23)
+target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
 target_link_libraries(osc PRIVATE
     OpenSimCreator
     $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>
 )
 target_include_directories(osc PRIVATE
-    # so that `#include <osc/osc_config.h>` works
-    "${CMAKE_CURRENT_BINARY_DIR}/generated/"
-
-    # Windows: `resources.rc` uses the include path to find resources
-    $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/../..>
-)
-target_link_options(osc PRIVATE
-
-    # MSVC (Windows)
-    $<$<CXX_COMPILER_ID:MSVC>:
-
-        # open as a desktop app, not CLI
-        /SUBSYSTEM:windows
-
-        # as above, call into `main`
-        /ENTRY:mainCRTStartup
-    >
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <osc/osc_config.h>` works
 )
 
+# Make OS-specific modifications to `osc`
+if(WIN32)
+    target_sources(osc PRIVATE
+        # Windows: also link a resources file (rc)
+        #
+        # the resources file tells MSVC compiler how to compile non-source resources
+        # into the output exe. Specifically, it's used to embed the application icon
+        # into the `osc` exe
+        $<$<CXX_COMPILER_ID:MSVC>:${CMAKE_CURRENT_SOURCE_DIR}/resources.rc>
+    )
+    target_link_options(osc PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:
 
-# -------------- installation/packaging ------------- #
+            # Windows: open as a desktop app, not CLI
+            /SUBSYSTEM:windows
 
-# set shared/common CPack variables
-set(CPACK_PACKAGE_NAME "${OSC_PACKAGE_NAME}")
-set(CPACK_PACKAGE_VENDOR "${OSC_AUTHOR}")
-set(CPACK_PACKAGE_CONTACT "${OSC_AUTHOR} <${OSC_AUTHOR_EMAIL}>")
-set(CPACK_PACKAGE_HOMEPAGE_URL "${OSC_REPO_URL}")
-set(CPACK_PACKAGE_DESCRIPTION "${OSC_SOFTWARE_DESCRIPTION}")
-set(CPACK_PACKAGE_EXECUTABLES "osc;${OSC_LONG_APPNAME}")  # ensure human-readable application name can be searched in start bar etc. (#1079)
+            # Windows: call into `main`, not `WinMain`
+            /ENTRY:mainCRTStartup
+        >
+    )
 
-# `include` platform-specific packaging instructions
-include(${OSC_PACKAGING_DIR}/Packaging.cmake)
+    # for development on Windows, copy all runtime dlls to the exe directory
+    # (because Windows doesn't have an RPATH)
+    #
+    # see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
+    add_custom_command(
+        TARGET osc
+        PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:osc> $<TARGET_RUNTIME_DLLS:osc>
+        COMMAND_EXPAND_LISTS
+    )
+elseif(UNIX AND NOT APPLE)
+    # On Linux, set RPATH of `osc` to $ORIGIN/../lib, because unix directory
+    # structure usually is:
+    #
+    #     ${SOME_ROOT}/lib/*.so
+    #     ${SOME_ROOT}/bin/osc (executable)
+    set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+elseif(APPLE)
+    # When building `osc` for Apple platforms, build it as a MacOSX bundle (enables using BUNDLE variables).
+    set_target_properties(osc PROPERTIES MACOSX_BUNDLE TRUE)
 
+    # Generate + specify a valid `Info.plist` file for the bundle.
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
+        @ONLY
+    )
+    set_target_properties(osc PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_BINARY_DIR}/generated/Info.plist"
+    )
+endif()
 
-# -------------- development nice-to-haves ------------- #
-
-# generate a dev-centric `osc.toml`
+# generate a development-specific `osc.toml`
 #
 #     - this causes osc to load resources from the current source dir
 #
@@ -172,22 +155,9 @@ include(${OSC_PACKAGING_DIR}/Packaging.cmake)
 if(TRUE)
     set(OSC_CONFIG_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../resources")
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../build_resources/osc.toml.in"
         "${CMAKE_BINARY_DIR}/osc.toml"  # CARE: this MUST be CMAKE_BINARY_DIR: multiple executables depend on it
         @ONLY
     )
     unset(OSC_CONFIG_RESOURCES_DIR)
-endif()
-
-# for development on Windows, copy all runtime dlls to the exe directory
-# (because Windows doesn't have an RPATH)
-#
-# see: https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html?highlight=runtime#genex:TARGET_RUNTIME_DLLS
-if (WIN32)
-    add_custom_command(
-        TARGET osc
-        PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:osc> $<TARGET_RUNTIME_DLLS:osc>
-        COMMAND_EXPAND_LISTS
-    )
 endif()

@@ -25,7 +25,7 @@ install(
 if(TRUE)
     set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${PROJECT_SOURCE_DIR}/build_resources/osc.toml.in"
         "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_windows.toml"
         @ONLY
     )
@@ -50,7 +50,6 @@ install(
 string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} OSC_ARCH_LOWERCASE)
 set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
 unset(OSC_ARCH_LOWERCASE)
-
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
 set(CPACK_GENERATOR "NSIS;ZIP")  # generate both a self-extracting and portable installer

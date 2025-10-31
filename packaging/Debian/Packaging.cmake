@@ -21,13 +21,7 @@
 # install-time: also package any required system libraries
 include(InstallRequiredSystemLibraries)
 
-# set RPATH of `osc` on Debian to $ORIGIN/../lib, because dir structure is:
-#
-#     lib/*.dylib
-#     bin/osc (exe)
-set_target_properties(osc PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
-
-# install runtime libraries into the install directory
+# install-time: install runtime libraries into the install directory
 install(
     TARGETS osc
     RUNTIME_DEPENDENCIES
@@ -37,12 +31,12 @@ install(
 
 # install-time: install a user-facing `osc.toml` config file
 #
-#     - in contrast to the dev-centric one, this loads resources from the installation dir,
-#       which has a known path relative to the osc executable (../resources)
+# In contrast to the dev-centric one, this loads resources from the installation
+# directory, which has a known path relative to the osc executable (../resources)
 if(TRUE)
     set(OSC_CONFIG_RESOURCES_DIR "resources")  # relative to `osc.toml`
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/osc.toml.in"
+        "${PROJECT_SOURCE_DIR}/build_resources/osc.toml.in"
         "${CMAKE_CURRENT_BINARY_DIR}/generated/osc_debian.toml"
         @ONLY
     )
@@ -63,18 +57,20 @@ install(
         "resources/"
 )
 
+# install-time: copy `osc.sh` (bootup script) to `/usr/local/bin/`
 install(
     PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.sh"
     RENAME "osc"
     DESTINATION /usr/local/bin/
 )
 
+# install-time: copy `osc.desktop` (startup icon) to `/usr/local/share/applications/`
 install(
     FILES "${CMAKE_CURRENT_SOURCE_DIR}/Debian/osc.desktop"
     DESTINATION /usr/local/share/applications/
 )
 
-# packaging: package installation as a DEB
+# Package installation as a DEB package
 set(CPACK_GENERATOR DEB)
 set(CPACK_PACKAGING_INSTALL_PREFIX /opt/osc)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "libblas3, liblapack3, libgl1, libopengl0")

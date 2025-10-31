@@ -1,8 +1,9 @@
-﻿# `liboscar`: Engine code for CAD projects
+﻿# `liboscar`: A library for building research UIs
 
-`liboscar` is an engine for making CAD tooling. It's designed to have a minimal
-dependency set, such that it can be built from source on all target
-platforms+architectures.
+`liboscar` is a library for creating research UIs. It's designed to have a
+minimal dependency set, so that it can be built from source on all target
+platforms+architectures, and a very low-level game-engine-like
+design, so that prototype UIs can be created quickly.
 
 | Directory | Description |
 | - | - |
@@ -16,4 +17,4 @@ platforms+architectures.
 | `testing/` | Code related to the unittest suite for `liboscar` |
 | `UI/` | Anything related to rendering a 2D UI |
 | `Utils/` | Commonly-used helper classes/functions that typically augment the standard C++ library. |
-| `Variant/` | A flexible runtime type (WIP: will be handy for scripting ,generic UIs, etc.) |
+| `Variant/` | A flexible runtime type (WIP: will be handy for scripting, generic UIs, etc.) |
