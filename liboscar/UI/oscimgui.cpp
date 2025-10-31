@@ -335,65 +335,32 @@ namespace
         return UID::from_int_unchecked(static_cast<UID::element_type>(id));
     }
 
-    // The internal backend data associated with one UI context.
-    //
-    // Must be constructed BEFORE the ImGui context is initialized and
-    // destroyed AFTER the ImGui context is shutdown, because ImGui has
-    // a few fields/structs that specify things like "this pointer must
-    // outlive the ImGui context".
-    struct OscarUIBackendData final {
-
-        explicit OscarUIBackendData(
-            CopyOnUpdPtr<ui::ContextConfiguration::Impl> config,
-            WindowID window_id) :
-
-            CallerConfig{std::move(config)},
-            Window{window_id}
-        {
-            ui_material.set_transparent(true);
-            ui_material.set_cull_mode(CullMode::Off);
-            ui_material.set_depth_tested(false);
-            ui_material.set_wireframe(false);
-        }
-
-        CopyOnUpdPtr<ui::ContextConfiguration::Impl>     CallerConfig;
-
-        WindowID                                         Window;
-        WindowID                                         ImeWindow;  // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
-        std::string                                      ClipboardText;
-        std::optional<AppClock::time_point>              LastFrameTime;
-
-        // Mouse handling
-        WindowID                                         MouseWindowID;
-        std::optional<CursorShape>                       CurrentCustomCursor;
-        int                                              MouseButtonsDown = 0;
-        int                                              MouseLastLeaveFrame = 0;
-
-        // Font handling
-        std::array<ImWchar, 3>                           IconFontGlyphRanges{};  // CARE: it's here because ImGui says it must outlive the context
-
-        // Config handling
-        std::string                                      UserIniFilePath;  // CARE: it's here because ImGui says it must outlive the context
-
-        // Graphics
-        std::array<uint8_t, 256> srgb_to_linear_lut = create_srgb_to_linear_lut();
-        Material ui_material{Shader{c_ui_vertex_shader_src, c_ui_fragment_shader_src}};
-        Camera camera;
-        Mesh mesh;
-
+    // Represents oscar-side storage for textures that ImGui is also managing
+    class OscarUITextureStorage final {
+    public:
         using texture_type = std::variant<Texture2D, RenderTexture>;
 
         template<typename Texture>
         requires (std::constructible_from<texture_type, Texture>)
-        ImTextureID allocate_imgui_texture(Texture&& texture) { return allocate_texture(textures_allocated_by_imgui, std::forward<Texture>(texture)); }
-
-        void deallocate_imgui_texture(ImTextureID id) { textures_allocated_by_imgui.erase(to_uid(id)); }
+        ImTextureID allocate_imgui_texture(Texture&& texture)
+        {
+            return allocate_texture(textures_allocated_by_imgui, std::forward<Texture>(texture));
+        }
+        void deallocate_imgui_texture(ImTextureID id)
+        {
+            textures_allocated_by_imgui.erase(to_uid(id));
+        }
 
         template<typename Texture>
         requires (std::constructible_from<texture_type, Texture>)
-        ImTextureID allocate_texture_for_this_frame(Texture&& texture) { return allocate_texture(textures_allocated_this_frame, std::forward<Texture>(texture)); }
-
-        void clear_textures_allocated_this_frame() { textures_allocated_this_frame.clear(); }
+        ImTextureID allocate_texture_for_this_frame(Texture&& texture)
+        {
+            return allocate_texture(textures_allocated_this_frame, std::forward<Texture>(texture));
+        }
+        void clear_textures_allocated_this_frame()
+        {
+            textures_allocated_this_frame.clear();
+        }
 
         texture_type* lookup_texture(ImTextureID id)
         {
@@ -418,6 +385,54 @@ namespace
 
         ankerl::unordered_dense::map<UID, texture_type> textures_allocated_this_frame;
         ankerl::unordered_dense::map<UID, texture_type> textures_allocated_by_imgui;
+    };
+
+    // The internal backend data associated with one UI context.
+    //
+    // Must be constructed BEFORE the ImGui context is initialized and
+    // destroyed AFTER the ImGui context is shutdown, because ImGui has
+    // a few fields/structs that specify things like "this pointer must
+    // outlive the ImGui context".
+    struct OscarUIBackendData final {
+
+        explicit OscarUIBackendData(
+            CopyOnUpdPtr<ui::ContextConfiguration::Impl> config,
+            WindowID window_id) :
+
+            caller_config{std::move(config)},
+            window{window_id}
+        {
+            ui_material.set_transparent(true);
+            ui_material.set_cull_mode(CullMode::Off);
+            ui_material.set_depth_tested(false);
+            ui_material.set_wireframe(false);
+        }
+
+        CopyOnUpdPtr<ui::ContextConfiguration::Impl> caller_config;
+
+        WindowID                                     window;
+        WindowID                                     ime_window;      // important: used for UI's textual inputs (e.g. `ImGui::InputText`)
+        std::string                                  clipboard_text;  // necessary because ImGui dishes out C-strings that need lifetime management
+        std::optional<AppClock::time_point>          last_frame_time;
+
+        // Mouse handling
+        WindowID                                     mouse_window_id;
+        std::optional<CursorShape>                   current_custom_cursor;
+        int                                          mouse_buttons_down = 0;
+        int                                          mouse_last_leave_frame = 0;
+
+        // Font handling (CARE: this is here because ImGui requires it outlives the ImGui context)
+        std::array<ImWchar, 3>                       icon_font_glyph_ranges{};
+
+        // Config handling (CARE: this is here because ImGui requires it outlives the ImGui context)
+        std::string                                  imgui_ini_file_path;
+
+        // Graphics
+        std::array<uint8_t, 256>                     srgb_to_linear_lut = create_srgb_to_linear_lut();
+        Material                                     ui_material{Shader{c_ui_vertex_shader_src, c_ui_fragment_shader_src}};
+        Camera                                       camera;
+        Mesh                                         mesh;
+        OscarUITextureStorage                        textures;
     };
 
     OscarUIBackendData* try_get_ui_backend_data(ImGuiContext* context)
@@ -513,7 +528,7 @@ namespace
         });
 
         // setup texture binding (it's almost always the font texture)
-        if (const auto* texture = bd.lookup_texture(draw_command.GetTexID())) {
+        if (const auto* texture = bd.textures.lookup_texture(draw_command.GetTexID())) {
             std::visit(Overload{
                 [&bd](const auto& texture) { bd.ui_material.set("uTexture", texture); },
             }, *texture);
@@ -571,12 +586,12 @@ namespace
     }
 
     template<typename Texture>
-    requires (std::constructible_from<OscarUIBackendData::texture_type, Texture>)
+    requires (std::constructible_from<OscarUITextureStorage::texture_type, Texture>)
     ImTextureID allocate_texture_for_current_frame(const Texture& texture)
     {
         OscarUIBackendData * bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
-        return bd->allocate_texture_for_this_frame(texture);
+        return bd->textures.allocate_texture_for_this_frame(texture);
     }
 
     template<typename>
@@ -596,7 +611,7 @@ namespace
 
         OscarUIBackendData* bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available - this is a developer error");
-        bd->clear_textures_allocated_this_frame();
+        bd->textures.clear_textures_allocated_this_frame();
     }
 
     void graphics_backend_handle_texture_data(OscarUIBackendData& bd, ImTextureData& texture_data)
@@ -625,12 +640,12 @@ namespace
             texture.set_pixel_data({static_cast<const uint8_t*>(texture_data.GetPixels()), bytes_in_texture});
 
             // Update ImGui with texture details
-            texture_data.SetTexID(bd.allocate_imgui_texture(texture));
+            texture_data.SetTexID(bd.textures.allocate_imgui_texture(texture));
             texture_data.SetStatus(ImTextureStatus_OK);
         }
         else if (texture_data.Status == ImTextureStatus_WantUpdates) {
             // Fetch the texture handle from the liboscar backend data
-            auto* t = bd.lookup_texture(texture_data.GetTexID());
+            auto* t = bd.textures.lookup_texture(texture_data.GetTexID());
             OSC_ASSERT(t and std::holds_alternative<Texture2D>(*t) && "the texture should've been created by ImTextureStatus_WantCreate");
 
             // Update pixel data
@@ -651,7 +666,7 @@ namespace
         }
         else if (texture_data.Status == ImTextureStatus_WantDestroy) {
             // Requesting backend to destroy the texture. Set status to Destroyed when done.
-            bd.deallocate_imgui_texture(texture_data.GetTexID());
+            bd.textures.deallocate_imgui_texture(texture_data.GetTexID());
             // Clear identifiers and mark as destroyed (in order to allow e.g. calling InvalidateDeviceObjects while running)
             texture_data.SetTexID(ImTextureID_Invalid);
             texture_data.SetStatus(ImTextureStatus_Destroyed);
@@ -844,8 +859,8 @@ namespace
     const char* ui_get_clipboard_text(ImGuiContext* context)
     {
         OscarUIBackendData* bd = try_get_ui_backend_data(context);
-        bd->ClipboardText = get_clipboard_text();
-        return bd->ClipboardText.c_str();
+        bd->clipboard_text = get_clipboard_text();
+        return bd->clipboard_text.c_str();
     }
 
     void ui_set_clipboard_text(ImGuiContext*, const char* text)
@@ -890,9 +905,9 @@ namespace
 
             // CARE: the reason this filepath is is being assigned to the backend data context
             //       is because ImGui requires that the string outlives the ImGui context
-            bd.UserIniFilePath = (user_data_directory / "imgui.ini").string();
-            ImGui::LoadIniSettingsFromDisk(bd.UserIniFilePath.c_str());
-            io.IniFilename = bd.UserIniFilePath.c_str();
+            bd.imgui_ini_file_path = (user_data_directory / "imgui.ini").string();
+            ImGui::LoadIniSettingsFromDisk(bd.imgui_ini_file_path.c_str());
+            io.IniFilename = bd.imgui_ini_file_path.c_str();
         }
     }
 
@@ -927,10 +942,10 @@ namespace
                 icon_font_config.GlyphMinAdvanceX = floor(1.5f * icon_font_config.SizePixels);
                 icon_font_config.GlyphMaxAdvanceX = floor(1.5f * icon_font_config.SizePixels);
                 static_assert(sizeof(decltype(icon_font->codepoint_range.lower)) == sizeof(ImWchar));
-                // CARE: IconFontGlyphRanges has to outlive the ImGui context
-                bd.IconFontGlyphRanges = std::to_array<ImWchar>({icon_font->codepoint_range.lower, icon_font->codepoint_range.upper, 0 });
+                // CARE: icon_font_glyph_ranges has to outlive the ImGui context
+                bd.icon_font_glyph_ranges = std::to_array<ImWchar>({icon_font->codepoint_range.lower, icon_font->codepoint_range.upper, 0 });
 
-                add_resource_as_font(loader, icon_font_config, *io.Fonts, icon_font->path, bd.IconFontGlyphRanges.data());
+                add_resource_as_font(loader, icon_font_config, *io.Fonts, icon_font->path, bd.icon_font_glyph_ranges.data());
             }
         }
     }
@@ -950,8 +965,8 @@ namespace
         OscarUIBackendData* bd = try_get_ui_backend_data();
         WindowID viewport_window{viewport->PlatformHandle};
 
-        if (bd->ImeWindow and (not ime_data->WantVisible or bd->ImeWindow != viewport_window)) {
-            app.stop_text_input(std::exchange(bd->ImeWindow, WindowID{}));
+        if (bd->ime_window and (not ime_data->WantVisible or bd->ime_window != viewport_window)) {
+            app.stop_text_input(std::exchange(bd->ime_window, WindowID{}));
         }
 
         if (ime_data->WantVisible) {
@@ -964,8 +979,8 @@ namespace
                 input_bottom_left_screen,
                 input_bottom_left_screen + input_dimensions
             ));
-            app.start_text_input(bd->Window);
-            bd->ImeWindow = viewport_window;
+            app.start_text_input(bd->window);
+            bd->ime_window = viewport_window;
         }
     }
 
@@ -1011,7 +1026,7 @@ namespace
 
             io.AddMouseSourceEvent(button_event.input_source() == MouseInputSource::TouchScreen ? ImGuiMouseSource_TouchScreen : ImGuiMouseSource_Mouse);
             io.AddMouseButtonEvent(mouse_button, button_event.type() == EventType::MouseButtonDown);
-            bd->MouseButtonsDown = (button_event.type() == EventType::MouseButtonDown) ? (bd->MouseButtonsDown | (1 << mouse_button)) : (bd->MouseButtonsDown & ~(1 << mouse_button));
+            bd->mouse_buttons_down = (button_event.type() == EventType::MouseButtonDown) ? (bd->mouse_buttons_down | (1 << mouse_button)) : (bd->mouse_buttons_down & ~(1 << mouse_button));
             return true;
         }
         case EventType::KeyDown:
@@ -1053,12 +1068,12 @@ namespace
 
             switch (window_event.type()) {
             case WindowEventType::GainedMouseFocus: {
-                bd->MouseWindowID = window_event.window();
-                bd->MouseLastLeaveFrame = 0;
+                bd->mouse_window_id = window_event.window();
+                bd->mouse_last_leave_frame = 0;
                 return true;
             }
             case WindowEventType::LostMouseFocus: {
-                bd->MouseLastLeaveFrame = ImGui::GetFrameCount() + 1;
+                bd->mouse_last_leave_frame = ImGui::GetFrameCount() + 1;
                 return true;
             }
             case WindowEventType::GainedKeyboardFocus: {
@@ -1162,7 +1177,7 @@ namespace
         }
 
         // clear/reset any other state
-        if (std::exchange(bd->CurrentCustomCursor, std::nullopt)) {
+        if (std::exchange(bd->current_custom_cursor, std::nullopt)) {
             app.pop_cursor_override();
         }
         io.BackendPlatformName = nullptr;
@@ -1184,12 +1199,12 @@ namespace
         OscarUIBackendData& bd = get_backend_data();
         const auto oscar_cursor = to<CursorShape>(ImGui::GetMouseCursor());
 
-        if (oscar_cursor != bd.CurrentCustomCursor) {
-            if (bd.CurrentCustomCursor) {
+        if (oscar_cursor != bd.current_custom_cursor) {
+            if (bd.current_custom_cursor) {
                 app.pop_cursor_override();
             }
             app.push_cursor_override(Cursor{oscar_cursor});
-            bd.CurrentCustomCursor = oscar_cursor;
+            bd.current_custom_cursor = oscar_cursor;
         }
     }
 
@@ -1215,22 +1230,22 @@ namespace
         // Update `DeltaTime`
         {
             auto t = app.frame_start_time();  // note: might not increase (#935)
-            if (bd.LastFrameTime and t <= *bd.LastFrameTime) {
+            if (bd.last_frame_time and t <= *bd.last_frame_time) {
                 // handle the case where the clock hasn't increased since the last frame by
                 // adding a very small amount of time, because ImGui doesn't accept a `DeltaTime`
                 // of zero (see: imgui/#6189, imgui/#6114, imgui/#3644)
                 static_assert(static_cast<float>(std::chrono::duration<AppClock::rep, std::nano>{1}.count()) > std::numeric_limits<float>::epsilon());
-                t = *bd.LastFrameTime + std::chrono::nanoseconds{1};
+                t = *bd.last_frame_time + std::chrono::nanoseconds{1};
             }
-            const auto delta = bd.LastFrameTime ? t - *bd.LastFrameTime : AppClock::duration{1.0/60.0};
+            const auto delta = bd.last_frame_time ? t - *bd.last_frame_time : AppClock::duration{1.0/60.0};
             io.DeltaTime = static_cast<float>(delta.count());
-            bd.LastFrameTime = t;
+            bd.last_frame_time = t;
         }
 
         // Handle mouse leaving the window
-        if (bd.MouseLastLeaveFrame and (bd.MouseLastLeaveFrame >= ImGui::GetFrameCount()) and bd.MouseButtonsDown == 0) {
-            bd.MouseWindowID.reset();
-            bd.MouseLastLeaveFrame = 0;
+        if (bd.mouse_last_leave_frame and (bd.mouse_last_leave_frame >= ImGui::GetFrameCount()) and bd.mouse_buttons_down == 0) {
+            bd.mouse_window_id.reset();
+            bd.mouse_last_leave_frame = 0;
             io.AddMousePosEvent(-FLT_MAX, -FLT_MAX);
         }
 
@@ -1749,7 +1764,7 @@ osc::ui::Context::~Context() noexcept
 void osc::ui::Context::reset()
 {
     App& app = App::upd();
-    const auto config = get_backend_data().CallerConfig;
+    const auto config = get_backend_data().caller_config;
     shutdown(app);
     init(app, config);
 }
