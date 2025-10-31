@@ -31,7 +31,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Third-party libraries `imgui`, `implot`, `lunasvg`, `mdspan`, `OpenBLAS`, `SDL`,
   `stb`, and `unordered_dense` were updated to their latest versions.
 - `liboscar`'s ImGui backend was updated to support ImGui v1.92.0's dynamic font
-  scaling API (`ImGuiBackendFlags_RendererHasTextures`).
+  scaling API (`ImGuiBackendFlags_RendererHasTextures`, #1134).
 - The project now additionally packages a Windows portable installer (zip), which makes it
   easier to copy OSC onto multiple computers quickly, or to have multiple versions installed,
   or to run OSC with reduced installation permissions (#881, #1135).
