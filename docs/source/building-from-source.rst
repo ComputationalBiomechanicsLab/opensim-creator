@@ -22,7 +22,7 @@ Windows Environment Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The OpenSim Creator build requires that the development environment has ``git``,
-a C++-20 compiler, cmake, ``NSIS`` (if packaging an installer), and ``python``
+a C++-20 compiler, cmake, ``WiX``/``NSIS`` (if packaging an installer), and ``python``
 (to run ``build_windows.py``, build script bindings, and build this documentation). Here
 is a step-by-step guide for setting up a typical development environment:
 
@@ -46,21 +46,24 @@ is a step-by-step guide for setting up a typical development environment:
     3. Verify it's installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
        and run ``cmake``.
 
-4. Get ``NSIS`` (if you plan on packaging an installer ``.exe``):
+4. Get ``NSIS`` (if `OSC_PACKAGE_WITH_NSIS` is `ON`, and you plan on packaging an installer ``.exe``):
     1. Download and install it from https://nsis.sourceforge.io/Download
 
-5. Get ``python`` and ``pip``:
+5. Get ``WiX`` (can be disabled with -DOSC_PACKAGE_WITH_WIX=OFF, builds the ``.msi`` installer):
+    1. Download and install ``wix-cli-x64.msi`` from https://github.com/wixtoolset/wix/releases
+
+6. Get ``python`` and ``pip``:
     1. Download from https://www.python.org/downloads/
     2. Make sure ``python`` and ``pip`` are added to the ``PATH`` (the installer usually prompts this)
     3. Verify they are installed by opening a terminal (``Shift+Right-Click`` -> ``Open Powershell window here``) and run ``python --help`` and ``pip --help``
 
-6. Clone the ``opensim-creator`` source code repository:
+7. Clone the ``opensim-creator`` source code repository:
     1. Open a terminal, ``cd`` to your workspace directory (e.g. ``Desktop``),
        and run ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
     2. The resulting ``opensim-creator`` directory should contain all necessary
        source code to build the project (incl. third_party code etc.)
 
-6. Install ``pip`` package dependencies (if building these documentation pages):
+8. Install ``pip`` package dependencies (if building these documentation pages):
     1. Using either a virtual environment (google it), or your base ``python``
        installation, ``cd`` into the ``opensim-creator`` directory in a terminal
        and install the documentation package dependencies with:

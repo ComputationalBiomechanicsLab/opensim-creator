@@ -35,6 +35,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - The project now additionally packages a Windows portable installer (zip), which makes it
   easier to copy OSC onto multiple computers quickly, or to have multiple versions installed,
   or to run OSC with reduced installation permissions (#881, #1135).
+- The windows installer is now shipped as an `.msi`, which has a more standard design and
+  additionally has the ability to be silently installed via a batch script by Windows system
+  administrators (#1136).
 
 ## [0.6.1] - 2025/10/09
 

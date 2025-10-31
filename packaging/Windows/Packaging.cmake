@@ -3,7 +3,10 @@
 # Creates a self-extracting (.exe) installer with NSIS and a portable ZIP
 # installer. Requires NSIS.exe, from: https://nsis.sourceforge.io/Download
 
-option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer" OFF)
+option(OSC_CODESIGN_ENABLED     "Enable codesigning the built binaries (exes/dlls) and resulting installer"                 OFF)
+option(OSC_PACKAGE_PORTABLE_ZIP "Enable creating a portable ZIP package"                                                    ON)
+option(OSC_PACKAGE_WITH_NSIS    "Enable using NSIS to package an exe installer (https://nsis.sourceforge.io/Download)"      OFF)
+option(OSC_PACKAGE_WITH_WIX     "Enable using WiX to package an MSI installer (https://github.com/wixtoolset/wix/releases)" ON)
 
 # package any required system libraries (C/C++ runtimes)
 include(InstallRequiredSystemLibraries)
@@ -52,28 +55,71 @@ set(CPACK_SYSTEM_NAME "windows-${OSC_ARCH_LOWERCASE}")
 unset(OSC_ARCH_LOWERCASE)
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${OSC_PACKAGE_NAME}")
-set(CPACK_GENERATOR "NSIS;ZIP")  # generate both a self-extracting and portable installer
 
-# set NSIS variables so that the self-extracting installer behaves as expected
-set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
-set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/OpenSimCreator/textures/logo.ico")
-set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
-set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
-set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")
-set(CPACK_NSIS_MODIFY_PATH OFF)  # do not prompt the user to modify the PATH
-set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
 
-# BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-#
-# the reason it's broke is because CMake has changed something in more-recent
-# versions that breaks it. There's a PR about it here:
-#
-# - https://gitlab.kitware.com/cmake/cmake/-/issues/23001
+if(OSC_PACKAGE_PORTABLE_ZIP)
+    list(APPEND CPACK_GENERATOR "ZIP")
+endif()
 
-# BROKE: set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
-#
-# it boots the app with admin privs if the installer is ran with admin privs
-# see opensim-creator/#95 (or inkscape's CMake file)
+# conditionally use NSIS to package a self-extracting EXE installer
+if(OSC_PACKAGE_WITH_NSIS)
+    list(APPEND CPACK_GENERATOR "NSIS")
+
+    # set NSIS variables so that the self-extracting installer behaves as expected
+    set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "resources/OpenSimCreator/textures/logo.ico")
+    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
+    set(CPACK_NSIS_HELP_LINK ${CPACK_PACKAGE_HOMEPAGE_URL})
+    set(CPACK_NSIS_CONTACT "${OSC_AUTHOR_EMAIL}")
+    set(CPACK_NSIS_MODIFY_PATH OFF)  # do not prompt the user to modify the PATH
+    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
+
+    # BROKE: set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+    #
+    # the reason it's broke is because CMake has changed something in more-recent
+    # versions that breaks it. There's a PR about it here:
+    #
+    # - https://gitlab.kitware.com/cmake/cmake/-/issues/23001
+
+    # BROKE: set(CPACK_NSIS_MUI_FINISHPAGE_RUN osc)
+    #
+    # it boots the app with admin privs if the installer is ran with admin privs
+    # see opensim-creator/#95 (or inkscape's CMake file)
+endif()
+
+# conditionally use WiX to package an MSI installer
+if(OSC_PACKAGE_WITH_WIX)
+    list(APPEND CPACK_GENERATOR "WIX")
+
+    set(CPACK_WIX_PRODUCT_ICON "${PROJECT_SOURCE_DIR}/resources/OpenSimCreator/textures/logo.ico")
+
+    set(CPACK_WIX_VERSION 4)  # use the more modern WiX .NET tools
+
+    # set `CPACK_WIX_UPGRADE_CODE` as a GUID derived from the project properties
+    if(TRUE)
+        string(MD5 OSC_VERSION_MD5_HASH "${PROJECT_NAME}-${PROJECT_VERSION}")
+        string(LENGTH "${OSC_VERSION_MD5_HASH}" _hash_len)
+        if(_hash_len LESS 32)
+            message(FATAL_ERROR "MD5 hash too short: ${OSC_VERSION_MD5_HASH}")
+        endif()
+        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 0 8  part1)
+        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 8 4  part2)
+        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 12 4 part3)
+        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 16 4 part4)
+        string(SUBSTRING "${OSC_VERSION_MD5_HASH}" 20 12 part5)
+        set(OSC_VERSION_GUID "${part1}-${part2}-${part3}-${part4}-${part5}")
+        set(CPACK_WIX_UPGRADE_CODE "${OSC_VERSION_GUID}")  # must be stable between releases
+        set(CPACK_WIX_UPGRADE_GUID "${OSC_VERSION_GUID}")  # must be stable between releases
+        unset(OSC_VERSION_MD5_HASH)
+        unset(part1)
+        unset(part2)
+        unset(part3)
+        unset(part4)
+        unset(part5)
+        unset(OSC_VERSION_GUID)
+        message(STATUS "Using deterministic UpgradeCode: ${CPACK_WIX_UPGRADE_CODE}")
+    endif()
+endif()
 
 # Handle code signing
 if(OSC_CODESIGN_ENABLED)

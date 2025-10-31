@@ -18,8 +18,8 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: opensimcreator-windows-amd64-exe
-        path: build/*windows-amd64.exe
+        name: opensimcreator-windows-amd64-msi
+        path: build/*windows-amd64.msi
         if-no-files-found: error
 
     - uses: actions/upload-artifact@v4
