@@ -617,13 +617,13 @@ namespace
     void graphics_backend_handle_texture_data(OscarUIBackendData& bd, ImTextureData& texture_data)
     {
         if (texture_data.Status == ImTextureStatus_OK) {
-            return;  // nothing to do
+            // nothing to do
         }
-
-        if (texture_data.Status == ImTextureStatus_Destroyed) {}  // nothing to do (no callback-style behavior in this backend)
+        else if (texture_data.Status == ImTextureStatus_Destroyed) {
+            // nothing to do (no callback-style behavior in this backend)
+        }
         else if (texture_data.Status == ImTextureStatus_WantCreate) {
-            // TODO: Requesting backend to create the texture. Set status OK when done.
-            // ImGui: Create and upload a new texture to the graphics system
+            // ImGui: Backends should create and upload a new texture to the graphics system
             OSC_ASSERT(texture_data.TexID == 0 and texture_data.BackendUserData == nullptr);
             OSC_ASSERT(texture_data.Format == ImTextureFormat_RGBA32);
 
@@ -648,20 +648,30 @@ namespace
             auto* t = bd.textures.lookup_texture(texture_data.GetTexID());
             OSC_ASSERT(t and std::holds_alternative<Texture2D>(*t) && "the texture should've been created by ImTextureStatus_WantCreate");
 
-            // Update pixel data
+            // Update pixel data in the texture
             std::get<Texture2D>(*t).update_pixel_data([&texture_data](std::span<uint8_t> pixel_data)
             {
+                // Unpack all of ImGui's numbers into `ptrdiff_t`s so that integer widening is explicit.
+                const auto texture_data_width = static_cast<ptrdiff_t>(texture_data.Width);
+                const auto texture_data_bytes_per_pixel = static_cast<ptrdiff_t>(texture_data.BytesPerPixel);
+                const auto texture_data_pitch = static_cast<ptrdiff_t>(texture_data.GetPitch());
                 for (const ImTextureRect& source_rect : texture_data.Updates) {
-                    uint8_t* source_first_pixel = static_cast<uint8_t*>(texture_data.GetPixelsAt(source_rect.x, source_rect.y));
-                    uint8_t* destination_first_pixel = pixel_data.data() + ((source_rect.x + source_rect.y*texture_data.Width) * texture_data.BytesPerPixel);
-                    for (int row = 0; row < source_rect.h; ++row) {
-                        uint8_t* source_row_begin = source_first_pixel + (row * texture_data.GetPitch());
-                        uint8_t* source_row_end = source_row_begin + (source_rect.w * texture_data.BytesPerPixel);
-                        uint8_t* destination_row_begin = destination_first_pixel + (row * texture_data.GetPitch());
-                        std::copy(source_row_begin, source_row_end, destination_row_begin);
+                    const auto source_rect_x = static_cast<ptrdiff_t>(source_rect.x);
+                    const auto source_rect_y = static_cast<ptrdiff_t>(source_rect.y);
+                    const auto source_rect_w = static_cast<ptrdiff_t>(source_rect.w);
+                    const auto source_rect_h = static_cast<ptrdiff_t>(source_rect.h);
+                    const size_t num_pixels_per_row = source_rect_w * texture_data_bytes_per_pixel;
+
+                    const auto* source_first_pixel = static_cast<const uint8_t*>(texture_data.GetPixelsAt(source_rect.x, source_rect.y));
+                    auto* destination_first_pixel = pixel_data.data() + ((source_rect_x + source_rect_y*texture_data_width) * texture_data_bytes_per_pixel);
+                    for (ptrdiff_t row = 0; row < source_rect_h; ++row) {
+                        std::span<const uint8_t> source_row{source_first_pixel + (row * texture_data_pitch), num_pixels_per_row};
+                        uint8_t* destination_row_begin = destination_first_pixel + (row * texture_data_pitch);
+                        rgs::copy(source_row, destination_row_begin);
                     }
                 }
             });
+
             texture_data.SetStatus(ImTextureStatus_OK);
         }
         else if (texture_data.Status == ImTextureStatus_WantDestroy) {
@@ -1833,7 +1843,7 @@ void osc::ui::Context::init(
         load_imgui_config(app.user_data_directory(), app.upd_resource_loader(), *config, *context_data);
 
         // setup (custom) fonts
-        configure_fonts(app.resource_loader(), *config, *context_data);
+        configure_fonts(App::resource_loader(), *config, *context_data);
 
         // Setup visual styling/theme.
         ImGui::GetStyle() = ImGuiStyle{};
