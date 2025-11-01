@@ -688,20 +688,21 @@ namespace
         OscarUIBackendData* bd = try_get_ui_backend_data();
         OSC_ASSERT(bd != nullptr && "no oscar ImGui renderer backend was available to shutdown - this is a developer error");
 
-        bd->camera.set_projection_matrix_override(display_projection_matrix(*draw_data));
-        for (int n = 0; n < draw_data->CmdListsCount; ++n) {
-            render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n], maybe_target);
-        }
-
-        // Catch up with texture updates. Most of the times, the list will have 1 element with an OK
-        // status, aka nothing to do.
+        // Before processing the draw data, which may contain texture references, catch up with texture
+        // updates.
         //
-        // (This almost always points to `ImGui::GetPlatformIO().Textures[]` but is part of `ImDrawData` to
-        //  allow overriding or disabling texture updates).
+        // Most of the times, the list will have 1 element with an OK status, aka nothing to do.
+        // (This almost always points to `ImGui::GetPlatformIO().Textures[]` but is part of
+        // `ImDrawData` to allow overriding or disabling texture updates).
         if (draw_data->Textures != nullptr) {
             for (ImTextureData* texture_data : *draw_data->Textures) {
                 graphics_backend_handle_texture_data(*bd, *texture_data);
             }
+        }
+
+        bd->camera.set_projection_matrix_override(display_projection_matrix(*draw_data));
+        for (int n = 0; n < draw_data->CmdListsCount; ++n) {
+            render_drawlist(*bd, *draw_data, *draw_data->CmdLists[n], maybe_target);
         }
     }
 
