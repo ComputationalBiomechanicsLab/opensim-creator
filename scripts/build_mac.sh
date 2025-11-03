@@ -23,10 +23,6 @@ OSC_BUILD_TYPE=${OSC_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 OSC_DEPS_BUILD_ALWAYS=${OSC_DEPS_BUILD_ALWAYS:-OFF}
 
 # maximum number of build jobs to run concurrently
-#
-# defaulted to 1, rather than `sysctl -n hw.physicalcpu`, because OpenSim
-# requires a large  amount of RAM--more than most machines have--to build
-# concurrently, #659
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.ncpu)}
 
 # extra flags to pass into each configuration call to cmake
