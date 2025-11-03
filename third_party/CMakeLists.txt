@@ -5,6 +5,7 @@ include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
 find_package(Git REQUIRED)  # GIT_EXECUTABLE
 
+option(OSCDEPS_BUILD_CGLTF           "Build cgltf"           ON)
 option(OSCDEPS_BUILD_GLAD            "Build glad"            ON)
 option(OSCDEPS_BUILD_GOOGLETEST      "Build googletest"      ON)
 option(OSCDEPS_BUILD_IMGUI           "Build imgui"           ON)
@@ -68,60 +69,10 @@ if(TRUE)
 endif()
 
 
-if(${OSCDEPS_BUILD_GOOGLETEST})
-    ExternalProject_Add(googletest
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DBUILD_GMOCK:BOOL=OFF
-            -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
-    )
-endif()
-
-if(${OSCDEPS_BUILD_LUNASVG})
-    ExternalProject_Add(lunasvg
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DBUILD_SHARED_LIBS:BOOL=OFF
-            -DLUNASVG_BUILD_EXAMPLES:BOOL=OFF
-    )
-endif()
-
-if(${OSCDEPS_BUILD_SDL})
-    # Ensure that OpenGL is available before trying to configure SDL3, because
-    # SDL3 will silently drop (i.e. not configure) 3D context support, which
-    # won't surface as an issue until the downstream application's test suite
-    # runs (#961)
-    cmake_policy(SET CMP0072 NEW)
-    find_package(OpenGL REQUIRED)
-    ExternalProject_Add(sdl
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DSDL_INSTALL_CMAKEDIR:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/SDL3
-            -DSDL_SHARED:BOOL=OFF
-            -DSDL_STATIC:BOOL=ON
-            -DSDL_TEST_LIBRARY:BOOL=OFF
-            -DSDL_PRESEED:BOOL=OFF  # https://github.com/libsdl-org/SDL/issues/11487#issuecomment-2487405649
-    )
-endif()
-
-if(${OSCDEPS_BUILD_TOMLPLUSPLUS})
-    ExternalProject_Add(tomlplusplus
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_UNORDERED_DENSE})
-    ExternalProject_Add(unordered_dense
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
+if (${OSCDEPS_BUILD_CGLTF})
+    ExternalProject_Add(cgltf
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cgltf
+        SOURCE_SUBDIR ../cmake/cgltf
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
@@ -134,6 +85,17 @@ if(${OSCDEPS_BUILD_GLAD})
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_GOOGLETEST})
+    ExternalProject_Add(googletest
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_GMOCK:BOOL=OFF
+            -Dgtest_force_shared_crt:BOOL=ON  # osc uses a shared runtime lib
     )
 endif()
 
@@ -162,6 +124,26 @@ if(${OSCDEPS_BUILD_IMPLOT})
     )
 endif()
 
+if(${OSCDEPS_BUILD_LUNASVG})
+    ExternalProject_Add(lunasvg
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_SHARED_LIBS:BOOL=OFF
+            -DLUNASVG_BUILD_EXAMPLES:BOOL=OFF
+    )
+endif()
+
+if(${OSCDEPS_BUILD_MDSPAN})
+    ExternalProject_Add(mdspan
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
 if(${OSCDEPS_BUILD_OPENBLAS})
     ExternalProject_Add(OpenBLAS
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenBLAS
@@ -170,6 +152,26 @@ if(${OSCDEPS_BUILD_OPENBLAS})
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
             -DC_LAPACK:BOOL=ON
             -DBUILD_STATIC_LIBS:BOOL=ON
+    )
+endif()
+
+if(${OSCDEPS_BUILD_SDL})
+    # Ensure that OpenGL is available before trying to configure SDL3, because
+    # SDL3 will silently drop (i.e. not configure) 3D context support, which
+    # won't surface as an issue until the downstream application's test suite
+    # runs (#961)
+    cmake_policy(SET CMP0072 NEW)
+    find_package(OpenGL REQUIRED)
+    ExternalProject_Add(sdl
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/SDL
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DSDL_INSTALL_CMAKEDIR:STRING=${CMAKE_INSTALL_LIBDIR}/cmake/SDL3
+            -DSDL_SHARED:BOOL=OFF
+            -DSDL_STATIC:BOOL=ON
+            -DSDL_TEST_LIBRARY:BOOL=OFF
+            -DSDL_PRESEED:BOOL=OFF  # https://github.com/libsdl-org/SDL/issues/11487#issuecomment-2487405649
     )
 endif()
 
@@ -187,6 +189,35 @@ if(${OSCDEPS_BUILD_SPDLOG})
     )
 endif()
 
+if (${OSCDEPS_BUILD_STB})
+    ExternalProject_Add(stb
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+        SOURCE_SUBDIR ../cmake/stb/
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_TOMLPLUSPLUS})
+    ExternalProject_Add(tomlplusplus
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(${OSCDEPS_BUILD_UNORDERED_DENSE})
+    ExternalProject_Add(unordered_dense
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+# Must be last in this file because it's dependent on other dependencies
 if(${OSCDEPS_BUILD_LIBOSIM})
     if(${OSCDEPS_BUILD_OPENBLAS})
         list(APPEND OSCDEPS_LIBOSIM_DEPS OpenBLAS)
@@ -207,23 +238,4 @@ if(${OSCDEPS_BUILD_LIBOSIM})
             -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
     )
     unset(OSCDEPS_LIBOSIM_PATCHES)
-endif()
-
-if (${OSCDEPS_BUILD_STB})
-    ExternalProject_Add(stb
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
-        SOURCE_SUBDIR ../cmake/stb/
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_MDSPAN})
-    ExternalProject_Add(mdspan
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
 endif()
