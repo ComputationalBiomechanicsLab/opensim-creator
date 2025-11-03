@@ -53,7 +53,7 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Otherwise, it requires @adamkewley's GitHub login to publish
             the generated draft from Zenodo
     - [ ] Update + commit the repository with the Zenodo release details:
-      - [ ] Use `./scripts/bump_zenodo_details.py` to automatically do this
+      - [ ] Use `./scripts/oneoff_bump-zenodo-details.py` to automatically do this
       - [ ] Ensure `codemeta.json`, `CITATION.cff`, and `README.md` refer to the
             correct Zenodo release.
     - [ ] Ensure the entire repository, incl. all tags, is pushed to the official

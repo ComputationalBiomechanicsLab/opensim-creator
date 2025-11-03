@@ -5,8 +5,10 @@
 #
 # USAGE
 #
-#     python scripts/bump_zenodo_details.py  # follow the prompts this gives
-#     git diff                               # ensure the script made sane changes
+#     python scripts/oneoff_bump-zenodo-details.py  # follow the prompts this gives
+#     git diff                                      # ensure the script made sane changes
+#     git add -A                                    # index the changes
+#     git commit -m "Updated Zenodo details"        # commit changes
 
 import datetime
 import re
