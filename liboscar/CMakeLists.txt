@@ -19,6 +19,7 @@ find_package(tomlplusplus REQUIRED CONFIG)
 find_package(stb REQUIRED CONFIG)
 find_package(lunasvg REQUIRED CONFIG)
 find_package(unordered_dense REQUIRED CONFIG)
+find_package(cgltf REQUIRED CONFIG)
 find_package(Threads REQUIRED)  # implicitly required by SDL3
 
 # generate `oscarconfig.h`
@@ -52,6 +53,7 @@ PRIVATE
     implot
     stb
     lunasvg::lunasvg
+    cgltf
     Threads::Threads  # implicitly required by SDL3
 )
 
