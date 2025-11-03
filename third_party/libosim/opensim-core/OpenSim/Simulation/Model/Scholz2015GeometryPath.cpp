@@ -28,6 +28,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include <optional>
+
 using namespace OpenSim;
 
 //=============================================================================
@@ -307,7 +309,8 @@ void Scholz2015GeometryPath::extendAddToSystem(
                 obstacle->getContactGeometry().getFrame()
                                               .getMobilizedBodyIndex(),
                 obstacle->getContactGeometry().getTransform(),
-                obstacle->getContactGeometry().getSimTKContactGeometryPtr(),
+                std::make_shared<SimTK::ContactGeometry>(
+                    obstacle->getContactGeometry().createSimTKContactGeometry()),
                 obstacle->getContactHint());
             _obstacleIndexes.emplace_back(std::make_tuple(ix, ielt));
         }
@@ -320,17 +323,40 @@ void Scholz2015GeometryPath::extendAddToSystem(
     _index = cable.getIndex();
 }
 
-void Scholz2015GeometryPath::generateDecorations(bool fixed,
-        const ModelDisplayHints&, const SimTK::State& s,
+void Scholz2015GeometryPath::generateDecorations(
+        bool fixed,
+        const ModelDisplayHints& hints,
+        const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const {
-    if (fixed) { return; }
 
-    getCableSpan().calcDecorativePathPoints(s,
-        [&](SimTK::Vec3 x_G)
-        {
-            geoms.push_back(SimTK::DecorativeSphere(0.005).setTransform(x_G)
-                    .setColor(SimTK::Blue));
-        });
+    if (fixed) { return; }
+    const bool showPathPoints = hints.get_show_path_points();
+    const SimTK::Vec3 color = getColor(s);
+    int index = 0;
+    std::optional<SimTK::Vec3> previous;
+    getCableSpan().calcDecorativePathPoints(s, [&](SimTK::Vec3 x_G) {
+        if (previous) {
+            // Emit line between points
+            geoms.push_back(SimTK::DecorativeLine(*previous, x_G)
+                .setLineThickness(4)
+                .setScaleFactors(SimTK::Vec3{1.0})
+                .setColor(color)
+                .setBodyId(0)
+                .setIndexOnBody(index++)
+            );
+        }
+        if (showPathPoints) {
+            geoms.push_back(SimTK::DecorativeSphere(0.005)
+                .setTransform(x_G)
+                .setScaleFactors(SimTK::Vec3{1.0})
+                .setColor(color)
+                .setBodyId(0)
+                .setIndexOnBody(index++)
+            );
+        }
+
+        previous = x_G;
+    });
 }
 
 //=============================================================================
