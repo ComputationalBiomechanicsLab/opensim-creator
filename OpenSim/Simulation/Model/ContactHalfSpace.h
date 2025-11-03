@@ -30,14 +30,14 @@ namespace OpenSim {
 /**
  * \section ContactHalfSpace
  * A class that represents a half space (that is, everything to one side of an
- * infinite plane) for use in contact modeling.  
+ * infinite plane) for use in contact modeling.
  *
  * In its local coordinate system, all points for which x>0 are considered to be
- * inside the geometry. Its location and orientation properties can be used to 
+ * inside the geometry. Its location and orientation properties can be used to
  * move and rotate it to represent other half spaces.
  *
- * A `SimTK::ContactGeometry::TriangleMesh` is constructed when either
- * `createSimTKContactGeometry()` or `getSimTKContactGeometryPtr()` is called.
+ * A `SimTK::ContactGeometry::TriangleMesh` is constructed when
+ * `createSimTKContactGeometry()` is called.
  *
  * @author Peter Eastman
  */
@@ -84,18 +84,22 @@ public:
                      const PhysicalFrame& frame,
                      const std::string& name);
 
-private:
-    // CONTACT GEOMETRY INTERFACE
-    void generateDecorationsImpl(bool fixed, const ModelDisplayHints& hints,
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& s,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
+private:
+    // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
 
     // INITIALIZATION
     void setNull();
 
-}; 
+};
 
 } // namespace OpenSim
 
-#endif // OPENSIM_CONTACT_HALF_SPACE_H_ 
+#endif // OPENSIM_CONTACT_HALF_SPACE_H_

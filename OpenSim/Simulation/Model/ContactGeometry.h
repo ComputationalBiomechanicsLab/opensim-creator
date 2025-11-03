@@ -135,44 +135,20 @@ public:
     SimTK::ContactGeometry createSimTKContactGeometry() const;
     // @}
 
-    /** @name Visualization */
-    // @{
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
-    // @}
-
 protected:
     // CONTACT GEOMETRY INTERFACE
     // Concrete implementations of ContactGeometry must implement this method to
     // provide an equivalent SimTK::ContactGeometry object.
     virtual SimTK::ContactGeometry createSimTKContactGeometryImpl() const = 0;
 
-    // Concrete implementations of ContactGeometry may override this method to
-    // customize `generateDecorations()`.
-    virtual void generateDecorationsImpl(
-            bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& state,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const;
-
     // OBJECT INTERFACE
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
         override;
 
 private:
-    mutable std::shared_ptr<const SimTK::ContactGeometry> _simTKContactGeometry;
-
-    /**
-     * Get a shared pointer to a SimTK::ContactGeometry based on this object.
-     */
-    std::shared_ptr<const SimTK::ContactGeometry>
-    getSimTKContactGeometryPtr() const;
-
     // INITIALIZATION
     void setNull();
     void constructProperties();
-
-    friend class Scholz2015GeometryPath;
 };
 
 /**
@@ -192,7 +168,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactSphere, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the sphere (default: 0).");
+            "The radius of the sphere (default: 0).");
 
 public:
 //=============================================================================
@@ -244,6 +220,13 @@ public:
     void setRadius(double radius);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
@@ -271,7 +254,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactCylinder, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radius, double,
-            "Radius of the cylinder (default: 0).");
+            "The radius of the cylinder (default: 0).");
 
 public:
 //=============================================================================
@@ -326,6 +309,13 @@ public:
     void setRadius(double radius);
     // @}
 
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
+    // @}
+
 private:
     // CONTACT GEOMETRY INTERFACE
     SimTK::ContactGeometry createSimTKContactGeometryImpl() const override;
@@ -346,7 +336,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ContactEllipsoid, ContactGeometry);
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_PROPERTY(radii, SimTK::Vec3,
-            "Radii of the ellipsoid (default: [0, 0, 0]).");
+            "The radii of the ellipsoid (default: [0, 0, 0]).");
 
 public:
 //=============================================================================
@@ -399,6 +389,13 @@ public:
      * %Set the radii of the ellipsoid.
      */
     void setRadii(const SimTK::Vec3& radii);
+    // @}
+
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
     // @}
 
 private:
@@ -499,6 +496,13 @@ public:
      * %Set the radius of the torus cross-section.
      */
     void setTubeRadius(double radius);
+    // @}
+
+    /** @name Visualization */
+    // @{
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& s,
+        SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
     // @}
 
 private:
