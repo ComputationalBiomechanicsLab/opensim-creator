@@ -6,38 +6,46 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- The model scene renderer now has an "Order-Independent Transparency" option
-  (default-disabled), which fixes the rendering of models containing a lot of
-  intersecting transparent geometry (e.g. Rajagopal2015.osim, when all of its
+- (nothing yet!)
+
+
+## [0.6.2] - 2025/11/03
+
+- Added "Order-Independent Transparency" option to the model scene renderer
+  (disabled by default), which fixes the rendering of models containing many
+  intersecting transparent surfaces (e.g. Rajagopal2015.osim, when all of its
   wrap surfaces are displayed, #1130).
-- OpenSim and Simbody were updated to the latest upstream version (2f3d0e1, 15th Oct)
+- Updated OpenSim and Simbody to the latest upstream version (2f3d0e1, 15th Oct)
   so that new features such as exponential path springs and Scholz wrapping paths are
   supported (big thanks to @alexbeattie42 for doing the legwork, #1099, #1100).
-- A new example, `Scholz2015GeometryPath.osim`, was added to OpenSim Creator's
-  pre-installed example models, so that developers and modellers can experiment with
-  the new wrapping algorithm (#1131).
-- The internal render queue used by OpenSim Creator's graphics engine was reworked,
-  which should improve rendering performance by 5-10 %.
-- Scene decorations that are known to be "safe" to backface cull (e.g. generated geometry,
-  not-user-supplied mesh data) are now rendered with backface culling enabled, which
-  improves rendering performance by 5-10 % (GPU-dependent, #1133).
-- The scene renderer now has a "Scholz Obstacle Contact Hints" option (default-enabled),
-  which renders spheres at the locations of `contact_hint`s for
-  `Scholz2015GeometryPathObstacle`s (#1131).
-- The model editor 3D viewport now supports 3D manipulation gizmos for the contact hint
-  property of a `Scholz2015GeometryPathObstacle` (#1131).
-- The navigator panel now draws vertical lines from each internal node in the model tree
-  to make it easier to visually count how deep the tree is.
-- Third-party libraries `imgui`, `implot`, `lunasvg`, `mdspan`, `OpenBLAS`, `SDL`,
-  `stb`, and `unordered_dense` were updated to their latest versions.
-- `liboscar`'s ImGui backend was updated to support ImGui v1.92.0's dynamic font
+- Added support for `Scholz2015GeometryPath`:
+  - Added `Scholz2015GeometryPath.osim`, so that developers and modellers can
+    experiment with the new wrapping algorithm (#1131).
+  - Added "Scholz Obstacle Contact Hints" option to the model scene renderer
+    (enabled by default), which renders spheres at the locations of `contact_hint`s for
+    `Scholz2015GeometryPathObstacle`s (#1131).
+  - Added 3D manipulation gizmos for the `contact_hint` property of `Scholz2015GeometryPathObstacle`s
+    (#1131).
+- Changed the internal render queue used by OpenSim Creator's graphics engine, which
+  improves rendering performance by approximately 5-10 %.
+- Added `SceneDecorationFlag::CanBackfaceCull`, and integrated it into `liboscar`'s
+  `SceneRenderer`. The flag is set for all decorations that are known to be "safe" to
+  backface cull (e.g. generated geometry, but not user-supplied mesh data). This improves
+  rendering performance by approximately 5-10 % (GPU-dependent, #1133).
+- Changed the navigator panel to draw vertical lines from each internal node in the
+  model tree, which makes it easier to visually count how deep the tree is.
+- Updated third-party libraries `imgui`, `implot`, `lunasvg`, `mdspan`, `OpenBLAS`, `SDL`,
+  `stb`, and `unordered_dense` to their latest versions.
+- Changed `liboscar`'s ImGui backend (`oscimgui`) to support ImGui v1.92.0's dynamic font
   scaling API (`ImGuiBackendFlags_RendererHasTextures`, #1134).
-- The project now additionally packages a Windows portable installer (zip), which makes it
-  easier to copy OSC onto multiple computers quickly, or to have multiple versions installed,
-  or to run OSC with reduced installation permissions (#881, #1135).
-- The windows installer is now shipped as an `.msi`, which has a more standard design and
-  additionally has the ability to be silently installed via a batch script by Windows system
-  administrators (#1136).
+- Changed Windows installer from a `.exe`, created with NSIS, to a `.msi`, created with WiX. A
+  `.msi` is a more standardized installer format that has additional features, such as the ability
+  for Windows system administrators to silently install/update OSC in the background (#1136).
+- Added portable installer (`.zip`) packaging for Windows. This makes it easier to copy OSC
+  onto multiple computers quickly (e.g. from a zip), and makes it easier to have multiple versions
+  of OSC "installed" somewhere. Additionally, portable software tends to have fewer admin
+  permissions requirements than installers (#881, #1135).
+
 
 ## [0.6.1] - 2025/10/09
 
@@ -57,6 +65,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (#1110).
 - Windows installers should now be signed by Adam Kewley, which should make installing
   OpenSim Creator on restricted Windows machines easier (#1117).
+
 
 ## [0.6.0] - 2025/09/08
 
@@ -115,6 +124,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   so that the resultant model is compatible with OpenSim <4.6 (#1104).
 - The `attach` button in the Add body popup now only shows the name of the attached mesh, rather
   than the full path to it.
+
 
 ## [0.5.25] - 2025/07/14
 
