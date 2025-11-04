@@ -9,6 +9,5 @@ set -xeuo pipefail
 OSCDEPS_BUILD_ALWAYS=ON ./scripts/build.py \
     --osx-architectures=arm64 \
     --osx-deployment-target=14.5 \
-    --allowed-final-target-build-attempts=8 \
-    --seconds-between-final-target-build-attempts=2
+    "$@"
 

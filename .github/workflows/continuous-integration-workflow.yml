@@ -38,7 +38,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_mac-amd64.sh
+      run: cd $GITHUB_WORKSPACE && ./scripts/ci_build_mac-amd64.sh --allowed-final-target-build-attempts=8 --seconds-between-final-target-build-attempts=2
 
     - uses: actions/upload-artifact@v4
       with:
@@ -53,7 +53,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: run build script
-      run: cd $GITHUB_WORKSPACE && bash ./scripts/ci_build_mac-arm64.sh
+      run: cd $GITHUB_WORKSPACE && bash ./scripts/ci_build_mac-arm64.sh --allowed-final-target-build-attempts=8 --seconds-between-final-target-build-attempts=2
 
     - uses: actions/upload-artifact@v4
       with:
