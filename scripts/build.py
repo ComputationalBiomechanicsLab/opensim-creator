@@ -101,6 +101,7 @@ class BuildConfiguration:
         self.system_version = os.getenv("OSC_SYSTEM_VERSION")
         self.build_dir = os.curdir
         self.codesign_enabled = None
+        self.notarization_enabled = None
         self.skip_osc = False
         self.skip_rendering_tests = False
         self.headless_mode = True
@@ -160,6 +161,8 @@ class BuildConfiguration:
             rv["OSC_BUILD_DOCS"] = "ON" if self.build_docs else "OFF"
         if self.codesign_enabled is not None:
             rv["OSC_CODESIGN_ENABLED"] = "ON" if self.codesign_enabled else "OFF"
+        if self.notarization_enabled is not None:
+            rv["OSC_NOTARIZATION_ENABLED"] = "ON" if self.notarization_enabled else "OFF"
         if self.system_version:
             rv["CMAKE_SYSTEM_VERSION"] = self.system_version
         if self.osx_architectures:
@@ -301,6 +304,7 @@ def main():
     parser.add_argument("--build-type", help="the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)", type=str, default=conf.base_build_type)
     parser.add_argument("--system-version", help="specify the value of CMAKE_SYSTEM_VERSION (e.g. '10.0.26100.0', a specific Windows SDK)", type=str, default=conf.system_version)
     parser.add_argument("--codesign-enabled", help="enable signing resulting binaries/package", default=conf.codesign_enabled, action="store_true")
+    parser.add_argument("--notarization-enabled", help="enable notarizing the resulting binaries/package", default=conf.notarization_enabled, action="store_true")
     parser.add_argument("--skip-rendering-tests", help="skip tests that use the rendering subsystem", default=conf.skip_rendering_tests, action="store_true")
     parser.add_argument("--headless", help="run tests is headless mode (i.e. don't show UI during UI tests)", default=conf.headless_mode, action="store_true")
     parser.add_argument("--allowed-final-target-build-attempts", help="the number of times the final build step is allowed to fail (can be handy when the packaging system is flakey)", type=int, default=conf.allowed_final_target_build_attempts)
@@ -319,6 +323,7 @@ def main():
     conf.base_build_type = args.build_type
     conf.system_version = args.system_version
     conf.codesign_enabled = args.codesign_enabled
+    conf.notarization_enabled = args.notarization_enabled
     conf.skip_rendering_tests = args.skip_rendering_tests
     conf.headless_mode = args.headless
     conf.allowed_final_target_build_attempts = args.allowed_final_target_build_attempts
