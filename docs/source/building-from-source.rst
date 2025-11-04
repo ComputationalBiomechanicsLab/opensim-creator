@@ -108,7 +108,7 @@ Building on MacOS (Sonoma or newer)
     2. ``cd`` into the source dir: ``cd opensim-creator``
     3. If you have multiple C++ compilers, make sure that the ``CC`` and ``CXX`` environment variables
        point to compilers that are compatible with C++23. E.g. ``export CXX=$(brew --prefix llvm@15)/bin/clang++``
-    4. Run the build script: ``scripts/build_mac.sh`` (**warning**: can take a long time)
+    4. Run the build script: ``python scripts/build.py`` (**warning**: can take a long time)
 7. Done:
     1. The ``build/`` directory should contain the built installer
 
@@ -134,7 +134,7 @@ Building on Ubuntu (22.04 or newer)
 7. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
-       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/build.py``
-    3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build.py``
+       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 python ./scripts/build.py``
+    3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 python ./scripts/build.py``
 8. Done:
     1. After the build is complete, the ``build/`` directory should contain the built installer

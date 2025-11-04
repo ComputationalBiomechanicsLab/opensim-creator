@@ -9,6 +9,7 @@ import os
 import pprint
 import platform
 import subprocess
+import time
 
 def _envvar_as_tristate(key : str, default=None):
     value = os.getenv(key, default)
@@ -17,9 +18,12 @@ def _envvar_as_tristate(key : str, default=None):
     else:
         return value.lower() in {"on", "true", "yes", "1"}
 
-def _run(args, extra_env_vars={}):
+def _run(args, extra_env_vars=None):
+    if extra_env_vars is None:
+        extra_env_vars = {}
+
     logging.info(f"running: {' '.join(args)}")
-    subprocess.run(args, check=True, env={**extra_env_vars, **os.environ})
+    subprocess.run(args, check=True, env={**os.environ, **extra_env_vars})
 
 def _log_dir_contents(path: str):
     logging.info(f"listing {path}")
@@ -32,12 +36,15 @@ def _default_generator():
     return "Unix Makefiles"
 
 def _generator_requires_architecture_flag(generator):
-    return "Visual Studio" in generator
+    return generator is not None and ("Visual Studio" in generator)
 
 def _is_multi_configuration_generator(generator):
-    return "Visual Studio" in generator or "Xcode" in generator or "Multi-Config" in generator
+    return generator is not None and ("Visual Studio" in generator or "Xcode" in generator or "Multi-Config" in generator)
 
-def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
+def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars):
+    if extra_env_vars is None:
+        extra_env_vars ={}
+
     args = ["cmake", "-S", source_dir, "-B", binary_dir]  # base arguments
 
     # append generator (-G) argument (if specified)
@@ -52,7 +59,10 @@ def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_
 
     _run(args, extra_env_vars)
 
-def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None, extra_env_vars={}):
+def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None, extra_env_vars=None):
+    if extra_env_vars is None:
+        extra_env_vars = {}
+
     args = ["cmake", "--build", binary_dir, "--verbose", "-j", str(concurrency)]  # base arguments
 
     # append --config argument (if necessary)
@@ -64,7 +74,12 @@ def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None
 
     _run(args, extra_env_vars)
 
-def _run_ctest(test_dir, concurrency, excluded_tests=[], extra_env_vars={}):
+def _run_ctest(test_dir, concurrency, excluded_tests=None, extra_env_vars=None):
+    if excluded_tests is None:
+        excluded_tests = []
+    if extra_env_vars is None:
+        extra_env_vars = {}
+
     args = ["ctest", "--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
     if excluded_tests:
         args += ["-E", "|".join(excluded_tests)]
@@ -85,10 +100,17 @@ class BuildConfiguration:
         self.skip_osc = False
         self.skip_rendering_tests = False
         self.headless_mode = True
+        self.allowed_final_target_build_attempts = 1
+        self.seconds_between_final_target_build_attempts = 2
 
         # these can be `None`, meaning "fall back to `base_build_type` at runtime"
         self._osc_deps_build_type = os.getenv("OSC_DEPS_BUILD_TYPE")
         self._osc_build_type = os.getenv("OSC_BUILD_TYPE")
+
+        # Mac-specific options
+        self.osx_architectures = os.getenv("OSC_OSX_ARCHITECTURES")
+        self.osx_deployment_target = os.getenv("OSC_TARGET_OSX_VERSION")
+        self.osx_sysroot = None if self.osx_deployment_target is None else f"/Library/Developer/CommandLineTools/SDKs/MacOSX{self.osx_deployment_target}.sdk/"
 
     def __repr__(self):
         return pprint.pformat(vars(self))
@@ -115,6 +137,12 @@ class BuildConfiguration:
         }
         if self.system_version:
             rv["CMAKE_SYSTEM_VERSION"] = self.system_version
+        if self.osx_architectures:
+            rv['CMAKE_OSX_ARCHITECTURES'] = self.osx_architectures
+        if self.osx_deployment_target:
+            rv['CMAKE_OSX_DEPLOYMENT_TARGET'] = self.osx_deployment_target
+        if self.osx_sysroot:
+            rv['CMAKE_OSX_SYSROOT'] = self.osx_sysroot
 
         return rv
 
@@ -130,6 +158,12 @@ class BuildConfiguration:
             rv["OSC_CODESIGN_ENABLED"] = "ON" if self.codesign_enabled else "OFF"
         if self.system_version:
             rv["CMAKE_SYSTEM_VERSION"] = self.system_version
+        if self.osx_architectures:
+            rv['CMAKE_OSX_ARCHITECTURES'] = self.osx_architectures
+        if self.osx_deployment_target:
+            rv['CMAKE_OSX_DEPLOYMENT_TARGET'] = self.osx_deployment_target
+        if self.osx_sysroot:
+            rv['CMAKE_OSX_SYSROOT'] = self.osx_sysroot
 
         return rv
 
@@ -218,14 +252,34 @@ def build_osc(conf: BuildConfiguration):
             excluded_tests=conf.get_excluded_tests(),
             extra_env_vars=conf.get_osc_ctest_extra_environment_variables()
         )
+
         # build final target (which might not be in ALL, e.g. `package`)
-        _run_cmake_build(
-            binary_dir=conf.get_osc_build_dir(),
-            generator=conf.generator,
-            build_type=conf.get_osc_build_type(),
-            concurrency=conf.concurrency,
-            target=conf.build_target
-        )
+        #
+        # multiple attempts might be necessary in certain situations. E.g. MacOS via
+        # a GitHub action runner can spuriously fail for no good reason
+        for i in range(0, conf.allowed_final_target_build_attempts):
+            try:
+                _run_cmake_build(
+                    binary_dir=conf.get_osc_build_dir(),
+                    generator=conf.generator,
+                    build_type=conf.get_osc_build_type(),
+                    concurrency=conf.concurrency,
+                    target=conf.build_target
+                )
+            except Exception as e:
+                if i+1 == conf.allowed_final_target_build_attempts:
+                    raise
+                else:
+                    logging.warning(f"error running final build step (will reattempt): {str(e)}")
+
+            time.sleep(conf.seconds_between_final_target_build_attempts)
+
+        if platform.system() == "Darwin":
+            # On Mac, ensure all runtime dependencies are within a known whitelist
+            _run(["./scripts/test_macos-dependencies.py", os.path.join(conf.get_osc_build_dir(), "osc/osc.app/Contents/MacOS/osc")])
+        if conf.osx_deployment_target:
+            # If the caller specified a specific deployment target, ensure the binary has that target
+            _run(["./scripts/test_macos-uses-sdk.py", conf.osx_deployment_target, os.path.join(conf.get_osc_build_dir(), "osc/osc.app/Contents/MacOS/osc")])
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
@@ -243,6 +297,13 @@ def main():
     parser.add_argument("--system-version", help="specify the value of CMAKE_SYSTEM_VERSION (e.g. '10.0.26100.0', a specific Windows SDK)", type=str, default=conf.system_version)
     parser.add_argument("--codesign-enabled", help="enable signing resulting binaries/package", default=conf.codesign_enabled, action="store_true")
     parser.add_argument("--skip-rendering-tests", help="skip tests that use the rendering subsystem", default=conf.skip_rendering_tests, action="store_true")
+    parser.add_argument("--headless", help="run tests is headless mode (i.e. don't show UI during UI tests)", default=conf.headless_mode, action="store_true")
+    parser.add_argument("--allowed-final-target-build-attempts", help="the number of times the final build step is allowed to fail (can be handy when the packaging system is flakey)", type=int, default=conf.allowed_final_target_build_attempts)
+    parser.add_argument("--seconds-between-final-target-build-attempts", help="the number of seconds that should be slept between final target build attempts", default=conf.seconds_between_final_target_build_attempts, type=int)
+    if platform.system() == "Darwin":
+        parser.add_argument("--osx-architectures", help="set which architectures to build for on (Mac-specific)")
+        parser.add_argument("--osx-deployment-target", help="set the version of MacOS that the build should target", default=conf.osx_deployment_target)
+        parser.add_argument("--osx-sysroot", help="set the MacOSX SDK sysroot that should be used to build everything", default=conf.osx_sysroot)
 
     # overwrite build configuration with any CLI args
     args = parser.parse_args()
@@ -254,6 +315,12 @@ def main():
     conf.system_version = args.system_version
     conf.codesign_enabled = args.codesign_enabled
     conf.skip_rendering_tests = args.skip_rendering_tests
+    conf.headless_mode = args.headless
+    conf.allowed_final_target_build_attempts = args.allowed_final_target_build_attempts
+    conf.seconds_between_final_target_build_attempts = args.seconds_between_final_target_build_attempts
+    conf.osx_architectures = args.osx_architectures
+    conf.osx_deployment_target = args.osx_deployment_target
+    conf.osx_sysroot = args.osx_sysroot
 
     log_build_params(conf)
     build_osc_dependencies(conf)
