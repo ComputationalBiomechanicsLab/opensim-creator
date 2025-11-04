@@ -2,9 +2,6 @@
 REM Performs an end-to-end CI build of OpenSim Creator.
 REM This is what build agents should run to build release amd64 binaries of OpenSim Creator on Windows.
 
-REM Hide window creation in CI, because CI runners typically do not have a desktop environment.
-set "OSC_INTERNAL_HIDE_WINDOW=1"
-
 REM Ensure dependencies are re-checked/re-built if the CI script is run on
 REM a potentially stale/cached workspace directory.
 set "OSCDEPS_BUILD_ALWAYS=ON"
@@ -15,7 +12,7 @@ call scripts/env_vs.bat
 REM --system-version is necessary because, otherwise, the wrong Windows SDK might be chosen,
 REM resulting in either missing headers or shipping a binary that doesn't run on target systems.
 REM The specified SDK supports Windows 10, version 1507 or higher.
-python scripts\build_windows.py --system-version=10.0.26100.0 --generator=Ninja
+python scripts\build_windows.py --system-version=10.0.26100.0 --generator=Ninja %*
 if errorlevel 1 (
     echo Command failed with exit code %errorlevel%
     exit /b %errorlevel%

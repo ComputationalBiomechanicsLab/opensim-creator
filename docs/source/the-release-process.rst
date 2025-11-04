@@ -41,8 +41,7 @@ Creator, it's usually copied into a GitHub issue:
             the signed+notarized binaries instead. See OSC_CODESIGN_ENABLED and OSC_NOTARIZATION_ENABLED flags in the
             MacOS packaging. Adam Kewley specifically has the CMake flags, password, keys etc. necessary to do this.
             The process is: `./scripts/ci_build_mac-amd64.sh && rm build/opensimcreator-*.dmg && cmake -S . -B build $SIGNING_ARGS_FROM_KEYCHAIN && cmake --build build --target package`
-      - [ ] For Windows, the release must be build ont a developer's machine, and the developer should configure the build with codesigning and
-            upload the signed binaries. See `OSC_CODESIGN_ENABLED` flags in the Windows packaging directory.
+      - [ ] For Windows, the release must be built on a developer's machine with `./scripts/ci_build_windows.bat --codesign-enabled`
     - [ ] Unzip/rename any artifacts (see prev. releases)
     - [ ] Create new release on github from the tagged commit
       - [ ] Upload all artifacts against it
