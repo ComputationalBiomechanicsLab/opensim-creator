@@ -3,6 +3,8 @@
 # Sets up a virtual environment at `docs/venv/` with the necessary python
 # dependencies to build the documentation.
 
+set -xeuo pipefail
+
 python -m venv docs/venv/
 
 # Determine which `activate` script to `source`

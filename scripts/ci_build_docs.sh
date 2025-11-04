@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -xeuo pipefail
+
 # Determine which activate script exists
 if [ -f "docs/venv/bin/activate" ]; then
     source "docs/venv/bin/activate"  # Linux/macOS
