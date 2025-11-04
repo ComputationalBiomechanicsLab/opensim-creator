@@ -9,72 +9,150 @@ import os
 import pprint
 import subprocess
 
-def _is_truthy_envvar(s : str):
-    sl = s.lower()
-    return sl in {"on", "true", "yes", "1"}
+def _envvar_as_tristate(key : str, default=None):
+    value = os.getenv(key, default)
+    if value is None:
+        return None
+    else:
+        return value.lower() in {"on", "true", "yes", "1"}
 
 def _run(s: str, extra_env_vars={}):
     logging.info(f"running: {s}")
     subprocess.run(s, check=True, env={**extra_env_vars, **os.environ})
-
-def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
-    all_cache_variables = ' '.join([f'-D{k}={v}' for k, v in cache_variables.items()])
-    maybe_arch_flag = f'-A {architecture}' if 'Visual Studio' in generator else ''
-    _run(f'cmake -S {source_dir} -B {binary_dir} -G "{generator}" {maybe_arch_flag} {all_cache_variables}', extra_env_vars)
-
-def _run_cmake_build(binary_dir, config, concurrency, target=None):
-    maybe_target_flag = f'--target {target}' if target else ''
-    _run(f'cmake --build {binary_dir} --verbose --config {config} -j{concurrency} {maybe_target_flag}')
 
 def _log_dir_contents(path: str):
     logging.info(f"listing {path}")
     for el in os.listdir(path):
         logging.info(f"{path}/{el}")
 
+def _default_generator():
+    return 'Visual Studio 17 2022'
+
+def _generator_requires_architecture_flag(generator):
+    return 'Visual Studio' in generator
+
+def _is_multi_configuration_generator(generator):
+    return 'Visual Studio' in generator or 'Xcode' in generator
+
+def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
+    args = ['-S', source_dir, '-B', binary_dir]  # base arguments
+
+    # append generator (-G) argument (if specified)
+    if generator:
+        args += ['-G', generator]
+    # append architecture (-A) argument (if necessary)
+    if _generator_requires_architecture_flag(generator):
+        args += ['-A', architecture if architecture else 'x64']
+    # append cache variables (-DK=V)
+    for k, v in cache_variables.items():
+        args += [f'-D{k}={v}']
+
+    _run(f'cmake {" ".join(args)}', extra_env_vars)
+
+def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None, extra_env_vars={}):
+    args = ['--build', binary_dir, '--verbose', '-j', str(concurrency)]  # base arguments
+
+    # append --config argument (if necessary)
+    if _is_multi_configuration_generator(generator):
+        args += ['--config', build_type]
+    # append --target argument (if specified)
+    if target:
+        args += ['--target', target]
+
+    _run(f'cmake {" ".join(args)}', extra_env_vars)
+
+def _run_ctest(test_dir, concurrency, excluded_tests=[], extra_env_vars={}):
+    args = ['--test-dir', test_dir, '-j', str(concurrency)]  # base arguments
+    if excluded_tests:
+        args += ['-E', '|'.join(excluded_tests)]
+    _run(f'ctest {" ".join(args)}', extra_env_vars)
+
+# Represents the top-level, potentially caller-controlled, build configuration.
 class BuildConfiguration:
+    def __init__(self):
+        self.base_build_type = os.getenv("OSC_BASE_BUILD_TYPE", "Release")
+        self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", multiprocessing.cpu_count()))
+        self.build_target = os.getenv("OSC_BUILD_TARGET", "package")
+        self.build_docs = _envvar_as_tristate("OSC_BUILD_DOCS")
+        self.generator = _default_generator()
+        self.architecture = None
+        self.system_version = os.getenv('OSC_SYSTEM_VERSION')
+        self.build_dir = os.curdir
+        self.codesign_enabled = None
+        self.skip_osc = False
+        self.exclude_tests_that_use_windowing_system = True
+        self.headless_mode = True
 
-    def __init__(
-            self,
-            *,
-            base_build_type="Release",
-            build_dir=os.curdir,
-            build_concurrency=multiprocessing.cpu_count(),
-            build_target="package",
-            build_docs="OFF",
-            system_version=None,
-            build_skip_osc=False):
-
-        self.base_build_type = os.getenv("OSC_BASE_BUILD_TYPE", base_build_type)
-        self.osc_deps_build_type = os.getenv("OSC_DEPS_BUILD_TYPE")
-        self.osc_build_type = os.getenv("OSC_BUILD_TYPE")
-        self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", build_concurrency))
-        self.build_target = os.getenv("OSC_BUILD_TARGET", build_target)
-        self.build_docs = _is_truthy_envvar(os.getenv("OSC_BUILD_DOCS", build_docs))
-        self.generator = 'Visual Studio 17 2022'
-        self.architecture = 'x64'
-        self.system_version = os.getenv('OSC_SYSTEM_VERSION', system_version)
-        self.build_dir = build_dir
-        self.skip_osc = build_skip_osc
+        # these can be `None`, meaning "fall back to `base_build_type` at runtime"
+        self._osc_deps_build_type = os.getenv("OSC_DEPS_BUILD_TYPE")
+        self._osc_build_type = os.getenv("OSC_BUILD_TYPE")
 
     def __repr__(self):
         return pprint.pformat(vars(self))
 
     def get_dependencies_build_dir(self):
-        return os.path.join(self.build_dir, f"third_party-build-{self.osc_deps_build_type}")
+        return os.path.join(self.build_dir, f"third_party-build-{self.get_osc_deps_build_type()}")
 
     def get_dependencies_install_dir(self):
-        return os.path.join(self.build_dir, f"third_party-install-{self.osc_deps_build_type}")
+        return os.path.join(self.build_dir, f"third_party-install-{self.get_osc_deps_build_type()}")
 
     def get_osc_build_dir(self):
-        # note: clangd usually expects that the build directory is located at `build/`
-        return os.path.join(self.build_dir, "build")
+        return os.path.join(self.build_dir, f"build/{self.get_osc_build_type()}")
 
     def get_osc_deps_build_type(self):
-        return self.osc_deps_build_type or self.base_build_type
+        return self._osc_deps_build_type or self.base_build_type
 
     def get_osc_build_type(self):
-        return self.osc_build_type or self.base_build_type
+        return self._osc_build_type or self.base_build_type
 
+    def get_dependencies_cmake_cache_variables(self):
+        rv = {
+            'CMAKE_BUILD_TYPE': self.get_osc_deps_build_type(),
+            'CMAKE_INSTALL_PREFIX': self.get_dependencies_install_dir(),
+        }
+        if self.system_version:
+            rv['CMAKE_SYSTEM_VERSION'] = self.system_version
+
+        return rv
+
+    def get_osc_cmake_cache_variables(self):
+        # calculate cache variables
+        rv = {
+            'CMAKE_BUILD_TYPE': self.get_osc_build_type(),
+            'CMAKE_PREFIX_PATH': os.path.abspath(self.get_dependencies_install_dir()),
+        }
+        if self.build_docs is not None:
+            rv['OSC_BUILD_DOCS'] = 'ON' if self.build_docs else 'OFF'
+        if self.codesign_enabled is not None:
+            rv['OSC_CODESIGN_ENABLED'] = 'ON' if self.codesign_enabled else 'OFF'
+        if self.system_version:
+            rv['CMAKE_SYSTEM_VERSION'] = self.system_version
+
+        return rv
+
+    def get_osc_ctest_extra_environment_variables(self):
+        rv = {}
+        if self.headless_mode:
+            rv['OSC_INTERNAL_HIDE_WINDOW'] = '1'
+        return rv
+
+    def get_excluded_tests(self):
+        if not self.exclude_tests_that_use_windowing_system:
+            return []  # no tests excluded
+        else:
+            return [
+                'Graphics',
+                'MeshDepthWritingMaterialFixture',
+                'MeshNormalVectorsMaterialFixture',
+                'ShaderTest',
+                'MaterialTest',
+                'RegisteredDemoTabsTest',
+                'RegisteredOpenSimCreatorTabs',
+                'AddComponentPopup',
+                'LoadingTab',
+            ]
+
+# Represents a section (grouping, substep) of the build
 class Section:
     def __init__(self, name):
         self.name = name
@@ -89,26 +167,19 @@ def log_build_params(conf: BuildConfiguration):
 
 def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
-        # calculate cache variables
-        cache_variables = {
-            'CMAKE_BUILD_TYPE': conf.get_osc_deps_build_type(),
-            'CMAKE_INSTALL_PREFIX': conf.get_dependencies_install_dir(),
-        }
-        if conf.system_version:
-            cache_variables['CMAKE_SYSTEM_VERSION'] = conf.system_version
-
         # configure
         _run_cmake_configure(
             source_dir='third_party',
             binary_dir=conf.get_dependencies_build_dir(),
             generator=conf.generator,
             architecture=conf.architecture,
-            cache_variables=cache_variables
+            cache_variables=conf.get_dependencies_cmake_cache_variables()
         )
         # build
         _run_cmake_build(
             binary_dir=conf.get_dependencies_build_dir(),
-            config=conf.get_osc_deps_build_type(),
+            generator=conf.generator,
+            build_type=conf.get_osc_deps_build_type(),
             concurrency=conf.concurrency
         )
 
@@ -118,54 +189,37 @@ def build_osc_dependencies(conf: BuildConfiguration):
 
 def build_osc(conf: BuildConfiguration):
     if conf.skip_osc:
-        logging.info("--skip-osc was provided: skipping the OSC build")
+        logging.info("skip_osc was set: skipping the OSC build")
         return
 
     with Section("build osc"):
-        # calculate cache variables
-        cache_variables = {
-            'CMAKE_BUILD_TYPE': conf.get_osc_build_type(),
-            'CMAKE_PREFIX_PATH': os.path.abspath(conf.get_dependencies_install_dir()),
-            'OSC_BUILD_DOCS': 'ON' if conf.build_docs else 'OFF'
-        }
-        if conf.system_version:
-            cache_variables['CMAKE_SYSTEM_VERSION'] = conf.system_version
-
         # configure
         _run_cmake_configure(
             source_dir='.',
             binary_dir=conf.get_osc_build_dir(),
             generator=conf.generator,
             architecture=conf.architecture,
-            cache_variables=cache_variables
+            cache_variables=conf.get_osc_cmake_cache_variables()
         )
-
         # build
         _run_cmake_build(
             binary_dir=conf.get_osc_build_dir(),
-            config=conf.get_osc_build_type(),
+            generator=conf.generator,
+            build_type=conf.get_osc_build_type(),
             concurrency=conf.concurrency
         )
-
         # test
-        excluded_tests = [  # necessary in CI: no windowing system available
-            'Graphics',
-            'MeshDepthWritingMaterialFixture',
-            'MeshNormalVectorsMaterialFixture',
-            'ShaderTest',
-            'MaterialTest',
-            'RegisteredDemoTabsTest',
-            'RegisteredOpenSimCreatorTabs',
-            'AddComponentPopup',
-            'LoadingTab',
-        ]
-        excluded_tests_str = '|'.join(excluded_tests)
-        _run(f'ctest --test-dir {conf.get_osc_build_dir()} -j {conf.concurrency} -E {excluded_tests_str}')
-
-        # ensure final target is built - even if it isn't in ALL (e.g. `package`)
+        _run_ctest(
+            test_dir=conf.get_osc_build_dir(),
+            concurrency=conf.concurrency,
+            excluded_tests=conf.get_excluded_tests(),
+            extra_env_vars=conf.get_osc_ctest_extra_environment_variables()
+        )
+        # build final target (which might not be in ALL, e.g. `package`)
         _run_cmake_build(
             binary_dir=conf.get_osc_build_dir(),
-            config=conf.get_osc_build_type(),
+            generator=conf.generator,
+            build_type=conf.get_osc_build_type(),
             concurrency=conf.concurrency,
             target=conf.build_target
         )
@@ -184,6 +238,7 @@ def main():
     parser.add_argument('--generator', '-G', help='set the build generator for cmake', type=str, default=conf.generator)
     parser.add_argument('--build-type', help='the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)', type=str, default=conf.base_build_type)
     parser.add_argument('--system-version', help='specify the value of CMAKE_SYSTEM_VERSION (e.g. "10.0.26100.0", a specific Windows SDK)', type=str, default=conf.system_version)
+    parser.add_argument('--codesign-enabled', help='enable signing resulting binaries/package', default=conf.codesign_enabled, action='store_true')
 
     # overwrite build configuration with any CLI args
     args = parser.parse_args()
@@ -193,6 +248,7 @@ def main():
     conf.generator = args.generator
     conf.base_build_type = args.build_type
     conf.system_version = args.system_version
+    conf.codesign_enabled = args.codesign_enabled
 
     log_build_params(conf)
     build_osc_dependencies(conf)
