@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Builds the project's third-party dependencies on Unix (MacOS/Linux), ready
+# for the main build to proceed (either via an IDE or build script).
 
 export OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 1)}
 
@@ -15,4 +18,3 @@ for config in "${configs[@]}"; do
     cmake -S third_party/ -B third_party-build-${config} -DCMAKE_INSTALL_PREFIX=${PWD}/third_party-install-${config} -DCMAKE_BUILD_TYPE=${config}
     cmake --build third_party-build-${config} -v -j${OSC_BUILD_CONCURRENCY}
 done
-

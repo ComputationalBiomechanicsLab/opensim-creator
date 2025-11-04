@@ -62,7 +62,7 @@ Creator, it's usually copied into a GitHub issue:
           `files.opensimcreator.com/releases`
       - [ ] Upload with (e.g.): `rsync --delete --exclude .git/ -avz files.opensimcreator.com/ files.opensimcreator.com:/var/www/files.opensimcreator.com/`
     - [ ] Update `docs.opensimcreator.com` to host the documentation
-      - [ ] Build the docs yourself, or get the CI build of them
+      - [ ] Build the docs yourself (e.g. with `./scripts/ci_build_docs.sh`), or get the CI build of them
       - [ ] Upload with (e.g.) `rsync -avz --delete build/ docs.opensimcreator.com:/var/www/docs.opensimcreator.com/manual/en/latest/`
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
       - [ ] Edit https://github.com/ComputationalBiomechanicsLab/www.opensimcreator.com appropriately
