@@ -7,6 +7,7 @@ import logging
 import multiprocessing
 import os
 import pprint
+import platform
 import subprocess
 
 def _envvar_as_tristate(key : str, default=None):
@@ -26,46 +27,48 @@ def _log_dir_contents(path: str):
         logging.info(f"{path}/{el}")
 
 def _default_generator():
-    return 'Visual Studio 17 2022'
+    if platform.system() == "Windows":
+        return "Visual Studio 17 2022"
+    return "Unix Makefiles"
 
 def _generator_requires_architecture_flag(generator):
-    return 'Visual Studio' in generator
+    return "Visual Studio" in generator
 
 def _is_multi_configuration_generator(generator):
-    return 'Visual Studio' in generator or 'Xcode' in generator or 'Multi-Config' in generator
+    return "Visual Studio" in generator or "Xcode" in generator or "Multi-Config" in generator
 
 def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
-    args = ['-S', source_dir, '-B', binary_dir]  # base arguments
+    args = ["-S", source_dir, "-B", binary_dir]  # base arguments
 
     # append generator (-G) argument (if specified)
     if generator:
-        args += ['-G', generator]
+        args += ["-G", generator]
     # append architecture (-A) argument (if necessary)
     if _generator_requires_architecture_flag(generator):
-        args += ['-A', architecture if architecture else 'x64']
+        args += ["-A", architecture if architecture else "x64"]
     # append cache variables (-DK=V)
     for k, v in cache_variables.items():
-        args += [f'-D{k}={v}']
+        args += [f"-D{k}={v}"]
 
-    _run(f'cmake {" ".join(args)}', extra_env_vars)
+    _run(f"cmake {' '.join(args)}", extra_env_vars)
 
 def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None, extra_env_vars={}):
-    args = ['--build', binary_dir, '--verbose', '-j', str(concurrency)]  # base arguments
+    args = ["--build", binary_dir, "--verbose", "-j", str(concurrency)]  # base arguments
 
     # append --config argument (if necessary)
     if _is_multi_configuration_generator(generator):
-        args += ['--config', build_type]
+        args += ["--config", build_type]
     # append --target argument (if specified)
     if target:
-        args += ['--target', target]
+        args += ["--target", target]
 
-    _run(f'cmake {" ".join(args)}', extra_env_vars)
+    _run(f"cmake {' '.join(args)}", extra_env_vars)
 
 def _run_ctest(test_dir, concurrency, excluded_tests=[], extra_env_vars={}):
-    args = ['--test-dir', test_dir, '-j', str(concurrency)]  # base arguments
+    args = ["--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
     if excluded_tests:
-        args += ['-E', '|'.join(excluded_tests)]
-    _run(f'ctest {" ".join(args)}', extra_env_vars)
+        args += ["-E", "|".join(excluded_tests)]
+    _run(f"ctest {' '.join(args)}", extra_env_vars)
 
 # Represents the top-level, potentially caller-controlled, build configuration.
 class BuildConfiguration:
@@ -76,7 +79,7 @@ class BuildConfiguration:
         self.build_docs = _envvar_as_tristate("OSC_BUILD_DOCS")
         self.generator = _default_generator()
         self.architecture = None
-        self.system_version = os.getenv('OSC_SYSTEM_VERSION')
+        self.system_version = os.getenv("OSC_SYSTEM_VERSION")
         self.build_dir = os.curdir
         self.codesign_enabled = None
         self.skip_osc = False
@@ -107,33 +110,33 @@ class BuildConfiguration:
 
     def get_dependencies_cmake_cache_variables(self):
         rv = {
-            'CMAKE_BUILD_TYPE': self.get_osc_deps_build_type(),
-            'CMAKE_INSTALL_PREFIX': self.get_dependencies_install_dir(),
+            "CMAKE_BUILD_TYPE": self.get_osc_deps_build_type(),
+            "CMAKE_INSTALL_PREFIX": self.get_dependencies_install_dir(),
         }
         if self.system_version:
-            rv['CMAKE_SYSTEM_VERSION'] = self.system_version
+            rv["CMAKE_SYSTEM_VERSION"] = self.system_version
 
         return rv
 
     def get_osc_cmake_cache_variables(self):
         # calculate cache variables
         rv = {
-            'CMAKE_BUILD_TYPE': self.get_osc_build_type(),
-            'CMAKE_PREFIX_PATH': os.path.abspath(self.get_dependencies_install_dir()),
+            "CMAKE_BUILD_TYPE": self.get_osc_build_type(),
+            "CMAKE_PREFIX_PATH": os.path.abspath(self.get_dependencies_install_dir()),
         }
         if self.build_docs is not None:
-            rv['OSC_BUILD_DOCS'] = 'ON' if self.build_docs else 'OFF'
+            rv["OSC_BUILD_DOCS"] = "ON" if self.build_docs else "OFF"
         if self.codesign_enabled is not None:
-            rv['OSC_CODESIGN_ENABLED'] = 'ON' if self.codesign_enabled else 'OFF'
+            rv["OSC_CODESIGN_ENABLED"] = "ON" if self.codesign_enabled else "OFF"
         if self.system_version:
-            rv['CMAKE_SYSTEM_VERSION'] = self.system_version
+            rv["CMAKE_SYSTEM_VERSION"] = self.system_version
 
         return rv
 
     def get_osc_ctest_extra_environment_variables(self):
         rv = {}
         if self.headless_mode:
-            rv['OSC_INTERNAL_HIDE_WINDOW'] = '1'
+            rv["OSC_INTERNAL_HIDE_WINDOW"] = "1"
         return rv
 
     def get_excluded_tests(self):
@@ -141,15 +144,15 @@ class BuildConfiguration:
             return []  # no tests excluded
         else:
             return [
-                'Graphics',
-                'MeshDepthWritingMaterialFixture',
-                'MeshNormalVectorsMaterialFixture',
-                'ShaderTest',
-                'MaterialTest',
-                'RegisteredDemoTabsTest',
-                'RegisteredOpenSimCreatorTabs',
-                'AddComponentPopup',
-                'LoadingTab',
+                "Graphics",
+                "MeshDepthWritingMaterialFixture",
+                "MeshNormalVectorsMaterialFixture",
+                "ShaderTest",
+                "MaterialTest",
+                "RegisteredDemoTabsTest",
+                "RegisteredOpenSimCreatorTabs",
+                "AddComponentPopup",
+                "LoadingTab",
             ]
 
 # Represents a section (grouping, substep) of the build
@@ -169,7 +172,7 @@ def build_osc_dependencies(conf: BuildConfiguration):
     with Section("build osc dependencies"):
         # configure
         _run_cmake_configure(
-            source_dir='third_party',
+            source_dir="third_party",
             binary_dir=conf.get_dependencies_build_dir(),
             generator=conf.generator,
             architecture=conf.architecture,
@@ -195,7 +198,7 @@ def build_osc(conf: BuildConfiguration):
     with Section("build osc"):
         # configure
         _run_cmake_configure(
-            source_dir='.',
+            source_dir=".",
             binary_dir=conf.get_osc_build_dir(),
             generator=conf.generator,
             architecture=conf.architecture,
@@ -232,13 +235,13 @@ def main():
 
     # parse CLI args
     parser = argparse.ArgumentParser()
-    parser.add_argument('--jobs', '-j', type=int, default=conf.concurrency)
-    parser.add_argument('--skip-osc', help='skip building OSC (handy if you plan on building OSC via Visual Studio)', default=conf.skip_osc, action='store_true')
-    parser.add_argument('--build-dir', '-B', help='build binaries in the specified directory', type=str, default=conf.build_dir)
-    parser.add_argument('--generator', '-G', help='set the build generator for cmake', type=str, default=conf.generator)
-    parser.add_argument('--build-type', help='the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)', type=str, default=conf.base_build_type)
-    parser.add_argument('--system-version', help='specify the value of CMAKE_SYSTEM_VERSION (e.g. "10.0.26100.0", a specific Windows SDK)', type=str, default=conf.system_version)
-    parser.add_argument('--codesign-enabled', help='enable signing resulting binaries/package', default=conf.codesign_enabled, action='store_true')
+    parser.add_argument("--jobs", "-j", type=int, default=conf.concurrency)
+    parser.add_argument("--skip-osc", help="skip building OSC (handy if you plan on building OSC via Visual Studio)", default=conf.skip_osc, action="store_true")
+    parser.add_argument("--build-dir", "-B", help="build binaries in the specified directory", type=str, default=conf.build_dir)
+    parser.add_argument("--generator", "-G", help="set the build generator for cmake", type=str, default=conf.generator)
+    parser.add_argument("--build-type", help="the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)", type=str, default=conf.base_build_type)
+    parser.add_argument("--system-version", help="specify the value of CMAKE_SYSTEM_VERSION (e.g. '10.0.26100.0', a specific Windows SDK)", type=str, default=conf.system_version)
+    parser.add_argument("--codesign-enabled", help="enable signing resulting binaries/package", default=conf.codesign_enabled, action="store_true")
 
     # overwrite build configuration with any CLI args
     args = parser.parse_args()
