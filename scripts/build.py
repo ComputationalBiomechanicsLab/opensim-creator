@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Performs an end-to-end build of OpenSim Creator on the Windows platform.
+# Performs an end-to-end build, test, and package of OpenSim Creator
 
 import argparse
 import logging
@@ -18,7 +18,7 @@ def _envvar_as_tristate(key : str, default=None):
         return value.lower() in {"on", "true", "yes", "1"}
 
 def _run(args, extra_env_vars={}):
-    logging.info(f"running: {args}")
+    logging.info(f"running: {' '.join(args)}")
     subprocess.run(args, check=True, env={**extra_env_vars, **os.environ})
 
 def _log_dir_contents(path: str):
@@ -77,13 +77,13 @@ class BuildConfiguration:
         self.concurrency = int(os.getenv("OSC_BUILD_CONCURRENCY", multiprocessing.cpu_count()))
         self.build_target = os.getenv("OSC_BUILD_TARGET", "package")
         self.build_docs = _envvar_as_tristate("OSC_BUILD_DOCS")
-        self.generator = _default_generator()
+        self.generator = os.getenv("OSC_BUILD_GENERATOR", _default_generator())
         self.architecture = None
         self.system_version = os.getenv("OSC_SYSTEM_VERSION")
         self.build_dir = os.curdir
         self.codesign_enabled = None
         self.skip_osc = False
-        self.exclude_tests_that_use_windowing_system = True
+        self.skip_rendering_tests = False
         self.headless_mode = True
 
         # these can be `None`, meaning "fall back to `base_build_type` at runtime"
@@ -140,7 +140,7 @@ class BuildConfiguration:
         return rv
 
     def get_excluded_tests(self):
-        if not self.exclude_tests_that_use_windowing_system:
+        if not self.skip_rendering_tests:
             return []  # no tests excluded
         else:
             return [
@@ -242,6 +242,7 @@ def main():
     parser.add_argument("--build-type", help="the type of build to produce (CMake string: Debug, Release, RelWithDebInfo, etc.)", type=str, default=conf.base_build_type)
     parser.add_argument("--system-version", help="specify the value of CMAKE_SYSTEM_VERSION (e.g. '10.0.26100.0', a specific Windows SDK)", type=str, default=conf.system_version)
     parser.add_argument("--codesign-enabled", help="enable signing resulting binaries/package", default=conf.codesign_enabled, action="store_true")
+    parser.add_argument("--skip-rendering-tests", help="skip tests that use the rendering subsystem", default=conf.skip_rendering_tests, action="store_true")
 
     # overwrite build configuration with any CLI args
     args = parser.parse_args()
@@ -252,6 +253,7 @@ def main():
     conf.base_build_type = args.build_type
     conf.system_version = args.system_version
     conf.codesign_enabled = args.codesign_enabled
+    conf.skip_rendering_tests = args.skip_rendering_tests
 
     log_build_params(conf)
     build_osc_dependencies(conf)

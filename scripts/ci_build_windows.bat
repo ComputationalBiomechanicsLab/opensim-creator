@@ -12,7 +12,7 @@ call scripts/env_vs.bat
 REM --system-version is necessary because, otherwise, the wrong Windows SDK might be chosen,
 REM resulting in either missing headers or shipping a binary that doesn't run on target systems.
 REM The specified SDK supports Windows 10, version 1507 or higher.
-python scripts\build_windows.py --system-version=10.0.26100.0 --generator=Ninja %*
+python scripts\build.py --system-version=10.0.26100.0 --generator=Ninja %*
 if errorlevel 1 (
     echo Command failed with exit code %errorlevel%
     exit /b %errorlevel%
