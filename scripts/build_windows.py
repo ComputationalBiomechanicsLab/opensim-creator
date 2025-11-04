@@ -17,9 +17,9 @@ def _envvar_as_tristate(key : str, default=None):
     else:
         return value.lower() in {"on", "true", "yes", "1"}
 
-def _run(s: str, extra_env_vars={}):
-    logging.info(f"running: {s}")
-    subprocess.run(s, check=True, env={**extra_env_vars, **os.environ})
+def _run(args, extra_env_vars={}):
+    logging.info(f"running: {args}")
+    subprocess.run(args, check=True, env={**extra_env_vars, **os.environ})
 
 def _log_dir_contents(path: str):
     logging.info(f"listing {path}")
@@ -38,7 +38,7 @@ def _is_multi_configuration_generator(generator):
     return "Visual Studio" in generator or "Xcode" in generator or "Multi-Config" in generator
 
 def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
-    args = ["-S", source_dir, "-B", binary_dir]  # base arguments
+    args = ["cmake", "-S", source_dir, "-B", binary_dir]  # base arguments
 
     # append generator (-G) argument (if specified)
     if generator:
@@ -50,10 +50,10 @@ def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_
     for k, v in cache_variables.items():
         args += [f"-D{k}={v}"]
 
-    _run(f"cmake {' '.join(args)}", extra_env_vars)
+    _run(args, extra_env_vars)
 
 def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None, extra_env_vars={}):
-    args = ["--build", binary_dir, "--verbose", "-j", str(concurrency)]  # base arguments
+    args = ["cmake", "--build", binary_dir, "--verbose", "-j", str(concurrency)]  # base arguments
 
     # append --config argument (if necessary)
     if _is_multi_configuration_generator(generator):
@@ -62,13 +62,13 @@ def _run_cmake_build(binary_dir, generator, build_type, concurrency, target=None
     if target:
         args += ["--target", target]
 
-    _run(f"cmake {' '.join(args)}", extra_env_vars)
+    _run(args, extra_env_vars)
 
 def _run_ctest(test_dir, concurrency, excluded_tests=[], extra_env_vars={}):
-    args = ["--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
+    args = ["ctest", "--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
     if excluded_tests:
         args += ["-E", "|".join(excluded_tests)]
-    _run(f"ctest {' '.join(args)}", extra_env_vars)
+    _run(args, extra_env_vars)
 
 # Represents the top-level, potentially caller-controlled, build configuration.
 class BuildConfiguration:
