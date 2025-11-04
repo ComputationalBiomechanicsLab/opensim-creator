@@ -18,10 +18,6 @@ OSC_DEPS_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 # build type for OSC
 OSC_BUILD_TYPE=${OSC_BUILD_TYPE:-`echo ${OSC_BASE_BUILD_TYPE}`}
 
-# sets whether the `OSCDEPS_BUILD_ALWAYS` flag is set when building
-# dependencies, which causes the build system to re-check them
-OSC_DEPS_BUILD_ALWAYS=${OSC_DEPS_BUILD_ALWAYS:-OFF}
-
 # maximum number of build jobs to run concurrently
 OSC_BUILD_CONCURRENCY=${OSC_BUILD_CONCURRENCY:-$(sysctl -n hw.ncpu)}
 
@@ -66,7 +62,6 @@ cmake \
     -B third_party-build-${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_BUILD_TYPE=${OSC_DEPS_BUILD_TYPE} \
     -DCMAKE_INSTALL_PREFIX=third_party-install-${OSC_DEPS_BUILD_TYPE} \
-    -DOSCDEPS_BUILD_ALWAYS=${OSC_DEPS_BUILD_ALWAYS} \
     ${OSC_CMAKE_CONFIG_EXTRA}
 cmake --build third_party-build-${OSC_DEPS_BUILD_TYPE} --verbose -j${OSC_BUILD_CONCURRENCY}
 
