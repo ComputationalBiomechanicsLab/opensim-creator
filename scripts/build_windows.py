@@ -32,7 +32,7 @@ def _generator_requires_architecture_flag(generator):
     return 'Visual Studio' in generator
 
 def _is_multi_configuration_generator(generator):
-    return 'Visual Studio' in generator or 'Xcode' in generator
+    return 'Visual Studio' in generator or 'Xcode' in generator or 'Multi-Config' in generator
 
 def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars={}):
     args = ['-S', source_dir, '-B', binary_dir]  # base arguments
