@@ -63,6 +63,9 @@ endif()
 # Handle code signing (notarization is separate - below)
 if(OSC_CODESIGN_ENABLED)
     set(OSC_CODESIGN_DEVELOPER_ID "" CACHE STRING "The developer ID string for the codesigning key (e.g. 'Developer ID Application: Some Developer (XYA12398BF)'). Get it with `security find-identity -p codesigning -v`")
+    if(NOT OSC_CODESIGN_DEVELOPER_ID)
+        message(FATAL_ERROR "OSC_CODESIGN_DEVELOPER_ID must be set if OSC_CODESIGN_ENABLED is on. Example value: 'Developer ID Application Some Developer (XYA12398BF)'. Get it with `security find-identity -p codesigning -v`")
+    endif()
 
     # Specify a script that signs the built binaries just before CPack creates the DMG.
     configure_file(
