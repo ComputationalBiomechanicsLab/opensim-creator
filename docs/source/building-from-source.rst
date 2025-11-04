@@ -23,7 +23,7 @@ Windows Environment Setup
 
 The OpenSim Creator build requires that the development environment has ``git``,
 a C++-20 compiler, cmake, ``WiX``/``NSIS`` (if packaging an installer), and ``python``
-(to run ``build_windows.py``, build script bindings, and build this documentation). Here
+(to run ``build.py``, build script bindings, and build this documentation). Here
 is a step-by-step guide for setting up a typical development environment:
 
 1. Get ``git``:
@@ -79,12 +79,12 @@ Windows Build
 
 Assuming your environment has been set up correctly (explained above), the
 easiest way to build OpenSim Creator is with the python script located at
-``scripts/build_windows.py`` in the source code repository. The steps are:
+``scripts/build.py`` in the source code repository. The steps are:
 
 1. Open a PowerShell terminal (``Shift+Right-Click`` -> ``Open Powershell window here``)
 2. Either ``cd`` into the ``opensim-creator`` directory (if cloned when you setup
    the environment, above), or clone it with ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``.
-3. Run the build script: ``python scripts/build_windows.py``. **Note**: this can
+3. Run the build script: ``python scripts/build.py``. **Note**: this can
    take a long time, grab a coffee ☕
 4. The ``build/`` directory should contain the built installer
 
@@ -101,7 +101,7 @@ Building on MacOS (Sonoma or newer)
        install a newer ``clang`` from brew (e.g. ``brew install clang``)
 4. Get ``cmake``:
     1. Can be installed via ``brew``: ``brew install cmake``
-5. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
+5. Get ``python`` and ``pip``:
     1. Can be installed via ``brew``: ``brew install python``
 6. Build OpenSim Creator in a terminal:
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
@@ -122,7 +122,7 @@ Building on Ubuntu (22.04 or newer)
     1. E.g. on Ubuntu 22.04, install ``g++-12`` or ``clang++``` via your package manager (e.g. ``apt-get install g++-12``)
 3. Get ``cmake``:
     1. Install ``cmake`` via your package manager (e.g. ``apt-get install cmake``)
-4. Get ``python`` and ``pip`` (*optional*: you only need this if you want to build documentation):
+4. Get ``python`` and ``pip``:
     1. Install ``python3`` and ``pip3`` via your package manager (e.g. ``apt-get install python3 pip3``)
 5. Use ``git`` to get OpenSim Creator's (+ dependencies') source code:
     1. Clone ``opensim-creator``: ``git clone https://github.com/ComputationalBiomechanicsLab/opensim-creator``
@@ -134,7 +134,7 @@ Building on Ubuntu (22.04 or newer)
 7. Build OpenSim Creator from source:
     1. ``cd`` into the ``opensim-creator`` source directory (if you haven't already)
     2. Run the build script, you can use the ``CC`` and ``CXX`` environment variables to choose
-       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 scripts/build_ubuntu.sh``
-    3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build_ubuntu.sh``
+       your C++ compiler if you're using the non-default one, e.g. ``CC=gcc-12 CXX=g++-12 ./scripts/build.py``
+    3. You can also accelerate it by setting the number of threads: ``OSC_BUILD_CONCURRENCY=20 ./scripts/build.py``
 8. Done:
     1. After the build is complete, the ``build/`` directory should contain the built installer
