@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 #
 # Performs an end-to-end CI build of OpenSim Creator. This is what build
-# agents should run if they want to build release arm64 binaries of OpenSim
+# agents should run if they want to build release amd64 binaries of OpenSim
 # Creator on MacOS.
 
 set -xeuo pipefail
 
-OSC_OSX_ARCHITECTURES=arm64 ./scripts/ci_build_mac.sh
+OSCDEPS_BUILD_ALWAYS=ON ./scripts/build.py \
+    --osx-architectures=arm64 \
+    --osx-deployment-target=14.5 \
+    --allowed-final-target-build-attempts=8 \
+    --seconds-between-final-target-build-attempts=2
+

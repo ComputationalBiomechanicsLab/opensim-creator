@@ -11,6 +11,8 @@ import platform
 import subprocess
 import time
 
+_dry_run = False
+
 def _envvar_as_tristate(key : str, default=None):
     value = os.getenv(key, default)
     if value is None:
@@ -23,7 +25,9 @@ def _run(args, extra_env_vars=None):
         extra_env_vars = {}
 
     logging.info(f"running: {' '.join(args)}")
-    subprocess.run(args, check=True, env={**os.environ, **extra_env_vars})
+
+    if not _dry_run:
+        subprocess.run(args, check=True, env={**os.environ, **extra_env_vars})
 
 def _log_dir_contents(path: str):
     logging.info(f"listing {path}")
@@ -41,7 +45,7 @@ def _generator_requires_architecture_flag(generator):
 def _is_multi_configuration_generator(generator):
     return generator is not None and ("Visual Studio" in generator or "Xcode" in generator or "Multi-Config" in generator)
 
-def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars):
+def _run_cmake_configure(source_dir, binary_dir, generator, architecture, cache_variables, extra_env_vars=None):
     if extra_env_vars is None:
         extra_env_vars ={}
 
@@ -266,6 +270,7 @@ def build_osc(conf: BuildConfiguration):
                     concurrency=conf.concurrency,
                     target=conf.build_target
                 )
+                break
             except Exception as e:
                 if i+1 == conf.allowed_final_target_build_attempts:
                     raise

@@ -6,4 +6,9 @@
 
 set -xeuo pipefail
 
-OSC_OSX_ARCHITECTURES=x86_64 ./scripts/ci_build_mac.sh
+OSCDEPS_BUILD_ALWAYS=ON ./scripts/build.py \
+    --osx-architectures=x86_64 \
+    --osx-deployment-target=14.5 \
+    --allowed-final-target-build-attempts=8 \
+    --seconds-between-final-target-build-attempts=2
+
