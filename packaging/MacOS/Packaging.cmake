@@ -64,7 +64,7 @@ endif()
 if(OSC_CODESIGN_ENABLED)
     set(OSC_CODESIGN_DEVELOPER_ID "" CACHE STRING "The developer ID string for the codesigning key (e.g. 'Developer ID Application: Some Developer (XYA12398BF)'). Get it with `security find-identity -p codesigning -v`")
     if(NOT OSC_CODESIGN_DEVELOPER_ID)
-        message(FATAL_ERROR "OSC_CODESIGN_DEVELOPER_ID must be set if OSC_CODESIGN_ENABLED is on. Example value: 'Developer ID Application Some Developer (XYA12398BF)'. Get it with `security find-identity -p codesigning -v`")
+        message(FATAL_ERROR "OSC_CODESIGN_DEVELOPER_ID must be set if OSC_CODESIGN_ENABLED is on")
     endif()
 
     # Specify a script that signs the built binaries just before CPack creates the DMG.
@@ -93,6 +93,16 @@ if(OSC_NOTARIZATION_ENABLED)
     set(OSC_NOTARIZATION_APPLE_ID "" CACHE STRING "Apple ID of the signer (e.g. 'some@email.com')")
     set(OSC_NOTARIZATION_TEAM_ID  "" CACHE STRING "Team ID of the signer (usually, random-looking string at the end of OSC_CODESIGN_DEVELOPER_ID)")
     set(OSC_NOTARIZATION_PASSWORD "" CACHE STRING "App-specific password of the signer (you can create this from your apple ID account)")
+
+    if(NOT OSC_NOTARIZATION_APPLE_ID)
+        message(FATAL_ERROR "OSC_NOTARIZATION_APPLE_ID must be set if OSC_NOTARIZATION_ENABLED is on")
+    endif()
+    if(NOT OSC_NOTARIZATION_TEAM_ID)
+        message(FATAL_ERROR "OSC_NOTARIZATION_TEAM_ID must be set if OSC_NOTARIZATION_ENABLED is on")
+    endif()
+    if(NOT OSC_NOTARIZATION_PASSWORD)
+        message(FATAL_ERROR "OSC_NOTARIZATION_PASSWORD must be set if OSC_NOTARIZATION_ENABLE is on")
+    endif()
 
     # Specify a script that notarizes the DMG after CPack creates it and it's signed (above)
     configure_file(
