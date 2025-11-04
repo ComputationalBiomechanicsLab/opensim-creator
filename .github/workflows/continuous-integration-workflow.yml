@@ -43,7 +43,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-macos-amd64-dmg
-        path: build/*.dmg
+        path: build/Release/*.dmg
         if-no-files-found: error
 
   macos_arm64:
@@ -58,7 +58,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: opensimcreator-macos-arm64-dmg
-        path: build/*.dmg
+        path: build/Release/*.dmg
         if-no-files-found: error
 
   ubuntu22_amd64:
