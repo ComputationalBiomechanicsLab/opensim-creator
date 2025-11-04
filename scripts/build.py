@@ -323,9 +323,10 @@ def main():
     conf.headless_mode = args.headless
     conf.allowed_final_target_build_attempts = args.allowed_final_target_build_attempts
     conf.seconds_between_final_target_build_attempts = args.seconds_between_final_target_build_attempts
-    conf.osx_architectures = args.osx_architectures
-    conf.osx_deployment_target = args.osx_deployment_target
-    conf.osx_sysroot = args.osx_sysroot
+    if platform.system() == "Darwin":
+        conf.osx_architectures = args.osx_architectures
+        conf.osx_deployment_target = args.osx_deployment_target
+        conf.osx_sysroot = args.osx_sysroot
 
     log_build_params(conf)
     build_osc_dependencies(conf)
