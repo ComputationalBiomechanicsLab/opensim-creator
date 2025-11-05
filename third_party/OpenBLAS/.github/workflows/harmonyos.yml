@@ -1,0 +1,37 @@
+name: harmonyos
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  build:
+    if: "github.repository == 'OpenMathLib/OpenBLAS'"
+    runs-on: ubuntu-latest
+    env:
+      OHOS_NDK_CMAKE: $GITHUB_WORKSPACE/ohos-sdk/linux/native/build-tools/cmake/bin/cmake
+      COMMON_CMAKE_OPTIONS: |
+        -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/ohos-sdk/linux/native/build/cmake/ohos.toolchain.cmake \
+        -DCMAKE_INSTALL_PREFIX=install \
+        -DCMAKE_BUILD_TYPE=Release \
+    steps:
+    - uses: actions/checkout@v4
+    - name: ndk-install
+      run: |
+        wget https://repo.huaweicloud.com/harmonyos/os/4.1.1-Release/ohos-sdk-windows_linux-public.tar.gz
+        tar -xf ohos-sdk-windows_linux-public.tar.gz
+        cd ohos-sdk/linux
+        unzip -q native-linux-x64-4.1.7.8-Release.zip
+        cd -
+    - name: build-armv8
+      run: |
+       mkdir build && cd build
+       ${{ env.OHOS_NDK_CMAKE }} ${{ env.COMMON_CMAKE_OPTIONS }} -DOHOS_ARCH="arm64-v8a" \
+       -DTARGET=ARMV8 -DNOFORTRAN=1 ..
+       ${{ env.OHOS_NDK_CMAKE }} --build . -j $(nproc)
+       
