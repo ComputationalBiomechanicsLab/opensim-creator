@@ -1,6 +1,6 @@
 #include "osim.h"
 
-#include <libosim/ThirdPartyPlugins/RegisterTypes_osimPlugin.h>
+#include <libopynsim/ThirdPartyPlugins/RegisterTypes_osimPlugin.h>
 
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
