@@ -29,10 +29,7 @@ nanobind_add_module(
     # sources
     opynsim/src/_opynsim_native.cpp
 )
-target_link_libraries(_opynsim_native
-PRIVATE
-    OpenSimCreator
-)
+target_link_libraries(_opynsim_native PRIVATE osim)
 
 # make the output module directly build into the source python package code,
 # so that test suites, developers, etc. can directly start using it (e.g. via

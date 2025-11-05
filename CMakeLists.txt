@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 project(opynsim VERSION 0.0.1 LANGUAGES CXX C)
 
 option(BUILD_TESTING              "Build test suites"                 ON)
-option(OPYN_BUILD_PYTHON_BINDINGS "Build Python bindings for opynsim" OFF)
+option(OPYN_BUILD_PYTHON_BINDINGS "Build Python bindings for opynsim" ON)
 
 if (BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for

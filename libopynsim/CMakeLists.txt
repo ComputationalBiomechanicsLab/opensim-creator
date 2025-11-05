@@ -6,6 +6,9 @@ include(CMakePackageConfigHelpers)  # configure_package_config_file
 find_package(LAPACK REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(mdspan REQUIRED)
+
+configure_file(oscarconfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/oscarconfig.h" @ONLY)
 
 set(OSIM_OPENSIM_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/opensim-core")
 set(OSIM_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/simbody")
@@ -601,6 +604,8 @@ add_library(osim STATIC
     # additional code (in the `osim::` namespace)
     osim.cpp
     osim.h
+    Utils/TPS3D.cpp
+    Utils/Assertions.cpp
 )
 target_include_directories(osim
 PUBLIC
@@ -630,6 +635,9 @@ PUBLIC
     # osim includes (uniformly uses `osim/DIR/HEADER` form)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
     $<INSTALL_INTERFACE:include>
+
+    # so that #include <oscarconfig.h> works
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/
 )
 target_compile_definitions(osim
 PRIVATE
@@ -677,7 +685,7 @@ PUBLIC
     # see https://github.com/simbody/simbody/pull/815 for details
     SWIG_PYTHON
 )
-target_compile_features(osim PUBLIC cxx_std_17)
+target_compile_features(osim PUBLIC cxx_std_20)
 
 target_link_libraries(osim
 PUBLIC
@@ -685,6 +693,7 @@ PUBLIC
     BLAS::BLAS        # used by simbody
     LAPACK::LAPACK    # used by simbody
     spdlog::spdlog    # used by OpenSim
+    mdspan::mdspan
 )
 set_target_properties(osim PROPERTIES POSITION_INDEPENDENT_CODE ON)  # for python bindings
 
