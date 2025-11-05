@@ -62,7 +62,8 @@ Creator, it's usually copied into a GitHub issue:
       - [ ] Upload with (e.g.) `./scripts/deploy_docs.sh` (requires SSH credentials)
     - [ ] Update `www.opensimcreator.com` with a basic announcement news post
       - [ ] Edit https://github.com/ComputationalBiomechanicsLab/www.opensimcreator.com appropriately
-      - [ ] Upload with (e.g.): `rsync -avz public/ www.opensimcreator.com:/var/www/opensimcreator.com/`
+      - [ ] Build the docs yourself with `hugo`
+      - [ ] Upload with: `./scripts/deploy.sh` (available in the site repo)
     - [ ] (optional) Update social media:
       - [ ] LinkedIn
       - [ ] Twitter
