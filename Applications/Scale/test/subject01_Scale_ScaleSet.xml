@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<ScaleSet name="gait2354_Scale">
+	<objects>
+		<Scale name="">
+				<scales>       1.14724000       1.14724000       1.14724000 </scales>
+			<segment> femur_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+				<scales>       1.14724000       1.14724000       1.14724000 </scales>
+			<segment> femur_l </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+				<scales>       0.98852300       0.98852300       0.98852300 </scales>
+			<segment> tibia_r </segment>
+			<apply> true </apply>
+		</Scale>
+		<Scale name="">
+				<scales>       0.98852300       0.98852300       0.98852300 </scales>
+			<segment> tibia_l </segment>
+			<apply> true </apply>
+		</Scale>
+	</objects>
+		<groups/>
+	</ScaleSet>
+</OpenSimDocument>
+
