@@ -1,0 +1,6 @@
+.vs
+CMakeSettings.json
+CMakeUserPresets.json
+out
+build*
+Makefile
