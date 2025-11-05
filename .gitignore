@@ -1,0 +1,50 @@
+# build: artifacts/side-effects
+build/
+docs/build
+docs/venv
+third_party-build*
+third_party-install*
+
+# build: intermediate/output files
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.so.*
+*.dll
+*.dylib
+__pycache__
+.pytest_cache
+*.ilk
+*.pyd
+*.pdb
+
+# runtime: opensim log files
+**/opensim.log
+
+# os: MacOS filesystem
+.DS_Store
+
+# LSP: `clangd` may create this (it does with nvim)
+.cache/
+
+# editor: QtCreator
+*.autosave
+CMakeLists.txt.user
+
+# editor: Visual Studio
+.vs/
+CMakeSettings.json
+out/
+*.vcxproj
+*.sln
+
+# editor: Visual Studio Code
+.vscode/
+
+# editor: CLion
+.idea/
+
