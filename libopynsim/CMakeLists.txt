@@ -1,4 +1,4 @@
-option(OSIM_INSTALL_OPENSIM_HEADERS "Install osim with Simbody/OpenSim headers (e.g. for use with OpenSim-compatible projects, like OpenSim Creator)" OFF)
+option(OPYN_INSTALL_OPENSIM_HEADERS "Install opynsim library with Simbody/OpenSim headers (e.g. for use with OpenSim-compatible projects)" OFF)
 
 include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
 include(CMakePackageConfigHelpers)  # configure_package_config_file
@@ -8,590 +8,590 @@ find_package(BLAS REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(mdspan REQUIRED)
 
-configure_file(oscarconfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/oscarconfig.h" @ONLY)
+configure_file(opynsimconfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" @ONLY)
 
-set(OSIM_OPENSIM_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/opensim-core")
-set(OSIM_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/simbody")
+set(OPYN_OPENSIM_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/opensim-core")
+set(OPYN_SIMBODY_BASEDIR "${CMAKE_CURRENT_SOURCE_DIR}/simbody")
 
-add_library(osim STATIC
+add_library(opynsim STATIC
 
     # Simbody sources
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_band.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_dense.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_direct.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_iterative.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_lapack.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_math.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_nvector.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spbcgs.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spgmr.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_sptfqmr.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/fnvector_serial.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/nvector_serial.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_band.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bandpre.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bbdpre.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_dense.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_direct.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_ic.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_io.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_lapack.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_nls.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_proj.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_root.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spbcgs.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spgmr.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spils.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_sptfqmr.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_band.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_dense.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_direct.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_iterative.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_lapack.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_math.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_nvector.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spbcgs.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_spgmr.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/sundials/sundials_sptfqmr.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/fnvector_serial.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/nvec_ser/nvector_serial.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_band.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bandpre.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_bbdpre.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_dense.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_direct.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_ic.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_io.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_lapack.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_nls.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_proj.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_root.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spbcgs.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spgmr.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_spils.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/src/cpodes/cpodes_sptfqmr.c
 
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaMersonIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/ExplicitEulerIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/SimTKcpodes.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/nvector_SimTK.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/SemiExplicitEulerIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKutta2Integrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/TimeStepper.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/VerletIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaFeldbergIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/SemiExplicitEuler2Integrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKutta3Integrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/Integrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/AbstractIntegratorRep.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodesIntegrator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/src/Differentiator.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/src/MultibodyGraphMaker.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/src/About.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_SmoothHeightMap.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Sphere.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_TriangleMesh.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Ellipsoid.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_HalfSpace.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/CollisionDetectionAlgorithm.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/BicubicSurface.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/GCVSPLUtil.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/gcvspl.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Box.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Sphere.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Triangle.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Brick.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/OBBTree.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Contact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactTracker.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Cylinder.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Point.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Torus.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geodesic.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/OrientedBoundingBox.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/lbfgsb.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/c-cmaes/cmaes.c
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CMAESOptimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/LBFGSBOptimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/InteriorPointOptimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAlgorithmRegOp.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpPDFullSpaceSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpUtils.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpQualityFunctionMuOracle.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLinearSolversRegOp.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIpoptNLP.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoMinC_1Nrm.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdCInterface.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundVector.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIteratesVector.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpExactHessianUpdater.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMonotoneMuUpdate.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpGenTMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpGradientScaling.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymTMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundSymMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRegOptions.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSumMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLoqoMuOracle.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpWarmStartIterateInitializer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDiagMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymScaledMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDefaultIterateInitializer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpFilterLSAcceptor.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpBlas.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTNLPAdapter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpObserver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLapackSolverInterface.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpPDPerturbationHandler.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptAlg.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAlgBuilder.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTSymLinearSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptData.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdAugSystemSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletHelper.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOptionsList.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIterationOutput.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseGenMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptApplication.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletToDenseConverter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIdentityMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTaggedObject.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOrigIpoptNLP.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptCalculatedQuantities.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLeastSquareMults.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoFilterConvCheck.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDebug.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSolveStatistics.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLowRankAugSystemSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpJournalist.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAdaptiveMuUpdate.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIterateInitializer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOrigIterationOutput.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpFilter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpProbingMuOracle.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpUserScaling.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoRestoPhase.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdInterfaceTNLP.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLimMemQuasiNewtonUpdater.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseVector.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAugRestoSystemSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpInterfacesRegOp.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSumSymMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMultiVectorMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOptErrorConvCheck.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpBacktrackingLineSearch.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpZeroMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLowRankUpdateSymMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTimingStatistics.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletToCSRConverter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpNLPScaling.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpScaledMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseSymMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpVector.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpExpansionMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLapack.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CFSQPOptimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/OptimizerRep.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/lbfgs.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/Optimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/LBFGSOptimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/LapackConvert.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/Eigen.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/FactorSVD.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/Factor.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/LapackInterface.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/Xml.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/tinyxml.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/NiceTypeName.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/PrivateInstantiations.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/About.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/Pathname.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/Timing.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/Parallel2DExecutor.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/tinyxmlparser.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelWorkQueue.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelExecutor.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/String.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/src/Plugin.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/src/SmallMatrix.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Random/src/SFMT.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Random/src/Random.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/State.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/EventReporter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Study.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Measure.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Subsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/System.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/EventHandler.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Event.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Geometry/src/DecorativeGeometry.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Geometry/src/PolygonalMesh.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/ElementFilter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/MatrixCharacteristics.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/MatrixHelper.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Scalar/src/Scalar.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Rotation.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/CoordinateAxis.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Quaternion.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/UnitVec.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/MassProperties.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Transform.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/PolynomialRootFinder.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/cpoly.cpp
-    ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/rpoly.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableSpan.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableSpan_SubsystemTestHelper_Impl.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/GeneralForceSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode_LoneParticle.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint_Rod.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableSpring.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Assembler.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/AssemblyCondition_OrientationSensors.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint_SphereOnPlaneContact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CablePath.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubtree.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint_PointOnPlaneContact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/GeneralContactSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CableTrackerSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ContactTrackerSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Force.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Motion.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Force_LinearBushing.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/LocalEnergyMinimizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/SmoothSphereHalfSpaceForce.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/HuntCrossleyContact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/PLUSImpulseSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint_SphereOnSphereContact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/PGSImpulseSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ObservedPointFitter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/TextDataEventReporter.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/MobilizedBody.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint_LineOnLineContact.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/DecorationSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Force_Gravity.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/HuntCrossleyForce.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/About.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode_Weld.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Constraint.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Force_Instantiations.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ExponentialSpringParameters.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNodeSpec_Derived.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/MultibodySystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ForceSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/AssemblyCondition_Markers.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ConditionalConstraint.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/SemiExplicitEulerTimeStepper.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ElasticFoundationForce.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ExponentialSpringForce.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Body.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/OBSOLETE_LengthConstraints.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubsystemRep.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/ImpulseSolver.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Force_Thermostat.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/Matter_Instantiations.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNodeSpec.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/src/CompliantContactSubsystem.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/src/VisualizerGeometry.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/src/VisualizerProtocol.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer_InputListener.cpp
-    ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer_Reporter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaMersonIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/ExplicitEulerIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/SimTKcpodes.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/nvector_SimTK.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/SemiExplicitEulerIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKutta2Integrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/TimeStepper.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/VerletIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKuttaFeldbergIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/SemiExplicitEuler2Integrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/RungeKutta3Integrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/Integrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/AbstractIntegratorRep.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodesIntegrator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/src/Differentiator.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/src/MultibodyGraphMaker.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/src/About.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_SmoothHeightMap.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Sphere.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_TriangleMesh.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Ellipsoid.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_HalfSpace.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/CollisionDetectionAlgorithm.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/BicubicSurface.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/GCVSPLUtil.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/gcvspl.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Box.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Sphere.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Triangle.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Brick.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/OBBTree.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Contact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactTracker.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Cylinder.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geo_Point.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/ContactGeometry_Torus.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/Geodesic.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/src/OrientedBoundingBox.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/lbfgsb.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/c-cmaes/cmaes.c
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CMAESOptimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/LBFGSBOptimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/InteriorPointOptimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAlgorithmRegOp.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpPDFullSpaceSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpUtils.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpQualityFunctionMuOracle.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLinearSolversRegOp.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIpoptNLP.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoMinC_1Nrm.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdCInterface.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundVector.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIteratesVector.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpExactHessianUpdater.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMonotoneMuUpdate.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpGenTMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpGradientScaling.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymTMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundSymMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRegOptions.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSumMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLoqoMuOracle.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpWarmStartIterateInitializer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDiagMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymScaledMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDefaultIterateInitializer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpFilterLSAcceptor.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpBlas.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTNLPAdapter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpObserver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLapackSolverInterface.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpPDPerturbationHandler.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptAlg.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAlgBuilder.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTSymLinearSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptData.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdAugSystemSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletHelper.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOptionsList.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIterationOutput.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseGenMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptApplication.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletToDenseConverter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIdentityMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTaggedObject.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOrigIpoptNLP.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpIpoptCalculatedQuantities.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLeastSquareMults.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoFilterConvCheck.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDebug.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSolveStatistics.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLowRankAugSystemSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpJournalist.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSymMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAdaptiveMuUpdate.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoIterateInitializer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpCompoundMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOrigIterationOutput.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpFilter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpProbingMuOracle.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpUserScaling.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpRestoRestoPhase.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpStdInterfaceTNLP.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLimMemQuasiNewtonUpdater.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseVector.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpAugRestoSystemSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpInterfacesRegOp.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpSumSymMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpMultiVectorMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpOptErrorConvCheck.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpBacktrackingLineSearch.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpZeroMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLowRankUpdateSymMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTimingStatistics.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpTripletToCSRConverter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpNLPScaling.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpScaledMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpDenseSymMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpVector.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpExpansionMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/IpOpt/IpLapack.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/CFSQPOptimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/OptimizerRep.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/lbfgs.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/Optimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Optimizers/src/LBFGSOptimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/LapackConvert.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/Eigen.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/FactorSVD.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/Factor.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/FactorQTZ.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKmath/LinearAlgebra/src/LapackInterface.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Xml.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/tinyxml.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/NiceTypeName.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/PrivateInstantiations.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/About.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Pathname.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Timing.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Parallel2DExecutor.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/tinyxmlparser.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelWorkQueue.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/ParallelExecutor.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/String.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/src/Plugin.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/src/SmallMatrix.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/src/SFMT.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/src/Random.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/State.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/EventReporter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Study.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Measure.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Subsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/System.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/EventHandler.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/src/Event.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Geometry/src/DecorativeGeometry.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Geometry/src/PolygonalMesh.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/ElementFilter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/MatrixCharacteristics.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/src/MatrixHelper.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Scalar/src/Scalar.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Rotation.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/CoordinateAxis.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Quaternion.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/UnitVec.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/MassProperties.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/src/Transform.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/PolynomialRootFinder.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/cpoly.cpp
+    ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/src/rpoly.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CableSpan.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CableSpan_SubsystemTestHelper_Impl.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/GeneralForceSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode_LoneParticle.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint_Rod.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CableSpring.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Assembler.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/AssemblyCondition_OrientationSensors.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint_SphereOnPlaneContact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CablePath.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubtree.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint_PointOnPlaneContact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/GeneralContactSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CableTrackerSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ContactTrackerSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Force.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Motion.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Force_LinearBushing.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/LocalEnergyMinimizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/SmoothSphereHalfSpaceForce.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/HuntCrossleyContact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/PLUSImpulseSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint_SphereOnSphereContact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/PGSImpulseSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ObservedPointFitter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/TextDataEventReporter.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/MobilizedBody.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint_LineOnLineContact.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/DecorationSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Force_Gravity.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/HuntCrossleyForce.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/About.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNode_Weld.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Constraint.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Force_Instantiations.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ExponentialSpringParameters.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNodeSpec_Derived.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/MultibodySystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ForceSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/AssemblyCondition_Markers.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ConditionalConstraint.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/SemiExplicitEulerTimeStepper.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ElasticFoundationForce.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ExponentialSpringForce.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Body.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/OBSOLETE_LengthConstraints.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/SimbodyMatterSubsystemRep.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/ImpulseSolver.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Force_Thermostat.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/Matter_Instantiations.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/RigidBodyNodeSpec.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/src/CompliantContactSubsystem.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/src/VisualizerGeometry.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/src/VisualizerProtocol.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer_InputListener.cpp
+    ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/src/Visualizer_Reporter.cpp
 
     # OpenSim sources
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/ParsedExpression.cpp
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/ExpressionProgram.cpp
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/Operation.cpp
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/Parser.cpp
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/ExpressionTreeNode.cpp
-    ${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/src/CompiledExpression.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/InverseDynamics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/MuscleAnalysis.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/JointReaction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/BodyKinematics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/PointKinematics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/ProbeReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/About.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimizationTarget.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/OutputReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/ForceReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/StatesReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/IMUDataReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerations.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimization.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerationsSolver.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/Actuation.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Analyses/Kinematics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ComponentOutput.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/OptimizationTarget.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyGroup.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/FileAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ScaleSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PiecewiseLinearFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/XYFunctionInterface.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/MarkerData.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ComponentList.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PiecewiseConstantFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyDblArray.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Lmdif.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Component.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyObj.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/DataAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyTransform.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Units.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/IO.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Assertion.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Exception.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ExpressionBasedFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ComponentSocket.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SignalGenerator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonTemplates.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ObjectGroup.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyDbl.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/XMLDocument.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/LatinHypercubeDesign.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/STOFileAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/VectorFunctionUncoupledNxN.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/VectorFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/StateVector.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Object.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/XsensDataReader.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/DebugUtilities.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunctionFactory.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyStr.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/TableUtilities.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/MarkerFrame.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SimmSpline.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyInt.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/LinearFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/About.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SimmIO.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyStrArray.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyIntArray.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/GCVSplineSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/APDMDataReader.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertySet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SegmentedQuinticBezierToolkit.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/MultiplierFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Scale.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyTable.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Property_Deprecated.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/IMUDataReader.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/AbstractDataTable.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/TRCFileAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/AbstractProperty.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/ComponentPath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Storage.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBoolArray.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/RootSolver.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/FunctionSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Signal.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Property.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/GCVSpline.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunction.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/MultivariatePolynomialFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/StepFunction.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/FunctionAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Function.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/CSVFileAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Constant.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/CommonUtilities.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Logger.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/Reporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Common/RegisterTypes_osimCommon.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimulationUtilities.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/VisualizerUtilities.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Control.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/TrackingController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Controller.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/SynergyController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/PrescribedController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlSetController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlConstant.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/InputController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinear.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinearNode.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectory.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Analysis.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractPathPoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Blankevoort1991Ligament.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CMCActuatorSubsystem.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedPathForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Probe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactGeometry.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/GeometryPath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedBushingForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PhysicalFrame.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceApplier.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PrescribedForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ModelComponent.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionBasedPath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Ligament.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Force.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Marker.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BodyScaleSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ModelVisualizer.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Point.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExponentialContactForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExternalForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MarkerSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CoordinateSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PointToPointSpring.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceProducer.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AnalysisSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathPoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Actuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/HuntCrossleyForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ControllerSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActivationFiberLengthMuscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Station.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BushingForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActuatorForceProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CoordinateLimitForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Model.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionBasedBushingForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Frame.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/StationDefinedFrame.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactMesh.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PhysicalOffsetFrame.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/SystemEnergyProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceAdapter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Geometry.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExternalLoads.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ElasticFoundationForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ConditionalPathPoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MovingPathPoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BodyScale.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Muscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactHalfSpace.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionThresholdCondition.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathSpring.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Condition.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Ground.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/MarkersReference.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/AssemblySolver.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Manager/Manager.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/About.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/RegisterTypes_osimSimulation.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapEllipsoid.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapObject.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapResult.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrap.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapPoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapMath.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapTorus.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapCylinder.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapSphere.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/InverseDynamicsSolver.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/MomentArmSolver.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/InverseKinematicsSolver.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/OpenSense/IMUPlacer.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/BufferedOrientationsReference.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PlanarJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PointConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/WeldJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/UniversalJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SpatialTransform.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/UnilateralConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/BallJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PinJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/WeldConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Joint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Constraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Body.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/TransformAxis.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SliderJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/FreeJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/GimbalJoint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/PositionMotion.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectoryReporter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/CoordinateReference.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Simulation/OrientationsReference.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPairSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Orientation.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/GenericModelMaker.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CorrectionController.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/InverseDynamicsTool.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/Measurement.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTargetFast.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ForwardTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/DynamicsTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/VectorFunctionForActuators.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTarget.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Point.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/RRATool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/About.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/IKCoordinateTask.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPlacer.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/AnalyzeTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMCTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ModelScaler.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/IMUInverseKinematicsTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/MeasurementSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/TrackingTask.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/ScaleTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Task.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/SMC_Joint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Joint.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/RegisterTypes_osimTools.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/InverseKinematicsTool.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_TaskSet.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/MuscleStateTrackingTask.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPair.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ModelFactory.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Thelen2003Muscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleSecondOrderActivationDynamicModel.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/RigidTendonMuscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/TendonForceLengthCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceLengthCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ClutchedPathSpring.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/FirstOrderMuscleActivationDynamics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleActivationDynamics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Thelen2003Muscle_Deprecated.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleFixedWidthPennationModel.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/PointActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ForceVelocityInverseCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/PointToPointActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/About.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/PolynomialPathFitter.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Delp1990Muscle_Deprecated.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberForceLengthCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/CoordinateActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ConstantMuscleActivation.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/TorqueActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ActiveForceLengthCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/BodyActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/ForceVelocityCurve.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/McKibbenActuator.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/Schutte1993Muscle_Deprecated.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/SpringGeneralizedForce.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.cpp
-    # ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused by OpenSim Creator
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/Actuators/RegisterTypes_osimActuators.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.cpp
-    ${OSIM_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/ToyReflexController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/ParsedExpression.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/ExpressionProgram.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/Operation.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/Parser.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/ExpressionTreeNode.cpp
+    ${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/src/CompiledExpression.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/InverseDynamics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/MuscleAnalysis.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/JointReaction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/BodyKinematics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/PointKinematics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/ProbeReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/About.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimizationTarget.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/OutputReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/ForceReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/StatesReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/IMUDataReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerations.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/StaticOptimization.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/InducedAccelerationsSolver.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/osimAnalysesDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/RegisterTypes_osimAnalyses.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/Actuation.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Analyses/Kinematics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ComponentOutput.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/OptimizationTarget.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyGroup.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/FileAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ScaleSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PiecewiseLinearFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/XYFunctionInterface.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/MarkerData.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ComponentList.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PiecewiseConstantFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyDblArray.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Lmdif.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Component.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyObj.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/DataAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyTransform.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Units.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/IO.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Assertion.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Exception.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/LoadOpenSimLibrary.cpp  # unused libopynsim (no native plugin support)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ExpressionBasedFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ComponentSocket.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SignalGenerator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonTemplates.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ObjectGroup.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyDbl.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/XMLDocument.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/LatinHypercubeDesign.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/STOFileAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/VectorFunctionUncoupledNxN.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/VectorFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/StateVector.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Object.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/XsensDataReader.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/DebugUtilities.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunctionFactory.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyStr.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/TableUtilities.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/MarkerFrame.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SimmSpline.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyInt.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/LinearFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/About.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SimmIO.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyStrArray.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyIntArray.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/GCVSplineSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/APDMDataReader.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertySet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SegmentedQuinticBezierToolkit.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/MultiplierFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Scale.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyTable.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Property_Deprecated.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/IMUDataReader.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/AbstractDataTable.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/TRCFileAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/AbstractProperty.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/ComponentPath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Storage.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/PropertyBoolArray.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/RootSolver.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/FunctionSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Signal.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Property.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/GCVSpline.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/SmoothSegmentedFunction.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/osimCommonDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/MultivariatePolynomialFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/StepFunction.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/FunctionAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Function.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/CSVFileAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Constant.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/CommonUtilities.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Logger.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/Reporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Common/RegisterTypes_osimCommon.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimulationUtilities.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/osimSimulationDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/VisualizerUtilities.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Control.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/TrackingController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/Controller.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/SynergyController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/PrescribedController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlSetController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlConstant.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/InputController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinear.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Control/ControlLinearNode.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectory.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Scholz2015GeometryPath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Analysis.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractPathPoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Blankevoort1991Ligament.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CMCActuatorSubsystem.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedPathForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/JointInternalPowerProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Probe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactGeometry.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/GeometryPath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedBushingForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PhysicalFrame.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceApplier.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PrescribedForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedPointToPointForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ModelComponent.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionBasedPath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Ligament.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Force.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Marker.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BodyScaleSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ModelVisualizer.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Point.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExponentialContactForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExternalForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MarkerSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CoordinateSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractGeometryPath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PointToPointSpring.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceProducer.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AnalysisSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathPoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Actuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/HuntCrossleyForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ControllerSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActivationFiberLengthMuscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Station.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BushingForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActuatorForceProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/CoordinateLimitForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Model.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionBasedBushingForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Frame.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/StationDefinedFrame.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactMesh.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PhysicalOffsetFrame.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/SystemEnergyProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceAdapter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Geometry.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExternalLoads.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ElasticFoundationForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ConditionalPathPoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ActuatorPowerProbe.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/MovingPathPoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ExpressionBasedCoordinateForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ForceSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/BodyScale.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Muscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/ContactHalfSpace.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/FunctionThresholdCondition.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/AbstractTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/PathSpring.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Condition.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Ground.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/MarkersReference.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/AssemblySolver.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Manager/Manager.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/About.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/RegisterTypes_osimSimulation.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapEllipsoid.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapObject.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapResult.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrap.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/PathWrapPoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapMath.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapTorus.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapCylinder.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/Wrap/WrapSphere.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/InverseDynamicsSolver.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/MomentArmSolver.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/InverseKinematicsSolver.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/OpenSense/OpenSenseUtilities.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/OpenSense/IMUPlacer.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/BufferedOrientationsReference.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PlanarJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SimbodyEngine.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PointConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/WeldJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/UniversalJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SpatialTransform.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/UnilateralConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/BallJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/PinJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/WeldConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Joint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Constraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/CustomJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Body.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/Coordinate.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/TransformAxis.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/SliderJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/FreeJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/SimbodyEngine/GimbalJoint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/PositionMotion.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/StatesTrajectoryReporter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/CoordinateReference.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Simulation/OrientationsReference.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPairSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Orientation.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/GenericModelMaker.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CorrectionController.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/InverseDynamicsTool.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/osimToolsDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/Measurement.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTargetFast.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ForwardTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/DynamicsTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/VectorFunctionForActuators.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ActuatorForceTarget.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Point.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/RRATool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/About.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/IKCoordinateTask.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPlacer.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/AnalyzeTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMCTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ModelScaler.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/IMUInverseKinematicsTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MeasurementSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/TrackingTask.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/ScaleTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Task.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/SMC_Joint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_Joint.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/RegisterTypes_osimTools.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/InverseKinematicsTool.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/CMC_TaskSet.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MuscleStateTrackingTask.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Tools/MarkerPair.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ModelFactory.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Thelen2003Muscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleSecondOrderActivationDynamicModel.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/RigidTendonMuscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/TendonForceLengthCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/DeGrooteFregly2016Muscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceLengthCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ClutchedPathSpring.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FirstOrderMuscleActivationDynamics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleActivationDynamics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Thelen2003Muscle_Deprecated.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Millard2012EquilibriumMuscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/MuscleFixedWidthPennationModel.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/PointActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ForceVelocityInverseCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/PointToPointActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/About.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/PolynomialPathFitter.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ZerothOrderMuscleActivationDynamics.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Delp1990Muscle_Deprecated.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberForceLengthCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/CoordinateActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ConstantMuscleActivation.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Millard2012AccelerationMuscle.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/TorqueActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ActiveForceLengthCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/BodyActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/ForceVelocityCurve.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/McKibbenActuator.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/Schutte1993Muscle_Deprecated.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/SpringGeneralizedForce.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.cpp
+    # ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/osimActuatorsDLL.cpp  # unused by libopynsim (uses `opyn::init`)
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/Actuators/RegisterTypes_osimActuators.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/RegisterTypes_osimExampleComponents.cpp
+    ${OPYN_OPENSIM_BASEDIR}/OpenSim/ExampleComponents/ToyReflexController.cpp
 
     # additional third-party plugins
     ThirdPartyPlugins/opensim-jam-org/jam-plugin/Smith2018ArticularContactForce.cpp
@@ -602,45 +602,43 @@ add_library(osim STATIC
     ThirdPartyPlugins/RegisterTypes_osimPlugin.h
 
     # additional code (in the `osim::` namespace)
-    osim.cpp
-    osim.h
+    init.cpp
+    init.h
     Utils/Assertions.cpp
     Utils/LandmarkPair3D.cpp
     Utils/TPS3D.cpp
 )
-target_include_directories(osim
+target_include_directories(opynsim
 PUBLIC
     # Simbody includes
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKmath/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Random/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Geometry/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Scalar/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/Simbody/include>
-    $<BUILD_INTERFACE:${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/src/CPodes/sundials/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKmath/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Geometry/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Scalar/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/Simbody/include>
+    $<BUILD_INTERFACE:${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/include>
     $<INSTALL_INTERFACE:include/simbody>
 
     # OpenSim includes
-    $<BUILD_INTERFACE:${OSIM_OPENSIM_BASEDIR}>
-    $<BUILD_INTERFACE:${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/include>
+    $<BUILD_INTERFACE:${OPYN_OPENSIM_BASEDIR}>
+    $<BUILD_INTERFACE:${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/include>
     $<INSTALL_INTERFACE:include>
 
-    # osim includes (uniformly uses `osim/DIR/HEADER` form)
+    # opynsim includes (uniformly uses `<libopynsim/DIR/HEADER.h>` form)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
     $<INSTALL_INTERFACE:include>
-
-    # so that #include <oscarconfig.h> works
-    ${CMAKE_CURRENT_BINARY_DIR}/generated/
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/  # so that #include <opynsimconfig.h> works
 )
-target_compile_definitions(osim
+target_compile_definitions(opynsim
 PRIVATE
     # Simbody defines
     SimTK_SIMMATH_MAJOR_VERSION=${PROJECT_VERSION_MAJOR}
@@ -686,9 +684,9 @@ PUBLIC
     # see https://github.com/simbody/simbody/pull/815 for details
     SWIG_PYTHON
 )
-target_compile_features(osim PUBLIC cxx_std_23)
+target_compile_features(opynsim PUBLIC cxx_std_23)
 
-target_link_libraries(osim
+target_link_libraries(opynsim
 PUBLIC
     ${CMAKE_DL_LIBS}  # used by simbody
     BLAS::BLAS        # used by simbody
@@ -696,67 +694,68 @@ PUBLIC
     spdlog::spdlog    # used by OpenSim
     mdspan::mdspan
 )
-set_target_properties(osim PROPERTIES POSITION_INDEPENDENT_CODE ON)  # for python bindings
+set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)  # for python bindings
 
-# make an installation directory that's mostly OpenSim-compatible (primarily, for OpenSim Creator)
-if(${OSIM_INSTALL_OPENSIM_HEADERS})
-    # install osim headers to `include/osim`
-    install(FILES osim.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/osim/)
+# If requested, install opynsim such that it is header-compatible with OpenSim
+# and simbody projects (unofficial legacy project support)
+if(${OPYN_INSTALL_OPENSIM_HEADERS})
+    # install `opynsim` headers to `include/libopynsim`
+    install(FILES init.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libopynsim/)
 
-    # install `osimTargets.cmake` to `lib/cmake/osim`
-    install(TARGETS osim EXPORT osimTargets)
-    install(EXPORT osimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim)
+    # install `opynsimTargets.cmake` to `lib/cmake/opynsim`
+    install(TARGETS opynsim EXPORT opynsimTargets)
+    install(EXPORT opynsimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opynsim)
 
-    # install `osimConfig.cmake` to `lib/cmake/osim`
+    # install `opynsimConfig.cmake` to `lib/cmake/opynsim`
     configure_package_config_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/osimConfig.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/osimConfig.cmake"
-        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsimConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/opynsimConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/opynsim
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/osimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/osim")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/opynsimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim")
 
-    # install simbody headers to `include/simbody` (same as `simbody`)
+    # install simbody headers to `include/simbody` (compatible with `simbody`'s install)
     install(
-    DIRECTORY
-        ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Integrators/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKmath/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKmath/Geometry/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Random/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Simulation/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Geometry/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Scalar/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/include/
-        ${OSIM_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/include/
-        ${OSIM_SIMBODY_BASEDIR}/Simbody/include/
-        ${OSIM_SIMBODY_BASEDIR}/Simbody/Visualizer/include/
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/simbody"
+        DIRECTORY
+            ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Integrators/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKmath/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKmath/Geometry/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/SmallMatrix/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Random/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Simulation/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Geometry/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/BigMatrix/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Scalar/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Mechanics/include/
+            ${OPYN_SIMBODY_BASEDIR}/SimTKcommon/Polynomial/include/
+            ${OPYN_SIMBODY_BASEDIR}/Simbody/include/
+            ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/include/
+        DESTINATION
+            "${CMAKE_INSTALL_INCLUDEDIR}/simbody"
     )
 
-    # install lepton headers to `include/lepton` (same as `opensim-core`)
-    file(GLOB_RECURSE OSIM_GLOBBED_LEPTON_HEADERS "${OSIM_OPENSIM_BASEDIR}/Vendors/lepton/include/lepton/*.h")
-    install(FILES ${OSIM_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton")
+    # install lepton headers to `include/lepton` (compatible with `opensim-core`'s install)
+    file(GLOB_RECURSE OPYN_GLOBBED_LEPTON_HEADERS "${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/include/lepton/*.h")
+    install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton")
 
-    # install OpenSim headers to `include/OpenSim` (same as `opensim-core`)
-    set(OSIM_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "C3DFileAdapter")
-    file(GLOB_RECURSE OSIM_GLOBBED_HEADERS "${OSIM_OPENSIM_BASEDIR}/OpenSim/*.h")
-    foreach(var ${OSIM_GLOBBED_HEADERS})
-        set(OSIM_EXCLUDE FALSE)
-        foreach(pattern ${OSIM_EXCLUDED_PATTERNS})
+    # install OpenSim headers to `include/OpenSim` (compatible with `opensim-core`'s install)
+    set(OPYN_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "C3DFileAdapter")
+    file(GLOB_RECURSE OPYN_GLOBBED_HEADERS "${OPYN_OPENSIM_BASEDIR}/OpenSim/*.h")
+    foreach(var ${OPYN_GLOBBED_HEADERS})
+        set(OPYN_EXCLUDE FALSE)
+        foreach(pattern ${OPYN_EXCLUDED_PATTERNS})
             if("${var}" MATCHES "${pattern}")
-                set(OSIM_EXCLUDE TRUE)
+                set(OPYN_EXCLUDE TRUE)
             endif()
         endforeach()
-        if(NOT ${OSIM_EXCLUDE})
-            list(APPEND OSIM_HEADER_FILES "${var}")
+        if(NOT ${OPYN_EXCLUDE})
+            list(APPEND OPYN_HEADER_FILES "${var}")
         endif()
     endforeach()
-    foreach(header ${OSIM_HEADER_FILES})
-        file(RELATIVE_PATH header_relpath ${OSIM_OPENSIM_BASEDIR} ${header})
+    foreach(header ${OPYN_HEADER_FILES})
+        file(RELATIVE_PATH header_relpath ${OPYN_OPENSIM_BASEDIR} ${header})
         get_filename_component(DIR ${header_relpath} DIRECTORY)
         install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR})
     endforeach()
 endif()
-

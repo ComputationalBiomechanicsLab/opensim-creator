@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace osim
+namespace opyn
 {
     enum class LogLevel {
         info,
@@ -10,16 +10,16 @@ namespace osim
         NUM_OPTIONS,
     };
 
-    // Runtime configuration that can be given to `osim::init` to change/monitor
+    // Runtime configuration that can be given to `opyn::init` to change/monitor
     // its behavior.
     class InitConfiguration {
     public:
         virtual ~InitConfiguration() noexcept = default;
 
-        // Called when `osim::init` wants to emit an informational log message.
+        // Called when `opyn::init` wants to emit an informational log message.
         void log_info(std::string_view payload) { impl_log_message(payload, LogLevel::info); }
 
-        // Called when `osim::init` wants to emit a warning log message.
+        // Called when `opyn::init` wants to emit a warning log message.
         void log_warn(std::string_view payload) { impl_log_message(payload, LogLevel::warn); }
     private:
 
@@ -29,15 +29,15 @@ namespace osim
         virtual void impl_log_message(std::string_view, LogLevel);
     };
 
-    // Globally initializes the osim (OpenSim + extensions) API with a default `InitConfiguration`.
+    // Globally initializes the opynsim (OpenSim + extensions) API with a default `InitConfiguration`.
     //
-    // This should be called by the application exactly once before using any `osim::`,
+    // This should be called by the application exactly once before using any `opyn::`,
     // `SimTK::`, or `OpenSim::`-prefixed API.
     void init();
 
-    // Globally initializes the osim (OpenSim + extensions) API with the given `InitConfiguration`.
+    // Globally initializes the opynsim (OpenSim + extensions) API with the given `InitConfiguration`.
     //
-    // This should be called by the application exactly once before using any `osim::`,
+    // This should be called by the application exactly once before using any `opyn::`,
     // `SimTK::`, or `OpenSim::`-prefixed API.
     void init(InitConfiguration&);
 }

@@ -24,9 +24,9 @@
 
 // UNIX PLATFORM
 
-// OSC change: this used to define `__declspec(dllexport)` and
+// opynsim change: this used to define `__declspec(dllexport)` and
 // `__declspec(dllimport)`, but that isn't necessary because
-// OpenSimCreator builds into a single fat binary
+// opynsim builds into a single fat binary
 #define OSIMPLUGIN_API
 
 #endif // __osimPluginDLL_h__

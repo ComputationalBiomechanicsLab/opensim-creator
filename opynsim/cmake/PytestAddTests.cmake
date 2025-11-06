@@ -127,7 +127,7 @@ if(CMAKE_SCRIPT_MODE_FILE)
             endif()
 
             # Prefix the test name with the test group name.
-            # set(test_name "${TEST_GROUP_NAME}.${test_name}")  # OpenSim Creator: don't prefix it, it reads better in VS2020
+            # set(test_name "${TEST_GROUP_NAME}.${test_name}")  # opynsim: don't prefix it, it reads better in VS2020
             set(test_case "${WORKING_DIRECTORY}/${line}")
 
             # Create the test for CTest.

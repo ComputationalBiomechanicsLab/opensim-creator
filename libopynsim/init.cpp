@@ -1,4 +1,4 @@
-#include "osim.h"
+#include "init.h"
 
 #include <libopynsim/ThirdPartyPlugins/RegisterTypes_osimPlugin.h>
 
@@ -22,7 +22,7 @@
 #include <sstream>
 #include <utility>
 
-using namespace osim;
+using namespace opyn;
 
 namespace
 {
@@ -67,11 +67,11 @@ namespace
     {
         // these are because OpenSim is inconsistient about handling locales
         //
-        // it *writes* OSIM files using the locale, so you can end up with entries like:
+        // it *writes* .osim files using the locale, so you can end up with entries like:
         //
         //     <PathPoint_X>0,1323</PathPoint_X>
         //
-        // but it *reads* OSIM files with the assumption that numbers will be in the format 'x.y'
+        // but it *reads* .osim files with the assumption that numbers will be in the format 'x.y'
 
         config.log_info("setting locale to US (so that numbers are always in the format '0.x'");
         const char* locale = "C";
@@ -123,18 +123,18 @@ namespace
     }
 }
 
-void osim::init()
+void opyn::init()
 {
     InitConfiguration config;
     init(config);
 }
 
-void osim::InitConfiguration::impl_log_message(std::string_view payload, LogLevel level)
+void opyn::InitConfiguration::impl_log_message(std::string_view payload, LogLevel level)
 {
     std::cerr << label_for(level) << ": " << payload << std::endl;
 }
 
-void osim::init(InitConfiguration& config)
+void opyn::init(InitConfiguration& config)
 {
     // make the current process globally use the same locale that OpenSim uses
     //

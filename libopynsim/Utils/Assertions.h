@@ -1,11 +1,11 @@
 #pragma once
 
-#include <libopynsim/oscarconfig.h>
+#include <libopynsim/opynsimconfig.h>
 
 #include <cstddef>
 #include <string_view>
 
-namespace osc::detail
+namespace opyn::detail
 {
     template<size_t N>
     consteval std::string_view extract_filename(const char(&p)[N])
@@ -28,13 +28,13 @@ namespace osc::detail
 }
 
 // always execute this assertion - even if in release mode /w debug flags disabled
-#define OSC_ASSERT_ALWAYS(expr) \
-    (static_cast<bool>(expr) ? static_cast<void>(0) : osc::detail::on_assertion_failure(#expr, static_cast<const char*>(__func__), osc::detail::extract_filename(__FILE__), __LINE__))
+#define OPYN_ASSERT_ALWAYS(expr) \
+    (static_cast<bool>(expr) ? static_cast<void>(0) : opyn::detail::on_assertion_failure(#expr, static_cast<const char*>(__func__), opyn::detail::extract_filename(__FILE__), __LINE__))
 
-#if OSC_FORCE_ASSERTS_ENABLED
-    #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
+#if OPYN_FORCE_ASSERTS_ENABLED
+    #define OPYN_ASSERT(expr) OPYN_ASSERT_ALWAYS(expr)
 #elif !defined(NDEBUG)
-    #define OSC_ASSERT(expr) OSC_ASSERT_ALWAYS(expr)
+    #define OPYN_ASSERT(expr) OPYN_ASSERT_ALWAYS(expr)
 #else
-    #define OSC_ASSERT(expr)
+    #define OPYN_ASSERT(expr)
 #endif

@@ -1,0 +1,5 @@
+#pragma once
+
+// define/enable/disable to toggle forcing `OPYN_ASSERT*` macros to always
+// run, regardless of the build's debug flags.
+#cmakedefine01 OPYN_FORCE_ASSERTS_ENABLED

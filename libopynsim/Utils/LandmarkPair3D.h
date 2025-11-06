@@ -5,7 +5,7 @@
 #include <concepts>
 #include <iosfwd>
 
-namespace osc
+namespace opyn
 {
     // a single source-to-destination landmark pair in 3D space
     //

@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <utility>
 
-using namespace osc;
+using namespace opyn;
 namespace nb = nanobind;
 
 namespace
@@ -119,8 +119,8 @@ namespace
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& source_landmarks,
         const nb::ndarray<const double, nb::shape<-1, 3>, nb::device::cpu>& destination_landmarks)
     {
-        OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
-        OSC_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
+        OPYN_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size() && "there must be an equal amount of source/destination landmarks");
+        OPYN_ASSERT_ALWAYS(source_landmarks.size() != 0 && "at least one pair of landmarks must be provided");
 
         const auto source_landmarks_mdspan = to_mdspan(source_landmarks);
         const auto destination_landmarks_mdspan = to_mdspan(destination_landmarks);

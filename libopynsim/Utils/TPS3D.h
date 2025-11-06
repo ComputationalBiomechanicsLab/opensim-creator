@@ -18,7 +18,7 @@
 // - primary literature source: https://ieeexplore.ieee.org/document/24792
 // - blog explanation: https://profs.etsmtl.ca/hlombaert/thinplates/
 // - blog explanation #2: https://khanhha.github.io/posts/Thin-Plate-Splines-Warping/
-namespace osc
+namespace opyn
 {
     // required inputs to the 3D TPS algorithm
     //

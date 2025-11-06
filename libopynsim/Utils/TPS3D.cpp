@@ -13,7 +13,7 @@
 #include <thread>
 #include <vector>
 
-using namespace osc;
+using namespace opyn;
 
 namespace
 {
@@ -169,7 +169,7 @@ namespace
         // 6. Use a linear solver to solve L * [w a] = [v o] to yield [w a]
         // 8. Return the coefficients, [w a]
 
-        OSC_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size());
+        OPYN_ASSERT_ALWAYS(source_landmarks.size() == destination_landmarks.size());
 
         const int numPairs = static_cast<int>(source_landmarks.extent(0));
 
@@ -330,64 +330,64 @@ namespace
     }
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<float>& inputs)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<float>& inputs)
 {
     return write_human_readable(o, inputs);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<double>& inputs)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficientSolverInputs3D<double>& inputs)
 {
     return write_human_readable(o, inputs);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D<float>& wt)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSNonAffineTerm3D<float>& wt)
 {
     return write_human_readable(o, wt);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSNonAffineTerm3D<double>& wt)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSNonAffineTerm3D<double>& wt)
 {
     return write_human_readable(o, wt);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D<float>& coefs)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficients3D<float>& coefs)
 {
     return write_human_readable(o, coefs);
 }
 
-std::ostream& osc::operator<<(std::ostream& o, const TPSCoefficients3D<double>& coefs)
+std::ostream& opyn::operator<<(std::ostream& o, const TPSCoefficients3D<double>& coefs)
 {
     return write_human_readable(o, coefs);
 }
 
-TPSCoefficients3D<float> osc::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
+TPSCoefficients3D<float> opyn::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<float>& inputs)
 {
     return ::TPSCalcCoefficients<float>(inputs);
 }
 
-TPSCoefficients3D<double> osc::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
+TPSCoefficients3D<double> opyn::TPSCalcCoefficients(const TPSCoefficientSolverInputs3D<double>& inputs)
 {
     return ::TPSCalcCoefficients<double>(inputs);
 }
 
-TPSCoefficients3D<double> osc::TPSCalcCoefficients(
+TPSCoefficients3D<double> opyn::TPSCalcCoefficients(
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> source_landmarks,
     cpp23::mdspan<const double, cpp23::extents<size_t, std::dynamic_extent, 3>, cpp23::layout_stride> destination_landmarks)
 {
     return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks);
 }
 
-SimTK::Vec<3, float> osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
+SimTK::Vec<3, float> opyn::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
 {
     return ::TPSWarpPoint<float>(coefs, p);
 }
 
-SimTK::Vec<3, double> osc::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
+SimTK::Vec<3, double> opyn::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
 {
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-SimTK::Vec<3, float> osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float blendingFactor)
+SimTK::Vec<3, float> opyn::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float blendingFactor)
 {
     const SimTK::Vec<3, float> warped = TPSWarpPoint(coefs, vert);
     return {
@@ -397,7 +397,7 @@ SimTK::Vec<3, float> osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Si
     };
 }
 
-std::vector<SimTK::Vec<3, float>> osc::TPSWarpPoints(
+std::vector<SimTK::Vec<3, float>> opyn::TPSWarpPoints(
     const TPSCoefficients3D<float>& coefs,
     std::span<const SimTK::Vec<3, float>> points,
     float blendingFactor)
@@ -407,7 +407,7 @@ std::vector<SimTK::Vec<3, float>> osc::TPSWarpPoints(
     return rv;
 }
 
-void osc::TPSWarpPointsInPlace(
+void opyn::TPSWarpPointsInPlace(
     const TPSCoefficients3D<float>& coefs,
     std::span<SimTK::Vec<3, float>> points,
     float blendingFactor)
