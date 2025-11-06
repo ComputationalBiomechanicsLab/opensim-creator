@@ -10,6 +10,8 @@
 #endif
 
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 #if defined(_WIN32)
@@ -19,8 +21,21 @@
     #include <unistd.h>
 #endif
 
+namespace
+{
+    std::string read_file(const std::string& path)
+    {
+        std::ifstream file(path, std::ios::binary); // binary avoids newline translation
+        if (!file) throw std::runtime_error("Cannot open file: " + path);
+
+        std::ostringstream buffer;
+        buffer << file.rdbuf();
+        return buffer.str();
+    }
+}
+
 int main() {
-    // Set working directory to the project root directory
+    // Set working directory to the debugger root directory
     if (chdir("@CMAKE_CURRENT_SOURCE_DIR@") != 0) {
         perror("chdir failed");
         return 1;
@@ -28,16 +43,15 @@ int main() {
 
     // Set PYTHONPATH so that Python finds the `opynsim` package
 #if defined(_WIN32)
-    _putenv("PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@");
+    _putenv("PYTHONPATH=@CMAKE_CURRENT_SOURCE_DIR@/..");
 #else
-    setenv("PYTHONPATH", "@CMAKE_CURRENT_SOURCE_DIR@", 1);
+    setenv("PYTHONPATH", "@CMAKE_CURRENT_SOURCE_DIR@/..", 1);
 #endif
 
-    // This is roughly equivalent to running `python -m opynsim` in the terminal
-    Py_Initialize();    
-    std::string code =
-        "import runpy\n"
-        "runpy.run_module('opynsim', run_name='__main__')\n";
+    // This is roughly equivalent to running `python debugscript.py` in the terminal
+    Py_Initialize();
+
+    std::string code = read_file("@CMAKE_CURRENT_SOURCE_DIR@/debugscript.py");
     int result = PyRun_SimpleString(code.c_str());
     Py_Finalize();
     return result;

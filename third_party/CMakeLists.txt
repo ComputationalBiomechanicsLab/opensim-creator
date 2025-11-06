@@ -4,8 +4,9 @@ project(opynsim-dependencies)
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
 
-# no nanobind: it's used via `add_submodule`
+option(OPYNDEPS_BUILD_CATCH2    "Build Catch2"                            ON)
 option(OPYNDEPS_BUILD_MDSPAN    "Build mdspan"                            ON)
+# SKIP nanobind: it's imported by `opynsim` via `add_submodule`
 option(OPYNDEPS_BUILD_OPENBLAS  "Build OpenBLAS"                          ${WIN32})
 option(OPYNDEPS_BUILD_ROBIN_MAP "Build robin-map (required for nanobind)" ON)
 option(OPYNDEPS_BUILD_SPDLOG    "Build spdlog"                            ON)
@@ -61,7 +62,16 @@ if(TRUE)
     unset(OPYNDEPS_FORWARDED_VARS)
 endif()
 
-if(${OPYNDEPS_BUILD_MDSPAN})
+if(OPYNDEPS_BUILD_CATCH2)
+    ExternalProject_Add(Catch2
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Catch2
+        BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OPYNDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(OPYNDEPS_BUILD_MDSPAN)
     ExternalProject_Add(mdspan
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
         BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
@@ -70,7 +80,7 @@ if(${OPYNDEPS_BUILD_MDSPAN})
     )
 endif()
 
-if(${OPYNDEPS_BUILD_OPENBLAS})
+if(OPYNDEPS_BUILD_OPENBLAS)
     ExternalProject_Add(OpenBLAS
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenBLAS
         BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
@@ -84,7 +94,7 @@ if(${OPYNDEPS_BUILD_OPENBLAS})
     )
 endif()
 
-if(${OPYNDEPS_BUILD_ROBIN_MAP})
+if(OPYNDEPS_BUILD_ROBIN_MAP)
     ExternalProject_Add(robin-map
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/robin-map
         BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
@@ -93,7 +103,7 @@ if(${OPYNDEPS_BUILD_ROBIN_MAP})
     )
 endif()
 
-if(${OPYNDEPS_BUILD_SPDLOG})
+if(OPYNDEPS_BUILD_SPDLOG)
     ExternalProject_Add(spdlog
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
         BUILD_ALWAYS ${OPYNDEPS_BUILD_ALWAYS}
@@ -106,4 +116,3 @@ if(${OPYNDEPS_BUILD_SPDLOG})
             -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS}
     )
 endif()
-

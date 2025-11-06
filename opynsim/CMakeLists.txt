@@ -2,6 +2,7 @@ include(CMakeDependentOption)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+option(OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" ON)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING "Build python test suites" ON BUILD_TESTING OFF)
 
 # ensure the necessary python development headers are available on
@@ -43,44 +44,10 @@ set_target_properties(_opynsim_native PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
 )
 
-# Create an executable program that uses the python native API to directly call into
-# python (embedded-mode) and run `opynsim`'s `__main__`.
-#
-# This makes it possible to attach a debugger to this executable and directly break
-# into native code.
-if(TRUE)
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/opynsim_debugger.cpp.in
-        ${CMAKE_CURRENT_BINARY_DIR}/generated/opynsim_debugger.cpp
-        @ONLY
-    )
-    add_executable(opynsim_debugger ${CMAKE_CURRENT_BINARY_DIR}/generated/opynsim_debugger.cpp)
-    target_link_libraries(opynsim_debugger PUBLIC Python::Python)
-    add_dependencies(opynsim_debugger _opynsim_native)
+if(OPYN_BUILD_OPYNSIM_DEBUGGER)
+    add_subdirectory(debugger)
 endif()
 
 if(OPYN_BUILD_PYTHON_TESTING)
-    find_package(Pytest)
-    if(NOT Pytest_FOUND)
-        message(FATAL_ERROR
-            "pytest is not installed in your current environment. You can solve this by either:\n"
-            "  - Disabling python tests by setting the cmake cache variable `OPYN_BUILD_PYTHON_TESTING` to `OFF`\n"
-            "  - Installing opynsim's test dependencies into the python environment with:\n"
-            "        ${Python_EXECUTABLE} -m pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements/test_requirements.txt\n"
-        )
-    endif()
-
-    file(GLOB OPYN_PYTEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.py")
-    pytest_discover_tests(
-        _opynsim_native
-        PYTHON_PATH_PREPEND
-            ${CMAKE_CURRENT_SOURCE_DIR}
-        WORKING_DIRECTORY
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests
-        DEPENDS
-            _opynsim_native
-            ${OPYN_PYTEST_SOURCES}
-        INCLUDE_FILE_PATH
-    )
-    unset(OPYN_PYTEST_SOURCES)
+    add_subdirectory(tests)
 endif()

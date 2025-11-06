@@ -759,3 +759,7 @@ if(${OPYN_INSTALL_OPENSIM_HEADERS})
         install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR})
     endforeach()
 endif()
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
