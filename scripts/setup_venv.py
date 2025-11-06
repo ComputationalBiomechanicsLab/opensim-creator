@@ -24,8 +24,7 @@ def main():
     # Install dependencies into the environment
     print(f"Installing dependencies from {requirements_file_path}")
     subprocess.run([str(pip_path), "install", "-r", str(requirements_file_path)], check=True)
-    print("Dependencies installed successfully")
-
+    print("Python dependencies installed successfully")
 
 if __name__ == "__main__":
     main()
