@@ -1,9 +1,8 @@
-#include <liboscar/Maths/Vector.h>
-
 #include <libopynsim/Utils/Assertions.h>
 #include <libopynsim/Utils/TPS3D.h>
 #include <libopynsim/Shims/Cpp23/mdspan.h>
 
+#include <SimTKcommon/SmallMatrix.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/array.h>
@@ -25,10 +24,10 @@ namespace
     // Returns a caller-owned 1D numpy ndarray constructed from the elements of `vec`.
     template<typename T, size_t N>
     requires std::is_trivially_constructible_v<T>
-    nb::ndarray<T, nb::shape<static_cast<nb::ssize_t>(N)>, nb::device::cpu, nb::numpy> to_owned_numpy_array(const Vector<T, N>& vec)
+    nb::ndarray<T, nb::shape<static_cast<nb::ssize_t>(N)>, nb::device::cpu, nb::numpy> to_owned_numpy_array(const SimTK::Vec<N, T>& vec)
     {
         auto data = std::make_unique<T[]>(N);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-        std::uninitialized_copy_n(vec.data(), N, data.get());
+        std::uninitialized_copy_n(&vec[0], N, data.get());
         auto* handle = data.get();
         nb::capsule owner{data.release(), [](void* p) noexcept
         {
@@ -43,7 +42,7 @@ namespace
         // Returns a `Vec` constructed from elements in `ndarray` at the specified indices.
         template<nb::ssize_t N, std::copy_constructible T, size_t... I>
         requires (sizeof...(I) == N)
-        Vector<T, static_cast<size_t>(N)> to_vec(
+        SimTK::Vec<static_cast<int>(N), T> to_vec(
             const nb::ndarray<const T, nb::shape<N>, nb::device::cpu>& ndarray,
             std::index_sequence<I...>)
         {
@@ -53,7 +52,7 @@ namespace
 
     // Returns a `Vec` constructed from the given (1D) ndarray.
     template<std::copy_constructible T, nb::ssize_t N>
-    Vector<T, static_cast<size_t>(N)> to_vec(const nb::ndarray<const T, nb::shape<N>, nb::device::cpu>& ndarray)
+    SimTK::Vec<static_cast<int>(N), T> to_vec(const nb::ndarray<const T, nb::shape<N>, nb::device::cpu>& ndarray)
     {
         return detail::to_vec(ndarray, std::make_index_sequence<N>{});
     }
@@ -134,8 +133,8 @@ namespace
         const TPSCoefficients3D<double>& coefficients,
         const nb::ndarray<const double, nb::shape<3>, nb::device::cpu>& python_vec3d)
     {
-        const Vector3d input = to_vec(python_vec3d);
-        const Vector3d output = TPSWarpPoint(coefficients, input);
+        const SimTK::Vec3 input = to_vec(python_vec3d);
+        const SimTK::Vec3 output = TPSWarpPoint(coefficients, input);
         return to_owned_numpy_array(output);
     }
 
@@ -188,4 +187,3 @@ NB_MODULE(_opynsim_native, m) {  // NOLINT(cppcoreguidelines-avoid-non-const-glo
         "Pairs `source_landmarks` with `destination_landmarks` and uses the pairing to compute the Thin-Plate Spline (coefficients) of the pairing"
     );
 }
-

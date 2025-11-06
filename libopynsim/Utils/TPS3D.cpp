@@ -1,23 +1,80 @@
 #include "TPS3D.h"
 
+#include <libopynsim/Utils/Assertions.h>
+
+#include <simmath/LinearAlgebra.h>
 #include <SimTKcommon/internal/Vec.h>
 
-#include <libopynsim/Utils/Assertions.h>
-#include <libopynsim/Utils/ParalellizationHelpers.h>
-#include <simmath/LinearAlgebra.h>
-
+#include <concepts>
+#include <cstddef>
+#include <future>
 #include <ostream>
 #include <span>
+#include <thread>
 #include <vector>
 
 using namespace osc;
 
 namespace
 {
+    // perform a parallelized and "Chunked" ForEach, where each thread receives an
+    // independent chunk of data to process
+    //
+    // this is a poor-man's `std::execution::par_unseq`, because C++17's <execution>
+    // isn't fully integrated into MacOS
+    template<typename T, std::invocable<T&> UnaryFunction>
+    void for_each_parallel_unsequenced(
+        size_t min_chunk_size,
+        std::span<T> values,
+        UnaryFunction mutator)
+    {
+        const size_t chunk_size = std::max(min_chunk_size, values.size()/std::thread::hardware_concurrency());
+        const size_t num_tasks = values.size()/chunk_size;
+
+        if (num_tasks > 1) {
+            std::vector<std::future<void>> tasks;
+            tasks.reserve(num_tasks);
+
+            for (size_t i = 0; i < num_tasks-1; ++i) {
+                const size_t chunk_begin = i * chunk_size;
+                const size_t chunk_end = (i+1) * chunk_size;
+                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
+                {
+                    for (size_t j = chunk_begin; j < chunk_end; ++j) {
+                        mutator(values[j]);
+                    }
+                }));
+            }
+
+            // last worker must also handle the remainder
+            {
+                const size_t chunk_begin = (num_tasks-1) * chunk_size;
+                const size_t chunk_end = values.size();
+                tasks.push_back(std::async(std::launch::async, [values, mutator, chunk_begin, chunk_end]()
+                {
+                    for (size_t i = chunk_begin; i < chunk_end; ++i) {
+                        mutator(values[i]);
+                    }
+                }));
+            }
+
+            for (std::future<void>& task : tasks) {
+                task.get();
+            }
+        }
+        else {
+            // chunks would be too small if parallelized: just do it sequentially
+            for (T& value : values) {
+                mutator(value);
+            }
+        }
+    }
+
     // this is effectively the "U" term in the TPS algorithm literature
     //
     // i.e. U(||pi - p||) in the literature is equivalent to `RadialBasisFunction3D(pi, p)` here
-    float RadialBasisFunction3D(const Vector3& controlPoint, const Vector3& p)
+    template<std::floating_point T>
+    float RadialBasisFunction3D(const SimTK::Vec<3, T>& controlPoint, const SimTK::Vec<3, T>& p)
     {
         // this implementation uses the U definition from the following (later) source:
         //
@@ -28,7 +85,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return length(controlPoint - p);
+        return (controlPoint - p).norm();
     }
 
     template<std::floating_point T>
@@ -127,8 +184,8 @@ namespace
         // populate the K part of matrix L (upper-left)
         for (int row = 0; row < numPairs; ++row) {
             for (int col = 0; col < numPairs; ++col) {
-                const Vector<T, 3> pis = {source_landmarks[row, 0], source_landmarks[row, 1], source_landmarks[row, 2]};
-                const Vector<T, 3> pj = {source_landmarks[col, 0], source_landmarks[col, 1], source_landmarks[col, 2]};
+                const SimTK::Vec<3, T> pis = {source_landmarks[row, 0], source_landmarks[row, 1], source_landmarks[row, 2]};
+                const SimTK::Vec<3, T> pj = {source_landmarks[col, 0], source_landmarks[col, 1], source_landmarks[col, 2]};
 
                 L(row, col) = RadialBasisFunction3D(pis, pj);
             }
@@ -198,16 +255,16 @@ namespace
         TPSCoefficients3D<T> rv;
 
         // populate affine a1, a2, a3, and a4 terms
-        rv.a1 = {Cx[numPairs],   Cy[numPairs]  , Cz[numPairs]  };
-        rv.a2 = {Cx[numPairs+1], Cy[numPairs+1], Cz[numPairs+1]};
-        rv.a3 = {Cx[numPairs+2], Cy[numPairs+2], Cz[numPairs+2]};
-        rv.a4 = {Cx[numPairs+3], Cy[numPairs+3], Cz[numPairs+3]};
+        rv.a1 = {T(Cx[numPairs]),   T(Cy[numPairs])  , T(Cz[numPairs])  };
+        rv.a2 = {T(Cx[numPairs+1]), T(Cy[numPairs+1]), T(Cz[numPairs+1])};
+        rv.a3 = {T(Cx[numPairs+2]), T(Cy[numPairs+2]), T(Cz[numPairs+2])};
+        rv.a4 = {T(Cx[numPairs+3]), T(Cy[numPairs+3]), T(Cz[numPairs+3])};
 
         // populate `wi` coefficients (+ control points, needed at evaluation-time)
         rv.nonAffineTerms.reserve(numPairs);
         for (int i = 0; i < numPairs; ++i) {
-            const Vector3 weight = {Cx[i], Cy[i], Cz[i]};
-            const Vector3 controlPoint = {source_landmarks[i, 0], source_landmarks[i, 1], source_landmarks[i, 2]};
+            const SimTK::Vec<3, T> weight{T(Cx[i]), T(Cy[i]), T(Cz[i])};
+            const SimTK::Vec<3, T> controlPoint{source_landmarks[i, 0], source_landmarks[i, 1], source_landmarks[i, 2]};
             rv.nonAffineTerms.emplace_back(weight, controlPoint);
         }
 
@@ -229,23 +286,23 @@ namespace
         const cpp23::layout_stride::mapping mapping{shape, strides};
 
         auto rv = ::TPSCalcCoefficients<T>(
-            {&inputs.landmarks.front().source.x, mapping},
-            {&inputs.landmarks.front().destination.x, mapping}
+            {&inputs.landmarks.front().source[0], mapping},
+            {&inputs.landmarks.front().destination[0], mapping}
         );
 
         // If required, modify the coefficients
         if (not inputs.applyAffineTranslation) {
-            rv.a1 = {};
+            rv.a1 = SimTK::Vec<3, T>{T(0.0), T(0.0), T(0.0)};
         }
         if (not inputs.applyAffineScale) {
-            rv.a2 = normalize(rv.a2);
-            rv.a3 = normalize(rv.a3);
-            rv.a4 = normalize(rv.a4);
+            rv.a2 = rv.a2.normalize();
+            rv.a3 = rv.a3.normalize();
+            rv.a4 = rv.a4.normalize();
         }
         if (not inputs.applyAffineRotation) {
-            rv.a2 = {length(rv.a2), T(0.0),        T(0.0)};
-            rv.a3 = {T(0.0),        length(rv.a3), T(0.0)};
-            rv.a4 = {T(0.0),        T(0.0),        length(rv.a4)};
+            rv.a2 = {rv.a2.norm(), T(0.0),       T(0.0)};
+            rv.a3 = {T(0.0),       rv.a3.norm(), T(0.0)};
+            rv.a4 = {T(0.0),       T(0.0),       rv.a4.norm()};
         }
         if (not inputs.applyNonAffineWarp) {
             rv.nonAffineTerms.clear();
@@ -255,21 +312,21 @@ namespace
     }
 
     template<std::floating_point T>
-    Vector<T, 3> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, Vector<T, 3> p)
+    SimTK::Vec<3, T> TPSWarpPoint(const TPSCoefficients3D<T>& coefs, SimTK::Vec<3, T> p)
     {
         // this implementation effectively evaluates `fx(x, y, z)`, `fy(x, y, z)`, and
         // `fz(x, y, z)` the same time, because `TPSCoefficients3D` stores the X, Y, and Z
         // variants of the coefficients together in memory (as `Vector3`s)
 
         // compute affine terms (a1 + a2*x + a3*y + a4*z)
-        Vector3d rv = Vector3d{coefs.a1} + Vector3d{coefs.a2*p.x} + Vector3d{coefs.a3*p.y} + Vector3d{coefs.a4*p.z};
+        SimTK::Vec3 rv = SimTK::Vec3{coefs.a1} + SimTK::Vec3{coefs.a2*p[0]} + SimTK::Vec3{coefs.a3*p[1]} + SimTK::Vec3{coefs.a4*p[2]};
 
         // accumulate non-affine terms (effectively: wi * U(||controlPoint - p||))
         for (const TPSNonAffineTerm3D<T>& term : coefs.nonAffineTerms) {
             rv += term.weight * RadialBasisFunction3D(term.controlPoint, p);
         }
 
-        return rv;
+        return SimTK::Vec<3, T>{rv};
     }
 }
 
@@ -320,39 +377,43 @@ TPSCoefficients3D<double> osc::TPSCalcCoefficients(
     return ::TPSCalcCoefficients<double>(source_landmarks, destination_landmarks);
 }
 
-Vector3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vector3 p)
+SimTK::Vec<3, float> osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> p)
 {
     return ::TPSWarpPoint<float>(coefs, p);
 }
 
-Vector3d osc::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, Vector3d p)
+SimTK::Vec<3, double> osc::TPSWarpPoint(const TPSCoefficients3D<double>& coefs, SimTK::Vec<3, double> p)
 {
     return ::TPSWarpPoint<double>(coefs, p);
 }
 
-Vector3 osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, Vector3 vert, float blendingFactor)
+SimTK::Vec<3, float> osc::TPSWarpPoint(const TPSCoefficients3D<float>& coefs, SimTK::Vec<3, float> vert, float blendingFactor)
 {
-    return lerp(vert, TPSWarpPoint(coefs, vert), blendingFactor);
+    const SimTK::Vec<3, float> warped = TPSWarpPoint(coefs, vert);
+    return {
+        std::lerp(vert[0], warped[0], blendingFactor),
+        std::lerp(vert[1], warped[1], blendingFactor),
+        std::lerp(vert[2], warped[2], blendingFactor),
+    };
 }
 
-std::vector<Vector3> osc::TPSWarpPoints(
+std::vector<SimTK::Vec<3, float>> osc::TPSWarpPoints(
     const TPSCoefficients3D<float>& coefs,
-    std::span<const Vector3> points,
+    std::span<const SimTK::Vec<3, float>> points,
     float blendingFactor)
 {
-    std::vector<Vector3> rv(points.begin(), points.end());
+    std::vector<SimTK::Vec<3, float>> rv(points.begin(), points.end());
     TPSWarpPointsInPlace(coefs, rv, blendingFactor);
     return rv;
 }
 
 void osc::TPSWarpPointsInPlace(
     const TPSCoefficients3D<float>& coefs,
-    std::span<Vector3> points,
+    std::span<SimTK::Vec<3, float>> points,
     float blendingFactor)
 {
-    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](Vector3& vert)
+    for_each_parallel_unsequenced(8192, points, [&coefs, blendingFactor](SimTK::Vec<3, float>& vert)
     {
         vert = TPSWarpPoint(coefs, vert, blendingFactor);
     });
 }
-

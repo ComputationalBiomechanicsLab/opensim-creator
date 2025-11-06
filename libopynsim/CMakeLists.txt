@@ -604,8 +604,9 @@ add_library(osim STATIC
     # additional code (in the `osim::` namespace)
     osim.cpp
     osim.h
-    Utils/TPS3D.cpp
     Utils/Assertions.cpp
+    Utils/LandmarkPair3D.cpp
+    Utils/TPS3D.cpp
 )
 target_include_directories(osim
 PUBLIC
@@ -685,7 +686,7 @@ PUBLIC
     # see https://github.com/simbody/simbody/pull/815 for details
     SWIG_PYTHON
 )
-target_compile_features(osim PUBLIC cxx_std_20)
+target_compile_features(osim PUBLIC cxx_std_23)
 
 target_link_libraries(osim
 PUBLIC

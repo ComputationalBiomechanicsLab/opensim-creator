@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SimTKcommon/internal/Vec.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -14,8 +14,8 @@ namespace osc
     struct LandmarkPair3D {
         friend bool operator==(const LandmarkPair3D&, const LandmarkPair3D&) = default;
 
-        SimTK::Vec<3, T> source(0.0);
-        SimTK::Vec<3, T> destination(0.0);
+        SimTK::Vec<3, T> source{0.0};
+        SimTK::Vec<3, T> destination{0.0};
     };
 
     std::ostream& operator<<(std::ostream&, const LandmarkPair3D<float>&);

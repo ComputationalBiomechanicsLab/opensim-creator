@@ -2,7 +2,7 @@
 
 #include <libopynsim/Shims/Cpp23/mdspan.h>
 #include <libopynsim/Utils/LandmarkPair3D.h>
-#include <SimTKcommon/internal/Vec.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>
 #include <iosfwd>
@@ -76,10 +76,10 @@ namespace osc
         friend bool operator==(const TPSCoefficients3D&, const TPSCoefficients3D&) = default;
 
         // default the coefficients to an "identity" warp
-	SimTK::Vec<3, T> a1(T{0.0}, T{0.0}, T{0.0});
-	SimTK::Vec<3, T> a2(T{1.0}, T{0.0}, T{0.0});
-	SimTK::Vec<3, T> a3(T{0.0}, T{1.0}, T{0.0});
-	SimTK::Vec<3, T> a4(T{0.0}, T{0.0}, T{1.0});
+        SimTK::Vec<3, T> a1 = {T{0.0}, T{0.0}, T{0.0}};
+        SimTK::Vec<3, T> a2 = {T{1.0}, T{0.0}, T{0.0}};
+        SimTK::Vec<3, T> a3 = {T{0.0}, T{1.0}, T{0.0}};
+        SimTK::Vec<3, T> a4 = {T{0.0}, T{0.0}, T{1.0}};
         std::vector<TPSNonAffineTerm3D<T>> nonAffineTerms;
     };
 

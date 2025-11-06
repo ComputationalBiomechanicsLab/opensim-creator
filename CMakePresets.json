@@ -9,7 +9,7 @@
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-RelWithDebInfo"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
             },
             "hidden": false
         },
@@ -21,7 +21,7 @@
             "binaryDir": "${sourceDir}/build/Debug",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Debug"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug"
             },
             "hidden": false
         },
@@ -33,7 +33,7 @@
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Release"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release"
             },
             "hidden": false
         },
@@ -45,7 +45,7 @@
             "binaryDir": "${sourceDir}/build/MinSizeRel",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-MinSizeRel"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel"
             },
             "hidden": false
         }
