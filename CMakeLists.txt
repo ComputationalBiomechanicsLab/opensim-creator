@@ -18,4 +18,3 @@ add_subdirectory(libopynsim)
 if (OPYN_BUILD_PYTHON_BINDINGS)
     add_subdirectory(opynsim)
 endif()
-
