@@ -1,0 +1,6 @@
+Metadata-Version: 2.3
+Name: @PROJECT_NAME@
+Version: @PROJECT_VERSION@
+Summary: OPynSim Python Bindings
+Requires-Python: >=3.12
+Requires-Dist: numpy>=1.23.5
