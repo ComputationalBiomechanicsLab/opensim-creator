@@ -1,3 +1,5 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(Pytest)
 if(NOT Pytest_FOUND)
     message(FATAL_ERROR

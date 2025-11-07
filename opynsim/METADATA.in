@@ -1,0 +1,28 @@
+Metadata-Version: 2.3
+Name: @PROJECT_NAME@
+Version: @OPYN_WHEEL_VERSION@
+Summary: Musculoskeletal Modelling Simplified
+Project-URL: Source Code, https://github.com/opynsim/opynsim
+Author: Adam Kewley
+Author-email: contact@adamkewley.com
+License: Apache 2.0
+Platform: @OPYN_METADATA_PLATFORM@
+Requires-Python: >=3.12
+Requires-Dist: numpy>=1.23.5
+Keywords: biomechanics, musculoskeletal, opensim, simulation
+Classifier: @OPYN_METADATA_OS_CLASSIFIER@
+Classifier: Development Status :: 1 - Planning
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: C++
+Description-Content-Type: text/markdown
+Description:
+ OPynSim is a musculoskeletal modelling library that provides Python-native
+ bindings for common modelling tasks, maintained by the developer of [OpenSim Creator](https://opensimcreator.com).
+ 
+ **This project is currently in a prototype phase**, see the
+ [project page](https://github.com/opynsim/opynsim) for more details.
