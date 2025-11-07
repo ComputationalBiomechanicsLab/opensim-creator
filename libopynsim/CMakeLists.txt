@@ -3,9 +3,30 @@ option(OPYN_INSTALL_OPENSIM_HEADERS "Install opynsim library with Simbody/OpenSi
 include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
 include(CMakePackageConfigHelpers)  # configure_package_config_file
 
-find_package(OpenBLAS REQUIRED)  # used by simbody
-find_package(spdlog  REQUIRED)   # used by OpenSim
-find_package(mdspan  REQUIRED)   # used by opynsim
+# BLAS/LAPACK: prefer using OpenBLAS if it has been installed
+# on the `CMAKE_PREFIX_PATH`, because the caller _probably_
+# wants the build to use that
+foreach(_prefix IN LISTS CMAKE_PREFIX_PATH)
+    if(EXISTS "${_prefix}/lib/cmake/OpenBLAS/OpenBLASConfig.cmake")
+        find_package(OpenBLAS REQUIRED CONFIG)
+
+        # Alias FindBLAS/FindLAPACK targets
+	add_library(BLAS::BLAS INTERFACE IMPORTED)
+        add_library(LAPACK::LAPACK INTERFACE IMPORTED)
+        set_target_properties(BLAS::BLAS PROPERTIES INTERFACE_LINK_LIBRARIES OpenBLAS::OpenBLAS)
+        set_target_properties(LAPACK::LAPACK PROPERTIES INTERFACE_LINK_LIBRARIES OpenBLAS::OpenBLAS)
+
+        break()
+    endif()
+endforeach()
+if(NOT OpenBLAS_FOUND)
+    # Fall back to system-provided BLAS/LAPACK
+    find_package(BLAS    REQUIRED)
+    find_package(LAPACK  REQUIRED)
+endif()
+
+find_package(spdlog  REQUIRED)  # used by OpenSim
+find_package(mdspan  REQUIRED)  # used by opynsim
 
 configure_file(opynsimconfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" @ONLY)
 
@@ -687,10 +708,11 @@ target_compile_features(opynsim PUBLIC cxx_std_23)
 
 target_link_libraries(opynsim
 PUBLIC
-    ${CMAKE_DL_LIBS}    # used by simbody (plugin loaders)
-    OpenBLAS::OpenBLAS  # used by simbody (linear algebra)
-    spdlog::spdlog      # used by OpenSim (logging)
-    mdspan::mdspan      # used by opynsim (reading strided memory buffers)
+    ${CMAKE_DL_LIBS} # used by simbody (plugin loaders)
+    BLAS::BLAS       # used by simbody (linear algebra)
+    LAPACK::LAPACK   # used by simbody (linear algebra)
+    spdlog::spdlog   # used by OpenSim (logging)
+    mdspan::mdspan   # used by opynsim (reading strided memory buffers)
 )
 set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)  # for python bindings
 
