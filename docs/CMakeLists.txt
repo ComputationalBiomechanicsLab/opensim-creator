@@ -7,6 +7,6 @@ find_program(
 )
 
 # create a build target that builds the documentation using sphinx
-add_custom_target(opynsim_docs ALL
+add_custom_target(opynsim_docs
     COMMAND ${OPYN_SPHINX_EXE} -M html "${CMAKE_CURRENT_SOURCE_DIR}/source" "${CMAKE_CURRENT_BINARY_DIR}"
 )

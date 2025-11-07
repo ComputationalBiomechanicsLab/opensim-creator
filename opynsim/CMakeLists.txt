@@ -2,45 +2,55 @@ include(CMakeDependentOption)
 
 option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" ON)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
+option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
 
-# This indirection can be useful when developing the package for PyPi etc. without having
-# to bump the cmake version and rebuild the entire project
-set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev6)
+
+set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
+set(OPYN_STABLE_ABI_PYTHON_VERSION 3.12)         # Dictated by nanobind
 
 # Find Python
 find_package(
-    Python 3.8 REQUIRED
+    Python ${OPYN_STABLE_ABI_PYTHON_VERSION} REQUIRED
     COMPONENTS Interpreter Development Development.Module Development.SABIModule
 )
 
-# Include `nanobind` (python binding library)
+# Build
+#
+# Build the native python extension module using `nanobind`
 if(TRUE)
+    # Include nanobind
     set(NB_USE_SUBMODULE_DEPS OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opynsim/nanobind SYSTEM)
+
+    # Use nanobind to declare the `_opynsim_native` Python extension module target
+    set(OPYN_NANOBIND_ARGS NB_STATIC)
+    if(OPYN_STABLE_ABI)
+        list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
+    endif()
+    nanobind_add_module(_opynsim_native ${OPYN_NANOBIND_ARGS}
+
+        opynsim/src/_opynsim_native.cpp
+    )
+
+    # Link to the underlying `libopynsim` C++ code
+    target_link_libraries(_opynsim_native PRIVATE opynsim)
+
+    # Nice to have: Build `_opynsim_native` directly into the python package sourcetree
+    #
+    # This is purely a practical measure that enables developers to run a Python
+    # REPL, tests, etc. from a terminal without having to re-run a built/copy/install
+    # script after every python edit.
+    #
+    # Technical note:
+    #     > Multi-configuration generators (Visual Studio, Xcode, Ninja Multi-Config) append
+    #     > a per-configuration subdirectory to the specified directory ***unless a generator
+    #     > expression is used***.
+    #         - https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
+    set_target_properties(_opynsim_native PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
+        RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
+    )
 endif()
-
-# Use nanobind to build the `_opynsim_native` Python extension module
-nanobind_add_module(_opynsim_native NB_STATIC # STABLE_ABI TODO
-
-    opynsim/src/_opynsim_native.cpp
-)
-target_link_libraries(_opynsim_native PRIVATE opynsim)
-
-# Build `_opynsim_native` directly into the python package sourcetree
-#
-# This is purely a practical measure that enables developers to run a Python
-# REPL, tests, etc. from a terminal without having to re-run a built/copy/install
-# script after every python edit.
-#
-# Technical note:
-#     > Multi-configuration generators (Visual Studio, Xcode, Ninja Multi-Config) append
-#     > a per-configuration subdirectory to the specified directory ***unless a generator
-#     > expression is used***.
-#         - https://cmake.org/cmake/help/latest/prop_tgt/LIBRARY_OUTPUT_DIRECTORY.html
-set_target_properties(_opynsim_native PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
-    RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
-)
 
 # Installation
 #
@@ -63,21 +73,29 @@ if(TRUE)
     )
 
     # Configure-time: Compute `OPYN_WHEEL_TAG`
-    if(TRUE)
-        execute_process(
-            COMMAND "${Python_EXECUTABLE}" -c "from packaging import tags; print(next(tags.sys_tags()))"
-            OUTPUT_VARIABLE OPYN_WHEEL_TAG
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_VARIABLE PY_ERR
-            RESULT_VARIABLE PY_RESULT
+    execute_process(
+        COMMAND "${Python_EXECUTABLE}" -c "from packaging import tags; print(next(tags.sys_tags()))"
+        OUTPUT_VARIABLE OPYN_WHEEL_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_VARIABLE PY_ERR
+        RESULT_VARIABLE PY_RESULT
+    )
+    if(NOT PY_RESULT EQUAL 0)
+        message(FATAL_ERROR
+            "Failed to query Python tags with ${Python_EXECUTABLE}:\n"
+            "Exit code: ${PY_RESULT}\n"
+            "Error output:\n${PY_ERR}"
         )
-        if(NOT PY_RESULT EQUAL 0)
-            message(FATAL_ERROR
-                "Failed to query Python tags with ${Python_EXECUTABLE}:\n"
-                "Exit code: ${PY_RESULT}\n"
-                "Error output:\n${PY_ERR}"
-            )
-        endif()
+    endif()
+
+    # If `OPYN_STABLE_ABI` is requested then the `OPYN_WHEEL_TAG` should be
+    # updated to contain have a valid `abi3` field (PEP 384).
+    if(OPYN_STABLE_ABI)
+        # Parse the Python tag of the form "impl-abi-platform"
+        string(REPLACE "-" ";" _tag_parts "${OPYN_WHEEL_TAG}")
+        list(GET _tag_parts 2 _plat)
+        string(REPLACE "." "" OPYN_INTERP_VERSION "${OPYN_STABLE_ABI_PYTHON_VERSION}")
+        set(OPYN_WHEEL_TAG "cp${OPYN_INTERP_VERSION}-abi3-${_plat}")
     endif()
 
     # Calculate OS-specific fields in package METADATA
