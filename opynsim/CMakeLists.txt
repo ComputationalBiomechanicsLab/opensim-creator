@@ -151,7 +151,7 @@ if(TRUE)
     )
 
     add_custom_target(deploy_to_pypi
-        COMMAND ${Python_EXECUTABLE} -m twine upload --verbose --repository-url https://pypi.org/legacy/ ${OPYN_BUILT_WHEEL_PATH}
+        COMMAND ${Python_EXECUTABLE} -m twine upload --verbose ${OPYN_BUILT_WHEEL_PATH}
         DEPENDS package
         COMMENT "Upload built wheel to pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
     )
