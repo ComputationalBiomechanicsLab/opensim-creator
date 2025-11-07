@@ -3,10 +3,9 @@ option(OPYN_INSTALL_OPENSIM_HEADERS "Install opynsim library with Simbody/OpenSi
 include(GNUInstallDirs)             # CMAKE_INSTALL_LIBDIR, _INCLUDEDIR, etc.
 include(CMakePackageConfigHelpers)  # configure_package_config_file
 
-find_package(LAPACK REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(spdlog REQUIRED)
-find_package(mdspan REQUIRED)
+find_package(OpenBLAS REQUIRED)  # used by simbody
+find_package(spdlog  REQUIRED)   # used by OpenSim
+find_package(mdspan  REQUIRED)   # used by opynsim
 
 configure_file(opynsimconfig.h.in "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" @ONLY)
 
@@ -688,11 +687,10 @@ target_compile_features(opynsim PUBLIC cxx_std_23)
 
 target_link_libraries(opynsim
 PUBLIC
-    ${CMAKE_DL_LIBS}  # used by simbody
-    BLAS::BLAS        # used by simbody
-    LAPACK::LAPACK    # used by simbody
-    spdlog::spdlog    # used by OpenSim
-    mdspan::mdspan
+    ${CMAKE_DL_LIBS}    # used by simbody (plugin loaders)
+    OpenBLAS::OpenBLAS  # used by simbody (linear algebra)
+    spdlog::spdlog      # used by OpenSim (logging)
+    mdspan::mdspan      # used by opynsim (reading strided memory buffers)
 )
 set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)  # for python bindings
 

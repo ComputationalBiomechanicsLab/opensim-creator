@@ -1,11 +1,8 @@
+# setup: bundled stuff
+venv/
+
 # build: artifacts/side-effects
 build/
-docs/build
-docs/venv
-third_party-build*
-third_party-install*
-
-# build: intermediate/output files
 *.slo
 *.lo
 *.o

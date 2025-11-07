@@ -7,7 +7,7 @@ include(GNUInstallDirs)  # CMAKE_INSTALL_LIBDIR
 option(OPYNDEPS_BUILD_CATCH2    "Build Catch2"                            ON)
 option(OPYNDEPS_BUILD_MDSPAN    "Build mdspan"                            ON)
 # SKIP nanobind: it's imported by `opynsim` via `add_submodule`
-option(OPYNDEPS_BUILD_OPENBLAS  "Build OpenBLAS"                          ${WIN32})
+option(OPYNDEPS_BUILD_OPENBLAS  "Build OpenBLAS"                          ON)
 option(OPYNDEPS_BUILD_ROBIN_MAP "Build robin-map (required for nanobind)" ON)
 option(OPYNDEPS_BUILD_SPDLOG    "Build spdlog"                            ON)
 

@@ -104,10 +104,10 @@ if(TRUE)
         set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: Microsoft :: Windows")
     elseif(UNIX AND NOT APPLE)
         set(OPYN_METADATA_PLATFORM "Linux")
-        set(OPYN_METADATA_OS_CLASSIFIER "POSIX :: Linux")
+        set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: POSIX :: Linux")
     elseif(APPLE)
         set(OPYN_METADATA_PLATFORM "macOS")
-        set(OPYN_METADATA_OS_CLASSIFIER "MacOS :: MacOS X")
+	set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: MacOS :: MacOS X")
     else()
         message(FATAL_ERROR "unsupported platform - review this code")
     endif()
@@ -145,13 +145,13 @@ endif()
 if(TRUE)
     # This assumes the caller has a valid environment (TWINE_USERNAME and TWINE_PASSWORD set, or a config file)
     add_custom_target(deploy_to_testpypi
-        COMMAND ${Python_EXECUTABLE} -m twine upload --verbose --repository-url https://test.pypi.org/legacy/ ${OPYN_BUILT_WHEEL_PATH}
+        COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose --repository-url https://test.pypi.org/legacy/ ${OPYN_BUILT_WHEEL_PATH}
         DEPENDS package
         COMMENT "Upload built wheel to test.pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
     )
 
     add_custom_target(deploy_to_pypi
-        COMMAND ${Python_EXECUTABLE} -m twine upload --verbose ${OPYN_BUILT_WHEEL_PATH}
+        COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose ${OPYN_BUILT_WHEEL_PATH}
         DEPENDS package
         COMMENT "Upload built wheel to pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
     )

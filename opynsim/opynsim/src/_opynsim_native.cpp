@@ -22,7 +22,7 @@ namespace nb = nanobind;
 namespace
 {
     // Returns a caller-owned 1D numpy ndarray constructed from the elements of `vec`.
-    template<typename T, size_t N>
+    template<typename T, int N>
     requires std::is_trivially_constructible_v<T>
     nb::ndarray<T, nb::shape<static_cast<nb::ssize_t>(N)>, nb::device::cpu, nb::numpy> to_owned_numpy_array(const SimTK::Vec<N, T>& vec)
     {
