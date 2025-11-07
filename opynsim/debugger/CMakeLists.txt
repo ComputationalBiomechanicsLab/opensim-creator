@@ -1,7 +1,7 @@
 # Create an executable program that uses the python native API to directly call into
 # python (embedded-mode) and run `opynsim`'s `__main__`.
 #
-# This makes it possible to attach a debugger to this executable and directly break
+# This makes it easier to attach a debugger to this executable via an IDE and directly break
 # into native code.
 
 configure_file(

@@ -3,6 +3,10 @@ include(CMakeDependentOption)
 option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" ON)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
 
+# This indirection can be useful when developing the package for PyPi etc. without having
+# to bump the cmake version and rebuild the entire project
+set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev6)
+
 # Find Python
 find_package(
     Python 3.8 REQUIRED
@@ -38,12 +42,10 @@ set_target_properties(_opynsim_native PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_SOURCE_DIR}>/opynsim/
 )
 
-# This indirection can be useful when developing the package for PyPi etc. without having
-# to bump the cmake version and rebuild the entire project
-set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev6)
-
-# Intallation: Create a package + dist-info layout that can either be copied into the
-# caller's site-packages directory or zipped up into a wheel for packaging.
+# Installation
+#
+# Creates a directory that has a package + dist-info layout that can either be copied
+# into the caller's site-packages directory or zipped up into a wheel for packaging.
 if(TRUE)
     # Install package python sources (retain directory layout but skip src, __pycache__, etc.)
     file(GLOB_RECURSE OPYN_PYTHON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/opynsim/*.py")
@@ -103,7 +105,9 @@ if(TRUE)
     )
 endif()
 
-# Packaging: zip up the installation directory into a .whl file
+# Packaging
+#
+# Zips up the installation directory structure into a wheel.
 if(TRUE)
     set(CPACK_GENERATOR External)
     set(CPACK_EXTERNAL_PACKAGE "wheel")
@@ -117,7 +121,9 @@ if(TRUE)
     set(OPYN_BUILT_WHEEL_PATH ${CMAKE_BINARY_DIR}/"${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
 endif()
 
-# Deployment: expose custom deployment targets (but don't put them in ALL - must be manual!)
+# Deployment
+#
+# Deploys the wheel to PyPi (if desired)
 if(TRUE)
     # This assumes the caller has a valid environment (TWINE_USERNAME and TWINE_PASSWORD set, or a config file)
     add_custom_target(deploy_to_testpypi
