@@ -45,5 +45,13 @@ if(OPYN_TEST_DEPENDENCIES)
                     "$<TARGET_FILE:_opynsim_native>"
                     "${CMAKE_CURRENT_SOURCE_DIR}/linux_whitelist.txt"
         )
+    elseif(APPLE)
+        add_test(
+            NAME test_apple_opynsim_native_dependencies_pass_whitelist
+            COMMAND "${Python_EXECUTABLE}"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
+                    "$<TARGET_FILE:_opynsim_native>"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/macos_whitelist.txt"
+        )
     endif()
 endif()

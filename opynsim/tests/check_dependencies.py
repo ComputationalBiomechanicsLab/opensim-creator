@@ -22,7 +22,7 @@ def get_dependencies(path):
 
     # Mach-O (macOS)
     elif isinstance(binary, lief.MachO.Binary):
-        return [d.name for d in binary.imported_libraries]
+        return [d.name for d in binary.libraries]
 
     else:
         raise TypeError(f"Unsupported binary type: {type(binary)}")
