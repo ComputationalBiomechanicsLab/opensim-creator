@@ -6,12 +6,13 @@ option(                OPYN_STABLE_ABI             "Perform a python stable ABI 
 
 
 set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
-set(OPYN_STABLE_ABI_PYTHON_VERSION 3.12)         # Dictated by nanobind
 
 set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)
 if(OPYN_STABLE_ABI)
+    set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.12)  # Dictated by nanobind
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.SABIModule)
 else()
+    set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.8)   # Safe fallback
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Module)
 endif()
 
@@ -21,7 +22,7 @@ endif()
 
 # Find Python
 find_package(
-    Python ${OPYN_STABLE_ABI_PYTHON_VERSION} REQUIRED
+    Python ${OPYN_MIN_PYTHON_REQUIRED_VERSION} REQUIRED
     COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS}
 )
 
@@ -105,12 +106,12 @@ if(TRUE)
     endif()
 
     # If `OPYN_STABLE_ABI` is requested then the `OPYN_WHEEL_TAG` should be
-    # updated to contain have a valid `abi3` field (PEP 384).
+    # updated to have a valid `abi3` field (PEP 384).
     if(OPYN_STABLE_ABI)
         # Parse the Python tag of the form "impl-abi-platform"
         string(REPLACE "-" ";" _tag_parts "${OPYN_WHEEL_TAG}")
         list(GET _tag_parts 2 _plat)
-        string(REPLACE "." "" OPYN_INTERP_VERSION "${OPYN_STABLE_ABI_PYTHON_VERSION}")
+        string(REPLACE "." "" OPYN_INTERP_VERSION "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
         set(OPYN_WHEEL_TAG "cp${OPYN_INTERP_VERSION}-abi3-${_plat}")
     endif()
 
