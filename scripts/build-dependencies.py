@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-import argpase
+import argparse
 import os
 from pathlib import Path
 import subprocess
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--build-type", "Release")
+    parser.add_argument("--build-type", default="Release")
     parser.add_argument("--generator", "-G", default=None)
     parser.add_argument("--jobs", "-j", type=int, default=os.cpu_count())
     args = parser.parse_args()

@@ -30,28 +30,28 @@ unset(OPYN_PYTEST_SOURCES)
 # If requested, add additional dependency tests
 if(OPYN_TEST_DEPENDENCIES)
     if(WIN32)
+        set(OPYN_DEPENDENCY_WHITELIST_FILENAME "windows.txt")
+    elseif(UNIX AND NOT APPLE)
+        if(OPYN_STABLE_ABI)
+            set(OPYN_DEPENDENCY_WHITELIST_FILENAME "linux_sabi.txt")
+        else()
+            set(OPYN_DEPENDENCY_WHITELIST_FILENAME "linux.txt")
+        endif()
+    elseif(APPLE)
+        if(OPYN_STABLE_ABI)
+            set(OPYN_DEPENDENCY_WHITELIST_FILENAME "macos_sabi.txt")
+        else()
+            set(OPYN_DEPENDENCY_WHITELIST_FILENAME "macos.txt")
+        endif()
+    endif()
+
+    if(OPYN_DEPENDENCY_WHITELIST_FILENAME)
         add_test(
             NAME test_windows_opynsim_native_dependencies_pass_whitelist
             COMMAND "${Python_EXECUTABLE}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
                     "$<TARGET_FILE:_opynsim_native>"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/windows_whitelist.txt"
-        )
-    elseif(UNIX AND NOT APPLE)
-        add_test(
-            NAME test_linux_opynsim_native_dependencies_pass_whitelist
-            COMMAND "${Python_EXECUTABLE}"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
-                    "$<TARGET_FILE:_opynsim_native>"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/linux_whitelist.txt"
-        )
-    elseif(APPLE)
-        add_test(
-            NAME test_apple_opynsim_native_dependencies_pass_whitelist
-            COMMAND "${Python_EXECUTABLE}"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
-                    "$<TARGET_FILE:_opynsim_native>"
-                    "${CMAKE_CURRENT_SOURCE_DIR}/macos_whitelist.txt"
+                    "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OPYN_DEPENDENCY_WHITELIST_FILENAME}"
         )
     endif()
 endif()
