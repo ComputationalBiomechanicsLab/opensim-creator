@@ -21,7 +21,7 @@ def main():
     build_args = ["cmake", "--build", str(build_path)]
     subprocess.run(build_args, check=True)
 
-    test_args = ["ctest", "--test-dir", str(build_path)]
+    test_args = ["ctest", "--output-on-failure", "--test-dir", str(build_path)]
     subprocess.run(test_args, check=True)
 
 if __name__ == "__main__":

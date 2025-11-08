@@ -7,6 +7,26 @@ import argparse
 import lief
 import re
 
+def get_dependencies(path):
+    binary = lief.parse(path)
+    if binary is None:
+        raise RuntimeError(f"Could not parse {args.binary_to_test}")
+
+    # PE (Windows)
+    if isinstance(binary, lief.PE.Binary):
+        return [imp.name for imp in binary.imports]  # list of DLL names
+
+    # ELF (Linux)
+    elif isinstance(binary, lief.ELF.Binary):
+        return binary.libraries  # list of needed .so files
+
+    # Mach-O (macOS)
+    elif isinstance(binary, lief.MachO.Binary):
+        return [d.name for d in binary.imported_libraries]
+
+    else:
+        raise TypeError(f"Unsupported binary type: {type(binary)}")
+
 parser = argparse.ArgumentParser()
 parser.add_argument("binary_to_test", help="Filesystem path to a binary that should be checked")
 parser.add_argument('whitelist', help="Filesystem path to a text file containing a whitelisted runtime dependency on each line")
@@ -14,9 +34,7 @@ parser.add_argument('--verbose', action='store_true')
 args = parser.parse_args()
 
 # Load+Parse the binary
-binary = lief.parse(args.binary_to_test)
-if binary is None:
-    raise RuntimeError(f"Could not parse {args.binary_to_test}")
+dependencies = get_dependencies(args.binary_to_test)
 
 # Load+Parse the whitelist as a list of regex patterns
 patterns = []
@@ -28,8 +46,8 @@ with open(args.whitelist, 'rt') as f:
 
 good_deps = set()
 bad_deps = set()
-for dep in binary.imports:
-    dep_name = dep.name.lower()
+for dep in dependencies:
+    dep_name = dep.lower()
     if any(pattern.fullmatch(dep_name) for pattern in patterns):
         good_deps.add(dep_name)
     else:
