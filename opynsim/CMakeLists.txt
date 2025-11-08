@@ -1,6 +1,6 @@
 include(CMakeDependentOption)
 
-option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" ON)
+option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" OFF)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
 option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
 
@@ -8,10 +8,21 @@ option(                OPYN_STABLE_ABI             "Perform a python stable ABI 
 set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
 set(OPYN_STABLE_ABI_PYTHON_VERSION 3.12)         # Dictated by nanobind
 
+set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)
+if(OPYN_STABLE_ABI)
+    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.SABIModule)
+else()
+    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Module)
+endif()
+
+if(OPYN_BUILD_OPYNSIM_DEBUGGER)
+    list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development)  # the debugger uses embedded API
+endif()
+
 # Find Python
 find_package(
     Python ${OPYN_STABLE_ABI_PYTHON_VERSION} REQUIRED
-    COMPONENTS Interpreter Development Development.Module Development.SABIModule
+    COMPONENTS ${OPYN_REQUIRED_PYTHON_COMPONENTS}
 )
 
 # Build

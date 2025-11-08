@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -xeuo pipefail
+
 # setup the build machine (e.g. build dependencies)
 ./scripts/setup_unix.sh
 

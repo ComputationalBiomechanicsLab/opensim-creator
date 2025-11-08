@@ -7,7 +7,7 @@ include(CMakePackageConfigHelpers)  # configure_package_config_file
 # on the `CMAKE_PREFIX_PATH`, because the caller _probably_
 # wants the build to use that
 foreach(_prefix IN LISTS CMAKE_PREFIX_PATH)
-    if(EXISTS "${_prefix}/lib/cmake/OpenBLAS/OpenBLASConfig.cmake")
+    if(EXISTS "${_prefix}/${CMAKE_INSTALL_LIBDIR}/cmake/OpenBLAS/OpenBLASConfig.cmake")
         find_package(OpenBLAS REQUIRED CONFIG)
 
         # Alias FindBLAS/FindLAPACK targets
