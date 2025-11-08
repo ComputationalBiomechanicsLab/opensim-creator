@@ -1,6 +1,4 @@
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
-find_package(Pytest)
+find_package(Pytest PATHS "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 if(NOT Pytest_FOUND)
     message(FATAL_ERROR
         "pytest is not installed in your current environment. You can solve this by either:\n"

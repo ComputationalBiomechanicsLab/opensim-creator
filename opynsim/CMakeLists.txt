@@ -52,6 +52,11 @@ if(TRUE)
     )
 endif()
 
+# Test
+if(OPYN_BUILD_PYTHON_TESTING)
+    add_subdirectory(tests)
+endif()
+
 # Installation
 #
 # Creates a directory that has a package + dist-info layout that can either be copied
@@ -144,13 +149,13 @@ endif()
 # Deploys the wheel to PyPi (if desired)
 if(TRUE)
     # This assumes the caller has a valid environment (TWINE_USERNAME and TWINE_PASSWORD set, or a config file)
-    add_custom_target(deploy_to_testpypi
+    add_custom_target(deploy_testpypi
         COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose --repository-url https://test.pypi.org/legacy/ ${OPYN_BUILT_WHEEL_PATH}
         DEPENDS package
         COMMENT "Upload built wheel to test.pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
     )
 
-    add_custom_target(deploy_to_pypi
+    add_custom_target(deploy_pypi
         COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose ${OPYN_BUILT_WHEEL_PATH}
         DEPENDS package
         COMMENT "Upload built wheel to pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
@@ -159,8 +164,4 @@ endif()
 
 if(OPYN_BUILD_OPYNSIM_DEBUGGER)
     add_subdirectory(debugger)
-endif()
-
-if(OPYN_BUILD_PYTHON_TESTING)
-    add_subdirectory(tests)
 endif()

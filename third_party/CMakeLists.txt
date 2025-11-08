@@ -17,9 +17,6 @@ option(OPYNDEPS_BUILD_OPENBLAS  "Build OpenBLAS"                          ${OPYN
 option(OPYNDEPS_BUILD_ROBIN_MAP "Build robin-map (required for nanobind)" ON)
 option(OPYNDEPS_BUILD_SPDLOG    "Build spdlog"                            ON)
 
-# required for `opynsim` python bindings (shared object)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # set OPYNDEPS_BUILD_ALWAYS
 if(TRUE)
     set(OPYNDEPS_BUILD_ALWAYS_DOCS "set BUILD_ALWAYS on all dependency targets, useful when editing dependencies")
@@ -35,6 +32,9 @@ endif()
 #
 # these are cache args that should be forwarded to external dependency projects
 if(TRUE)
+    # required for `opynsim` python bindings (shared object)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
     set(OPYNDEPS_FORWARDED_VARS
 
         CMAKE_CXX_COMPILER
