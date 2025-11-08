@@ -10,5 +10,5 @@ call "scripts/env_visual-studio.bat"
 IF %ERRORLEVEL% NEQ 0 echo Failed to source Visual Studio environment & exit /b %ERRORLEVEL%
 
 REM build dependencies
-python scripts/build-dependencies.py
+python scripts/build-dependencies.py --generator=Ninja
 IF %ERRORLEVEL% NEQ 0 echo Failed to build opynsim's dependencies & exit /b %ERRORLEVEL%

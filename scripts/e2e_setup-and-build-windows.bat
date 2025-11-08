@@ -12,5 +12,5 @@ call "scripts/env_venv.bat"
 IF %ERRORLEVEL% NEQ 0 echo Failed to source the project-level venv & exit /b %ERRORLEVEL%
 
 REM build the project
-python scripts/build.py
+python scripts/build.py --generator=Ninja
 IF %ERRORLEVEL% NEQ 0 echo Failed to build opynsim & exit /b %ERRORLEVEL%
