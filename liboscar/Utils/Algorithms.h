@@ -1,7 +1,7 @@
 #pragma once
 
 #include <liboscar/Concepts/AssociativeContainer.h>
-#include <liboscar/Concepts/AssociativeContainerKey.h>
+#include <liboscar/Concepts/AssociativeContainerKeyFor.h>
 
 #include <algorithm>
 #include <concepts>
@@ -89,7 +89,7 @@ namespace osc
     }
 
     // returns a copy of the element with key equivalent to `key`, or `std::nullopt` if no such element exists in `container`
-    template<AssociativeContainer Lookup, AssociativeContainerKey<Lookup> Key>
+    template<AssociativeContainer Lookup, AssociativeContainerKeyFor<Lookup> Key>
     std::optional<typename Lookup::mapped_type> lookup_or_nullopt(const Lookup& lookup, const Key& key)
     {
         if (const auto it = lookup.find(key); it != lookup.end()) {
@@ -112,7 +112,7 @@ namespace osc
     }
 
     // returns a pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
-    template<AssociativeContainer T, AssociativeContainerKey<T> Key>
+    template<AssociativeContainer T, AssociativeContainerKeyFor<T> Key>
     auto* lookup_or_nullptr(const T& container, const Key& key)
     {
         using return_type = decltype(std::addressof(std::ranges::begin(container)->second));
@@ -124,7 +124,7 @@ namespace osc
     }
 
     // returns a mutable pointer to the element with key equivalent to `key`, or `nullptr` if no such element exists in `container`
-    template<AssociativeContainer T, AssociativeContainerKey<T> Key>
+    template<AssociativeContainer T, AssociativeContainerKeyFor<T> Key>
     auto* lookup_or_nullptr(T& container, const Key& key)
     {
         using return_type = decltype(std::addressof(std::ranges::begin(container)->second));

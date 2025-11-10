@@ -1,6 +1,6 @@
 #pragma once
 
-#include <liboscar/Concepts/StaticallySizedNonEmptyInputRange.h>
+#include <liboscar/Concepts/InputRangeWithSizeGreaterThan.h>
 #include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/CommonFunctions.h>
 #include <liboscar/Maths/Matrix4x4.h>
@@ -136,7 +136,7 @@ namespace osc
     }
 
     // returns an `AABB` that tightly bounds the `Vector3`s projected from `r` (specialized for compile-time-non-empty ranges)
-    template<StaticallySizedNonEmptyInputRange R, class Proj = std::identity>
+    template<InputRangeWithSizeGreaterThan<0> R, class Proj = std::identity>
     requires std::convertible_to<typename std::projected<std::ranges::iterator_t<R>, Proj>::value_type, const Vector3&>
     constexpr AABB bounding_aabb_of(R&& r, Proj proj = {})
     {

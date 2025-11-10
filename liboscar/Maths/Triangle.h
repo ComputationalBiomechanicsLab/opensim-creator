@@ -17,8 +17,9 @@ namespace osc
         using const_pointer = const value_type*;
         using iterator = value_type*;
         using const_iterator = const value_type*;
+        static constexpr size_t extent = 3;
 
-        constexpr size_type size() const { return 3; }
+        constexpr size_type size() const { return extent; }
         constexpr pointer data() { return &p0; }
         constexpr const_pointer data() const { return &p0; }
         constexpr iterator begin() { return data(); }
