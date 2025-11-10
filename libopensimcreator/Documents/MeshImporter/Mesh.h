@@ -58,7 +58,7 @@ namespace osc::mi
             m_Transform = t;
         }
 
-        AABB calcBounds() const;
+        std::optional<AABB> calcBounds() const;
 
         void reloadMeshDataFromDisk();
 
@@ -113,7 +113,7 @@ namespace osc::mi
             setXform(t);
         }
 
-        AABB implCalcBounds(const IObjectFinder&) const final
+        std::optional<AABB> implCalcBounds(const IObjectFinder&) const final
         {
             return calcBounds();
         }

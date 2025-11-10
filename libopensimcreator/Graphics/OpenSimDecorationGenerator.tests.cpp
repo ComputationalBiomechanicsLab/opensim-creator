@@ -577,7 +577,7 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
     // Before changing radius: it should be as-set
     {
         const auto decorations = GenerateModelDecorations(cache, model, state);
-        const float volume = volume_of(bounding_aabb_of(decorations, &SceneDecoration::world_space_bounds));
+        const float volume = volume_of(bounding_aabb_of(decorations, &SceneDecoration::world_space_bounds).value());
         ASSERT_NEAR(volume, 0.2f*0.2f*0.2f, 0.001f);
     }
 
@@ -588,7 +588,7 @@ TEST(GenerateModelDecorations, RadiusOfContactSphereIsCorrectlyUpdated)
     // After changing radius: should update it
     {
         const auto decorations = GenerateModelDecorations(cache, model, state);
-        const float volume = volume_of(bounding_aabb_of(decorations, &SceneDecoration::world_space_bounds));
+        const float volume = volume_of(bounding_aabb_of(decorations, &SceneDecoration::world_space_bounds).value());
         ASSERT_NEAR(volume, 1.0f*1.0f*1.0f, 0.001f);
     }
 }

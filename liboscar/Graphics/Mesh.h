@@ -111,16 +111,21 @@ namespace osc
         Triangle get_triangle_at(size_t first_index_offset) const;
         std::vector<Vector3> indexed_vertices() const;
 
-        // local-space bounds of the mesh
+        // Returns the local-space bounds of this mesh, if it contains at least
+        // one primitive. Automatically recalculated from the indexed data
+        // whenever `set_vertices`, `set_indices`, or `set_vertex_buffer_data`
+        // is called.
         //
-        // automatically recalculated from the indexed data whenever `set_vertices`,
-        // `set_indices`, or `set_vertex_buffer_data` is called
-        const AABB& bounds() const;
+        // Returns `std::nullopt` if the mesh contains no primitives (e.g. when
+        // it's empty).
+        const std::optional<AABB>& bounds() const;
 
-        // Returns the local-space centroid of the bounds of this mesh.
+        // Returns the local-space centroid of the bounds of this mesh, if it
+        // contains at least one primitive.
         //
-        // Equivalent to `centroid_of(mesh.bounds())`
-        Vector3 centroid() const;
+        // Returns `std::nullopt` if the mesh contains no primitives (e.g. when
+        // it's empty).
+        std::optional<Vector3> centroid() const;
 
         // clear all data in the mesh, such that the mesh then behaves as-if it were
         // just default-initialized

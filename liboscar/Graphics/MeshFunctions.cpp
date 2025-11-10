@@ -171,7 +171,7 @@ Vector3 osc::mass_center_of(const Mesh& mesh)
     return weighted_com / total_volume;
 }
 
-Sphere osc::bounding_sphere_of(const Mesh& mesh)
+std::optional<Sphere> osc::bounding_sphere_of(const Mesh& mesh)
 {
     return bounding_sphere_of(mesh.vertices());
 }

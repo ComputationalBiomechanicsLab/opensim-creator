@@ -44,7 +44,7 @@ namespace osc
         bool has_flag(SceneDecorationFlag flag) const { return flags.get(flag); }
 
         // Returns the world-space bounds of this `SceneDecoration`
-        AABB world_space_bounds() const;
+        std::optional<AABB> world_space_bounds() const;
 
         Mesh mesh{};
         Transform transform{};

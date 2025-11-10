@@ -90,7 +90,7 @@ namespace
             // allocate an appropriate internal node
 
             // compute bounding box of remaining (children) prims
-            const AABB aabb = bounding_aabb_of(
+            const AABB aabb = *bounding_aabb_of(
                 std::span<const BVHPrim>{prims.begin() + begin, static_cast<size_t>(n)},
                 &BVHPrim::bounds
             );
@@ -1119,26 +1119,26 @@ Vector2 osc::project_onto_viewport_rect(
     return ndc2D;
 }
 
-Sphere osc::bounding_sphere_of(std::span<const Vector3> points)
+std::optional<Sphere> osc::bounding_sphere_of(std::span<const Vector3> points)
 {
-    // edge-case: no points provided
-    if (points.empty()) {
-        return Sphere{.radius = 0.0f};
+    const std::optional<AABB> bounding_aabb = bounding_aabb_of(points);
+    if (not bounding_aabb) {
+        return std::nullopt;  // edge-case: no points provided
     }
 
-    const Vector3 origin = centroid_of(bounding_aabb_of(points));
+    const Vector3 origin = centroid_of(*bounding_aabb);
 
     float r2 = 0.0f;
     for (const Vector3& point : points) {
         r2 = max(r2, length2(point - origin));
     }
 
-    return {.origin = origin, .radius = sqrt(r2)};
+    return Sphere{.origin = origin, .radius = sqrt(r2)};
 }
 
 Sphere osc::bounding_sphere_of(const AABB& aabb)
 {
-    return bounding_sphere_of(corner_vertices_of(aabb));
+    return bounding_sphere_of(corner_vertices_of(aabb)).value();
 }
 
 AABB osc::bounding_aabb_of(const Sphere& sphere)

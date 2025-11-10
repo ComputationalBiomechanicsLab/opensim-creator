@@ -85,8 +85,9 @@ public:
             generateDecorations();
         }
         if (std::exchange(m_FirstFrame, false)) {
-            const AABB sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds);
-            auto_focus(m_ModelRendererParams.camera, sceneAABB);
+            if (const std::optional<AABB> sceneAABB = bounding_aabb_of(m_Decorations, &SceneDecoration::world_space_bounds)) {
+                auto_focus(m_ModelRendererParams.camera, *sceneAABB);
+            }
         }
 
         const Rect workspaceScreenRect = ui::get_main_window_workspace_screen_space_rect();

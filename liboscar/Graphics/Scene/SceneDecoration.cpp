@@ -4,4 +4,10 @@
 
 using namespace osc;
 
-AABB osc::SceneDecoration::world_space_bounds() const { return transform_aabb(transform, mesh.bounds()); }
+std::optional<AABB> osc::SceneDecoration::world_space_bounds() const
+{
+    return mesh.bounds().transform([this](const AABB& local_aabb)
+    {
+        return transform_aabb(transform, local_aabb);
+    });
+}

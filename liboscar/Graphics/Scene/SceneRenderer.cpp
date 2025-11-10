@@ -851,7 +851,7 @@ private:
             return std::nullopt;
         }
 
-        const std::optional<AABB> maybe_rim_world_space_aabb = maybe_bounding_aabb_of(decorations, rim_aabb_of);
+        const std::optional<AABB> maybe_rim_world_space_aabb = bounding_aabb_of(decorations, rim_aabb_of);
         if (not maybe_rim_world_space_aabb) {
             return std::nullopt;  // the scene does not contain any rim-highlighted geometry
         }

@@ -258,7 +258,13 @@ bool osc::mi::TryTranslateToMeshBoundsCenter(
         return false;
     }
 
-    const Vector3 boundsMidpoint = centroid_of(mesh->calcBounds());
+    const std::optional<AABB> bounds = mesh->calcBounds();
+    if (!bounds)
+    {
+        return false;
+    }
+
+    const Vector3 boundsMidpoint = centroid_of(*bounds);
 
     obj->setPos(doc, boundsMidpoint);
     udoc.commit_scratch("moved " + obj->getLabel());

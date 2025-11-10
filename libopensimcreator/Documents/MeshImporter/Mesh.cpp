@@ -34,9 +34,12 @@ osc::mi::Mesh::Mesh(
     m_Name{SanitizeToOpenSimComponentName(m_Path.filename().replace_extension().string())}
 {}
 
-AABB osc::mi::Mesh::calcBounds() const
+std::optional<AABB> osc::mi::Mesh::calcBounds() const
 {
-    return transform_aabb(m_Transform, m_MeshData.bounds());
+    return m_MeshData.bounds().transform([this](const AABB& localBounds)
+    {
+        return transform_aabb(m_Transform, localBounds);
+    });
 }
 
 void osc::mi::Mesh::reloadMeshDataFromDisk()

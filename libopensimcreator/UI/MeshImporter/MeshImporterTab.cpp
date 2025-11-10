@@ -983,7 +983,8 @@ private:
                 {
                     if (ui::draw_menu_item(OSC_ICON_BORDER_ALL " at bounds center"))
                     {
-                        const Vector3 location = centroid_of(mesh->calcBounds());
+                        const AABB bounds = mesh->calcBounds().value_or(AABB{});
+                        const Vector3 location = centroid_of(bounds);
                         AddBody(m_Shared->updCommittableModelGraph(), location, mesh->getID());
                     }
                     ui::draw_tooltip_if_item_hovered("Add Body", MIStrings::c_BodyDescription);
@@ -1056,7 +1057,7 @@ private:
                     {
                         if (ui::draw_menu_item(OSC_ICON_BORDER_ALL " at bounds center"))
                         {
-                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid_of(el.calcBounds(m_Shared->getModelGraph())));
+                            AddStationAtLocation(m_Shared->updCommittableModelGraph(), el, centroid_of(el.calcBounds(m_Shared->getModelGraph()).value_or(AABB{})));
                         }
                         ui::draw_tooltip_if_item_hovered("Add Station", MIStrings::c_StationDescription);
                     }
@@ -1096,7 +1097,7 @@ private:
     {
         if (ui::draw_menu_item(OSC_ICON_CAMERA " Focus camera on this"))
         {
-            m_Shared->focusCameraOn(centroid_of(el.calcBounds(m_Shared->getModelGraph())));
+            m_Shared->focusCameraOn(centroid_of(el.calcBounds(m_Shared->getModelGraph()).value_or(AABB{})));
         }
         ui::draw_tooltip_if_item_hovered("Focus camera on this scene element", "Focuses the scene camera on this element. This is useful for tracking the camera around that particular object in the scene");
 
@@ -1839,7 +1840,7 @@ private:
 
     std::optional<AABB> calcSceneAABB() const
     {
-        return maybe_bounding_aabb_of(m_DrawablesBuffer, [](const DrawableThing& drawable) -> std::optional<AABB>
+        return bounding_aabb_of(m_DrawablesBuffer, [](const DrawableThing& drawable) -> std::optional<AABB>
         {
             if (drawable.id != MIIDs::Empty()) {
                 return calcBounds(drawable);

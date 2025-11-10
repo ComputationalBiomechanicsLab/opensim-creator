@@ -821,7 +821,7 @@ TEST(Mesh, set_indices_recalculates_Mesh_bounds)
 
     Mesh m;
     m.set_vertices(triangle);
-    ASSERT_EQ(m.bounds(), AABB{});
+    ASSERT_EQ(m.bounds(), std::nullopt);
     m.set_indices(iota_index_range(0, 3));
     ASSERT_EQ(m.bounds(), bounding_aabb_of(triangle));
 }
@@ -832,9 +832,9 @@ TEST(Mesh, set_indices_with_DontRecalculateBounds_does_not_recalculate_bounds)
 
     Mesh m;
     m.set_vertices(triangle);
-    ASSERT_EQ(m.bounds(), AABB{});
+    ASSERT_EQ(m.bounds(), std::nullopt);
     m.set_indices(iota_index_range(0, 3), MeshUpdateFlag::DontRecalculateBounds);
-    ASSERT_EQ(m.bounds(), AABB{}) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
+    ASSERT_EQ(m.bounds(), std::nullopt) << "bounds shouldn't update: we explicitly asked for the engine to skip it";
 }
 
 TEST(Mesh, for_each_indexed_vertex_is_not_called_when_given_empty_Mesh)
@@ -1006,14 +1006,13 @@ TEST(Mesh, indexed_vertices_only_returns_the_indexed_vertices)
     ASSERT_EQ(m.indexed_vertices(), expected);
 }
 
-TEST(Mesh, bounds_on_empty_Mesh_returns_empty_AABB)
+TEST(Mesh, bounds_on_empty_Mesh_returns_std_nullopt)
 {
     const Mesh m;
-    const AABB empty;
-    ASSERT_EQ(m.bounds(), empty);
+    ASSERT_EQ(m.bounds(), std::nullopt);
 }
 
-TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
+TEST(Mesh, bounds_on_Mesh_without_indices_returns_std_nullopt)
 {
     constexpr auto pyramid_vertices = std::to_array<Vector3>({
         {-1.0f, -1.0f, 0.0f},  // base: bottom-left
@@ -1024,8 +1023,7 @@ TEST(Mesh, bounds_on_Mesh_without_indices_returns_empty_AABB)
 
     Mesh m;
     m.set_vertices(pyramid_vertices);
-    constexpr AABB empty_aabb;
-    ASSERT_EQ(m.bounds(), empty_aabb) << "should be empty, because the caller forgot to provide indices";
+    ASSERT_EQ(m.bounds(), std::nullopt) << "should be std::nullopt, because the caller forgot to provide indices";
 }
 
 TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
@@ -1043,12 +1041,12 @@ TEST(Mesh, bounds_on_correctly_initialized_Mesh_returns_expected_AABB)
     ASSERT_EQ(mesh.bounds(), bounding_aabb_of(triangle_vertices));
 }
 
-TEST(Mesh, centroid_of_empty_Mesh_returns_zero_vector)
+TEST(Mesh, centroid_of_empty_Mesh_returns_std_nullopt)
 {
-    ASSERT_EQ(Mesh{}.centroid(), Vector3{});
+    ASSERT_EQ(Mesh{}.centroid(), std::nullopt);
 }
 
-TEST(Mesh, centroid_of_Mesh_without_indicies_returns_zero_vector)
+TEST(Mesh, centroid_of_Mesh_without_indicies_returns_std_nullopt)
 {
     constexpr auto square_vertices = std::to_array<Vector3>({
         {-1.0f,  1.0f, 0.0f},  // top-left
@@ -1059,7 +1057,7 @@ TEST(Mesh, centroid_of_Mesh_without_indicies_returns_zero_vector)
 
     Mesh m;
     m.set_vertices(square_vertices);
-    ASSERT_EQ(m.centroid(), Vector3{}) << "should be empty, because the caller forgot to provide indices";
+    ASSERT_EQ(m.centroid(), std::nullopt) << "should be std::nullopt, because the caller forgot to provide indices";
 }
 
 TEST(Mesh, centroid_of_correctly_initialized_Mesh_returns_centroid_of_bounds)

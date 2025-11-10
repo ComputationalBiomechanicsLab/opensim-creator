@@ -4637,8 +4637,8 @@ public:
         return rv;
     }
 
-    const AABB& bounds() const { return aabb_; }
-    Vector3 centroid() const { return centroid_of(bounds()); }
+    const std::optional<AABB>& bounds() const { return aabb_; }
+    std::optional<Vector3> centroid() const { return bounds().transform([](const AABB& aabb) { return centroid_of(aabb); }); }
 
     void clear()
     {
@@ -5023,7 +5023,7 @@ private:
     size_t num_indices_ = 0;
     std::vector<PackedIndex> indices_data_;
 
-    AABB aabb_ = {};
+    std::optional<AABB> aabb_;
 
     std::vector<SubMeshDescriptor> submesh_descriptors_;
 
@@ -5179,12 +5179,12 @@ std::vector<Vector3> osc::Mesh::indexed_vertices() const
     return impl_->indexed_vertices();
 }
 
-const AABB& osc::Mesh::bounds() const
+const std::optional<AABB>& osc::Mesh::bounds() const
 {
     return impl_->bounds();
 }
 
-Vector3 osc::Mesh::centroid() const
+std::optional<Vector3> osc::Mesh::centroid() const
 {
     return impl_->centroid();
 }

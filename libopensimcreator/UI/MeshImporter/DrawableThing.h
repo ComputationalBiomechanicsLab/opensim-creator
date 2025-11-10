@@ -23,8 +23,11 @@ namespace osc::mi
         SceneDecorationFlags flags = SceneDecorationFlag::Default;
     };
 
-    inline AABB calcBounds(const DrawableThing& dt)
+    inline std::optional<AABB> calcBounds(const DrawableThing& dt)
     {
-        return transform_aabb(dt.transform, dt.mesh.bounds());
+        return dt.mesh.bounds().transform([&dt](const AABB& localBounds)
+        {
+            return transform_aabb(dt.transform, localBounds);
+        });
     }
 }

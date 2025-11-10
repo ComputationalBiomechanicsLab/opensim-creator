@@ -34,9 +34,9 @@ namespace osc::mi
             return identity<Transform>();
         }
 
-        AABB implCalcBounds(const IObjectFinder&) const final
+        std::optional<AABB> implCalcBounds(const IObjectFinder&) const final
         {
-            return AABB{};
+            return std::nullopt;
         }
     };
 }

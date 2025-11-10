@@ -33,6 +33,14 @@ namespace
     struct TransformedMesh {
         Mesh mesh;
         Transform transform;
+
+        std::optional<AABB> world_space_bounds() const
+        {
+            return mesh.bounds().transform([this](const AABB& local_aabb)
+            {
+                return transform_aabb(transform, local_aabb);
+            });
+        }
     };
 
     std::vector<TransformedMesh> generateDecorations()
@@ -126,8 +134,8 @@ public:
 
         // render from user's perspective on left-hand side
         for (const auto& decoration : decorations_) {
-            const AABB decoration_world_aabb = transform_aabb(decoration.transform, decoration.mesh.bounds());
-            if (is_intersecting(frustum, decoration_world_aabb)) {
+            const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
+            if (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) {
                 graphics::draw(decoration.mesh, decoration.transform, material_, user_camera_, blue_material_props_);
             }
         }
@@ -136,8 +144,8 @@ public:
 
         // render from top-down perspective on right-hand side
         for (const auto& decoration : decorations_) {
-            const AABB decoration_world_aabb = transform_aabb(decoration.transform, decoration.mesh.bounds());
-            const auto & props = is_intersecting(frustum, decoration_world_aabb) ? blue_material_props_ : red_material_props_;
+            const std::optional<AABB> decoration_world_aabb = decoration.world_space_bounds();
+            const auto & props = (decoration_world_aabb and is_intersecting(frustum, *decoration_world_aabb)) ? blue_material_props_ : red_material_props_;
             graphics::draw(decoration.mesh, decoration.transform, material_, top_down_camera_, props);
         }
         graphics::draw(

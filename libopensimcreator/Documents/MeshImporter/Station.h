@@ -91,7 +91,7 @@ namespace osc::mi
             m_Position = t.translation;
         }
 
-        AABB implCalcBounds(const IObjectFinder&) const final
+        std::optional<AABB> implCalcBounds(const IObjectFinder&) const final
         {
             return bounding_aabb_of(m_Position);
         }

@@ -17,6 +17,7 @@
 #include <liboscar/Maths/Vector4.h>
 
 #include <array>
+#include <optional>
 #include <span>
 
 namespace osc { struct Circle; }
@@ -93,7 +94,7 @@ namespace osc
     // ----- `Sphere` helpers -----
 
     // returns a `Sphere` that loosely bounds the given `Vector3`s
-    Sphere bounding_sphere_of(std::span<const Vector3>);
+    std::optional<Sphere> bounding_sphere_of(std::span<const Vector3>);
 
     // returns a `Sphere` that loosely bounds the given `AABB`
     Sphere bounding_sphere_of(const AABB&);

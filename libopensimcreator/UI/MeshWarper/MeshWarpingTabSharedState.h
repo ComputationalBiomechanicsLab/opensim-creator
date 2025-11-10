@@ -14,6 +14,7 @@
 #include <liboscar/Graphics/Material.h>
 #include <liboscar/Graphics/Materials/MeshBasicMaterial.h>
 #include <liboscar/Graphics/Scene/SceneCache.h>
+#include <liboscar/Maths/AABB.h>
 #include <liboscar/Maths/PolarPerspectiveCamera.h>
 #include <liboscar/Maths/Vector2.h>
 #include <liboscar/Maths/Vector3.h>
@@ -297,7 +298,7 @@ namespace osc
         bool m_OnlyLinkRotation = false;
 
         // shared linked camera
-        PolarPerspectiveCamera m_LinkedCameraBase = create_camera_focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds());
+        PolarPerspectiveCamera m_LinkedCameraBase = create_camera_focused_on(m_UndoableTPSDocument->scratch().sourceMesh.bounds().value_or(AABB{}));
 
         // shared scene cache, to minimize rendering effort when redrawing
         std::shared_ptr<SceneCache> m_SceneCache;

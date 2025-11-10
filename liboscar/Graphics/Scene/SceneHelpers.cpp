@@ -219,7 +219,9 @@ void osc::update_scene_bvh(std::span<const SceneDecoration> decorations, BVH& bv
     std::vector<AABB> aabbs;
     aabbs.reserve(decorations.size());
     for (const SceneDecoration& decoration : decorations) {
-        aabbs.push_back(decoration.world_space_bounds());
+        if (const std::optional<AABB> bounds = decoration.world_space_bounds()) {
+            aabbs.push_back(*bounds);
+        }
     }
 
     bvh.build_from_aabbs(aabbs);

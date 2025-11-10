@@ -137,7 +137,7 @@ namespace osc::mi
             setXform(lookup, getXForm(lookup).with_rotation(newRotation));
         }
 
-        AABB calcBounds(const IObjectFinder& lookup) const
+        std::optional<AABB> calcBounds(const IObjectFinder& lookup) const
         {
             return implCalcBounds(lookup);
         }
@@ -218,6 +218,6 @@ namespace osc::mi
         virtual Transform implGetXform(const IObjectFinder&) const = 0;
         virtual void implSetXform(const IObjectFinder&, const Transform&) {}
 
-        virtual AABB implCalcBounds(const IObjectFinder&) const = 0;
+        virtual std::optional<AABB> implCalcBounds(const IObjectFinder&) const = 0;
     };
 }

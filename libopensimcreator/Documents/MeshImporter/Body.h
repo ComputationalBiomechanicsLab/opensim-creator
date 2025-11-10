@@ -78,7 +78,7 @@ namespace osc::mi
             m_Xform.scale = {1.0f, 1.0f, 1.0f};
         }
 
-        AABB implCalcBounds(const IObjectFinder&) const final
+        std::optional<AABB> implCalcBounds(const IObjectFinder&) const final
         {
             return bounding_aabb_of(m_Xform.translation);
         }
