@@ -119,6 +119,11 @@ namespace
         return muscle.getFiberLength(st);
     }
 
+    double GetTotalLength(const SimTK::State& st, const OpenSim::Muscle& muscle, const OpenSim::Coordinate&)
+    {
+        return muscle.getLength(st);
+    }
+
     double GetTendonLength(const SimTK::State& st, const OpenSim::Muscle& muscle, const OpenSim::Coordinate&)
     {
         return muscle.getTendonLength(st);
@@ -226,6 +231,7 @@ namespace
             GetDefaultMuscleOutput(),
             {"Tendon Length", "m", GetTendonLength},
             {"Fiber Length", "m", GetFiberLength},
+            {"Total Length", "m", GetTotalLength},
             {"Pennation Angle", "deg", GetPennationAngle},
             {"Normalized Fiber Length", "Unitless", GetNormalizedFiberLength},
             {"Tendon Strain", "Unitless", GetTendonStrain},

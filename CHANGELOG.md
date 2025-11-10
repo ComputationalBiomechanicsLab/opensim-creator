@@ -6,7 +6,7 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Upcoming Release]
 
-- (nothing yet!)
+- Added "Total Length" as an option in the muscle plot panel (#1141)
 
 
 ## [0.6.2] - 2025/11/03
