@@ -249,6 +249,7 @@ private:
             plot::pop_style_var();
             plot::pop_style_var();
         }
+        bool plotIsHovered = ui::is_item_hovered(ui::HoveredFlag::AllowWhenOverlapped);
 
         // if the user right-clicks, draw a context menu
         TryDrawOutputContextMenuForLastItem(*m_API, sim, m_OutputExtractor);
@@ -277,7 +278,7 @@ private:
             drawlist.add_line(p1, p2, currentTimeLineColor);
         }
 
-        if (ui::is_item_hovered()) {
+        if (plotIsHovered) {
             const Vector2 mp = ui::get_mouse_ui_position();
             const Vector2 plotLoc = mp - plotRect.ypd_top_left();
             const float relLoc = plotLoc.x / plotRect.width();

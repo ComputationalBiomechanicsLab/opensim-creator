@@ -7,6 +7,9 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Upcoming Release]
 
 - Added "Total Length" as an option in the muscle plot panel (#1141)
+- Fixed a regression in the simulation workflow where clicking and dragging
+  the mouse over a simulation plot was no longer continuously scrubbing through
+  the simulation (#1139).
 
 
 ## [0.6.2] - 2025/11/03
