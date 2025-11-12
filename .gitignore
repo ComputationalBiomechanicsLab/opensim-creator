@@ -1,5 +1,5 @@
 # setup: bundled stuff
-venv/
+.venv/
 
 # build: artifacts/side-effects
 build/

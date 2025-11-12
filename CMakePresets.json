@@ -8,9 +8,10 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
 
             },
             "hidden": false
@@ -22,9 +23,10 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             },
             "hidden": false
         },
@@ -35,9 +37,10 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Debug",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
 
             },
             "hidden": false
@@ -49,9 +52,10 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Debug",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
             },
             "hidden": false
         },
@@ -62,10 +66,9 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
-
             },
             "hidden": false
         },
@@ -76,7 +79,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
             },
@@ -89,7 +92,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/MinSizeRel",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
 
@@ -103,7 +106,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/MinSizeRel",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
             },

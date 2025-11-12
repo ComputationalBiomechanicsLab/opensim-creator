@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 def main():
-    venv_path = Path("venv")
+    venv_path = Path(".venv")
     requirements_file_path = Path("requirements") / "all_requirements.txt"
 
     # Create virtual environment if it doesn't exist yet
