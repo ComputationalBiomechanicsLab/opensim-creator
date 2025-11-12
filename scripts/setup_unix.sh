@@ -6,5 +6,5 @@ set -euo pipefail
 ./scripts/setup_venv.py
 
 # build bundled dependencies
-./scripts/build-dependencies.py
+./scripts/build-dependencies.py $*
 

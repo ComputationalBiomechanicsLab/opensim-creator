@@ -2,70 +2,146 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "OPynSim-RelWithDebInfo",
-            "displayName": "OPynSim RelWithDebInfo",
-            "description": "Default configure preset for IDE users",
+            "name": "OPynSim-Unix-RelWithDebInfo",
+            "displayName": "OPynSim Unix (MacOS/Linux) RelWithDebInfo",
+            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim-Windows-RelWithDebInfo",
+            "displayName": "OPynSim RelWithDebInfo",
+            "description": "Default configure preset for IDE users on Windows",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
             },
             "hidden": false
         },
         {
-            "name": "OPynSim-Debug",
-            "displayName": "OPynSim Debug",
-            "description": "Default configuration preset for IDE users",
+            "name": "OPynSim-Unix-Debug",
+            "displayName": "OPynSim Unix (MacOS/Linux) Debug",
+            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Debug",
             "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install"
+
             },
             "hidden": false
         },
         {
-            "name": "OPynSim-Release",
-            "displayName": "OPynSim Release",
-            "description": "Default configuration preset for IDE users",
+            "name": "OPynSim-Windows-Debug",
+            "displayName": "OPynSim Debug",
+            "description": "Default configure preset for IDE users on Windows",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Debug",
+            "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim-Unix-Release",
+            "displayName": "OPynSim Unix (MacOS/Linux) Release",
+            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+
             },
             "hidden": false
         },
         {
-            "name": "OPynSim-MinSizeRel",
-            "displayName": "OPynSim MinSizeRel",
-            "description": "Default configure preset for IDE users",
+            "name": "OPynSim-Windows-Release",
+            "displayName": "OPynSim Release",
+            "description": "Default configure preset for IDE users on Windows",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim-Unix-MinSizeRel",
+            "displayName": "OPynSim Unix (MacOS/Linux) MinSizeRel",
+            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/MinSizeRel",
             "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/bin/python",
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
+
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim-Windows-MinSizeRel",
+            "displayName": "OPynSim MinSizeRel",
+            "description": "Default configure preset for IDE users on Windows",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MinSizeRel",
+            "cacheVariables": {
+                "Python_EXECUTABLE": "${sourceDir}/venv/Scripts/python",
+                "CMAKE_BUILD_TYPE": "MinSizeRel",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
             },
             "hidden": false
         }
     ],
     "buildPresets": [
         {
-            "name": "OPynSim-Debug",
-            "configurePreset": "OPynSim-Debug"
+            "name": "OPynSim-Unix-RelWithDebInfo",
+            "configurePreset": "OPynSim-Unix-RelWithDebInfo"
         },
         {
-            "name": "OPynSim-Release",
-            "configurePreset": "OPynSim-Release"
+            "name": "OPynSim-Windows-RelWithDebInfo",
+            "configurePreset": "OPynSim-Windows-RelWithDebInfo"
         },
         {
-            "name": "OPynSim-RelWithDebInfo",
-            "configurePreset": "OPynSim-RelWithDebInfo"
+            "name": "OPynSim-Unix-Debug",
+            "configurePreset": "OPynSim-Unix-Debug"
         },
         {
-            "name": "OPynSim-MinSizeRel",
-            "configurePreset": "OPynSim-MinSizeRel"
+            "name": "OPynSim-Windows-Debug",
+            "configurePreset": "OPynSim-Windows-Debug"
+        },
+        {
+            "name": "OPynSim-Unix-Release",
+            "configurePreset": "OPynSim-Unix-Release"
+        },
+        {
+            "name": "OPynSim-Windows-Release",
+            "configurePreset": "OPynSim-Windows-Release"
+        },
+        {
+            "name": "OPynSim-Unix-MinSizeRel",
+            "configurePreset": "OPynSim-Unix-MinSizeRel"
+        },
+        {
+            "name": "OPynSim-Windows-MinSizeRel",
+            "configurePreset": "OPynSim-Windows-MinSizeRel"
         }
     ]
 }

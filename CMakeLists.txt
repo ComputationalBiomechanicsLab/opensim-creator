@@ -4,7 +4,7 @@ project(opynsim VERSION 0.0.1 LANGUAGES CXX C)
 
 option(BUILD_TESTING              "Build test suites"                    ON)
 option(OPYN_BUILD_PYTHON_BINDINGS "Build Python bindings for libopynsim" ON)
-option(OPYN_BUILD_DOCS            "Build documentation"                  ON)
+option(OPYN_BUILD_DOCS            "Build documentation"                  OFF)
 
 if (BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for
