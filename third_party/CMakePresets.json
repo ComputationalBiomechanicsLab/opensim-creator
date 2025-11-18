@@ -1,0 +1,129 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "OPynSim_third-party_Development",
+            "displayName": "OPynSim Third-Party Code (Development)",
+            "description": "Configure OPynSim's third-party code build suitable for day-to-day development (not necessarily RelWithDebInfo or Debug)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim_third-party_ErrorCheck",
+            "displayName": "OPynSim Third-Party Code (ErrorCheck)",
+            "description": "Configure OPynSim's third-party code build suitable for error-checking development (Debug, libASAN, clang-tidy)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim_third-party_RelWithDebInfo",
+            "displayName": "OPynSim Third-Party Code (RelWithDebInfo)",
+            "description": "Configure OPynSim's third-party code build with a standard RelWithDebInfo configuration",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/RelWithDebInfo/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim_third-party_Release",
+            "displayName": "OPynSim Third-Party Code (Release)",
+            "description": "Configure OPynSim's third-party code build with a standard Release configuration",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/../build/third_party/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install"
+            },
+            "hidden": false
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "OPynSim_third-party_Development",
+            "configurePreset": "OPynSim_third-party_Development"
+        },
+        {
+            "name": "OPynSim_third-party_ErrorCheck",
+            "configurePreset": "OPynSim_third-party_ErrorCheck"
+        },
+        {
+            "name": "OPynSim_third-party_RelWithDebInfo",
+            "configurePreset": "OPynSim_third-party_RelWithDebInfo"
+        },
+        {
+            "name": "OPynSim_third-party_Release",
+            "configurePreset": "OPynSim_third-party_Release"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "OPynSim_third-party_Development",
+            "description": "Configure + Build OPynSim's third-party dependencies for day-to-day development (not necessarily RelWithDebInfo or Debug)",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "OPynSim_third-party_Development"
+                },
+                {
+                    "type": "build",
+                    "name": "OPynSim_third-party_Development"
+                }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_ErrorCheck",
+            "description": "Configure + Build OPynSim's third-party dependencies for error-checking development",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "OPynSim_third-party_ErrorCheck"
+                },
+                {
+                    "type": "build",
+                    "name": "OPynSim_third-party_ErrorCheck"
+                }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_RelWithDebInfo",
+            "description": "Configure + build OPynSim's third-party dependencies (RelWithDebInfo build)",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "OPynSim_third-party_RelWithDebInfo"
+                },
+                {
+                    "type": "build",
+                    "name": "OPynSim_third-party_RelWithDebInfo"
+                }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_Release",
+            "description": "Configure + build OPynSim's third-party dependencies (Release build)",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "OPynSim_third-party_Release"
+                },
+                {
+                    "type": "build",
+                    "name": "OPynSim_third-party_Release"
+                }
+            ]
+        }
+    ]
+}

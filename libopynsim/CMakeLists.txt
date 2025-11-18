@@ -1,3 +1,5 @@
+option(OPYN_FORCE_ASSERTS_ENABLED "Enable OPynSim's runtime assertions - even if building a release build" ON)
+
 find_package(mdspan REQUIRED)
 
 # Generate compile-time configuration file
@@ -23,6 +25,10 @@ PUBLIC
     $<INSTALL_INTERFACE:include>                               # `libopysim` is installed into the `include` root
 )
 target_compile_features(opynsim PUBLIC cxx_std_23)
+if(OPYN_USE_STRICT_COMPILER_FLAGS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_strict_compiler_options.cmake)
+    target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
+endif()
 set_target_properties(opynsim PROPERTIES
     CXX_EXTENSIONS            OFF
     POSITION_INDEPENDENT_CODE ON  # for python bindings

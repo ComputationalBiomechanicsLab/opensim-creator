@@ -3,6 +3,7 @@ include(CMakeDependentOption)
 option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" OFF)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
 option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
+set(OPYN_VENV "" CACHE PATH "Path to a Python virtual environment that the build should use")
 
 
 set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
@@ -18,6 +19,20 @@ endif()
 
 if(OPYN_BUILD_OPYNSIM_DEBUGGER)
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development)  # the debugger uses embedded API
+endif()
+
+if(OPYN_VENV)
+    if(WIN32)
+        set(OPYN_PYTHON_EXE "${OPYN_VENV}/Scripts/python.exe")
+    else()
+        set(OPYN_PYTHON_EXE "${OPYN_VENV}/bin/python")
+    endif()
+
+    if(EXISTS ${OPYN_VENV})
+        set(Python3_EXECUTABLE "${OPYN_PYTHON_EXE}" CACHE FILEPATH "Path to Python interpreter")
+    else()
+        message(FATAL_ERROR "${OPYN_PYTHON_EXE}: python executable not found, but OPYN_VENV was set to this path?")
+    endif()
 endif()
 
 # Find Python

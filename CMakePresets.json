@@ -1,150 +1,87 @@
 {
-    "version": 3,
+    "version": 6,
     "configurePresets": [
         {
-            "name": "OPynSim-Unix-RelWithDebInfo",
-            "displayName": "OPynSim Unix (MacOS/Linux) RelWithDebInfo",
-            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
+            "name": "OPynSim_Development",
+            "displayName": "OPynSim Development Configuration",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "binaryDir": "${sourceDir}/build/Development",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
-
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Windows-RelWithDebInfo",
-            "displayName": "OPynSim RelWithDebInfo",
-            "description": "Default configure preset for IDE users on Windows",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Unix-Debug",
-            "displayName": "OPynSim Unix (MacOS/Linux) Debug",
-            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Debug",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
 
-            },
-            "hidden": false
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_FORCE_ASSERTS_ENABLED": "ON",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
         },
         {
-            "name": "OPynSim-Windows-Debug",
-            "displayName": "OPynSim Debug",
-            "description": "Default configure preset for IDE users on Windows",
+            "name": "OPynSim_ErrorCheck",
+            "displayName": "OPynSim ErrorCheck Configuration",
+            "description": "Configure OPynSim for strict error checking and linting (Debug, libASAN, clang-tidy)",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Debug",
+            "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Debug/install",
-                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Unix-Release",
-            "displayName": "OPynSim Unix (MacOS/Linux) Release",
-            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Release",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Windows-Release",
-            "displayName": "OPynSim Release",
-            "description": "Default configure preset for IDE users on Windows",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Release",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Unix-MinSizeRel",
-            "displayName": "OPynSim Unix (MacOS/Linux) MinSizeRel",
-            "description": "Default configure preset for IDE users on Unixes (MacOS/Linux)",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/MinSizeRel",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/bin/python",
-                "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
 
-            },
-            "hidden": false
-        },
-        {
-            "name": "OPynSim-Windows-MinSizeRel",
-            "displayName": "OPynSim MinSizeRel",
-            "description": "Default configure preset for IDE users on Windows",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/MinSizeRel",
-            "cacheVariables": {
-                "Python_EXECUTABLE": "${sourceDir}/.venv/Scripts/python",
-                "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/MinSizeRel/install"
-            },
-            "hidden": false
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_FORCE_ASSERTS_ENABLED": "ON",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
         }
     ],
     "buildPresets": [
         {
-            "name": "OPynSim-Unix-RelWithDebInfo",
-            "configurePreset": "OPynSim-Unix-RelWithDebInfo"
+            "name": "OPynSim_Development",
+            "configurePreset": "OPynSim_Development"
         },
         {
-            "name": "OPynSim-Windows-RelWithDebInfo",
-            "configurePreset": "OPynSim-Windows-RelWithDebInfo"
+            "name": "OPynSim_ErrorCheck",
+            "configurePreset": "OPynSim_ErrorCheck"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "OPynSim_Development",
+            "configurePreset": "OPynSim_Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim-Unix-Debug",
-            "configurePreset": "OPynSim-Unix-Debug"
+            "name": "OPynSim_ErrorCheck",
+            "configurePreset": "OPynSim_ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "OPynSim_Development",
+            "description": "Perform a development configure + build of OPynSim",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_Development" },
+                { "type": "build", "name": "OPynSim_Development" },
+                { "type": "test", "name": "OPynSim_Development" }
+            ]
         },
         {
-            "name": "OPynSim-Windows-Debug",
-            "configurePreset": "OPynSim-Windows-Debug"
-        },
-        {
-            "name": "OPynSim-Unix-Release",
-            "configurePreset": "OPynSim-Unix-Release"
-        },
-        {
-            "name": "OPynSim-Windows-Release",
-            "configurePreset": "OPynSim-Windows-Release"
-        },
-        {
-            "name": "OPynSim-Unix-MinSizeRel",
-            "configurePreset": "OPynSim-Unix-MinSizeRel"
-        },
-        {
-            "name": "OPynSim-Windows-MinSizeRel",
-            "configurePreset": "OPynSim-Windows-MinSizeRel"
+            "name": "OPynSim_ErrorCheck",
+            "description": "Perform a strict error checking configure + build of OPynSim",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_ErrorCheck" },
+                { "type": "build", "name": "OPynSim_ErrorCheck" },
+                { "type": "test", "name": "OPynSim_ErrorCheck" }
+            ]
         }
     ]
 }

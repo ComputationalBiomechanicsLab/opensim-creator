@@ -85,7 +85,7 @@ namespace
         // (e.g. the above book) uses U(v) = |v|. The primary author (Gunz) claims that the original
         // basis function is not as good as just using the magnitude?
 
-        return (controlPoint - p).norm();
+        return static_cast<float>((controlPoint - p).norm());
     }
 
     template<std::floating_point T>
