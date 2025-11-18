@@ -1,4 +1,4 @@
-# `oscar`
+# Oscar
 
 > Create research tools in pure C++
 
@@ -8,8 +8,9 @@
 >
 > At the moment, `oscar` is effectively an extraction of the engine code of
 > [opensim-creator](https://www.opensimcreator.com), so that new tools can be built independently
-> of that project. My intention is that this project will independently grow (gain its own docs, etc.)
-> but that will take some time.
+> of that project. My intention is that this project will grow into its own thing (i.e. gain its
+> own documentation pages, used in more than one project, etc.) but it will take some time for
+> that to happen.
 
 # Build Instructions (Development)
 
