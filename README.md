@@ -2,9 +2,14 @@
 
 > Create research tools in pure C++
 
-**TODO**: This is currently **WIP** and is effectively just the
-engine code from [opensim-creator](https://www.opensimcreator.com)
-extracted into its own codebase. It's only really usable via `add_subdirectory`.
+> [!CAUTION]
+> This isn't intended for production use in anything but @adamkewley's projects. You can use
+> it, of course, but don't expect stability or support.
+>
+> At the moment, `oscar` is effectively an extraction of the engine code of
+> [opensim-creator](https://www.opensimcreator.com), so that new tools can be built independently
+> of that project. My intention is that this project will independently grow (gain its own docs, etc.)
+> but that will take some time.
 
 # Build Instructions (Development)
 
