@@ -38,10 +38,10 @@ OPynSim is supported on the following platform combinations:
 
 # TODO
 
-- Codesigning on MacOS
-- API documentation in the documentation build
 - GitHub Actions build
+- Development/Release configurations /w strict compiler flags
+- Codesigning on MacOS/Windows
+- API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
 - READMEs/architectural explanations
 - Integration into opensim-creator build
-
