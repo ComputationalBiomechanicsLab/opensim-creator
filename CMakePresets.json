@@ -84,25 +84,25 @@
             "name": "oscar_Development",
             "configurePreset": "oscar_Development",
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error", "jobs": 0}
+            "execution": {"noTestsAction": "error"}
         },
         {
             "name": "oscar_ErrorCheck",
             "configurePreset": "oscar_ErrorCheck",
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error", "jobs": 0}
+            "execution": {"noTestsAction": "error"}
         },
         {
             "name": "oscar_RelWithDebInfo",
             "configurePreset": "oscar_RelWithDebInfo",
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error", "jobs": 0}
+            "execution": {"noTestsAction": "error"}
         },
         {
             "name": "oscar_Release",
             "configurePreset": "oscar_Release",
             "output": {"outputOnFailure": true},
-            "execution": {"noTestsAction": "error", "jobs": 0}
+            "execution": {"noTestsAction": "error"}
         }
     ],
     "workflowPresets": [
