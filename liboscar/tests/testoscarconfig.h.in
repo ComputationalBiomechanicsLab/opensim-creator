@@ -1,0 +1,16 @@
+#pragma once
+
+// char[]
+//
+// name of the organization (affects things like configuration location)
+#define TESTOSCAR_ORGNAME_STRING "oscar"
+
+// char[]
+//
+// full application name string
+#define TESTOSCAR_APPNAME_STRING "TestOscar"
+
+// char[]
+//
+// absolute path to the build_resources/ dir (for access to test fixture data)
+#define OSC_TEST_RESOURCES_DIR "@CMAKE_CURRENT_SOURCE_DIR@/resources"

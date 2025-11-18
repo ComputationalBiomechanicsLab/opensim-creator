@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(glad REQUIRED)
+find_dependency(SDL3 REQUIRED)
+find_dependency(imgui REQUIRED)
+find_dependency(implot REQUIRED)
+find_dependency(tomlplusplus REQUIRED)
+find_dependency(stb REQUIRED)
+find_dependency(lunasvg REQUIRED)
+find_dependency(unordered_dense REQUIRED)
+find_dependency(Threads REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/oscarTargets.cmake")
+
+check_required_components("oscar")

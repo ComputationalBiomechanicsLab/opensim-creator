@@ -1,0 +1,8 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(oscar REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/oscar_demosTargets.cmake")
+
+check_required_components("oscar_demos")

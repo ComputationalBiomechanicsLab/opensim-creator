@@ -1,0 +1,146 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "oscar_Development",
+            "displayName": "Oscar Development Configuration",
+            "description": "Configure Oscar for day-to-day development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_FORCE_ASSERTS_ENABLED": "ON"
+            },
+            "hidden": false
+        },
+        {
+            "name": "oscar_ErrorCheck",
+            "displayName": "Oscar ErrorCheck Configuration",
+            "description": "Configure Oscar for strict error checking and linting (Debug, libASAN, clang-tidy)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/ErrorCheck",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_FORCE_ASSERTS_ENABLED": "ON",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy"
+            },
+            "hidden": false
+        },
+        {
+            "name": "oscar_RelWithDebInfo",
+            "displayName": "Oscar Default Configuration (RelWithDebInfo)",
+            "description": "Configure Oscar with a `RelWithDebInfo` build type and bundled dependencies",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "oscar_Release",
+            "displayName": "Oscar Default Configuration (Release)",
+            "description": "Configure Oscar with a `Release` build type and bundled dependencies",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+            },
+            "hidden": false
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "oscar_Development",
+            "configurePreset": "oscar_Development"
+        },
+        {
+            "name": "oscar_ErrorCheck",
+            "configurePreset": "oscar_ErrorCheck"
+        },
+        {
+            "name": "oscar_RelWithDebInfo",
+            "configurePreset": "oscar_RelWithDebInfo"
+        },
+        {
+            "name": "oscar_Release",
+            "configurePreset": "oscar_Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "oscar_Development",
+            "configurePreset": "oscar_Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error", "jobs": 0}
+        },
+        {
+            "name": "oscar_ErrorCheck",
+            "configurePreset": "oscar_ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error", "jobs": 0}
+        },
+        {
+            "name": "oscar_RelWithDebInfo",
+            "configurePreset": "oscar_RelWithDebInfo",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error", "jobs": 0}
+        },
+        {
+            "name": "oscar_Release",
+            "configurePreset": "oscar_Release",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error", "jobs": 0}
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "oscar_Development",
+            "description": "Perform a development configure + build of Oscar",
+            "steps": [
+                { "type": "configure", "name": "oscar_Development" },
+                { "type": "build", "name": "oscar_Development" },
+                { "type": "test", "name": "oscar_Development" }
+            ]
+        },
+        {
+            "name": "oscar_ErrorCheck",
+            "description": "Perform a ErrorCheck configure + build of Oscar",
+            "steps": [
+                { "type": "configure", "name": "oscar_ErrorCheck" },
+                { "type": "build", "name": "oscar_ErrorCheck" },
+                { "type": "test", "name": "oscar_ErrorCheck" }
+            ]
+        },
+        {
+            "name": "oscar_RelWithDebInfo",
+            "description": "Configure + build oscar's third-party dependencies (RelWithDebInfo build)",
+            "steps": [
+                { "type": "configure", "name": "oscar_RelWithDebInfo" },
+                { "type": "build", "name": "oscar_RelWithDebInfo" },
+                { "type": "test", "name": "oscar_RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "oscar_Release",
+            "description": "Configure + build oscar's third-party dependencies (Release build)",
+            "steps": [
+                { "type": "configure", "name": "oscar_Release" },
+                { "type": "build", "name": "oscar_Release" },
+                { "type": "test", "name": "oscar_Release" }
+            ]
+        }
+    ]
+}
