@@ -29,7 +29,7 @@ if(OPYN_VENV)
     endif()
 
     if(EXISTS ${OPYN_VENV})
-        set(Python_EXECUTABLE "${OPYN_PYTHON_EXE}" CACHE FILEPATH "Path to Python interpreter")
+        set(Python_EXECUTABLE "${OPYN_PYTHON_EXE}" CACHE FILEPATH "Path to Python interpreter" FORCE)
     else()
         message(FATAL_ERROR "${OPYN_PYTHON_EXE}: python executable not found, but OPYN_VENV was set to this path?")
     endif()
