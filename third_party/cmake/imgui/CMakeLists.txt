@@ -24,15 +24,6 @@ target_include_directories(imgui
 target_compile_features(imgui
     PRIVATE cxx_std_17
 )
-target_compile_definitions(imgui PRIVATE
-    # for opensim-creator
-    #
-    # this is necessary until we move away from our legacy `imgui.ini` and
-    # `imgui_base_config.ini` files because existing users have already encoded
-    # the legacy CRC checks into their local `imgui.ini` file (and we don't want
-    # it to screw up when they update the software)
-    IMGUI_USE_LEGACY_CRC32_ADLER
-)
 install(
     TARGETS imgui
     EXPORT imguiTargets
