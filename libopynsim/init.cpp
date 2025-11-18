@@ -1,7 +1,7 @@
 #include "init.h"
 
-#include <libopynsim/ThirdPartyPlugins/RegisterTypes_osimPlugin.h>
-
+#include <jam-plugin/Smith2018ArticularContactForce.h>
+#include <jam-plugin/Smith2018ContactMesh.h>
 #include <OpenSim/Actuators/RegisterTypes_osimActuators.h>
 #include <OpenSim/Analyses/RegisterTypes_osimAnalyses.h>
 #include <OpenSim/Common/RegisterTypes_osimCommon.h>
@@ -110,7 +110,8 @@ namespace
         RegisterTypes_osimAnalyses();
         RegisterTypes_osimTools();
         RegisterTypes_osimExampleComponents();
-        RegisterTypes_osimPlugin();  // from `ThirdPartyPlugins/`
+        OpenSim::Object::registerType( OpenSim::Smith2018ArticularContactForce() );
+        OpenSim::Object::registerType( OpenSim::Smith2018ContactMesh() );
     }
 
     std::string_view label_for(LogLevel level)

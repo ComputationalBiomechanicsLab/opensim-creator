@@ -36,3 +36,12 @@ OPynSim is supported on the following platform combinations:
 - Upstream stable ideas, algorithms, project designs, dependency handling methods, etc. from this
   project to [Simbody](https://github.com/simbody/simbody) and [OpenSim](https://simtk.org/projects/opensim).
 
+# TODO
+
+- Codesigning on MacOS
+- API documentation in the documentation build
+- GitHub Actions build
+- Developer guide that specifically focuses on CLion
+- READMEs/architectural explanations
+- Integration into opensim-creator build
+

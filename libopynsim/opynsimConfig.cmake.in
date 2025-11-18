@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(osim REQUIRED)
+find_dependency(mdspan REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/opynsimTargets.cmake")
+
+check_required_components("opynsim")

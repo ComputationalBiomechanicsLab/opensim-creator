@@ -1,0 +1,49 @@
+Fixes a header in OpenSim that implicitly uses an OpenSim::Model that's
+forward-delcared without having access to the definition
+
+---
+
+diff --git a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
+index 772dcfc4..8ea342b9 100644
+--- a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
++++ b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.cpp
+@@ -32,6 +32,13 @@
+ using namespace OpenSim;
+ using namespace std;
+ 
++
++OutputReporter::OutputReporter(const OutputReporter&) = default;
++OutputReporter::OutputReporter(OutputReporter&&) noexcept = default;
++OutputReporter::~OutputReporter() noexcept = default;
++OutputReporter& OutputReporter::operator=(const OutputReporter&) = default;
++OutputReporter& OutputReporter::operator=(OutputReporter&&) noexcept = default;
++
+ //=============================================================================
+ // ANALYSIS
+ //=============================================================================
+diff --git a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
+index 32fafb13..0b2c639a 100644
+--- a/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
++++ b/libosim/opensim-core/OpenSim/Analyses/OutputReporter.h
+@@ -28,6 +28,7 @@
+ // INCLUDES
+ //=============================================================================
+ #include <OpenSim/Simulation/Model/Analysis.h>
++#include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Common/Reporter.h>
+ #include <OpenSim/Common/STOFileAdapter.h>
+ #include "osimAnalysesDLL.h"
+@@ -85,7 +86,12 @@ OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
+         setName("OutputReporter");
+     }
+ 
+-    virtual ~OutputReporter() = default;
++    OutputReporter(const OutputReporter&);
++    OutputReporter(OutputReporter&&) noexcept;
++    ~OutputReporter() noexcept override;
++
++    OutputReporter& operator=(const OutputReporter&);
++    OutputReporter& operator=(OutputReporter&&) noexcept;
+ 
+ protected:
+     //--------------------------------------------------------------------------
