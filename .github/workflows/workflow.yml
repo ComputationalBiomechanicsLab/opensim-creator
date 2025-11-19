@@ -27,9 +27,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+      
+      - name: Get gcc-12
+        run: sudo apt-get install -y gcc-12 g++-12
 
       - name: Run Build Script
-        run: ./scripts/e2e_setup-and-build-ubuntu22.sh
+        run: CC=gcc-12 CXX=g++-12 ./scripts/e2e_setup-and-build-unix.sh
 
   macos_universal:
     name: MacOS (universal?)
@@ -56,4 +59,3 @@ jobs:
 
       - name: Run Build Script
         run: PATH=/opt/python/cp312-cp312/bin:${PATH} ./scripts/e2e_setup-and-build-unix.sh
-
