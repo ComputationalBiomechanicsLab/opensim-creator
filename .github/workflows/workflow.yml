@@ -50,7 +50,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Ninja
-        run: yum install ninja
+        run: |
+          yum install -y epel-release
+          yum install -y ninja-build
 
       - name: Run Build Script
         env:
