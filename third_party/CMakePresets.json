@@ -1,4 +1,4 @@
-{
+
     "version": 6,
     "configurePresets": [
         {
@@ -48,17 +48,6 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install"
             },
             "hidden": false
-        },
-        {
-            "name": "OPynSim_third-party_ManyLinux",
-            "displayName": "OPynSim Third-Party Code (ManyLinux Release)",
-            "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/../build/third_party/ManyLinux",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ManyLinux/install"
-            },
-            "hidden": false
         }
     ],
     "buildPresets": [
@@ -77,10 +66,6 @@
         {
             "name": "OPynSim_third-party_Release",
             "configurePreset": "OPynSim_third-party_Release"
-        },
-        {
-            "name": "OPynSim_third-party_ManyLinux",
-            "configurePreset": "OPynSim_third-party_ManyLinux"
         }
     ],
     "workflowPresets": [
@@ -133,19 +118,6 @@
                 {
                     "type": "build",
                     "name": "OPynSim_third-party_Release"
-                }
-            ]
-        },
-        {
-            "name": "OPynSim_third-party_ManyLinux",
-            "steps": [
-                {
-                    "type": "configure",
-                    "name": "OPynSim_third-party_ManyLinux"
-                },
-                {
-                    "type": "build",
-                    "name": "OPynSim_third-party_ManyLinux"
                 }
             ]
         }

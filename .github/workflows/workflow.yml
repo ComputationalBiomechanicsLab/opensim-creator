@@ -29,7 +29,7 @@ jobs:
           python-version: '3.12'
 
       - name: Run Build Script
-        run: ./scripts/e2e_setup-and-build-unix.sh
+        run: ./scripts/e2e_setup-and-build-ubuntu22.sh
 
   macos_universal:
     name: MacOS (universal?)
