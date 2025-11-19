@@ -27,16 +27,41 @@
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
-                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
-                "CMAKE_EXE_LINKER_FLAGS": "-rdynamic",
-                "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_C_FLAGS": "-fsanitize=undefined",
+                "CMAKE_CXX_FLAGS": "-fsanitize=undefined",
+                "CMAKE_EXE_LINKER_FLAGS": "-rdynamic -fsanitize=undefined",
+                "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic -fsanitize=undefined",
+                "CMAKE_MODULE_LINKER_FLAGS": "-rdynamic -fsanitize=undefined",
                 "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
 
                 "OPYN_VENV": "${sourceDir}/.venv",
                 "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
                 "OPYN_FORCE_ASSERTS_ENABLED": "ON",
                 "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
+        },
+        {
+            "name": "OPynSim_RelWithDebInfo",
+            "displayName": "OPynSim RelWithDebInfo Configuration",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
+        },
+        {
+            "name": "OPynSim_Release",
+            "displayName": "OPynSim Release Configuration",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv"
             }
         }
     ],
@@ -48,6 +73,14 @@
         {
             "name": "OPynSim_ErrorCheck",
             "configurePreset": "OPynSim_ErrorCheck"
+        },
+        {
+            "name": "OPynSim_RelWithDebInfo",
+            "configurePreset": "OPynSim_RelWithDebInfo"
+        },
+        {
+            "name": "OPynSim_Release",
+            "configurePreset": "OPynSim_Release"
         }
     ],
     "testPresets": [
@@ -62,12 +95,23 @@
             "configurePreset": "OPynSim_ErrorCheck",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "OPynSim_RelWithDebInfo",
+            "configurePreset": "OPynSim_RelWithDebInfo",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "OPynSim_Release",
+            "configurePreset": "OPynSim_Release",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         }
     ],
     "workflowPresets": [
         {
             "name": "OPynSim_Development",
-            "description": "Perform a development configure + build of OPynSim",
             "steps": [
                 { "type": "configure", "name": "OPynSim_Development" },
                 { "type": "build", "name": "OPynSim_Development" },
@@ -76,11 +120,26 @@
         },
         {
             "name": "OPynSim_ErrorCheck",
-            "description": "Perform a strict error checking configure + build of OPynSim",
             "steps": [
                 { "type": "configure", "name": "OPynSim_ErrorCheck" },
                 { "type": "build", "name": "OPynSim_ErrorCheck" },
                 { "type": "test", "name": "OPynSim_ErrorCheck" }
+            ]
+        },
+        {
+            "name": "OPynSim_RelWithDebInfo",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_RelWithDebInfo" },
+                { "type": "build", "name": "OPynSim_RelWithDebInfo" },
+                { "type": "test", "name": "OPynSim_RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "OPynSim_Release",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_Release" },
+                { "type": "build", "name": "OPynSim_Release" },
+                { "type": "test", "name": "OPynSim_Release" }
             ]
         }
     ]

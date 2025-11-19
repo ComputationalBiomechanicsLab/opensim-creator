@@ -20,8 +20,12 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install"
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "-fsanitize=undefined",
+                "CMAKE_CXX_FLAGS": "-fsanitize=undefined"
             },
             "hidden": false
         },
