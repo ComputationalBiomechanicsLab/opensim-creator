@@ -25,8 +25,8 @@ OPynSim is supported on the following platform combinations:
 |---------------------|------------------------------------------------------------------------------|-------------------------|
 | >=3.12              | Windows                                                                      | amd64 (Intel/AMD)       |
 | >=3.12              | Linux (manylinux 234: Debian 12+, Ubuntu 21.10+, Fedora 35+, CentOS/RHEL 9+) | amd64 (Intel/AMD)       |
-| >=3.12              | MacOS                                                                        | amd64 (Intel)           |
-| >=3.12              | MacOS                                                                        | arm64 (Apple Silicon)   |
+| >=3.12              | MacOS >= 14.5 (Sonoma)                                                       | amd64 (Intel)           |
+| >=3.12              | MacOS >= 14.5 (Sonoma)                                                       | arm64 (Apple Silicon)   |
 
 
 # Core Goals
@@ -42,8 +42,8 @@ OPynSim is supported on the following platform combinations:
 # TODO
 
 - MacOS arm64 + amd64
-- Packaging tests for wheel validity
 - Packaging/build tests for MacOS SDK/ABI
+- Packaging tests for wheel validity
 - Codesigning on MacOS/Windows
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
