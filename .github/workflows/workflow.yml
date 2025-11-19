@@ -41,3 +41,17 @@ jobs:
 
       - name: Run Build Script
         run: cd $GITHUB_WORKSPACE && ./scripts/e2e_setup-and-build-unix.sh
+
+  manylinux_amd64:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pypa/manylinux_2_34_x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: yum install ninja
+
+      - name: Run Build Script
+        run: cd $GITHUB_WORKSPACE && ./scripts/e2e_setup-and-build-unix.sh
+
