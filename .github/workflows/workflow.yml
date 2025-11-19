@@ -8,6 +8,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
       - name: Run Build Script
         shell: cmd
         run: call .\scripts\e2e_setup-and-build-windows.bat
