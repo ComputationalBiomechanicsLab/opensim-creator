@@ -41,8 +41,6 @@ OPynSim is supported on the following platform combinations:
 
 # TODO
 
-- GitHub Actions build
-- Development/Release configurations /w strict compiler flags
 - MacOS arm64 + amd64
 - Packaging tests for wheel validity
 - Packaging/build tests for MacOS SDK/ABI

@@ -18,9 +18,7 @@
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
                 "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_C_FLAGS": "-fsanitize=undefined",
-                "CMAKE_CXX_FLAGS": "-fsanitize=undefined"
+                "CMAKE_CXX_COMPILER": "clang++"
             }
         },
         {
