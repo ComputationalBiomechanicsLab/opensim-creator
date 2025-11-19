@@ -55,7 +55,5 @@ jobs:
           yum install -y ninja-build
 
       - name: Run Build Script
-        env:
-          PATH: /opt/python/cp312-cp312/bin:${PATH}
-        run: ./scripts/e2e_setup-and-build-unix.sh
+        run: PATH=/opt/python/cp312-cp312/bin:${PATH} ./scripts/e2e_setup-and-build-unix.sh
 
