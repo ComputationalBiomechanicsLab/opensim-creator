@@ -1,4 +1,5 @@
-option(OPYN_TEST_DEPENDENCIES "Add tests that check _opynsim_native's dependencies" ON)
+option(OPYN_TEST_DEPENDENCIES "Add tests that check _opynsim_native's dependencies against a whitelist" ON)
+option(OPYN_TEST_SYMBOLS      "Add tests that check _opynsim_native's symbols against a whitelist"      ON)
 
 # Find `pytest` (python unit test library)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -39,11 +40,27 @@ if(OPYN_TEST_DEPENDENCIES)
 
     if(OPYN_DEPENDENCY_WHITELIST_FILENAME)
         add_test(
-            NAME test_windows_opynsim_native_dependencies_pass_whitelist
+            NAME test_opynsim_native_dependencies_pass_whitelist
             COMMAND "${Python_EXECUTABLE}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
                     "$<TARGET_FILE:_opynsim_native>"
                     "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OPYN_DEPENDENCY_WHITELIST_FILENAME}"
         )
     endif()
+endif()
+
+if(OPYN_TEST_SYMBOLS)
+    if(APPLE)
+        set(OPYN_PERMITTED_SYMBOLS "_PyInit__opynsim_native")
+    else()
+        set(OPYN_PERMITTED_SYMBOLS "PyInit__opynsim_native")
+    endif()
+
+    add_test(
+        NAME test_opynsim_native_symbols_pass_whitelist
+        COMMAND "${Python_EXECUTABLE}"
+                "${CMAKE_CURRENT_SOURCE_DIR}/check_symbols.py"
+                "$<TARGET_FILE:_opynsim_native>"
+                ${OPYN_PERMITTED_SYMBOLS}
+    )
 endif()

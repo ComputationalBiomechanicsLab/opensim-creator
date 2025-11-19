@@ -62,6 +62,16 @@ if(TRUE)
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_opynsim_native PRIVATE opynsim)
 
+    # Scrap all public symbols apart from `PyInit_*` / `_PyInit_*`
+    #
+    # This is to prevent symbol collisions when loading the library in a python
+    # environment that might also contain (e.g.) OpenSim
+    if (APPLE)
+        target_link_options(_opynsim_native PRIVATE "-Wl,-exported_symbols_list,${CMAKE_CURRENT_SOURCE_DIR}/exports.txt")
+    elseif(UNIX AND NOT APPLE)
+        target_link_options(_opynsim_native PRIVATE "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/exports.map")
+    endif()
+
     # Nice to have: Build `_opynsim_native` directly into the python package sourcetree
     #
     # This is purely a practical measure that enables developers to run a Python
