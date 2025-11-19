@@ -63,6 +63,18 @@
 
                 "OPYN_VENV": "${sourceDir}/.venv"
             }
+        },
+        {
+            "name": "OPynSim_ManyLinux",
+            "displayName": "OPynSim ManyLinux Release Configuration",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build/ManyLinux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ManyLinux/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
         }
     ],
     "buildPresets": [
@@ -81,6 +93,10 @@
         {
             "name": "OPynSim_Release",
             "configurePreset": "OPynSim_Release"
+        },
+        {
+            "name": "OPynSim_ManyLinux",
+            "configurePreset": "OPynSim_ManyLinux"
         }
     ],
     "testPresets": [
@@ -107,12 +123,22 @@
             "configurePreset": "OPynSim_Release",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "OPynSim_ManyLinux",
+            "configurePreset": "OPynSim_ManyLinux",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         }
     ],
     "packagePresets": [
         {
             "name": "OPynSim_Release",
             "configurePreset": "OPynSim_Release"
+        },
+        {
+            "name": "OPynSim_ManyLinux",
+            "configurePreset": "OPynSim_ManyLinux"
         }
     ],
     "workflowPresets": [
@@ -147,6 +173,15 @@
                 { "type": "build", "name": "OPynSim_Release" },
                 { "type": "test", "name": "OPynSim_Release" },
                 { "type": "package", "name": "OPynSim_Release" }
+            ]
+        },
+        {
+            "name": "OPynSim_ManyLinux",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_ManyLinux" },
+                { "type": "build", "name": "OPynSim_ManyLinux" },
+                { "type": "test", "name": "OPynSim_ManyLinux" },
+                { "type": "package", "name": "OPynSim_ManyLinux" }
             ]
         }
     ]

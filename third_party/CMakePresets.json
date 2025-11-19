@@ -4,7 +4,6 @@
         {
             "name": "OPynSim_third-party_Development",
             "displayName": "OPynSim Third-Party Code (Development)",
-            "description": "Configure OPynSim's third-party code build suitable for day-to-day development (not necessarily RelWithDebInfo or Debug)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Development",
             "cacheVariables": {
@@ -16,7 +15,6 @@
         {
             "name": "OPynSim_third-party_ErrorCheck",
             "displayName": "OPynSim Third-Party Code (ErrorCheck)",
-            "description": "Configure OPynSim's third-party code build suitable for error-checking development (Debug, libASAN, clang-tidy)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
@@ -32,7 +30,6 @@
         {
             "name": "OPynSim_third-party_RelWithDebInfo",
             "displayName": "OPynSim Third-Party Code (RelWithDebInfo)",
-            "description": "Configure OPynSim's third-party code build with a standard RelWithDebInfo configuration",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
             "cacheVariables": {
@@ -44,12 +41,22 @@
         {
             "name": "OPynSim_third-party_Release",
             "displayName": "OPynSim Third-Party Code (Release)",
-            "description": "Configure OPynSim's third-party code build with a standard Release configuration",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "OPynSim_third-party_ManyLinux",
+            "displayName": "OPynSim Third-Party Code (ManyLinux Release)",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/../build/third_party/ManyLinux",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ManyLinux/install"
             },
             "hidden": false
         }
@@ -70,12 +77,15 @@
         {
             "name": "OPynSim_third-party_Release",
             "configurePreset": "OPynSim_third-party_Release"
+        },
+        {
+            "name": "OPynSim_third-party_ManyLinux",
+            "configurePreset": "OPynSim_third-party_ManyLinux"
         }
     ],
     "workflowPresets": [
         {
             "name": "OPynSim_third-party_Development",
-            "description": "Configure + Build OPynSim's third-party dependencies for day-to-day development (not necessarily RelWithDebInfo or Debug)",
             "steps": [
                 {
                     "type": "configure",
@@ -89,7 +99,6 @@
         },
         {
             "name": "OPynSim_third-party_ErrorCheck",
-            "description": "Configure + Build OPynSim's third-party dependencies for error-checking development",
             "steps": [
                 {
                     "type": "configure",
@@ -103,7 +112,6 @@
         },
         {
             "name": "OPynSim_third-party_RelWithDebInfo",
-            "description": "Configure + build OPynSim's third-party dependencies (RelWithDebInfo build)",
             "steps": [
                 {
                     "type": "configure",
@@ -117,7 +125,6 @@
         },
         {
             "name": "OPynSim_third-party_Release",
-            "description": "Configure + build OPynSim's third-party dependencies (Release build)",
             "steps": [
                 {
                     "type": "configure",
@@ -126,6 +133,19 @@
                 {
                     "type": "build",
                     "name": "OPynSim_third-party_Release"
+                }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_ManyLinux",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "OPynSim_third-party_ManyLinux"
+                },
+                {
+                    "type": "build",
+                    "name": "OPynSim_third-party_ManyLinux"
                 }
             ]
         }

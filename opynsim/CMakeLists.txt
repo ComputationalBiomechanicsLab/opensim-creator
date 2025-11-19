@@ -4,8 +4,6 @@ option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger t
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
 option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
 set(OPYN_VENV "" CACHE PATH "Path to a Python virtual environment that the build should use")
-
-
 set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
 
 set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)
@@ -169,7 +167,7 @@ endif()
 # Packaging
 #
 # Zips up the installation directory structure into a wheel.
-if(TRUE)
+if(OPYN_INSTALL)
     set(CPACK_GENERATOR External)
     set(CPACK_EXTERNAL_PACKAGE "wheel")
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/PackageWheel.cmake")
