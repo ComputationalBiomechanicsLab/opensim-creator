@@ -21,12 +21,12 @@ pip install opynsim
 
 OPynSim is supported on the following platform combinations:
 
-| Python Interpreter  | Operating System                                                             | Processor Architecture  |
-|---------------------|------------------------------------------------------------------------------|-------------------------|
-| >=3.12              | Windows                                                                      | amd64 (Intel/AMD)       |
-| >=3.12              | Linux (manylinux 234: Debian 12+, Ubuntu 21.10+, Fedora 35+, CentOS/RHEL 9+) | amd64 (Intel/AMD)       |
-| >=3.12              | MacOS >= 14.5 (Sonoma)                                                       | amd64 (Intel)           |
-| >=3.12              | MacOS >= 14.5 (Sonoma)                                                       | arm64 (Apple Silicon)   |
+| Python Version | Operating System                                                             | Processor Architecture  |
+|--------------- |------------------------------------------------------------------------------|-------------------------|
+| >=3.12         | Windows                                                                      | amd64 (Intel/AMD)       |
+| >=3.12         | Linux (manylinux 234: Debian 12+, Ubuntu 21.10+, Fedora 35+, CentOS/RHEL 9+) | amd64 (Intel/AMD)       |
+| >=3.12         | MacOS >= 14.5 (Sonoma)                                                       | amd64 (Intel)           |
+| >=3.12         | MacOS >= 14.5 (Sonoma)                                                       | arm64 (Apple Silicon)   |
 
 
 # Core Goals
