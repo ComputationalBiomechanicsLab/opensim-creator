@@ -704,8 +704,8 @@ set_target_properties(osim PROPERTIES
 if(OPYN_INSTALL)
 
     # install `osimTargets.cmake` to `lib/cmake/osim`
-    install(TARGETS osim EXPORT osimTargets)
-    install(EXPORT osimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim)
+    install(TARGETS osim EXPORT osimTargets COMPONENT cpp)
+    install(EXPORT osimTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim COMPONENT cpp)
 
     # install `osimConfig.cmake` to `lib/cmake/osim`
     configure_package_config_file(
@@ -713,7 +713,7 @@ if(OPYN_INSTALL)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake"
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/osim
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/osim")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/osimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/osim" COMPONENT cpp)
 
     # install simbody headers to `include/simbody` (compatible with `simbody`'s install)
     install(
@@ -734,11 +734,12 @@ if(OPYN_INSTALL)
             ${OPYN_SIMBODY_BASEDIR}/Simbody/Visualizer/include/
 
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/simbody"
+        COMPONENT cpp
     )
 
     # install lepton headers to `include/lepton` (compatible with `opensim-core`'s install)
     file(GLOB_RECURSE OPYN_GLOBBED_LEPTON_HEADERS "${OPYN_OPENSIM_BASEDIR}/Vendors/lepton/include/lepton/*.h")
-    install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton")
+    install(FILES ${OPYN_GLOBBED_LEPTON_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/lepton" COMPONENT cpp)
 
     # install OpenSim headers to `include/OpenSim` (compatible with `opensim-core`'s install)
     set(OPYN_EXCLUDED_PATTERNS "/Test/" "/Tests/" "/Examples/" "/Moco/" "/Sandbox/" "C3DFileAdapter")
@@ -757,6 +758,6 @@ if(OPYN_INSTALL)
     foreach(header ${OPYN_HEADER_FILES})
         file(RELATIVE_PATH header_relpath ${OPYN_OPENSIM_BASEDIR} ${header})
         get_filename_component(DIR ${header_relpath} DIRECTORY)
-        install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR})
+        install(FILES ${header} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${DIR} COMPONENT cpp)
     endforeach()
 endif()

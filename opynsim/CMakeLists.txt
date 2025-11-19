@@ -98,20 +98,20 @@ endif()
 #
 # Creates a directory that has a package + dist-info layout that can either be copied
 # into the caller's site-packages directory or zipped up into a wheel for packaging.
-if(TRUE)
+if(OPYN_INSTALL)
     # Install package python sources (retain directory layout but skip src, __pycache__, etc.)
     file(GLOB_RECURSE OPYN_PYTHON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/opynsim/*.py")
     foreach(f ${OPYN_PYTHON_FILES})
         file(RELATIVE_PATH rel "${CMAKE_CURRENT_SOURCE_DIR}/opynsim" "${f}")
         get_filename_component(dest_dir "${rel}" DIRECTORY)
-        install(FILES "${f}" DESTINATION "opynsim/${dest_dir}")
+        install(FILES "${f}" DESTINATION "opynsim/${dest_dir}" COMPONENT python)
     endforeach()
 
     # Install `_opynsim_native` extension module into the package
     install(
-        TARGETS _opynsim_native
-        LIBRARY DESTINATION "opynsim"
-        RUNTIME DESTINATION "opynsim"
+        FILES $<TARGET_FILE:_opynsim_native>
+        DESTINATION "opynsim"
+        COMPONENT python
     )
 
     # Configure-time: Compute `OPYN_WHEEL_TAG`
@@ -162,6 +162,7 @@ if(TRUE)
             ${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA
             ${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL
         DESTINATION "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}.dist-info"
+        COMPONENT python
     )
 endif()
 
@@ -174,6 +175,7 @@ if(TRUE)
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/PackageWheel.cmake")
     set(CPACK_WHEEL_PYTHON_EXECUTABLE "${Python_EXECUTABLE}")
     set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
+    set(CPACK_COMPONENT_INSTALL ON)
     set(CPACK_EXTERNAL_ENABLE_STAGING YES)
     set(CPACK_EXTERNAL_PACKAGE_DEPENDS _opynsim_native)
     include(CPack)

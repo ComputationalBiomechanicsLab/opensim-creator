@@ -43,19 +43,20 @@ if(OPYN_INSTALL)
     include(CMakePackageConfigHelpers)  # configure_package_config_file
 
     # Install generated `opynsimconfig.h`
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/libopynsim/opynsimconfig.h" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim" COMPONENT cpp)
 
     # Install all of `libopynsim`'s header files (excl. tests)
     install(
         DIRECTORY   "${CMAKE_CURRENT_SOURCE_DIR}/"
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/libopynsim"
+        COMPONENT cpp
         FILES_MATCHING PATTERN "*.h"
         PATTERN "tests" EXCLUDE
     )
 
     # Install `libopynsim` library target
-    install(TARGETS opynsim EXPORT opynsimTargets)
-    install(EXPORT opynsimTargets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim")
+    install(TARGETS opynsim EXPORT opynsimTargets COMPONENT cpp)
+    install(EXPORT opynsimTargets DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim" COMPONENT cpp)
 
     # Generate + install an `opynsimConfig.cmake` file
     configure_package_config_file(
@@ -63,5 +64,5 @@ if(OPYN_INSTALL)
         "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake"
         INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim"
     )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/generated/opynsimConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/opynsim" COMPONENT cpp)
 endif()
