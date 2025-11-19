@@ -109,6 +109,12 @@
             "execution": {"noTestsAction": "error"}
         }
     ],
+    "packagePresets": [
+        {
+            "name": "OPynSim_Release",
+            "configurePreset": "OPynSim_Release"
+        }
+    ],
     "workflowPresets": [
         {
             "name": "OPynSim_Development",
@@ -139,7 +145,8 @@
             "steps": [
                 { "type": "configure", "name": "OPynSim_Release" },
                 { "type": "build", "name": "OPynSim_Release" },
-                { "type": "test", "name": "OPynSim_Release" }
+                { "type": "test", "name": "OPynSim_Release" },
+                { "type": "package", "name": "OPynSim_Release" }
             ]
         }
     ]

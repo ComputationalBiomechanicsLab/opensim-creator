@@ -6,5 +6,4 @@ set -euo pipefail
 ./scripts/setup_venv.py
 
 # build bundled dependencies
-./scripts/build-dependencies.py $*
-
+cd third_party/ && cmake --workflow --preset OPynSim_third-party_Release && cd ..

@@ -1,0 +1,33 @@
+on: [push]
+
+jobs:
+
+  windows_amd64:
+    name: Windows (amd64)
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build Script
+        shell: cmd
+        run: call .\scripts\e2e_setup-and-build-windows.bat
+
+  ubuntu22_amd64:
+    name: Ubuntu 22.04 (amd64)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build Script
+        run: cd $GITHUB_WORKSPACE && ./scripts/e2e_setup-and-build-unix.sh
+
+  macos_universal:
+    name: MacOS (universal?)
+    runs-on: macos-14
+    env:
+      CTEST_PARALLEL_LEVEL: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build Script
+        run: cd $GITHUB_WORKSPACE && ./scripts/e2e_setup-and-build-unix.sh

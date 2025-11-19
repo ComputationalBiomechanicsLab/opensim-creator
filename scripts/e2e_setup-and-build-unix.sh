@@ -9,5 +9,4 @@ set -xeuo pipefail
 source ./scripts/env_venv.sh
 
 # build the project
-python scripts/build.py $*
-
+cmake --workflow --preset OPynSim_Release
