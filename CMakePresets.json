@@ -3,7 +3,6 @@
     "configurePresets": [
         {
             "name": "OPynSim_Development",
-            "displayName": "OPynSim Development Configuration",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Development",
             "cacheVariables": {
@@ -18,8 +17,6 @@
         },
         {
             "name": "OPynSim_ErrorCheck",
-            "displayName": "OPynSim ErrorCheck Configuration",
-            "description": "Configure OPynSim for strict error checking and linting (Debug, libASAN, clang-tidy)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
@@ -42,7 +39,6 @@
         },
         {
             "name": "OPynSim_RelWithDebInfo",
-            "displayName": "OPynSim RelWithDebInfo Configuration",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
@@ -54,7 +50,6 @@
         },
         {
             "name": "OPynSim_Release",
-            "displayName": "OPynSim Release Configuration",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
@@ -64,24 +59,34 @@
                 "OPYN_VENV": "${sourceDir}/.venv"
             }
         },
+        {
+            "name": "OPynSim_Release-MacOS-amd64",
+            "inherits": "OPynSim_Release",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "amd64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
+        },
+        {
+            "name": "OPynSim_Release-MacOS-arm64",
+            "inherits": "OPynSim_Release",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
+        }
     ],
     "buildPresets": [
-        {
-            "name": "OPynSim_Development",
-            "configurePreset": "OPynSim_Development"
-        },
-        {
-            "name": "OPynSim_ErrorCheck",
-            "configurePreset": "OPynSim_ErrorCheck"
-        },
-        {
-            "name": "OPynSim_RelWithDebInfo",
-            "configurePreset": "OPynSim_RelWithDebInfo"
-        },
-        {
-            "name": "OPynSim_Release",
-            "configurePreset": "OPynSim_Release"
-        }
+        { "name": "OPynSim_Development",         "configurePreset": "OPynSim_Development" },
+        { "name": "OPynSim_ErrorCheck",          "configurePreset": "OPynSim_ErrorCheck" },
+        { "name": "OPynSim_RelWithDebInfo",      "configurePreset": "OPynSim_RelWithDebInfo" },
+        { "name": "OPynSim_Release",             "configurePreset": "OPynSim_Release" },
+        { "name": "OPynSim_Release-MacOS-amd64", "configurePreset": "OPynSim_Release-MacOS-amd64" },
+        { "name": "OPynSim_Release-MacOS-arm64", "configurePreset": "OPynSim_Release-MacOS-arm64" }
     ],
     "testPresets": [
         {
@@ -107,12 +112,32 @@
             "configurePreset": "OPynSim_Release",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "OPynSim_Release-MacOS-amd64",
+            "configurePreset": "OPynSim_Release-MacOS-amd64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "OPynSim_Release-MacOS-arm64",
+            "configurePreset": "OPynSim_Release-MacOS-arm64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         }
     ],
     "packagePresets": [
         {
             "name": "OPynSim_Release",
             "configurePreset": "OPynSim_Release"
+        },
+        {
+            "name": "OPynSim_Release-MacOS-amd64",
+            "configurePreset": "OPynSim_Release-MacOS-amd64"
+        },
+        {
+            "name": "OPynSim_Release-MacOS-arm64",
+            "configurePreset": "OPynSim_Release-MacOS-arm64"
         }
     ],
     "workflowPresets": [
@@ -147,6 +172,24 @@
                 { "type": "build", "name": "OPynSim_Release" },
                 { "type": "test", "name": "OPynSim_Release" },
                 { "type": "package", "name": "OPynSim_Release" }
+            ]
+        },
+        {
+            "name": "OPynSim_Release-MacOS-amd64",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_Release-MacOS-amd64" },
+                { "type": "build", "name": "OPynSim_Release-MacOS-amd64" },
+                { "type": "test", "name": "OPynSim_Release-MacOS-amd64" },
+                { "type": "package", "name": "OPynSim_Release-MacOS-amd64" }
+            ]
+        },
+        {
+            "name": "OPynSim_Release-MacOS-arm64",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_Release-MacOS-arm64" },
+                { "type": "build", "name": "OPynSim_Release-MacOS-arm64" },
+                { "type": "test", "name": "OPynSim_Release-MacOS-arm64" },
+                { "type": "package", "name": "OPynSim_Release-MacOS-arm64" }
             ]
         }
     ]

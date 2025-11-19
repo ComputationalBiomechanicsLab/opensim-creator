@@ -1,20 +1,17 @@
-
+{
     "version": 6,
     "configurePresets": [
         {
             "name": "OPynSim_third-party_Development",
-            "displayName": "OPynSim Third-Party Code (Development)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Development",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Development/install"
-            },
-            "hidden": false
+            }
         },
         {
             "name": "OPynSim_third-party_ErrorCheck",
-            "displayName": "OPynSim Third-Party Code (ErrorCheck)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
@@ -24,30 +21,45 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_C_FLAGS": "-fsanitize=undefined",
                 "CMAKE_CXX_FLAGS": "-fsanitize=undefined"
-            },
-            "hidden": false
+            }
         },
         {
             "name": "OPynSim_third-party_RelWithDebInfo",
-            "displayName": "OPynSim Third-Party Code (RelWithDebInfo)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/RelWithDebInfo/install"
-            },
-            "hidden": false
+            }
         },
         {
             "name": "OPynSim_third-party_Release",
-            "displayName": "OPynSim Third-Party Code (Release)",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/Release/install"
-            },
-            "hidden": false
+            }
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-amd64",
+            "inherits": "OPynSim_third-party_Release",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "amd64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-arm64",
+            "inherits": "OPynSim_third-party_Release",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
         }
     ],
     "buildPresets": [
@@ -66,59 +78,57 @@
         {
             "name": "OPynSim_third-party_Release",
             "configurePreset": "OPynSim_third-party_Release"
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-amd64",
+            "configurePreset": "OPynSim_third-party_Release-MacOS-amd64"
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-arm64",
+            "configurePreset": "OPynSim_third-party_Release-MacOS-arm64"
         }
     ],
     "workflowPresets": [
         {
             "name": "OPynSim_third-party_Development",
             "steps": [
-                {
-                    "type": "configure",
-                    "name": "OPynSim_third-party_Development"
-                },
-                {
-                    "type": "build",
-                    "name": "OPynSim_third-party_Development"
-                }
+                { "type": "configure", "name": "OPynSim_third-party_Development" },
+                { "type": "build",     "name": "OPynSim_third-party_Development" }
             ]
         },
         {
             "name": "OPynSim_third-party_ErrorCheck",
             "steps": [
-                {
-                    "type": "configure",
-                    "name": "OPynSim_third-party_ErrorCheck"
-                },
-                {
-                    "type": "build",
-                    "name": "OPynSim_third-party_ErrorCheck"
-                }
+                { "type": "configure", "name": "OPynSim_third-party_ErrorCheck" },
+                { "type": "build",     "name": "OPynSim_third-party_ErrorCheck" }
             ]
         },
         {
             "name": "OPynSim_third-party_RelWithDebInfo",
             "steps": [
-                {
-                    "type": "configure",
-                    "name": "OPynSim_third-party_RelWithDebInfo"
-                },
-                {
-                    "type": "build",
-                    "name": "OPynSim_third-party_RelWithDebInfo"
-                }
+                { "type": "configure", "name": "OPynSim_third-party_RelWithDebInfo" },
+                { "type": "build",     "name": "OPynSim_third-party_RelWithDebInfo" }
             ]
         },
         {
             "name": "OPynSim_third-party_Release",
             "steps": [
-                {
-                    "type": "configure",
-                    "name": "OPynSim_third-party_Release"
-                },
-                {
-                    "type": "build",
-                    "name": "OPynSim_third-party_Release"
-                }
+                { "type": "configure", "name": "OPynSim_third-party_Release" },
+                { "type": "build",     "name": "OPynSim_third-party_Release" }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-amd64",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_third-party_Release-MacOS-amd64" },
+                { "type": "build",     "name": "OPynSim_third-party_Release-MacOS-amd64" }
+            ]
+        },
+        {
+            "name": "OPynSim_third-party_Release-MacOS-arm64",
+            "steps": [
+                { "type": "configure", "name": "OPynSim_third-party_Release-MacOS-arm64" },
+                { "type": "build",     "name": "OPynSim_third-party_Release-MacOS-arm64" }
             ]
         }
     ]

@@ -43,6 +43,9 @@ OPynSim is supported on the following platform combinations:
 
 - GitHub Actions build
 - Development/Release configurations /w strict compiler flags
+- MacOS arm64 + amd64
+- Packaging tests for wheel validity
+- Packaging/build tests for MacOS SDK/ABI
 - Codesigning on MacOS/Windows
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
