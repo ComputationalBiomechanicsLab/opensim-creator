@@ -49,7 +49,7 @@ if(OPYN_TEST_DEPENDENCIES)
     endif()
 endif()
 
-if(OPYN_TEST_SYMBOLS)
+if(OPYN_TEST_SYMBOLS AND UNIX)
     if(APPLE)
         set(OPYN_PERMITTED_SYMBOLS "_PyInit__opynsim_native")
     else()
