@@ -10,6 +10,10 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed a regression in the simulation workflow where clicking and dragging
   the mouse over a simulation plot was no longer continuously scrubbing through
   the simulation (#1139).
+- Added `compensate_for_frame_warping` to Thin-Plate Spline (TPS) warping steps in
+  the model warper workflow. The option compensates for the case where a scaling step
+  in the model warper operates on frames that may have been warped by previous steps,
+  which can result in double-warping of the data (#1144).
 
 
 ## [0.6.2] - 2025/11/03

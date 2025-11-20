@@ -23,6 +23,7 @@
 
 #include <liboscar/Formats/OBJ.h>
 #include <liboscar/Maths/TransformFunctions.h>
+#include <liboscar/Maths/MathHelpers.h>
 #include <liboscar/Platform/App.h>
 #include <liboscar/Platform/Log.h>
 #include <liboscar/UI/Events/OpenTabEvent.h>
@@ -169,51 +170,77 @@ namespace
     class ScalingCache final {
     public:
         std::unique_ptr<InMemoryMesh> lookupTPSMeshWarp(
-            const OpenSim::Model& model,
-            const SimTK::State& state,
-            const OpenSim::Mesh& inputMesh,
-            const OpenSim::Frame& landmarksFrame,
-            const ThinPlateSplineCommonInputs& tpsInputs)
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Model& resultModel,
+            const OpenSim::Mesh& sourceMesh,
+            const OpenSim::Mesh& resultMesh,
+            const OpenSim::Frame& sourceLandmarksFrame,
+            const OpenSim::Frame& resultLandmarksFrame,
+            const ThinPlateSplineCommonInputs& tpsInputs,
+            bool compensateForFrameWarping)
         {
             // Compile the TPS coefficients from the source+destination landmarks
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
 
+            // Calculate transforms to use before/after TPS warping
+            const Transforms transforms = calculateTransforms(
+                sourceModel,
+                resultModel,
+                sourceMesh.getFrame(),
+                resultMesh.getFrame(),
+                sourceLandmarksFrame,
+                resultLandmarksFrame,
+                compensateForFrameWarping
+            );
+
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
-            Mesh mesh = ToOscMesh(model, state, inputMesh);
+            Mesh resultOscMesh = ToOscMesh(resultModel, resultModel.getWorkingState(), resultMesh);
 
-            // Figure out the transform between the input mesh and the landmarks frame
-            const auto mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
-
-            // Warp the verticies in-place.
-            auto vertices = mesh.vertices();
+            // Warp the vertices in-place.
+            auto vertices = resultOscMesh.vertices();
             for (auto& vertex : vertices) {
-                vertex = transform_point(mesh2landmarks, vertex);  // put vertex into landmark frame
+                vertex = transform_point(transforms.localToLandmarks, vertex);  // put vertex into landmark frame
             }
             TPSWarpPointsInPlace(coefficients, vertices, static_cast<float>(tpsInputs.blendingFactor));
             for (auto& vertex : vertices) {
-                vertex = inverse_transform_point(mesh2landmarks, vertex);  // put vertex back into mesh frame
+                vertex = transform_point(transforms.landmarksToLocal, vertex);  // put vertex back into mesh frame
             }
 
             // Assign the vertices back to the OSC mesh and emit it as an `InMemoryMesh` component
-            mesh.set_vertices(vertices);
-            mesh.recalculate_normals();  // maybe should be a runtime param
-            return std::make_unique<InMemoryMesh>(mesh);
+            resultOscMesh.set_vertices(vertices);
+            resultOscMesh.recalculate_normals();  // maybe should be a runtime param
+            return std::make_unique<InMemoryMesh>(resultOscMesh);
         }
 
         SimTK::Vec3 lookupTPSWarpedRigidPoint(
-            [[maybe_unused]] const OpenSim::Model& model,
-            const SimTK::State& state,
-            const SimTK::Vec3& locationInParent,
-            const OpenSim::Frame& parentFrame,
-            const OpenSim::Frame& landmarksFrame,
-            const ThinPlateSplineCommonInputs& tpsInputs)
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Model& resultModel,
+            [[maybe_unused]] const SimTK::Vec3& sourceLocation,
+            const SimTK::Vec3& resultLocation,
+            const OpenSim::Frame& sourceParentFrame,
+            const OpenSim::Frame& resultParentFrame,
+            const OpenSim::Frame& sourceLandmarksFrame,
+            const OpenSim::Frame& resultLandmarksFrame,
+            const ThinPlateSplineCommonInputs& tpsInputs,
+            bool compensateForFrameWarping)
         {
+            // Compile the TPS coefficients from the source+destination landmarks
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
-            const SimTK::Transform stationParentToLandmarksXform = landmarksFrame.getTransformInGround(state).invert() * parentFrame.getTransformInGround(state);
-            const SimTK::Vec3 inputLocationInLandmarksFrame = stationParentToLandmarksXform * locationInParent;
-            const auto warpedLocationInLandmarksFrame = to<SimTK::Vec3>(TPSWarpPoint(coefficients, to<Vector3>(inputLocationInLandmarksFrame), static_cast<float>(tpsInputs.blendingFactor)));
-            const SimTK::Vec3 warpedLocationInStationParentFrame = stationParentToLandmarksXform.invert() * warpedLocationInLandmarksFrame;
-            return warpedLocationInStationParentFrame;
+
+            // Calculate transforms to use before/after TPS warping
+            const Transforms transforms = calculateTransforms(
+                sourceModel,
+                resultModel,
+                sourceParentFrame,
+                resultParentFrame,
+                sourceLandmarksFrame,
+                resultLandmarksFrame,
+                compensateForFrameWarping
+            );
+
+            const auto resultLocationInLandmarkFrame = transform_point(transforms.localToLandmarks, to<Vector3>(resultLocation));
+            const auto warpedLocationInLandmarkFrame = TPSWarpPoint(coefficients, resultLocationInLandmarkFrame, static_cast<float>(tpsInputs.blendingFactor));
+            return to<SimTK::Vec3>(transform_point(transforms.landmarksToLocal, warpedLocationInLandmarkFrame));
         }
 
         SimTK::Transform lookupTPSAffineTransformWithoutScaling(
@@ -236,6 +263,36 @@ namespace
             return SimTK::Transform{rotation, translation};
         }
     private:
+        struct Transforms final {
+            Matrix4x4 localToLandmarks;
+            Matrix4x4 landmarksToLocal;
+        };
+
+        Transforms calculateTransforms(
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Model& resultModel,
+            const OpenSim::Frame& sourceFrame,
+            const OpenSim::Frame& resultFrame,
+            const OpenSim::Frame& sourceLandmarksFrame,
+            const OpenSim::Frame& resultLandmarksFrame,
+            bool compensateForFrameWarping) const
+        {
+            const SimTK::Transform resultTransform = resultFrame.findTransformBetween(resultModel.getWorkingState(), resultLandmarksFrame);
+
+            if (compensateForFrameWarping) {
+                const SimTK::Transform sourceTransform = sourceFrame.findTransformBetween(sourceModel.getWorkingState(), sourceLandmarksFrame);
+                const SimTK::Transform frameWarpTransform = sourceTransform.invert() * resultTransform;
+                return Transforms{
+                    .localToLandmarks = to<Matrix4x4>(sourceTransform),
+                    .landmarksToLocal = to<Matrix4x4>(frameWarpTransform.invert() * sourceTransform.invert()),
+                };
+            } else {
+                return Transforms{
+                    .localToLandmarks = to<Matrix4x4>(resultTransform),
+                    .landmarksToLocal = to<Matrix4x4>(SimTK::Transform{resultTransform.invert()}),
+                };
+            }
+        }
 
         const TPSCoefficients3D<float>& lookupTPSCoefficients(const ThinPlateSplineCommonInputs& tpsInputs)
         {
@@ -410,7 +467,9 @@ namespace
     // Common parameters that can be requested from the `ThinPlateSplineScalingStep` base class.
     struct ThinPlateSplineScalingStepCommonParams final {
         ThinPlateSplineCommonInputs tpsInputs;
-        const OpenSim::Frame* landmarksFrame = nullptr;
+        const OpenSim::Frame* sourceLandmarksFrame = nullptr;
+        const OpenSim::Frame* resultLandmarksFrame = nullptr;
+        bool compensateForFrameWarping = false;
     };
 
     // An abstract base class for a `ScalingStep` that uses the Thin-Plate Spline (TPS)
@@ -424,6 +483,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(compensate_for_frame_warping, bool, "If `landmarks_frame` is different from the source data's frame, and previous scaling steps have caused the spatial transform between those two frames to change, compensate for it by inverse-applying the difference between the frames to the result, so that the effect of frame warping is compensated for. This can be necessary to stop double-warping for occurring (e.g. when separately warping a frame followed by warping data within that frame)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
 
@@ -436,6 +496,7 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_compensate_for_frame_warping(false);
             constructProperty_source_landmarks_prescale(1.0);
             constructProperty_destination_landmarks_prescale(1.0);
         }
@@ -501,7 +562,8 @@ namespace
         // algorithm.
         ThinPlateSplineScalingStepCommonParams calcTPSScalingStepCommonParams(
             const ScalingParameters& parameters,
-            OpenSim::Model& resultModel) const
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Model& resultModel) const
         {
             // Lookup/validate warping inputs.
             const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
@@ -514,8 +576,12 @@ namespace
             const std::filesystem::path destinationLandmarksPath = modelFilesystemLocation->parent_path() / get_destination_landmarks_file();
 
             OSC_ASSERT_ALWAYS(not get_landmarks_frame().empty());
-            const auto* landmarksFrame = FindComponent<OpenSim::Frame>(resultModel, get_landmarks_frame());
-            OSC_ASSERT_ALWAYS(landmarksFrame && "could not find the landmarks frame in the model");
+
+            const auto* sourceLandmarksFrame = FindComponent<OpenSim::Frame>(sourceModel, get_landmarks_frame());
+            OSC_ASSERT_ALWAYS(sourceLandmarksFrame && "could not find the landmarks frame in the source model");
+
+            const auto* resultLandmarksFrame = FindComponent<OpenSim::Frame>(resultModel, get_landmarks_frame());
+            OSC_ASSERT_ALWAYS(resultLandmarksFrame && "could not find the landmarks frame in the model");
 
             const std::optional<double> blendingFactor = parameters.lookup<double>("blending_factor");
             OSC_ASSERT_ALWAYS(blendingFactor && "blending_factor was not set by the warping engine");
@@ -528,7 +594,9 @@ namespace
                     get_destination_landmarks_prescale(),
                     *blendingFactor,
                 },
-                .landmarksFrame = landmarksFrame,
+                .sourceLandmarksFrame = sourceLandmarksFrame,
+                .resultLandmarksFrame = resultLandmarksFrame,
+                .compensateForFrameWarping = get_compensate_for_frame_warping(),
             };
         }
     };
@@ -555,9 +623,10 @@ namespace
 
         ThinPlateSplineScalingStepCommonParams calcTPSScalingStepCommonParams(
             const ScalingParameters& parameters,
-            OpenSim::Model& resultModel) const
+            const OpenSim::Model& sourceModel,
+            const OpenSim::Model& resultModel) const
         {
-            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, resultModel);
+            auto rv = ThinPlateSplineScalingStep::calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
             rv.tpsInputs.applyAffineTranslation = get_apply_affine_translation();
             rv.tpsInputs.applyAffineScale = get_apply_affine_scale();
             rv.tpsInputs.applyAffineRotation = get_apply_affine_rotation();
@@ -611,29 +680,36 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Warp each mesh specified by the `meshes` property.
             for (int i = 0; i < getProperty_meshes().size(); ++i) {
+                const auto* sourceMesh = FindComponent<OpenSim::Mesh>(sourceModel, get_meshes(i));
+                OSC_ASSERT_ALWAYS(sourceMesh && "could not find a mesh in the source model");
+
                 // Find the input mesh and use it produce the warped mesh.
-                const auto* mesh = FindComponent<OpenSim::Mesh>(resultModel, get_meshes(i));
-                OSC_ASSERT_ALWAYS(mesh && "could not find a mesh in the source model");
+                const auto* resultMesh = FindComponent<OpenSim::Mesh>(resultModel, get_meshes(i));
+                OSC_ASSERT_ALWAYS(resultMesh && "could not find a mesh in the model");
+
                 std::unique_ptr<InMemoryMesh> warpedMesh = scalingCache.lookupTPSMeshWarp(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
-                    *mesh,
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    *sourceMesh,
+                    *resultMesh,
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
 
                 // Overwrite the mesh in the result model with the warped mesh.
-                auto* resultMesh = FindComponentMut<OpenSim::Mesh>(resultModel, get_meshes(i));
+                auto* resultMeshMut = FindComponentMut<OpenSim::Mesh>(resultModel, get_meshes(i));
                 OSC_ASSERT_ALWAYS(resultMesh && "could not find a corresponding mesh in the result model");
-                OverwriteGeometry(resultModel, *resultMesh, std::move(warpedMesh));
+                OverwriteGeometry(resultModel, *resultMeshMut, std::move(warpedMesh));
                 OSC_ASSERT_ALWAYS(FindComponent<InMemoryMesh>(resultModel, get_meshes(i)) != nullptr);
             }
             InitializeModel(resultModel);
@@ -680,29 +756,36 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Warp each station specified by the `stations` property.
             for (int i = 0; i < getProperty_stations().size(); ++i) {
+                const auto* sourceStation = FindComponent<OpenSim::Station>(sourceModel, get_stations(i));
+                OSC_ASSERT_ALWAYS(sourceStation && "could not find a station in the source model");
+
                 // Find the input station and use it produce the warped station.
-                const auto* station = FindComponent<OpenSim::Station>(resultModel, get_stations(i));
-                OSC_ASSERT_ALWAYS(station && "could not find a station in the source model");
+                const auto* resultStation = FindComponent<OpenSim::Station>(resultModel, get_stations(i));
+                OSC_ASSERT_ALWAYS(resultStation && "could not find a station in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
-                    station->get_location(),
-                    station->getParentFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    sourceStation->get_location(),
+                    resultStation->get_location(),
+                    sourceStation->getParentFrame(),
+                    resultStation->getParentFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
-                auto* resultStation = FindComponentMut<OpenSim::Station>(resultModel, get_stations(i));
-                OSC_ASSERT_ALWAYS(resultStation && "could not find a corresponding station in the result model");
-                resultStation->set_location(warpedLocation);
+                auto* resultStationMut = FindComponentMut<OpenSim::Station>(resultModel, get_stations(i));
+                OSC_ASSERT_ALWAYS(resultStationMut && "could not find a corresponding station in the result model");
+                resultStationMut->set_location(warpedLocation);
             }
             InitializeModel(resultModel);
             InitializeState(resultModel);
@@ -748,29 +831,36 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Warp each path point specified by the `path_points` property.
             for (int i = 0; i < getProperty_path_points().size(); ++i) {
+                const auto* sourcePathPoint = FindComponent<OpenSim::PathPoint>(sourceModel, get_path_points(i));
+                OSC_ASSERT_ALWAYS(sourcePathPoint && "could not find a path point in the source model");
+
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* pathPoint = FindComponent<OpenSim::PathPoint>(resultModel, get_path_points(i));
-                OSC_ASSERT_ALWAYS(pathPoint && "could not find a path point in the source model");
+                const auto* resultPathPoint = FindComponent<OpenSim::PathPoint>(resultModel, get_path_points(i));
+                OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a path point in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
-                    pathPoint->get_location(),
-                    pathPoint->getParentFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    sourcePathPoint->get_location(),
+                    resultPathPoint->get_location(),
+                    sourcePathPoint->getParentFrame(),
+                    resultPathPoint->getParentFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
-                auto* resultPathPoint = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));
-                OSC_ASSERT_ALWAYS(resultPathPoint && "could not find a corresponding path point in the result model");
-                resultPathPoint->set_location(warpedLocation);
+                auto* resultPathPointMut = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));
+                OSC_ASSERT_ALWAYS(resultPathPointMut && "could not find a corresponding path point in the result model");
+                resultPathPointMut->set_location(warpedLocation);
             }
             InitializeModel(resultModel);
             InitializeState(resultModel);
@@ -818,30 +908,37 @@ namespace
         void implApplyScalingStep(
             ScalingCache& scalingCache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Warp each offset frame `translation` specified by the `offset_frames` property.
             for (int i = 0; i < getProperty_offset_frames().size(); ++i) {
+                const auto* sourceOffsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(sourceModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(sourceOffsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
+
                 // Find the path point in the source model and use it produce the warped path point.
-                const auto* offsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
-                OSC_ASSERT_ALWAYS(offsetFrame && "could not find a `PhysicalOffsetFrame` in the source model");
+                const auto* resultOffsetFrame = FindComponent<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a `PhysicalOffsetFrame` in the model");
 
                 const SimTK::Vec3 warpedLocation = scalingCache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
-                    offsetFrame->get_translation(),
-                    offsetFrame->getParentFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    sourceOffsetFrame->get_translation(),
+                    resultOffsetFrame->get_translation(),
+                    sourceOffsetFrame->getParentFrame(),
+                    resultOffsetFrame->getParentFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
-                auto* resultOffsetFrame = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
-                OSC_ASSERT_ALWAYS(resultOffsetFrame && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
-                resultOffsetFrame->set_translation(warpedLocation);
+                auto* resultOffsetFrameMut = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
+                OSC_ASSERT_ALWAYS(resultOffsetFrameMut && "could not find a corresponding `PhysicalOffsetFrame` in the result model");
+                resultOffsetFrameMut->set_translation(warpedLocation);
             }
             InitializeModel(resultModel);
             InitializeState(resultModel);
@@ -905,11 +1002,11 @@ namespace
         void implApplyScalingStep(
             ScalingCache& cache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Lookup/validate warping inputs.
             const std::optional<std::filesystem::path> modelFilesystemLocation = TryFindInputFile(resultModel);
@@ -1028,11 +1125,11 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
         void implApplyScalingStep(
             ScalingCache& cache,
             const ScalingParameters& parameters,
-            const OpenSim::Model&,
+            const OpenSim::Model& sourceModel,
             OpenSim::Model& resultModel) const final
         {
             // Lookup/validate warping inputs.
-            const auto commonParams = calcTPSScalingStepCommonParams(parameters, resultModel);
+            const auto commonParams = calcTPSScalingStepCommonParams(parameters, sourceModel, resultModel);
 
             // Precalculate the surface point direction vector as "rotate a unit vector pointing
             // along X around the Z axis by theta amount" (see property documentation).
@@ -1040,45 +1137,63 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
             const SimTK::UnitVec3 surfacePointDirectionInCylinderSpace{rotateCylinderXToSurfacePointDirection * SimTK::Vec3{1.0, 0.0, 0.0}};
 
             // Precalculate the midline projection point in the cylinder's local (not parent) space.
-            const SimTK::Vec3 sourceMidlinePointInCylinderSpace{0.0, 0.0, get_midline_projection_distance()};
+            const SimTK::Vec3 midlinePointInCylinderSpace{0.0, 0.0, get_midline_projection_distance()};
 
             // Warp each `WrapCylinder` specified by the `wrap_cylinders` property.
             for (int i = 0; i < getProperty_wrap_cylinders().size(); ++i) {
+                const auto* sourceWrapCylinder = FindComponent<OpenSim::WrapCylinder>(sourceModel, get_wrap_cylinders(i));
+                OSC_ASSERT_ALWAYS(sourceWrapCylinder && "could not find a `WrapCylinder` in the source model");
+
                 // Find the `i`th `WrapCylinder` in the model.
-                auto* wrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinders(i));
-                OSC_ASSERT_ALWAYS(wrapCylinder && "could not find a `WrapCylinder` in the source model");
+                auto* resultWrapCylinder = FindComponentMut<OpenSim::WrapCylinder>(resultModel, get_wrap_cylinders(i));
+                OSC_ASSERT_ALWAYS(resultWrapCylinder && "could not find a `WrapCylinder` in the model");
 
                 // Calculate the `WrapCylinder`'s new `translation` by warping the origin.
                 const SimTK::Vec3 newOriginPointInParent = cache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
-                    wrapCylinder->get_translation(),
-                    wrapCylinder->getFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    sourceWrapCylinder->get_translation(),
+                    resultWrapCylinder->get_translation(),
+                    sourceWrapCylinder->getFrame(),
+                    resultWrapCylinder->getFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
                 // Calculate the `WrapCylinder`'s new projected midline point by warping it.
-                const SimTK::Vec3 sourceMidlinePointInParent = wrapCylinder->getTransform() * sourceMidlinePointInCylinderSpace;
+                const SimTK::Vec3 sourceMidlinePointInParent = sourceWrapCylinder->getTransform() * midlinePointInCylinderSpace;
+                const SimTK::Vec3 resultMidlinePointInParent = resultWrapCylinder->getTransform() * midlinePointInCylinderSpace;
                 const SimTK::Vec3 newMidlinePointInParent = cache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
                     sourceMidlinePointInParent,
-                    wrapCylinder->getFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    resultMidlinePointInParent,
+                    sourceWrapCylinder->getFrame(),
+                    resultWrapCylinder->getFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
                 // Calculate the source surface point by projecting the direction onto the `WrapCylinder`'s surface.
-                const SimTK::Vec3 sourceSurfacePointInCylinderSpace = wrapCylinder->get_radius() * surfacePointDirectionInCylinderSpace;
-                const SimTK::Vec3 sourceSurfacePointInParent = wrapCylinder->getTransform() * sourceSurfacePointInCylinderSpace;
+                const SimTK::Vec3 sourceSurfacePointInCylinderSpace = sourceWrapCylinder->get_radius() * surfacePointDirectionInCylinderSpace;
+                const SimTK::Vec3 resultSurfacePointInCylinderSpace = resultWrapCylinder->get_radius() * surfacePointDirectionInCylinderSpace;
+                const SimTK::Vec3 sourceSurfacePointInParent = sourceWrapCylinder->getTransform() * sourceSurfacePointInCylinderSpace;
+                const SimTK::Vec3 resultSurfacePointInParent = resultWrapCylinder->getTransform() * resultSurfacePointInCylinderSpace;
                 const SimTK::Vec3 newSurfacePointInParent = cache.lookupTPSWarpedRigidPoint(
+                    sourceModel,
                     resultModel,
-                    resultModel.getWorkingState(),
                     sourceSurfacePointInParent,
-                    wrapCylinder->getFrame(),
-                    *commonParams.landmarksFrame,
-                    commonParams.tpsInputs
+                    resultSurfacePointInParent,
+                    sourceWrapCylinder->getFrame(),
+                    resultWrapCylinder->getFrame(),
+                    *commonParams.sourceLandmarksFrame,
+                    *commonParams.resultLandmarksFrame,
+                    commonParams.tpsInputs,
+                    commonParams.compensateForFrameWarping
                 );
 
                 // The `WrapCylinder`'s new Z axis within the parent frame is a unit vector that
@@ -1112,9 +1227,9 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                 const double newRadius = SimTK::dot(SimTK::Vec3{newSurfacePointInParent - newOriginPointInParent}, newXAxisDirectionInParent);
 
                 // (finally) Update the cylinder
-                wrapCylinder->set_translation(newOriginPointInParent);
-                wrapCylinder->set_xyz_body_rotation(newCylinderRotation.convertRotationToBodyFixedXYZ());
-                wrapCylinder->set_radius(newRadius);
+                resultWrapCylinder->set_translation(newOriginPointInParent);
+                resultWrapCylinder->set_xyz_body_rotation(newCylinderRotation.convertRotationToBodyFixedXYZ());
+                resultWrapCylinder->set_radius(newRadius);
             }
             InitializeModel(resultModel);
             InitializeState(resultModel);
