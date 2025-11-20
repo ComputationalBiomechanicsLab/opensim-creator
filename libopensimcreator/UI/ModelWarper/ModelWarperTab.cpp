@@ -184,7 +184,7 @@ namespace
             // Figure out the transform between the input mesh and the landmarks frame
             const auto mesh2landmarks = to<Transform>(inputMesh.getFrame().findTransformBetween(state, landmarksFrame));
 
-            // Warp the verticies in-place.
+            // Warp the vertices in-place.
             auto vertices = mesh.vertices();
             for (auto& vertex : vertices) {
                 vertex = transform_point(mesh2landmarks, vertex);  // put vertex into landmark frame
@@ -424,6 +424,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.");
+        OpenSim_DECLARE_PROPERTY(compensate_for_frame_warping, bool, "If `landmarks_frame` is different from the warped data's frame, and previous scaling steps has caused the spatial transform between the two to change, compensate for it by inverse-applying the warp transform to this data, so that the effect of frame warping is compensated for. This can be necessary to stop double-warping for occurring");
         OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
 
@@ -436,6 +437,7 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
+            constructProperty_compensate_for_frame_warping(true);
             constructProperty_source_landmarks_prescale(1.0);
             constructProperty_destination_landmarks_prescale(1.0);
         }
