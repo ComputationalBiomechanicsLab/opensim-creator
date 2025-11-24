@@ -177,7 +177,7 @@ namespace
             const OpenSim::Frame& sourceLandmarksFrame,
             const OpenSim::Frame& resultLandmarksFrame,
             const ThinPlateSplineCommonInputs& tpsInputs,
-            bool compensateForFrameWarping)
+            bool compensateForFrameChanges)
         {
             // Compile the TPS coefficients from the source+destination landmarks
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
@@ -190,7 +190,7 @@ namespace
                 resultMesh.getFrame(),
                 sourceLandmarksFrame,
                 resultLandmarksFrame,
-                compensateForFrameWarping
+                compensateForFrameChanges
             );
 
             // Convert the input mesh into an OSC mesh, so that it's suitable for warping.
@@ -222,7 +222,7 @@ namespace
             const OpenSim::Frame& sourceLandmarksFrame,
             const OpenSim::Frame& resultLandmarksFrame,
             const ThinPlateSplineCommonInputs& tpsInputs,
-            bool compensateForFrameWarping)
+            bool compensateForFrameChanges)
         {
             // Compile the TPS coefficients from the source+destination landmarks
             const TPSCoefficients3D<float>& coefficients = lookupTPSCoefficients(tpsInputs);
@@ -235,7 +235,7 @@ namespace
                 resultParentFrame,
                 sourceLandmarksFrame,
                 resultLandmarksFrame,
-                compensateForFrameWarping
+                compensateForFrameChanges
             );
 
             const auto resultLocationInLandmarkFrame = transform_point(transforms.localToLandmarks, to<Vector3>(resultLocation));
@@ -275,11 +275,11 @@ namespace
             const OpenSim::Frame& resultFrame,
             const OpenSim::Frame& sourceLandmarksFrame,
             const OpenSim::Frame& resultLandmarksFrame,
-            bool compensateForFrameWarping) const
+            bool compensateForFrameChanges) const
         {
             const SimTK::Transform resultTransform = resultFrame.findTransformBetween(resultModel.getWorkingState(), resultLandmarksFrame);
 
-            if (compensateForFrameWarping) {
+            if (compensateForFrameChanges) {
                 const SimTK::Transform sourceTransform = sourceFrame.findTransformBetween(sourceModel.getWorkingState(), sourceLandmarksFrame);
                 const SimTK::Transform frameWarpTransform = sourceTransform.invert() * resultTransform;
                 return Transforms{
@@ -469,7 +469,7 @@ namespace
         ThinPlateSplineCommonInputs tpsInputs;
         const OpenSim::Frame* sourceLandmarksFrame = nullptr;
         const OpenSim::Frame* resultLandmarksFrame = nullptr;
-        bool compensateForFrameWarping = false;
+        bool compensateForFrameChanges = false;
     };
 
     // An abstract base class for a `ScalingStep` that uses the Thin-Plate Spline (TPS)
@@ -483,7 +483,7 @@ namespace
         OpenSim_DECLARE_PROPERTY(source_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the source landmarks can be loaded from (e.g. `Geometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_file, std::string, "Filesystem path, relative to the model's filesystem path, where a CSV containing the destination landmarks can be loaded from (e.g. `DestinationGeometry/torso.landmarks.csv`)");
         OpenSim_DECLARE_PROPERTY(landmarks_frame, std::string, "Component path (e.g. `/bodyset/somebody`) to the frame that the landmarks defined in both `source_landmarks_file` and `destination_landmarks_file` are expressed in.\n\nThe engine uses this to figure out how to transform the input to/from the coordinate system of the warp transform.");
-        OpenSim_DECLARE_PROPERTY(compensate_for_frame_warping, bool, "If `landmarks_frame` is different from the source data's frame, and previous scaling steps have caused the spatial transform between those two frames to change, compensate for it by inverse-applying the difference between the frames to the result, so that the effect of frame warping is compensated for. This can be necessary to stop double-warping for occurring (e.g. when separately warping a frame followed by warping data within that frame)");
+        OpenSim_DECLARE_PROPERTY(compensate_for_frame_changes, bool, "If `landmarks_frame` is different from the source data's frame, and previous scaling steps have caused the spatial transform between those two frames to change, compensate for it by inverse-applying the difference between the frames to the result, so that the effect of those frame changes is compensated for. This can be necessary to stop double-warping for occurring (e.g. when separately warping a frame followed by warping data within that frame)");
         OpenSim_DECLARE_PROPERTY(source_landmarks_prescale, double, "Scaling factor that each source landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
         OpenSim_DECLARE_PROPERTY(destination_landmarks_prescale, double, "Scaling factor that each destination landmark point should be multiplied by before computing the TPS warp. This is sometimes necessary if (e.g.) the mesh is in different units (OpenSim works in meters).");
 
@@ -496,7 +496,7 @@ namespace
             constructProperty_source_landmarks_file({});
             constructProperty_destination_landmarks_file({});
             constructProperty_landmarks_frame("/ground");
-            constructProperty_compensate_for_frame_warping(false);
+            constructProperty_compensate_for_frame_changes(false);
             constructProperty_source_landmarks_prescale(1.0);
             constructProperty_destination_landmarks_prescale(1.0);
         }
@@ -596,7 +596,7 @@ namespace
                 },
                 .sourceLandmarksFrame = sourceLandmarksFrame,
                 .resultLandmarksFrame = resultLandmarksFrame,
-                .compensateForFrameWarping = get_compensate_for_frame_warping(),
+                .compensateForFrameChanges = get_compensate_for_frame_changes(),
             };
         }
     };
@@ -702,7 +702,7 @@ namespace
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
                 OSC_ASSERT_ALWAYS(warpedMesh && "warping a mesh in the model failed");
 
@@ -780,7 +780,7 @@ namespace
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 auto* resultStationMut = FindComponentMut<OpenSim::Station>(resultModel, get_stations(i));
@@ -855,7 +855,7 @@ namespace
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 auto* resultPathPointMut = FindComponentMut<OpenSim::PathPoint>(resultModel, get_path_points(i));
@@ -933,7 +933,7 @@ namespace
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 auto* resultOffsetFrameMut = FindComponentMut<OpenSim::PhysicalOffsetFrame>(resultModel, get_offset_frames(i));
@@ -1159,7 +1159,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 // Calculate the `WrapCylinder`'s new projected midline point by warping it.
@@ -1175,7 +1175,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 // Calculate the source surface point by projecting the direction onto the `WrapCylinder`'s surface.
@@ -1193,7 +1193,7 @@ Uses the Thin-Plate Spline (TPS) warping algorithm to scale `WrapCylinder`s in t
                     *commonParams.sourceLandmarksFrame,
                     *commonParams.resultLandmarksFrame,
                     commonParams.tpsInputs,
-                    commonParams.compensateForFrameWarping
+                    commonParams.compensateForFrameChanges
                 );
 
                 // The `WrapCylinder`'s new Z axis within the parent frame is a unit vector that
