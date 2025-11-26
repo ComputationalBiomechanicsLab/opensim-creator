@@ -36,7 +36,7 @@ FOR %%C IN (%CONFIGS%) DO (
     echo Entering third_party directory for %%C
     cd third_party
     echo Building dependencies for %%C
-    cmake --workflow --preset OPynSim_third-party_%%C
+    python scripts/setup_dependencies.py %%C
     IF !ERRORLEVEL! NEQ 0 (
        echo Failed to build opynsim's dependencies
        exit /b !ERRORLEVEL!

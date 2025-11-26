@@ -21,7 +21,7 @@ for CONFIG in "${CONFIGS[@]}"; do
     echo "=== Building configuration: $CONFIG ==="
 
     # build bundled dependencies
-    cd third_party/ && cmake --workflow --preset "OPynSim_third-party_$CONFIG" && cd ..
+    ./scripts/setup_dependencies.py $CONFIG
 
     # build the main project
     cmake --workflow --preset "OPynSim_$CONFIG"
