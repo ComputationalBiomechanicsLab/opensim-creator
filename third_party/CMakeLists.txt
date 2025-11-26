@@ -32,9 +32,6 @@ endif()
 #
 # these are cache args that should be forwarded to external dependency projects
 if(TRUE)
-    # required for `opynsim` python bindings (shared object)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
     set(OPYNDEPS_FORWARDED_VARS
 
         CMAKE_CXX_COMPILER
@@ -58,13 +55,18 @@ if(TRUE)
         CMAKE_SYSTEM_VERSION
         CMAKE_OSX_DEPLOYMENT_TARGET
         CMAKE_OSX_ARCHITECTURES
-        CMAKE_POSITION_INDEPENDENT_CODE
     )
     foreach(OPYNDEPS_FORWARDED_VAR IN LISTS OPYNDEPS_FORWARDED_VARS)
         if (DEFINED ${OPYNDEPS_FORWARDED_VAR})
             list(APPEND OPYNDEPS_DEPENDENCY_CMAKE_ARGS -D${OPYNDEPS_FORWARDED_VAR}:STRING=${${OPYNDEPS_FORWARDED_VAR}})
         endif()
     endforeach()
+
+    # Forcibly set `CMAKE_POSITION_INDEPENDENT_CODE` to `ON` for
+    # dependency builds. This is necessary for building shared libraries, such
+    # as native python extension modules (e.g. `opynsim`).
+    list(APPEND OPYNDEPS_DEPENDENCY_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
     unset(OPYNDEPS_FORWARDED_VARS)
 endif()
 

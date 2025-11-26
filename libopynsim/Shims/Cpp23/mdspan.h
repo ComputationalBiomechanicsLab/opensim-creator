@@ -5,5 +5,5 @@
 
 #define MDSPAN_IMPL_STANDARD_NAMESPACE opyn::cpp23
 #define MDSPAN_IMPL_PROPOSED_NAMESPACE proposed
-#define MDSPAN_USE_BRACKET_OPERATOR 1
+#define MDSPAN_USE_PAREN_OPERATOR 1
 #include <mdspan/mdspan.hpp>

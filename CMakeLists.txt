@@ -6,7 +6,24 @@ option(BUILD_TESTING                  "Build test suites"                       
 option(OPYN_BUILD_PYTHON_BINDINGS     "Build Python bindings for libopynsim"      ON)
 option(OPYN_BUILD_DOCS                "Build documentation"                       OFF)
 option(OPYN_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
-option(OPYN_INSTALL                   "Install opynsim targets"                   ON)
+option(OPYN_PACKAGE                   "Configure packaging the project's targets" ON)
+set(OPYN_VENV "" CACHE PATH "Optional path to a Python virtual environment that the build should use")
+
+if(OPYN_VENV)
+    if(WIN32)
+        set(_opyn_python_exe "${OPYN_VENV}/Scripts/python.exe")
+    else()
+        set(_opyn_python_exe "${OPYN_VENV}/bin/python")
+    endif()
+
+    if(EXISTS ${OPYN_VENV})
+        set(Python_EXECUTABLE "${_opyn_python_exe}" CACHE FILEPATH "Path to Python interpreter" FORCE)
+    else()
+        message(FATAL_ERROR "${_opyn_python_exe}: python executable not found, but OPYN_VENV was set to this path?")
+    endif()
+
+    unset(_opyn_python_exe)
+endif()
 
 if (BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for
@@ -25,4 +42,8 @@ endif()
 
 if(OPYN_BUILD_PYTHON_BINDINGS)
     add_subdirectory(opynsim)
+endif()
+
+if(OPYN_PACKAGE)
+    add_subdirectory(packaging)
 endif()

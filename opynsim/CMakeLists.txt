@@ -3,34 +3,18 @@ include(CMakeDependentOption)
 option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" OFF)
 cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
 option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
-set(OPYN_VENV "" CACHE PATH "Path to a Python virtual environment that the build should use")
-set(OPYN_WHEEL_VERSION ${PROJECT_VERSION}.dev7)  # Useful for test.pypi.org (e.g. version.dev{1,2,3})
 
+# Figure out required python components
 set(OPYN_REQUIRED_PYTHON_COMPONENTS Interpreter)
 if(OPYN_STABLE_ABI)
     set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.12)  # Dictated by nanobind
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.SABIModule)
 else()
-    set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.8)   # Safe fallback
+    set(OPYN_MIN_PYTHON_REQUIRED_VERSION 3.8)  # Dicatated by opynsim's python source code
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development.Module)
 endif()
-
 if(OPYN_BUILD_OPYNSIM_DEBUGGER)
     list(APPEND OPYN_REQUIRED_PYTHON_COMPONENTS Development)  # the debugger uses embedded API
-endif()
-
-if(OPYN_VENV)
-    if(WIN32)
-        set(OPYN_PYTHON_EXE "${OPYN_VENV}/Scripts/python.exe")
-    else()
-        set(OPYN_PYTHON_EXE "${OPYN_VENV}/bin/python")
-    endif()
-
-    if(EXISTS ${OPYN_VENV})
-        set(Python_EXECUTABLE "${OPYN_PYTHON_EXE}" CACHE FILEPATH "Path to Python interpreter" FORCE)
-    else()
-        message(FATAL_ERROR "${OPYN_PYTHON_EXE}: python executable not found, but OPYN_VENV was set to this path?")
-    endif()
 endif()
 
 # Find Python
@@ -53,9 +37,77 @@ if(TRUE)
         list(APPEND OPYN_NANOBIND_ARGS STABLE_ABI)
     endif()
     nanobind_add_module(_opynsim_native ${OPYN_NANOBIND_ARGS}
-
         opynsim/src/_opynsim_native.cpp
     )
+
+    # Set opynsim-specific properties on the native module:
+    #
+    #   OPYN_PYTHON_INTERPRETER_TAG   wheel-compatible interpreter tag (e.g. "cp311")
+    #   OPYN_PYTHON_ABI_TAG           wheel-compatible ABI tag (e.g. "cp311", "abi3")
+    #   OPYN_PYTHON_PLATFORM_TAG      wheel-compatible platform tag (e.g. "win_amd64", "manylinux_x86_64")
+    if(TRUE)
+        string(REPLACE "." "" _opyn_interpreter_tag "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
+        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_INTERPRETER_TAG "cp${_opyn_interpreter_tag}")
+        unset(_opyn_interpreter_tag)
+    endif()
+    if(OPYN_STABLE_ABI)
+        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_ABI_TAG "abi3")
+    else()
+        # Remove dot between MAJOR.MINOR → "3.11" → "311"
+        string(REGEX MATCH "^[0-9]+\\.[0-9]+" _py_mm "${Python_VERSION}")
+        string(REPLACE "." "" _py_tag "${_py_mm}")
+
+        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_ABI_TAG "cp${_py_tag}")
+
+        unset(_py_tag)
+        unset(_py_mm)
+    endif()
+    if(TRUE)
+        # Detect Python wheel platform tag
+        if(UNIX AND NOT APPLE)
+            if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
+                set(_plat_arch "x86_64")
+            elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+                set(_plat_arch "aarch64")
+            elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
+                set(_plat_arch "armv7l")
+            else()
+                message(FATAL_ERROR "Unsupported Linux architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+            endif()
+
+            set(_platform_tag "manylinux_${_plat_arch}")  # TODO: fix this
+
+        elseif(APPLE)
+            if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
+                set(_plat_arch "arm64")
+            else()
+                set(_plat_arch "x86_64")
+            endif()
+
+            if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+                set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOSX_DEPLOYMENT_TARGET}")
+            endif()
+
+            string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" _ UNUSED "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            set(_mac_major "${CMAKE_MATCH_1}")
+            set(_mac_minor "${CMAKE_MATCH_2}")
+
+            set(_platform_tag "macosx_${_mac_major}_${_mac_minor}_${_plat_arch}")
+
+        elseif(WIN32)
+            if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+                if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "ARM64|arm64")
+                    set(_platform_tag "win_arm64")
+                else()
+                    set(_platform_tag "win_amd64")
+                endif()
+            else()
+                set(_platform_tag "win32")
+            endif()
+        endif()
+        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_PLATFORM_TAG ${_platform_tag})
+        unset(_platform_tag)
+    endif()
 
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_opynsim_native PRIVATE opynsim)
@@ -87,115 +139,31 @@ if(TRUE)
     )
 endif()
 
-# Test
+# Testing
 if(OPYN_BUILD_PYTHON_TESTING)
     add_subdirectory(tests)
 endif()
 
 # Installation
 #
-# Creates a directory that has a package + dist-info layout that can either be copied
-# into the caller's site-packages directory or zipped up into a wheel for packaging.
-if(OPYN_INSTALL)
+# Creates a directory that has a package layout that can either be directly installed
+# into the caller's (presumed, Linux) environment, or added to their PYTHONPATH
+if(TRUE)
+    set(OPYN_PYTHON_INSTALL_PREFIX "lib/python3/site-packages/opynsim")
+
     # Install package python sources (retain directory layout but skip src, __pycache__, etc.)
     file(GLOB_RECURSE OPYN_PYTHON_FILES "${CMAKE_CURRENT_SOURCE_DIR}/opynsim/*.py")
     foreach(f ${OPYN_PYTHON_FILES})
         file(RELATIVE_PATH rel "${CMAKE_CURRENT_SOURCE_DIR}/opynsim" "${f}")
         get_filename_component(dest_dir "${rel}" DIRECTORY)
-        install(FILES "${f}" DESTINATION "opynsim/${dest_dir}" COMPONENT python)
+        install(FILES "${f}" DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}/${dest_dir}" COMPONENT opynsim-python)
     endforeach()
 
     # Install `_opynsim_native` extension module into the package
     install(
         FILES $<TARGET_FILE:_opynsim_native>
-        DESTINATION "opynsim"
-        COMPONENT python
-    )
-
-    # Configure-time: Compute `OPYN_WHEEL_TAG`
-    execute_process(
-        COMMAND "${Python_EXECUTABLE}" -c "from packaging import tags; print(next(tags.sys_tags()))"
-        OUTPUT_VARIABLE OPYN_WHEEL_TAG
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_VARIABLE PY_ERR
-        RESULT_VARIABLE PY_RESULT
-    )
-    if(NOT PY_RESULT EQUAL 0)
-        message(FATAL_ERROR
-            "Failed to query Python tags with ${Python_EXECUTABLE}:\n"
-            "Exit code: ${PY_RESULT}\n"
-            "Error output:\n${PY_ERR}"
-        )
-    endif()
-
-    # If `OPYN_STABLE_ABI` is requested then the `OPYN_WHEEL_TAG` should be
-    # updated to have a valid `abi3` field (PEP 384).
-    if(OPYN_STABLE_ABI)
-        # Parse the Python tag of the form "impl-abi-platform"
-        string(REPLACE "-" ";" _tag_parts "${OPYN_WHEEL_TAG}")
-        list(GET _tag_parts 2 _plat)
-        string(REPLACE "." "" OPYN_INTERP_VERSION "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
-        set(OPYN_WHEEL_TAG "cp${OPYN_INTERP_VERSION}-abi3-${_plat}")
-    endif()
-
-    # Calculate OS-specific fields in package METADATA
-    if(WIN32)
-        set(OPYN_METADATA_PLATFORM "Windows")
-        set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: Microsoft :: Windows")
-    elseif(UNIX AND NOT APPLE)
-        set(OPYN_METADATA_PLATFORM "Linux")
-        set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: POSIX :: Linux")
-    elseif(APPLE)
-        set(OPYN_METADATA_PLATFORM "macOS")
-	set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: MacOS :: MacOS X")
-    else()
-        message(FATAL_ERROR "unsupported platform - review this code")
-    endif()
-
-    # Generate `dist-info` metadata files at configuration time, install them at install time
-    configure_file(METADATA.in ${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA @ONLY)
-    configure_file(WHEEL.in    ${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL @ONLY)
-    install(
-        FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA
-            ${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL
-        DESTINATION "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}.dist-info"
-        COMPONENT python
-    )
-endif()
-
-# Packaging
-#
-# Zips up the installation directory structure into a wheel.
-if(OPYN_INSTALL)
-    set(CPACK_GENERATOR External)
-    set(CPACK_EXTERNAL_PACKAGE "wheel")
-    set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/PackageWheel.cmake")
-    set(CPACK_WHEEL_PYTHON_EXECUTABLE "${Python_EXECUTABLE}")
-    set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
-    set(CPACK_COMPONENT_INSTALL ON)
-    set(CPACK_EXTERNAL_ENABLE_STAGING YES)
-    set(CPACK_EXTERNAL_PACKAGE_DEPENDS _opynsim_native)
-    include(CPack)
-
-    set(OPYN_BUILT_WHEEL_PATH ${CMAKE_BINARY_DIR}/"${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
-endif()
-
-# Deployment
-#
-# Deploys the wheel to PyPi (if desired)
-if(TRUE)
-    # This assumes the caller has a valid environment (TWINE_USERNAME and TWINE_PASSWORD set, or a config file)
-    add_custom_target(deploy_testpypi
-        COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose --repository-url https://test.pypi.org/legacy/ ${OPYN_BUILT_WHEEL_PATH}
-        DEPENDS package
-        COMMENT "Upload built wheel to test.pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
-    )
-
-    add_custom_target(deploy_pypi
-        COMMAND ${Python_EXECUTABLE} -m twine upload --non-interactive --verbose ${OPYN_BUILT_WHEEL_PATH}
-        DEPENDS package
-        COMMENT "Upload built wheel to pypi.org (TWINE_USERNAME+TWINE_PASSWORD, or ~/.pypirc must be configured)"
+        DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}/opynsim"
+        COMPONENT opynsim-python
     )
 endif()
 
