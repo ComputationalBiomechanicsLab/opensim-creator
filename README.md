@@ -42,10 +42,8 @@ OPynSim is supported on the following platform combinations:
 # TODO
 
 - Compiling everything within Rosetta: `arch -x86_64 /usr/bin/env bash`
-- Codesigning on MacOS/Windows
 - Sanity-check MSVC runtime in opynsim
 - Sanity-check MacOS SDK/ABI in opynsim
-- Sanity-check SDK version in opynsim
 - Python declarations `.pyd` for IDEs etc.
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
