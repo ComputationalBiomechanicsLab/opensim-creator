@@ -2,7 +2,6 @@
 
 import argparse
 import re
-import glob
 import zipfile
 from pathlib import Path
 
