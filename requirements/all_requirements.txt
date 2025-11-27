@@ -3,4 +3,4 @@
 -r docs_requirements.txt
 -r packaging_requirements.txt
 -r runtime_requirements.txt
--r tests_requirements.txt
+-r test_requirements.txt
