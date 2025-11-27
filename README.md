@@ -41,6 +41,7 @@ OPynSim is supported on the following platform combinations:
 
 # TODO
 
+- Compiling everything within Rosetta: `arch -x86_64 /usr/bin/env bash`
 - Codesigning on MacOS/Windows
 - Sanity-check MSVC runtime in opynsim
 - Sanity-check MacOS SDK/ABI in opynsim

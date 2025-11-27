@@ -96,12 +96,12 @@ execute_process(
 )
 if(NOT PY_RESULT EQUAL 0)
     message(FATAL_ERROR
-            "Failed to pip check wheel:\n"
+            "Failed to check wheel contents:\n"
             "Exit code: ${PY_RESULT}\n"
             "Output:\n${PY_OUT}\n"
             "Error:\n${PY_ERR}"
     )
 endif()
-message(STATUS "pip check: OK")
+message(STATUS "check_wheel_contents.py: OK")
 
 message(STATUS "package: ${CPACK_PACKAGE_FILE_NAME} generated.")
