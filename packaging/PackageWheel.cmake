@@ -6,6 +6,7 @@ if(CPACK_WHEEL_DEBUG)
     cmake_print_variables(CPACK_TOPLEVEL_DIRECTORY)
     cmake_print_variables(CPACK_PACKAGE_DIRECTORY)
     cmake_print_variables(CPACK_PACKAGE_FILE_NAME)
+    cmake_print_variables(CPACK_WHEEL_PACKAGING_SOURCE_DIR)
     cmake_print_variables(CPACK_WHEEL_METADATA_FILE)
     cmake_print_variables(CPACK_WHEEL_WHEEL_FILE)
     cmake_print_variables(CPACK_WHEEL_NAME)
@@ -14,7 +15,7 @@ if(CPACK_WHEEL_DEBUG)
     cmake_print_variables(CPACK_WHEEL_PYTHON)
 endif()
 
-set(OPYN_WHEEL_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}/opynsim-python")
+set(OPYN_WHEEL_DIRECTORY "${CPACK_TEMPORARY_DIRECTORY}/opynsim-python/lib/python3/site-packages")
 set(OPYN_WHEEL_DIST_INFO_DIR "${CPACK_WHEEL_NAME}-${CPACK_WHEEL_VERSION}.dist-info")
 set(OPYN_WHEEL_FILENAME "${CPACK_WHEEL_NAME}-${CPACK_WHEEL_VERSION}-${CPACK_WHEEL_TAG}.whl")
 set(OPYN_WHEEL_OUTPUT_PATH "${CPACK_PACKAGE_DIRECTORY}/${OPYN_WHEEL_FILENAME}")
@@ -70,6 +71,25 @@ message(STATUS "twine check: OK")
 message(STATUS "pip check ${OPYN_WHEEL_OUTPUT_PATH}")
 execute_process(
         COMMAND "${CPACK_WHEEL_PYTHON}" -m pip check "${OPYN_WHEEL_OUTPUT_PATH}"
+        RESULT_VARIABLE PY_RESULT
+        OUTPUT_VARIABLE PY_OUT
+        ERROR_VARIABLE PY_ERR
+)
+if(NOT PY_RESULT EQUAL 0)
+    message(FATAL_ERROR
+            "Failed to pip check wheel:\n"
+            "Exit code: ${PY_RESULT}\n"
+            "Output:\n${PY_OUT}\n"
+            "Error:\n${PY_ERR}"
+    )
+endif()
+message(STATUS "pip check: OK")
+
+# Run custom `check_wheel_contents.py` to ensure that the wheel actually
+# contains some of the expected entries (sanity check)
+message(STATUS "check_wheel_contents.py ${OPYN_WHEEL_OUTPUT_PATH}")
+execute_process(
+        COMMAND "${CPACK_WHEEL_PYTHON}" "${CPACK_WHEEL_PACKAGING_SOURCE_DIR}/check_wheel_contents.py" "${OPYN_WHEEL_OUTPUT_PATH}" "opynsim/__init__.py" "opynsim/_opynsim_native.*" "opynsim/__main__.py"
         RESULT_VARIABLE PY_RESULT
         OUTPUT_VARIABLE PY_OUT
         ERROR_VARIABLE PY_ERR

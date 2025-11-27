@@ -130,7 +130,7 @@ if(TRUE)
     # Install `_opynsim_native` extension module into the package
     install(
         FILES $<TARGET_FILE:_opynsim_native>
-        DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}/opynsim"
+        DESTINATION "${OPYN_PYTHON_INSTALL_PREFIX}"
         COMPONENT opynsim-python
     )
 endif()
