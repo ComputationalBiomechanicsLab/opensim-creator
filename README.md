@@ -41,10 +41,11 @@ OPynSim is supported on the following platform combinations:
 
 # TODO
 
-- MacOS arm64 + amd64
-- Packaging/build tests for MacOS SDK/ABI
-- Packaging tests for wheel validity
 - Codesigning on MacOS/Windows
+- Sanity-check MSVC runtime in opynsim
+- Sanity-check MacOS SDK/ABI in opynsim
+- Sanity-check SDK version in opynsim
+- Python declarations `.pyd` for IDEs etc.
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
 - READMEs/architectural explanations

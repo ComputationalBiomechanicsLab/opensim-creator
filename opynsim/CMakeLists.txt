@@ -27,6 +27,16 @@ find_package(
 #
 # Build the native python extension module using `nanobind`
 if(TRUE)
+    if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+        list(LENGTH CMAKE_OSX_ARCHITECTURES _arch_count)
+        if(_arch_count GREATER 1)
+            message(FATAL_ERROR
+                    "Universal builds are not allowed, because it's simpler to package python libraries one arch per package (imo)"
+                    "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES} contains multiple entries."
+            )
+        endif()
+    endif()
+
     # Include nanobind
     set(NB_USE_SUBMODULE_DEPS OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../third_party/nanobind ${CMAKE_CURRENT_BINARY_DIR}/opynsim/nanobind SYSTEM)
@@ -40,73 +50,31 @@ if(TRUE)
         opynsim/src/_opynsim_native.cpp
     )
 
-    # Set opynsim-specific properties on the native module:
+    # Set `OPYN_PYTHON_INTERPRETER_TAG` and `OPYN_PYTHON_ABI_TAG` on the native module
     #
-    #   OPYN_PYTHON_INTERPRETER_TAG   wheel-compatible interpreter tag (e.g. "cp311")
-    #   OPYN_PYTHON_ABI_TAG           wheel-compatible ABI tag (e.g. "cp311", "abi3")
-    #   OPYN_PYTHON_PLATFORM_TAG      wheel-compatible platform tag (e.g. "win_amd64", "manylinux_x86_64")
-    if(TRUE)
-        string(REPLACE "." "" _opyn_interpreter_tag "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
-        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_INTERPRETER_TAG "cp${_opyn_interpreter_tag}")
-        unset(_opyn_interpreter_tag)
-    endif()
+    # This can help downstream build/packaging steps determine which python interpreter
+    # can use the resulting native module. When compiling with a stable ABI, it's
+    # dictated by nanobind. Otherwise, it's dictated by the python version that was used
+    # to compile the module.
     if(OPYN_STABLE_ABI)
-        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_ABI_TAG "abi3")
+        string(REGEX MATCH "^[0-9]+\\.[0-9]+" OPYN_MIN_PY_VER_MAJOR_MINOR "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
+        string(REPLACE "." "" _opyn_interpreter_tag "${OPYN_MIN_PY_VER_MAJOR_MINOR}")
+        set_target_properties(_opynsim_native PROPERTIES
+            OPYN_PYTHON_INTERPRETER_TAG "cp${_opyn_interpreter_tag}"
+            OPYN_PYTHON_ABI_TAG         "abi3"
+        )
+        unset(_opyn_interpreter_tag)
+        unset(OPYN_MIN_PY_VER_MAJOR_MINOR)
     else()
         # Remove dot between MAJOR.MINOR → "3.11" → "311"
         string(REGEX MATCH "^[0-9]+\\.[0-9]+" _py_mm "${Python_VERSION}")
         string(REPLACE "." "" _py_tag "${_py_mm}")
-
-        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_ABI_TAG "cp${_py_tag}")
-
+        set_target_properties(_opynsim_native PROPERTIES
+            OPYN_PYTHON_INTERPRETER_TAG "cp${_py_tag}"
+            OPYN_PYTHON_ABI_TAG         "cp${_py_tag}"
+        )
         unset(_py_tag)
         unset(_py_mm)
-    endif()
-    if(TRUE)
-        # Detect Python wheel platform tag
-        if(UNIX AND NOT APPLE)
-            if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64|amd64")
-                set(_plat_arch "x86_64")
-            elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
-                set(_plat_arch "aarch64")
-            elseif(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "armv7l")
-                set(_plat_arch "armv7l")
-            else()
-                message(FATAL_ERROR "Unsupported Linux architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-            endif()
-
-            set(_platform_tag "manylinux_${_plat_arch}")  # TODO: fix this
-
-        elseif(APPLE)
-            if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "arm64")
-                set(_plat_arch "arm64")
-            else()
-                set(_plat_arch "x86_64")
-            endif()
-
-            if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "${MACOSX_DEPLOYMENT_TARGET}")
-            endif()
-
-            string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" _ UNUSED "${CMAKE_OSX_DEPLOYMENT_TARGET}")
-            set(_mac_major "${CMAKE_MATCH_1}")
-            set(_mac_minor "${CMAKE_MATCH_2}")
-
-            set(_platform_tag "macosx_${_mac_major}_${_mac_minor}_${_plat_arch}")
-
-        elseif(WIN32)
-            if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-                if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "ARM64|arm64")
-                    set(_platform_tag "win_arm64")
-                else()
-                    set(_platform_tag "win_amd64")
-                endif()
-            else()
-                set(_platform_tag "win32")
-            endif()
-        endif()
-        set_target_properties(_opynsim_native PROPERTIES OPYN_PYTHON_PLATFORM_TAG ${_platform_tag})
-        unset(_platform_tag)
     endif()
 
     # Link to the underlying `libopynsim` C++ code

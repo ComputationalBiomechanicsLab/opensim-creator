@@ -11,37 +11,41 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
 
     # Get `OPYN_PYTHON_INTERPRETER_TAG` from the native module
     get_target_property(_opyn_python_interpreter_tag _opynsim_native OPYN_PYTHON_INTERPRETER_TAG)
-    if(${_opyn_python_interpreter_tag} STREQUAL "_opyn_python_interpreter_tag-NOTFOUND")
+    if(_opyn_python_interpreter_tag STREQUAL "_opyn_python_interpreter_tag-NOTFOUND")
         message(FATAL_ERROR "OPYN_PYTHON_INTERPRETER_TAG property not set on _opynsim_native (${_opyn_python_interpreter_tag})")
     endif()
 
     # Get `OPYN_PYTHON_ABI_TAG` from the native module
     get_target_property(_opyn_python_abi_tag _opynsim_native OPYN_PYTHON_ABI_TAG)
-    if(${_opyn_python_abi_tag} STREQUAL "_opyn_python_abi_tag-NOTFOUND")
+    if(_opyn_python_abi_tag STREQUAL "_opyn_python_abi_tag-NOTFOUND")
         message(FATAL_ERROR "OPYN_PYTHON_ABI_TAG property not set on _opynsim_native (${_opyn_python_abi_tag})")
     endif()
 
-    # Get `OPYN_PYTHON_PLATFORM_TAG` from the native module
-    get_target_property(_opyn_python_platform_tag _opynsim_native OPYN_PYTHON_PLATFORM_TAG)
-    if(${_opyn_python_platform_tag} STREQUAL "_opyn_python_platform_tag-NOTFOUND")
-        message(FATAL_ERROR "OPYN_PYTHON_PLATFORM_TAG property not set on _opynsim_native (${_opyn_python_platform_tag})")
+    # Get `_opyn_python_platform_tag` from python itself
+    if(TRUE)
+        execute_process(
+            COMMAND "${Python_EXECUTABLE}" -c "from packaging.tags import sys_tags; print(next(sys_tags()).platform)"
+            OUTPUT_VARIABLE _opyn_python_platform_tag
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_VARIABLE PY_ERR
+            RESULT_VARIABLE PY_RESULT
+        )
+        if(NOT PY_RESULT EQUAL 0)
+            message(FATAL_ERROR
+                    "Failed to query Python platform with ${Python_EXECUTABLE}:\n"
+                    "Exit code: ${PY_RESULT}\n"
+                    "Error output:\n${PY_ERR}"
+            )
+        endif()
+        unset(PY_ERR)
+        unset(PY_RESULT)
     endif()
 
-    # If the native module was built with a stable ABI, then the `_opyn_wheel_tag` should be
-    # updated to have a valid `abi3` field (PEP 384).
-    if(_opyn_stable_abi)
-        # Parse the Python tag of the form "impl-abi-platform"
-        string(REPLACE "-" ";" _tag_parts "${_opyn_wheel_tag}")
-        list(GET _tag_parts 2 _plat)
-        string(REPLACE "." "" _opyn_interpreter_version "${OPYN_MIN_PYTHON_REQUIRED_VERSION}")
-        set(_opyn_wheel_tag "cp${_opyn_interpreter_version}-abi3-${_plat}")
+    # Calculate wheel tag/filename that's suitable for the native module
+    set(OPYN_WHEEL_TAG "${_opyn_python_interpreter_tag}-${_opyn_python_abi_tag}-${_opyn_python_platform_tag}")
+    set(OPYN_WHEEL_FILENAME "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
 
-        unset(_tag_parts)
-        unset(_plat)
-        unset(_opyn_interpreter_version)
-    endif()
-
-    # Calculate OS-specific fields in package METADATA
+    # Calculate OS-specific fields in the package METADATA
     if(WIN32)
         set(OPYN_METADATA_PLATFORM "Windows")
         set(OPYN_METADATA_OS_CLASSIFIER "Operating System :: Microsoft :: Windows")
@@ -55,25 +59,32 @@ if(OPYN_BUILD_PYTHON_BINDINGS)
         message(FATAL_ERROR "unsupported platform - review this code")
     endif()
 
-    # Generate `dist-info` metadata files at configuration time, install them at install time
+    # Generate `METADATA` and `WHEEL` files so that `PackageWheel.cmake` can copy them
+    # into `.dist-info`
     configure_file(METADATA.in ${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA @ONLY)
     configure_file(WHEEL.in    ${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL @ONLY)
-    install(
-        FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA
-            ${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL
-        DESTINATION "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}.dist-info"
-        COMPONENT opynsim-python
-    )
+
+    # Setup CPack to generate a wheel
     set(CPACK_GENERATOR External)
     set(CPACK_EXTERNAL_PACKAGE "wheel")
     set(CPACK_EXTERNAL_PACKAGE_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/PackageWheel.cmake")
-    set(CPACK_WHEEL_PYTHON_EXECUTABLE "${Python_EXECUTABLE}")
-    set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${OPYN_WHEEL_VERSION}-${OPYN_WHEEL_TAG}.whl")
-    set(CPACK_COMPONENT_INSTALL ON)
     set(CPACK_EXTERNAL_ENABLE_STAGING YES)
     set(CPACK_EXTERNAL_PACKAGE_DEPENDS _opynsim_native)
+    set(CPACK_PACKAGE_FILE_NAME "${OPYN_WHEEL_FILENAME}")
+    set(CPACK_COMPONENT_INSTALL ON)
 
+    set(CPACK_WHEEL_METADATA_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/METADATA")
+    set(CPACK_WHEEL_WHEEL_FILE "${CMAKE_CURRENT_BINARY_DIR}/generated/WHEEL")
+    set(CPACK_WHEEL_NAME "${PROJECT_NAME}")
+    set(CPACK_WHEEL_VERSION "${OPYN_WHEEL_VERSION}")
+    set(CPACK_WHEEL_TAG "${OPYN_WHEEL_TAG}")
+    set(CPACK_WHEEL_PYTHON "${Python_EXECUTABLE}")
+    set(CPACK_WHEEL_DEBUG OFF)
+
+    unset(OPYN_METADATA_OS_CLASSIFIER)
+    unset(OPYN_METADATA_PLATFORM)
+    unset(OPYN_WHEEL_FILENAME)
+    unset(OPYN_WHEEL_TAG)
     unset(_opyn_python_platform_tag)
     unset(_opyn_python_abi_tag)
     unset(_opyn_python_interpreter_tag)
