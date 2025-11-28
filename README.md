@@ -33,7 +33,7 @@ OPynSim is supported on the following platform combinations:
 
 - Make building and integrating [Simbody](https://github.com/simbody/simbody)'s and
   [OpenSim](https://simtk.org/projects/opensim)'s C++ APIs as easy as possible, to
-  encourage new developers to work on those codebases (`libopynsim`).
+  encourage new developers to work on those codebases (`libosim`).
 - Provide a straightforward infrastructure for researchers to develop new C++ and python
   algorithms that are tested and deployed regularly.
 - Upstream stable ideas, algorithms, project designs, dependency handling methods, etc. from this
@@ -48,4 +48,5 @@ OPynSim is supported on the following platform combinations:
 - API documentation in the documentation build
 - Developer guide that specifically focuses on CLion
 - READMEs/architectural explanations
-- Integration into opensim-creator build
+- Integration into the opensim-creator build
+
