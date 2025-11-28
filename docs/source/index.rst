@@ -13,6 +13,7 @@ Table of Contents
    :numbered:
 
    clion-development-environment-setup
+   contributing-to-simbody-and-opensim
 
 .. toctree::
     :caption: Other Links
