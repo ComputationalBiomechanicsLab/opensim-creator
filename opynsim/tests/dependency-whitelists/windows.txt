@@ -1,5 +1,6 @@
 python3\.dll
 KERNEL32\.dll
-MSVCP140\.dll
+MSVCP140.*\.dll
 VCRUNTIME140.*\.dll
 api-ms-win-crt-.*\.dll
+ucrtbase.*\.dll

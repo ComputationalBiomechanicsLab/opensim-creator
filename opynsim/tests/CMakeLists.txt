@@ -43,6 +43,7 @@ if(OPYN_TEST_DEPENDENCIES)
             NAME test_opynsim_native_dependencies_pass_whitelist
             COMMAND "${Python_EXECUTABLE}"
                     "${CMAKE_CURRENT_SOURCE_DIR}/check_dependencies.py"
+                    "--verbose"
                     "$<TARGET_FILE:_opynsim_native>"
                     "${CMAKE_CURRENT_SOURCE_DIR}/dependency-whitelists/${OPYN_DEPENDENCY_WHITELIST_FILENAME}"
         )
