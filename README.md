@@ -3,14 +3,9 @@
 > Create research tools in pure C++
 
 > [!CAUTION]
-> This isn't intended for production use in anything but @adamkewley's projects. You can use
-> it, of course, but don't expect stability or support.
->
-> At the moment, `oscar` is effectively an extraction of the engine code of
-> [opensim-creator](https://www.opensimcreator.com), so that new tools can be built independently
-> of that project. My intention is that this project will grow into its own thing (i.e. gain its
-> own documentation pages, used in more than one project, etc.) but it will take some time for
-> that to happen.
+> This isn't currently intended for public use (only for internal use by [opensim-creator](https://www.opensimcreator.com/)
+> and [opynsim](https://github.com/opynsim/opynsim)). Read/use it at your own
+> risk, and don't expect stability of support.
 
 # Build Instructions (Development)
 
