@@ -1,8 +1,6 @@
 # OPynSim
 
-> Musculoskeletal Modelling Simplified.
->
-> ⚠️ **EXPERIMENTAL** ⚠️ : This is an experimental/prototype project that requires more resources.
+> Python-Native Musculoskeletal Modelling
 
 The aim of OPynSim is to provide a python-native API for musculoskeletal modelling that
 doesn't compromise on nearly 20 years of research, feature development, and UI development from
