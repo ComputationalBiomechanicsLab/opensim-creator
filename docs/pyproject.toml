@@ -1,0 +1,3 @@
+[tool.esbonio.sphinx]
+buildCommand = ["sphinx-build", "-M", "dirhtml", "source", "../build/docs"]
+pythonCommand = ["${venv:../.venv}"]

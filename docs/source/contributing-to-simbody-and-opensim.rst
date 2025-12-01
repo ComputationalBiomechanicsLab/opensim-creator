@@ -8,7 +8,6 @@ in mind, etc. - ensure expectations are set
 
 Creating a Patch from OPynSim
 =============================
- 
 
 .. code:: bash
 

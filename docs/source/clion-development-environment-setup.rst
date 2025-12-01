@@ -33,6 +33,7 @@ the system PATH.
   and running ``python3 --version`` and ``pip3 --version``.
 
 
+
 Download and Install CLion
 --------------------------
 

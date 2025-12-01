@@ -13,7 +13,9 @@ Table of Contents
    :numbered:
 
    clion-development-environment-setup
+   visual-studio-development-environment-setup
    contributing-to-simbody-and-opensim
+   updating-documentation
 
 .. toctree::
     :caption: Other Links
