@@ -2,7 +2,7 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "OPynSim_Development",
+            "name": "Development",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Development",
             "cacheVariables": {
@@ -16,7 +16,7 @@
             }
         },
         {
-            "name": "OPynSim_ErrorCheck",
+            "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
@@ -33,7 +33,7 @@
             }
         },
         {
-            "name": "OPynSim_RelWithDebInfo",
+            "name": "RelWithDebInfo",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
@@ -44,7 +44,7 @@
             }
         },
         {
-            "name": "OPynSim_Release",
+            "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
@@ -55,7 +55,7 @@
             }
         },
         {
-            "name": "OPynSim_Release-MacOS-amd64",
+            "name": "Release-MacOS-amd64",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release-MacOS-amd64",
             "cacheVariables": {
@@ -68,7 +68,7 @@
             }
         },
         {
-            "name": "OPynSim_Release-MacOS-arm64",
+            "name": "Release-MacOS-arm64",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
             "cacheVariables": {
@@ -82,115 +82,115 @@
         }
     ],
     "buildPresets": [
-        { "name": "OPynSim_Development",         "configurePreset": "OPynSim_Development" },
-        { "name": "OPynSim_ErrorCheck",          "configurePreset": "OPynSim_ErrorCheck" },
-        { "name": "OPynSim_RelWithDebInfo",      "configurePreset": "OPynSim_RelWithDebInfo" },
-        { "name": "OPynSim_Release",             "configurePreset": "OPynSim_Release" },
-        { "name": "OPynSim_Release-MacOS-amd64", "configurePreset": "OPynSim_Release-MacOS-amd64" },
-        { "name": "OPynSim_Release-MacOS-arm64", "configurePreset": "OPynSim_Release-MacOS-arm64" }
+        { "name": "Development",         "configurePreset": "Development" },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",             "configurePreset": "Release" },
+        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
     ],
     "testPresets": [
         {
-            "name": "OPynSim_Development",
-            "configurePreset": "OPynSim_Development",
+            "name": "Development",
+            "configurePreset": "Development",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim_ErrorCheck",
-            "configurePreset": "OPynSim_ErrorCheck",
+            "name": "ErrorCheck",
+            "configurePreset": "ErrorCheck",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim_RelWithDebInfo",
-            "configurePreset": "OPynSim_RelWithDebInfo",
+            "name": "RelWithDebInfo",
+            "configurePreset": "RelWithDebInfo",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim_Release",
-            "configurePreset": "OPynSim_Release",
+            "name": "Release",
+            "configurePreset": "Release",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim_Release-MacOS-amd64",
-            "configurePreset": "OPynSim_Release-MacOS-amd64",
+            "name": "Release-MacOS-amd64",
+            "configurePreset": "Release-MacOS-amd64",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OPynSim_Release-MacOS-arm64",
-            "configurePreset": "OPynSim_Release-MacOS-arm64",
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         }
     ],
     "packagePresets": [
         {
-            "name": "OPynSim_Release",
-            "configurePreset": "OPynSim_Release"
+            "name": "Release",
+            "configurePreset": "Release"
         },
         {
-            "name": "OPynSim_Release-MacOS-amd64",
-            "configurePreset": "OPynSim_Release-MacOS-amd64"
+            "name": "Release-MacOS-amd64",
+            "configurePreset": "Release-MacOS-amd64"
         },
         {
-            "name": "OPynSim_Release-MacOS-arm64",
-            "configurePreset": "OPynSim_Release-MacOS-arm64"
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64"
         }
     ],
     "workflowPresets": [
         {
-            "name": "OPynSim_Development",
+            "name": "Development",
             "steps": [
-                { "type": "configure", "name": "OPynSim_Development" },
-                { "type": "build", "name": "OPynSim_Development" },
-                { "type": "test", "name": "OPynSim_Development" }
+                { "type": "configure", "name": "Development" },
+                { "type": "build", "name": "Development" },
+                { "type": "test", "name": "Development" }
             ]
         },
         {
-            "name": "OPynSim_ErrorCheck",
+            "name": "ErrorCheck",
             "steps": [
-                { "type": "configure", "name": "OPynSim_ErrorCheck" },
-                { "type": "build", "name": "OPynSim_ErrorCheck" },
-                { "type": "test", "name": "OPynSim_ErrorCheck" }
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build", "name": "ErrorCheck" },
+                { "type": "test", "name": "ErrorCheck" }
             ]
         },
         {
-            "name": "OPynSim_RelWithDebInfo",
+            "name": "RelWithDebInfo",
             "steps": [
-                { "type": "configure", "name": "OPynSim_RelWithDebInfo" },
-                { "type": "build", "name": "OPynSim_RelWithDebInfo" },
-                { "type": "test", "name": "OPynSim_RelWithDebInfo" }
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build", "name": "RelWithDebInfo" },
+                { "type": "test", "name": "RelWithDebInfo" }
             ]
         },
         {
-            "name": "OPynSim_Release",
+            "name": "Release",
             "steps": [
-                { "type": "configure", "name": "OPynSim_Release" },
-                { "type": "build", "name": "OPynSim_Release" },
-                { "type": "test", "name": "OPynSim_Release" },
-                { "type": "package", "name": "OPynSim_Release" }
+                { "type": "configure", "name": "Release" },
+                { "type": "build", "name": "Release" },
+                { "type": "test", "name": "Release" },
+                { "type": "package", "name": "Release" }
             ]
         },
         {
-            "name": "OPynSim_Release-MacOS-amd64",
+            "name": "Release-MacOS-amd64",
             "steps": [
-                { "type": "configure", "name": "OPynSim_Release-MacOS-amd64" },
-                { "type": "build", "name": "OPynSim_Release-MacOS-amd64" },
-                { "type": "test", "name": "OPynSim_Release-MacOS-amd64" },
-                { "type": "package", "name": "OPynSim_Release-MacOS-amd64" }
+                { "type": "configure", "name": "Release-MacOS-amd64" },
+                { "type": "build", "name": "Release-MacOS-amd64" },
+                { "type": "test", "name": "Release-MacOS-amd64" },
+                { "type": "package", "name": "Release-MacOS-amd64" }
             ]
         },
         {
-            "name": "OPynSim_Release-MacOS-arm64",
+            "name": "Release-MacOS-arm64",
             "steps": [
-                { "type": "configure", "name": "OPynSim_Release-MacOS-arm64" },
-                { "type": "build", "name": "OPynSim_Release-MacOS-arm64" },
-                { "type": "test", "name": "OPynSim_Release-MacOS-arm64" },
-                { "type": "package", "name": "OPynSim_Release-MacOS-arm64" }
+                { "type": "configure", "name": "Release-MacOS-arm64" },
+                { "type": "build", "name": "Release-MacOS-arm64" },
+                { "type": "test", "name": "Release-MacOS-arm64" },
+                { "type": "package", "name": "Release-MacOS-arm64" }
             ]
         }
     ]

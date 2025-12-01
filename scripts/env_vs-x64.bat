@@ -1,7 +1,7 @@
-REM usage: `call scripts\env_visual-studio.bat`
+REM usage: `call scripts\env_vs-x64.bat`
 REM
 REM sets up a batch/cmd.exe terminal with Visual Studio's variables
-REM (ninja on the PATH, etc.)
+REM (ninja on the PATH, etc.) and the python virtual environment
 
 @echo off
 
@@ -26,4 +26,7 @@ if not defined VSPATH (
 
 REM Pull `VSPATH`'s variables, PATH, etc. into this script, so that we have direct access
 REM to Visual Studio's copy of `cmake`, `Ninja`, etc.
-call "%VSPATH%\Common7\Tools\VsDevCmd.bat" -arch=amd64
+call "%VSPATH%\Common7\Tools\VsDevCmd.bat" -host_arch=x64 -arch=amd64
+
+REM Activate the project-local Python virtual environment
+call "scripts/env_venv.bat"

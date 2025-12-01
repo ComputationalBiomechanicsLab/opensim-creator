@@ -1,7 +1,7 @@
 include(CMakeDependentOption)
 
 option(                OPYN_BUILD_OPYNSIM_DEBUGGER "Build the opynsim_debugger target" OFF)
-cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites" ON BUILD_TESTING OFF)
+cmake_dependent_option(OPYN_BUILD_PYTHON_TESTING   "Build python test suites"          ON BUILD_TESTING OFF)
 option(                OPYN_STABLE_ABI             "Perform a python stable ABI build" ON)
 
 # Figure out required python components
@@ -76,6 +76,8 @@ if(TRUE)
         unset(_py_tag)
         unset(_py_mm)
     endif()
+
+    target_compile_features(_opynsim_native PUBLIC cxx_std_20)  # CARE: MSVC C++23 isn't ABI-stable yet
 
     # Link to the underlying `libopynsim` C++ code
     target_link_libraries(_opynsim_native PRIVATE opynsim)

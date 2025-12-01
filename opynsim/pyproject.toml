@@ -1,0 +1,11 @@
+[project]
+name = "opynsim"
+version = "0.0.0"
+description = "Local development package for opynsim (this isn't what's installed, it's just here for `pip install -e ./opynsim/`, CMake separately handles packaging"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["opynsim"]  # Only include the `opynsim` package when `pip install -e`-ing this directory

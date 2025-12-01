@@ -7,7 +7,7 @@ option(OPYN_BUILD_PYTHON_BINDINGS     "Build Python bindings for libopynsim"    
 option(OPYN_BUILD_DOCS                "Build documentation"                       OFF)
 option(OPYN_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
 option(OPYN_PACKAGE                   "Configure packaging the project's targets" ON)
-set(OPYN_VENV "" CACHE PATH "Optional path to a Python virtual environment that the build should use")
+set   (OPYN_VENV "" CACHE PATH        "Optional absolute path to a Python virtual environment that the build should use")
 
 if(OPYN_VENV)
     if(WIN32)
