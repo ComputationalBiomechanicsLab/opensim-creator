@@ -21,9 +21,7 @@ Third-party libraries are maintained/changed using `git subtree`, for example:
 
 ```bash
 git subtree pull --squash --prefix=third_party/googletest https://github.com/google/googletest v1.17.0
-git subtree pull --squash --prefix=third_party/spdlog/ https://github.com/gabime/spdlog.git v1.15.3
-git subtree pull --squash --prefix=third_party/libosim/simbody/ https://github.com/simbody/simbody.git 77bf63c030e4c30112952602abe120afedbdb1e6
-git subtree pull --squash --prefix=third_party/libosim/opensim-core/ https://github.com/opensim-org/opensim-core 2f3d0e13c7beeb5c75dc701afb5b3cd8626864de
+git subtree pull --prefix=third_party/opynsim/ https://github.com/opynsim/opynsim.git master
 ```
 
 You can list all subtrees with:
