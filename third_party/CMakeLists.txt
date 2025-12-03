@@ -10,6 +10,7 @@ option(OSCDEPS_BUILD_GOOGLETEST      "Build googletest"      ON)
 option(OSCDEPS_BUILD_IMGUI           "Build imgui"           ON)
 option(OSCDEPS_BUILD_IMPLOT          "Build implot"          ON)
 option(OSCDEPS_BUILD_LUNASVG         "Build lunasvg"         ON)
+option(OSCDEPS_BUILD_OPYNSIM         "Build opynsim"         ON)
 option(OSCDEPS_BUILD_SDL             "Build SDL"             ON)
 option(OSCDEPS_BUILD_STB             "Build stb"             ON)
 option(OSCDEPS_BUILD_TOMLPLUSPLUS    "Build tomlplusplus"    ON)
@@ -63,8 +64,16 @@ if(TRUE)
     unset(OSCDEPS_FORWARDED_VARS)
 endif()
 
+if(OSCDEPS_BUILD_GLAD)
+    ExternalProject_Add(glad
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
 
-if(${OSCDEPS_BUILD_GOOGLETEST})
+if(OSCDEPS_BUILD_GOOGLETEST)
     ExternalProject_Add(googletest
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/googletest
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -75,7 +84,32 @@ if(${OSCDEPS_BUILD_GOOGLETEST})
     )
 endif()
 
-if(${OSCDEPS_BUILD_LUNASVG})
+if (OSCDEPS_BUILD_IMGUI)
+    file(GLOB OSCDEPS_IMGUI_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/*.patch")
+    ExternalProject_Add(imgui
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_IMGUI_PATCHES}
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
+        SOURCE_SUBDIR ../cmake/imgui/
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+    unset(OSCDEPS_IMGUI_PATCHES)
+endif()
+
+if(OSCDEPS_BUILD_IMPLOT)
+    ExternalProject_Add(implot
+        DEPENDS imgui
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
+        SOURCE_SUBDIR ../cmake/implot/
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -Dimgui_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/imgui
+    )
+endif()
+
+if(OSCDEPS_BUILD_LUNASVG)
     ExternalProject_Add(lunasvg
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lunasvg
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -86,7 +120,33 @@ if(${OSCDEPS_BUILD_LUNASVG})
     )
 endif()
 
-if(${OSCDEPS_BUILD_SDL})
+if(OSCDEPS_BUILD_OPYNSIM)
+    ExternalProject_Add(opynsim-dependencies
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/third_party
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        INSTALL_COMMAND ""
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_TESTING:BOOL=OFF
+            -DOPYNDEPS_BUILD_CATCH2:BOOL=OFF
+            -DOPYNDEPS_BUILD_ROBIN_MAP:BOOL=OFF
+    )
+    ExternalProject_Add(opynsim
+        DEPENDS opynsim-dependencies
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBUILD_TESTING:BOOL=OFF
+            -DOPYN_BUILD_PYTHON_BINDINGS:BOOL=OFF
+            -DOPYN_BUILD_DOCS:BOOL=OFF
+            -DOPYN_USE_STRICT_COMPILER_FLAGS:BOOL=OFF
+            -DOPYN_PACKAGE:BOOL=OFF
+    )
+endif()
+
+if(OSCDEPS_BUILD_SDL)
     # Ensure that OpenGL is available before trying to configure SDL3, because
     # SDL3 will silently drop (i.e. not configure) 3D context support, which
     # won't surface as an issue until the downstream application's test suite
@@ -105,7 +165,17 @@ if(${OSCDEPS_BUILD_SDL})
     )
 endif()
 
-if(${OSCDEPS_BUILD_TOMLPLUSPLUS})
+if(OSCDEPS_BUILD_STB)
+    ExternalProject_Add(stb
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
+        SOURCE_SUBDIR ../cmake/stb/
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+    )
+endif()
+
+if(OSCDEPS_BUILD_TOMLPLUSPLUS)
     ExternalProject_Add(tomlplusplus
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tomlplusplus
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
@@ -114,53 +184,9 @@ if(${OSCDEPS_BUILD_TOMLPLUSPLUS})
     )
 endif()
 
-if(${OSCDEPS_BUILD_UNORDERED_DENSE})
+if(OSCDEPS_BUILD_UNORDERED_DENSE)
     ExternalProject_Add(unordered_dense
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/unordered_dense
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_GLAD})
-    ExternalProject_Add(glad
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glad
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if (${OSCDEPS_BUILD_IMGUI})
-    file(GLOB OSCDEPS_IMGUI_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/imgui/*.patch")
-    ExternalProject_Add(imgui
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_IMGUI_PATCHES}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-        SOURCE_SUBDIR ../cmake/imgui/
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-    unset(OSCDEPS_IMGUI_PATCHES)
-endif()
-
-if(${OSCDEPS_BUILD_IMPLOT})
-    ExternalProject_Add(implot
-        DEPENDS imgui
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/implot
-        SOURCE_SUBDIR ../cmake/implot/
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -Dimgui_DIR:PATH=${CMAKE_INSTALL_PREFIX}/lib/cmake/imgui
-    )
-endif()
-
-if (${OSCDEPS_BUILD_STB})
-    ExternalProject_Add(stb
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
-        SOURCE_SUBDIR ../cmake/stb/
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
