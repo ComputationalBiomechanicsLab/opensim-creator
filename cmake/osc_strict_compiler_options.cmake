@@ -28,19 +28,6 @@ set(OSC_STRICT_COMPILER_OPTIONS
         # only handle standard, synchronous, C++ exceptions (ISO) and treat asynchronous
         # Windows/system structured exceptions as fatal, non-catchable, errors
         /EHsc
-
-        # use a mostly-standards-conformant floating point implementation (save for
-        # floating point exceptions/masks, which we don't use)
-        #
-        # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
-        /fp:precise
-
-        # relax standards-conformance for certain operations (FMA, reciporical square root)
-        # where CPUs can actually produce more accurate results (less rounding) more quickly
-        # but it's technically not-standards-conformant so bitwise results may vary.
-        #
-        # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior
-        /fp:contract
     >
 
     # gcc AND clang flags
