@@ -1,1 +1,0 @@
-OpenSimAddExampleCXX(NAME exampleHangingMuscle SUBDIR Moco)

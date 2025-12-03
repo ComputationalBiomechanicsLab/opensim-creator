@@ -9,12 +9,8 @@ option(OSCDEPS_BUILD_GLAD            "Build glad"            ON)
 option(OSCDEPS_BUILD_GOOGLETEST      "Build googletest"      ON)
 option(OSCDEPS_BUILD_IMGUI           "Build imgui"           ON)
 option(OSCDEPS_BUILD_IMPLOT          "Build implot"          ON)
-option(OSCDEPS_BUILD_LIBOSIM         "Build libosim"         ON)
 option(OSCDEPS_BUILD_LUNASVG         "Build lunasvg"         ON)
-option(OSCDEPS_BUILD_MDSPAN          "Build mdspan"          ON)
-option(OSCDEPS_BUILD_OPENBLAS        "Build OpenBLAS"        ${WIN32})  # MacOS/Linux systems can provide it
 option(OSCDEPS_BUILD_SDL             "Build SDL"             ON)
-option(OSCDEPS_BUILD_SPDLOG          "Build spdlog"          ON)
 option(OSCDEPS_BUILD_STB             "Build stb"             ON)
 option(OSCDEPS_BUILD_TOMLPLUSPLUS    "Build tomlplusplus"    ON)
 option(OSCDEPS_BUILD_UNORDERED_DENSE "Build unordered-dense" ON)
@@ -161,69 +157,10 @@ if(${OSCDEPS_BUILD_IMPLOT})
     )
 endif()
 
-if(${OSCDEPS_BUILD_OPENBLAS})
-    ExternalProject_Add(OpenBLAS
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/OpenBLAS
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DC_LAPACK:BOOL=ON
-            -DBUILD_STATIC_LIBS:BOOL=ON
-            -DNOFORTRAN:STRING="1"
-            -DBUILD_TESTING:BOOL=OFF
-            -BUILD_LAPACK_DEPRECATED:BOOL=OFF
-    )
-endif()
-
-if(${OSCDEPS_BUILD_SPDLOG})
-    ExternalProject_Add(spdlog
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/spdlog
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DSPDLOG_BUILD_BENCH:BOOL=OFF
-            -DSPDLOG_BUILD_TESTS:BOOL=OFF
-            -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
-            -DSPDLOG_BUILD_SHARED:BOOL=OFF
-            -DCMAKE_CXX_FLAGS:STRING=${SPDLOG_CXX_FLAGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_LIBOSIM})
-    if(${OSCDEPS_BUILD_OPENBLAS})
-        list(APPEND OSCDEPS_LIBOSIM_DEPS OpenBLAS)
-    endif()
-    if(${OSCDEPS_BUILD_SPDLOG})
-        list(APPEND OSCDEPS_LIBOSIM_DEPS spdlog)
-    endif()
-
-    file(GLOB OSCDEPS_LIBOSIM_PATCHES "${CMAKE_CURRENT_SOURCE_DIR}/patches/libosim/*.patch")
-    ExternalProject_Add(libosim
-        DEPENDS ${OSCDEPS_LIBOSIM_DEPS}
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libosim
-        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${OSCDEPS_LIBOSIM_PATCHES}
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-            -DOSIM_INSTALL_OPENSIM_HEADERS:BOOL=1
-            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
-    )
-    unset(OSCDEPS_LIBOSIM_PATCHES)
-endif()
-
 if (${OSCDEPS_BUILD_STB})
     ExternalProject_Add(stb
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/stb
         SOURCE_SUBDIR ../cmake/stb/
-        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
-        CMAKE_CACHE_ARGS
-            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
-    )
-endif()
-
-if(${OSCDEPS_BUILD_MDSPAN})
-    ExternalProject_Add(mdspan
-        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/mdspan
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
             ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}

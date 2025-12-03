@@ -1,6 +1,0 @@
-mdspan_add_test(default_accessor.access.pass)
-mdspan_add_test(default_accessor.ctor.conversion.pass)
-mdspan_add_test(default_accessor.ctor.default.pass)
-#mdspan_add_test(default_accessor.element_type.verify)
-mdspan_add_test(default_accessor.offset.pass)
-mdspan_add_test(default_accessor.types.pass)
