@@ -3,18 +3,7 @@ Copyright 2025 Adam Kewley
 License: Apache License Version 2.0
 
 This product includes software developed by third parties, listed
-below. All third-party code uses some kind of permissive license, and
-is either used as a library (i.e. unmodified, linked), or as a source
-code fork (i.e. copied + pasted, then subsequently modified in-tree).
-
-
-Libraries
-=========
-
-This product uses software developed by third parties in an unmodified
-form. In all cases, the software has a permissive license.
-
-The following software libraries are used:
+below.
 
 
 glad
@@ -53,22 +42,6 @@ ImPlot
 - Copyright (c) 2020 Evan Pezent
 
 
-opensim-core
-------------
-
-- https://github.com/opensim-org/opensim-core
-- Licensed under the Apache 2.0 license
-- Copyright (c) 2024 the OpenSim Developers (various holders on a per-source basis)
-
-
-simbody
--------
-
-- https://github.com/simbody/simbody.git
-- Licensed under the Apache 2.0 license
-- Copyright (c) Stanford University and the Authors (various holders on a per-source basis)
-
-
 lunasvg
 -------
 
@@ -77,20 +50,12 @@ lunasvg
 - Copyright (c) 2020-2024 Samuel Ugochukwu <sammycageagle@gmail.com>
 
 
-mdspan
-------
+opynsim
+-------
 
-- https://github.com/kokkos/mdspan
-- Licensed under the Apache License v2.0 with LLVM exceptions
-- Copyright (c) 2022 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
-
-
-OpenBLAS
---------
-
-- https://github.com/OpenMathLib/OpenBLAS
-- Licensed under BSD 3-Clause "New" or "Revised" License
-- Copyright (c) 2011-2014, The OpenBLAS Project
+- https://github.com/opynsim/opynsim
+- Licensed under the Apache 2.0 license
+- Copyright (c) 2025 Adam Kewley
 
 
 SDL
@@ -99,14 +64,6 @@ SDL
 - https://github.com/libsdl-org/SDL
 - Licensed under the zlib license
 - Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
-
-
-spdlog
-------
-
-- https://github.com/gabime/spdlog
-- Licensed under the MIT license
-- Copyright (c) 2016 Gabi Melman.
 
 
 stb
@@ -136,19 +93,8 @@ unordered_dense
 
 
 
-Source Code Forks (Copy + Paste + Modify)
-=========================================
-
-This product contains source code that was originally copied + pasted
-from its original project into this project's sourcetree. In all cases,
-the original source codes have a permissive license.
-
-The reason for these copy+paste forks is usually to accomodate major,
-not-backwards-compatible, modifications. The copyright holder---and
-license---for those changes is the same as the top-level OpenSim Creator
-project.
-
-The following source code was copied, pasted, and modified in-tree:
+The following source code was copied, pasted, and modified in-tree
+at some point:
 
 OpenGL Mathematics (GLM)
 ------------------------
@@ -156,10 +102,6 @@ OpenGL Mathematics (GLM)
 - https://github.com/g-truc/glm
 - Licensed under the MIT license
 - Copyright (c) 2005 - G-Truc Creation
-- The source code for `glm::vec2`, `glm::vec3`, `glm::vec4`, `glm::vec<L, T>`, `glm::quat`
-  `glm::mat3`, `glm::mat4`, and `glm::mat` and associated functions (e.g. `glm::dot`, and
-  `glm::conjugate` were copied into OpenSim Creator's `Maths/` library, followed by gradually
-  changing them to meet OpenSim Creator's requirements.
 
 
 imgui_impl_sdl2
@@ -168,8 +110,6 @@ imgui_impl_sdl2
 - https://github.com/ocornut/imgui/blob/v1.91.2/backends/imgui_impl_sdl2.cpp
 - Licensed under the MIT license
 - Copyright (c) 2014-2024 Omar Cornut
-- The source code was copied + pasted into OpenSim Creator's UI backend module, followed by
-  gradually modifying it to instead use the `App` API that OpenSimCreator hosts.
 
 
 ImGuizmo
@@ -178,7 +118,3 @@ ImGuizmo
 - https://github.com/CedricGuillemet/ImGuizmo
 - Licensed under the MIT license
 - Copyright (c) 2016 Cedric Guillemet
-- The source code was copied + pasted into OpenSim Creator's UI code, followed by modifying
-  it to fix various application-specific issues (e.g. ability to reset the global context)
-  in a backwards-compatibility-breaking way. It was then subsequently refactored to match the
-  rest of the project.
