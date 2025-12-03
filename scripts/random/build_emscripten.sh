@@ -32,7 +32,6 @@ CXXFLAGS="-fexceptions" emcmake cmake -S third_party/ -B third_party-build-Debug
 emmake cmake --build third_party-build-Debug -j$(nproc) -v
 
 LDFLAGS="-fexceptions -sNO_DISABLE_EXCEPTION_CATCHING=1 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=2 -sFULL_ES2=1 -sFULL_ES3=1 -sUSE_SDL=2" CXXFLAGS="-fexceptions --use-port=sdl2" emcmake cmake -S . -B build/ \
-    -DOSC_BUILD_OPENSIMCREATOR=OFF \
     -DOSC_DISCOVER_TESTS=OFF \
     -DOSC_EMSCRIPTEN=ON \
     -DCMAKE_PREFIX_PATH="${PWD}/third_party-install-Debug" \

@@ -25,6 +25,11 @@ namespace osc
     };
 
     template<>
+    struct Converter<Vector3, SimTK::fVec3> final {
+        SimTK::fVec3 operator()(const Vector3&) const;
+    };
+
+    template<>
     struct Converter<EulerAngles, SimTK::Vec3> final {
         SimTK::Vec3 operator()(const EulerAngles&) const;
     };
@@ -62,6 +67,11 @@ namespace osc
     template<>
     struct Converter<SimTK::Vec3, Vector3> final {
         Vector3 operator()(const SimTK::Vec3&) const;
+    };
+
+    template<>
+    struct Converter<SimTK::fVec3, Vector3> final {
+        Vector3 operator()(const SimTK::fVec3&) const;
     };
 
     template<>

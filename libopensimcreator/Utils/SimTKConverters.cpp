@@ -24,6 +24,11 @@ SimTK::Vec3 osc::Converter<Vector3, SimTK::Vec3>::operator()(const Vector3& v) c
     };
 }
 
+SimTK::fVec3 Converter<Vector3, SimTK::fVec3>::operator()(const Vector3& v) const
+{
+    return {v.x, v.y, v.z};
+}
+
 SimTK::Vec3 osc::Converter<EulerAngles, SimTK::Vec3>::operator()(const EulerAngles& v) const
 {
     return {
@@ -78,6 +83,11 @@ Vector3 osc::Converter<SimTK::Vec3, Vector3>::operator()(const SimTK::Vec3& v) c
         static_cast<float>(v[1]),
         static_cast<float>(v[2]),
     };
+}
+
+Vector3 osc::Converter<SimTK::fVec3, Vector3>::operator()(const SimTK::fVec3& v) const
+{
+    return Vector3{v[0], v[1], v[2]};
 }
 
 Vector3 osc::Converter<SimTK::UnitVec3, Vector3>::operator()(const SimTK::UnitVec3& v) const

@@ -17,7 +17,7 @@
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/LogSink.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
-#include <osim/osim.h>
+#include <libopynsim/init.h>
 
 #include <array>
 #include <filesystem>
@@ -109,20 +109,20 @@ namespace
         // globally initialize OpenSim
         log_info("initializing OpenSim (osim::init)");
         {
-            class LogginingInitConfiguration final : public osim::InitConfiguration {
-                void impl_log_message(std::string_view payload, osim::LogLevel level) final
+            class LogginingInitConfiguration final : public opyn::InitConfiguration {
+                void impl_log_message(std::string_view payload, opyn::LogLevel level) final
                 {
-                    static_assert(num_options<osim::LogLevel>() == 2);
+                    static_assert(num_options<opyn::LogLevel>() == 2);
                     const std::string str{payload};
                     switch (level) {
-                    case osim::LogLevel::info: osc::log_info("%s", str.c_str()); return;
-                    case osim::LogLevel::warn: osc::log_warn("%s", str.c_str()); return;
+                    case opyn::LogLevel::info: osc::log_info("%s", str.c_str()); return;
+                    case opyn::LogLevel::warn: osc::log_warn("%s", str.c_str()); return;
                     default:                   osc::log_info("%s", str.c_str()); return;
                     }
                 }
             };
             LogginingInitConfiguration config;
-            osim::init(config);
+            opyn::init(config);
         }
 
         // custom components

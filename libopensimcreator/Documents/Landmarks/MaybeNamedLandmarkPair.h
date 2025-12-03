@@ -1,9 +1,11 @@
 #pragma once
 
-#include <libopensimcreator/Utils/LandmarkPair3D.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/LandmarkPair3D.h>
 #include <liboscar/Maths/Vector3.h>
 #include <liboscar/Utils/CStringView.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <concepts>
 #include <optional>
@@ -34,10 +36,10 @@ namespace osc
         bool hasSource() const { return m_MaybeSourcePosition.has_value(); }
         bool hasDestination() const { return m_MaybeDestinationPosition.has_value(); }
         bool isFullyPaired() const { return hasSource() && hasDestination(); }
-        std::optional<LandmarkPair3D<float>> tryGetPairedLocations() const
+        std::optional<opyn::LandmarkPair3D<float>> tryGetPairedLocations() const
         {
             if (m_MaybeSourcePosition && m_MaybeDestinationPosition) {
-                return LandmarkPair3D<float>{*m_MaybeSourcePosition, *m_MaybeDestinationPosition};
+                return opyn::LandmarkPair3D<float>{to<SimTK::fVec3>(*m_MaybeSourcePosition), to<SimTK::fVec3>(*m_MaybeDestinationPosition)};
             }
             else {
                 return std::nullopt;

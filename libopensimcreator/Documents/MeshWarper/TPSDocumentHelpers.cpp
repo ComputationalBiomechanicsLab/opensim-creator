@@ -5,6 +5,7 @@
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentElementType.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentLandmarkPair.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentNonParticipatingLandmark.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
 #include <liboscar/Shims/Cpp23/ranges.h>
 #include <liboscar/Maths/Vector3.h>
@@ -204,25 +205,25 @@ bool osc::ContainsElementWithName(const TPSDocument& doc, const StringName& name
         FindNonParticipatingLandmarkByName(doc, name) != nullptr;
 }
 
-std::optional<LandmarkPair3D<float>> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
+std::optional<opyn::LandmarkPair3D<float>> osc::TryExtractLandmarkPair(const TPSDocumentLandmarkPair& p)
 {
     if (IsFullyPaired(p)) {
-        return LandmarkPair3D<float>{*p.maybeSourceLocation, *p.maybeDestinationLocation};
+        return opyn::LandmarkPair3D<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)};
     }
     else {
         return std::nullopt;
     }
 }
 
-std::vector<LandmarkPair3D<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
+std::vector<opyn::LandmarkPair3D<float>> osc::GetLandmarkPairs(const TPSDocument& doc)
 {
-    std::vector<LandmarkPair3D<float>> rv;
+    std::vector<opyn::LandmarkPair3D<float>> rv;
     rv.reserve(CountFullyPaired(doc));
     for (const auto& p : doc.landmarkPairs)
     {
         if (IsFullyPaired(p))
         {
-            rv.push_back(LandmarkPair3D<float>{*p.maybeSourceLocation, *p.maybeDestinationLocation});
+            rv.push_back(opyn::LandmarkPair3D<float>{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)});
         }
     }
     return rv;
@@ -236,7 +237,7 @@ std::vector<NamedLandmarkPair3D> osc::GetNamedLandmarkPairs(const TPSDocument& d
     {
         if (IsFullyPaired(p))
         {
-            rv.push_back(NamedLandmarkPair3D{{*p.maybeSourceLocation, *p.maybeDestinationLocation}, p.name});
+            rv.push_back(NamedLandmarkPair3D{{to<SimTK::fVec3>(*p.maybeSourceLocation), to<SimTK::fVec3>(*p.maybeDestinationLocation)}, p.name});
         }
     }
     return rv;

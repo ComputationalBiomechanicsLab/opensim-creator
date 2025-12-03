@@ -2,10 +2,13 @@
 
 #include <libopensimcreator/Documents/MeshWarper/TPSDocument.h>
 #include <libopensimcreator/Documents/MeshWarper/TPSDocumentHelpers.h>
-#include <libopensimcreator/Utils/TPS3D.h>
+#include <libopensimcreator/Utils/OPynSimHelpers.h>
+#include <libopensimcreator/Utils/SimTKConverters.h>
 
+#include <libopynsim/Utils/TPS3D.h>
 #include <liboscar/Graphics/Mesh.h>
 #include <liboscar/Maths/Vector3.h>
+#include <SimTKcommon/SmallMatrix.h>
 
 #include <algorithm>
 #include <span>
@@ -31,7 +34,10 @@ namespace osc
         std::span<const Vector3> getWarpedNonParticipatingLandmarkLocations(const TPSDocument& doc)
         {
             updateAll(doc);
-            return m_CachedResultNonParticipatingLandmarks;
+            static_assert(alignof(decltype(m_CachedResultNonParticipatingLandmarks.front())) == alignof(SimTK::fVec3));
+            static_assert(sizeof(decltype(m_CachedResultNonParticipatingLandmarks.front())) == sizeof(SimTK::fVec3));
+            const auto* ptr = std::launder(reinterpret_cast<const Vector3*>(m_CachedResultNonParticipatingLandmarks.data()));
+            return {ptr, m_CachedResultNonParticipatingLandmarks.size()};
         }
 
     private:
@@ -49,14 +55,14 @@ namespace osc
                 if (m_CachedRecalculateNormalsState) {
                     m_CachedResultMesh.recalculate_normals();
                 }
-                m_CachedResultNonParticipatingLandmarks = TPSWarpPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
+                m_CachedResultNonParticipatingLandmarks = opyn::TPSWarpPoints(m_CachedCoefficients, m_CachedSourceNonParticipatingLandmarks, m_CachedBlendingFactor);
             }
         }
 
         // returns `true` if cached inputs were updated; otherwise, returns the cached inputs
         bool updateInputs(const TPSDocument& doc)
         {
-            TPSCoefficientSolverInputs3D newInputs{GetLandmarkPairs(doc)};
+            opyn::TPSCoefficientSolverInputs3D newInputs{GetLandmarkPairs(doc)};
             for (auto& [source, destination] : newInputs.landmarks) {
                 source *= doc.sourceLandmarksPrescale;
                 destination *= doc.destinationLandmarksPrescale;
@@ -84,7 +90,7 @@ namespace osc
                 return false;
             }
 
-            TPSCoefficients3D newCoefficients = TPSCalcCoefficients(m_CachedInputs);
+            opyn::TPSCoefficients3D newCoefficients = TPSCalcCoefficients(m_CachedInputs);
 
             if (newCoefficients != m_CachedCoefficients)
             {
@@ -105,9 +111,9 @@ namespace osc
             const bool samePositions = rgs::equal(
                 docLandmarks,
                 m_CachedSourceNonParticipatingLandmarks,
-                [](const TPSDocumentNonParticipatingLandmark& lm, const Vector3& position)
+                [](const TPSDocumentNonParticipatingLandmark& lm, const SimTK::fVec3& position)
                 {
-                    return lm.location == position;
+                    return lm.location.x == position[0] and lm.location.y == position[1] and lm.location.z == position[2];
                 }
             );
 
@@ -117,7 +123,7 @@ namespace osc
                 rgs::transform(
                     docLandmarks,
                     std::back_inserter(m_CachedSourceNonParticipatingLandmarks),
-                    [](const auto& lm) { return lm.location; }
+                    [](const auto& lm) { return to<SimTK::fVec3>(lm.location); }
                 );
                 return true;
             }
@@ -163,13 +169,13 @@ namespace osc
             }
         }
 
-        TPSCoefficientSolverInputs3D<float> m_CachedInputs;
-        TPSCoefficients3D<float> m_CachedCoefficients;
+        opyn::TPSCoefficientSolverInputs3D<float> m_CachedInputs;
+        opyn::TPSCoefficients3D<float> m_CachedCoefficients;
         Mesh m_CachedSourceMesh;
         float m_CachedBlendingFactor = 1.0f;
         bool m_CachedRecalculateNormalsState = false;
         Mesh m_CachedResultMesh;
-        std::vector<Vector3> m_CachedSourceNonParticipatingLandmarks;
-        std::vector<Vector3> m_CachedResultNonParticipatingLandmarks;
+        std::vector<SimTK::fVec3> m_CachedSourceNonParticipatingLandmarks;
+        std::vector<SimTK::fVec3> m_CachedResultNonParticipatingLandmarks;
     };
 }

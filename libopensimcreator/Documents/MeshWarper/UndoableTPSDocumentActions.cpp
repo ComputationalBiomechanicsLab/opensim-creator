@@ -377,19 +377,18 @@ void osc::ActionPromptUserToSavePairedLandmarksToCSV(const TPSDocument& doc, lm:
         // write data rows
         std::vector<std::string> cols;
         cols.reserve(flags & lm::LandmarkCSVFlags::NoNames ? 6 : 7);
-        for (const auto& p : pairs)
-        {
+        for (const auto& p : pairs) {
             using std::to_string;
 
             if (not (flags & lm::LandmarkCSVFlags::NoNames)) {
                 cols.emplace_back(p.name);
             }
-            cols.push_back(to_string(p.source.x));
-            cols.push_back(to_string(p.source.y));
-            cols.push_back(to_string(p.source.z));
-            cols.push_back(to_string(p.destination.x));
-            cols.push_back(to_string(p.destination.y));
-            cols.push_back(to_string(p.destination.z));
+            cols.push_back(to_string(p.source[0]));
+            cols.push_back(to_string(p.source[1]));
+            cols.push_back(to_string(p.source[2]));
+            cols.push_back(to_string(p.destination[0]));
+            cols.push_back(to_string(p.destination[1]));
+            cols.push_back(to_string(p.destination[2]));
 
             CSV::write_row(fout, cols);
 

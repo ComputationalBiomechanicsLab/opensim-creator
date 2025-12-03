@@ -1,71 +1,170 @@
 {
-    "version": 3,
+    "version": 6,
     "configurePresets": [
         {
-            "name": "OpenSimCreator-RelWithDebInfo",
-            "displayName": "OpenSimCreator RelWithDebInfo",
-            "description": "Default configure preset for IDE users",
+            "name": "Development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install"
+            }
+        },
+        {
+            "name": "ErrorCheck",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/ErrorCheck",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "RelWithDebInfo",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-RelWithDebInfo"
-            },
-            "hidden": false
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+            }
         },
         {
-            "name": "OpenSimCreator-Release",
-            "displayName": "OpenSimCreator Release",
-            "description": "Default configuration preset for IDE users",
+            "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Release"
-            },
-            "hidden": false
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+            }
         },
         {
-            "name": "OpenSimCreator-Debug",
-            "displayName": "OpenSimCreator Debug",
-            "description": "Default configuration preset for IDE users",
+            "name": "Release-MacOS-amd64",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/Debug",
+            "binaryDir": "${sourceDir}/build/Release-MacOS-amd64",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-Debug"
-            },
-            "hidden": false
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-amd64/install",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
         },
         {
-            "name": "OpenSimCreator-MinSizeRel",
-            "displayName": "OpenSimCreator MinSizeRel",
-            "description": "Default configure preset for IDE users",
+            "name": "Release-MacOS-arm64",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/MinSizeRel",
+            "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_PREFIX_PATH": "${sourceDir}/third_party-install-MinSizeRel"
-            },
-            "hidden": false
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-arm64/install",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/"
+            }
         }
     ],
     "buildPresets": [
+        { "name": "Development",         "configurePreset": "Development"         },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck"          },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo"      },
+        { "name": "Release",             "configurePreset": "Release"             },
+        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
+    ],
+    "testPresets": [
         {
-            "name": "OpenSimCreator-RelWithDebInfo",
-            "configurePreset": "OpenSimCreator-RelWithDebInfo"
+            "name": "Development",
+            "configurePreset": "Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OpenSimCreator-Release",
-            "configurePreset": "OpenSimCreator-Release"
+            "name": "ErrorCheck",
+            "configurePreset": "ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OpenSimCreator-Debug",
-            "configurePreset": "OpenSimCreator-Debug"
+            "name": "RelWithDebInfo",
+            "configurePreset": "RelWithDebInfo",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "OpenSimCreator-MinSizeRel",
-            "configurePreset": "OpenSimCreator-MinSizeRel"
+            "name": "Release",
+            "configurePreset": "Release",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "configurePreset": "Release-MacOS-amd64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        }
+    ],
+    "packagePresets": [
+        { "name": "Release",             "configurePreset": "Release"             },
+        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
+    ],
+    "workflowPresets": [
+        {
+            "name": "Development",
+            "steps": [
+                { "type": "configure", "name": "Development" },
+                { "type": "build",     "name": "Development" }
+            ]
+        },
+        {
+            "name": "ErrorCheck",
+            "steps": [
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build",     "name": "ErrorCheck" },
+                { "type": "test",      "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "RelWithDebInfo",
+            "steps": [
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build",     "name": "RelWithDebInfo" },
+                { "type": "test",      "name": "RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "Release",
+            "steps": [
+                { "type": "configure", "name": "Release" },
+                { "type": "build",     "name": "Release" },
+                { "type": "test",      "name": "Release" },
+                { "type": "package",   "name": "Release" }
+            ]
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "steps": [
+                { "type": "configure", "name": "Release-MacOS-amd64" },
+                { "type": "build",     "name": "Release-MacOS-amd64" },
+                { "type": "test",      "name": "Release-MacOS-amd64" },
+                { "type": "package",   "name": "Release-MacOS-amd64" }
+            ]
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "steps": [
+                { "type": "configure", "name": "Release-MacOS-arm64" },
+                { "type": "build",     "name": "Release-MacOS-arm64" },
+                { "type": "test",      "name": "Release-MacOS-arm64" },
+                { "type": "package",   "name": "Release-MacOS-arm64" }
+            ]
         }
     ]
 }
