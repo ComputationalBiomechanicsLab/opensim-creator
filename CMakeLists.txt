@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 project(opynsim VERSION 0.0.1 LANGUAGES CXX C)
 
 option(BUILD_TESTING                  "Build test suites"                         ON)
+option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"      ${BUILD_TESTING})
 option(OPYN_BUILD_PYTHON_BINDINGS     "Build Python bindings for libopynsim"      ON)
 option(OPYN_BUILD_DOCS                "Build documentation"                       OFF)
 option(OPYN_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
@@ -25,7 +26,7 @@ if(OPYN_VENV)
     unset(_opyn_python_exe)
 endif()
 
-if (BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     # This has to be done at the top-level, so that `ctest --show-only` works for
     # all test suites. It is how IDEs typically detect tests.
     #
