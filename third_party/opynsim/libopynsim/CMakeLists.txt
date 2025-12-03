@@ -1,3 +1,5 @@
+option(BUILD_TESTING                  "Build test suites"                         ON)
+option(OPYN_BUILD_TESTING             "Build test suites (OPynSim-specific)"      ${BUILD_TESTING})
 option(OPYN_FORCE_ASSERTS_ENABLED "Enable OPynSim's runtime assertions - even if building a release build" ON)
 
 find_package(mdspan REQUIRED)
@@ -34,7 +36,7 @@ set_target_properties(opynsim PROPERTIES
     POSITION_INDEPENDENT_CODE ON  # for python bindings
 )
 
-if(BUILD_TESTING)
+if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
