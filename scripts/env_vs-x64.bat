@@ -1,5 +1,3 @@
-REM usage: `call scripts\env_visual-studio.bat`
-REM
 REM sets up a batch/cmd.exe terminal with Visual Studio's variables
 REM (ninja on the PATH, etc.)
 

@@ -7,7 +7,7 @@ set -xeuo pipefail
 export OSCARDEPS_BUILD_ALWAYS=${OSCARDEPS_BUILD_ALWAYS:-ON}
 
 # Build dependencies
-cd third_party && cmake --workflow --preset oscar_third-party_Release ; cd -
+cd third_party && cmake --workflow --preset Release; cd -
 
 # Run full build workflow
-cmake --workflow --preset oscar_Release
+cmake --workflow --preset Release

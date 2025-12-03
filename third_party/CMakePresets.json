@@ -2,9 +2,7 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "oscar_third-party_Development",
-            "displayName": "Oscar Third-Party Code (Development)",
-            "description": "Configure Oscar's third-party code build suitable for day-to-day development (not necessarily RelWithDebInfo or Debug)",
+            "name": "Development",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Development",
             "cacheVariables": {
@@ -14,9 +12,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_third-party_ErrorCheck",
-            "displayName": "Oscar Third-Party Code (ErrorCheck)",
-            "description": "Configure Oscar's third-party code build suitable for error-checking development (Debug, libASAN, clang-tidy)",
+            "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/ErrorCheck",
             "cacheVariables": {
@@ -32,9 +28,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_third-party_RelWithDebInfo",
-            "displayName": "Oscar Third-Party Code (RelWithDebInfo)",
-            "description": "Configure Oscar's third-party code build with a standard RelWithDebInfo configuration",
+            "name": "RelWithDebInfo",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/RelWithDebInfo",
             "cacheVariables": {
@@ -44,9 +38,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_third-party_Release",
-            "displayName": "Oscar Third-Party Code (Release)",
-            "description": "Configure Oscar's third-party code build with a standard Release configuration",
+            "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/../build/third_party/Release",
             "cacheVariables": {
@@ -57,54 +49,38 @@
         }
     ],
     "buildPresets": [
-        {
-            "name": "oscar_third-party_Development",
-            "configurePreset": "oscar_third-party_Development"
-        },
-        {
-            "name": "oscar_third-party_ErrorCheck",
-            "configurePreset": "oscar_third-party_ErrorCheck"
-        },
-        {
-            "name": "oscar_third-party_RelWithDebInfo",
-            "configurePreset": "oscar_third-party_RelWithDebInfo"
-        },
-        {
-            "name": "oscar_third-party_Release",
-            "configurePreset": "oscar_third-party_Release"
-        }
+        { "name": "Development",    "configurePreset": "Development" },
+        { "name": "ErrorCheck",     "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",        "configurePreset": "Release" }
     ],
     "workflowPresets": [
         {
-            "name": "oscar_third-party_Development",
-            "description": "Configure + Build Oscar's third-party dependencies for day-to-day development (not necessarily RelWithDebInfo or Debug)",
+            "name": "Development",
             "steps": [
-                { "type": "configure", "name": "oscar_third-party_Development" },
-                { "type": "build", "name": "oscar_third-party_Development" }
+                { "type": "configure", "name": "Development" },
+                { "type": "build", "name": "Development" }
             ]
         },
         {
-            "name": "oscar_third-party_ErrorCheck",
-            "description": "Configure + Build Oscar's third-party dependencies for error-checking development",
+            "name": "ErrorCheck",
             "steps": [
-                { "type": "configure", "name": "oscar_third-party_ErrorCheck" },
-                { "type": "build", "name": "oscar_third-party_ErrorCheck" }
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build", "name": "ErrorCheck" }
             ]
         },
         {
-            "name": "oscar_third-party_RelWithDebInfo",
-            "description": "Configure + build oscar's third-party dependencies (RelWithDebInfo build)",
+            "name": "RelWithDebInfo",
             "steps": [
-                { "type": "configure", "name": "oscar_third-party_RelWithDebInfo" },
-                { "type": "build", "name": "oscar_third-party_RelWithDebInfo" }
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build", "name": "RelWithDebInfo" }
             ]
         },
         {
-            "name": "oscar_third-party_Release",
-            "description": "Configure + build oscar's third-party dependencies (Release build)",
+            "name": "Release",
             "steps": [
-                { "type": "configure", "name": "oscar_third-party_Release" },
-                { "type": "build", "name": "oscar_third-party_Release" }
+                { "type": "configure", "name": "Release" },
+                { "type": "build", "name": "Release" }
             ]
         }
     ]

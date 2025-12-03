@@ -11,7 +11,7 @@ export CC=gcc-12
 export CXX=g++-12
 
 # Build dependencies
-cd third_party && cmake --workflow --preset oscar_third-party_Release ; cd -
+cd third_party && cmake --workflow --preset Release ; cd -
 
 # Run full build workflow
-xvfb-run cmake --workflow --preset oscar_Release
+xvfb-run cmake --workflow --preset Release

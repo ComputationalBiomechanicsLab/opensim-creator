@@ -16,10 +16,10 @@
 BUILD_TYPE=Development
 
 # Build bundled dependencies
-cd third_party && cmake --workflow --preset oscar_third-party_${BUILD_TYPE} ; cd -
+cd third_party && cmake --workflow --preset "${BUILD_TYPE}" ; cd -
 
 # Build
-cmake --workflow --preset oscar_${BUILD_TYPE}
+cmake --workflow --preset "${BUILD_TYPE}"
 ```
 
 ## Batch Terminal (Windows)
@@ -32,8 +32,8 @@ REM Or RelWithDebInfo / Release (ErrorCheck only works on Unixes)
 set BUILD_TYPE=Development
 
 REM Build bundled dependencies
-cd third_party && cmake --workflow --preset oscar_third-party_%BUILD_TYPE% && cd ..
+cd third_party && cmake --workflow --preset "%BUILD_TYPE%" && cd ..
 
 REM Build
-cmake --workflow --preset oscar_%BUILD_TYPE%
+cmake --workflow --preset "%BUILD_TYPE%"
 ```

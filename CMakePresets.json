@@ -2,9 +2,7 @@
     "version": 6,
     "configurePresets": [
         {
-            "name": "oscar_Development",
-            "displayName": "Oscar Development Configuration",
-            "description": "Configure Oscar for day-to-day development",
+            "name": "Development",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Development",
             "cacheVariables": {
@@ -16,9 +14,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_ErrorCheck",
-            "displayName": "Oscar ErrorCheck Configuration",
-            "description": "Configure Oscar for strict error checking and linting (Debug, libASAN, clang-tidy)",
+            "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
@@ -37,9 +33,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_RelWithDebInfo",
-            "displayName": "Oscar Default Configuration (RelWithDebInfo)",
-            "description": "Configure Oscar with a `RelWithDebInfo` build type and bundled dependencies",
+            "name": "RelWithDebInfo",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/RelWithDebInfo",
             "cacheVariables": {
@@ -49,9 +43,7 @@
             "hidden": false
         },
         {
-            "name": "oscar_Release",
-            "displayName": "Oscar Default Configuration (Release)",
-            "description": "Configure Oscar with a `Release` build type and bundled dependencies",
+            "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
@@ -62,84 +54,72 @@
         }
     ],
     "buildPresets": [
-        {
-            "name": "oscar_Development",
-            "configurePreset": "oscar_Development"
-        },
-        {
-            "name": "oscar_ErrorCheck",
-            "configurePreset": "oscar_ErrorCheck"
-        },
-        {
-            "name": "oscar_RelWithDebInfo",
-            "configurePreset": "oscar_RelWithDebInfo"
-        },
-        {
-            "name": "oscar_Release",
-            "configurePreset": "oscar_Release"
-        }
+        { "name": "Development",    "configurePreset": "Development" },
+        { "name": "ErrorCheck",     "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",        "configurePreset": "Release" }
     ],
     "testPresets": [
         {
-            "name": "oscar_Development",
-            "configurePreset": "oscar_Development",
+            "name": "Development",
+            "configurePreset": "Development",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "oscar_ErrorCheck",
-            "configurePreset": "oscar_ErrorCheck",
+            "name": "ErrorCheck",
+            "configurePreset": "ErrorCheck",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "oscar_RelWithDebInfo",
-            "configurePreset": "oscar_RelWithDebInfo",
+            "name": "RelWithDebInfo",
+            "configurePreset": "RelWithDebInfo",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         },
         {
-            "name": "oscar_Release",
-            "configurePreset": "oscar_Release",
+            "name": "Release",
+            "configurePreset": "Release",
             "output": {"outputOnFailure": true},
             "execution": {"noTestsAction": "error"}
         }
     ],
     "workflowPresets": [
         {
-            "name": "oscar_Development",
+            "name": "Development",
             "description": "Perform a development configure + build of Oscar",
             "steps": [
-                { "type": "configure", "name": "oscar_Development" },
-                { "type": "build", "name": "oscar_Development" },
-                { "type": "test", "name": "oscar_Development" }
+                { "type": "configure", "name": "Development" },
+                { "type": "build", "name": "Development" },
+                { "type": "test", "name": "Development" }
             ]
         },
         {
-            "name": "oscar_ErrorCheck",
+            "name": "ErrorCheck",
             "description": "Perform a ErrorCheck configure + build of Oscar",
             "steps": [
-                { "type": "configure", "name": "oscar_ErrorCheck" },
-                { "type": "build", "name": "oscar_ErrorCheck" },
-                { "type": "test", "name": "oscar_ErrorCheck" }
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build", "name": "ErrorCheck" },
+                { "type": "test", "name": "ErrorCheck" }
             ]
         },
         {
-            "name": "oscar_RelWithDebInfo",
+            "name": "RelWithDebInfo",
             "description": "Configure + build oscar's third-party dependencies (RelWithDebInfo build)",
             "steps": [
-                { "type": "configure", "name": "oscar_RelWithDebInfo" },
-                { "type": "build", "name": "oscar_RelWithDebInfo" },
-                { "type": "test", "name": "oscar_RelWithDebInfo" }
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build", "name": "RelWithDebInfo" },
+                { "type": "test", "name": "RelWithDebInfo" }
             ]
         },
         {
-            "name": "oscar_Release",
+            "name": "Release",
             "description": "Configure + build oscar's third-party dependencies (Release build)",
             "steps": [
-                { "type": "configure", "name": "oscar_Release" },
-                { "type": "build", "name": "oscar_Release" },
-                { "type": "test", "name": "oscar_Release" }
+                { "type": "configure", "name": "Release" },
+                { "type": "build", "name": "Release" },
+                { "type": "test", "name": "Release" }
             ]
         }
     ]
