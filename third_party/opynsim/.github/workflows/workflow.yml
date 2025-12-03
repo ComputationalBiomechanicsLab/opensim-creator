@@ -1,0 +1,72 @@
+on: [push]
+
+jobs:
+
+  windows_amd64:
+    name: Windows (amd64)
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Run Build Script
+        shell: cmd
+        run: call .\scripts\e2e_setup-and-build-windows.bat
+
+  ubuntu22_amd64:
+    name: Ubuntu 22.04 (amd64)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+      
+      - name: Get gcc-12
+        run: sudo apt-get install -y gcc-12 g++-12
+
+      - name: Run Build Script
+        run: CC=gcc-12 CXX=g++-12 ./scripts/e2e_setup-and-build-unix.sh
+
+  macos_amd64:
+    name: MacOS (amd64)
+    runs-on: macos-14
+    env:
+      CTEST_PARALLEL_LEVEL: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build Script
+        run: ./scripts/e2e_setup-and-build-unix.sh Release-MacOS-amd64
+
+  macos_arm64:
+    name: MacOS (arm64)
+    runs-on: macos-14
+    env:
+      CTEST_PARALLEL_LEVEL: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Build Script
+        run: ./scripts/e2e_setup-and-build-unix.sh Release-MacOS-arm64
+
+  manylinux_amd64:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/pypa/manylinux_2_34_x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: |
+          yum install -y epel-release
+          yum install -y ninja-build
+
+      - name: Run Build Script
+        run: PATH=/opt/python/cp312-cp312/bin:${PATH} ./scripts/e2e_setup-and-build-unix.sh

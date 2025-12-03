@@ -1,0 +1,197 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "Development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_FORCE_ASSERTS_ENABLED": "ON",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
+        },
+        {
+            "name": "ErrorCheck",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/ErrorCheck",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
+
+                "OPYN_VENV": "${sourceDir}/.venv",
+                "OPYN_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OPYN_FORCE_ASSERTS_ENABLED": "ON",
+                "OPYN_BUILD_OPYNSIM_DEBUGGER": "ON"
+            }
+        },
+        {
+            "name": "RelWithDebInfo",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
+        },
+        {
+            "name": "Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install",
+
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release-MacOS-amd64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-amd64/install",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/",
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release-MacOS-arm64",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release-MacOS-arm64/install",
+                "CMAKE_OSX_ARCHITECTURES": "arm64",
+                "CMAKE_OSX_DEPLOYMENT_TARGET": "14.5",
+                "CMAKE_OSX_SYSROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX14.5.sdk/",
+                "OPYN_VENV": "${sourceDir}/.venv"
+            }
+        }
+    ],
+    "buildPresets": [
+        { "name": "Development",         "configurePreset": "Development" },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",             "configurePreset": "Release" },
+        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
+    ],
+    "testPresets": [
+        {
+            "name": "Development",
+            "configurePreset": "Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "ErrorCheck",
+            "configurePreset": "ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "RelWithDebInfo",
+            "configurePreset": "RelWithDebInfo",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "configurePreset": "Release-MacOS-amd64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "Release",
+            "configurePreset": "Release"
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "configurePreset": "Release-MacOS-amd64"
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "configurePreset": "Release-MacOS-arm64"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "Development",
+            "steps": [
+                { "type": "configure", "name": "Development" },
+                { "type": "build", "name": "Development" },
+                { "type": "test", "name": "Development" }
+            ]
+        },
+        {
+            "name": "ErrorCheck",
+            "steps": [
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build", "name": "ErrorCheck" },
+                { "type": "test", "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "RelWithDebInfo",
+            "steps": [
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build", "name": "RelWithDebInfo" },
+                { "type": "test", "name": "RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "Release",
+            "steps": [
+                { "type": "configure", "name": "Release" },
+                { "type": "build", "name": "Release" },
+                { "type": "test", "name": "Release" },
+                { "type": "package", "name": "Release" }
+            ]
+        },
+        {
+            "name": "Release-MacOS-amd64",
+            "steps": [
+                { "type": "configure", "name": "Release-MacOS-amd64" },
+                { "type": "build", "name": "Release-MacOS-amd64" },
+                { "type": "test", "name": "Release-MacOS-amd64" },
+                { "type": "package", "name": "Release-MacOS-amd64" }
+            ]
+        },
+        {
+            "name": "Release-MacOS-arm64",
+            "steps": [
+                { "type": "configure", "name": "Release-MacOS-arm64" },
+                { "type": "build", "name": "Release-MacOS-arm64" },
+                { "type": "test", "name": "Release-MacOS-arm64" },
+                { "type": "package", "name": "Release-MacOS-arm64" }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+opynsim
+Copyright 2025 Adam Kewley
+License: Apache License Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+This product includes software developed by third parties, listed
+below. All third-party code is under a permissive license and
+is incorporated either as libraries (i.e. unmodified and linked), or as
+source code forks (i.e. copied and modified within this codebase).

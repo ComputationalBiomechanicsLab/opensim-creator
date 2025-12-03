@@ -1,0 +1,8 @@
+# This file is for use with .github/remote-ubuntu-dev/docker-compose.yml
+.git
+opensim-models
+Moco
+dependencies/casadi
+dependencies/docopt
+dependencies/opensim-core
+dependencies/simbody

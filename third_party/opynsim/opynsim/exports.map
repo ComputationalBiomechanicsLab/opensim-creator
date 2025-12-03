@@ -1,0 +1,5 @@
+{
+    global:
+        PyInit__opynsim_native;
+    local: *;
+};

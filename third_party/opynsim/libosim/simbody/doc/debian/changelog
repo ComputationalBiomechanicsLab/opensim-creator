@@ -1,0 +1,30 @@
+simbody (3.6.0-1~xenial) xenial; urgency=medium
+
+  * simbody 3.6.0-1 release
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Tue, 21 Feb 2018 00:15:12 +0100
+
+simbody (3.5.1-1~trusty) trusty; urgency=medium
+
+  * simbody 3.5.1-1~1 release
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Mon, 12 Jan 2015 18:02:59 +0100
+
+simbody (3.5-1~quantal) quantal; urgency=low
+
+  * master branch version (development)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 28 Mar 2014 19:40:46 +0100
+
+simbody (3.4-1~quantal) quantal; urgency=low
+
+  * New 3.4 upstream version
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Fri, 28 Mar 2014 19:40:46 +0100
+
+simbody (3.3-1~quantal) quantal; urgency=high
+
+  * Initial release. (Closes: #728723)
+
+ -- Jose Luis Rivero <jrivero@osrfoundation.org>  Thu, 22 Aug 2013 16:23:00 -0700
+

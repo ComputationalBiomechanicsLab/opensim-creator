@@ -1,0 +1,6 @@
+-r deploy_requirements.txt
+-r dev_requirements.txt
+-r docs_requirements.txt
+-r packaging_requirements.txt
+-r runtime_requirements.txt
+-r test_requirements.txt
