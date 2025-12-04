@@ -47,6 +47,14 @@
             }
         },
         {
+            "name": "RelWithDebInfo-Inlined",
+            "inherits": "RelWithDebInfo",
+            "cacheVariables": {
+                "OSC_BUILD_OPYNSIM_INLINE": "ON",
+                "OSC_TEST_OPYNSIM_INLINE": "ON"
+            }
+        },
+        {
             "name": "Release",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
