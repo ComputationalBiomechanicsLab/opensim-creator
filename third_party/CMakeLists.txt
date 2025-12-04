@@ -62,11 +62,6 @@ if(TRUE)
         endif()
     endforeach()
 
-    # Forcibly set `CMAKE_POSITION_INDEPENDENT_CODE` to `ON` for
-    # dependency builds. This is necessary for building shared libraries, such
-    # as native python extension modules (e.g. `opynsim`).
-    list(APPEND OPYNDEPS_DEPENDENCY_CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
-
     unset(OPYNDEPS_FORWARDED_VARS)
 endif()
 

@@ -31,10 +31,10 @@ if(OPYN_USE_STRICT_COMPILER_FLAGS)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/opynsim_strict_compiler_options.cmake)
     target_compile_options(opynsim PRIVATE ${OPYN_STRICT_COMPILER_OPTIONS})
 endif()
-set_target_properties(opynsim PROPERTIES
-    CXX_EXTENSIONS            OFF
-    POSITION_INDEPENDENT_CODE ON  # for python bindings
-)
+set_target_properties(opynsim PROPERTIES CXX_EXTENSIONS OFF)
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    set_target_properties(opynsim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 if(OPYN_BUILD_TESTING)
     add_subdirectory(tests)
