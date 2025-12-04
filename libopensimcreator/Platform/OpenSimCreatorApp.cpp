@@ -107,7 +107,7 @@ namespace
     bool InitializeOpenSim()
     {
         // globally initialize OpenSim
-        log_info("initializing OpenSim (osim::init)");
+        log_info("initializing OpenSim (opyn::init)");
         {
             class LogginingInitConfiguration final : public opyn::InitConfiguration {
                 void impl_log_message(std::string_view payload, opyn::LogLevel level) final
