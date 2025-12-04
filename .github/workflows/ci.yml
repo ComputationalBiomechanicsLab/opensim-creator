@@ -8,20 +8,8 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Build Dependencies
-      shell: cmd
-      run: |
-        cd /d "%GITHUB_WORKSPACE%"
-        call scripts\env_visual-studio.bat
-        cd third_party
-        cmake --workflow --preset oscar_third-party_Release
-    
-    - name: Build oscar
-      shell: cmd
-      run: |
-        cd /d "%GITHUB_WORKSPACE%"
-        call scripts\env_visual-studio.bat
-        cmake --workflow --preset oscar_Release
+    - name: Run Build Script
+      run: ./scripts/e2e_build_windows.bat
 
   ubuntu22_amd64:
     name: Ubuntu 22.04 (amd64)
@@ -30,10 +18,10 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Setup system
-      run: cd $GITHUB_WORKSPACE && ./scripts/setup_ubuntu22_ci.sh
+      run: ./scripts/setup_ubuntu22_ci.sh
 
     - name: Run Build Script
-      run: cd $GITHUB_WORKSPACE && ./scripts/e2e_build_ubuntu22.sh
+      run: ./scripts/e2e_build_ubuntu22.sh
 
   macos_universal:
     name: MacOS (universal?)
@@ -43,5 +31,5 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: run build script
-      run: cd $GITHUB_WORKSPACE && ./scripts/e2e_build_mac.sh
+    - name: Run Build Script
+      run: ./scripts/e2e_build_mac.sh
