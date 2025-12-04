@@ -11,14 +11,30 @@
             }
         },
         {
+            "name": "Development-Inlined",
+            "inherits": "Development",
+            "cacheVariables": {
+                "OSC_BUILD_OPYNSIM_INLINE": "ON",
+                "OSC_TEST_OPYNSIM_INLINE": "ON"
+            }
+        },
+        {
             "name": "ErrorCheck",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/ErrorCheck",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
+                "CMAKE_CXX_FLAGS": "-fsanitize=address",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
+            }
+        },
+        {
+            "name": "ErrorCheck-Inlined",
+            "inherits": "ErrorCheck",
+            "cacheVariables": {
+                "OSC_BUILD_OPYNSIM_INLINE": "ON",
+                "OSC_TEST_OPYNSIM_INLINE": "ON"
             }
         },
         {

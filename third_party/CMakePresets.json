@@ -17,8 +17,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../build/third_party/ErrorCheck/install",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
+                "CMAKE_CXX_FLAGS": "-fsanitize=address",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
             }
         },
         {
@@ -65,30 +65,12 @@
         }
     ],
     "buildPresets": [
-        {
-            "name": "Development",
-            "configurePreset": "Development"
-        },
-        {
-            "name": "ErrorCheck",
-            "configurePreset": "ErrorCheck"
-        },
-        {
-            "name": "RelWithDebInfo",
-            "configurePreset": "RelWithDebInfo"
-        },
-        {
-            "name": "Release",
-            "configurePreset": "Release"
-        },
-        {
-            "name": "Release-MacOS-amd64",
-            "configurePreset": "Release-MacOS-amd64"
-        },
-        {
-            "name": "Release-MacOS-arm64",
-            "configurePreset": "Release-MacOS-arm64"
-        }
+        { "name": "Development",         "configurePreset": "Development" },
+        { "name": "ErrorCheck",          "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo",      "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",             "configurePreset": "Release" },
+        { "name": "Release-MacOS-amd64", "configurePreset": "Release-MacOS-amd64" },
+        { "name": "Release-MacOS-arm64", "configurePreset": "Release-MacOS-arm64" }
     ],
     "workflowPresets": [
         {
