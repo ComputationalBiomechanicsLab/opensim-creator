@@ -84,7 +84,7 @@ def _run_ctest(test_dir, concurrency, excluded_tests=None, extra_env_vars=None):
     if extra_env_vars is None:
         extra_env_vars = {}
 
-    args = ["ctest", "--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
+    args = ["ctest", "--output-on-failure", "--test-dir", test_dir, "-j", str(concurrency)]  # base arguments
     if excluded_tests:
         args += ["-E", "|".join(excluded_tests)]
     _run(args, extra_env_vars)
