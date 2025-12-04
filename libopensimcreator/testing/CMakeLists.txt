@@ -14,6 +14,7 @@ add_executable(TestOpenSimCreator
     ${OSC_OPENSIMCREATOR_TEST_SOURCES}
     TestDocumentationModels.cpp
     TestOpenSimLibraryAPI.cpp
+    TestOpenSimCreator.cpp  # main
 )
 set_target_properties(TestOpenSimCreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(TestOpenSimCreator PUBLIC cxx_std_23)
@@ -24,7 +25,6 @@ target_include_directories(TestOpenSimCreator PRIVATE
 target_link_libraries(TestOpenSimCreator PRIVATE
     OpenSimCreator
     GTest::gtest
-    GTest::gtest_main
 )
 
 # tell CMake (+IDEs) how to find all tests
