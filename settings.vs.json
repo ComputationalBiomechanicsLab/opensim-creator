@@ -1,6 +1,0 @@
-{
-  "files.exclude": {
-    "**/*.vcxproj": true,
-    "**/*.sln": true
-  }
-}
