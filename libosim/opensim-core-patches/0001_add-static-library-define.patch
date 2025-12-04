@@ -3,10 +3,10 @@ can be compiled into libosim (static library).
 
 ---
 
-diff --git a/libosim/opensim-core/OpenSim/Actuators/osimActuatorsDLL.h b/libosim/opensim-core/OpenSim/Actuators/osimActuatorsDLL.h
+diff --git a/OpenSim/Actuators/osimActuatorsDLL.h b/OpenSim/Actuators/osimActuatorsDLL.h
 index fae5000e0..2a2bd6e59 100644
---- a/libosim/opensim-core/OpenSim/Actuators/osimActuatorsDLL.h
-+++ b/libosim/opensim-core/OpenSim/Actuators/osimActuatorsDLL.h
+--- a/OpenSim/Actuators/osimActuatorsDLL.h
++++ b/OpenSim/Actuators/osimActuatorsDLL.h
 @@ -38,10 +38,12 @@
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
@@ -23,10 +23,10 @@ index fae5000e0..2a2bd6e59 100644
  #endif
  
  #endif // PLATFORM
-diff --git a/libosim/opensim-core/OpenSim/Analyses/osimAnalysesDLL.h b/libosim/opensim-core/OpenSim/Analyses/osimAnalysesDLL.h
+diff --git a/OpenSim/Analyses/osimAnalysesDLL.h b/OpenSim/Analyses/osimAnalysesDLL.h
 index 67fabc33d..94f4ed209 100644
---- a/libosim/opensim-core/OpenSim/Analyses/osimAnalysesDLL.h
-+++ b/libosim/opensim-core/OpenSim/Analyses/osimAnalysesDLL.h
+--- a/OpenSim/Analyses/osimAnalysesDLL.h
++++ b/OpenSim/Analyses/osimAnalysesDLL.h
 @@ -34,10 +34,12 @@
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
@@ -43,10 +43,10 @@ index 67fabc33d..94f4ed209 100644
  #endif
  
  #endif // PLATFORM
-diff --git a/libosim/opensim-core/OpenSim/Common/osimCommonDLL.h b/libosim/opensim-core/OpenSim/Common/osimCommonDLL.h
+diff --git a/OpenSim/Common/osimCommonDLL.h b/OpenSim/Common/osimCommonDLL.h
 index fec242da3..460649499 100644
---- a/libosim/opensim-core/OpenSim/Common/osimCommonDLL.h
-+++ b/libosim/opensim-core/OpenSim/Common/osimCommonDLL.h
+--- a/OpenSim/Common/osimCommonDLL.h
++++ b/OpenSim/Common/osimCommonDLL.h
 @@ -34,7 +34,9 @@
      #define WIN32_LEAN_AND_MEAN
      #define NOMINMAX
@@ -58,10 +58,10 @@ index fec242da3..460649499 100644
          #define OSIMCOMMON_API __declspec(dllexport)
      #else
          #define OSIMCOMMON_API __declspec(dllimport)
-diff --git a/libosim/opensim-core/OpenSim/ExampleComponents/osimExampleComponentsDLL.h b/libosim/opensim-core/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
+diff --git a/OpenSim/ExampleComponents/osimExampleComponentsDLL.h b/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
 index c14297287..4465bcef9 100644
---- a/libosim/opensim-core/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
-+++ b/libosim/opensim-core/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
+--- a/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
++++ b/OpenSim/ExampleComponents/osimExampleComponentsDLL.h
 @@ -33,10 +33,13 @@
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
@@ -79,10 +79,10 @@ index c14297287..4465bcef9 100644
  #endif
  
  #endif // PLATFORM
-diff --git a/libosim/opensim-core/OpenSim/Simulation/osimSimulationDLL.h b/libosim/opensim-core/OpenSim/Simulation/osimSimulationDLL.h
+diff --git a/OpenSim/Simulation/osimSimulationDLL.h b/OpenSim/Simulation/osimSimulationDLL.h
 index 467d9b5d8..7c1dd2ab9 100644
---- a/libosim/opensim-core/OpenSim/Simulation/osimSimulationDLL.h
-+++ b/libosim/opensim-core/OpenSim/Simulation/osimSimulationDLL.h
+--- a/OpenSim/Simulation/osimSimulationDLL.h
++++ b/OpenSim/Simulation/osimSimulationDLL.h
 @@ -38,10 +38,12 @@
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
@@ -99,10 +99,10 @@ index 467d9b5d8..7c1dd2ab9 100644
  #endif
  
  #endif // PLATFORM
-diff --git a/libosim/opensim-core/OpenSim/Tools/osimToolsDLL.h b/libosim/opensim-core/OpenSim/Tools/osimToolsDLL.h
+diff --git a/OpenSim/Tools/osimToolsDLL.h b/OpenSim/Tools/osimToolsDLL.h
 index 402c688b2..5deef7331 100644
---- a/libosim/opensim-core/OpenSim/Tools/osimToolsDLL.h
-+++ b/libosim/opensim-core/OpenSim/Tools/osimToolsDLL.h
+--- a/OpenSim/Tools/osimToolsDLL.h
++++ b/OpenSim/Tools/osimToolsDLL.h
 @@ -37,10 +37,12 @@
  #define WIN32_LEAN_AND_MEAN
  #define NOMINMAX
