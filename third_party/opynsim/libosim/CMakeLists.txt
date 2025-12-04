@@ -695,9 +695,12 @@ PUBLIC
     spdlog::spdlog   # used by OpenSim (logging)
 )
 set_target_properties(osim PROPERTIES
-    POSITION_INDEPENDENT_CODE ON  # for python bindings
+    CXX_EXTENSIONS OFF
     CXX_CLANG_TIDY            ""  # do not statically analyze third-party code
 )
+if(OPYN_BUILD_PYTHON_BINDINGS)
+    set_target_properties(osim PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # Install osim such that it is header-compatible with OpenSim and
 # simbody projects (unofficial legacy project support).
