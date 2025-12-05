@@ -20,8 +20,8 @@ version.
 Third-party libraries are maintained/changed using `git subtree`, for example:
 
 ```bash
-git subtree pull --squash --prefix=third_party/googletest https://github.com/google/googletest v1.17.0
 git subtree pull --prefix=third_party/opynsim/ https://github.com/opynsim/opynsim.git master
+git subtree pull --prefix=third_party/oscar/   https://github.com/opynsim/oscar.git   master
 ```
 
 You can list all subtrees with:
@@ -29,6 +29,3 @@ You can list all subtrees with:
 ```bash
 for d in $(find third_party/ -mindepth 1 -maxdepth 1 -type d); do v=$(git log --grep "git-subtree-dir: $d" -1 --pretty=format:"%b" | grep git-subtree-split); if [ -n "$v" ]; then echo "$d $v"; fi; done
 ```
-
-**Note**: the build procedure also applies patches so some of the upstream code so
-that it works better in OpenSim Creator. See `patches/`.
