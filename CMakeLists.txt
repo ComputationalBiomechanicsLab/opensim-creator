@@ -25,9 +25,6 @@ if(OSC_BUILD_OPYNSIM_INLINE)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim)
 endif()
 
-add_subdirectory(liboscar)
-add_subdirectory(liboscar-demos)
-add_subdirectory(hellooscar)
 add_subdirectory(libopensimcreator)
 add_subdirectory(osc)
 

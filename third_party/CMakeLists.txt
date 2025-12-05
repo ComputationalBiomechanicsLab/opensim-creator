@@ -56,7 +56,7 @@ if(TRUE)
 endif()
 
 if(OSCDEPS_BUILD_OPYNSIM)
-    ExternalProject_Add(opynsim-dependencies
+    ExternalProject_Add(opyndeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim/third_party
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
@@ -66,7 +66,7 @@ if(OSCDEPS_BUILD_OPYNSIM)
             -DOPYNDEPS_BUILD_ROBIN_MAP:BOOL=OFF
     )
     ExternalProject_Add(opynsim
-        DEPENDS opynsim-dependencies
+        DEPENDS opyndeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/opynsim
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
@@ -81,7 +81,7 @@ if(OSCDEPS_BUILD_OPYNSIM)
 endif()
 
 if(OSCDEPS_BUILD_OSCAR)
-    ExternalProject_Add(oscar-dependencies
+    ExternalProject_Add(oscdeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar/third_party
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         INSTALL_COMMAND ""
@@ -90,7 +90,7 @@ if(OSCDEPS_BUILD_OSCAR)
             -DBUILD_TESTING:BOOL=OFF
     )
     ExternalProject_Add(oscar
-        DEPENDS oscar-dependencies
+        DEPENDS oscdeps
         SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
         BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
         CMAKE_CACHE_ARGS
