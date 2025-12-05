@@ -5,6 +5,7 @@ project(osc VERSION 0.6.2 LANGUAGES CXX C)
 option(BUILD_TESTING            "Build test suites"                                     ON)
 option(OSC_BUILD_OPYNSIM_INLINE "Inline the OPynSim build"                              OFF)
 option(OSC_TEST_OPYNSIM_INLINE  "Inline the OPynSim test suite"                         OFF)
+option(OSC_BUILD_OSCAR_INLINE   "Inline the oscar build"                                OFF)
 option(OSC_BUILD_DOCS           "Build OpenSim Creator's documentation"                 OFF)
 option(OSC_CONFIGURE_PACKAGING  "Configure the build to support installation/packaging" ON)
 
@@ -23,6 +24,10 @@ if(OSC_BUILD_OPYNSIM_INLINE)
     set(OPYN_USE_STRICT_COMPILER_FLAGS OFF)
     set(OPYN_PACKAGE OFF)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/opynsim)
+endif()
+
+if(OSC_BUILD_OSCAR_INLINE)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/oscar)
 endif()
 
 add_subdirectory(libopensimcreator)

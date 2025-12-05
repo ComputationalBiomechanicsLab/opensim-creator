@@ -15,7 +15,8 @@
             "inherits": "Development",
             "cacheVariables": {
                 "OSC_BUILD_OPYNSIM_INLINE": "ON",
-                "OSC_TEST_OPYNSIM_INLINE": "ON"
+                "OSC_TEST_OPYNSIM_INLINE": "ON",
+                "OSC_BUILD_OSCAR_INLINE": "ON"
             }
         },
         {
