@@ -1,18 +1,16 @@
 # `third_party/`: Source Code for OpenSim Creator's Third-Party Dependencies
 
 This directory contains the source code for of OpenSim Creator's third-party runtime
-dependencies, such that the entire technology stack can be compiled from source on
-all target platforms with only `cmake` and a C++ compiler and no internet connection.
+dependencies, such that its entire dependency tree can be compiled from source on
+all target platforms with only `cmake` and a C++ compiler.
 
 There's a `CMakeLists.txt` file that uses the `ExternalProject` API to build+install
 these third-party dependencies into a standalone install directory. That directory
 can then be used by OpenSim Creator's main build via the `CMAKE_PREFIX_PATH` variable.
 
-Because OpenSim Creator uniformly uses `find_package`, you can also reconfigure what
-third-party dependencies it *actually* uses at configure-time. This is particularly
-useful for LAPACK/BLAS, because Linux/MacOS provide these at an OS-level, so you can
-skip building it in this superbuild and just let `find_package` find the OS-level
-version.
+You don't strictly *need* to build everything from source: the main `opensim-creator`
+build uses `find_package` to find each upstream dependency, so if you know your system
+provides all of the dependencies already you can probably (parts of) this.
 
 
 ## Update Procedure
@@ -20,8 +18,8 @@ version.
 Third-party libraries are maintained/changed using `git subtree`, for example:
 
 ```bash
-git subtree pull --prefix=third_party/opynsim/ https://github.com/opynsim/opynsim.git master
-git subtree pull --prefix=third_party/oscar/   https://github.com/opynsim/oscar.git   main
+git subtree pull --prefix=third_party/opynsim/ https://github.com/opynsim/opynsim.git  main
+git subtree pull --prefix=third_party/oscar/   https://github.com/adamkewley/oscar.git main
 ```
 
 You can list all subtrees with:

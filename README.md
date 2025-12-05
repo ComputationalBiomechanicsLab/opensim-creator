@@ -28,8 +28,8 @@ MacOS (>= 14.5, Sonoma), and Ubuntu (>= 22.04, Jammy Jellyfish).
 department at [TU Delft](https://www.tudelft.nl/). Architecturally, `osc` is a C++ codebase
 that is directly integrated against the [OpenSim core C++ API](https://github.com/opensim-org/opensim-core). It
 otherwise only uses lightweight open-source libraries that can easily be built from source
-(e.g. [SDL](https://www.libsdl.org/)) to implement the UI on all target platforms. This makes `osc`
-fairly easy to build, integrate, and package.
+(e.g. [oscar](https://github.com/adamkewley/oscar)) to implement the UI on all target
+platforms. This makes `osc` fairly easy to build, integrate, and package.
 
 
 <a name="citing"></a>

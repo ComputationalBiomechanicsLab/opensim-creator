@@ -14,6 +14,13 @@ on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   the model warper workflow. The option compensates for the case where a scaling step
   in the model warper operates on frames that may have been warped by previous steps,
   which can result in double-warping of the data (#1144).
+- OpenSim Creator now uses [OPynSim](https://github.com/opynsim/opynsim) as its OpenSim/Simbody
+  provider. This should enable porting some of OpenSim Creator's algorithms upstream so that they
+  can be used from Python.
+- OpenSim Creator now uses [oscar](https://github.com/adamkewley/oscar) as its backend. `oscar`
+  is effectively a separated refactor of OpenSim Creator's existing engine. This is mostly an
+  organizational change for @adamkewley that enables building new OpenSim Creator-like UIs
+  separately from OpenSim/simbody/OPynSim.
 
 
 ## [0.6.2] - 2025/11/03
