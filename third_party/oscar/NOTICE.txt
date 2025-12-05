@@ -1,0 +1,96 @@
+oscar
+Copyright 2025 Adam Kewley
+License: Apache License Version 2.0
+
+This product includes software developed by third parties, listed
+below. All third-party code uses some kind of permissive license, and
+is either used as a library (i.e. unmodified, linked), or as a source
+code fork (i.e. copied + pasted, then subsequently modified in-tree).
+
+
+Libraries
+=========
+
+This product uses software developed by third parties in an unmodified
+form. The following software libraries are used:
+
+
+glad
+----
+
+- https://github.com/Dav1dde/glad
+- The `glad` code was generated via https://glad.dav1d.de/ . It can be any of
+  public domain, WTFPL, or CC0 license. The headers also contain code from
+  Khronos, which is Apache 2.0 licensed.
+- Author: David Herberth <github@dav1d.de>
+
+googletest
+----------
+
+- https://github.com/google/googletest
+- Licensed under the BSD 3-Clause "New" or "Revised" License
+- Copyright 2008, Google Inc.
+
+imgui
+-----
+
+- https://github.com/ocornut/imgui
+- Licensed under the MIT license
+- Copyright (c) 2014-2024 Omar Cornut
+
+ImPlot
+------
+
+- https://github.com/epezent/implot
+- Licensed under the MIT license
+- Copyright (c) 2020 Evan Pezent
+
+lunasvg
+-------
+
+- https://github.com/sammycage/lunasvg
+- Licensed under the MIT license
+- Copyright (c) 2020-2024 Samuel Ugochukwu <sammycageagle@gmail.com>
+
+SDL
+---
+
+- https://github.com/libsdl-org/SDL
+- Licensed under the zlib license
+- Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+
+stb
+---
+
+- https://github.com/nothings/stb
+- Licensed under the MIT license
+- Copyright (c) 2017 Sean Barrett
+
+tomlplusplus
+------------
+
+- https://github.com/marzer/tomlplusplus
+- Licensed under the MIT license
+- Copyright (c) Mark Gillard <mark.gillard@outlook.com.au>
+
+unordered_dense
+---------------
+
+- https://github.com/martinus/unordered_dense
+- Licensed under the MIT license
+- Copyright (c) 2022 Martin Leitner-Ankerl
+
+
+Source Code Forks (Copy + Paste + Modify)
+=========================================
+
+This product contains source code that was originally copied + pasted
+from its original project into this project's sourcetree. The
+following source code was copied, pasted, and modified in-tree:
+
+ImGuizmo
+--------
+
+- https://github.com/CedricGuillemet/ImGuizmo
+- Licensed under the MIT license
+- Copyright (c) 2016 Cedric Guillemet

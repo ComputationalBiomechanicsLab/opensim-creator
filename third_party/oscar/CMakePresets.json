@@ -1,0 +1,126 @@
+{
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "Development",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Development",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Development/install",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_FORCE_ASSERTS_ENABLED": "ON"
+            },
+            "hidden": false
+        },
+        {
+            "name": "ErrorCheck",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/ErrorCheck",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/ErrorCheck/install",
+                "OSCAR_USE_STRICT_COMPILER_FLAGS": "ON",
+                "OSCAR_FORCE_ASSERTS_ENABLED": "ON",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_SHARED_LINKER_FLAGS": "-rdynamic",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy"
+            },
+            "hidden": false
+        },
+        {
+            "name": "RelWithDebInfo",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/RelWithDebInfo",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/RelWithDebInfo/install"
+            },
+            "hidden": false
+        },
+        {
+            "name": "Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_PREFIX_PATH": "${sourceDir}/build/third_party/Release/install"
+            },
+            "hidden": false
+        }
+    ],
+    "buildPresets": [
+        { "name": "Development",    "configurePreset": "Development" },
+        { "name": "ErrorCheck",     "configurePreset": "ErrorCheck" },
+        { "name": "RelWithDebInfo", "configurePreset": "RelWithDebInfo" },
+        { "name": "Release",        "configurePreset": "Release" }
+    ],
+    "testPresets": [
+        {
+            "name": "Development",
+            "configurePreset": "Development",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "ErrorCheck",
+            "configurePreset": "ErrorCheck",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "RelWithDebInfo",
+            "configurePreset": "RelWithDebInfo",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error"}
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "Development",
+            "description": "Perform a development configure + build of Oscar",
+            "steps": [
+                { "type": "configure", "name": "Development" },
+                { "type": "build", "name": "Development" },
+                { "type": "test", "name": "Development" }
+            ]
+        },
+        {
+            "name": "ErrorCheck",
+            "description": "Perform a ErrorCheck configure + build of Oscar",
+            "steps": [
+                { "type": "configure", "name": "ErrorCheck" },
+                { "type": "build", "name": "ErrorCheck" },
+                { "type": "test", "name": "ErrorCheck" }
+            ]
+        },
+        {
+            "name": "RelWithDebInfo",
+            "description": "Configure + build oscar's third-party dependencies (RelWithDebInfo build)",
+            "steps": [
+                { "type": "configure", "name": "RelWithDebInfo" },
+                { "type": "build", "name": "RelWithDebInfo" },
+                { "type": "test", "name": "RelWithDebInfo" }
+            ]
+        },
+        {
+            "name": "Release",
+            "description": "Configure + build oscar's third-party dependencies (Release build)",
+            "steps": [
+                { "type": "configure", "name": "Release" },
+                { "type": "build", "name": "Release" },
+                { "type": "test", "name": "Release" }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+cmake
+build-essential
+pkg-config
+xdg-desktop-portal-gtk
+libx11-dev
+libxext-dev
+libopengl-dev
+libgl1-mesa-dev

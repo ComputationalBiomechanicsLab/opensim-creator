@@ -1,0 +1,69 @@
+---
+Checks: >
+  clang-analyzer-*,
+  -clang-analyzer-optin.core.EnumCastOutOfRange,
+  -clang-analyzer-optin.performance.Padding,
+  bugprone-*,
+  -bugprone-narrowing-conversions,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-lambda-function-name,
+  -bugprone-branch-clone,
+  -bugprone-unchecked-optional-access,
+  misc-*,
+  -misc-no-recursion,
+  -misc-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-const-correctness,
+  concurrency-*,
+  modernize-*,
+  -modernize-loop-convert,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-narrowing-conversions,
+  -cppcoreguidelines-pro-type-const-cast,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-macro-usage,
+  performance-*,
+  -performance-avoid-endl,
+  -performance-enum-size,
+  portability-*,
+  google-*,
+  -google-readability-namespace-comments,
+  -google-readability-todo,
+  -google-build-using-namespace,
+  -google-readability-avoid-underscore-in-googletest-name,
+  hicpp-*,
+  -hicpp-uppercase-literal-suffix,
+  -hicpp-signed-bitwise,
+  -hicpp-vararg,
+  -hicpp-named-parameter,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-identifier-length,
+  -readability-uppercase-literal-suffix,
+  -readability-else-after-return,
+  -readability-function-cognitive-complexity,
+  -readability-named-parameter,
+  -readability-convert-member-functions-to-static,
+  -readability-qualified-auto,
+  -readability-avoid-nested-conditional-operator,
+  -readability-simplify-boolean-expr,
+  -readability-make-member-function-const,
+  cert-*
+  -cert-dcl21-cpp
+
+CheckOptions:
+  - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
+    value: true
+
+WarningsAsErrors: '*'
+

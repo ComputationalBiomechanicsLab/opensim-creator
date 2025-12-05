@@ -1,0 +1,36 @@
+# build: artifacts/side-effects
+build/
+
+# build: intermediate/output files
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.so.*
+*.dll
+*.dylib
+
+# os: MacOS filesystem
+.DS_Store
+
+# LSP: `clangd` may create this (it does with nvim)
+.cache/
+
+# editor: QtCreator
+*.autosave
+CMakeLists.txt.user
+
+# editor: Visual Studio
+.vs/
+CMakeSettings.json
+out/
+
+# editor: Visual Studio Code
+.vscode/
+
+# editor: CLion
+.idea/
+
