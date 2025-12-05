@@ -21,7 +21,7 @@ Third-party libraries are maintained/changed using `git subtree`, for example:
 
 ```bash
 git subtree pull --prefix=third_party/opynsim/ https://github.com/opynsim/opynsim.git master
-git subtree pull --prefix=third_party/oscar/   https://github.com/opynsim/oscar.git   master
+git subtree pull --prefix=third_party/oscar/   https://github.com/opynsim/oscar.git   main
 ```
 
 You can list all subtrees with:

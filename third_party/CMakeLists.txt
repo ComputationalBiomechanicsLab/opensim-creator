@@ -4,7 +4,8 @@ project(osc-dependencies)
 include(ExternalProject)  # ExternalProject_Add
 include(GNUInstallDirs)   # CMAKE_INSTALL_LIBDIR
 
-option(OSCDEPS_BUILD_OPYNSIM         "Build opynsim"         ON)
+option(OSCDEPS_BUILD_OPYNSIM "Build opynsim"         ON)
+option(OSCDEPS_BUILD_OSCAR   "Build oscar"           ON)
 
 # set OSCDEPS_BUILD_ALWAYS
 if(TRUE)
@@ -76,5 +77,26 @@ if(OSCDEPS_BUILD_OPYNSIM)
             -DOPYN_BUILD_DOCS:BOOL=OFF
             -DOPYN_USE_STRICT_COMPILER_FLAGS:BOOL=OFF
             -DOPYN_PACKAGE:BOOL=OFF
+    )
+endif()
+
+if(OSCDEPS_BUILD_OSCAR)
+    ExternalProject_Add(oscar-dependencies
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar/third_party
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        INSTALL_COMMAND ""
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DBUILD_TESTING:BOOL=OFF
+    )
+    ExternalProject_Add(oscar
+        DEPENDS oscar-dependencies
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/oscar
+        BUILD_ALWAYS ${OSCDEPS_BUILD_ALWAYS}
+        CMAKE_CACHE_ARGS
+            ${OSCDEPS_DEPENDENCY_CMAKE_ARGS}
+            -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBUILD_TESTING:BOOL=OFF
+            -DOSCAR_BUILD_HELLOOSCAR:BOOL=OFF
     )
 endif()
