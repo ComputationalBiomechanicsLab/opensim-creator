@@ -1,4 +1,3 @@
-include(../cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
 include(GoogleTest)  # gtest_discover_tests
 
 option(OSC_DISCOVER_TESTS "Automatically run test discovery (IDE integration)" ON)
@@ -18,14 +17,17 @@ add_executable(TestOpenSimCreator
 )
 set_target_properties(TestOpenSimCreator PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(TestOpenSimCreator PUBLIC cxx_std_23)
-target_compile_options(TestOpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+if(OSC_USE_STRICT_COMPILER_FLAGS)
+    include(../cmake/osc_strict_compiler_options.cmake)
+    target_compile_options(TestOpenSimCreator PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+endif()
 target_include_directories(TestOpenSimCreator PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <libopensimcreator/tests/TestOpenSimCreatorConfig.h>` works
 )
 target_link_libraries(TestOpenSimCreator PRIVATE opensimcreator GTest::gtest)
 
 # tell CMake (+IDEs) how to find all tests
-if(${OSC_DISCOVER_TESTS})
+if(OSC_DISCOVER_TESTS)
     gtest_discover_tests(TestOpenSimCreator)
 endif()
 

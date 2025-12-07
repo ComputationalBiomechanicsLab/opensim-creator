@@ -1,5 +1,4 @@
-include(${CMAKE_CURRENT_SOURCE_DIR}/../libopensimcreator/cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
-
+option(OSC_USE_STRICT_COMPILER_FLAGS "Add stricter compilation flags to targets" OFF)
 set(
     OSC_REPO_URL "https://github.com/ComputationalBiomechanicsLab/opensim-creator"
     CACHE STRING
@@ -81,7 +80,10 @@ configure_file(
 add_executable(osc osc.cpp)
 set_target_properties(osc PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(osc PUBLIC cxx_std_23)
-target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+if(OSC_USE_STRICT_COMPILER_FLAGS)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/../libopensimcreator/cmake/osc_strict_compiler_options.cmake)  # OSC_STRICT_COMPILER_OPTIONS
+    target_compile_options(osc PRIVATE ${OSC_STRICT_COMPILER_OPTIONS})
+endif()
 target_link_libraries(osc PRIVATE opensimcreator $<$<BOOL:${OSC_BUNDLE_OSCAR_DEMOS}>:oscar_demos>)
 target_include_directories(osc PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}/generated/"  # so that `#include <osc/osc_config.h>` works
